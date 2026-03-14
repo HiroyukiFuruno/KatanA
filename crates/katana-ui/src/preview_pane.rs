@@ -34,6 +34,12 @@ pub enum RenderedSection {
         _source: String,
         message: String,
     },
+    /// コマンドラインツールが見つからない（パスの問題など）。
+    CommandNotFound {
+        tool_name: String,
+        install_hint: String,
+        _source: String,
+    },
     /// 必要なツールが未インストール— UI からダウンロードできる。
     NotInstalled {
         kind: String,
@@ -133,8 +139,10 @@ impl PreviewPane {
         });
     }
 
-    /// プレビューペインの内容を描画する。
+    /// プレビューペインの内容を描画する（ScrollArea 込み）。
+    /// PreviewOnly モードなどスクロール同期が不要な場面で使う。
     /// ダウンロードボタンが押された場合は `Some(DownloadRequest)` を返す。
+    #[allow(dead_code)]
     pub fn show(&mut self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         // バックグラウンドレンダリング完了をポーリング。
         self.poll_renders(ui.ctx());
@@ -143,16 +151,34 @@ impl PreviewPane {
         ScrollArea::vertical()
             .auto_shrink([false, false])
             .show(ui, |ui| {
-                for (i, section) in self.sections.iter().enumerate() {
-                    if let Some(req) = show_section(ui, &mut self.commonmark_cache, section, i) {
-                        request = Some(req);
-                    }
-                    ui.separator();
-                }
-                if self.sections.is_empty() {
-                    ui.label(egui::RichText::new("（プレビューなし）").weak());
-                }
+                request = self.render_sections(ui);
             });
+        request
+    }
+
+    /// ScrollArea なしでプレビューコンテンツだけを描画する。
+    /// 外側で ScrollArea を制御したい場合（スクロール同期など）に使う。
+    pub fn show_content(&mut self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+        self.poll_renders(ui.ctx());
+        self.render_sections(ui)
+    }
+
+    /// セクションを順に描画する内部メソッド。
+    fn render_sections(&mut self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+        let mut request: Option<DownloadRequest> = None;
+        for (i, section) in self.sections.iter().enumerate() {
+            // セクションごとに ID スコープを分離し、同一ドキュメント内に
+            // 複数のテーブルがあっても egui の Grid ID が衝突しないようにする。
+            ui.push_id(format!("section_{i}"), |ui| {
+                if let Some(req) = show_section(ui, &mut self.commonmark_cache, section, i) {
+                    request = Some(req);
+                }
+                ui.separator();
+            });
+        }
+        if self.sections.is_empty() {
+            ui.label(egui::RichText::new("（プレビューなし）").weak());
+        }
         request
     }
 
@@ -238,6 +264,21 @@ fn show_section(
             );
             None
         }
+        RenderedSection::CommandNotFound {
+            tool_name,
+            install_hint,
+            _source: _,
+        } => {
+            let msg = crate::i18n::t("missing_dependency")
+                .replace("{tool_name}", tool_name)
+                .replace("{install_hint}", install_hint);
+            ui.label(
+                egui::RichText::new(msg)
+                    .color(egui::Color32::YELLOW)
+                    .small(),
+            );
+            None
+        }
         RenderedSection::NotInstalled {
             kind,
             download_url,
@@ -310,10 +351,20 @@ fn render_diagram(kind: &DiagramKind, source: &str) -> RenderedSection {
     let result = dispatch_renderer(&block);
     match result {
         DiagramResult::Ok(html) => try_rasterize(kind, source, &html),
+        DiagramResult::OkPng(bytes) => decode_png_to_section(kind, source, bytes),
         DiagramResult::Err { source, error } => RenderedSection::Error {
             kind: format!("{kind:?}"),
             _source: source,
             message: error,
+        },
+        DiagramResult::CommandNotFound {
+            tool_name,
+            install_hint,
+            source,
+        } => RenderedSection::CommandNotFound {
+            tool_name,
+            install_hint,
+            _source: source,
         },
         DiagramResult::NotInstalled {
             kind: k,
@@ -365,4 +416,32 @@ fn extract_svg(html: &str) -> Option<&str> {
     Some(&html[start..end])
 }
 
+/// PNG バイト列を `RenderedSection::Image` に変換する。
+///
+/// mmdc の PNG 出力を `image` クレートでデコードし、RGBA ピクセルバッファを取得する。
+/// これにより resvg の `<foreignObject>` 非対応を完全に回避できる。
+fn decode_png_to_section(kind: &DiagramKind, source: &str, bytes: Vec<u8>) -> RenderedSection {
+    match decode_png_rgba(&bytes) {
+        Ok(rasterized) => RenderedSection::Image {
+            svg_data: rasterized,
+            alt: format!("{kind:?} diagram"),
+        },
+        Err(e) => RenderedSection::Error {
+            kind: format!("{kind:?}"),
+            _source: source.to_string(),
+            message: format!("PNG デコード失敗: {e}"),
+        },
+    }
+}
 
+/// PNG バイト列を RGBA ピクセルに変換する。
+fn decode_png_rgba(bytes: &[u8]) -> Result<RasterizedSvg, String> {
+    let img = image::load_from_memory(bytes).map_err(|e| e.to_string())?;
+    let rgba = img.into_rgba8();
+    let (width, height) = rgba.dimensions();
+    Ok(RasterizedSvg {
+        width,
+        height,
+        rgba: rgba.into_raw(),
+    })
+}

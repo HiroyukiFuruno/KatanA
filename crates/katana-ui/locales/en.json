@@ -16,5 +16,18 @@
   "workspace_title": "Workspace",
   "view_mode_preview": "Preview",
   "view_mode_code": "Code",
-  "view_mode_split": "Split"
+  "view_mode_split": "Split",
+  "missing_dependency": "⚠️ {tool_name} is not found. Please install it using {install_hint}.",
+  "status_ready": "Ready",
+  "status_saved": "Saved.",
+  "status_save_failed": "Save failed: {error}",
+  "status_opened_workspace": "Opened workspace: {name}",
+  "status_cannot_open_workspace": "Cannot open workspace: {error}",
+  "status_cannot_open_file": "Cannot open file: {error}",
+  "expand_all": "Expand all",
+  "collapse_all": "Collapse all",
+  "ai_unconfigured": "[AI: unconfigured]",
+  "curl_launch_failed": "curl launch failed",
+  "download_failed": "Download failed",
+  "collapse_sidebar": "Hide Sidebar"
 }

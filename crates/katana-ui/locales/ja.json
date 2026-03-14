@@ -16,5 +16,18 @@
   "workspace_title": "ワークスペース",
   "view_mode_preview": "プレビュー",
   "view_mode_code": "コード",
-  "view_mode_split": "分割"
+  "view_mode_split": "分割",
+  "missing_dependency": "⚠️ {tool_name} が見つかりません。{install_hint} を使用してインストールしてください。",
+  "status_ready": "準備完了",
+  "status_saved": "保存しました。",
+  "status_save_failed": "保存に失敗しました: {error}",
+  "status_opened_workspace": "{name} を開きました",
+  "status_cannot_open_workspace": "ワークスペースを開けませんでした: {error}",
+  "status_cannot_open_file": "ファイルを開けませんでした: {error}",
+  "expand_all": "すべて展開",
+  "collapse_all": "すべて折りたたむ",
+  "ai_unconfigured": "[AI: 未設定]",
+  "curl_launch_failed": "curl 起動失敗",
+  "download_failed": "ダウンロードに失敗しました",
+  "collapse_sidebar": "サイドバーを隐す"
 }
