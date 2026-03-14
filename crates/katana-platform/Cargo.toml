@@ -1,0 +1,17 @@
+[package]
+name = "katana-platform"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Katana platform: filesystem access, settings persistence, keybindings, clipboard, and OS integrations"
+
+[dependencies]
+katana-core = { path = "../katana-core" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

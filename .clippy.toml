@@ -1,0 +1,5 @@
+# Clippy configuration
+# Functions over 30 lines trigger a warning (enforced as error in CI via -D warnings).
+too-many-lines-threshold = 30
+# Cognitive complexity threshold (proxy for nesting depth ≤ 3).
+cognitive-complexity-threshold = 10

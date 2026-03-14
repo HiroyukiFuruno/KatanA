@@ -1,0 +1,18 @@
+[package]
+name = "katana-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Katana UI: egui application shell, panes, menu wiring, and presentation state"
+
+[dependencies]
+katana-core = { path = "../katana-core" }
+katana-platform = { path = "../katana-platform" }
+eframe.workspace = true
+egui.workspace = true
+egui_extras.workspace = true
+serde.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+rfd = "0.15"

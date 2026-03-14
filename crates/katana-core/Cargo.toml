@@ -1,0 +1,24 @@
+[package]
+name = "katana-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Katana core: document model, workspace model, markdown pipeline, AI orchestration, and plugin contracts"
+
+[dependencies]
+comrak.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+resvg.workspace = true
+usvg.workspace = true
+tiny-skia.workspace = true
+xmltree.workspace = true
+dirs-sys = "0.4"
+tempfile.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+cargo-husky = { workspace = true }

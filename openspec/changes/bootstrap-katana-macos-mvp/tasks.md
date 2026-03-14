@@ -1,8 +1,8 @@
 ## 1. Application foundation
 
-- [ ] 1.1 Create the initial Rust project layout for `ui`, `core`, and `platform` modules, add the MVP dependencies for `egui`, `comrak`, and preview rendering, and verify `cargo check` passes.
-- [ ] 1.2 Define the shared application state, action flow, and service interfaces for filesystem access, settings, clipboard, and OS integration, and document the boundary of each service.
-- [ ] 1.3 Wire macOS app startup so the shell can initialize services, registries, and an empty workspace session cleanly, and verify the app reaches the initial shell without panicking.
+- [x] 1.1 Create the initial Rust project layout for `ui`, `core`, and `platform` modules, add the MVP dependencies for `egui`, `comrak`, and preview rendering, and verify `cargo check` passes.
+- [x] 1.2 Define the shared application state, action flow, and service interfaces for filesystem access, settings, clipboard, and OS integration, and document the boundary of each service.
+- [x] 1.3 Wire macOS app startup so the shell can initialize services, registries, and an empty workspace session cleanly, and verify the app reaches the initial shell without panicking.
 
 ## 2. Workspace shell and document lifecycle
 
