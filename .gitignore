@@ -50,14 +50,17 @@ Temporary Items
 .apdisk
 
 # Katana local and tool-specific ignores
-/.agent/
-/.agents/
+/.agent/workflows/opsx-*.md
+/.agent/skills/openspec-*/
+/.agents/skills/openspec-*/
 /.claude/commands/opsx/
 /.claude/skills/openspec-*/
 /.codex/skills/openspec-*/
 /.github/prompts/opsx-*.md
 /.github/skills/openspec-*/
 
-# Local planning inputs kept out of git
-/katana_monorepo_architecture.md
-/katana_openspec_request.md
+# Documentation
+docs/blog
+
+# mcp
+.serena

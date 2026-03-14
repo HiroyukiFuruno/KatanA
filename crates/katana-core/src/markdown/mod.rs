@@ -1,0 +1,200 @@
+//! Markdown parsing pipeline using `comrak`.
+
+#![deny(clippy::too_many_lines, clippy::cognitive_complexity)]
+
+use comrak::{markdown_to_html, ComrakOptions};
+
+pub mod diagram;
+pub mod drawio_renderer;
+pub mod mermaid_renderer;
+pub mod plantuml_renderer;
+pub mod svg_rasterize;
+
+use diagram::{DiagramBlock, DiagramKind, DiagramRenderer, DiagramResult};
+pub use diagram::NoOpRenderer;
+
+/// 本番用レンダラー: 各図ブロック種別を実際のサブプロセス / XML パーサーに委譲する。
+#[derive(Debug, Default)]
+pub struct KatanaRenderer;
+
+impl DiagramRenderer for KatanaRenderer {
+    fn render(&self, block: &DiagramBlock) -> DiagramResult {
+        match block.kind {
+            DiagramKind::Mermaid => mermaid_renderer::render_mermaid(block),
+            DiagramKind::PlantUml => plantuml_renderer::render_plantuml(block),
+            DiagramKind::DrawIo => drawio_renderer::render_drawio(block),
+        }
+    }
+}
+
+/// 本番用 `KatanaRenderer` を使って Markdown を HTML にレンダリングする。
+pub fn render_with_katana_renderer(source: &str) -> Result<RenderOutput, MarkdownError> {
+    render(source, &KatanaRenderer)
+}
+
+/// The result of rendering a Markdown buffer.
+#[derive(Debug, Clone)]
+pub struct RenderOutput {
+    pub html: String,
+}
+
+/// Errors that may arise during Markdown rendering.
+#[derive(Debug, thiserror::Error)]
+pub enum MarkdownError {
+    #[error("Rendering failed: {0}")]
+    RenderFailed(String),
+}
+
+/// Build default `comrak` options with GFM extensions enabled.
+fn gfm_options() -> ComrakOptions<'static> {
+    let mut opts = ComrakOptions::default();
+    opts.extension.strikethrough = true;
+    opts.extension.table = true;
+    opts.extension.autolink = true;
+    opts.extension.tasklist = true;
+    opts.extension.footnotes = true;
+    // カスタム HTML（図ブロック変換後のマークアップ）をそのまま出力するために必要。
+    opts.render.unsafe_ = true;
+    opts
+}
+
+/// Render Markdown to HTML, routing diagram fences through `renderer`.
+pub fn render<R: DiagramRenderer>(
+    source: &str,
+    renderer: &R,
+) -> Result<RenderOutput, MarkdownError> {
+    let transformed = transform_diagram_blocks(source, renderer);
+    let html = markdown_to_html(&transformed, &gfm_options());
+    Ok(RenderOutput { html })
+}
+
+/// Convenience render using the no-op diagram renderer.
+pub fn render_basic(source: &str) -> Result<RenderOutput, MarkdownError> {
+    render(source, &diagram::NoOpRenderer)
+}
+
+// ── Fence transformation ─────────────────────────────────────────────────────
+
+struct FenceBlock {
+    info: String,
+    content: String,
+    raw: String,
+}
+
+/// Extract one complete fenced block from the start of `s`.
+fn extract_fence_block(s: &str) -> Option<(FenceBlock, &str)> {
+    let body = s.strip_prefix("```")?;
+    let info_end = body.find('\n')?;
+    let info = body[..info_end].trim().to_string();
+    let after_info = &body[info_end + 1..];
+    let close = after_info.find("\n```")?;
+    let content = after_info[..close].to_string();
+    let raw = format!("```{info}\n{content}\n```");
+    let rest = after_info[close + 4..].strip_prefix('\n').unwrap_or(&after_info[close + 4..]);
+    Some((FenceBlock { info, content, raw }, rest))
+}
+
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+}
+
+fn fallback_html(source: &str, error: &str) -> String {
+    format!(
+        r#"<div class="katana-diagram-error"><p class="katana-diagram-error-label">⚠ Diagram render failed: {e}</p><pre><code>{s}</code></pre></div>"#,
+        e = html_escape(error),
+        s = html_escape(source),
+    )
+}
+
+fn render_diagram_block<R: DiagramRenderer>(block: &FenceBlock, renderer: &R) -> Option<String> {
+    let kind = DiagramKind::from_info(&block.info)?;
+    let diagram = DiagramBlock {
+        kind,
+        source: block.content.clone(),
+    };
+    Some(match renderer.render(&diagram) {
+        DiagramResult::Ok(html) => html,
+        DiagramResult::Err { source, error } => fallback_html(&source, &error),
+    })
+}
+
+fn process_fence<R: DiagramRenderer>(output: &mut String, remaining: &mut &str, renderer: &R) {
+    let Some((block, after)) = extract_fence_block(remaining) else {
+        output.push_str("```");
+        *remaining = &remaining[3..];
+        return;
+    };
+    if let Some(html) = render_diagram_block(&block, renderer) {
+        output.push_str(&html);
+    } else {
+        output.push_str(&block.raw);
+    }
+    *remaining = after;
+}
+
+/// Walk code fences in `source`, replace diagram blocks with rendered HTML.
+fn transform_diagram_blocks<R: DiagramRenderer>(source: &str, renderer: &R) -> String {
+    let mut output = String::with_capacity(source.len());
+    let mut remaining = source;
+    while let Some(fence_start) = remaining.find("\n```") {
+        output.push_str(&remaining[..fence_start + 1]);
+        remaining = &remaining[fence_start + 1..];
+        process_fence(&mut output, &mut remaining, renderer);
+    }
+    output.push_str(remaining);
+    output
+}
+
+// ── Tests ────────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basic_gfm_renders_to_html() {
+        let md = "# Heading\n\nParagraph with **bold** and `code`.\n";
+        let out = render_basic(md).expect("render failed");
+        assert!(out.html.contains("<h1>"));
+        assert!(out.html.contains("<strong>bold</strong>"));
+        assert!(out.html.contains("<code>code</code>"));
+    }
+
+    #[test]
+    fn gfm_table_renders() {
+        let md = "| A | B |\n|---|---|\n| 1 | 2 |\n";
+        let out = render_basic(md).expect("render failed");
+        assert!(out.html.contains("<table>"));
+    }
+
+    #[test]
+    fn gfm_tasklist_renders() {
+        let md = "- [x] Done\n- [ ] Todo\n";
+        let out = render_basic(md).expect("render failed");
+        assert!(out.html.contains("<li>"));
+    }
+
+    #[test]
+    fn malformed_document_does_not_panic() {
+        let md = "## Unclosed\n\n```\nno close fence";
+        assert!(render_basic(md).is_ok());
+    }
+
+    #[test]
+    fn mermaid_block_is_transformed() {
+        let md = "\n```mermaid\ngraph TD; A-->B\n```\n";
+        let out = render_basic(md).expect("render failed");
+        // NoOpRenderer wraps in code block; original fence should not appear as-is.
+        assert!(out.html.contains("mermaid"));
+    }
+
+    #[test]
+    fn unknown_fence_passes_through() {
+        let md = "\n```rust\nfn main() {}\n```\n";
+        let out = render_basic(md).expect("render failed");
+        assert!(out.html.contains("fn main()"));
+    }
+}
