@@ -67,6 +67,10 @@ fn run_mmdc_process(source: &str) -> Result<String, String> {
             input_file.path().to_str().unwrap_or(""),
             "-o",
             output_path.to_str().unwrap_or(""),
+            "--backgroundColor",
+            "white",
+            "--theme",
+            "default",
             "--quiet",
         ])
         .stdout(Stdio::null())

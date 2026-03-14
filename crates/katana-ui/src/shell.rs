@@ -7,7 +7,7 @@ use katana_platform::FilesystemService;
 
 use crate::{
     app_state::{AppAction, AppState},
-    preview_pane::PreviewPane,
+    preview_pane::{DownloadRequest, PreviewPane},
 };
 
 pub struct KatanaApp {
@@ -15,6 +15,8 @@ pub struct KatanaApp {
     fs: FilesystemService,
     pending_action: AppAction,
     preview_pane: PreviewPane,
+    /// バックグラウンドダウンロードの完了通知レシーバ。
+    download_rx: Option<std::sync::mpsc::Receiver<Result<(), String>>>,
 }
 
 impl KatanaApp {
@@ -24,6 +26,7 @@ impl KatanaApp {
             fs: FilesystemService::new(),
             pending_action: AppAction::None,
             preview_pane: PreviewPane::default(),
+            download_rx: None,
         }
     }
 
@@ -100,22 +103,88 @@ impl KatanaApp {
             AppAction::None => {}
         }
     }
+
+    /// ダウンロードリクエストをバックグラウンドスレッドで処理する。
+    fn start_download(&mut self, req: DownloadRequest) {
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.download_rx = Some(rx);
+        self.state.status_message = Some("⬇ PlantUML JAR をダウンロード中…".to_string());
+        let url = req.url;
+        let dest = req.dest;
+        std::thread::spawn(move || {
+            let result = download_with_curl(&url, &dest);
+            let _ = tx.send(result);
+        });
+    }
+
+    /// ダウンロード完了をポーリングし、完了時にプレビューを再レンダリングする。
+    fn poll_download(&mut self, ctx: &egui::Context) {
+        let done = if let Some(rx) = &self.download_rx {
+            match rx.try_recv() {
+                Ok(Ok(())) => {
+                    self.state.status_message = Some(
+                        "✅ PlantUML のインストールが完了しました。プレビューを更新中…".to_string(),
+                    );
+                    // ダウンロード完了 → プレビュー全体を再レンダリング。
+                    self.pending_action = AppAction::RefreshDiagrams;
+                    true
+                }
+                Ok(Err(e)) => {
+                    self.state.status_message = Some(format!("❌ ダウンロードエラー: {e}"));
+                    true
+                }
+                Err(std::sync::mpsc::TryRecvError::Empty) => {
+                    // まだ完了していないので再描画を依頼する。
+                    ctx.request_repaint_after(std::time::Duration::from_millis(200));
+                    false
+                }
+                Err(_) => true, // チャンネルクローズど。
+            }
+        } else {
+            false
+        };
+        if done {
+            self.download_rx = None;
+        }
+    }
+}
+
+/// `curl` をサブプロセスとして呼び出し、ファイルをダウンロードする。
+fn download_with_curl(url: &str, dest: &std::path::Path) -> Result<(), String> {
+    if let Some(parent) = dest.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let status = std::process::Command::new("curl")
+        .args(["-L", "-o", dest.to_str().unwrap_or(""), url])
+        .status()
+        .map_err(|e| format!("curl 起動失敗: {e}"))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("ダウンロードに失敗しました".to_string())
+    }
 }
 
 impl eframe::App for KatanaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // ダウンロード完了をポーリング。
+        self.poll_download(ctx);
+
         let action = self.take_action();
         self.process_action(action);
 
         render_menu_bar(ctx, &mut self.state, &mut self.pending_action);
         render_status_bar(ctx, &self.state);
         render_workspace_panel(ctx, &mut self.state, &mut self.pending_action);
-        render_preview_panel(
+        let download_req = render_preview_panel(
             ctx,
             &mut self.preview_pane,
             &self.state,
             &mut self.pending_action,
         );
+        if let Some(req) = download_req {
+            self.start_download(req);
+        }
         render_editor_panel(ctx, &mut self.state, &mut self.pending_action);
     }
 }
@@ -208,7 +277,8 @@ fn render_preview_panel(
     preview: &mut PreviewPane,
     state: &AppState,
     action: &mut AppAction,
-) {
+) -> Option<DownloadRequest> {
+    let mut download_req = None;
     egui::SidePanel::right("preview_pane")
         .resizable(true)
         .min_width(200.0)
@@ -219,9 +289,10 @@ fn render_preview_panel(
             if state.active_document.is_none() {
                 ui.label("No document selected.");
             } else {
-                preview.show(ui);
+                download_req = preview.show(ui);
             }
         });
+    download_req
 }
 
 fn render_preview_header(ui: &mut egui::Ui, state: &AppState, action: &mut AppAction) {

@@ -21,6 +21,10 @@ fn jar_candidate_paths() -> Vec<PathBuf> {
     if let Ok(env_path) = std::env::var("PLANTUML_JAR") {
         paths.push(PathBuf::from(env_path));
     }
+    // Homebrew (Apple Silicon / Intel)
+    for prefix in &["/opt/homebrew", "/usr/local"] {
+        paths.push(PathBuf::from(prefix).join("opt/plantuml/libexec/plantuml.jar"));
+    }
     // バイナリと同じディレクトリ
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
@@ -35,6 +39,11 @@ fn jar_candidate_paths() -> Vec<PathBuf> {
     paths
 }
 
+/// Katana が自動インストールするデフォルトの JAR パス。
+pub fn default_install_path() -> Option<PathBuf> {
+    dirs_sys::home_dir().map(|h| h.join(".local").join("katana").join("plantuml.jar"))
+}
+
 /// システムで利用可能な PlantUML JAR パスを返す。存在しなければ `None`。
 fn find_plantuml_jar() -> Option<PathBuf> {
     jar_candidate_paths().into_iter().find(|p| p.exists())
@@ -43,10 +52,13 @@ fn find_plantuml_jar() -> Option<PathBuf> {
 /// PlantUML ソースを SVG に変換する。
 pub fn render_plantuml(block: &DiagramBlock) -> DiagramResult {
     let Some(jar) = find_plantuml_jar() else {
-        return DiagramResult::Err {
-            source: block.source.clone(),
-            error: "plantuml.jar が見つかりません。PLANTUML_JAR 環境変数でパスを指定してください。"
-                .to_string(),
+        let install_path = default_install_path().unwrap_or_else(|| PathBuf::from("plantuml.jar"));
+        return DiagramResult::NotInstalled {
+            kind: "PlantUML".to_string(),
+            download_url:
+                "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar"
+                    .to_string(),
+            install_path,
         };
     };
     match run_plantuml_process(&jar, &block.source) {
@@ -102,7 +114,7 @@ mod tests {
     use crate::markdown::diagram::{DiagramBlock, DiagramKind};
 
     #[test]
-    fn jar未検出時はエラー結果を返す() {
+    fn jar未検出時はnotinstalledを返す() {
         // PLANTUML_JAR を意図的に存在しないパスに向ける。
         std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar");
         let block = DiagramBlock {
@@ -110,6 +122,7 @@ mod tests {
             source: "@startuml\nA -> B\n@enduml".to_string(),
         };
         let result = render_plantuml(&block);
-        assert!(matches!(result, DiagramResult::Err { .. }));
+        assert!(matches!(result, DiagramResult::NotInstalled { .. }));
+        std::env::remove_var("PLANTUML_JAR");
     }
 }

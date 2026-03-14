@@ -34,6 +34,19 @@ pub enum RenderedSection {
         _source: String,
         message: String,
     },
+    /// 必要なツールが未インストール— UI からダウンロードできる。
+    NotInstalled {
+        kind: String,
+        download_url: String,
+        install_path: std::path::PathBuf,
+    },
+}
+
+/// プレビューペインから返されるダウンロードリクエスト。
+#[derive(Debug, Clone)]
+pub struct DownloadRequest {
+    pub url: String,
+    pub dest: std::path::PathBuf,
 }
 
 #[derive(Default)]
@@ -81,34 +94,42 @@ impl PreviewPane {
     }
 
     /// プレビューペインの内容を描画する。
-    pub fn show(&mut self, ui: &mut egui::Ui) {
+    /// ダウンロードボタンが押された場合は `Some(DownloadRequest)` を返す。
+    pub fn show(&mut self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+        let mut request: Option<DownloadRequest> = None;
         ScrollArea::vertical()
             .auto_shrink([false, false])
             .show(ui, |ui| {
                 for (i, section) in self.sections.iter().enumerate() {
-                    show_section(ui, &mut self.commonmark_cache, section, i);
+                    if let Some(req) = show_section(ui, &mut self.commonmark_cache, section, i) {
+                        request = Some(req);
+                    }
                     ui.separator();
                 }
                 if self.sections.is_empty() {
                     ui.label(egui::RichText::new("（プレビューなし）").weak());
                 }
             });
+        request
     }
 }
 
 /// 単一セクションを描画する。
+/// ダウンロードボタンが押された場合は `Some(DownloadRequest)` を返す。
 fn show_section(
     ui: &mut egui::Ui,
     cache: &mut CommonMarkCache,
     section: &RenderedSection,
     id: usize,
-) {
+) -> Option<DownloadRequest> {
     match section {
         RenderedSection::Markdown(md) => {
             CommonMarkViewer::new().show(ui, cache, md);
+            None
         }
         RenderedSection::Image { svg_data, alt } => {
             show_rasterized(ui, svg_data, alt, id);
+            None
         }
         RenderedSection::Error {
             kind,
@@ -120,8 +141,42 @@ fn show_section(
                     .color(egui::Color32::YELLOW)
                     .small(),
             );
+            None
         }
+        RenderedSection::NotInstalled {
+            kind,
+            download_url,
+            install_path,
+        } => show_not_installed(ui, kind, download_url, install_path),
     }
+}
+
+/// 未インストールツールのダウンロードボタン UI。
+fn show_not_installed(
+    ui: &mut egui::Ui,
+    kind: &str,
+    download_url: &str,
+    install_path: &std::path::Path,
+) -> Option<DownloadRequest> {
+    let mut request = None;
+    ui.group(|ui| {
+        ui.label(
+            egui::RichText::new(format!("⚠ {kind} がインストールされていません"))
+                .color(egui::Color32::from_rgb(255, 165, 0)),
+        );
+        ui.label(
+            egui::RichText::new(format!("インストール先: {}", install_path.display()))
+                .small()
+                .weak(),
+        );
+        if ui.button(format!("⬇ {} をダウンロード", kind)).clicked() {
+            request = Some(DownloadRequest {
+                url: download_url.to_string(),
+                dest: install_path.to_path_buf(),
+            });
+        }
+    });
+    request
 }
 
 /// ラスタライズ済み SVG を egui テクスチャとして表示する。
@@ -162,6 +217,15 @@ fn render_diagram(kind: &DiagramKind, source: &str) -> RenderedSection {
             kind: format!("{kind:?}"),
             _source: source,
             message: error,
+        },
+        DiagramResult::NotInstalled {
+            kind: k,
+            download_url,
+            install_path,
+        } => RenderedSection::NotInstalled {
+            kind: k,
+            download_url,
+            install_path,
         },
     }
 }
