@@ -48,7 +48,7 @@ impl FilesystemService {
         Ok(())
     }
 
-    /// Recursively scan a directory and return a flat tree.
+    /// ディレクトリを再帰的にスキャンし、`.md` ファイルのみを含むツリーを返す。
     fn scan_directory(&self, dir: &Path) -> std::io::Result<Vec<TreeEntry>> {
         let mut entries = Vec::new();
         for entry in std::fs::read_dir(dir)? {
@@ -58,14 +58,21 @@ impl FilesystemService {
                 Some(n) => n,
                 None => continue,
             };
-            // Skip hidden files and common non-content directories.
+            // 隠しファイル・ビルド成果物・ Node.js モジュールはスキップ。
             if file_name.starts_with('.') || file_name == "target" || file_name == "node_modules" {
                 continue;
             }
             if path.is_dir() {
                 let children = self.scan_directory(&path).unwrap_or_default();
-                entries.push(TreeEntry::Directory { path, children });
-            } else {
+                // 配下に `.md` ファイルが一つもないディレクトリは表示しない。
+                if has_any_markdown(&children) {
+                    entries.push(TreeEntry::Directory { path, children });
+                }
+            } else if path
+                .extension()
+                .map(|e| e.eq_ignore_ascii_case("md"))
+                .unwrap_or(false)
+            {
                 entries.push(TreeEntry::File { path });
             }
         }
@@ -79,6 +86,13 @@ impl FilesystemService {
     }
 }
 
+/// ツリー内に `.md` ファイルが少なくとも1つあるかを再帰的に確認する。
+fn has_any_markdown(entries: &[TreeEntry]) -> bool {
+    entries.iter().any(|e| match e {
+        TreeEntry::File { .. } => e.is_markdown(),
+        TreeEntry::Directory { children, .. } => has_any_markdown(children),
+    })
+}
 impl Default for FilesystemService {
     fn default() -> Self {
         Self::new()

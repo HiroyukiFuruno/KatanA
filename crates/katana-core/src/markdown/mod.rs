@@ -120,6 +120,11 @@ fn render_diagram_block<R: DiagramRenderer>(block: &FenceBlock, renderer: &R) ->
     Some(match renderer.render(&diagram) {
         DiagramResult::Ok(html) => html,
         DiagramResult::Err { source, error } => fallback_html(&source, &error),
+        // core 層では「未インストール」をフォールバック HTML として表示する。
+        // UI 層の RenderedSection::NotInstalled で適切なダウンロード UI が描画される。
+        DiagramResult::NotInstalled { kind, .. } => {
+            fallback_html("", &format!("{kind} is not installed"))
+        }
     })
 }
 

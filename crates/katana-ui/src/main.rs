@@ -42,8 +42,54 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Katana",
         native_options,
-        Box::new(|_cc| Ok(Box::new(KatanaApp::new(state)))),
+        Box::new(|cc| {
+            setup_fonts(&cc.egui_ctx);
+            Ok(Box::new(KatanaApp::new(state)))
+        }),
     )
+}
+
+/// 日本語を含む CJK フォントを読み込んで egui に登録する。
+///
+/// macOS バンドルの AquaKana.ttc などを倪側フォントとして追加する。
+fn setup_fonts(ctx: &egui::Context) {
+    let mut fonts = egui::FontDefinitions::default();
+    // 試行順序: AquaKana (macOS) → Hiragino Sans GB → フォールバックなし。
+    let candidates = [
+        "/System/Library/Fonts/AquaKana.ttc",
+        "/System/Library/Fonts/Hiragino Sans GB.ttc",
+    ];
+    let loaded = load_first_font(&candidates);
+    if let Some((name, data)) = loaded {
+        fonts
+            .font_data
+            .insert(name.clone(), egui::FontData::from_owned(data));
+        for family in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
+            if let Some(list) = fonts.families.get_mut(&family) {
+                // 追加フォントはフォールバックとして末尾に追加（日本語文字のみがこのフォントで描画される）。
+                list.push(name.clone());
+            }
+        }
+        tracing::info!("日本語フォントを読み込みました font={name}");
+    } else {
+        tracing::warn!("日本語フォントが見つかりませんでした。文字化けが発生する場合があります。");
+    }
+    ctx.set_fonts(fonts);
+}
+
+/// 候補パスの先頭から読めたフォントを返す。
+fn load_first_font(candidates: &[&str]) -> Option<(String, Vec<u8>)> {
+    for &path in candidates {
+        if let Ok(data) = std::fs::read(path) {
+            let name = std::path::Path::new(path)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("cjk_font")
+                .to_string();
+            return Some((name, data));
+        }
+    }
+    None
 }
 
 /// Register all built-in plugins at startup.

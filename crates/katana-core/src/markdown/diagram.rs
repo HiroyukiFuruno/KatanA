@@ -96,6 +96,15 @@ pub enum DiagramResult {
     Ok(String),
     /// Rendering failed; preserve the original source for fallback display.
     Err { source: String, error: String },
+    /// Required runtime tool is not installed.
+    NotInstalled {
+        /// 表示名（"PlantUML" 等）。
+        kind: String,
+        /// ダウンロード URL。
+        download_url: String,
+        /// インストール先パス。
+        install_path: std::path::PathBuf,
+    },
 }
 
 /// Trait that all diagram renderer adapters must implement.
