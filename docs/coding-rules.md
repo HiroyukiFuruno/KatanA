@@ -271,16 +271,79 @@ cognitive-complexity-threshold = 10
 
 ## 10. 例外申請プロセス
 
-以下のいずれかに該当する場合のみ `#[allow(...)]` を許容する:
+以下のいずれかに該当する場合のみ `#[allow(...)]` を許容する：
 
 1. egui の `update()` など、フレームワーク都合で分割不能な場合
 2. 生成コードやマクロ展開結果
 3. PR レビューで合意を得た設計上の理由がある場合
 
-`#[allow(...)]` には **必ず日本語コメントで理由を記載** すること:
+`#[allow(...)]` には **必ず日本語コメントで理由を記載** すること：
 
 ```rust
 // egui の App::update は単一エントリポイントのためフレームワーク制約で分割不能。
 #[allow(clippy::too_many_lines)]
 fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) { ... }
+```
+
+---
+
+## 11. i18n（国際化）規約 【最重要・違反ゼロを維持すること】
+
+**UI に表示するすべての文字列は `i18n::t()` または `i18n::tf()` を経由しなければならない。**
+ハードコーディングは言語問わず **一切禁止**（英語・日本語・記号以外のすべて）。
+
+### 11.1 対象となる呼び出し
+
+以下の呼び出しに文字列リテラルを直接渡すことを禁止する：
+
+| 禁止パターン | 正しいパターン |
+|------------|--------------|
+| `ui.heading("Preview")` | `ui.heading(i18n::t("preview_title"))` |
+| `ui.label("Ready")` | `ui.label(i18n::t("status_ready"))` |
+| `ui.button("Save")` | `ui.button(i18n::t("menu_save"))` |
+| `.on_hover_text("Expand all")` | `.on_hover_text(i18n::t("expand_all"))` |
+| `format!("Saved: {name}")` | `i18n::tf("status_saved_as", &[("name", &name)])` |
+
+### 11.2 例外（記号・非テキスト）
+
+以下は翻訳不要として許容する：
+
+- 単一記号: `"*"`, `"x"`, `"+"`, `"-"`, `"▼"`, `"▶"` など
+- アイコン絵文字: `"🔄"` など UI コントロール用記号
+- パス区切り: `"/"` のみの文字列
+
+### 11.3 ロケールファイル管理
+
+- 新しいキーは **en.json と ja.json に同時追加** する（片方だけの追加は禁止）
+- キーは `snake_case` で命名する
+- パラメータは `{param_name}` 形式のプレースホルダを使う
+
+```json
+// ✅ Good
+"status_opened_workspace": "Opened workspace: {name}"
+
+// ❌ Bad — ハードコード
+self.state.status_message = Some(format!("Opened workspace: {name}"));
+```
+
+### 11.4 UT による自動検出（ルール + UT の二重拘束）
+
+`i18n.rs` の `#[cfg(test)]` に以下のテストを維持すること：
+
+1. **`全ロケールキーが両言語に存在する`**: en.json と ja.json のキー差分をゼロにする
+2. **`shellrsにi18n漏れがない`**: `shell.rs` のソースコードを静的解析し、高リスクな
+   ハードコードパターン（`.on_hover_text("`, `ui.heading("` 等）を検出する
+
+新しいファイルに UI を追加した場合は、対応する静的解析テストも追加すること。
+
+### 11.5 違反検出フロー
+
+```
+コード変更
+  ↓
+cargo test (UT で自動検出)  ← 一次防衛
+  ↓
+PR レビュー (AI セルフレビューで確認)  ← 二次防衛
+  ↓
+マージ
 ```
