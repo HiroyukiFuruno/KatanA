@@ -1,0 +1,10 @@
+.DS_Store
+
+/.agent/
+/.agents/
+/.claude/
+/.codex/
+/.github/skills/
+
+/katana_monorepo_architecture.md
+/katana_openspec_request.md
