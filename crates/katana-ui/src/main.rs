@@ -45,6 +45,13 @@ fn main() -> eframe::Result<()> {
         native_options,
         Box::new(|cc| {
             setup_fonts(&cc.egui_ctx);
+
+            // macOS: eframe がウィンドウを生成した後にネイティブメニューバーを構築する。
+            #[cfg(target_os = "macos")]
+            unsafe {
+                shell::native_menu_setup();
+            }
+
             Ok(Box::new(KatanaApp::new(state)))
         }),
     )
@@ -76,6 +83,15 @@ fn setup_fonts(ctx: &egui::Context) {
         tracing::warn!("日本語フォントが見つかりませんでした。文字化けが発生する場合があります。");
     }
     ctx.set_fonts(fonts);
+
+    // デバッグビルドで "First use of Grid ID XXXX" などの赤いオーバーレイが
+    // プレビュー領域に表示される問題を防ぐ。
+    ctx.style_mut(|style| {
+        style.debug.debug_on_hover = false;
+        style.debug.show_expand_width = false;
+        style.debug.show_expand_height = false;
+        style.debug.show_widget_hits = false;
+    });
 }
 
 /// 候補パスの先頭から読めたフォントを返す。
