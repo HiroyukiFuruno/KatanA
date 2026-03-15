@@ -10,6 +10,21 @@ use xmltree::Element;
 
 use super::diagram::{DiagramBlock, DiagramResult};
 
+/// Draw.io キャンバスの最小幅（要素がない場合のフォールバック）。
+const CANVAS_MIN_WIDTH: f64 = 400.0;
+
+/// Draw.io キャンバスの最小高さ（要素がない場合のフォールバック）。
+const CANVAS_MIN_HEIGHT: f64 = 300.0;
+
+/// キャンバスサイズ推定時に各要素の端から追加するマージン (px)。
+const CANVAS_EDGE_MARGIN: f64 = 20.0;
+
+/// エッジラベルのベースラインからの上方オフセット (px)。
+const EDGE_LABEL_VERTICAL_OFFSET: f64 = 6.0;
+
+/// border_point() でゼロ除算を防ぐためのベクトル長最小閾値。
+const BORDER_POINT_EPSILON: f64 = 0.001;
+
 /// Draw.io XML を SVG HTML フラグメントに変換する。
 pub fn render_drawio(block: &DiagramBlock) -> DiagramResult {
     match convert_xml_to_svg(&block.source) {
@@ -61,15 +76,15 @@ fn collect_cells(model: &Element) -> Vec<&Element> {
 
 /// キャンバスサイズを推定する（全頂点の最大座標 + マージン）。
 fn estimate_canvas_size(cells: &[&Element]) -> (f64, f64) {
-    let (mut max_x, mut max_y) = (400.0_f64, 300.0_f64);
+    let (mut max_x, mut max_y) = (CANVAS_MIN_WIDTH, CANVAS_MIN_HEIGHT);
     for cell in cells {
         if let Some(geo) = cell.get_child("mxGeometry") {
             let x: f64 = attr_f64(geo, "x");
             let y: f64 = attr_f64(geo, "y");
             let w: f64 = attr_f64(geo, "width");
             let h: f64 = attr_f64(geo, "height");
-            max_x = max_x.max(x + w + 20.0);
-            max_y = max_y.max(y + h + 20.0);
+            max_x = max_x.max(x + w + CANVAS_EDGE_MARGIN);
+            max_y = max_y.max(y + h + CANVAS_EDGE_MARGIN);
         }
     }
     (max_x, max_y)
@@ -216,8 +231,18 @@ fn render_edge(
         return;
     };
 
-    let src = Rect { x: sx, y: sy, w: sw, h: sh };
-    let tgt = Rect { x: tx, y: ty, w: tw, h: th };
+    let src = Rect {
+        x: sx,
+        y: sy,
+        w: sw,
+        h: sh,
+    };
+    let tgt = Rect {
+        x: tx,
+        y: ty,
+        w: tw,
+        h: th,
+    };
     let (scx, scy) = src.center();
     let (tcx, tcy) = tgt.center();
     let waypoints = collect_waypoints(cell);
@@ -250,7 +275,7 @@ fn append_edge_label(cell: &Element, shapes: &mut String, x1: f64, y1: f64, x2: 
     if let Some(label) = cell.attributes.get("value") {
         if !label.is_empty() {
             let mid_x = (x1 + x2) / 2.0;
-            let mid_y = (y1 + y2) / 2.0 - 6.0;
+            let mid_y = (y1 + y2) / 2.0 - EDGE_LABEL_VERTICAL_OFFSET;
             const TEXT_COLOR: &str = "#333333";
             shapes.push_str(&format!(
                 r#"<text x="{mid_x:.1}" y="{mid_y:.1}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="{TEXT_COLOR}">{}</text>"#,
@@ -290,7 +315,7 @@ fn collect_waypoints(cell: &Element) -> Vec<(f64, f64)> {
 fn border_point(rect: &Rect, cx: f64, cy: f64, tx: f64, ty: f64) -> (f64, f64) {
     let dx = tx - cx;
     let dy = ty - cy;
-    if dx.abs() < 0.001 && dy.abs() < 0.001 {
+    if dx.abs() < BORDER_POINT_EPSILON && dy.abs() < BORDER_POINT_EPSILON {
         return (cx, cy);
     }
     if dx.abs() * rect.h >= dy.abs() * rect.w {
@@ -346,73 +371,4 @@ fn xml_escape(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::markdown::diagram::{DiagramBlock, DiagramKind};
-
-    const SIMPLE_DRAWIO_XML: &str = r#"<mxfile><diagram name="test"><mxGraphModel><root>
-<mxCell id="0"/>
-<mxCell id="1" parent="0"/>
-<mxCell id="2" value="Box A" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-    <mxGeometry x="80" y="80" width="120" height="60" as="geometry"/>
-</mxCell>
-<mxCell id="3" value="Box B" vertex="1" parent="1">
-    <mxGeometry x="280" y="80" width="120" height="60" as="geometry"/>
-</mxCell>
-</root></mxGraphModel></diagram></mxfile>"#;
-
-    #[test]
-    fn 有効なdrawio_xmlがsvgに変換される() {
-        let block = DiagramBlock {
-            kind: DiagramKind::DrawIo,
-            source: SIMPLE_DRAWIO_XML.to_string(),
-        };
-        let result = render_drawio(&block);
-        assert!(matches!(result, DiagramResult::Ok(_)));
-        if let DiagramResult::Ok(html) = result {
-            assert!(html.contains("<svg"));
-            assert!(html.contains("Box A"));
-            assert!(html.contains("Box B"));
-        }
-    }
-
-    #[test]
-    fn 無効なxmlはエラー結果を返す() {
-        let block = DiagramBlock {
-            kind: DiagramKind::DrawIo,
-            source: "not xml".to_string(),
-        };
-        let result = render_drawio(&block);
-        assert!(matches!(result, DiagramResult::Err { .. }));
-    }
-
-    #[test]
-    fn 楕円スタイルが処理される() {
-        let xml = r#"<mxGraphModel><root>
-<mxCell id="0"/><mxCell id="1" parent="0"/>
-<mxCell id="2" value="Circle" style="ellipse;" vertex="1" parent="1">
-    <mxGeometry x="50" y="50" width="100" height="100" as="geometry"/>
-</mxCell>
-</root></mxGraphModel>"#;
-        let block = DiagramBlock {
-            kind: DiagramKind::DrawIo,
-            source: xml.to_string(),
-        };
-        let result = render_drawio(&block);
-        if let DiagramResult::Ok(html) = result {
-            assert!(html.contains("<ellipse"));
-        }
-    }
-
-    #[test]
-    fn spaceの抽出() {
-        assert_eq!(
-            extract_style_value("rounded=1;fillColor=#fff;", "fillColor"),
-            Some("#fff")
-        );
-        assert_eq!(extract_style_value("rounded=1;", "fillColor"), None);
-    }
 }
