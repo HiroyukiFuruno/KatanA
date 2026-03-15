@@ -8,6 +8,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+const DEFAULT_FONT_SIZE: f32 = 14.0;
+
 /// Application-level settings.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
@@ -48,7 +50,7 @@ fn default_theme() -> String {
 }
 
 fn default_font_size() -> f32 {
-    14.0
+    DEFAULT_FONT_SIZE
 }
 
 fn default_font_family() -> String {
