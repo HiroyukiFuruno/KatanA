@@ -72,6 +72,12 @@ fn main() -> eframe::Result<()> {
             #[cfg(target_os = "macos")]
             unsafe {
                 shell_ui::native_menu_setup();
+                let icon = load_icon();
+                shell_ui::native_set_app_icon(
+                    icon.rgba.as_ptr(),
+                    icon.width as i32,
+                    icon.height as i32,
+                );
             }
 
             Ok(Box::new(KatanaApp::new(state)))
