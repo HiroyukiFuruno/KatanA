@@ -101,26 +101,13 @@ int katana_poll_menu_action(void) {
     return action;
 }
 
-/// Called from Rust: Sets the application and dock icon explicitly at runtime.
-void katana_set_app_icon(const unsigned char *rgba, int width, int height) {
+/// Called from Rust: Sets the application and dock icon from PNG bytes.
+void katana_set_app_icon_png(const unsigned char *png_data, unsigned long png_len) {
     @autoreleasepool {
-        CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, rgba, width * height * 4, NULL);
-        if (!provider) return;
-        
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        CGImageRef cgImage = CGImageCreate(
-            width, height, 8, 32, width * 4, colorSpace,
-            kCGBitmapByteOrderDefault | kCGImageAlphaLast,
-            provider, NULL, false, kCGRenderingIntentDefault
-        );
-        
-        if (cgImage) {
-            NSImage *image = [[NSImage alloc] initWithCGImage:cgImage size:NSMakeSize(width, height)];
+        NSData *data = [NSData dataWithBytes:png_data length:png_len];
+        NSImage *image = [[NSImage alloc] initWithData:data];
+        if (image) {
             [NSApp setApplicationIconImage:image];
-            CGImageRelease(cgImage);
         }
-        
-        CGColorSpaceRelease(colorSpace);
-        CGDataProviderRelease(provider);
     }
 }

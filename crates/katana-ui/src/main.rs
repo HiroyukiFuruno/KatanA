@@ -68,16 +68,12 @@ fn main() -> eframe::Result<()> {
         Box::new(|cc| {
             setup_fonts(&cc.egui_ctx);
 
-            // macOS: Construct the native menu bar after eframe creates the window.
+            // macOS: Construct the native menu bar and set app icon.
             #[cfg(target_os = "macos")]
             unsafe {
                 shell_ui::native_menu_setup();
-                let icon = load_icon();
-                shell_ui::native_set_app_icon(
-                    icon.rgba.as_ptr(),
-                    icon.width as i32,
-                    icon.height as i32,
-                );
+                let png_bytes = include_bytes!("../../../assets/icon.iconset/icon_512x512.png");
+                shell_ui::native_set_app_icon_png(png_bytes.as_ptr(), png_bytes.len());
             }
 
             Ok(Box::new(KatanaApp::new(state)))
