@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/katana-core",
+    "crates/katana-linter",
     "crates/katana-platform",
     "crates/katana-ui",
 ]
@@ -39,6 +40,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Testing
 tempfile = "3"
+syn = { version = "2", features = ["full", "visit"] }
+ignore = "0.4"
 
 # Diagram rendering
 resvg = "0.44"

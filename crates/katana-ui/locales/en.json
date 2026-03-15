@@ -8,7 +8,7 @@
   "no_document_selected": "No document open.",
   "preview_title": "Preview",
   "refresh_diagrams": "Refresh diagrams",
-  "rendering": "Rendering...",
+  "rendering": "{kind} Rendering...",
   "no_preview": "(No preview)",
   "downloading_plantuml": "⬇ Downloading PlantUML JAR...",
   "plantuml_installed": "✅ PlantUML installed. Refreshing preview...",
@@ -29,5 +29,9 @@
   "ai_unconfigured": "[AI: unconfigured]",
   "curl_launch_failed": "curl launch failed",
   "download_failed": "Download failed",
-  "collapse_sidebar": "Hide Sidebar"
+  "collapse_sidebar": "Hide Sidebar",
+  "render_error": "⚠ [{kind}] {message}",
+  "tool_not_installed": "⚠ {tool} is not installed",
+  "tool_install_path": "Install path: {path}",
+  "tool_download": "⬇ Download {tool}"
 }

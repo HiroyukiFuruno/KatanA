@@ -8,7 +8,7 @@
   "no_document_selected": "ドキュメントが開かれていません。",
   "preview_title": "プレビュー",
   "refresh_diagrams": "ダイアグラムを更新",
-  "rendering": "レンダリング中…",
+  "rendering": "{kind} レンダリング中…",
   "no_preview": "（プレビューなし）",
   "downloading_plantuml": "⬇ PlantUML JAR をダウンロード中…",
   "plantuml_installed": "✅ PlantUML のインストールが完了しました。プレビューを更新中…",
@@ -29,5 +29,9 @@
   "ai_unconfigured": "[AI: 未設定]",
   "curl_launch_failed": "curl 起動失敗",
   "download_failed": "ダウンロードに失敗しました",
-  "collapse_sidebar": "サイドバーを隐す"
+  "collapse_sidebar": "サイドバーを隐す",
+  "render_error": "⚠ [{kind}] {message}",
+  "tool_not_installed": "⚠ {tool} がインストールされていません",
+  "tool_install_path": "インストール先: {path}",
+  "tool_download": "⬇ {tool} をダウンロード"
 }

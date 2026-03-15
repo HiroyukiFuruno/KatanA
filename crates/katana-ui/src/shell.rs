@@ -11,6 +11,64 @@ use crate::{
     preview_pane::{DownloadRequest, PreviewPane},
 };
 
+// ─────────────────────────────────────────────
+// レイアウト定数
+// ─────────────────────────────────────────────
+
+/// サイドバー折りたたみ時に表示する「›」トグルボタンの幅 (px)。
+const SIDEBAR_COLLAPSED_TOGGLE_WIDTH: f32 = 24.0;
+
+/// ファイルツリーパネルのリサイズ最小幅 (px)。
+const FILE_TREE_PANEL_MIN_WIDTH: f32 = 120.0;
+
+/// ファイルツリーパネルの初期表示幅 (px)。
+const FILE_TREE_PANEL_DEFAULT_WIDTH: f32 = 220.0;
+
+/// Split モード時のプレビューパネル最小幅 (px)。
+const SPLIT_PREVIEW_PANEL_MIN_WIDTH: f32 = 200.0;
+
+/// Split モード時のプレビューパネル初期幅 (px)。
+const SPLIT_PREVIEW_PANEL_DEFAULT_WIDTH: f32 = 400.0;
+
+/// タブバー右端の ◀▶ ナビゲーションボタン領域幅 (px)。
+const TAB_NAV_BUTTONS_AREA_WIDTH: f32 = 80.0;
+
+/// 各タブの右側に設けるタブ間余白 (px)。
+const TAB_INTER_ITEM_SPACING: f32 = 4.0;
+
+/// テキストエディタ TextEdit の初期表示行数。
+const EDITOR_INITIAL_VISIBLE_ROWS: usize = 40;
+
+/// エディタ⇔プレビュー間スクロール同期の感度閾値。
+/// fraction 差分がこの値以下の場合はスクロールイベントを無視する。
+const SCROLL_SYNC_DEAD_ZONE: f32 = 0.002;
+
+/// タブのツールチップが表示されるまでの遅延 (秒)。
+const TAB_TOOLTIP_SHOW_DELAY_SECS: f32 = 0.25;
+
+/// ファイルツリーの「ワークスペース未選択」表示下の余白 (px)。
+const NO_WORKSPACE_BOTTOM_SPACING: f32 = 8.0;
+
+/// ダウンロード完了チェックのポーリング間隔 (ms)。
+const DOWNLOAD_STATUS_CHECK_INTERVAL_MS: u64 = 200;
+
+// ─────────────────────────────────────────────
+// カラー定数
+// ─────────────────────────────────────────────
+
+/// アプリ内タイトルバーに表示するファイル名のテキスト色。
+const TITLE_BAR_TEXT_COLOR: egui::Color32 = egui::Color32::from_gray(180);
+
+/// ファイルツリーの通常テキスト色（非アクティブファイル・ディレクトリ）。
+const FILE_TREE_TEXT_COLOR: egui::Color32 = egui::Color32::from_gray(220);
+
+/// ファイルツリーでアクティブファイルを示す背景ハイライト色 (VSCode風半透明ブルー)。
+const ACTIVE_FILE_HIGHLIGHT_BG: egui::Color32 =
+    egui::Color32::from_rgba_premultiplied(40, 80, 160, 100);
+
+/// ファイルツリーのアクティブ行背景の角丸半径。
+const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
+
 // macOS ネイティブメニュー FFI
 #[cfg(target_os = "macos")]
 mod native_menu {
@@ -229,7 +287,9 @@ impl KatanaApp {
                     true
                 }
                 Err(std::sync::mpsc::TryRecvError::Empty) => {
-                    ctx.request_repaint_after(std::time::Duration::from_millis(200));
+                    ctx.request_repaint_after(std::time::Duration::from_millis(
+                        DOWNLOAD_STATUS_CHECK_INTERVAL_MS,
+                    ));
                     false
                 }
                 Err(_) => true,
@@ -323,7 +383,7 @@ impl eframe::App for KatanaApp {
                     ui.label(
                         egui::RichText::new(&title_text)
                             .small()
-                            .color(egui::Color32::from_gray(180)),
+                            .color(TITLE_BAR_TEXT_COLOR),
                     );
                 });
             });
@@ -333,7 +393,7 @@ impl eframe::App for KatanaApp {
         if !self.state.show_workspace {
             egui::SidePanel::left("workspace_collapsed")
                 .resizable(false)
-                .exact_width(24.0)
+                .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
                 .show(ctx, |ui| {
                     ui.vertical_centered(|ui| {
                         if ui
@@ -383,8 +443,8 @@ impl eframe::App for KatanaApp {
             );
             egui::SidePanel::right("preview_panel")
                 .resizable(true)
-                .min_width(200.0)
-                .default_width(400.0)
+                .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+                .default_width(SPLIT_PREVIEW_PANEL_DEFAULT_WIDTH)
                 .show(ctx, |ui| {
                     if let Some(path) = &active_path {
                         let pane = self.tab_panes.entry(path.clone()).or_default();
@@ -481,13 +541,11 @@ fn render_file_menu(ui: &mut egui::Ui, state: &AppState, action: &mut AppAction)
 fn render_settings_menu(ui: &mut egui::Ui, _state: &AppState, action: &mut AppAction) {
     ui.menu_button(crate::i18n::t("menu_language"), |ui| {
         let mut reset_layout = false;
-        if ui.button("English").clicked() {
-            *action = AppAction::ChangeLanguage("en".to_string());
-            reset_layout = true;
-        }
-        if ui.button("日本語").clicked() {
-            *action = AppAction::ChangeLanguage("ja".to_string());
-            reset_layout = true;
+        for (code, display_name) in crate::i18n::supported_languages() {
+            if ui.button(display_name.as_str()).clicked() {
+                *action = AppAction::ChangeLanguage(code.to_string());
+                reset_layout = true;
+            }
         }
         if reset_layout {
             ui.close_menu();
@@ -525,8 +583,8 @@ fn render_status_bar(ctx: &egui::Context, state: &AppState) {
 fn render_workspace_panel(ctx: &egui::Context, state: &mut AppState, action: &mut AppAction) {
     egui::SidePanel::left("workspace_tree")
         .resizable(true)
-        .min_width(120.0)
-        .default_width(220.0)
+        .min_width(FILE_TREE_PANEL_MIN_WIDTH)
+        .default_width(FILE_TREE_PANEL_DEFAULT_WIDTH)
         .show(ctx, |ui| {
             // パネル幅をコンテンツが押し広げないようにする。
             // available_width をコンテンツの最大幅として固定することで、
@@ -593,7 +651,7 @@ fn render_workspace_content(ui: &mut egui::Ui, state: &mut AppState, action: &mu
         }
     } else {
         ui.label(crate::i18n::t("no_workspace_open"));
-        ui.add_space(8.0);
+        ui.add_space(NO_WORKSPACE_BOTTOM_SPACING);
         if ui.button(crate::i18n::t("menu_open_workspace")).clicked() {
             if let Some(path) = open_folder_dialog() {
                 *action = AppAction::OpenWorkspace(path);
@@ -645,7 +703,7 @@ fn render_preview_content(
             if max_scroll > 0.0 {
                 let current_fraction = (output.state.offset.y / max_scroll).clamp(0.0, 1.0);
                 let diff = (current_fraction - *fraction).abs();
-                if diff > 0.002 {
+                if diff > SCROLL_SYNC_DEAD_ZONE {
                     *fraction = current_fraction;
                     *source = ScrollSource::Preview;
                 }
@@ -685,11 +743,11 @@ fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &mut AppActio
     let doc_count = state.open_documents.len();
 
     // ツールチップの表示遅延を 0.25 秒に設定
-    ui.style_mut().interaction.tooltip_delay = 0.25;
+    ui.style_mut().interaction.tooltip_delay = TAB_TOOLTIP_SHOW_DELAY_SECS;
 
     ui.horizontal(|ui| {
         // 右端の ◀ ▶ ボタン分の幅を確保（ボタン2つ + セパレータ + マージン ≈ 80px）
-        let nav_button_width = 80.0;
+        let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
         let scroll_width = ui.available_width() - nav_button_width;
 
         // タブ一覧（横スクロール可能）
@@ -726,7 +784,7 @@ fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &mut AppActio
                         if ui.small_button("x").clicked() {
                             close_idx = Some(idx);
                         }
-                        ui.add_space(4.0);
+                        ui.add_space(TAB_INTER_ITEM_SPACING);
                     }
                 });
             });
@@ -822,7 +880,7 @@ fn render_editor_content(
                 egui::TextEdit::multiline(&mut buffer)
                     .font(egui::TextStyle::Monospace)
                     .desired_width(f32::INFINITY)
-                    .desired_rows(40),
+                    .desired_rows(EDITOR_INITIAL_VISIBLE_ROWS),
             );
             if response.changed() {
                 *action = AppAction::UpdateBuffer(buffer);
@@ -846,7 +904,7 @@ fn render_editor_content(
                 if max_scroll > 0.0 {
                     let current_fraction = (output.state.offset.y / max_scroll).clamp(0.0, 1.0);
                     let diff = (current_fraction - state.scroll_fraction).abs();
-                    if diff > 0.002 {
+                    if diff > SCROLL_SYNC_DEAD_ZONE {
                         state.scroll_fraction = current_fraction;
                         state.scroll_source = ScrollSource::Editor;
                     }
@@ -905,7 +963,7 @@ fn render_directory_entry(
     let prefix = indent_prefix(depth);
     let label_text = format!("{prefix}{arrow} {dir_icon} {name}");
     let resp = ui.add(
-        egui::Label::new(egui::RichText::new(label_text).color(egui::Color32::from_gray(220)))
+        egui::Label::new(egui::RichText::new(label_text).color(FILE_TREE_TEXT_COLOR))
             .truncate()
             .sense(egui::Sense::click()),
     );
@@ -940,7 +998,7 @@ fn render_file_entry(
     let text_color = if is_active {
         egui::Color32::WHITE
     } else {
-        egui::Color32::from_gray(220)
+        FILE_TREE_TEXT_COLOR
     };
     let rich = egui::RichText::new(&label).color(text_color);
     let rich = if is_active { rich.strong() } else { rich };
@@ -958,8 +1016,11 @@ fn render_file_entry(
             egui::pos2(ui.min_rect().max.x, resp.rect.max.y),
         );
         // VSCode 風のアクティブアイテム背景色（ただし文字の下に描画）
-        let bg_color = egui::Color32::from_rgba_premultiplied(40, 80, 160, 100);
-        ui.painter().rect_filled(full_rect, 3.0, bg_color);
+        ui.painter().rect_filled(
+            full_rect,
+            ACTIVE_FILE_HIGHLIGHT_ROUNDING,
+            ACTIVE_FILE_HIGHLIGHT_BG,
+        );
     }
 
     if resp.clicked() && entry.is_markdown() {
