@@ -18,6 +18,16 @@ use katana_core::{
     preview::{split_into_sections, PreviewSection},
 };
 
+// ─────────────────────────────────────────────
+// 定数
+// ─────────────────────────────────────────────
+
+/// ツール未インストール警告のテキスト色 (オレンジ)。
+const WARNING_TEXT_COLOR: egui::Color32 = egui::Color32::from_rgb(255, 165, 0);
+
+/// ダイアグラム SVG をピクセル画像に変換する際の表示スケール。
+const DIAGRAM_SVG_DISPLAY_SCALE: f32 = 1.5;
+
 /// UI 層で保持するレンダリング済みセクション。
 #[derive(Debug, Clone)]
 pub enum RenderedSection {
@@ -177,7 +187,7 @@ impl PreviewPane {
             });
         }
         if self.sections.is_empty() {
-            ui.label(egui::RichText::new("（プレビューなし）").weak());
+            ui.label(egui::RichText::new(crate::i18n::t("no_preview")).weak());
         }
         request
     }
@@ -255,9 +265,12 @@ fn show_section(
             message,
         } => {
             ui.label(
-                egui::RichText::new(format!("⚠ [{kind}] {message}"))
-                    .color(egui::Color32::YELLOW)
-                    .small(),
+                egui::RichText::new(crate::i18n::tf(
+                    "render_error",
+                    &[("kind", kind), ("message", message)],
+                ))
+                .color(egui::Color32::YELLOW)
+                .small(),
             );
             None
         }
@@ -285,7 +298,7 @@ fn show_section(
             ui.horizontal(|ui| {
                 ui.spinner();
                 ui.label(
-                    egui::RichText::new(format!("{} {}", kind, crate::i18n::t("rendering"))).weak(),
+                    egui::RichText::new(crate::i18n::tf("rendering", &[("kind", kind)])).weak(),
                 );
             });
             None
@@ -303,15 +316,21 @@ fn show_not_installed(
     let mut request = None;
     ui.group(|ui| {
         ui.label(
-            egui::RichText::new(format!("⚠ {kind} がインストールされていません"))
-                .color(egui::Color32::from_rgb(255, 165, 0)),
+            egui::RichText::new(crate::i18n::tf("tool_not_installed", &[("tool", kind)]))
+                .color(WARNING_TEXT_COLOR),
         );
         ui.label(
-            egui::RichText::new(format!("インストール先: {}", install_path.display()))
-                .small()
-                .weak(),
+            egui::RichText::new(crate::i18n::tf(
+                "tool_install_path",
+                &[("path", &install_path.display().to_string())],
+            ))
+            .small()
+            .weak(),
         );
-        if ui.button(format!("⬇ {} をダウンロード", kind)).clicked() {
+        if ui
+            .button(crate::i18n::tf("tool_download", &[("tool", kind)]))
+            .clicked()
+        {
             request = Some(DownloadRequest {
                 url: download_url.to_string(),
                 dest: install_path.to_path_buf(),
@@ -393,7 +412,7 @@ fn try_rasterize(kind: &DiagramKind, source: &str, html: &str) -> RenderedSectio
             message: "SVG の抽出に失敗しました".to_string(),
         };
     };
-    match rasterize_svg(svg, 1.5) {
+    match rasterize_svg(svg, DIAGRAM_SVG_DISPLAY_SCALE) {
         Ok(img) => RenderedSection::Image {
             svg_data: img,
             alt: format!("{kind:?} diagram"),
