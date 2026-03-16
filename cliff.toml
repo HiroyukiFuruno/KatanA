@@ -1,0 +1,53 @@
+# git-cliff configuration for KatanA
+# https://git-cliff.org/docs/configuration
+
+[changelog]
+# Template for the changelog body
+header = """
+# Changelog\n
+All notable changes to KatanA Desktop will be documented in this file.\n
+"""
+body = """
+{%- macro remote_url() -%}
+  https://github.com/HiroyukiFuruno/katana
+{%- endmacro -%}
+
+{% if version -%}
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else -%}
+    ## [Unreleased]
+{% endif -%}
+
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {{ commit.message | upper_first }}\
+    {% endfor %}
+{% endfor %}\n
+"""
+trim = true
+footer = ""
+postprocessors = []
+
+[git]
+# Parse conventional commits
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_parsers = [
+    { message = "^feat", group = "🚀 Features" },
+    { message = "^fix", group = "🐛 Bug Fixes" },
+    { message = "^docs", group = "📚 Documentation" },
+    { message = "^refactor", group = "♻️ Refactoring" },
+    { message = "^test", group = "🧪 Testing" },
+    { message = "^chore", group = "🔧 Miscellaneous" },
+    { message = "^perf", group = "⚡ Performance" },
+    { message = "^style", group = "🎨 Styling" },
+    { message = "^ci", group = "👷 CI/CD" },
+    { message = "^build", group = "📦 Build" },
+    { message = "^revert", group = "⏪ Reverted" },
+]
+protect_breaking_commits = false
+filter_commits = false
+topo_order = false
+sort_commits = "oldest"
