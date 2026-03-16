@@ -35,6 +35,8 @@ conventional_commits = true
 filter_unconventional = true
 split_commits = false
 commit_parsers = [
+    # Skip commits from CI bots / external systems
+    { author = "afb_2022_bitbucket_pipelines", skip = true },
     { message = "^feat", group = "🚀 Features" },
     { message = "^fix", group = "🐛 Bug Fixes" },
     { message = "^docs", group = "📚 Documentation" },
@@ -48,6 +50,6 @@ commit_parsers = [
     { message = "^revert", group = "⏪ Reverted" },
 ]
 protect_breaking_commits = false
-filter_commits = false
+filter_commits = true
 topo_order = false
 sort_commits = "oldest"
