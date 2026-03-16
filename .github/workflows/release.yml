@@ -31,8 +31,6 @@ permissions:
 env:
   CARGO_INCREMENTAL: 0
   CARGO_TERM_COLOR: always
-  SCCACHE_GHA_ENABLED: true
-  RUSTC_WRAPPER: sccache
 
 jobs:
   release:
@@ -59,10 +57,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
 
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@054db53350805f83040bf3e6e9b8cf5a139aa7c9 # v0.0.7
-
-      - name: Cache Cargo registry
+      - name: Cache Cargo registry & build
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
@@ -70,18 +65,19 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             ~/.cargo/bin
+            target
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-release-
 
       - name: Install cargo-bundle
-        run: command -v cargo-bundle || RUSTC_WRAPPER= cargo install cargo-bundle
+        run: command -v cargo-bundle || cargo install cargo-bundle
 
       - name: Install create-dmg
         run: brew install create-dmg
 
       - name: Install git-cliff
-        run: command -v git-cliff || RUSTC_WRAPPER= cargo install git-cliff
+        run: command -v git-cliff || cargo install git-cliff
 
       - name: Build .app bundle
         run: make package-mac
