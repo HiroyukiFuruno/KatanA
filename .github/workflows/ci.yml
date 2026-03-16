@@ -49,6 +49,8 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    env:
+      RUSTC_WRAPPER: ""  # Disable sccache for clippy compatibility
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -57,19 +59,17 @@ jobs:
         with:
           components: clippy, rustfmt
 
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@054db53350805f83040bf3e6e9b8cf5a139aa7c9 # v0.0.7
-
-      - name: Cache Cargo registry
+      - name: Cache Cargo registry & target
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/git/db
-          key: ${{ runner.os }}-cargo-reg-${{ hashFiles('**/Cargo.lock') }}
+            target
+          key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-reg-
+            ${{ runner.os }}-cargo-lint-
 
       - name: cargo fmt check
         run: cargo fmt --all -- --check
