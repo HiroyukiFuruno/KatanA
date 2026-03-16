@@ -28,6 +28,8 @@ Just as a katana cuts cleanly through its target, this tool is designed to **sli
 
 KatanA Desktop is a fast, lightweight Markdown workspace for macOS, purpose-built for developers who work with specification documents and technical writing.
 
+The trailing uppercase **A** stands for **"Agent"** — KatanA is designed for the era of AI agent-assisted development, where Markdown specifications serve as the bridge between humans and AI. **Katana × Agent = KatanA.**
+
 ---
 
 ## Background
