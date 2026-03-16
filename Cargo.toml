@@ -46,5 +46,5 @@ ignore = "0.4"
 # Diagram rendering
 resvg = "0.44"
 usvg = "0.44"
-tiny-skia = "0.11"
+tiny-skia = "0.12"
 xmltree = "0.12"
