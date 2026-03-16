@@ -15,6 +15,9 @@
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS">
 </p>
 
+<p align="center">
+  English | <a href="README.ja.md">日本語</a>
+</p>
 ---
 
 ## Background
@@ -165,13 +168,15 @@ If you want to build from source, contribute, or understand the architecture:
 
 If you find KatanA useful and would like to support its development, you can do so through sponsorship.
 
+<a href="https://github.com/sponsors/HiroyukiFuruno"><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
+
 Support helps cover:
 
 - development time
 - infrastructure
 - tooling costs
 
-(Sponsorship links will be added soon.)
+👉 **[Become a Sponsor](https://github.com/sponsors/HiroyukiFuruno)**
 
 - ⭐ Star this repository — it helps others discover KatanA
 - Share KatanA with people who might find it useful

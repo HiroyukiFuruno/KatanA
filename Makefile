@@ -13,8 +13,8 @@
 build: ## Build the entire workspace (debug)
 	cargo build --workspace
 
-.PHONY: release
-release: ## Release build (optimized)
+.PHONY: build-release
+build-release: ## Release build (optimized)
 	cargo build --workspace --release
 
 .PHONY: run

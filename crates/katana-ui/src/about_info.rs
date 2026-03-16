@@ -39,8 +39,8 @@ pub const APP_DOCS_URL: &str = "https://github.com/HiroyukiFuruno/katana/tree/ma
 /// Issue tracker URL.
 pub const APP_ISSUES_URL: &str = "https://github.com/HiroyukiFuruno/katana/issues";
 
-/// Sponsor / Support URL. Empty string means "Coming Soon".
-pub const APP_SPONSOR_URL: &str = "";
+/// Sponsor / Support URL.
+pub const APP_SPONSOR_URL: &str = "https://github.com/sponsors/HiroyukiFuruno";
 
 /// Short description of the application.
 pub const APP_DESCRIPTION: &str = "A fast, keyboard-driven Markdown editor built with Rust.";
@@ -296,10 +296,15 @@ mod tests {
     // ── 7. Support / Sponsor ──
 
     #[test]
-    fn sponsor_url_is_coming_soon() {
-        // Currently empty, meaning "Coming Soon" is displayed.
-        // When a sponsor URL is configured, update this test to assert HTTPS.
-        assert!(APP_SPONSOR_URL.is_empty());
+    fn sponsor_url_is_valid() {
+        assert!(
+            APP_SPONSOR_URL.starts_with("https://"),
+            "Sponsor URL must be HTTPS"
+        );
+        assert!(
+            APP_SPONSOR_URL.contains("github.com/sponsors"),
+            "Sponsor URL must point to GitHub Sponsors"
+        );
     }
 
     // ── about_info() integration ──
