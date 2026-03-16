@@ -73,6 +73,13 @@ jobs:
       - name: Build .app bundle
         run: make package-mac
 
+      - name: Ad-hoc code sign
+        run: |
+          APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
+          echo "Signing: $APP_PATH"
+          codesign --force --deep --sign - "$APP_PATH"
+          codesign --verify --verbose "$APP_PATH"
+
       - name: Build .dmg installer
         run: make dmg
 
