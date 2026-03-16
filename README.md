@@ -20,6 +20,16 @@
 </p>
 ---
 
+## What is KatanA
+
+The name **KatanA** comes from the Japanese word **"刀" (katana)** — a razor-sharp blade forged with precision and purpose.
+
+Just as a katana cuts cleanly through its target, this tool is designed to **slice through the complexity of documentation workflows** with speed and clarity. The name reflects the creator's desire to build something that helps developers **cut through challenges decisively**, one problem at a time.
+
+KatanA Desktop is a fast, lightweight Markdown workspace for macOS, purpose-built for developers who work with specification documents and technical writing.
+
+---
+
 ## Background
 
 As of **2026**, software development is rapidly evolving with the rise of **AI agents** assisting engineers in writing, reviewing, and maintaining code.
