@@ -6,8 +6,9 @@ use katana_ui::shell::KatanaApp;
 
 /// Snapshot pixel tolerance to absorb non-deterministic rendering differences.
 /// egui_kittest defaults to 0, but font hinting and anti-aliasing vary between runs.
-/// Max observed diff: ~1508 pixels, so 2000 provides comfortable margin.
-const SNAPSHOT_PIXEL_TOLERANCE: usize = 2000;
+/// Max observed diff between local and GitHub Actions macOS environment: ~3731 pixels.
+/// We set it to 4000 to provide a comfortable margin for environmental differences.
+const SNAPSHOT_PIXEL_TOLERANCE: usize = 4000;
 
 fn setup_harness() -> Harness<'static, KatanaApp> {
     Harness::builder().build_eframe(|_cc| {
