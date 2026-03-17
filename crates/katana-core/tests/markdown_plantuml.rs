@@ -1,9 +1,13 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::plantuml_renderer;
 use std::path::PathBuf;
+use std::sync::Mutex;
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
 fn returns_notinstalled_when_jar_not_found() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
     let block = DiagramBlock {
         kind: DiagramKind::PlantUml,
@@ -16,6 +20,7 @@ fn returns_notinstalled_when_jar_not_found() {
 
 #[test]
 fn returns_only_env_var_path_when_jar_candidate_paths_env_var_is_set() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("PLANTUML_JAR", "/custom/path/plantuml.jar") };
     let paths = plantuml_renderer::jar_candidate_paths();
     assert_eq!(paths, vec![PathBuf::from("/custom/path/plantuml.jar")]);
@@ -24,6 +29,7 @@ fn returns_only_env_var_path_when_jar_candidate_paths_env_var_is_set() {
 
 #[test]
 fn returns_multiple_candidates_when_jar_candidate_paths_env_var_is_not_set() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::remove_var("PLANTUML_JAR") };
     let paths = plantuml_renderer::jar_candidate_paths();
     // Includes Homebrew path + binary adjacent + XDG candidates
@@ -32,6 +38,7 @@ fn returns_multiple_candidates_when_jar_candidate_paths_env_var_is_not_set() {
 
 #[test]
 fn find_plantuml_jar_returns_none_if_not_exists() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/never/plantuml.jar") };
     let result = plantuml_renderer::find_plantuml_jar();
     assert!(result.is_none());

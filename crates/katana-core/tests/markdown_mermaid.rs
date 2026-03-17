@@ -1,8 +1,12 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::mermaid_renderer;
+use std::sync::Mutex;
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
 fn returns_commandnotfound_when_mmdc_not_found() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
     let block = DiagramBlock {
         kind: DiagramKind::Mermaid,
@@ -15,6 +19,7 @@ fn returns_commandnotfound_when_mmdc_not_found() {
 
 #[test]
 fn returns_its_path_when_resolve_mmdc_binary_env_var_is_set() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/custom/mmdc") };
     let path = mermaid_renderer::resolve_mmdc_binary();
     assert_eq!(path, std::path::PathBuf::from("/custom/mmdc"));
@@ -23,6 +28,7 @@ fn returns_its_path_when_resolve_mmdc_binary_env_var_is_set() {
 
 #[test]
 fn searches_system_path_when_resolve_mmdc_binary_env_var_is_not_set() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::remove_var("MERMAID_MMDC") };
     let path = mermaid_renderer::resolve_mmdc_binary();
     // Even if mmdc is not found, "mmdc" is returned as fallback
@@ -39,6 +45,7 @@ fn create_input_file_creates_a_temporary_file() {
 
 #[test]
 fn fake_binary_is_false_in_is_mmdc_available() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
     assert!(!mermaid_renderer::is_mmdc_available());
     unsafe { std::env::remove_var("MERMAID_MMDC") };
@@ -47,6 +54,7 @@ fn fake_binary_is_false_in_is_mmdc_available() {
 // Integration test that runs only when mmdc is available on the system.
 #[test]
 fn returns_png_correctly_if_mmdc_is_available() {
+    let _guard = ENV_LOCK.lock().unwrap();
     if std::env::var("MERMAID_MMDC").as_deref() == Ok("/nonexistent/mmdc") {
         return;
     }
@@ -64,6 +72,7 @@ fn returns_png_correctly_if_mmdc_is_available() {
 // run_mmdc_process error path when mmdc is not found
 #[test]
 fn run_mmdc_process_errors_when_mmdc_is_absent() {
+    let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
     let result = mermaid_renderer::run_mmdc_process("graph TD; A-->B");
     assert!(result.is_err());

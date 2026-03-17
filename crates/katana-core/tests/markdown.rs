@@ -1,4 +1,7 @@
 use katana_core::markdown::*;
+use std::sync::Mutex;
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
 fn basic_gfm_renders_to_html() {
@@ -57,6 +60,7 @@ fn render_with_katana_renderer_succeeds_for_plain_markdown() {
 
 #[test]
 fn katana_renderer_handles_mermaid_block_without_crash() {
+    let _guard = ENV_LOCK.lock().unwrap();
     // mmdc unavailable → CommandNotFound → fallback HTML
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
     let md = "\n```mermaid\ngraph TD; A-->B\n```\n";
@@ -68,6 +72,7 @@ fn katana_renderer_handles_mermaid_block_without_crash() {
 
 #[test]
 fn katana_renderer_handles_plantuml_block_without_crash() {
+    let _guard = ENV_LOCK.lock().unwrap();
     // PlantUML not installed → NotInstalled → fallback HTML
     unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
     let md = "\n```plantuml\n@startuml\nA -> B\n@enduml\n```\n";
