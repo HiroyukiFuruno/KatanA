@@ -247,7 +247,10 @@ fn centered_markdown_is_processed_in_update_markdown_sections() {
     let src = "<p align=\"center\">centered</p>";
     pane.update_markdown_sections(src, std::path::Path::new("/tmp/test.md"));
     assert_eq!(pane.sections.len(), 1);
-    assert!(matches!(pane.sections[0], RenderedSection::CenteredMarkdown(_)));
+    assert!(matches!(
+        pane.sections[0],
+        RenderedSection::CenteredMarkdown(_)
+    ));
 }
 
 #[test]
@@ -256,7 +259,10 @@ fn centered_markdown_is_processed_in_full_render() {
     let src = "<p align=\"center\">centered</p>";
     pane.full_render(src, std::path::Path::new("/tmp/test.md"));
     assert_eq!(pane.sections.len(), 1);
-    assert!(matches!(pane.sections[0], RenderedSection::CenteredMarkdown(_)));
+    assert!(matches!(
+        pane.sections[0],
+        RenderedSection::CenteredMarkdown(_)
+    ));
 }
 
 // ── Cover each variant of show_section using egui_kittest ──

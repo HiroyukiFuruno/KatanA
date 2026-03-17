@@ -93,7 +93,8 @@ impl PreviewPane {
                     new_sections.push(RenderedSection::Markdown(md.clone()));
                 }
                 PreviewSection::CenteredMarkdown(md) => {
-                    new_sections.push(RenderedSection::CenteredMarkdown(md.clone()));
+                    let resolved_md = resolve_image_paths(md, md_file_path);
+                    new_sections.push(RenderedSection::CenteredMarkdown(resolved_md));
                 }
                 PreviewSection::Diagram { kind, source } => {
                     // Reuse existing rendered image if available.
@@ -133,7 +134,8 @@ impl PreviewPane {
                     sections.push(RenderedSection::Markdown(md.clone()));
                 }
                 PreviewSection::CenteredMarkdown(md) => {
-                    sections.push(RenderedSection::CenteredMarkdown(md.clone()));
+                    let resolved_md = resolve_image_paths(md, md_file_path);
+                    sections.push(RenderedSection::CenteredMarkdown(resolved_md));
                 }
                 PreviewSection::Diagram { kind, source: src } => {
                     sections.push(RenderedSection::Pending {
