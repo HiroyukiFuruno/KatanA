@@ -5,10 +5,12 @@
 
 pub mod about_info;
 pub mod app_state;
+pub mod font_loader;
 pub mod html_renderer;
 pub mod i18n;
 pub mod preview_pane;
 pub mod preview_pane_ui;
+pub mod settings_window;
 pub mod shell;
 pub mod shell_logic;
 pub mod shell_ui;

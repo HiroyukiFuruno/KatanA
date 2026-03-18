@@ -4,6 +4,7 @@
 //! entire application can be themed cohesively.
 
 use eframe::egui;
+use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_platform::theme::{Rgb, Rgba, ThemeColors, ThemeMode};
 
 // ── Stroke width constants ──
@@ -55,11 +56,39 @@ pub fn visuals_from_theme(colors: &ThemeColors) -> egui::Visuals {
     visuals.widgets.hovered.fg_stroke = egui::Stroke::new(STROKE_MEDIUM, accent);
     visuals.widgets.hovered.bg_stroke = egui::Stroke::new(STROKE_NORMAL, accent);
 
+    let strong = strengthen_color(text, dark);
     visuals.widgets.active.bg_fill = accent;
-    visuals.widgets.active.fg_stroke = egui::Stroke::new(STROKE_BOLD, bg);
+    visuals.widgets.active.fg_stroke = egui::Stroke::new(STROKE_BOLD, strong);
     visuals.widgets.active.bg_stroke = egui::Stroke::new(STROKE_NORMAL, accent);
 
     visuals
+}
+
+/// Blend ratio for strong text emphasis (30% toward the target extreme).
+const STRONG_BLEND_RATIO: f32 = 0.3;
+
+/// Produces a stronger (higher contrast) variant of `base` for emphasis.
+///
+/// - **Dark mode**: lightens toward white (like SCSS `lighten`).
+/// - **Light mode**: darkens toward black (like SCSS `darken`).
+fn strengthen_color(base: egui::Color32, dark: bool) -> egui::Color32 {
+    let target: egui::Color32 = if dark {
+        egui::Color32::WHITE
+    } else {
+        egui::Color32::BLACK
+    };
+    let lerp = |a: u8, b: u8| -> u8 {
+        let a = f32::from(a);
+        let b = f32::from(b);
+        #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+        let result = (a + (b - a) * STRONG_BLEND_RATIO) as u8;
+        result
+    };
+    egui::Color32::from_rgb(
+        lerp(base.r(), target.r()),
+        lerp(base.g(), target.g()),
+        lerp(base.b(), target.b()),
+    )
 }
 
 /// Convert `Rgb` to `egui::Color32`.
@@ -94,4 +123,85 @@ pub fn apply_font_size(ctx: &egui::Context, font_size: f32) {
             }
         }
     });
+}
+
+/// Dynamically applies a font family from settings to the egui context.
+///
+/// Refetches OS fonts, overrides the primary definitions if a specific OS font is chosen,
+/// and resets the text styles to map to the correct default family.
+pub fn apply_font_family(ctx: &egui::Context, family_name: &str) {
+    let preset = DiagramColorPreset::current();
+    let mut custom_path = None;
+    let mut custom_name = None;
+
+    let mut default_family = egui::FontFamily::Proportional;
+    if family_name == "Proportional" {
+        default_family = egui::FontFamily::Proportional;
+    } else if family_name == "Monospace" {
+        default_family = egui::FontFamily::Monospace;
+    } else {
+        let os_fonts = katana_platform::os_fonts::OsFontScanner::cached_fonts();
+        if let Some((name, path)) = os_fonts.iter().find(|(name, _)| name == family_name) {
+            custom_path = Some(path.as_str());
+            custom_name = Some(name.as_str());
+            default_family = egui::FontFamily::Proportional;
+        }
+    }
+
+    crate::font_loader::SystemFontLoader::setup_fonts(ctx, preset, custom_path, custom_name);
+
+    ctx.style_mut(|style| {
+        for (text_style, font_id) in style.text_styles.iter_mut() {
+            if *text_style != egui::TextStyle::Monospace {
+                font_id.family = default_family.clone();
+            }
+        }
+    });
+}
+
+#[cfg(test)]
+mod apply_font_family_tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_font_family_proportional() {
+        let ctx = egui::Context::default();
+        apply_font_family(&ctx, "Proportional");
+        let style = ctx.style();
+        assert_eq!(
+            style
+                .text_styles
+                .get(&egui::TextStyle::Body)
+                .unwrap()
+                .family,
+            egui::FontFamily::Proportional
+        );
+    }
+
+    #[test]
+    fn test_apply_font_family_monospace() {
+        let ctx = egui::Context::default();
+        apply_font_family(&ctx, "Monospace");
+        let style = ctx.style();
+        assert_eq!(
+            style
+                .text_styles
+                .get(&egui::TextStyle::Body)
+                .unwrap()
+                .family,
+            egui::FontFamily::Monospace
+        );
+    }
+
+    #[test]
+    fn test_apply_font_family_custom_os_font() {
+        let ctx = egui::Context::default();
+        apply_font_family(&ctx, "UnknownNonExistentFont123");
+
+        // Also try to hit the branch matching an actual OS font if any exist
+        let os_fonts = katana_platform::os_fonts::OsFontScanner::cached_fonts();
+        if let Some((name, _)) = os_fonts.first() {
+            apply_font_family(&ctx, name);
+        }
+    }
 }
