@@ -329,7 +329,7 @@ PR をマージ可能とするための必須条件:
 5. **テスト配置**: 新規ロジックには `tests/` ディレクトリにテストが付随している
 6. **カバレッジ**: `cargo llvm-cov --workspace --fail-under-lines 100` パス
 
-一括チェック: `make ci`（pre-push フックと同等）
+一括チェック: `make check`（pre-push フックと同等）
 
 ---
 

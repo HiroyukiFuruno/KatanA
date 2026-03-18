@@ -114,8 +114,8 @@ lint: ## Run Clippy (forces zero warnings)
 lint-fix: ## Run Clippy and apply automatic fixes
 	cargo clippy --workspace --fix --allow-dirty --allow-staged -- -D warnings
 
-.PHONY: check
-check: ## cargo check (type check only, fast)
+.PHONY: typecheck
+typecheck: ## cargo check (type check only, fast)
 	cargo check --workspace
 
 # ---------- Testing ----------
@@ -211,12 +211,16 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 	fi; \
 	echo "✅ Coverage gate passed (all meaningful lines executed)"
 
-.PHONY: ci
-ci: fmt-check lint test-integration coverage ## Reproduce CI (fmt + clippy + IT + 100% coverage enforced/no relaxations)
+.PHONY: check
+check: fmt-check lint test-integration coverage ## Full verification (fmt + clippy + IT + 100% coverage enforced)
 	@echo "✅ All checks passed"
 
+.PHONY: check-light
+check-light: fmt-check lint test ## Quick verification (fmt + clippy + unit tests, no coverage/IT)
+	@echo "✅ Light checks passed"
+
 .PHONY: pre-push
-pre-push: ci ## Pre-push hook equivalent checks
+pre-push: check ## Pre-push hook equivalent checks
 
 # ---------- Documentation ----------
 
