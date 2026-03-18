@@ -154,14 +154,19 @@ COVERAGE_IGNORE := plantuml_renderer\.rs|mermaid_renderer\.rs|katana-ui/src/main
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
-	# The following are temporary exclusions. They should be removed after refactoring away from external command dependencies:
-	#   - plantuml_renderer.rs: depends on java -jar -> planned for DI
-	#   - mermaid_renderer.rs: depends on mmdc binary -> planned for DI
-	# main.rs: Entry point only. Testable logic is exposed and tested via lib.rs
-	# The following are egui UI rendering functions only. Business logic separated to shell.rs / shell_logic.rs / preview_pane.rs:
-	#   - shell_ui.rs: eframe::App::update + button click event branching + macOS native menu
-	#   - preview_pane_ui.rs: drawing sections + render_sections
-	#   - html_renderer.rs: egui widget generation from HtmlNode tree (requires frame context)
+	# Excluded files and reasons:
+	#
+	# [egui frame context dependent — cannot execute in headless tests]
+	#   - main.rs: eframe::run_native setup_cc closure (icon loading, workspace restore)
+	#   - shell_ui.rs: macOS native FFI calls (process name, menu, icon)
+	#   - preview_pane_ui.rs: egui UI rendering of preview sections
+	#   - html_renderer.rs: egui widget generation from HtmlNode tree
+	#   Business logic is fully tested in shell.rs / shell_logic.rs / preview_pane.rs.
+	#
+	# [OnceLock process-wide cache — fallback tiers unreachable after first resolution]
+	#   - mermaid_renderer.rs: 6-tier mmdc resolution cached via OnceLock; later tiers
+	#     (volta/fnm/which/login-shell) never execute once nvm probe succeeds.
+	#   - plantuml_renderer.rs: jar path resolution + render error path.
 	#
 	# ── Test Execution + Table Report ──
 	cargo llvm-cov --workspace --lib --tests \

@@ -123,6 +123,8 @@ jobs:
 
       - name: Run coverage
         # Mirror the local `make coverage` gate (Makefile > coverage target).
-        # GUI rendering / external-tool-dependent files are excluded;
-        # gate uses text-output physical-line counting to avoid LLVM sub-region false positives.
+        # Excludes: egui frame-context files (main.rs, shell_ui.rs, preview_pane_ui.rs,
+        # html_renderer.rs) and OnceLock-cached resolvers (mermaid_renderer.rs,
+        # plantuml_renderer.rs). See Makefile for detailed rationale.
+        # Gate uses text-output physical-line counting to avoid LLVM sub-region false positives.
         run: make coverage
