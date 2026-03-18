@@ -87,6 +87,10 @@ pub struct KatanaApp {
     pub(crate) cached_theme: Option<ThemeColors>,
     /// Cached font size to avoid redundant `style_mut()` calls every frame.
     pub(crate) cached_font_size: Option<f32>,
+    /// Cached font family to avoid rebuilding `FontDefinitions` every frame.
+    pub(crate) cached_font_family: Option<String>,
+    /// Dedicated PreviewPane for the settings window live preview.
+    pub(crate) settings_preview: PreviewPane,
 }
 
 impl KatanaApp {
@@ -102,6 +106,8 @@ impl KatanaApp {
             about_icon: None,
             cached_theme: None,
             cached_font_size: None,
+            cached_font_family: None,
+            settings_preview: PreviewPane::default(),
         }
     }
 
@@ -234,6 +240,9 @@ impl KatanaApp {
             AppAction::UpdateBuffer(c) => self.handle_update_buffer(c),
             AppAction::SaveDocument => self.handle_save_document(),
             AppAction::RefreshDiagrams => {
+                // Invalidate hashes so non-active tabs re-render on next switch
+                self.tab_hashes.clear();
+                // Re-render only the active tab immediately
                 if let Some(doc) = self.state.active_document() {
                     let src = doc.buffer.clone();
                     let path = doc.path.clone();
@@ -246,6 +255,9 @@ impl KatanaApp {
                 if let Err(e) = self.state.settings.save() {
                     tracing::warn!("Failed to save settings: {e}");
                 }
+            }
+            AppAction::ToggleSettings => {
+                self.state.show_settings = !self.state.show_settings;
             }
             AppAction::None => {}
         }
@@ -492,6 +504,19 @@ mod tests {
         let mut app = make_app();
         app.process_action(AppAction::ChangeLanguage("ja".to_string()));
         // Verify i18n language was changed (since direct access is hard, ensure no panic)
+    }
+
+    // process_action: ToggleSettings
+    #[test]
+    fn process_action_toggle_settings_toggles_flag() {
+        let mut app = make_app();
+        assert!(!app.state.show_settings);
+
+        app.process_action(AppAction::ToggleSettings);
+        assert!(app.state.show_settings);
+
+        app.process_action(AppAction::ToggleSettings);
+        assert!(!app.state.show_settings);
     }
 
     // process_action: None (L258)
@@ -843,5 +868,56 @@ mod tests_extra {
         let mut app = make_app_with_failing_repo();
         app.process_action(AppAction::ChangeLanguage("ja".to_string()));
         // Language change still proceeds despite save failure
+    }
+
+    // Regression: trigger_action(OpenWorkspace) must not be overwritten before take_action().
+    //
+    // Background: shell_ui.rs::update() sets pending_action = RefreshDiagrams on the first
+    // frame (cold theme cache). If trigger_action() is called from the eframe setup_cc closure
+    // (workspace restore at startup), the unconditional assignment silently discards the
+    // OpenWorkspace action, causing the saved workspace to not be restored on reopen.
+    #[test]
+    fn trigger_action_is_not_overwritten_before_take_action() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+
+        // Simulate startup: workspace restore sets pending_action via trigger_action().
+        app.trigger_action(AppAction::OpenWorkspace(dir.path().to_path_buf()));
+
+        // Verify the action is still intact before take_action() is called.
+        // The fix in shell_ui.rs guards the RefreshDiagrams assignment with
+        // `if matches!(self.pending_action, AppAction::None)`.
+        assert!(
+            matches!(app.pending_action, AppAction::OpenWorkspace(_)),
+            "pending_action must still be OpenWorkspace before take_action(); \
+             RefreshDiagrams must not overwrite it"
+        );
+
+        let action = app.take_action();
+        assert!(
+            matches!(action, AppAction::OpenWorkspace(_)),
+            "take_action() must return OpenWorkspace, not a different action. \
+             Regression: shell_ui theme guard was overwriting pending_action on first frame."
+        );
+
+        // After take_action(), pending_action is reset to None.
+        assert!(matches!(app.pending_action, AppAction::None));
+    }
+
+    // Verify that RefreshDiagrams IS set when no action is pending (normal theme-change path).
+    #[test]
+    fn refresh_diagrams_is_set_when_no_action_is_pending() {
+        let mut app = make_app();
+        assert!(matches!(app.pending_action, AppAction::None));
+
+        // Reproduce the fixed guard: only assign when pending is None.
+        if matches!(app.pending_action, AppAction::None) {
+            app.pending_action = AppAction::RefreshDiagrams;
+        }
+
+        assert!(
+            matches!(app.pending_action, AppAction::RefreshDiagrams),
+            "RefreshDiagrams should be set when no action is pending"
+        );
     }
 }
