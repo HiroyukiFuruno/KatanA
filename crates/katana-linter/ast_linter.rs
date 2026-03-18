@@ -428,6 +428,45 @@ impl<'ast> Visit<'ast> for MagicNumberVisitor {
 }
 
 // ─────────────────────────────────────────────
+// Lazy Code Detection Visitor
+// ─────────────────────────────────────────────
+
+struct LazyCodeVisitor {
+    file: PathBuf,
+    violations: Vec<Violation>,
+}
+
+impl LazyCodeVisitor {
+    fn new(file: PathBuf) -> Self {
+        Self {
+            file,
+            violations: Vec::new(),
+        }
+    }
+}
+
+impl<'ast> Visit<'ast> for LazyCodeVisitor {
+    fn visit_macro(&mut self, mac: &'ast syn::Macro) {
+        if let Some(segment) = mac.path.segments.last() {
+            let ident = segment.ident.to_string();
+            if ident == "todo" || ident == "unimplemented" || ident == "dbg" {
+                let (line, column) = span_location(segment.ident.span());
+                self.violations.push(Violation {
+                    file: self.file.clone(),
+                    line,
+                    column,
+                    message: format!(
+                        "Lazy code macro `{}!()` detected. Please implement properly instead of deferring.",
+                        ident
+                    ),
+                });
+            }
+        }
+        syn::visit::visit_macro(self, mac);
+    }
+}
+
+// ─────────────────────────────────────────────
 // File Traversal Engine
 // ─────────────────────────────────────────────
 
@@ -480,6 +519,13 @@ fn lint_i18n(path: &Path, syntax: &syn::File) -> Vec<Violation> {
 /// Apply magic number rule to a single file and return a list of violations.
 fn lint_magic_numbers(path: &Path, syntax: &syn::File) -> Vec<Violation> {
     let mut visitor = MagicNumberVisitor::new(path.to_path_buf());
+    visitor.visit_file(syntax);
+    visitor.violations
+}
+
+/// Apply lazy code rule to a single file and return a list of violations.
+fn lint_lazy_code(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+    let mut visitor = LazyCodeVisitor::new(path.to_path_buf());
     visitor.visit_file(syntax);
     visitor.violations
 }
@@ -576,6 +622,23 @@ fn ast_linter_no_magic_numbers() {
             root.join("crates/katana-ui/src"),
         ],
         lint_magic_numbers,
+    );
+}
+
+/// Lazy code rule: Detect todo!(), unimplemented!(), and dbg!() macros.
+/// Scope: All crates.
+#[test]
+fn ast_linter_no_lazy_code() {
+    let root = workspace_root();
+    run_ast_lint(
+        "lazy-code",
+        "Fix: Remove `todo!()`, `unimplemented!()`, and `dbg!()` macros. Implement the actual logic.",
+        &[
+            root.join("crates/katana-core/src"),
+            root.join("crates/katana-platform/src"),
+            root.join("crates/katana-ui/src"),
+        ],
+        lint_lazy_code,
     );
 }
 
