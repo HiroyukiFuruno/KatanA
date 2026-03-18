@@ -67,7 +67,7 @@ The script installs:
 ```sh
 make run          # Build and launch KatanA
 make test         # Run the full test suite
-make check           # Full CI check: fmt + clippy + tests
+make check-light  # Full CI check: fmt + clippy + tests
 make watch-run    # Launch with auto-reload on file changes
 make doc-open     # Build and open API docs in your browser
 ```
