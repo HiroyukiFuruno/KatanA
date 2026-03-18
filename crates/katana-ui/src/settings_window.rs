@@ -10,6 +10,7 @@ use crate::preview_pane::PreviewPane;
 use crate::theme_bridge;
 use katana_platform::settings::{SettingsService, MAX_FONT_SIZE, MIN_FONT_SIZE};
 use katana_platform::theme::{Rgb, ThemeColors, ThemeMode, ThemePreset};
+use katana_platform::{PaneOrder, SplitDirection};
 
 // ── Window layout constants ──────────────────────────────────────────
 
@@ -419,6 +420,10 @@ fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut SettingsService
 fn render_layout_tab(ui: &mut egui::Ui, settings: &mut SettingsService) {
     section_header(ui, "settings_tab_layout");
     render_toc_toggle(ui, settings);
+    ui.add_space(SECTION_SPACING);
+    render_split_direction_selector(ui, settings);
+    ui.add_space(SECTION_SPACING);
+    render_pane_order_selector(ui, settings);
 }
 
 fn render_toc_toggle(ui: &mut egui::Ui, settings: &mut SettingsService) {
@@ -430,4 +435,62 @@ fn render_toc_toggle(ui: &mut egui::Ui, settings: &mut SettingsService) {
         settings.settings_mut().toc_visible = toc_visible;
         let _ = settings.save();
     }
+}
+
+fn render_split_direction_selector(ui: &mut egui::Ui, settings: &mut SettingsService) {
+    ui.label(i18n::t("settings_layout_split_direction"));
+    ui.horizontal(|ui| {
+        let current = settings.settings().split_direction;
+        if ui
+            .selectable_label(
+                current == SplitDirection::Horizontal,
+                i18n::t("settings_layout_horizontal"),
+            )
+            .clicked()
+            && current != SplitDirection::Horizontal
+        {
+            settings.settings_mut().split_direction = SplitDirection::Horizontal;
+            let _ = settings.save();
+        }
+        if ui
+            .selectable_label(
+                current == SplitDirection::Vertical,
+                i18n::t("settings_layout_vertical"),
+            )
+            .clicked()
+            && current != SplitDirection::Vertical
+        {
+            settings.settings_mut().split_direction = SplitDirection::Vertical;
+            let _ = settings.save();
+        }
+    });
+}
+
+fn render_pane_order_selector(ui: &mut egui::Ui, settings: &mut SettingsService) {
+    ui.label(i18n::t("settings_layout_pane_order"));
+    ui.horizontal(|ui| {
+        let current = settings.settings().pane_order;
+        if ui
+            .selectable_label(
+                current == PaneOrder::EditorFirst,
+                i18n::t("settings_layout_editor_first"),
+            )
+            .clicked()
+            && current != PaneOrder::EditorFirst
+        {
+            settings.settings_mut().pane_order = PaneOrder::EditorFirst;
+            let _ = settings.save();
+        }
+        if ui
+            .selectable_label(
+                current == PaneOrder::PreviewFirst,
+                i18n::t("settings_layout_preview_first"),
+            )
+            .clicked()
+            && current != PaneOrder::PreviewFirst
+        {
+            settings.settings_mut().pane_order = PaneOrder::PreviewFirst;
+            let _ = settings.save();
+        }
+    });
 }

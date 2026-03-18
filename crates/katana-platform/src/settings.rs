@@ -8,6 +8,26 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+/// Split direction for editor/preview layout.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum SplitDirection {
+    /// Editor on left, preview on right.
+    #[default]
+    Horizontal,
+    /// Editor on top, preview on bottom.
+    Vertical,
+}
+
+/// Pane order within the split view.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum PaneOrder {
+    /// Editor first (left or top), preview second.
+    #[default]
+    EditorFirst,
+    /// Preview first (left or top), editor second.
+    PreviewFirst,
+}
+
 const DEFAULT_FONT_SIZE: f32 = 14.0;
 /// Minimum allowed font size in pixels.
 pub const MIN_FONT_SIZE: f32 = 8.0;
@@ -39,6 +59,12 @@ pub struct AppSettings {
     /// Whether the table of contents panel is visible.
     #[serde(default)]
     pub toc_visible: bool,
+    /// Split direction for editor/preview layout.
+    #[serde(default)]
+    pub split_direction: SplitDirection,
+    /// Pane order within the split view.
+    #[serde(default)]
+    pub pane_order: PaneOrder,
     /// Workspace directory paths.
     #[serde(default)]
     pub workspace_paths: Vec<String>,
@@ -79,6 +105,8 @@ impl Default for AppSettings {
             font_family: default_font_family(),
             last_workspace: None,
             toc_visible: false,
+            split_direction: SplitDirection::default(),
+            pane_order: PaneOrder::default(),
             workspace_paths: Vec::new(),
             terms_accepted_version: None,
             language: default_language(),
@@ -456,5 +484,39 @@ mod tests {
                 b: 30
             }
         );
+    }
+
+    #[test]
+    fn test_split_direction_defaults_to_horizontal() {
+        let settings = AppSettings::default();
+        assert_eq!(settings.split_direction, SplitDirection::Horizontal);
+    }
+
+    #[test]
+    fn test_pane_order_defaults_to_editor_first() {
+        let settings = AppSettings::default();
+        assert_eq!(settings.pane_order, PaneOrder::EditorFirst);
+    }
+
+    #[test]
+    fn test_layout_settings_serde_backward_compat() {
+        // Existing JSON without split_direction/pane_order must deserialize
+        // to the default values so that existing users' settings are not broken.
+        let json = r#"{"theme": "dark"}"#;
+        let loaded: AppSettings = serde_json::from_str(json).unwrap();
+        assert_eq!(loaded.split_direction, SplitDirection::Horizontal);
+        assert_eq!(loaded.pane_order, PaneOrder::EditorFirst);
+    }
+
+    #[test]
+    fn test_layout_settings_roundtrip() {
+        let mut settings = AppSettings::default();
+        settings.split_direction = SplitDirection::Vertical;
+        settings.pane_order = PaneOrder::PreviewFirst;
+
+        let json = serde_json::to_string(&settings).unwrap();
+        let loaded: AppSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(loaded.split_direction, SplitDirection::Vertical);
+        assert_eq!(loaded.pane_order, PaneOrder::PreviewFirst);
     }
 }

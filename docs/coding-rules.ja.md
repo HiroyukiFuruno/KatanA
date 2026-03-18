@@ -185,33 +185,44 @@ fn 未保存バッファはディスクに書き込まれない() { ... }
 fn unsaved_buffer_does_not_write_to_disk() { ... }
 ```
 
-### 7.2 テストファイル配置
+### 7.2 テストファイル配置（更新 2026-03-19）
 
-テストは **クレートルートの `tests/` ディレクトリ** に配置する。
-`src/` 内の `#[cfg(test)] mod tests { ... }` は禁止（テストヘルパー関数の `#[cfg(test)]` アトリビュートは許容）。
+Rust コミュニティのベストプラクティスに合わせ、テストを **種別** で分離する。
 
-**「private 関数をテストするために `#[cfg(test)]` が必要」は設計不良のサインであり、言い訳として認めない。**
-テストで検証すべきロジックが private にある場合は、そのロジックを public なモジュール/関数に抽出して再設計すること。
+| 種別 | 配置 | 説明 |
+|------|------|------|
+| **Unit Test (UT)** | `src/` 内 `#[cfg(test)] mod tests { ... }` | 同一クレート内の private API を直接テストできる。Rust 標準スタイル。 |
+| **Integration Test (IT)** | `tests/` ディレクトリ | クレートの公開 API のみアクセス可能。外部利用者視点の検証。 |
 
 ```
 crates/katana-core/
-  src/              # 実装コードのみ
+  src/
+    document.rs           # 実装 + #[cfg(test)] mod tests { ... }  (UT)
+    workspace.rs          # 実装 + #[cfg(test)] mod tests { ... }  (UT)
   tests/
-    document.rs     # document.rs のテスト
-    workspace.rs    # workspace.rs のテスト
-    preview.rs      # preview.rs のテスト
-    ai.rs           # AI モジュールのテスト
-    markdown_*.rs   # 各レンダラーのテスト
-    plugin.rs       # プラグインのテスト
+    integration.rs        # 公開 API を通じた結合テスト (IT)
+    markdown_renderer.rs  # レンダラーの結合テスト (IT)
 ```
+
+**UT のガイドライン**
+
+- `src/` モジュールと同一ファイル内の `#[cfg(test)] mod tests { ... }` に記述する。
+- private 関数・内部状態のテストに使用してよい。
+- `#[allow(clippy::unwrap_used)]` は `mod tests` ブロックにのみ許容する。
+
+**IT のガイドライン**
+
+- `tests/` ディレクトリに配置する。
+- クレートの `pub` API のみを使用する（private アクセス不可）。
+- `use crate_name::...;` 形式でインポートし、外部利用者と同等の視点でテストする。
 
 ### 7.3 テストピラミッド
 
 | 種別 | 配置 | カバレッジ目標 |
-|------|------|--------------| 
-| Unit Test | `tests/` ディレクトリ | **100%（例外なし）** |
-| Integration Test | `tests/` ディレクトリ | 主要フロー網羅 |
-| Integration Test | `tests/integration/` (egui_kittest予定) | MVP の全シナリオ、スナップショット回帰監視 |
+|------|------|--------------|
+| Unit Test (UT) | `src/` 内インライン `#[cfg(test)]` | **100%（例外なし）** |
+| Integration Test (IT) | `tests/` ディレクトリ | 主要公開 API フロー網羅 |
+| UI Integration Test | `tests/integration/` (egui_kittest予定) | MVP の全シナリオ、スナップショット回帰監視 |
 
 カバレッジ測定: `cargo llvm-cov --workspace --fail-under-lines 100`（CI 強制）
 
