@@ -22,6 +22,7 @@ use crate::shell::{
     TAB_INTER_ITEM_SPACING, TAB_NAV_BUTTONS_AREA_WIDTH, TAB_TOOLTIP_SHOW_DELAY_SECS,
 };
 use crate::theme_bridge;
+use katana_platform::{PaneOrder, SplitDirection};
 
 pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
     rfd::FileDialog::new().pick_folder()
@@ -234,18 +235,17 @@ pub(crate) fn render_preview_content(
 }
 
 pub(crate) fn render_preview_header(ui: &mut egui::Ui, state: &AppState, action: &mut AppAction) {
-    ui.horizontal(|ui| {
-        ui.heading(crate::i18n::t("preview_title"));
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            let has_doc = state.active_document().is_some();
-            if ui
-                .add_enabled(has_doc, egui::Button::new("\u{1F504}"))
-                .on_hover_text(crate::i18n::t("refresh_diagrams"))
-                .clicked()
-            {
-                *action = AppAction::RefreshDiagrams;
-            }
-        });
+    // タスク4.1: 「Preview」ラベルを削除し、リフレッシュボタンのみ残す。
+    // ヘッダーには操作ボタンだけを配置することで、プレビュー領域を最大限活用できる。
+    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        let has_doc = state.active_document().is_some();
+        if ui
+            .add_enabled(has_doc, egui::Button::new("\u{1F504}"))
+            .on_hover_text(crate::i18n::t("refresh_diagrams"))
+            .clicked()
+        {
+            *action = AppAction::RefreshDiagrams;
+        }
     });
 }
 
@@ -523,7 +523,198 @@ pub(crate) fn render_file_entry(
 }
 
 // ─────────────────────────────────────────────
-// macOS Native Menu FFI
+// Split Layout Helpers (Task 4.2 / 4.4)
+// ─────────────────────────────────────────────
+
+/// Renders the split view and returns a pending download request if any.
+///
+/// Supports both `Horizontal` (left/right) and `Vertical` (top/bottom) splits,
+/// with configurable pane order via `PaneOrder`.
+fn render_split_mode(
+    ctx: &egui::Context,
+    app: &mut KatanaApp,
+    split_dir: SplitDirection,
+    pane_order: PaneOrder,
+) -> Option<DownloadRequest> {
+    match split_dir {
+        SplitDirection::Horizontal => render_horizontal_split(ctx, app, pane_order),
+        SplitDirection::Vertical => render_vertical_split(ctx, app, pane_order),
+    }
+}
+
+/// Renders a left/right 50-50 split using SidePanel + CentralPanel.
+///
+/// The panel width is calculated as half of the available central area so that
+/// both panes always occupy an equal share regardless of window size.
+fn render_horizontal_split(
+    ctx: &egui::Context,
+    app: &mut KatanaApp,
+    pane_order: PaneOrder,
+) -> Option<DownloadRequest> {
+    let available_width = ctx.available_rect().width();
+    let half_width = (available_width * SPLIT_HALF_RATIO).max(SPLIT_PREVIEW_PANEL_MIN_WIDTH);
+    let preview_bg = theme_bridge::rgb_to_color32(
+        app.state
+            .settings
+            .settings()
+            .effective_theme_colors()
+            .preview_background,
+    );
+    let active_path = app.state.active_document().map(|d| d.path.clone());
+    let mut scroll_state = (
+        app.state.scroll_fraction,
+        app.state.scroll_source,
+        app.state.preview_max_scroll,
+    );
+    let mut download_req = None;
+
+    // EditorFirst: preview panel on the right; PreviewFirst: preview panel on the left.
+    let panel_side = match pane_order {
+        PaneOrder::EditorFirst => egui::SidePanel::right("preview_panel_h"),
+        PaneOrder::PreviewFirst => egui::SidePanel::left("preview_panel_h"),
+    };
+
+    panel_side
+        .resizable(true)
+        .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+        .default_width(half_width)
+        .frame(egui::Frame::side_top_panel(ctx.style().as_ref()).fill(preview_bg))
+        .show(ctx, |ui| {
+            if let Some(path) = &active_path {
+                let pane = app.tab_panes.entry(path.clone()).or_default();
+                download_req = render_preview_content(
+                    ui,
+                    pane,
+                    &app.state,
+                    &mut app.pending_action,
+                    true,
+                    &mut scroll_state,
+                );
+            }
+        });
+
+    egui::CentralPanel::default().show(ctx, |ui| {
+        render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+    });
+
+    app.state.scroll_fraction = scroll_state.0;
+    app.state.scroll_source = scroll_state.1;
+    app.state.preview_max_scroll = scroll_state.2;
+
+    download_req
+}
+
+/// Renders a top/bottom 50-50 split using TopBottomPanel + CentralPanel.
+fn render_vertical_split(
+    ctx: &egui::Context,
+    app: &mut KatanaApp,
+    pane_order: PaneOrder,
+) -> Option<DownloadRequest> {
+    let available_height = ctx.available_rect().height();
+    let half_height = available_height * SPLIT_HALF_RATIO;
+    let preview_bg = theme_bridge::rgb_to_color32(
+        app.state
+            .settings
+            .settings()
+            .effective_theme_colors()
+            .preview_background,
+    );
+    let active_path = app.state.active_document().map(|d| d.path.clone());
+    let mut scroll_state = (
+        app.state.scroll_fraction,
+        app.state.scroll_source,
+        app.state.preview_max_scroll,
+    );
+    let mut download_req = None;
+
+    // EditorFirst: editor on top, preview on bottom; PreviewFirst: reversed.
+    let show_preview_top = pane_order == PaneOrder::PreviewFirst;
+
+    if show_preview_top {
+        egui::TopBottomPanel::top("preview_panel_v_top")
+            .resizable(true)
+            .default_height(half_height)
+            .frame(egui::Frame::side_top_panel(ctx.style().as_ref()).fill(preview_bg))
+            .show(ctx, |ui| {
+                if let Some(path) = &active_path {
+                    let pane = app.tab_panes.entry(path.clone()).or_default();
+                    download_req = render_preview_content(
+                        ui,
+                        pane,
+                        &app.state,
+                        &mut app.pending_action,
+                        true,
+                        &mut scroll_state,
+                    );
+                }
+            });
+        egui::CentralPanel::default().show(ctx, |ui| {
+            render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+        });
+    } else {
+        egui::TopBottomPanel::bottom("preview_panel_v_bottom")
+            .resizable(true)
+            .default_height(half_height)
+            .frame(egui::Frame::side_top_panel(ctx.style().as_ref()).fill(preview_bg))
+            .show(ctx, |ui| {
+                if let Some(path) = &active_path {
+                    let pane = app.tab_panes.entry(path.clone()).or_default();
+                    download_req = render_preview_content(
+                        ui,
+                        pane,
+                        &app.state,
+                        &mut app.pending_action,
+                        true,
+                        &mut scroll_state,
+                    );
+                }
+            });
+        egui::CentralPanel::default().show(ctx, |ui| {
+            render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+        });
+    }
+
+    app.state.scroll_fraction = scroll_state.0;
+    app.state.scroll_source = scroll_state.1;
+    app.state.preview_max_scroll = scroll_state.2;
+
+    download_req
+}
+
+/// Renders the preview-only mode into the given ui.
+fn render_preview_only(ui: &mut egui::Ui, app: &mut KatanaApp) {
+    ui.painter().rect_filled(
+        ui.max_rect(),
+        0.0,
+        theme_bridge::rgb_to_color32(
+            app.state
+                .settings
+                .settings()
+                .effective_theme_colors()
+                .preview_background,
+        ),
+    );
+    let active_path = app.state.active_document().map(|d| d.path.clone());
+    let mut scroll_state = (0.0_f32, ScrollSource::Neither, 0.0_f32);
+    if let Some(path) = active_path {
+        let pane = app.tab_panes.entry(path).or_default();
+        render_preview_content(
+            ui,
+            pane,
+            &app.state,
+            &mut app.pending_action,
+            false,
+            &mut scroll_state,
+        );
+    } else {
+        ui.centered_and_justified(|ui| {
+            ui.label(i18n::t("no_document_selected"));
+        });
+    }
+}
+
+// ─────────────────────────────────────────────
+// eframe::App Implementation (egui Main Rendering Loop)
 // ─────────────────────────────────────────────
 
 #[cfg(target_os = "macos")]
@@ -579,10 +770,10 @@ pub unsafe fn native_set_app_icon_png(png_data: *const u8, png_len: usize) {
 // eframe::App Implementation (egui Main Rendering Loop)
 // ─────────────────────────────────────────────
 
-use crate::shell::{
-    KatanaApp, SIDEBAR_COLLAPSED_TOGGLE_WIDTH, SPLIT_PREVIEW_PANEL_DEFAULT_WIDTH,
-    SPLIT_PREVIEW_PANEL_MIN_WIDTH,
-};
+use crate::shell::{KatanaApp, SIDEBAR_COLLAPSED_TOGGLE_WIDTH, SPLIT_PREVIEW_PANEL_MIN_WIDTH};
+
+// Half-panel ratio for responsive 50/50 split (task 4.2).
+const SPLIT_HALF_RATIO: f32 = 0.5;
 
 impl eframe::App for KatanaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -717,82 +908,23 @@ impl eframe::App for KatanaApp {
         let current_mode = self.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
 
-        // Split mode
         if is_split {
-            let active_path = self.state.active_document().map(|d| d.path.clone());
-            let mut scroll_state = (
-                self.state.scroll_fraction,
-                self.state.scroll_source,
-                self.state.preview_max_scroll,
-            );
-            let preview_bg = theme_bridge::rgb_to_color32(
-                self.state
-                    .settings
-                    .settings()
-                    .effective_theme_colors()
-                    .preview_background,
-            );
-            egui::SidePanel::right("preview_panel")
-                .resizable(true)
-                .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
-                .default_width(SPLIT_PREVIEW_PANEL_DEFAULT_WIDTH)
-                .frame(egui::Frame::side_top_panel(ctx.style().as_ref()).fill(preview_bg))
-                .show(ctx, |ui| {
-                    if let Some(path) = &active_path {
-                        let pane = self.tab_panes.entry(path.clone()).or_default();
-                        download_req = render_preview_content(
-                            ui,
-                            pane,
-                            &self.state,
-                            &mut self.pending_action,
-                            true,
-                            &mut scroll_state,
-                        );
-                    }
-                });
-            self.state.scroll_fraction = scroll_state.0;
-            self.state.scroll_source = scroll_state.1;
-            self.state.preview_max_scroll = scroll_state.2;
+            let split_dir = self.state.settings.settings().split_direction;
+            let pane_order = self.state.settings.settings().pane_order;
+            download_req = render_split_mode(ctx, self, split_dir, pane_order);
         }
 
-        egui::CentralPanel::default().show(ctx, |ui| match current_mode {
-            ViewMode::CodeOnly | ViewMode::Split => {
-                render_editor_content(ui, &mut self.state, &mut self.pending_action, is_split);
-            }
-            ViewMode::PreviewOnly => {
-                ui.painter().rect_filled(
-                    ui.max_rect(),
-                    0.0,
-                    theme_bridge::rgb_to_color32(
-                        self.state
-                            .settings
-                            .settings()
-                            .effective_theme_colors()
-                            .preview_background,
-                    ),
-                );
-                let active_path = self.state.active_document().map(|d| d.path.clone());
-                let mut scroll_state = (0.0_f32, ScrollSource::Neither, 0.0_f32);
-                if let Some(path) = active_path {
-                    let pane = self.tab_panes.entry(path).or_default();
-                    let req = render_preview_content(
-                        ui,
-                        pane,
-                        &self.state,
-                        &mut self.pending_action,
-                        false,
-                        &mut scroll_state,
-                    );
-                    if req.is_some() {
-                        download_req = req;
-                    }
-                } else {
-                    ui.centered_and_justified(|ui| {
-                        ui.label(i18n::t("no_document_selected"));
-                    });
+        if !is_split {
+            egui::CentralPanel::default().show(ctx, |ui| match current_mode {
+                ViewMode::CodeOnly => {
+                    render_editor_content(ui, &mut self.state, &mut self.pending_action, false);
                 }
-            }
-        });
+                ViewMode::PreviewOnly => {
+                    render_preview_only(ui, self);
+                }
+                ViewMode::Split => {}
+            });
+        }
 
         if let Some(req) = download_req {
             self.start_download(req);

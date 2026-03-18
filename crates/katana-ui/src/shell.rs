@@ -29,9 +29,6 @@ pub(crate) const FILE_TREE_PANEL_DEFAULT_WIDTH: f32 = 220.0;
 /// Minimum width of the preview panel in Split mode (px).
 pub(crate) const SPLIT_PREVIEW_PANEL_MIN_WIDTH: f32 = 200.0;
 
-/// Initial width of the preview panel in Split mode (px).
-pub(crate) const SPLIT_PREVIEW_PANEL_DEFAULT_WIDTH: f32 = 400.0;
-
 /// Width of the ◀▶ navigation button area at the right end of the tab bar (px).
 pub(crate) const TAB_NAV_BUTTONS_AREA_WIDTH: f32 = 80.0;
 

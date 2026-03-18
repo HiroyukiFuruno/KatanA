@@ -181,30 +181,44 @@ Grouping equivalent to `describe` is done with `mod`.
 fn unsaved_buffer_does_not_write_to_disk() { ... }
 ```
 
-### 7.2 Test File Placement
+### 7.2 Test File Placement (Updated 2026-03-19)
 
-Tests are placed in the **`tests/` directory at the crate root**.
-`#[cfg(test)] mod tests { ... }` in `src/` is prohibited (the `#[cfg(test)]` attribute for test helper functions is permitted).
+Aligned with Rust community best practices, tests are separated **by kind**.
 
-```
+| Kind | Placement | Description |
+|------|-----------|-------------|
+| **Unit Test (UT)** | `#[cfg(test)] mod tests { ... }` inside `src/` | Can directly test private APIs within the same crate. Rust standard style. |
+| **Integration Test (IT)** | `tests/` directory | Only public APIs are accessible. Verifies behavior from an external-user perspective. |
+
+```text
 crates/katana-core/
-  src/              # Implementation code only
+  src/
+    document.rs           # Implementation + #[cfg(test)] mod tests { ... }  (UT)
+    workspace.rs          # Implementation + #[cfg(test)] mod tests { ... }  (UT)
   tests/
-    document.rs     # Tests for document.rs
-    workspace.rs    # Tests for workspace.rs
-    preview.rs      # Tests for preview.rs
-    ai.rs           # Tests for the AI module
-    markdown_*.rs   # Tests for each renderer
-    plugin.rs       # Tests for plugins
+    integration.rs        # Integration tests via public API (IT)
+    markdown_renderer.rs  # Renderer integration tests (IT)
 ```
+
+**UT Guidelines**
+
+- Write in `#[cfg(test)] mod tests { ... }` within the same file as the `src/` module.
+- May test private functions and internal state.
+- `#[allow(clippy::unwrap_used)]` is permitted only within the `mod tests` block.
+
+**IT Guidelines**
+
+- Place in the `tests/` directory.
+- Only use `pub` APIs of the crate (no private access).
+- Import via `use crate_name::...;` and test from the same perspective as an external user.
 
 ### 7.3 Test Pyramid
 
 | Type | Placement | Coverage Target |
-|------|------|--------------| 
-| Unit Test | `tests/` directory | **100% (No Exceptions)** |
-| Integration Test | `tests/` directory | Core flow coverage |
-| Integration Test | `tests/integration/` (Planned egui_kittest) | All MVP scenarios, Snapshot regression monitoring |
+|------|-----------|----------------|
+| Unit Test (UT) | Inline `#[cfg(test)]` inside `src/` | **100% (No Exceptions)** |
+| Integration Test (IT) | `tests/` directory | Core public API flow coverage |
+| UI Integration Test | `tests/integration/` (Planned egui_kittest) | All MVP scenarios, Snapshot regression monitoring |
 
 Coverage measurement: `cargo llvm-cov --workspace --fail-under-lines 100` (Forced in CI)
 
@@ -319,7 +333,7 @@ Prerequisites for allowing a PR to be merged:
 2. **Clippy**: Passes `cargo clippy --workspace -- -D warnings` (Zero warnings)
 3. **Tests (Logic)**: Passes all `cargo test --workspace`
 4. **Tests (Integration)**: Passes `make test-integration` (No UI Snapshot Regressions)
-5. **Test Placement**: New logic is accompanied by tests in the `tests/` directory
+5. **Test Placement**: New logic has accompanying UT in `src/` inline `#[cfg(test)]`; IT for cross-boundary scenarios in the `tests/` directory
 6. **Coverage**: Passes `cargo llvm-cov --workspace --fail-under-lines 100`
 
 Batch check: `make check` (equivalent to the pre-push hook)

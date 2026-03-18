@@ -7,7 +7,7 @@ pub mod theme;
 
 pub use filesystem::FilesystemService;
 pub use settings::{
-    AppSettings, InMemoryRepository, JsonFileRepository, SettingsRepository, SettingsService,
-    MAX_FONT_SIZE, MIN_FONT_SIZE,
+    AppSettings, InMemoryRepository, JsonFileRepository, PaneOrder, SettingsRepository,
+    SettingsService, SplitDirection, MAX_FONT_SIZE, MIN_FONT_SIZE,
 };
 pub use theme::{ThemeColors, ThemeMode, ThemePreset};
