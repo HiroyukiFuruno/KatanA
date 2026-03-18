@@ -643,13 +643,19 @@ fn snapshot_basic_ja() {
 }
 
 // ── Diagrams (External Dependencies) ──
+// These tests depend on external tools (mmdc, plantuml.jar, drawio) and produce
+// vastly different output depending on whether they are installed. CI runners
+// lack these tools, so the snapshots will never match. Run locally with:
+//   cargo test -- --ignored snapshot_diagrams
 
 #[test]
+#[ignore = "requires external diagram tools (mmdc, plantuml, drawio) not available in CI"]
 fn snapshot_diagrams_en() {
     snapshot_fixture("sample_diagrams.md", "sample_diagrams_en");
 }
 
 #[test]
+#[ignore = "requires external diagram tools (mmdc, plantuml, drawio) not available in CI"]
 fn snapshot_diagrams_ja() {
     snapshot_fixture("sample_diagrams.ja.md", "sample_diagrams_ja");
 }
