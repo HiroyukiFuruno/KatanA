@@ -169,9 +169,34 @@ fn resolve_via_login_shell() -> Option<PathBuf> {
     None
 }
 
+/// Builds a [`Command`] for the resolved `mmdc` binary with a PATH
+/// that includes the binary's own directory.
+///
+/// macOS GUI apps inherit a minimal PATH from `launchd`, which
+/// typically *does not* include nvm/volta/fnm managed Node.  Since
+/// `mmdc`'s shebang is `#!/usr/bin/env node`, we must ensure `node`
+/// is discoverable.  The node binary always lives in the same `bin/`
+/// directory as the `mmdc` symlink, so prepending that directory to
+/// PATH is both correct and lightweight.
+fn build_mmdc_command() -> Command {
+    let mmdc = resolve_mmdc_binary();
+    let mut cmd = Command::new(&mmdc);
+
+    // Enrich PATH so that `#!/usr/bin/env node` can find `node`.
+    if let Some(bin_dir) = mmdc.parent() {
+        let current_path = std::env::var("PATH").unwrap_or_default();
+        let bin_dir_str = bin_dir.to_string_lossy();
+        // Only prepend if not already present.
+        if !current_path.split(':').any(|p| p == bin_dir_str.as_ref()) {
+            cmd.env("PATH", format!("{bin_dir_str}:{current_path}"));
+        }
+    }
+    cmd
+}
+
 /// Checks if `mmdc` is available.
 pub fn is_mmdc_available() -> bool {
-    Command::new(resolve_mmdc_binary())
+    build_mmdc_command()
         .arg("--version")
         .stdout(Stdio::null())
         .stderr(Stdio::null())
@@ -211,7 +236,7 @@ pub fn run_mmdc_process(source: &str) -> Result<Vec<u8>, String> {
     let output_path = input_file.path().with_extension("png");
 
     let preset = DiagramColorPreset::current();
-    let status = Command::new(resolve_mmdc_binary())
+    let status = build_mmdc_command()
         .args([
             "-i",
             input_file.path().to_str().unwrap_or(""),

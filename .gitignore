@@ -65,6 +65,7 @@ docs/blog
 # mcp
 .serena
 openspec
+.cocoindex_code
 
 # Coverage
 target/llvm-cov/
