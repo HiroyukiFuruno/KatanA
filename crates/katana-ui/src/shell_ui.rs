@@ -593,8 +593,11 @@ impl eframe::App for KatanaApp {
             ctx.set_visuals(theme_bridge::visuals_from_theme(&theme_colors));
             katana_core::markdown::color_preset::DiagramColorPreset::set_dark_mode(dark);
             self.cached_theme = Some(theme_colors.clone());
-            // Re-render diagrams with the new theme colours
-            self.pending_action = AppAction::RefreshDiagrams;
+            // Re-render diagrams with the new theme colours.
+            // Only set if no action is already pending (e.g. OpenWorkspace from startup restore).
+            if matches!(self.pending_action, AppAction::None) {
+                self.pending_action = AppAction::RefreshDiagrams;
+            }
         }
 
         // Apply font size to egui text styles (only when the size changed)
