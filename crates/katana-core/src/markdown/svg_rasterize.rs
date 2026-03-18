@@ -34,8 +34,13 @@ pub fn rasterize_svg(svg_text: &str, scale: f32) -> Result<RasterizedSvg, SvgRas
     // `Pixmap::new` is always `Some` because `max(1)` guarantees width/height >= 1.
     let mut pixmap =
         Pixmap::new(width, height).expect("BUG: width/height >= 1 guaranteed by max(1)");
-    // Fill with white before rendering so SVG content doesn't disappear on dark backgrounds.
-    pixmap.fill(tiny_skia::Color::WHITE);
+    // Start with a transparent canvas. Each diagram renderer is responsible
+    // for setting the correct background via the DiagramColorPreset:
+    //   - PlantUML: `skinparam backgroundColor transparent`
+    //   - DrawIo:   SVG has no background rect — transparent by default
+    //   - Mermaid:  renders to PNG with `--backgroundColor transparent`
+    // The transparent base lets diagram content blend naturally with the
+    // host application's dark/light theme.
     let transform = tiny_skia::Transform::from_scale(scale, scale);
     render(&tree, transform, &mut pixmap.as_mut());
     Ok(RasterizedSvg {

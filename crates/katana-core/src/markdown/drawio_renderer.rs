@@ -366,9 +366,16 @@ fn append_label(
         Some(v) if !v.is_empty() => v.as_str(),
         _ => return,
     };
+    let style = cell
+        .attributes
+        .get("style")
+        .map(String::as_str)
+        .unwrap_or("");
+    // Priority: explicit fontColor in style > preset drawio_label_color.
+    // This ensures text is readable against arbitrary shape fill colors.
+    let text_color = extract_style_value(style, "fontColor").unwrap_or(preset.drawio_label_color);
     // Vertical centering with `dy="0.35em"` (because `dominant-baseline` is not supported by resvg).
     // If `fill` is not explicitly specified, resvg may skip the text.
-    let text_color = preset.text;
     labels.push_str(&format!(
         r#"<text x="{cx}" y="{cy}" dy="0.35em" text-anchor="middle" font-family="sans-serif" font-size="12" fill="{text_color}">{}</text>"#,
         xml_escape(label)

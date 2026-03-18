@@ -29,6 +29,12 @@ pub struct DiagramColorPreset {
     /// Color for arrows and connection lines.
     pub arrow: &'static str,
 
+    // ── DrawIo-specific ──
+    /// Default label text color for DrawIo shapes.
+    /// Used when the shape style does not include an explicit `fontColor`.
+    /// Should contrast well against common fill colors (light blue, light green, etc.).
+    pub drawio_label_color: &'static str,
+
     // ── Mermaid-specific ──
     /// Mermaid `--theme` argument value (e.g. `"dark"`, `"default"`).
     pub mermaid_theme: &'static str,
@@ -77,6 +83,7 @@ impl DiagramColorPreset {
         fill: "#2D2D2D",
         stroke: "#888888",
         arrow: "#AAAAAA",
+        drawio_label_color: "#1A1A1A",
         mermaid_theme: "dark",
         plantuml_class_bg: "#2D2D2D",
         plantuml_note_bg: "#3A3A3A",
@@ -130,6 +137,7 @@ impl DiagramColorPreset {
         fill: "#fff2cc",
         stroke: "#d6b656",
         arrow: "#555555",
+        drawio_label_color: "#333333",
         mermaid_theme: "default",
         plantuml_class_bg: "#FEFECE",
         plantuml_note_bg: "#FBFB77",
@@ -206,6 +214,29 @@ impl DiagramColorPreset {
         let g = u8::from_str_radix(&hex[G_START..G_END], HEX_RADIX).ok()?;
         let b = u8::from_str_radix(&hex[B_START..HEX_RGB_LEN], HEX_RADIX).ok()?;
         Some((r, g, b))
+    }
+
+    /// Calculates the relative luminance of a `#RRGGBB` hex color.
+    ///
+    /// Uses the sRGB luminance formula (ITU-R BT.709).
+    /// Returns a value between 0.0 (black) and 1.0 (white).
+    /// Returns `None` if the hex string cannot be parsed.
+    pub fn relative_luminance(hex: &str) -> Option<f64> {
+        /// Maximum value of a u8 channel, used for normalization to 0.0–1.0.
+        const CHANNEL_MAX: f64 = 255.0;
+        /// ITU-R BT.709 luminance coefficient for the red channel.
+        const LUMA_R: f64 = 0.2126;
+        /// ITU-R BT.709 luminance coefficient for the green channel.
+        const LUMA_G: f64 = 0.7152;
+        /// ITU-R BT.709 luminance coefficient for the blue channel.
+        const LUMA_B: f64 = 0.0722;
+
+        let (r, g, b) = Self::parse_hex_rgb(hex)?;
+        // Normalize to 0.0–1.0 range.
+        let rf = f64::from(r) / CHANNEL_MAX;
+        let gf = f64::from(g) / CHANNEL_MAX;
+        let bf = f64::from(b) / CHANNEL_MAX;
+        Some(LUMA_R * rf + LUMA_G * gf + LUMA_B * bf)
     }
 }
 
@@ -364,6 +395,58 @@ mod tests {
         assert_eq!(
             DiagramColorPreset::DARK.monospace_font_candidates,
             DiagramColorPreset::LIGHT.monospace_font_candidates,
+        );
+    }
+
+    // ── DrawIo-specific preset tests ──
+
+    #[test]
+    fn dark_drawio_label_is_dark_color() {
+        // DrawIo label text must be dark so it's readable on light fill colors
+        let lum =
+            DiagramColorPreset::relative_luminance(DiagramColorPreset::DARK.drawio_label_color);
+        assert!(
+            lum.unwrap() < 0.2,
+            "drawio_label_color should be a dark color"
+        );
+    }
+
+    #[test]
+    fn light_drawio_label_is_also_dark() {
+        let lum =
+            DiagramColorPreset::relative_luminance(DiagramColorPreset::LIGHT.drawio_label_color);
+        assert!(
+            lum.unwrap() < 0.3,
+            "drawio_label_color should be a dark color in light theme too"
+        );
+    }
+
+    // ── Luminance tests ──
+
+    #[test]
+    fn luminance_white_is_one() {
+        let lum = DiagramColorPreset::relative_luminance("#FFFFFF").unwrap();
+        assert!((lum - 1.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn luminance_black_is_zero() {
+        let lum = DiagramColorPreset::relative_luminance("#000000").unwrap();
+        assert!(lum.abs() < 0.01);
+    }
+
+    #[test]
+    fn luminance_invalid_returns_none() {
+        assert!(DiagramColorPreset::relative_luminance("not-a-color").is_none());
+    }
+
+    #[test]
+    fn luminance_light_blue_is_high() {
+        // #dae8fc (typical DrawIo light blue fill) should be bright
+        let lum = DiagramColorPreset::relative_luminance("#dae8fc").unwrap();
+        assert!(
+            lum > 0.7,
+            "Light blue fill should have high luminance, got {lum}"
         );
     }
 }
