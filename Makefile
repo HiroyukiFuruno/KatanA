@@ -150,7 +150,7 @@ test-update-snapshots: ## Update UI snapshot images (UPDATE_SNAPSHOTS=true)
 
 # ---------- CI / Quality Gates ----------
 
-COVERAGE_IGNORE := plantuml_renderer\.rs|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell_ui\.rs|preview_pane_ui\.rs|html_renderer\.rs|settings_window\.rs
+COVERAGE_IGNORE := plantuml_renderer\.rs|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell_ui\.rs|preview_pane_ui\.rs|html_renderer\.rs|settings_window\.rs|os_theme\.rs
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
@@ -162,6 +162,10 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 	#   - preview_pane_ui.rs: egui UI rendering of preview sections
 	#   - html_renderer.rs: egui widget generation from HtmlNode tree
 	#   Business logic is fully tested in shell.rs / shell_logic.rs / preview_pane.rs.
+	#
+	# [macOS NSApp context — unavailable in test binary (no NSApplication run loop)]
+	#   - os_theme.rs: detect_dark_mode_impl calls NSApp.effectiveAppearance, which
+	#     requires NSApplicationMain to have been called. Test binaries have no run loop.
 	#
 	# [OnceLock process-wide cache — fallback tiers unreachable after first resolution]
 	#   - mermaid_renderer.rs: 6-tier mmdc resolution cached via OnceLock; later tiers

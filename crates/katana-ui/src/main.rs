@@ -62,7 +62,11 @@ fn main() -> eframe::Result<()> {
 
     // Initialize settings with JSON file persistence.
     let repo = JsonFileRepository::with_default_path();
-    let settings = SettingsService::new(Box::new(repo));
+    let mut settings = SettingsService::new(Box::new(repo));
+
+    // On first launch (no settings.json), automatically select the OS-matching theme.
+    // Existing users keep their saved preset unchanged.
+    settings.apply_os_default_theme();
 
     // Read saved values before moving settings into AppState.
     let saved_language = settings.settings().language.clone();

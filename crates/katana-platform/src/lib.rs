@@ -2,6 +2,7 @@
 
 pub mod filesystem;
 pub mod os_fonts;
+pub mod os_theme;
 pub mod settings;
 pub mod theme;
 
