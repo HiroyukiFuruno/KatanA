@@ -66,29 +66,28 @@ KatanAの目標は、**シンプルで高速、ワークスペース指向のMar
 
 > 現在は **macOSのみ** 対応。Apple SiliconとIntelの両方をサポートしています。
 
-### ダウンロード
+### Homebrew（推奨）
+
+```sh
+brew tap HiroyukiFuruno/katana
+brew install --cask katana-desktop
+```
+
+追加の手順は不要で、すぐに使い始められます。
+
+### 手動ダウンロード
 
 1. [Releasesページ](https://github.com/HiroyukiFuruno/katana/releases/latest) にアクセス
 2. 最新の `KatanA-Desktop-x.y.z.dmg` をダウンロード
 3. DMGを開き、**KatanA Desktop.app** を **アプリケーション** フォルダにドラッグ
-
-### 初回起動時の注意
-
-KatanA Desktop はアドホック署名済みですが、Appleの公証を受けていないため、初回起動時に **「未確認の開発元」** の警告が表示されます。
-
-**オプションA: 右クリックで開く（macOSの設定に依存します）**
-
-1. アプリケーションフォルダ内の **KatanA Desktop.app** を右クリック（またはControl+クリック）
-2. コンテキストメニューから **「開く」** を選択
-3. 確認ダイアログで **「開く」** をクリック
-
-**オプションB: コマンドライン（推奨 / 確実な方法）**
+4. 以下のコマンドを1回実行して、アプリの起動を許可してください：
 
 ```sh
 xattr -cr /Applications/KatanA\ Desktop.app
 ```
 
-初回の起動に成功すれば、以降はmacOSが選択を記憶し、通常通り起動できます。
+> **注意:** macOS Sequoia（15.x）では、Appleの公証を受けていないアプリの起動にこのコマンドが必要です。
+> または、初回起動を試みた後に **システム設定 → プライバシーとセキュリティ → 「このまま開く」** からも許可できます。
 
 ---
 

@@ -66,29 +66,28 @@ The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdo
 
 > **macOS only** at this time. Apple Silicon and Intel are both supported.
 
-### Download
+### Homebrew (Recommended)
+
+```sh
+brew tap HiroyukiFuruno/katana
+brew install --cask katana-desktop
+```
+
+No additional steps required — the app is ready to use immediately.
+
+### Manual Download
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/katana/releases/latest)
 2. Download the latest `KatanA-Desktop-x.y.z.dmg`
 3. Open the DMG and drag **KatanA Desktop.app** into your **Applications** folder
-
-### First Launch (Important)
-
-KatanA Desktop is ad-hoc signed but not notarized with Apple, so macOS will show an **"unidentified developer"** warning on first launch.
-
-**Option A: Right-click to open (depends on macOS settings)**
-
-1. Right-click (or Control-click) on **KatanA Desktop.app** in your Applications folder
-2. Select **"Open"** from the context menu
-3. Click **"Open"** in the confirmation dialog
-
-**Option B: Command line (Recommended / Guaranteed to work)**
+4. Run the following command once to allow the app to launch:
 
 ```sh
 xattr -cr /Applications/KatanA\ Desktop.app
 ```
 
-After the first successful launch, macOS will remember your choice and the app will open normally.
+> **Note:** On macOS Sequoia (15.x), Gatekeeper requires this command for apps not notarized with Apple.
+> Alternatively, go to **System Settings → Privacy & Security → "Open Anyway"** after the first launch attempt.
 
 ---
 
