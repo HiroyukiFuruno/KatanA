@@ -13,4 +13,4 @@ pre-push:
   commands:
     ci:
       glob: "*.{rs,toml,lock}"
-      run: make ci
+      run: make check
