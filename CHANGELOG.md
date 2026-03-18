@@ -2,6 +2,30 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.0.3] - 2026-03-18
+
+Bug fixes for diagram rendering readability and .app bundle compatibility, plus testing improvements.
+
+### 🐛 Bug Fixes
+
+- Fixed DrawIo diagram text being unreadable in dark theme due to insufficient contrast — introduced `drawio_label_color` in presets with proper fallback
+- Fixed `mmdc` (Mermaid CLI) not being found when launched from .dmg/.app bundle on systems with nvm lazy-loading or non-standard PATH configurations
+- Fixed CI snapshot test failures caused by environment-dependent rendering differences
+- Fixed i18n test flakiness caused by global state contention between parallel tests
+
+### ✨ Improvements
+
+- Expanded `mmdc` binary resolution to a 6-tier fallback chain: `MERMAID_MMDC` env var → Homebrew (`/opt/homebrew/bin`, `/usr/local/bin`) → nvm/volta/fnm direct filesystem probe → `which` → `/bin/zsh -l -c` login shell → bare `mmdc`, with `OnceLock` process-wide caching for sub-millisecond subsequent lookups
+- Refined coverage exclusion rationale — replaced vague "planned for DI" comments with precise technical reasons (egui frame context dependency, OnceLock cache behavior)
+- Extracted magic numbers into named constants (`CHANNEL_MAX`, `LUMA_R/G/B`, `RENDER_POLL_INTERVAL_MS`) for improved readability
+
+### 🧪 Testing
+
+- Added diagram rendering snapshot tests covering all diagram types (Mermaid, PlantUML, DrawIo) and fallback states (CommandNotFound, RenderError, Pending)
+- Added sample fixture integration tests for EN/JA Markdown documents with HTML, badges, and diagrams
+- Added AST linter test for `#[cfg(test)]` impl method skip logic
+- Added `drawio_label_color` and `relative_luminance` unit tests in color_preset module
+
 ## [0.0.2] - 2026-03-17
 
 Second release focusing on HTML rendering fidelity, test coverage, and documentation.

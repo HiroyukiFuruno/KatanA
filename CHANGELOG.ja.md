@@ -2,6 +2,30 @@
 
 KatanA Desktop の主な変更点をこのファイルに記録します。
 
+## [0.0.3] - 2026-03-18
+
+ダイアグラム描画の視認性修正と .app バンドル互換性の改善、テスト拡充に焦点を当てたリリース。
+
+### 🐛 バグ修正
+
+- ダークテーマでDrawIo図のテキストがコントラスト不足で読めない問題を修正 — プリセットに `drawio_label_color` を導入し適切なフォールバックを実装
+- nvm 遅延ロードや非標準PATH環境で .dmg/.app バンドルから起動した際に `mmdc`（Mermaid CLI）が見つからない問題を修正
+- 環境依存のレンダリング差異によるCIスナップショットテストの失敗を修正
+- 並列テスト実行時のグローバルステート競合による i18n テストの不安定性を修正
+
+### ✨ 改善
+
+- `mmdc` バイナリ解決を6層フォールバックチェーンに拡張: `MERMAID_MMDC` 環境変数 → Homebrew (`/opt/homebrew/bin`, `/usr/local/bin`) → nvm/volta/fnm ファイルシステム直接探索 → `which` → `/bin/zsh -l -c` ログインシェル → ベア `mmdc`（`OnceLock` によるプロセスキャッシュでサブミリ秒の後続ルックアップ）
+- カバレッジ除外理由を正確化 — 曖昧な「DI 計画中」コメントを具体的な技術的根拠（egui フレームコンテキスト依存、OnceLock キャッシュ動作）に置換
+- マジックナンバーを名前付き定数に抽出（`CHANNEL_MAX`, `LUMA_R/G/B`, `RENDER_POLL_INTERVAL_MS`）し可読性を向上
+
+### 🧪 テスト
+
+- 全ダイアグラム種別（Mermaid, PlantUML, DrawIo）とフォールバック状態（CommandNotFound, RenderError, Pending）をカバーするスナップショットテストを追加
+- EN/JA Markdownドキュメント（HTML、バッジ、ダイアグラム含む）のサンプルフィクスチャ統合テストを追加
+- AST リンターの `#[cfg(test)]` impl メソッドスキップロジックのテストを追加
+- color_preset モジュールに `drawio_label_color` と `relative_luminance` のユニットテストを追加
+
 ## [0.0.2] - 2026-03-17
 
 HTMLレンダリングの忠実性向上、テストカバレッジ維持、ドキュメント拡充に焦点を当てた第2リリース。
