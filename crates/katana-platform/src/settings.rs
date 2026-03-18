@@ -95,6 +95,23 @@ fn default_language() -> String {
     "en".to_string()
 }
 
+/// Selects the initial theme preset based on the OS dark/light mode setting.
+///
+/// Called only on first launch. Returns `KatanaDark` when the OS is in dark mode
+/// (or when detection is unavailable), and `KatanaLight` otherwise.
+fn select_initial_preset() -> ThemePreset {
+    select_preset_for_mode(crate::os_theme::is_dark_mode())
+}
+
+/// Pure helper: selects the preset for a given dark-mode query result.
+/// Factored out to allow unit testing of both branches without OS dependency.
+fn select_preset_for_mode(is_dark: Option<bool>) -> ThemePreset {
+    match is_dark {
+        Some(false) => ThemePreset::KatanaLight,
+        _ => ThemePreset::KatanaDark, // dark mode or unknown -> dark by default
+    }
+}
+
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
@@ -141,12 +158,24 @@ impl AppSettings {
 
 // ── Repository trait ──
 
-/// Abstraction for loading/saving settings (enables test doubles).
+/// Marker identifying whether settings were loaded from a persisted file.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SettingsLoadOrigin {
+    /// No settings file existed; defaults were used.
+    FirstLaunch,
+    /// Settings file was read (even if partially corrupt).
+    Persisted,
+}
+
+/// Minimal interface for loading and saving settings.
 pub trait SettingsRepository: Send {
-    /// Load settings from the backing store. Returns defaults on any error.
     fn load(&self) -> AppSettings;
-    /// Persist settings to the backing store.
     fn save(&self, settings: &AppSettings) -> anyhow::Result<()>;
+    /// Returns the load origin for detecting first launch.
+    fn load_origin(&self) -> SettingsLoadOrigin {
+        // Default: assume persisted to avoid false positives in tests.
+        SettingsLoadOrigin::Persisted
+    }
 }
 
 // ── JSON file repository ──
@@ -190,6 +219,15 @@ impl SettingsRepository for JsonFileRepository {
         tracing::info!("Settings saved to {}", self.path.display());
         Ok(())
     }
+
+    fn load_origin(&self) -> SettingsLoadOrigin {
+        // If the settings file does not exist, this is a first launch.
+        if self.path.exists() {
+            SettingsLoadOrigin::Persisted
+        } else {
+            SettingsLoadOrigin::FirstLaunch
+        }
+    }
 }
 
 // ── In-memory repository (for tests) ──
@@ -213,15 +251,19 @@ impl SettingsRepository for InMemoryRepository {
 pub struct SettingsService {
     settings: AppSettings,
     repository: Box<dyn SettingsRepository>,
+    /// `true` when the settings were first loaded without an existing settings file.
+    is_first_launch: bool,
 }
 
 impl SettingsService {
     /// Create a new service backed by the given repository, loading initial settings.
     pub fn new(repository: Box<dyn SettingsRepository>) -> Self {
+        let is_first_launch = repository.load_origin() == SettingsLoadOrigin::FirstLaunch;
         let settings = repository.load();
         Self {
             settings,
             repository,
+            is_first_launch,
         }
     }
 
@@ -236,6 +278,19 @@ impl SettingsService {
     /// Persist current settings via the repository.
     pub fn save(&self) -> anyhow::Result<()> {
         self.repository.save(&self.settings)
+    }
+
+    /// Applies the OS-default theme preset on first launch only.
+    ///
+    /// If this is not a first launch (settings file already existed), this is a no-op
+    /// to respect the user's saved theme preference.
+    pub fn apply_os_default_theme(&mut self) {
+        if !self.is_first_launch {
+            return; // Existing users keep their saved preset unchanged.
+        }
+        let preset = select_initial_preset();
+        self.settings.selected_preset = preset.clone();
+        self.settings.theme = preset.colors().mode.to_theme_string();
     }
 }
 
@@ -518,5 +573,94 @@ mod tests {
         let loaded: AppSettings = serde_json::from_str(&json).unwrap();
         assert_eq!(loaded.split_direction, SplitDirection::Vertical);
         assert_eq!(loaded.pane_order, PaneOrder::PreviewFirst);
+    }
+
+    // ── Task 5.3: OS theme auto-selection tests ──
+
+    /// Helper: a test repository that reports `FirstLaunch` and holds a preset.
+    struct FirstLaunchRepo {
+        preset: ThemePreset,
+    }
+
+    impl SettingsRepository for FirstLaunchRepo {
+        fn load(&self) -> AppSettings {
+            let mut s = AppSettings::default();
+            s.selected_preset = self.preset.clone();
+            s
+        }
+
+        fn save(&self, _settings: &AppSettings) -> anyhow::Result<()> {
+            Ok(())
+        }
+
+        fn load_origin(&self) -> SettingsLoadOrigin {
+            SettingsLoadOrigin::FirstLaunch
+        }
+    }
+
+    #[test]
+    fn test_apply_os_default_theme_is_noop_for_existing_users() {
+        // InMemoryRepository defaults to Persisted, so apply_os_default_theme
+        // must not change the saved preset (user's choice is respected).
+        let mut service = SettingsService::new(Box::new(InMemoryRepository));
+        // Manually set a non-default preset to verify it is NOT overwritten.
+        service.settings_mut().selected_preset = ThemePreset::Dracula;
+        service.apply_os_default_theme();
+        assert_eq!(
+            service.settings().selected_preset,
+            ThemePreset::Dracula,
+            "existing user's preset must not be overwritten"
+        );
+    }
+
+    #[test]
+    fn test_apply_os_default_theme_on_first_launch_picks_katana_preset() {
+        // On first launch, apply_os_default_theme selects KatanaDark or KatanaLight
+        // depending on the OS theme (KatanaDark when unknown / non-macOS).
+        let repo = FirstLaunchRepo {
+            preset: ThemePreset::KatanaDark, // initial value before apply
+        };
+        let mut service = SettingsService::new(Box::new(repo));
+        service.apply_os_default_theme();
+        let preset = &service.settings().selected_preset;
+        // Must be one of the two Katana presets — never a third-party preset.
+        assert!(
+            *preset == ThemePreset::KatanaDark || *preset == ThemePreset::KatanaLight,
+            "first launch must yield KatanaDark or KatanaLight, got {preset:?}"
+        );
+    }
+
+    #[test]
+    fn test_select_preset_for_mode_dark() {
+        // Explicit dark-mode input must yield KatanaDark.
+        assert_eq!(select_preset_for_mode(Some(true)), ThemePreset::KatanaDark);
+    }
+
+    #[test]
+    fn test_select_preset_for_mode_light() {
+        // Explicit light-mode input must yield KatanaLight.
+        assert_eq!(
+            select_preset_for_mode(Some(false)),
+            ThemePreset::KatanaLight
+        );
+    }
+
+    #[test]
+    fn test_select_preset_for_mode_unknown() {
+        // Unknown (None) falls back to KatanaDark.
+        assert_eq!(select_preset_for_mode(None), ThemePreset::KatanaDark);
+    }
+
+    #[test]
+    fn test_first_launch_repo_save_is_noop() {
+        // Covers the save() implementation of the test helper.
+        let repo = FirstLaunchRepo {
+            preset: ThemePreset::KatanaDark,
+        };
+        let settings = AppSettings::default();
+        assert!(
+            repo.save(&settings).is_ok(),
+            "FirstLaunchRepo::save() must succeed"
+        );
     }
 }

@@ -2182,6 +2182,7 @@ name = "katana-platform"
 version = "0.0.3"
 dependencies = [
  "anyhow",
+ "cc",
  "dirs",
  "katana-core",
  "rayon",

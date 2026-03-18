@@ -73,6 +73,16 @@ pub struct ThemeColors {
     pub preview_background: Rgb,
 }
 
+impl ThemeMode {
+    /// Returns the legacy theme string used for backward-compatible JSON persistence.
+    pub fn to_theme_string(self) -> String {
+        match self {
+            ThemeMode::Dark => "dark".to_string(),
+            ThemeMode::Light => "light".to_string(),
+        }
+    }
+}
+
 impl ThemeColors {
     /// Returns the syntect theme name fitting this palette's mode.
     pub fn syntax_theme_name(&self) -> &str {
@@ -981,5 +991,15 @@ mod tests {
         let json = serde_json::to_string(&colors).expect("serialize colors");
         let loaded: ThemeColors = serde_json::from_str(&json).expect("deserialize colors");
         assert_eq!(loaded, colors);
+    }
+
+    #[test]
+    fn theme_mode_to_theme_string_dark() {
+        assert_eq!(ThemeMode::Dark.to_theme_string(), "dark");
+    }
+
+    #[test]
+    fn theme_mode_to_theme_string_light() {
+        assert_eq!(ThemeMode::Light.to_theme_string(), "light");
     }
 }
