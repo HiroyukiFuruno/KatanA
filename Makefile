@@ -216,7 +216,8 @@ check: fmt-check lint test-integration coverage ## Full verification (fmt + clip
 	@echo "✅ All checks passed"
 
 .PHONY: check-light
-check-light: fmt-check lint test ## Quick verification (fmt + clippy + unit tests, no coverage/IT)
+check-light: fmt-check lint ## Quick verification (skip slow fixture tests)
+	cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 .PHONY: pre-push
