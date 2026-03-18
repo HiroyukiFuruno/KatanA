@@ -385,31 +385,59 @@ fn render_font_size_slider(ui: &mut egui::Ui, settings: &mut SettingsService) {
 }
 
 fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut SettingsService) {
-    let mut current = settings.settings().font_family.clone();
+    let current = settings.settings().font_family.clone();
     let os_fonts = katana_platform::os_fonts::OsFontScanner::cached_fonts();
 
+    // ── Search field ──────────────────────────────────────────────────
+    // Keep the search query in egui transient state, keyed per widget ID.
+    let search_id = egui::Id::new("font_search_query");
+    let mut query: String = ui
+        .data(|d| d.get_temp::<String>(search_id))
+        .unwrap_or_default();
+
+    ui.horizontal(|ui| {
+        let response = ui.text_edit_singleline(&mut query);
+        if response.changed() {
+            ui.data_mut(|d| d.insert_temp(search_id, query.clone()));
+        }
+        if ui.small_button("✕").clicked() {
+            query.clear();
+            ui.data_mut(|d| d.insert_temp(search_id, query.clone()));
+        }
+    });
+
+    let query_lower = query.to_lowercase();
+
+    // ── ComboBox with filtered list ───────────────────────────────────
+    let mut current_mut = current.clone();
     egui::ComboBox::from_id_salt("font_family_selector")
-        .selected_text(&current)
-        .width(FONT_FAMILY_COMBOBOX_WIDTH) // Provide enough width for long font names
+        .selected_text(&current_mut)
+        .width(FONT_FAMILY_COMBOBOX_WIDTH)
         .show_ui(ui, |ui| {
             let defaults = ["Proportional", "Monospace"];
             for family in defaults {
-                if ui
-                    .selectable_value(&mut current, family.to_string(), family)
-                    .changed()
+                if (query_lower.is_empty() || family.to_lowercase().contains(&query_lower))
+                    && ui
+                        .selectable_value(&mut current_mut, family.to_string(), family)
+                        .changed()
                 {
                     settings.settings_mut().font_family = family.to_string();
                     let _ = settings.save();
+                    // Clear search on selection.
+                    ui.data_mut(|d| d.insert_temp(search_id, String::new()));
                 }
             }
             ui.separator();
             for (name, _) in os_fonts {
-                if ui
-                    .selectable_value(&mut current, name.to_string(), name)
-                    .changed()
+                if (query_lower.is_empty() || name.to_lowercase().contains(&query_lower))
+                    && ui
+                        .selectable_value(&mut current_mut, name.to_string(), name)
+                        .changed()
                 {
                     settings.settings_mut().font_family = name.to_string();
                     let _ = settings.save();
+                    // Clear search on selection.
+                    ui.data_mut(|d| d.insert_temp(search_id, String::new()));
                 }
             }
         });
