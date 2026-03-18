@@ -67,7 +67,7 @@ The script installs:
 ```sh
 make run          # Build and launch KatanA
 make test         # Run the full test suite
-make ci           # Full CI check: fmt + clippy + tests
+make check-light  # Full CI check: fmt + clippy + tests
 make watch-run    # Launch with auto-reload on file changes
 make doc-open     # Build and open API docs in your browser
 ```
@@ -113,7 +113,7 @@ KatanA is in early, active development. All contributions are welcome.
 ### Pull Request Guidelines
 
 1. Fork the repository and create a branch from `master`
-2. Ensure `make ci` passes completely before opening a PR
+2. Ensure `make check` passes completely before opening a PR
 3. Write tests for new behaviour (coverage gate: 100% lines)
 4. Keep commits focused and atomic; write clear, descriptive messages
 5. Open a draft PR early if you want feedback on an approach
