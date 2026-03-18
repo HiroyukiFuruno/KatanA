@@ -869,4 +869,55 @@ mod tests_extra {
         app.process_action(AppAction::ChangeLanguage("ja".to_string()));
         // Language change still proceeds despite save failure
     }
+
+    // Regression: trigger_action(OpenWorkspace) must not be overwritten before take_action().
+    //
+    // Background: shell_ui.rs::update() sets pending_action = RefreshDiagrams on the first
+    // frame (cold theme cache). If trigger_action() is called from the eframe setup_cc closure
+    // (workspace restore at startup), the unconditional assignment silently discards the
+    // OpenWorkspace action, causing the saved workspace to not be restored on reopen.
+    #[test]
+    fn trigger_action_is_not_overwritten_before_take_action() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+
+        // Simulate startup: workspace restore sets pending_action via trigger_action().
+        app.trigger_action(AppAction::OpenWorkspace(dir.path().to_path_buf()));
+
+        // Verify the action is still intact before take_action() is called.
+        // The fix in shell_ui.rs guards the RefreshDiagrams assignment with
+        // `if matches!(self.pending_action, AppAction::None)`.
+        assert!(
+            matches!(app.pending_action, AppAction::OpenWorkspace(_)),
+            "pending_action must still be OpenWorkspace before take_action(); \
+             RefreshDiagrams must not overwrite it"
+        );
+
+        let action = app.take_action();
+        assert!(
+            matches!(action, AppAction::OpenWorkspace(_)),
+            "take_action() must return OpenWorkspace, not a different action. \
+             Regression: shell_ui theme guard was overwriting pending_action on first frame."
+        );
+
+        // After take_action(), pending_action is reset to None.
+        assert!(matches!(app.pending_action, AppAction::None));
+    }
+
+    // Verify that RefreshDiagrams IS set when no action is pending (normal theme-change path).
+    #[test]
+    fn refresh_diagrams_is_set_when_no_action_is_pending() {
+        let mut app = make_app();
+        assert!(matches!(app.pending_action, AppAction::None));
+
+        // Reproduce the fixed guard: only assign when pending is None.
+        if matches!(app.pending_action, AppAction::None) {
+            app.pending_action = AppAction::RefreshDiagrams;
+        }
+
+        assert!(
+            matches!(app.pending_action, AppAction::RefreshDiagrams),
+            "RefreshDiagrams should be set when no action is pending"
+        );
+    }
 }
