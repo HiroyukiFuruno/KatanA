@@ -184,12 +184,18 @@ pub(crate) fn render_sections(
 /// `egui_commonmark::CommonMarkViewer`. `pulldown-cmark` identifies HTML blocks
 /// per CommonMark spec and passes them to this handler. This means we no longer
 /// need custom regex-based HTML block extraction in `split_into_sections`.
+/// Vertical spacing (in points) added before and after each HTML block.
+const HTML_BLOCK_VERTICAL_SPACING: f32 = 4.0;
+
 fn render_html_block(
     ui: &mut egui::Ui,
     html: &str,
     text_color: Option<egui::Color32>,
     md_file_path: &std::path::Path,
 ) {
+    // Add breathing room above the HTML block
+    ui.add_space(HTML_BLOCK_VERTICAL_SPACING);
+
     // Resolve relative image paths in the HTML to absolute file:// URIs
     let resolved_html = katana_core::preview::resolve_html_image_paths(html, md_file_path);
     let base_dir = md_file_path.parent().unwrap_or(std::path::Path::new("."));
@@ -209,4 +215,7 @@ fn render_html_block(
             }
         }
     }
+
+    // Add breathing room below the HTML block
+    ui.add_space(HTML_BLOCK_VERTICAL_SPACING);
 }

@@ -324,7 +324,7 @@ fn do_not_wrap_if_surrounded_by_text() {
 #[test]
 fn wrap_standalone_with_leading_whitespace() {
     let src = "  <a href=\"foo\">link</a>  ";
-    let expected = format!("<div>\n<a href=\"foo\">link</a>\n</div>");
+    let expected = "<div>\n<a href=\"foo\">link</a>\n</div>".to_string();
     assert_eq!(wrap_standalone_inline_html(src), expected);
 }
 
