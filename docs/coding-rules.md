@@ -322,7 +322,7 @@ Prerequisites for allowing a PR to be merged:
 5. **Test Placement**: New logic is accompanied by tests in the `tests/` directory
 6. **Coverage**: Passes `cargo llvm-cov --workspace --fail-under-lines 100`
 
-Batch check: `make ci` (equivalent to the pre-push hook)
+Batch check: `make check` (equivalent to the pre-push hook)
 
 ---
 

@@ -42,7 +42,7 @@ with:
 
 Verify compliance with the rules defined in `docs/coding-rules.ja.md`.
 
-### Automated (enforced by `make ci`)
+### Automated (enforced by `make check`)
 - `cargo fmt --check` — formatting
 - `cargo clippy` — lint (`#![deny(warnings)]` enforced)
 - `cargo test -p katana-linter` — AST Linter (magic numbers, function size, etc.)
@@ -91,7 +91,7 @@ Ensure tests are not distorted just to make them pass.
 Confirm the change does not break existing functionality.
 
 ### Checklist
-- [ ] `make ci` passes all gates (fmt / lint / test / coverage)
+- [ ] `make check` passes all gates (fmt / lint / test / coverage)
 - [ ] All call sites are updated for changed public APIs (`pub fn`, `pub struct` fields)
 - [ ] Serde compatibility: existing JSON settings files can deserialize into the new structs (proper use of `#[serde(default)]`)
 - [ ] Type signature changes are propagated across all dependent crates
@@ -130,7 +130,7 @@ Verify the correct language is used in Git-managed files.
 
 ```bash
 # 1. Automated checks
-make ci
+make check
 
 # 2. Manual review (walk through the checklists above)
 
@@ -138,7 +138,7 @@ make ci
 git diff --stat HEAD
 git diff HEAD              # review all diffs
 
-# 4. Fix issues → re-run make ci → re-review
+# 4. Fix issues → re-run make check → re-review
 
 # 5. Once all checks pass, proceed to commit
 ```
