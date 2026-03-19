@@ -16,6 +16,22 @@ fn make_meta(id: &str, api_version: u32, points: Vec<ExtensionPoint>) -> PluginM
 }
 
 #[test]
+fn register_overwrites_existing_plugin() {
+    init_tracing();
+    let mut registry = PluginRegistry::new();
+    registry.register(
+        make_meta("p1", PLUGIN_API_VERSION, vec![ExtensionPoint::AiTool]),
+        || Ok(()),
+    );
+    // Re-register to cover the overwrite path
+    registry.register(
+        make_meta("p1", PLUGIN_API_VERSION, vec![ExtensionPoint::AiTool]),
+        || Ok(()),
+    );
+    assert_eq!(registry.status("p1"), Some(&PluginStatus::Active));
+}
+
+#[test]
 fn compatible_plugin_becomes_active() {
     init_tracing();
     let mut registry = PluginRegistry::new();

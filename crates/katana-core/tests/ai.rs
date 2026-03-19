@@ -38,6 +38,15 @@ impl AiProvider for EchoProvider {
 }
 
 #[test]
+fn register_overwrites_existing_provider() {
+    let mut registry = AiProviderRegistry::new();
+    registry.register(Box::new(EchoProvider));
+    // Re-register to cover the overwrite path
+    registry.register(Box::new(EchoProvider));
+    assert!(registry.set_active("echo"));
+}
+
+#[test]
 fn registry_returns_not_configured_when_empty() {
     let registry = AiProviderRegistry::new();
     let req = AiRequest::new("hello");

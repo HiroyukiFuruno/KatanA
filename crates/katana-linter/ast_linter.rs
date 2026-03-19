@@ -1389,4 +1389,34 @@ mod internal_tests {
         let violations = lint_lazy_code(&PathBuf::from("fake.rs"), &syntax);
         assert!(violations.is_empty());
     }
+
+    // ── lint_prohibited_types: ProhibitedTypesVisitor coverage ──
+
+    #[test]
+    fn lint_prohibited_types_detects_hashmap() {
+        let code = r#"fn foo() { let map: std::collections::HashMap<i32, i32> = std::collections::HashMap::new(); }"#;
+        let syntax = syn::parse_file(code).unwrap();
+        let violations = lint_prohibited_types(&PathBuf::from("fake.rs"), &syntax);
+        assert!(violations.iter().any(|v| v.message.contains("HashMap")));
+    }
+
+    #[test]
+    fn lint_prohibited_types_detects_type_array() {
+        let code = r#"fn foo() { let arr: [i32; 4] = [1, 2, 3, 4]; }"#;
+        let syntax = syn::parse_file(code).unwrap();
+        let violations = lint_prohibited_types(&PathBuf::from("fake.rs"), &syntax);
+        assert!(violations
+            .iter()
+            .any(|v| v.message.contains("Fixed-length array")));
+    }
+
+    #[test]
+    fn lint_prohibited_types_detects_expr_array() {
+        let code = r#"fn foo() { let arr = [1, 2, 3]; }"#;
+        let syntax = syn::parse_file(code).unwrap();
+        let violations = lint_prohibited_types(&PathBuf::from("fake.rs"), &syntax);
+        assert!(violations
+            .iter()
+            .any(|v| v.message.contains("Array literal")));
+    }
 }
