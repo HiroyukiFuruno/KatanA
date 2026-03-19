@@ -33,7 +33,7 @@
   "ai_unconfigured": "[AI: 未設定]",
   "curl_launch_failed": "curl 起動失敗",
   "download_failed": "ダウンロードに失敗しました",
-  "collapse_sidebar": "サイドバーを隐す",
+  "collapse_sidebar": "サイドバーを隠す",
   "refresh_workspace": "ワークスペースを更新",
   "render_error": "⚠ [{kind}] {message}",
   "tool_not_installed": "⚠ {tool} がインストールされていません",
@@ -71,5 +71,8 @@
   "settings_preview_normal_text": "通常テキストと",
   "settings_preview_accent_link": "アクセントリンク",
   "settings_preview_secondary_text": "セカンダリテキストのサンプル",
-  "settings_preview_code_sample": "fn main() { println!(\"こんにちは!\"); }"
+  "settings_preview_code_sample": "fn main() { println!(\"こんにちは!\"); }",
+  "tab_nav_prev": "前のタブへ移動",
+  "tab_nav_next": "次のタブへ移動",
+  "settings_font_size_slider_hint": "左右にドラッグしてサイズを増減"
 }
