@@ -630,65 +630,86 @@ impl CommonMarkViewerInternal {
         if self.is_table {
             self.line.try_insert_start(ui);
 
-            let id = ui.id().with("_table").with(self.curr_table);
+            let _id = ui.id().with("_table").with(self.curr_table);
             self.curr_table += 1;
 
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 let Table { header, rows } = parse_table(events);
-
-                // Force table to fill available preview width (CSS: width: 100%).
-                // Without this, egui::Grid shrinks to fit cell content.
-                let frame_padding = ui.spacing().indent;
-                let table_width = (max_width - frame_padding).max(0.0);
-                ui.set_min_width(table_width);
-
-                // Distribute width equally across columns (CSS: table-layout with auto columns).
                 let num_cols = header.len().max(1);
-                let col_spacing = ui.spacing().item_spacing.x;
-                let min_col = ((table_width - col_spacing * (num_cols as f32 - 1.0))
-                    / num_cols as f32)
-                    .max(0.0);
 
-                egui::Grid::new(id)
-                    .striped(true)
-                    .min_col_width(min_col)
-                    .show(ui, |ui| {
-                    for col in header {
-                        ui.horizontal(|ui| {
-                            for (e, src_span) in col {
-                                let tmp_start =
-                                    std::mem::replace(&mut self.line.should_start_newline, false);
-                                let tmp_end =
-                                    std::mem::replace(&mut self.line.should_end_newline, false);
-                                self.event(ui, e, src_span, cache, options, max_width);
+                // ── Header row ──
+                ui.columns(num_cols, |cols| {
+                    for (i, col_events) in header.into_iter().enumerate() {
+                        if let Some(col_ui) = cols.get_mut(i) {
+                            for (e, src_span) in col_events {
+                                let tmp_start = std::mem::replace(
+                                    &mut self.line.should_start_newline,
+                                    false,
+                                );
+                                let tmp_end = std::mem::replace(
+                                    &mut self.line.should_end_newline,
+                                    false,
+                                );
+                                self.event(col_ui, e, src_span, cache, options, max_width);
                                 self.line.should_start_newline = tmp_start;
                                 self.line.should_end_newline = tmp_end;
                             }
-                        });
+                            self.flush_pending_inline(col_ui, max_width);
+                        }
+                    }
+                });
+
+                // Separator line below header
+                let sep_rect = ui.available_rect_before_wrap();
+                let y = sep_rect.top();
+                ui.painter().line_segment(
+                    [
+                        egui::pos2(sep_rect.left(), y),
+                        egui::pos2(sep_rect.right(), y),
+                    ],
+                    ui.visuals().widgets.noninteractive.bg_stroke,
+                );
+                ui.add_space(2.0);
+
+                // ── Data rows ──
+                for (row_idx, row) in rows.into_iter().enumerate() {
+                    // Striped background for even rows
+                    if row_idx % 2 == 0 {
+                        let row_rect = ui.available_rect_before_wrap();
+                        let row_h =
+                            ui.text_style_height(&TextStyle::Body) + ui.spacing().item_spacing.y;
+                        let stripe_rect = egui::Rect::from_min_size(
+                            row_rect.min,
+                            egui::vec2(row_rect.width(), row_h),
+                        );
+                        ui.painter().rect_filled(
+                            stripe_rect,
+                            0.0,
+                            ui.visuals().faint_bg_color,
+                        );
                     }
 
-                    ui.end_row();
-
-                    for row in rows {
-                        for col in row {
-                            ui.horizontal(|ui| {
-                                for (e, src_span) in col {
+                    ui.columns(num_cols, |cols| {
+                        for (i, col_events) in row.into_iter().enumerate() {
+                            if let Some(col_ui) = cols.get_mut(i) {
+                                for (e, src_span) in col_events {
                                     let tmp_start = std::mem::replace(
                                         &mut self.line.should_start_newline,
                                         false,
                                     );
-                                    let tmp_end =
-                                        std::mem::replace(&mut self.line.should_end_newline, false);
-                                    self.event(ui, e, src_span, cache, options, max_width);
+                                    let tmp_end = std::mem::replace(
+                                        &mut self.line.should_end_newline,
+                                        false,
+                                    );
+                                    self.event(col_ui, e, src_span, cache, options, max_width);
                                     self.line.should_start_newline = tmp_start;
                                     self.line.should_end_newline = tmp_end;
                                 }
-                            });
+                                self.flush_pending_inline(col_ui, max_width);
+                            }
                         }
-
-                        ui.end_row();
-                    }
-                });
+                    });
+                }
             });
 
             self.is_table = false;
