@@ -218,7 +218,7 @@ pub(crate) fn render_preview_content(
     let (fraction, source, prev_max_scroll) = scroll_state;
     let mut scroll_area = egui::ScrollArea::vertical()
         .id_salt("preview_scroll")
-        .auto_shrink([false, false]);
+        .auto_shrink(std::array::from_fn(|_| false));
 
     let consuming_editor = scroll_sync && *source == ScrollSource::Editor;
     if consuming_editor {
@@ -719,7 +719,8 @@ fn render_horizontal_split(
         .frame(egui::Frame::NONE.fill(preview_bg))
         .show(ctx, |ui| {
             if let Some(path) = &active_path {
-                let pane = app.tab_panes.entry(path.clone()).or_default();
+                let pane =
+                    crate::shell::KatanaApp::get_preview_pane(&mut app.tab_previews, path.clone());
                 download_req = render_preview_content(
                     ui,
                     pane,
@@ -785,7 +786,10 @@ fn render_vertical_split(
             .frame(egui::Frame::NONE.fill(preview_bg))
             .show(ctx, |ui| {
                 if let Some(path) = &active_path {
-                    let pane = app.tab_panes.entry(path.clone()).or_default();
+                    let pane = crate::shell::KatanaApp::get_preview_pane(
+                        &mut app.tab_previews,
+                        path.clone(),
+                    );
                     download_req = render_preview_content(
                         ui,
                         pane,
@@ -816,7 +820,10 @@ fn render_vertical_split(
             .frame(egui::Frame::NONE.fill(preview_bg))
             .show(ctx, |ui| {
                 if let Some(path) = &active_path {
-                    let pane = app.tab_panes.entry(path.clone()).or_default();
+                    let pane = crate::shell::KatanaApp::get_preview_pane(
+                        &mut app.tab_previews,
+                        path.clone(),
+                    );
                     download_req = render_preview_content(
                         ui,
                         pane,
@@ -856,7 +863,7 @@ fn render_preview_only(ui: &mut egui::Ui, app: &mut KatanaApp) {
     let active_path = app.state.active_document().map(|d| d.path.clone());
     let mut scroll_state = (0.0_f32, ScrollSource::Neither, 0.0_f32);
     if let Some(path) = active_path {
-        let pane = app.tab_panes.entry(path).or_default();
+        let pane = crate::shell::KatanaApp::get_preview_pane(&mut app.tab_previews, path);
         render_preview_content(
             ui,
             pane,
@@ -1290,7 +1297,11 @@ mod tests {
         let mut pane = PreviewPane::default();
         pane.full_render(markdown, path);
         pane.wait_for_renders();
-        app.tab_panes.insert(path.to_path_buf(), pane);
+        app.tab_previews.push(crate::shell::TabPreviewCache {
+            path: path.to_path_buf(),
+            pane,
+            hash: 0,
+        });
         app
     }
 
@@ -1948,7 +1959,7 @@ fn render_about_window(ctx: &egui::Context, open: &mut bool, icon: Option<&egui:
         .open(open)
         .resizable(false)
         .collapsible(false)
-        .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
         .default_width(ABOUT_WINDOW_WIDTH)
         .frame(egui::Frame::window(&ctx.style()).inner_margin(INNER_PADDING))
         .show(ctx, |ui| {

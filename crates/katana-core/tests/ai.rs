@@ -1,5 +1,4 @@
 use katana_core::ai::*;
-use std::collections::HashMap;
 
 struct DisabledProvider;
 
@@ -33,7 +32,7 @@ impl AiProvider for EchoProvider {
     fn execute(&self, req: &AiRequest) -> Result<AiResponse, AiError> {
         Ok(AiResponse {
             content: req.prompt.clone(),
-            metadata: HashMap::new(),
+            metadata: Vec::new(),
         })
     }
 }

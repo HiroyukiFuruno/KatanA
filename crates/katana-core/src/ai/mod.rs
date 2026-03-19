@@ -4,7 +4,11 @@
 //! issue AI requests without knowing about provider-specific authentication,
 //! transport, or model details.
 
-use std::collections::HashMap;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Param {
+    pub key: String,
+    pub value: String,
+}
 
 /// A normalized AI generation request.
 #[derive(Debug, Clone)]
@@ -14,7 +18,7 @@ pub struct AiRequest {
     /// Optional model identifier (provider interprets or ignores this).
     pub model: Option<String>,
     /// Extra key-value parameters (temperature, max_tokens, etc.).
-    pub params: HashMap<String, String>,
+    pub params: Vec<Param>,
 }
 
 impl AiRequest {
@@ -22,7 +26,7 @@ impl AiRequest {
         Self {
             prompt: prompt.into(),
             model: None,
-            params: HashMap::new(),
+            params: Vec::new(),
         }
     }
 }
@@ -33,7 +37,7 @@ pub struct AiResponse {
     /// Generated text content from the provider.
     pub content: String,
     /// Provider-specific metadata (model name, token usage, etc.).
-    pub metadata: HashMap<String, String>,
+    pub metadata: Vec<Param>,
 }
 
 /// Errors that may arise from AI provider operations.
@@ -78,7 +82,7 @@ pub trait AiProvider: Send + Sync {
 /// rather than through concrete provider types.
 #[derive(Default)]
 pub struct AiProviderRegistry {
-    providers: HashMap<String, Box<dyn AiProvider>>,
+    providers: Vec<Box<dyn AiProvider>>,
     active_id: Option<String>,
 }
 
@@ -90,14 +94,18 @@ impl AiProviderRegistry {
     /// Register a provider adapter.
     pub fn register(&mut self, provider: Box<dyn AiProvider>) {
         let id = provider.id().to_string();
-        self.providers.insert(id, provider);
+        if let Some(idx) = self.providers.iter().position(|p| p.id() == id) {
+            self.providers[idx] = provider;
+        } else {
+            self.providers.push(provider);
+        }
     }
 
     /// Activate a registered provider by ID.
     ///
     /// Returns `false` if no provider with that ID is registered.
     pub fn set_active(&mut self, id: &str) -> bool {
-        if self.providers.contains_key(id) {
+        if self.providers.iter().any(|p| p.id() == id) {
             self.active_id = Some(id.to_string());
             true
         } else {
@@ -115,7 +123,8 @@ impl AiProviderRegistry {
         // Therefore, if `active_id` is `Some`, it must exist in providers.
         let provider = self
             .providers
-            .get(id)
+            .iter()
+            .find(|p| p.id() == id)
             .expect("BUG: active_id is set but provider not found in registry");
         if !provider.is_available() {
             return Err(AiError::NotConfigured);
@@ -127,7 +136,7 @@ impl AiProviderRegistry {
     pub fn has_active_provider(&self) -> bool {
         self.active_id
             .as_deref()
-            .and_then(|id| self.providers.get(id))
+            .and_then(|id| self.providers.iter().find(|p| p.id() == id))
             .map(|p| p.is_available())
             .unwrap_or(false)
     }

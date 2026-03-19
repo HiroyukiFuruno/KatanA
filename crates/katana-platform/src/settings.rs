@@ -5,11 +5,11 @@
 
 use crate::theme::{ThemeColors, ThemePreset};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 pub mod migration;
 pub mod migration_0_1_2;
+pub mod migration_0_1_3_to_0_1_4;
 use migration::MigrationRunner;
 
 /// Split direction for editor/preview layout.
@@ -68,7 +68,13 @@ pub struct AppSettings {
     pub language: String,
     /// Additional key-value settings for future use.
     #[serde(default)]
-    pub extra: HashMap<String, String>,
+    pub extra: Vec<ExtraSetting>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ExtraSetting {
+    pub key: String,
+    pub value: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,7 +125,7 @@ pub struct LayoutSettings {
 }
 
 fn default_version() -> String {
-    "0.1.3".to_string()
+    "0.1.4".to_string()
 }
 
 fn default_theme() -> String {
@@ -166,7 +172,7 @@ impl Default for AppSettings {
             workspace_paths: Vec::new(),
             terms_accepted_version: None,
             language: default_language(),
-            extra: HashMap::new(),
+            extra: Vec::new(),
         }
     }
 }
@@ -249,6 +255,7 @@ impl SettingsRepository for JsonFileRepository {
                     Ok(mut value) => {
                         let mut runner = MigrationRunner::new();
                         runner.add_strategy(Box::new(migration_0_1_2::Migration0_1_2));
+                        runner.add_strategy(Box::new(migration_0_1_3_to_0_1_4::Migration013To014));
                         value = runner.migrate(value);
                         serde_json::from_value(value).unwrap_or_default()
                     }
@@ -508,13 +515,17 @@ mod tests {
             },
             ..Default::default()
         };
-        s.extra.insert("key".to_string(), "value".to_string());
+        s.extra.push(ExtraSetting {
+            key: "key".to_string(),
+            value: "value".to_string(),
+        });
 
         let json = serde_json::to_string(&s).unwrap();
         let loaded: AppSettings = serde_json::from_str(&json).unwrap();
         assert_eq!(loaded.theme.theme, "light");
         assert!((loaded.font.size - 16.0).abs() < f32::EPSILON);
-        assert_eq!(loaded.extra.get("key").unwrap(), "value");
+        let ext = loaded.extra.iter().find(|e| e.key == "key").unwrap();
+        assert_eq!(ext.value, "value");
     }
 
     #[test]

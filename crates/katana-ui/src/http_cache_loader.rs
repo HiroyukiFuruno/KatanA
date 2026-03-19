@@ -1,3 +1,4 @@
+#![allow(clippy::useless_vec)]
 use egui::{
     load::{Bytes, BytesLoadResult, BytesLoader, BytesPoll, LoadError},
     mutex::Mutex,
@@ -6,7 +7,6 @@ use egui::{
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
-    collections::HashMap,
     fmt::Write as _,
     path::{Path, PathBuf},
     sync::Arc,
@@ -54,8 +54,13 @@ struct CacheMetadata {
 
 type Entry = Poll<Result<CachedFile, String>>;
 
+struct HttpCacheEntry {
+    uri: String,
+    entry: Entry,
+}
+
 pub struct PersistentHttpLoader {
-    cache: Arc<Mutex<HashMap<String, Entry>>>,
+    cache: Arc<Mutex<Vec<HttpCacheEntry>>>,
     cache_dir: PathBuf,
 }
 
@@ -64,7 +69,7 @@ impl PersistentHttpLoader {
 
     pub fn new(cache_dir: PathBuf) -> Self {
         Self {
-            cache: Arc::new(Mutex::new(HashMap::new())),
+            cache: Arc::new(Mutex::new(Vec::new())),
             cache_dir,
         }
     }
@@ -110,18 +115,24 @@ impl BytesLoader for PersistentHttpLoader {
         }
 
         let mut cache = self.cache.lock();
-        if let Some(entry) = cache.get(uri).cloned() {
+        if let Some(entry) = cache.iter().find(|e| e.uri == uri).map(|e| e.entry.clone()) {
             return entry_to_bytes_result(entry);
         }
 
         if let Some(file) = self.read_from_disk(uri) {
             let entry = Poll::Ready(Ok(file.clone()));
-            cache.insert(uri.to_owned(), entry.clone());
+            cache.push(HttpCacheEntry {
+                uri: uri.to_owned(),
+                entry: entry.clone(),
+            });
             return entry_to_bytes_result(entry);
         }
 
         let uri = uri.to_owned();
-        cache.insert(uri.clone(), Poll::Pending);
+        cache.push(HttpCacheEntry {
+            uri: uri.clone(),
+            entry: Poll::Pending,
+        });
         drop(cache);
 
         let cache = Arc::clone(&self.cache);
@@ -132,10 +143,8 @@ impl BytesLoader for PersistentHttpLoader {
 
             let repaint = {
                 let mut cache = cache.lock();
-                if let std::collections::hash_map::Entry::Occupied(mut entry) =
-                    cache.entry(uri.clone())
-                {
-                    *entry.get_mut() = Poll::Ready(result);
+                if let Some(entry) = cache.iter_mut().find(|e| e.uri == uri) {
+                    entry.entry = Poll::Ready(result);
                     true
                 } else {
                     false
@@ -151,7 +160,7 @@ impl BytesLoader for PersistentHttpLoader {
     }
 
     fn forget(&self, uri: &str) {
-        let _ = self.cache.lock().remove(uri);
+        self.cache.lock().retain(|e| e.uri != uri);
         self.remove_from_disk(uri);
     }
 
@@ -170,8 +179,8 @@ impl BytesLoader for PersistentHttpLoader {
     fn byte_size(&self) -> usize {
         self.cache
             .lock()
-            .values()
-            .map(|entry| match entry {
+            .iter()
+            .map(|e| match &e.entry {
                 Poll::Ready(Ok(file)) => {
                     file.bytes.len() + file.mime.as_ref().map_or(0, String::len)
                 }
@@ -182,7 +191,7 @@ impl BytesLoader for PersistentHttpLoader {
     }
 
     fn has_pending(&self) -> bool {
-        self.cache.lock().values().any(Poll::is_pending)
+        self.cache.lock().iter().any(|e| e.entry.is_pending())
     }
 }
 
@@ -273,7 +282,7 @@ fn read_cached_file(body_path: &Path, meta_path: &Path) -> Option<CachedFile> {
 }
 
 fn remove_cache_file(body_path: &Path, meta_path: &Path) {
-    for path in [body_path, meta_path] {
+    for path in vec![body_path, meta_path] {
         if let Err(err) = std::fs::remove_file(path) {
             if err.kind() != std::io::ErrorKind::NotFound {
                 tracing::warn!("Failed to remove cache file {}: {err}", path.display());
@@ -458,10 +467,10 @@ mod tests {
         let file = sample_file();
 
         // Pre-populate the in-memory cache
-        loader
-            .cache
-            .lock()
-            .insert(uri.to_owned(), Poll::Ready(Ok(file.clone())));
+        loader.cache.lock().push(HttpCacheEntry {
+            uri: uri.to_owned(),
+            entry: Poll::Ready(Ok(file.clone())),
+        });
 
         let result = loader.load(&ctx, uri).expect("should hit memory cache");
         match result {
@@ -493,9 +502,18 @@ mod tests {
 
         {
             let mut cache = loader.cache.lock();
-            cache.insert("ok".to_owned(), Poll::Ready(Ok(file.clone())));
-            cache.insert("err".to_owned(), Poll::Ready(Err("error msg".to_string())));
-            cache.insert("pending".to_owned(), Poll::Pending);
+            cache.push(HttpCacheEntry {
+                uri: "ok".to_owned(),
+                entry: Poll::Ready(Ok(file.clone())),
+            });
+            cache.push(HttpCacheEntry {
+                uri: "err".to_owned(),
+                entry: Poll::Ready(Err("error msg".to_string())),
+            });
+            cache.push(HttpCacheEntry {
+                uri: "pending".to_owned(),
+                entry: Poll::Pending,
+            });
         }
 
         let size = loader.byte_size();
@@ -510,10 +528,10 @@ mod tests {
         let loader = PersistentHttpLoader::new(tmp.path().to_path_buf());
         assert!(!loader.has_pending());
 
-        loader
-            .cache
-            .lock()
-            .insert("pending".to_owned(), Poll::Pending);
+        loader.cache.lock().push(HttpCacheEntry {
+            uri: "pending".to_owned(),
+            entry: Poll::Pending,
+        });
         assert!(loader.has_pending());
     }
 
@@ -526,10 +544,10 @@ mod tests {
         loader
             .write_to_disk("https://example.com/a.svg", &file)
             .expect("write");
-        loader
-            .cache
-            .lock()
-            .insert("a".to_owned(), Poll::Ready(Ok(file)));
+        loader.cache.lock().push(HttpCacheEntry {
+            uri: "a".to_owned(),
+            entry: Poll::Ready(Ok(file)),
+        });
 
         loader.forget_all();
         assert!(loader.cache.lock().is_empty());

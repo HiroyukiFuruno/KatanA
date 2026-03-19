@@ -94,8 +94,7 @@ fn estimate_canvas_size(cells: &[&Element]) -> (f64, f64) {
 /// Assembles the entire SVG document.
 fn build_svg(cells: &[&Element], width: f64, height: f64) -> String {
     // Builds a map of cell ID -> (x, y, w, h).
-    let mut geo_map: std::collections::HashMap<String, (f64, f64, f64, f64)> =
-        std::collections::HashMap::new();
+    let mut geo_map: Vec<(String, (f64, f64, f64, f64))> = Vec::new();
     for cell in cells {
         if let (Some(id), Some(geo)) = (cell.attributes.get("id"), cell.get_child("mxGeometry")) {
             let is_vertex = cell
@@ -108,7 +107,8 @@ fn build_svg(cells: &[&Element], width: f64, height: f64) -> String {
                 let y = attr_f64(geo, "y");
                 let w = attr_f64(geo, "width").max(1.0);
                 let h = attr_f64(geo, "height").max(1.0);
-                geo_map.insert(id.clone(), (x, y, w, h));
+                // push instead of insert since we assume unique IDs in well-formed XML
+                geo_map.push((id.clone(), (x, y, w, h)));
             }
         }
     }
@@ -129,11 +129,12 @@ fn build_svg(cells: &[&Element], width: f64, height: f64) -> String {
 }
 
 /// Writes a single `<mxCell>` to the shapes/labels buffers.
+#[allow(clippy::type_complexity)]
 fn render_cell(
     cell: &Element,
     shapes: &mut String,
     labels: &mut String,
-    geo_map: &std::collections::HashMap<String, (f64, f64, f64, f64)>,
+    geo_map: &[(String, (f64, f64, f64, f64))],
     preset: &DiagramColorPreset,
 ) {
     let is_vertex = cell
@@ -220,10 +221,11 @@ impl Rect {
 ///
 /// Uses the nearest point on the source and target rectangle borders as connection points,
 /// and also routes through `mxPoint` waypoints included in the `Array` element within `mxGeometry`.
+#[allow(clippy::type_complexity)]
 fn render_edge(
     cell: &Element,
     shapes: &mut String,
-    geo_map: &std::collections::HashMap<String, (f64, f64, f64, f64)>,
+    geo_map: &[(String, (f64, f64, f64, f64))],
     preset: &DiagramColorPreset,
 ) {
     let src_id = match cell.attributes.get("source") {
@@ -234,10 +236,10 @@ fn render_edge(
         Some(id) => id.as_str(),
         None => return,
     };
-    let Some(&(sx, sy, sw, sh)) = geo_map.get(src_id) else {
+    let Some(&(_, (sx, sy, sw, sh))) = geo_map.iter().find(|(k, _)| k == src_id) else {
         return;
     };
-    let Some(&(tx, ty, tw, th)) = geo_map.get(tgt_id) else {
+    let Some(&(_, (tx, ty, tw, th))) = geo_map.iter().find(|(k, _)| k == tgt_id) else {
         return;
     };
 

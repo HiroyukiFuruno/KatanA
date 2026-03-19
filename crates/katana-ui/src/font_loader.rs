@@ -14,9 +14,9 @@ impl SystemFontLoader {
         custom_font_name: Option<&str>,
     ) {
         let fonts = Self::build_font_definitions(
-            preset.proportional_font_candidates,
-            preset.monospace_font_candidates,
-            preset.emoji_font_candidates,
+            &preset.proportional_font_candidates,
+            &preset.monospace_font_candidates,
+            &preset.emoji_font_candidates,
             custom_font_path,
             custom_font_name,
         );
@@ -238,9 +238,9 @@ mod tests {
     fn test_macos_ui_font_setup_does_not_register_apple_color_emoji_globally() {
         let preset = DiagramColorPreset::current();
         let fonts = SystemFontLoader::build_font_definitions(
-            preset.proportional_font_candidates,
-            preset.monospace_font_candidates,
-            preset.emoji_font_candidates,
+            &preset.proportional_font_candidates,
+            &preset.monospace_font_candidates,
+            &preset.emoji_font_candidates,
             None,
             None,
         );

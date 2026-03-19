@@ -24,12 +24,22 @@ fn settings_mut_allows_modification() {
     svc.settings_mut().theme.theme = "light".to_string();
     svc.settings_mut()
         .extra
-        .insert("key".to_string(), "value".to_string());
+        .push(katana_platform::settings::ExtraSetting {
+            key: "key".to_string(),
+            value: "value".to_string(),
+        });
 
     let settings = svc.settings();
     assert_eq!(settings.last_workspace.as_deref(), Some("/workspace"));
     assert_eq!(settings.theme.theme, "light");
-    assert_eq!(settings.extra.get("key").map(|s| s.as_str()), Some("value"));
+    assert_eq!(
+        settings
+            .extra
+            .iter()
+            .find(|s| s.key == "key")
+            .map(|s| s.value.as_str()),
+        Some("value")
+    );
 }
 
 #[test]

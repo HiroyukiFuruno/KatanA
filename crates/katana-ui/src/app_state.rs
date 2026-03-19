@@ -11,7 +11,6 @@ use katana_core::{
     ai::AiProviderRegistry, document::Document, plugin::PluginRegistry, workspace::Workspace,
 };
 use katana_platform::SettingsService;
-use std::collections::HashMap;
 
 /// Display mode for the UI layout
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -26,6 +25,18 @@ pub enum ViewMode {
 pub struct SplitViewState {
     pub direction: katana_platform::SplitDirection,
     pub order: katana_platform::PaneOrder,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TabViewMode {
+    pub path: std::path::PathBuf,
+    pub mode: ViewMode,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TabSplitState {
+    pub path: std::path::PathBuf,
+    pub state: SplitViewState,
 }
 
 /// Tab within the settings window.
@@ -78,9 +89,9 @@ pub struct AppState {
     /// Index of the currently active document, if any.
     pub active_doc_idx: Option<usize>,
     /// View mode per tab. The key is the file path (to prevent index shifts after closing a tab).
-    pub tab_view_modes: HashMap<std::path::PathBuf, ViewMode>,
+    pub tab_view_modes: Vec<TabViewMode>,
     /// Split-layout cache per tab. Initialized from persisted defaults when a tab is first opened.
-    pub tab_split_states: HashMap<std::path::PathBuf, SplitViewState>,
+    pub tab_split_states: Vec<TabSplitState>,
 
     /// Plugin registry (will be referenced during plugin widget integration in future Task 5.x).
     pub _plugin_registry: PluginRegistry,
@@ -130,8 +141,8 @@ impl AppState {
             workspace: None,
             open_documents: Vec::new(),
             active_doc_idx: None,
-            tab_view_modes: HashMap::new(),
-            tab_split_states: HashMap::new(),
+            tab_view_modes: Vec::new(),
+            tab_split_states: Vec::new(),
             _plugin_registry: plugin_registry,
             status_message: None,
             show_workspace: true,
@@ -171,8 +182,12 @@ impl AppState {
     /// Returns the view mode of the active tab. Default value if no tab is selected.
     pub fn active_view_mode(&self) -> ViewMode {
         self.active_document()
-            .and_then(|doc| self.tab_view_modes.get(&doc.path))
-            .copied()
+            .and_then(|doc| {
+                self.tab_view_modes
+                    .iter()
+                    .find(|t| t.path == doc.path)
+                    .map(|t| t.mode)
+            })
             .unwrap_or(ViewMode::PreviewOnly)
     }
 
@@ -180,7 +195,11 @@ impl AppState {
     pub fn set_active_view_mode(&mut self, mode: ViewMode) {
         if let Some(doc) = self.active_document() {
             let path = doc.path.clone();
-            self.tab_view_modes.insert(path, mode);
+            if let Some(t) = self.tab_view_modes.iter_mut().find(|t| t.path == path) {
+                t.mode = mode;
+            } else {
+                self.tab_view_modes.push(TabViewMode { path, mode });
+            }
         }
     }
 
@@ -192,8 +211,14 @@ impl AppState {
     }
 
     pub fn initialize_tab_split_state(&mut self, path: impl Into<std::path::PathBuf>) {
-        let defaults = self.split_defaults();
-        self.tab_split_states.entry(path.into()).or_insert(defaults);
+        let p = path.into();
+        if !self.tab_split_states.iter().any(|t| t.path == p) {
+            let defaults = self.split_defaults();
+            self.tab_split_states.push(TabSplitState {
+                path: p,
+                state: defaults,
+            });
+        }
     }
 
     pub fn ensure_active_split_state(&mut self) {
@@ -206,16 +231,24 @@ impl AppState {
     /// Returns the split direction for the active tab.
     pub fn active_split_direction(&self) -> katana_platform::SplitDirection {
         self.active_document()
-            .and_then(|doc| self.tab_split_states.get(&doc.path))
-            .map(|state| state.direction)
+            .and_then(|doc| {
+                self.tab_split_states
+                    .iter()
+                    .find(|t| t.path == doc.path)
+                    .map(|t| t.state.direction)
+            })
             .unwrap_or_else(|| self.split_defaults().direction)
     }
 
     /// Returns the pane order for the active tab.
     pub fn active_pane_order(&self) -> katana_platform::PaneOrder {
         self.active_document()
-            .and_then(|doc| self.tab_split_states.get(&doc.path))
-            .map(|state| state.order)
+            .and_then(|doc| {
+                self.tab_split_states
+                    .iter()
+                    .find(|t| t.path == doc.path)
+                    .map(|t| t.state.order)
+            })
             .unwrap_or_else(|| self.split_defaults().order)
     }
 
@@ -224,9 +257,16 @@ impl AppState {
         let Some(path) = self.active_path().map(std::path::Path::to_path_buf) else {
             return;
         };
-        let defaults = self.split_defaults();
-        let state = self.tab_split_states.entry(path).or_insert(defaults);
-        state.direction = dir;
+        if let Some(t) = self.tab_split_states.iter_mut().find(|t| t.path == path) {
+            t.state.direction = dir;
+        } else {
+            let mut defaults = self.split_defaults();
+            defaults.direction = dir;
+            self.tab_split_states.push(TabSplitState {
+                path,
+                state: defaults,
+            });
+        }
     }
 
     /// Sets the pane order for the active tab (temporary — not persisted to disk).
@@ -234,9 +274,16 @@ impl AppState {
         let Some(path) = self.active_path().map(std::path::Path::to_path_buf) else {
             return;
         };
-        let defaults = self.split_defaults();
-        let state = self.tab_split_states.entry(path).or_insert(defaults);
-        state.order = order;
+        if let Some(t) = self.tab_split_states.iter_mut().find(|t| t.path == path) {
+            t.state.order = order;
+        } else {
+            let mut defaults = self.split_defaults();
+            defaults.order = order;
+            self.tab_split_states.push(TabSplitState {
+                path,
+                state: defaults,
+            });
+        }
     }
 }
 
@@ -355,5 +402,28 @@ mod tests {
         // No documents open — should return early without panic
         state.set_active_pane_order(PaneOrder::PreviewFirst);
         assert!(state.tab_split_states.is_empty());
+    }
+    #[test]
+    fn test_set_active_split_direction_uninitialized() {
+        let mut state = make_state_with_doc("/tmp/uninit.md");
+        state.tab_split_states.clear();
+        state.set_active_split_direction(SplitDirection::Vertical);
+        assert_eq!(state.tab_split_states.len(), 1);
+        assert_eq!(
+            state.tab_split_states[0].state.direction,
+            SplitDirection::Vertical
+        );
+    }
+
+    #[test]
+    fn test_set_active_pane_order_uninitialized() {
+        let mut state = make_state_with_doc("/tmp/uninit.md");
+        state.tab_split_states.clear();
+        state.set_active_pane_order(PaneOrder::PreviewFirst);
+        assert_eq!(state.tab_split_states.len(), 1);
+        assert_eq!(
+            state.tab_split_states[0].state.order,
+            PaneOrder::PreviewFirst
+        );
     }
 }

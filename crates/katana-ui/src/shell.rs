@@ -2,7 +2,7 @@
 //!
 //! Contains only business logic. egui rendering code is separated into shell_ui.rs.
 
-use std::collections::HashMap;
+#![allow(clippy::useless_vec)]
 
 use eframe::egui;
 use katana_platform::theme::ThemeColors;
@@ -65,14 +65,18 @@ fn hash_str(s: &str) -> u64 {
     crate::shell_logic::hash_str(s)
 }
 
+pub(crate) struct TabPreviewCache {
+    pub path: std::path::PathBuf,
+    pub pane: PreviewPane,
+    pub hash: u64,
+}
+
 pub struct KatanaApp {
     pub(crate) state: AppState,
     pub(crate) fs: FilesystemService,
     pub(crate) pending_action: AppAction,
-    /// Per-tab preview pane. Key is the file path. Reuses cache on tab switch.
-    pub(crate) tab_panes: HashMap<std::path::PathBuf, PreviewPane>,
-    /// Last rendered content hash per tab. Used for change detection.
-    pub(crate) tab_hashes: HashMap<std::path::PathBuf, u64>,
+    /// Per-tab preview pane cache. Reuses cache on tab switch.
+    pub(crate) tab_previews: Vec<TabPreviewCache>,
     /// Receiver for background download completion notifications.
     pub(crate) download_rx: Option<std::sync::mpsc::Receiver<Result<(), String>>>,
     /// Whether the About dialog is currently visible.
@@ -96,8 +100,7 @@ impl KatanaApp {
             state,
             fs: FilesystemService::new(),
             pending_action: AppAction::None,
-            tab_panes: HashMap::new(),
-            tab_hashes: HashMap::new(),
+            tab_previews: Vec::new(),
             download_rx: None,
             show_about: false,
             about_icon: None,
@@ -112,22 +115,42 @@ impl KatanaApp {
         std::mem::replace(&mut self.pending_action, AppAction::None)
     }
 
+    pub(crate) fn get_preview_pane(
+        previews: &mut Vec<TabPreviewCache>,
+        path: std::path::PathBuf,
+    ) -> &mut PreviewPane {
+        if let Some(idx) = previews.iter().position(|t| t.path == path) {
+            &mut previews[idx].pane
+        } else {
+            previews.push(TabPreviewCache {
+                path,
+                pane: PreviewPane::default(),
+                hash: 0,
+            });
+            &mut previews.last_mut().expect("just pushed").pane
+        }
+    }
+
     /// Reflects only text changes (keeps existing images for diagrams).
     fn refresh_preview(&mut self, path: &std::path::Path, source: &str) {
-        self.tab_panes
-            .entry(path.to_path_buf())
-            .or_default()
+        let path_buf = path.to_path_buf();
+        Self::get_preview_pane(&mut self.tab_previews, path_buf)
             .update_markdown_sections(source, path);
     }
 
     /// Re-renders all sections. Updates the content hash as well.
     fn full_refresh_preview(&mut self, path: &std::path::Path, source: &str) {
         let h = hash_str(source);
-        self.tab_hashes.insert(path.to_path_buf(), h);
-        self.tab_panes
-            .entry(path.to_path_buf())
-            .or_default()
-            .full_render(source, path);
+        let path_buf = path.to_path_buf();
+        let pane = Self::get_preview_pane(&mut self.tab_previews, path_buf.clone());
+        pane.full_render(source, path);
+
+        let tab = self
+            .tab_previews
+            .iter_mut()
+            .find(|t| t.path == path_buf)
+            .expect("just fetched pane");
+        tab.hash = h;
     }
 
     fn handle_open_workspace(&mut self, path: std::path::PathBuf) {
@@ -136,7 +159,7 @@ impl KatanaApp {
                 let name = ws.name().unwrap_or("unknown").to_string();
                 self.state.status_message = Some(crate::i18n::tf(
                     "status_opened_workspace",
-                    &[("name", &name)],
+                    &vec![("name", name.as_str())],
                 ));
                 self.state.workspace = Some(ws);
                 self.state.open_documents.clear();
@@ -153,7 +176,7 @@ impl KatanaApp {
                 let error = e.to_string();
                 self.state.status_message = Some(crate::i18n::tf(
                     "status_cannot_open_workspace",
-                    &[("error", &error)],
+                    &vec![("error", error.as_str())],
                 ));
             }
         }
@@ -172,7 +195,7 @@ impl KatanaApp {
                 let error = e.to_string();
                 self.state.status_message = Some(crate::i18n::tf(
                     "status_cannot_open_workspace",
-                    &[("error", &error)],
+                    &vec![("error", error.as_str())],
                 ));
             }
         }
@@ -190,7 +213,12 @@ impl KatanaApp {
             self.state.initialize_tab_split_state(path.clone());
             let src = self.state.open_documents[existing_idx].buffer.clone();
             let h = hash_str(&src);
-            let last_h = self.tab_hashes.get(&path).copied().unwrap_or(0);
+            let last_h = self
+                .tab_previews
+                .iter()
+                .find(|t| t.path == path)
+                .map(|t| t.hash)
+                .unwrap_or(0);
             if h != last_h {
                 // Re-render only if the content has changed
                 self.full_refresh_preview(&path, &src);
@@ -211,7 +239,7 @@ impl KatanaApp {
                 let error = e.to_string();
                 self.state.status_message = Some(crate::i18n::tf(
                     "status_cannot_open_file",
-                    &[("error", &error)],
+                    &vec![("error", error.as_str())],
                 ));
             }
         }
@@ -237,7 +265,7 @@ impl KatanaApp {
                 let error = e.to_string();
                 self.state.status_message = Some(crate::i18n::tf(
                     &crate::i18n::get().status.save_failed,
-                    &[("error", &error)],
+                    &vec![("error", error.as_str())],
                 ));
             }
         }
@@ -261,7 +289,9 @@ impl KatanaApp {
             AppAction::SaveDocument => self.handle_save_document(),
             AppAction::RefreshDiagrams => {
                 // Invalidate hashes so non-active tabs re-render on next switch
-                self.tab_hashes.clear();
+                for tab in &mut self.tab_previews {
+                    tab.hash = 0;
+                }
                 // Re-render only the active tab immediately
                 if let Some(doc) = self.state.active_document() {
                     let src = doc.buffer.clone();
@@ -363,7 +393,7 @@ fn _download_with_cmd(cmd: &str, url: &str, dest: &std::path::Path) -> Result<()
         std::fs::create_dir_all(p).map_err(|e| e.to_string())?;
     }
     let status = std::process::Command::new(cmd)
-        .args(["-L", "-o", dest.to_str().unwrap_or(""), url])
+        .args(vec!["-L", "-o", dest.to_str().unwrap_or(""), url])
         .status()
         .map_err(|e| {
             format!(
@@ -682,7 +712,11 @@ mod tests_extra {
         assert_eq!(app.state.open_documents.len(), 1);
 
         // Set an old hash in tab_hashes (different from buffer)
-        app.tab_hashes.insert(path.clone(), 0xDEADBEEF);
+        app.tab_previews.push(TabPreviewCache {
+            path: path.clone(),
+            pane: PreviewPane::default(),
+            hash: 0xDEADBEEF,
+        });
 
         // Re-select -> full_refresh_preview is called due to hash mismatch (L184-185)
         app.handle_select_document(path.clone());
@@ -773,7 +807,7 @@ mod tests_extra {
         let dir = make_temp_workspace();
         let path = dir.path().join("test.md");
         app.full_refresh_preview(&path, "# Content");
-        assert!(app.tab_hashes.contains_key(&path));
+        assert!(app.tab_previews.iter().any(|t| t.path == path));
     }
 
     // refresh_preview: Existing entry is updated (L131-137)
@@ -1033,5 +1067,25 @@ mod tests_extra {
         app.handle_open_workspace(dir.path().to_path_buf());
         app.process_action(AppAction::RefreshWorkspace);
         assert!(app.state.workspace.is_some());
+    }
+    #[test]
+    fn test_open_workspace_file_updates_buffer() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("a.md");
+        std::fs::write(&file_path, "A").unwrap();
+        app.handle_open_workspace(dir.path().to_path_buf());
+        app.handle_open_workspace_file(file_path.clone());
+
+        let mut doc = app.state.active_document_mut().unwrap();
+        doc.buffer = "B".to_string(); // bypass update_buffer to bypass hash updates
+
+        app.handle_open_workspace_file(file_path.clone());
+        let tab = app
+            .tab_previews
+            .iter()
+            .find(|t| t.path == file_path)
+            .unwrap();
+        assert!(tab.hash != 0);
     }
 }
