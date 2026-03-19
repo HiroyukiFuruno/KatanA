@@ -71,5 +71,8 @@
   "settings_preview_normal_text": "Normal text with ",
   "settings_preview_accent_link": "accent link",
   "settings_preview_secondary_text": "Secondary text sample",
-  "settings_preview_code_sample": "fn main() { println!(\"Hello!\"); }"
+  "settings_preview_code_sample": "fn main() { println!(\"Hello!\"); }",
+  "tab_nav_prev": "Move to previous tab",
+  "tab_nav_next": "Move to next tab",
+  "settings_font_size_slider_hint": "Drag left or right to adjust size"
 }

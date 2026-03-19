@@ -38,6 +38,8 @@ const SWATCH_CORNER_DIVISOR: f32 = 4.0;
 const FONT_FAMILY_COMBOBOX_WIDTH: f32 = 200.0;
 /// Maximum height of the scrollable font list inside the search popup.
 const FONT_DROPDOWN_MAX_HEIGHT: f32 = 200.0;
+/// Per-channel brightness boost applied to the inactive slider rail for better dark theme contrast.
+const SLIDER_BRIGHTNESS_BOOST: u8 = 40;
 
 // ── Sample markdown for settings preview ─────────────────────────────
 
@@ -474,10 +476,36 @@ fn render_font_size_slider(ui: &mut egui::Ui, settings: &mut SettingsService) {
     let slider = egui::Slider::new(&mut size, MIN_FONT_SIZE..=MAX_FONT_SIZE)
         .step_by(FONT_SIZE_STEP)
         .suffix(" px");
-    if ui.add(slider).changed() {
+
+    // Improve slider visibility by applying accent color to the rail/handle.
+    let accent = ui.visuals().widgets.active.bg_fill;
+    let inactive_bg = ui.visuals().widgets.inactive.bg_fill;
+    let saved_active_bg = ui.visuals().widgets.active.bg_fill;
+    let saved_hovered_bg = ui.visuals().widgets.hovered.bg_fill;
+    let saved_inactive_bg = ui.visuals().widgets.inactive.bg_fill;
+
+    ui.visuals_mut().widgets.active.bg_fill = accent;
+    ui.visuals_mut().widgets.hovered.bg_fill = accent;
+    ui.visuals_mut().widgets.inactive.bg_fill = egui::Color32::from_rgba_premultiplied(
+        inactive_bg.r().saturating_add(SLIDER_BRIGHTNESS_BOOST),
+        inactive_bg.g().saturating_add(SLIDER_BRIGHTNESS_BOOST),
+        inactive_bg.b().saturating_add(SLIDER_BRIGHTNESS_BOOST),
+        inactive_bg.a(),
+    );
+
+    if ui
+        .add(slider)
+        .on_hover_text(crate::i18n::t("settings_font_size_slider_hint"))
+        .changed()
+    {
         settings.settings_mut().set_font_size(size);
         let _ = settings.save();
     }
+
+    // Restore original visuals.
+    ui.visuals_mut().widgets.active.bg_fill = saved_active_bg;
+    ui.visuals_mut().widgets.hovered.bg_fill = saved_hovered_bg;
+    ui.visuals_mut().widgets.inactive.bg_fill = saved_inactive_bg;
 }
 
 // ── Layout tab ───────────────────────────────────────────────────────
