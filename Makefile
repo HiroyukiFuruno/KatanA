@@ -37,6 +37,8 @@ package-mac: ## Build macOS .app bundle (release)
 	cargo bundle --release --format osx --package katana-ui
 	@# Overlay project-specific Info.plist (cargo-bundle generates its own)
 	cp crates/katana-ui/Info.plist "$(CONTENTS)/Info.plist"
+	@# Ensure the bundle Info.plist strictly matches root Cargo.toml version
+	perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$$1v$(VERSION)$$2/' "$(CONTENTS)/Info.plist"
 	@# Copy icon into Resources/ (cargo-bundle does not handle icns correctly)
 	mkdir -p "$(CONTENTS)/Resources"
 	cp assets/icon.icns "$(CONTENTS)/Resources/icon.icns"
