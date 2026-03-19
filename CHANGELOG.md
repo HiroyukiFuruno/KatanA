@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.1.2] - 2026-03-19
+
+### 🐛 Bug Fixes
+
+- **Workspace file alignment**: Fixed file entry labels being right-aligned (stretched to full row width) in the workspace panel — now properly left-aligned.
+- **Font size slider visibility**: Improved contrast of the font size slider rail on dark themes by applying accent color styling with brightness-boosted inactive state.
+
+### ✨ Features
+
+- **Tab navigation tooltips**: Added i18n tooltips to the ◀/▶ tab navigation buttons ("Move to previous/next tab").
+- **Font slider hover hint**: Added an i18n tooltip to the font size slider describing drag-to-adjust usage.
+
+### 📚 Documentation
+
+- Added **Diagram Rendering Setup** guide to README (EN/JA) with installation steps for Mermaid CLI and PlantUML.
+
 ## [0.1.1] - 2026-03-19
 
 ### ✨ Features
