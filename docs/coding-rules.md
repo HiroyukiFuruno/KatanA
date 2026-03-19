@@ -239,7 +239,7 @@ crates/katana-core/
 |------|-----------|----------------|
 | Unit Test (UT) | Inline `#[cfg(test)]` inside `src/` | **100% (No Exceptions)** |
 | Integration Test (IT) | `tests/` directory | Core public API flow coverage |
-| UI Integration Test | `tests/integration/` (egui_kittest) | All MVP scenarios, and assertion of actual responses (Node, Rect, etc.). **Snapshots are deprecated** |
+| UI Integration Test | `tests/integration/` (egui_kittest) | All MVP scenarios, and assertion of actual responses (Node, Rect, etc.). **Snapshot testing is prohibited (NG)** |
 
 Coverage measurement: `cargo llvm-cov --workspace --fail-under-lines 100` (Forced in CI)
 
@@ -271,11 +271,20 @@ The convention "a defined rule without enforcement is meaningless" applies here 
 ❌ Remove or weaken a test to make the implementation pass
 ```
 
-#### UI Testing with egui_kittest (Abolishing Snapshots and Validating Actual Responses)
+#### UI Testing with egui_kittest (Snapshots are NG — Validate Actual Responses)
 
 **Best Practice: UI verification must validate the "actual response (output)".**
-Reliance on "Snapshot testing (comparing `.png` files) which can only detect visual differences" is now formally deprecated as technical debt.
+Reliance on "Snapshot testing (comparing `.png` files) which can only detect visual differences" is **prohibited (NG)** as technical debt.
 Snapshot tests are slow to execute, and when they fail, developers blindly run `UPDATE_SNAPSHOTS=1` assuming "the image just shifted slightly", which renders them completely ineffective as a safeguard against regressions.
+
+**Correct IT Patterns — Validate Logic Directly:**
+
+| Verification Target | Correct Approach (✅) | Anti-pattern (❌) |
+|---|---|---|
+| Widget alignment | Assert `Rect` position/width from AccessKit node | Snapshot comparison of rendered image |
+| Click behavior | Trigger click → assert state change (e.g., `active_doc_idx`) | Visual check of hover/highlight in snapshot |
+| Color/visibility | Assert color channel values against contrast thresholds | Compare screenshot pixels |
+| Tooltip text | Assert i18n key resolution (`assert_ne!(text, key)`) | Hover screenshot comparison |
 
 **Ironclad Rule for Bugs/Regressions:**
 When a bug or regression occurs, **before modifying any code, you have an absolute obligation to first reproduce and bound that failure (the bug's behavior) using TDD (RED)**.
@@ -369,7 +378,7 @@ Prerequisites for allowing a PR to be merged:
 1. **Format**: Passes `cargo fmt --all -- --check`
 2. **Clippy**: Passes `cargo clippy --workspace -- -D warnings` (Zero warnings)
 3. **Tests (Logic)**: Passes all `cargo test --workspace`
-4. **Tests (Integration)**: Passes `make test-integration` (No UI Snapshot Regressions)
+4. **Tests (Integration)**: Passes `make test-integration` (response-based assertions only, no snapshots)
 5. **Test Placement**: New logic has accompanying UT in `src/` inline `#[cfg(test)]`; IT for cross-boundary scenarios in the `tests/` directory
 6. **Coverage**: Passes `cargo llvm-cov --workspace --fail-under-lines 100`
 

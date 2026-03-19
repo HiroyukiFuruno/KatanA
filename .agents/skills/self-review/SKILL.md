@@ -86,7 +86,8 @@ Ensure tests are not distorted just to make them pass.
 - [ ] Assertions compare against concrete expected values
 - [ ] No unjustified relaxation of linter rules or allowed-list expansion. If done, is the reason legitimate?
 - [ ] No intentional test disabling via `#[ignore]` or `#[cfg(not(test))]`
-- [ ] Snapshot updates are expected diffs caused by the change (not silent regressions)
+- [ ] **No new snapshot tests** (`snapshot_options`, `UPDATE_SNAPSHOTS`) are introduced. Snapshot testing is **prohibited (NG)**.
+- [ ] IT uses **response-based assertions** (Rect, state changes, color values, i18n key resolution), NOT snapshot image comparison
 - [ ] No unnatural code contortions to bypass the coverage gate
 
 ---

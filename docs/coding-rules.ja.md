@@ -243,7 +243,7 @@ crates/katana-core/
 |------|------|--------------|
 | Unit Test (UT) | `src/` 内インライン `#[cfg(test)]` | **100%（例外なし）** |
 | Integration Test (IT) | `tests/` ディレクトリ | 主要公開 API フロー網羅 |
-| UI Integration Test | `tests/integration/` (egui_kittest) | 全MVPシナリオ、および実レスポンス（Node, Rect等）のアサーション。**Snapshot非推奨** |
+| UI Integration Test | `tests/integration/` (egui_kittest) | 全MVPシナリオ、および実レスポンス（Node, Rect等）のアサーション。**Snapshotテストは禁止（NG）** |
 
 カバレッジ測定: `cargo llvm-cov --workspace --fail-under-lines 100`（CI 強制）
 
@@ -275,11 +275,20 @@ crates/katana-core/
 ❌ 実装を通すためにテストを削除または弱体化する
 ```
 
-#### egui_kittest による UI テスト (Snapshotの廃止と実レスポンス検証)
+#### egui_kittest による UI テスト (Snapshotは禁止（NG）— 実レスポンス検証)
 
 **ベストプラクティス：UIの検証は「実レスポンス（出力）」を検証すること。**
-UIにおける「差分しか検出できないSnapshotテスト (`.png` 比較)」への依存は技術的負債として現在廃止（非推奨）します。
-Snapshotテストは実行が遅く、失敗しても開発者が「ただ画像がズレただけ」と脳死で `UPDATE_SNAPSHOTS=1` を叩いてしまうため、デグレードの担保として全く機能しません。
+UIにおける「差分しか検出できないSnapshotテスト (`.png` 比較)」への依存は技術的負債として**禁止（NG）**とする。
+Snapshotテストは実行が遅く、失敗しても開発者が「ただ画像がズレただけ」と脳死で `UPDATE_SNAPSHOTS=1` を叩いてしまうため、デグレードの担保として全く機能しない。
+
+**正しいITパターン — ロジックを直接検証する：**
+
+| 検証対象 | 正しいアプローチ (✅) | アンチパターン (❌) |
+|---|---|---|
+| ウィジェット配置 | AccessKitノードから `Rect` の位置・幅をアサート | レンダリング画像のSnapshot比較 |
+| クリック動作 | クリック → 状態変化をアサート（例: `active_doc_idx`） | Snapshotでホバー/ハイライトを目視 |
+| 色・視認性 | 色チャンネル値をコントラスト閾値と比較 | スクリーンショートのピクセル比較 |
+| ツールチップ | i18nキー解決をアサート（`assert_ne!(text, key)`） | ホバーSnapshotの比較 |
 
 **不具合・デグレード発生時の鉄則：**
 不具合やデグレードが発生した際は、**コードを修正する前に、まずTDD（RED）でその失敗（バグの挙動）を再現・制限すること**を絶対の義務とします。
@@ -373,7 +382,7 @@ PR をマージ可能とするための必須条件:
 1. **フォーマット**: `cargo fmt --all -- --check` パス
 2. **Clippy**: `cargo clippy --workspace -- -D warnings` パス（warning ゼロ）
 3. **テスト (ロジック)**: `cargo test --workspace` 全パス
-4. **テスト (統合)**: `make test-integration` パス（UI スナップショット回帰なし）
+4. **テスト (統合)**: `make test-integration` パス（実レスポンス・アサーションのみ、Snapshot不使用）
 5. **テスト配置**: 新規ロジックには `src/` 内インライン UT、または境界横断シナリオ向けの `tests/` 配下 IT が付随している
 6. **カバレッジ**: `cargo llvm-cov --workspace --fail-under-lines 100` パス
 
