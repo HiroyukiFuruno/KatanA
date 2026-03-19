@@ -48,9 +48,8 @@ impl MigrationStrategy for Migration0_1_2 {
                 layout_map.insert("pane_order".to_string(), json!("EditorFirst"));
             }
 
-            // Move `toc_visible` and `last_workspace` inside `workspace` or keep top-level?
-            // Wait, implementation_plan says "settings_json_ko_kaisouka".
-            // Let's create `workspace` and `layout`
+            // `toc_visible` and `last_workspace` remain at the top level;
+            // only theme/font/layout are grouped into nested objects.
             map.insert("version".to_string(), json!("0.1.3"));
             map.insert("theme".to_string(), serde_json::Value::Object(theme_map));
             map.insert("font".to_string(), serde_json::Value::Object(font_map));

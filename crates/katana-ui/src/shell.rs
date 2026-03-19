@@ -729,16 +729,19 @@ mod tests_extra {
 
     #[test]
     fn download_with_curl_launch_error() {
-        // Temporarily clear PATH to simulate a system without curl installed
+        // Temporarily clear PATH to simulate a system without curl installed.
+        // SAFETY: This test modifies the environment, which is unsafe in
+        // multi-threaded contexts. Acceptable here because the value is
+        // immediately restored after the test call.
         let old_path = std::env::var_os("PATH").unwrap_or_default();
-        std::env::set_var("PATH", "/invalid_path_for_test");
+        unsafe { std::env::set_var("PATH", "/invalid_path_for_test") };
 
         let dir = tempfile::tempdir().unwrap();
         let dest = dir.path().join("dest.txt");
         let result = download_with_curl("http://example.com/file", &dest);
 
         // Restore PATH
-        std::env::set_var("PATH", old_path);
+        unsafe { std::env::set_var("PATH", old_path) };
 
         assert!(result.is_err());
         let err = result.unwrap_err();
