@@ -1075,12 +1075,12 @@ mod tests_extra {
         let file_path = dir.path().join("a.md");
         std::fs::write(&file_path, "A").unwrap();
         app.handle_open_workspace(dir.path().to_path_buf());
-        app.handle_open_workspace_file(file_path.clone());
+        app.handle_select_document(file_path.clone());
 
-        let mut doc = app.state.active_document_mut().unwrap();
+        let doc = app.state.active_document_mut().unwrap();
         doc.buffer = "B".to_string(); // bypass update_buffer to bypass hash updates
 
-        app.handle_open_workspace_file(file_path.clone());
+        app.handle_select_document(file_path.clone());
         let tab = app
             .tab_previews
             .iter()
