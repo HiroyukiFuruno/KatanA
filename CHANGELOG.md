@@ -6,157 +6,256 @@ All notable changes to KatanA Desktop will be documented in this file.
 
 ### 🐛 Bug Fixes
 
-- **Workspace file alignment**: Fixed file entry labels being right-aligned (stretched to full row width) in the workspace panel — now properly left-aligned.
-- **Font size slider visibility**: Improved contrast of the font size slider rail on dark themes by applying accent color styling with brightness-boosted inactive state.
-
-### ✨ Features
-
-- **Tab navigation tooltips**: Added i18n tooltips to the ◀/▶ tab navigation buttons ("Move to previous/next tab").
-- **Font slider hover hint**: Added an i18n tooltip to the font size slider describing drag-to-adjust usage.
+- ワークスペースファイルエントリの左寄せ修正
+- ライトテーマでフォントサイズスライダーが不可視になる問題を修正
+- スライダーにselection colorのborderを付与し全テーマで視認性確保
+- Markdownプレビューのテーブルが利用可能幅を使うよう修正
+- テーブルレイアウトおよび上下分割スクロールの不具合を修正
 
 ### 📚 Documentation
 
-- Added **Diagram Rendering Setup** guide to README (EN/JA) with installation steps for Mermaid CLI and PlantUML.
+- READMEにダイアグラム表示ガイドとbrewアップデート方法を追加
+- Snapshot禁止(NG)ルールをcoding-rules・self-reviewに追記
+- Brewアップデート方法をREADMEに追加
+
+### 🔧 Miscellaneous
+
+- V0.1.2 リリース準備
+- Fix flaky view mode integration test by adding ui stabilization steps
+- Warningのerror化と未使用コードの削除
+
+### 🚀 Features
+
+- タブナビ・スライダーにi18nツールチップ追加
+
+### 🧪 Testing
+
+- UIバグに対するTDD検証テストの追加とスナップショット更新
 
 ## [0.1.1] - 2026-03-19
 
-### ✨ Features
+### 🐛 Bug Fixes
 
-- **Hidden Directory Support**: workspace file tree now includes hidden directories (`.`-prefixed, e.g. `.github`, `.vscode`) if they contain `.md` files.
-- **Refresh Workspace Button**: Added a 🔄 button to the workspace panel toolbar to reload the directory tree from disk.
+- Homebrew Cask更新ステップにエラーハンドリングを追加
+- キャッシュされた古いDMGファイルの混入を防止
+- Emoji.rsのmacOS専用コードにcfgガードを追加（Linux CI Lint修正）
+
+### 🚀 Features
+
+- 隠しディレクトリのワークスペースツリー表示対応とディレクトリ更新ボタンの追加
 
 ## [0.1.0] - 2026-03-19
 
-Major update introducing a dedicated Settings window, allowing flexible customization of themes, fonts, and layouts to significantly improve UI/UX.
+### ⏪ Reverted
 
-### ✨ Features
-
-- **10 Theme Presets & Color Customization**: Now includes 10 popular dark/light theme presets (e.g., Katana-Dark, Dracula, Nord) with support for custom color overrides.
-- **OS Theme Sync**: Automatically selects the optimal theme based on your macOS system appearance (Dark/Light mode) on the first launch.
-- **Extended Font Settings**: Configurable font family and size (8px-32px) for both editor and preview panes.
-- **Incremental Search**: Added a real-time filtering UI to quickly search and select from the font list.
-- **Apple Color Emoji Support**: Emojis are now rendered correctly in the preview pane on macOS environments.
-- **Dedicated Settings UI**: Introduced an overlay Settings window with real-time preview and instant auto-save.
-- **Flexible Layouts**: Improved responsive 50:50 window splitting. You can now toggle split directions (Horizontal/Vertical) and swap the order of the editor and preview panes.
-
-### 🐛 Bug Fixes
-
-- Fixed a regression where the previous workspace state was not correctly restored upon app restart.
-- Fixed `mmdc` (Mermaid CLI) execution failures from GUI app launch by auto-completing Node's PATH environment variable.
-- Fixed cramped layout issues by adjusting margins for headings and HTML blocks.
-
-### 🔧 Miscellaneous
-
-- Added Homebrew Cask support (`brew install --cask`) for seamless installation and updates.
-- Enforced stricter quality checks in the custom linter (e.g., prohibiting `todo!` macros) and updated coding guidelines.
-
-## [0.0.3] - 2026-03-18
-
-Bug fixes for diagram rendering readability and .app bundle compatibility, plus testing improvements.
-
-### 🐛 Bug Fixes
-
-- Fixed DrawIo diagram text being unreadable in dark theme due to insufficient contrast — introduced `drawio_label_color` in presets with proper fallback
-- Fixed `mmdc` (Mermaid CLI) not being found when launched from .dmg/.app bundle on systems with nvm lazy-loading or non-standard PATH configurations
-- Fixed CI snapshot test failures caused by environment-dependent rendering differences
-- Fixed i18n test flakiness caused by global state contention between parallel tests
-
-### ✨ Improvements
-
-- Expanded `mmdc` binary resolution to a 6-tier fallback chain: `MERMAID_MMDC` env var → Homebrew (`/opt/homebrew/bin`, `/usr/local/bin`) → nvm/volta/fnm direct filesystem probe → `which` → `/bin/zsh -l -c` login shell → bare `mmdc`, with `OnceLock` process-wide caching for sub-millisecond subsequent lookups
-- Refined coverage exclusion rationale — replaced vague "planned for DI" comments with precise technical reasons (egui frame context dependency, OnceLock cache behavior)
-- Extracted magic numbers into named constants (`CHANNEL_MAX`, `LUMA_R/G/B`, `RENDER_POLL_INTERVAL_MS`) for improved readability
-
-### 🧪 Testing
-
-- Added diagram rendering snapshot tests covering all diagram types (Mermaid, PlantUML, DrawIo) and fallback states (CommandNotFound, RenderError, Pending)
-- Added sample fixture integration tests for EN/JA Markdown documents with HTML, badges, and diagrams
-- Added AST linter test for `#[cfg(test)]` impl method skip logic
-- Added `drawio_label_color` and `relative_luminance` unit tests in color_preset module
-
-## [0.0.2] - 2026-03-17
-
-Second release focusing on HTML rendering fidelity, test coverage, and documentation.
-
-### 🚀 Features
-
-- Native support for `align="center"` HTML attributes within Markdown (e.g., `<p align="center">`, `<h1 align="center">`)
-
-### 🐛 Bug Fixes
-
-- Fixed unreachable code paths in UI pane components to achieve 100% LLVM coverage
-- Resolved rendering bugs where multi-element centered blocks (like README badges and links) collided horizontally due to egui layout ID reuse
-- Fixed image resolution paths and Markdown processing for standalone inline tags
-- Resolved Linux cross-compilation errors for GitHub Actions
-
-### 📚 Documentation
-
-- Added explicit TDD (Test-Driven Development) enforcement policies to coding rules (EN/JA)
-- Restored `xattr` command instructions for initial launch on macOS
-
-### 🧪 Testing
-
-- Expanded integration tests with precision bounds assertions to prevent UI layout regressions
-- Increased image snapshot tolerance to absorb CI/local macOS text rendering differences
-
-### 🔧 Miscellaneous
-
-- Disabled `sccache` to prevent cross-compilation cache issues while keeping workflow cache optimizations
-- Refined CI pipeline for better stability on snapshot tests
-
-## [0.0.1] - 2026-03-16
-
-First public release of KatanA Desktop 🎉
-
-### 🚀 Features
-
-- Rust + egui based native macOS Markdown workspace
-- Live split-view preview with scroll synchronization
-- Diagram rendering (Mermaid, PlantUML, Draw.io)
-- GitHub Flavored Markdown support (tables, strikethrough, task lists, footnotes)
-- Workspace-aware file tree navigation
-- Tab bar for multi-document editing
-- i18n support (English & Japanese)
-- Settings persistence (workspace, language)
-- macOS .app bundle and .dmg installer
-- Automated release pipeline with changelog generation
-- Ad-hoc code signing for smooth installation
-- AST Linter for coding standards enforcement
+- Release.ymlとREADMEをv0.0.3の状態に戻す
+- V0.0.4の変更を取り消し、v0.0.3の状態に戻す
 
 ### ♻️ Refactoring
 
-- Separated egui rendering logic from event routing
-- Extracted magic numbers into named constants
-- Migrated tests from src/ to tests/ directory
-- Externalized language definitions to locales/languages.json
-- Translated source code comments and strings to English
+- Make ci → make check リネーム + make check-light 新設
+- Os_fonts.rs のインラインテストを tests/ に移動し日本語コメントを英語化
+
+### 🎨 Styling
+
+- #[allow] 属性に理由コメントを追加（coding-rules セクション10準拠）
 
 ### 🐛 Bug Fixes
 
-- Fixed code block rendering inside lists (pre-processing de-indent)
-- Fixed flaky snapshot tests
-- Fixed lazy loading, Mermaid font, and desktop forced-move issues
-- macOS sed compatibility fix for Info.plist updates
+- .app署名を改善（--deep廃止、runtime/timestamp指定、DMGは未署名のまま）
+- 起動時にワークスペースが復元されないデグレードを修正
+- Vendor egui_commonmarkに絵文字対応パッチを適用
 
 ### 📚 Documentation
 
-- User-facing README with installation guide (EN/JA)
-- "What is KatanA" section explaining the name origin (Katana × Agent)
-- Developer guide moved to docs/
-- Architecture Decision Records (ADR)
-- Coding rules and i18n conventions
-- GitHub Sponsors integration
-
-### 🧪 Testing
-
-- 100% line coverage gate (cargo-llvm-cov)
-- Integration tests for preview synchronization
-- Settings persistence round-trip tests
-- CodeQL security scanning
+- Define Versioning Policy and refine CI triggers
+- Make check コマンドのインデントを他コマンドと統一
+- コーディング規約および自己レビュー基準の更新
+- コードブロックの言語指定（text）を日英版で統一
+- CHANGELOG v0.1.0-dev 追記およびREADME.ja.mdの同期修正
 
 ### 🔧 Miscellaneous
 
-- CI/CD pipeline (GitHub Actions) with sccache optimization
-- Release automation with git-cliff
-- lefthook pre-commit/pre-push hooks
-- FUNDING.yml for GitHub Sponsors
+- Pre-push hookにglobフィルタを追加し、コード変更を伴わないpushのCI実行をスキップ
+- V0.0.4 リリース準備
+- Make check-light から fixture テストを除外
+- スナップショット更新時の不要な旧バックアップ画像 (.old.png) をGit追跡対象から除外
+- カバレッジゲートの除外ルールを拡張（return None/false/display/Pending）
+- V0.1.0 リリース準備（バージョン番号更新）
+
+### 🚀 Features
+
+- Homebrew Cask対応を追加
+- テーマプリセット10種と ThemeColors 基盤を実装（Task 1） (#23)
+- フォントサイズ・ファミリー設定の基盤実装（Task 2）
+- テーマ連動・設定画面実装とスナップショットの更新 (WIP)
+- OSフォントの動的取得とUIへの反映機能を追加
+- タスク4 エディタ/プレビューレイアウト設定を実装
+- タスク5 OSテーマ連動（初回デフォルト自動選択）を実装
+- タスク6 フォント設定拡張（検索機能 + Apple Color Emoji）を実装
+- Linterに厳密な品質チェック（todo!マクロ等の使用禁止など）を追加
+- フォント検索・絵文字対応およびプレビュー等のUI機能改善
+- 絵文字インライン描画基盤の実装とSVG/HTTPキャッシュローダーの分離
+- AST Linterにlazyコード検出テストと#[cfg(test)]モジュール除外を追加
+
+### 🧪 Testing
+
+- カバレッジ改善のためのテスト追加
+
+## [0.0.3] - 2026-03-18
+
+### ♻️ Refactoring
+
+- マジックナンバー定数化とAST linterテスト拡充
+- Ignoreタグをlimited_localに統一
+
+### 🐛 Bug Fixes
+
+- Coverageジョブをローカルのmake coverageと統一
+- ダークテーマでのDrawIo図テキスト視認性を改善
+- .appバンドルからのmmdc解決を6層フォールバックに拡張
+- ダイアグラム系スナップショットテストをCI環境でスキップ
+- Mmdc実行時にnodeのPATHを補完してGUIアプリからの起動を修正
+- HTMLブロックの上下に余白を追加しレイアウトの窮屈さを解消
+
+### 📚 Documentation
+
+- READMEのバージョン固定セクションを動的なステータス表記に変更
+
+### 🔧 Miscellaneous
+
+- カバレッジ除外理由を正確な技術的根拠に更新
+- V0.0.3 リリース準備
+- リリースノートをCHANGELOG.mdからの抽出に変更
+
+### 🧪 Testing
+
+- スナップショットテストのCI環境依存エラーを修正
+- I18nの複数テストにおけるグローバルステートの競合エラーを修正
+- ダイアグラムレンダリングとサンプルフィクスチャの統合テストを追加
+
+## [0.0.2] - 2026-03-17
+
+### 🐛 Bug Fixes
+
+- Resolve linux cross-compilation errors for github actions
+- Resolve markdown rendering, i18n label update, and CI coverage flakiness
+- Support CenteredMarkdown for raw HTML alignment reproduction
+- CenteredMarkdown の中央寄せ・画像パス解決・バッジ表示を修正
+
+### 📚 Documentation
+
+- 初開起動時のxattrコマンド手順を復元
+
+### 🔧 Miscellaneous
+
+- Kick ci to retry integration tests
+- Release v0.0.2
+- Include Cargo.lock and CHANGELOG.ja.md in release v0.0.2
+
+### 🧪 Testing
+
+- Update integration test snapshot
+- Increase snapshot tolerance to 4000 to absorb CI/local macOS text rendering differences
+
+## [0.0.1] - 2026-03-16
+
+### ⏪ Reverted
+
+- Sccacheを撤回、キャッシュパス最適化のみ維持
+
+### ♻️ Refactoring
+
+- Drawio_renderer のclippy警告を修正
+- テストを src/ から tests/ ディレクトリに移行し、Clippy を厳格化
+- Katana-ui を lib/binary 構造にリファクタリングし、ロジックを抽出
+- マジックナンバーを用途明確な名前付き定数に抽出
+- 言語定義をlocales/languages.jsonに外部化
+- Span_locationの重複をフリー関数に統合(自己レビュー修正)
+- Egui描画ロジックとイベントルーティングの分離
+- ソースコードとテストの日本語コメント・文字列を英語化
+- UIレイアウト改善とリンターモジュール追加
+
+### ⚡ Performance
+
+- CI/CDにsccacheとキャッシュ最適化を導入
+
+### 🐛 Bug Fixes
+
+- Clippy 警告・フォーマット・30行制限の修正
+- スクリーンショットで確認した問題を修正
+- PLANTUML_JAR を排他的オーバーライドにしてテストを安定化
+- 3問題を修正 — レイジーロード・Mermaidフォント・デスクトップ強制移動
+- スナップショットテストのフレーキー問題を修正
+- Eguiのレイアウト制約を回避するためリスト内のコードブロックを前処理でデインデントする
+- MacOS sed互換性のためInfo.plist更新をPerlに変更
+- Release CDにad-hocコード署名を追加
+- CIトリガーのブランチ名をmasterに修正、Cargo.lock更新
+- Sccache-actionのSHA修正、CHANGELOG英語/日本語版を整備
+- Cargo installでsccacheを一時無効化（競合回避）
+- CI LintジョブでRUSTC_WRAPPERを無効化（clippy互換性）
+
+### 📚 Documentation
+
+- Mark test compilation, tab UI, and plantuml macos bug as done
+- Coding-rulesにi18n規約（セクション11）を追加
+- README・ドキュメントテンプレート追加、.obsidianをgitignore対象に変更
+- プロジェクト基盤ファイル追加 — LICENSE(MIT)、README、開発環境セットアップスクリプト
+- ADR(Architecture Decision Records)と統合テストシナリオを追加
+- 技術的負債メモ(TECHNICAL_DEBT.md)を追加
+- Organize-documentsのopenspecを追加
+- 共通ドキュメント周りの英語化と日本語版(*.ja.md)の並行整備およびopenspecアーカイブ
+- プロジェクト名をKatanAに統一（README、Cargo.toml、設定コメント）
+- ドキュメントを一般配布向けに再構築 (#21)
+- 「What is KatanA」セクションを追加（英語/日本語）
+- KatanAの末尾「A」= Agentの由来を追記
+
+### 🔧 Miscellaneous
+
+- Bootstrap katana repository
+- Remove opsx prompt files
+- Align gitignore with official templates
+- Task 6.2 完了マーク — bootstrap-katana-macos-mvp 全タスク完了
+- Openspecディレクトリをgit管理から除外
+- Gitignore更新（openspec, obsidian設定, katana-core .gitignore統合）
+- 不要なドキュメントテンプレートとREADMEを削除
+- CI カバレッジジョブ追加と品質ゲートの明文化
+- Desktop-viewer-polishに向けたCI要件の厳格化と不要アセット削除
+- Lefthookの検証コマンドをMakefileに統合・自動修正化
+- 依存関係の更新 (dirs-sys 0.5.0, rfd 0.17.2, egui_commonmark features追加)
+- GitHub Sponsors用のFUNDING.ymlを追加
+- Cliff.tomlからCI botコミットを除外する設定を追加
+- V0.0.1 リリース準備
+
+### 🚀 Features
+
+- Bootstrap Katana macOS MVP — Rust プロジェクト基盤と全コアモジュールの実装
+- Task 3.2 — ネイティブ Markdown プレビューペイン実装
+- I18n support, language setting, appAction expansion, bin rename
+- ダイアグラムレンダリング改善（drawio矢印対応、mermaid PNG出力、CommandNotFound区別）
+- ファイルシステムサービス拡張（ワークスペースツリー・ファイル監視改善）
+- タブ別プレビュー管理、スクロール同期、macOSネイティブメニュー、ワークスペースパネル制御
+- 検証強化 — lefthook導入、テスト追加、Clippy厳格化、品質ゲート定義
+- AST Linter(katana-linter)を導入 — i18nハードコード文字列・マジックナンバー検知
+- Apply Katana app icon and version for native About panel (#15)
+- 設定の永続化基盤を実装（JsonFileRepository + SettingsService）
+- ワークスペース・言語変更時に設定を自動保存
+- 起動時に保存済み設定（ワークスペース・言語）を復元
+- プレビュー機能改善 (画像パス解決、セクション分割の先頭フェンス対応、ダイアグラムレンダラー改善)
+- About画面の改善とアプリ表示名KatanAへの統一
+- MacOSアプリバンドル(.app)パッケージングの追加 (#18)
+- MacOS DMGインストーラー生成の追加 (#19)
+- リリース自動化（git-cliff + make release） (#20)
+- リリースCDワークフロー(.github/workflows/release.yml)を新設 (#22)
+- GitHub SponsorsのURL設定とREADME日本語版の追加
+
+### 🧪 Testing
+
+- Task 6.2 — プレビュー同期テスト追加
+- Add app state unit tests and fix java headless mode for plantuml
+- プレビュー同期のユニットテストを追加（タスク3.2完了）
+- カバレッジ厳格化 — ignore-filename-regex 撤去・#[coverage(off)] 全廃・Regions 100% 強制
+- LLVMカバレッジ算出の差異対応とテスト100%ゲートの厳密化
+- 永続化ラウンドトリップの統合テストを追加
+
+
