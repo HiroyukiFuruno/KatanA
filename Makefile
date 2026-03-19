@@ -85,6 +85,8 @@ endif
 	@echo "🚀 Releasing v$(VERSION)..."
 	@# 1. Update workspace version in root Cargo.toml
 	sed -i '' 's/^version = ".*"/version = "$(VERSION)"/' Cargo.toml
+	@# - Sync Cargo.lock
+	cargo check --workspace >/dev/null 2>&1 || true
 	@# 2. Update Info.plist version
 	perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$$1v$(VERSION)$$2/' crates/katana-ui/Info.plist
 	@# 3. Generate/update CHANGELOG.md
