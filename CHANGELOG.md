@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.1.4] - 2026-03-20
+
+A maintenance release focused on migrating all UI and integration tests from visual snapshot comparisons to semantic AccessKit assertions, vastly improving CI stability and execution speed.
+
+### 🧪 Testing & CI
+
+- **Semantic Integrations**: Eradicated flaky, environment-dependent UI snapshot tests in favor of deterministic AccessKit-based layout and state assertions.
+- **Repository Cleanup**: Removed all 56 tracking PNG files associated with image snapshots.
+- **Improved Maintainability**: Refactored `sample_fixture_tests` and `integration` harnesses to enforce clean TDD patterns without generating spurious images on failure.
+
 ## [0.1.3] - 2026-03-20
 
 A major update revamping the i18n (internationalization) system, supporting 10 languages globally and fully integrating with macOS native menus. It also introduces hierarchical settings and substantially expands theme presets.

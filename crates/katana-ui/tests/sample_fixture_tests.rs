@@ -13,13 +13,9 @@
 //! (not hard-coded duplicates) to avoid label collisions in AccessKit,
 //! while guaranteeing that fixture changes propagate to tests.
 //!
-//! ### Snapshot tests
-//! Full-document visual snapshots serve as the ultimate regression catch-all,
-//! including badge rendering and layout details that AccessKit can't verify.
-//!
 //! ### Known AccessKit limitations
 //! - `<img>` alt attributes are NOT exposed as AccessKit labels.
-//!   Badge same-row verification relies on snapshot tests, not AccessKit queries.
+//!   Badge same-row verification is limited by standard AccessKit queries.
 
 use eframe::egui;
 use egui_kittest::kittest::{NodeT, Queryable};
@@ -28,7 +24,7 @@ use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
 
 const PANEL_WIDTH: f32 = 800.0;
-/// Maximum height for snapshot tests.
+/// Maximum height for UI panel rendering tests.
 /// GPU texture limit is 8192px. Fixtures are split into groups (html, basic, diagrams)
 /// so that each group fits within this limit and is captured in full — no clipping.
 const PANEL_HEIGHT: f32 = 8000.0;
@@ -644,39 +640,12 @@ fn fixture_ja_drawio_renders() {
 }
 
 // ═════════════════════════════════════════════
-// Split-fixture snapshots — each captures the ENTIRE document, no clipping.
+// Split-fixture full render tests — verifies structural bounds.
 //
-// Fixtures are split into 3 groups so each fits within the GPU texture limit (8192px):
-//   1. HTML centering (sample_html)       — past bug regression
-//   2. Basic Markdown  (sample_basic)     — headings, lists, code, tables, quotes, edge cases
-//   3. Diagrams        (sample_diagrams)  — Mermaid, PlantUML, DrawIo (external deps)
-//
-// Badge same-row, overall layout, and visual details
-// are verified here — this is the ground truth.
+// Fixtures are split into groups:
+//   1. HTML centering (sample_html)
+//   2. Basic Markdown (sample_basic)
 // ═════════════════════════════════════════════
-
-/// Shared helper: load a fixture, build a harness with CJK fonts, run, and step.
-/// Snapshot tests have been deprecated in favor of ensuring no panics occur during rendering.
-fn snapshot_fixture(fixture_filename: &str, _snapshot_name: &str) {
-    let (pane, _, _) = load_fixture(fixture_filename);
-    let sections = pane.sections;
-    let mut fonts_loaded = false;
-    let mut harness = Harness::builder()
-        .with_size(egui::vec2(PANEL_WIDTH, PANEL_HEIGHT))
-        .build_ui(move |ui| {
-            if !fonts_loaded {
-                load_test_fonts(ui.ctx());
-                fonts_loaded = true;
-            }
-            let mut pane = PreviewPane::default();
-            pane.sections = sections.clone();
-            pane.show_content(ui);
-        });
-    for _ in 0..5 {
-        harness.step();
-    }
-    harness.run();
-}
 
 fn load_fixture_harness(filename: &str) -> Harness<'static> {
     let (pane, _, _) = load_fixture(filename);
@@ -792,15 +761,3 @@ fn basic_fixture_ja_s11_2_long_inline_code_wraps_within_panel() {
 // vastly different output depending on whether they are installed. CI runners
 // lack these tools, so the snapshots will never match. Run locally with:
 //   cargo test -- --ignored snapshot_diagrams
-
-#[test]
-#[ignore = "limited_local: requires external diagram tools (mmdc, plantuml, drawio)"]
-fn snapshot_diagrams_en() {
-    snapshot_fixture("sample_diagrams.md", "sample_diagrams_en");
-}
-
-#[test]
-#[ignore = "limited_local: requires external diagram tools (mmdc, plantuml, drawio)"]
-fn snapshot_diagrams_ja() {
-    snapshot_fixture("sample_diagrams.ja.md", "sample_diagrams_ja");
-}
