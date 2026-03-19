@@ -10,6 +10,7 @@
 //! - Future theme system can swap presets without touching renderer internals.
 
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::OnceLock;
 
 /// A complete theme preset for preview rendering and editor configuration.
 ///
@@ -17,7 +18,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 /// Font candidate paths are OS-specific absolute paths, tried in priority order.
 /// Use `DARK` / `LIGHT` associated constants for built-in presets,
 /// or create a custom preset with partial overrides via builder methods.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct DiagramColorPreset {
     // ── Common Colors ──
     /// Background color for diagram canvases.
@@ -61,15 +62,15 @@ pub struct DiagramColorPreset {
 
     // ── Font Settings ──
     /// OS font paths for proportional (body text) family, in priority order.
-    pub proportional_font_candidates: &'static [&'static str],
+    pub proportional_font_candidates: Vec<&'static str>,
     /// OS font paths for monospace (code) family, in priority order.
-    pub monospace_font_candidates: &'static [&'static str],
+    pub monospace_font_candidates: Vec<&'static str>,
     /// OS font paths for emoji fallback family, in priority order.
     ///
     /// TODO: In the future, when fully supporting Windows / Linux, this should be modified
     /// to dynamically switch the font candidate list using `cfg!(target_os)`.
     /// Currently, candidates for all OSs are listed flatly, and the first found is used.
-    pub emoji_font_candidates: &'static [&'static str],
+    pub emoji_font_candidates: Vec<&'static str>,
     /// Font size for the code editor TextEdit (in egui points).
     pub editor_font_size: f32,
 }
@@ -79,116 +80,122 @@ impl DiagramColorPreset {
     const DEFAULT_EDITOR_FONT_SIZE: f32 = 14.0;
 
     /// Dark theme preset — optimized for dark application backgrounds.
-    pub const DARK: Self = Self {
-        background: "transparent",
-        text: "#E0E0E0",
-        fill: "#2D2D2D",
-        stroke: "#888888",
-        arrow: "#AAAAAA",
-        drawio_label_color: "#1A1A1A",
-        mermaid_theme: "dark",
-        plantuml_class_bg: "#2D2D2D",
-        plantuml_note_bg: "#3A3A3A",
-        plantuml_note_text: "#E0E0E0",
-        syntax_theme_dark: "base16-ocean.dark",
-        syntax_theme_light: "base16-ocean.light",
-        preview_text: "#E0E0E0",
-        proportional_font_candidates: &[
-            // macOS — Hiragino Sans (high-quality CJK + Latin rendering)
-            "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
-            "/System/Library/Fonts/Hiragino Sans GB.ttc",
-            "/System/Library/Fonts/AquaKana.ttc",
-            // Windows — Yu Gothic UI / Meiryo (CJK + Latin)
-            "C:/Windows/Fonts/YuGothR.ttc",
-            "C:/Windows/Fonts/yugothic.ttf",
-            "C:/Windows/Fonts/meiryo.ttc",
-            "C:/Windows/Fonts/segoeui.ttf",
-            // Linux — Noto Sans (widely available via distro packages)
-            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        ],
-        monospace_font_candidates: &[
-            // macOS — Menlo (standard monospace since OS X 10.6)
-            "/System/Library/Fonts/Menlo.ttc",
-            "/System/Library/Fonts/SFMono-Regular.otf",
-            "/System/Library/Fonts/Monaco.ttf",
-            // Windows — Consolas (standard monospace since Vista)
-            "C:/Windows/Fonts/consola.ttf",
-            "C:/Windows/Fonts/cour.ttf",
-            // Linux — standard monospace fonts
-            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-            "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
-        ],
-        emoji_font_candidates: &[
-            // macOS — Apple Color Emoji
-            "/System/Library/Fonts/Apple Color Emoji.ttc",
-            // Windows — Segoe UI Emoji (standard since Windows 8.1)
-            "C:/Windows/Fonts/seguiemj.ttf",
-            // Linux — Noto Color Emoji (widely available via distro packages)
-            "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
-            "/usr/share/fonts/google-noto-emoji/NotoColorEmoji.ttf",
-        ],
-        editor_font_size: Self::DEFAULT_EDITOR_FONT_SIZE,
-    };
+    pub fn dark() -> &'static Self {
+        static DARK: OnceLock<DiagramColorPreset> = OnceLock::new();
+        DARK.get_or_init(|| Self {
+            background: "transparent",
+            text: "#E0E0E0",
+            fill: "#2D2D2D",
+            stroke: "#888888",
+            arrow: "#AAAAAA",
+            drawio_label_color: "#1A1A1A",
+            mermaid_theme: "dark",
+            plantuml_class_bg: "#2D2D2D",
+            plantuml_note_bg: "#3A3A3A",
+            plantuml_note_text: "#E0E0E0",
+            syntax_theme_dark: "base16-ocean.dark",
+            syntax_theme_light: "base16-ocean.light",
+            preview_text: "#E0E0E0",
+            proportional_font_candidates: vec![
+                // macOS — Hiragino Sans (high-quality CJK + Latin rendering)
+                "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+                "/System/Library/Fonts/Hiragino Sans GB.ttc",
+                "/System/Library/Fonts/AquaKana.ttc",
+                // Windows — Yu Gothic UI / Meiryo (CJK + Latin)
+                "C:/Windows/Fonts/YuGothR.ttc",
+                "C:/Windows/Fonts/yugothic.ttf",
+                "C:/Windows/Fonts/meiryo.ttc",
+                "C:/Windows/Fonts/segoeui.ttf",
+                // Linux — Noto Sans (widely available via distro packages)
+                "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            ],
+            monospace_font_candidates: vec![
+                // macOS — Menlo (standard monospace since OS X 10.6)
+                "/System/Library/Fonts/Menlo.ttc",
+                "/System/Library/Fonts/SFMono-Regular.otf",
+                "/System/Library/Fonts/Monaco.ttf",
+                // Windows — Consolas (standard monospace since Vista)
+                "C:/Windows/Fonts/consola.ttf",
+                "C:/Windows/Fonts/cour.ttf",
+                // Linux — standard monospace fonts
+                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+                "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+            ],
+            emoji_font_candidates: vec![
+                // macOS — Apple Color Emoji
+                "/System/Library/Fonts/Apple Color Emoji.ttc",
+                // Windows — Segoe UI Emoji (standard since Windows 8.1)
+                "C:/Windows/Fonts/seguiemj.ttf",
+                // Linux — Noto Color Emoji (widely available via distro packages)
+                "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+                "/usr/share/fonts/google-noto-emoji/NotoColorEmoji.ttf",
+            ],
+            editor_font_size: Self::DEFAULT_EDITOR_FONT_SIZE,
+        })
+    }
 
     /// Light theme preset — optimized for light application backgrounds.
-    pub const LIGHT: Self = Self {
-        background: "transparent",
-        text: "#333333",
-        fill: "#fff2cc",
-        stroke: "#d6b656",
-        arrow: "#555555",
-        drawio_label_color: "#333333",
-        mermaid_theme: "default",
-        plantuml_class_bg: "#FEFECE",
-        plantuml_note_bg: "#FBFB77",
-        plantuml_note_text: "#333333",
-        syntax_theme_dark: "base16-ocean.dark",
-        syntax_theme_light: "InspiredGitHub",
-        preview_text: "#333333",
-        proportional_font_candidates: &[
-            // macOS
-            "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
-            "/System/Library/Fonts/Hiragino Sans GB.ttc",
-            "/System/Library/Fonts/AquaKana.ttc",
-            // Windows
-            "C:/Windows/Fonts/YuGothR.ttc",
-            "C:/Windows/Fonts/yugothic.ttf",
-            "C:/Windows/Fonts/meiryo.ttc",
-            "C:/Windows/Fonts/segoeui.ttf",
-            // Linux
-            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        ],
-        monospace_font_candidates: &[
-            // macOS
-            "/System/Library/Fonts/Menlo.ttc",
-            "/System/Library/Fonts/SFMono-Regular.otf",
-            "/System/Library/Fonts/Monaco.ttf",
-            // Windows
-            "C:/Windows/Fonts/consola.ttf",
-            "C:/Windows/Fonts/cour.ttf",
-            // Linux
-            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-            "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
-        ],
-        emoji_font_candidates: &[
-            // macOS — Apple Color Emoji
-            "/System/Library/Fonts/Apple Color Emoji.ttc",
-            // Windows
-            "C:/Windows/Fonts/seguiemj.ttf",
-            // Linux
-            "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
-            "/usr/share/fonts/google-noto-emoji/NotoColorEmoji.ttf",
-        ],
-        editor_font_size: Self::DEFAULT_EDITOR_FONT_SIZE,
-    };
+    pub fn light() -> &'static Self {
+        static LIGHT: OnceLock<DiagramColorPreset> = OnceLock::new();
+        LIGHT.get_or_init(|| Self {
+            background: "transparent",
+            text: "#333333",
+            fill: "#fff2cc",
+            stroke: "#d6b656",
+            arrow: "#555555",
+            drawio_label_color: "#333333",
+            mermaid_theme: "default",
+            plantuml_class_bg: "#FEFECE",
+            plantuml_note_bg: "#FBFB77",
+            plantuml_note_text: "#333333",
+            syntax_theme_dark: "base16-ocean.dark",
+            syntax_theme_light: "InspiredGitHub",
+            preview_text: "#333333",
+            proportional_font_candidates: vec![
+                // macOS
+                "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+                "/System/Library/Fonts/Hiragino Sans GB.ttc",
+                "/System/Library/Fonts/AquaKana.ttc",
+                // Windows
+                "C:/Windows/Fonts/YuGothR.ttc",
+                "C:/Windows/Fonts/yugothic.ttf",
+                "C:/Windows/Fonts/meiryo.ttc",
+                "C:/Windows/Fonts/segoeui.ttf",
+                // Linux
+                "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            ],
+            monospace_font_candidates: vec![
+                // macOS
+                "/System/Library/Fonts/Menlo.ttc",
+                "/System/Library/Fonts/SFMono-Regular.otf",
+                "/System/Library/Fonts/Monaco.ttf",
+                // Windows
+                "C:/Windows/Fonts/consola.ttf",
+                "C:/Windows/Fonts/cour.ttf",
+                // Linux
+                "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+                "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+            ],
+            emoji_font_candidates: vec![
+                // macOS — Apple Color Emoji
+                "/System/Library/Fonts/Apple Color Emoji.ttc",
+                // Windows
+                "C:/Windows/Fonts/seguiemj.ttf",
+                // Linux
+                "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+                "/usr/share/fonts/google-noto-emoji/NotoColorEmoji.ttf",
+            ],
+            editor_font_size: Self::DEFAULT_EDITOR_FONT_SIZE,
+        })
+    }
 }
 
 pub static DARK_MODE: AtomicBool = AtomicBool::new(true);
@@ -207,9 +214,9 @@ impl DiagramColorPreset {
     /// Returns the currently active preset based on the current UI theme.
     pub fn current() -> &'static Self {
         if Self::is_dark_mode() {
-            &Self::DARK
+            Self::dark()
         } else {
-            &Self::LIGHT
+            Self::light()
         }
     }
 
@@ -267,29 +274,29 @@ mod tests {
 
     #[test]
     fn dark_preset_has_transparent_background() {
-        assert_eq!(DiagramColorPreset::DARK.background, "transparent");
+        assert_eq!(DiagramColorPreset::dark().background, "transparent");
     }
 
     #[test]
     fn light_preset_has_transparent_background() {
-        assert_eq!(DiagramColorPreset::LIGHT.background, "transparent");
+        assert_eq!(DiagramColorPreset::light().background, "transparent");
     }
 
     #[test]
     fn dark_preset_text_is_light() {
-        assert_eq!(DiagramColorPreset::DARK.text, "#E0E0E0");
+        assert_eq!(DiagramColorPreset::dark().text, "#E0E0E0");
     }
 
     #[test]
     fn light_preset_text_is_dark() {
-        assert_eq!(DiagramColorPreset::LIGHT.text, "#333333");
+        assert_eq!(DiagramColorPreset::light().text, "#333333");
     }
 
     #[test]
     fn dark_and_light_presets_differ() {
         assert_ne!(
-            DiagramColorPreset::DARK.text,
-            DiagramColorPreset::LIGHT.text
+            DiagramColorPreset::dark().text,
+            DiagramColorPreset::light().text
         );
     }
 
@@ -297,7 +304,7 @@ mod tests {
     fn current_returns_dark_preset() {
         assert_eq!(
             DiagramColorPreset::current().text,
-            DiagramColorPreset::DARK.text
+            DiagramColorPreset::dark().text
         );
     }
 
@@ -306,7 +313,7 @@ mod tests {
         DiagramColorPreset::set_dark_mode(false);
         assert_eq!(
             DiagramColorPreset::current().text,
-            DiagramColorPreset::LIGHT.text
+            DiagramColorPreset::light().text
         );
         DiagramColorPreset::set_dark_mode(true);
     }
@@ -314,7 +321,7 @@ mod tests {
     #[test]
     fn dark_preset_syntax_theme_is_ocean() {
         assert_eq!(
-            DiagramColorPreset::DARK.syntax_theme_dark,
+            DiagramColorPreset::dark().syntax_theme_dark,
             "base16-ocean.dark"
         );
     }
@@ -322,19 +329,19 @@ mod tests {
     #[test]
     fn light_preset_syntax_theme_light() {
         assert_eq!(
-            DiagramColorPreset::LIGHT.syntax_theme_light,
+            DiagramColorPreset::light().syntax_theme_light,
             "InspiredGitHub"
         );
     }
 
     #[test]
     fn dark_preset_preview_text() {
-        assert_eq!(DiagramColorPreset::DARK.preview_text, "#E0E0E0");
+        assert_eq!(DiagramColorPreset::dark().preview_text, "#E0E0E0");
     }
 
     #[test]
     fn light_preset_preview_text() {
-        assert_eq!(DiagramColorPreset::LIGHT.preview_text, "#333333");
+        assert_eq!(DiagramColorPreset::light().preview_text, "#333333");
     }
 
     #[test]
@@ -376,7 +383,7 @@ mod tests {
     #[test]
     fn dark_preset_has_proportional_font_candidates() {
         assert!(
-            !DiagramColorPreset::DARK
+            !DiagramColorPreset::dark()
                 .proportional_font_candidates
                 .is_empty(),
             "Proportional font candidates must not be empty"
@@ -386,7 +393,7 @@ mod tests {
     #[test]
     fn dark_preset_has_monospace_font_candidates() {
         assert!(
-            !DiagramColorPreset::DARK
+            !DiagramColorPreset::dark()
                 .monospace_font_candidates
                 .is_empty(),
             "Monospace font candidates must not be empty"
@@ -395,7 +402,7 @@ mod tests {
 
     #[test]
     fn dark_preset_monospace_candidates_cover_all_platforms() {
-        let candidates = DiagramColorPreset::DARK.monospace_font_candidates;
+        let candidates = &DiagramColorPreset::dark().monospace_font_candidates;
         let has_macos = candidates.iter().any(|p| p.starts_with("/System/"));
         let has_windows = candidates.iter().any(|p| p.starts_with("C:/Windows/"));
         let has_linux = candidates.iter().any(|p| p.starts_with("/usr/share/"));
@@ -411,7 +418,7 @@ mod tests {
     #[allow(clippy::assertions_on_constants)]
     fn dark_preset_editor_font_size_is_positive() {
         assert!(
-            DiagramColorPreset::DARK.editor_font_size > 0.0,
+            DiagramColorPreset::dark().editor_font_size > 0.0,
             "Editor font size must be positive"
         );
     }
@@ -420,12 +427,12 @@ mod tests {
     fn dark_and_light_have_same_font_candidates() {
         // Font candidates are OS-dependent, not theme-dependent.
         assert_eq!(
-            DiagramColorPreset::DARK.proportional_font_candidates,
-            DiagramColorPreset::LIGHT.proportional_font_candidates,
+            DiagramColorPreset::dark().proportional_font_candidates,
+            DiagramColorPreset::light().proportional_font_candidates,
         );
         assert_eq!(
-            DiagramColorPreset::DARK.monospace_font_candidates,
-            DiagramColorPreset::LIGHT.monospace_font_candidates,
+            DiagramColorPreset::dark().monospace_font_candidates,
+            DiagramColorPreset::light().monospace_font_candidates,
         );
     }
 
@@ -435,7 +442,7 @@ mod tests {
     fn dark_drawio_label_is_dark_color() {
         // DrawIo label text must be dark so it's readable on light fill colors
         let lum =
-            DiagramColorPreset::relative_luminance(DiagramColorPreset::DARK.drawio_label_color);
+            DiagramColorPreset::relative_luminance(DiagramColorPreset::dark().drawio_label_color);
         assert!(
             lum.unwrap() < 0.2,
             "drawio_label_color should be a dark color"
@@ -445,7 +452,7 @@ mod tests {
     #[test]
     fn light_drawio_label_is_also_dark() {
         let lum =
-            DiagramColorPreset::relative_luminance(DiagramColorPreset::LIGHT.drawio_label_color);
+            DiagramColorPreset::relative_luminance(DiagramColorPreset::light().drawio_label_color);
         assert!(
             lum.unwrap() < 0.3,
             "drawio_label_color should be a dark color in light theme too"

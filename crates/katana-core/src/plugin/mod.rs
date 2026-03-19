@@ -5,8 +5,6 @@
 //! - All registrations happen at startup from compile-time definitions.
 //! - Plugins failing to initialize are disabled, not fatal.
 
-use std::collections::HashMap;
-
 /// Plugin API contract version.
 /// Plugins must declare compatibility with this version to be activated.
 pub const PLUGIN_API_VERSION: u32 = 1;
@@ -60,7 +58,7 @@ struct PluginEntry {
 /// The plugin registry: assembled at startup from static built-in definitions.
 #[derive(Default)]
 pub struct PluginRegistry {
-    entries: HashMap<String, PluginEntry>,
+    entries: Vec<PluginEntry>,
 }
 
 impl PluginRegistry {
@@ -97,14 +95,19 @@ impl PluginRegistry {
                 }
             }
         };
-        self.entries
-            .insert(meta.id.clone(), PluginEntry { meta, status });
+        let id = meta.id.clone();
+        if let Some(entry) = self.entries.iter_mut().find(|e| e.meta.id == id) {
+            entry.meta = meta;
+            entry.status = status;
+        } else {
+            self.entries.push(PluginEntry { meta, status });
+        }
     }
 
     /// Return metadata for all plugins that are active and contribute to `point`.
     pub fn active_plugins_for(&self, point: &ExtensionPoint) -> Vec<&PluginMeta> {
         let mut result = Vec::new();
-        for entry in self.entries.values() {
+        for entry in &self.entries {
             if entry.status == PluginStatus::Active && entry.meta.extension_points.contains(point) {
                 result.push(&entry.meta);
             }
@@ -114,7 +117,7 @@ impl PluginRegistry {
 
     /// Status of a plugin by ID.
     pub fn status(&self, id: &str) -> Option<&PluginStatus> {
-        match self.entries.get(id) {
+        match self.entries.iter().find(|e| e.meta.id == id) {
             Some(entry) => Some(&entry.status),
             None => None,
         }
@@ -123,7 +126,7 @@ impl PluginRegistry {
     /// Total number of active plugins.
     pub fn active_count(&self) -> usize {
         let mut count = 0;
-        for entry in self.entries.values() {
+        for entry in &self.entries {
             if entry.status == PluginStatus::Active {
                 count += 1;
             }

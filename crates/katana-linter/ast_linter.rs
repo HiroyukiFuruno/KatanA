@@ -111,26 +111,32 @@ fn is_emoji_or_symbol(c: char) -> bool {
 // ─────────────────────────────────────────────
 
 /// List of UI method names to inspect.
-const UI_METHODS: &[&str] = &[
-    "label",
-    "heading",
-    "button",
-    "on_hover_text",
-    "selectable_label",
-    "checkbox",
-    "radio",
-    "radio_value",
-    "small_button",
-    "text_edit_singleline",
-    "hyperlink_to",
-    "collapsing",
-];
+fn ui_methods() -> Vec<&'static str> {
+    vec![
+        "label",
+        "heading",
+        "button",
+        "on_hover_text",
+        "selectable_label",
+        "checkbox",
+        "radio",
+        "radio_value",
+        "small_button",
+        "text_edit_singleline",
+        "hyperlink_to",
+        "collapsing",
+    ]
+}
 
 /// List of function calls (`Type::func()` format) to inspect.
-const UI_FUNCTIONS: &[&str] = &["new"];
+fn ui_functions() -> Vec<&'static str> {
+    vec!["new"]
+}
 
 /// Target type names for function calls.
-const UI_TYPES_FOR_NEW: &[&str] = &["RichText"];
+fn ui_types_for_new() -> Vec<&'static str> {
+    vec!["RichText"]
+}
 
 struct I18nHardcodeVisitor {
     file: PathBuf,
@@ -227,13 +233,13 @@ impl I18nHardcodeVisitor {
             .last()
             .expect("syn::Path always has at least one segment");
         let func_name = last_segment.ident.to_string();
-        if !UI_FUNCTIONS.contains(&func_name.as_str()) {
+        if !ui_functions().contains(&func_name.as_str()) {
             return;
         }
         let Some(type_name) = extract_type_from_call(&node.func) else {
             return;
         };
-        if !UI_TYPES_FOR_NEW.contains(&type_name.as_str()) {
+        if !ui_types_for_new().contains(&type_name.as_str()) {
             return;
         }
         self.check_string_literal_args(&node.args, &format!("{type_name}::{func_name}"));
@@ -272,7 +278,7 @@ impl<'ast> Visit<'ast> for I18nHardcodeVisitor {
     /// Inspect method call: `receiver.method(args)`.
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         let method_name = node.method.to_string();
-        if UI_METHODS.contains(&method_name.as_str()) {
+        if ui_methods().contains(&method_name.as_str()) {
             self.check_string_literal_args(&node.args, &method_name);
         }
 
@@ -315,11 +321,11 @@ fn has_cfg_test_attr(attrs: &[syn::Attribute]) -> bool {
 /// Numeric literals allowed as magic numbers.
 /// These have clear intent and do not need to be extracted into named constants.
 fn is_allowed_number(value: f64) -> bool {
-    const ALLOWED: &[f64] = &[
+    let allowed: Vec<f64> = vec![
         -1.0, 0.0, 1.0, 2.0, // 100 often appears in percentages and scaling
         100.0,
     ];
-    ALLOWED.iter().any(|it| (*it - value).abs() < f64::EPSILON)
+    allowed.iter().any(|it| (*it - value).abs() < f64::EPSILON)
 }
 
 struct MagicNumberVisitor {
@@ -539,6 +545,94 @@ fn lint_lazy_code(path: &Path, syntax: &syn::File) -> Vec<Violation> {
 }
 
 // ─────────────────────────────────────────────
+// Prohibited Types Detection Visitor
+// ─────────────────────────────────────────────
+
+struct ProhibitedTypesVisitor {
+    file: PathBuf,
+    violations: Vec<Violation>,
+}
+
+impl ProhibitedTypesVisitor {
+    fn new(file: PathBuf) -> Self {
+        Self {
+            file,
+            violations: Vec::new(),
+        }
+    }
+}
+
+impl<'ast> Visit<'ast> for ProhibitedTypesVisitor {
+    fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
+        if has_cfg_test_attr(&node.attrs) {
+            return;
+        }
+        syn::visit::visit_item_mod(self, node);
+    }
+
+    fn visit_item_fn(&mut self, node: &'ast syn::ItemFn) {
+        if has_cfg_test_attr(&node.attrs) {
+            return;
+        }
+        syn::visit::visit_item_fn(self, node);
+    }
+
+    fn visit_impl_item_fn(&mut self, node: &'ast syn::ImplItemFn) {
+        if has_cfg_test_attr(&node.attrs) {
+            return;
+        }
+        syn::visit::visit_impl_item_fn(self, node);
+    }
+
+    fn visit_type_path(&mut self, node: &'ast syn::TypePath) {
+        if let Some(segment) = node.path.segments.last() {
+            if segment.ident == "HashMap" {
+                let (line, column) = span_location(segment.ident.span());
+                self.violations.push(Violation {
+                    file: self.file.clone(),
+                    line,
+                    column,
+                    message: "Prohibited type `HashMap` detected. Please use `Vec` or a typed struct instead.".to_string(),
+                });
+            }
+        }
+        syn::visit::visit_type_path(self, node);
+    }
+
+    fn visit_type_array(&mut self, node: &'ast syn::TypeArray) {
+        use syn::spanned::Spanned;
+        let (line, column) = span_location(node.span());
+        self.violations.push(Violation {
+            file: self.file.clone(),
+            line,
+            column,
+            message: "Fixed-length array `[T; N]` detected. Please use `Vec<T>` instead."
+                .to_string(),
+        });
+        syn::visit::visit_type_array(self, node);
+    }
+
+    fn visit_expr_array(&mut self, node: &'ast syn::ExprArray) {
+        use syn::spanned::Spanned;
+        let (line, column) = span_location(node.span());
+        self.violations.push(Violation {
+            file: self.file.clone(),
+            line,
+            column,
+            message: "Array literal `[...]` detected. Please use `vec![...]` instead.".to_string(),
+        });
+        syn::visit::visit_expr_array(self, node);
+    }
+}
+
+/// Apply prohibited types rule to a single file and return a list of violations.
+fn lint_prohibited_types(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+    let mut visitor = ProhibitedTypesVisitor::new(path.to_path_buf());
+    visitor.visit_file(syntax);
+    visitor.violations
+}
+
+// ─────────────────────────────────────────────
 // Test Entry Point
 // ─────────────────────────────────────────────
 
@@ -647,6 +741,23 @@ fn ast_linter_no_lazy_code() {
             root.join("crates/katana-ui/src"),
         ],
         lint_lazy_code,
+    );
+}
+
+/// Prohibited types rule: Detect HashMap, [T; N] and array literals.
+/// Scope: All crates.
+#[test]
+fn ast_linter_no_prohibited_types() {
+    let root = workspace_root();
+    run_ast_lint(
+        "prohibited-types",
+        "Fix: Use `Vec` instead of `HashMap`, `[T; N]` or `[...]`.",
+        &[
+            root.join("crates/katana-core/src"),
+            root.join("crates/katana-platform/src"),
+            root.join("crates/katana-ui/src"),
+        ],
+        lint_prohibited_types,
     );
 }
 

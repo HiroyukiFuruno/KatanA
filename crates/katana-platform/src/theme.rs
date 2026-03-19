@@ -131,8 +131,8 @@ pub enum ThemePreset {
 
 impl ThemePreset {
     /// All available presets, ordered dark-first.
-    pub fn all() -> &'static [ThemePreset] {
-        &[
+    pub fn all() -> Vec<ThemePreset> {
+        vec![
             Self::KatanaDark,
             Self::Dracula,
             Self::GitHubDark,

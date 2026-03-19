@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use std::collections::HashMap;
 use std::sync::{OnceLock, RwLock};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -246,8 +245,12 @@ const FR_JSON: &str = include_str!("../locales/fr.json");
 const DE_JSON: &str = include_str!("../locales/de.json");
 const ES_JSON: &str = include_str!("../locales/es.json");
 const IT_JSON: &str = include_str!("../locales/it.json");
+pub struct I18nDictionaryEntry {
+    pub lang: &'static str,
+    pub messages: I18nMessages,
+}
 
-static DICTIONARY: OnceLock<HashMap<&'static str, I18nMessages>> = OnceLock::new();
+static DICTIONARY: OnceLock<Vec<I18nDictionaryEntry>> = OnceLock::new();
 static CURRENT_LANGUAGE: RwLock<String> = RwLock::new(String::new());
 
 fn init_current_language() {
@@ -257,9 +260,9 @@ fn init_current_language() {
     }
 }
 
-fn get_dictionary() -> &'static HashMap<&'static str, I18nMessages> {
+fn get_dictionary() -> &'static Vec<I18nDictionaryEntry> {
     DICTIONARY.get_or_init(|| {
-        let entries: &[(&str, &str)] = &[
+        let entries = vec![
             ("en", EN_JSON),
             ("ja", JA_JSON),
             ("zh-CN", ZH_CN_JSON),
@@ -271,15 +274,15 @@ fn get_dictionary() -> &'static HashMap<&'static str, I18nMessages> {
             ("es", ES_JSON),
             ("it", IT_JSON),
         ];
-        let mut map = HashMap::new();
-        for &(code, json) in entries {
-            map.insert(
-                code,
-                serde_json::from_str(json)
+        let mut vec = Vec::new();
+        for (code, json) in entries {
+            vec.push(I18nDictionaryEntry {
+                lang: code,
+                messages: serde_json::from_str(json)
                     .unwrap_or_else(|e| panic!("BUG: {code}.json is invalid: {e}")),
-            );
+            });
         }
-        map
+        vec
     })
 }
 
@@ -300,10 +303,10 @@ pub fn get_language() -> String {
 pub fn get() -> &'static I18nMessages {
     let lang = get_language();
     let dict = get_dictionary();
-    if let Some(msgs) = dict.get(lang.as_str()) {
-        msgs
+    if let Some(entry) = dict.iter().find(|e| e.lang == lang.as_str()) {
+        &entry.messages
     } else {
-        dict.get("en").unwrap()
+        &dict.iter().find(|e| e.lang == "en").unwrap().messages
     }
 }
 

@@ -62,7 +62,8 @@ fn probe_well_known_paths() -> Option<PathBuf> {
 
     // --- Homebrew ---
     // Apple Silicon: /opt/homebrew/bin, Intel Mac: /usr/local/bin
-    for brew_prefix in ["/opt/homebrew/bin/mmdc", "/usr/local/bin/mmdc"] {
+    #[allow(clippy::useless_vec)]
+    for brew_prefix in vec!["/opt/homebrew/bin/mmdc", "/usr/local/bin/mmdc"] {
         let p = PathBuf::from(brew_prefix);
         if p.is_file() {
             return Some(p);
@@ -155,7 +156,7 @@ fn which_from_current_path() -> Option<PathBuf> {
 /// This is the slowest path (~200-500ms) but handles any custom setup.
 fn resolve_via_login_shell() -> Option<PathBuf> {
     let output = Command::new("/bin/zsh")
-        .args(["-l", "-c", "which mmdc"])
+        .args(vec!["-l", "-c", "which mmdc"])
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .output()
@@ -237,7 +238,7 @@ pub fn run_mmdc_process(source: &str) -> Result<Vec<u8>, String> {
 
     let preset = DiagramColorPreset::current();
     let status = build_mmdc_command()
-        .args([
+        .args(vec![
             "-i",
             input_file.path().to_str().unwrap_or(""),
             "-o",

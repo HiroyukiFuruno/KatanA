@@ -1,3 +1,4 @@
+#![allow(clippy::useless_vec)]
 //! Pure egui UI rendering functions for the preview pane.
 //!
 //! This module contains code that depends entirely on the egui UI context (`egui::Ui`).
@@ -41,9 +42,9 @@ pub(crate) fn show_section(
                     ui.add_space(-leading_heading_offset(ui));
                 }
                 let preset = if ui.visuals().dark_mode {
-                    &DiagramColorPreset::DARK
+                    DiagramColorPreset::dark()
                 } else {
-                    &DiagramColorPreset::LIGHT
+                    DiagramColorPreset::light()
                 };
                 let text_color = ui.visuals().override_text_color;
                 let md_path_owned = md_file_path.to_path_buf();
@@ -69,7 +70,7 @@ pub(crate) fn show_section(
             ui.label(
                 egui::RichText::new(crate::i18n::tf(
                     &crate::i18n::get().error.render_error,
-                    &[("kind", kind), ("message", message)],
+                    &vec![("kind", kind.as_str()), ("message", message.as_str())],
                 ))
                 .color(egui::Color32::YELLOW)
                 .small(),
@@ -105,7 +106,7 @@ pub(crate) fn show_section(
                 ui.label(
                     egui::RichText::new(crate::i18n::tf(
                         &crate::i18n::get().preview.rendering,
-                        &[("kind", kind)],
+                        &vec![("kind", kind.as_str())],
                     ))
                     .weak(),
                 );
@@ -152,7 +153,7 @@ fn set_preview_body_family(ui: &mut egui::Ui, family: egui::FontFamily) {
     let style = ui.style_mut();
     style.override_font_id = None;
     style.override_text_style = None;
-    for text_style in [
+    for text_style in vec![
         egui::TextStyle::Body,
         egui::TextStyle::Button,
         egui::TextStyle::Heading,
@@ -176,14 +177,15 @@ pub(crate) fn show_not_installed(
         ui.label(
             egui::RichText::new(crate::i18n::tf(
                 &crate::i18n::get().tool.not_installed,
-                &[("tool", kind)],
+                &vec![("tool", kind)],
             ))
             .color(WARNING_TEXT_COLOR),
         );
+        let path_str = install_path.display().to_string();
         ui.label(
             egui::RichText::new(crate::i18n::tf(
                 &crate::i18n::get().tool.install_path,
-                &[("path", &install_path.display().to_string())],
+                &vec![("path", path_str.as_str())],
             ))
             .small()
             .weak(),
@@ -191,7 +193,7 @@ pub(crate) fn show_not_installed(
         if ui
             .button(crate::i18n::tf(
                 &crate::i18n::get().tool.download,
-                &[("tool", kind)],
+                &vec![("tool", kind)],
             ))
             .clicked()
         {
@@ -207,7 +209,13 @@ pub(crate) fn show_not_installed(
 /// Displays rasterized SVG as an egui texture.
 pub(crate) fn show_rasterized(ui: &mut egui::Ui, img: &RasterizedSvg, _alt: &str, id: usize) {
     let color_img = egui::ColorImage::from_rgba_unmultiplied(
-        [img.width as usize, img.height as usize],
+        std::array::from_fn(|i| {
+            if i == 0 {
+                img.width as usize
+            } else {
+                img.height as usize
+            }
+        }),
         &img.rgba,
     );
     let texture = ui.ctx().load_texture(

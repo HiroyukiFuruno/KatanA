@@ -2,8 +2,7 @@
 use regex::Regex;
 #[cfg(target_os = "macos")]
 use resvg::{render, usvg};
-#[cfg(target_os = "macos")]
-use std::collections::HashMap;
+
 #[cfg(target_os = "macos")]
 use std::path::Path;
 #[cfg(target_os = "macos")]
@@ -41,6 +40,12 @@ struct EmojiCacheKey {
     pixel_size: u32,
 }
 
+#[cfg(target_os = "macos")]
+struct EmojiCacheEntry {
+    key: EmojiCacheKey,
+    png: Option<Vec<u8>>,
+}
+
 /// Rasterizes a single emoji grapheme into PNG bytes using Apple Color Emoji on macOS.
 ///
 /// Returns `None` when the system font is unavailable or when the grapheme cannot be rasterized.
@@ -66,8 +71,8 @@ pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<V
         let cache = emoji_png_cache();
         {
             let guard = cache.lock().expect("emoji raster cache lock poisoned");
-            if let Some(bytes) = guard.get(&key) {
-                return bytes.clone();
+            if let Some(entry) = guard.iter().find(|e| e.key == key) {
+                return entry.png.clone();
             }
         }
 
@@ -75,7 +80,10 @@ pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<V
         cache
             .lock()
             .expect("emoji raster cache lock poisoned")
-            .insert(key, rendered.clone());
+            .push(EmojiCacheEntry {
+                key,
+                png: rendered.clone(),
+            });
         rendered
     }
 }
@@ -107,10 +115,9 @@ pub fn prefer_apple_color_emoji_in_svg(svg: &str) -> String {
 }
 
 #[cfg(target_os = "macos")]
-fn emoji_png_cache() -> &'static Mutex<HashMap<EmojiCacheKey, Option<Vec<u8>>>> {
-    static EMOJI_PNG_CACHE: OnceLock<Mutex<HashMap<EmojiCacheKey, Option<Vec<u8>>>>> =
-        OnceLock::new();
-    EMOJI_PNG_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+fn emoji_png_cache() -> &'static Mutex<Vec<EmojiCacheEntry>> {
+    static EMOJI_PNG_CACHE: OnceLock<Mutex<Vec<EmojiCacheEntry>>> = OnceLock::new();
+    EMOJI_PNG_CACHE.get_or_init(|| Mutex::new(Vec::new()))
 }
 
 #[cfg(target_os = "macos")]
@@ -244,7 +251,8 @@ fn font_family_single_quote_regex() -> &'static Regex {
 
 #[cfg(target_os = "macos")]
 fn ensure_emoji_font_family(attrs: &str) -> String {
-    for (regex, quote) in [
+    #[allow(clippy::useless_vec)]
+    for (regex, quote) in vec![
         (font_family_double_quote_regex(), '"'),
         (font_family_single_quote_regex(), '\''),
     ] {

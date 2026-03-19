@@ -15,7 +15,9 @@ use katana_core::html::{HtmlNode, LinkAction, TextAlign};
 
 /// Known badge service hosts that always return SVG content.
 /// egui's SVG loader requires URIs to end with `.svg`.
-const SVG_BADGE_HOSTS: &[&str] = &["img.shields.io"];
+fn svg_badge_hosts() -> Vec<&'static str> {
+    vec!["img.shields.io"]
+}
 
 /// Vertical spacing (in points) for line breaks.
 const LINE_BREAK_SPACING: f32 = 4.0;
@@ -549,7 +551,7 @@ fn ensure_svg_extension(url: &str) -> String {
     if path.ends_with(".svg") {
         return url.to_string();
     }
-    for host in SVG_BADGE_HOSTS {
+    for host in svg_badge_hosts() {
         if url.contains(host) {
             return format!("{path}.svg{suffix}");
         }

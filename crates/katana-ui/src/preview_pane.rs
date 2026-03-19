@@ -168,7 +168,7 @@ impl PreviewPane {
         let mut request: Option<DownloadRequest> = None;
         let content_width = ui.available_width();
         ScrollArea::vertical()
-            .auto_shrink([false, false])
+            .auto_shrink([false; 2])
             .show(ui, |ui| {
                 let child_rect = egui::Rect::from_min_size(
                     ui.next_widget_position(),

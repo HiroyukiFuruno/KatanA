@@ -24,7 +24,8 @@ pub fn jar_candidate_paths() -> Vec<PathBuf> {
     }
     let mut paths = Vec::new();
     // Homebrew (Apple Silicon / Intel)
-    for prefix in &["/opt/homebrew", "/usr/local"] {
+    #[allow(clippy::useless_vec)]
+    for prefix in vec!["/opt/homebrew", "/usr/local"] {
         paths.push(PathBuf::from(prefix).join("opt/plantuml/libexec/plantuml.jar"));
     }
     // Same directory as the binary
@@ -171,7 +172,7 @@ mod tests {
     #[test]
     fn inject_theme_inserts_after_startuml() {
         let source = "@startuml\nA -> B\n@enduml";
-        let result = inject_theme(source, &DiagramColorPreset::DARK);
+        let result = inject_theme(source, DiagramColorPreset::dark());
         assert!(result.starts_with("@startuml\n"));
         assert!(result.contains("skinparam backgroundColor transparent"));
         assert!(result.contains("skinparam defaultFontColor #E0E0E0"));
@@ -182,7 +183,7 @@ mod tests {
     #[test]
     fn inject_theme_wraps_when_no_startuml() {
         let source = "A -> B";
-        let result = inject_theme(source, &DiagramColorPreset::DARK);
+        let result = inject_theme(source, DiagramColorPreset::dark());
         assert!(result.starts_with("@startuml\n"));
         assert!(result.contains("skinparam backgroundColor transparent"));
         assert!(result.contains("A -> B"));
@@ -192,7 +193,7 @@ mod tests {
     #[test]
     fn inject_theme_startuml_without_newline() {
         let source = "@startuml";
-        let result = inject_theme(source, &DiagramColorPreset::DARK);
+        let result = inject_theme(source, DiagramColorPreset::dark());
         assert!(result.starts_with("@startuml"));
         assert!(result.contains("skinparam backgroundColor transparent"));
     }
@@ -200,7 +201,7 @@ mod tests {
     #[test]
     fn inject_theme_with_light_preset() {
         let source = "@startuml\nA -> B\n@enduml";
-        let result = inject_theme(source, &DiagramColorPreset::LIGHT);
+        let result = inject_theme(source, DiagramColorPreset::light());
         assert!(result.contains("skinparam defaultFontColor #333333"));
         assert!(result.contains("skinparam classBackgroundColor #FEFECE"));
     }

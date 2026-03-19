@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::mem::size_of;
 use std::sync::{
     atomic::{AtomicU64, Ordering::Relaxed},
@@ -21,9 +20,19 @@ struct Entry {
     result: Result<Arc<ColorImage>, String>,
 }
 
+struct SvgCacheEntry {
+    size_hint: SizeHint,
+    data: Entry,
+}
+
+struct SvgCacheBucket {
+    uri: String,
+    entries: Vec<SvgCacheEntry>,
+}
+
 pub struct KatanaSvgLoader {
     pass_index: AtomicU64,
-    cache: Mutex<HashMap<String, HashMap<SizeHint, Entry>>>,
+    cache: Mutex<Vec<SvgCacheBucket>>,
     options: resvg::usvg::Options<'static>,
 }
 
@@ -100,10 +109,11 @@ fn rasterize_svg_bytes_with_size(
         &mut pixmap.as_mut(),
     );
 
-    Ok(
-        ColorImage::from_rgba_premultiplied([width as _, height as _], pixmap.data())
-            .with_source_size(source_size),
+    Ok(ColorImage::from_rgba_premultiplied(
+        vec![width as usize, height as usize].try_into().unwrap(),
+        pixmap.data(),
     )
+    .with_source_size(source_size))
 }
 
 impl Default for KatanaSvgLoader {
@@ -113,7 +123,7 @@ impl Default for KatanaSvgLoader {
 
         Self {
             pass_index: AtomicU64::new(0),
-            cache: Mutex::new(HashMap::default()),
+            cache: Mutex::new(Vec::new()),
             options,
         }
     }
@@ -130,9 +140,23 @@ impl ImageLoader for KatanaSvgLoader {
         }
 
         let mut cache = self.cache.lock();
-        let bucket = cache.entry(uri.to_owned()).or_default();
+        let bucket_idx = if let Some(idx) = cache.iter().position(|b| b.uri == uri) {
+            idx
+        } else {
+            cache.push(SvgCacheBucket {
+                uri: uri.to_owned(),
+                entries: Vec::new(),
+            });
+            cache.len() - 1
+        };
+        let bucket = &mut cache[bucket_idx];
 
-        if let Some(entry) = bucket.get(&size_hint) {
+        if let Some(entry) = bucket
+            .entries
+            .iter()
+            .find(|e| e.size_hint == size_hint)
+            .map(|e| &e.data)
+        {
             entry
                 .last_used
                 .store(self.pass_index.load(Relaxed), Relaxed);
@@ -149,13 +173,13 @@ impl ImageLoader for KatanaSvgLoader {
                         })
                         .map(Arc::new);
 
-                    bucket.insert(
+                    bucket.entries.push(SvgCacheEntry {
                         size_hint,
-                        Entry {
+                        data: Entry {
                             last_used: AtomicU64::new(self.pass_index.load(Relaxed)),
                             result: result.clone(),
                         },
-                    );
+                    });
 
                     match result {
                         Ok(image) => Ok(ImagePoll::Ready { image }),
@@ -169,7 +193,7 @@ impl ImageLoader for KatanaSvgLoader {
     }
 
     fn forget(&self, uri: &str) {
-        self.cache.lock().retain(|key, _| key != uri);
+        self.cache.lock().retain(|bucket| bucket.uri != uri);
     }
 
     fn forget_all(&self) {
@@ -179,9 +203,9 @@ impl ImageLoader for KatanaSvgLoader {
     fn byte_size(&self) -> usize {
         self.cache
             .lock()
-            .values()
-            .flat_map(|bucket| bucket.values())
-            .map(|entry| match &entry.result {
+            .iter()
+            .flat_map(|bucket| bucket.entries.iter())
+            .map(|entry| match &entry.data.result {
                 Ok(image) => image.pixels.len() * size_of::<egui::Color32>(),
                 Err(err) => err.len(),
             })
@@ -191,11 +215,13 @@ impl ImageLoader for KatanaSvgLoader {
     fn end_pass(&self, pass_index: u64) {
         self.pass_index.store(pass_index, Relaxed);
         let mut cache = self.cache.lock();
-        cache.retain(|_key, bucket| {
-            if 2 <= bucket.len() {
-                bucket.retain(|_, image| pass_index <= image.last_used.load(Relaxed) + 1);
+        cache.retain_mut(|bucket| {
+            if 2 <= bucket.entries.len() {
+                bucket
+                    .entries
+                    .retain(|entry| pass_index <= entry.data.last_used.load(Relaxed) + 1);
             }
-            !bucket.is_empty()
+            !bucket.entries.is_empty()
         });
     }
 }
@@ -405,26 +431,26 @@ mod tests {
     #[test]
     fn svg_loader_forget_removes_cached_entry() {
         let loader = KatanaSvgLoader::default();
-        loader
-            .cache
-            .lock()
-            .insert("test.svg".to_owned(), HashMap::new());
-        assert!(loader.cache.lock().contains_key("test.svg"));
+        loader.cache.lock().push(SvgCacheBucket {
+            uri: "test.svg".to_owned(),
+            entries: Vec::new(),
+        });
+        assert!(loader.cache.lock().iter().any(|b| b.uri == "test.svg"));
         loader.forget("test.svg");
-        assert!(!loader.cache.lock().contains_key("test.svg"));
+        assert!(!loader.cache.lock().iter().any(|b| b.uri == "test.svg"));
     }
 
     #[test]
     fn svg_loader_forget_all_clears_cache() {
         let loader = KatanaSvgLoader::default();
-        loader
-            .cache
-            .lock()
-            .insert("a.svg".to_owned(), HashMap::new());
-        loader
-            .cache
-            .lock()
-            .insert("b.svg".to_owned(), HashMap::new());
+        loader.cache.lock().push(SvgCacheBucket {
+            uri: "a.svg".to_owned(),
+            entries: Vec::new(),
+        });
+        loader.cache.lock().push(SvgCacheBucket {
+            uri: "b.svg".to_owned(),
+            entries: Vec::new(),
+        });
         loader.forget_all();
         assert!(loader.cache.lock().is_empty());
     }
@@ -439,15 +465,18 @@ mod tests {
     fn svg_loader_byte_size_with_entries() {
         let loader = KatanaSvgLoader::default();
         let image = ColorImage::new([2, 2], vec![egui::Color32::RED; 4]);
-        let mut bucket = HashMap::new();
-        bucket.insert(
-            SizeHint::default(),
-            Entry {
+        let mut bucket = SvgCacheBucket {
+            uri: "test.svg".to_owned(),
+            entries: Vec::new(),
+        };
+        bucket.entries.push(SvgCacheEntry {
+            size_hint: SizeHint::default(),
+            data: Entry {
                 last_used: AtomicU64::new(0),
                 result: Ok(Arc::new(image)),
             },
-        );
-        loader.cache.lock().insert("test.svg".to_owned(), bucket);
+        });
+        loader.cache.lock().push(bucket);
         // 2x2 pixels * 4 bytes per Color32 = 16
         assert_eq!(loader.byte_size(), 4 * size_of::<egui::Color32>());
     }
@@ -455,15 +484,18 @@ mod tests {
     #[test]
     fn svg_loader_byte_size_with_error_entry() {
         let loader = KatanaSvgLoader::default();
-        let mut bucket = HashMap::new();
-        bucket.insert(
-            SizeHint::default(),
-            Entry {
+        let mut bucket = SvgCacheBucket {
+            uri: "err.svg".to_owned(),
+            entries: Vec::new(),
+        };
+        bucket.entries.push(SvgCacheEntry {
+            size_hint: SizeHint::default(),
+            data: Entry {
                 last_used: AtomicU64::new(0),
                 result: Err("rasterize failed".to_string()),
             },
-        );
-        loader.cache.lock().insert("err.svg".to_owned(), bucket);
+        });
+        loader.cache.lock().push(bucket);
         assert_eq!(loader.byte_size(), "rasterize failed".len());
     }
 
@@ -475,30 +507,40 @@ mod tests {
         // Create a bucket with two size hints:
         // - Scale(1.0): last used at pass 0 — stale at pass 10
         // - Scale(2.0): last used at pass 9 — still fresh (10 <= 9+1 = 10)
-        let mut bucket = HashMap::new();
-        bucket.insert(
-            SizeHint::Scale(1.0.into()),
-            Entry {
+        let mut bucket = SvgCacheBucket {
+            uri: "test.svg".to_owned(),
+            entries: Vec::new(),
+        };
+        bucket.entries.push(SvgCacheEntry {
+            size_hint: SizeHint::Scale(1.0.into()),
+            data: Entry {
                 last_used: AtomicU64::new(0),
                 result: Ok(Arc::new(image.clone())),
             },
-        );
-        bucket.insert(
-            SizeHint::Scale(2.0.into()),
-            Entry {
+        });
+        bucket.entries.push(SvgCacheEntry {
+            size_hint: SizeHint::Scale(2.0.into()),
+            data: Entry {
                 last_used: AtomicU64::new(9),
                 result: Ok(Arc::new(image)),
             },
-        );
-        loader.cache.lock().insert("test.svg".to_owned(), bucket);
+        });
+        loader.cache.lock().push(bucket);
 
         // end_pass at index 10 — eviction only runs on buckets with 2+ entries
         // Keeps entries where pass_index <= last_used + 1
         loader.end_pass(10);
 
         let cache = loader.cache.lock();
-        let bucket = cache.get("test.svg").expect("uri should still exist");
-        assert_eq!(bucket.len(), 1, "stale entry should have been evicted");
+        let bucket = cache
+            .iter()
+            .find(|b| b.uri == "test.svg")
+            .expect("uri should still exist");
+        assert_eq!(
+            bucket.entries.len(),
+            1,
+            "stale entry should have been evicted"
+        );
     }
 
     // ── ImageLoader::load integration (exercising ctx.try_load_bytes) ──
@@ -544,15 +586,18 @@ mod tests {
 
         // Insert an error entry with a .svg URI (must pass is_supported check)
         let uri = "https://example.com/broken.svg";
-        let mut bucket = HashMap::new();
-        bucket.insert(
-            SizeHint::default(),
-            Entry {
+        let mut bucket = SvgCacheBucket {
+            uri: uri.to_owned(),
+            entries: Vec::new(),
+        };
+        bucket.entries.push(SvgCacheEntry {
+            size_hint: SizeHint::default(),
+            data: Entry {
                 last_used: AtomicU64::new(0),
                 result: Err("forced error".to_string()),
             },
-        );
-        loader.cache.lock().insert(uri.to_owned(), bucket);
+        });
+        loader.cache.lock().push(bucket);
 
         let result = loader.load(&ctx, uri, SizeHint::default());
         assert!(result.is_err(), "cached error should be returned");

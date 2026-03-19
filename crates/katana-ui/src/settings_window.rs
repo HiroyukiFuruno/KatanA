@@ -147,7 +147,7 @@ pub(crate) fn render_settings_window(
 // ── Tab bar (styled underline tabs) ──────────────────────────────────
 
 fn render_tab_bar(ui: &mut egui::Ui, active_tab: &mut SettingsTab) {
-    let tabs = [
+    let tabs = vec![
         (
             SettingsTab::Theme,
             crate::i18n::get().settings.tab_name("theme"),
@@ -239,7 +239,8 @@ fn render_theme_preset_selector(ui: &mut egui::Ui, settings: &mut SettingsServic
     const VISIBLE_PRESET_COUNT: usize = 5;
 
     ui.label(egui::RichText::new(crate::i18n::get().settings.theme.dark_section.clone()).weak());
-    let mut dark_presets: Vec<&ThemePreset> = ThemePreset::all()
+    let all_presets = ThemePreset::all();
+    let mut dark_presets: Vec<&ThemePreset> = all_presets
         .iter()
         .filter(|it| it.colors().mode == ThemeMode::Dark)
         .collect();
@@ -251,7 +252,7 @@ fn render_theme_preset_selector(ui: &mut egui::Ui, settings: &mut SettingsServic
     ui.add_space(SECTION_SPACING);
 
     ui.label(egui::RichText::new(crate::i18n::get().settings.theme.light_section.clone()).weak());
-    let mut light_presets: Vec<&ThemePreset> = ThemePreset::all()
+    let mut light_presets: Vec<&ThemePreset> = all_presets
         .iter()
         .filter(|it| it.colors().mode == ThemeMode::Light)
         .collect();
@@ -364,18 +365,25 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
 
     egui::Grid::new("color_editor_grid")
         .num_columns(2)
-        .spacing([SECTION_SPACING, SUBSECTION_SPACING])
+        .spacing(egui::vec2(SECTION_SPACING, SUBSECTION_SPACING))
         .show(ui, |ui| {
             for (key, label, original_rgb) in &color_fields {
                 ui.add_sized(
                     egui::vec2(COLOR_GRID_LABEL_WIDTH, 0.0),
                     egui::Label::new(*label),
                 );
-                let mut color_arr = [
-                    f32::from(original_rgb.r) / COLOUR_CHANNEL_MAX,
-                    f32::from(original_rgb.g) / COLOUR_CHANNEL_MAX,
-                    f32::from(original_rgb.b) / COLOUR_CHANNEL_MAX,
-                ];
+                let r = f32::from(original_rgb.r) / COLOUR_CHANNEL_MAX;
+                let g = f32::from(original_rgb.g) / COLOUR_CHANNEL_MAX;
+                let b = f32::from(original_rgb.b) / COLOUR_CHANNEL_MAX;
+                let mut color_arr = std::array::from_fn(|i| {
+                    if i == 0 {
+                        r
+                    } else if i == 1 {
+                        g
+                    } else {
+                        b
+                    }
+                });
                 if ui.color_edit_button_rgb(&mut color_arr).changed() {
                     // Colour channel values are clamped to [0.0, 1.0] by the colour picker;
                     // multiplying by 255 always yields a valid u8.
@@ -478,7 +486,7 @@ fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut SettingsService
             egui::ScrollArea::vertical()
                 .max_height(FONT_DROPDOWN_MAX_HEIGHT)
                 .show(ui, |ui| {
-                    let defaults = ["Proportional", "Monospace"];
+                    let defaults = vec!["Proportional", "Monospace"];
                     for family in defaults {
                         if query_lower.is_empty() || family.to_lowercase().contains(&query_lower) {
                             let is_current = current == family;

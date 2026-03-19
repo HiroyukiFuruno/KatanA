@@ -1,3 +1,4 @@
+#![allow(clippy::useless_vec)]
 #![deny(warnings)]
 //! KatanA UI application entry point.
 
@@ -14,10 +15,14 @@ use katana_ui::shell::KatanaApp;
 use katana_ui::shell_ui;
 
 #[cfg(not(test))]
-const INITIAL_WINDOW_SIZE: [f32; 2] = [1280.0, 800.0];
+fn initial_window_size() -> egui::Vec2 {
+    egui::vec2(1280.0, 800.0)
+}
 
 #[cfg(not(test))]
-const MIN_WINDOW_SIZE: [f32; 2] = [800.0, 500.0];
+fn min_window_size() -> egui::Vec2 {
+    egui::vec2(800.0, 500.0)
+}
 
 #[cfg(not(test))]
 fn load_icon() -> std::sync::Arc<egui::IconData> {
@@ -131,8 +136,8 @@ fn main() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_title("KatanA")
             .with_icon(load_icon())
-            .with_inner_size(INITIAL_WINDOW_SIZE)
-            .with_min_inner_size(MIN_WINDOW_SIZE),
+            .with_inner_size(initial_window_size())
+            .with_min_inner_size(min_window_size()),
         ..Default::default()
     };
 
@@ -208,7 +213,7 @@ pub fn setup_fonts_from_preset(
 /// Receives a list of font candidates and sets the fonts. Testable.
 /// Kept for backward compatibility with existing tests.
 pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
-    let fonts = build_font_definitions(candidates, &[], &[]);
+    let fonts = build_font_definitions(candidates, &vec![], &vec![]);
     ctx.set_fonts(fonts);
 
     #[cfg(debug_assertions)]
@@ -308,7 +313,7 @@ mod tests {
 
     #[test]
     fn test_load_first_font_not_found() {
-        let candidates = ["/invalid/path/to/never/found/font.ttc"];
+        let candidates = vec!["/invalid/path/to/never/found/font.ttc"];
         let result = load_first_font(&candidates);
         assert!(result.is_none());
     }
@@ -316,7 +321,7 @@ mod tests {
     #[test]
     fn test_load_first_font_found() {
         // Cover the success path using fonts that exist on macOS
-        let candidates = [
+        let candidates = vec![
             "/System/Library/Fonts/AquaKana.ttc",
             "/System/Library/Fonts/Hiragino Sans GB.ttc",
         ];
@@ -489,8 +494,8 @@ mod tests {
     fn test_preset_dark_and_light_have_different_preview_text() {
         use katana_core::markdown::color_preset::DiagramColorPreset;
         assert_ne!(
-            DiagramColorPreset::DARK.preview_text,
-            DiagramColorPreset::LIGHT.preview_text,
+            DiagramColorPreset::dark().preview_text,
+            DiagramColorPreset::light().preview_text,
             "DARK and LIGHT presets should have different preview text colors"
         );
     }
