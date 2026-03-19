@@ -721,13 +721,16 @@ fn render_horizontal_split(
             }
         });
 
-    egui::CentralPanel::default().show(ctx, |ui| {
-        render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
-    });
-
+    // Sync preview's scroll state to app.state BEFORE the editor renders.
+    // The editor reads/writes app.state directly; writing back after the
+    // editor would overwrite the editor's consumption of scroll signals.
     app.state.scroll_fraction = scroll_state.0;
     app.state.scroll_source = scroll_state.1;
     app.state.preview_max_scroll = scroll_state.2;
+
+    egui::CentralPanel::default().show(ctx, |ui| {
+        render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+    });
 
     download_req
 }
@@ -768,6 +771,7 @@ fn render_vertical_split(
         egui::TopBottomPanel::top(panel_id)
             .resizable(true)
             .default_height(half_height)
+            .max_height(available_height * SPLIT_PANEL_MAX_RATIO)
             .frame(egui::Frame::NONE.fill(preview_bg))
             .show(ctx, |ui| {
                 if let Some(path) = &active_path {
@@ -782,6 +786,15 @@ fn render_vertical_split(
                     );
                 }
             });
+
+        // Sync preview's scroll state to app.state BEFORE the editor renders.
+        // The editor reads from app.state directly, so it must see the preview's
+        // latest scroll_source/fraction. After the editor runs, its writes to
+        // app.state are preserved (no subsequent overwrite).
+        app.state.scroll_fraction = scroll_state.0;
+        app.state.scroll_source = scroll_state.1;
+        app.state.preview_max_scroll = scroll_state.2;
+
         egui::CentralPanel::default().show(ctx, |ui| {
             render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
         });
@@ -789,6 +802,7 @@ fn render_vertical_split(
         egui::TopBottomPanel::bottom(panel_id)
             .resizable(true)
             .default_height(half_height)
+            .max_height(available_height * SPLIT_PANEL_MAX_RATIO)
             .frame(egui::Frame::NONE.fill(preview_bg))
             .show(ctx, |ui| {
                 if let Some(path) = &active_path {
@@ -803,14 +817,15 @@ fn render_vertical_split(
                     );
                 }
             });
+
+        app.state.scroll_fraction = scroll_state.0;
+        app.state.scroll_source = scroll_state.1;
+        app.state.preview_max_scroll = scroll_state.2;
+
         egui::CentralPanel::default().show(ctx, |ui| {
             render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
         });
     }
-
-    app.state.scroll_fraction = scroll_state.0;
-    app.state.scroll_source = scroll_state.1;
-    app.state.preview_max_scroll = scroll_state.2;
 
     download_req
 }
@@ -910,6 +925,10 @@ use crate::shell::{KatanaApp, SIDEBAR_COLLAPSED_TOGGLE_WIDTH, SPLIT_PREVIEW_PANE
 
 // Half-panel ratio for responsive 50/50 split.
 const SPLIT_HALF_RATIO: f32 = 0.5;
+/// Maximum ratio for TopBottomPanel in vertical split.
+/// Prevents preview from consuming more than 70% of the available height,
+/// guaranteeing the editor retains at least 30% for scrolling.
+const SPLIT_PANEL_MAX_RATIO: f32 = 0.7;
 const PREVIEW_CONTENT_PADDING: i8 = 12;
 
 fn preview_panel_id(path: Option<&std::path::Path>, base: &'static str) -> egui::Id {
@@ -1619,6 +1638,200 @@ mod tests {
         assert!(
             max_right <= preview_rect.right() - PREVIEW_CONTENT_PADDING + 4.0,
             "mixed-style blockquote must stay within preview width, got right edge {max_right}"
+        );
+    }
+
+    // ── TDD(RED): Vertical split must leave sufficient height for editor scrolling ──
+
+    /// When the split direction is vertical (top/bottom), the editor's
+    /// CentralPanel must occupy at least 30% of the total height so that
+    /// the TextEdit inside can scroll.
+    ///
+    /// The bug: `render_preview_content` calls `allocate_rect(outer_rect)` which
+    /// consumes the full available height of the TopBottomPanel. Combined with
+    /// no `max_height` constraint, the preview panel grows beyond its `default_height`,
+    /// starving the CentralPanel.
+    #[test]
+    fn vertical_split_editor_has_sufficient_height_for_scrolling() {
+        let ctx = egui::Context::default();
+        let active = PathBuf::from("/tmp/vsplit_scroll.md");
+        let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
+        let mut app = app_with_preview_doc(&active, &long_content);
+        let total_height = 800.0_f32;
+
+        // Run 3 frames for layout stabilization
+        for _ in 0..3 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, total_height)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        let preview_rect = egui::containers::panel::PanelState::load(
+            &ctx,
+            preview_panel_id(Some(active.as_path()), "preview_panel_v_bottom"),
+        )
+        .expect("preview panel rect")
+        .rect;
+
+        // The preview panel should not consume more than 70% of the total height.
+        // The remaining >= 30% is the editor's CentralPanel.
+        let editor_height = total_height - preview_rect.height();
+        let min_editor_ratio = 0.30;
+
+        assert!(
+            editor_height >= total_height * min_editor_ratio,
+            "Editor panel in vertical split must have at least {:.0}% of total height for scrolling. \
+             Got editor_height={editor_height:.1}, preview_height={:.1}, total={total_height:.1}",
+            min_editor_ratio * 100.0,
+            preview_rect.height(),
+        );
+    }
+
+    // ── TDD(RED): Bidirectional scroll sync in vertical split ──
+    //
+    // Scenario 3: Scroll sync works bidirectionally in vertical split.
+    // Scenario 5: Scroll sync works bidirectionally after order swap.
+
+    /// When the editor reports a scroll (scroll_source=Editor, fraction=0.5),
+    /// the preview must consume it within the next frame, transitioning
+    /// scroll_source to Neither. This verifies editor→preview sync works.
+    #[test]
+    fn vertical_split_editor_to_preview_scroll_sync() {
+        let ctx = egui::Context::default();
+        let active = PathBuf::from("/tmp/vsplit_sync_e2p.md");
+        let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
+        let mut app = app_with_preview_doc(&active, &long_content);
+
+        // Stabilize layout (5 frames)
+        for _ in 0..5 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        // Simulate editor scroll by setting scroll state
+        app.state.scroll_fraction = 0.5;
+        app.state.scroll_source = ScrollSource::Editor;
+
+        // Run 3 frames for sync to propagate
+        for _ in 0..3 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        // After sync, scroll_source must settle to Neither.
+        // If it bounces to Preview, the sync is creating an oscillation loop.
+        assert_eq!(
+            app.state.scroll_source,
+            ScrollSource::Neither,
+            "Editor→Preview sync must settle to Neither after consumption. \
+             Got {:?}, fraction={:.4}",
+            app.state.scroll_source,
+            app.state.scroll_fraction,
+        );
+    }
+
+    /// Same editor→preview sync test for horizontal split — expected to PASS.
+    #[test]
+    fn horizontal_split_editor_to_preview_scroll_sync() {
+        let ctx = egui::Context::default();
+        let active = PathBuf::from("/tmp/hsplit_sync_e2p.md");
+        let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
+        let mut app = app_with_preview_doc(&active, &long_content);
+
+        for _ in 0..5 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_horizontal_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        app.state.scroll_fraction = 0.5;
+        app.state.scroll_source = ScrollSource::Editor;
+
+        for _ in 0..3 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_horizontal_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        assert_eq!(
+            app.state.scroll_source,
+            ScrollSource::Neither,
+            "Editor→Preview sync must settle to Neither in horizontal split. \
+             Got {:?}, fraction={:.4}",
+            app.state.scroll_source,
+            app.state.scroll_fraction,
+        );
+    }
+
+    /// Scenario 5: After swapping order (PreviewFirst), the same
+    /// editor→preview sync must work in vertical split.
+    #[test]
+    fn vertical_split_editor_to_preview_scroll_sync_after_swap() {
+        let ctx = egui::Context::default();
+        let active = PathBuf::from("/tmp/vsplit_sync_swap.md");
+        let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
+        let mut app = app_with_preview_doc(&active, &long_content);
+
+        // Use PreviewFirst (swapped order)
+        for _ in 0..5 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::PreviewFirst);
+            });
+        }
+
+        app.state.scroll_fraction = 0.5;
+        app.state.scroll_source = ScrollSource::Editor;
+
+        for _ in 0..3 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::PreviewFirst);
+            });
+        }
+
+        assert_eq!(
+            app.state.scroll_source,
+            ScrollSource::Neither,
+            "Editor→Preview sync must settle to Neither after order swap. \
+             Got {:?}, fraction={:.4}",
+            app.state.scroll_source,
+            app.state.scroll_fraction,
+        );
+    }
+
+    /// Verify preview→editor sync direction also works in vertical split.
+    /// Set scroll_source=Preview and verify it transitions to Neither.
+    #[test]
+    fn vertical_split_preview_to_editor_scroll_sync() {
+        let ctx = egui::Context::default();
+        let active = PathBuf::from("/tmp/vsplit_sync_p2e.md");
+        let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
+        let mut app = app_with_preview_doc(&active, &long_content);
+
+        for _ in 0..5 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        // Simulate preview scroll
+        app.state.scroll_fraction = 0.5;
+        app.state.scroll_source = ScrollSource::Preview;
+
+        for _ in 0..3 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                render_vertical_split(ctx, &mut app, PaneOrder::EditorFirst);
+            });
+        }
+
+        assert_eq!(
+            app.state.scroll_source,
+            ScrollSource::Neither,
+            "Preview→Editor sync must settle to Neither in vertical split. \
+             Got {:?}, fraction={:.4}",
+            app.state.scroll_source,
+            app.state.scroll_fraction,
         );
     }
 }
