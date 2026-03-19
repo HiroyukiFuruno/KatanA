@@ -2,6 +2,7 @@
 
 pub mod ai;
 pub mod document;
+pub mod emoji;
 pub mod html;
 pub mod markdown;
 pub mod plugin;

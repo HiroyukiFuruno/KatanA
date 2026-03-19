@@ -89,7 +89,7 @@ fn main() -> eframe::Result<()> {
         Box::new(|cc| {
             setup_fonts(&cc.egui_ctx);
             // Install lazy, parallel image loaders for file:// URIs in preview.
-            egui_extras::install_image_loaders(&cc.egui_ctx);
+            katana_ui::svg_loader::install_image_loaders(&cc.egui_ctx);
 
             // macOS: Construct the native menu bar and set app icon.
             #[cfg(target_os = "macos")]
@@ -172,8 +172,8 @@ pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
 ///   Also appended to Monospace as CJK fallback.
 /// - **Monospace**: loaded from `monospace_candidates`, inserted at position 0 in Monospace family.
 ///   Also appended to Proportional as fallback.
-/// - **Emoji**: loaded from `emoji_candidates`, appended to both Proportional and Monospace
-///   families as a fallback for rendering emoji characters.
+/// - **Emoji**: candidates are retained for preview-specific loaders, but are not injected
+///   into the global egui font families.
 ///
 /// This is a pure function for testability.
 pub fn build_font_definitions(
@@ -302,8 +302,8 @@ mod tests {
     #[test]
     fn test_install_image_loaders_does_not_panic() {
         let ctx = egui::Context::default();
-        // This must not panic. If egui_extras features are missing, it would.
-        egui_extras::install_image_loaders(&ctx);
+        katana_ui::svg_loader::install_image_loaders(&ctx);
+        assert!(ctx.is_loader_installed(katana_ui::svg_loader::KatanaSvgLoader::ID));
     }
 
     // ── Font Family Ordering Tests ──
@@ -460,9 +460,8 @@ mod tests {
     }
 
     #[test]
-    fn test_emoji_font_is_fallback_in_proportional_family() {
+    fn test_emoji_font_is_not_in_proportional_family() {
         init_tracing();
-        // Only run if emoji font is actually available
         if load_first_font(EMOJI_CANDIDATES).is_none() {
             return;
         }
@@ -473,13 +472,13 @@ mod tests {
             .expect("Proportional family missing");
         let emoji_name = load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
-            proportional.contains(&emoji_name),
-            "Emoji font must be in Proportional family as fallback"
+            !proportional.contains(&emoji_name),
+            "Preview emoji should not replace UI fallback fonts in Proportional family"
         );
     }
 
     #[test]
-    fn test_emoji_font_is_fallback_in_monospace_family() {
+    fn test_emoji_font_is_not_in_monospace_family() {
         init_tracing();
         if load_first_font(EMOJI_CANDIDATES).is_none() {
             return;
@@ -491,8 +490,8 @@ mod tests {
             .expect("Monospace family missing");
         let emoji_name = load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
-            monospace.contains(&emoji_name),
-            "Emoji font must be in Monospace family as fallback"
+            !monospace.contains(&emoji_name),
+            "Preview emoji should not replace UI fallback fonts in Monospace family"
         );
     }
 

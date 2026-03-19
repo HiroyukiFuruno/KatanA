@@ -26,9 +26,9 @@ const HEADING_H2_SIZE: f32 = 20.0;
 /// Font size (in points) for H3 headings.
 const HEADING_H3_SIZE: f32 = 16.0;
 /// Browser-like block spacing for top-level paragraphs.
-const PARAGRAPH_BLOCK_MARGIN_Y: f32 = 12.0;
+const PARAGRAPH_BLOCK_MARGIN_Y: f32 = 5.0;
 /// Browser-like block spacing for top-level headings.
-const HEADING_BLOCK_MARGIN_Y: f32 = 16.0;
+const HEADING_BLOCK_MARGIN_Y: f32 = 6.0;
 
 /// Heading level constants for match arms.
 const HEADING_LEVEL_1: u8 = 1;
@@ -480,7 +480,7 @@ impl<'a> HtmlRenderer<'a> {
                     job,
                     self.ui.style().as_ref(),
                     egui::FontSelection::Default,
-                    egui::Align::Center,
+                    egui::Align::BOTTOM,
                 );
             }
             HtmlNode::Emphasis(children) => {
@@ -502,7 +502,7 @@ impl<'a> HtmlRenderer<'a> {
                     job,
                     self.ui.style().as_ref(),
                     egui::FontSelection::Default,
-                    egui::Align::Center,
+                    egui::Align::BOTTOM,
                 );
             }
             _ => {}
@@ -545,13 +545,49 @@ fn collect_text(nodes: &[HtmlNode]) -> String {
 /// egui's SVG loader only accepts URIs ending with `.svg`.
 /// Some badge service URLs omit the extension but still return SVG content.
 fn ensure_svg_extension(url: &str) -> String {
-    if url.ends_with(".svg") {
+    let (path, suffix) = split_url_suffix(url);
+    if path.ends_with(".svg") {
         return url.to_string();
     }
     for host in SVG_BADGE_HOSTS {
         if url.contains(host) {
-            return format!("{url}.svg");
+            return format!("{path}.svg{suffix}");
         }
     }
     url.to_string()
+}
+
+fn split_url_suffix(url: &str) -> (&str, &str) {
+    let suffix_start = url
+        .find('?')
+        .into_iter()
+        .chain(url.find('#'))
+        .min()
+        .unwrap_or(url.len());
+    url.split_at(suffix_start)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ensure_svg_extension_inserts_suffix_before_query_string() {
+        let url =
+            "https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors";
+
+        let normalized = ensure_svg_extension(url);
+
+        assert_eq!(
+            normalized,
+            "https://img.shields.io/badge/Sponsor-❤️-ea4aaa.svg?style=for-the-badge&logo=github-sponsors"
+        );
+    }
+
+    #[test]
+    fn ensure_svg_extension_preserves_existing_svg_suffix_before_query_string() {
+        let url = "https://img.shields.io/badge/License-MIT-blue.svg?style=flat";
+
+        assert_eq!(ensure_svg_extension(url), url);
+    }
 }
