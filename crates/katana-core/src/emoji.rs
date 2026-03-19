@@ -1,22 +1,40 @@
+#[cfg(target_os = "macos")]
 use regex::Regex;
+#[cfg(target_os = "macos")]
 use resvg::{render, usvg};
+#[cfg(target_os = "macos")]
 use std::collections::HashMap;
+#[cfg(target_os = "macos")]
 use std::path::Path;
+#[cfg(target_os = "macos")]
 use std::sync::{Arc, Mutex, OnceLock};
+#[cfg(target_os = "macos")]
 use tiny_skia::{Pixmap, PixmapPaint, Transform};
 
+#[cfg(target_os = "macos")]
 const APPLE_COLOR_EMOJI_FONT_PATH: &str = "/System/Library/Fonts/Apple Color Emoji.ttc";
+#[cfg(target_os = "macos")]
 const APPLE_COLOR_EMOJI_FONT_FAMILY: &str = "Apple Color Emoji";
+#[cfg(target_os = "macos")]
 const MIN_EMOJI_PIXEL_SIZE: u32 = 16;
+#[cfg(target_os = "macos")]
 const EMOJI_RASTER_SCALE: u32 = 2;
+#[cfg(target_os = "macos")]
 const EMOJI_CANVAS_MULTIPLIER: u32 = 4;
+#[cfg(target_os = "macos")]
 const EMOJI_FONT_SIZE_RATIO: f32 = 1.0;
+#[cfg(target_os = "macos")]
 const EMOJI_CROP_PADDING: usize = 2;
+#[cfg(target_os = "macos")]
 const EMOJI_BASELINE_PADDING_RATIO: f32 = 0.2;
+#[cfg(target_os = "macos")]
 const EMOJI_TOP_PADDING_SHARE: f32 = 0.35;
+#[cfg(target_os = "macos")]
 const RGBA_CHANNEL_COUNT: usize = 4;
+#[cfg(target_os = "macos")]
 const RGBA_ALPHA_CHANNEL_OFFSET: usize = 3;
 
+#[cfg(target_os = "macos")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct EmojiCacheKey {
     grapheme: String,
@@ -188,6 +206,7 @@ fn crop_non_transparent(pixmap: &Pixmap) -> Option<Pixmap> {
     Some(cropped)
 }
 
+#[cfg(target_os = "macos")]
 fn escape_svg_text(text: &str) -> String {
     text.replace('&', "&amp;")
         .replace('<', "&lt;")
