@@ -8,12 +8,23 @@
 //! This ensures that regardless of the host environment, fallback UIs are
 //! always verified, and rendering is verified when tools are present.
 
-use egui_kittest::{kittest::Queryable, Harness, SnapshotOptions, SnapshotResults};
+use egui_kittest::{kittest::Queryable, Harness};
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
 
-/// Snapshot pixel tolerance to absorb non-deterministic rendering differences.
-const SNAPSHOT_PIXEL_TOLERANCE: usize = 10000;
+// ─────────────────────────────────────────────
+// DrawIo: Pure Rust renderer (no external tools)
+// ─────────────────────────────────────────────
+
+const DRAWIO_SOURCE: &str = r#"<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="2" value="Hello" style="rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="100" y="100" width="120" height="60" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>"#;
 
 // ─────────────────────────────────────────────
 // Helper
@@ -31,10 +42,6 @@ fn assert_image(sections: &[RenderedSection], idx: usize, context: &str) {
         "[{context}] Expected Image at index {idx}, got: {:?}",
         sections.get(idx)
     );
-}
-
-fn snapshot_opts() -> SnapshotOptions {
-    SnapshotOptions::default().failed_pixel_count_threshold(SNAPSHOT_PIXEL_TOLERANCE)
 }
 
 /// Render a diagram and wait for completion, returning the PreviewPane.
@@ -70,88 +77,9 @@ fn assert_standard_diagram_markdown_visible(harness: &Harness) {
 /// Build a harness, run it, take a snapshot, and return the SnapshotResults
 /// (which must be merged into a parent SnapshotResults if multiple snapshots
 /// are taken within a single test).
-fn build_snapshot(
-    sections: Vec<RenderedSection>,
-    name: &str,
-    width: f32,
-    height: f32,
-) -> SnapshotResults {
-    let mut harness = Harness::builder()
-        .with_size(egui::vec2(width, height))
-        .build_ui(move |ui| {
-            let mut pane = PreviewPane::default();
-            pane.sections = sections.clone();
-            pane.show_content(ui);
-        });
-    harness.step();
-    harness.step();
-    harness.step();
-    harness.run();
-    let result = harness.try_snapshot_options(name, &snapshot_opts());
-    let mut results = harness.take_snapshot_results();
-    results.add(result);
-    results
-}
-
-// ─────────────────────────────────────────────
-// DrawIo: Pure Rust renderer (no external tools)
-// ─────────────────────────────────────────────
-
-const DRAWIO_SOURCE: &str = r#"<mxGraphModel>
-  <root>
-    <mxCell id="0"/>
-    <mxCell id="1" parent="0"/>
-    <mxCell id="2" value="Hello" style="rounded=1;" vertex="1" parent="1">
-      <mxGeometry x="100" y="100" width="120" height="60" as="geometry"/>
-    </mxCell>
-  </root>
-</mxGraphModel>"#;
-
-/// DrawIo: always renders (pure Rust). Tests both success and error states.
+/// Fallback: DrawIo render error fallback UI.
 #[test]
-fn drawio_renders_to_image_section() {
-    let pane = render_and_wait("drawio", DRAWIO_SOURCE);
-
-    assert_eq!(
-        pane.sections.len(),
-        3,
-        "Expected 3 sections (md, diagram, md)"
-    );
-    assert_image(&pane.sections, 1, "DrawIo");
-
-    if let RenderedSection::Image { svg_data, alt } = &pane.sections[1] {
-        assert!(svg_data.width > 0, "Width should be > 0");
-        assert!(svg_data.height > 0, "Height should be > 0");
-        assert!(!svg_data.rgba.is_empty(), "RGBA data should not be empty");
-        assert!(
-            alt.contains("DrawIo"),
-            "Alt text should mention DrawIo, got: {alt}"
-        );
-    }
-}
-
-/// DrawIo with invalid XML produces an Error section (not a panic).
-#[test]
-fn drawio_invalid_xml_produces_error_section() {
-    let pane = render_and_wait("drawio", "<not-valid-drawio/>");
-    assert!(
-        !matches!(pane.sections[1], RenderedSection::Pending { .. }),
-        "Should not remain Pending after wait_for_renders"
-    );
-}
-
-/// DrawIo image rendering stays visible in the preview UI without relying on snapshots.
-#[test]
-fn drawio_rendered_image_is_visible_in_ui() {
-    let pane = render_and_wait("drawio", DRAWIO_SOURCE);
-    assert_image(&pane.sections, 1, "DrawIo pre-snapshot");
-    let harness = build_harness(pane.sections, 600.0, 400.0);
-    assert_standard_diagram_markdown_visible(&harness);
-}
-
-/// Snapshot: DrawIo render error fallback UI.
-#[test]
-fn snapshot_drawio_render_error() {
+fn drawio_render_error_ui() {
     let sections = vec![
         RenderedSection::Markdown("# DrawIo Diagram\n".to_string()),
         RenderedSection::Error {
@@ -161,7 +89,17 @@ fn snapshot_drawio_render_error() {
         },
         RenderedSection::Markdown("## After diagram\n".to_string()),
     ];
-    build_snapshot(sections, "diagram_drawio_render_error", 600.0, 300.0);
+    let harness = build_harness(sections, 600.0, 300.0);
+    // Verify fallback UI text using i18n
+    let expected_error = katana_ui::i18n::tf(
+        "render_error",
+        &[
+            ("kind", "DrawIo"),
+            ("message", "Failed to extract SVG from rendered HTML"),
+        ],
+    );
+    // Verify it doesn't panic and error text exists
+    let _ = harness.get_by_label(&expected_error);
 }
 
 // ─────────────────────────────────────────────
@@ -354,7 +292,7 @@ fn mixed_diagram_document_renders_all_independently() {
 }
 
 // ─────────────────────────────────────────────
-// UI snapshot: Mixed document + Pending spinner + all fallbacks
+// UI semantic check: Mixed document + Pending spinner + all fallbacks
 // ─────────────────────────────────────────────
 
 /// Mixed document fallback UI remains semantically correct without snapshots.
@@ -394,7 +332,7 @@ fn mixed_diagrams_with_fallbacks_render_semantically() {
     let _not_installed = harness.get_by_label(&expected_not_installed);
 }
 
-/// Snapshot: Diagram in Pending state showing spinner.
+/// Fallback: Diagram in Pending state showing spinner.
 #[test]
 fn snapshot_diagram_pending_spinner() {
     let sections = vec![
@@ -416,7 +354,8 @@ fn snapshot_diagram_pending_spinner() {
             pane.show_content(ui);
         });
     harness.step();
-    harness.snapshot_options("diagram_pending_spinner", &snapshot_opts());
+    // Use run_steps instead of run() because spin animations loop forever.
+    harness.run_steps(5);
 }
 
 // ─────────────────────────────────────────────

@@ -1899,8 +1899,10 @@ fn badges_then_language_selector_both_centered() {
 /// cells to fit text, leaving most of the preview area unused and causing
 /// text overflow when content is even slightly longer.
 ///
-/// This test verifies that the rightmost header cell extends to at least 80%
-/// of the preview content width.
+/// Validates BOTH:
+/// 1. The table group frame rect fills >= 80% of content width
+/// 2. The rightmost cell text ("Header C" / "Cell 3") starts past the 50% mark,
+///    proving columns are actually distributed across the table width.
 #[test]
 fn markdown_table_fills_available_width() {
     let table_md = concat!(
@@ -1916,32 +1918,38 @@ fn markdown_table_fills_available_width() {
     pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/table_test.md"));
 
     let ctx = egui::Context::default();
-    let output = ctx.run(
-        egui::RawInput {
-            screen_rect: Some(egui::Rect::from_min_size(
-                egui::pos2(0.0, 0.0),
-                egui::vec2(preview_width, 400.0),
-            )),
-            ..Default::default()
-        },
-        |ctx| {
+    let raw_input = egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, 400.0),
+        )),
+        ..Default::default()
+    };
+
+    let render_frame = |ctx: &egui::Context, pane: &mut PreviewPane| {
+        ctx.run(raw_input.clone(), |ctx| {
             egui::CentralPanel::default()
                 .frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8)))
                 .show(ctx, |ui| {
                     pane.show(ui);
                 });
-        },
-    );
+        })
+    };
 
-    // Inspect Rect shapes to find the table group frame.
-    // The table group frame is distinguished by having a non-zero stroke width
-    // (egui::Frame::group always draws a border).
+    // Run multiple frames so egui::Grid can persist column widths.
+    // Grid's min_col_width propagates via stored state across frames.
+    let _ = render_frame(&ctx, &mut pane);
+    let _ = render_frame(&ctx, &mut pane);
+    let output = render_frame(&ctx, &mut pane);
+
+    let content_width = preview_width - 16.0; // 8px margin each side
+
+    // ── Check 1: Frame rect width ──
     let flat = flatten_shapes(&output.shapes);
     let group_frame_widths: Vec<f32> = flat
         .iter()
         .filter_map(|s| {
             if let egui::epaint::Shape::Rect(rect_shape) = s {
-                // Group frames have a visible stroke (width > 0)
                 if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
                     Some(rect_shape.rect.width())
                 } else {
@@ -1962,15 +1970,49 @@ fn markdown_table_fills_available_width() {
         .iter()
         .copied()
         .fold(f32::NEG_INFINITY, f32::max);
-
-    // Table should fill at least 80% of available width (accounting for margins).
-    // Available width after 8px margin on each side = preview_width - 16.
-    let content_width = preview_width - 16.0;
     let fill_ratio = table_frame_width / content_width;
 
     assert!(
         fill_ratio >= 0.80,
         "Table frame should fill >= 80% of available width, got {fill_ratio:.2} \
          (table_frame_width={table_frame_width:.1}, content_width={content_width:.1})"
+    );
+
+    // ── Check 2: Rightmost column text position ──
+    // Find text shapes for "Header C" or "Cell 3" (the 3rd column content).
+    // Their left edge (x position) must be past the 50% mark of the content area,
+    // proving the Grid columns are distributed, not all clustered on the left.
+    let right_col_texts: Vec<f32> = flat
+        .iter()
+        .filter_map(|s| {
+            if let egui::epaint::Shape::Text(text_shape) = s {
+                let text = &text_shape.galley.job.text;
+                if text.contains("Header C") || text.contains("Cell 3") {
+                    Some(text_shape.pos.x)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !right_col_texts.is_empty(),
+        "Expected text shapes for the rightmost column (Header C / Cell 3)"
+    );
+
+    let rightmost_col_x = right_col_texts
+        .iter()
+        .copied()
+        .fold(f32::NEG_INFINITY, f32::max);
+    let midpoint = 8.0 + content_width * 0.50; // 50% mark from left margin
+
+    assert!(
+        rightmost_col_x >= midpoint,
+        "Rightmost column text must start past 50% of content width, \
+         got x={rightmost_col_x:.1}, midpoint={midpoint:.1}. \
+         This means Grid columns are NOT distributed across the table width."
     );
 }

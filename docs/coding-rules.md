@@ -239,7 +239,7 @@ crates/katana-core/
 |------|-----------|----------------|
 | Unit Test (UT) | Inline `#[cfg(test)]` inside `src/` | **100% (No Exceptions)** |
 | Integration Test (IT) | `tests/` directory | Core public API flow coverage |
-| UI Integration Test | `tests/integration/` (egui_kittest) | All MVP scenarios, and assertion of actual responses (Node, Rect, etc.). **Snapshot testing is prohibited (NG)** |
+| UI Integration Test | `tests/integration/` (egui_kittest) | All MVP scenarios, and assertion of actual responses (Node, Rect, etc.). **Visual Snapshot testing (image comparison) is strictly prohibited.** |
 
 Coverage measurement: `cargo llvm-cov --workspace --fail-under-lines 100` (Forced in CI)
 
@@ -271,11 +271,11 @@ The convention "a defined rule without enforcement is meaningless" applies here 
 ❌ Remove or weaken a test to make the implementation pass
 ```
 
-#### UI Testing with egui_kittest (Snapshots are NG — Validate Actual Responses)
+#### UI Testing with egui_kittest (Snapshots are Prohibited — Validate Actual Responses)
 
 **Best Practice: UI verification must validate the "actual response (output)".**
-Reliance on "Snapshot testing (comparing `.png` files) which can only detect visual differences" is **prohibited (NG)** as technical debt.
-Snapshot tests are slow to execute, and when they fail, developers blindly run `UPDATE_SNAPSHOTS=1` assuming "the image just shifted slightly", which renders them completely ineffective as a safeguard against regressions.
+Reliance on "Visual Snapshot testing (comparing `.png` files, e.g., `try_snapshot_options`) which can only detect visual differences" is **strictly prohibited** as technical debt.
+Snapshot tests are slow to execute, hard to maintain, and when they fail, developers blindly blindly accept the new image assuming "the layout just shifted slightly", which renders them completely ineffective as a safeguard against logic regressions.
 
 **Correct IT Patterns — Validate Logic Directly:**
 
