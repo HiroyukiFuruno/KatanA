@@ -2016,3 +2016,128 @@ fn markdown_table_fills_available_width() {
          This means Grid columns are NOT distributed across the table width."
     );
 }
+
+// ── TDD(RED): Table cells within same row must share the same Y coordinate ──
+
+/// Validates that header cells and data cells are rendered in proper row-aligned
+/// layout. With `ui.columns()` (equal-width distribution), columns are rendered
+/// but cell content within each "row" may not share the same Y coordinate if the
+/// Grid-based row mechanism is broken.
+///
+/// This test uses Shape-based inspection to verify:
+/// 1. All 6 data cell texts (Cell 1–6) are present in the rendered output
+/// 2. Cells within the SAME row share the same Y coordinate (within tolerance)
+/// 3. Header cells (Header A/B/C) are all on the same row
+#[test]
+fn markdown_table_cells_in_same_row_share_y_coordinate() {
+    let table_md = concat!(
+        "# Table Test\n\n",
+        "| Header A | Header B | Header C |\n",
+        "|----------|----------|----------|\n",
+        "| Cell 1   | Cell 2   | Cell 3   |\n",
+        "| Cell 4   | Cell 5   | Cell 6   |\n",
+    );
+
+    let preview_width = 600.0_f32;
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/table_row_test.md"));
+
+    let ctx = egui::Context::default();
+    let raw_input = egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, 400.0),
+        )),
+        ..Default::default()
+    };
+
+    let render_frame = |ctx: &egui::Context, pane: &mut PreviewPane| {
+        ctx.run(raw_input.clone(), |ctx| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8)))
+                .show(ctx, |ui| {
+                    pane.show(ui);
+                });
+        })
+    };
+
+    // Multiple frames for egui::Grid layout stabilization.
+    // Grid persists column widths across frames and needs several iterations
+    // to settle auto-sized column widths.
+    for _ in 0..4 {
+        let _ = render_frame(&ctx, &mut pane);
+    }
+    let output = render_frame(&ctx, &mut pane);
+
+    let flat = flatten_shapes(&output.shapes);
+
+    // Extract positions of all cell/header text shapes
+    let cell_labels = [
+        "Header A", "Header B", "Header C", "Cell 1", "Cell 2", "Cell 3", "Cell 4", "Cell 5",
+        "Cell 6",
+    ];
+    let mut text_positions: std::collections::HashMap<&str, egui::Pos2> =
+        std::collections::HashMap::new();
+
+    for shape in &flat {
+        if let egui::epaint::Shape::Text(text_shape) = shape {
+            let text = &text_shape.galley.job.text;
+            for label in &cell_labels {
+                if text.contains(label) {
+                    text_positions.insert(label, text_shape.pos);
+                }
+            }
+        }
+    }
+
+    // ── Check 1: All cell texts must be present ──
+    for label in &cell_labels {
+        assert!(
+            text_positions.contains_key(label),
+            "Missing text shape for '{label}' in rendered output. \
+             Found: {:?}",
+            text_positions.keys().collect::<Vec<_>>()
+        );
+    }
+
+    // ── Check 2: Cells in the same row must share the same Y coordinate ──
+    let y_tolerance = 2.0_f32;
+
+    // Header row: Header A, Header B, Header C
+    let header_a_y = text_positions["Header A"].y;
+    let header_b_y = text_positions["Header B"].y;
+    let header_c_y = text_positions["Header C"].y;
+    assert!(
+        (header_a_y - header_b_y).abs() <= y_tolerance
+            && (header_b_y - header_c_y).abs() <= y_tolerance,
+        "Header cells must be on the same row (same Y). \
+         Got: A.y={header_a_y:.1}, B.y={header_b_y:.1}, C.y={header_c_y:.1}"
+    );
+
+    // Data row 1: Cell 1, Cell 2, Cell 3
+    let cell1_y = text_positions["Cell 1"].y;
+    let cell2_y = text_positions["Cell 2"].y;
+    let cell3_y = text_positions["Cell 3"].y;
+    assert!(
+        (cell1_y - cell2_y).abs() <= y_tolerance && (cell2_y - cell3_y).abs() <= y_tolerance,
+        "Data row 1 cells must be on the same row (same Y). \
+         Got: C1.y={cell1_y:.1}, C2.y={cell2_y:.1}, C3.y={cell3_y:.1}"
+    );
+
+    // Data row 2: Cell 4, Cell 5, Cell 6
+    let cell4_y = text_positions["Cell 4"].y;
+    let cell5_y = text_positions["Cell 5"].y;
+    let cell6_y = text_positions["Cell 6"].y;
+    assert!(
+        (cell4_y - cell5_y).abs() <= y_tolerance && (cell5_y - cell6_y).abs() <= y_tolerance,
+        "Data row 2 cells must be on the same row (same Y). \
+         Got: C4.y={cell4_y:.1}, C5.y={cell5_y:.1}, C6.y={cell6_y:.1}"
+    );
+
+    // ── Check 3: Rows must be in descending Y order ──
+    assert!(
+        header_a_y < cell1_y && cell1_y < cell4_y,
+        "Rows must be in top-to-bottom order. \
+         Got header.y={header_a_y:.1}, row1.y={cell1_y:.1}, row2.y={cell4_y:.1}"
+    );
+}
