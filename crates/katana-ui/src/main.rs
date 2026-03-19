@@ -34,6 +34,41 @@ fn load_icon() -> std::sync::Arc<egui::IconData> {
     })
 }
 
+/// Resolves a macOS locale string (e.g. "ja-JP", "zh-Hans") to a supported language code.
+#[cfg(all(target_os = "macos", not(test)))]
+fn resolve_locale_to_lang(locale: &str) -> String {
+    let lower = locale.to_lowercase();
+
+    // Chinese variants require special handling due to script subtags.
+    if lower.starts_with("zh-hans") || lower.contains("hans") {
+        return "zh-CN".to_string();
+    }
+    if lower.starts_with("zh-hant")
+        || lower.contains("hant")
+        || lower.starts_with("zh-tw")
+        || lower.starts_with("zh-hk")
+    {
+        return "zh-TW".to_string();
+    }
+
+    // Simple prefix-based lookup for all other languages.
+    const PREFIX_MAP: &[(&str, &str)] = &[
+        ("ja", "ja"),
+        ("ko", "ko"),
+        ("pt", "pt"),
+        ("fr", "fr"),
+        ("de", "de"),
+        ("es", "es"),
+        ("it", "it"),
+    ];
+    for &(prefix, lang) in PREFIX_MAP {
+        if lower.starts_with(prefix) {
+            return lang.to_string();
+        }
+    }
+    "en".to_string()
+}
+
 #[cfg(not(test))]
 fn detect_initial_language() -> Option<String> {
     #[cfg(target_os = "macos")]
@@ -45,40 +80,7 @@ fn detect_initial_language() -> Option<String> {
         unsafe { katana_get_mac_locale(buf.as_mut_ptr() as _, buf.len()) };
         let c_str = unsafe { std::ffi::CStr::from_ptr(buf.as_ptr() as _) };
         let locale = c_str.to_string_lossy().to_string();
-
-        let lower = locale.to_lowercase();
-        if lower.starts_with("ja") {
-            return Some("ja".to_string());
-        }
-        if lower.starts_with("zh-hans") || lower.contains("hans") {
-            return Some("zh-CN".to_string());
-        }
-        if lower.starts_with("zh-hant")
-            || lower.contains("hant")
-            || lower.starts_with("zh-tw")
-            || lower.starts_with("zh-hk")
-        {
-            return Some("zh-TW".to_string());
-        }
-        if lower.starts_with("ko") {
-            return Some("ko".to_string());
-        }
-        if lower.starts_with("pt") {
-            return Some("pt".to_string());
-        }
-        if lower.starts_with("fr") {
-            return Some("fr".to_string());
-        }
-        if lower.starts_with("de") {
-            return Some("de".to_string());
-        }
-        if lower.starts_with("es") {
-            return Some("es".to_string());
-        }
-        if lower.starts_with("it") {
-            return Some("it".to_string());
-        }
-        return Some("en".to_string());
+        return Some(resolve_locale_to_lang(&locale));
     }
     #[allow(unreachable_code)]
     None

@@ -259,47 +259,26 @@ fn init_current_language() {
 
 fn get_dictionary() -> &'static HashMap<&'static str, I18nMessages> {
     DICTIONARY.get_or_init(|| {
+        let entries: &[(&str, &str)] = &[
+            ("en", EN_JSON),
+            ("ja", JA_JSON),
+            ("zh-CN", ZH_CN_JSON),
+            ("zh-TW", ZH_TW_JSON),
+            ("ko", KO_JSON),
+            ("pt", PT_JSON),
+            ("fr", FR_JSON),
+            ("de", DE_JSON),
+            ("es", ES_JSON),
+            ("it", IT_JSON),
+        ];
         let mut map = HashMap::new();
-        map.insert(
-            "en",
-            serde_json::from_str(EN_JSON).expect("BUG: en.json is invalid"),
-        );
-        map.insert(
-            "ja",
-            serde_json::from_str(JA_JSON).expect("BUG: ja.json is invalid"),
-        );
-        map.insert(
-            "zh-CN",
-            serde_json::from_str(ZH_CN_JSON).expect("BUG: zh-CN.json is invalid"),
-        );
-        map.insert(
-            "zh-TW",
-            serde_json::from_str(ZH_TW_JSON).expect("BUG: zh-TW.json is invalid"),
-        );
-        map.insert(
-            "ko",
-            serde_json::from_str(KO_JSON).expect("BUG: ko.json is invalid"),
-        );
-        map.insert(
-            "pt",
-            serde_json::from_str(PT_JSON).expect("BUG: pt.json is invalid"),
-        );
-        map.insert(
-            "fr",
-            serde_json::from_str(FR_JSON).expect("BUG: fr.json is invalid"),
-        );
-        map.insert(
-            "de",
-            serde_json::from_str(DE_JSON).expect("BUG: de.json is invalid"),
-        );
-        map.insert(
-            "es",
-            serde_json::from_str(ES_JSON).expect("BUG: es.json is invalid"),
-        );
-        map.insert(
-            "it",
-            serde_json::from_str(IT_JSON).expect("BUG: it.json is invalid"),
-        );
+        for &(code, json) in entries {
+            map.insert(
+                code,
+                serde_json::from_str(json)
+                    .unwrap_or_else(|e| panic!("BUG: {code}.json is invalid: {e}")),
+            );
+        }
         map
     })
 }
@@ -350,5 +329,7 @@ mod tests {
         let msgs = get();
         // Just verify it returned a valid dictionary (falling back to "en").
         assert!(!msgs.menu.file.is_empty());
+        // Restore to avoid polluting global state for other tests running in parallel.
+        set_language("en");
     }
 }
