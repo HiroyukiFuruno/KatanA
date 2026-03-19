@@ -1,5 +1,7 @@
+use std::collections::hash_map::DefaultHasher;
 use std::iter::Peekable;
 use std::ops::Range;
+use std::hash::{Hash, Hasher};
 
 use crate::{CommonMarkCache, CommonMarkOptions};
 
@@ -10,6 +12,12 @@ use egui_commonmark_backend::elements::*;
 use egui_commonmark_backend::misc::*;
 use egui_commonmark_backend::pulldown::*;
 use pulldown_cmark::{CowStr, HeadingLevel};
+use unicode_segmentation::UnicodeSegmentation;
+
+const INLINE_EMOJI_URI_PREFIX: &str = "bytes://katana-inline-emoji-";
+const INLINE_EMOJI_FILENAME_SUFFIX: &str = ".png";
+const INLINE_EMOJI_MIN_PIXEL_SIZE: u32 = 16;
+const INLINE_EMOJI_DISPLAY_SCALE: f32 = 1.0;
 
 /// Newline logic is constructed by the following:
 /// All elements try to insert a newline before them (if they are allowed)
@@ -185,7 +193,7 @@ impl CommonMarkViewerInternal {
                 &mut layout_job,
                 &style,
                 egui::FontSelection::Default,
-                egui::Align::LEFT,
+                egui::Align::BOTTOM,
             );
         }
 
@@ -198,6 +206,67 @@ impl CommonMarkViewerInternal {
                 ui.label(self.text_style.to_richtext(ui, chunk));
             }
         }
+    }
+
+    fn push_inline_text(&mut self, text: &str, ui: &mut Ui, max_width: f32) {
+        if text.is_empty() {
+            return;
+        }
+
+        let rich_text = self.text_style.to_richtext(ui, text);
+        if self.after_inline_widget && !self.text_style.code && text.contains(char::is_whitespace) {
+            self.flush_pending_inline(ui, max_width);
+            self.emit_wrapped_followup_chunks(ui, text);
+        } else {
+            self.pending_inline.push(rich_text);
+        }
+        self.after_inline_widget = false;
+    }
+
+    fn current_inline_font_size(&self, ui: &Ui) -> f32 {
+        let body_size = TextStyle::Body.resolve(ui.style()).size;
+        let heading_size = TextStyle::Heading.resolve(ui.style()).size;
+        let heading_delta = heading_size - body_size;
+
+        match self.text_style.heading {
+            Some(0) => heading_size,
+            Some(1) => body_size + heading_delta * 0.835,
+            Some(2) => body_size + heading_delta * 0.668,
+            Some(3) => body_size + heading_delta * 0.501,
+            Some(4) => body_size + heading_delta * 0.334,
+            Some(_) => body_size + heading_delta * 0.167,
+            None if self.text_style.code => TextStyle::Monospace.resolve(ui.style()).size,
+            None => body_size,
+        }
+    }
+
+    fn try_render_inline_emoji(&mut self, ui: &mut Ui, max_width: f32, grapheme: &str) -> bool {
+        #[cfg(target_os = "macos")]
+        {
+            let pixel_size = self
+                .current_inline_font_size(ui)
+                .ceil()
+                .max(INLINE_EMOJI_MIN_PIXEL_SIZE as f32) as u32;
+            let display_size = pixel_size as f32 * INLINE_EMOJI_DISPLAY_SCALE;
+            if let Some(bytes) = katana_core::emoji::render_apple_color_emoji_png(grapheme, pixel_size) {
+                self.flush_pending_inline(ui, max_width);
+                ui.add(
+                    egui::Image::from_bytes(inline_emoji_uri(grapheme, pixel_size), bytes)
+                        .fit_to_exact_size(egui::vec2(display_size, display_size)),
+                );
+                self.after_inline_widget = true;
+                return true;
+            }
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = ui;
+            let _ = max_width;
+            let _ = grapheme;
+        }
+
+        false
     }
 
     fn should_flush_before_start_tag(tag: &pulldown_cmark::Tag) -> bool {
@@ -712,25 +781,26 @@ impl CommonMarkViewerInternal {
     }
 
     fn event_text(&mut self, text: CowStr, ui: &mut Ui, max_width: f32) {
-        let rich_text = self.text_style.to_richtext(ui, &text);
         if let Some(image) = &mut self.image {
             self.after_inline_widget = false;
-            image.alt_text.push(rich_text);
+            image.alt_text.push(self.text_style.to_richtext(ui, &text));
         } else if let Some(block) = &mut self.code_block {
             self.after_inline_widget = false;
             block.content.push_str(&text);
         } else if let Some(link) = &mut self.link {
             self.after_inline_widget = false;
-            link.text.push(rich_text);
+            link.text.push(self.text_style.to_richtext(ui, &text));
         } else {
-            if self.after_inline_widget && !self.text_style.code && text.contains(char::is_whitespace)
-            {
-                self.flush_pending_inline(ui, max_width);
-                self.emit_wrapped_followup_chunks(ui, &text);
-            } else {
-                self.pending_inline.push(rich_text);
+            for segment in split_inline_text_and_emoji(&text) {
+                match segment {
+                    InlineSegment::Text(text) => self.push_inline_text(text, ui, max_width),
+                    InlineSegment::Emoji(grapheme) => {
+                        if !self.try_render_inline_emoji(ui, max_width, grapheme) {
+                            self.push_inline_text(grapheme, ui, max_width);
+                        }
+                    }
+                }
             }
-            self.after_inline_widget = false;
         }
     }
 
@@ -948,4 +1018,57 @@ impl CommonMarkViewerInternal {
             self.line.try_insert_end(ui);
         }
     }
+}
+
+enum InlineSegment<'a> {
+    Text(&'a str),
+    Emoji(&'a str),
+}
+
+fn split_inline_text_and_emoji(text: &str) -> Vec<InlineSegment<'_>> {
+    let mut segments = Vec::new();
+    let mut text_start = 0usize;
+
+    for (idx, grapheme) in text.grapheme_indices(true) {
+        if is_emoji_grapheme(grapheme) {
+            if text_start < idx {
+                segments.push(InlineSegment::Text(&text[text_start..idx]));
+            }
+            segments.push(InlineSegment::Emoji(grapheme));
+            text_start = idx + grapheme.len();
+        }
+    }
+
+    if text_start < text.len() {
+        segments.push(InlineSegment::Text(&text[text_start..]));
+    }
+
+    if segments.is_empty() {
+        segments.push(InlineSegment::Text(text));
+    }
+
+    segments
+}
+
+fn is_emoji_grapheme(grapheme: &str) -> bool {
+    grapheme.chars().any(is_emoji_scalar)
+}
+
+fn is_emoji_scalar(ch: char) -> bool {
+    matches!(
+        ch as u32,
+        0x2600..=0x27BF
+            | 0x1F000..=0x1FAFF
+            | 0x1FC00..=0x1FFFD
+    )
+}
+
+fn inline_emoji_uri(grapheme: &str, pixel_size: u32) -> String {
+    let mut hasher = DefaultHasher::new();
+    grapheme.hash(&mut hasher);
+    pixel_size.hash(&mut hasher);
+    format!(
+        "{INLINE_EMOJI_URI_PREFIX}{:016x}{INLINE_EMOJI_FILENAME_SUFFIX}",
+        hasher.finish()
+    )
 }

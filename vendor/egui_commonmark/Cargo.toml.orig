@@ -18,6 +18,7 @@ include = ["src/**/*.rs", "LICENSE-MIT", "LICENSE-APACHE", "Cargo.toml"]
 [dependencies]
 egui_commonmark_backend = { workspace = true }
 egui_commonmark_macros = { workspace = true, optional = true }
+katana-core = { path = "../../crates/katana-core" }
 
 egui_extras = { workspace = true }
 egui = { workspace = true }
@@ -25,6 +26,7 @@ egui = { workspace = true }
 document-features = { workspace = true, optional = true }
 
 pulldown-cmark = { workspace = true }
+unicode-segmentation = "1.12"
 
 [features]
 default = ["load-images", "pulldown_cmark"]
