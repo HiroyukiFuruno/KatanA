@@ -69,8 +69,7 @@ The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdo
 ### Homebrew (Recommended)
 
 ```sh
-brew tap HiroyukiFuruno/katana
-brew install --cask katana-desktop
+brew tap HiroyukiFuruno/katana && brew install --cask katana-desktop
 ```
 
 No additional steps required — the app is ready to use immediately.
@@ -78,8 +77,7 @@ No additional steps required — the app is ready to use immediately.
 ### Updating via Homebrew
 
 ```sh
-brew update
-brew upgrade --cask katana-desktop
+brew update && brew upgrade --cask katana-desktop
 ```
 
 ### Manual Download

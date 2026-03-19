@@ -69,8 +69,7 @@ KatanAの目標は、**シンプルで高速、ワークスペース指向のMar
 ### Homebrew（推奨）
 
 ```sh
-brew tap HiroyukiFuruno/katana
-brew install --cask katana-desktop
+brew tap HiroyukiFuruno/katana && brew install --cask katana-desktop
 ```
 
 追加の手順は不要で、すぐに使い始められます。
@@ -78,8 +77,7 @@ brew install --cask katana-desktop
 ### Homebrew でのアップデート
 
 ```sh
-brew update
-brew upgrade --cask katana-desktop
+brew update && brew upgrade --cask katana-desktop
 ```
 
 ### 手動ダウンロード
