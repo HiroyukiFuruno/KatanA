@@ -91,9 +91,15 @@ default-features = false
 version = "0.33"
 default-features = false
 
+[dependencies.katana-core]
+path = "../../crates/katana-core"
+
 [dependencies.pulldown-cmark]
 version = "0.13"
 default-features = false
+
+[dependencies.unicode-segmentation]
+version = "1.12"
 
 [dev-dependencies.eframe]
 version = "0.33"
