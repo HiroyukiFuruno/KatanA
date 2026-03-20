@@ -31,13 +31,13 @@ pub const APP_COPYRIGHT: &str = "© 2026 KatanA Project";
 pub const APP_LICENSE: &str = "MIT License";
 
 /// Project repository URL.
-pub const APP_REPOSITORY: &str = "https://github.com/HiroyukiFuruno/katana";
+pub const APP_REPOSITORY: &str = "https://github.com/HiroyukiFuruno/KatanA";
 
 /// Documentation URL.
-pub const APP_DOCS_URL: &str = "https://github.com/HiroyukiFuruno/katana/tree/master/docs";
+pub const APP_DOCS_URL: &str = "https://github.com/HiroyukiFuruno/KatanA/tree/master/docs";
 
 /// Issue tracker URL.
-pub const APP_ISSUES_URL: &str = "https://github.com/HiroyukiFuruno/katana/issues";
+pub const APP_ISSUES_URL: &str = "https://github.com/HiroyukiFuruno/KatanA/issues";
 
 /// Sponsor / Support URL.
 pub const APP_SPONSOR_URL: &str = "https://github.com/sponsors/HiroyukiFuruno";
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn repository_url_uses_correct_github_account() {
-        const EXPECTED_BASE: &str = "https://github.com/HiroyukiFuruno/katana";
+        const EXPECTED_BASE: &str = "https://github.com/HiroyukiFuruno/KatanA";
         assert_eq!(
             APP_REPOSITORY, EXPECTED_BASE,
             "Repository URL must be {EXPECTED_BASE}"

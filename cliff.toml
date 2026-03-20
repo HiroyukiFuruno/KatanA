@@ -9,7 +9,7 @@ All notable changes to KatanA Desktop will be documented in this file.\n
 """
 body = """
 {%- macro remote_url() -%}
-  https://github.com/HiroyukiFuruno/katana
+  https://github.com/HiroyukiFuruno/KatanA
 {%- endmacro -%}
 
 {% if version -%}
