@@ -81,12 +81,46 @@ dmg: package-mac ## Build macOS .dmg installer from .app bundle
 
 # ---------- Release ----------
 
+.PHONY: release-check-github-gpg-key
+release-check-github-gpg-key:
+	@SIGNING_FORMAT=$$(git config --get gpg.format || true); \
+	if [ -n "$$SIGNING_FORMAT" ] && [ "$$SIGNING_FORMAT" != "openpgp" ]; then \
+		echo "Skipping GitHub GPG key preflight because gpg.format=$$SIGNING_FORMAT"; \
+		exit 0; \
+	fi; \
+	SIGNING_KEY=$$(git config --get user.signingkey || true); \
+	if [ -z "$$SIGNING_KEY" ]; then \
+		echo "Skipping GitHub GPG key preflight because user.signingkey is not set"; \
+		exit 0; \
+	fi; \
+	GITHUB_OWNER=$$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\\.git$$##; s#/.*##'); \
+	if [ -z "$$GITHUB_OWNER" ]; then \
+		echo "Skipping GitHub GPG key preflight because origin is not a GitHub repository"; \
+		exit 0; \
+	fi; \
+	if ! command -v gh >/dev/null 2>&1; then \
+		echo "Skipping GitHub GPG key preflight because gh is not installed"; \
+		exit 0; \
+	fi; \
+	if ! PUBLIC_GPG_KEYS=$$(gh api "users/$$GITHUB_OWNER/gpg_keys" --jq '.[].key_id' 2>/dev/null); then \
+		echo "Skipping GitHub GPG key preflight because public GPG keys could not be queried"; \
+		exit 0; \
+	fi; \
+	SIGNING_KEY=$$(printf '%s' "$$SIGNING_KEY" | tr '[:lower:]' '[:upper:]'); \
+	if ! printf '%s\n' "$$PUBLIC_GPG_KEYS" | grep -Fx "$$SIGNING_KEY" >/dev/null 2>&1; then \
+		echo "ERROR: GPG key $$SIGNING_KEY is not published on GitHub user $$GITHUB_OWNER."; \
+		echo "Add the public key in GitHub Settings > SSH and GPG keys before running make release."; \
+		exit 1; \
+	fi
+
 .PHONY: release
 release: ## Create a versioned release (usage: make release VERSION=x.y.z)
 ifndef VERSION
 	$(error VERSION is required. Usage: make release VERSION=x.y.z)
 endif
 	@echo "🚀 Releasing v$(VERSION)..."
+	@# 0. Fail fast if GitHub cannot verify the configured GPG signing key
+	$(MAKE) release-check-github-gpg-key
 	@# 1. Update workspace version in root Cargo.toml
 	sed -i '' 's/^version = ".*"/version = "$(VERSION)"/' Cargo.toml
 	@# - Sync Cargo.lock
