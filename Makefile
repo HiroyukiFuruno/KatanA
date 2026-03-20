@@ -32,115 +32,24 @@ run: ## Run the application (KatanA)
 run-release: ## Run the application in release mode
 	cargo run --bin KatanA --release
 
-APP_NAME     := KatanA Desktop
-APP_BUNDLE   := target/release/bundle/osx/$(APP_NAME).app
-CONTENTS     := $(APP_BUNDLE)/Contents
+VERSION      := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 
 .PHONY: package-mac
 package-mac: ## Build macOS .app bundle (release)
-	cargo bundle --release --format osx --package katana-ui
-	@# Overlay project-specific Info.plist (cargo-bundle generates its own)
-	cp crates/katana-ui/Info.plist "$(CONTENTS)/Info.plist"
-	@# Ensure the bundle Info.plist strictly matches root Cargo.toml version
-	perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$$1v$(VERSION)$$2/' "$(CONTENTS)/Info.plist"
-	@# Copy icon into Resources/ (cargo-bundle does not handle icns correctly)
-	mkdir -p "$(CONTENTS)/Resources"
-	cp assets/icon.icns "$(CONTENTS)/Resources/icon.icns"
-	@echo "✅ $(APP_BUNDLE) created"
-
-VERSION      := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-DMG_NAME     := KatanA-Desktop-$(VERSION).dmg
-DMG_OUT      := target/release/$(DMG_NAME)
+	scripts/package-mac.sh $(VERSION)
 
 .PHONY: dmg
 dmg: package-mac ## Build macOS .dmg installer from .app bundle
-	@rm -f "$(DMG_OUT)"
-	@if command -v create-dmg >/dev/null 2>&1; then \
-		echo "Building DMG with create-dmg..."; \
-		create-dmg \
-			--volname "KatanA Desktop $(VERSION)" \
-			--window-pos 200 120 \
-			--window-size 600 400 \
-			--icon-size 100 \
-			--icon "KatanA Desktop.app" 150 190 \
-			--app-drop-link 450 190 \
-			--no-internet-enable \
-			"$(DMG_OUT)" \
-			"$(APP_BUNDLE)"; \
-	else \
-		echo "create-dmg not found, falling back to hdiutil..."; \
-		TMP_DMG=$$(mktemp -d)/staging; \
-		mkdir -p "$$TMP_DMG"; \
-		cp -R "$(APP_BUNDLE)" "$$TMP_DMG/"; \
-		ln -s /Applications "$$TMP_DMG/Applications"; \
-		hdiutil create -volname "KatanA Desktop $(VERSION)" \
-			-srcfolder "$$TMP_DMG" -ov -format UDZO "$(DMG_OUT)"; \
-		rm -rf "$$TMP_DMG"; \
-	fi
-	@echo "✅ $(DMG_OUT) created"
+	scripts/dmg.sh $(VERSION)
 
 # ---------- Release ----------
-
-.PHONY: release-check-github-gpg-key
-release-check-github-gpg-key:
-	@SIGNING_FORMAT=$$(git config --get gpg.format || true); \
-	if [ -n "$$SIGNING_FORMAT" ] && [ "$$SIGNING_FORMAT" != "openpgp" ]; then \
-		echo "Skipping GitHub GPG key preflight because gpg.format=$$SIGNING_FORMAT"; \
-		exit 0; \
-	fi; \
-	SIGNING_KEY=$$(git config --get user.signingkey || true); \
-	if [ -z "$$SIGNING_KEY" ]; then \
-		echo "Skipping GitHub GPG key preflight because user.signingkey is not set"; \
-		exit 0; \
-	fi; \
-	GITHUB_OWNER=$$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\\.git$$##; s#/.*##'); \
-	if [ -z "$$GITHUB_OWNER" ]; then \
-		echo "Skipping GitHub GPG key preflight because origin is not a GitHub repository"; \
-		exit 0; \
-	fi; \
-	if ! command -v gh >/dev/null 2>&1; then \
-		echo "Skipping GitHub GPG key preflight because gh is not installed"; \
-		exit 0; \
-	fi; \
-	if ! PUBLIC_GPG_KEYS=$$(gh api "users/$$GITHUB_OWNER/gpg_keys" --jq '.[].key_id' 2>/dev/null); then \
-		echo "Skipping GitHub GPG key preflight because public GPG keys could not be queried"; \
-		exit 0; \
-	fi; \
-	SIGNING_KEY=$$(printf '%s' "$$SIGNING_KEY" | tr '[:lower:]' '[:upper:]'); \
-	if ! printf '%s\n' "$$PUBLIC_GPG_KEYS" | grep -Fx "$$SIGNING_KEY" >/dev/null 2>&1; then \
-		echo "ERROR: GPG key $$SIGNING_KEY is not published on GitHub user $$GITHUB_OWNER."; \
-		echo "Add the public key in GitHub Settings > SSH and GPG keys before running make release."; \
-		exit 1; \
-	fi
 
 .PHONY: release
 release: ## Create a versioned release (usage: make release VERSION=x.y.z)
 ifndef VERSION
 	$(error VERSION is required. Usage: make release VERSION=x.y.z)
 endif
-	@echo "🚀 Releasing v$(VERSION)..."
-	@# 0. Fail fast if GitHub cannot verify the configured GPG signing key
-	$(MAKE) release-check-github-gpg-key
-	@# 1. Update workspace version in root Cargo.toml
-	sed -i '' 's/^version = ".*"/version = "$(VERSION)"/' Cargo.toml
-	@# - Sync Cargo.lock
-	cargo check --workspace >/dev/null 2>&1 || true
-	@# 2. Update Info.plist version
-	perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$$1v$(VERSION)$$2/' crates/katana-ui/Info.plist
-	@# 3. Verify CHANGELOG is updated manually before release
-	@# (Due to Japanese/English parallel maintenance, git-cliff automation is disabled)
-	@# 4. Verify release artifacts and quality gates after version/changelog updates
-	$(MAKE) check
-	@# 5. Stage and commit
-	git add Cargo.toml Cargo.lock crates/*/Cargo.toml crates/katana-ui/Info.plist CHANGELOG.md CHANGELOG.ja.md
-	git commit -m "chore: v$(VERSION) リリース準備"
-	@# 6. Create signed annotated tag
-	git tag -s "v$(VERSION)" -m "Release v$(VERSION)"
-	@echo "✅ Release v$(VERSION) committed and tagged"
-	@# 7. Push to remote to trigger GitHub Actions release workflow
-	git push origin HEAD
-	git push origin v$(VERSION)
-	@echo "✅ Pushed to remote. GitHub Actions release workflow has been triggered."
+	@scripts/release.sh $(VERSION)
 
 # ---------- Formatters ----------
 
@@ -194,74 +103,9 @@ test-integration: ## Run integration tests (UI tests, semantic assertions only) 
 
 # ---------- CI / Quality Gates ----------
 
-COVERAGE_IGNORE := plantuml_renderer\.rs|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell_ui\.rs|preview_pane_ui\.rs|html_renderer\.rs|settings_window\.rs|os_theme\.rs
-
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
-	# Excluded files and reasons:
-	#
-	# [egui frame context dependent — cannot execute in headless tests]
-	#   - main.rs: eframe::run_native setup_cc closure (icon loading, workspace restore)
-	#   - shell_ui.rs: macOS native FFI calls (process name, menu, icon)
-	#   - preview_pane_ui.rs: egui UI rendering of preview sections
-	#   - html_renderer.rs: egui widget generation from HtmlNode tree
-	#   Business logic is fully tested in shell.rs / shell_logic.rs / preview_pane.rs.
-	#
-	# [macOS NSApp context — unavailable in test binary (no NSApplication run loop)]
-	#   - os_theme.rs: detect_dark_mode_impl calls NSApp.effectiveAppearance, which
-	#     requires NSApplicationMain to have been called. Test binaries have no run loop.
-	#
-	# [OnceLock process-wide cache — fallback tiers unreachable after first resolution]
-	#   - mermaid_renderer.rs: 6-tier mmdc resolution cached via OnceLock; later tiers
-	#     (volta/fnm/which/login-shell) never execute once nvm probe succeeds.
-	#   - plantuml_renderer.rs: jar path resolution + render error path.
-	#
-	cargo llvm-cov clean --workspace
-	#
-	# ── Test Execution + Table Report ──
-	cargo llvm-cov --workspace --lib --tests \
-		--ignore-filename-regex '$(COVERAGE_IGNORE)' \
-		-- --test-threads=1 --skip fixture
-	#
-	# ── Gate Check: Verify that all source code lines are executed at least once ──
-	#
-	# Q: Why use the text output validation instead of the Lines column in the table?
-	#
-	#   The llvm-cov report table aggregates coverage based on "regions".
-	#   Therefore, even if a source code line is executed, if a sub-region
-	#   generated by LLVM within that line has a count of 0 (see examples below),
-	#   it's treated as a "missed line":
-	#
-	#     - The None/Err path of the `?` operator (when it's always Some/Ok in the happy path)
-	#     - Internally expanded code for iterators in `for` loops
-	#     - Short-circuit evaluated paths in `&&` / `||` where the right side is not evaluated
-	#     - Error paths of `map_err` closures
-	#
-	#   This is a known behavior of LLVM's instrumentation, a structural limitation
-	#   that cannot be resolved regardless of how the Rust code is written.
-	#   (ref: https://github.com/taiki-e/cargo-llvm-cov/issues related issues)
-	#
-	#   Therefore, the number of lines with "line count = 0" from the text output
-	#   is used for the gate. This means the source code line has physically never
-	#   been executed, serving as a metric more reflective of reality than the table's Lines column.
-	#
-	@echo "--- Coverage Gate ---"
-	@echo "The Lines column in the table is a reference value due to LLVM sub-region aggregation."
-	@echo "Gate Criteria: 0 truly unreachable non-structural lines."
-	@echo "Excluded: test panic!() assertions, LLVM ?-operator guard branches (closing braces),"
-	@echo "  return None; (inner match returns), standalone false (async race paths),"
-	@echo "  .display() (LLVM sub-region in tracing macros), Pending (async-only mappings)."
-	@UNCOV=$$(cargo llvm-cov report \
-		--ignore-filename-regex '$(COVERAGE_IGNORE)' \
-		--text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -cEv 'panic!|^[^|]*\|[^|]*\|[[:space:]]*\}$$|return None;|[[:space:]]*false$$|\.display\(\)|Pending' || true); \
-	if [ "$$UNCOV" -ne 0 ]; then \
-		echo "❌ FAIL: $$UNCOV lines were never executed (excluding structural/test lines)"; \
-		cargo llvm-cov report \
-			--ignore-filename-regex '$(COVERAGE_IGNORE)' \
-			--text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -Ev 'panic!|^[^|]*\|[^|]*\|[[:space:]]*\}$$|return None;|[[:space:]]*false$$|\.display\(\)|Pending'; \
-		exit 1; \
-	fi; \
-	echo "✅ Coverage gate passed (all meaningful lines executed)"
+	scripts/coverage.sh
 
 .PHONY: check
 check: fmt-check lint test-integration coverage ## Full verification (fmt + clippy + IT + 100% coverage enforced)
