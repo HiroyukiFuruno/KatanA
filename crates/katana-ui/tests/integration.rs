@@ -69,12 +69,7 @@ fn test_integration_workspace_and_tabs() {
         .state_mut()
         .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
 
-    for _ in 0..10 {
-        harness.step();
-        if !harness.state_mut().app_state_mut().is_loading_workspace {
-            break;
-        }
-    }
+    wait_for_workspace_load(&mut harness);
 
     // Check if the tree shows the file test1.md
     let _file_node = harness.get_all_by_value("📄 test1.md").next().unwrap();
@@ -163,6 +158,53 @@ fn test_integration_view_modes() {
     );
 
     let _ = std::fs::remove_dir_all(&temp_dir);
+}
+#[test]
+fn test_integration_settings_window() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    // Trigger settings window to open via Action
+    harness
+        .state_mut()
+        .trigger_action(katana_ui::app_state::AppAction::ToggleSettings);
+    harness.step();
+    harness.step();
+
+    // Now the settings window should be open.
+    // Let's click on the "Font", "Theme", "Layout" tabs on the left pane.
+    for node in harness.get_all_by_label("Font") {
+        node.click();
+    }
+    harness.step();
+    assert_eq!(
+        harness.state_mut().app_state_mut().active_settings_tab,
+        katana_ui::app_state::SettingsTab::Font
+    );
+
+    for node in harness.get_all_by_label("Layout") {
+        node.click();
+    }
+    harness.step();
+    assert_eq!(
+        harness.state_mut().app_state_mut().active_settings_tab,
+        katana_ui::app_state::SettingsTab::Layout
+    );
+
+    for node in harness.get_all_by_label("Theme") {
+        node.click();
+    }
+    harness.step();
+    assert_eq!(
+        harness.state_mut().app_state_mut().active_settings_tab,
+        katana_ui::app_state::SettingsTab::Theme
+    );
+
+    // Close settings window
+    harness
+        .state_mut()
+        .trigger_action(katana_ui::app_state::AppAction::ToggleSettings);
+    harness.step();
 }
 
 #[test]
