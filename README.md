@@ -10,8 +10,8 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/HiroyukiFuruno/katana/actions/workflows/ci.yml"><img src="https://github.com/HiroyukiFuruno/katana/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/HiroyukiFuruno/katana/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/katana" alt="Latest Release"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
   <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS">
 </p>
@@ -75,7 +75,7 @@ The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdo
 ### Homebrew (Recommended)
 
 ```sh
-brew tap HiroyukiFuruno/katana && brew install --cask katana-desktop
+brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
 ```
 
 No additional steps required — the app is ready to use immediately.
@@ -88,7 +88,7 @@ brew update && brew upgrade --cask katana-desktop
 
 ### Manual Download
 
-1. Go to the [Releases page](https://github.com/HiroyukiFuruno/katana/releases/latest)
+1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
 2. Download the latest `KatanA-Desktop-x.y.z.dmg`
 3. Open the DMG and drag **KatanA Desktop.app** into your **Applications** folder
 4. Run the following command once to allow the app to launch:
@@ -104,7 +104,7 @@ xattr -cr /Applications/KatanA\ Desktop.app
 
 ## Current Status
 
-KatanA Desktop is under **active development**. See the [Releases page](https://github.com/HiroyukiFuruno/katana/releases/latest) for the latest version and changelog.
+KatanA Desktop is under **active development**. See the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest) for the latest version and changelog.
 
 Core features available today:
 
@@ -171,7 +171,7 @@ We welcome:
 - design feedback
 - contributions from developers
 
-If you have thoughts on how KatanA can improve the documentation workflow for developers, please open an [issue](https://github.com/HiroyukiFuruno/katana/issues) or [discussion](https://github.com/HiroyukiFuruno/katana/discussions).
+If you have thoughts on how KatanA can improve the documentation workflow for developers, please open an [issue](https://github.com/HiroyukiFuruno/KatanA/issues) or [discussion](https://github.com/HiroyukiFuruno/KatanA/discussions).
 
 Your feedback will directly influence the direction of the project.
 

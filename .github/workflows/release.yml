@@ -160,10 +160,10 @@ jobs:
             version "VERSION_PLACEHOLDER"
             sha256 "SHA256_PLACEHOLDER"
 
-            url "https://github.com/HiroyukiFuruno/katana/releases/download/v#{version}/KatanA-Desktop-#{version}.dmg"
+            url "https://github.com/HiroyukiFuruno/KatanA/releases/download/v#{version}/KatanA-Desktop-#{version}.dmg"
             name "KatanA Desktop"
             desc "Lightweight Markdown viewer with live preview, Mermaid diagrams, and syntax highlighting"
-            homepage "https://github.com/HiroyukiFuruno/katana"
+            homepage "https://github.com/HiroyukiFuruno/KatanA"
 
             livecheck do
               url :url
