@@ -749,10 +749,30 @@ pub(crate) fn render_directory_entry(
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         );
         child_ui.add_space(TREE_LABEL_HOFFSET);
-        let label_resp = child_ui.add(
-            egui::Label::new(egui::RichText::new(label_text).color(file_tree_color))
-                .sense(egui::Sense::click()),
+        let rich = egui::RichText::new(label_text.clone()).color(file_tree_color);
+        let text_widget = egui::WidgetText::from(rich);
+        let galley = text_widget.into_galley(
+            &child_ui,
+            Some(egui::TextWrapMode::Extend),
+            f32::INFINITY,
+            egui::FontSelection::Default,
         );
+        let desired_size = egui::vec2(
+            galley.size().x.min(child_ui.available_width()),
+            galley.size().y,
+        );
+        let (rect, label_resp) = child_ui.allocate_at_least(desired_size, egui::Sense::click());
+        label_resp
+            .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &label_text));
+
+        if child_ui.is_rect_visible(rect) {
+            let mut clip_rect = child_ui.clip_rect();
+            clip_rect.max.x = clip_rect.max.x.min(rect.max.x);
+            child_ui
+                .painter()
+                .with_clip_rect(clip_rect)
+                .galley(rect.min, galley, file_tree_color);
+        }
         resp = resp.union(label_resp);
     }
 
@@ -764,7 +784,7 @@ pub(crate) fn render_directory_entry(
     // Directory level Meta Info on Hover
     let path_str = path.display().to_string();
     let meta_text = format!(
-        "{}\n{}",
+        "{name}\n{}\n{}",
         crate::i18n::tf("Path", &[("path", path_str.as_str())]),
         if let Ok(metadata) = std::fs::metadata(path) {
             crate::shell_logic::format_metadata_tooltip(
@@ -897,18 +917,37 @@ pub(crate) fn render_file_entry(
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         );
         child_ui.add_space(TREE_LABEL_HOFFSET);
-        let rich = egui::RichText::new(label_text).color(text_color);
-        let label_resp = child_ui.add(
-            egui::Label::new(if is_active { rich.strong() } else { rich })
-                .sense(egui::Sense::click()),
+        let rich = egui::RichText::new(label_text.clone()).color(text_color);
+        let text_widget = egui::WidgetText::from(if is_active { rich.strong() } else { rich });
+        let galley = text_widget.into_galley(
+            &child_ui,
+            Some(egui::TextWrapMode::Extend),
+            f32::INFINITY,
+            egui::FontSelection::Default,
         );
+        let desired_size = egui::vec2(
+            galley.size().x.min(child_ui.available_width()),
+            galley.size().y,
+        );
+        let (rect, label_resp) = child_ui.allocate_at_least(desired_size, egui::Sense::click());
+        label_resp
+            .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &label_text));
+
+        if child_ui.is_rect_visible(rect) {
+            let mut clip_rect = child_ui.clip_rect();
+            clip_rect.max.x = clip_rect.max.x.min(rect.max.x);
+            child_ui
+                .painter()
+                .with_clip_rect(clip_rect)
+                .galley(rect.min, galley, text_color);
+        }
         resp = resp.union(label_resp);
     }
 
     // File level Meta Info on Hover
     let path_str = path.display().to_string();
     let meta_text = format!(
-        "{}\n{}",
+        "{name}\n{}\n{}",
         crate::i18n::tf("Path", &[("path", path_str.as_str())]),
         if let Ok(metadata) = std::fs::metadata(path) {
             crate::shell_logic::format_metadata_tooltip(
