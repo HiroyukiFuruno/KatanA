@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::sync::{OnceLock, RwLock};
+use std::sync::{OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 #[derive(Debug, Clone, Deserialize)]
 #[allow(dead_code)]
@@ -278,8 +278,16 @@ pub struct I18nDictionaryEntry {
 static DICTIONARY: OnceLock<Vec<I18nDictionaryEntry>> = OnceLock::new();
 static CURRENT_LANGUAGE: RwLock<String> = RwLock::new(String::new());
 
+fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
+    lock.read().unwrap_or_else(PoisonError::into_inner)
+}
+
+fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
+    lock.write().unwrap_or_else(PoisonError::into_inner)
+}
+
 fn init_current_language() {
-    let mut lang = CURRENT_LANGUAGE.write().unwrap();
+    let mut lang = write_guard(&CURRENT_LANGUAGE);
     if lang.is_empty() {
         *lang = "en".to_string();
     }
@@ -313,26 +321,25 @@ fn get_dictionary() -> &'static Vec<I18nDictionaryEntry> {
 
 /// Sets the current language.
 pub fn set_language(lang: &str) {
-    if let Ok(mut current) = CURRENT_LANGUAGE.write() {
-        *current = lang.to_string();
-    }
+    let mut current = write_guard(&CURRENT_LANGUAGE);
+    *current = lang.to_string();
 }
 
 /// Gets the current language.
 pub fn get_language() -> String {
     init_current_language();
-    CURRENT_LANGUAGE.read().unwrap().clone()
+    read_guard(&CURRENT_LANGUAGE).clone()
 }
 
 /// Access the strongly-typed message hierarchy.
 pub fn get() -> &'static I18nMessages {
     let lang = get_language();
     let dict = get_dictionary();
-    if let Some(entry) = dict.iter().find(|e| e.lang == lang.as_str()) {
-        &entry.messages
-    } else {
-        &dict.iter().find(|e| e.lang == "en").unwrap().messages
-    }
+    let fallback = &dict[0].messages;
+    dict.iter()
+        .find(|entry| entry.lang == lang.as_str())
+        .map(|entry| &entry.messages)
+        .unwrap_or(fallback)
 }
 
 /// Gets the parameter-substituted translated string.
@@ -349,6 +356,8 @@ pub fn tf(template: &str, params: &[(&str, &str)]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::panic::{catch_unwind, AssertUnwindSafe};
+    use std::sync::RwLock;
 
     #[test]
     fn test_get_fallback_to_en() {
@@ -367,5 +376,21 @@ mod tests {
             super::default_metadata_tooltip(),
             "Size: {size} B\nModified: {mod_time}"
         );
+    }
+
+    #[test]
+    fn test_rwlock_helpers_recover_from_poison() {
+        let lock = RwLock::new(String::new());
+        let _ = catch_unwind(AssertUnwindSafe(|| {
+            let _guard = lock.write().expect("poison test must acquire write lock");
+            panic!("poison language lock");
+        }));
+
+        {
+            let mut guard = write_guard(&lock);
+            *guard = "en".to_string();
+        }
+
+        assert_eq!(read_guard(&lock).as_str(), "en");
     }
 }
