@@ -92,7 +92,7 @@ endif
 	@# 3. Generate/update CHANGELOG.md
 	git-cliff --tag "v$(VERSION)" --output CHANGELOG.md
 	@# 4. Stage and commit
-	git add Cargo.toml Cargo.lock crates/*/Cargo.toml crates/katana-ui/Info.plist CHANGELOG.md
+	git add Cargo.toml Cargo.lock crates/*/Cargo.toml crates/katana-ui/Info.plist CHANGELOG.md CHANGELOG.ja.md
 	git commit -m "chore: v$(VERSION) リリース準備"
 	@# 5. Create annotated tag
 	git tag -a "v$(VERSION)" -m "Release v$(VERSION)"
