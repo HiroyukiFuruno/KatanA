@@ -93,8 +93,8 @@ endif
 	cargo check --workspace >/dev/null 2>&1 || true
 	@# 2. Update Info.plist version
 	perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$$1v$(VERSION)$$2/' crates/katana-ui/Info.plist
-	@# 3. Generate/update CHANGELOG.md
-	git-cliff --tag "v$(VERSION)" --output CHANGELOG.md
+	@# 3. Verify CHANGELOG is updated manually before release
+	@# (Due to Japanese/English parallel maintenance, git-cliff automation is disabled)
 	@# 4. Verify release artifacts and quality gates after version/changelog updates
 	$(MAKE) check
 	@# 5. Stage and commit
