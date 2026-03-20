@@ -163,6 +163,81 @@ mod tests {
             tooltip
         );
     }
+
+    #[test]
+    fn collect_matches_filters_correctly() {
+        use katana_core::workspace::TreeEntry;
+        use regex::Regex;
+        let ws_root = Path::new("/root");
+
+        let entries = vec![
+            TreeEntry::File {
+                path: ws_root.join("src/main.rs"),
+            },
+            TreeEntry::File {
+                path: ws_root.join("tests/integration.rs"),
+            },
+            TreeEntry::Directory {
+                path: ws_root.join("docs"),
+                children: vec![TreeEntry::File {
+                    path: ws_root.join("docs/readme.md"),
+                }],
+            },
+        ];
+
+        // 1. Empty query matches all files up to 100
+        let mut results = Vec::new();
+        collect_matches(&entries, "", &[], &[], ws_root, &mut results);
+        assert_eq!(results.len(), 3);
+
+        // 2. Query search
+        let mut results = Vec::new();
+        collect_matches(&entries, "main", &[], &[], ws_root, &mut results);
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0], ws_root.join("src/main.rs"));
+
+        // 3. Exclude regex
+        let mut results = Vec::new();
+        let exclude = vec![Regex::new(r"^tests/").unwrap()];
+        collect_matches(&entries, "", &[], &exclude, ws_root, &mut results);
+        assert_eq!(results.len(), 2);
+        assert!(!results.contains(&ws_root.join("tests/integration.rs")));
+
+        // 4. Include regex
+        let mut results = Vec::new();
+        let include = vec![Regex::new(r"\.md$").unwrap()];
+        collect_matches(&entries, "", &include, &[], ws_root, &mut results);
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0], ws_root.join("docs/readme.md"));
+
+        // 5. Case insensitive query
+        let mut results = Vec::new();
+        collect_matches(&entries, "readme", &[], &[], ws_root, &mut results);
+        assert_eq!(results.len(), 1);
+    }
+
+    #[test]
+    fn collect_matches_limits_to_100() {
+        use katana_core::workspace::TreeEntry;
+        let ws_root = std::path::Path::new("/root");
+
+        let mut entries = Vec::new();
+        for i in 0..105 {
+            entries.push(TreeEntry::File {
+                path: ws_root.join(format!("file_{}.txt", i)),
+            });
+        }
+
+        // Test early return at start of function
+        let mut results = vec![ws_root.join("dummy.txt"); 100];
+        collect_matches(&entries, "", &[], &[], ws_root, &mut results);
+        assert_eq!(results.len(), 100); // Should not add any more
+
+        // Test early return inside loop
+        let mut results = Vec::new();
+        collect_matches(&entries, "", &[], &[], ws_root, &mut results);
+        assert_eq!(results.len(), 100); // Should stop at 100
+    }
 }
 
 /// Helper function to format the full tooltip for a file tree entry.
@@ -183,4 +258,72 @@ pub fn format_tree_tooltip(name: &str, path: &std::path::Path) -> String {
             "Metadata unavailable".to_string()
         }
     )
+}
+
+/// Recursively collects up to 100 matching files from the workspace tree.
+pub fn collect_matches(
+    entries: &[katana_core::workspace::TreeEntry],
+    query: &str,
+    include_regexes: &[regex::Regex],
+    exclude_regexes: &[regex::Regex],
+    ws_root: &std::path::Path,
+    results: &mut Vec<std::path::PathBuf>,
+) {
+    if results.len() >= 100 {
+        return;
+    }
+    for entry in entries {
+        match entry {
+            katana_core::workspace::TreeEntry::File { path } => {
+                let rel = relative_full_path(path, Some(ws_root));
+
+                // 1. Exclude check (priority)
+                let mut is_excluded = false;
+                for re in exclude_regexes {
+                    if re.is_match(&rel) {
+                        is_excluded = true;
+                        break;
+                    }
+                }
+                if is_excluded {
+                    continue;
+                }
+
+                // 2. Query check
+                let mut matches_query = true;
+                if !query.is_empty() {
+                    matches_query = rel.to_lowercase().contains(query);
+                }
+
+                // 3. Include check
+                let mut matches_include = true;
+                if !include_regexes.is_empty() {
+                    matches_include = false;
+                    for re in include_regexes {
+                        if re.is_match(&rel) {
+                            matches_include = true;
+                            break;
+                        }
+                    }
+                }
+
+                if matches_query && matches_include {
+                    results.push(path.clone());
+                    if results.len() >= 100 {
+                        return;
+                    }
+                }
+            }
+            katana_core::workspace::TreeEntry::Directory { children, .. } => {
+                collect_matches(
+                    children,
+                    query,
+                    include_regexes,
+                    exclude_regexes,
+                    ws_root,
+                    results,
+                );
+            }
+        }
+    }
 }

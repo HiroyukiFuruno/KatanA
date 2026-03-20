@@ -1301,6 +1301,12 @@ fn preview_panel_id(path: Option<&std::path::Path>, base: &'static str) -> egui:
     }
 }
 
+fn invalidate_preview_image_cache(ctx: &egui::Context, action: &AppAction) {
+    if matches!(action, AppAction::RefreshDiagrams) {
+        ctx.forget_all_images();
+    }
+}
+
 impl eframe::App for KatanaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Apply theme colours to egui Visuals (only when the palette changed)
@@ -1398,6 +1404,7 @@ impl eframe::App for KatanaApp {
         }
 
         let action = self.take_action();
+        invalidate_preview_image_cache(ctx, &action);
         self.process_action(action);
 
         // On macOS, the egui menu is hidden because the native menu bar is used.
@@ -1549,8 +1556,14 @@ impl eframe::App for KatanaApp {
 mod tests {
     use super::*;
     use eframe::egui::{self, pos2, Rect};
+    use eframe::App as _;
+    use egui::load::{BytesLoadResult, BytesLoader, LoadError};
     use katana_core::{document::Document, workspace::TreeEntry};
     use std::path::{Path, PathBuf};
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
 
     const PREVIEW_CONTENT_PADDING: f32 = 12.0;
 
@@ -1617,6 +1630,34 @@ mod tests {
             hash: 0,
         });
         app
+    }
+
+    struct CountingBytesLoader {
+        forget_all_calls: Arc<AtomicUsize>,
+    }
+
+    impl BytesLoader for CountingBytesLoader {
+        fn id(&self) -> &str {
+            egui::generate_loader_id!(CountingBytesLoader)
+        }
+
+        fn load(&self, _ctx: &egui::Context, _uri: &str) -> BytesLoadResult {
+            Err(LoadError::NotSupported)
+        }
+
+        fn forget(&self, _uri: &str) {}
+
+        fn forget_all(&self) {
+            self.forget_all_calls.fetch_add(1, Ordering::SeqCst);
+        }
+
+        fn byte_size(&self) -> usize {
+            0
+        }
+
+        fn has_pending(&self) -> bool {
+            false
+        }
     }
 
     #[test]
@@ -2261,6 +2302,30 @@ mod tests {
             app.state.scroll_fraction,
         );
     }
+
+    #[test]
+    fn refresh_diagrams_update_clears_image_caches() {
+        let ctx = egui::Context::default();
+        let mut frame = eframe::Frame::_new_kittest();
+        let path = PathBuf::from("/tmp/refresh-cache.md");
+        let mut app = app_with_preview_doc(&path, "# Refresh cache");
+        let forget_all_calls = Arc::new(AtomicUsize::new(0));
+
+        ctx.add_bytes_loader(Arc::new(CountingBytesLoader {
+            forget_all_calls: Arc::clone(&forget_all_calls),
+        }));
+        app.pending_action = AppAction::RefreshDiagrams;
+
+        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            app.update(ctx, &mut frame);
+        });
+
+        assert_eq!(
+            forget_all_calls.load(Ordering::SeqCst),
+            1,
+            "RefreshDiagrams must clear image caches before rerendering preview"
+        );
+    }
 }
 
 /// Renders the custom About window with all required OSS project information.
@@ -2463,84 +2528,12 @@ pub(crate) fn render_search_modal(
                     state.search_results.clear();
                 } else if let Some(ws) = &state.workspace {
                     let mut results = Vec::new();
-                    let ws_root = ws.root.clone();
-
-                    fn collect_matches(
-                        entries: &[katana_core::workspace::TreeEntry],
-                        query: &str,
-                        include_regexes: &[regex::Regex],
-                        exclude_regexes: &[regex::Regex],
-                        ws_root: &std::path::Path,
-                        results: &mut Vec<std::path::PathBuf>,
-                    ) {
-                        if results.len() >= 100 {
-                            return;
-                        }
-                        for entry in entries {
-                            match entry {
-                                katana_core::workspace::TreeEntry::File { path } => {
-                                    let rel =
-                                        crate::shell_logic::relative_full_path(path, Some(ws_root));
-
-                                    // 1. Exclude check (priority)
-                                    let mut is_excluded = false;
-                                    for re in exclude_regexes {
-                                        if re.is_match(&rel) {
-                                            is_excluded = true;
-                                            break;
-                                        }
-                                    }
-                                    if is_excluded {
-                                        continue;
-                                    }
-
-                                    // 2. Query check
-                                    let mut matches_query = true;
-                                    if !query.is_empty() {
-                                        matches_query = rel.to_lowercase().contains(query);
-                                    }
-
-                                    // 3. Include check
-                                    let mut matches_include = true;
-                                    if !include_regexes.is_empty() {
-                                        matches_include = false;
-                                        for re in include_regexes {
-                                            if re.is_match(&rel) {
-                                                matches_include = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    if matches_query && matches_include {
-                                        results.push(path.clone());
-                                        if results.len() >= 100 {
-                                            return;
-                                        }
-                                    }
-                                }
-                                katana_core::workspace::TreeEntry::Directory {
-                                    children, ..
-                                } => {
-                                    collect_matches(
-                                        children,
-                                        query,
-                                        include_regexes,
-                                        exclude_regexes,
-                                        ws_root,
-                                        results,
-                                    );
-                                }
-                            }
-                        }
-                    }
-
-                    collect_matches(
+                    crate::shell_logic::collect_matches(
                         &ws.tree,
                         &query,
                         &include_regexes,
                         &exclude_regexes,
-                        &ws_root,
+                        &ws.root,
                         &mut results,
                     );
                     state.search_results = results;
