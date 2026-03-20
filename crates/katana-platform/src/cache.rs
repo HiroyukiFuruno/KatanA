@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::sync::RwLock;
+use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
 pub trait CacheFacade: Send + Sync {
@@ -61,11 +61,19 @@ impl DefaultCacheService {
         {
             std::fs::create_dir_all(parent)?;
         }
-        let data = self.persistent.read().unwrap();
+        let data = read_guard(&self.persistent);
         let json = serde_json::to_string_pretty(&*data)?;
         std::fs::write(&self.persistent_path, json)?;
         Ok(())
     }
+}
+
+fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
+    lock.read().unwrap_or_else(PoisonError::into_inner)
+}
+
+fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
+    lock.write().unwrap_or_else(PoisonError::into_inner)
 }
 
 impl Default for DefaultCacheService {
@@ -76,12 +84,12 @@ impl Default for DefaultCacheService {
 
 impl CacheFacade for DefaultCacheService {
     fn get_memory(&self, key: &str) -> Option<String> {
-        let map = self.memory.read().unwrap();
+        let map = read_guard(&self.memory);
         map.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
     }
 
     fn set_memory(&self, key: &str, value: String) {
-        let mut map = self.memory.write().unwrap();
+        let mut map = write_guard(&self.memory);
         if let Some(pos) = map.iter().position(|(k, _)| k == key) {
             map[pos].1 = value;
         } else {
@@ -90,7 +98,7 @@ impl CacheFacade for DefaultCacheService {
     }
 
     fn get_persistent(&self, key: &str) -> Option<String> {
-        let data = self.persistent.read().unwrap();
+        let data = read_guard(&self.persistent);
         data.entries
             .iter()
             .find(|(k, _)| k == key)
@@ -99,7 +107,7 @@ impl CacheFacade for DefaultCacheService {
 
     fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()> {
         {
-            let mut data = self.persistent.write().unwrap();
+            let mut data = write_guard(&self.persistent);
             if let Some(pos) = data.entries.iter().position(|(k, _)| k == key) {
                 data.entries[pos].1 = value;
             } else {
@@ -119,12 +127,12 @@ pub struct InMemoryCacheService {
 
 impl CacheFacade for InMemoryCacheService {
     fn get_memory(&self, key: &str) -> Option<String> {
-        let map = self.memory.read().unwrap();
+        let map = read_guard(&self.memory);
         map.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
     }
 
     fn set_memory(&self, key: &str, value: String) {
-        let mut map = self.memory.write().unwrap();
+        let mut map = write_guard(&self.memory);
         if let Some(pos) = map.iter().position(|(k, _)| k == key) {
             map[pos].1 = value;
         } else {
@@ -133,12 +141,12 @@ impl CacheFacade for InMemoryCacheService {
     }
 
     fn get_persistent(&self, key: &str) -> Option<String> {
-        let data = self.persistent.read().unwrap();
+        let data = read_guard(&self.persistent);
         data.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
     }
 
     fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()> {
-        let mut data = self.persistent.write().unwrap();
+        let mut data = write_guard(&self.persistent);
         if let Some(pos) = data.iter().position(|(k, _)| k == key) {
             data[pos].1 = value;
         } else {
@@ -151,6 +159,7 @@ impl CacheFacade for InMemoryCacheService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::panic::{catch_unwind, AssertUnwindSafe};
     use tempfile::TempDir;
 
     #[test]
@@ -208,5 +217,20 @@ mod tests {
         assert_eq!(cache.get_persistent("pkey"), Some("pval1".to_string()));
         cache.set_persistent("pkey", "pval2".to_string()).unwrap();
         assert_eq!(cache.get_persistent("pkey"), Some("pval2".to_string()));
+    }
+
+    #[test]
+    fn test_cache_recovers_from_poisoned_memory_lock() {
+        let cache = DefaultCacheService::new(PathBuf::from("dummy.json"));
+        let _ = catch_unwind(AssertUnwindSafe(|| {
+            let _guard = cache
+                .memory
+                .write()
+                .expect("poison test must acquire write lock");
+            panic!("poison memory lock");
+        }));
+
+        cache.set_memory("test", "recovered".to_string());
+        assert_eq!(cache.get_memory("test"), Some("recovered".to_string()));
     }
 }

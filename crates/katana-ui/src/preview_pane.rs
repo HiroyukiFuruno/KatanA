@@ -140,6 +140,10 @@ impl PreviewPane {
         force: bool,
         diagram_concurrency: usize,
     ) {
+        if force {
+            self.commonmark_cache = CommonMarkCache::default();
+        }
+
         self.md_file_path = md_file_path.to_path_buf();
         let resolved = resolve_image_paths(source, md_file_path);
         let flattened = flatten_list_code_blocks(&resolved);
@@ -823,6 +827,31 @@ mod tests {
         // Wait and confirm that there are no crashes
         pane.wait_for_renders();
         assert!(pane.render_rx.is_none());
+    }
+
+    // full_render: force=true should clear CommonMarkCache
+    // (We cannot directly observe the opaque cache length, but we verify the reset path doesn't crash)
+    #[test]
+    fn full_render_with_force_true_resets_commonmark_cache() {
+        let mut pane = PreviewPane::default();
+        let source = "![image](https://example.com/test.png)";
+        let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+
+        // Initial render (force = false)
+        pane.full_render(
+            source,
+            std::path::Path::new("/tmp/test.md"),
+            cache.clone(),
+            false,
+            4,
+        );
+
+        // Force render (force = true) triggers `self.commonmark_cache = CommonMarkCache::default()`
+        pane.full_render(source, std::path::Path::new("/tmp/test.md"), cache, true, 4);
+        assert!(
+            pane.render_rx.is_none(),
+            "Markdown-only render should not have pending background jobs"
+        );
     }
 
     // ── parse_md_image / find_next_image unit tests ──
