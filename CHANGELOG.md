@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.4.0] - 2026-03-21
+
+### 🚀 Features
+
+- Add App Branding (Icon & Splash Screen)
+- Implement Check For Updates functionality
+- Add native menus for Checking for Updates, Help, and Donations
+- Optimize Diagram Texture implementation with cache
+- Add Trackpad support (Pan and Zoom) to Preview and Full-screen Viewers
+
+### 🐛 Bug Fixes
+
+- Fix Native Fullscreen on macOS displaying black background
+- Support relative image resolution in Markdown
+- Fix integration TOC bugs
+
 ## [0.3.1] - 2026-03-21
 
 ### 🚀 Features
