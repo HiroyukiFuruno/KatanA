@@ -90,7 +90,10 @@
       "vertical": "Vertical (Cima / Baixo)",
       "pane_order": "Ordem dos Painéis",
       "editor_first": "Editor Primeiro",
-      "preview_first": "Visualização Primeiro"
+      "preview_first": "Visualização Primeiro",
+      "toc_position": "TOC Position",
+      "left": "Left",
+      "right": "Right"
     },
     "preview": {
       "title": "Visualização",

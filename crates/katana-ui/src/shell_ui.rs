@@ -442,22 +442,24 @@ pub(crate) fn render_preview_header(ui: &mut egui::Ui, state: &AppState, action:
         *action = AppAction::RefreshDiagrams;
     }
 
-    let toc_bg = if state.show_toc {
-        ui.visuals().selection.bg_fill
-    } else {
-        egui::Color32::TRANSPARENT
-    };
-    if overlay_ui
-        .add_enabled(
-            has_doc,
-            egui::Button::new(crate::Icon::Toc.as_str())
-                .min_size(button_size)
-                .fill(toc_bg),
-        )
-        .on_hover_text(crate::i18n::get().action.toggle_toc.clone())
-        .clicked()
-    {
-        *action = AppAction::ToggleToc;
+    if state.settings.settings().layout.toc_visible {
+        let toc_bg = if state.show_toc {
+            ui.visuals().selection.bg_fill
+        } else {
+            egui::Color32::TRANSPARENT
+        };
+        if overlay_ui
+            .add_enabled(
+                has_doc,
+                egui::Button::new(crate::Icon::Toc.as_str())
+                    .min_size(button_size)
+                    .fill(toc_bg),
+            )
+            .on_hover_text(crate::i18n::get().action.toggle_toc.clone())
+            .clicked()
+        {
+            *action = AppAction::ToggleToc;
+        }
     }
 }
 
@@ -533,6 +535,10 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                             }
                             if ui.button(&i18n.tab.close_others).clicked() {
                                 tab_action = Some(AppAction::CloseOtherDocuments(idx));
+                                ui.close();
+                            }
+                            if ui.button(&i18n.tab.close_all).clicked() {
+                                tab_action = Some(AppAction::CloseAllDocuments);
                                 ui.close();
                             }
                             if ui.button(&i18n.tab.close_right).clicked() {
@@ -1598,10 +1604,10 @@ impl eframe::App for KatanaApp {
         let current_mode = self.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
 
-        if self.state.show_toc {
+        if self.state.show_toc && self.state.settings.settings().layout.toc_visible {
             if let Some(doc) = self.state.active_document() {
                 if let Some(preview) = self.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-                    render_toc_panel(ctx, &mut preview.pane);
+                    render_toc_panel(ctx, &mut preview.pane, &self.state);
                 }
             }
         }
@@ -2704,8 +2710,17 @@ const TOC_INDENT_PER_LEVEL: f32 = 12.0;
 pub(crate) fn render_toc_panel(
     ctx: &egui::Context,
     preview: &mut crate::preview_pane::PreviewPane,
+    state: &crate::app_state::AppState,
 ) {
-    egui::SidePanel::left("toc_panel")
+    use katana_platform::settings::TocPosition;
+    let position = state.settings.settings().layout.toc_position;
+
+    let panel = match position {
+        TocPosition::Left => egui::SidePanel::left("toc_panel"),
+        TocPosition::Right => egui::SidePanel::right("toc_panel"),
+    };
+
+    panel
         .resizable(true)
         .default_width(TOC_PANEL_DEFAULT_WIDTH)
         .show(ctx, |ui| {

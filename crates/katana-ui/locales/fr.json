@@ -90,7 +90,10 @@
       "vertical": "Vertical (Haut / Bas)",
       "pane_order": "Ordre des volets",
       "editor_first": "Éditeur en premier",
-      "preview_first": "Aperçu en premier"
+      "preview_first": "Aperçu en premier",
+      "toc_position": "TOC Position",
+      "left": "Left",
+      "right": "Right"
     },
     "preview": {
       "title": "Aperçu",

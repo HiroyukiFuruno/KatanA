@@ -90,7 +90,10 @@
       "vertical": "Verticale (Sopra / Sotto)",
       "pane_order": "Ordine dei Riquadri",
       "editor_first": "Prima Editor",
-      "preview_first": "Prima Anteprima"
+      "preview_first": "Prima Anteprima",
+      "toc_position": "TOC Position",
+      "left": "Left",
+      "right": "Right"
     },
     "preview": {
       "title": "Anteprima",
