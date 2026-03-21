@@ -71,7 +71,7 @@
   },
   "settings": {
     "title": "設定",
-    "toc_visible": "目次を表示",
+    "toc_visible": "目次の有効化・無効化",
     "theme": {
       "preset": "テーマプリセット",
       "dark_section": "ダーク",
@@ -90,7 +90,10 @@
       "vertical": "垂直（上下）",
       "pane_order": "配置順",
       "editor_first": "エディタ優先",
-      "preview_first": "プレビュー優先"
+      "preview_first": "プレビュー優先",
+      "toc_position": "目次の配置",
+      "left": "左側",
+      "right": "右側"
     },
     "preview": {
       "title": "プレビュー",

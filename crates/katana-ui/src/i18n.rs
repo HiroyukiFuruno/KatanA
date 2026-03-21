@@ -206,6 +206,9 @@ pub struct SettingsLayoutMessages {
     pub pane_order: String,
     pub editor_first: String,
     pub preview_first: String,
+    pub toc_position: String,
+    pub left: String,
+    pub right: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

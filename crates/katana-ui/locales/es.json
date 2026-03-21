@@ -90,7 +90,10 @@
       "vertical": "Vertical (Arriba / Abajo)",
       "pane_order": "Orden de Paneles",
       "editor_first": "Editor Primero",
-      "preview_first": "Vista Previa Primero"
+      "preview_first": "Vista Previa Primero",
+      "toc_position": "TOC Position",
+      "left": "Left",
+      "right": "Right"
     },
     "preview": {
       "title": "Vista Previa",

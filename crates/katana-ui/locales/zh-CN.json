@@ -90,7 +90,10 @@
       "vertical": "垂直（上 / 下）",
       "pane_order": "窗格顺序",
       "editor_first": "编辑器优先",
-      "preview_first": "预览优先"
+      "preview_first": "预览优先",
+      "toc_position": "TOC Position",
+      "left": "Left",
+      "right": "Right"
     },
     "preview": {
       "title": "预览",

@@ -90,7 +90,10 @@
       "vertical": "수직 (상 / 하)",
       "pane_order": "패널 순서",
       "editor_first": "에디터 우선",
-      "preview_first": "미리보기 우선"
+      "preview_first": "미리보기 우선",
+      "toc_position": "TOC Position",
+      "left": "Left",
+      "right": "Right"
     },
     "preview": {
       "title": "미리보기",
