@@ -1769,6 +1769,11 @@ impl eframe::App for KatanaApp {
             ctx.output_mut(|o| o.commands.extend(unprocessed_commands));
         }
     }
+
+    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        // Persist the open tabs state right before the application process is terminated
+        self.save_workspace_state();
+    }
 }
 
 #[allow(clippy::items_after_test_module)]
