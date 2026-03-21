@@ -26,6 +26,7 @@ pub enum Icon {
     CloseModal,
     Info,
     Export,
+    Filter,
 }
 
 impl Icon {
@@ -56,6 +57,7 @@ impl Icon {
             Self::CloseModal => "✗",
             Self::Info => "ℹ",
             Self::Export => "📤",
+            Self::Filter => "∇", // Nabla looks like a funnel top / Y-shape
         }
     }
 }
