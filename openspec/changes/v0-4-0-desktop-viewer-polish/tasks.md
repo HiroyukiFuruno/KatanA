@@ -43,13 +43,13 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 3. メニュー拡充
 
-- [ ] 3.1 About ダイアログを実装し、アプリ名、バージョン、ライセンス、アイコンを表示する
+- [x] 3.1 About ダイアログを実装し、アプリ名、バージョン、ライセンス、アイコンを表示する
 - [ ] 3.2 Help メニューから GitHub リポジトリへブラウザで遷移させる
 - [ ] 3.3 macOS ネイティブメニュー（`macos_menu.m`）と非macOS用フォールバックメニューに追加を適用する
 
 ### Definition of Done (DoD)
 
-- [ ] OSネイティブのメニューから About, Help の各種ダイアログ（または遷移）が正常に呼び出せること。
+- [ ] OSネイティブのメニューから Help の各種ダイアログ（または遷移）が正常に呼び出せること。
 - [ ] `make check-local` が exit 0 で全てパスすること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
@@ -57,16 +57,16 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 4. 画像・ダイアグラムのビューアコントロール追加
 
-- [ ] 4.1 画像やダイアグラム（mermaid, drawio, plantuml, png, jpg, svg）の右上・右下等にオーバーレイ表示されるサブコントロールUI（ボタン群）を実装する
-- [ ] 4.2 コントロールから【拡大・縮小・左右上下の移動（パン操作）・リセット等】を行えるようにする
-- [ ] 4.3 コントロールのボタン（または画像ダブルクリック等）から、対象画像をモーダルで別画面領域に大きく表示する機能を追加する
+- [x] 4.1 画像やダイアグラム（mermaid, drawio, plantuml, png, jpg, svg）の右上・右下等にオーバーレイ表示されるサブコントロールUI（ボタン群）を実装する
+- [x] 4.2 コントロールから【拡大・縮小・左右上下の移動（パン操作）・リセット等】を行えるようにする
+- [x] 4.3 コントロールのボタン（または画像ダブルクリック等）から、対象画像をモーダルで別画面領域に大きく表示する機能を追加する
 
 ### Definition of Done (DoD)
 
-- [ ] Markdown内の画像およびダイアグラム上にコントロールUIが表示され、拡大・縮小などのパン＆ズーム操作が正常に行えること。
-- [ ] モーダルでの別表示機能が正常に動作し、元のプレビュー画面全体のレイアウトに干渉したりアプリがクラッシュしないこと。
-- [ ] `make check-local` が exit 0 で全てパスすること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Markdown内の画像およびダイアグラム上にコントロールUIが表示され、拡大・縮小などのパン＆ズーム操作が正常に行えること。
+- [x] モーダルでの別表示機能が正常に動作し、元のプレビュー画面全体のレイアウトに干渉したりアプリがクラッシュしないこと。
+- [x] `make check-local` が exit 0 で全てパスすること。
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
