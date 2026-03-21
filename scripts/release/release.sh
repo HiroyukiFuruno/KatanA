@@ -156,7 +156,10 @@ if [[ "$USE_GITHUB_WORKFLOW" = "1" ]]; then
         info "Pushing changes and tag..."
         git push origin HEAD --no-verify
         git push origin "v${VERSION}" --no-verify
-        success "Pushed to remote. GitHub Actions release workflow triggered."
+        
+        info "Triggering GitHub Actions release workflow..."
+        gh workflow run release.yml -f tag="v${VERSION}"
+        success "GitHub Actions release workflow triggered."
     else
         warn "Push skipped. You must push manually to trigger the release."
     fi
