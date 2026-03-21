@@ -26,8 +26,8 @@
 - [x] 未ロード中または未発見時には適切なプレースホルダーが表示されること。
 - [x] `make check-local` が exit 0 で全てパスすること。
 - [x] `.agents/skills/self-review/SKILL.md` を利用して自己レビューと品質確認を行うこと。
-- [ ] `.agents/skills/commit_and_push/SKILL.md` を利用してコミットとプッシュを行うこと。
-- [ ] `.agents/skills/create_pull_request/SKILL.md` を利用してタスクPRを作成すること。
+- [x] `.agents/skills/commit_and_push/SKILL.md` を利用してコミットとプッシュを行うこと。
+- [x] `.agents/skills/create_pull_request/SKILL.md` を利用してタスクPRを作成すること。
 - [x] `gh pr merge` 等を利用し、ベースブランチへマージして最新化すること。
 
 ---
@@ -43,10 +43,7 @@
 - [ ] アプリ起動時に独立したスプラッシュ画面が表示され、その後メインUIに遷移すること。
 - [ ] ユーザーのクリック操作で瞬時にスキップできること。
 - [ ] `make check-local` が exit 0 で全てパスすること。
-- [ ] `.agents/skills/self-review/SKILL.md` を利用して自己レビューと品質確認を行うこと。
-- [ ] `.agents/skills/commit_and_push/SKILL.md` を利用してコミットとプッシュを行うこと。
-- [ ] `.agents/skills/create_pull_request/SKILL.md` を利用してタスクPRを作成すること。
-- [ ] `gh pr merge` 等を利用し、ベースブランチへマージして最新化すること。
+- [ ] Execute `.agents/skills/openspec-delivery/SKILL.md` to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -60,10 +57,7 @@
 
 - [ ] OSネイティブのメニューから About, Help の各種ダイアログ（または遷移）が正常に呼び出せること。
 - [ ] `make check-local` が exit 0 で全てパスすること。
-- [ ] `.agents/skills/self-review/SKILL.md` を利用して自己レビューと品質確認を行うこと。
-- [ ] `.agents/skills/commit_and_push/SKILL.md` を利用してコミットとプッシュを行うこと。
-- [ ] `.agents/skills/create_pull_request/SKILL.md` を利用してタスクPRを作成すること。
-- [ ] `gh pr merge` 等を利用し、ベースブランチへマージして最新化すること。
+- [ ] Execute `.agents/skills/openspec-delivery/SKILL.md` to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 

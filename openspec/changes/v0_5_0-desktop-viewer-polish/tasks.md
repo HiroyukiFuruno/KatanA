@@ -25,10 +25,7 @@
 - [ ] HTML, PDF, および画像ファイルへのエクスポート処理が実行され、ファイルが生成されること。
 - [ ] 外部ツールが存在しない環境では、クラッシュせずに適切なエラーダイアログがユーザーに提示されること。
 - [ ] `make check-local` が exit 0 で全てパスすること。
-- [ ] `.agents/skills/self-review/SKILL.md` を利用して自己レビューと品質確認を行うこと。
-- [ ] `commit_and_push` スキルを利用してコミットとプッシュを行うこと。
-- [ ] `create_pull_request` スキルを利用してタスクPRを作成すること。
-- [ ] `gh pr merge` 等を利用し、ベースブランチへマージして最新化すること。
+- [ ] Execute `.agents/skills/openspec-delivery/SKILL.md` to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -44,10 +41,7 @@
 - [ ] 初回起動時に多言語対応の規約画面が必ず表示され、同意するまでアプリ本来の機能にアクセスできないこと。
 - [ ] 一度同意すれば次回以降の起動時はスキップされること（ただし規約バージョンが上がった場合は再提示されること）。
 - [ ] `make check-local` が exit 0 で全てパスすること。
-- [ ] `.agents/skills/self-review/SKILL.md` を利用して自己レビューと品質確認を行うこと。
-- [ ] `commit_and_push` スキルを利用してコミットとプッシュを行うこと。
-- [ ] `create_pull_request` スキルを利用してタスクPRを作成すること。
-- [ ] `gh pr merge` 等を利用し、ベースブランチへマージして最新化すること。
+- [ ] Execute `.agents/skills/openspec-delivery/SKILL.md` to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
