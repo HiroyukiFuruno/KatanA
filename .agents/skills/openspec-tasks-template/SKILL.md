@@ -14,11 +14,7 @@ Insert this at the top of the `tasks.md` file, immediately after the DoR (Defini
 ```markdown
 ## Branch Rule
 
-Tasks Grouped by ## = Rotate the following cycle for 1 session:
-
-1. **Create Base Branch**: Initially create `[Change Directory Name]` from `master`
-2. **Create Task Branch**: For each task, branch out `[Change Directory Name]-task{N}` from the base `1` branch
-3. **Implementation / PR / Self-Review / Merge**: Use `/opsx-apply` (The merge target is the base `1` branch, NOT `master`. After merging, switch back to the base `1` branch and pull the latest changes)
+Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
 ```
 
 *(Replace `[Change Directory Name]` with the actual change directory name, e.g., `desktop-viewer-polish-v0.5.0`)*
@@ -50,5 +46,5 @@ To prevent AI workflow skipping and ensure delivery consistency, you MUST INCLUD
 ```markdown
 ### Definition of Done (DoD)
 - [ ] (Other task-specific verifiable conditions...)
-- [ ] Execute `.agents/skills/openspec-delivery/SKILL.md` to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 ```
