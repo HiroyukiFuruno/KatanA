@@ -31,9 +31,9 @@ cd "$(dirname "$DMG_PATH")"
 DMG_NAME=$(basename "$DMG_PATH")
 shasum -a 256 "$DMG_NAME" > checksums.txt
 
-echo "[INFO] Creating GitHub Release $VERSION..."
-gh release create "$VERSION" \
-    --title "KatanA Desktop $VERSION" \
+echo "[INFO] Creating GitHub Release v$VERSION..."
+gh release create "v$VERSION" \
+    --title "KatanA Desktop v$VERSION" \
     --notes-file "$NOTES_PATH" \
     "$DMG_NAME" \
     "checksums.txt"
