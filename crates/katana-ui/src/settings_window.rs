@@ -446,10 +446,9 @@ fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut SettingsService
         .unwrap_or_default();
 
     // ── Trigger button (shows current value, opens popup on click) ────────
-    let button_resp = ui.add(
-        egui::Button::new(format!("{current}  ▾"))
-            .min_size(egui::vec2(FONT_FAMILY_COMBOBOX_WIDTH, 0.0)),
-    );
+    let button_text = format!("{current}  {}", crate::Icon::TriangleDown.as_str());
+    let button_resp = ui
+        .add(egui::Button::new(button_text).min_size(egui::vec2(FONT_FAMILY_COMBOBOX_WIDTH, 0.0)));
     if button_resp.clicked() {
         let new_state = !is_open;
         ui.data_mut(|d| d.insert_temp(open_id, new_state));

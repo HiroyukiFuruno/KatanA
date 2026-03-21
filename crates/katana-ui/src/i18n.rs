@@ -18,6 +18,14 @@ pub struct I18nMessages {
     pub settings: SettingsMessages,
     pub tab: TabMessages,
     pub search: SearchMessages,
+    pub toc: TocMessages,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)]
+pub struct TocMessages {
+    pub title: String,
+    pub empty: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -123,6 +131,8 @@ pub struct ActionMessages {
     pub recursive_expand: String,
     #[serde(default)]
     pub recursive_open_all: String,
+    #[serde(default)]
+    pub toggle_toc: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

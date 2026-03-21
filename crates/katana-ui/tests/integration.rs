@@ -94,6 +94,50 @@ fn test_integration_workspace_and_tabs() {
 
     // Tab is closed, fallback to workspace view
     assert!(harness.state_mut().app_state_mut().active_doc_idx.is_none());
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_toc_panel_display() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_toc");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let test_file1 = temp_dir.join("toc_test1.md");
+    std::fs::write(&test_file1, "# Heading 1").unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    // Select document, which should trigger a single frame where the UI is rendered.
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(test_file1.clone()));
+    harness.step();
+
+    // Click the toggle button via UI to truly simulate user interaction!
+    let toggle_btn = harness.get_by_label(katana_ui::icon::Icon::Toc.as_str());
+    toggle_btn.click();
+    harness.step(); // UI Registers click, sets pending_action = ToggleToc
+    harness.step(); // KatanaApp reads pending_action, sets show_toc = true, renders TOC panel
+
+    // The TOC panel must be visible
+    let toc_visible = harness.state_mut().app_state_mut().show_toc;
+    assert!(toc_visible, "show_toc should be true after clicking button");
+
+    let toc_title = katana_ui::i18n::get().toc.title.clone();
+    let _panel = harness.get_by_label(&toc_title);
+
+    // Verify the actual outline item is displayed in the panel!
+    let headings_count = harness.get_all_by_label("Heading 1").count();
+    assert_eq!(
+        headings_count, 2,
+        "Heading 1 should appear exactly twice: once in TOC, once in preview text"
+    );
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
