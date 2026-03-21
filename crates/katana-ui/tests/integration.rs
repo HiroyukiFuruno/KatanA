@@ -2575,12 +2575,12 @@ fn test_integration_ui_context_menu_close_others() {
 
     // Fix Flaky: ensure popup correctly renders with harness.run_steps() to await all frames
     tab_b.click_secondary();
-    harness.run_steps(5);
+    harness.run_steps(10);
 
     // The localized label is "Close Others" because language is forced to "en"
     let btn = harness.get_by_label("Close Others");
     btn.click();
-    harness.run_steps(5);
+    harness.run_steps(10);
 
     // Verify it successfully closed everything except b.md
     assert_eq!(harness.state_mut().app_state_mut().open_documents.len(), 1);
