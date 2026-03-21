@@ -50,7 +50,7 @@ pub(crate) fn render_menu_bar(ctx: &egui::Context, state: &mut AppState, action:
 pub(crate) fn render_help_menu(ui: &mut egui::Ui, action: &mut AppAction) {
     if ui.button(crate::i18n::get().menu.about.clone()).clicked() {
         *action = AppAction::ToggleAbout;
-        ui.close_menu();
+        ui.close();
     }
 }
 
