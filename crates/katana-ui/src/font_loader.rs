@@ -41,36 +41,30 @@ impl SystemFontLoader {
     ) -> FontDefinitions {
         let mut fonts = FontDefinitions::default();
 
-        Self::load_system_candidates(
-            &mut fonts,
-            FontFamily::Proportional,
-            proportional_candidates,
-        );
-        Self::load_system_candidates(&mut fonts, FontFamily::Monospace, monospace_candidates);
+        let prop_name = Self::load_first_valid(&mut fonts, proportional_candidates);
+        let mono_name = Self::load_first_valid(&mut fonts, monospace_candidates);
+
+        // Add primary fonts mapped to their corresponding families
+        if let Some(name) = &prop_name {
+            Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
+        }
+        if let Some(name) = &mono_name {
+            Self::append_fallback(&mut fonts, FontFamily::Monospace, name);
+        }
+
+        // Cross-fallbacks for comprehensive CJK coverage in code blocks, and vice versa
+        if let Some(name) = &prop_name {
+            Self::append_fallback(&mut fonts, FontFamily::Monospace, name);
+        }
+        if let Some(name) = &mono_name {
+            Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
+        }
 
         if let (Some(path), Some(name)) = (custom_font_path, custom_font_name) {
             Self::inject_custom_font(&mut fonts, path, name);
         }
 
         fonts
-    }
-
-    fn load_system_candidates(
-        fonts: &mut FontDefinitions,
-        primary_family: FontFamily,
-        candidates: &[&str],
-    ) {
-        let Some(name) = Self::load_first_valid(fonts, candidates) else {
-            return;
-        };
-        Self::prepend_primary(fonts, primary_family.clone(), &name);
-
-        let fallback_family = if primary_family == FontFamily::Proportional {
-            FontFamily::Monospace
-        } else {
-            FontFamily::Proportional
-        };
-        Self::append_fallback(fonts, fallback_family, &name);
     }
 
     fn load_first_valid(fonts: &mut FontDefinitions, candidates: &[&str]) -> Option<String> {
@@ -183,13 +177,6 @@ mod tests {
 
         // Returns early without doing anything
         assert!(!fonts.font_data.contains_key("MyCustomFont"));
-    }
-
-    #[test]
-    fn test_load_system_candidates_empty_returns_early() {
-        let mut fonts = FontDefinitions::empty();
-        SystemFontLoader::load_system_candidates(&mut fonts, FontFamily::Proportional, &[]);
-        assert!(fonts.font_data.is_empty());
     }
 
     #[test]

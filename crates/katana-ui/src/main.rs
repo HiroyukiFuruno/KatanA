@@ -379,7 +379,7 @@ mod tests {
     ];
 
     #[test]
-    fn test_proportional_font_is_first_in_proportional_family() {
+    fn test_proportional_font_is_fallback_in_proportional_family() {
         init_tracing();
         if load_first_font(PROP_CANDIDATES).is_none() {
             return;
@@ -390,14 +390,19 @@ mod tests {
             .get(&egui::FontFamily::Proportional)
             .expect("Proportional family missing");
         let loaded_name = load_first_font(PROP_CANDIDATES).unwrap().0;
-        assert_eq!(
-            proportional[0], loaded_name,
-            "Proportional font must be at position 0 in Proportional family"
+        assert!(
+            proportional.contains(&loaded_name),
+            "Proportional font must be included as fallback in Proportional family"
+        );
+        assert_ne!(
+            proportional.first().unwrap(),
+            &loaded_name,
+            "CJK font should NOT be at position 0; egui defaults should render Latin text"
         );
     }
 
     #[test]
-    fn test_monospace_font_is_first_in_monospace_family() {
+    fn test_monospace_font_is_fallback_in_monospace_family() {
         init_tracing();
         if load_first_font(MONO_CANDIDATES).is_none() {
             return;
@@ -408,9 +413,14 @@ mod tests {
             .get(&egui::FontFamily::Monospace)
             .expect("Monospace family missing");
         let mono_name = load_first_font(MONO_CANDIDATES).unwrap().0;
-        assert_eq!(
-            monospace[0], mono_name,
-            "Monospace font (e.g. Menlo) must be at position 0 in Monospace family"
+        assert!(
+            monospace.contains(&mono_name),
+            "Monospace font must be included as fallback in Monospace family"
+        );
+        assert_ne!(
+            monospace.first().unwrap(),
+            &mono_name,
+            "Monospace CJK font should NOT be at position 0"
         );
     }
 
