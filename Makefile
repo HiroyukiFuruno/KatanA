@@ -45,11 +45,11 @@ dmg: package-mac ## Build macOS .dmg installer from .app bundle
 # ---------- Release ----------
 
 .PHONY: release
-release: ## Create a versioned release (usage: make release VERSION=x.y.z)
+release: ## Create a versioned release (usage: make release VERSION=x.y.z USE_GITHUB_WORKFLOW=1 FORCE=1)
 ifndef VERSION
 	$(error VERSION is required. Usage: make release VERSION=x.y.z)
 endif
-	@scripts/release.sh $(VERSION)
+	@USE_GITHUB_WORKFLOW=$(USE_GITHUB_WORKFLOW) FORCE=$(FORCE) scripts/release/release.sh $(VERSION)
 
 # ---------- Formatters ----------
 
