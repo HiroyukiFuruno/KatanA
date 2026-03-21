@@ -214,7 +214,6 @@
   },
   "terms": {
     "title": "Términos de Servicio",
-    "version": "v1.0.0",
     "version_label": "Versión: {version}",
     "content": "Terms content.",
     "accept": "Aceptar",

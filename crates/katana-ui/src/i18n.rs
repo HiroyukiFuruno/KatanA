@@ -42,7 +42,6 @@ pub struct ExportMessages {
 #[allow(dead_code)]
 pub struct TermsMessages {
     pub title: String,
-    pub version: String,
     pub version_label: String,
     pub content: String,
     pub accept: String,

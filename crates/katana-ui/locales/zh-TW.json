@@ -214,7 +214,6 @@
   },
   "terms": {
     "title": "服務條款",
-    "version": "v1.0.0",
     "version_label": "版本: {version}",
     "content": "Terms content.",
     "accept": "接受",
