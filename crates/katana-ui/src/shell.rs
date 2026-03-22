@@ -194,9 +194,26 @@ impl KatanaApp {
 
     /// Reflects only text changes (keeps existing images for diagrams).
     fn refresh_preview(&mut self, path: &std::path::Path, source: &str) {
+        let h = hash_str(source);
         let path_buf = path.to_path_buf();
-        Self::get_preview_pane(&mut self.tab_previews, path_buf)
+
+        let current_hash = self
+            .tab_previews
+            .iter()
+            .find(|t| t.path == path_buf)
+            .map(|t| t.hash)
+            .unwrap_or(0);
+
+        if current_hash != 0 && current_hash == h {
+            return;
+        }
+
+        Self::get_preview_pane(&mut self.tab_previews, path_buf.clone())
             .update_markdown_sections(source, path);
+
+        if let Some(tab) = self.tab_previews.iter_mut().find(|t| t.path == path_buf) {
+            tab.hash = h;
+        }
     }
 
     fn full_refresh_preview(

@@ -4,13 +4,13 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. P0 CPU無限ループ および タブ切り替えバグ修正
 
-- [ ] 1.1 `KatanaSvgLoader::load` が失敗した場合にエラーを返し、キャッシュさせるようにする (`LoadError::NotSupported` の利用)
-- [ ] 1.2 `shell.rs` において、`tab.hash` （キャッシュ）を判定し、同一ハッシュなら早期リターンするよう最適化 (CPU100%バグ修正)
+- [x] 1.1 `KatanaSvgLoader::load` が失敗した場合にエラーを返し、キャッシュさせるようにする (`LoadError::NotSupported` の利用)
+- [x] 1.2 `shell.rs` において、`tab.hash` （キャッシュ）を判定し、同一ハッシュなら早期リターンするよう最適化 (CPU100%バグ修正)
 
 ### Definition of Done (DoD)
 
-- [ ] CPUが100%に張り付く現象が消失し、`tests::svg_loader` などが通過する
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] CPUが100%に張り付く現象が消失し、`tests::svg_loader` などが通過する
+- [/] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. P1/P3/P4 UI レンダリングバグ修正
 
