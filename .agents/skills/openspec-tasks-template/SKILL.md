@@ -48,7 +48,7 @@ Insert this as the very last task group at the bottom of the `tasks.md` file.
 
 ## 3. Mandatory Definition of Done (DoD) per Task
 
-To prevent AI workflow skipping and ensure delivery consistency, you MUST INCLUDE the following unified checklist item in the Definition of Done for any individual task. Do NOT split it into separate manual steps. 
+To prevent AI workflow skipping and ensure delivery consistency, you MUST INCLUDE the following unified checklist item in the Definition of Done for any individual task. Do NOT split it into separate manual steps.
 
 ```markdown
 ### Definition of Done (DoD)
