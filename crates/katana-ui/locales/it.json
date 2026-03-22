@@ -207,14 +207,14 @@
   "export": {
     "success": "Esportato in {format} presso: {path}",
     "failed": "Esportazione in {format} fallita: {error}",
-    "tool_missing": "Strumento '{tool}' non trovato. Si prega di installarlo (es: `brew install wkhtmltopdf`) per esportare in {format}.",
+    "tool_missing": "Lo strumento di esportazione non è disponibile. Assicurarsi che Chrome o Chromium sia installato per esportare come {format}.",
     "temp_file_error": "Impossibile creare il file temporaneo: {error}",
     "write_error": "Impossibile scrivere il contenuto: {error}",
-    "persist_error": "Impossibile salvare il file temporaneo"
+    "persist_error": "Impossibile salvare il file temporaneo",
+    "exporting": "⏳ Esportazione di {filename}..."
   },
   "terms": {
     "title": "Termini di servizio",
-    "version": "v1.0.0",
     "version_label": "Versione: {version}",
     "content": "Terms content.",
     "accept": "Accetta",

@@ -207,14 +207,14 @@
   "export": {
     "success": "已成功匯出 {format} 至 {path}",
     "failed": "{format} 匯出失敗: {error}",
-    "tool_missing": "未找到工具 '{tool}'。請安裝（如 `brew install wkhtmltopdf`）以匯出為 {format}。",
+    "tool_missing": "匯出工具無法使用。請確認已安裝 Chrome 或 Chromium 以匯出為 {format}。",
     "temp_file_error": "建立暫存檔案失敗: {error}",
     "write_error": "寫入內容失敗: {error}",
-    "persist_error": "持久化暫存檔案失敗"
+    "persist_error": "持久化暫存檔案失敗",
+    "exporting": "⏳ {filename} 匯出中..."
   },
   "terms": {
     "title": "服務條款",
-    "version": "v1.0.0",
     "version_label": "版本: {version}",
     "content": "Terms content.",
     "accept": "接受",

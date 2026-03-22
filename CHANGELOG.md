@@ -2,6 +2,18 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.5.0] - 2026-03-22
+
+### 🚀 Features
+
+- Add Terms of Service agreement with version tracking
+- Implement Markdown export (HTML, PDF, PNG, JPG)
+
+### 🎨 UI/UX
+
+- Polish Terms modal with language ComboBox and better centering
+- Workspace sidebar filter icon changed to ∇ (Nabla) for better semantics
+
 ## [0.4.0] - 2026-03-21
 
 ### 🚀 Features

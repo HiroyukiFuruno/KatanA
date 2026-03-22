@@ -7,6 +7,13 @@ description: Add Katana-specific "Branch Rule" and "Release Process" boilerplate
 When creating, formatting, or updating a `tasks.md` file for an OpenSpec change in the Katana project, ALWAYS use the following structures for the **Branch Rule** and the **Final Checklist**.
 Throughout the development lifecycle, proactively utilize OpenSpec skills (`/opsx-propose`, `/opsx-explore`, `/opsx-apply`, `/opsx-archive`) to streamline the workflow.
 
+## 0. Change Directory Naming Rule
+
+When creating a new change directory under `openspec/changes/`, the directory name MUST follow the format `v${x}-${y}-${z}-xxxx` (where `${x}-${y}-${z}` is the target version with hyphens, and `xxxx` is a slug for the feature).
+
+- **Correct**: `v0-5-0-desktop-viewer-polish`
+- **Incorrect**: `v0.5.0-desktop-viewer-polish` (No dots allowed in the directory name)
+
 ## 1. Branch Rule (Initial Phase)
 
 Insert this at the top of the `tasks.md` file, immediately after the DoR (Definition of Ready):
@@ -17,7 +24,7 @@ Insert this at the top of the `tasks.md` file, immediately after the DoR (Defini
 Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
 ```
 
-*(Replace `[Change Directory Name]` with the actual change directory name, e.g., `desktop-viewer-polish-v0.5.0`)*
+*(Replace `[Change Directory Name]` with the actual change directory name, e.g., `v0-5-0-desktop-viewer-polish`)*
 
 ## 2. Final Verification & Release Work (Final Phase)
 
@@ -37,11 +44,11 @@ Insert this as the very last task group at the bottom of the `tasks.md` file.
 - [ ] x.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
 ```
 
-*(Replace `x` with the next sequential task number. Replace `[Target Version]` with the actual target release version like `v1.2.3`)*
+*(Replace `x` with the next sequential task number. Replace `[Target Version]` with the actual target release version like `0.5.0`)*
 
 ## 3. Mandatory Definition of Done (DoD) per Task
 
-To prevent AI workflow skipping and ensure delivery consistency, you MUST INCLUDE the following unified checklist item in the Definition of Done for any individual task. Do NOT split it into separate manual steps. 
+To prevent AI workflow skipping and ensure delivery consistency, you MUST INCLUDE the following unified checklist item in the Definition of Done for any individual task. Do NOT split it into separate manual steps.
 
 ```markdown
 ### Definition of Done (DoD)

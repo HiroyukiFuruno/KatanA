@@ -207,14 +207,14 @@
   "export": {
     "success": "Exporté vers {format} : {path}",
     "failed": "L'exportation vers {format} a échoué : {error}",
-    "tool_missing": "Outil '{tool}' non trouvé. Veuillez l'installer (ex: `brew install wkhtmltopdf`) pour exporter en {format}.",
+    "tool_missing": "L'outil d'exportation n'est pas disponible. Veuillez vous assurer que Chrome ou Chromium est installé pour exporter en {format}.",
     "temp_file_error": "Échec de création du fichier temporaire : {error}",
     "write_error": "Échec de l'écriture : {error}",
-    "persist_error": "Échec de persistance du fichier temporaire"
+    "persist_error": "Échec de persistance du fichier temporaire",
+    "exporting": "⏳ Export de {filename} en cours..."
   },
   "terms": {
     "title": "Conditions d'utilisation",
-    "version": "v1.0.0",
     "version_label": "Version : {version}",
     "content": "Terms content.",
     "accept": "Accepter",
