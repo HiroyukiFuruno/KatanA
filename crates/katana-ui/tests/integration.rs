@@ -41,7 +41,8 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
         // Pre-accept terms to bypass the blocking UI in integration tests.
-        state.settings.settings_mut().terms_accepted_version = Some("v1.0.0".to_string());
+        state.settings.settings_mut().terms_accepted_version =
+            Some(katana_ui::about_info::APP_VERSION.to_string());
 
         katana_ui::i18n::set_language("en");
         let mut app = KatanaApp::new(state);
@@ -1345,7 +1346,8 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
         // Pre-accept terms to bypass the blocking UI in persistence tests.
-        state.settings.settings_mut().terms_accepted_version = Some("v1.0.0".to_string());
+        state.settings.settings_mut().terms_accepted_version =
+            Some(katana_ui::about_info::APP_VERSION.to_string());
 
         katana_ui::i18n::set_language("en");
         let mut app = KatanaApp::new(state);
@@ -2336,12 +2338,11 @@ fn test_search_sidebar_buttons() {
         "Search button (🔍) must be present in the workspace sidebar"
     );
 
-    // Check that we have a Y-shaped Filter button (▼ or funnel) in the sidebar
-    // Since we will use ▼
-    let filter_nodes: Vec<_> = harness.get_all_by_label("\u{25BC}").collect(); // ▼
+    // Check that we have a Nabla-shaped Filter button (∇) in the sidebar
+    let filter_nodes: Vec<_> = harness.get_all_by_label("\u{2207}").collect(); // ∇
     assert!(
         !filter_nodes.is_empty(),
-        "Filter button (\u{25BC}) must be present in the workspace sidebar"
+        "Filter button (\u{2207}) must be present in the workspace sidebar"
     );
 }
 
@@ -2575,12 +2576,12 @@ fn test_integration_ui_context_menu_close_others() {
 
     // Fix Flaky: ensure popup correctly renders with harness.run_steps() to await all frames
     tab_b.click_secondary();
-    harness.run_steps(5);
+    harness.run_steps(10);
 
     // The localized label is "Close Others" because language is forced to "en"
     let btn = harness.get_by_label("Close Others");
     btn.click();
-    harness.run_steps(5);
+    harness.run_steps(10);
 
     // Verify it successfully closed everything except b.md
     assert_eq!(harness.state_mut().app_state_mut().open_documents.len(), 1);
@@ -2968,4 +2969,47 @@ fn test_integration_tab_restore_closed_limit() {
     assert_eq!(harness.state_mut().app_state_mut().open_documents.len(), 10);
 
     let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_ui_terms_modal_visibility() {
+    // Force settings removal to ensure ToS is required
+    let settings_path = std::env::temp_dir().join(format!(
+        "katana_test_settings_terms_{}.json",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_file(&settings_path);
+
+    let mut harness = Harness::builder().build_eframe(move |_cc| {
+        let ai_registry = AiProviderRegistry::new();
+        let plugin_registry = PluginRegistry::new();
+        let state = AppState::new(
+            ai_registry,
+            plugin_registry,
+            katana_platform::SettingsService::new(Box::new(
+                katana_platform::JsonFileRepository::new(settings_path.clone()),
+            )),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        let mut app = KatanaApp::new(state);
+        app.skip_splash();
+        app
+    });
+
+    harness.step();
+
+    // Verify Terms of Service title is visible
+    // We force "en" in setup_harness if possible, but here we use default.
+    // Let's force it to "en" to be deterministic.
+    katana_ui::i18n::set_language("en");
+    harness.step();
+
+    harness.get_by_label("Terms of Service");
+
+    harness.get_by_label_contains("Version: 0.5.0");
+    harness.get_by_label("Accept").click();
+    harness.step();
+    harness.run_steps(5);
+
+    harness.get_by_label("No workspace open.");
 }

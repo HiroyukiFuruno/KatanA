@@ -36,13 +36,13 @@ pub struct ExportMessages {
     pub temp_file_error: String,
     pub write_error: String,
     pub persist_error: String,
+    pub exporting: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
 #[allow(dead_code)]
 pub struct TermsMessages {
     pub title: String,
-    pub version: String,
     pub version_label: String,
     pub content: String,
     pub accept: String,

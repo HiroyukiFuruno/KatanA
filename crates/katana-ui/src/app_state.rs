@@ -118,6 +118,14 @@ pub enum AppAction {
     None,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum StatusType {
+    Info,
+    Success,
+    Warning,
+    Error,
+}
+
 /// Top-level application state shared across all UI components.
 pub struct AppState {
     /// The currently open workspace, if any.
@@ -133,8 +141,8 @@ pub struct AppState {
 
     /// Plugin registry (will be referenced during plugin widget integration in future Task 5.x).
     pub _plugin_registry: PluginRegistry,
-    /// Non-fatal status message for the status bar.
-    pub status_message: Option<String>,
+    /// Non-fatal status message for the status bar with its importance type.
+    pub status_message: Option<(String, StatusType)>,
     /// Show/hide the workspace panel.
     pub show_workspace: bool,
     /// Whether the workspace file filter is enabled.

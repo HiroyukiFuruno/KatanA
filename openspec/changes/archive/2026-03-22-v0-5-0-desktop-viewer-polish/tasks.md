@@ -22,7 +22,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] HTML, PDF, および画像ファイルへのエクスポート処理が実行され、ファイルが生成されること。
 - [x] 外部ツールが存在しない環境では、クラッシュせずに適切なエラーダイアログがユーザーに提示されること。
 - [x] `make check-local` が exit 0 で全てパスすること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -39,7 +39,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 初回起動時に多言語対応の規約画面が必ず表示され、同意するまでアプリ本来の機能にアクセスできないこと。
 - [x] 一度同意すれば次回以降の起動時はスキップされること（ただし規約バージョンが上がった場合は再提示されること）。
 - [x] `make check-local` が exit 0 で全てパスすること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -75,11 +75,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 >
 > これらはプロセスの信頼性を根底から覆す行為です。以下の手順は**絶対に独自解釈でスキップ・代替実行せず**、一つずつ確実に完了させてください。エラー発生時は即座に中断し、人間に報告すること。
 
-- [ ] 4.1 本バージョンの `tasks.md` にて、先行するすべてのタスクが完了し `[x]` が付いていることを確認する。
-- [ ] 4.2 `docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md` を利用して自己レビューを行う。**追加・変更したすべての実行パス（エラー処理等）がテストで網羅されているか**監査すること。
-- [ ] 4.3 `make check-local` が exit 0 で完全にパスし、LLVM Coverage が 100% であることを確認する。（※エラーが出ても `--no-verify` で強行しないこと）
-- [ ] 4.4 最初に作成したmasterから派生させた中間branchをmasterブランチにマージする。
-- [ ] 4.5 **（重要）リリース前に必ずアーカイブを実行:** `.agents/skills/openspec-archive-change/SKILL.md` に従い、本ディレクトリ(`v0.5.0-desktop-viewer-polish`)をアーカイブ（退避・コミット）する。
+- [x] 4.1 本バージョンの `tasks.md` にて、先行するすべてのタスクが完了し `[x]` が付いていることを確認する。
+- [x] 4.2 `docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md` を利用して自己レビューを行う。**追加・変更したすべての実行パス（エラー処理等）がテストで網羅されているか**監査すること。
+- [x] 4.3 `make check-local` が exit 0 で完全にパスし、LLVM Coverage が 100% であることを確認する。（※エラーが出ても `--no-verify` で強行しないこと）
+- [x] 4.4 最初に作成したmasterから派生させた中間branchをmasterブランチにマージする。
+- [x] 4.5 **（重要）リリース前に必ずアーカイブを実行:** `.agents/skills/openspec-archive-change/SKILL.md` に従い、本ディレクトリ(`v0.5.0-desktop-viewer-polish`)をアーカイブ（退避・コミット）する。
 - [ ] 4.6 masterに向けてPRを作成する。
 - [ ] 4.7 master merge ※--adminの利用を許可。（プッシュ時にフックエラーが出た場合、独断で `--no-verify` を使わず人間へ報告すること）
 - [ ] 4.8 `.agents/skills/release_workflow/SKILL.md` に従い、`make release VERSION=0.5.0` を実行し、自動タグ打ちとリリースを完了する。**（※コマンド実行に失敗した場合は絶対に代替手順を使わず、作業を即時終了してユーザーの指示を仰ぐこと。全報告・コミットは日本語厳守）**

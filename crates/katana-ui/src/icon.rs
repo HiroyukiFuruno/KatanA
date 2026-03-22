@@ -25,7 +25,11 @@ pub enum Icon {
     Fullscreen,
     CloseModal,
     Info,
+    Success,
+    Warning,
+    Error,
     Export,
+    Filter,
 }
 
 impl Icon {
@@ -55,7 +59,11 @@ impl Icon {
             Self::Fullscreen => "⛶",
             Self::CloseModal => "✗",
             Self::Info => "ℹ",
+            Self::Success => "✓",
+            Self::Warning => "⚠",
+            Self::Error => "⊗",
             Self::Export => "📤",
+            Self::Filter => "∇", // Nabla looks like a funnel top / Y-shape
         }
     }
 }
@@ -89,5 +97,11 @@ mod tests {
         assert_eq!(Icon::ResetView.as_str(), "↻");
         assert_eq!(Icon::Fullscreen.as_str(), "⛶");
         assert_eq!(Icon::CloseModal.as_str(), "✗");
+        assert_eq!(Icon::Info.as_str(), "ℹ");
+        assert_eq!(Icon::Success.as_str(), "✓");
+        assert_eq!(Icon::Warning.as_str(), "⚠");
+        assert_eq!(Icon::Error.as_str(), "⊗");
+        assert_eq!(Icon::Export.as_str(), "📤");
+        assert_eq!(Icon::Filter.as_str(), "∇");
     }
 }

@@ -207,14 +207,14 @@
   "export": {
     "success": "已成功导出 {format} 至 {path}",
     "failed": "{format} 导出失败: {error}",
-    "tool_missing": "未找到工具 '{tool}'。请安装（如 `brew install wkhtmltopdf`）以导出为 {format}。",
+    "tool_missing": "导出工具不可用。请确保已安装 Chrome 或 Chromium 以导出为 {format}。",
     "temp_file_error": "创建临时文件失败: {error}",
     "write_error": "写入内容失败: {error}",
-    "persist_error": "持久化临时文件失败"
+    "persist_error": "持久化临时文件失败",
+    "exporting": "⏳ {filename} 导出中..."
   },
   "terms": {
     "title": "服务条款",
-    "version": "v1.0.0",
     "version_label": "版本: {version}",
     "content": "Terms content.",
     "accept": "接受",
