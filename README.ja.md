@@ -139,7 +139,7 @@ npm i -g @mermaid-js/mermaid-cli
 brew install openjdk@25
 ```
 
-2. PlantUML ブロックを含む Markdown ファイルを KatanA で開き、プレビューペインに表示される **⬇ ダウンロード** ボタンをクリックしてください。`plantuml.jar` が自動的にダウンロードされます。
+1. PlantUML ブロックを含む Markdown ファイルを KatanA で開き、プレビューペインに表示される **⬇ ダウンロード** ボタンをクリックしてください。`plantuml.jar` が自動的にダウンロードされます。
 
 ### Draw.io
 

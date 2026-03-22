@@ -20,6 +20,22 @@
   "markdownlint.config": {
     "MD024": {
       "siblings_only": true
-    }
+    },
+    "MD033": {
+      "allowed_elements": [
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "a",
+        "img",
+        "p"
+      ]
+    },
+    "MD041": {
+      "level": 2
+  }
   }
 }
