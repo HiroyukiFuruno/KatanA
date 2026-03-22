@@ -182,15 +182,16 @@ else
     ./scripts/release/extract-notes.sh "$VERSION" > "$RELEASE_NOTES_PATH"
     
     if confirm "Publish to GitHub and Update Homebrew now?"; then
+        info "Pushing changes and tag to origin..."
+        git push origin HEAD --no-verify
+        git push origin "v${VERSION}" --no-verify
+
         ./scripts/release/publish-github.sh "$VERSION" "$DMG_PATH" "$RELEASE_NOTES_PATH"
         
         SHA256=$(shasum -a 256 "$DMG_PATH" | awk '{print $1}')
         DMG_NAME=$(basename "$DMG_PATH")
         ./scripts/release/update-homebrew.sh "$VERSION" "$SHA256" "$DMG_NAME"
         
-        info "Pushing changes and tag to origin..."
-        git push origin HEAD --no-verify
-        git push origin "v${VERSION}" --no-verify
         success "Local release and publication complete!"
     else
         warn "Publication skipped. You must publish manually."
