@@ -207,10 +207,11 @@
   "export": {
     "success": "Exported to {format} at {path}",
     "failed": "{format} export failed: {error}",
-    "tool_missing": "Tool '{tool}' not found. Please install it (e.g. `brew install wkhtmltopdf`) to export as {format}.",
+    "tool_missing": "Export tool is not available. Please ensure Chrome or Chromium is installed to export as {format}.",
     "temp_file_error": "Failed to create temp file: {error}",
     "write_error": "Failed to write content: {error}",
-    "persist_error": "Failed to persist temp file"
+    "persist_error": "Failed to persist temp file",
+    "exporting": "⏳ Exporting {filename}..."
   },
   "terms": {
     "title": "Terms of Service",

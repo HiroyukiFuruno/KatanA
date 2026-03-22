@@ -73,6 +73,10 @@ pub struct AppSettings {
     #[serde(default)]
     pub performance: PerformanceSettings,
 
+    /// Export settings (nesting).
+    #[serde(default)]
+    pub export: ExportSettings,
+
     /// Terms of service accepted version (None = not accepted).
     #[serde(default)]
     pub terms_accepted_version: Option<String>,
@@ -187,6 +191,26 @@ impl Default for PerformanceSettings {
     }
 }
 
+/// Export-related settings.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExportSettings {
+    /// Directory for HTML export output. Defaults to the system temp directory.
+    #[serde(default = "default_html_output_dir")]
+    pub html_output_dir: String,
+}
+
+fn default_html_output_dir() -> String {
+    std::env::temp_dir().to_string_lossy().to_string()
+}
+
+impl Default for ExportSettings {
+    fn default() -> Self {
+        Self {
+            html_output_dir: default_html_output_dir(),
+        }
+    }
+}
+
 fn default_version() -> String {
     "0.2.0".to_string()
 }
@@ -233,6 +257,7 @@ impl Default for AppSettings {
             layout: LayoutSettings::default(),
             workspace: WorkspaceSettings::default(),
             performance: PerformanceSettings::default(),
+            export: ExportSettings::default(),
             terms_accepted_version: None,
             language: default_language(),
             extra: Vec::new(),
