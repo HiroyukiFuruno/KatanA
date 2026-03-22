@@ -80,6 +80,6 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 4.3 `make check-local` が exit 0 で完全にパスし、LLVM Coverage が 100% であることを確認する。（※エラーが出ても `--no-verify` で強行しないこと）
 - [x] 4.4 最初に作成したmasterから派生させた中間branchをmasterブランチにマージする。
 - [x] 4.5 **（重要）リリース前に必ずアーカイブを実行:** `.agents/skills/openspec-archive-change/SKILL.md` に従い、本ディレクトリ(`v0.5.0-desktop-viewer-polish`)をアーカイブ（退避・コミット）する。
-- [ ] 4.6 masterに向けてPRを作成する。
-- [ ] 4.7 master merge ※--adminの利用を許可。（プッシュ時にフックエラーが出た場合、独断で `--no-verify` を使わず人間へ報告すること）
-- [ ] 4.8 `.agents/skills/release_workflow/SKILL.md` に従い、`make release VERSION=0.5.0` を実行し、自動タグ打ちとリリースを完了する。**（※コマンド実行に失敗した場合は絶対に代替手順を使わず、作業を即時終了してユーザーの指示を仰ぐこと。全報告・コミットは日本語厳守）**
+- [x] 4.6 masterに向けてPRを作成する。
+- [x] 4.7 master merge ※--adminの利用を許可。（プッシュ時にフックエラーが出た場合、独断で `--no-verify` を使わず人間へ報告すること）
+- [x] 4.8 `.agents/skills/release_workflow/SKILL.md` に従い、`make release VERSION=0.5.0` を実行し、自動タグ打ちとリリースを完了する。**（※コマンド実行に失敗した場合は絶対に代替手順を使わず、作業を即時終了してユーザーの指示を仰ぐこと。全報告・コミットは日本語厳守）**
