@@ -196,7 +196,7 @@
   },
   "update": {
     "update_available": "Actualización disponible",
-    "update_available_desc": "Una nueva versión de KatanA ({version}) está disponible. Por favor, ejecute `brew upgrade katana` para actualizar.",
+    "update_available_desc": "Una nueva versión de KatanA ({version}) está disponible. Por favor, ejecute `brew upgrade katana-desktop` para actualizar.",
     "up_to_date": "Actualizado",
     "up_to_date_desc": "KatanA está actualizado.",
     "failed_to_check": "Error al buscar actualizaciones.",
