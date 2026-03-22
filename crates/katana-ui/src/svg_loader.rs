@@ -251,7 +251,16 @@ impl ImageLoader for KatanaSvgLoader {
                     }
                 }
                 Ok(BytesPoll::Pending { size }) => Ok(ImagePoll::Pending { size }),
-                Err(err) => Err(err),
+                Err(err) => {
+                    bucket.entries.push(SvgCacheEntry {
+                        size_hint,
+                        data: Entry {
+                            last_used: AtomicU64::new(self.pass_index.load(Relaxed)),
+                            result: Err(err.to_string()),
+                        },
+                    });
+                    Err(err)
+                }
             }
         }
     }
