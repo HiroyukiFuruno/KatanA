@@ -22,7 +22,7 @@ const INITIAL_HEIGHT: f32 = 800.0;
 const MIN_WIDTH: f32 = 800.0;
 #[cfg(not(test))]
 const MIN_HEIGHT: f32 = 500.0;
-#[cfg(not(test))]
+#[cfg(all(target_os = "macos", not(test)))]
 const LOCALE_BUF_SIZE: usize = 32;
 
 #[cfg(not(test))]
