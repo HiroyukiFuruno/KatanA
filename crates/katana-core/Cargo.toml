@@ -23,6 +23,6 @@ headless_chrome.workspace = true
 base64 = "0.22"
 
 [dev-dependencies]
-pulldown-cmark = "0.13.1"
+pulldown-cmark = "0.13.2"
 tempfile.workspace = true
 tracing-subscriber = "0.3"
