@@ -1,4 +1,6 @@
-use katana_ui::shell_logic::{hash_str, next_tab_index, prev_tab_index, relative_full_path};
+use katana_ui::shell_logic::{
+    format_tree_tooltip, hash_str, next_tab_index, prev_tab_index, relative_full_path,
+};
 use std::path::Path;
 
 // ── hash_str tests ──
@@ -116,4 +118,13 @@ fn next_tab_index_with_single_tab() {
 #[test]
 fn next_tab_index_with_empty_list() {
     assert_eq!(next_tab_index(0, 0), 0);
+}
+
+// ── format_tree_tooltip tests ──
+
+#[test]
+fn test_format_tree_tooltip_metadata_unavailable() {
+    let path = Path::new("/non/existent/path/for/test/metadata_unavailable.md");
+    let tooltip = format_tree_tooltip("metadata_unavailable.md", path);
+    assert!(tooltip.contains("Metadata unavailable"));
 }

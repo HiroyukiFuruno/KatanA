@@ -158,7 +158,7 @@ pub(crate) fn default_true() -> bool {
     true
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceSettings {
     /// ID of the last opened workspace root path, restored on next launch.
     #[serde(default)]
@@ -172,6 +172,49 @@ pub struct WorkspaceSettings {
     /// Index of the actively selected tab.
     #[serde(default)]
     pub active_tab_idx: Option<usize>,
+    /// Directories to ignore during workspace scanning.
+    #[serde(default = "default_ignored_directories")]
+    pub ignored_directories: Vec<String>,
+    /// Maximum depth for recursive directory scanning.
+    #[serde(default = "default_max_depth")]
+    pub max_depth: usize,
+}
+
+/// Default maximum recursion depth for workspace scanning.
+pub const DEFAULT_MAX_DEPTH: usize = 10;
+
+/// Default list of directory names to ignore during workspace scanning.
+pub const DEFAULT_IGNORED_DIRECTORIES: &[&str] = &[
+    ".git",
+    ".terraform",
+    "node_modules",
+    "target",
+    ".idea",
+    ".vscode",
+];
+
+fn default_ignored_directories() -> Vec<String> {
+    DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|&s| s.to_string())
+        .collect()
+}
+
+fn default_max_depth() -> usize {
+    DEFAULT_MAX_DEPTH
+}
+
+impl Default for WorkspaceSettings {
+    fn default() -> Self {
+        Self {
+            last_workspace: None,
+            paths: vec![],
+            open_tabs: vec![],
+            active_tab_idx: None,
+            ignored_directories: default_ignored_directories(),
+            max_depth: default_max_depth(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

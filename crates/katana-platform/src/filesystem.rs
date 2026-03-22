@@ -21,10 +21,23 @@ impl FilesystemService {
     ///
     /// On success, returns a [`Workspace`] with the directory tree populated.  
     /// On failure (unreadable path), returns a recoverable [`WorkspaceError`].
-    pub fn open_workspace(&self, path: impl Into<PathBuf>) -> Result<Workspace, WorkspaceError> {
+    pub fn open_workspace(
+        &self,
+        path: impl Into<PathBuf>,
+        ignored_directories: &[String],
+        max_depth: usize,
+        cancel_token: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    ) -> Result<Workspace, WorkspaceError> {
         let root: PathBuf = path.into();
+        const ROOT_DEPTH: usize = 0;
         let tree = self
-            .scan_directory(&root)
+            .scan_directory(
+                &root,
+                ignored_directories,
+                max_depth,
+                ROOT_DEPTH,
+                &cancel_token,
+            )
             .map_err(|e| WorkspaceError::unreadable_root(root.clone(), e))?;
         Ok(Workspace::new(root, tree))
     }
@@ -49,7 +62,18 @@ impl FilesystemService {
     }
 
     /// Recursively and in parallel scans a directory, returning a tree containing only `.md` files.
-    fn scan_directory(&self, dir: &Path) -> std::io::Result<Vec<TreeEntry>> {
+    fn scan_directory(
+        &self,
+        dir: &Path,
+        ignored_directories: &[String],
+        max_depth: usize,
+        current_depth: usize,
+        cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
+    ) -> std::io::Result<Vec<TreeEntry>> {
+        if current_depth >= max_depth || cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
+            return Ok(Vec::new());
+        }
+
         use rayon::prelude::*;
 
         let iter = std::fs::read_dir(dir)?;
@@ -58,16 +82,30 @@ impl FilesystemService {
         let mut entries: Vec<TreeEntry> = child_entries
             .into_par_iter()
             .filter_map(|entry| {
+                if cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
+                    return None;
+                }
+
                 let path = entry.path();
                 let file_name = path.file_name().and_then(|n| n.to_str())?;
 
-                // Skip build artifacts and Node.js modules.
-                if file_name == "target" || file_name == "node_modules" {
+                if ignored_directories
+                    .iter()
+                    .any(|ignored| ignored == file_name)
+                {
                     return None;
                 }
 
                 if path.is_dir() {
-                    let children = self.scan_directory(&path).unwrap_or_default();
+                    let children = self
+                        .scan_directory(
+                            &path,
+                            ignored_directories,
+                            max_depth,
+                            current_depth + 1,
+                            cancel_token,
+                        )
+                        .unwrap_or_default();
                     // Do not show directories that contain no `.md` files underneath.
                     if has_any_markdown(&children) {
                         Some(TreeEntry::Directory { path, children })
