@@ -207,10 +207,11 @@
   "export": {
     "success": "{format} 내보내기 성공: {path}",
     "failed": "{format} 내보내기 실패: {error}",
-    "tool_missing": "'{tool}' 도구를 찾을 수 없습니다. {format}(으)로 내보내려면 설치(예: `brew install wkhtmltopdf`)가 필요합니다.",
+    "tool_missing": "내보내기 도구를 사용할 수 없습니다. {format}(으)로 내보내려면 Chrome 또는 Chromium이 설치되어 있는지 확인하세요.",
     "temp_file_error": "임시 파일 생성 실패: {error}",
     "write_error": "내용 쓰기 실패: {error}",
-    "persist_error": "임시 파일 저장 실패"
+    "persist_error": "임시 파일 저장 실패",
+    "exporting": "⏳ {filename} 내보내는 중..."
   },
   "terms": {
     "title": "이용 약관",

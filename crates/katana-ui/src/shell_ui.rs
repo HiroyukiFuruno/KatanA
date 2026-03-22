@@ -137,13 +137,56 @@ pub(crate) fn render_header_right(ui: &mut egui::Ui, state: &AppState) {
     });
 }
 
-pub(crate) fn render_status_bar(ctx: &egui::Context, state: &AppState) {
+pub(crate) fn render_status_bar(
+    ctx: &egui::Context,
+    state: &AppState,
+    export_filenames: &[String],
+) {
     egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
         ui.horizontal(|ui| {
-            let ready = crate::i18n::get().status.ready.clone();
-            let msg = state.status_message.as_deref().unwrap_or(&ready);
-            ui.label(msg);
+            let (msg, kind) = if let Some((msg, kind)) = &state.status_message {
+                (msg.as_str(), Some(kind))
+            } else {
+                (crate::i18n::get().status.ready.as_str(), None)
+            };
+
+            let (color, icon) = match kind {
+                Some(crate::app_state::StatusType::Error) => {
+                    (egui::Color32::RED, Some(crate::Icon::Error.as_str()))
+                }
+                Some(crate::app_state::StatusType::Warning) => (
+                    ui.visuals().warn_fg_color,
+                    Some(crate::Icon::Warning.as_str()),
+                ),
+                Some(crate::app_state::StatusType::Success) => (
+                    egui::Color32::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
+                    Some(crate::Icon::Success.as_str()),
+                ),
+                Some(crate::app_state::StatusType::Info) => {
+                    (ui.visuals().text_color(), Some(crate::Icon::Info.as_str()))
+                }
+                _ => (ui.visuals().text_color(), None),
+            };
+
+            ui.add_space(STATUS_BAR_ICON_SPACING);
+            if let Some(i) = icon {
+                ui.colored_label(color, i);
+                ui.add_space(2.0);
+            }
+            ui.colored_label(color, msg);
+
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if !export_filenames.is_empty() {
+                    let total = export_filenames.len();
+                    ui.spinner();
+                    for (i, filename) in export_filenames.iter().enumerate() {
+                        let numbered = crate::i18n::tf(
+                            &crate::i18n::get().export.exporting,
+                            &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
+                        );
+                        ui.label(numbered);
+                    }
+                }
                 if state.is_dirty() {
                     ui.label(crate::Icon::Dot.as_str());
                 }
@@ -155,6 +198,10 @@ pub(crate) fn render_status_bar(ctx: &egui::Context, state: &AppState) {
 const WORKSPACE_SPINNER_OUTER_MARGIN: f32 = 10.0;
 const WORKSPACE_SPINNER_INNER_MARGIN: f32 = 10.0;
 const WORKSPACE_SPINNER_TEXT_MARGIN: f32 = 5.0;
+/// Green channel value for the success status bar color.
+const STATUS_SUCCESS_GREEN: u8 = 200;
+/// Spacing before the icon in the status bar.
+const STATUS_BAR_ICON_SPACING: f32 = 4.0;
 
 pub(crate) fn render_workspace_panel(
     ctx: &egui::Context,
@@ -1149,7 +1196,10 @@ pub(crate) fn render_file_entry(
     let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
     let prefix = indent_prefix(ctx.depth);
     let icon = if entry.is_markdown() { "📄" } else { "  " };
-    let label = format!("{prefix}{icon} {name}");
+    // Prepend two spaces to align with the directory's arrow and its following space ("▶ ").
+    let label = format!("{prefix}  {icon} {name}");
+    // Accessibility label without leading indentation (used for widget_info / test queries).
+    let accessible_label = format!("{icon} {name}");
 
     let is_active = ctx.active_path.is_some_and(|ap| ap == path);
 
@@ -1193,8 +1243,9 @@ pub(crate) fn render_file_entry(
             galley.size().y,
         );
         let (rect, label_resp) = child_ui.allocate_at_least(desired_size, egui::Sense::click());
-        label_resp
-            .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &label_text));
+        label_resp.widget_info(|| {
+            egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &accessible_label)
+        });
 
         if child_ui.is_rect_visible(rect) {
             let mut clip_rect = child_ui.clip_rect();
@@ -1844,6 +1895,7 @@ impl eframe::App for KatanaApp {
         self.poll_download(ctx);
         self.poll_workspace_load(ctx);
         self.poll_update_check(ctx);
+        self.poll_export(ctx);
 
         // macOS: Poll actions from the native menu.
         #[cfg(target_os = "macos")]
@@ -1921,7 +1973,12 @@ impl eframe::App for KatanaApp {
         // On macOS, the egui menu is hidden because the native menu bar is used.
         #[cfg(not(target_os = "macos"))]
         render_menu_bar(ctx, &mut self.state, &mut self.pending_action);
-        render_status_bar(ctx, &self.state);
+        let export_filenames: Vec<String> = self
+            .export_tasks
+            .iter()
+            .map(|t| t.filename.clone())
+            .collect();
+        render_status_bar(ctx, &self.state, &export_filenames);
 
         // Reflect the file name in the window title
         let ws_root_for_title = self.state.workspace.as_ref().map(|ws| ws.root.clone());

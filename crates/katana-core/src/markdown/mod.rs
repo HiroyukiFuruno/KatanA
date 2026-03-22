@@ -129,8 +129,14 @@ fn render_diagram_block<R: DiagramRenderer>(block: &FenceBlock, renderer: &R) ->
     };
     Some(match renderer.render(&diagram) {
         DiagramResult::Ok(html) => html,
-        // OkPng is directly converted to RGBA in the UI layer. Only a placeholder in the core layer.
-        DiagramResult::OkPng(_) => String::new(),
+        // OkPng: embed as a base64 data URI so the diagram shows in exported HTML.
+        DiagramResult::OkPng(bytes) => {
+            use base64::Engine;
+            let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
+            format!(
+                r#"<div class="katana-diagram mermaid"><img src="data:image/png;base64,{b64}" style="max-width:100%" /></div>"#
+            )
+        }
         DiagramResult::Err { source, error } => fallback_html(&source, &error),
         DiagramResult::CommandNotFound {
             tool_name,
@@ -223,5 +229,45 @@ mod tests {
         // NoOpRenderer returns empty string for OkPng, so diagram is replaced with nothing.
         // But the key assertion is that the "After" text is preserved and no panic occurs.
         assert!(result.contains("After"));
+    }
+
+    /// A test renderer that always returns OkPng with fixed bytes.
+    struct PngTestRenderer;
+    impl DiagramRenderer for PngTestRenderer {
+        fn render(&self, _block: &DiagramBlock) -> DiagramResult {
+            DiagramResult::OkPng(vec![0x89, 0x50, 0x4E, 0x47]) // PNG magic bytes
+        }
+    }
+
+    // render_diagram_block: OkPng should be embedded as base64 <img> tag
+    #[test]
+    fn render_diagram_block_okpng_embeds_base64_img() {
+        let block = FenceBlock {
+            info: "mermaid".to_string(),
+            content: "graph TD; A-->B".to_string(),
+            raw: "```mermaid\ngraph TD; A-->B\n```".to_string(),
+        };
+        let result = render_diagram_block(&block, &PngTestRenderer);
+        let html = result.expect("mermaid blocks should produce Some");
+        assert!(
+            html.contains("data:image/png;base64,"),
+            "OkPng should embed a base64 data URI, got: {html}"
+        );
+        assert!(
+            html.contains("<img"),
+            "OkPng should produce an <img> tag, got: {html}"
+        );
+    }
+
+    // transform_diagram_blocks with PngTestRenderer produces <img> in output
+    #[test]
+    fn transform_with_png_renderer_embeds_base64_in_output() {
+        let source = "# Hello\n\n```mermaid\ngraph TD; A-->B\n```\n\nAfter";
+        let result = transform_diagram_blocks(source, &PngTestRenderer);
+        assert!(
+            result.contains("data:image/png;base64,"),
+            "Output should contain base64 image data"
+        );
+        assert!(result.contains("After"), "Text after diagram preserved");
     }
 }

@@ -207,10 +207,11 @@
   "export": {
     "success": "Exportado para {format} em: {path}",
     "failed": "Exportação para {format} falhou: {error}",
-    "tool_missing": "Ferramenta '{tool}' not found. Instale-a (ex: `brew install wkhtmltopdf`) para exportar como {format}.",
+    "tool_missing": "A ferramenta de exportação não está disponível. Certifique-se de que o Chrome ou Chromium está instalado para exportar como {format}.",
     "temp_file_error": "Falha ao criar arquivo temporário: {error}",
     "write_error": "Falha ao gravar conteúdo: {error}",
-    "persist_error": "Falha ao persistir arquivo temporário"
+    "persist_error": "Falha ao persistir arquivo temporário",
+    "exporting": "⏳ Exportando {filename}..."
   },
   "terms": {
     "title": "Termos de Serviço",

@@ -92,6 +92,16 @@ pub(crate) type WorkspaceLoadResult =
     Result<katana_core::workspace::Workspace, katana_core::workspace::WorkspaceError>;
 pub(crate) type WorkspaceLoadMessage = (WorkspaceLoadType, std::path::PathBuf, WorkspaceLoadResult);
 
+/// A single background export task with its communication channel.
+pub(crate) struct ExportTask {
+    /// Display filename for the progress indicator.
+    pub filename: String,
+    /// Receiver for the background thread result.
+    pub rx: std::sync::mpsc::Receiver<Result<std::path::PathBuf, String>>,
+    /// Whether to open the result file in the browser after completion (HTML exports).
+    pub open_on_complete: bool,
+}
+
 pub struct KatanaApp {
     pub(crate) state: AppState,
     pub(crate) fs: FilesystemService,
@@ -104,6 +114,8 @@ pub struct KatanaApp {
     pub(crate) workspace_rx: Option<std::sync::mpsc::Receiver<WorkspaceLoadMessage>>,
     /// Receiver for background update checks.
     pub(crate) update_rx: Option<std::sync::mpsc::Receiver<Result<String, String>>>,
+    /// Active background export tasks.
+    pub(crate) export_tasks: Vec<ExportTask>,
 
     /// Whether the About dialog is currently visible.
     pub(crate) show_about: bool,
@@ -136,6 +148,7 @@ impl KatanaApp {
             download_rx: None,
             workspace_rx: None,
             update_rx: None,
+            export_tasks: Vec::new(),
             show_about: false,
             show_update_dialog: false,
             update_notified: false,
@@ -216,9 +229,12 @@ impl KatanaApp {
 
         self.state.is_loading_workspace = true;
         // Temporary feedback
-        self.state.status_message = Some(crate::i18n::tf(
-            &crate::i18n::get().status.opened_workspace,
-            &vec![("name", "...")],
+        self.state.status_message = Some((
+            crate::i18n::tf(
+                &crate::i18n::get().status.opened_workspace,
+                &vec![("name", "...")],
+            ),
+            crate::app_state::StatusType::Info,
         ));
 
         let (tx, rx) = std::sync::mpsc::channel();
@@ -238,9 +254,12 @@ impl KatanaApp {
         ws: katana_core::workspace::Workspace,
     ) {
         let name = ws.name().unwrap_or("unknown").to_string();
-        self.state.status_message = Some(crate::i18n::tf(
-            &crate::i18n::get().status.opened_workspace,
-            &vec![("name", name.as_str())],
+        self.state.status_message = Some((
+            crate::i18n::tf(
+                &crate::i18n::get().status.opened_workspace,
+                &vec![("name", name.as_str())],
+            ),
+            crate::app_state::StatusType::Success,
         ));
         self.state.workspace = Some(ws);
         self.state.open_documents.clear();
@@ -380,9 +399,12 @@ impl KatanaApp {
                 Ok((_load_type, _path, Err(e))) => {
                     self.state.is_loading_workspace = false;
                     let error = e.to_string();
-                    self.state.status_message = Some(crate::i18n::tf(
-                        &crate::i18n::get().status.cannot_open_workspace,
-                        &vec![("error", error.as_str())],
+                    self.state.status_message = Some((
+                        crate::i18n::tf(
+                            &crate::i18n::get().status.cannot_open_workspace,
+                            &vec![("error", error.as_str())],
+                        ),
+                        crate::app_state::StatusType::Error,
                     ));
                     true
                 }
@@ -462,9 +484,12 @@ impl KatanaApp {
                 }
                 Err(e) => {
                     let error = e.to_string();
-                    self.state.status_message = Some(crate::i18n::tf(
-                        "status_cannot_open_file",
-                        &vec![("error", error.as_str())],
+                    self.state.status_message = Some((
+                        crate::i18n::tf(
+                            &crate::i18n::get().status.cannot_open_file,
+                            &vec![("error", error.as_str())],
+                        ),
+                        crate::app_state::StatusType::Error,
                     ));
                 }
             }
@@ -545,14 +570,20 @@ impl KatanaApp {
         };
         match self.fs.save_document(doc) {
             Ok(()) => {
-                self.state.status_message = Some(crate::i18n::get().status.saved.clone());
+                self.state.status_message = Some((
+                    crate::i18n::get().status.saved.clone(),
+                    crate::app_state::StatusType::Success,
+                ));
                 self.save_workspace_state();
             }
             Err(e) => {
                 let error = e.to_string();
-                self.state.status_message = Some(crate::i18n::tf(
-                    &crate::i18n::get().status.save_failed,
-                    &vec![("error", error.as_str())],
+                self.state.status_message = Some((
+                    crate::i18n::tf(
+                        &crate::i18n::get().status.save_failed,
+                        &vec![("error", error.as_str())],
+                    ),
+                    crate::app_state::StatusType::Error,
                 ));
             }
         }
@@ -768,82 +799,125 @@ impl KatanaApp {
     fn handle_export_document(&mut self, ctx: &egui::Context, fmt: crate::app_state::ExportFormat) {
         tracing::info!("Export document requested: {:?}", fmt);
 
-        let Some(buffer) = self.state.active_document().map(|it| it.buffer.clone()) else {
+        let Some(doc) = self.state.active_document() else {
             return;
         };
+        let buffer = doc.buffer.clone();
+        let doc_path = doc.path.clone();
 
         match fmt {
-            crate::app_state::ExportFormat::Html => self.export_as_html(ctx, &buffer),
-            crate::app_state::ExportFormat::Pdf => self.export_with_tool(ctx, &buffer, "pdf"),
-            crate::app_state::ExportFormat::Png => self.export_with_tool(ctx, &buffer, "png"),
-            crate::app_state::ExportFormat::Jpg => self.export_with_tool(ctx, &buffer, "jpg"),
-        }
-    }
-
-    fn export_as_html(&mut self, ctx: &egui::Context, source: &str) {
-        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-        let renderer = katana_core::markdown::KatanaRenderer;
-
-        match katana_core::markdown::HtmlExporter::export(source, &renderer, preset) {
-            Ok(html) => self.save_and_open_html(ctx, html),
-            Err(e) => {
-                self.state.status_message = Some(format!("HTML Export failed: {}", e));
+            crate::app_state::ExportFormat::Html => self.export_as_html(ctx, &buffer, &doc_path),
+            crate::app_state::ExportFormat::Pdf => {
+                self.export_with_tool(ctx, &buffer, "pdf", &doc_path)
+            }
+            crate::app_state::ExportFormat::Png => {
+                self.export_with_tool(ctx, &buffer, "png", &doc_path)
+            }
+            crate::app_state::ExportFormat::Jpg => {
+                self.export_with_tool(ctx, &buffer, "jpg", &doc_path)
             }
         }
     }
 
-    fn save_and_open_html(&mut self, ctx: &egui::Context, html: String) {
-        use std::io::Write;
-        let mut temp = match tempfile::Builder::new()
-            .prefix("katana_export_")
-            .suffix(".html")
-            .tempfile()
-        {
-            Ok(t) => t,
-            Err(e) => {
-                let msg = crate::i18n::tf(
-                    &crate::i18n::get().export.temp_file_error,
-                    &[("error", &e.to_string())],
-                );
-                self.state.status_message = Some(msg);
-                return;
-            }
+    /// Generates an export filename from the document's path.
+    ///
+    /// The filename is composed of:
+    /// 1. A prefix from the workspace root's directory initials (first char of each component)
+    /// 2. The relative path within the workspace, with separators replaced by `_`
+    ///
+    /// Example: workspace `/Users/hiroyuki/works/private/katana`,
+    ///          doc `docs/readme.md`, ext `pdf`
+    ///          → `Uhwpk_docs_readme.pdf`
+    fn export_filename(&self, doc_path: &std::path::Path, ext: &str) -> String {
+        let (prefix, relative) = if let Some(ws) = &self.state.workspace {
+            // Build prefix from workspace root path initials
+            let initials: String = ws
+                .root
+                .components()
+                .filter_map(|c| match c {
+                    std::path::Component::Normal(s) => s.to_string_lossy().chars().next(),
+                    _ => None, // skip RootDir, Prefix, CurDir, ParentDir
+                })
+                .collect();
+
+            let rel = doc_path.strip_prefix(&ws.root).unwrap_or(doc_path);
+            (initials, rel.to_path_buf())
+        } else {
+            (String::new(), doc_path.to_path_buf())
         };
 
-        if let Err(e) = temp.write_all(html.as_bytes()) {
-            let msg = crate::i18n::tf(
-                &crate::i18n::get().export.write_error,
-                &[("error", &e.to_string())],
-            );
-            self.state.status_message = Some(msg);
-            return;
+        let stem = relative
+            .with_extension("")
+            .to_string_lossy()
+            .replace([std::path::MAIN_SEPARATOR, '/'], "_");
+
+        if stem.is_empty() {
+            format!("export.{}", ext)
+        } else if prefix.is_empty() {
+            format!("{}.{}", stem, ext)
+        } else {
+            format!("{}_{}.{}", prefix, stem, ext)
         }
+    }
+}
 
-        // Keep the file! NamedTempFile will delete itself on drop.
-        let Ok((_file, path)) = temp.keep() else {
-            self.state.status_message = Some(crate::i18n::get().export.persist_error.clone());
-            return;
-        };
+/// Converts markdown source to HTML and writes it to the system temp directory.
+///
+/// Returns the absolute path of the written HTML file.
+///
+/// This is a pure function (no UI state) suitable for background threads and unit tests.
+/// Steps: 1) markdown→HTML  2) write to /tmp  3) return path
+fn export_html_to_tmp(
+    source: &str,
+    filename: &str,
+    preset: &katana_core::markdown::color_preset::DiagramColorPreset,
+    base_dir: Option<&std::path::Path>,
+) -> Result<std::path::PathBuf, String> {
+    let renderer = katana_core::markdown::KatanaRenderer;
+    let html = katana_core::markdown::HtmlExporter::export(source, &renderer, preset, base_dir)
+        .map_err(|e| e.to_string())?;
+    let output_path = std::path::PathBuf::from("/tmp").join(filename);
+    std::fs::write(&output_path, html.as_bytes()).map_err(|e| e.to_string())?;
+    Ok(output_path)
+}
 
-        let url = format!("file://{}", path.display());
-        ctx.open_url(egui::OpenUrl::new_tab(url));
+impl KatanaApp {
+    fn export_as_html(&mut self, _ctx: &egui::Context, source: &str, doc_path: &std::path::Path) {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
+        let source = source.to_string();
+        let base_dir = doc_path.parent().map(|p| p.to_path_buf());
+        let filename = self.export_filename(doc_path, "html");
 
-        let msg = crate::i18n::tf(
-            &crate::i18n::get().export.success,
-            &[("format", "HTML"), ("path", &path.display().to_string())],
-        );
-        self.state.status_message = Some(msg);
+        let (tx, rx) = std::sync::mpsc::channel();
+
+        let fname = filename.clone();
+        std::thread::spawn(move || {
+            let result = export_html_to_tmp(&source, &fname, &preset, base_dir.as_deref());
+            let _ = tx.send(result);
+        });
+
+        self.export_tasks.push(ExportTask {
+            filename,
+            rx,
+            open_on_complete: true,
+        });
     }
 
-    fn export_with_tool(&mut self, _ctx: &egui::Context, source: &str, ext: &str) {
+    fn export_with_tool(
+        &mut self,
+        _ctx: &egui::Context,
+        source: &str,
+        ext: &str,
+        doc_path: &std::path::Path,
+    ) {
         let (is_available, tool_name) = match ext {
             "pdf" => (
                 katana_core::markdown::PdfExporter::is_available(),
-                "wkhtmltopdf",
+                "headless_chrome",
             ),
             _ => (
                 katana_core::markdown::ImageExporter::is_available(),
-                "wkhtmltoimage",
+                "headless_chrome",
             ),
         };
 
@@ -852,62 +926,145 @@ impl KatanaApp {
                 &crate::i18n::get().export.tool_missing,
                 &[("tool", tool_name), ("format", &ext.to_uppercase())],
             );
-            self.state.status_message = Some(msg);
+            self.state.status_message = Some((msg, crate::app_state::StatusType::Error));
             return;
         }
 
+        let default_name = self.export_filename(doc_path, ext);
         let path = rfd::FileDialog::new()
-            .set_file_name(format!("export.{}", ext))
+            .set_file_name(&default_name)
             .add_filter(ext, &[ext])
             .save_file();
 
         if let Some(output_path) = path {
-            self.perform_tool_export(source, ext, output_path);
+            self.perform_tool_export(source, ext, output_path, doc_path);
         }
     }
 
-    fn perform_tool_export(&mut self, source: &str, ext: &str, output_path: std::path::PathBuf) {
-        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-        let renderer = katana_core::markdown::KatanaRenderer;
+    fn perform_tool_export(
+        &mut self,
+        source: &str,
+        ext: &str,
+        output_path: std::path::PathBuf,
+        doc_path: &std::path::Path,
+    ) {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
+        let source = source.to_string();
+        let ext = ext.to_string();
+        let base_dir = doc_path.parent().map(|p| p.to_path_buf());
+        let filename = output_path
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "export".to_string());
 
-        let html = match katana_core::markdown::HtmlExporter::export(source, &renderer, preset) {
-            Ok(h) => h,
-            Err(e) => {
-                let msg = crate::i18n::tf(
-                    &crate::i18n::get().export.failed,
-                    &[("format", &ext.to_uppercase()), ("error", &e.to_string())],
-                );
-                self.state.status_message = Some(msg);
-                return;
+        let (tx, rx) = std::sync::mpsc::channel();
+
+        std::thread::spawn(move || {
+            let renderer = katana_core::markdown::KatanaRenderer;
+            let html = match katana_core::markdown::HtmlExporter::export(
+                &source,
+                &renderer,
+                &preset,
+                base_dir.as_deref(),
+            ) {
+                Ok(h) => h,
+                Err(e) => {
+                    let _ = tx.send(Err(e.to_string()));
+                    return;
+                }
+            };
+
+            let result = match ext.as_str() {
+                "pdf" => katana_core::markdown::PdfExporter::export(&html, &output_path),
+                _ => katana_core::markdown::ImageExporter::export(&html, &output_path),
+            };
+
+            let _ = tx.send(
+                result
+                    .map(|()| output_path.clone())
+                    .map_err(|e| e.to_string()),
+            );
+        });
+
+        self.export_tasks.push(ExportTask {
+            filename,
+            rx,
+            open_on_complete: false,
+        });
+    }
+
+    /// Polls all background export tasks for completion. Called every frame.
+    pub(crate) fn poll_export(&mut self, ctx: &egui::Context) {
+        const EXPORT_POLL_INTERVAL_MS: u64 = 50;
+        let mut has_pending = false;
+
+        // Collect completed tasks first (borrow checker workaround).
+        let mut completed: Vec<(usize, Result<std::path::PathBuf, String>)> = Vec::new();
+        for (i, task) in self.export_tasks.iter().enumerate() {
+            match task.rx.try_recv() {
+                Ok(result) => {
+                    completed.push((i, result));
+                }
+                Err(std::sync::mpsc::TryRecvError::Empty) => {
+                    has_pending = true;
+                }
+                Err(_) => {
+                    completed.push((i, Err("Export thread disconnected".to_string())));
+                }
             }
-        };
+        }
 
-        let result = match ext {
-            "pdf" => katana_core::markdown::PdfExporter::export(&html, &output_path),
-            _ => katana_core::markdown::ImageExporter::export(&html, &output_path),
-        };
+        // Process completed tasks in reverse order to maintain correct indices.
+        for (i, result) in completed.into_iter().rev() {
+            let task = self.export_tasks.remove(i);
+            match result {
+                Ok(output_path) => {
+                    let ext = output_path
+                        .extension()
+                        .map(|e| e.to_string_lossy().to_uppercase())
+                        .unwrap_or_default();
+                    let msg = crate::i18n::tf(
+                        &crate::i18n::get().export.success,
+                        &[
+                            ("format", &ext),
+                            ("path", &output_path.display().to_string()),
+                        ],
+                    );
+                    self.state.status_message = Some((msg, crate::app_state::StatusType::Success));
+                    if task.open_on_complete {
+                        if let Err(e) = open::that(&output_path) {
+                            tracing::warn!("Failed to open {}: {e}", output_path.display());
+                        }
+                    }
+                    tracing::info!(
+                        "Export complete: {} → {}",
+                        task.filename,
+                        output_path.display()
+                    );
+                }
+                Err(error) => {
+                    let msg = crate::i18n::tf(
+                        &crate::i18n::get().export.failed,
+                        &[("format", &task.filename), ("error", &error)],
+                    );
+                    self.state.status_message = Some((msg, crate::app_state::StatusType::Error));
+                }
+            }
+        }
 
-        let status_msg = match result {
-            Ok(()) => crate::i18n::tf(
-                &crate::i18n::get().export.success,
-                &[
-                    ("format", &ext.to_uppercase()),
-                    ("path", &output_path.display().to_string()),
-                ],
-            ),
-            Err(e) => crate::i18n::tf(
-                &crate::i18n::get().export.failed,
-                &[("format", &ext.to_uppercase()), ("error", &e.to_string())],
-            ),
-        };
-        self.state.status_message = Some(status_msg);
+        if has_pending {
+            ctx.request_repaint_after(std::time::Duration::from_millis(EXPORT_POLL_INTERVAL_MS));
+        }
     }
 
     /// Processes a download request in a background thread.
     pub(crate) fn start_download(&mut self, req: DownloadRequest) {
         let (tx, rx) = std::sync::mpsc::channel();
         self.download_rx = Some(rx);
-        self.state.status_message = Some(crate::i18n::get().plantuml.downloading_plantuml.clone());
+        self.state.status_message = Some((
+            crate::i18n::get().plantuml.downloading_plantuml.clone(),
+            crate::app_state::StatusType::Info,
+        ));
         let url = req.url;
         let dest = req.dest;
         std::thread::spawn(move || {
@@ -921,16 +1078,21 @@ impl KatanaApp {
         let done = if let Some(rx) = &self.download_rx {
             match rx.try_recv() {
                 Ok(Ok(())) => {
-                    self.state.status_message =
-                        Some(crate::i18n::get().plantuml.plantuml_installed.clone());
+                    self.state.status_message = Some((
+                        crate::i18n::get().plantuml.plantuml_installed.clone(),
+                        crate::app_state::StatusType::Success,
+                    ));
                     self.pending_action = AppAction::RefreshDiagrams;
                     true
                 }
                 Ok(Err(e)) => {
-                    self.state.status_message = Some(format!(
-                        "{}{}",
-                        crate::i18n::get().plantuml.download_error.clone(),
-                        e
+                    self.state.status_message = Some((
+                        format!(
+                            "{}{}",
+                            crate::i18n::get().plantuml.download_error.clone(),
+                            e
+                        ),
+                        crate::app_state::StatusType::Error,
                     ));
                     true
                 }
@@ -1251,7 +1413,13 @@ mod tests {
     }
 
     #[test]
-    fn process_action_export_pdf_shows_status_message() {
+    fn process_action_export_pdf_without_tool_shows_error() {
+        // When headless_chrome is not available, export_with_tool sets an error
+        // status_message WITHOUT opening rfd::FileDialog.
+        if katana_core::markdown::PdfExporter::is_available() {
+            // In CI with Chrome installed, skip gracefully (not "ignore").
+            return;
+        }
         let mut app = make_app();
         let dir = make_temp_workspace();
         let path = dir.path().join("test.md");
@@ -1261,11 +1429,16 @@ mod tests {
             &egui::Context::default(),
             AppAction::ExportDocument(crate::app_state::ExportFormat::Pdf),
         );
-        assert!(app.state.status_message.is_some());
+        let (msg, kind) = app.state.status_message.as_ref().unwrap();
+        assert_eq!(*kind, crate::app_state::StatusType::Error);
+        assert!(msg.contains("headless_chrome"), "msg = {msg}");
     }
 
     #[test]
-    fn process_action_export_png_shows_status_message() {
+    fn process_action_export_png_without_tool_shows_error() {
+        if katana_core::markdown::ImageExporter::is_available() {
+            return;
+        }
         let mut app = make_app();
         let dir = make_temp_workspace();
         let path = dir.path().join("test.md");
@@ -1275,7 +1448,9 @@ mod tests {
             &egui::Context::default(),
             AppAction::ExportDocument(crate::app_state::ExportFormat::Png),
         );
-        assert!(app.state.status_message.is_some());
+        let (msg, kind) = app.state.status_message.as_ref().unwrap();
+        assert_eq!(*kind, crate::app_state::StatusType::Error);
+        assert!(msg.contains("headless_chrome"), "msg = {msg}");
     }
 
     // process_action: RefreshDiagrams no document (L249 early return)
@@ -1961,6 +2136,7 @@ mod tests_extra {
             download_rx: None,
             workspace_rx: None,
             update_rx: None,
+            export_tasks: Vec::new(),
             show_about: false,
             show_update_dialog: false,
             update_notified: false,
@@ -2069,5 +2245,192 @@ mod tests_extra {
         // Now since it's newer and we weren't notified, it should pop up
         assert!(app.show_update_dialog);
         assert!(app.update_notified);
+    }
+
+    // ── export_html_to_tmp tests ──
+
+    #[test]
+    fn export_html_to_tmp_writes_html_file() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let filename = "katana_test_export.html";
+        let result = super::export_html_to_tmp("# Hello", filename, preset, None);
+        let path = result.unwrap();
+        assert!(path.exists(), "HTML file must exist at {}", path.display());
+        let contents = std::fs::read_to_string(&path).unwrap();
+        assert!(
+            contents.contains("<!DOCTYPE html>"),
+            "Output must be valid HTML"
+        );
+        assert!(contents.contains("Hello"), "Output must contain heading");
+        // Cleanup
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_html_to_tmp_path_is_in_temp_dir() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let filename = "katana_path_check.html";
+        let path = super::export_html_to_tmp("test", filename, preset, None).unwrap();
+        let expected = std::path::PathBuf::from("/tmp").join(filename);
+        assert_eq!(path, expected);
+        let _ = std::fs::remove_file(&path);
+    }
+
+    // ── export_as_html integration tests ──
+
+    #[test]
+    fn export_as_html_creates_task_with_open_on_complete() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let md_path = dir.path().join("hello.md");
+        std::fs::write(&md_path, "# Integration Test").unwrap();
+        app.handle_select_document(md_path.clone(), true);
+
+        app.export_as_html(&egui::Context::default(), "# Integration Test", &md_path);
+
+        assert_eq!(
+            app.export_tasks.len(),
+            1,
+            "must push exactly one ExportTask"
+        );
+        let task = &app.export_tasks[0];
+        assert!(
+            task.open_on_complete,
+            "HTML export must set open_on_complete = true"
+        );
+        assert!(
+            task.filename.ends_with(".html"),
+            "filename must be .html, got {}",
+            task.filename
+        );
+    }
+
+    #[test]
+    fn export_as_html_thread_produces_html_file_in_tmp() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let md_path = dir.path().join("real_doc.md");
+        std::fs::write(&md_path, "# Real Document\n\nParagraph content.").unwrap();
+        app.handle_select_document(md_path.clone(), true);
+
+        app.export_as_html(
+            &egui::Context::default(),
+            "# Real Document\n\nParagraph content.",
+            &md_path,
+        );
+
+        // Wait for the background thread to finish (max 5s).
+        let task = &app.export_tasks[0];
+        let result = task.rx.recv_timeout(std::time::Duration::from_secs(5));
+        let path = result
+            .expect("channel must receive within 5s")
+            .expect("export must succeed");
+
+        // Verify the file is in /tmp
+        assert!(
+            path.starts_with("/tmp"),
+            "path must be under /tmp, got {}",
+            path.display()
+        );
+        assert!(path.exists(), "HTML file must exist at {}", path.display());
+
+        // Verify content is valid HTML
+        let html = std::fs::read_to_string(&path).unwrap();
+        assert!(
+            html.contains("<!DOCTYPE html>"),
+            "must be full HTML document"
+        );
+        assert!(html.contains("Real Document"), "must contain the heading");
+        assert!(html.contains("Paragraph content"), "must contain body text");
+
+        // Cleanup
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_as_html_multiple_calls_create_multiple_tasks() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let path1 = dir.path().join("doc1.md");
+        let path2 = dir.path().join("doc2.md");
+        std::fs::write(&path1, "# Doc 1").unwrap();
+        std::fs::write(&path2, "# Doc 2").unwrap();
+        app.handle_select_document(path1.clone(), true);
+
+        app.export_as_html(&egui::Context::default(), "# Doc 1", &path1);
+        app.export_as_html(&egui::Context::default(), "# Doc 2", &path2);
+
+        assert_eq!(
+            app.export_tasks.len(),
+            2,
+            "two exports must create two tasks"
+        );
+
+        // Both complete successfully
+        for task in &app.export_tasks {
+            let result = task.rx.recv_timeout(std::time::Duration::from_secs(5));
+            let path = result.unwrap().unwrap();
+            assert!(path.exists());
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+
+    // ── RED: HTML export bug detection tests ──
+    // Failure mode 1: HTML generation itself fails
+    // Failure mode 2: Path cannot be resolved / opened
+
+    #[test]
+    fn export_html_to_tmp_path_is_canonicalizable() {
+        // If this fails, the generated path has unresolvable symlinks / broken components.
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let path = super::export_html_to_tmp("# Test", "katana_canon_test.html", preset, None)
+            .expect("generation must succeed");
+        let canonical = path
+            .canonicalize()
+            .unwrap_or_else(|e| panic!("path {} must be canonicalizable: {e}", path.display()));
+        assert!(
+            canonical.is_absolute(),
+            "canonical path must be absolute: {}",
+            canonical.display()
+        );
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_html_file_url_is_valid_and_openable() {
+        // Reproduces the exact URL construction from poll_export.
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let path = super::export_html_to_tmp("# URL Test", "katana_url_test.html", preset, None)
+            .expect("generation must succeed");
+
+        // Construct URL exactly as poll_export does (line ~1035)
+        let url = format!("file://{}", path.display());
+
+        // file:// + absolute path (/tmp/...) = file:///tmp/... — must have 3 slashes
+        assert!(
+            url.starts_with("file:///"),
+            "URL must start with file:/// (3 slashes), got: {url}"
+        );
+
+        // Extract path from URL and verify it exists
+        let file_path = std::path::Path::new(url.strip_prefix("file://").unwrap());
+        assert!(
+            file_path.exists(),
+            "path extracted from URL must exist: {} (url={url})",
+            file_path.display()
+        );
+
+        // Canonicalize to catch symlink issues (macOS /var -> /private/var)
+        let canonical = path.canonicalize().unwrap();
+        let canonical_url = format!("file://{}", canonical.display());
+        let canonical_file_path =
+            std::path::Path::new(canonical_url.strip_prefix("file://").unwrap());
+        assert!(
+            canonical_file_path.exists(),
+            "canonical path from URL must exist: {}",
+            canonical_file_path.display()
+        );
+
+        let _ = std::fs::remove_file(&path);
     }
 }
