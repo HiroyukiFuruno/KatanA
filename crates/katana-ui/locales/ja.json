@@ -41,7 +41,7 @@
     "title": "更新の確認",
     "checking_for_updates": "更新を確認中...",
     "update_available": "アップデートが利用可能です",
-    "update_available_desc": "新しいバージョンの KatanA ({version}) がリリースされています。\n`brew upgrade katana` を実行して更新してください。",
+    "update_available_desc": "新しいバージョンの KatanA ({version}) がリリースされています。\n`brew upgrade katana-desktop` を実行して更新してください。",
     "up_to_date": "最新版です",
     "up_to_date_desc": "お使いの KatanA は最新バージョンです。",
     "failed_to_check": "更新の確認に失敗しました。",
