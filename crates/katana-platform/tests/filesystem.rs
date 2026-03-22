@@ -1,3 +1,4 @@
+use katana_core::workspace::TreeEntry;
 use katana_platform::FilesystemService;
 use std::fs;
 use tempfile::TempDir;
@@ -15,7 +16,18 @@ fn setup_workspace() -> TempDir {
 fn open_valid_workspace_returns_workspace() {
     let tmp = setup_workspace();
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
     assert_eq!(ws.root, tmp.path());
     assert!(!ws.tree.is_empty());
 }
@@ -23,7 +35,12 @@ fn open_valid_workspace_returns_workspace() {
 #[test]
 fn open_invalid_workspace_returns_error() {
     let svc = FilesystemService::new();
-    let result = svc.open_workspace("/nonexistent/path/that/does/not/exist");
+    let result = svc.open_workspace(
+        "/nonexistent/path/that/does/not/exist",
+        &[],
+        10,
+        std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+    );
     assert!(result.is_err());
 }
 
@@ -87,7 +104,18 @@ fn hidden_directories_with_markdown_are_included() {
     fs::write(tmp.path().join(".cache").join("data.bin"), b"binary").unwrap();
 
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
 
     let all_paths = collect_all_paths(&ws.tree);
     assert!(all_paths.iter().any(|p| p.contains("visible.md")));
@@ -121,7 +149,18 @@ fn target_directory_is_excluded_from_workspace() {
     fs::write(tmp.path().join("target").join("build.md"), "# Build output").unwrap();
 
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
 
     let paths: Vec<_> = ws
         .tree
@@ -140,7 +179,18 @@ fn node_modules_directory_is_excluded_from_workspace() {
     fs::write(tmp.path().join("node_modules").join("pkg.md"), "# Package").unwrap();
 
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
 
     let paths: Vec<_> = ws
         .tree
@@ -162,7 +212,18 @@ fn directories_without_markdown_are_excluded() {
     fs::write(tmp.path().join("assets").join("style.css"), "body{}").unwrap();
 
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
 
     let paths: Vec<_> = ws
         .tree
@@ -182,7 +243,18 @@ fn non_markdown_files_at_root_are_excluded() {
     fs::write(tmp.path().join("script.sh"), "#!/bin/bash").unwrap();
 
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
 
     let paths: Vec<_> = ws
         .tree
@@ -208,7 +280,18 @@ fn nested_subdirectory_with_markdown_is_included() {
     .unwrap();
 
     let svc = FilesystemService::new();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
 
     // "docs" directory is included (because it contains a .md file inside)
     fn find_dir(tree: &[katana_core::workspace::TreeEntry], name: &str) -> bool {
@@ -230,6 +313,48 @@ fn filesystem_service_default_works() {
     // Default::default() and new() are the same
     let tmp = TempDir::new().unwrap();
     fs::write(tmp.path().join("note.md"), "# Note").unwrap();
-    let ws = svc.open_workspace(tmp.path()).unwrap();
+    let ignored = katana_platform::settings::DEFAULT_IGNORED_DIRECTORIES
+        .iter()
+        .map(|s| s.to_string())
+        .collect::<Vec<_>>();
+    let ws = svc
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            10,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        )
+        .unwrap();
     assert!(!ws.tree.is_empty());
+}
+
+#[test]
+fn test_scan_directory_respects_max_depth() {
+    let svc = FilesystemService::new();
+    let tmp = tempfile::TempDir::new().unwrap();
+    let dir1 = tmp.path().join("dir1");
+    fs::create_dir(&dir1).unwrap();
+    let dir2 = dir1.join("dir2");
+    fs::create_dir(&dir2).unwrap();
+    fs::write(dir1.join("file1.md"), "# File 1").unwrap();
+    fs::write(dir2.join("file2.md"), "# File 2").unwrap();
+
+    let ignored = vec![];
+    let cancel_token = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+
+    // depth 2 should see dir1 (at depth 1) and its file, but not its subdirectory (dir2 at depth 2)
+    let ws = svc
+        .open_workspace(tmp.path(), &ignored, 2, cancel_token.clone())
+        .unwrap();
+
+    fn find_dir(entries: &[TreeEntry], name: &str) -> bool {
+        entries.iter().any(|e| match e {
+            TreeEntry::Directory { path, children } => {
+                path.file_name().and_then(|n| n.to_str()) == Some(name) || find_dir(children, name)
+            }
+            _ => false,
+        })
+    }
+    assert!(find_dir(&ws.tree, "dir1"));
+    assert!(!find_dir(&ws.tree, "dir2"));
 }
