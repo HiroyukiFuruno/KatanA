@@ -25,7 +25,7 @@
     "workspace_title": "Espaço de Trabalho",
     "recent_workspaces": "Espaços de trabalho recentes",
     "metadata_tooltip": "Tamanho: {size} B\nModificado: {mod_time}",
-    "path_label": "Path"
+    "path_label": "Caminho"
   },
   "preview": {
     "preview_title": "Visualização",
@@ -85,7 +85,7 @@
     "recursive_expand": "Expansão recursiva",
     "recursive_open_all": "Abrir todos os arquivos recursivamente",
     "toggle_toc": "Alternar sumário",
-    "show_meta_info": "Show Meta Info"
+    "show_meta_info": "Mostrar Metadados"
   },
   "ai": {
     "ai_unconfigured": "[AI: não configurado]"
