@@ -275,54 +275,80 @@ pub(crate) fn render_workspace_panel(
                         state.force_tree_open = Some(false);
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let icon_bg = if ui.visuals().dark_mode {
+                            egui::Color32::TRANSPARENT
+                        } else {
+                            egui::Color32::from_gray(LIGHT_MODE_ICON_BG) // Always gray for icons in light mode
+                        };
+
                         if !state.settings.settings().workspace.paths.is_empty() {
                             let ws_history_img =
-                                egui::Image::new(crate::icon::Icon::Document.uri())
-                                    .tint(ui.visuals().text_color());
-                            ui.menu_image_button(ws_history_img, |ui| {
-                                for path in state.settings.settings().workspace.paths.iter().rev() {
-                                    ui.horizontal(|ui| {
-                                        if ui
-                                            .add(egui::Button::image_and_text(
-                                                crate::Icon::Remove
-                                                    .ui_image(ui, crate::icon::IconSize::Small),
-                                                invisible_label("x"),
-                                            ))
-                                            .on_hover_text(
-                                                crate::i18n::get().action.remove_workspace.clone(),
-                                            )
-                                            .clicked()
-                                        {
-                                            *action = AppAction::RemoveWorkspace(path.clone());
-                                            ui.close();
-                                        }
-                                        if ui.selectable_label(false, path).clicked() {
-                                            *action = AppAction::OpenWorkspace(
-                                                std::path::PathBuf::from(path),
-                                            );
-                                            ui.close();
-                                        }
-                                    });
-                                }
-                            })
-                            .response
-                            .on_hover_text(crate::i18n::get().workspace.recent_workspaces.clone());
+                                crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Small);
+                            ui.scope(|ui| {
+                                ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
+                                ui.menu_image_button(ws_history_img, |ui| {
+                                    for path in
+                                        state.settings.settings().workspace.paths.iter().rev()
+                                    {
+                                        ui.horizontal(|ui| {
+                                            if ui
+                                                .add(egui::Button::image_and_text(
+                                                    crate::Icon::Remove
+                                                        .ui_image(ui, crate::icon::IconSize::Small),
+                                                    invisible_label("x"),
+                                                ))
+                                                .on_hover_text(
+                                                    crate::i18n::get()
+                                                        .action
+                                                        .remove_workspace
+                                                        .clone(),
+                                                )
+                                                .clicked()
+                                            {
+                                                *action = AppAction::RemoveWorkspace(path.clone());
+                                                ui.close();
+                                            }
+                                            if ui.selectable_label(false, path).clicked() {
+                                                *action = AppAction::OpenWorkspace(
+                                                    std::path::PathBuf::from(path),
+                                                );
+                                                ui.close();
+                                            }
+                                        });
+                                    }
+                                })
+                                .response
+                                .on_hover_text(
+                                    crate::i18n::get().workspace.recent_workspaces.clone(),
+                                );
+                            });
                         }
+
                         if ui
-                            .add(egui::Button::image_and_text(
-                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("🔄"),
-                            ))
+                            .add(
+                                egui::Button::image_and_text(
+                                    crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
+                                    invisible_label("🔄"),
+                                )
+                                .fill(icon_bg),
+                            )
                             .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
                             .clicked()
                         {
                             *action = AppAction::RefreshWorkspace;
                         }
+
                         let filter_btn_color = if state.filter_enabled {
-                            ui.visuals().selection.bg_fill
+                            if ui.visuals().dark_mode {
+                                ui.visuals().selection.bg_fill
+                            } else {
+                                egui::Color32::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
+                                // Darker gray when active in light mode
+                            }
                         } else {
-                            egui::Color32::TRANSPARENT
+                            icon_bg
                         };
+
                         if ui
                             .add(
                                 egui::Button::image_and_text(
@@ -336,11 +362,15 @@ pub(crate) fn render_workspace_panel(
                         {
                             state.filter_enabled = !state.filter_enabled;
                         }
+
                         if ui
-                            .add(egui::Button::image_and_text(
-                                crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("🔍"),
-                            ))
+                            .add(
+                                egui::Button::image_and_text(
+                                    crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Small),
+                                    invisible_label("🔍"),
+                                )
+                                .fill(icon_bg),
+                            )
                             .on_hover_text(crate::i18n::get().search.modal_title.clone())
                             .clicked()
                         {
@@ -488,9 +518,7 @@ pub(crate) fn render_preview_content(
 ) -> Option<DownloadRequest> {
     let mut download_req = None;
     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Wrap);
-    let padding = f32::from(PREVIEW_CONTENT_PADDING);
     let outer_rect = ui.available_rect_before_wrap();
-    let content_rect = outer_rect.shrink2(egui::vec2(padding, padding));
     ui.allocate_rect(outer_rect, egui::Sense::hover());
 
     let (fraction, source, prev_max_scroll) = scroll_state;
@@ -505,26 +533,35 @@ pub(crate) fn render_preview_content(
 
     let mut content_ui = ui.new_child(
         egui::UiBuilder::new()
-            .max_rect(content_rect)
+            .max_rect(outer_rect)
             .layout(egui::Layout::top_down(egui::Align::Min)),
     );
-    content_ui.set_clip_rect(content_rect);
+    content_ui.set_clip_rect(outer_rect);
 
     let output = scroll_area.show(&mut content_ui, |ui| {
-        let content_width = ui.available_width();
-        let child_rect =
-            egui::Rect::from_min_size(ui.next_widget_position(), egui::vec2(content_width, 0.0));
-        ui.scope_builder(
-            egui::UiBuilder::new()
-                .max_rect(child_rect)
-                .layout(egui::Layout::top_down(egui::Align::Min)),
-            |ui| {
-                const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0; // 0.25rem padding
-                ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
-                download_req = preview.show_content(ui);
-                ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
-            },
-        );
+        egui::Frame::NONE
+            .inner_margin(egui::Margin::symmetric(
+                PREVIEW_CONTENT_PADDING,
+                PREVIEW_CONTENT_PADDING,
+            ))
+            .show(ui, |ui| {
+                let content_width = ui.available_width();
+                let child_rect = egui::Rect::from_min_size(
+                    ui.next_widget_position(),
+                    egui::vec2(content_width, 0.0),
+                );
+                ui.scope_builder(
+                    egui::UiBuilder::new()
+                        .max_rect(child_rect)
+                        .layout(egui::Layout::top_down(egui::Align::Min)),
+                    |ui| {
+                        const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0; // 0.25rem padding
+                        ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+                        download_req = preview.show_content(ui);
+                        ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+                    },
+                );
+            });
     });
 
     if scroll_sync {
@@ -576,6 +613,13 @@ pub(crate) fn render_preview_header(ui: &mut egui::Ui, state: &AppState, action:
             .layout(egui::Layout::right_to_left(egui::Align::Center)),
     );
     let has_doc = state.active_document().is_some();
+
+    let icon_bg = if ui.visuals().dark_mode {
+        egui::Color32::TRANSPARENT
+    } else {
+        egui::Color32::from_gray(LIGHT_MODE_ICON_BG)
+    };
+
     if overlay_ui
         .add_enabled(
             has_doc,
@@ -583,7 +627,8 @@ pub(crate) fn render_preview_header(ui: &mut egui::Ui, state: &AppState, action:
                 crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
                 invisible_label("🔄"),
             )
-            .min_size(button_size),
+            .min_size(button_size)
+            .fill(icon_bg),
         )
         .on_hover_text(crate::i18n::get().preview.refresh_diagrams.clone())
         .clicked()
@@ -593,43 +638,50 @@ pub(crate) fn render_preview_header(ui: &mut egui::Ui, state: &AppState, action:
 
     let export_img =
         egui::Image::new(crate::icon::Icon::Export.uri()).tint(overlay_ui.visuals().text_color());
-    overlay_ui.menu_image_button(export_img, |ui| {
-        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-        if ui
-            .button(crate::i18n::get().menu.export_html.clone())
-            .clicked()
-        {
-            *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Html);
-            ui.close();
-        }
-        if ui
-            .button(crate::i18n::get().menu.export_pdf.clone())
-            .clicked()
-        {
-            *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Pdf);
-            ui.close();
-        }
-        if ui
-            .button(crate::i18n::get().menu.export_png.clone())
-            .clicked()
-        {
-            *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Png);
-            ui.close();
-        }
-        if ui
-            .button(crate::i18n::get().menu.export_jpg.clone())
-            .clicked()
-        {
-            *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Jpg);
-            ui.close();
-        }
+    overlay_ui.scope(|ui| {
+        ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
+        ui.menu_image_button(export_img, |ui| {
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+            if ui
+                .button(crate::i18n::get().menu.export_html.clone())
+                .clicked()
+            {
+                *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Html);
+                ui.close();
+            }
+            if ui
+                .button(crate::i18n::get().menu.export_pdf.clone())
+                .clicked()
+            {
+                *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Pdf);
+                ui.close();
+            }
+            if ui
+                .button(crate::i18n::get().menu.export_png.clone())
+                .clicked()
+            {
+                *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Png);
+                ui.close();
+            }
+            if ui
+                .button(crate::i18n::get().menu.export_jpg.clone())
+                .clicked()
+            {
+                *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Jpg);
+                ui.close();
+            }
+        });
     });
 
     if state.settings.settings().layout.toc_visible {
         let toc_bg = if state.show_toc {
-            ui.visuals().selection.bg_fill
+            if ui.visuals().dark_mode {
+                ui.visuals().selection.bg_fill
+            } else {
+                egui::Color32::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
+            }
         } else {
-            egui::Color32::TRANSPARENT
+            icon_bg
         };
         if overlay_ui
             .add_enabled(
@@ -668,6 +720,12 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
         let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
         let scroll_width = ui.available_width() - nav_button_width;
 
+        let should_scroll = ui.memory_mut(|mem| {
+            mem.data
+                .get_temp::<bool>(egui::Id::new("scroll_tab_req"))
+                .unwrap_or(false)
+        });
+
         egui::ScrollArea::horizontal()
             .max_width(scroll_width)
             .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
@@ -703,8 +761,8 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                             .inner;
 
                         tab_rects.push((idx, resp.rect));
-                        // Task 3.3: Keep the active tab visible in the scroll area.
-                        if is_active {
+                        // Task 3.7: Only scroll when navigated via left/right buttons.
+                        if is_active && should_scroll {
                             resp.scroll_to_me(Some(egui::Align::Center));
                         }
                         if resp.drag_stopped() {
@@ -776,16 +834,30 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                 });
             });
 
+        if should_scroll {
+            ui.memory_mut(|mem| {
+                mem.data
+                    .remove_temp::<bool>(egui::Id::new("scroll_tab_req"));
+            });
+        }
+
         ui.separator();
 
         let nav_enabled = doc_count > 1;
+        let icon_bg = if ui.visuals().dark_mode {
+            egui::Color32::TRANSPARENT
+        } else {
+            egui::Color32::from_gray(LIGHT_MODE_ICON_BG)
+        };
+
         if ui
             .add_enabled(
                 nav_enabled,
                 egui::Button::image_and_text(
                     crate::Icon::TriangleLeft.ui_image(ui, crate::icon::IconSize::Small),
                     invisible_label("◀"),
-                ),
+                )
+                .fill(icon_bg),
             )
             .on_hover_text(crate::i18n::get().tab.nav_prev.clone())
             .clicked()
@@ -795,6 +867,7 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                 tab_action = Some(AppAction::SelectDocument(
                     state.open_documents[new_idx].path.clone(),
                 ));
+                ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
             }
         }
         if ui
@@ -803,7 +876,8 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                 egui::Button::image_and_text(
                     crate::Icon::TriangleRight.ui_image(ui, crate::icon::IconSize::Small),
                     invisible_label("▶"),
-                ),
+                )
+                .fill(icon_bg),
             )
             .on_hover_text(crate::i18n::get().tab.nav_next.clone())
             .clicked()
@@ -813,6 +887,7 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                 tab_action = Some(AppAction::SelectDocument(
                     state.open_documents[new_idx].path.clone(),
                 ));
+                ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
             }
         }
     });
@@ -981,6 +1056,12 @@ pub(crate) fn render_editor_content(
                     .font(egui::TextStyle::Monospace)
                     .desired_width(f32::INFINITY)
                     .desired_rows(EDITOR_INITIAL_VISIBLE_ROWS)
+                    .margin(egui::Margin {
+                        left: 0,
+                        right: LINE_NUMBER_MARGIN as i8,
+                        top: 0,
+                        bottom: 0,
+                    })
                     .frame(false)
                     .show(ui);
                 let response = text_output.response;
@@ -1145,10 +1226,11 @@ pub(crate) fn render_directory_entry(
         egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, is_open);
     state.set_open(is_open);
     let file_tree_color = ui.visuals().text_color();
-    let (rect, resp) = ui.allocate_at_least(
+    let (rect, mut resp) = ui.allocate_at_least(
         egui::vec2(ui.available_width(), TREE_ROW_HEIGHT),
         egui::Sense::click(),
     );
+    resp = resp.on_hover_cursor(egui::CursorIcon::PointingHand);
 
     let accessible_label = format!("dir {}", name);
     resp.widget_info(|| {
@@ -1164,7 +1246,7 @@ pub(crate) fn render_directory_entry(
     }
 
     if ui.is_rect_visible(rect) {
-        if resp.hovered() {
+        if ui.rect_contains_pointer(rect) && ui.is_enabled() {
             ui.painter()
                 .rect_filled(rect, 2.0, ui.visuals().widgets.hovered.bg_fill);
         }
@@ -1187,7 +1269,7 @@ pub(crate) fn render_directory_entry(
             crate::icon::Icon::FolderClosed
         };
 
-        child_ui.label(egui::RichText::new(prefix));
+        child_ui.add(egui::Label::new(prefix).selectable(false));
 
         // Add spacing equivalent to item_spacing.x = 2.0 manually or rely on default layout
         child_ui.add(
@@ -1200,16 +1282,16 @@ pub(crate) fn render_directory_entry(
                 .image(crate::icon::IconSize::Medium)
                 .tint(file_tree_color),
         );
-        child_ui.add(egui::Label::new(egui::RichText::new(name).color(file_tree_color)).truncate());
+        child_ui.add(
+            egui::Label::new(egui::RichText::new(name).color(file_tree_color))
+                .selectable(false)
+                .truncate(),
+        );
+        // We do not union because resp already covers the whole area and the
+        // children don't have interactive senses that would steal hover/clicks.
     }
 
-    // Directory level Meta Info on Hover
-    let resp = resp.on_hover_ui(|ui| {
-        let meta_text = crate::shell_logic::format_tree_tooltip(name, path);
-        ui.label(meta_text);
-    });
-
-    // "Open All" Context Menu for directories
+    // Context Menu for directories
     resp.context_menu(|ui| {
         if ui
             .button(crate::i18n::get().action.recursive_expand.clone())
@@ -1234,6 +1316,17 @@ pub(crate) fn render_directory_entry(
             if !to_open.is_empty() {
                 *ctx.action = crate::app_state::AppAction::OpenMultipleDocuments(to_open);
             }
+            ui.close();
+        }
+
+        ui.separator();
+
+        // Meta info moved to context menu click action
+        if ui
+            .button(crate::i18n::get().action.show_meta_info.clone())
+            .clicked()
+        {
+            *ctx.action = crate::app_state::AppAction::ShowMetaInfo(path.to_path_buf());
             ui.close();
         }
     });
@@ -1313,13 +1406,14 @@ pub(crate) fn render_file_entry(
         egui::vec2(ui.available_width(), TREE_ROW_HEIGHT),
         egui::Sense::click(),
     );
+    resp = resp.on_hover_cursor(egui::CursorIcon::PointingHand);
 
     if ui.is_rect_visible(full_rect) {
         if is_active {
             let highlight_color = ui.visuals().selection.bg_fill;
             ui.painter()
                 .rect_filled(full_rect, ACTIVE_FILE_HIGHLIGHT_ROUNDING, highlight_color);
-        } else if resp.hovered() {
+        } else if ui.rect_contains_pointer(full_rect) && ui.is_enabled() {
             ui.painter()
                 .rect_filled(full_rect, 2.0, ui.visuals().widgets.hovered.bg_fill);
         }
@@ -1332,10 +1426,16 @@ pub(crate) fn render_file_entry(
         child_ui.add_space(TREE_LABEL_HOFFSET);
 
         let prefix_string = indent_prefix(ctx.depth);
-        child_ui.label(egui::RichText::new(prefix_string).color(text_color));
+        child_ui.add(
+            egui::Label::new(egui::RichText::new(prefix_string).color(text_color))
+                .selectable(false),
+        );
 
         // Allocate empty space exactly matching the directory arrow icon's size
-        child_ui.allocate_space(egui::vec2(crate::icon::IconSize::Small.to_vec2().x, 0.0));
+        child_ui.allocate_response(
+            egui::vec2(crate::icon::IconSize::Small.to_vec2().x, 0.0),
+            egui::Sense::hover(),
+        );
 
         if entry.is_markdown() {
             child_ui.add(
@@ -1345,25 +1445,31 @@ pub(crate) fn render_file_entry(
             );
         } else {
             // For non-markdown, we might want a raw file icon, but for now we fallback to invisible space to match old behavior
-            child_ui.add_space(crate::icon::IconSize::Medium.to_vec2().x);
-        }
+            child_ui.allocate_response(
+                egui::vec2(crate::icon::IconSize::Medium.to_vec2().x, 0.0),
+                egui::Sense::hover(),
+            );
+        };
 
         let mut rich = egui::RichText::new(name).color(text_color);
         if is_active {
             rich = rich.strong();
         }
-        let resp_label = child_ui.add(egui::Label::new(rich).truncate());
+        let resp_label = child_ui.add(egui::Label::new(rich).truncate().selectable(false));
 
         resp_label.widget_info(|| {
             egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &accessible_label)
         });
-        resp = resp.union(resp_label);
     }
 
-    // File level Meta Info on Hover
-    let resp = resp.on_hover_ui(|ui| {
-        let meta_text = crate::shell_logic::format_tree_tooltip(name, path);
-        ui.label(meta_text);
+    resp.context_menu(|ui| {
+        if ui
+            .button(crate::i18n::get().action.show_meta_info.clone())
+            .clicked()
+        {
+            *ctx.action = crate::app_state::AppAction::ShowMetaInfo(path.to_path_buf());
+            ui.close();
+        }
     });
 
     if resp.clicked() && entry.is_markdown() {
@@ -1454,9 +1560,11 @@ fn render_horizontal_split(
     app.state.scroll_source = scroll_state.1;
     app.state.preview_max_scroll = scroll_state.2;
 
-    egui::CentralPanel::default().show(ctx, |ui| {
-        render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
-    });
+    egui::CentralPanel::default()
+        .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+        .show(ctx, |ui| {
+            render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+        });
 
     download_req
 }
@@ -1524,9 +1632,11 @@ fn render_vertical_split(
         app.state.scroll_source = scroll_state.1;
         app.state.preview_max_scroll = scroll_state.2;
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
-        });
+        egui::CentralPanel::default()
+            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+            .show(ctx, |ui| {
+                render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+            });
     } else {
         egui::TopBottomPanel::bottom(panel_id)
             .resizable(true)
@@ -1554,9 +1664,11 @@ fn render_vertical_split(
         app.state.scroll_source = scroll_state.1;
         app.state.preview_max_scroll = scroll_state.2;
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
-        });
+        egui::CentralPanel::default()
+            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+            .show(ctx, |ui| {
+                render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+            });
     }
 
     download_req
@@ -1795,148 +1907,153 @@ impl KatanaApp {
     fn render_terms_modal(&mut self, ctx: &egui::Context, version: &str) {
         let terms = crate::i18n::get().terms.clone();
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let width = ui.available_width();
-            let height = ui.available_height();
-            let content_width = width.min(Self::TERMS_MODAL_WIDTH);
+        egui::CentralPanel::default()
+            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+            .show(ctx, |ui| {
+                let width = ui.available_width();
+                let height = ui.available_height();
+                let content_width = width.min(Self::TERMS_MODAL_WIDTH);
 
-            ui.vertical_centered(|ui| {
-                ui.add_space(height * Self::TERMS_CENTER_OFFSET_RATIO);
+                ui.vertical_centered(|ui| {
+                    ui.add_space(height * Self::TERMS_CENTER_OFFSET_RATIO);
 
-                ui.set_width(content_width);
+                    ui.set_width(content_width);
 
-                egui::Frame::window(ui.style())
-                    .inner_margin(Self::TERMS_INNER_MARGIN)
-                    .corner_radius(Self::TERMS_ROUNDING_LARGE)
-                    .show(ui, |ui| {
-                        ui.vertical_centered(|ui| {
-                            ui.heading(
-                                egui::RichText::new(&terms.title)
-                                    .size(Self::TERMS_TITLE_SIZE)
-                                    .strong()
-                                    .color(ui.visuals().strong_text_color()),
-                            );
-                            ui.add_space(Self::TERMS_SPACING_SMALL);
-
-                            ui.horizontal(|ui| {
-                                ui.label(
-                                    egui::RichText::new(crate::i18n::tf(
-                                        &terms.version_label,
-                                        &[("version", version)],
-                                    ))
-                                    .weak(),
+                    egui::Frame::window(ui.style())
+                        .inner_margin(Self::TERMS_INNER_MARGIN)
+                        .corner_radius(Self::TERMS_ROUNDING_LARGE)
+                        .show(ui, |ui| {
+                            ui.vertical_centered(|ui| {
+                                ui.heading(
+                                    egui::RichText::new(&terms.title)
+                                        .size(Self::TERMS_TITLE_SIZE)
+                                        .strong()
+                                        .color(ui.visuals().strong_text_color()),
                                 );
+                                ui.add_space(Self::TERMS_SPACING_SMALL);
 
-                                ui.with_layout(
-                                    egui::Layout::right_to_left(egui::Align::Center),
-                                    |ui| {
-                                        let current_lang = crate::i18n::get_language();
-                                        let current_name = crate::i18n::supported_languages()
-                                            .iter()
-                                            .find(|(code, _)| *code == current_lang)
-                                            .map(|(_, name)| name.as_str())
-                                            .unwrap_or("English");
-
-                                        egui::ComboBox::from_id_salt("terms_lang_select")
-                                            .selected_text(current_name)
-                                            .width(Self::TERMS_LANG_SELECT_WIDTH)
-                                            .show_ui(ui, |ui| {
-                                                for (code, name) in
-                                                    crate::i18n::supported_languages()
-                                                {
-                                                    if ui
-                                                        .selectable_label(
-                                                            current_lang == *code,
-                                                            name,
-                                                        )
-                                                        .clicked()
-                                                    {
-                                                        self.pending_action =
-                                                            AppAction::ChangeLanguage(code.clone());
-                                                    }
-                                                }
-                                            });
-                                    },
-                                );
-                            });
-
-                            ui.add_space(Self::TERMS_SPACING_MEDIUM);
-                            ui.separator();
-                            ui.add_space(Self::TERMS_SPACING_MEDIUM);
-
-                            egui::Frame::canvas(ui.style())
-                                .inner_margin(Self::TERMS_CONVAS_MARGIN)
-                                .corner_radius(Self::TERMS_ROUNDING_SMALL)
-                                .show(ui, |ui| {
-                                    ui.set_min_height(
-                                        ui.available_height() * Self::TERMS_SCROLL_HEIGHT_RATIO,
+                                ui.horizontal(|ui| {
+                                    ui.label(
+                                        egui::RichText::new(crate::i18n::tf(
+                                            &terms.version_label,
+                                            &[("version", version)],
+                                        ))
+                                        .weak(),
                                     );
-                                    egui::ScrollArea::vertical()
-                                        .max_height(
-                                            ui.available_height() * Self::TERMS_SCROLL_HEIGHT_RATIO,
-                                        )
-                                        .show(ui, |ui| {
-                                            ui.add(egui::Label::new(&terms.content).wrap());
-                                        });
+
+                                    ui.with_layout(
+                                        egui::Layout::right_to_left(egui::Align::Center),
+                                        |ui| {
+                                            let current_lang = crate::i18n::get_language();
+                                            let current_name = crate::i18n::supported_languages()
+                                                .iter()
+                                                .find(|(code, _)| *code == current_lang)
+                                                .map(|(_, name)| name.as_str())
+                                                .unwrap_or("English");
+
+                                            egui::ComboBox::from_id_salt("terms_lang_select")
+                                                .selected_text(current_name)
+                                                .width(Self::TERMS_LANG_SELECT_WIDTH)
+                                                .show_ui(ui, |ui| {
+                                                    for (code, name) in
+                                                        crate::i18n::supported_languages()
+                                                    {
+                                                        if ui
+                                                            .selectable_label(
+                                                                current_lang == *code,
+                                                                name,
+                                                            )
+                                                            .clicked()
+                                                        {
+                                                            self.pending_action =
+                                                                AppAction::ChangeLanguage(
+                                                                    code.clone(),
+                                                                );
+                                                        }
+                                                    }
+                                                });
+                                        },
+                                    );
                                 });
 
-                            ui.add_space(Self::TERMS_SPACING_XLARGE);
+                                ui.add_space(Self::TERMS_SPACING_MEDIUM);
+                                ui.separator();
+                                ui.add_space(Self::TERMS_SPACING_MEDIUM);
 
-                            ui.horizontal(|ui| {
-                                let total_buttons_width =
-                                    Self::TERMS_BUTTON_WIDTH * 2.0 + Self::TERMS_BUTTON_SPACING;
-                                let available = ui.available_width();
-                                let outer_spacing = (available - total_buttons_width) / 2.0;
+                                egui::Frame::canvas(ui.style())
+                                    .inner_margin(Self::TERMS_CONVAS_MARGIN)
+                                    .corner_radius(Self::TERMS_ROUNDING_SMALL)
+                                    .show(ui, |ui| {
+                                        ui.set_min_height(
+                                            ui.available_height() * Self::TERMS_SCROLL_HEIGHT_RATIO,
+                                        );
+                                        egui::ScrollArea::vertical()
+                                            .max_height(
+                                                ui.available_height()
+                                                    * Self::TERMS_SCROLL_HEIGHT_RATIO,
+                                            )
+                                            .show(ui, |ui| {
+                                                ui.add(egui::Label::new(&terms.content).wrap());
+                                            });
+                                    });
 
-                                if outer_spacing > 0.0 {
-                                    ui.add_space(outer_spacing);
-                                }
+                                ui.add_space(Self::TERMS_SPACING_XLARGE);
 
-                                let accept_btn = egui::Button::new(
-                                    egui::RichText::new(&terms.accept)
-                                        .strong()
-                                        .size(Self::TERMS_BUTTON_TEXT_SIZE),
-                                )
-                                .min_size(egui::vec2(
-                                    Self::TERMS_BUTTON_WIDTH,
-                                    Self::TERMS_BUTTON_HEIGHT,
-                                ))
-                                .corner_radius(Self::TERMS_ROUNDING_SMALL);
+                                ui.horizontal(|ui| {
+                                    let total_buttons_width =
+                                        Self::TERMS_BUTTON_WIDTH * 2.0 + Self::TERMS_BUTTON_SPACING;
+                                    let available = ui.available_width();
+                                    let outer_spacing = (available - total_buttons_width) / 2.0;
 
-                                if ui
-                                    .add(accept_btn)
-                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                    .clicked()
-                                {
-                                    self.pending_action =
-                                        AppAction::AcceptTerms(version.to_string());
-                                }
+                                    if outer_spacing > 0.0 {
+                                        ui.add_space(outer_spacing);
+                                    }
 
-                                ui.add_space(Self::TERMS_BUTTON_SPACING);
+                                    let accept_btn = egui::Button::new(
+                                        egui::RichText::new(&terms.accept)
+                                            .strong()
+                                            .size(Self::TERMS_BUTTON_TEXT_SIZE),
+                                    )
+                                    .min_size(egui::vec2(
+                                        Self::TERMS_BUTTON_WIDTH,
+                                        Self::TERMS_BUTTON_HEIGHT,
+                                    ))
+                                    .corner_radius(Self::TERMS_ROUNDING_SMALL);
 
-                                let decline_btn = egui::Button::new(
-                                    egui::RichText::new(&terms.decline)
-                                        .size(Self::TERMS_BUTTON_TEXT_SIZE),
-                                )
-                                .min_size(egui::vec2(
-                                    Self::TERMS_BUTTON_WIDTH,
-                                    Self::TERMS_BUTTON_HEIGHT,
-                                ))
-                                .corner_radius(Self::TERMS_ROUNDING_SMALL);
+                                    if ui
+                                        .add(accept_btn)
+                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                        .clicked()
+                                    {
+                                        self.pending_action =
+                                            AppAction::AcceptTerms(version.to_string());
+                                    }
 
-                                if ui
-                                    .add(decline_btn)
-                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                    .clicked()
-                                {
-                                    self.pending_action = AppAction::DeclineTerms;
-                                }
+                                    ui.add_space(Self::TERMS_BUTTON_SPACING);
+
+                                    let decline_btn = egui::Button::new(
+                                        egui::RichText::new(&terms.decline)
+                                            .size(Self::TERMS_BUTTON_TEXT_SIZE),
+                                    )
+                                    .min_size(egui::vec2(
+                                        Self::TERMS_BUTTON_WIDTH,
+                                        Self::TERMS_BUTTON_HEIGHT,
+                                    ))
+                                    .corner_radius(Self::TERMS_ROUNDING_SMALL);
+
+                                    if ui
+                                        .add(decline_btn)
+                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                        .clicked()
+                                    {
+                                        self.pending_action = AppAction::DeclineTerms;
+                                    }
+                                });
+                                ui.add_space(Self::TERMS_SPACING_MEDIUM);
                             });
-                            ui.add_space(Self::TERMS_SPACING_MEDIUM);
                         });
-                    });
+                });
             });
-        });
     }
 }
 
@@ -2014,6 +2131,13 @@ impl eframe::App for KatanaApp {
 
         self.poll_download(ctx);
         self.poll_workspace_load(ctx);
+
+        // Process pending document loads (1 per frame to avoid UI freeze)
+        if let Some(path) = self.pending_document_loads.pop_front() {
+            self.handle_select_document(path, false);
+            ctx.request_repaint();
+        }
+
         self.poll_update_check(ctx);
         self.poll_export(ctx);
 
@@ -2194,15 +2318,22 @@ impl eframe::App for KatanaApp {
             }
 
             if !is_split {
-                egui::CentralPanel::default().show(ctx, |ui| match current_mode {
-                    ViewMode::CodeOnly => {
-                        render_editor_content(ui, &mut self.state, &mut self.pending_action, false);
-                    }
-                    ViewMode::PreviewOnly => {
-                        render_preview_only(ui, self);
-                    }
-                    ViewMode::Split => {}
-                });
+                egui::CentralPanel::default()
+                    .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+                    .show(ctx, |ui| match current_mode {
+                        ViewMode::CodeOnly => {
+                            render_editor_content(
+                                ui,
+                                &mut self.state,
+                                &mut self.pending_action,
+                                false,
+                            );
+                        }
+                        ViewMode::PreviewOnly => {
+                            render_preview_only(ui, self);
+                        }
+                        ViewMode::Split => {}
+                    });
             }
 
             if let Some(req) = download_req {
@@ -2224,6 +2355,15 @@ impl eframe::App for KatanaApp {
         // About dialog
         if self.show_about {
             render_about_window(ctx, &mut self.show_about, self.about_icon.as_ref());
+        }
+
+        // Meta info dialog
+        if let Some(path) = self.show_meta_info_for.clone() {
+            let mut is_open = true;
+            render_meta_info_window(ctx, &mut is_open, &path);
+            if !is_open {
+                self.show_meta_info_for = None;
+            }
         }
 
         // Update notification dialog
@@ -2434,6 +2574,32 @@ mod tests {
 
     const PREVIEW_CONTENT_PADDING: f32 = 12.0;
 
+    /// Custom testing egui Context that pre-populates dummy font mappings for Markdown
+    /// layout families. PreviewPane panics if these are missing natively.
+    fn test_context() -> egui::Context {
+        let ctx = egui::Context::default();
+        let mut fonts = egui::FontDefinitions::default();
+        let md_prop = fonts
+            .families
+            .get(&egui::FontFamily::Proportional)
+            .cloned()
+            .unwrap_or_default();
+        let md_mono = fonts
+            .families
+            .get(&egui::FontFamily::Monospace)
+            .cloned()
+            .unwrap_or_default();
+        fonts.families.insert(
+            egui::FontFamily::Name("MarkdownProportional".into()),
+            md_prop,
+        );
+        fonts
+            .families
+            .insert(egui::FontFamily::Name("MarkdownMonospace".into()), md_mono);
+        ctx.set_fonts(fonts);
+        ctx
+    }
+
     fn test_input(size: egui::Vec2) -> egui::RawInput {
         egui::RawInput {
             screen_rect: Some(Rect::from_min_size(pos2(0.0, 0.0), size)),
@@ -2529,18 +2695,20 @@ mod tests {
 
     #[test]
     fn preview_header_leaves_height_for_preview_body() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let state = state_with_active_doc(std::path::Path::new("/tmp/preview.md"));
         let mut action = AppAction::None;
         let mut before_height = 0.0;
         let mut remaining_height = 0.0;
 
         let _ = ctx.run(test_input(egui::vec2(800.0, 600.0)), |ctx| {
-            egui::CentralPanel::default().show(ctx, |ui| {
-                before_height = ui.available_height();
-                render_preview_header(ui, &state, &mut action);
-                remaining_height = ui.available_height();
-            });
+            egui::CentralPanel::default()
+                .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+                .show(ctx, |ui| {
+                    before_height = ui.available_height();
+                    render_preview_header(ui, &state, &mut action);
+                    remaining_height = ui.available_height();
+                });
         });
 
         assert!(
@@ -2551,23 +2719,25 @@ mod tests {
 
     #[test]
     fn active_file_highlight_is_painted_before_text() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let path = std::path::PathBuf::from("/tmp/CHANGELOG.md");
         let entry = TreeEntry::File { path: path.clone() };
         let mut action = AppAction::None;
         let mut expanded_directories = std::collections::HashSet::new();
 
         let output = ctx.run(test_input(egui::vec2(320.0, 200.0)), |ctx| {
-            egui::CentralPanel::default().show(ctx, |ui| {
-                let mut render_ctx = TreeRenderContext {
-                    action: &mut action,
-                    depth: 0,
-                    active_path: Some(path.as_path()),
-                    filter_set: None,
-                    expanded_directories: &mut expanded_directories,
-                };
-                render_file_entry(ui, &entry, &path, &mut render_ctx);
-            });
+            egui::CentralPanel::default()
+                .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+                .show(ctx, |ui| {
+                    let mut render_ctx = TreeRenderContext {
+                        action: &mut action,
+                        depth: 0,
+                        active_path: Some(path.as_path()),
+                        filter_set: None,
+                        expanded_directories: &mut expanded_directories,
+                    };
+                    render_file_entry(ui, &entry, &path, &mut render_ctx);
+                });
         });
 
         let shapes = flatten_shapes(output.shapes.iter());
@@ -2597,7 +2767,7 @@ mod tests {
 
     #[test]
     fn split_preview_left_padding_is_consistent() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let path = PathBuf::from("/tmp/padding.md");
         let mut app = app_with_preview_doc(&path, "# PaddingHeading\n\nBody");
         let output = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
@@ -2638,7 +2808,7 @@ mod tests {
 
     #[test]
     fn new_horizontal_split_starts_at_half_width_even_if_another_tab_has_panel_state() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/active.md");
         let stale = PathBuf::from("/tmp/stale.md");
         let mut app = app_with_preview_doc(&active, "Body");
@@ -2671,7 +2841,7 @@ mod tests {
 
     #[test]
     fn horizontal_split_width_stays_stable_across_initial_frames() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/active.md");
         let mut app = app_with_preview_doc(&active, "# Title\n\nBody");
 
@@ -2710,7 +2880,7 @@ mod tests {
 
     #[test]
     fn horizontal_split_width_stays_stable_with_readme_like_preview_content() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/readme.md");
         let markdown = concat!(
             "# KatanA Desktop\n\n",
@@ -2756,7 +2926,7 @@ mod tests {
 
     #[test]
     fn horizontal_split_width_stays_stable_with_changelog_like_list_content() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/changelog.md");
         let markdown = concat!(
             "## Fixes\n\n",
@@ -2804,7 +2974,7 @@ mod tests {
 
     #[test]
     fn new_vertical_split_starts_at_half_height_even_if_another_tab_has_panel_state() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/active.md");
         let stale = PathBuf::from("/tmp/stale.md");
         let mut app = app_with_preview_doc(&active, "Body");
@@ -2837,7 +3007,7 @@ mod tests {
 
     #[test]
     fn split_preview_wraps_long_lines_without_horizontal_overflow() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let path = PathBuf::from("/tmp/long-line.md");
         let long_line = "あ".repeat(240);
         let mut app = app_with_preview_doc(&path, &long_line);
@@ -2878,7 +3048,7 @@ mod tests {
 
     #[test]
     fn split_preview_wraps_long_inline_code_without_horizontal_overflow() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let path = PathBuf::from("/tmp/long-inline-code.md");
         let inline_code = format!("`{}`", "あ".repeat(240));
         let mut app = app_with_preview_doc(&path, &inline_code);
@@ -2919,7 +3089,7 @@ mod tests {
 
     #[test]
     fn split_preview_wraps_long_markdown_with_mixed_inline_styles() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let path = PathBuf::from("/tmp/blockquote-strong.md");
         let markdown = concat!(
             "> **Note:** On macOS Sequoia (15.x), Gatekeeper requires this command for apps not notarized with Apple. ",
@@ -2988,7 +3158,7 @@ mod tests {
     /// starving the CentralPanel.
     #[test]
     fn vertical_split_editor_has_sufficient_height_for_scrolling() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/vsplit_scroll.md");
         let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
         let mut app = app_with_preview_doc(&active, &long_content);
@@ -3032,7 +3202,7 @@ mod tests {
     /// scroll_source to Neither. This verifies editor→preview sync works.
     #[test]
     fn vertical_split_editor_to_preview_scroll_sync() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/vsplit_sync_e2p.md");
         let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
         let mut app = app_with_preview_doc(&active, &long_content);
@@ -3070,7 +3240,7 @@ mod tests {
     /// Same editor→preview sync test for horizontal split — expected to PASS.
     #[test]
     fn horizontal_split_editor_to_preview_scroll_sync() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/hsplit_sync_e2p.md");
         let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
         let mut app = app_with_preview_doc(&active, &long_content);
@@ -3104,7 +3274,7 @@ mod tests {
     /// editor→preview sync must work in vertical split.
     #[test]
     fn vertical_split_editor_to_preview_scroll_sync_after_swap() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/vsplit_sync_swap.md");
         let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
         let mut app = app_with_preview_doc(&active, &long_content);
@@ -3139,7 +3309,7 @@ mod tests {
     /// Set scroll_source=Preview and verify it transitions to Neither.
     #[test]
     fn vertical_split_preview_to_editor_scroll_sync() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let active = PathBuf::from("/tmp/vsplit_sync_p2e.md");
         let long_content = (0..100).map(|i| format!("Line {i}\n")).collect::<String>();
         let mut app = app_with_preview_doc(&active, &long_content);
@@ -3172,7 +3342,7 @@ mod tests {
 
     #[test]
     fn refresh_diagrams_update_clears_image_caches() {
-        let ctx = egui::Context::default();
+        let ctx = test_context();
         let mut frame = eframe::Frame::_new_kittest();
         let path = PathBuf::from("/tmp/refresh-cache.md");
         let mut app = app_with_preview_doc(&path, "# Refresh cache");
@@ -3193,6 +3363,24 @@ mod tests {
             "RefreshDiagrams must clear image caches before rerendering preview"
         );
     }
+}
+
+/// Renders the Meta Info window popup.
+fn render_meta_info_window(ctx: &egui::Context, open: &mut bool, path: &std::path::Path) {
+    let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
+    let meta_text = crate::shell_logic::format_tree_tooltip(name, path);
+
+    const META_INFO_WINDOW_WIDTH: f32 = 400.0;
+    egui::Window::new(crate::i18n::get().action.show_meta_info.clone())
+        .open(open)
+        .collapsible(false)
+        .resizable(true)
+        .default_width(META_INFO_WINDOW_WIDTH)
+        .show(ctx, |ui| {
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                ui.label(meta_text);
+            });
+        });
 }
 
 /// Renders the custom About window with all required OSS project information.
@@ -3476,6 +3664,9 @@ const TOC_PANEL_DEFAULT_WIDTH: f32 = 200.0;
 const TOC_PANEL_MARGIN: f32 = 8.0;
 const TOC_HEADING_VISIBILITY_THRESHOLD: f32 = 40.0;
 const TOC_INDENT_PER_LEVEL: f32 = 12.0;
+
+const LIGHT_MODE_ICON_BG: u8 = 235;
+const LIGHT_MODE_ICON_ACTIVE_BG: u8 = 200;
 
 pub(crate) fn render_toc_panel(
     ctx: &egui::Context,
