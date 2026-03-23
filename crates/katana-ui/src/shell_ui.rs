@@ -713,6 +713,12 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
         let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
         let scroll_width = ui.available_width() - nav_button_width;
 
+        let should_scroll = ui.memory_mut(|mem| {
+            mem.data
+                .get_temp::<bool>(egui::Id::new("scroll_tab_req"))
+                .unwrap_or(false)
+        });
+
         egui::ScrollArea::horizontal()
             .max_width(scroll_width)
             .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
@@ -748,11 +754,6 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                             .inner;
 
                         tab_rects.push((idx, resp.rect));
-                        let should_scroll = ui.memory_mut(|mem| {
-                            mem.data
-                                .remove_temp::<bool>(egui::Id::new("scroll_tab_req"))
-                                .unwrap_or(false)
-                        });
                         // Task 3.7: Only scroll when navigated via left/right buttons.
                         if is_active && should_scroll {
                             resp.scroll_to_me(Some(egui::Align::Center));
@@ -1205,7 +1206,7 @@ pub(crate) fn render_directory_entry(
         egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, is_open);
     state.set_open(is_open);
     let file_tree_color = ui.visuals().text_color();
-    let (rect, mut resp) = ui.allocate_at_least(
+    let (rect, resp) = ui.allocate_at_least(
         egui::vec2(ui.available_width(), TREE_ROW_HEIGHT),
         egui::Sense::click(),
     );
@@ -1247,24 +1248,26 @@ pub(crate) fn render_directory_entry(
             crate::icon::Icon::FolderClosed
         };
 
-        let r1 = child_ui.add(egui::Label::new(prefix));
+        child_ui.add(egui::Label::new(prefix).selectable(false));
 
         // Add spacing equivalent to item_spacing.x = 2.0 manually or rely on default layout
-        let r2 = child_ui.add(
+        child_ui.add(
             arrow_icon
                 .image(crate::icon::IconSize::Small)
-                .tint(file_tree_color)
-                .sense(egui::Sense::click()),
+                .tint(file_tree_color),
         );
-        let r3 = child_ui.add(
+        child_ui.add(
             folder_icon
                 .image(crate::icon::IconSize::Medium)
-                .tint(file_tree_color)
-                .sense(egui::Sense::click()),
+                .tint(file_tree_color),
         );
-        let r4 = child_ui
-            .add(egui::Label::new(egui::RichText::new(name).color(file_tree_color)).truncate());
-        resp = resp.union(r1).union(r2).union(r3).union(r4);
+        child_ui.add(
+            egui::Label::new(egui::RichText::new(name).color(file_tree_color))
+                .selectable(false)
+                .truncate(),
+        );
+        // We do not union because resp already covers the whole area and the
+        // children don't have interactive senses that would steal hover/clicks.
     }
 
     // "Open All" Context Menu for directories
@@ -1372,7 +1375,7 @@ pub(crate) fn render_file_entry(
     } else {
         ui.visuals().text_color()
     };
-    let (full_rect, mut resp) = ui.allocate_at_least(
+    let (full_rect, resp) = ui.allocate_at_least(
         egui::vec2(ui.available_width(), TREE_ROW_HEIGHT),
         egui::Sense::click(),
     );
@@ -1395,49 +1398,44 @@ pub(crate) fn render_file_entry(
         child_ui.add_space(TREE_LABEL_HOFFSET);
 
         let prefix_string = indent_prefix(ctx.depth);
-        let r1 = child_ui.add(egui::Label::new(
-            egui::RichText::new(prefix_string).color(text_color),
-        ));
-
-        // Allocate empty space exactly matching the directory arrow icon's size
-        let r2 = child_ui.allocate_response(
-            egui::vec2(crate::icon::IconSize::Small.to_vec2().x, 0.0),
-            egui::Sense::click(),
+        child_ui.add(
+            egui::Label::new(egui::RichText::new(prefix_string).color(text_color))
+                .selectable(false),
         );
 
-        let r3 = if entry.is_markdown() {
+        // Allocate empty space exactly matching the directory arrow icon's size
+        child_ui.allocate_response(
+            egui::vec2(crate::icon::IconSize::Small.to_vec2().x, 0.0),
+            egui::Sense::hover(),
+        );
+
+        if entry.is_markdown() {
             child_ui.add(
                 crate::icon::Icon::Document
                     .image(crate::icon::IconSize::Medium)
-                    .tint(text_color)
-                    .sense(egui::Sense::click()),
-            )
+                    .tint(text_color),
+            );
         } else {
             // For non-markdown, we might want a raw file icon, but for now we fallback to invisible space to match old behavior
             child_ui.allocate_response(
                 egui::vec2(crate::icon::IconSize::Medium.to_vec2().x, 0.0),
-                egui::Sense::click(),
-            )
+                egui::Sense::hover(),
+            );
         };
 
         let mut rich = egui::RichText::new(name).color(text_color);
         if is_active {
             rich = rich.strong();
         }
-        let resp_label = child_ui.add(
-            egui::Label::new(rich)
-                .truncate()
-                .sense(egui::Sense::click()),
-        );
+        let resp_label = child_ui.add(egui::Label::new(rich).truncate().selectable(false));
 
         resp_label.widget_info(|| {
             egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &accessible_label)
         });
-        resp = resp.union(r1).union(r2).union(r3).union(resp_label);
     }
 
-    // File level Meta Info on Hover
-    let resp = resp.on_hover_ui(|ui| {
+    // File level Meta Info on Context Menu
+    resp.context_menu(|ui| {
         let meta_text = crate::shell_logic::format_tree_tooltip(name, path);
         ui.label(meta_text);
     });
