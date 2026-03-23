@@ -13,7 +13,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [x] CPUが100%に張り付く現象が消失し、UIスレッドがアイドル状態に戻ることを確認
 - [x] `tests::svg_loader` などが通過する
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. P1/P3/P4 UI レンダリングバグ修正
 
