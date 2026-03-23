@@ -58,3 +58,9 @@
 - [ ] **PDF エクスポートの余白制御**: `headless_chrome` の `print_to_pdf` 経由の PDF 生成では、Mermaid 図などの大きな要素がページ境界で分割される際に意図しない余白が発生する。CSS の `@page`、`@media print`（`break-inside: avoid`、`max-height` 制限等）、`PrintToPdfOptions` のマージン設定をすべて試行したが、Chrome のページネーションエンジンの仕様として改善できなかった。ブラウザの印刷機能でも同一の余白が再現する。
   - 対応案: `headless_chrome` 以外の PDF 生成ライブラリ（`wkhtmltopdf`、`weasyprint` 等）への移行、または HTML エクスポートを正とし PDF は廃止も検討。
   - 発見契機: PDF エクスポートの品質検証にて（2026-03-22）
+
+- [ ] **テーブル中央寄せ（`:---:` alignment）の実装**: `apply_alignment` で egui Layout ベースの中央寄せを試みたが、`egui::Label` は内部で `LayoutJob.halign` を上書きするため効果がない。Label を使わず `Galley` を直接 `ui.painter().galley()` で描画するアプローチで実現可能。ROI が見合う段階で着手。
+  - 発見契機: v0.6.1 UI deferred fixes でテーブル描画改善中に判明（2026-03-23）
+
+- [ ] **テスト fixtures の assets 移動 + ヘルプ機能連携**: 現在 `crates/katana-ui/tests/fixtures/` にあるサンプル Markdown は、テストコードからは直接参照されていない（テスト内はインライン文字列を使用）。`assets/` に移動し、将来的にアプリ内「ヘルプ」から参照可能にする構想。
+  - 発見契機: v0.6.1 UI fixes の目視確認フロー議論にて（2026-03-23）

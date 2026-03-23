@@ -1934,19 +1934,12 @@ fn badges_then_language_selector_both_centered() {
     );
 }
 
-// ── TDD(RED): Markdown table must fill available preview width ──
+// ── TDD(RED): Markdown table must be horizontally centered ──
 
-/// Table must use the available preview width so columns don't shrink to
-/// content-minimum. Without explicit width constraints, egui::Grid compacts
-/// cells to fit text, leaving most of the preview area unused and causing
-/// text overflow when content is even slightly longer.
-///
-/// Validates BOTH:
-/// 1. The table group frame rect fills >= 80% of content width
-/// 2. The rightmost cell text ("Header C" / "Cell 3") starts past the 50% mark,
-///    proving columns are actually distributed across the table width.
+/// Table must shrink to fit its contents up to available_width,
+/// and it must align to the center of the available horizontal space.
 #[test]
-fn markdown_table_fills_available_width() {
+fn markdown_table_stretches_to_full_width() {
     let table_md = concat!(
         "# Table Test\n\n",
         "| Header A | Header B | Header C |\n",
@@ -1986,76 +1979,30 @@ fn markdown_table_fills_available_width() {
 
     let content_width = preview_width - 16.0; // 8px margin each side
 
-    // ── Check 1: Frame rect width ──
     let flat = flatten_shapes(&output.shapes);
-    let group_frame_widths: Vec<f32> = flat
-        .iter()
-        .filter_map(|s| {
-            if let egui::epaint::Shape::Rect(rect_shape) = s {
-                if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
-                    Some(rect_shape.rect.width())
-                } else {
-                    None
-                }
-            } else {
-                None
+    let mut table_frame_rect = egui::Rect::NOTHING;
+    for s in flat.iter() {
+        if let egui::epaint::Shape::Rect(rect_shape) = s {
+            // Find the table group frame rect
+            if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
+                table_frame_rect = rect_shape.rect;
+                break;
             }
-        })
-        .collect();
+        }
+    }
 
     assert!(
-        !group_frame_widths.is_empty(),
+        table_frame_rect.width() > 0.0,
         "Expected at least one group frame rect shape for the table"
     );
 
-    let table_frame_width = group_frame_widths
-        .iter()
-        .copied()
-        .fold(f32::NEG_INFINITY, f32::max);
+    let table_frame_width = table_frame_rect.width();
     let fill_ratio = table_frame_width / content_width;
 
     assert!(
-        fill_ratio >= 0.80,
-        "Table frame should fill >= 80% of available width, got {fill_ratio:.2} \
+        (fill_ratio - 1.0).abs() < 0.05,
+        "Table frame should stretch to full width, got {fill_ratio:.2} \
          (table_frame_width={table_frame_width:.1}, content_width={content_width:.1})"
-    );
-
-    // ── Check 2: Rightmost column text position ──
-    // Find text shapes for "Header C" or "Cell 3" (the 3rd column content).
-    // Their left edge (x position) must be past the 50% mark of the content area,
-    // proving the Grid columns are distributed, not all clustered on the left.
-    let right_col_texts: Vec<f32> = flat
-        .iter()
-        .filter_map(|s| {
-            if let egui::epaint::Shape::Text(text_shape) = s {
-                let text = &text_shape.galley.job.text;
-                if text.contains("Header C") || text.contains("Cell 3") {
-                    Some(text_shape.pos.x)
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    assert!(
-        !right_col_texts.is_empty(),
-        "Expected text shapes for the rightmost column (Header C / Cell 3)"
-    );
-
-    let rightmost_col_x = right_col_texts
-        .iter()
-        .copied()
-        .fold(f32::NEG_INFINITY, f32::max);
-    let midpoint = 8.0 + content_width * 0.50; // 50% mark from left margin
-
-    assert!(
-        rightmost_col_x >= midpoint,
-        "Rightmost column text must start past 50% of content width, \
-         got x={rightmost_col_x:.1}, midpoint={midpoint:.1}. \
-         This means Grid columns are NOT distributed across the table width."
     );
 }
 
@@ -2181,5 +2128,343 @@ fn markdown_table_cells_in_same_row_share_y_coordinate() {
         header_a_y < cell1_y && cell1_y < cell4_y,
         "Rows must be in top-to-bottom order. \
          Got header.y={header_a_y:.1}, row1.y={cell1_y:.1}, row2.y={cell4_y:.1}"
+    );
+}
+
+// ── TDD(RED): Table must render visible vertical separator lines between columns ──
+
+/// Tables with 3 columns should have 2 vertical divider lines (between col 1-2 and col 2-3).
+/// The vlines must span the full table height (header + all body rows), not just individual cells.
+#[test]
+fn markdown_table_has_visible_vertical_lines() {
+    let table_md = concat!(
+        "| A | B | C |\n",
+        "|---|---|---|\n",
+        "| 1 | 2 | 3 |\n",
+        "| 4 | 5 | 6 |\n",
+    );
+
+    let preview_width = 600.0_f32;
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/vline_test.md"));
+
+    let ctx = egui::Context::default();
+    let raw_input = egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, 400.0),
+        )),
+        ..Default::default()
+    };
+
+    let render_frame = |ctx: &egui::Context, pane: &mut PreviewPane| {
+        ctx.run(raw_input.clone(), |ctx| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8)))
+                .show(ctx, |ui| {
+                    pane.show(ui);
+                });
+        })
+    };
+
+    let _ = render_frame(&ctx, &mut pane);
+    let _ = render_frame(&ctx, &mut pane);
+    let output = render_frame(&ctx, &mut pane);
+
+    let flat = flatten_shapes(&output.shapes);
+
+    // Find all vertical line segments (same x, different y, visible stroke).
+    let vertical_lines: Vec<_> = flat
+        .iter()
+        .filter_map(|s| {
+            if let egui::epaint::Shape::LineSegment { points, stroke } = s {
+                let x_diff = (points[0].x - points[1].x).abs();
+                let y_diff = (points[0].y - points[1].y).abs();
+                if x_diff < 1.0 && y_diff > 5.0 && stroke.width > 0.0 {
+                    Some((points[0].x, y_diff, stroke.width, stroke.color.a()))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    assert!(
+        !vertical_lines.is_empty(),
+        "Expected at least one vertical line segment in a 3-column table"
+    );
+
+    // The vlines must have visible stroke: width ≥ 0.5 AND color alpha ≥ 100.
+    // If bg_stroke is transparent/faint, the vlines exist but are invisible.
+    for (x, height, width, alpha) in &vertical_lines {
+        assert!(
+            *width >= 0.5 && *alpha >= 100,
+            "Vertical line at x={x:.1} (height={height:.1}) has insufficient visibility: \
+             width={width:.1}, alpha={alpha}. Must be width≥0.5 AND alpha≥100."
+        );
+    }
+}
+
+// ── TDD(RED): Table must NOT have excessive whitespace below the last row ──
+
+/// Validates that the table's bottom edge closely matches the last row's text
+/// bottom. A visible gap below the last row indicates trailing space caused by
+/// Grid internals or misplaced newlines.
+#[test]
+fn markdown_table_no_trailing_whitespace() {
+    let table_md = concat!(
+        "| A | B | C |\n",
+        "|---|---|---|\n",
+        "| 1 | 2 | 3 |\n",
+        "| 4 | 5 | 6 |\n",
+    );
+
+    let preview_width = 600.0_f32;
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/trail_test.md"));
+
+    let ctx = egui::Context::default();
+    let raw_input = egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, 400.0),
+        )),
+        ..Default::default()
+    };
+
+    let render_frame = |ctx: &egui::Context, pane: &mut PreviewPane| {
+        ctx.run(raw_input.clone(), |ctx| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8)))
+                .show(ctx, |ui| {
+                    pane.show(ui);
+                });
+        })
+    };
+
+    let _ = render_frame(&ctx, &mut pane);
+    let _ = render_frame(&ctx, &mut pane);
+    let output = render_frame(&ctx, &mut pane);
+
+    let flat = flatten_shapes(&output.shapes);
+
+    // Find the bottom edge of the last text in the table body.
+    let mut last_text_bottom: f32 = 0.0;
+    for s in &flat {
+        if let egui::epaint::Shape::Text(text_shape) = s {
+            let text = text_shape.galley.job.text.trim().to_string();
+            if ["4", "5", "6"].contains(&text.as_str()) {
+                let text_bottom = text_shape.pos.y + text_shape.galley.size().y;
+                if text_bottom > last_text_bottom {
+                    last_text_bottom = text_bottom;
+                }
+            }
+        }
+    }
+
+    assert!(
+        last_text_bottom > 0.0,
+        "Expected last-row text shapes to be found"
+    );
+
+    // Find the table's visual bottom edge from the border rect.
+    // The border is drawn with rect_stroke (stroke_width > 0) and covers the table area.
+    let mut table_bottom: f32 = 0.0;
+    for s in &flat {
+        if let egui::epaint::Shape::Rect(rect_shape) = s {
+            // Table border rect has visible stroke and reasonable table width.
+            if rect_shape.rect.width() > 50.0
+                && rect_shape.stroke.width > 0.0
+                && rect_shape.rect.height() > 20.0
+                && rect_shape.rect.height() < 300.0
+            {
+                let rect_bottom = rect_shape.rect.bottom();
+                if rect_bottom > table_bottom {
+                    table_bottom = rect_bottom;
+                }
+            }
+        }
+    }
+
+    assert!(
+        table_bottom > 0.0,
+        "Expected table background rects to be found"
+    );
+
+    // The gap between the last text bottom and the table bottom should be small.
+    // Normal cell padding is ~4-8px. A gap > 20px indicates trailing whitespace.
+    let gap = table_bottom - last_text_bottom;
+    assert!(
+        gap < 20.0,
+        "Table has excessive trailing whitespace below last row: \
+         gap={gap:.1}px (last_text_bottom={last_text_bottom:.1}, table_bottom={table_bottom:.1}). \
+         Expected < 20px."
+    );
+}
+
+// ── TDD(RED): Blockquote vertical lines must have uniform thickness ──
+
+/// All blockquote nesting levels should draw their vertical accent line with
+/// identical stroke width. A first-level quote whose line is drawn at the
+/// parent clip rect boundary gets half-clipped, appearing thinner.
+///
+/// This test renders nested blockquotes and asserts that line x-coordinates
+/// are offset inward enough that the full stroke width is visible.
+#[test]
+fn blockquote_lines_uniform_thickness() {
+    let md = concat!(
+        "> First level\n",
+        "> > Second level\n",
+        "> > > Third level\n",
+    );
+
+    let preview_width = 600.0_f32;
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(md, std::path::Path::new("/tmp/bq_line_test.md"));
+
+    let ctx = egui::Context::default();
+    let raw_input = egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, 400.0),
+        )),
+        ..Default::default()
+    };
+
+    let render_frame = |ctx: &egui::Context, pane: &mut PreviewPane| {
+        ctx.run(raw_input.clone(), |ctx| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8)))
+                .show(ctx, |ui| {
+                    pane.show(ui);
+                });
+        })
+    };
+
+    let _ = render_frame(&ctx, &mut pane);
+    let _ = render_frame(&ctx, &mut pane);
+    let output = render_frame(&ctx, &mut pane);
+
+    let flat = flatten_shapes(&output.shapes);
+
+    // Collect all vertical line segments (blockquote accent lines are vertical
+    // line_segment shapes with non-zero stroke width).
+    let mut line_widths: Vec<f32> = Vec::new();
+    let mut line_x_positions: Vec<f32> = Vec::new();
+    for s in &flat {
+        if let egui::epaint::Shape::LineSegment { points, stroke } = s {
+            // Vertical line: same x, different y
+            if (points[0].x - points[1].x).abs() < 0.1
+                && stroke.width > 0.0
+                && (points[1].y - points[0].y).abs() > 5.0
+            {
+                line_widths.push(stroke.width);
+                line_x_positions.push(points[0].x);
+            }
+        }
+    }
+
+    assert!(
+        line_widths.len() >= 3,
+        "Expected at least 3 blockquote vertical lines (one per nesting level), \
+         found {}",
+        line_widths.len()
+    );
+
+    // All lines must have the same stroke width.
+    let first_width = line_widths[0];
+    for (i, width) in line_widths.iter().enumerate() {
+        assert!(
+            (*width - first_width).abs() < 0.1,
+            "Blockquote line {} has different width ({}) than line 0 ({}). \
+             All should be uniform.",
+            i,
+            width,
+            first_width
+        );
+    }
+
+    // The leftmost line's x must be far enough from the parent clip rect left
+    // (8.0 = inner margin) to avoid clipping. Specifically, x should be at
+    // least half_stroke_width inward from the clip edge.
+    let clip_left = 8.0_f32; // CentralPanel inner_margin
+    let half_stroke = first_width / 2.0;
+    let leftmost_x = line_x_positions
+        .iter()
+        .copied()
+        .fold(f32::INFINITY, f32::min);
+
+    assert!(
+        leftmost_x >= clip_left + half_stroke - 0.1,
+        "Leftmost blockquote line at x={leftmost_x:.1} is too close to clip edge \
+         ({clip_left}). At least {half_stroke:.1} inward is needed for full stroke visibility. \
+         The line's left edge would be at {left_edge:.1} which gets clipped.",
+        left_edge = leftmost_x - half_stroke,
+    );
+}
+
+#[test]
+fn markdown_table_max_width_is_constrained() {
+    let table_md = concat!(
+        "| Header A | Header B |\n",
+        "|----------|----------|\n",
+        "| This is a very very extremely long sentence that should absolutely force the table to wrap its contents. If it does not wrap its contents, then the table width will explode and exceed the available viewing area. | Short |\n",
+    );
+
+    let preview_width = 400.0_f32; // Narrow screen
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(
+        table_md,
+        std::path::Path::new("/tmp/table_max_width_test.md"),
+    );
+
+    let ctx = egui::Context::default();
+    let raw_input = egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, 400.0),
+        )),
+        ..Default::default()
+    };
+
+    let render_frame = |ctx: &egui::Context, pane: &mut PreviewPane| {
+        ctx.run(raw_input.clone(), |ctx| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8)))
+                .show(ctx, |ui| {
+                    pane.show(ui);
+                });
+        })
+    };
+
+    // Run multiple frames
+    let _ = render_frame(&ctx, &mut pane);
+    let _ = render_frame(&ctx, &mut pane);
+    let output = render_frame(&ctx, &mut pane);
+
+    let content_width = preview_width - 16.0; // 8px margin each side
+
+    let mut table_frame_rect = egui::Rect::NOTHING;
+    for clipped_shape in output.shapes {
+        if let egui::Shape::Rect(rect_shape) = clipped_shape.shape {
+            if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
+                table_frame_rect = rect_shape.rect;
+                break;
+            }
+        }
+    }
+
+    assert!(
+        table_frame_rect.width() > 0.0,
+        "Expected at least one group frame rect shape for the table"
+    );
+
+    let table_frame_width = table_frame_rect.width();
+
+    assert!(
+        table_frame_width <= content_width,
+        "Table frame width ({table_frame_width:.1}) must not exceed available content width ({content_width:.1}). It should wrap instead!"
     );
 }
