@@ -110,7 +110,9 @@ pub fn parse_table<'e>(events: &mut impl Iterator<Item = EventIteratorItem<'e>>)
     let mut rows = Vec::new();
     while all_events.peek().is_some() {
         let row = parse_row(&mut all_events);
-        rows.push(row);
+        if !row.is_empty() {
+            rows.push(row);
+        }
     }
 
     Table { header, rows }

@@ -179,11 +179,11 @@ fn render_blockquote(ui: &mut Ui, accent: egui::Color32, add_contents: impl FnOn
         egui::epaint::Shape::line_segment(
             [
                 egui::pos2(
-                    response.rect.left(),
+                    response.rect.left() + BLOCKQUOTE_LINE_WIDTH / 2.0,
                     response.rect.top(),
                 ),
                 egui::pos2(
-                    response.rect.left(),
+                    response.rect.left() + BLOCKQUOTE_LINE_WIDTH / 2.0,
                     response.rect.bottom(),
                 ),
             ],
@@ -692,7 +692,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     .with_main_align(egui::Align::Center)
             }
             pulldown_cmark::Alignment::Right => {
-                // right_to_left respects with_main_wrap and wraps starting from the right
                 egui::Layout::right_to_left(egui::Align::Center).with_main_wrap(true)
             }
         };
@@ -713,83 +712,114 @@ impl<'a> CommonMarkViewerInternal<'a> {
             let id = ui.id().with("_table").with(self.curr_table);
             self.curr_table += 1;
 
-            egui::Frame::group(ui.style()).show(ui, |ui| {
-                let Table { header, rows } = parse_table(events);
-                let num_cols = header.len().max(1);
+            let table_width_key = id.with("_table_width");
+            let prev_table_width: Option<f32> =
+                ui.memory(|mem| mem.data.get_temp(table_width_key));
 
-                // Force table frame to fill available preview width (CSS: width: 100%).
-                // Without this, egui::Grid shrinks to fit cell content.
-                let table_width = ui.available_width();
-                ui.set_min_width(table_width);
+            let Table { header, rows } = parse_table(events);
+            let num_cols = header.len().max(1);
 
-                // Distribute columns across the available width.
-                // Grid auto-sizes based on content, so we set min_col_width to
-                // ensure even distribution when content is smaller than the column.
-                let spacing_total =
-                    ui.spacing().item_spacing.x * (num_cols.saturating_sub(1) as f32);
-                let min_col = (table_width - spacing_total) / (num_cols as f32);
+            ui.horizontal(|ui| {
+                if let Some(prev_w) = prev_table_width {
+                    let available = ui.available_width();
+                    if available > prev_w {
+                        ui.add_space((available - prev_w) / 2.0);
+                    }
+                }
 
-                egui::Grid::new(id)
-                    .num_columns(num_cols)
-                    .striped(true)
-                    .min_col_width(min_col.max(0.0))
+                let frame_res = egui::Frame::group(ui.style())
+                    .inner_margin(egui::Margin::symmetric(5, 5))
                     .show(ui, |ui| {
-                        // ── Header row ──
-                        for (col_idx, col) in header.iter().enumerate() {
-                            let cell_width = min_col;
-                            Self::apply_alignment(ui, alignments.get(col_idx).unwrap_or(&pulldown_cmark::Alignment::None), |ui| {
-                                for (e, src_span) in col {
-                                    let tmp_start =
-                                        std::mem::replace(&mut self.line.should_start_newline, false);
-                                    let tmp_end =
-                                        std::mem::replace(&mut self.line.should_end_newline, false);
-                                    self.event(ui, e.clone(), src_span.clone(), cache, options, cell_width);
-                                    self.line.should_start_newline = tmp_start;
-                                    self.line.should_end_newline = tmp_end;
-                                }
-                                self.flush_pending_inline(ui, cell_width);
-                            });
+                        let mut col_boundaries = Vec::new();
+                        let mut row_bottoms = Vec::new();
+                        let mut header_bottom_y = None;
 
-                            if col_idx < num_cols - 1 {
-                                let rect = ui.max_rect();
-                                let x = rect.right() + ui.spacing().item_spacing.x / 2.0;
-                                ui.painter().vline(x, rect.y_range(), ui.visuals().widgets.noninteractive.bg_stroke);
-                            }
-                        }
-                        ui.end_row();
+                        ui.spacing_mut().item_spacing.x = 5.0; // 2.5px padding per side
+                        ui.spacing_mut().item_spacing.y = 5.0;
 
-                        // ── Body rows ──
-                        for row_data in &rows {
-                            for col_idx in 0..num_cols {
-                                if let Some(col_data) = row_data.get(col_idx) {
-                                    let cell_width = min_col;
-                                    Self::apply_alignment(ui, alignments.get(col_idx).unwrap_or(&pulldown_cmark::Alignment::None), |ui| {
-                                        for (e, src_span) in col_data {
-                                            let tmp_start = std::mem::replace(
-                                                &mut self.line.should_start_newline,
-                                                false,
-                                            );
-                                            let tmp_end =
-                                                std::mem::replace(&mut self.line.should_end_newline, false);
-                                            self.event(ui, e.clone(), src_span.clone(), cache, options, cell_width);
-                                            self.line.should_start_newline = tmp_start;
-                                            self.line.should_end_newline = tmp_end;
-                                        }
-                                        self.flush_pending_inline(ui, cell_width);
-                                    });
-                                } else {
-                                    ui.label("");
-                                }
+                        let table_width = ui.available_width();
+                        ui.set_min_width(table_width);
 
-                                if col_idx < num_cols - 1 {
-                                    let rect = ui.max_rect();
-                                    let x = rect.right() + ui.spacing().item_spacing.x / 2.0;
-                                    ui.painter().vline(x, rect.y_range(), ui.visuals().widgets.noninteractive.bg_stroke);
+                        let spacing_total =
+                            ui.spacing().item_spacing.x * (num_cols.saturating_sub(1) as f32);
+                        let min_col = (table_width - spacing_total) / (num_cols as f32);
+
+                        let grid_res = egui::Grid::new(id)
+                            .num_columns(num_cols)
+                            .striped(true)
+                            .min_col_width(min_col.max(0.0))
+                            .show(ui, |ui| {
+                            // ── Header row ──
+                            for (col_idx, col) in header.iter().enumerate() {
+                                let alignment = alignments.get(col_idx).unwrap_or(&pulldown_cmark::Alignment::None);
+
+                                Self::apply_alignment(ui, alignment, |ui| {
+                                    for (e, src_span) in col {
+                                        let tmp_start = std::mem::replace(&mut self.line.should_start_newline, false);
+                                        let tmp_end = std::mem::replace(&mut self.line.should_end_newline, false);
+                                        self.event(ui, e.clone(), src_span.clone(), cache, options, ui.available_width());
+                                        self.line.should_start_newline = tmp_start;
+                                        self.line.should_end_newline = tmp_end;
+                                    }
+                                    self.flush_pending_inline(ui, ui.available_width());
+                                });
+
+                                if col_boundaries.len() < num_cols - 1 && col_idx < num_cols - 1 {
+                                    col_boundaries.push(ui.cursor().min.x - ui.spacing().item_spacing.x / 2.0);
                                 }
                             }
+                            header_bottom_y = Some(ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0);
                             ui.end_row();
-                        }
-                    });
+
+                            // ── Body rows ──
+                            for (row_idx, row_data) in rows.iter().enumerate() {
+                                for col_idx in 0..num_cols {
+                                    if let Some(col_data) = row_data.get(col_idx) {
+                                        let alignment = alignments.get(col_idx).unwrap_or(&pulldown_cmark::Alignment::None);
+
+                                        Self::apply_alignment(ui, alignment, |ui| {
+                                            for (e, src_span) in col_data {
+                                                let tmp_start = std::mem::replace(
+                                                    &mut self.line.should_start_newline,
+                                                    false,
+                                                );
+                                                let tmp_end = std::mem::replace(&mut self.line.should_end_newline, false);
+                                                self.event(ui, e.clone(), src_span.clone(), cache, options, ui.available_width());
+                                                self.line.should_start_newline = tmp_start;
+                                                self.line.should_end_newline = tmp_end;
+                                            }
+                                            self.flush_pending_inline(ui, ui.available_width());
+                                        });
+                                    } else {
+                                        ui.label("");
+                                    }
+                                }
+                                if row_idx < rows.len() - 1 {
+                                    row_bottoms.push(ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0);
+                                }
+                                ui.end_row();
+                            }
+                        });
+
+                    // Draw vertical and horizontal separators
+                    let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
+                    for x in col_boundaries {
+                        ui.painter().vline(x, grid_res.response.rect.y_range(), stroke);
+                    }
+                    if let (Some(y), false) = (header_bottom_y, rows.is_empty()) {
+                        let header_stroke = egui::Stroke::new(1.0, ui.visuals().text_color().gamma_multiply(0.4));
+                        ui.painter().hline(grid_res.response.rect.x_range(), y, header_stroke);
+                    }
+                    for y in row_bottoms {
+                        ui.painter().hline(grid_res.response.rect.x_range(), y, stroke);
+                    }
+                });
+
+                let current_table_width = frame_res.response.rect.width();
+                if prev_table_width.map_or(true, |pw| (pw - current_table_width).abs() > 0.1) {
+                    ui.memory_mut(|mem| { mem.data.insert_temp(table_width_key, current_table_width); });
+                    ui.ctx().request_repaint();
+                }
             });
 
             if events.peek().is_none() {
