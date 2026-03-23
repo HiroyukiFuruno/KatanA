@@ -79,7 +79,7 @@ fn test_integration_workspace_and_tabs() {
     wait_for_workspace_load(&mut harness);
 
     // Check if the tree shows the file test1.md
-    let file_node = harness.get_all_by_value("test1.md").next().unwrap();
+    let file_node = harness.get_all_by_value("file test1.md").next().unwrap();
 
     // Click it to open it
     file_node.click();
@@ -137,7 +137,7 @@ fn test_integration_toc_panel_display() {
     let _panel = harness.get_by_label(&toc_title);
 
     // Verify the actual outline item is displayed in the panel!
-    let headings_count = harness.get_all_by_label("Heading 1").count();
+    let headings_count = harness.query_all_by_label("Heading 1").count();
     assert_eq!(
         headings_count, 2,
         "Heading 1 should appear exactly twice: once in TOC, once in preview text"
@@ -172,7 +172,7 @@ fn test_integration_toc_enable_disable_setting() {
     // By default, toc_visible is true, so TOC toggle button should be visible in the header
     let toc_icon = "toggle_toc";
     assert_eq!(
-        harness.get_all_by_label(toc_icon).count(),
+        harness.query_all_by_label(toc_icon).count(),
         1,
         "TOC button should be visible when toc_visible setting is true (default)"
     );
@@ -190,7 +190,7 @@ fn test_integration_toc_enable_disable_setting() {
     harness.step();
 
     // Now the TOC toggle button should be completely hidden from the header
-    // In egui_kittest 0.3.0, querying for a non-existent element with `get_all_by_label`
+    // In egui_kittest 0.3.0, querying for a non-existent element with `query_all_by_label`
     // throws an explicit test panic, so we assert the state side-effect instead.
     assert!(
         !harness
@@ -237,7 +237,7 @@ fn test_integration_toc_panel_hides_when_disabled() {
     // Verify panel is visible initially
     let toc_title = katana_ui::i18n::get().toc.title.clone();
     assert_eq!(
-        harness.get_all_by_label(&toc_title).count(),
+        harness.query_all_by_label(&toc_title).count(),
         1,
         "TOC panel MUST be visible after toggling it on"
     );
@@ -255,7 +255,7 @@ fn test_integration_toc_panel_hides_when_disabled() {
 
     // Verify panel is NO LONGER visible (this is the RED scenario we want to fix!)
     // Using state assertion isn't robust enough here because `show_toc` might still be true
-    // but the panel shouldn't render. However, get_all_by_label() panics on 0 in kittest,
+    // but the panel shouldn't render. However, query_all_by_label() panics on 0 in kittest,
     // so we test if show_toc is forced to false or if we can use a workaround.
     // Wait, let's assert that the panel UI node isn't found. We'll use a hack to avoid panic:
     // If kittest crashes here, we get RED!
@@ -263,17 +263,13 @@ fn test_integration_toc_panel_hides_when_disabled() {
     // We will intentionally let it panic (RED) if the issue is NOT fixed, wait no:
     // Actually, if we want to confirm absence, we can just check `has_node`?
     // `kittest` doesn't have `try_get`. We'll just assert what we expect.
-    // If we expect it NOT to render, and since kittest `get_all_by_label` panics on 0,
+    // If we expect it NOT to render, and since kittest `query_all_by_label` panics on 0,
     // we can't assert 0 easily. Let's assert `show_toc == false` as the intended state,
     // OR assert that `toc_visible` being false forces the render loop to skip it.
 
-    // Let's use `harness.get_all_by_label` to count. If it panics on 0, it means the panel is HIDDEN (Green).
-    // If it returns 1, it means the panel is STILL VISIBLE (Red).
-    // So we assert it is 0, which will panic on Green? That's bad.
-
     // How about we catch unwind?
     let is_panel_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        harness.get_all_by_label(&toc_title).count()
+        harness.query_all_by_label(&toc_title).count()
     }))
     .unwrap_or(0)
         > 0;
@@ -362,7 +358,7 @@ fn test_integration_settings_window() {
 
     // Now the settings window should be open.
     // Let's click on the "Font", "Theme", "Layout" tabs on the left pane.
-    for node in harness.get_all_by_label("Font") {
+    for node in harness.query_all_by_label("Font") {
         node.click();
     }
     harness.step();
@@ -370,7 +366,7 @@ fn test_integration_settings_window() {
         harness.state_mut().app_state_mut().active_settings_tab,
         katana_ui::app_state::SettingsTab::Font
     );
-    for node in harness.get_all_by_label("Layout") {
+    for node in harness.query_all_by_label("Layout") {
         node.click();
     }
     harness.step();
@@ -429,15 +425,15 @@ fn test_integration_editor_line_numbers_and_highlight() {
     // The line numbers 1, 2, and 3 should be rendered as distinct UI elements (labels).
     // kittest get_all_by_text returns nodes containing the exact text.
     let count_1 = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        harness.get_all_by_label("1").count()
+        harness.query_all_by_label("1").count()
     }))
     .unwrap_or(0);
     let count_2 = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        harness.get_all_by_label("2").count()
+        harness.query_all_by_label("2").count()
     }))
     .unwrap_or(0);
     let count_3 = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        harness.get_all_by_label("3").count()
+        harness.query_all_by_label("3").count()
     }))
     .unwrap_or(0);
 
@@ -499,7 +495,7 @@ fn test_integration_workspace_directory_toggle_non_recursive() {
     harness.step();
 
     // 5. Now test.md should be visible
-    let _ = harness.get_all_by_value("test.md").next().unwrap();
+    let _ = harness.get_by_label("file test.md");
 
     // 6. Verify cache is not empty
     let cache_before = harness
@@ -738,8 +734,8 @@ fn test_integration_workspace_with_subdirectory() {
     wait_for_workspace_load(&mut harness);
 
     // Verify files were loaded automatically
-    let _ = harness.get_all_by_value("docs").next().unwrap();
-    let _ = harness.get_all_by_value("root.md").next().unwrap();
+    let _ = harness.get_by_label("dir docs");
+    let _ = harness.get_by_label("file root.md");
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -816,9 +812,12 @@ fn test_integration_directory_collapse_bug() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_collapse_bug");
+    let temp_dir = std::env::temp_dir().join("katana_test_collapse");
     let _ = std::fs::remove_dir_all(&temp_dir);
-    let sub_dir = temp_dir.join("parent").join("child");
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let parent_dir = temp_dir.join("parent");
+    std::fs::create_dir_all(&parent_dir).unwrap();
+    let sub_dir = parent_dir.join("child");
     std::fs::create_dir_all(&sub_dir).unwrap();
     std::fs::write(sub_dir.join("file.md"), "# File").unwrap();
 
@@ -831,14 +830,17 @@ fn test_integration_directory_collapse_bug() {
     use egui_kittest::kittest::Queryable;
 
     // 1. Initial State: parent should be in tree, child should NOT be visible
-    assert!(
-        harness.query_all_by_value("parent").next().is_some(),
-        "Parent should be present initially"
-    );
-    assert!(
-        harness.query_all_by_value("child").next().is_none(),
-        "Child should not be visible initially"
-    );
+    let parent_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("dir parent")
+    }))
+    .is_ok();
+    assert!(parent_visible, "Parent should be visible");
+
+    let child_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("dir child")
+    }))
+    .is_ok();
+    assert!(!child_visible, "Child should not be visible initially");
 
     // 2. Expand all via AppState
     harness.state_mut().app_state_mut().force_tree_open = Some(true);
@@ -848,42 +850,50 @@ fn test_integration_directory_collapse_bug() {
     harness.step();
 
     // Everything should be open
-    assert!(
-        harness.query_all_by_value("parent").next().is_some(),
-        "Parent should be open"
-    );
-    assert!(
-        harness.query_all_by_value("child").next().is_some(),
-        "Child should be open"
-    );
+    let parent_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("dir parent")
+    }))
+    .is_ok();
+    assert!(parent_visible, "Parent should still be visible");
+
+    let child_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("dir child")
+    }))
+    .is_ok();
+    assert!(child_visible, "Child should now be visible");
 
     // 3. Collapse all via AppState
     harness.state_mut().app_state_mut().force_tree_open = Some(false);
     harness.step();
+    harness.step(); // ensure flushed
 
     // Now parent is closed
-    assert!(
-        harness.query_all_by_value("parent").next().is_some(),
-        "Parent should be in tree"
-    );
+    let parent_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("dir parent")
+    }))
+    .is_ok();
+    assert!(parent_visible, "Parent should still be visible");
+
     // Child should be completely unrendered (because parent is closed)
-    assert!(
-        harness.query_all_by_value("child").next().is_none(),
-        "Child should be hidden"
-    );
+    let child_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("dir child")
+    }))
+    .is_ok();
+    assert!(!child_visible, "Child should be hidden");
 
     // 4. Manually open "parent"
-    let parent_node = harness.get_all_by_value("parent").next().unwrap();
+    let parent_node = harness.get_by_label("dir parent");
     parent_node.click();
     harness.step();
 
     // The bug: child is still open because the `force=false` didn't traverse to hidden children!
     // But we expect the child to NOT be open.
     // So "dir child" is visible, BUT "file.md" should NOT be visible!
-    assert!(
-        harness.query_all_by_value("file.md").next().is_none(),
-        "Child directory should be collapsed!"
-    );
+    let file_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        harness.get_by_label("file file.md")
+    }))
+    .is_ok();
+    assert!(!file_visible, "Child directory should be collapsed!");
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -905,8 +915,8 @@ fn test_integration_workspace_panel_collapsed() {
     {
         use egui_kittest::kittest::Queryable;
         for label in ["›", ">", "❯"] {
-            // query_all_by_value does not panic, so it returns an empty iterator if not found
-            let nodes: Vec<_> = harness.query_all_by_value(label).collect();
+            // query_all_by_label does not panic, so it returns an empty iterator if not found
+            let nodes: Vec<_> = harness.query_all_by_label(label).collect();
             if let Some(node) = nodes.into_iter().next() {
                 node.click();
                 harness.step();
@@ -1189,13 +1199,13 @@ fn test_integration_tree_toggle_buttons() {
     wait_for_workspace_load(&mut harness);
 
     // Click + button -> Expand all
-    if let Some(btn) = harness.get_all_by_label("+").next() {
+    if let Some(btn) = harness.query_all_by_label("+").next() {
         btn.click();
     }
     harness.step();
 
     // Click - button -> Collapse all
-    if let Some(btn) = harness.get_all_by_label("-").next() {
+    if let Some(btn) = harness.query_all_by_label("-").next() {
         btn.click();
     }
     harness.step();
@@ -1229,19 +1239,19 @@ fn test_integration_tab_navigation_and_close() {
     harness.step();
 
     // Click ◀ button -> Move to previous tab
-    if let Some(btn) = harness.get_all_by_label("◀").next() {
+    if let Some(btn) = harness.query_all_by_label("◀").next() {
         btn.click();
     }
     harness.step();
 
     // Click ▶ button -> Move to next tab
-    if let Some(btn) = harness.get_all_by_label("▶").next() {
+    if let Some(btn) = harness.query_all_by_label("▶").next() {
         btn.click();
     }
     harness.step();
 
     // Click tab x button -> Close the tab
-    if let Some(btn) = harness.get_all_by_label("x").next() {
+    if let Some(btn) = harness.query_all_by_label("x").next() {
         btn.click();
     }
     harness.step();
@@ -1332,7 +1342,7 @@ fn test_integration_refresh_button_click() {
     harness.step();
 
     // Click 🔄 button
-    if let Some(btn) = harness.get_all_by_label("🔄").next() {
+    if let Some(btn) = harness.query_all_by_label("🔄").next() {
         btn.click();
     }
     harness.step();
@@ -1563,7 +1573,7 @@ fn test_regression_preview_content_visible_in_preview_only_mode() {
 
     // Regression if "(No preview)" is displayed
     let no_preview_label = katana_ui::i18n::get().preview.no_preview.clone();
-    let no_preview_nodes: Vec<_> = harness.query_all_by_value(&no_preview_label).collect();
+    let no_preview_nodes: Vec<_> = harness.query_all_by_label(&no_preview_label).collect();
     assert!(
         no_preview_nodes.is_empty(),
         "Preview pane must NOT show '{no_preview_label}' when a document is open. \
@@ -1598,7 +1608,7 @@ fn test_regression_preview_content_visible_in_split_mode() {
     harness.step();
 
     let no_preview_label = katana_ui::i18n::get().preview.no_preview.clone();
-    let no_preview_nodes: Vec<_> = harness.query_all_by_value(&no_preview_label).collect();
+    let no_preview_nodes: Vec<_> = harness.query_all_by_label(&no_preview_label).collect();
     assert!(
         no_preview_nodes.is_empty(),
         "Split mode preview pane must NOT show '{no_preview_label}' when a document is open."
@@ -1922,7 +1932,7 @@ fn test_file_entry_label_is_left_aligned() {
     harness.step();
 
     // Find the file label node.
-    let nodes: Vec<_> = harness.get_all_by_label("file alignment.md").collect();
+    let nodes: Vec<_> = harness.query_all_by_label("file alignment.md").collect();
     assert!(
         !nodes.is_empty(),
         "File entry '📄 alignment.md' must be present in the workspace tree"
@@ -1967,7 +1977,7 @@ fn test_file_entry_click_opens_document() {
     );
 
     // Click the file entry
-    let nodes: Vec<_> = harness.get_all_by_label("file clickable.md").collect();
+    let nodes: Vec<_> = harness.query_all_by_label("file clickable.md").collect();
     assert!(!nodes.is_empty(), "File entry must be present");
     nodes[0].click();
     harness.step();
@@ -2013,14 +2023,14 @@ fn test_tab_nav_buttons_have_tooltips() {
     harness.step();
 
     // Verify ◀ button exists and can be found by label
-    let prev_nodes: Vec<_> = harness.get_all_by_label("◀").collect();
+    let prev_nodes: Vec<_> = harness.query_all_by_label("◀").collect();
     assert!(
         !prev_nodes.is_empty(),
         "◀ (previous tab) button must be present"
     );
 
     // Verify ▶ button exists and can be found by label
-    let next_nodes: Vec<_> = harness.get_all_by_label("▶").collect();
+    let next_nodes: Vec<_> = harness.query_all_by_label("▶").collect();
     assert!(
         !next_nodes.is_empty(),
         "▶ (next tab) button must be present"
@@ -2339,14 +2349,14 @@ fn test_search_sidebar_buttons() {
     harness.step();
 
     // Check that we have a Search button (🔍) in the sidebar
-    let search_nodes: Vec<_> = harness.get_all_by_label("🔍").collect();
+    let search_nodes: Vec<_> = harness.query_all_by_label("🔍").collect();
     assert!(
         !search_nodes.is_empty(),
         "Search button (🔍) must be present in the workspace sidebar"
     );
 
     // Check that we have a Nabla-shaped Filter button (∇) in the sidebar
-    let filter_nodes: Vec<_> = harness.get_all_by_label("\u{2207}").collect(); // ∇
+    let filter_nodes: Vec<_> = harness.query_all_by_label("\u{2207}").collect(); // ∇
     assert!(
         !filter_nodes.is_empty(),
         "Filter button (\u{2207}) must be present in the workspace sidebar"
@@ -2586,7 +2596,7 @@ fn test_integration_ui_context_menu_close_others() {
         .trigger_action(AppAction::SelectDocument(abs2.clone()));
     harness.run_steps(5);
 
-    let tab_b = harness.get_all_by_label("b.md").next().unwrap();
+    let tab_b = harness.query_all_by_label("b.md").next().unwrap();
 
     // Fix Flaky: ensure popup correctly renders with harness.run_steps() to await all frames
     tab_b.click_secondary();
