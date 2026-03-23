@@ -1940,6 +1940,14 @@ impl eframe::App for KatanaApp {
             self.needs_splash = false;
         }
 
+        // Pre-calculate splash state to prevent flickering of the background UI.
+        // If the splash is fully opaque (the first 1.5s), we skip drawing the panels.
+        let splash_opacity = self
+            .splash_start
+            .map(|s| crate::shell_logic::calculate_splash_opacity(s.elapsed().as_secs_f32()))
+            .unwrap_or(0.0);
+        let splash_is_opaque = self.splash_start.is_some() && splash_opacity >= 1.0;
+
         // Apply theme colours to egui Visuals (only when the palette changed)
         let theme_colors = self.state.settings.settings().effective_theme_colors();
         if self.cached_theme.as_ref() != Some(&theme_colors) {
@@ -2060,132 +2068,137 @@ impl eframe::App for KatanaApp {
         invalidate_preview_image_cache(ctx, &action);
         self.process_action(ctx, action);
 
-        // Terms of Service check (Blocking UI)
-        let terms_ver = crate::about_info::APP_VERSION.to_string();
-        let accepted_ver = self
-            .state
-            .settings
-            .settings()
-            .terms_accepted_version
-            .as_ref();
-        if accepted_ver != Some(&terms_ver) {
-            self.render_terms_modal(ctx, &terms_ver);
-            return;
-        }
-
-        // On macOS, the egui menu is hidden because the native menu bar is used.
-        #[cfg(not(target_os = "macos"))]
-        render_menu_bar(ctx, &mut self.state, &mut self.pending_action);
-        let export_filenames: Vec<String> = self
-            .export_tasks
-            .iter()
-            .map(|t| t.filename.clone())
-            .collect();
-        render_status_bar(ctx, &self.state, &export_filenames);
-
-        // Reflect the file name in the window title
-        let ws_root_for_title = self.state.workspace.as_ref().map(|ws| ws.root.clone());
-        let title_text = match self.state.active_document() {
-            Some(doc) => {
-                let rel = relative_full_path(&doc.path, ws_root_for_title.as_deref());
-                format!("KatanA — {rel}")
+        if !splash_is_opaque {
+            // Terms of Service check (Blocking UI)
+            let terms_ver = crate::about_info::APP_VERSION.to_string();
+            let accepted_ver = self
+                .state
+                .settings
+                .settings()
+                .terms_accepted_version
+                .as_ref();
+            if accepted_ver != Some(&terms_ver) {
+                self.render_terms_modal(ctx, &terms_ver);
+                return;
             }
-            None => "KatanA".to_string(),
-        };
-        if self.state.last_window_title != title_text {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Title(title_text.clone()));
-            self.state.last_window_title = title_text.clone();
         }
 
-        // In-app title bar
-        egui::TopBottomPanel::top("app_title_bar").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.centered_and_justified(|ui| {
-                    let title_color = theme_bridge::rgb_to_color32(theme_colors.title_bar_text);
-                    ui.label(egui::RichText::new(&title_text).small().color(title_color));
-                });
-            });
-        });
+        if !splash_is_opaque {
+            // On macOS, the egui menu is hidden because the native menu bar is used.
+            #[cfg(not(target_os = "macos"))]
+            render_menu_bar(ctx, &mut self.state, &mut self.pending_action);
+            let export_filenames: Vec<String> = self
+                .export_tasks
+                .iter()
+                .map(|t| t.filename.clone())
+                .collect();
+            render_status_bar(ctx, &self.state, &export_filenames);
 
-        // Show the collapse toggle button even when the workspace is hidden.
-        if !self.state.show_workspace {
-            egui::SidePanel::left("workspace_collapsed")
-                .resizable(false)
-                .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
-                .show(ctx, |ui| {
-                    ui.vertical_centered(|ui| {
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::ChevronRight
-                                    .ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
-                            .clicked()
-                        {
-                            self.state.show_workspace = true;
-                        }
+            // Reflect the file name in the window title
+            let ws_root_for_title = self.state.workspace.as_ref().map(|ws| ws.root.clone());
+            let title_text = match self.state.active_document() {
+                Some(doc) => {
+                    let rel = relative_full_path(&doc.path, ws_root_for_title.as_deref());
+                    format!("KatanA — {rel}")
+                }
+                None => "KatanA".to_string(),
+            };
+            if self.state.last_window_title != title_text {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Title(title_text.clone()));
+                self.state.last_window_title = title_text.clone();
+            }
+
+            // In-app title bar
+            egui::TopBottomPanel::top("app_title_bar").show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.centered_and_justified(|ui| {
+                        let title_color = theme_bridge::rgb_to_color32(theme_colors.title_bar_text);
+                        ui.label(egui::RichText::new(&title_text).small().color(title_color));
                     });
                 });
-        } else {
-            render_workspace_panel(ctx, &mut self.state, &mut self.pending_action);
-        }
-
-        // Tab row + breadcrumbs + view mode row
-        egui::TopBottomPanel::top("tab_toolbar").show(ctx, |ui| {
-            render_tab_bar(ui, &mut self.state, &mut self.pending_action);
-            if let Some(doc) = self.state.active_document() {
-                let ws_root = self.state.workspace.as_ref().map(|ws| ws.root.clone());
-                let rel = relative_full_path(&doc.path, ws_root.as_deref());
-                ui.horizontal(|ui| {
-                    let segments: Vec<&str> = rel.split('/').collect();
-                    for (i, seg) in segments.iter().enumerate() {
-                        if i > 0 {
-                            const CHEVRON_ICON_SIZE: f32 = 10.0;
-                            ui.add(
-                                egui::Image::new(crate::Icon::ChevronRight.uri())
-                                    .tint(ui.visuals().text_color())
-                                    .max_height(CHEVRON_ICON_SIZE),
-                            );
-                        }
-                        ui.label(egui::RichText::new(*seg).small());
-                    }
-                });
-                render_view_mode_bar(ui, &mut self.state);
-            }
-        });
-
-        let mut download_req: Option<DownloadRequest> = None;
-        let current_mode = self.state.active_view_mode();
-        let is_split = current_mode == ViewMode::Split;
-
-        if self.state.show_toc && self.state.settings.settings().layout.toc_visible {
-            if let Some(doc) = self.state.active_document() {
-                if let Some(preview) = self.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-                    render_toc_panel(ctx, &mut preview.pane, &self.state);
-                }
-            }
-        }
-
-        if is_split {
-            let split_dir = self.state.active_split_direction();
-            let pane_order = self.state.active_pane_order();
-            download_req = render_split_mode(ctx, self, split_dir, pane_order);
-        }
-
-        if !is_split {
-            egui::CentralPanel::default().show(ctx, |ui| match current_mode {
-                ViewMode::CodeOnly => {
-                    render_editor_content(ui, &mut self.state, &mut self.pending_action, false);
-                }
-                ViewMode::PreviewOnly => {
-                    render_preview_only(ui, self);
-                }
-                ViewMode::Split => {}
             });
-        }
 
-        if let Some(req) = download_req {
-            self.start_download(req);
+            // Show the collapse toggle button even when the workspace is hidden.
+            if !self.state.show_workspace {
+                egui::SidePanel::left("workspace_collapsed")
+                    .resizable(false)
+                    .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
+                    .show(ctx, |ui| {
+                        ui.vertical_centered(|ui| {
+                            if ui
+                                .add(egui::Button::image(
+                                    crate::Icon::ChevronRight
+                                        .ui_image(ui, crate::icon::IconSize::Medium),
+                                ))
+                                .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
+                                .clicked()
+                            {
+                                self.state.show_workspace = true;
+                            }
+                        });
+                    });
+            } else {
+                render_workspace_panel(ctx, &mut self.state, &mut self.pending_action);
+            }
+
+            // Tab row + breadcrumbs + view mode row
+            egui::TopBottomPanel::top("tab_toolbar").show(ctx, |ui| {
+                render_tab_bar(ui, &mut self.state, &mut self.pending_action);
+                if let Some(doc) = self.state.active_document() {
+                    let ws_root = self.state.workspace.as_ref().map(|ws| ws.root.clone());
+                    let rel = relative_full_path(&doc.path, ws_root.as_deref());
+                    ui.horizontal(|ui| {
+                        let segments: Vec<&str> = rel.split('/').collect();
+                        for (i, seg) in segments.iter().enumerate() {
+                            if i > 0 {
+                                const CHEVRON_ICON_SIZE: f32 = 10.0;
+                                ui.add(
+                                    egui::Image::new(crate::Icon::ChevronRight.uri())
+                                        .tint(ui.visuals().text_color())
+                                        .max_height(CHEVRON_ICON_SIZE),
+                                );
+                            }
+                            ui.label(egui::RichText::new(*seg).small());
+                        }
+                    });
+                    render_view_mode_bar(ui, &mut self.state);
+                }
+            });
+
+            let mut download_req: Option<DownloadRequest> = None;
+            let current_mode = self.state.active_view_mode();
+            let is_split = current_mode == ViewMode::Split;
+
+            if self.state.show_toc && self.state.settings.settings().layout.toc_visible {
+                if let Some(doc) = self.state.active_document() {
+                    if let Some(preview) = self.tab_previews.iter_mut().find(|p| p.path == doc.path)
+                    {
+                        render_toc_panel(ctx, &mut preview.pane, &self.state);
+                    }
+                }
+            }
+
+            if is_split {
+                let split_dir = self.state.active_split_direction();
+                let pane_order = self.state.active_pane_order();
+                download_req = render_split_mode(ctx, self, split_dir, pane_order);
+            }
+
+            if !is_split {
+                egui::CentralPanel::default().show(ctx, |ui| match current_mode {
+                    ViewMode::CodeOnly => {
+                        render_editor_content(ui, &mut self.state, &mut self.pending_action, false);
+                    }
+                    ViewMode::PreviewOnly => {
+                        render_preview_only(ui, self);
+                    }
+                    ViewMode::Split => {}
+                });
+            }
+
+            if let Some(req) = download_req {
+                self.start_download(req);
+            }
         }
 
         // Settings window

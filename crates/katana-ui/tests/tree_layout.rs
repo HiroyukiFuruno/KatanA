@@ -26,7 +26,9 @@ mod tests {
             state.settings.settings_mut().terms_accepted_version =
                 Some(katana_ui::about_info::APP_VERSION.to_string());
             katana_ui::i18n::set_language("en");
-            KatanaApp::new(state)
+            let mut app = KatanaApp::new(state);
+            app.skip_splash();
+            app
         })
     }
 
@@ -36,6 +38,7 @@ mod tests {
 
         // Create a temporary directory and file at level 0
         let temp_dir = std::env::temp_dir().join("katana_layout_repro");
+        let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
         let _ = std::fs::remove_dir_all(&temp_dir);
         std::fs::create_dir_all(&temp_dir).unwrap();
 

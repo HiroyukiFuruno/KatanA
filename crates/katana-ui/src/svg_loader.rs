@@ -114,8 +114,19 @@ fn rasterize_svg_bytes_with_size(
     }
     .round();
 
-    let width = scaled_size.x as u32;
-    let height = scaled_size.y as u32;
+    // Fall back to 2x the SVG's original dimensions when the size hint resolves to zero
+    // (e.g. when the image is placed in a zero-sized rect by egui Button).
+    // Use 2x for Retina display sharpness.
+    let width = if scaled_size.x < 1.0 {
+        (source_size.x * 2.0) as u32
+    } else {
+        scaled_size.x as u32
+    };
+    let height = if scaled_size.y < 1.0 {
+        (source_size.y * 2.0) as u32
+    } else {
+        scaled_size.y as u32
+    };
     let mut pixmap = Pixmap::new(width, height)
         .ok_or_else(|| format!("Failed to create SVG Pixmap of size {width}x{height}"))?;
     resvg::render(
@@ -135,6 +146,9 @@ impl Default for KatanaSvgLoader {
     fn default() -> Self {
         let mut options = resvg::usvg::Options::default();
         options.fontdb_mut().load_system_fonts();
+        // Set an explicit default font family to avoid warnings on systems where Arial is missing
+        // or has character coverage issues.
+        options.font_family = "Verdana".to_string();
 
         Self {
             pass_index: AtomicU64::new(0),
@@ -247,7 +261,10 @@ impl ImageLoader for KatanaSvgLoader {
 
                     match result {
                         Ok(image) => Ok(ImagePoll::Ready { image }),
-                        Err(_) => Err(LoadError::NotSupported),
+                        Err(e) => {
+                            tracing::warn!("SVG rasterization failed for {uri}: {e}");
+                            Err(LoadError::NotSupported)
+                        }
                     }
                 }
                 Ok(BytesPoll::Pending { size }) => Ok(ImagePoll::Pending { size }),
@@ -758,5 +775,21 @@ mod tests {
         let uri = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221%22%20height%3D%221%22%3E%3C%2Fsvg%3E";
         let result = loader.load(&ctx, uri, SizeHint::default());
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_svg_rasterize_fallback_size() {
+        let svg_data = r#"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>"#;
+        // Zero or tiny scale should trigger the fallback
+        let result = super::rasterize_svg_bytes_with_size(
+            svg_data.as_bytes(),
+            egui::load::SizeHint::Width(0),
+            &resvg::usvg::Options::default(),
+        );
+        assert!(result.is_ok());
+        let image = result.unwrap();
+        // Since original size is 10x10, fallback should be 20x20
+        assert_eq!(image.width(), 20);
+        assert_eq!(image.height(), 20);
     }
 }

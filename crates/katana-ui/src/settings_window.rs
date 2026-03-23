@@ -16,13 +16,9 @@ use katana_platform::{PaneOrder, SplitDirection};
 const SETTINGS_WINDOW_DEFAULT_WIDTH: f32 = 900.0;
 const SETTINGS_WINDOW_DEFAULT_HEIGHT: f32 = 500.0;
 
-const SETTINGS_SIDE_PANEL_MIN_WIDTH: f32 = 150.0;
 const SETTINGS_SIDE_PANEL_DEFAULT_WIDTH: f32 = 200.0;
-const SETTINGS_SIDE_PANEL_MAX_WIDTH: f32 = 400.0;
 
-const SETTINGS_PREVIEW_PANEL_MIN_WIDTH: f32 = 250.0;
 const SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH: f32 = 350.0;
-const SETTINGS_PREVIEW_PANEL_MAX_WIDTH: f32 = 800.0;
 
 const SETTINGS_HEADER_FONT_SIZE: f32 = 14.0;
 const SETTINGS_GROUP_SPACING: f32 = 8.0;
@@ -102,17 +98,17 @@ pub(crate) fn render_settings_window(
     let mut open = state.show_settings;
     egui::Window::new(crate::i18n::get().settings.title.clone())
         .open(&mut open)
-        .default_size(egui::vec2(
+        .fixed_size(egui::vec2(
             SETTINGS_WINDOW_DEFAULT_WIDTH,
             SETTINGS_WINDOW_DEFAULT_HEIGHT,
         ))
         .collapsible(false)
-        .resizable(true)
+        .resizable(false)
         .show(ctx, |ui| {
             egui::SidePanel::left("settings_left_panel")
-                .resizable(true)
-                .default_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
-                .width_range(SETTINGS_SIDE_PANEL_MIN_WIDTH..=SETTINGS_SIDE_PANEL_MAX_WIDTH)
+                .resizable(false)
+                .min_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
+                .max_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
                 .show_inside(ui, |ui| {
                     // Expand All / Collapse All toolbar
                     ui.horizontal(|ui| {
@@ -152,9 +148,9 @@ pub(crate) fn render_settings_window(
                 });
 
             egui::SidePanel::right("settings_right_panel")
-                .resizable(true)
-                .default_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
-                .width_range(SETTINGS_PREVIEW_PANEL_MIN_WIDTH..=SETTINGS_PREVIEW_PANEL_MAX_WIDTH)
+                .resizable(false)
+                .min_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
+                .max_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
                 .show_inside(ui, |ui| {
                     section_header(ui, &crate::i18n::get().settings.preview.title);
                     preview_pane.show(ui);

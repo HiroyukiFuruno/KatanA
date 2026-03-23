@@ -19,7 +19,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [x] 2.1 `needs_splash` フラグを使い、UI初期化ではなく「更新（初回フレーム）」タイミングでSplashタイマーを開始させる
 - [x] 2.2 Blockquote 上下の不要な表示改行を削除する
-- [x] 2.3 `KatanaApp` から不要にエラーが出る `bytes://icon/copy.svg` などを事前登録し、アイコンエラーを解消する
+- [x] 2.3 `KatanaApp` から不要にエラーが出る `bytes://icon/copy.svg` などを事前登録し、アイコンエラーを解消する (内部描画への移行で解決)
 
 ### Definition of Done (DoD)
 
@@ -53,3 +53,18 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [x] 巨大なダイアグラムファイル (`sample_diagrams.ja.md`) を開いてからすぐに別タブに移動したりタブを閉じたりした場合、裏で処理が走らず CPU が 0% 近くのアイドル状態にすぐ戻ることを Activity Monitor 等で確認できる。
 - [x] TDDで、キャンセルトークンが機能してスレッドが中断されることを証明する（GREEN）。
+
+## 5. UI レンダリングバグ修正 (最終フェーズ)
+
+- [x] 5.1 引用 (Blockquote) 内のリスト表示と余白の修正
+  - [x] 引用内のリスト項目が改行されないよう `horizontal_wrapped` 内で描画
+  - [x] 引用内のコードブロック上下の余計な空行を削除
+- [x] 5.2 コードブロックのコピーボタン表示バグ修正
+  - [x] SVG読み込みから `Painter` API による直接描画へ移行 (描画の確実性向上)
+  - [x] ボタン位置を 2-3px 下、および右端に寄せる調整 (見栄えとスクロールバー被り防止)
+- [x] 5.3 設定画面のレイアウト崩れバグ修正
+  - [x] ウィンドウを開いた際に中央パネルが消失・縮小する問題を、サイドパネルの幅固定 (`resizable(false)`) により解消
+- [x] 5.4 テストと品質管理
+  - [x] `tree_layout` テストでのスプラッシュ画面によるタイムアウト問題を `skip_splash()` により解消
+  - [x] `svg_loader` のフォールバックロジックに対するテスト追加とカバレッジゲート通過
+  - [x] `make check` (fmt, clippy, test, coverage) の All Pass 確認

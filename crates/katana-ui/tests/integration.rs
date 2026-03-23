@@ -65,6 +65,7 @@ fn test_integration_workspace_and_tabs() {
 
     // Create a temporary directory and file
     let temp_dir = std::env::temp_dir().join("katana_test_ws");
+    let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
     let _ = std::fs::remove_dir_all(&temp_dir);
     std::fs::create_dir_all(&temp_dir).unwrap();
     let test_file = temp_dir.join("test1.md");
@@ -109,6 +110,7 @@ fn test_integration_toc_panel_display() {
     std::fs::create_dir_all(&temp_dir).unwrap();
     let test_file1 = temp_dir.join("toc_test1.md");
     std::fs::write(&test_file1, "# Heading 1").unwrap();
+    let test_file1 = test_file1.canonicalize().unwrap_or(test_file1);
 
     harness
         .state_mut()
@@ -150,6 +152,7 @@ fn test_integration_toc_enable_disable_setting() {
     harness.step();
 
     let temp_dir = std::env::temp_dir().join("katana_test_toc_setting");
+    let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
     let _ = std::fs::remove_dir_all(&temp_dir);
     std::fs::create_dir_all(&temp_dir).unwrap();
     let test_file1 = temp_dir.join("toc_test_setting.md");
@@ -209,6 +212,7 @@ fn test_integration_toc_panel_hides_when_disabled() {
     harness.step();
 
     let temp_dir = std::env::temp_dir().join("katana_test_toc_hide");
+    let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
     let _ = std::fs::remove_dir_all(&temp_dir);
     std::fs::create_dir_all(&temp_dir).unwrap();
     let test_file1 = temp_dir.join("toc_hide_test.md");
