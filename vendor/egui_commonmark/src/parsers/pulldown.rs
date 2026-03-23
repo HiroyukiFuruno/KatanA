@@ -330,7 +330,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
         split_points_id: Option<Id>,
     ) -> (egui::InnerResponse<()>, Vec<CheckboxClickEvent>) {
         let max_width = options.max_width(ui);
-        let layout = egui::Layout::left_to_right(egui::Align::BOTTOM).with_main_wrap(true);
+        let layout = egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true);
         let child_rect =
             egui::Rect::from_min_size(ui.next_widget_position(), egui::vec2(max_width, 0.0));
 
@@ -430,7 +430,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             .auto_shrink([false, true])
             .show_viewport(ui, |ui, viewport| {
                 ui.set_height(page_size.y);
-                let layout = egui::Layout::left_to_right(egui::Align::BOTTOM).with_main_wrap(true);
+                let layout = egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true);
 
                 let max_width = options.max_width(ui);
                 let child_rect = egui::Rect::from_min_size(
