@@ -440,4 +440,18 @@ mod split_tests {
         assert!(matches!(sections[1], PreviewSection::LocalImage { .. }));
         assert!(matches!(sections[2], PreviewSection::Markdown(_)));
     }
+
+    #[test]
+    fn test_split_with_relaxed_math_spacing() {
+        let md = "Here is some math: $ E = mc^2 $ and a plain text test $ 500 $ 10.";
+        let sections = split_into_sections(md);
+        assert_eq!(sections.len(), 1);
+        if let PreviewSection::Markdown(text) = &sections[0] {
+            // The heuristic converts the math equation but ignores the plain text money values
+            assert!(text.contains("$E = mc^2$"));
+            assert!(text.contains("$ 500 $ 10."));
+        } else {
+            panic!("Expected Markdown section");
+        }
+    }
 }
