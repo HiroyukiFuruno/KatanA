@@ -138,19 +138,19 @@ fn with_preview_text_style<R>(
     add_contents: impl FnOnce(&mut egui::Ui) -> R,
 ) -> R {
     ui.scope(|ui| {
-        if body_uses_monospace(ui) {
+        let fonts_loaded = ui.ctx().data(|d| {
+            d.get_temp::<bool>(egui::Id::new("katana_fonts_loaded"))
+                .unwrap_or(false)
+        });
+        if fonts_loaded {
+            set_preview_body_family(ui, egui::FontFamily::Name("MarkdownProportional".into()));
+        } else {
             set_preview_body_family(ui, egui::FontFamily::Proportional);
         }
+
         add_contents(ui)
     })
     .inner
-}
-
-fn body_uses_monospace(ui: &egui::Ui) -> bool {
-    ui.style()
-        .text_styles
-        .get(&egui::TextStyle::Body)
-        .is_some_and(|font_id| font_id.family == egui::FontFamily::Monospace)
 }
 
 fn set_preview_body_family(ui: &mut egui::Ui, family: egui::FontFamily) {
