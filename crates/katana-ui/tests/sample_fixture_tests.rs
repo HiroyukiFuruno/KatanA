@@ -721,6 +721,46 @@ fn basic_fixture_en_semantic_smoke() {
     );
 }
 
+/// §2.2: `<u>` inline HTML renders as underlined text (not raw tag).
+#[test]
+fn basic_fixture_en_s2_2_underline_renders_as_text() {
+    let (_, _, source) = load_fixture("sample_basic.md");
+    let section_md = extract_section(&source, "### 2.2", "### 2.3");
+    let pane = render_snippet(&section_md);
+    let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 300.0);
+    // The word "Underline" should appear as a labeled node (not as "<u>Underline</u>")
+    let node = harness.get_by_label("Underline");
+    let bounds = node
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Underline text should have bounds");
+    assert!(
+        bounds.x1 - bounds.x0 > 10.0,
+        "Underline text should have non-trivial width, got {:.1}",
+        bounds.x1 - bounds.x0
+    );
+}
+
+/// §2.2: `<mark>` inline HTML renders as highlighted text (not raw tag).
+#[test]
+fn basic_fixture_en_s2_2_highlight_renders_as_text() {
+    let (_, _, source) = load_fixture("sample_basic.md");
+    let section_md = extract_section(&source, "### 2.2", "### 2.3");
+    let pane = render_snippet(&section_md);
+    let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 300.0);
+    // The word "Highlight" should appear as a labeled node (not as "<mark>Highlight</mark>")
+    let node = harness.get_by_label("Highlight");
+    let bounds = node
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Highlight text should have bounds");
+    assert!(
+        bounds.x1 - bounds.x0 > 10.0,
+        "Highlight text should have non-trivial width, got {:.1}",
+        bounds.x1 - bounds.x0
+    );
+}
+
 #[test]
 fn basic_fixture_ja_semantic_smoke() {
     let harness = load_fixture_harness("sample_basic.ja.md");
@@ -759,6 +799,26 @@ fn basic_fixture_ja_s11_2_long_inline_code_wraps_within_panel() {
         bounds.y1 - bounds.y0 > 24.0,
         "long inline code should wrap to multiple rows, got height {:.1}",
         bounds.y1 - bounds.y0
+    );
+}
+
+/// §12: `<details><summary>` renders as an accordion with the summary text as a label.
+#[test]
+fn basic_fixture_en_s12_accordion_renders_summary() {
+    let (_, _, source) = load_fixture("sample_basic.md");
+    let section_md = extract_section(&source, "## 12", "## 13");
+    let pane = render_snippet(&section_md);
+    let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 300.0);
+    // The summary text "Show details" should appear as a clickable label
+    let node = harness.get_by_label("Show details");
+    let bounds = node
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Show details label should have bounds");
+    assert!(
+        bounds.x1 - bounds.x0 > 10.0,
+        "Show details label should have non-trivial width, got {:.1}",
+        bounds.x1 - bounds.x0
     );
 }
 

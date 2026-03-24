@@ -115,6 +115,8 @@ pub struct Style {
     pub strikethrough: bool,
     pub quote: bool,
     pub code: bool,
+    pub underline: bool,
+    pub highlight: bool,
 }
 
 impl Style {
@@ -181,6 +183,16 @@ impl Style {
 
         if self.code {
             text = text.code();
+        }
+
+        if self.underline {
+            text = text.underline();
+        }
+
+        if self.highlight {
+            // Semi-transparent yellow background for `<mark>` highlight rendering.
+            let highlight_bg = egui::Color32::from_rgba_unmultiplied(255, 255, 0, 60);
+            text = text.background_color(highlight_bg);
         }
 
         text

@@ -107,6 +107,11 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     /// paragraph-level newlines that would otherwise create large vertical gaps.
     inside_blockquote: bool,
     checkbox_events: Vec<CheckboxClickEvent>,
+    /// When inside a `<details>` block, holds the summary text.
+    /// Used to render a CollapsingHeader across HTML block boundaries.
+    details_summary: Option<String>,
+    /// Counter for generating unique IDs for `<details>` elements.
+    details_id_counter: usize,
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
@@ -136,6 +141,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
             is_blockquote: false,
             inside_blockquote: false,
             checkbox_events: Vec::new(),
+            details_summary: None,
+            details_id_counter: 0,
         }
     }
 }
@@ -577,12 +584,70 @@ impl<'a> CommonMarkViewerInternal<'a> {
         options: &CommonMarkOptions,
         max_width: f32,
     ) {
+        // When inside a <details> block, check if the CollapsingHeader was just entered.
+        // The first event after setting details_summary triggers the header rendering.
+        if let Some(summary) = self.details_summary.take() {
+            let id = ui.id().with("_details").with(self.details_id_counter);
+            let state = egui::collapsing_header::CollapsingState::load_with_default_open(
+                ui.ctx(), id, false,
+            );
+            let is_open = state.is_open();
+
+            // Render the collapsing header
+            let _ = state.show_header(ui, |ui| {
+                ui.label(egui::RichText::new(&summary).strong());
+            });
+
+            if !is_open {
+                // Collapsed: skip rendering content until </details>.
+                // Consume events until the closing </details> HtmlBlock.
+                self.skip_until_details_close(events);
+                return;
+            }
+
+            // Open: continue rendering the current event and subsequent events normally.
+            // Stash None so we know we're inside details but header is rendered.
+            // (details_summary is already None from take())
+        }
+
         self.event(ui, event, src_span, cache, options, max_width);
 
         self.def_list_def_wrapping(events, max_width, cache, options, ui);
         self.item_list_wrapping(events, max_width, cache, options, ui);
         self.table(events, cache, options, ui, max_width);
         self.blockquote(events, max_width, cache, options, ui);
+    }
+
+    /// Consume events from the stream until a `</details>` closing HtmlBlock is found.
+    fn skip_until_details_close<'e>(
+        &mut self,
+        events: &mut Peekable<impl Iterator<Item = EventIteratorItem<'e>>>,
+    ) {
+        let mut depth = 0i32;
+        while let Some((_, (event, _))) = events.next() {
+            match &event {
+                pulldown_cmark::Event::Start(pulldown_cmark::Tag::HtmlBlock) => {
+                    // Enter a new HTML block — could be nested details or closing tag.
+                    self.html_block.clear();
+                }
+                pulldown_cmark::Event::Html(text) => {
+                    self.html_block.push_str(text);
+                }
+                pulldown_cmark::Event::End(pulldown_cmark::TagEnd::HtmlBlock) => {
+                    let block = std::mem::take(&mut self.html_block);
+                    let trimmed = block.trim();
+                    if extract_details_summary(trimmed).is_some() {
+                        depth += 1; // Nested <details>
+                    } else if trimmed.contains("</details>") {
+                        if depth == 0 {
+                            return; // Our closing tag found
+                        }
+                        depth -= 1;
+                    }
+                }
+                _ => {} // Skip all other events
+            }
+        }
     }
 
     fn def_list_def_wrapping<'e>(
@@ -956,7 +1021,18 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 self.text_style.code = false;
             }
             pulldown_cmark::Event::InlineHtml(text) => {
-                self.event_text(text, ui, max_width);
+                let trimmed = text.trim();
+                if trimmed.eq_ignore_ascii_case("<u>") {
+                    self.text_style.underline = true;
+                } else if trimmed.eq_ignore_ascii_case("</u>") {
+                    self.text_style.underline = false;
+                } else if trimmed.eq_ignore_ascii_case("<mark>") {
+                    self.text_style.highlight = true;
+                } else if trimmed.eq_ignore_ascii_case("</mark>") {
+                    self.text_style.highlight = false;
+                } else {
+                    self.event_text(text, ui, max_width);
+                }
             }
 
             pulldown_cmark::Event::Html(text) => {
@@ -1257,9 +1333,19 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
             }
             pulldown_cmark::TagEnd::HtmlBlock => {
-                if let Some(html_fn) = options.html_fn {
-                    html_fn(ui, &self.html_block);
-                    self.html_block.clear();
+                let block = std::mem::take(&mut self.html_block);
+                let trimmed = block.trim();
+
+                // Detect <details><summary>...</summary> opening block
+                if let Some(summary) = extract_details_summary(trimmed) {
+                    self.details_summary = Some(summary);
+                    self.details_id_counter += 1;
+                } else if trimmed.contains("</details>") {
+                    // Closing block: reset details state
+                    self.details_summary = None;
+                } else if let Some(html_fn) = options.html_fn {
+                    // Regular HTML block — delegate to the callback
+                    html_fn(ui, &block);
                 }
             }
 
@@ -1340,4 +1426,22 @@ fn inline_emoji_uri(grapheme: &str, pixel_size: u32) -> String {
         "{INLINE_EMOJI_URI_PREFIX}{:016x}{INLINE_EMOJI_FILENAME_SUFFIX}",
         hasher.finish()
     )
+}
+
+/// Extracts the summary text from a `<details><summary>...</summary>` HTML block.
+///
+/// Returns `Some(summary_text)` if the block starts with `<details>` and contains
+/// a `<summary>...</summary>` pair. Returns `None` otherwise.
+fn extract_details_summary(html: &str) -> Option<String> {
+    let lower = html.to_ascii_lowercase();
+    if !lower.starts_with("<details") {
+        return None;
+    }
+    let summary_start = lower.find("<summary>")?;
+    let summary_end = lower.find("</summary>")?;
+    if summary_end <= summary_start {
+        return None;
+    }
+    let start = summary_start + "<summary>".len();
+    Some(html[start..summary_end].trim().to_string())
 }
