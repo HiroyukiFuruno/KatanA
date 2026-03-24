@@ -2,10 +2,9 @@ use egui::{Context, FontData, FontDefinitions, FontFamily};
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use std::fs;
 
-/// Y-offset factor for CJK fallback fonts in monospace context.
-/// Aligns CJK baseline with the primary Latin monospace font (e.g. Menlo).
 const MONO_FALLBACK_Y_OFFSET_FACTOR: f32 = 0.40;
 const MONO_PRIMARY_Y_OFFSET_FACTOR: f32 = -0.15;
+const MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.13;
 
 /// Font wrapper that tracks normalization state for consistent baseline
 /// alignment across mixed-language text (JP/EN) and across font families
@@ -111,7 +110,13 @@ impl SystemFontLoader {
             custom_font_path,
             custom_font_name,
         );
+        let is_loaded = normalized
+            .fonts
+            .families
+            .contains_key(&egui::FontFamily::Name("MarkdownProportional".into()));
         ctx.set_fonts(normalized.into_inner());
+        let id = egui::Id::new("katana_fonts_loaded");
+        ctx.data_mut(|d| d.insert_temp(id, is_loaded));
 
         #[cfg(debug_assertions)]
         ctx.style_mut(|style| {
@@ -135,12 +140,26 @@ impl SystemFontLoader {
         let mut fonts = FontDefinitions::default();
 
         let prop_name = Self::load_first_valid(&mut fonts, proportional_candidates, None, "");
+
+        let markdown_tweak = egui::FontTweak {
+            scale: 1.0,
+            y_offset_factor: MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR, // 2px down locally for Markdown Proportional
+            y_offset: 0.0,
+        };
+        let markdown_name = Self::load_first_valid(
+            &mut fonts,
+            proportional_candidates,
+            Some(markdown_tweak),
+            "_markdown",
+        );
+
         let mono_tweak = egui::FontTweak {
             scale: 1.0,
             y_offset_factor: MONO_PRIMARY_Y_OFFSET_FACTOR,
             y_offset: 0.0,
         };
-        let mono_name = Self::load_first_valid(&mut fonts, monospace_candidates, Some(mono_tweak), "");
+        let mono_name =
+            Self::load_first_valid(&mut fonts, monospace_candidates, Some(mono_tweak), "");
 
         // Add primary fonts mapped to their corresponding families
         if let Some(name) = &prop_name {
@@ -149,10 +168,24 @@ impl SystemFontLoader {
         if let Some(name) = &mono_name {
             Self::prepend_primary(&mut fonts, FontFamily::Monospace, name);
         }
+        if let Some(name) = &markdown_name {
+            Self::prepend_primary(
+                &mut fonts,
+                FontFamily::Name("MarkdownProportional".into()),
+                name,
+            );
+        }
 
         // Mono to Prop fallback (usually English Monaco fallback for Proportional CJK)
         if let Some(name) = &mono_name {
             Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
+        }
+        if let Some(name) = &mono_name {
+            Self::append_fallback(
+                &mut fonts,
+                FontFamily::Name("MarkdownProportional".into()),
+                name,
+            );
         }
 
         if let (Some(path), Some(name)) = (custom_font_path, custom_font_name) {
@@ -776,5 +809,18 @@ mod tests {
                 y_offset
             );
         }
+    }
+    #[test]
+    fn test_setup_fonts_sets_fonts_loaded_flag() {
+        let ctx = Context::default();
+        let preset = DiagramColorPreset::current();
+        SystemFontLoader::setup_fonts(&ctx, preset, None, None);
+
+        // Flag is always set (true if CJK fonts found, false otherwise).
+        let loaded = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("katana_fonts_loaded")));
+        assert!(
+            loaded.is_some(),
+            "katana_fonts_loaded flag must always be set"
+        );
     }
 }

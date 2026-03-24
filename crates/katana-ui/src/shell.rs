@@ -738,9 +738,15 @@ impl KatanaApp {
                 for tab in &mut self.tab_previews {
                     tab.hash = 0;
                 }
-                // Re-render only the active tab immediately
-                if let Some(doc) = self.state.active_document() {
+                // Re-read file from disk and re-render the active tab
+                if let Some(doc) = self.state.active_document_mut() {
                     let path = doc.path.clone();
+                    // Reload content from disk so external edits are picked up
+                    if let Ok(content) = std::fs::read_to_string(&path) {
+                        doc.buffer = content;
+                        doc.is_dirty = false;
+                        doc.is_loaded = true;
+                    }
                     let src = doc.buffer.clone();
                     let concurrency = self
                         .state
