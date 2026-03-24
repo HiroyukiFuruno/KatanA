@@ -216,7 +216,89 @@ impl<'a> CommonMarkViewerInternal<'a> {
             );
         }
 
-        ui.add(egui::Label::new(layout_job).wrap().halign(halign));
+        // Extract and strip strikethrough from LayoutJob sections so that we
+        // can draw them ourselves at the correct vertical center of each row.
+        // epaint's built-in strikethrough uses per-glyph logical_rect().center().y
+        // which is off-center for mixed CJK/Latin text.
+        let mut strikethrough_char_flags: Vec<bool> = Vec::new();
+        let mut any_strikethrough = false;
+        let mut st_stroke = egui::Stroke::NONE;
+
+        {
+            let text = &layout_job.text;
+            // Build per- char-index strikethrough flag from section byte ranges
+            let total_chars = text.chars().count();
+            strikethrough_char_flags.resize(total_chars, false);
+            for section in &layout_job.sections {
+                if section.format.strikethrough != egui::Stroke::NONE {
+                    any_strikethrough = true;
+                    st_stroke = section.format.strikethrough;
+                    // Map byte range to char indices
+                    let start_char = text[..section.byte_range.start].chars().count();
+                    let end_char = start_char
+                        + text[section.byte_range.start..section.byte_range.end]
+                            .chars()
+                            .count();
+                    for flag in &mut strikethrough_char_flags[start_char..end_char] {
+                        *flag = true;
+                    }
+                }
+            }
+        }
+
+        // Strip strikethrough from sections so epaint won't draw it
+        if any_strikethrough {
+            for section in &mut layout_job.sections {
+                section.format.strikethrough = egui::Stroke::NONE;
+            }
+        }
+
+        // Lay out and paint the galley manually for strikethrough override,
+        // or fall back to Label for the common non-strikethrough case.
+        if any_strikethrough {
+            // Render text using Label (identical to non-strikethrough path)
+            // so that list indentation, wrapping, and positioning are correct.
+            let layout_job_for_galley = layout_job.clone();
+            let response = ui.add(egui::Label::new(layout_job).wrap().halign(halign));
+
+            // Lay out a separate galley to get per-row glyph positions
+            // for drawing the strikethrough overlay.
+            let galley = ui.fonts_mut(|f| f.layout_job(layout_job_for_galley));
+            let text_pos = response.rect.left_top();
+
+            // Draw strikethrough lines at each row's visual center.
+            // CJK glyphs sit higher than geometric center, so use 0.38
+            // ratio to approximate the visual midpoint of the text.
+            let mut char_idx = 0usize;
+            for row in &galley.rows {
+                let row_rect = row.rect();
+                let mut st_min_x: Option<f32> = None;
+                let mut st_max_x: Option<f32> = None;
+
+                for glyph in &row.glyphs {
+                    let is_st = char_idx < strikethrough_char_flags.len()
+                        && strikethrough_char_flags[char_idx];
+                    if is_st {
+                        let gx = text_pos.x + glyph.pos.x;
+                        let gx_end = text_pos.x + glyph.max_x();
+                        st_min_x = Some(st_min_x.map_or(gx, |v: f32| v.min(gx)));
+                        st_max_x = Some(st_max_x.map_or(gx_end, |v: f32| v.max(gx_end)));
+                    } else if let (Some(min_x), Some(max_x)) = (st_min_x.take(), st_max_x.take())
+                    {
+                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.38;
+                        ui.painter().hline(min_x..=max_x, y, st_stroke);
+                    }
+                    char_idx += 1;
+                }
+                // Flush remaining strikethrough run at end of row
+                if let (Some(min_x), Some(max_x)) = (st_min_x, st_max_x) {
+                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.38;
+                    ui.painter().hline(min_x..=max_x, y, st_stroke);
+                }
+            }
+        } else {
+            ui.add(egui::Label::new(layout_job).wrap().halign(halign));
+        }
     }
 
     fn emit_wrapped_followup_chunks(&self, ui: &mut Ui, text: &str) {
@@ -673,25 +755,41 @@ impl<'a> CommonMarkViewerInternal<'a> {
         min_width: f32,
         add_contents: impl FnOnce(&mut egui::Ui) -> R,
     ) -> egui::InnerResponse<R> {
-        let layout = match alignment {
-            pulldown_cmark::Alignment::None | pulldown_cmark::Alignment::Center => {
-                egui::Layout::left_to_right(egui::Align::Center)
-                    .with_main_wrap(true)
-                    .with_main_align(egui::Align::Center)
-            }
-            pulldown_cmark::Alignment::Left => {
-                egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true)
+        match alignment {
+            pulldown_cmark::Alignment::Center => {
+                // Use top_down(Center) layout which centers child widgets
+                // horizontally within the available width — analogous to
+                // CSS `margin: 0 auto`.
+                let layout = egui::Layout::top_down(egui::Align::Center);
+                ui.with_layout(layout, |ui| {
+                    if min_width > 0.0 {
+                        ui.set_min_width(min_width);
+                    }
+                    add_contents(ui)
+                })
             }
             pulldown_cmark::Alignment::Right => {
-                egui::Layout::right_to_left(egui::Align::Center).with_main_wrap(true)
+                let layout =
+                    egui::Layout::right_to_left(egui::Align::Center).with_main_wrap(true);
+                ui.with_layout(layout, |ui| {
+                    if min_width > 0.0 {
+                        ui.set_min_width(min_width);
+                    }
+                    add_contents(ui)
+                })
             }
-        };
-        ui.with_layout(layout, |ui| {
-            if min_width > 0.0 {
-                ui.set_min_width(min_width);
+            _ => {
+                // Left or None
+                let layout =
+                    egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true);
+                ui.with_layout(layout, |ui| {
+                    if min_width > 0.0 {
+                        ui.set_min_width(min_width);
+                    }
+                    add_contents(ui)
+                })
             }
-            add_contents(ui)
-        })
+        }
     }
 
     fn table<'e>(
