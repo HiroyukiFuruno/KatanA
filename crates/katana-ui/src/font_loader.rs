@@ -115,9 +115,8 @@ impl SystemFontLoader {
             .families
             .contains_key(&egui::FontFamily::Name("MarkdownProportional".into()));
         ctx.set_fonts(normalized.into_inner());
-        if is_loaded {
-            ctx.data_mut(|d| d.insert_temp(egui::Id::new("katana_fonts_loaded"), true));
-        }
+        let id = egui::Id::new("katana_fonts_loaded");
+        ctx.data_mut(|d| d.insert_temp(id, is_loaded));
 
         #[cfg(debug_assertions)]
         ctx.style_mut(|style| {
@@ -810,5 +809,18 @@ mod tests {
                 y_offset
             );
         }
+    }
+    #[test]
+    fn test_setup_fonts_sets_fonts_loaded_flag() {
+        let ctx = Context::default();
+        let preset = DiagramColorPreset::current();
+        SystemFontLoader::setup_fonts(&ctx, preset, None, None);
+
+        // Flag is always set (true if CJK fonts found, false otherwise).
+        let loaded = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("katana_fonts_loaded")));
+        assert!(
+            loaded.is_some(),
+            "katana_fonts_loaded flag must always be set"
+        );
     }
 }
