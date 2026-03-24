@@ -202,8 +202,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
         let remaining_width = (ui.clip_rect().right() - ui.cursor().min.x).max(0.0);
         let max_width = max_width.min(remaining_width);
         let style = ui.style().clone();
+        let halign = ui.layout().horizontal_align();
         let mut layout_job = egui::text::LayoutJob::default();
-        layout_job.halign = egui::Align::LEFT;
+        layout_job.halign = halign;
         layout_job.wrap.max_width = max_width;
         layout_job.wrap.break_anywhere = true;
         for rich_text in &pending_inline {
@@ -215,18 +216,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             );
         }
 
-        // Task 1.3: Shift inline code and strikethrough text upward.
-        // Monospace (code) and strikethrough sections appear ~5px too low
-        // when using Align::Center. Use Align::TOP for a raised-text effect.
-        for section in &mut layout_job.sections {
-            if section.format.font_id.family == egui::FontFamily::Monospace
-                || section.format.strikethrough != egui::Stroke::NONE
-            {
-                section.format.valign = egui::Align::TOP;
-            }
-        }
-
-        ui.add(egui::Label::new(layout_job).wrap().halign(egui::Align::LEFT));
+        ui.add(egui::Label::new(layout_job).wrap().halign(halign));
     }
 
     fn emit_wrapped_followup_chunks(&self, ui: &mut Ui, text: &str) {
@@ -680,22 +670,28 @@ impl<'a> CommonMarkViewerInternal<'a> {
     fn apply_alignment<R>(
         ui: &mut egui::Ui,
         alignment: &pulldown_cmark::Alignment,
+        min_width: f32,
         add_contents: impl FnOnce(&mut egui::Ui) -> R,
     ) -> egui::InnerResponse<R> {
         let layout = match alignment {
-            pulldown_cmark::Alignment::None | pulldown_cmark::Alignment::Left => {
-                egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true)
-            }
-            pulldown_cmark::Alignment::Center => {
+            pulldown_cmark::Alignment::None | pulldown_cmark::Alignment::Center => {
                 egui::Layout::left_to_right(egui::Align::Center)
                     .with_main_wrap(true)
                     .with_main_align(egui::Align::Center)
+            }
+            pulldown_cmark::Alignment::Left => {
+                egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true)
             }
             pulldown_cmark::Alignment::Right => {
                 egui::Layout::right_to_left(egui::Align::Center).with_main_wrap(true)
             }
         };
-        ui.with_layout(layout, add_contents)
+        ui.with_layout(layout, |ui| {
+            if min_width > 0.0 {
+                ui.set_min_width(min_width);
+            }
+            add_contents(ui)
+        })
     }
 
     fn table<'e>(
@@ -753,7 +749,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             for (col_idx, col) in header.iter().enumerate() {
                                 let alignment = alignments.get(col_idx).unwrap_or(&pulldown_cmark::Alignment::None);
 
-                                Self::apply_alignment(ui, alignment, |ui| {
+                                Self::apply_alignment(ui, alignment, min_col, |ui| {
                                     for (e, src_span) in col {
                                         let tmp_start = std::mem::replace(&mut self.line.should_start_newline, false);
                                         let tmp_end = std::mem::replace(&mut self.line.should_end_newline, false);
@@ -777,7 +773,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                     if let Some(col_data) = row_data.get(col_idx) {
                                         let alignment = alignments.get(col_idx).unwrap_or(&pulldown_cmark::Alignment::None);
 
-                                        Self::apply_alignment(ui, alignment, |ui| {
+                                        Self::apply_alignment(ui, alignment, min_col, |ui| {
                                             for (e, src_span) in col_data {
                                                 let tmp_start = std::mem::replace(
                                                     &mut self.line.should_start_newline,
