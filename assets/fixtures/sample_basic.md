@@ -25,7 +25,9 @@ lists, code blocks, tables, blockquotes, and edge cases.
 - **Bold text**
 - *Italic text*
 - ~~Strikethrough~~
+- <u>Underline</u>
 - `Inline code`
+- <mark>Highlight</mark>
 - **Bold and *italic* mixed**
 
 ### 2.3 Links
@@ -276,6 +278,35 @@ let code = "directly after quote";
 | Table after list |
 
 ↑ Proper spacing between each block element.
+
+---
+
+## 12 Accordion
+
+<details><summary>Show details</summary><div>
+
+- Swords
+  - Muramasa
+  - Masamune
+  - Kotetsu
+
+</div></details>
+
+## 13 Math
+
+### 13.1 Block Math
+
+```math
+f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
+```
+
+### 13.2 Inline Math
+
+Mass-energy equivalence: $ E = mc^2 $
+
+### 13.3 Single-line Math
+
+$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 
 ---
 
