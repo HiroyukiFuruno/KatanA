@@ -7,7 +7,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 1.1 `pulldown.rs` 内の `self.line.append_to` に使用される `egui::Align` を `BOTTOM` から `Center` へ変更。
 - [x] 1.2 `katana-ui/tests/preview_pane.rs` において、`html_...` となっている旧テストケースを `Center` 対応へと修正する。
 - [x] 1.3 インラインコードと取り消し線のvalignをALIGN::TOPに変更し、~5pxの上方向シフトを実現
-- [/] 1.4 【再指摘 p2】改善していない、取り消し線の位置が下寄り、「インラインコード」のbgが下寄り
+- [x] 1.4 【再指摘 p2】改善していない、取り消し線の位置が下寄り、「インラインコード」のbgが下寄り
 
 ### Definition of Done (DoD)
 
@@ -39,7 +39,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 3.10 プレビューウィンドウとメインウィンドウの外枠の謎のpadding or marginを削除
 - [x] 3.11 プレビューウィンドウとメインウィンドウの内枠の右の余白を左と揃える。
 - [x] 3.12 tableのヘッダーとrowとの間のboaderの表示がおかしいため正しく修正してください。途中で途切れるような形で引かれています。
-- [ ] 3.13 tableのaline中央寄せ（commitしてから試行錯誤）
+- [x] 3.13 tableのaline中央寄せ（commitしてから試行錯誤）
 
 ### Definition of Done (DoD)
 
@@ -59,5 +59,5 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 4.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
 - [x] 4.4 Create a PR targeting `master`
 - [x] 4.5 Merge into master (※ `--admin` is permitted)
-- [ ] 4.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.6.1`
-- [ ] 4.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [x] 4.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.6.1`
+- [x] 4.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
