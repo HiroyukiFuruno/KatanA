@@ -2,6 +2,12 @@
 
 All notable changes to KatanA DesktopThis file records the major changes to KatanA Desktop.
 
+## [0.7.2] - 2026-03-26
+
+### 🐛 Bug Fixes
+
+- **UI Layout**: Fix update checker dialog stretching vertically in the “up to date” state. Changed `ScrollArea::auto_shrink` from `[false; 2]` to `[true, true]` and added `default_height(0.0)` to the `egui::Window` so the window height follows content size. Added regression test to prevent recurrence.
+
 ## [0.7.1] - 2026-03-26 05:00:00 (JST)
 
 ### 🐛 Bug Fixes

@@ -4000,6 +4000,7 @@ fn render_update_window(
         .collapsible(false)
         .resizable(false)
         .default_width(DEFAULT_WIDTH)
+        .default_height(0.0)
         .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
         .show(ctx, |ui| {
             ui.vertical_centered(|ui| {
@@ -4034,7 +4035,7 @@ fn render_update_window(
                         const MAX_SCROLL_HEIGHT: f32 = 250.0;
                         egui::ScrollArea::vertical()
                             .max_height(MAX_SCROLL_HEIGHT)
-                            .auto_shrink([false; 2])
+                            .auto_shrink([true, true])
                             .show(ui, |ui| {
                                 egui_commonmark::CommonMarkViewer::new().show(
                                     ui,

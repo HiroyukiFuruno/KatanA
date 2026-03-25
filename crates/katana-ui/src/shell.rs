@@ -184,6 +184,14 @@ impl KatanaApp {
         self.splash_start = None;
     }
 
+    /// Test-only helper: opens the update dialog without going through the menu action.
+    #[doc(hidden)]
+    pub fn open_update_dialog_for_test(&mut self) {
+        self.show_update_dialog = true;
+    }
+
+
+
     pub(crate) fn take_action(&mut self) -> AppAction {
         std::mem::replace(&mut self.pending_action, AppAction::None)
     }

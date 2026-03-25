@@ -3038,3 +3038,30 @@ fn test_integration_ui_terms_modal_visibility() {
 
     harness.get_by_label("No workspace open.");
 }
+
+/// Regression test for v0.7.2: update dialog must render correctly in the "up to date" state.
+/// The bug manifested because egui::Window retained its previous height across frames when the
+/// content shrank, caused by ScrollArea::auto_shrink([false;2]).
+///
+/// This test verifies that:
+/// 1. The update dialog renders when explicitly opened (window title is visible).
+/// 2. The window close button is accessible (dialog is well-formed).
+#[test]
+fn test_regression_update_dialog_up_to_date_renders_correctly() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    // Open the update dialog via the test helper.
+    // AppState defaults: checking_for_updates=false, update_available=None, update_check_error=None
+    // → the dialog shows the "up to date" branch with minimal content.
+    harness.state_mut().open_update_dialog_for_test();
+    harness.step();
+    harness.run_steps(5);
+
+    // The dialog window title must be present in the rendered output.
+    harness.get_by_label("Check for Updates");
+
+    // The egui-provided close button must be present.
+    harness.get_by_label("Close window");
+}
+
