@@ -308,6 +308,7 @@ impl KatanaApp {
         self.state.workspace_cancel_token = Some(new_token.clone());
 
         let settings = self.state.settings.settings().workspace.clone();
+        let in_memory_dirs = self.state.in_memory_dirs.clone();
 
         std::thread::spawn(move || {
             let fs = katana_platform::FilesystemService::new();
@@ -316,6 +317,7 @@ impl KatanaApp {
                 &settings.ignored_directories,
                 settings.max_depth,
                 new_token,
+                &in_memory_dirs,
             );
             let _ = tx.send((WorkspaceLoadType::Open, path_clone, result));
         });
@@ -457,6 +459,7 @@ impl KatanaApp {
         self.state.workspace_cancel_token = Some(new_token.clone());
 
         let settings = self.state.settings.settings().workspace.clone();
+        let in_memory_dirs = self.state.in_memory_dirs.clone();
 
         std::thread::spawn(move || {
             let fs = katana_platform::FilesystemService::new();
@@ -465,6 +468,7 @@ impl KatanaApp {
                 &settings.ignored_directories,
                 settings.max_depth,
                 new_token,
+                &in_memory_dirs,
             );
             let _ = tx.send((WorkspaceLoadType::Refresh, root, result));
         });
@@ -985,6 +989,58 @@ impl KatanaApp {
                         let _ = katana_core::update::execute_relauncher(_prep);
                         std::process::exit(0);
                     }
+                }
+            }
+            AppAction::RequestNewFile(path) => {
+                self.state.create_fs_node_modal_state = Some((path, String::new(), false));
+            }
+            AppAction::RequestNewDirectory(path) => {
+                self.state.create_fs_node_modal_state = Some((path, String::new(), true));
+            }
+            AppAction::RequestRename(path) => {
+                let name = path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().into_owned())
+                    .unwrap_or_default();
+                self.state.rename_modal_state = Some((path, name));
+            }
+            AppAction::RequestDelete(path) => {
+                self.state.delete_modal_state = Some(path);
+            }
+            AppAction::CopyPathToClipboard(path) => {
+                ctx.copy_text(path.to_string_lossy().to_string());
+            }
+            AppAction::CopyRelativePathToClipboard(path) => {
+                let rel_path = if let Some(ws) = &self.state.workspace {
+                    path.strip_prefix(&ws.root).unwrap_or(&path).to_path_buf()
+                } else {
+                    path.clone()
+                };
+                ctx.copy_text(rel_path.to_string_lossy().to_string());
+            }
+            AppAction::RevealInOs(path) => {
+                #[cfg(target_os = "macos")]
+                {
+                    let _ = std::process::Command::new("open")
+                        .arg("-R")
+                        .arg(&path)
+                        .spawn();
+                }
+                #[cfg(target_os = "windows")]
+                {
+                    let _ = std::process::Command::new("explorer")
+                        .arg("/select,")
+                        .arg(&path)
+                        .spawn();
+                }
+                #[cfg(target_os = "linux")]
+                {
+                    let dir = if path.is_file() {
+                        path.parent().unwrap_or(&path)
+                    } else {
+                        &path
+                    };
+                    let _ = std::process::Command::new("xdg-open").arg(dir).spawn();
                 }
             }
             AppAction::None => {}

@@ -76,16 +76,26 @@
     "cannot_open_file": "无法打开文件: {error}"
   },
   "action": {
-    "expand_all": "全部展开",
-    "collapse_all": "全部折叠",
-    "collapse_sidebar": "隐藏侧边栏",
-    "refresh_workspace": "刷新工作区",
-    "toggle_filter": "切换过滤器",
-    "remove_workspace": "从历史记录中移除",
-    "recursive_expand": "递归展开",
-    "recursive_open_all": "递归打开所有文件",
-    "toggle_toc": "切换目录",
-    "show_meta_info": "显示元数据"
+    "expand_all": "[zh-CN] 全部展开",
+    "collapse_all": "[zh-CN] 全部折叠",
+    "collapse_sidebar": "[zh-CN] 隐藏侧边栏",
+    "refresh_workspace": "[zh-CN] 刷新工作区",
+    "toggle_filter": "[zh-CN] 切换过滤器",
+    "remove_workspace": "[zh-CN] 从历史记录中移除",
+    "recursive_expand": "[zh-CN] 递归展开",
+    "recursive_open_all": "[zh-CN] 递归打开所有文件",
+    "toggle_toc": "[zh-CN] 切换目录",
+    "show_meta_info": "[zh-CN] 显示元数据",
+    "new_file": "[zh-CN] New File",
+    "new_directory": "[zh-CN] New Folder",
+    "open": "[zh-CN] Open",
+    "rename": "[zh-CN] Rename",
+    "delete": "[zh-CN] Delete",
+    "copy_path": "[zh-CN] Copy Path",
+    "reveal_in_os": "[zh-CN] Reveal in OS",
+    "save": "[zh-CN] 保存",
+    "cancel": "[zh-CN] キャンセル",
+    "copy_relative_path": "[zh-CN] Copy Relative Path"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未配置]"
@@ -258,5 +268,12 @@
     "content": "Terms content.",
     "accept": "接受",
     "decline": "拒绝"
+  },
+  "dialog": {
+    "new_file_title": "[zh-CN] New File",
+    "new_directory_title": "[zh-CN] New Folder",
+    "rename_title": "[zh-CN] Rename",
+    "delete_title": "[zh-CN] Confirm Deletion",
+    "delete_confirm_msg": "[zh-CN] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
   }
 }

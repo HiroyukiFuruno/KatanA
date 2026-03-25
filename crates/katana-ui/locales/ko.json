@@ -76,16 +76,26 @@
     "cannot_open_file": "파일 열기 실패: {error}"
   },
   "action": {
-    "expand_all": "모두 확장",
-    "collapse_all": "모두 축소",
-    "collapse_sidebar": "사이드바 숨기기",
-    "refresh_workspace": "워크스페이스 새로고침",
-    "toggle_filter": "필터 토글",
-    "remove_workspace": "기록에서 제거",
-    "recursive_expand": "재귀적 확장",
-    "recursive_open_all": "모든 파일 재귀적 열기",
-    "toggle_toc": "목차 토글",
-    "show_meta_info": "메타 정보 표시"
+    "expand_all": "[ko] 모두 확장",
+    "collapse_all": "[ko] 모두 축소",
+    "collapse_sidebar": "[ko] 사이드바 숨기기",
+    "refresh_workspace": "[ko] 워크스페이스 새로고침",
+    "toggle_filter": "[ko] 필터 토글",
+    "remove_workspace": "[ko] 기록에서 제거",
+    "recursive_expand": "[ko] 재귀적 확장",
+    "recursive_open_all": "[ko] 모든 파일 재귀적 열기",
+    "toggle_toc": "[ko] 목차 토글",
+    "show_meta_info": "[ko] 메타 정보 표시",
+    "new_file": "[ko] New File",
+    "new_directory": "[ko] New Folder",
+    "open": "[ko] Open",
+    "rename": "[ko] Rename",
+    "delete": "[ko] Delete",
+    "copy_path": "[ko] Copy Path",
+    "reveal_in_os": "[ko] Reveal in OS",
+    "save": "[ko] 保存",
+    "cancel": "[ko] キャンセル",
+    "copy_relative_path": "[ko] Copy Relative Path"
   },
   "ai": {
     "ai_unconfigured": "[AI: 설정되지 않음]"
@@ -258,5 +268,12 @@
     "content": "Terms content.",
     "accept": "동의",
     "decline": "거부"
+  },
+  "dialog": {
+    "new_file_title": "[ko] New File",
+    "new_directory_title": "[ko] New Folder",
+    "rename_title": "[ko] Rename",
+    "delete_title": "[ko] Confirm Deletion",
+    "delete_confirm_msg": "[ko] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
   }
 }
