@@ -215,7 +215,7 @@
   },
   "update": {
     "update_available": "有新版本可用",
-    "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop ` 進行更新。",
+    "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
     "up_to_date": "已是最新版本",
     "up_to_date_desc": "您使用的是最新版本的 KatanA。",
     "failed_to_check": "檢查更新失敗。",

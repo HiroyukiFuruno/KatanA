@@ -215,7 +215,7 @@
   },
   "update": {
     "update_available": "Update verfügbar",
-    "update_available_desc": "Eine neue Version von KatanA ({version}) ist verfügbar. Bitte führen Sie `brew update && brew upgrade --cask katana-desktop ` aus, um zu aktualisieren.",
+    "update_available_desc": "Eine neue Version von KatanA ({version}) ist verfügbar. Bitte führen Sie `brew update && brew upgrade --cask katana-desktop` aus, um zu aktualisieren.",
     "up_to_date": "Aktuell",
     "up_to_date_desc": "KatanA ist auf dem neuesten Stand.",
     "failed_to_check": "Fehler beim Prüfen auf Updates.",
