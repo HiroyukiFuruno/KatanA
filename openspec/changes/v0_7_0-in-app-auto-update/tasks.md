@@ -15,11 +15,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 1.2 `katana-core` への .zip ダウンロード・一時展開・Relauncher（ヘルパースクリプト）生成機能の実装
 - [x] 1.3 `katana-core` から Relauncher をバックグラウンド起動し、自身を終了させるフローの構築（置換・`xattr -cr`・テンポラリのクリーンアップ・再起動処理を委譲）
 - [x] 1.4 `katana-core` へのチェック頻度や状態管理・エラーハンドリング機能の実装
-- [ ] 1.5 ローカルHTTPサーバーとダミーファイルを用いた、実リリース前の完全ローカル疑似E2Eテストの実行と検証
+- [x] 1.5 ローカルHTTPサーバーとダミーファイルを用いた、実リリース前の完全ローカル疑似E2Eテストの実行と検証
 
 ### Definition of Done (DoD)
 
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. 更新通知・設定 UI の実装 (UI / View)
 
