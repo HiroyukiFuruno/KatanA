@@ -9,9 +9,9 @@ Mermaid (mmdc)、PlantUML (jar)、DrawIo (純Rust)。
 
 ---
 
-## 7. ダイアグラム — Mermaid
+## 9. ダイアグラム — Mermaid
 
-### 7.1 フローチャート
+### 9.1 フローチャート
 
 ```mermaid
 graph TD
@@ -22,7 +22,7 @@ graph TD
     D --> E
 ```
 
-### 7.2 シーケンス図
+### 9.2 シーケンス図
 
 ```mermaid
 sequenceDiagram
@@ -36,7 +36,7 @@ sequenceDiagram
     KatanA-->>ユーザー: プレビュー表示
 ```
 
-### 7.3 クラス図
+### 9.3 クラス図
 
 ```mermaid
 classDiagram
@@ -58,7 +58,7 @@ classDiagram
     PreviewPane --> RenderedSection
 ```
 
-### 7.4 状態遷移図
+### 9.4 状態遷移図
 
 ```mermaid
 stateDiagram-v2
@@ -73,7 +73,7 @@ stateDiagram-v2
     NotInstalled --> [*]
 ```
 
-### 7.5 ガントチャート
+### 9.5 ガントチャート
 
 ```mermaid
 gantt
@@ -92,9 +92,9 @@ gantt
 
 ---
 
-## 8. ダイアグラム — PlantUML
+## 10. ダイアグラム — PlantUML
 
-### 8.1 シーケンス図
+### 10.1 シーケンス図
 
 ```plantuml
 @startuml
@@ -109,7 +109,7 @@ K --> ユーザー: プレビュー描画
 @enduml
 ```
 
-### 8.2 クラス図
+### 10.2 クラス図
 
 ```plantuml
 @startuml
@@ -130,7 +130,7 @@ PreviewPane --> RenderedSection
 @enduml
 ```
 
-### 8.3 アクティビティ図
+### 10.3 アクティビティ図
 
 ```plantuml
 @startuml
@@ -153,9 +153,9 @@ stop
 
 ---
 
-## 9. ダイアグラム — DrawIo
+## 11. ダイアグラム — DrawIo
 
-### 9.1 基本図形
+### 11.1 基本図形
 
 ```drawio
 <mxGraphModel>
@@ -175,7 +175,7 @@ stop
 </mxGraphModel>
 ```
 
-### 9.2 複数の図形と接続
+### 11.2 複数の図形と接続
 
 ```drawio
 <mxGraphModel>
@@ -203,7 +203,7 @@ stop
 
 ---
 
-## 10. ダイアグラム混在コンテンツ
+## 12. ダイアグラム混在コンテンツ
 
 KatanA の描画パイプライン:
 
@@ -234,7 +234,7 @@ graph LR
 
 ---
 
-## 12. 複数ダイアグラム連続表示
+## 14. 複数ダイアグラム連続表示
 
 3種類のダイアグラムを連続で配置。1つの失敗が他に影響しないこと。
 

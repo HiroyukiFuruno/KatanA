@@ -100,7 +100,9 @@ that all elements render correctly.
 - **Bold text**
 - *Italic text*
 - ~~Strikethrough~~
+- <u>Underline</u>
 - `Inline code`
+- <mark>Highlight</mark>
 - **Bold and *italic* mixed**
 
 ### 2.3 Links
@@ -141,10 +143,10 @@ Text below
 ### 3.3 Task Lists
 
 - [x] Completed task
-- [ ] Pending task
+- [-] Pending task
 - [x] Another completed task
-  - [ ] Nested pending
-  - [x] Nested completed
+  - [/] Nested pending
+  - [ ] Nested completed
 
 ---
 
@@ -282,9 +284,38 @@ features:
 
 ---
 
-## 7. Diagrams — Mermaid
+## 7. Accordion
 
-### 7.1 Flowchart
+<details><summary>Show details</summary><div>
+
+- Swords
+  - Muramasa
+  - Masamune
+  - Kotetsu
+
+</div></details>
+
+## 8. Math
+
+### 8.1 Block Math
+
+```math
+f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
+```
+
+### 8.2 Inline Math
+
+Mass-energy equivalence: $E = mc^2$
+
+### 8.3 Single-line Math
+
+$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
+
+---
+
+## 9. Diagrams — Mermaid
+
+### 9.1 Flowchart
 
 ```mermaid
 graph TD
@@ -295,7 +326,7 @@ graph TD
     D --> E
 ```
 
-### 7.2 Sequence Diagram
+### 9.2 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -309,7 +340,7 @@ sequenceDiagram
     KatanA-->>User: Render preview
 ```
 
-### 7.3 Class Diagram
+### 9.3 Class Diagram
 
 ```mermaid
 classDiagram
@@ -331,7 +362,7 @@ classDiagram
     PreviewPane --> RenderedSection
 ```
 
-### 7.4 State Diagram
+### 9.4 State Diagram
 
 ```mermaid
 stateDiagram-v2
@@ -346,7 +377,7 @@ stateDiagram-v2
     NotInstalled --> [*]
 ```
 
-### 7.5 Gantt Chart
+### 9.5 Gantt Chart
 
 ```mermaid
 gantt
@@ -365,9 +396,9 @@ gantt
 
 ---
 
-## 8. Diagrams — PlantUML
+## 10. Diagrams — PlantUML
 
-### 8.1 Sequence Diagram
+### 10.1 Sequence Diagram
 
 ```plantuml
 @startuml
@@ -382,7 +413,7 @@ K --> User: Render preview
 @enduml
 ```
 
-### 8.2 Class Diagram
+### 10.2 Class Diagram
 
 ```plantuml
 @startuml
@@ -403,7 +434,7 @@ PreviewPane --> RenderedSection
 @enduml
 ```
 
-### 8.3 Activity Diagram
+### 10.3 Activity Diagram
 
 ```plantuml
 @startuml
@@ -426,9 +457,9 @@ stop
 
 ---
 
-## 9. Diagrams — DrawIo
+## 11. Diagrams — DrawIo
 
-### 9.1 Basic Shapes
+### 11.1 Basic Shapes
 
 ```drawio
 <mxGraphModel>
@@ -448,7 +479,7 @@ stop
 </mxGraphModel>
 ```
 
-### 9.2 Multiple Shapes with Connections
+### 11.2 Multiple Shapes with Connections
 
 ```drawio
 <mxGraphModel>
@@ -476,7 +507,7 @@ stop
 
 ---
 
-## 10. Mixed Content (Past Bug: Section Boundary Breaking)
+## 12. Mixed Content (Past Bug: Section Boundary Breaking)
 
 Markdown text, diagrams, code blocks, and tables mixed together.
 Verify no layout overlap between sections.
@@ -530,32 +561,32 @@ And a DrawIo diagram below:
 
 ---
 
-## 11. Edge Cases
+## 13. Edge Cases
 
-### 11.1 Empty Code Block
+### 13.1 Empty Code Block
 
 ```
 ```
 
-### 11.2 Very Long Line
+### 13.2 Very Long Line
 
 `This is a very long line to verify horizontal scrolling or word wrapping. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`
 
-### 11.3 Special Characters
+### 13.3 Special Characters
 
 - HTML entities: &amp; &lt; &gt; &quot;
 - Japanese: こんにちは世界 🌍
 - Emoji: 🦀 ⚡ 📝 🔧 ✅ ❌ ⚠️ 💡
 - Math symbols: α β γ δ ∑ ∫ √ ∞
 
-### 11.4 Footnotes
+### 13.4 Footnotes
 
 This text has a footnote[^1]. Here's another[^2].
 
 [^1]: First footnote content.
 [^2]: Second footnote content.
 
-### 11.5 Consecutive Different Block Elements
+### 13.5 Consecutive Different Block Elements
 
 > A blockquote
 
@@ -573,7 +604,7 @@ let code = "directly after quote";
 
 ---
 
-## 12. Consecutive Diagrams
+## 14. Consecutive Diagrams
 
 Three diagram types in a row. One failing should not affect the others.
 
