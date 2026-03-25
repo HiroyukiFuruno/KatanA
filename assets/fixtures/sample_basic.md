@@ -68,10 +68,10 @@ Text below
 ### 3.3 Task Lists
 
 - [x] Completed task
-- [ ] Pending task
+- [-] Pending task
 - [x] Another completed task
-  - [ ] Nested pending
-  - [x] Nested completed
+  - [/] Nested pending
+  - [ ] Nested completed
 
 ---
 
@@ -302,7 +302,7 @@ f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
 
 ### 13.2 Inline Math
 
-Mass-energy equivalence: $ E = mc^2 $
+Mass-energy equivalence: $E = mc^2$
 
 ### 13.3 Single-line Math
 
