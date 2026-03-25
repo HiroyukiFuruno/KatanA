@@ -26,7 +26,10 @@ The skill determines the correct `--base` branch automatically. Do not override 
 
 ### Step 4: Merge PR & Synchronization
 
-Execute `gh pr merge` (use `--admin` if required). Then switch to the Base Feature Branch and pull.
+1. Execute `gh pr merge --merge --delete-branch` (or `--admin` if required) to merge the PR and clean up the remote branch.
+2. Switch back to the Base Feature Branch (`git checkout <base-branch>`).
+3. Pull the latest changes from remote (`git pull`).
+4. Delete the successfully merged local task branch (`git branch -D <task-branch>`).
 
 ---
 
