@@ -7,10 +7,6 @@
 - [ ] **katana-common クレートの検討**: 現在 `katana-core` がドメインロジックと共通基盤を兼務。i18n、エラー型、設定管理などクロスカッティングな関心事が複数クレートにまたがる兆候が出た時点で `katana-common` への分離を実施する。
   - 発見契機: AST Linter をワークスペース共通化する際、共通クレートが存在しない構造的な違和感が指摘された。
 
-## i18n 設計
-
-- [ ] **ロケール JSON の読み込み方式の拡張性**: 現在 `include_str!` で en/ja を静的埋め込み。言語追加時に `i18n.rs` の `get_dictionary()` に1行追加が必要。`languages.json` のリストから動的にロケールファイルを読み込む方式にすれば、Rust コードの変更が完全に不要になる。
-
 ## CI / カバレッジ
 
 - [ ] **CI coverage ゲートの厳格化**: 現在 CI の coverage ジョブは `make coverage` を呼び出しており、GUI 描画系・外部ツール依存ファイル（`shell_ui.rs`, `preview_pane_ui.rs`, `html_renderer.rs`, `main.rs`, `mermaid_renderer.rs`, `plantuml_renderer.rs`）を除外してゲートしている。本来は除外に頼らず、以下の方向でカバレッジギャップを埋めるべき：
@@ -58,9 +54,3 @@
 - [ ] **PDF エクスポートの余白制御**: `headless_chrome` の `print_to_pdf` 経由の PDF 生成では、Mermaid 図などの大きな要素がページ境界で分割される際に意図しない余白が発生する。CSS の `@page`、`@media print`（`break-inside: avoid`、`max-height` 制限等）、`PrintToPdfOptions` のマージン設定をすべて試行したが、Chrome のページネーションエンジンの仕様として改善できなかった。ブラウザの印刷機能でも同一の余白が再現する。
   - 対応案: `headless_chrome` 以外の PDF 生成ライブラリ（`wkhtmltopdf`、`weasyprint` 等）への移行、または HTML エクスポートを正とし PDF は廃止も検討。
   - 発見契機: PDF エクスポートの品質検証にて（2026-03-22）
-
-- [ ] **テーブル中央寄せ（`:---:` alignment）の実装**: `apply_alignment` で egui Layout ベースの中央寄せを試みたが、`egui::Label` は内部で `LayoutJob.halign` を上書きするため効果がない。Label を使わず `Galley` を直接 `ui.painter().galley()` で描画するアプローチで実現可能。ROI が見合う段階で着手。
-  - 発見契機: v0.6.1 UI deferred fixes でテーブル描画改善中に判明（2026-03-23）
-
-- [ ] **テスト fixtures の assets 移動 + ヘルプ機能連携**: 現在 `crates/katana-ui/tests/fixtures/` にあるサンプル Markdown は、テストコードからは直接参照されていない（テスト内はインライン文字列を使用）。`assets/` に移動し、将来的にアプリ内「ヘルプ」から参照可能にする構想。
-  - 発見契機: v0.6.1 UI fixes の目視確認フロー議論にて（2026-03-23）
