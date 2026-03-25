@@ -8,20 +8,6 @@ pub struct ReleaseInfo {
     pub download_url: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct GithubReleaseAsset {
-    pub name: String,
-    pub browser_download_url: String,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct GithubRelease {
-    pub tag_name: String,
-    pub html_url: String,
-    pub body: Option<String>,
-    pub assets: Vec<GithubReleaseAsset>,
-}
-
 /// Parses the semver versions (stripping 'v' prefix if present)
 /// and returns true if `upstream` is strictly greater than `current`.
 pub fn is_newer_version(current: &str, upstream: &str) -> bool {
@@ -38,45 +24,51 @@ pub fn is_newer_version(current: &str, upstream: &str) -> bool {
     }
 }
 
-pub fn parse_release_response(
+pub fn check_for_updates(
     current_version: &str,
-    json_str: &str,
+    api_url_override: Option<&str>,
 ) -> anyhow::Result<Option<ReleaseInfo>> {
-    let release: GithubRelease = serde_json::from_str(json_str)?;
+    let check_url =
+        api_url_override.unwrap_or("https://github.com/HiroyukiFuruno/KatanA/releases/latest");
 
-    if is_newer_version(current_version, &release.tag_name) {
-        let download_url = release
-            .assets
-            .into_iter()
-            .find(|a| a.name.ends_with(".zip") || a.name.contains("macOS"))
-            .map(|a| a.browser_download_url)
-            .unwrap_or_else(|| release.html_url.clone());
+    // Do not use the API. Send a direct HTTP GET request to the latest endpoint.
+    // ureq securely follows the 302 redirect by default, landing at the tagged release.
+    let response = ureq::get(check_url)
+        .set("User-Agent", concat!("KatanA/", env!("CARGO_PKG_VERSION")))
+        .call()?;
+
+    let final_url = response.get_url();
+
+    let tag_name = final_url
+        .split('/')
+        .next_back()
+        .ok_or_else(|| anyhow::anyhow!("リリースタグの解析に失敗しました ({})", final_url))?
+        .to_string();
+
+    if is_newer_version(current_version, &tag_name) {
+        let html_url = format!(
+            "https://github.com/HiroyukiFuruno/KatanA/releases/tag/{}",
+            tag_name
+        );
+        let download_url = format!(
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
+            tag_name
+        );
+
+        let body = format!(
+            "### 🚀 最新バージョン {} が利用可能です\n\n詳しい変更内容やリリースノートについては、[GitHub Releases ページ]({}) をご確認ください。\n自動アップデートを実行するには「インストールして再起動」をクリックしてください。",
+            &tag_name, html_url
+        );
 
         Ok(Some(ReleaseInfo {
-            tag_name: release.tag_name,
-            html_url: release.html_url.clone(),
-            body: release.body.unwrap_or_default(),
+            tag_name,
+            html_url,
+            body,
             download_url,
         }))
     } else {
         Ok(None)
     }
-}
-
-pub fn check_for_updates(
-    current_version: &str,
-    api_url_override: Option<&str>,
-) -> anyhow::Result<Option<ReleaseInfo>> {
-    let api_url = api_url_override
-        .unwrap_or("https://api.github.com/repos/HiroyukiFuruno/KatanA/releases/latest");
-
-    let resp_string = ureq::get(api_url)
-        .set("Accept", "application/vnd.github.v3+json")
-        .set("User-Agent", concat!("KatanA/", env!("CARGO_PKG_VERSION")))
-        .call()?
-        .into_string()?;
-
-    parse_release_response(current_version, &resp_string)
 }
 
 /// Downloads a file from the given URL to the destination path.
@@ -272,67 +264,50 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_release_response_newer() {
-        let json = r#"{
-            "tag_name": "v0.7.0",
-            "html_url": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.7.0",
-            "body": "Release notes here",
-            "assets": [
-                {
-                    "name": "KatanA-macOS.zip",
-                    "browser_download_url": "https://github.com/.../KatanA-macOS.zip"
-                }
-            ]
-        }"#;
-
-        let result = parse_release_response("0.6.4", json).unwrap().unwrap();
-        assert_eq!(result.tag_name, "v0.7.0");
-        assert_eq!(
-            result.download_url,
-            "https://github.com/.../KatanA-macOS.zip"
-        );
-        assert_eq!(result.body, "Release notes here");
-    }
-
-    #[test]
-    fn test_parse_release_response_older() {
-        let json = r#"{ "tag_name": "v0.6.0", "html_url": "...", "body": null, "assets": [] }"#;
-        let result = parse_release_response("0.6.4", json).unwrap();
-        assert!(result.is_none());
-    }
-
-    #[test]
     fn test_check_for_updates_network_success() {
         use std::io::Write;
         use std::net::TcpListener;
         use std::thread;
 
+        // Mock server: first request gets a 302 redirect to /releases/tag/v0.7.0,
+        // second request (after redirect) gets a 200 OK.
+        // ureq follows the redirect and get_url() returns the final URL,
+        // from which we extract "v0.7.0".
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let port = listener.local_addr().unwrap().port();
-        let url = format!("http://127.0.0.1:{}/latest.json", port);
+        let base_url = format!("http://127.0.0.1:{}", port);
+        let check_url = format!("{}/releases/latest", base_url);
 
-        // Spawn a tiny server that just replies with a 200 OK + valid JSON
         thread::spawn(move || {
             use std::io::Read;
-            if let Ok((mut stream, _)) = listener.accept() {
-                let mut buf = [0; 1024];
-                let _ = stream.read(&mut buf); // Consume the request headers to prevent TCP RST
+            // Handle up to 2 connections: initial request + redirect follow-up
+            for _ in 0..2 {
+                if let Ok((mut stream, _)) = listener.accept() {
+                    let mut buf = [0u8; 2048];
+                    let n = stream.read(&mut buf).unwrap_or(0);
+                    let request = std::str::from_utf8(&buf[..n]).unwrap_or("");
 
-                let body = r#"{
-                    "tag_name": "v0.7.0",
-                    "html_url": "https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.7.0",
-                    "assets": []
-                }"#;
-                let response = format!(
-                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                    body.len(),
-                    body
-                );
-                let _ = stream.write_all(response.as_bytes());
+                    if request.contains("GET /releases/latest") {
+                        // Return a 302 redirect to the tagged release page
+                        let location = format!("http://127.0.0.1:{}/releases/tag/v0.7.0", port);
+                        let _ = stream.write_all(
+                            format!(
+                                "HTTP/1.1 302 Found\r\nLocation: {}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                                location
+                            )
+                            .as_bytes(),
+                        );
+                    } else {
+                        // Follow-up GET /releases/tag/v0.7.0 — return minimal HTML
+                        let _ = stream.write_all(
+                            b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok",
+                        );
+                    }
+                }
             }
         });
 
-        let res = check_for_updates("0.6.4", Some(&url)).expect("Network check failed");
+        let res = check_for_updates("0.6.4", Some(&check_url)).expect("Network check failed");
         let info = res.expect("Should contain newer version info");
         assert_eq!(info.tag_name, "v0.7.0");
     }

@@ -1,8 +1,15 @@
 # Changelog
 
-All notable changes to KatanA Desktop will be documented in this file.
+All notable changes to KatanA DesktopThis file records the major changes to KatanA Desktop.
 
-## [0.7.0] - 2026-03-25 18:00:00 (UTC)
+## [0.7.1] - 2026-03-26 05:00:00 (JST)
+
+### 🐛 Bug Fixes
+
+- **Auto-Updater**: Eliminated reliance on `api.github.com`, resolving the fundamental architecture flaw that forced rate-limited `HTTP 403 Forbidden` API crashes on consumer networks.
+- **UI Layout**: Repaired an `egui::Window` memory constraint bug that caused the update checker modal to unpredictably stretch vertically with blank whitespace.
+
+## [0.7.0] - 2026-03-26 03:00:00 (JST)C)
 
 ### ✨ Features
 

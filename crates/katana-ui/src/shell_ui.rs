@@ -3998,7 +3998,7 @@ fn render_update_window(
         .id(egui::Id::new("katana_update_dialog_v5"))
         .open(open)
         .collapsible(false)
-        .resizable(true)
+        .resizable(false)
         .default_width(DEFAULT_WIDTH)
         .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
         .show(ctx, |ui| {
