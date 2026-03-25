@@ -353,7 +353,13 @@ fn test_scan_directory_respects_max_depth() {
 
     // depth 2 should see dir1 (at depth 1) and its file, but not its subdirectory (dir2 at depth 2)
     let ws = svc
-        .open_workspace(tmp.path(), &ignored, 2, cancel_token.clone(), &std::collections::HashSet::new())
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            2,
+            cancel_token.clone(),
+            &std::collections::HashSet::new(),
+        )
         .unwrap();
 
     fn find_dir(entries: &[TreeEntry], name: &str) -> bool {

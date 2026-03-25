@@ -21,7 +21,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [x] 再現していた環境で背景が表示されることを確認
 - [x] `make check` が exit code 0 で通過
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -29,17 +29,17 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 > **実装対象の明確化**: タブバー上のタブではなく、左ペインのファイルツリー（Source Tree）上のファイル/ディレクトリアイテムが対象。
 
-- [ ] 2.1 Source Tree のファイル/ディレクトリアイテムに右クリックイベントを追加
-- [ ] 2.2 Workspace ペインと共通のコンテキストメニューコンポーネントを統合（重複実装を避ける）
-- [ ] 2.3 「開く」「コピー」「削除」「名前変更」などの操作をコンテキストメニュー経由で実行できるよう実装
-- [ ] 2.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.1 Source Tree のファイル/ディレクトリアイテムに右クリックイベントを追加
+- [x] 2.2 Workspace ペインと共通のコンテキストメニューコンポーネントを統合（重複実装を避ける）
+- [x] 2.3 「開く」「コピー」「削除」「名前変更」などの操作をコンテキストメニュー経由で実行できるよう実装
+- [x] 2.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] Source Tree のタブ右クリックでメニューが表示される
-- [ ] Workspace コンテキストメニューと同等の操作が実行できる
-- [ ] `make check` が exit code 0 で通過
+- [x] Source Tree のタブ右クリックでメニューが表示される
+- [x] Workspace コンテキストメニューと同等の操作が実行できる
+- [x] `make check` が exit code 0 で通過
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
