@@ -111,16 +111,26 @@
     "cannot_open_file": "ファイルを開けませんでした: {error}"
   },
   "action": {
-    "expand_all": "すべて展開",
-    "collapse_all": "すべて折りたたむ",
-    "collapse_sidebar": "サイドバーを隠す",
-    "refresh_workspace": "ワークスペースを更新",
-    "toggle_filter": "フィルター切り替え",
-    "remove_workspace": "履歴から削除",
-    "recursive_expand": "再帰的にディレクトリを展開",
-    "recursive_open_all": "再帰的に全ファイルを開く",
-    "toggle_toc": "目次の表示切替",
-    "show_meta_info": "メタ情報表示"
+    "expand_all": "[ja] すべて展開",
+    "collapse_all": "[ja] すべて折りたたむ",
+    "collapse_sidebar": "[ja] サイドバーを隠す",
+    "refresh_workspace": "[ja] ワークスペースを更新",
+    "toggle_filter": "[ja] フィルター切り替え",
+    "remove_workspace": "[ja] 履歴から削除",
+    "recursive_expand": "[ja] 再帰的にディレクトリを展開",
+    "recursive_open_all": "[ja] 再帰的に全ファイルを開く",
+    "toggle_toc": "[ja] 目次の表示切替",
+    "show_meta_info": "[ja] メタ情報表示",
+    "new_file": "[ja] 新しいファイル...",
+    "new_directory": "[ja] 新しいフォルダー...",
+    "open": "[ja] 開く",
+    "rename": "[ja] 名前の変更...",
+    "delete": "[ja] 削除",
+    "copy_path": "[ja] パスのコピー",
+    "reveal_in_os": "[ja] OSの機能で表示する",
+    "save": "[ja] 保存",
+    "cancel": "[ja] キャンセル",
+    "copy_relative_path": "[ja] 相対パスのコピー"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -258,5 +268,12 @@
     "content": "KatanA をご利用いただきありがとうございます。\n\n本ソフトウェアはオープンソースソフトウェであり、MITライセンスの下で提供されます。\n\n【免責事項】\n1. 本ソフトウェアの使用によって生じた直接的、間接的、付随的、特殊的または結果的な損害について、作者および著作権者は一切の責任を負いません。\n2. 本ソフトウェアは「現状のまま」提供され、商品性、特定の目的への適合性、および権利の非侵害に関する保証を含むがこれらに限定されない、明示的または黙示的な種類の保証も行いません。\n\n【プライバシー】\n1. 本ソフトウェアは、ユーザーの作成したドキュメント内容を外部サーバーに送信することはありません。\n2. クラッシュレポートや利用統計（匿名）が送信される場合がありますが、これらは設定で無効化可能です。\n\n「同意する」をクリックすることで、上記の内容に同意したものとみなされます。",
     "accept": "同意する",
     "decline": "同意しない"
+  },
+  "dialog": {
+    "new_file_title": "[ja] 新規ファイル",
+    "new_directory_title": "[ja] 新規フォルダ",
+    "rename_title": "[ja] 名前変更",
+    "delete_title": "[ja] 削除の確認",
+    "delete_confirm_msg": "[ja] '{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。"
   }
 }
