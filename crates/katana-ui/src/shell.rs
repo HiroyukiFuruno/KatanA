@@ -998,7 +998,8 @@ impl KatanaApp {
                 self.state.create_fs_node_modal_state = Some((path, String::new(), true));
             }
             AppAction::RequestRename(path) => {
-                let name = path.file_name()
+                let name = path
+                    .file_name()
                     .map(|n| n.to_string_lossy().into_owned())
                     .unwrap_or_default();
                 self.state.rename_modal_state = Some((path, name));
@@ -1020,11 +1021,17 @@ impl KatanaApp {
             AppAction::RevealInOs(path) => {
                 #[cfg(target_os = "macos")]
                 {
-                    let _ = std::process::Command::new("open").arg("-R").arg(&path).spawn();
+                    let _ = std::process::Command::new("open")
+                        .arg("-R")
+                        .arg(&path)
+                        .spawn();
                 }
                 #[cfg(target_os = "windows")]
                 {
-                    let _ = std::process::Command::new("explorer").arg("/select,").arg(&path).spawn();
+                    let _ = std::process::Command::new("explorer")
+                        .arg("/select,")
+                        .arg(&path)
+                        .spawn();
                 }
                 #[cfg(target_os = "linux")]
                 {

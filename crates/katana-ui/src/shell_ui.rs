@@ -1491,11 +1491,10 @@ fn render_tree_context_menu(
             }
         }
     } else if let Some(entry) = entry {
-        if entry.is_markdown()
-            && ui.button(msg.open.clone()).clicked() {
-                *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
-                ui.close();
-            }
+        if entry.is_markdown() && ui.button(msg.open.clone()).clicked() {
+            *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
+            ui.close();
+        }
     }
 
     ui.separator();
@@ -2564,8 +2563,7 @@ impl eframe::App for KatanaApp {
                     let mut breadcrumb_action = None;
                     ui.horizontal(|ui| {
                         let segments: Vec<&str> = rel.split('/').collect();
-                        let mut current_path =
-                            ws_root.clone().unwrap_or_else(std::path::PathBuf::new);
+                        let mut current_path = ws_root.clone().unwrap_or_default();
                         for (i, seg) in segments.iter().enumerate() {
                             if i > 0 {
                                 const CHEVRON_ICON_SIZE: f32 = 10.0;
