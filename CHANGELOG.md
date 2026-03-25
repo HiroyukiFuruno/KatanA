@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.6.3] - 2026-03-25 08:26:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **i18n**: Remove trailing space from the Homebrew update command in localized update notification messages.
+
 ## [0.6.2] - 2026-03-25 08:05:30 (UTC)
 
 ### 🚀 Features
