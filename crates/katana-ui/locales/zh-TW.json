@@ -76,16 +76,26 @@
     "cannot_open_file": "無法開啟檔案: {error}"
   },
   "action": {
-    "expand_all": "全部展開",
-    "collapse_all": "全部折疊",
-    "collapse_sidebar": "隱藏側邊欄",
-    "refresh_workspace": "刷新工作區",
-    "toggle_filter": "切換篩選器",
-    "remove_workspace": "從歷史記錄中移除",
-    "recursive_expand": "遞迴展開",
-    "recursive_open_all": "遞迴打開所有文件",
-    "toggle_toc": "切換目錄",
-    "show_meta_info": "顯示中繼資料"
+    "expand_all": "[zh-TW] 全部展開",
+    "collapse_all": "[zh-TW] 全部折疊",
+    "collapse_sidebar": "[zh-TW] 隱藏側邊欄",
+    "refresh_workspace": "[zh-TW] 刷新工作區",
+    "toggle_filter": "[zh-TW] 切換篩選器",
+    "remove_workspace": "[zh-TW] 從歷史記錄中移除",
+    "recursive_expand": "[zh-TW] 遞迴展開",
+    "recursive_open_all": "[zh-TW] 遞迴打開所有文件",
+    "toggle_toc": "[zh-TW] 切換目錄",
+    "show_meta_info": "[zh-TW] 顯示中繼資料",
+    "new_file": "[zh-TW] New File",
+    "new_directory": "[zh-TW] New Folder",
+    "open": "[zh-TW] Open",
+    "rename": "[zh-TW] Rename",
+    "delete": "[zh-TW] Delete",
+    "copy_path": "[zh-TW] Copy Path",
+    "reveal_in_os": "[zh-TW] Reveal in OS",
+    "save": "[zh-TW] 保存",
+    "cancel": "[zh-TW] キャンセル",
+    "copy_relative_path": "[zh-TW] Copy Relative Path"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -258,5 +268,12 @@
     "content": "Terms content.",
     "accept": "接受",
     "decline": "拒絶"
+  },
+  "dialog": {
+    "new_file_title": "[zh-TW] New File",
+    "new_directory_title": "[zh-TW] New Folder",
+    "rename_title": "[zh-TW] Rename",
+    "delete_title": "[zh-TW] Confirm Deletion",
+    "delete_confirm_msg": "[zh-TW] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
   }
 }

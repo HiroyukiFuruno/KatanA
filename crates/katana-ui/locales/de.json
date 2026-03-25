@@ -76,16 +76,26 @@
     "cannot_open_file": "Datei konnte nicht geöffnet werden: {error}"
   },
   "action": {
-    "expand_all": "Alle ausklappen",
-    "collapse_all": "Alle einklappen",
-    "collapse_sidebar": "Seitenleiste ausblenden",
-    "refresh_workspace": "Arbeitsbereich aktualisieren",
-    "toggle_filter": "Filter umschalten",
-    "remove_workspace": "Aus Verlauf entfernen",
-    "recursive_expand": "Unterordner rekursiv ausklappen",
-    "recursive_open_all": "Alle Dateien rekursiv öffnen",
-    "toggle_toc": "Inhaltsverzeichnis umschalten",
-    "show_meta_info": "Metainfos zeigen"
+    "expand_all": "[de] Alle ausklappen",
+    "collapse_all": "[de] Alle einklappen",
+    "collapse_sidebar": "[de] Seitenleiste ausblenden",
+    "refresh_workspace": "[de] Arbeitsbereich aktualisieren",
+    "toggle_filter": "[de] Filter umschalten",
+    "remove_workspace": "[de] Aus Verlauf entfernen",
+    "recursive_expand": "[de] Unterordner rekursiv ausklappen",
+    "recursive_open_all": "[de] Alle Dateien rekursiv öffnen",
+    "toggle_toc": "[de] Inhaltsverzeichnis umschalten",
+    "show_meta_info": "[de] Metainfos zeigen",
+    "new_file": "[de] New File",
+    "new_directory": "[de] New Folder",
+    "open": "[de] Open",
+    "rename": "[de] Rename",
+    "delete": "[de] Delete",
+    "copy_path": "[de] Copy Path",
+    "reveal_in_os": "[de] Reveal in OS",
+    "save": "[de] 保存",
+    "cancel": "[de] キャンセル",
+    "copy_relative_path": "[de] Copy Relative Path"
   },
   "ai": {
     "ai_unconfigured": "[AI: nicht konfiguriert]"
@@ -258,5 +268,12 @@
     "content": "Terms content.",
     "accept": "Akzeptieren",
     "decline": "Ablehnen"
+  },
+  "dialog": {
+    "new_file_title": "[de] New File",
+    "new_directory_title": "[de] New Folder",
+    "rename_title": "[de] Rename",
+    "delete_title": "[de] Confirm Deletion",
+    "delete_confirm_msg": "[de] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
   }
 }

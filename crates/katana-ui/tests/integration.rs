@@ -2560,6 +2560,52 @@ fn test_integration_tab_context_menu_close_others() {
 }
 
 #[test]
+fn test_integration_tree_context_menu_actions() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_tree_actions");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let file = temp_dir.join("test.md");
+
+    // Test RequestNewFile sets modal state
+    harness
+        .state_mut()
+        .trigger_action(AppAction::RequestNewFile(temp_dir.clone()));
+    harness.step();
+    let state = harness.state_mut().app_state_mut();
+    assert!(state.create_fs_node_modal_state.is_some());
+    let (parent, name, is_dir) = state.create_fs_node_modal_state.as_ref().unwrap();
+    assert_eq!(*parent, temp_dir);
+    assert!(name.is_empty());
+    assert!(!*is_dir);
+
+    // Test RequestRename sets modal state
+    harness
+        .state_mut()
+        .trigger_action(AppAction::RequestRename(file.clone()));
+    harness.step();
+    let state = harness.state_mut().app_state_mut();
+    assert!(state.rename_modal_state.is_some());
+    let (target, name) = state.rename_modal_state.as_ref().unwrap();
+    assert_eq!(*target, file);
+    assert_eq!(name, "test.md");
+
+    // Test RequestDelete sets modal state
+    harness
+        .state_mut()
+        .trigger_action(AppAction::RequestDelete(file.clone()));
+    harness.step();
+    let state = harness.state_mut().app_state_mut();
+    assert!(state.delete_modal_state.is_some());
+    let target = state.delete_modal_state.as_ref().unwrap();
+    assert_eq!(*target, file);
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
 fn test_integration_ui_context_menu_close_others() {
     let mut harness = setup_harness();
     harness.step();

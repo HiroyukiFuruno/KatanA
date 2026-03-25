@@ -26,6 +26,7 @@ fn open_valid_workspace_returns_workspace() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
     assert_eq!(ws.root, tmp.path());
@@ -40,6 +41,7 @@ fn open_invalid_workspace_returns_error() {
         &[],
         10,
         std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        &std::collections::HashSet::new(),
     );
     assert!(result.is_err());
 }
@@ -114,6 +116,7 @@ fn hidden_directories_with_markdown_are_included() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
 
@@ -159,6 +162,7 @@ fn target_directory_is_excluded_from_workspace() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
 
@@ -189,6 +193,7 @@ fn node_modules_directory_is_excluded_from_workspace() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
 
@@ -222,6 +227,7 @@ fn directories_without_markdown_are_excluded() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
 
@@ -253,6 +259,7 @@ fn non_markdown_files_at_root_are_excluded() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
 
@@ -290,6 +297,7 @@ fn nested_subdirectory_with_markdown_is_included() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
 
@@ -323,6 +331,7 @@ fn filesystem_service_default_works() {
             &ignored,
             10,
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            &std::collections::HashSet::new(),
         )
         .unwrap();
     assert!(!ws.tree.is_empty());
@@ -344,7 +353,13 @@ fn test_scan_directory_respects_max_depth() {
 
     // depth 2 should see dir1 (at depth 1) and its file, but not its subdirectory (dir2 at depth 2)
     let ws = svc
-        .open_workspace(tmp.path(), &ignored, 2, cancel_token.clone())
+        .open_workspace(
+            tmp.path(),
+            &ignored,
+            2,
+            cancel_token.clone(),
+            &std::collections::HashSet::new(),
+        )
         .unwrap();
 
     fn find_dir(entries: &[TreeEntry], name: &str) -> bool {

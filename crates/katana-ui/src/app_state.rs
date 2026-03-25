@@ -175,6 +175,20 @@ pub enum AppAction {
     DeclineTerms,
     /// Shows metadata info for the selected path.
     ShowMetaInfo(std::path::PathBuf),
+    /// Request to create a new file in the given parent directory.
+    RequestNewFile(std::path::PathBuf),
+    /// Request to create a new directory in the given parent directory.
+    RequestNewDirectory(std::path::PathBuf),
+    /// Request to rename the given path.
+    RequestRename(std::path::PathBuf),
+    /// Request to delete the given path.
+    RequestDelete(std::path::PathBuf),
+    /// Copy the given path to the clipboard.
+    CopyPathToClipboard(std::path::PathBuf),
+    /// Copy the given path relative to the workspace root to the clipboard.
+    CopyRelativePathToClipboard(std::path::PathBuf),
+    /// Reveal the given path in the OS file explorer.
+    RevealInOs(std::path::PathBuf),
     /// Skip a specific update version (persists to settings).
     SkipVersion(String),
     /// Dismiss the update dialog without action ("Later").
@@ -275,10 +289,19 @@ pub struct AppState {
     pub cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
     /// Set of manually expanded directories in the workspace tree.
     pub expanded_directories: std::collections::HashSet<std::path::PathBuf>,
+    /// Empty directories manually created in the current session (to bypass markdown-only visibility filter).
+    pub in_memory_dirs: std::collections::HashSet<std::path::PathBuf>,
     /// History of closed tabs to enable restoring (LIFO).
     pub recently_closed_tabs: std::collections::VecDeque<std::path::PathBuf>,
     /// Cache for the last window title set to prevent redundant viewport commands.
     pub last_window_title: String,
+
+    /// Modal state for creating a new file or directory: `Some((parent_dir, new_name, is_dir))`
+    pub create_fs_node_modal_state: Option<(std::path::PathBuf, String, bool)>,
+    /// Modal state for renaming a file or directory: `Some((target_path, new_name))`
+    pub rename_modal_state: Option<(std::path::PathBuf, String)>,
+    /// Modal state for deleting a file or directory: `Some(target_path)`
+    pub delete_modal_state: Option<std::path::PathBuf>,
 }
 
 /// Indicates the source of a scroll operation. Used to prevent chain reactions.
@@ -343,10 +366,14 @@ impl AppState {
             scale_override: 1.0,
             cache,
             expanded_directories: std::collections::HashSet::new(),
+            in_memory_dirs: std::collections::HashSet::new(),
             recently_closed_tabs: std::collections::VecDeque::with_capacity(
                 Self::MAX_RECENTLY_CLOSED_TABS,
             ),
             last_window_title: String::new(),
+            create_fs_node_modal_state: None,
+            rename_modal_state: None,
+            delete_modal_state: None,
         }
     }
 
