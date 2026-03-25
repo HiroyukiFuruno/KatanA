@@ -45,7 +45,14 @@
     "up_to_date": "Up to Date",
     "up_to_date_desc": "KatanA is up to date.",
     "failed_to_check": "Failed to check for updates.",
-    "action_close": "OK"
+    "action_close": "OK",
+    "install_update": "Install and Relaunch",
+    "downloading": "Downloading update...",
+    "installing": "Installing update...",
+    "restart_confirm": "Update is ready. Restart now?",
+    "action_later": "Later",
+    "action_skip_version": "Skip This Version",
+    "action_restart": "Restart Now"
   },
   "workspace": {
     "no_workspace_open": "No workspace open.",
@@ -197,6 +204,10 @@
       {
         "key": "group_system",
         "name": "System"
+      },
+      {
+        "key": "updates",
+        "name": "Updates"
       }
     ],
     "updates": {
