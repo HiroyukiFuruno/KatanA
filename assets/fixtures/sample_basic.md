@@ -209,7 +209,7 @@ features:
 
 ---
 
-## 10. Mixed Content (Past Bug: Section Boundary Breaking)
+## 12. Mixed Content (Past Bug: Section Boundary Breaking)
 
 Markdown text, code blocks, and tables mixed together.
 Verify no layout overlap between sections.
@@ -238,32 +238,32 @@ enum RenderedSection {
 
 ---
 
-## 11. Edge Cases
+## 13. Edge Cases
 
-### 11.1 Empty Code Block
+### 13.1 Empty Code Block
 
 ```
 ```
 
-### 11.2 Very Long Line
+### 13.2 Very Long Line
 
 `This is a very long line to verify horizontal scrolling or word wrapping. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`
 
-### 11.3 Special Characters
+### 13.3 Special Characters
 
 - HTML entities: &amp; &lt; &gt; &quot;
 - Japanese: こんにちは世界 🌍
 - Emoji: 🦀 ⚡ 📝 🔧 ✅ ❌ ⚠️ 💡
 - Math symbols: α β γ δ ∑ ∫ √ ∞
 
-### 11.4 Footnotes
+### 13.4 Footnotes
 
 This text has a footnote[^1]. Here's another[^2].
 
 [^1]: First footnote content.
 [^2]: Second footnote content.
 
-### 11.5 Consecutive Different Block Elements
+### 13.5 Consecutive Different Block Elements
 
 > A blockquote
 
@@ -281,7 +281,7 @@ let code = "directly after quote";
 
 ---
 
-## 12 Accordion
+## 7. Accordion
 
 <details><summary>Show details</summary><div>
 
@@ -292,19 +292,19 @@ let code = "directly after quote";
 
 </div></details>
 
-## 13 Math
+## 8. Math
 
-### 13.1 Block Math
+### 8.1 Block Math
 
 ```math
 f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
 ```
 
-### 13.2 Inline Math
+### 8.2 Inline Math
 
 Mass-energy equivalence: $E = mc^2$
 
-### 13.3 Single-line Math
+### 8.3 Single-line Math
 
 $$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 

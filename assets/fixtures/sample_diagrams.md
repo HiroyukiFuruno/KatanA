@@ -9,9 +9,9 @@ Mermaid (mmdc), PlantUML (jar), and DrawIo (Pure Rust).
 
 ---
 
-## 7. Diagrams — Mermaid
+## 9. Diagrams — Mermaid
 
-### 7.1 Flowchart
+### 9.1 Flowchart
 
 ```mermaid
 graph TD
@@ -22,7 +22,7 @@ graph TD
     D --> E
 ```
 
-### 7.2 Sequence Diagram
+### 9.2 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -36,7 +36,7 @@ sequenceDiagram
     KatanA-->>User: Render preview
 ```
 
-### 7.3 Class Diagram
+### 9.3 Class Diagram
 
 ```mermaid
 classDiagram
@@ -58,7 +58,7 @@ classDiagram
     PreviewPane --> RenderedSection
 ```
 
-### 7.4 State Diagram
+### 9.4 State Diagram
 
 ```mermaid
 stateDiagram-v2
@@ -73,7 +73,7 @@ stateDiagram-v2
     NotInstalled --> [*]
 ```
 
-### 7.5 Gantt Chart
+### 9.5 Gantt Chart
 
 ```mermaid
 gantt
@@ -92,9 +92,9 @@ gantt
 
 ---
 
-## 8. Diagrams — PlantUML
+## 10. Diagrams — PlantUML
 
-### 8.1 Sequence Diagram
+### 10.1 Sequence Diagram
 
 ```plantuml
 @startuml
@@ -109,7 +109,7 @@ K --> User: Render preview
 @enduml
 ```
 
-### 8.2 Class Diagram
+### 10.2 Class Diagram
 
 ```plantuml
 @startuml
@@ -130,7 +130,7 @@ PreviewPane --> RenderedSection
 @enduml
 ```
 
-### 8.3 Activity Diagram
+### 10.3 Activity Diagram
 
 ```plantuml
 @startuml
@@ -153,9 +153,9 @@ stop
 
 ---
 
-## 9. Diagrams — DrawIo
+## 11. Diagrams — DrawIo
 
-### 9.1 Basic Shapes
+### 11.1 Basic Shapes
 
 ```drawio
 <mxGraphModel>
@@ -175,7 +175,7 @@ stop
 </mxGraphModel>
 ```
 
-### 9.2 Multiple Shapes with Connections
+### 11.2 Multiple Shapes with Connections
 
 ```drawio
 <mxGraphModel>
@@ -203,7 +203,7 @@ stop
 
 ---
 
-## 10. Mixed Content with Diagrams
+## 12. Mixed Content with Diagrams
 
 KatanA rendering pipeline:
 
@@ -234,7 +234,7 @@ And a DrawIo diagram below:
 
 ---
 
-## 12. Consecutive Diagrams
+## 14. Consecutive Diagrams
 
 Three diagram types in a row. One failing should not affect the others.
 
