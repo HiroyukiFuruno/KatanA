@@ -120,7 +120,17 @@
     "recursive_expand": "Recursive Expand Subdirectories",
     "recursive_open_all": "Recursive Open All Files",
     "toggle_toc": "Toggle Table of Contents",
-    "show_meta_info": "Show Meta Info"
+    "show_meta_info": "Show Meta Info",
+    "new_file": "New File",
+    "new_directory": "New Folder",
+    "open": "Open",
+    "rename": "Rename",
+    "delete": "Delete",
+    "copy_path": "Copy Path",
+    "reveal_in_os": "Reveal in OS",
+    "save": "Save",
+    "cancel": "Cancel",
+    "copy_relative_path": "Copy Relative Path"
   },
   "ai": {
     "ai_unconfigured": "[AI: unconfigured]"
@@ -258,5 +268,12 @@
     "content": "Thank you for using KatanA.\n\nThis software is open source and provided under the MIT License.\n\n[Disclaimer]\n1. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.\n2. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n\n[Privacy]\n1. This software does not transmit your document contents to any external servers.\n2. Anonymous crash reports or usage statistics may be sent, but these can be disabled in settings.\n\nBy clicking \"Accept\", you agree to the terms above.",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "dialog": {
+    "new_file_title": "New File",
+    "new_directory_title": "New Folder",
+    "rename_title": "Rename",
+    "delete_title": "Confirm Deletion",
+    "delete_confirm_msg": "Are you sure you want to delete '{name}'?\nThis action cannot be undone."
   }
 }

@@ -1440,6 +1440,95 @@ pub(crate) fn indent_prefix(depth: usize) -> String {
     "  ".repeat(depth)
 }
 
+fn render_tree_context_menu(
+    ui: &mut egui::Ui,
+    path: &std::path::Path,
+    is_dir: bool,
+    children: Option<&[katana_core::workspace::TreeEntry]>,
+    entry: Option<&katana_core::workspace::TreeEntry>,
+    ctx: &mut TreeRenderContext<'_, '_>,
+) {
+    let msg = &crate::i18n::get().action;
+
+    let target_dir = if is_dir {
+        path.to_path_buf()
+    } else {
+        path.parent().unwrap_or(path).to_path_buf()
+    };
+
+    if is_dir {
+        if ui.button(msg.new_file.clone()).clicked() {
+            *ctx.action = crate::app_state::AppAction::RequestNewFile(target_dir.clone());
+            ui.close();
+        }
+        if ui.button(msg.new_directory.clone()).clicked() {
+            *ctx.action = crate::app_state::AppAction::RequestNewDirectory(target_dir);
+            ui.close();
+        }
+        ui.separator();
+    }
+
+    if is_dir {
+        if let Some(children) = children {
+            if ui.button(msg.recursive_expand.clone()).clicked() {
+                let mut to_expand = Vec::new();
+                for child in children {
+                    child.collect_all_directory_paths(&mut to_expand);
+                }
+                ctx.expanded_directories.insert(path.to_path_buf());
+                ctx.expanded_directories.extend(to_expand);
+                ui.close();
+            }
+            if ui.button(msg.recursive_open_all.clone()).clicked() {
+                let mut to_open = Vec::new();
+                for child in children {
+                    child.collect_all_markdown_file_paths(&mut to_open);
+                }
+                if !to_open.is_empty() {
+                    *ctx.action = crate::app_state::AppAction::OpenMultipleDocuments(to_open);
+                }
+                ui.close();
+            }
+        }
+    } else if let Some(entry) = entry {
+        if entry.is_markdown()
+            && ui.button(msg.open.clone()).clicked() {
+                *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
+                ui.close();
+            }
+    }
+
+    ui.separator();
+
+    if ui.button(msg.reveal_in_os.clone()).clicked() {
+        *ctx.action = crate::app_state::AppAction::RevealInOs(path.to_path_buf());
+        ui.close();
+    }
+    if ui.button(msg.copy_path.clone()).clicked() {
+        *ctx.action = crate::app_state::AppAction::CopyPathToClipboard(path.to_path_buf());
+        ui.close();
+    }
+    if ui.button(msg.copy_relative_path.clone()).clicked() {
+        *ctx.action = crate::app_state::AppAction::CopyRelativePathToClipboard(path.to_path_buf());
+        ui.close();
+    }
+    if ui.button(msg.show_meta_info.clone()).clicked() {
+        *ctx.action = crate::app_state::AppAction::ShowMetaInfo(path.to_path_buf());
+        ui.close();
+    }
+
+    ui.separator();
+
+    if ui.button(msg.rename.clone()).clicked() {
+        *ctx.action = crate::app_state::AppAction::RequestRename(path.to_path_buf());
+        ui.close();
+    }
+    if ui.button(msg.delete.clone()).clicked() {
+        *ctx.action = crate::app_state::AppAction::RequestDelete(path.to_path_buf());
+        ui.close();
+    }
+}
+
 pub(crate) fn render_directory_entry(
     ui: &mut egui::Ui,
     path: &std::path::Path,
@@ -1524,42 +1613,7 @@ pub(crate) fn render_directory_entry(
 
     // Context Menu for directories
     resp.context_menu(|ui| {
-        if ui
-            .button(crate::i18n::get().action.recursive_expand.clone())
-            .clicked()
-        {
-            let mut to_expand = Vec::new();
-            for child in children {
-                child.collect_all_directory_paths(&mut to_expand);
-            }
-            ctx.expanded_directories.insert(path.to_path_buf()); // Expand self too
-            ctx.expanded_directories.extend(to_expand);
-            ui.close();
-        }
-        if ui
-            .button(crate::i18n::get().action.recursive_open_all.clone())
-            .clicked()
-        {
-            let mut to_open = Vec::new();
-            for child in children {
-                child.collect_all_markdown_file_paths(&mut to_open);
-            }
-            if !to_open.is_empty() {
-                *ctx.action = crate::app_state::AppAction::OpenMultipleDocuments(to_open);
-            }
-            ui.close();
-        }
-
-        ui.separator();
-
-        // Meta info moved to context menu click action
-        if ui
-            .button(crate::i18n::get().action.show_meta_info.clone())
-            .clicked()
-        {
-            *ctx.action = crate::app_state::AppAction::ShowMetaInfo(path.to_path_buf());
-            ui.close();
-        }
+        render_tree_context_menu(ui, path, true, Some(children), None, ctx);
     });
 
     if resp.clicked() {
@@ -1694,13 +1748,7 @@ pub(crate) fn render_file_entry(
     }
 
     resp.context_menu(|ui| {
-        if ui
-            .button(crate::i18n::get().action.show_meta_info.clone())
-            .clicked()
-        {
-            *ctx.action = crate::app_state::AppAction::ShowMetaInfo(path.to_path_buf());
-            ui.close();
-        }
+        render_tree_context_menu(ui, path, false, None, Some(entry), ctx);
     });
 
     if resp.clicked() && entry.is_markdown() {
@@ -2509,11 +2557,15 @@ impl eframe::App for KatanaApp {
             // Tab row + breadcrumbs + view mode row
             egui::TopBottomPanel::top("tab_toolbar").show(ctx, |ui| {
                 render_tab_bar(ui, &mut self.state, &mut self.pending_action);
-                if let Some(doc) = self.state.active_document() {
+                let active_doc_props = self.state.active_document().map(|d| d.path.clone());
+                if let Some(doc_path) = active_doc_props {
                     let ws_root = self.state.workspace.as_ref().map(|ws| ws.root.clone());
-                    let rel = relative_full_path(&doc.path, ws_root.as_deref());
+                    let rel = relative_full_path(&doc_path, ws_root.as_deref());
+                    let mut breadcrumb_action = None;
                     ui.horizontal(|ui| {
                         let segments: Vec<&str> = rel.split('/').collect();
+                        let mut current_path =
+                            ws_root.clone().unwrap_or_else(std::path::PathBuf::new);
                         for (i, seg) in segments.iter().enumerate() {
                             if i > 0 {
                                 const CHEVRON_ICON_SIZE: f32 = 10.0;
@@ -2523,9 +2575,49 @@ impl eframe::App for KatanaApp {
                                         .max_height(CHEVRON_ICON_SIZE),
                                 );
                             }
-                            ui.label(egui::RichText::new(*seg).small());
+
+                            if ws_root.is_none() {
+                                ui.label(egui::RichText::new(*seg).small());
+                                continue;
+                            }
+
+                            current_path = current_path.join(seg);
+                            let is_last = i == segments.len() - 1;
+                            let is_dir = !is_last;
+
+                            let resp = ui.add(
+                                egui::Label::new(egui::RichText::new(*seg).small())
+                                    .sense(egui::Sense::click()),
+                            );
+
+                            let doc_path_clone = doc_path.clone();
+                            // Context menu matching the Source Tree
+                            resp.context_menu(|ui| {
+                                let mut ctx_action = crate::app_state::AppAction::None;
+                                let mut tree_ctx = TreeRenderContext {
+                                    action: &mut ctx_action,
+                                    depth: 0,
+                                    active_path: Some(doc_path_clone.as_path()),
+                                    filter_set: None,
+                                    expanded_directories: &mut self.state.expanded_directories,
+                                };
+                                render_tree_context_menu(
+                                    ui,
+                                    &current_path,
+                                    is_dir,
+                                    None,
+                                    None,
+                                    &mut tree_ctx,
+                                );
+                                if !matches!(ctx_action, crate::app_state::AppAction::None) {
+                                    breadcrumb_action = Some(ctx_action);
+                                }
+                            });
                         }
                     });
+                    if let Some(a) = breadcrumb_action {
+                        self.pending_action = a;
+                    }
                     render_view_mode_bar(ui, &mut self.state, &mut self.pending_action);
                 }
             });
@@ -2598,6 +2690,17 @@ impl eframe::App for KatanaApp {
             if !is_open {
                 self.show_meta_info_for = None;
             }
+        }
+
+        // File system operation modals
+        if self.state.create_fs_node_modal_state.is_some() {
+            render_create_fs_node_modal(ctx, &mut self.state, &mut self.pending_action);
+        }
+        if self.state.rename_modal_state.is_some() {
+            render_rename_modal(ctx, &mut self.state, &mut self.pending_action);
+        }
+        if self.state.delete_modal_state.is_some() {
+            render_delete_modal(ctx, &mut self.state, &mut self.pending_action);
         }
 
         // Update notification dialog
@@ -4173,6 +4276,247 @@ fn render_update_window(
         );
         if close == Some(true) {
             *open = false;
+        }
+    }
+}
+
+fn render_create_fs_node_modal(
+    ctx: &egui::Context,
+    state: &mut crate::app_state::AppState,
+    pending_action: &mut crate::app_state::AppAction,
+) {
+    let mut close = false;
+    let mut do_create = false;
+
+    if let Some((parent_dir, mut name, is_dir)) = state.create_fs_node_modal_state.take() {
+        let title = if is_dir {
+            crate::i18n::get().dialog.new_directory_title.clone()
+        } else {
+            crate::i18n::get().dialog.new_file_title.clone()
+        };
+
+        let mut is_open = true;
+        egui::Window::new(title)
+            .open(&mut is_open)
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    const MODAL_INPUT_WIDTH: f32 = 200.0;
+                    let re = ui.add(
+                        egui::TextEdit::singleline(&mut name)
+                            .hint_text("Name")
+                            .desired_width(MODAL_INPUT_WIDTH),
+                    );
+                    re.request_focus();
+
+                    if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                        do_create = true;
+                    }
+                });
+                const SPACING_SMALL: f32 = 8.0;
+                ui.add_space(SPACING_SMALL);
+                ui.horizontal(|ui| {
+                    if ui
+                        .button(crate::i18n::get().action.cancel.clone())
+                        .clicked()
+                    {
+                        close = true;
+                    }
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(crate::i18n::get().action.save.clone()).clicked() {
+                            do_create = true;
+                        }
+                    });
+                });
+            });
+
+        if !is_open {
+            close = true;
+        }
+
+        if do_create && !name.is_empty() {
+            let target_path = parent_dir.join(&name);
+            let res = if is_dir {
+                std::fs::create_dir(&target_path)
+            } else {
+                std::fs::File::create(&target_path).map(|_| ())
+            };
+            if let Err(e) = res {
+                tracing::error!("Failed to create fs node: {}", e);
+            } else {
+                if is_dir {
+                    state.in_memory_dirs.insert(target_path);
+                }
+                *pending_action = crate::app_state::AppAction::RefreshWorkspace;
+                state.expanded_directories.insert(parent_dir.clone());
+            }
+            close = true;
+        }
+
+        if !close {
+            state.create_fs_node_modal_state = Some((parent_dir, name, is_dir));
+        }
+    }
+}
+
+fn render_rename_modal(
+    ctx: &egui::Context,
+    state: &mut crate::app_state::AppState,
+    pending_action: &mut crate::app_state::AppAction,
+) {
+    let mut close = false;
+    let mut do_rename = false;
+
+    if let Some((target_path, mut new_name)) = state.rename_modal_state.take() {
+        let mut is_open = true;
+        egui::Window::new(crate::i18n::get().dialog.rename_title.clone())
+            .open(&mut is_open)
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    const MODAL_INPUT_WIDTH: f32 = 200.0;
+                    let re = ui.add(
+                        egui::TextEdit::singleline(&mut new_name)
+                            .hint_text("New Name")
+                            .desired_width(MODAL_INPUT_WIDTH),
+                    );
+                    re.request_focus();
+
+                    if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                        do_rename = true;
+                    }
+                });
+                const SPACING_SMALL: f32 = 8.0;
+                ui.add_space(SPACING_SMALL);
+                ui.horizontal(|ui| {
+                    if ui
+                        .button(crate::i18n::get().action.cancel.clone())
+                        .clicked()
+                    {
+                        close = true;
+                    }
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(crate::i18n::get().action.save.clone()).clicked() {
+                            do_rename = true;
+                        }
+                    });
+                });
+            });
+
+        if !is_open {
+            close = true;
+        }
+
+        if do_rename && !new_name.is_empty() {
+            if let Some(parent) = target_path.parent() {
+                let new_path = parent.join(&new_name);
+                if let Err(e) = std::fs::rename(&target_path, &new_path) {
+                    tracing::error!("Failed to rename file: {}", e);
+                } else {
+                    *pending_action = crate::app_state::AppAction::RefreshWorkspace;
+                    for doc in &mut state.open_documents {
+                        if doc.path == target_path {
+                            doc.path = new_path.clone();
+                            break;
+                        }
+                    }
+                }
+            }
+            close = true;
+        }
+
+        if !close {
+            state.rename_modal_state = Some((target_path, new_name));
+        }
+    }
+}
+
+fn render_delete_modal(
+    ctx: &egui::Context,
+    state: &mut crate::app_state::AppState,
+    pending_action: &mut crate::app_state::AppAction,
+) {
+    let mut close = false;
+
+    if let Some(target_path) = state.delete_modal_state.take() {
+        let mut is_open = true;
+        egui::Window::new(crate::i18n::get().dialog.delete_title.clone())
+            .open(&mut is_open)
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .show(ctx, |ui| {
+                let name = target_path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("?");
+                let msg = crate::i18n::tf(
+                    &crate::i18n::get().dialog.delete_confirm_msg,
+                    &[("name", name)],
+                );
+                ui.label(msg);
+
+                const SPACING_SMALL: f32 = 8.0;
+                ui.add_space(SPACING_SMALL);
+                ui.horizontal(|ui| {
+                    if ui
+                        .button(crate::i18n::get().action.cancel.clone())
+                        .clicked()
+                    {
+                        close = true;
+                    }
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let del_btn = egui::Button::new(
+                            egui::RichText::new(crate::i18n::get().action.delete.clone())
+                                .color(ui.visuals().error_fg_color),
+                        );
+                        if ui.add(del_btn).clicked() {
+                            let res = if target_path.is_dir() {
+                                std::fs::remove_dir_all(&target_path)
+                            } else {
+                                std::fs::remove_file(&target_path)
+                            };
+
+                            if let Err(e) = res {
+                                tracing::error!("Failed to delete path: {}", e);
+                            } else {
+                                *pending_action = crate::app_state::AppAction::RefreshWorkspace;
+                                if let Some(idx) = state
+                                    .open_documents
+                                    .iter()
+                                    .position(|d| d.path == target_path)
+                                {
+                                    state.open_documents.remove(idx);
+                                    if let Some(active_idx) = state.active_doc_idx {
+                                        if active_idx == idx {
+                                            state.active_doc_idx =
+                                                if state.open_documents.is_empty() {
+                                                    None
+                                                } else {
+                                                    Some(if idx > 0 { idx - 1 } else { 0 })
+                                                };
+                                        } else if active_idx > idx {
+                                            state.active_doc_idx = Some(active_idx - 1);
+                                        }
+                                    }
+                                }
+                            }
+                            close = true;
+                        }
+                    });
+                });
+            });
+
+        if !is_open {
+            close = true;
+        }
+
+        if !close {
+            state.delete_modal_state = Some(target_path);
         }
     }
 }
