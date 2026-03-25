@@ -18,6 +18,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 1.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 再現していた環境で背景が表示されることを確認
 - [ ] `make check` が exit code 0 で通過
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
@@ -35,6 +36,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 2.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] Source Tree のタブ右クリックでメニューが表示される
 - [ ] Workspace コンテキストメニューと同等の操作が実行できる
 - [ ] `make check` が exit code 0 で通過
@@ -51,6 +53,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 3.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 左→右・右→左双方向のドラッグ移動が正常動作する
 - [ ] `make check` が exit code 0 で通過
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
@@ -72,6 +75,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 4.11 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] グループの作成・削除・色変更・タブ追加が動作する
 - [ ] アプリ再起動後にグループが復元される
 - [ ] `make check` が exit code 0 で通過
@@ -90,6 +94,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 5.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 再起動後に前回開いていたタブが復元される
 - [ ] 設定でOFF時は復元されない
 - [ ] `make check` が exit code 0 で通過
@@ -107,6 +112,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 6.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] ピン留め中のタブがコンテキストメニューなしで削除できないことを確認
 - [ ] ピン留め中にタイトルがツールチップで表示される
 - [ ] `make check` が exit code 0 で通過
