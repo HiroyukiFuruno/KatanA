@@ -626,22 +626,25 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     .max_rect(outer_rect)
                     .layout(egui::Layout::top_down(egui::Align::LEFT)),
                 |ui| {
+                    const OPTICAL_ACCORDION_TOP_MARGIN: f32 = -24.0;
+                    const OPTICAL_DEFAULT_INTERACT_HEIGHT: f32 = 18.0;
+
                     // 4.3 (Optical): Markdown block parser generates empty \n\n gaps resulting in a massive 
                     // unbalanced top gap before <details> compared to the bottom. 
                     // Explicitly pull the widget back up to optically balance against 8px bottom spacing.
-                    ui.add_space(-24.0); 
+                    ui.add_space(OPTICAL_ACCORDION_TOP_MARGIN); 
 
                     // 4.4 (Optical): Egui natively generates geometrically centered icons that map incorrectly 
                     // to the optical visual weight of Japanese fonts, plunging to the baseline.
                     // Instead of inflating/deflating interact_size, we use standard spacing and apply an optical shift.
-                    ui.spacing_mut().interact_size.y = 18.0;
+                    ui.spacing_mut().interact_size.y = OPTICAL_DEFAULT_INTERACT_HEIGHT;
 
                     let id_salt = egui::Id::new(&summary).with(id);
                     let collapsing = egui::CollapsingHeader::new(
                         egui::RichText::new(&summary).strong()
                     )
                     .id_salt(id_salt)
-                    .icon(crate::ui_components::centering::paint_collapsing_icon_optically_centered);
+                    .icon(crate::ui_components::centering::AccordionIcon::paint_optically_centered);
 
                     let _header_res = collapsing.show_unindented(ui, |ui| {
                         let layout = egui::Layout::left_to_right(egui::Align::Center)
