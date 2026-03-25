@@ -29,3 +29,6 @@ zip.workspace = true
 pulldown-cmark = "0.13.2"
 tempfile.workspace = true
 tracing-subscriber = "0.3"
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(coverage)'] }
