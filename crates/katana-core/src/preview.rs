@@ -194,9 +194,17 @@ pub enum PreviewSection {
     /// Normal Markdown text.
     Markdown(String),
     /// A diagram fence block.
-    Diagram { kind: DiagramKind, source: String },
+    Diagram {
+        kind: DiagramKind,
+        source: String,
+        lines: usize,
+    },
     /// A standalone local image.
-    LocalImage { path: String, alt: String },
+    LocalImage {
+        path: String,
+        alt: String,
+        lines: usize,
+    },
 }
 
 /// Splits the source text into a list of `PreviewSection`s.
@@ -204,9 +212,36 @@ pub enum PreviewSection {
 /// Detects diagram fences (` ```mermaid` / ` ```plantuml` / ` ```drawio` ),
 /// and groups the rest as Markdown sections.
 pub fn split_into_sections(source: &str) -> Vec<PreviewSection> {
+    // Pre-processing: Relaxed inline math delimiters
+    // Katana intercepts `$ E = mc^2 $` and transforms it to `$E = mc^2$` automatically.
+    // However, to prevent converting text like "Costs $ 5 and $ 10" to math, we use a
+    // heuristic that requires characteristic math symbols or letters inside the block.
+    let re = regex::Regex::new(r"(?m)(^|[^\\])\$([ \t]+)([^$\n]+?)([ \t]+)\$").unwrap();
+    let source_cow = re.replace_all(source, |caps: &regex::Captures| {
+        const REGEX_PREFIX_GROUP: usize = 1;
+        const REGEX_CONTENT_GROUP: usize = 3;
+        let prefix = caps.get(REGEX_PREFIX_GROUP).unwrap().as_str();
+        let content = caps.get(REGEX_CONTENT_GROUP).unwrap().as_str();
+
+        // Heuristic: Does this contain any characteristic math symbols or ascii letters?
+        let is_math = content
+            .chars()
+            .any(|c| c.is_ascii_alphabetic() || "=\\+-*/^_<>()[]{}|".contains(c));
+
+        if is_math {
+            // Strip the spaces inside the delimiters so pulldown-cmark parses it as Math
+            format!("{}${}$", prefix, content)
+        } else {
+            // Leave the original text unmodified (spaces intact), so pulldown-cmark
+            // treats it as plain text and avoids false positive SVG rendering.
+            caps.get(0).unwrap().as_str().to_string()
+        }
+    });
+    let source_processed = source_cow.as_ref();
+
     let mut initial_sections = Vec::new();
     let mut markdown_acc = String::new();
-    let mut remaining = source;
+    let mut remaining = source_processed;
 
     loop {
         // Find the next fence: either at the very start of remaining, or after a newline.
@@ -228,9 +263,11 @@ pub fn split_into_sections(source: &str) -> Vec<PreviewSection> {
                     initial_sections
                         .push(PreviewSection::Markdown(std::mem::take(&mut markdown_acc)));
                 }
+                let lines = fence_source.chars().filter(|c| *c == '\n').count();
                 initial_sections.push(PreviewSection::Diagram {
                     kind,
                     source: fence_source,
+                    lines,
                 });
                 remaining = after;
             }
@@ -265,7 +302,12 @@ pub fn split_into_sections(source: &str) -> Vec<PreviewSection> {
                         temp.push(PreviewSection::Markdown(before.to_string()));
                     }
 
-                    temp.push(PreviewSection::LocalImage { path: url, alt });
+                    let lines = m.as_str().chars().filter(|c| *c == '\n').count();
+                    temp.push(PreviewSection::LocalImage {
+                        path: url,
+                        alt,
+                        lines,
+                    });
                     last_end = m.end();
                 }
 
@@ -412,5 +454,19 @@ mod split_tests {
         ));
         assert!(matches!(sections[1], PreviewSection::LocalImage { .. }));
         assert!(matches!(sections[2], PreviewSection::Markdown(_)));
+    }
+
+    #[test]
+    fn test_split_with_relaxed_math_spacing() {
+        let md = "Here is some math: $ E = mc^2 $ and a plain text test $ 500 $ 10.";
+        let sections = split_into_sections(md);
+        assert_eq!(sections.len(), 1);
+        if let PreviewSection::Markdown(text) = &sections[0] {
+            // The heuristic converts the math equation but ignores the plain text money values
+            assert!(text.contains("$E = mc^2$"));
+            assert!(text.contains("$ 500 $ 10."));
+        } else {
+            panic!("Expected Markdown section");
+        }
     }
 }
