@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop will be documented in this file.
 
+## [0.6.4] - 2026-03-25 09:50:20 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Underline Rendering**: Manually draw underlines using proportional geometry bounds to bypass macOS CJK font metric corruption, ensuring `<u>` tags are consistently visible across all environments.
+
+### 🔧 Miscellaneous
+
+- **Regression Tests**: Implement `egui_kittest` integration tests and `pulldown-cmark` AST unit tests to permanently guarantee inline formatting integrity.
+- **Ops**: Minor workflow refinements for the OpenSpec process.
+
 ## [0.6.3] - 2026-03-25 08:26:00 (UTC)
 
 ### 🐛 Bug Fixes
