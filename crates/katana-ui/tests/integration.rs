@@ -3048,19 +3048,113 @@ fn test_integration_ui_terms_modal_visibility() {
 /// 2. The window close button is accessible (dialog is well-formed).
 #[test]
 fn test_regression_update_dialog_up_to_date_renders_correctly() {
-    let mut harness = setup_harness();
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static COUNTER_UP: AtomicUsize = AtomicUsize::new(200);
+    let id = COUNTER_UP.fetch_add(1, Ordering::SeqCst);
+    let settings_path = std::env::temp_dir().join(format!(
+        "katana_test_settings_uptodate_{}_{}.json",
+        std::process::id(),
+        id
+    ));
+    let _ = std::fs::remove_file(&settings_path);
+
+    let mut harness = Harness::builder()
+        .with_size(egui::Vec2::new(1280.0, 800.0))
+        .build_eframe(move |_cc| {
+            let ai_registry = katana_core::ai::AiProviderRegistry::new();
+            let plugin_registry = katana_core::plugin::PluginRegistry::new();
+            let mut state = AppState::new(
+                ai_registry,
+                plugin_registry,
+                katana_platform::SettingsService::new(Box::new(
+                    katana_platform::JsonFileRepository::new(settings_path.clone()),
+                )),
+                std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+            );
+            state.settings.settings_mut().terms_accepted_version =
+                Some(katana_ui::about_info::APP_VERSION.to_string());
+            katana_ui::i18n::set_language("en");
+            let mut app = KatanaApp::new(state);
+            app.skip_splash();
+            app
+        });
+
     harness.step();
 
+    // The app generally triggers a background update check on startup.
+    // We override the state here to force the "up to date" dialog path.
+    harness.state_mut().app_state_mut().checking_for_updates = false;
+
     // Open the update dialog via the test helper.
-    // AppState defaults: checking_for_updates=false, update_available=None, update_check_error=None
-    // → the dialog shows the "up to date" branch with minimal content.
     harness.state_mut().open_update_dialog_for_test();
     harness.step();
-    harness.run_steps(5);
+    harness.run_steps(10);
 
     // The dialog window title must be present in the rendered output.
     harness.get_by_label("Check for Updates");
 
-    // The egui-provided close button must be present.
-    harness.get_by_label("Close window");
+    // The "up to date" heading must be visible.
+    harness.get_by_label("Up to Date");
+
+    // The explicit OK button (from Modal footer) must be present.
+    harness.get_by_label("OK");
+}
+
+/// RED→GREEN: Update dialog must NOT stretch vertically beyond its content.
+///
+/// Root cause: `egui::Window` with `.open()` and `anchor(CENTER_CENTER)`
+/// stores resize state across frames, causing the window height to grow
+/// unbounded on large screens.
+#[test]
+fn test_regression_update_dialog_does_not_stretch_vertically() {
+    // Use a large screen to reproduce the real-world behavior.
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static COUNTER2: AtomicUsize = AtomicUsize::new(100);
+    let id = COUNTER2.fetch_add(1, Ordering::SeqCst);
+    let settings_path = std::env::temp_dir().join(format!(
+        "katana_test_settings_stretch_{}_{}.json",
+        std::process::id(),
+        id
+    ));
+    let _ = std::fs::remove_file(&settings_path);
+
+    let mut harness = Harness::builder()
+        .with_size(egui::Vec2::new(1280.0, 800.0))
+        .build_eframe(move |_cc| {
+            let ai_registry = katana_core::ai::AiProviderRegistry::new();
+            let plugin_registry = katana_core::plugin::PluginRegistry::new();
+            let mut state = AppState::new(
+                ai_registry,
+                plugin_registry,
+                katana_platform::SettingsService::new(Box::new(
+                    katana_platform::JsonFileRepository::new(settings_path.clone()),
+                )),
+                std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+            );
+            state.settings.settings_mut().terms_accepted_version =
+                Some(katana_ui::about_info::APP_VERSION.to_string());
+            katana_ui::i18n::set_language("en");
+            let mut app = KatanaApp::new(state);
+            app.skip_splash();
+            app
+        });
+
+    harness.step();
+    harness.state_mut().open_update_dialog_for_test();
+
+    // Run enough frames for egui to stabilize window sizing
+    harness.run_steps(10);
+
+    // Query the window rect from egui's internal memory.
+    let window_id = egui::Id::new("katana_update_dialog_v6");
+    let rect = harness
+        .ctx
+        .memory(|mem: &egui::Memory| mem.area_rect(window_id));
+
+    let bounds = rect.expect("Update dialog window rect not found in egui memory");
+    let height = bounds.height();
+    assert!(
+        height < 200.0,
+        "Update dialog height ({height:.0}px) exceeds 200px — vertical stretch bug!"
+    );
 }

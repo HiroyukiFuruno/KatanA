@@ -2574,11 +2574,13 @@ impl eframe::App for KatanaApp {
         }
 
         // Settings window
-        crate::settings_window::render_settings_window(
+        if let Some(settings_action) = crate::settings_window::render_settings_window(
             ctx,
             &mut self.state,
             &mut self.settings_preview,
-        );
+        ) {
+            self.pending_action = settings_action;
+        }
 
         if self.state.show_search_modal {
             render_search_modal(ctx, &mut self.state, &mut self.pending_action);
@@ -3986,103 +3988,191 @@ fn render_update_window(
     markdown_cache: &mut egui_commonmark::CommonMarkCache,
     pending_action: &mut AppAction,
 ) {
-    const DEFAULT_WIDTH: f32 = 500.0;
+    use crate::app_state::UpdatePhase;
+    use crate::widgets::Modal;
+
     const SPACING_SMALL: f32 = 4.0;
     const SPACING_MEDIUM: f32 = 8.0;
     const SPACING_LARGE: f32 = 12.0;
+    const MAX_SCROLL_HEIGHT: f32 = 250.0;
 
     let msgs = &crate::i18n::get().update;
-    let mut force_close = false;
-    let mut trigger_install = false;
-    egui::Window::new(msgs.title.clone())
-        .id(egui::Id::new("katana_update_dialog_v5"))
-        .open(open)
-        .collapsible(false)
-        .resizable(false)
-        .default_width(DEFAULT_WIDTH)
-        .default_height(0.0)
-        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
-        .show(ctx, |ui| {
-            ui.vertical_centered(|ui| {
-                ui.add_space(SPACING_LARGE);
-                if state.checking_for_updates {
-                    ui.add(egui::Spinner::new());
-                    ui.add_space(SPACING_MEDIUM);
-                    ui.label(msgs.checking_for_updates.clone());
-                    ui.add_space(SPACING_LARGE);
-                } else if let Some(err) = &state.update_check_error {
-                    ui.colored_label(egui::Color32::RED, msgs.failed_to_check.clone());
-                    ui.add_space(SPACING_SMALL);
-                    ui.label(err);
-                    ui.add_space(SPACING_LARGE);
-                } else if let Some(latest) = &state.update_available {
-                    // Accent heading for new version
-                    ui.label(
-                        egui::RichText::new(msgs.update_available.clone())
-                            .heading()
-                            .color(ui.visuals().widgets.active.text_color()),
-                    );
-                    ui.add_space(SPACING_MEDIUM);
-                    let desc = msgs
-                        .update_available_desc
-                        .replace("{version}", latest.tag_name.as_str());
-                    ui.label(desc);
 
-                    ui.add_space(SPACING_LARGE);
-
-                    // Revert to left alignment for Markdown release notes content
-                    ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
-                        const MAX_SCROLL_HEIGHT: f32 = 250.0;
-                        egui::ScrollArea::vertical()
-                            .max_height(MAX_SCROLL_HEIGHT)
-                            .auto_shrink([true, true])
-                            .show(ui, |ui| {
-                                egui_commonmark::CommonMarkViewer::new().show(
-                                    ui,
-                                    markdown_cache,
-                                    &latest.body,
-                                );
-                            });
-                    });
-
-                    ui.add_space(SPACING_LARGE);
-                } else {
-                    ui.heading(msgs.up_to_date.clone());
-                    ui.add_space(SPACING_SMALL);
-                    ui.label(msgs.up_to_date_desc.clone());
-                    ui.add_space(SPACING_LARGE);
-                }
+    // Phase-aware modals (Downloading / Installing / ReadyToRelaunch)
+    match &state.update_phase {
+        Some(UpdatePhase::Downloading) => {
+            Modal::new("katana_update_progress", &msgs.title).show_body_only(ctx, |ui| {
+                ui.add(egui::Spinner::new());
+                ui.add_space(SPACING_MEDIUM);
+                ui.label(&msgs.downloading);
             });
-
-            if !state.checking_for_updates {
-                ui.separator();
-                ui.add_space(SPACING_SMALL);
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.button(msgs.action_close.clone()).clicked() {
-                        force_close = true;
-                    }
-                    if state.update_available.is_some()
-                        && ui
+            return;
+        }
+        Some(UpdatePhase::Installing) => {
+            Modal::new("katana_update_progress", &msgs.title).show_body_only(ctx, |ui| {
+                ui.add(egui::Spinner::new());
+                ui.add_space(SPACING_MEDIUM);
+                ui.label(&msgs.installing);
+            });
+            return;
+        }
+        Some(UpdatePhase::ReadyToRelaunch) => {
+            let action = Modal::new("katana_update_relaunch", &msgs.title).show(
+                ctx,
+                |ui| {
+                    ui.add_space(SPACING_LARGE);
+                    ui.label(egui::RichText::new(&msgs.restart_confirm).heading());
+                    ui.add_space(SPACING_LARGE);
+                },
+                |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui
                             .button(
-                                egui::RichText::new(msgs.install_update.clone())
+                                egui::RichText::new(&msgs.action_restart)
                                     .color(ui.visuals().widgets.active.text_color())
                                     .strong(),
                             )
                             .clicked()
-                    {
-                        trigger_install = true;
-                        force_close = true;
-                    }
-                });
+                        {
+                            return Some(AppAction::ConfirmRelaunch);
+                        }
+                        if ui.button(&msgs.action_later).clicked() {
+                            return Some(AppAction::DismissUpdate);
+                        }
+                        None
+                    })
+                    .inner
+                },
+            );
+            if let Some(action) = action {
+                *pending_action = action;
+                if matches!(pending_action, AppAction::DismissUpdate) {
+                    *open = false;
+                }
             }
-
-            ui.add_space(SPACING_SMALL);
-        });
-
-    if force_close {
-        *open = false;
+            return;
+        }
+        None => {} // Fall through to the standard update dialog
     }
-    if trigger_install {
-        *pending_action = AppAction::InstallUpdate;
+
+    // Standard update dialog — use Modal to avoid vertical stretch bug.
+    // (egui::Window::open() stores resize state, causing unbounded height growth.)
+    if state.checking_for_updates {
+        // Checking spinner — no footer, no close button
+        Modal::new("katana_update_dialog_v6", &msgs.title).show_body_only(ctx, |ui| {
+            ui.add(egui::Spinner::new());
+            ui.add_space(SPACING_MEDIUM);
+            ui.label(msgs.checking_for_updates.clone());
+        });
+    } else if let Some(err) = &state.update_check_error {
+        // Error state — OK button to close
+        let close = {
+            let err = err.clone();
+            Modal::new("katana_update_dialog_v6", &msgs.title).show(
+                ctx,
+                |ui| {
+                    ui.colored_label(egui::Color32::RED, msgs.failed_to_check.clone());
+                    ui.add_space(SPACING_SMALL);
+                    ui.label(&err);
+                },
+                |ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(msgs.action_close.clone()).clicked() {
+                            return Some(true);
+                        }
+                        None
+                    })
+                    .inner
+                },
+            )
+        };
+        if close == Some(true) {
+            *open = false;
+        }
+    } else if let Some(latest) = &state.update_available {
+        // Update available — Install/Skip/Later buttons
+        let tag = latest.tag_name.clone();
+        let body_text = latest.body.clone();
+        let desc = msgs
+            .update_available_desc
+            .replace("{version}", tag.as_str());
+        let action = Modal::new("katana_update_dialog_v6", &msgs.title).show(
+            ctx,
+            |ui| {
+                ui.label(
+                    egui::RichText::new(msgs.update_available.clone())
+                        .heading()
+                        .color(ui.visuals().widgets.active.text_color()),
+                );
+                ui.add_space(SPACING_MEDIUM);
+                ui.label(&desc);
+                ui.add_space(SPACING_LARGE);
+
+                ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
+                    egui::ScrollArea::vertical()
+                        .max_height(MAX_SCROLL_HEIGHT)
+                        .auto_shrink([true, true])
+                        .show(ui, |ui| {
+                            egui_commonmark::CommonMarkViewer::new().show(
+                                ui,
+                                markdown_cache,
+                                &body_text,
+                            );
+                        });
+                });
+                ui.add_space(SPACING_LARGE);
+            },
+            |ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    // Primary: Install
+                    if ui
+                        .button(
+                            egui::RichText::new(msgs.install_update.clone())
+                                .color(ui.visuals().widgets.active.text_color())
+                                .strong(),
+                        )
+                        .clicked()
+                    {
+                        return Some(AppAction::InstallUpdate);
+                    }
+                    // Skip
+                    if ui.button(msgs.action_skip_version.clone()).clicked() {
+                        return Some(AppAction::SkipVersion(tag.clone()));
+                    }
+                    // Later
+                    if ui.button(msgs.action_later.clone()).clicked() {
+                        return Some(AppAction::DismissUpdate);
+                    }
+                    None
+                })
+                .inner
+            },
+        );
+        if let Some(action) = action {
+            *pending_action = action;
+            *open = false;
+        }
+    } else {
+        // Up to date — OK button to close
+        let close = Modal::new("katana_update_dialog_v6", &msgs.title).show(
+            ctx,
+            |ui| {
+                ui.heading(msgs.up_to_date.clone());
+                ui.add_space(SPACING_SMALL);
+                ui.label(msgs.up_to_date_desc.clone());
+            },
+            |ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui.button(msgs.action_close.clone()).clicked() {
+                        return Some(true);
+                    }
+                    None
+                })
+                .inner
+            },
+        );
+        if close == Some(true) {
+            *open = false;
+        }
     }
 }

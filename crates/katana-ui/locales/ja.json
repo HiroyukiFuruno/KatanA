@@ -45,7 +45,14 @@
     "up_to_date": "最新版です",
     "up_to_date_desc": "お使いの KatanA は最新バージョンです。",
     "failed_to_check": "更新の確認に失敗しました。",
-    "action_close": "OK"
+    "action_close": "OK",
+    "install_update": "アップデート＆再起動",
+    "downloading": "アップデートをダウンロード中...",
+    "installing": "アップデートをインストール中...",
+    "restart_confirm": "アップデートの準備ができました。今すぐ再起動しますか？",
+    "action_later": "後で",
+    "action_skip_version": "このバージョンをスキップ",
+    "action_restart": "今すぐ再起動"
   },
   "workspace": {
     "no_workspace_open": "ワークスペースが開かれていません。",
@@ -197,6 +204,10 @@
       {
         "key": "group_system",
         "name": "システム"
+      },
+      {
+        "key": "updates",
+        "name": "アップデート"
       }
     ],
     "updates": {
