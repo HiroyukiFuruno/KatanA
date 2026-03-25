@@ -231,8 +231,9 @@ fn test_integration_toc_panel_hides_when_disabled() {
 
     // Explicitly toggle TOC on
     harness.state_mut().trigger_action(AppAction::ToggleToc);
-    harness.step(); // Action processes
-    harness.step(); // Panel renders
+    for _ in 0..10 {
+        harness.step();
+    }
 
     // Verify panel is visible initially
     let toc_title = katana_ui::i18n::get().toc.title.clone();
