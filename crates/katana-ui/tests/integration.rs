@@ -2576,7 +2576,7 @@ fn test_integration_tree_context_menu_actions() {
     harness.step();
     let state = harness.state_mut().app_state_mut();
     assert!(state.create_fs_node_modal_state.is_some());
-    let (parent, name, is_dir) = state.create_fs_node_modal_state.as_ref().unwrap();
+    let (parent, name, _, is_dir) = state.create_fs_node_modal_state.as_ref().unwrap();
     assert_eq!(*parent, temp_dir);
     assert!(name.is_empty());
     assert!(!*is_dir);

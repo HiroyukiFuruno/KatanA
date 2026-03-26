@@ -188,7 +188,8 @@
     "workspace": {
       "max_depth": "最大スキャン階層",
       "ignored_directories": "除外ディレクトリ",
-      "ignored_directories_hint": "スキャンから除外するディレクトリのカンマ区切りリスト（例: .git, node_modules, .terraform）"
+      "ignored_directories_hint": "スキャンから除外するディレクトリのカンマ区切りリスト（例: .git, node_modules, .terraform）",
+      "visible_extensions": "表示対象の拡張子"
     },
     "tabs": [
       {

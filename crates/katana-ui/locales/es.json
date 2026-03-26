@@ -185,9 +185,10 @@
       }
     ],
     "workspace": {
-      "max_depth": "Profundidad máx. escaneo",
+      "max_depth": "Profundidad máxima de escaneo",
       "ignored_directories": "Directorios ignorados",
-      "ignored_directories_hint": "Lista de directorios a excluir, separados por comas (p. ej., .git, node_modules, .terraform)"
+      "ignored_directories_hint": "Lista separada por comas de directorios a excluir del escaneo (p. ej., .git, node_modules, .terraform)",
+      "visible_extensions": "Extensiones visibles"
     },
     "updates": {
       "section_title": "[es] App Updates",

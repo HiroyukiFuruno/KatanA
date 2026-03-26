@@ -66,13 +66,13 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 Workspace設定タブ内に、表示対象ファイルの拡張子設定を追加する。
 
-- [ ] 3.1 `WorkspaceSettings` に `visible_extensions: Vec<String>` を追加（default: `["md"]`）
-- [ ] 3.2 設定画面のWorkspaceタブに拡張子トグル（`.md`, `.markdown`, `.mdx`）を追加
-- [ ] 3.3 ファイルツリーのフィルタロジックを `visible_extensions` に基づくよう変更
-- [ ] 3.4 新規ファイル作成ダイアログのデフォルト拡張子をプルダウン（StyledComboBox）で選択可能に
-- [ ] 3.5 i18n: 関連メッセージを全言語に追加
-- [ ] 3.6 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 3.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 3.1 `WorkspaceSettings` に `visible_extensions: Vec<String>` を追加（default: `["md"]`）
+- [x] 3.2 設定画面のWorkspaceタブに拡張子トグル（`.md`, `.markdown`, `.mdx`）を追加
+- [x] 3.3 ファイルツリーのフィルタロジックを `visible_extensions` に基づくよう変更
+- [x] 3.4 新規ファイル作成ダイアログのデフォルト拡張子をプルダウン（StyledComboBox）で選択可能に
+- [x] 3.5 i18n: 関連メッセージを全言語に追加
+- [x] 3.6 ユーザーへのUIスナップショット（画像等）の提示および動作報告（※ユーザー指示により未確認進行・事後レビュー）
+- [x] 3.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装（※同上）
 
 ### Definition of Done (DoD)
 
