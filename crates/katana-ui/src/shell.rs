@@ -146,6 +146,8 @@ pub struct KatanaApp {
     pub(crate) splash_start: Option<std::time::Instant>,
     /// Path for the currently active metadata dialog.
     pub(crate) show_meta_info_for: Option<std::path::PathBuf>,
+    /// Prepared update ready to be relaunched after user confirmation.
+    pub(crate) pending_relaunch: Option<katana_core::update::UpdatePreparation>,
 }
 
 impl KatanaApp {
@@ -173,6 +175,7 @@ impl KatanaApp {
             needs_splash: !cfg!(test),
             splash_start: None,
             show_meta_info_for: None,
+            pending_relaunch: None,
         };
         app.start_update_check(false);
         app
@@ -305,6 +308,7 @@ impl KatanaApp {
         self.state.workspace_cancel_token = Some(new_token.clone());
 
         let settings = self.state.settings.settings().workspace.clone();
+        let in_memory_dirs = self.state.in_memory_dirs.clone();
 
         std::thread::spawn(move || {
             let fs = katana_platform::FilesystemService::new();
@@ -313,6 +317,7 @@ impl KatanaApp {
                 &settings.ignored_directories,
                 settings.max_depth,
                 new_token,
+                &in_memory_dirs,
             );
             let _ = tx.send((WorkspaceLoadType::Open, path_clone, result));
         });
@@ -454,6 +459,7 @@ impl KatanaApp {
         self.state.workspace_cancel_token = Some(new_token.clone());
 
         let settings = self.state.settings.settings().workspace.clone();
+        let in_memory_dirs = self.state.in_memory_dirs.clone();
 
         std::thread::spawn(move || {
             let fs = katana_platform::FilesystemService::new();
@@ -462,6 +468,7 @@ impl KatanaApp {
                 &settings.ignored_directories,
                 settings.max_depth,
                 new_token,
+                &in_memory_dirs,
             );
             let _ = tx.send((WorkspaceLoadType::Refresh, root, result));
         });
@@ -967,12 +974,80 @@ impl KatanaApp {
             AppAction::ShowMetaInfo(path) => {
                 self.show_meta_info_for = Some(path);
             }
+            AppAction::SkipVersion(version) => {
+                self.state.settings.settings_mut().updates.skipped_version = Some(version);
+                let _ = self.state.settings.save();
+                self.show_update_dialog = false;
+            }
+            AppAction::DismissUpdate => {
+                self.show_update_dialog = false;
+            }
+            AppAction::ConfirmRelaunch => {
+                if let Some(_prep) = self.pending_relaunch.take() {
+                    #[cfg(all(not(test), not(coverage)))]
+                    {
+                        let _ = katana_core::update::execute_relauncher(_prep);
+                        std::process::exit(0);
+                    }
+                }
+            }
+            AppAction::RequestNewFile(path) => {
+                self.state.create_fs_node_modal_state = Some((path, String::new(), false));
+            }
+            AppAction::RequestNewDirectory(path) => {
+                self.state.create_fs_node_modal_state = Some((path, String::new(), true));
+            }
+            AppAction::RequestRename(path) => {
+                let name = path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().into_owned())
+                    .unwrap_or_default();
+                self.state.rename_modal_state = Some((path, name));
+            }
+            AppAction::RequestDelete(path) => {
+                self.state.delete_modal_state = Some(path);
+            }
+            AppAction::CopyPathToClipboard(path) => {
+                ctx.copy_text(path.to_string_lossy().to_string());
+            }
+            AppAction::CopyRelativePathToClipboard(path) => {
+                let rel_path = if let Some(ws) = &self.state.workspace {
+                    path.strip_prefix(&ws.root).unwrap_or(&path).to_path_buf()
+                } else {
+                    path.clone()
+                };
+                ctx.copy_text(rel_path.to_string_lossy().to_string());
+            }
+            AppAction::RevealInOs(path) => {
+                #[cfg(target_os = "macos")]
+                {
+                    let _ = std::process::Command::new("open")
+                        .arg("-R")
+                        .arg(&path)
+                        .spawn();
+                }
+                #[cfg(target_os = "windows")]
+                {
+                    let _ = std::process::Command::new("explorer")
+                        .arg("/select,")
+                        .arg(&path)
+                        .spawn();
+                }
+                #[cfg(target_os = "linux")]
+                {
+                    let dir = if path.is_file() {
+                        path.parent().unwrap_or(&path)
+                    } else {
+                        &path
+                    };
+                    let _ = std::process::Command::new("xdg-open").arg(dir).spawn();
+                }
+            }
             AppAction::None => {}
             AppAction::InstallUpdate => {
                 if let Some(release) = &self.state.update_available {
                     self.state.checking_for_updates = true;
-                    // Usually we don't have the MacOS .app path when running via `cargo run` locally normally.
-                    // For safety, let's grab the current exe context:
+                    self.state.update_phase = Some(crate::app_state::UpdatePhase::Downloading);
                     let exe_path = std::env::current_exe().unwrap();
                     let target_app_path = if exe_path.to_string_lossy().contains("MacOS") {
                         const MACOS_BUNDLE_LEVELS: usize = 3;
@@ -982,7 +1057,6 @@ impl KatanaApp {
                             .unwrap()
                             .to_path_buf()
                     } else {
-                        // Development mode fallback
                         exe_path.clone()
                     };
 
@@ -1351,27 +1425,33 @@ impl KatanaApp {
         });
     }
 
-    /// Polls for update check completion.
+    /// Polls for update installation completion.
     pub(crate) fn poll_update_install(&mut self, _ctx: &egui::Context) {
         if let Some(rx) = &self.update_install_rx {
             match rx.try_recv() {
-                Ok(Ok(_prep)) => {
-                    // Safety net: in dev it might try to replace target/debug/katana. Ignore failure.
-                    #[cfg(all(not(test), not(coverage)))]
-                    {
-                        let _ = katana_core::update::execute_relauncher(_prep);
-                        std::process::exit(0);
-                    }
+                Ok(Ok(prep)) => {
+                    self.state.checking_for_updates = false;
+                    self.state.update_phase = Some(crate::app_state::UpdatePhase::ReadyToRelaunch);
+                    self.pending_relaunch = Some(prep);
+                    self.show_update_dialog = true;
+                    self.update_install_rx = None;
                 }
                 Ok(Err(err)) => {
                     self.state.checking_for_updates = false;
+                    self.state.update_phase = None;
                     self.state.update_check_error = Some(err);
                     self.show_update_dialog = true;
                     self.update_install_rx = None;
                 }
-                Err(std::sync::mpsc::TryRecvError::Empty) => {}
+                Err(std::sync::mpsc::TryRecvError::Empty) => {
+                    // Still in progress — update phase to Installing if downloading is done
+                    if self.state.update_phase == Some(crate::app_state::UpdatePhase::Downloading) {
+                        self.state.update_phase = Some(crate::app_state::UpdatePhase::Installing);
+                    }
+                }
                 Err(_) => {
                     self.state.checking_for_updates = false;
+                    self.state.update_phase = None;
                     self.update_install_rx = None;
                 }
             }
@@ -2446,6 +2526,7 @@ mod tests_extra {
             needs_splash: false,
             splash_start: None,
             show_meta_info_for: None,
+            pending_relaunch: None,
         }
     }
 

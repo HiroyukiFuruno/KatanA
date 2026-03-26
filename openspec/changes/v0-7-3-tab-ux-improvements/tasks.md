@@ -11,16 +11,17 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. ハイライト背景バグ調査・修正
 
-- [ ] 1.1 再現条件の調査（特定GPU/描画環境、macOS バージョン、egui のバージョン）。※技術負債メモに記録されている「コードブロック背景色が `syntect` に強制上書きされる問題」と同一事象の可能性があるため、調査時に関連性を確認すること
-- [ ] 1.2 egui の `Painter::rect_filled` / `Frame::fill` の描画パスを追跡し、背景が描画されないコードパスを特定
-- [ ] 1.3 修正実装（描画パス変更またはフォールバック追加）
-- [ ] 1.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 1.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 1.1 再現条件の調査（特定GPU/描画環境、macOS バージョン、egui のバージョン）。※技術負債メモに記録されている「コードブロック背景色が `syntect` に強制上書きされる問題」と同一事象の可能性があるため、調査時に関連性を確認すること
+- [x] 1.2 egui の `Painter::rect_filled` / `Frame::fill` の描画パスを追跡し、背景が描画されないコードパスを特定
+- [x] 1.3 修正実装（描画パス変更またはフォールバック追加）
+- [x] 1.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 1.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
-- [ ] 再現していた環境で背景が表示されることを確認
-- [ ] `make check` が exit code 0 で通過
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+- [x] 再現していた環境で背景が表示されることを確認
+- [x] `make check` が exit code 0 で通過
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -28,17 +29,18 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 > **実装対象の明確化**: タブバー上のタブではなく、左ペインのファイルツリー（Source Tree）上のファイル/ディレクトリアイテムが対象。
 
-- [ ] 2.1 Source Tree のファイル/ディレクトリアイテムに右クリックイベントを追加
-- [ ] 2.2 Workspace ペインと共通のコンテキストメニューコンポーネントを統合（重複実装を避ける）
-- [ ] 2.3 「開く」「コピー」「削除」「名前変更」などの操作をコンテキストメニュー経由で実行できるよう実装
-- [ ] 2.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.1 Source Tree のファイル/ディレクトリアイテムに右クリックイベントを追加
+- [x] 2.2 Workspace ペインと共通のコンテキストメニューコンポーネントを統合（重複実装を避ける）
+- [x] 2.3 「開く」「コピー」「削除」「名前変更」などの操作をコンテキストメニュー経由で実行できるよう実装
+- [x] 2.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
-- [ ] Source Tree のタブ右クリックでメニューが表示される
-- [ ] Workspace コンテキストメニューと同等の操作が実行できる
-- [ ] `make check` が exit code 0 で通過
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+- [x] Source Tree のタブ右クリックでメニューが表示される
+- [x] Workspace コンテキストメニューと同等の操作が実行できる
+- [x] `make check` が exit code 0 で通過
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -51,6 +53,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 3.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 左→右・右→左双方向のドラッグ移動が正常動作する
 - [ ] `make check` が exit code 0 で通過
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
@@ -72,6 +75,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 4.11 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] グループの作成・削除・色変更・タブ追加が動作する
 - [ ] アプリ再起動後にグループが復元される
 - [ ] `make check` が exit code 0 で通過
@@ -90,6 +94,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 5.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 再起動後に前回開いていたタブが復元される
 - [ ] 設定でOFF時は復元されない
 - [ ] `make check` が exit code 0 で通過
@@ -107,6 +112,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 6.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] ピン留め中のタブがコンテキストメニューなしで削除できないことを確認
 - [ ] ピン留め中にタイトルがツールチップで表示される
 - [ ] `make check` が exit code 0 で通過

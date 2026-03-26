@@ -4,7 +4,7 @@
 //!   - **Left pane**: Tab bar + settings controls (scrollable)
 //!   - **Right pane**: Live markdown preview using `PreviewPane` (scrollable independently)
 
-use crate::app_state::SettingsTab;
+use crate::app_state::{AppAction, SettingsTab};
 use crate::preview_pane::PreviewPane;
 use crate::theme_bridge;
 use katana_platform::settings::{SettingsService, MAX_FONT_SIZE, MIN_FONT_SIZE};
@@ -77,15 +77,17 @@ Secondary text and [a link](https://example.com) for reference.
 
 // ── Public rendering entry-point ─────────────────────────────────────
 
-/// Render the settings window.
+/// Render the settings window. Returns an action to dispatch if triggered from settings.
 pub(crate) fn render_settings_window(
     ctx: &egui::Context,
     state: &mut crate::app_state::AppState,
     preview_pane: &mut PreviewPane,
-) {
+) -> Option<AppAction> {
     if !state.show_settings {
-        return;
+        return None;
     }
+
+    let mut triggered_action: Option<AppAction> = None;
 
     // Ensure preview pane has content loaded
     if preview_pane.sections.is_empty() {
@@ -179,6 +181,11 @@ pub(crate) fn render_settings_window(
                         .find(|t| t.key == "workspace")
                         .map(|t| t.name.as_str())
                         .unwrap_or("Workspace"),
+                    SettingsTab::Updates => tab_messages
+                        .iter()
+                        .find(|t| t.key == "updates")
+                        .map(|t| t.name.as_str())
+                        .unwrap_or("Updates"),
                 };
 
                 section_header(ui, title);
@@ -194,6 +201,11 @@ pub(crate) fn render_settings_window(
                                 SettingsTab::Font => render_font_tab(ui, &mut state.settings),
                                 SettingsTab::Layout => render_layout_tab(ui, state),
                                 SettingsTab::Workspace => render_workspace_tab(ui, state),
+                                SettingsTab::Updates => {
+                                    if let Some(action) = render_updates_tab(ui, state) {
+                                        triggered_action = Some(action);
+                                    }
+                                }
                             }
                         });
                     });
@@ -205,8 +217,8 @@ pub(crate) fn render_settings_window(
             }
         });
     state.show_settings = open;
+    triggered_action
 }
-
 // ── Tree Navigation ──────────────────────────────────────────────────
 
 fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
@@ -290,6 +302,14 @@ fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
             .clicked()
         {
             state.active_settings_tab = SettingsTab::Workspace;
+        }
+
+        let updates_selected = state.active_settings_tab == SettingsTab::Updates;
+        if ui
+            .selectable_label(updates_selected, settings_msgs.tab_name("updates"))
+            .clicked()
+        {
+            state.active_settings_tab = SettingsTab::Updates;
         }
     });
 }
@@ -864,10 +884,15 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
             .weak()
             .size(HINT_FONT_SIZE),
     );
+}
 
-    ui.add_space(SECTION_SPACING);
-
+fn render_updates_tab(
+    ui: &mut egui::Ui,
+    state: &mut crate::app_state::AppState,
+) -> Option<AppAction> {
     let update_msgs = &crate::i18n::get().settings.updates;
+    let settings = &mut state.settings;
+
     section_header(ui, &update_msgs.section_title);
 
     let ver_str = format!("Current version: v{}", env!("CARGO_PKG_VERSION"));
@@ -911,7 +936,7 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
     ui.add_space(SUBSECTION_SPACING);
 
     if ui.button(&update_msgs.check_now).clicked() {
-        // Will be wired up to the AppState manual check trigger
-        state.manual_update_check_requested = true;
+        return Some(AppAction::CheckForUpdates);
     }
+    None
 }

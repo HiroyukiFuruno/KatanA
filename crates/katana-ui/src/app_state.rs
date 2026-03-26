@@ -39,6 +39,17 @@ pub struct TabSplitState {
     pub state: SplitViewState,
 }
 
+/// Current phase of the update installation process.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UpdatePhase {
+    /// Downloading the update ZIP from GitHub.
+    Downloading,
+    /// Extracting and installing the update.
+    Installing,
+    /// Ready to relaunch — waiting for user confirmation.
+    ReadyToRelaunch,
+}
+
 /// Top-level section within the settings window.
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub enum SettingsSection {
@@ -61,6 +72,8 @@ pub enum SettingsTab {
     Layout,
     /// Workspace scanning options (max depth, excluded dirs).
     Workspace,
+    /// Application update settings.
+    Updates,
 }
 
 impl SettingsTab {
@@ -68,7 +81,7 @@ impl SettingsTab {
     pub const fn section(&self) -> SettingsSection {
         match self {
             Self::Theme | Self::Font | Self::Layout => SettingsSection::Appearance,
-            Self::Workspace => SettingsSection::Behavior,
+            Self::Workspace | Self::Updates => SettingsSection::Behavior,
         }
     }
 }
@@ -78,7 +91,7 @@ impl SettingsSection {
     pub const fn tabs(&self) -> &[SettingsTab] {
         match self {
             Self::Appearance => &[SettingsTab::Theme, SettingsTab::Font, SettingsTab::Layout],
-            Self::Behavior => &[SettingsTab::Workspace],
+            Self::Behavior => &[SettingsTab::Workspace, SettingsTab::Updates],
         }
     }
 }
@@ -162,6 +175,26 @@ pub enum AppAction {
     DeclineTerms,
     /// Shows metadata info for the selected path.
     ShowMetaInfo(std::path::PathBuf),
+    /// Request to create a new file in the given parent directory.
+    RequestNewFile(std::path::PathBuf),
+    /// Request to create a new directory in the given parent directory.
+    RequestNewDirectory(std::path::PathBuf),
+    /// Request to rename the given path.
+    RequestRename(std::path::PathBuf),
+    /// Request to delete the given path.
+    RequestDelete(std::path::PathBuf),
+    /// Copy the given path to the clipboard.
+    CopyPathToClipboard(std::path::PathBuf),
+    /// Copy the given path relative to the workspace root to the clipboard.
+    CopyRelativePathToClipboard(std::path::PathBuf),
+    /// Reveal the given path in the OS file explorer.
+    RevealInOs(std::path::PathBuf),
+    /// Skip a specific update version (persists to settings).
+    SkipVersion(String),
+    /// Dismiss the update dialog without action ("Later").
+    DismissUpdate,
+    /// Confirm relaunch after update is ready.
+    ConfirmRelaunch,
     /// No-op (used internally).
     None,
 }
@@ -246,7 +279,8 @@ pub struct AppState {
     pub update_available: Option<katana_core::update::ReleaseInfo>,
     /// Flags whether an update check is currently running
     pub checking_for_updates: bool,
-    pub manual_update_check_requested: bool,
+    /// Current phase of update installation (download/install/ready-to-relaunch).
+    pub update_phase: Option<UpdatePhase>,
     /// Stores any error encountered during update checking
     pub update_check_error: Option<String>,
     /// Global UI scale factor.
@@ -255,10 +289,19 @@ pub struct AppState {
     pub cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
     /// Set of manually expanded directories in the workspace tree.
     pub expanded_directories: std::collections::HashSet<std::path::PathBuf>,
+    /// Empty directories manually created in the current session (to bypass markdown-only visibility filter).
+    pub in_memory_dirs: std::collections::HashSet<std::path::PathBuf>,
     /// History of closed tabs to enable restoring (LIFO).
     pub recently_closed_tabs: std::collections::VecDeque<std::path::PathBuf>,
     /// Cache for the last window title set to prevent redundant viewport commands.
     pub last_window_title: String,
+
+    /// Modal state for creating a new file or directory: `Some((parent_dir, new_name, is_dir))`
+    pub create_fs_node_modal_state: Option<(std::path::PathBuf, String, bool)>,
+    /// Modal state for renaming a file or directory: `Some((target_path, new_name))`
+    pub rename_modal_state: Option<(std::path::PathBuf, String)>,
+    /// Modal state for deleting a file or directory: `Some(target_path)`
+    pub delete_modal_state: Option<std::path::PathBuf>,
 }
 
 /// Indicates the source of a scroll operation. Used to prevent chain reactions.
@@ -318,15 +361,19 @@ impl AppState {
             is_loading_workspace: false,
             update_available: None,
             checking_for_updates: false,
-            manual_update_check_requested: false,
+            update_phase: None,
             update_check_error: None,
             scale_override: 1.0,
             cache,
             expanded_directories: std::collections::HashSet::new(),
+            in_memory_dirs: std::collections::HashSet::new(),
             recently_closed_tabs: std::collections::VecDeque::with_capacity(
                 Self::MAX_RECENTLY_CLOSED_TABS,
             ),
             last_window_title: String::new(),
+            create_fs_node_modal_state: None,
+            rename_modal_state: None,
+            delete_modal_state: None,
         }
     }
 
@@ -483,12 +530,16 @@ mod tests {
         assert_eq!(SettingsTab::Font.section(), SettingsSection::Appearance);
         assert_eq!(SettingsTab::Layout.section(), SettingsSection::Appearance);
         assert_eq!(SettingsTab::Workspace.section(), SettingsSection::Behavior);
+        assert_eq!(SettingsTab::Updates.section(), SettingsSection::Behavior);
 
         assert_eq!(
             SettingsSection::Appearance.tabs(),
             &[SettingsTab::Theme, SettingsTab::Font, SettingsTab::Layout]
         );
-        assert_eq!(SettingsSection::Behavior.tabs(), &[SettingsTab::Workspace]);
+        assert_eq!(
+            SettingsSection::Behavior.tabs(),
+            &[SettingsTab::Workspace, SettingsTab::Updates]
+        );
     }
 
     fn make_state_with_doc(path: &str) -> AppState {

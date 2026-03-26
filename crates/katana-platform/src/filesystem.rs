@@ -27,6 +27,7 @@ impl FilesystemService {
         ignored_directories: &[String],
         max_depth: usize,
         cancel_token: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        in_memory_dirs: &std::collections::HashSet<PathBuf>,
     ) -> Result<Workspace, WorkspaceError> {
         let root: PathBuf = path.into();
         const ROOT_DEPTH: usize = 0;
@@ -37,6 +38,7 @@ impl FilesystemService {
                 max_depth,
                 ROOT_DEPTH,
                 &cancel_token,
+                in_memory_dirs,
             )
             .map_err(|e| WorkspaceError::unreadable_root(root.clone(), e))?;
         Ok(Workspace::new(root, tree))
@@ -69,6 +71,7 @@ impl FilesystemService {
         max_depth: usize,
         current_depth: usize,
         cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
+        in_memory_dirs: &std::collections::HashSet<PathBuf>,
     ) -> std::io::Result<Vec<TreeEntry>> {
         if current_depth >= max_depth || cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
             return Ok(Vec::new());
@@ -104,10 +107,11 @@ impl FilesystemService {
                             max_depth,
                             current_depth + 1,
                             cancel_token,
+                            in_memory_dirs,
                         )
                         .unwrap_or_default();
-                    // Do not show directories that contain no `.md` files underneath.
-                    if has_any_markdown(&children) {
+                    // Show directory if it has markdown files OR it is an explicitly created empty directory.
+                    if has_any_markdown(&children) || in_memory_dirs.contains(&path) {
                         Some(TreeEntry::Directory { path, children })
                     } else {
                         None
