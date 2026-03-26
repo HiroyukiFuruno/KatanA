@@ -4060,15 +4060,17 @@ fn about_row(ui: &mut egui::Ui, label: &str, value: &str) {
     });
 }
 
-/// Link row: label on the left, clickable short text on the right.
 fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) {
     ui.horizontal(|ui| {
+        ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium));
         ui.label(egui::RichText::new(label).weak());
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             if ui
                 .add(
-                    egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Small))
-                        .frame(false),
+                    egui::Button::image(
+                        crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
+                    )
+                    .frame(false),
                 )
                 .on_hover_text(url)
                 .clicked()

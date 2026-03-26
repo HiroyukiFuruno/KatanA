@@ -166,6 +166,16 @@ pub(crate) fn render_settings_window(
             }
 
             egui::CentralPanel::default().show_inside(ui, |ui| {
+                let expected_width = if show_preview {
+                    SETTINGS_WINDOW_DEFAULT_WIDTH
+                        - SETTINGS_SIDE_PANEL_DEFAULT_WIDTH
+                        - SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH
+                } else {
+                    SETTINGS_WINDOW_DEFAULT_WIDTH - SETTINGS_SIDE_PANEL_DEFAULT_WIDTH
+                };
+                ui.set_min_width(expected_width);
+                ui.set_min_height(ui.available_height());
+                
                 let tab_messages = &crate::i18n::get().settings.tabs;
                 let title = match state.active_settings_tab {
                     SettingsTab::Theme => tab_messages
