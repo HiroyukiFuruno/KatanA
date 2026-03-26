@@ -2,6 +2,12 @@
 
 All notable changes to KatanA DesktopThis file records the major changes to KatanA Desktop.
 
+## [0.7.5] - 2026-03-26 05:43:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Tab Navigation**: Resolve an issue where closing a tab would fail to load and render the preview for the newly activated tab if it was previously opened in the background without being rendered.
+
 ## [0.7.4] - 2026-03-26 05:15:00 (UTC)
 
 ### 🚀 Features
