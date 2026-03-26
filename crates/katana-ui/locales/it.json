@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "Aggiornamenti"
+      },
+      {
+        "key": "behavior",
+        "name": "Comportamento"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[it] Weekly",
       "monthly": "[it] Monthly",
       "check_now": "[it] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "Comportamento",
+      "confirm_close_dirty_tab": "Conferma prima di chiudere le schede non salvate",
+      "scroll_sync": "Sincronizza lo scorrimento dell'editor e dell'anteprima",
+      "auto_save": "Salvataggio automatico",
+      "auto_save_interval": "Intervallo di salvataggio automatico",
+      "seconds": "secondi",
+      "close_confirm_title": "Modifiche non salvate",
+      "close_confirm_msg": "'{name}' ha modifiche non salvate. Eliminarle?",
+      "close_confirm_discard": "Elimina",
+      "close_confirm_cancel": "Annulla"
     }
   },
   "tab": {

@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "Mises à jour"
+      },
+      {
+        "key": "behavior",
+        "name": "Comportement"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[fr] Weekly",
       "monthly": "[fr] Monthly",
       "check_now": "[fr] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "Comportement",
+      "confirm_close_dirty_tab": "Confirmer avant de fermer les onglets non enregistrés",
+      "scroll_sync": "Synchroniser le défilement de l'éditeur et de l'aperçu",
+      "auto_save": "Sauvegarde automatique",
+      "auto_save_interval": "Intervalle de sauvegarde automatique",
+      "seconds": "secondes",
+      "close_confirm_title": "Modifications non enregistrées",
+      "close_confirm_msg": "'{name}' a des modifications non enregistrées. Les supprimer ?",
+      "close_confirm_discard": "Supprimer",
+      "close_confirm_cancel": "Annuler"
     }
   },
   "tab": {

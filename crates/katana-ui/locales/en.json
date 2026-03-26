@@ -218,6 +218,10 @@
       {
         "key": "updates",
         "name": "Updates"
+      },
+      {
+        "key": "behavior",
+        "name": "Behavior"
       }
     ],
     "updates": {
@@ -228,6 +232,18 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "check_now": "Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "Behavior",
+      "confirm_close_dirty_tab": "Confirm before closing unsaved tabs",
+      "scroll_sync": "Synchronise editor and preview scroll",
+      "auto_save": "Auto-save",
+      "auto_save_interval": "Auto-save interval",
+      "seconds": "seconds",
+      "close_confirm_title": "Unsaved Changes",
+      "close_confirm_msg": "'{name}' has unsaved changes. Discard them?",
+      "close_confirm_discard": "Discard",
+      "close_confirm_cancel": "Cancel"
     }
   },
   "tab": {
