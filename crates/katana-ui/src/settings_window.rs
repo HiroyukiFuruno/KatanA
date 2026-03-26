@@ -426,6 +426,8 @@ fn render_theme_preset_selector(ui: &mut egui::Ui, settings: &mut SettingsServic
                 {
                     settings.settings_mut().theme.custom_color_overrides =
                         Some(custom_theme.colors.clone());
+                    settings.settings_mut().theme.active_custom_theme =
+                        Some(custom_theme.name.clone());
                     let _ = settings.save();
                 }
 
@@ -440,6 +442,7 @@ fn render_theme_preset_selector(ui: &mut egui::Ui, settings: &mut SettingsServic
                         settings.settings_mut().theme.custom_themes.remove(idx);
                         if is_selected {
                             settings.settings_mut().theme.custom_color_overrides = None;
+                            settings.settings_mut().theme.active_custom_theme = None;
                         }
                         let _ = settings.save();
                     }
@@ -490,6 +493,7 @@ fn render_preset_group(
             {
                 settings.settings_mut().theme.preset = (*preset).clone();
                 settings.settings_mut().theme.custom_color_overrides = None;
+                settings.settings_mut().theme.active_custom_theme = None;
                 let _ = settings.save();
             }
         });
@@ -593,17 +597,12 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
     }
 
     ui.add_space(SUBSECTION_SPACING);
-    ui.horizontal(|ui| {
-        if settings.settings().theme.custom_color_overrides.is_some()
-            && ui
-                .button(crate::i18n::get().settings.theme.reset_custom.clone())
-                .clicked()
-        {
-            settings.settings_mut().theme.custom_color_overrides = None;
-            let _ = settings.save();
-        }
 
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    let active_custom = settings.settings().theme.active_custom_theme.clone();
+
+    ui.with_layout(
+        egui::Layout::top_down_justified(egui::Align::Center),
+        |ui| {
             let limit_reached = settings.settings().theme.custom_themes.len()
                 >= katana_platform::settings::MAX_CUSTOM_THEMES;
             ui.add_enabled_ui(!limit_reached, |ui| {
@@ -611,10 +610,49 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
                     ui.button(crate::i18n::get().settings.theme.save_custom_theme.clone());
                 if save_btn.clicked() {
                     ui.data_mut(|d| d.insert_temp(egui::Id::new("show_save_theme_modal"), true));
+
+                    if let Some(name) = &active_custom {
+                        let dup_name = format!("{} copy", name);
+                        ui.data_mut(|d| {
+                            d.insert_temp(egui::Id::new("custom_theme_name_input"), dup_name)
+                        });
+                    } else {
+                        ui.data_mut(|d| {
+                            d.insert_temp(egui::Id::new("custom_theme_name_input"), String::new())
+                        });
+                    }
                 }
             });
-        });
-    });
+
+            if settings.settings().theme.custom_color_overrides.is_some() {
+                ui.add_space(SUBSECTION_SPACING);
+                if ui
+                    .button(crate::i18n::get().settings.theme.reset_custom.clone())
+                    .clicked()
+                {
+                    if let Some(name) = &active_custom {
+                        if let Some(theme) = settings
+                            .settings()
+                            .theme
+                            .custom_themes
+                            .iter()
+                            .find(|t| t.name == *name)
+                        {
+                            settings.settings_mut().theme.custom_color_overrides =
+                                Some(theme.colors.clone());
+                        } else {
+                            settings.settings_mut().theme.custom_color_overrides = None;
+                            settings.settings_mut().theme.active_custom_theme = None;
+                        }
+                    } else {
+                        settings.settings_mut().theme.custom_color_overrides = None;
+                        settings.settings_mut().theme.active_custom_theme = None;
+                    }
+                    let _ = settings.save();
+                }
+            }
+        },
+    );
 
     let modal_id = egui::Id::new("show_save_theme_modal");
     let show_modal = ui.data(|d| d.get_temp::<bool>(modal_id).unwrap_or(false));
@@ -657,12 +695,19 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
                     {
                         let mut theme_colors = settings.settings().effective_theme_colors();
                         theme_colors.name = name.clone();
-                        settings.settings_mut().theme.custom_themes.push(
-                            katana_platform::settings::CustomTheme {
+
+                        let mut themes = settings.settings().theme.custom_themes.clone();
+                        if let Some(existing) = themes.iter_mut().find(|t| t.name == name) {
+                            existing.colors = theme_colors;
+                        } else {
+                            themes.push(katana_platform::settings::CustomTheme {
                                 name: name.clone(),
                                 colors: theme_colors,
-                            },
-                        );
+                            });
+                        }
+                        settings.settings_mut().theme.custom_themes = themes;
+                        settings.settings_mut().theme.active_custom_theme = Some(name);
+
                         let _ = settings.save();
                         close = true;
                     }

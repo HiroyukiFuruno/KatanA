@@ -120,6 +120,8 @@ pub struct ThemeSettings {
     pub custom_color_overrides: Option<ThemeColors>,
     #[serde(default)]
     pub custom_themes: Vec<CustomTheme>,
+    #[serde(default)]
+    pub active_custom_theme: Option<String>,
 }
 
 impl Default for ThemeSettings {
@@ -129,6 +131,7 @@ impl Default for ThemeSettings {
             preset: ThemePreset::default(),
             custom_color_overrides: None,
             custom_themes: Vec::new(),
+            active_custom_theme: None,
         }
     }
 }
