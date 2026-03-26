@@ -23,8 +23,10 @@ Determine the correct `--base` value:
 
 1. If the current branch matches `<feature>-task<N>` pattern → base is `<feature>` (the Base Feature Branch per `/openspec-branching`).
 2. If the current branch matches `<feature>-task<N>-<suffix>` pattern → base is still `<feature>`.
-3. If the caller explicitly specifies a base branch, use that.
-4. **If none of the above apply, ask the user.** Do not guess.
+3. If the current branch matches `<feature>-feedback`, `<feature>-fix`, or `<feature>-fixes` (e.g., `v0-7-0-feature-feedback-fixes`) pattern → base is STILL `<feature>` (the integration branch).
+4. If the current branch IS the integration branch `<feature>` itself (e.g., `v0-7-0-feature`) → base is `master`.
+5. If the caller explicitly specifies a base branch, use that.
+6. **If none of the above apply, ask the user.** Do not guess.
 
 verify the base branch exists:
 
