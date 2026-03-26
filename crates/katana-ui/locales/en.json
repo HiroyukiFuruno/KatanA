@@ -242,7 +242,7 @@
     "behavior": {
       "section_title": "Behavior",
       "confirm_close_dirty_tab": "Confirm before closing unsaved tabs",
-      "scroll_sync": "Synchronise editor and preview scroll",
+      "scroll_sync": "Scroll Sync",
       "auto_save": "Auto-save",
       "auto_save_interval": "Auto-save interval",
       "seconds": "seconds",

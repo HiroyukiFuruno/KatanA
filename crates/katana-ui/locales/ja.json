@@ -242,7 +242,7 @@
     "behavior": {
       "section_title": "動作",
       "confirm_close_dirty_tab": "未保存のタブを閉じる前に確認する",
-      "scroll_sync": "エディタとプレビューのスクロールを同期する",
+      "scroll_sync": "スクロールの同期",
       "auto_save": "自動保存",
       "auto_save_interval": "自動保存間隔",
       "seconds": "秒",
