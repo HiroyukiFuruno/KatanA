@@ -4560,7 +4560,9 @@ fn render_create_fs_node_modal(
     let mut close = false;
     let mut do_create = false;
 
-    if let Some((parent_dir, mut name, is_dir)) = state.create_fs_node_modal_state.take() {
+    if let Some((parent_dir, mut name, mut selected_ext, is_dir)) =
+        state.create_fs_node_modal_state.take()
+    {
         let title = if is_dir {
             crate::i18n::get().dialog.new_directory_title.clone()
         } else {
@@ -4582,6 +4584,25 @@ fn render_create_fs_node_modal(
                             .desired_width(MODAL_INPUT_WIDTH),
                     );
                     re.request_focus();
+
+                    if !is_dir {
+                        if let Some(ref mut ext) = selected_ext {
+                            const EXT_COMBOBOX_WIDTH: f32 = 80.0;
+                            let options = state
+                                .settings
+                                .settings()
+                                .workspace
+                                .visible_extensions
+                                .clone();
+                            crate::widgets::StyledComboBox::new("new_file_ext", ext.as_str())
+                                .width(EXT_COMBOBOX_WIDTH)
+                                .show(ui, |ui| {
+                                    for opt in &options {
+                                        ui.selectable_value(ext, opt.clone(), opt);
+                                    }
+                                });
+                        }
+                    }
 
                     if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                         do_create = true;
@@ -4609,7 +4630,21 @@ fn render_create_fs_node_modal(
         }
 
         if do_create && !name.is_empty() {
-            let target_path = parent_dir.join(&name);
+            let actual_name = if !is_dir {
+                if let Some(ref ext) = selected_ext {
+                    if name.ends_with(&format!(".{}", ext)) {
+                        name.clone()
+                    } else {
+                        format!("{}.{}", name, ext)
+                    }
+                } else {
+                    name.clone()
+                }
+            } else {
+                name.clone()
+            };
+
+            let target_path = parent_dir.join(&actual_name);
             let res = if is_dir {
                 std::fs::create_dir(&target_path)
             } else {
@@ -4628,7 +4663,7 @@ fn render_create_fs_node_modal(
         }
 
         if !close {
-            state.create_fs_node_modal_state = Some((parent_dir, name, is_dir));
+            state.create_fs_node_modal_state = Some((parent_dir, name, selected_ext, is_dir));
         }
     }
 }

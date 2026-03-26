@@ -187,7 +187,8 @@
     "workspace": {
       "max_depth": "Profondità scansione max",
       "ignored_directories": "Directory ignorate",
-      "ignored_directories_hint": "Elenco di directory da escludere, separate da virgole (es. .git, node_modules, .terraform)"
+      "ignored_directories_hint": "Elenco di directory da escludere, separate da virgole (es. .git, node_modules, .terraform)",
+      "visible_extensions": "Estensioni visibili"
     },
     "updates": {
       "section_title": "[it] App Updates",

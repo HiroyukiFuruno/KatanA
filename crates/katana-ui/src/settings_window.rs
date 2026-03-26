@@ -911,6 +911,36 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
             .weak()
             .size(HINT_FONT_SIZE),
     );
+
+    ui.add_space(SECTION_SPACING);
+
+    section_header(ui, &workspace_msgs.visible_extensions);
+    ui.horizontal(|ui| {
+        let mut extensions = settings.settings().workspace.visible_extensions.clone();
+        let mut changed_ext = false;
+
+        for ext in &["md", "markdown", "mdx"] {
+            let mut is_enabled = extensions.contains(&ext.to_string());
+            if toggle_ui(ui, &mut is_enabled).changed() {
+                if is_enabled {
+                    if !extensions.contains(&ext.to_string()) {
+                        extensions.push(ext.to_string());
+                    }
+                } else {
+                    extensions.retain(|e| e != ext);
+                }
+                changed_ext = true;
+            }
+            ui.label(*ext);
+            const SETTINGS_TOGGLE_SPACING: f32 = 8.0;
+            ui.add_space(SETTINGS_TOGGLE_SPACING);
+        }
+
+        if changed_ext {
+            settings.settings_mut().workspace.visible_extensions = extensions;
+            let _ = settings.save();
+        }
+    });
 }
 
 fn render_updates_tab(

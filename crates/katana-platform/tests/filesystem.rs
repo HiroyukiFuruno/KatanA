@@ -25,6 +25,7 @@ fn open_valid_workspace_returns_workspace() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -40,6 +41,7 @@ fn open_invalid_workspace_returns_error() {
         "/nonexistent/path/that/does/not/exist",
         &[],
         10,
+        &["md".to_string()],
         std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
         &std::collections::HashSet::new(),
     );
@@ -115,6 +117,7 @@ fn hidden_directories_with_markdown_are_included() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -161,6 +164,7 @@ fn target_directory_is_excluded_from_workspace() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -192,6 +196,7 @@ fn node_modules_directory_is_excluded_from_workspace() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -226,6 +231,7 @@ fn directories_without_markdown_are_excluded() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -258,6 +264,7 @@ fn non_markdown_files_at_root_are_excluded() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -296,6 +303,7 @@ fn nested_subdirectory_with_markdown_is_included() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -330,6 +338,7 @@ fn filesystem_service_default_works() {
             tmp.path(),
             &ignored,
             10,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             &std::collections::HashSet::new(),
         )
@@ -357,6 +366,7 @@ fn test_scan_directory_respects_max_depth() {
             tmp.path(),
             &ignored,
             2,
+            &["md".to_string(), "markdown".to_string(), "mdx".to_string()],
             cancel_token.clone(),
             &std::collections::HashSet::new(),
         )
