@@ -183,6 +183,10 @@
       {
         "key": "updates",
         "name": "更新"
+      },
+      {
+        "key": "behavior",
+        "name": "行为"
       }
     ],
     "updates": {
@@ -193,6 +197,18 @@
       "weekly": "[zh-CN] Weekly",
       "monthly": "[zh-CN] Monthly",
       "check_now": "[zh-CN] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "行为",
+      "confirm_close_dirty_tab": "关闭未保存的标签页前确认",
+      "scroll_sync": "同步编辑器和预览滚动",
+      "auto_save": "自动保存",
+      "auto_save_interval": "自动保存间隔",
+      "seconds": "秒",
+      "close_confirm_title": "未保存的更改",
+      "close_confirm_msg": "'{name}' 有未保存的更改。是否丢弃？",
+      "close_confirm_discard": "丢弃",
+      "close_confirm_cancel": "取消"
     }
   },
   "tab": {

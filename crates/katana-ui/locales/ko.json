@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "업데이트"
+      },
+      {
+        "key": "behavior",
+        "name": "동작"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[ko] Weekly",
       "monthly": "[ko] Monthly",
       "check_now": "[ko] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "동작",
+      "confirm_close_dirty_tab": "저장되지 않은 탭을 닫기 전에 확인",
+      "scroll_sync": "에디터와 미리보기 스크롤 동기화",
+      "auto_save": "자동 저장",
+      "auto_save_interval": "자동 저장 간격",
+      "seconds": "초",
+      "close_confirm_title": "저장되지 않은 변경 사항",
+      "close_confirm_msg": "'{name}'에 저장되지 않은 변경 사항이 있습니다. 삭제하시겠습니까?",
+      "close_confirm_discard": "삭제",
+      "close_confirm_cancel": "취소"
     }
   },
   "tab": {
