@@ -91,6 +91,17 @@ jobs:
       - name: Build .dmg installer
         run: make dmg
 
+      - name: Build .zip archive
+        run: |
+          APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
+          if [[ -n "$APP_PATH" ]]; then
+            (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
+            echo "Successfully built target/release/KatanA-macOS.zip"
+          else
+            echo "Error: .app bundle not found"
+            exit 1
+          fi
+
       - name: Extract release notes from CHANGELOG.md
         run: |
           scripts/release/extract-notes.sh "${{ steps.tag.outputs.version }}" > RELEASE_NOTES.md
@@ -100,7 +111,7 @@ jobs:
       - name: Generate Checksums
         run: |
           cd target/release
-          shasum -a 256 KatanA-Desktop-*.dmg > checksums.txt
+          shasum -a 256 KatanA-Desktop-*.dmg KatanA-macOS.zip > checksums.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
@@ -112,6 +123,7 @@ jobs:
           prerelease: false
           files: |
             target/release/KatanA-Desktop-*.dmg
+            target/release/KatanA-macOS.zip
             target/release/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
