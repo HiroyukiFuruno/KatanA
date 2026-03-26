@@ -2,7 +2,29 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
-## [0.7.6] - Unreleased
+## [0.7.6] - 2026-03-26 21:20:00 (UTC)
+
+### 🚀 Features
+
+- **Behavior Settings**: Provide granular control to adjust the auto-save interval with 0.1-second precision.
+- **Workspace Settings**: Implement toggles for hiding file extensions and add a fully functioning list-style UI for managing scan exclusion paths easily.
+- **Custom Theme Management**: Support complete lifecycle actions for custom themes, including named saving, duplication, and explicit deletion.
+
+### 🎨 UI/UX
+
+- **ComboBox Standardization**: Deprecate raw `egui::ComboBox` usage in favor of the newly introduced, unified `StyledComboBox` component globally.
+- **Preview Sync Configuration**: Transition scroll synchronization configuration to an intuitive toggle switch and streamline layout order.
+- **Theme Builder Polish**: Rearrange custom theme color pickers vertically to dramatically improve visibility and usability within constrained side panels.
+
+### 🐛 Bug Fixes
+
+- **i18n Validation**: Synchronize translation tokens across all 10 locales to eliminate strict AST linter panics regarding identical string declarations.
+- **Lint Stabilisation**: Apply necessary UI layout test clipping fixes and resolve Markdown Lint discrepancies.
+
+### 🔧 Miscellaneous
+
+- **Internal**: Comprehensive Unit and Integration test expansions to strictly maintain the 100% coverage quality gate.
+- **Ops**: Archive finished OpenSpec documentation artifacts (`v0.7.4`, `v0.7.5`) and properly segment subsequent workflow proposals (`v0.7.7`, `v0.8.0`).
 
 ## [0.7.5] - 2026-03-26 05:43:00 (UTC)
 
