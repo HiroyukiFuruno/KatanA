@@ -21,12 +21,14 @@ impl FilesystemService {
     ///
     /// On success, returns a [`Workspace`] with the directory tree populated.  
     /// On failure (unreadable path), returns a recoverable [`WorkspaceError`].
+    #[allow(clippy::too_many_arguments)]
     pub fn open_workspace(
         &self,
         path: impl Into<PathBuf>,
         ignored_directories: &[String],
         max_depth: usize,
         visible_extensions: &[String],
+        extensionless_excludes: &[String],
         cancel_token: std::sync::Arc<std::sync::atomic::AtomicBool>,
         in_memory_dirs: &std::collections::HashSet<PathBuf>,
     ) -> Result<Workspace, WorkspaceError> {
@@ -39,6 +41,7 @@ impl FilesystemService {
                 max_depth,
                 ROOT_DEPTH,
                 visible_extensions,
+                extensionless_excludes,
                 &cancel_token,
                 in_memory_dirs,
             )
@@ -74,6 +77,7 @@ impl FilesystemService {
         max_depth: usize,
         current_depth: usize,
         visible_extensions: &[String],
+        extensionless_excludes: &[String],
         cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
         in_memory_dirs: &std::collections::HashSet<PathBuf>,
     ) -> std::io::Result<Vec<TreeEntry>> {
@@ -111,6 +115,7 @@ impl FilesystemService {
                             max_depth,
                             current_depth + 1,
                             visible_extensions,
+                            extensionless_excludes,
                             cancel_token,
                             in_memory_dirs,
                         )
@@ -123,19 +128,27 @@ impl FilesystemService {
                     } else {
                         None
                     }
-                } else if path
-                    .extension()
-                    .and_then(|e| e.to_str())
-                    .map(|ext| {
-                        visible_extensions
-                            .iter()
-                            .any(|v| v.eq_ignore_ascii_case(ext))
-                    })
-                    .unwrap_or(false)
-                {
-                    Some(TreeEntry::File { path })
                 } else {
-                    None
+                    let is_visible = match path.extension().and_then(|e| e.to_str()) {
+                        Some(ext) => visible_extensions
+                            .iter()
+                            .any(|v| v.eq_ignore_ascii_case(ext)),
+                        None => {
+                            let no_ext_enabled = visible_extensions.iter().any(|v| v.is_empty());
+                            if no_ext_enabled {
+                                let is_excluded =
+                                    extensionless_excludes.iter().any(|excl| excl == file_name);
+                                !is_excluded
+                            } else {
+                                false
+                            }
+                        }
+                    };
+                    if is_visible {
+                        Some(TreeEntry::File { path })
+                    } else {
+                        None
+                    }
                 }
             })
             .collect();
@@ -153,20 +166,114 @@ impl FilesystemService {
 /// Recursively checks if there is at least one visible file in the tree.
 fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[String]) -> bool {
     entries.iter().any(|e| match e {
-        TreeEntry::File { path } => path
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .map(|ext| {
-                visible_extensions
-                    .iter()
-                    .any(|v| v.eq_ignore_ascii_case(ext))
-            })
-            .unwrap_or(false),
+        TreeEntry::File { path } => match path.extension().and_then(|ext| ext.to_str()) {
+            Some(ext) => visible_extensions
+                .iter()
+                .any(|v| v.eq_ignore_ascii_case(ext)),
+            None => visible_extensions.iter().any(|v| v.is_empty()),
+        },
         TreeEntry::Directory { children, .. } => has_any_visible(children, visible_extensions),
     })
 }
 impl Default for FilesystemService {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_has_any_visible_with_empty_extension() {
+        let file_with_no_ext = TreeEntry::File {
+            path: PathBuf::from("no_extension_file"),
+        };
+        let file_with_ext = TreeEntry::File {
+            path: PathBuf::from("file.md"),
+        };
+
+        // Without empty string in visible_extensions
+        let visible_exts_without_empty = vec!["md".to_string()];
+        assert!(!has_any_visible(
+            &[file_with_no_ext.clone()],
+            &visible_exts_without_empty
+        ));
+        assert!(has_any_visible(
+            &[file_with_ext.clone()],
+            &visible_exts_without_empty
+        ));
+
+        // With empty string in visible_extensions
+        let visible_exts_with_empty = vec!["md".to_string(), "".to_string()];
+        assert!(has_any_visible(
+            &[file_with_no_ext.clone()],
+            &visible_exts_with_empty
+        ));
+
+        // Inside a directory
+        let dir = TreeEntry::Directory {
+            path: PathBuf::from("dir"),
+            children: vec![file_with_no_ext],
+        };
+        assert!(!has_any_visible(
+            &[dir.clone()],
+            &visible_exts_without_empty
+        ));
+        assert!(has_any_visible(&[dir], &visible_exts_with_empty));
+    }
+
+    #[test]
+    fn test_scan_directory_empty_extension() {
+        use std::fs;
+        use std::sync::atomic::AtomicBool;
+        use std::sync::Arc;
+        use tempfile::tempdir;
+
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("no_ext_file");
+        fs::write(&file_path, "test").unwrap();
+
+        let svc = FilesystemService::new();
+        let cancel_token = Arc::new(AtomicBool::new(false));
+        let in_memory_dirs = std::collections::HashSet::new();
+
+        // 1. empty string in visible_extensions
+        let tree_with_empty = svc
+            .scan_directory(
+                dir.path(),
+                &[],
+                10,
+                0,
+                &["".to_string()],
+                &[],
+                &cancel_token,
+                &in_memory_dirs,
+            )
+            .unwrap();
+
+        assert_eq!(tree_with_empty.len(), 1);
+        if let TreeEntry::File { path } = &tree_with_empty[0] {
+            assert_eq!(path.file_name().unwrap(), "no_ext_file");
+        } else {
+            panic!("Expected file entry");
+        }
+
+        // 2. empty string not in visible_extensions
+        let tree_without_empty = svc
+            .scan_directory(
+                dir.path(),
+                &[],
+                10,
+                0,
+                &["md".to_string()],
+                &[],
+                &cancel_token,
+                &in_memory_dirs,
+            )
+            .unwrap();
+        assert!(tree_without_empty.is_empty());
     }
 }

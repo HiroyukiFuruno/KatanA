@@ -1277,21 +1277,20 @@ pub(crate) fn render_view_mode_bar(
                     .scroll_sync_override
                     .unwrap_or(state.settings.settings().behavior.scroll_sync_enabled);
 
-                // Right to left layout: emit rightmost element first (the toggle switch)
-                let toggle_response = crate::widgets::toggle_switch(ui, &mut is_on);
+                const TOGGLE_LABEL_SPACING: f32 = 8.0;
 
-                // Then emit the label to its left
-                let label_response = ui
-                    .add(
-                        egui::Label::new(crate::i18n::get().settings.behavior.scroll_sync.clone())
-                            .sense(egui::Sense::click()),
+                let resp = ui.add(
+                    crate::widgets::LabeledToggle::new(
+                        crate::i18n::get().settings.behavior.scroll_sync.clone(),
+                        &mut is_on,
                     )
-                    .on_hover_cursor(egui::CursorIcon::PointingHand);
+                    .position(crate::widgets::TogglePosition::Right)
+                    .alignment(crate::widgets::ToggleAlignment::Attached(
+                        TOGGLE_LABEL_SPACING,
+                    )),
+                );
 
-                if toggle_response.clicked() || label_response.clicked() {
-                    if label_response.clicked() {
-                        is_on = !is_on;
-                    }
+                if resp.clicked() {
                     state.scroll_sync_override = Some(is_on);
                 }
             }
@@ -1696,8 +1695,9 @@ fn render_tree_context_menu(
                 ui.close();
             }
         }
-    } else if let Some(entry) = entry {
-        if entry.is_markdown() && ui.button(msg.open.clone()).clicked() {
+    } else if entry.is_some() {
+        #[allow(clippy::collapsible_if)]
+        if ui.button(msg.open.clone()).clicked() {
             *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
             ui.close();
         }
@@ -1960,7 +1960,7 @@ pub(crate) fn render_file_entry(
         });
     }
 
-    if resp.clicked() && entry.is_markdown() {
+    if resp.clicked() {
         *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
     }
 }

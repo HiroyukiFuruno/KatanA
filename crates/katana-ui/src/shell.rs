@@ -328,6 +328,7 @@ impl KatanaApp {
                 &settings.ignored_directories,
                 settings.max_depth,
                 &settings.visible_extensions,
+                &settings.extensionless_excludes,
                 new_token,
                 &in_memory_dirs,
             );
@@ -480,6 +481,7 @@ impl KatanaApp {
                 &settings.ignored_directories,
                 settings.max_depth,
                 &settings.visible_extensions,
+                &settings.extensionless_excludes,
                 new_token,
                 &in_memory_dirs,
             );
