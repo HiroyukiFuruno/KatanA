@@ -861,50 +861,12 @@ fn render_layout_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) 
     render_pane_order_selector(ui, state);
 }
 
-fn toggle_ui(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
-    let desired_size = ui.spacing().interact_size.y * egui::vec2(2.0, 1.0);
-    let (rect, mut response) = ui.allocate_exact_size(desired_size, egui::Sense::click());
-    if response.clicked() {
-        *on = !*on;
-        response.mark_changed();
-    }
-    response.widget_info(|| {
-        egui::WidgetInfo::selected(egui::WidgetType::Checkbox, ui.is_enabled(), *on, "")
-    });
-
-    if ui.is_rect_visible(rect) {
-        let how_on = ui.ctx().animate_bool(response.id, *on);
-        let visuals = ui.style().interact_selectable(&response, *on);
-        let rect = rect.expand(visuals.expansion);
-        const TOGGLE_RADIUS_RATIO: f32 = 0.5;
-        let radius = TOGGLE_RADIUS_RATIO * rect.height();
-        ui.painter().rect(
-            rect,
-            radius,
-            visuals.bg_fill,
-            visuals.bg_stroke,
-            egui::StrokeKind::Inside,
-        );
-        let circle_x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), how_on);
-        let center = egui::pos2(circle_x, rect.center().y);
-        const TOGGLE_CIRCLE_RATIO: f32 = 0.75;
-        ui.painter().circle(
-            center,
-            TOGGLE_CIRCLE_RATIO * radius,
-            visuals.bg_fill,
-            visuals.fg_stroke,
-        );
-    }
-
-    response
-}
-
 fn render_toc_toggle(ui: &mut egui::Ui, settings: &mut SettingsService) {
     let mut toc_visible = settings.settings().layout.toc_visible;
     ui.horizontal(|ui| {
         ui.label(crate::i18n::get().settings.toc_visible.clone());
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if toggle_ui(ui, &mut toc_visible).changed() {
+            if crate::widgets::toggle_switch(ui, &mut toc_visible).changed() {
                 settings.settings_mut().layout.toc_visible = toc_visible;
                 let _ = settings.save();
             }
@@ -1045,9 +1007,9 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
         let mut extensions = settings.settings().workspace.visible_extensions.clone();
         let mut changed_ext = false;
 
-        for ext in &["md", "markdown", "mdx"] {
+        for ext in &["md", "markdown", "mdx", "txt", "adr"] {
             let mut is_enabled = extensions.contains(&ext.to_string());
-            if toggle_ui(ui, &mut is_enabled).changed() {
+            if crate::widgets::toggle_switch(ui, &mut is_enabled).changed() {
                 if is_enabled {
                     if !extensions.contains(&ext.to_string()) {
                         extensions.push(ext.to_string());
@@ -1135,7 +1097,7 @@ fn render_behavior_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState
     ui.horizontal(|ui| {
         ui.label(&behavior_msgs.confirm_close_dirty_tab);
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if toggle_ui(ui, &mut confirm).changed() {
+            if crate::widgets::toggle_switch(ui, &mut confirm).changed() {
                 settings.settings_mut().behavior.confirm_close_dirty_tab = confirm;
                 let _ = settings.save();
             }
@@ -1149,7 +1111,7 @@ fn render_behavior_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState
     ui.horizontal(|ui| {
         ui.label(&behavior_msgs.scroll_sync);
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if toggle_ui(ui, &mut scroll_sync).changed() {
+            if crate::widgets::toggle_switch(ui, &mut scroll_sync).changed() {
                 settings.settings_mut().behavior.scroll_sync_enabled = scroll_sync;
                 let _ = settings.save();
             }
@@ -1168,7 +1130,7 @@ fn render_behavior_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState
     ui.horizontal(|ui| {
         ui.label(&behavior_msgs.auto_save);
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if toggle_ui(ui, &mut enabled).changed() {
+            if crate::widgets::toggle_switch(ui, &mut enabled).changed() {
                 settings.settings_mut().behavior.auto_save = enabled;
                 let _ = settings.save();
             }
