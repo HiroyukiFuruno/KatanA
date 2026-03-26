@@ -1096,6 +1096,22 @@ impl KatanaApp {
         // Specifically, ensure inactive tabs give up their background CPU,
         // and closed tabs drop their previews entirely.
         self.cleanup_closed_tab_previews();
+
+        // Ensure the newly active document is loaded and has a preview.
+        // This handles cases where tabs are closed and the active tab silently shifts.
+        let mut inactive_but_focused_path = None;
+        if let Some(active_idx) = self.state.active_doc_idx {
+            if let Some(doc) = self.state.open_documents.get(active_idx) {
+                let has_preview = self.tab_previews.iter().any(|t| t.path == doc.path);
+                if !doc.is_loaded || !has_preview {
+                    inactive_but_focused_path = Some(doc.path.clone());
+                }
+            }
+        }
+        if let Some(path) = inactive_but_focused_path {
+            self.handle_select_document(path, true);
+        }
+
         self.cancel_inactive_renders();
     }
 
