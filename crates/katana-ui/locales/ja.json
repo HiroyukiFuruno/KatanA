@@ -218,6 +218,10 @@
       {
         "key": "updates",
         "name": "アップデート"
+      },
+      {
+        "key": "behavior",
+        "name": "動作"
       }
     ],
     "updates": {
@@ -228,6 +232,18 @@
       "weekly": "毎週",
       "monthly": "毎月",
       "check_now": "今すぐ更新をチェックする"
+    },
+    "behavior": {
+      "section_title": "動作",
+      "confirm_close_dirty_tab": "未保存のタブを閉じる前に確認する",
+      "scroll_sync": "エディタとプレビューのスクロールを同期する",
+      "auto_save": "自動保存",
+      "auto_save_interval": "自動保存間隔",
+      "seconds": "秒",
+      "close_confirm_title": "未保存の変更",
+      "close_confirm_msg": "'{name}' に未保存の変更があります。破棄しますか？",
+      "close_confirm_discard": "破棄",
+      "close_confirm_cancel": "キャンセル"
     }
   },
   "tab": {

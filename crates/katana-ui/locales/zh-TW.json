@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "更新"
+      },
+      {
+        "key": "behavior",
+        "name": "行為"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[zh-TW] Weekly",
       "monthly": "[zh-TW] Monthly",
       "check_now": "[zh-TW] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "行為",
+      "confirm_close_dirty_tab": "關閉未儲存的分頁前確認",
+      "scroll_sync": "同步編輯器和預覽捲動",
+      "auto_save": "自動儲存",
+      "auto_save_interval": "自動儲存間隔",
+      "seconds": "秒",
+      "close_confirm_title": "未儲存的變更",
+      "close_confirm_msg": "'{name}' 有未儲存的變更。是否捨棄？",
+      "close_confirm_discard": "捨棄",
+      "close_confirm_cancel": "取消"
     }
   },
   "tab": {

@@ -622,6 +622,30 @@ impl KatanaApp {
         }
     }
 
+    pub(crate) fn force_close_document(&mut self, idx: usize) {
+        if idx < self.state.open_documents.len() {
+            let closed_doc = self.state.open_documents.remove(idx);
+            self.state.push_recently_closed(closed_doc.path);
+            self.state.active_doc_idx = if self.state.open_documents.is_empty() {
+                None
+            } else {
+                Some(
+                    self.state
+                        .active_doc_idx
+                        .unwrap_or(0)
+                        .saturating_sub(if self.state.active_doc_idx == Some(idx) {
+                            1
+                        } else {
+                            0
+                        })
+                        .min(self.state.open_documents.len().saturating_sub(1)),
+                )
+            };
+        }
+        self.save_workspace_state();
+        self.cleanup_closed_tab_previews();
+    }
+
     pub(crate) fn save_workspace_state(&mut self) {
         let open_tabs: Vec<String> = self
             .state
@@ -771,27 +795,26 @@ impl KatanaApp {
             }
             AppAction::RemoveWorkspace(path) => self.handle_remove_workspace(path),
             AppAction::CloseDocument(idx) => {
-                if idx < self.state.open_documents.len() {
-                    let closed_doc = self.state.open_documents.remove(idx);
-                    self.state.push_recently_closed(closed_doc.path);
-                    self.state.active_doc_idx = if self.state.open_documents.is_empty() {
-                        None
-                    } else {
-                        Some(
-                            self.state
-                                .active_doc_idx
-                                .unwrap_or(0)
-                                .saturating_sub(if self.state.active_doc_idx == Some(idx) {
-                                    1
-                                } else {
-                                    0
-                                })
-                                .min(self.state.open_documents.len().saturating_sub(1)),
-                        )
-                    };
+                // A1: If confirm_close_dirty_tab is enabled and the doc is dirty,
+                // show a confirmation dialog instead of closing immediately.
+                let should_confirm = self
+                    .state
+                    .settings
+                    .settings()
+                    .behavior
+                    .confirm_close_dirty_tab
+                    && idx < self.state.open_documents.len()
+                    && self.state.open_documents[idx].is_dirty;
+
+                if should_confirm {
+                    self.state.pending_close_confirm = Some(idx);
+                } else {
+                    self.force_close_document(idx);
                 }
-                self.save_workspace_state();
-                self.cleanup_closed_tab_previews();
+            }
+            AppAction::ForceCloseDocument(idx) => {
+                self.state.pending_close_confirm = None;
+                self.force_close_document(idx);
             }
             AppAction::UpdateBuffer(c) => self.handle_update_buffer(c),
             AppAction::ReplaceText { span, replacement } => {

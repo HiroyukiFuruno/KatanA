@@ -81,6 +81,10 @@ pub struct AppSettings {
     #[serde(default)]
     pub updates: UpdateSettings,
 
+    /// Behavior / system-default settings (nesting).
+    #[serde(default)]
+    pub behavior: BehaviorSettings,
+
     /// Terms of service accepted version (None = not accepted).
     #[serde(default)]
     pub terms_accepted_version: Option<String>,
@@ -287,6 +291,41 @@ pub struct UpdateSettings {
     pub skipped_version: Option<String>,
 }
 
+/// Default auto-save interval in seconds.
+const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
+
+fn default_auto_save_interval_secs() -> f64 {
+    DEFAULT_AUTO_SAVE_INTERVAL_SECS
+}
+
+/// Application behavior settings controlling system-level defaults.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BehaviorSettings {
+    /// Show a confirmation dialog when closing a tab with unsaved changes.
+    #[serde(default = "crate::settings::default_true")]
+    pub confirm_close_dirty_tab: bool,
+    /// Synchronise scroll position between editor and preview in split view.
+    #[serde(default = "crate::settings::default_true")]
+    pub scroll_sync_enabled: bool,
+    /// Enable automatic saving of dirty documents.
+    #[serde(default)]
+    pub auto_save: bool,
+    /// Interval in seconds between auto-save triggers.
+    #[serde(default = "default_auto_save_interval_secs")]
+    pub auto_save_interval_secs: f64,
+}
+
+impl Default for BehaviorSettings {
+    fn default() -> Self {
+        Self {
+            confirm_close_dirty_tab: true,
+            scroll_sync_enabled: true,
+            auto_save: false,
+            auto_save_interval_secs: DEFAULT_AUTO_SAVE_INTERVAL_SECS,
+        }
+    }
+}
+
 fn default_version() -> String {
     "0.2.0".to_string()
 }
@@ -335,6 +374,7 @@ impl Default for AppSettings {
             performance: PerformanceSettings::default(),
             export: ExportSettings::default(),
             updates: UpdateSettings::default(),
+            behavior: BehaviorSettings::default(),
             terms_accepted_version: None,
             language: default_language(),
             extra: Vec::new(),
@@ -558,6 +598,46 @@ mod tests {
         assert_eq!(s.language, "en");
         assert!(s.workspace.last_workspace.is_none());
         assert!(s.workspace.paths.is_empty());
+        // Behavior defaults
+        assert!(s.behavior.confirm_close_dirty_tab);
+        assert!(s.behavior.scroll_sync_enabled);
+        assert!(!s.behavior.auto_save);
+        assert_eq!(s.behavior.auto_save_interval_secs, 5.0);
+    }
+
+    #[test]
+    fn test_behavior_settings_defaults() {
+        let b = BehaviorSettings::default();
+        assert!(b.confirm_close_dirty_tab);
+        assert!(b.scroll_sync_enabled);
+        assert!(!b.auto_save);
+        assert_eq!(b.auto_save_interval_secs, 5.0);
+    }
+
+    #[test]
+    fn test_behavior_settings_serde_roundtrip() {
+        let b = BehaviorSettings {
+            confirm_close_dirty_tab: false,
+            scroll_sync_enabled: false,
+            auto_save: true,
+            auto_save_interval_secs: 10.0,
+        };
+        let json = serde_json::to_string(&b).unwrap();
+        let loaded: BehaviorSettings = serde_json::from_str(&json).unwrap();
+        assert!(!loaded.confirm_close_dirty_tab);
+        assert!(!loaded.scroll_sync_enabled);
+        assert!(loaded.auto_save);
+        assert_eq!(loaded.auto_save_interval_secs, 10.0);
+    }
+
+    #[test]
+    fn test_behavior_settings_serde_missing_fields_use_defaults() {
+        let json = "{}";
+        let loaded: BehaviorSettings = serde_json::from_str(json).unwrap();
+        assert!(loaded.confirm_close_dirty_tab);
+        assert!(loaded.scroll_sync_enabled);
+        assert!(!loaded.auto_save);
+        assert_eq!(loaded.auto_save_interval_secs, 5.0);
     }
 
     #[test]

@@ -309,6 +309,8 @@ pub struct ActionMessages {
     pub save: String,
     #[serde(default = "default_action_cancel")]
     pub cancel: String,
+    #[serde(default = "default_action_discard")]
+    pub discard: String,
 }
 
 fn default_action_new_file() -> String {
@@ -341,6 +343,9 @@ fn default_action_save() -> String {
 fn default_action_cancel() -> String {
     "Cancel".to_string()
 }
+fn default_action_discard() -> String {
+    "Discard".to_string()
+}
 
 #[derive(Debug, Clone, Deserialize, Default)]
 #[allow(dead_code)]
@@ -350,6 +355,17 @@ pub struct DialogMessages {
     pub rename_title: String,
     pub delete_title: String,
     pub delete_confirm_msg: String,
+    #[serde(default = "default_unsaved_changes_title")]
+    pub unsaved_changes_title: String,
+    #[serde(default = "default_unsaved_changes_msg")]
+    pub unsaved_changes_msg: String,
+}
+
+fn default_unsaved_changes_title() -> String {
+    "Unsaved Changes".to_string()
+}
+fn default_unsaved_changes_msg() -> String {
+    "Do you want to save the changes you made to {name}?\n\nYour changes will be lost if you don't save them.".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -378,6 +394,8 @@ pub struct SettingsMessages {
     pub workspace: SettingsWorkspaceMessages,
     #[serde(default)]
     pub updates: SettingsUpdatesMessages,
+    #[serde(default)]
+    pub behavior: SettingsBehaviorMessages,
     pub preview: SettingsPreviewMessages,
     pub color: SettingsColorMessages,
 }
@@ -449,6 +467,32 @@ pub struct SettingsUpdatesMessages {
     pub weekly: String,
     pub monthly: String,
     pub check_now: String,
+}
+
+/// i18n messages for the Behavior settings tab.
+#[derive(Debug, Clone, Deserialize, Default)]
+#[allow(dead_code)]
+pub struct SettingsBehaviorMessages {
+    /// Section heading.
+    pub section_title: String,
+    /// Label for the confirm-close-dirty-tab toggle.
+    pub confirm_close_dirty_tab: String,
+    /// Label for the scroll-sync toggle.
+    pub scroll_sync: String,
+    /// Label for the auto-save toggle.
+    pub auto_save: String,
+    /// Label for the auto-save interval input.
+    pub auto_save_interval: String,
+    /// Unit label for seconds.
+    pub seconds: String,
+    /// Confirmation dialog title.
+    pub close_confirm_title: String,
+    /// Confirmation dialog message template.
+    pub close_confirm_msg: String,
+    /// Confirmation dialog discard button.
+    pub close_confirm_discard: String,
+    /// Confirmation dialog cancel button.
+    pub close_confirm_cancel: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
