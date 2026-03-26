@@ -188,7 +188,8 @@
     "workspace": {
       "max_depth": "Max Scan Depth",
       "ignored_directories": "Ignored Directories",
-      "ignored_directories_hint": "Comma-separated list of directories to exclude from scanning (e.g., .git, node_modules, .terraform)"
+      "ignored_directories_hint": "Comma-separated list of directories to exclude from scanning (e.g., .git, node_modules, .terraform)",
+      "visible_extensions": "Visible Extensions"
     },
     "tabs": [
       {
