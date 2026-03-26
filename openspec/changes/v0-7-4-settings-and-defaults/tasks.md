@@ -27,6 +27,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 1.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 全対象箇所のアイコン・文字が上下中央に揃っていることをスナップショットで確認
 - [ ] `egui::ComboBox` の直接使用が設定画面から撤廃されている
 - [ ] `make check` が exit code 0 で通過
@@ -47,6 +48,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 2.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 設定画面からシステムデフォルト挙動を変更でき、再起動後も反映されていること
 - [ ] 旧設定ファイルでも `#[serde(default)]` でエラーなく起動すること
 - [ ] `make check` が exit code 0 で通過
@@ -66,6 +68,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 3.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] カスタムテーマを保存・選択・削除できること
 - [ ] アプリ再起動後にカスタムテーマが維持されること
 - [ ] `make check` が exit code 0 で通過

@@ -281,6 +281,10 @@ pub struct UpdateSettings {
     /// The last time an update check was performed (UNIX timestamp in seconds).
     #[serde(default)]
     pub last_checked_timestamp_sec: Option<u64>,
+    /// Version tag the user explicitly chose to skip (e.g. "v0.8.0").
+    /// Auto-check will suppress notifications for this version.
+    #[serde(default)]
+    pub skipped_version: Option<String>,
 }
 
 fn default_version() -> String {
@@ -942,5 +946,27 @@ mod tests {
         // Test with Some
         service.apply_os_default_language(Some("fr".to_string()));
         assert_eq!(service.settings().language, "fr");
+    }
+
+    #[test]
+    fn test_skipped_version_persistence_roundtrip() {
+        let tmp = TempDir::new().unwrap();
+        let path = tmp.path().join("settings.json");
+
+        let mut settings = AppSettings::default();
+        settings.updates.skipped_version = Some("v0.8.0".to_string());
+        let repo = JsonFileRepository::new(path.clone());
+        repo.save(&settings).unwrap();
+
+        let loaded = repo.load();
+        assert_eq!(loaded.updates.skipped_version, Some("v0.8.0".to_string()));
+    }
+
+    #[test]
+    fn test_skipped_version_backward_compat() {
+        // Existing JSON without skipped_version must deserialize to None
+        let json = r#"{"updates": {"interval": "Daily"}}"#;
+        let loaded: AppSettings = serde_json::from_str(json).unwrap();
+        assert_eq!(loaded.updates.skipped_version, None);
     }
 }

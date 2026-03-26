@@ -25,6 +25,8 @@ pub struct I18nMessages {
     pub export: ExportMessages,
     #[serde(default)]
     pub terms: TermsMessages,
+    #[serde(default)]
+    pub dialog: DialogMessages,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -100,10 +102,40 @@ pub struct UpdateMessages {
     pub action_close: String,
     #[serde(default = "default_install_update")]
     pub install_update: String,
+    #[serde(default = "default_downloading")]
+    pub downloading: String,
+    #[serde(default = "default_installing")]
+    pub installing: String,
+    #[serde(default = "default_restart_confirm")]
+    pub restart_confirm: String,
+    #[serde(default = "default_action_later")]
+    pub action_later: String,
+    #[serde(default = "default_action_skip_version")]
+    pub action_skip_version: String,
+    #[serde(default = "default_action_restart")]
+    pub action_restart: String,
 }
 
 fn default_install_update() -> String {
     "Install and Relaunch".to_string()
+}
+fn default_downloading() -> String {
+    "Downloading update...".to_string()
+}
+fn default_installing() -> String {
+    "Installing update...".to_string()
+}
+fn default_restart_confirm() -> String {
+    "Update is ready. Restart now?".to_string()
+}
+fn default_action_later() -> String {
+    "Later".to_string()
+}
+fn default_action_skip_version() -> String {
+    "Skip This Version".to_string()
+}
+fn default_action_restart() -> String {
+    "Restart Now".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -257,6 +289,67 @@ pub struct ActionMessages {
     #[serde(default)]
     pub toggle_toc: String,
     pub show_meta_info: String,
+    #[serde(default = "default_action_new_file")]
+    pub new_file: String,
+    #[serde(default = "default_action_new_directory")]
+    pub new_directory: String,
+    #[serde(default = "default_action_open")]
+    pub open: String,
+    #[serde(default = "default_action_rename")]
+    pub rename: String,
+    #[serde(default = "default_action_delete")]
+    pub delete: String,
+    #[serde(default = "default_action_copy_path")]
+    pub copy_path: String,
+    #[serde(default = "default_action_copy_relative_path")]
+    pub copy_relative_path: String,
+    #[serde(default = "default_action_reveal_in_os")]
+    pub reveal_in_os: String,
+    #[serde(default = "default_action_save")]
+    pub save: String,
+    #[serde(default = "default_action_cancel")]
+    pub cancel: String,
+}
+
+fn default_action_new_file() -> String {
+    "New File".to_string()
+}
+fn default_action_new_directory() -> String {
+    "New Folder".to_string()
+}
+fn default_action_open() -> String {
+    "Open".to_string()
+}
+fn default_action_rename() -> String {
+    "Rename".to_string()
+}
+fn default_action_delete() -> String {
+    "Delete".to_string()
+}
+fn default_action_copy_path() -> String {
+    "Copy Path".to_string()
+}
+fn default_action_copy_relative_path() -> String {
+    "Copy Relative Path".to_string()
+}
+fn default_action_reveal_in_os() -> String {
+    "Reveal in OS".to_string()
+}
+fn default_action_save() -> String {
+    "Save".to_string()
+}
+fn default_action_cancel() -> String {
+    "Cancel".to_string()
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+#[allow(dead_code)]
+pub struct DialogMessages {
+    pub new_file_title: String,
+    pub new_directory_title: String,
+    pub rename_title: String,
+    pub delete_title: String,
+    pub delete_confirm_msg: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -536,6 +629,20 @@ mod tests {
     use std::sync::RwLock;
 
     #[test]
+    fn test_i18n_default_action_values() {
+        assert_eq!(default_action_new_file(), "New File");
+        assert_eq!(default_action_new_directory(), "New Folder");
+        assert_eq!(default_action_open(), "Open");
+        assert_eq!(default_action_rename(), "Rename");
+        assert_eq!(default_action_delete(), "Delete");
+        assert_eq!(default_action_copy_path(), "Copy Path");
+        assert_eq!(default_action_copy_relative_path(), "Copy Relative Path");
+        assert_eq!(default_action_reveal_in_os(), "Reveal in OS");
+        assert_eq!(default_action_save(), "Save");
+        assert_eq!(default_action_cancel(), "Cancel");
+    }
+
+    #[test]
     fn test_get_fallback_to_en() {
         // Test that an unsupported language defaults to 'en' dictionary without failing.
         set_language("unsupported-lang-code");
@@ -587,5 +694,29 @@ mod tests {
         assert!(!msgs.menu.export_pdf.is_empty());
         assert!(!msgs.menu.export_png.is_empty());
         assert!(!msgs.menu.export_jpg.is_empty());
+    }
+
+    #[test]
+    fn test_update_messages_serde_defaults_backward_compat() {
+        // Exercises all serde(default) fallback functions for UpdateMessages,
+        // simulating a locale file that predates the v0.7.2 update keys.
+        let minimal_json = r#"{
+            "title": "T",
+            "checking_for_updates": "C",
+            "update_available": "A",
+            "update_available_desc": "D",
+            "up_to_date": "U",
+            "up_to_date_desc": "UD",
+            "failed_to_check": "F",
+            "action_close": "OK"
+        }"#;
+        let msgs: super::UpdateMessages = serde_json::from_str(minimal_json).unwrap();
+        assert_eq!(msgs.install_update, "Install and Relaunch");
+        assert_eq!(msgs.downloading, "Downloading update...");
+        assert_eq!(msgs.installing, "Installing update...");
+        assert_eq!(msgs.restart_confirm, "Update is ready. Restart now?");
+        assert_eq!(msgs.action_later, "Later");
+        assert_eq!(msgs.action_skip_version, "Skip This Version");
+        assert_eq!(msgs.action_restart, "Restart Now");
     }
 }
