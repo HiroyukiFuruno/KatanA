@@ -870,7 +870,7 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                         tab_rects.push((idx, full_tab_rect));
 
                         let tab_interact = ui.interact(
-                            full_tab_rect,
+                            title_resp.rect,
                             egui::Id::new("tab_interact").with(idx),
                             egui::Sense::click_and_drag(),
                         );
