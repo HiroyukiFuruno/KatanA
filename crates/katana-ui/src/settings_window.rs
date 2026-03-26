@@ -197,6 +197,11 @@ pub(crate) fn render_settings_window(
                         .find(|t| t.key == "updates")
                         .map(|t| t.name.as_str())
                         .unwrap_or("Updates"),
+                    SettingsTab::Behavior => tab_messages
+                        .iter()
+                        .find(|t| t.key == "behavior")
+                        .map(|t| t.name.as_str())
+                        .unwrap_or("Behavior"),
                 };
 
                 section_header(ui, title);
@@ -217,6 +222,7 @@ pub(crate) fn render_settings_window(
                                         triggered_action = Some(action);
                                     }
                                 }
+                                SettingsTab::Behavior => render_behavior_tab(ui, state),
                             }
                         });
                     });
@@ -323,6 +329,14 @@ fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
             .clicked()
         {
             state.active_settings_tab = SettingsTab::Updates;
+        }
+
+        let behavior_selected = state.active_settings_tab == SettingsTab::Behavior;
+        if ui
+            .selectable_label(behavior_selected, settings_msgs.tab_name("behavior"))
+            .clicked()
+        {
+            state.active_settings_tab = SettingsTab::Behavior;
         }
     });
 }
@@ -954,4 +968,76 @@ fn render_updates_tab(
         return Some(AppAction::CheckForUpdates);
     }
     None
+}
+
+fn render_behavior_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+    let behavior_msgs = &crate::i18n::get().settings.behavior;
+    let settings = &mut state.settings;
+
+    // A1: Confirm before closing unsaved tabs
+    let mut confirm = settings.settings().behavior.confirm_close_dirty_tab;
+    ui.horizontal(|ui| {
+        ui.label(&behavior_msgs.confirm_close_dirty_tab);
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if toggle_ui(ui, &mut confirm).changed() {
+                settings.settings_mut().behavior.confirm_close_dirty_tab = confirm;
+                let _ = settings.save();
+            }
+        });
+    });
+
+    ui.add_space(SUBSECTION_SPACING);
+
+    // B1: Scroll sync (persistent setting)
+    let mut scroll_sync = settings.settings().behavior.scroll_sync_enabled;
+    ui.horizontal(|ui| {
+        ui.label(&behavior_msgs.scroll_sync);
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if toggle_ui(ui, &mut scroll_sync).changed() {
+                settings.settings_mut().behavior.scroll_sync_enabled = scroll_sync;
+                let _ = settings.save();
+            }
+        });
+    });
+
+    ui.add_space(SUBSECTION_SPACING);
+
+    // E1: Auto-save toggle
+    const AUTO_SAVE_INTERVAL_MIN: f64 = 0.0;
+    const AUTO_SAVE_INTERVAL_MAX: f64 = 300.0;
+    const AUTO_SAVE_INTERVAL_STEP: f64 = 0.1;
+    const SETTINGS_TOGGLE_SPACING: f32 = 8.0;
+
+    let mut enabled = settings.settings().behavior.auto_save;
+    ui.horizontal(|ui| {
+        ui.label(&behavior_msgs.auto_save);
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if toggle_ui(ui, &mut enabled).changed() {
+                settings.settings_mut().behavior.auto_save = enabled;
+                let _ = settings.save();
+            }
+        });
+    });
+
+    if enabled {
+        ui.add_space(SETTINGS_TOGGLE_SPACING);
+
+        let mut interval = settings.settings().behavior.auto_save_interval_secs;
+        ui.label(&behavior_msgs.auto_save_interval);
+        let slider = egui::Slider::new(
+            &mut interval,
+            AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
+        )
+        .step_by(AUTO_SAVE_INTERVAL_STEP)
+        .suffix("s")
+        .max_decimals(1)
+        .clamping(egui::SliderClamping::Always);
+
+        if add_styled_slider(ui, slider).changed() {
+            settings.settings_mut().behavior.auto_save_interval_secs = interval;
+            let _ = settings.save();
+        }
+    }
+
+    ui.add_space(SUBSECTION_SPACING);
 }

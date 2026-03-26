@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "Atualizações"
+      },
+      {
+        "key": "behavior",
+        "name": "Comportamento"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[pt] Weekly",
       "monthly": "[pt] Monthly",
       "check_now": "[pt] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "Comportamento",
+      "confirm_close_dirty_tab": "Confirmar antes de fechar abas não salvas",
+      "scroll_sync": "Sincronizar rolagem do editor e da visualização",
+      "auto_save": "Salvamento automático",
+      "auto_save_interval": "Intervalo de salvamento automático",
+      "seconds": "segundos",
+      "close_confirm_title": "Alterações não salvas",
+      "close_confirm_msg": "'{name}' tem alterações não salvas. Descartar?",
+      "close_confirm_discard": "Descartar",
+      "close_confirm_cancel": "Cancelar"
     }
   },
   "tab": {

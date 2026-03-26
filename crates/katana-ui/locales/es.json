@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "Actualizaciones"
+      },
+      {
+        "key": "behavior",
+        "name": "Comportamiento"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[es] Weekly",
       "monthly": "[es] Monthly",
       "check_now": "[es] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "Comportamiento",
+      "confirm_close_dirty_tab": "Confirmar antes de cerrar pestañas sin guardar",
+      "scroll_sync": "Sincronizar desplazamiento de editor y vista previa",
+      "auto_save": "Guardado automático",
+      "auto_save_interval": "Intervalo de guardado automático",
+      "seconds": "segundos",
+      "close_confirm_title": "Cambios sin guardar",
+      "close_confirm_msg": "'{name}' tiene cambios sin guardar. ¿Descartarlos?",
+      "close_confirm_discard": "Descartar",
+      "close_confirm_cancel": "Cancelar"
     }
   },
   "tab": {

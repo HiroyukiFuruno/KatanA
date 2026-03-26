@@ -1205,6 +1205,20 @@ pub(crate) fn render_view_mode_bar(
             if is_split && (is_split == prev_is_split) {
                 ui.separator();
 
+                let scroll_sync = state
+                    .scroll_sync_override
+                    .unwrap_or(state.settings.settings().behavior.scroll_sync_enabled);
+                if ui
+                    .selectable_label(
+                        scroll_sync,
+                        crate::i18n::get().settings.behavior.scroll_sync.clone(),
+                    )
+                    .clicked()
+                {
+                    state.scroll_sync_override = Some(!scroll_sync);
+                }
+                ui.separator();
+
                 // Toggle pane order.
                 let current_order = state.active_pane_order();
                 let (order_text, order_tip) = match current_order {
@@ -1997,6 +2011,11 @@ fn render_horizontal_split(
         PaneOrder::PreviewFirst => egui::SidePanel::left(panel_id),
     };
 
+    let scroll_sync = app
+        .state
+        .scroll_sync_override
+        .unwrap_or(app.state.settings.settings().behavior.scroll_sync_enabled);
+
     panel_side
         .resizable(true)
         .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
@@ -2011,7 +2030,7 @@ fn render_horizontal_split(
                     pane,
                     &mut app.state,
                     &mut app.pending_action,
-                    true,
+                    scroll_sync,
                     &mut scroll_state,
                 );
             }
@@ -2027,7 +2046,7 @@ fn render_horizontal_split(
     egui::CentralPanel::default()
         .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
         .show(ctx, |ui| {
-            render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+            render_editor_content(ui, &mut app.state, &mut app.pending_action, scroll_sync);
         });
 
     download_req
@@ -2064,6 +2083,10 @@ fn render_vertical_split(
 
     // EditorFirst: editor on top, preview on bottom; PreviewFirst: reversed.
     let show_preview_top = pane_order == PaneOrder::PreviewFirst;
+    let scroll_sync = app
+        .state
+        .scroll_sync_override
+        .unwrap_or(app.state.settings.settings().behavior.scroll_sync_enabled);
 
     if show_preview_top {
         egui::TopBottomPanel::top(panel_id)
@@ -2082,7 +2105,7 @@ fn render_vertical_split(
                         pane,
                         &mut app.state,
                         &mut app.pending_action,
-                        true,
+                        scroll_sync,
                         &mut scroll_state,
                     );
                 }
@@ -2099,7 +2122,7 @@ fn render_vertical_split(
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
             .show(ctx, |ui| {
-                render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+                render_editor_content(ui, &mut app.state, &mut app.pending_action, scroll_sync);
             });
     } else {
         egui::TopBottomPanel::bottom(panel_id)
@@ -2118,7 +2141,7 @@ fn render_vertical_split(
                         pane,
                         &mut app.state,
                         &mut app.pending_action,
-                        true,
+                        scroll_sync,
                         &mut scroll_state,
                     );
                 }
@@ -2131,7 +2154,7 @@ fn render_vertical_split(
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
             .show(ctx, |ui| {
-                render_editor_content(ui, &mut app.state, &mut app.pending_action, true);
+                render_editor_content(ui, &mut app.state, &mut app.pending_action, scroll_sync);
             });
     }
 
@@ -2527,6 +2550,32 @@ impl eframe::App for KatanaApp {
         if self.needs_splash {
             self.splash_start = Some(std::time::Instant::now());
             self.needs_splash = false;
+        }
+
+        // --- Auto-Save Timer ---
+        let auto_save_enabled = self.state.settings.settings().behavior.auto_save;
+        let auto_save_interval = self
+            .state
+            .settings
+            .settings()
+            .behavior
+            .auto_save_interval_secs;
+        if auto_save_enabled && auto_save_interval > 0.0 {
+            let now = std::time::Instant::now();
+            if let Some(last) = self.state.last_auto_save {
+                if now.duration_since(last).as_secs_f64() >= auto_save_interval {
+                    if let Some(doc) = self.state.active_document() {
+                        if doc.is_dirty {
+                            self.pending_action = crate::app_state::AppAction::SaveDocument;
+                        }
+                    }
+                    self.state.last_auto_save = Some(now);
+                }
+            } else {
+                self.state.last_auto_save = Some(now);
+            }
+        } else {
+            self.state.last_auto_save = None;
         }
 
         // Pre-calculate splash state to prevent flickering of the background UI.

@@ -178,6 +178,10 @@
       {
         "key": "updates",
         "name": "Aktualisierungen"
+      },
+      {
+        "key": "behavior",
+        "name": "Verhalten"
       }
     ],
     "workspace": {
@@ -193,6 +197,18 @@
       "weekly": "[de] Weekly",
       "monthly": "[de] Monthly",
       "check_now": "[de] Check for Updates Now"
+    },
+    "behavior": {
+      "section_title": "Verhalten",
+      "confirm_close_dirty_tab": "Vor dem Schließen nicht gespeicherter Tabs bestätigen",
+      "scroll_sync": "Editor- und Vorschau-Scroll synchronisieren",
+      "auto_save": "Automatisch speichern",
+      "auto_save_interval": "Automatisches Speicherintervall",
+      "seconds": "Sekunden",
+      "close_confirm_title": "Nicht gespeicherte Änderungen",
+      "close_confirm_msg": "'{name}' hat nicht gespeicherte Änderungen. Verwerfen?",
+      "close_confirm_discard": "Verwerfen",
+      "close_confirm_cancel": "Abbrechen"
     }
   },
   "tab": {
