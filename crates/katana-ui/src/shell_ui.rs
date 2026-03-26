@@ -1277,16 +1277,16 @@ pub(crate) fn render_view_mode_bar(
                     .scroll_sync_override
                     .unwrap_or(state.settings.settings().behavior.scroll_sync_enabled);
 
-                // Right to left layout: emit rightmost element first (the label)
+                // Right to left layout: emit rightmost element first (the toggle switch)
+                let toggle_response = crate::widgets::toggle_switch(ui, &mut is_on);
+
+                // Then emit the label to its left
                 let label_response = ui
                     .add(
                         egui::Label::new(crate::i18n::get().settings.behavior.scroll_sync.clone())
                             .sense(egui::Sense::click()),
                     )
                     .on_hover_cursor(egui::CursorIcon::PointingHand);
-
-                // Then emit the switch to its left
-                let toggle_response = crate::widgets::toggle_switch(ui, &mut is_on);
 
                 if toggle_response.clicked() || label_response.clicked() {
                     if label_response.clicked() {
