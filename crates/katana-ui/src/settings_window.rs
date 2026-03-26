@@ -14,7 +14,7 @@ use katana_platform::{PaneOrder, SplitDirection};
 
 // ── Window layout constants ──────────────────────────────────────────
 
-const SETTINGS_WINDOW_DEFAULT_WIDTH: f32 = 900.0;
+const SETTINGS_WINDOW_DEFAULT_WIDTH: f32 = 1000.0;
 const SETTINGS_WINDOW_DEFAULT_HEIGHT: f32 = 500.0;
 
 const SETTINGS_SIDE_PANEL_DEFAULT_WIDTH: f32 = 200.0;
@@ -23,6 +23,11 @@ const SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH: f32 = 350.0;
 
 const SETTINGS_HEADER_FONT_SIZE: f32 = 14.0;
 const SETTINGS_GROUP_SPACING: f32 = 8.0;
+const SETTINGS_TOGGLE_SPACING: f32 = 8.0;
+
+const AUTO_SAVE_INTERVAL_MIN: f64 = 0.0;
+const AUTO_SAVE_INTERVAL_MAX: f64 = 300.0;
+const AUTO_SAVE_INTERVAL_STEP: f64 = 0.1;
 
 // ── Spacing & sizing constants ───────────────────────────────────────
 
@@ -36,6 +41,7 @@ const LAYOUT_SELECTOR_SPACING: f32 = 4.0;
 const PRESET_SWATCH_SIZE: f32 = 14.0;
 const COLOR_GRID_LABEL_WIDTH: f32 = 130.0;
 const SECTION_HEADER_SIZE: f32 = 14.0;
+const SECTION_HEADER_MARGIN: f32 = 4.0;
 const SWATCH_CORNER_DIVISOR: f32 = 4.0;
 const FONT_FAMILY_COMBOBOX_WIDTH: f32 = 200.0;
 /// Maximum height of the scrollable font list inside the search popup.
@@ -205,7 +211,6 @@ pub(crate) fn render_settings_window(
                 };
 
                 section_header(ui, title);
-                ui.add_space(SUBSECTION_SPACING);
 
                 egui::ScrollArea::vertical()
                     .id_salt("settings_form_scroll")
@@ -344,7 +349,10 @@ fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
 // ── Section header helper ────────────────────────────────────────────
 
 fn section_header(ui: &mut egui::Ui, text: &str) {
-    ui.label(egui::RichText::new(text).strong().size(SECTION_HEADER_SIZE));
+    ui.add_space(SECTION_HEADER_MARGIN);
+    ui.label(egui::RichText::new(text).size(SECTION_HEADER_SIZE).strong());
+    ui.add_space(SECTION_HEADER_MARGIN);
+    ui.separator();
     ui.add_space(SUBSECTION_SPACING);
 }
 
@@ -360,6 +368,7 @@ fn render_theme_tab(ui: &mut egui::Ui, settings: &mut SettingsService) {
             .size(SECTION_HEADER_SIZE),
     )
     .default_open(settings.settings().theme.custom_color_overrides.is_some())
+    .icon(egui_commonmark::ui_components::centering::AccordionIcon::paint_optically_centered)
     .show(ui, |ui| {
         render_custom_color_editor(ui, settings);
     });
@@ -419,17 +428,34 @@ fn render_theme_preset_selector(ui: &mut egui::Ui, settings: &mut SettingsServic
                 ui.painter()
                     .circle_filled(rect.center(), corner, accent_color);
 
-                if ui
-                    .selectable_label(is_selected, &custom_theme.name)
-                    .clicked()
-                    && !is_selected
-                {
+                let response = ui.selectable_label(is_selected, &custom_theme.name);
+                if response.clicked() && !is_selected {
                     settings.settings_mut().theme.custom_color_overrides =
                         Some(custom_theme.colors.clone());
                     settings.settings_mut().theme.active_custom_theme =
                         Some(custom_theme.name.clone());
                     let _ = settings.save();
                 }
+
+                response.context_menu(|ui| {
+                    if ui
+                        .button(crate::i18n::get().settings.theme.duplicate.clone())
+                        .clicked()
+                    {
+                        ui.data_mut(|d| {
+                            d.insert_temp(egui::Id::new("show_save_theme_modal"), true);
+                            d.insert_temp(
+                                egui::Id::new("custom_theme_name_input"),
+                                format!("{} copy", custom_theme.name),
+                            );
+                            d.insert_temp(
+                                egui::Id::new("duplicate_theme_colors"),
+                                custom_theme.colors.clone(),
+                            );
+                        });
+                        ui.close();
+                    }
+                });
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui
@@ -486,16 +512,33 @@ fn render_preset_group(
             ui.painter()
                 .circle_filled(rect.center(), corner, accent_color);
 
-            if ui
-                .selectable_label(is_selected, preset.display_name())
-                .clicked()
-                && !is_selected
-            {
+            let response = ui.selectable_label(is_selected, preset.display_name());
+            if response.clicked() && !is_selected {
                 settings.settings_mut().theme.preset = (*preset).clone();
                 settings.settings_mut().theme.custom_color_overrides = None;
                 settings.settings_mut().theme.active_custom_theme = None;
                 let _ = settings.save();
             }
+
+            response.context_menu(|ui| {
+                if ui
+                    .button(crate::i18n::get().settings.theme.duplicate.clone())
+                    .clicked()
+                {
+                    ui.data_mut(|d| {
+                        d.insert_temp(egui::Id::new("show_save_theme_modal"), true);
+                        d.insert_temp(
+                            egui::Id::new("custom_theme_name_input"),
+                            format!("{} copy", preset.display_name()),
+                        );
+                        d.insert_temp(
+                            egui::Id::new("duplicate_theme_colors"),
+                            preset.colors().clone(),
+                        );
+                    });
+                    ui.close();
+                }
+            });
         });
     }
 }
@@ -693,32 +736,40 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
                     if ui.button(crate::i18n::get().action.save.clone()).clicked()
                         && !name.is_empty()
                     {
-                        let mut theme_colors = settings.settings().effective_theme_colors();
+                        let dup_id = egui::Id::new("duplicate_theme_colors");
+                        let mut theme_colors = ui
+                            .data(|d| d.get_temp::<ThemeColors>(dup_id))
+                            .unwrap_or_else(|| settings.settings().effective_theme_colors());
                         theme_colors.name = name.clone();
 
                         let mut themes = settings.settings().theme.custom_themes.clone();
                         if let Some(existing) = themes.iter_mut().find(|t| t.name == name) {
-                            existing.colors = theme_colors;
+                            existing.colors = theme_colors.clone();
                         } else {
                             themes.push(katana_platform::settings::CustomTheme {
                                 name: name.clone(),
-                                colors: theme_colors,
+                                colors: theme_colors.clone(),
                             });
                         }
                         settings.settings_mut().theme.custom_themes = themes;
-                        settings.settings_mut().theme.active_custom_theme = Some(name);
+                        settings.settings_mut().theme.custom_color_overrides = Some(theme_colors);
+                        settings.settings_mut().theme.active_custom_theme = Some(name.clone());
 
                         let _ = settings.save();
                         close = true;
                     }
                 });
             });
-        });
 
-        if close {
-            ui.data_mut(|d| d.insert_temp(modal_id, false));
-            ui.data_mut(|d| d.remove::<String>(egui::Id::new("custom_theme_name_input")));
-        }
+            let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
+            if should_close {
+                ui.data_mut(|d: &mut egui::util::IdTypeMap| {
+                    d.insert_temp(modal_id, false);
+                    d.remove::<String>(egui::Id::new("custom_theme_name_input"));
+                    d.remove::<ThemeColors>(egui::Id::new("duplicate_theme_colors"));
+                });
+            }
+        });
     }
 }
 
@@ -908,15 +959,20 @@ fn render_layout_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) 
 
 fn render_toc_toggle(ui: &mut egui::Ui, settings: &mut SettingsService) {
     let mut toc_visible = settings.settings().layout.toc_visible;
-    ui.horizontal(|ui| {
-        ui.label(crate::i18n::get().settings.toc_visible.clone());
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if crate::widgets::toggle_switch(ui, &mut toc_visible).changed() {
-                settings.settings_mut().layout.toc_visible = toc_visible;
-                let _ = settings.save();
-            }
-        });
-    });
+    if ui
+        .add(
+            crate::widgets::LabeledToggle::new(
+                &crate::i18n::get().settings.toc_visible,
+                &mut toc_visible,
+            )
+            .position(crate::widgets::TogglePosition::Right)
+            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+        )
+        .changed()
+    {
+        settings.settings_mut().layout.toc_visible = toc_visible;
+        let _ = settings.save();
+    }
 }
 
 fn render_toc_position_selector(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
@@ -1014,6 +1070,41 @@ fn render_pane_order_selector(ui: &mut egui::Ui, state: &mut crate::app_state::A
 
 // ── Workspace tab ───────────────────────────────────────────────────
 
+fn render_string_list_editor(ui: &mut egui::Ui, list: &mut Vec<String>) -> bool {
+    let mut changed = false;
+    let mut to_remove = None;
+
+    ui.vertical(|ui| {
+        for (i, item) in list.iter_mut().enumerate() {
+            ui.push_id(i, |ui| {
+                ui.horizontal(|ui| {
+                    let response = ui.text_edit_singleline(item);
+                    if response.changed() {
+                        changed = true;
+                    }
+                    if ui.button("-").clicked() {
+                        to_remove = Some(i);
+                    }
+                });
+            });
+        }
+
+        if let Some(i) = to_remove {
+            list.remove(i);
+            changed = true;
+        }
+
+        if ui.button("+").clicked() {
+            list.push(String::new());
+            changed = true;
+        }
+    });
+
+    // Option: The empty strings remain in the UI, enabling UX.
+    // They are filtered implicitly in filesystem scanning.
+    changed
+}
+
 fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
     let workspace_msgs = &crate::i18n::get().settings.workspace;
     let settings = &mut state.settings;
@@ -1029,14 +1120,9 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
     ui.add_space(SECTION_SPACING);
 
     section_header(ui, &workspace_msgs.ignored_directories);
-    let mut ignored = settings.settings().workspace.ignored_directories.join(", ");
-    if ui.text_edit_singleline(&mut ignored).changed() {
-        let list: Vec<String> = ignored
-            .split(',')
-            .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty())
-            .collect();
-        settings.settings_mut().workspace.ignored_directories = list;
+    let mut ignored = settings.settings().workspace.ignored_directories.clone();
+    if render_string_list_editor(ui, &mut ignored) {
+        settings.settings_mut().workspace.ignored_directories = ignored;
         let _ = settings.save();
     }
     ui.label(
@@ -1048,24 +1134,42 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
     ui.add_space(SECTION_SPACING);
 
     section_header(ui, &workspace_msgs.visible_extensions);
-    ui.horizontal(|ui| {
+    ui.horizontal_wrapped(|ui| {
         let mut extensions = settings.settings().workspace.visible_extensions.clone();
         let mut changed_ext = false;
 
-        for ext in &["md", "markdown", "mdx", "txt", "adr"] {
+        for ext in &["md", "markdown", "mdx", "txt", "adr", ""] {
+            let label_text = if ext.is_empty() {
+                workspace_msgs.no_extension_label.as_str()
+            } else {
+                *ext
+            };
+
             let mut is_enabled = extensions.contains(&ext.to_string());
-            if crate::widgets::toggle_switch(ui, &mut is_enabled).changed() {
+            if ui
+                .add(
+                    crate::widgets::LabeledToggle::new(label_text, &mut is_enabled)
+                        .position(crate::widgets::TogglePosition::Left)
+                        .alignment(crate::widgets::ToggleAlignment::Attached(
+                            SETTINGS_TOGGLE_SPACING,
+                        )),
+                )
+                .changed()
+            {
                 if is_enabled {
-                    if !extensions.contains(&ext.to_string()) {
+                    if ext.is_empty() {
+                        ui.data_mut(|d| {
+                            d.insert_temp(egui::Id::new("show_no_extension_warning"), true)
+                        });
+                    } else if !extensions.contains(&ext.to_string()) {
                         extensions.push(ext.to_string());
+                        changed_ext = true;
                     }
                 } else {
                     extensions.retain(|e| e != ext);
+                    changed_ext = true;
                 }
-                changed_ext = true;
             }
-            ui.label(*ext);
-            const SETTINGS_TOGGLE_SPACING: f32 = 8.0;
             ui.add_space(SETTINGS_TOGGLE_SPACING);
         }
 
@@ -1074,6 +1178,78 @@ fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppStat
             let _ = settings.save();
         }
     });
+
+    if settings
+        .settings()
+        .workspace
+        .visible_extensions
+        .contains(&"".to_string())
+    {
+        ui.add_space(SECTION_SPACING);
+
+        section_header(ui, &workspace_msgs.extensionless_excludes);
+        let mut excludes = settings.settings().workspace.extensionless_excludes.clone();
+        if render_string_list_editor(ui, &mut excludes) {
+            settings.settings_mut().workspace.extensionless_excludes = excludes;
+            let _ = settings.save();
+        }
+        ui.label(
+            egui::RichText::new(&workspace_msgs.extensionless_excludes_hint)
+                .weak()
+                .size(HINT_FONT_SIZE),
+        );
+    }
+
+    let modal_id = egui::Id::new("show_no_extension_warning");
+    let show_modal = ui.data(|d| d.get_temp::<bool>(modal_id).unwrap_or(false));
+    if show_modal {
+        let mut close = false;
+        let mut confirm = false;
+        egui::Window::new(&workspace_msgs.no_extension_warning_title)
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .show(ui.ctx(), |ui| {
+                ui.label(&workspace_msgs.no_extension_warning);
+                ui.add_space(SUBSECTION_SPACING);
+                ui.horizontal(|ui| {
+                    if ui
+                        .button(crate::i18n::get().action.cancel.clone())
+                        .clicked()
+                    {
+                        close = true;
+                    }
+                    if ui
+                        .button(crate::i18n::get().action.confirm.clone())
+                        .clicked()
+                    {
+                        confirm = true;
+                        close = true;
+                    }
+                });
+            });
+
+        let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
+
+        if confirm
+            && !settings
+                .settings()
+                .workspace
+                .visible_extensions
+                .contains(&"".to_string())
+        {
+            settings
+                .settings_mut()
+                .workspace
+                .visible_extensions
+                .push("".to_string());
+            let _ = settings.save();
+        }
+
+        if should_close {
+            ui.data_mut(|d| d.insert_temp(modal_id, false));
+        }
+    }
 }
 
 fn render_updates_tab(
@@ -1139,68 +1315,122 @@ fn render_behavior_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState
 
     // A1: Confirm before closing unsaved tabs
     let mut confirm = settings.settings().behavior.confirm_close_dirty_tab;
-    ui.horizontal(|ui| {
-        ui.label(&behavior_msgs.confirm_close_dirty_tab);
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if crate::widgets::toggle_switch(ui, &mut confirm).changed() {
-                settings.settings_mut().behavior.confirm_close_dirty_tab = confirm;
-                let _ = settings.save();
-            }
-        });
-    });
+    if ui
+        .add(
+            crate::widgets::LabeledToggle::new(
+                &behavior_msgs.confirm_close_dirty_tab,
+                &mut confirm,
+            )
+            .position(crate::widgets::TogglePosition::Right)
+            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+        )
+        .changed()
+    {
+        settings.settings_mut().behavior.confirm_close_dirty_tab = confirm;
+        let _ = settings.save();
+    }
 
     ui.add_space(SUBSECTION_SPACING);
 
     // B1: Scroll sync (persistent setting)
     let mut scroll_sync = settings.settings().behavior.scroll_sync_enabled;
-    ui.horizontal(|ui| {
-        ui.label(&behavior_msgs.scroll_sync);
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if crate::widgets::toggle_switch(ui, &mut scroll_sync).changed() {
-                settings.settings_mut().behavior.scroll_sync_enabled = scroll_sync;
-                let _ = settings.save();
-            }
-        });
-    });
+    if ui
+        .add(
+            crate::widgets::LabeledToggle::new(&behavior_msgs.scroll_sync, &mut scroll_sync)
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+        )
+        .changed()
+    {
+        settings.settings_mut().behavior.scroll_sync_enabled = scroll_sync;
+        let _ = settings.save();
+    }
+
+    ui.add_space(SUBSECTION_SPACING);
 
     ui.add_space(SUBSECTION_SPACING);
 
     // E1: Auto-save toggle
-    const AUTO_SAVE_INTERVAL_MIN: f64 = 0.0;
-    const AUTO_SAVE_INTERVAL_MAX: f64 = 300.0;
-    const AUTO_SAVE_INTERVAL_STEP: f64 = 0.1;
-    const SETTINGS_TOGGLE_SPACING: f32 = 8.0;
-
     let mut enabled = settings.settings().behavior.auto_save;
-    ui.horizontal(|ui| {
-        ui.label(&behavior_msgs.auto_save);
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if crate::widgets::toggle_switch(ui, &mut enabled).changed() {
-                settings.settings_mut().behavior.auto_save = enabled;
-                let _ = settings.save();
-            }
-        });
-    });
+    if ui
+        .add(
+            crate::widgets::LabeledToggle::new(&behavior_msgs.auto_save, &mut enabled)
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+        )
+        .changed()
+    {
+        settings.settings_mut().behavior.auto_save = enabled;
+        let _ = settings.save();
+    }
 
     if enabled {
         ui.add_space(SETTINGS_TOGGLE_SPACING);
 
-        let mut interval = settings.settings().behavior.auto_save_interval_secs;
+        let interval = settings.settings().behavior.auto_save_interval_secs;
         ui.label(&behavior_msgs.auto_save_interval);
-        let slider = egui::Slider::new(
-            &mut interval,
-            AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
-        )
-        .step_by(AUTO_SAVE_INTERVAL_STEP)
-        .suffix("s")
-        .max_decimals(1)
-        .clamping(egui::SliderClamping::Always);
 
-        if add_styled_slider(ui, slider).changed() {
-            settings.settings_mut().behavior.auto_save_interval_secs = interval;
-            let _ = settings.save();
-        }
+        let original_width = ui.spacing().slider_width;
+        const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
+        ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
+
+        ui.horizontal(|ui| {
+            let mut display_val = interval;
+
+            let slider = egui::Slider::new(
+                &mut display_val,
+                AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
+            )
+            .show_value(false) // テキストは別で表示
+            .step_by(AUTO_SAVE_INTERVAL_STEP)
+            .min_decimals(1)
+            .max_decimals(1)
+            .logarithmic(true)
+            .clamping(egui::SliderClamping::Always);
+
+            let slider_response = add_styled_slider(ui, slider);
+
+            // 横に別コンポーネントとしてテキスト部分を配置
+            let drag_response = ui.add(
+                egui::DragValue::new(&mut display_val)
+                    .speed(AUTO_SAVE_INTERVAL_STEP)
+                    .suffix("s")
+                    .max_decimals(1)
+                    .range(AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX),
+            );
+
+            if slider_response.changed() || drag_response.changed() {
+                // DragValueやSliderが変更されたら保存
+                settings.settings_mut().behavior.auto_save_interval_secs = display_val;
+                let _ = settings.save();
+            }
+        });
+
+        ui.spacing_mut().slider_width = original_width;
     }
 
     ui.add_space(SUBSECTION_SPACING);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_auto_save_interval_slider_config_invariants() {
+        // Strict UT for the 0.1 step requirement.
+        assert_eq!(
+            AUTO_SAVE_INTERVAL_STEP, 0.1,
+            "The auto-save slider MUST increment/decrement by exactly 0.1 seconds \
+             to satisfy the UI precision requirements."
+        );
+        assert_eq!(
+            AUTO_SAVE_INTERVAL_MIN, 0.0,
+            "The minimum auto-save interval MUST be 0.0 (off or immediate)."
+        );
+        assert_eq!(
+            AUTO_SAVE_INTERVAL_MAX, 300.0,
+            "The maximum auto-save interval MUST be 300.0 seconds."
+        );
+    }
 }

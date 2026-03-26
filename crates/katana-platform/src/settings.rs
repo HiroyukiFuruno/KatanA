@@ -203,12 +203,30 @@ pub struct WorkspaceSettings {
     /// Visible extensions in the workspace tree.
     #[serde(default = "default_visible_extensions")]
     pub visible_extensions: Vec<String>,
+
+    /// Excluded exact file names when "no extension" files are visible.
+    #[serde(default = "default_extensionless_excludes")]
+    pub extensionless_excludes: Vec<String>,
 }
 
 fn default_visible_extensions() -> Vec<String> {
-    vec!["md".to_string()]
+    vec![
+        "md".to_string(),
+        "markdown".to_string(),
+        "mdx".to_string(),
+        "txt".to_string(),
+        "adr".to_string(),
+    ]
 }
 
+fn default_extensionless_excludes() -> Vec<String> {
+    vec![
+        ".DS_Store".to_string(),
+        ".gitignore".to_string(),
+        ".gitattributes".to_string(),
+        "Makefile".to_string(),
+    ]
+}
 /// Default maximum recursion depth for workspace scanning.
 pub const DEFAULT_MAX_DEPTH: usize = 10;
 
@@ -241,8 +259,9 @@ impl Default for WorkspaceSettings {
             open_tabs: vec![],
             active_tab_idx: None,
             ignored_directories: default_ignored_directories(),
-            max_depth: default_max_depth(),
+            max_depth: DEFAULT_MAX_DEPTH,
             visible_extensions: default_visible_extensions(),
+            extensionless_excludes: default_extensionless_excludes(),
         }
     }
 }
@@ -610,6 +629,16 @@ mod tests {
     }
 
     #[test]
+    fn test_workspace_settings_default_deserialization() {
+        let json = "{}";
+        let ws: WorkspaceSettings = serde_json::from_str(json).unwrap();
+        assert_eq!(ws.max_depth, DEFAULT_MAX_DEPTH);
+        assert!(!ws.visible_extensions.is_empty());
+        assert!(!ws.extensionless_excludes.is_empty());
+        assert!(!ws.ignored_directories.is_empty());
+    }
+
+    #[test]
     fn test_app_settings_default_values() {
         let s = AppSettings::default();
         assert_eq!(s.theme.theme, "dark");
@@ -811,6 +840,42 @@ mod tests {
         assert_eq!(loaded.theme.theme, "custom");
         assert!((loaded.font.size - DEFAULT_FONT_SIZE).abs() < f32::EPSILON);
         assert_eq!(loaded.language, "en");
+    }
+
+    #[test]
+    fn test_behavior_settings_fractional_auto_save_interval() {
+        let mut b = BehaviorSettings::default();
+        b.auto_save_interval_secs = 5.1;
+
+        let json = serde_json::to_string(&b).unwrap();
+        // Ensure standard string serialization maintains precision and dec places.
+        assert!(
+            json.contains("5.1"),
+            "Should serialize as float with exactly 1 decimal representation for 0.1s"
+        );
+
+        let parsed: BehaviorSettings = serde_json::from_str(&json).unwrap();
+        assert_eq!(
+            parsed.auto_save_interval_secs, 5.1,
+            "Must roundtrip 0.1 float boundaries precisely to support egui interval sliding"
+        );
+
+        // Edge boundary testing
+        b.auto_save_interval_secs = 0.0;
+        let parsed: BehaviorSettings =
+            serde_json::from_str(&serde_json::to_string(&b).unwrap()).unwrap();
+        assert_eq!(
+            parsed.auto_save_interval_secs, 0.0,
+            "Zero boundary strict matching"
+        );
+
+        b.auto_save_interval_secs = 300.0;
+        let parsed: BehaviorSettings =
+            serde_json::from_str(&serde_json::to_string(&b).unwrap()).unwrap();
+        assert_eq!(
+            parsed.auto_save_interval_secs, 300.0,
+            "Max boundary strict matching"
+        );
     }
 
     #[test]
