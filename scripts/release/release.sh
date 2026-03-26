@@ -143,6 +143,27 @@ if ! grep -q "^## \[${VERSION}\]" CHANGELOG.ja.md; then
     warn "Version v${VERSION} not found in CHANGELOG.ja.md. You may want to update the Japanese changelog."
 fi
 
+# ── 3.8 Archive OpenSpec Changes ───────────────────────────────────────────────
+info "Archiving OpenSpec changes for v${VERSION}..."
+VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
+for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*; do
+    if [[ -d "$CHANGE_DIR" ]]; then
+        CHANGE_NAME=$(basename "$CHANGE_DIR")
+        ARCHIVE_DIR="openspec/changes/archive/$(date +%Y-%m-%d)-${CHANGE_NAME}"
+        
+        info "Found OpenSpec change: $CHANGE_NAME"
+        mkdir -p openspec/changes/archive
+        if [[ -d "$ARCHIVE_DIR" ]]; then
+            warn "Archive directory $ARCHIVE_DIR already exists. Skipping move."
+        else
+            mv "$CHANGE_DIR" "$ARCHIVE_DIR"
+            # Add to the git staging area so it gets included in the release commit
+            git add "openspec/changes/archive/$(basename "$ARCHIVE_DIR")" "$CHANGE_DIR"
+            success "Archived $CHANGE_NAME"
+        fi
+    fi
+done
+
 # ── 4. Commit and Tag ─────────────────────────────────────────────────────────
 info "Staging release changes..."
 git add Cargo.toml Cargo.lock crates/*/Cargo.toml crates/katana-ui/Info.plist CHANGELOG.md CHANGELOG.ja.md
