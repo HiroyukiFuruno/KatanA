@@ -455,6 +455,12 @@ pub struct SettingsWorkspaceMessages {
     pub max_depth: String,
     pub ignored_directories: String,
     pub ignored_directories_hint: String,
+    #[serde(default = "default_visible_extensions_msg")]
+    pub visible_extensions: String,
+}
+
+fn default_visible_extensions_msg() -> String {
+    "Visible Extensions".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -762,5 +768,13 @@ mod tests {
         assert_eq!(msgs.action_later, "Later");
         assert_eq!(msgs.action_skip_version, "Skip This Version");
         assert_eq!(msgs.action_restart, "Restart Now");
+    }
+
+    #[test]
+    fn test_default_visible_extensions_msg() {
+        assert_eq!(
+            super::default_visible_extensions_msg(),
+            "Visible Extensions"
+        );
     }
 }

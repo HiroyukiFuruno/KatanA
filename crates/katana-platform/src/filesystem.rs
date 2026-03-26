@@ -26,6 +26,7 @@ impl FilesystemService {
         path: impl Into<PathBuf>,
         ignored_directories: &[String],
         max_depth: usize,
+        visible_extensions: &[String],
         cancel_token: std::sync::Arc<std::sync::atomic::AtomicBool>,
         in_memory_dirs: &std::collections::HashSet<PathBuf>,
     ) -> Result<Workspace, WorkspaceError> {
@@ -37,6 +38,7 @@ impl FilesystemService {
                 ignored_directories,
                 max_depth,
                 ROOT_DEPTH,
+                visible_extensions,
                 &cancel_token,
                 in_memory_dirs,
             )
@@ -63,13 +65,15 @@ impl FilesystemService {
         Ok(())
     }
 
-    /// Recursively and in parallel scans a directory, returning a tree containing only `.md` files.
+    /// Recursively and in parallel scans a directory, returning a tree containing only visible files.
+    #[allow(clippy::too_many_arguments)]
     fn scan_directory(
         &self,
         dir: &Path,
         ignored_directories: &[String],
         max_depth: usize,
         current_depth: usize,
+        visible_extensions: &[String],
         cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
         in_memory_dirs: &std::collections::HashSet<PathBuf>,
     ) -> std::io::Result<Vec<TreeEntry>> {
@@ -106,19 +110,27 @@ impl FilesystemService {
                             ignored_directories,
                             max_depth,
                             current_depth + 1,
+                            visible_extensions,
                             cancel_token,
                             in_memory_dirs,
                         )
                         .unwrap_or_default();
-                    // Show directory if it has markdown files OR it is an explicitly created empty directory.
-                    if has_any_markdown(&children) || in_memory_dirs.contains(&path) {
+                    // Show directory if it has visible files OR it is an explicitly created empty directory.
+                    if has_any_visible(&children, visible_extensions)
+                        || in_memory_dirs.contains(&path)
+                    {
                         Some(TreeEntry::Directory { path, children })
                     } else {
                         None
                     }
                 } else if path
                     .extension()
-                    .map(|e| e.eq_ignore_ascii_case("md"))
+                    .and_then(|e| e.to_str())
+                    .map(|ext| {
+                        visible_extensions
+                            .iter()
+                            .any(|v| v.eq_ignore_ascii_case(ext))
+                    })
                     .unwrap_or(false)
                 {
                     Some(TreeEntry::File { path })
@@ -138,11 +150,19 @@ impl FilesystemService {
     }
 }
 
-/// Recursively checks if there is at least one `.md` file in the tree.
-fn has_any_markdown(entries: &[TreeEntry]) -> bool {
+/// Recursively checks if there is at least one visible file in the tree.
+fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[String]) -> bool {
     entries.iter().any(|e| match e {
-        TreeEntry::File { .. } => e.is_markdown(),
-        TreeEntry::Directory { children, .. } => has_any_markdown(children),
+        TreeEntry::File { path } => path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| {
+                visible_extensions
+                    .iter()
+                    .any(|v| v.eq_ignore_ascii_case(ext))
+            })
+            .unwrap_or(false),
+        TreeEntry::Directory { children, .. } => has_any_visible(children, visible_extensions),
     })
 }
 impl Default for FilesystemService {

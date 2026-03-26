@@ -327,6 +327,7 @@ impl KatanaApp {
                 &path_clone,
                 &settings.ignored_directories,
                 settings.max_depth,
+                &settings.visible_extensions,
                 new_token,
                 &in_memory_dirs,
             );
@@ -478,6 +479,7 @@ impl KatanaApp {
                 &root,
                 &settings.ignored_directories,
                 settings.max_depth,
+                &settings.visible_extensions,
                 new_token,
                 &in_memory_dirs,
             );
@@ -1026,10 +1028,18 @@ impl KatanaApp {
                 }
             }
             AppAction::RequestNewFile(path) => {
-                self.state.create_fs_node_modal_state = Some((path, String::new(), false));
+                let ext = self
+                    .state
+                    .settings
+                    .settings()
+                    .workspace
+                    .visible_extensions
+                    .first()
+                    .cloned();
+                self.state.create_fs_node_modal_state = Some((path, String::new(), ext, false));
             }
             AppAction::RequestNewDirectory(path) => {
-                self.state.create_fs_node_modal_state = Some((path, String::new(), true));
+                self.state.create_fs_node_modal_state = Some((path, String::new(), None, true));
             }
             AppAction::RequestRename(path) => {
                 let name = path

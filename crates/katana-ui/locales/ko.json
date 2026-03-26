@@ -187,7 +187,8 @@
     "workspace": {
       "max_depth": "최대 스캔 깊이",
       "ignored_directories": "무시할 디렉토리",
-      "ignored_directories_hint": "쉼표로 구분된 디렉토리 목록 (예: .git, node_modules, .terraform)"
+      "ignored_directories_hint": "쉼표로 구분된 디렉토리 목록 (예: .git, node_modules, .terraform)",
+      "visible_extensions": "표시할 확장자"
     },
     "updates": {
       "section_title": "[ko] App Updates",

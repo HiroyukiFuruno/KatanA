@@ -186,6 +186,13 @@ pub struct WorkspaceSettings {
     /// Maximum depth for recursive directory scanning.
     #[serde(default = "default_max_depth")]
     pub max_depth: usize,
+    /// Visible extensions in the workspace tree.
+    #[serde(default = "default_visible_extensions")]
+    pub visible_extensions: Vec<String>,
+}
+
+fn default_visible_extensions() -> Vec<String> {
+    vec!["md".to_string()]
 }
 
 /// Default maximum recursion depth for workspace scanning.
@@ -221,6 +228,7 @@ impl Default for WorkspaceSettings {
             active_tab_idx: None,
             ignored_directories: default_ignored_directories(),
             max_depth: default_max_depth(),
+            visible_extensions: default_visible_extensions(),
         }
     }
 }

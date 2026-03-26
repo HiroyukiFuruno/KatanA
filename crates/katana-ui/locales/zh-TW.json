@@ -186,8 +186,9 @@
     ],
     "workspace": {
       "max_depth": "最大掃描深度",
-      "ignored_directories": "忽略的目錄",
-      "ignored_directories_hint": "以逗號分隔的目錄清單（例如 .git, node_modules, .terraform）"
+      "ignored_directories": "忽略目錄",
+      "ignored_directories_hint": "用逗號分隔的掃描排除目錄清單（例如：.git, node_modules, .terraform）",
+      "visible_extensions": "可見副檔名"
     },
     "updates": {
       "section_title": "[zh-TW] App Updates",

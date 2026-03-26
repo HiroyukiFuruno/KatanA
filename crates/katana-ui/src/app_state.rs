@@ -304,8 +304,8 @@ pub struct AppState {
     /// Cache for the last window title set to prevent redundant viewport commands.
     pub last_window_title: String,
 
-    /// Modal state for creating a new file or directory: `Some((parent_dir, new_name, is_dir))`
-    pub create_fs_node_modal_state: Option<(std::path::PathBuf, String, bool)>,
+    /// Modal state for creating a new file or directory: `Some((parent_dir, new_name, selected_extension, is_dir))`
+    pub create_fs_node_modal_state: Option<(std::path::PathBuf, String, Option<String>, bool)>,
     /// Modal state for renaming a file or directory: `Some((target_path, new_name))`
     pub rename_modal_state: Option<(std::path::PathBuf, String)>,
     /// Modal state for deleting a file or directory: `Some(target_path)`
