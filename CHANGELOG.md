@@ -2,6 +2,23 @@
 
 All notable changes to KatanA DesktopThis file records the major changes to KatanA Desktop.
 
+## [0.7.4] - 2026-03-26 05:15:00 (UTC)
+
+### 🚀 Features
+
+- **In-App Updater**: Integrate a visual progress bar during the update download phase and correct the GitHub API release URL.
+
+### 🎨 UI/UX
+
+- **About Dialog**: Redesign link rows to display aligned icons (e.g., External Link) and make the build version commit hash clickable.
+- **Settings Window**: Conditionally hide the markdown preview panel in System settings to optimize space.
+- **Settings Window**: Center accordion icons optically for a more balanced layout.
+
+### 🐛 Bug Fixes
+
+- **Tab Navigation**: Resolve a critical degradation where the close tab button was rendered unclickable due to the drag-and-drop interaction overlay.
+- **Settings Window**: Fix layout regressions where the window stretched horizontally out-of-bounds while the title bar rendered insufficiently short by enforcing rigorous geometry combinations (`fixed_size` with `min_width`).
+
 ## [0.7.3] - 2026-03-26 00:30:00 (UTC)
 
 ### 🚀 Features
@@ -30,12 +47,11 @@ All notable changes to KatanA DesktopThis file records the major changes to Kata
 - **Auto-Updater**: Eliminated reliance on `api.github.com`, resolving the fundamental architecture flaw that forced rate-limited `HTTP 403 Forbidden` API crashes on consumer networks.
 - **UI Layout**: Repaired an `egui::Window` memory constraint bug that caused the update checker modal to unpredictably stretch vertically with blank whitespace.
 
-## [0.7.0] - 2026-03-26 03:00:00 (JST)C)
+## [0.7.0] - 2026-03-26 03:00:00 (UTC)
 
 ### ✨ Features
 
 - **In-App Updater**: Implement interactive UI for the auto-update release framework, incorporating Markdown-rendered release notes and integrated extraction logic.
-
 
 ## [0.6.4] - 2026-03-25 09:50:20 (UTC)
 
