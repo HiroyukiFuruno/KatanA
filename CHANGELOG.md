@@ -2,6 +2,21 @@
 
 All notable changes to KatanA DesktopThis file records the major changes to KatanA Desktop.
 
+## [0.7.3] - 2026-03-26 00:30:00 (UTC)
+
+### 🚀 Features
+
+- **Source Tree**: Add context menus (Open, Rename, Delete, Copy) to directory and file items via right-click interaction.
+
+### 🎨 UI/UX
+
+- **Tab Navigation**: Improve bidirectional drag-and-drop tab movement by unifying drop points to exact midpoints between tabs.
+- **Tab Navigation**: Support auto-scrolling when dragging a tab to the edges of the visible scroll area.
+
+### 🐛 Bug Fixes
+
+- **Code Blocks**: Fix syntax highlight background color rendering issue caused by `syntect` override by switching to direct `Painter::rect_filled` layer drawing.
+
 ## [0.7.2] - 2026-03-26
 
 ### 🐛 Bug Fixes
