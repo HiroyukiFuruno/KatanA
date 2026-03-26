@@ -412,4 +412,42 @@ mod tests {
             );
         });
     }
+
+    #[test]
+    fn test_toggle_switch_clicked() {
+        let mut on = false;
+        let ctx = egui::Context::default();
+
+        let mut rect = egui::Rect::NOTHING;
+        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                rect = toggle_switch(ui, &mut on).rect;
+            });
+        });
+
+        assert!(!on);
+
+        let mut input = egui::RawInput::default();
+        input.events.push(egui::Event::PointerMoved(rect.center()));
+        input.events.push(egui::Event::PointerButton {
+            pos: rect.center(),
+            button: egui::PointerButton::Primary,
+            pressed: true,
+            modifiers: egui::Modifiers::default(),
+        });
+        input.events.push(egui::Event::PointerButton {
+            pos: rect.center(),
+            button: egui::PointerButton::Primary,
+            pressed: false,
+            modifiers: egui::Modifiers::default(),
+        });
+
+        let _ = ctx.run(input, |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let _ = toggle_switch(ui, &mut on);
+            });
+        });
+
+        assert!(on);
+    }
 }

@@ -1280,10 +1280,8 @@ pub(crate) fn render_view_mode_bar(
                 // Right to left layout: emit rightmost element first (the label)
                 let label_response = ui
                     .add(
-                        egui::Label::new(
-                            crate::i18n::get().settings.behavior.scroll_sync.clone(),
-                        )
-                        .sense(egui::Sense::click()),
+                        egui::Label::new(crate::i18n::get().settings.behavior.scroll_sync.clone())
+                            .sense(egui::Sense::click()),
                     )
                     .on_hover_cursor(egui::CursorIcon::PointingHand);
 
