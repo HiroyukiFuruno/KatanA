@@ -1205,18 +1205,23 @@ pub(crate) fn render_view_mode_bar(
             if is_split && (is_split == prev_is_split) {
                 ui.separator();
 
-                let scroll_sync = state
-                    .scroll_sync_override
-                    .unwrap_or(state.settings.settings().behavior.scroll_sync_enabled);
-                if ui
-                    .selectable_label(
-                        scroll_sync,
-                        crate::i18n::get().settings.behavior.scroll_sync.clone(),
-                    )
-                    .clicked()
-                {
-                    state.scroll_sync_override = Some(!scroll_sync);
-                }
+                ui.horizontal(|ui| {
+                    let mut is_on = state
+                        .scroll_sync_override
+                        .unwrap_or(state.settings.settings().behavior.scroll_sync_enabled);
+
+                    let toggle_response = crate::widgets::toggle_switch(ui, &mut is_on);
+                    let label_response = ui
+                        .add(egui::Label::new(crate::i18n::get().settings.behavior.scroll_sync.clone()).sense(egui::Sense::click()))
+                        .on_hover_cursor(egui::CursorIcon::PointingHand);
+
+                    if toggle_response.clicked() || label_response.clicked() {
+                        if label_response.clicked() {
+                            is_on = !is_on;
+                        }
+                        state.scroll_sync_override = Some(is_on);
+                    }
+                });
                 ui.separator();
 
                 // Toggle pane order.
