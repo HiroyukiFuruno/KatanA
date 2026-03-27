@@ -681,7 +681,7 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
         },
     ];
 
-    let code_settings = vec![
+    let code_settings = [
         ColorSettingDef {
             label: &color_i18n.code_background,
             prop: ColorPropType::Rgb(|c| c.code.background, |c, r| c.code.background = r),
@@ -724,7 +724,7 @@ fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut SettingsService)
         },
     ];
 
-    let preview_settings = vec![
+    let preview_settings = [
         ColorSettingDef {
             label: &color_i18n.preview_background,
             prop: ColorPropType::Rgb(|c| c.preview.background, |c, r| c.preview.background = r),
@@ -926,7 +926,6 @@ fn render_color_section_header(ui: &mut egui::Ui, label: &str) {
 }
 
 /// Renders a single colour picker row inside a Grid, returning `true` if changed.
-
 pub(crate) enum ColorPropType {
     Rgb(fn(&ThemeColors) -> Rgb, fn(&mut ThemeColors, Rgb)),
     Rgba(fn(&ThemeColors) -> Rgba, fn(&mut ThemeColors, Rgba)),

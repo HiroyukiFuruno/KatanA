@@ -18,7 +18,6 @@ use crate::icon::Icon;
 use crate::preview_pane::{DownloadRequest, RenderedSection, ViewerState};
 
 /// Text color for the tool not installed warning (orange).
-
 /// Helper to configure new tab vs same tab behavior. We currently default to new_tab.
 pub(crate) fn open_tab(ctx: &egui::Context, url: &str) {
     ctx.open_url(egui::OpenUrl::new_tab(url));
