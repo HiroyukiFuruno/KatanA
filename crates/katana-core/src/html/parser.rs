@@ -483,12 +483,12 @@ mod tests {
 
     #[test]
     fn parse_md_link() {
-        let nodes = parser().parse("[日本語](README.ja.md)");
+        let nodes = parser().parse("[\u{65e5}\u{672c}\u{8a9e}](README.ja.md)");
         assert_eq!(
             nodes,
             vec![HtmlNode::Link {
                 target: LinkTarget::InternalFile(PathBuf::from("/project/README.ja.md")),
-                children: vec![HtmlNode::Text("日本語".into())],
+                children: vec![HtmlNode::Text("\u{65e5}\u{672c}\u{8a9e}".into())],
             }]
         );
     }
@@ -507,14 +507,14 @@ mod tests {
 
     #[test]
     fn parse_text_with_md_link() {
-        let nodes = parser().parse("English | [日本語](README.ja.md)");
+        let nodes = parser().parse("English | [\u{65e5}\u{672c}\u{8a9e}](README.ja.md)");
         assert_eq!(nodes.len(), 2);
         assert_eq!(nodes[0], HtmlNode::Text("English | ".into()));
         assert_eq!(
             nodes[1],
             HtmlNode::Link {
                 target: LinkTarget::InternalFile(PathBuf::from("/project/README.ja.md")),
-                children: vec![HtmlNode::Text("日本語".into())],
+                children: vec![HtmlNode::Text("\u{65e5}\u{672c}\u{8a9e}".into())],
             }
         );
     }

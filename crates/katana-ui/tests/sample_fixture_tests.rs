@@ -93,7 +93,7 @@ fn load_test_fonts(ctx: &egui::Context) {
 
     // macOS proportional CJK font candidates
     let prop_candidates = [
-        "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+        "/System/Library/Fonts/\u{30d2}\u{30e9}\u{30ae}\u{30ce}\u{89d2}\u{30b4}\u{30b7}\u{30c3}\u{30af} W3.ttc",
         "/System/Library/Fonts/AquaKana.ttc",
         "/System/Library/Fonts/Hiragino Sans GB.ttc",
     ];
@@ -436,7 +436,7 @@ fn fixture_en_s1_4_badge_section_renders() {
     let _harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 200.0);
 }
 
-/// §1.5: "English | 日本語" — link exists and is to the right of text, same row.
+/// §1.5: "English | \u{65e5}\u{672c}\u{8a9e}" — link exists and is to the right of text, same row.
 #[test]
 fn fixture_en_s1_5_text_link_same_row_and_centered() {
     let (_, _, source) = load_fixture("sample.md");
@@ -444,9 +444,14 @@ fn fixture_en_s1_5_text_link_same_row_and_centered() {
     let pane = render_snippet(&section_md);
     let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 200.0);
     // Verify link exists
-    let _link = harness.get_by_label("日本語");
+    let _link = harness.get_by_label("\u{65e5}\u{672c}\u{8a9e}");
     // Verify text and link are on the same row, link to the right
-    assert_right_of_same_row(&harness, "English |", "日本語", "§1.5 text + link");
+    assert_right_of_same_row(
+        &harness,
+        "English |",
+        "\u{65e5}\u{672c}\u{8a9e}",
+        "§1.5 text + link",
+    );
 }
 
 /// §1.6: Full README header — heading and description are centered.
@@ -465,7 +470,7 @@ fn fixture_en_s1_6_readme_header_centered() {
         "§1.6 description",
     );
     // Language link present
-    let _link = harness.get_by_label("日本語");
+    let _link = harness.get_by_label("\u{65e5}\u{672c}\u{8a9e}");
     // Heading is above description
     assert_below(
         &harness,
@@ -570,8 +575,8 @@ fn fixture_ja_s1_3_centered_blocks_no_overlap() {
     let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 400.0);
     assert_below(
         &harness,
-        "中央寄せ見出し",
-        "中央寄せの説明段落。",
+        "\u{4e2d}\u{592e}\u{5bc4}\u{305b}\u{898b}\u{51fa}\u{3057}",
+        "\u{4e2d}\u{592e}\u{5bc4}\u{305b}\u{306e}\u{8aac}\u{660e}\u{6bb5}\u{843d}\u{3002}",
         "§1.3 JA heading -> description",
     );
 }
@@ -585,7 +590,12 @@ fn fixture_ja_s1_5_bidirectional_link() {
     let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 200.0);
     let _link = harness.get_by_label("English");
     // Verify text+link are on same row
-    assert_right_of_same_row(&harness, "English", "| 日本語", "§1.5 JA link same row");
+    assert_right_of_same_row(
+        &harness,
+        "English",
+        "| \u{65e5}\u{672c}\u{8a9e}",
+        "§1.5 JA link same row",
+    );
 }
 
 /// §1.6 (JA): Top-level HTML blocks should keep browser-like vertical margins.
@@ -598,7 +608,7 @@ fn fixture_ja_s1_6_readme_header_has_block_spacing() {
     assert_gap_at_least(
         &harness,
         "KatanA Desktop",
-        "高速・軽量な macOS 向け Markdown ワークスペース",
+        "\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a} macOS \u{5411}\u{3051} Markdown \u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9}",
         7.0,
         "§1.6 JA top-level block spacing",
     );
@@ -686,18 +696,18 @@ fn html_fixture_ja_semantic_layout() {
     let harness = load_fixture_harness("sample_html.ja.md");
     assert_centered(
         &harness,
-        "中央寄せ見出し",
+        "\u{4e2d}\u{592e}\u{5bc4}\u{305b}\u{898b}\u{51fa}\u{3057}",
         "sample_html_ja centered heading",
     );
     assert_centered(
         &harness,
-        "2つ目の中央寄せ段落 — 1つ目と重ならないこと。",
+        "2\u{3064}\u{76ee}\u{306e}\u{4e2d}\u{592e}\u{5bc4}\u{305b}\u{6bb5}\u{843d} — 1\u{3064}\u{76ee}\u{3068}\u{91cd}\u{306a}\u{3089}\u{306a}\u{3044}\u{3053}\u{3068}\u{3002}",
         "sample_html_ja centered paragraph",
     );
     assert_below(
         &harness,
-        "中央寄せ見出し",
-        "すべてのセクションが正しく表示されていれば、HTMLセンタリングは正常です。",
+        "\u{4e2d}\u{592e}\u{5bc4}\u{305b}\u{898b}\u{51fa}\u{3057}",
+        "\u{3059}\u{3079}\u{3066}\u{306e}\u{30bb}\u{30af}\u{30b7}\u{30e7}\u{30f3}\u{304c}\u{6b63}\u{3057}\u{304f}\u{8868}\u{793a}\u{3055}\u{308c}\u{3066}\u{3044}\u{308c}\u{3070}\u{3001}HTML\u{30bb}\u{30f3}\u{30bf}\u{30ea}\u{30f3}\u{30b0}\u{306f}\u{6b63}\u{5e38}\u{3067}\u{3059}\u{3002}",
         "sample_html_ja full document order",
     );
 }
@@ -764,16 +774,17 @@ fn basic_fixture_en_s2_2_highlight_renders_as_text() {
 #[test]
 fn basic_fixture_ja_semantic_smoke() {
     let harness = load_fixture_harness("sample_basic.ja.md");
-    let _h6 = harness.get_by_label("H6 見出し");
-    let _strike = harness.get_by_label("取り消し線");
-    let _link = harness.get_by_label("通常のリンク");
-    let _task = harness.get_by_label("完了タスク");
-    let _quote = harness.get_by_label("外側の引用");
-    let _arch = harness.get_by_label("アーキテクチャ概要");
+    let _h6 = harness.get_by_label("H6 \u{898b}\u{51fa}\u{3057}");
+    let _strike = harness.get_by_label("\u{53d6}\u{308a}\u{6d88}\u{3057}\u{7dda}");
+    let _link = harness.get_by_label("\u{901a}\u{5e38}\u{306e}\u{30ea}\u{30f3}\u{30af}");
+    let _task = harness.get_by_label("\u{5b8c}\u{4e86}\u{30bf}\u{30b9}\u{30af}");
+    let _quote = harness.get_by_label("\u{5916}\u{5074}\u{306e}\u{5f15}\u{7528}");
+    let _arch = harness
+        .get_by_label("\u{30a2}\u{30fc}\u{30ad}\u{30c6}\u{30af}\u{30c1}\u{30e3}\u{6982}\u{8981}");
     assert_below(
         &harness,
-        "H6 見出し",
-        "アーキテクチャ概要",
+        "H6 \u{898b}\u{51fa}\u{3057}",
+        "\u{30a2}\u{30fc}\u{30ad}\u{30c6}\u{30af}\u{30c1}\u{30e3}\u{6982}\u{8981}",
         "sample_basic_ja full document order",
     );
 }
@@ -785,7 +796,7 @@ fn basic_fixture_ja_s11_2_long_inline_code_wraps_within_panel() {
     let section_md = extract_section(&source, "### 13.2", "### 13.3");
     let pane = render_snippet(&section_md);
     let harness = build_harness(pane.sections.clone(), 420.0, 220.0);
-    let node = harness.get_by_label_contains("このテキストは非常に長い行");
+    let node = harness.get_by_label_contains("\u{3053}\u{306e}\u{30c6}\u{30ad}\u{30b9}\u{30c8}\u{306f}\u{975e}\u{5e38}\u{306b}\u{9577}\u{3044}\u{884c}");
     let bounds = node
         .accesskit_node()
         .raw_bounds()

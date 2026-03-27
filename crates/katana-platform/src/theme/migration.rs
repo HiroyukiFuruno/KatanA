@@ -6,8 +6,8 @@ use crate::theme::types::*;
 use serde::{Deserialize, Deserializer};
 
 // ── Migration fallback color constants ──────────────────────────
-// レガシーフォーマットから新3層構造への変換時に使用するデフォルト値。
-// "is_dark" 分岐で使い分けるため dark/light のペアで定義する。
+// Default values used when converting from legacy format to the new 3-layer structure.
+// Defined in dark/light pairs for use in the "is_dark" branch.
 
 const LEGACY_SUCCESS_DARK: Rgb = Rgb {
     r: 80,

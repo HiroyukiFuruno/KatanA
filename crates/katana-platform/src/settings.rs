@@ -256,8 +256,10 @@ mod tests {
 
     #[test]
     fn test_behavior_settings_fractional_auto_save_interval() {
-        let mut b = BehaviorSettings::default();
-        b.auto_save_interval_secs = 5.1;
+        let mut b = BehaviorSettings {
+            auto_save_interval_secs: 5.1,
+            ..Default::default()
+        };
 
         let json = serde_json::to_string(&b).unwrap();
         assert!(
@@ -406,7 +408,7 @@ mod tests {
     impl SettingsRepository for FirstLaunchRepo {
         fn load(&self) -> AppSettings {
             let mut s = AppSettings::default();
-            s.theme.preset = self.preset.clone();
+            s.theme.preset = self.preset;
             s
         }
 

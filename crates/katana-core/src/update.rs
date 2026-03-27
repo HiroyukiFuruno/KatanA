@@ -48,7 +48,7 @@ pub fn check_for_updates(
     let tag_name = final_url
         .split('/')
         .next_back()
-        .ok_or_else(|| anyhow::anyhow!("リリースタグの解析に失敗しました ({})", final_url))?
+        .ok_or_else(|| anyhow::anyhow!("Failed to parse release tag ({})", final_url))?
         .to_string();
 
     if is_newer_version(current_version, &tag_name) {
@@ -62,7 +62,7 @@ pub fn check_for_updates(
         );
 
         let body = format!(
-            "### 🚀 最新バージョン {} が利用可能です\n\n詳しい変更内容やリリースノートについては、[GitHub Releases ページ]({}) をご確認ください。\n自動アップデートを実行するには「インストールして再起動」をクリックしてください。",
+            "### 🚀 \u{6700}\u{65b0}\u{30d0}\u{30fc}\u{30b8}\u{30e7}\u{30f3} {} \u{304c}\u{5229}\u{7528}\u{53ef}\u{80fd}\u{3067}\u{3059}\n\n\u{8a73}\u{3057}\u{3044}\u{5909}\u{66f4}\u{5185}\u{5bb9}\u{3084}\u{30ea}\u{30ea}\u{30fc}\u{30b9}\u{30ce}\u{30fc}\u{30c8}\u{306b}\u{3064}\u{3044}\u{3066}\u{306f}\u{3001}[GitHub Releases \u{30da}\u{30fc}\u{30b8}]({}) \u{3092}\u{3054}\u{78ba}\u{8a8d}\u{304f}\u{3060}\u{3055}\u{3044}\u{3002}\n\u{81ea}\u{52d5}\u{30a2}\u{30c3}\u{30d7}\u{30c7}\u{30fc}\u{30c8}\u{3092}\u{5b9f}\u{884c}\u{3059}\u{308b}\u{306b}\u{306f}\u{300c}\u{30a4}\u{30f3}\u{30b9}\u{30c8}\u{30fc}\u{30eb}\u{3057}\u{3066}\u{518d}\u{8d77}\u{52d5}\u{300d}\u{3092}\u{30af}\u{30ea}\u{30c3}\u{30af}\u{3057}\u{3066}\u{304f}\u{3060}\u{3055}\u{3044}\u{3002}",
             &tag_name, html_url
         );
 

@@ -1673,9 +1673,9 @@ mod tests {
         i18n::set_language("ja");
         let msgs = i18n::get();
         let dc = &msgs.preview.diagram_controller;
-        assert_eq!(dc.pan_up, "上へ移動");
-        assert_eq!(dc.reset, "初期位置・サイズにリセット");
-        assert_eq!(dc.fullscreen, "全画面表示");
+        assert_eq!(dc.pan_up, "\u{4e0a}\u{3078}\u{79fb}\u{52d5}");
+        assert_eq!(dc.reset, "\u{521d}\u{671f}\u{4f4d}\u{7f6e}\u{30fb}\u{30b5}\u{30a4}\u{30ba}\u{306b}\u{30ea}\u{30bb}\u{30c3}\u{30c8}");
+        assert_eq!(dc.fullscreen, "\u{5168}\u{753b}\u{9762}\u{8868}\u{793a}");
         // Restore default language.
         i18n::set_language("en");
     }

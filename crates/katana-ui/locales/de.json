@@ -19,6 +19,41 @@
     "help": "Hilfe",
     "check_updates": "Nach Updates suchen..."
   },
+  "about": {
+    "basic_info": "Basisinfo",
+    "version": "Version",
+    "build": "Build",
+    "copyright": "Urheberrecht",
+    "runtime": "Laufzeit",
+    "platform": "Plattform",
+    "architecture": "Architektur",
+    "rust": "Rust",
+    "license": "Lizenz",
+    "links": "Links",
+    "source_code": "Quellcode",
+    "documentation": "Dokumentation",
+    "report_issue": "Problem melden",
+    "support": "Support",
+    "sponsor": "Sponsoren",
+    "coming_soon": "Demnächst"
+  },
+  "update": {
+    "title": "Updates prüfen",
+    "checking_for_updates": "Suche nach Updates...",
+    "update_available": "Update verfügbar",
+    "update_available_desc": "Eine neue Version von KatanA ({version}) ist verfügbar. Bitte führen Sie `brew update && brew upgrade --cask katana-desktop` aus, um zu aktualisieren.",
+    "up_to_date": "Aktuell",
+    "up_to_date_desc": "KatanA ist auf dem neuesten Stand.",
+    "failed_to_check": "Fehler beim Prüfen auf Updates.",
+    "action_close": "OK",
+    "install_update": "Aktualisieren und Neustarten",
+    "downloading": "Update wird heruntergeladen...",
+    "installing": "Update wird installiert...",
+    "restart_confirm": "Das Update ist bereit. Jetzt neu starten?",
+    "action_later": "Später",
+    "action_skip_version": "Diese Version überspringen",
+    "action_restart": "Jetzt neu starten"
+  },
   "workspace": {
     "no_workspace_open": "Kein Arbeitsbereich geöffnet.",
     "no_document_selected": "Kein Dokument geöffnet.",
@@ -53,7 +88,7 @@
   "view_mode": {
     "preview": "Vorschau",
     "code": "Code",
-    "split": "Geteilt"
+    "split": "Teilen"
   },
   "split_toggle": {
     "horizontal": "Zur horizontalen Ansicht wechseln (links/rechts)",
@@ -76,28 +111,28 @@
     "cannot_open_file": "Datei konnte nicht geöffnet werden: {error}"
   },
   "action": {
-    "expand_all": "[de] Alle ausklappen",
-    "collapse_all": "[de] Alle einklappen",
-    "collapse_sidebar": "[de] Seitenleiste ausblenden",
-    "refresh_workspace": "[de] Arbeitsbereich aktualisieren",
-    "toggle_filter": "[de] Filter umschalten",
-    "remove_workspace": "[de] Aus Verlauf entfernen",
-    "recursive_expand": "[de] Unterordner rekursiv ausklappen",
-    "recursive_open_all": "[de] Alle Dateien rekursiv öffnen",
-    "toggle_toc": "[de] Inhaltsverzeichnis umschalten",
-    "show_meta_info": "[de] Metainfos zeigen",
-    "new_file": "[de] New File",
-    "new_directory": "[de] New Folder",
-    "open": "[de] Open",
-    "rename": "[de] Rename",
-    "delete": "[de] Delete",
-    "copy_path": "[de] Copy Path",
-    "reveal_in_os": "[de] Reveal in OS",
-    "save": "[de] 保存",
-    "cancel": "[de] キャンセル",
+    "expand_all": "Alle erweitern",
+    "collapse_all": "Alle minimieren",
+    "collapse_sidebar": "Seitenleiste",
+    "refresh_workspace": "Aktualisieren",
+    "toggle_filter": "Filter",
+    "remove_workspace": "Entfernen",
+    "recursive_expand": "Rekursiv",
+    "recursive_open_all": "Alle öffnen",
+    "toggle_toc": "Inhaltsverzeichnis",
+    "show_meta_info": "Infos",
+    "new_file": "Neue Datei",
+    "new_directory": "Neuer Ordner",
+    "open": "Öffnen",
+    "rename": "Umbenennen",
+    "delete": "Löschen",
+    "copy_path": "Pfad kopieren",
+    "reveal_in_os": "Im OS anzeigen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
     "discard": "Verwerfen",
     "confirm": "Bestätigen",
-    "copy_relative_path": "[de] Copy Relative Path"
+    "copy_relative_path": "Relativ kopieren"
   },
   "ai": {
     "ai_unconfigured": "[AI: nicht konfiguriert]"
@@ -122,8 +157,8 @@
       "save_custom_theme_title": "Benutzerdefiniertes Theme speichern",
       "theme_name_label": "Theme-Name:",
       "duplicate": "Duplizieren...",
-      "ui_contrast_offset": "[de] UI Contrast (Alpha Offset)",
-      "reset_contrast": "[de] Reset"
+      "ui_contrast_offset": "UI-Kontrast",
+      "reset_contrast": "Zurücksetzen"
     },
     "font": {
       "size": "Schriftgröße",
@@ -162,24 +197,35 @@
       "code_text": "Text",
       "preview_text": "Text",
       "highlight": "Hervorheben",
-      "section_system": "",
-      "section_code": "",
+      "section_system": "Systemfarben",
+      "section_code": "Code",
       "section_preview": "Vorschau",
-      "title_bar_text": "",
-      "active_file_highlight": "",
-      "success_text": "",
-      "warning_text": "",
-      "error_text": "",
-      "button_background": "",
-      "button_active_background": "",
-      "splash_background": "",
-      "splash_progress": "",
-      "fullscreen_overlay": "",
-      "line_number_text": "",
-      "line_number_active_text": "",
-      "current_line_background": "",
-      "hover_line_background": "",
-      "file_tree_text": ""
+      "title_bar_text": "Titelleiste",
+      "active_file_highlight": "Datei markieren",
+      "success_text": "Erfolg",
+      "warning_text": "Warnung",
+      "error_text": "Fehler",
+      "button_background": "Button-Hintergrund",
+      "button_active_background": "Button-Aktivitäts-Hintergrund",
+      "splash_background": "Splash Screen",
+      "splash_progress": "Fortschritt",
+      "fullscreen_overlay": "Vollbild",
+      "line_number_text": "Zeilen text",
+      "line_number_active_text": "Aktive Zeile",
+      "current_line_background": "Aktueller Code",
+      "hover_line_background": "Hover",
+      "file_tree_text": "Dateibaum"
+    },
+    "workspace": {
+      "max_depth": "Max. Suchtiefe",
+      "ignored_directories": "Ignoriert",
+      "ignored_directories_hint": "Kommaseparierte Liste von Verzeichnissen, die von der Suche ausgeschlossen werden sollen (z.B. .git, node_modules, .terraform)",
+      "visible_extensions": "Sichtbare Erweiterungen",
+      "no_extension_label": "Keine Erweiterung",
+      "no_extension_warning_title": "Warnung",
+      "no_extension_warning": "Es gibt keine Garantie, dass Dateien ohne Erweiterungen als Markdown korrekt angezeigt werden können. Darüber hinaus kann die Anwendung aufgrund unerwarteten Verhaltens abstürzen. Sind Sie sicher, dass Sie dies aktivieren möchten?",
+      "extensionless_excludes": "Ohne Erweiterung",
+      "extensionless_excludes_hint": "Durch Kommas getrennt..."
     },
     "tabs": [
       {
@@ -215,25 +261,14 @@
         "name": "Verhalten"
       }
     ],
-    "workspace": {
-      "max_depth": "Max. Suchtiefe",
-      "ignored_directories": "[de] Ignored Directories",
-      "ignored_directories_hint": "Kommaseparierte Liste von Verzeichnissen, die von der Suche ausgeschlossen werden sollen (z.B. .git, node_modules, .terraform)",
-      "visible_extensions": "Sichtbare Erweiterungen",
-      "no_extension_label": "Keine Erweiterung",
-      "no_extension_warning_title": "Warnung",
-      "no_extension_warning": "Es gibt keine Garantie, dass Dateien ohne Erweiterungen als Markdown korrekt angezeigt werden können. Darüber hinaus kann die Anwendung aufgrund unerwarteten Verhaltens abstürzen. Sind Sie sicher, dass Sie dies aktivieren möchten?",
-      "extensionless_excludes": "[de] Ignored Extensionless Files",
-      "extensionless_excludes_hint": "[de] List of exact file names to ignore when 'No Extension' is enabled (e.g. .DS_Store, .gitignore)."
-    },
     "updates": {
-      "section_title": "[de] App Updates",
-      "interval": "[de] Check for updates automatically",
-      "never": "[de] Never",
-      "daily": "[de] Daily",
-      "weekly": "[de] Weekly",
-      "monthly": "[de] Monthly",
-      "check_now": "[de] Check for Updates Now"
+      "section_title": "Updates",
+      "interval": "Intervall",
+      "never": "Nie",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "check_now": "Jetzt prüfen"
     },
     "behavior": {
       "section_title": "Verhalten",
@@ -246,9 +281,9 @@
       "close_confirm_msg": "'{name}' hat nicht gespeicherte Änderungen. Verwerfen?",
       "close_confirm_discard": "Verwerfen",
       "close_confirm_cancel": "Abbrechen",
-      "clear_http_cache": "[de] Clear All Caches",
-      "cache_retention_days": "[de] Cache Retention Days",
-      "days_suffix": "[de]  days"
+      "clear_http_cache": "Cache leeren",
+      "cache_retention_days": "Aufbewahrung",
+      "days_suffix": " Tage"
     }
   },
   "tab": {
@@ -274,41 +309,6 @@
     "title": "Inhaltsverzeichnis",
     "empty": "Keine Überschriften gefunden"
   },
-  "about": {
-    "basic_info": "Basisinfo",
-    "version": "Version",
-    "build": "Build",
-    "copyright": "Copyright",
-    "runtime": "Runtime",
-    "platform": "Plattform",
-    "architecture": "Architektur",
-    "rust": "Rust",
-    "license": "Lizenz",
-    "links": "Links",
-    "source_code": "Quellcode",
-    "documentation": "Dokumentation",
-    "report_issue": "Problem melden",
-    "support": "Support",
-    "sponsor": "Sponsoren",
-    "coming_soon": "Demnächst"
-  },
-  "update": {
-    "update_available": "Update verfügbar",
-    "update_available_desc": "Eine neue Version von KatanA ({version}) ist verfügbar. Bitte führen Sie `brew update && brew upgrade --cask katana-desktop` aus, um zu aktualisieren.",
-    "up_to_date": "Aktuell",
-    "up_to_date_desc": "KatanA ist auf dem neuesten Stand.",
-    "failed_to_check": "Fehler beim Prüfen auf Updates.",
-    "action_close": "OK",
-    "title": "Updates prüfen",
-    "checking_for_updates": "Suche nach Updates...",
-    "install_update": "Aktualisieren und Neustarten",
-    "downloading": "Update wird heruntergeladen...",
-    "installing": "Update wird installiert...",
-    "restart_confirm": "Das Update ist bereit. Jetzt neu starten?",
-    "action_later": "Später",
-    "action_skip_version": "Diese Version überspringen",
-    "action_restart": "Jetzt neu starten"
-  },
   "export": {
     "success": "Exportiert nach {format} unter: {path}",
     "failed": "{format}-Export fehlgeschlagen: {error}",
@@ -326,10 +326,10 @@
     "decline": "Ablehnen"
   },
   "dialog": {
-    "new_file_title": "[de] New File",
-    "new_directory_title": "[de] New Folder",
-    "rename_title": "[de] Rename",
-    "delete_title": "[de] Confirm Deletion",
-    "delete_confirm_msg": "[de] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+    "new_file_title": "Neue Datei",
+    "new_directory_title": "Neuer Ordner",
+    "rename_title": "Umbenennen",
+    "delete_title": "Löschen",
+    "delete_confirm_msg": "Wirklich löschen? {name}"
   }
 }

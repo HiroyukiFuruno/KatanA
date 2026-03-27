@@ -19,6 +19,41 @@
     "help": "Ajuda",
     "check_updates": "Verificar atualizações..."
   },
+  "about": {
+    "basic_info": "Informações básicas",
+    "version": "Versão",
+    "build": "Build",
+    "copyright": "Direitos Autorais",
+    "runtime": "Execução",
+    "platform": "Plataforma",
+    "architecture": "Arquitetura",
+    "rust": "Rust",
+    "license": "Licença",
+    "links": "Links",
+    "source_code": "Código fonte",
+    "documentation": "Documentação",
+    "report_issue": "Relatar problema",
+    "support": "Suporte",
+    "sponsor": "Patrocinar",
+    "coming_soon": "Em breve"
+  },
+  "update": {
+    "title": "Verificar atualizações",
+    "checking_for_updates": "Verificando atualizações...",
+    "update_available": "Atualização disponível",
+    "update_available_desc": "Uma nova versione do KatanA ({version}) está disponível. Execute `brew update && brew upgrade --cask katana-desktop` para atualizar.",
+    "up_to_date": "Atualizado",
+    "up_to_date_desc": "O KatanA está atualizado.",
+    "failed_to_check": "Falha ao verificar atualizações.",
+    "action_close": "OK",
+    "install_update": "Instalar e Reiniciar",
+    "downloading": "Baixando atualização...",
+    "installing": "Instalando atualização...",
+    "restart_confirm": "A atualização está pronta. Reiniciar agora?",
+    "action_later": "Mais tarde",
+    "action_skip_version": "Pular esta versão",
+    "action_restart": "Reiniciar agora"
+  },
   "workspace": {
     "no_workspace_open": "Nenhum espaço de trabalho aberto.",
     "no_document_selected": "Nenhum documento aberto.",
@@ -38,7 +73,7 @@
       "pan_left": "Esquerda",
       "pan_right": "Direita",
       "zoom_in": "Aumentar",
-      "zoom_out": "Diminuir",
+      "zoom_out": "Diminuir zoom",
       "reset": "Redefinir",
       "fullscreen": "Tela cheia",
       "close": "Fechar",
@@ -76,28 +111,28 @@
     "cannot_open_file": "Não foi possível abrir o arquivo: {error}"
   },
   "action": {
-    "expand_all": "[pt] Expandir tudo",
-    "collapse_all": "[pt] Recolher tudo",
-    "collapse_sidebar": "[pt] Ocultar barra lateral",
-    "refresh_workspace": "[pt] Atualizar espaço de trabalho",
-    "toggle_filter": "[pt] Alternar filtro",
-    "remove_workspace": "[pt] Remover do histórico",
-    "recursive_expand": "[pt] Expansão recursiva",
-    "recursive_open_all": "[pt] Abrir todos os arquivos recursivamente",
-    "toggle_toc": "[pt] Alternar sumário",
-    "show_meta_info": "[pt] Mostrar Metadados",
-    "new_file": "[pt] New File",
-    "new_directory": "[pt] New Folder",
-    "open": "[pt] Open",
-    "rename": "[pt] Rename",
-    "delete": "[pt] Delete",
-    "copy_path": "[pt] Copy Path",
-    "reveal_in_os": "[pt] Reveal in OS",
-    "save": "[pt] 保存",
-    "cancel": "[pt] キャンセル",
+    "expand_all": "Expandir Tudo",
+    "collapse_all": "Recolher Tudo",
+    "collapse_sidebar": "Recolher",
+    "refresh_workspace": "Atualizar",
+    "toggle_filter": "Filtro",
+    "remove_workspace": "Remover",
+    "recursive_expand": "Expansão Recursiva",
+    "recursive_open_all": "Abrir Tudo Recursivamente",
+    "toggle_toc": "Índice",
+    "show_meta_info": "Info",
+    "new_file": "Novo Arquivo",
+    "new_directory": "Nova Pasta",
+    "open": "Abrir",
+    "rename": "Renomear",
+    "delete": "Excluir",
+    "copy_path": "Copiar Caminho",
+    "reveal_in_os": "Revelar no SO",
+    "save": "Salvar",
+    "cancel": "Cancelar",
     "discard": "Descartar",
     "confirm": "Confirmar",
-    "copy_relative_path": "[pt] Copy Relative Path"
+    "copy_relative_path": "Caminho Relativo"
   },
   "ai": {
     "ai_unconfigured": "[AI: não configurado]"
@@ -122,8 +157,8 @@
       "save_custom_theme_title": "Salvar Tema Personalizado",
       "theme_name_label": "Nome do Tema:",
       "duplicate": "Duplicar...",
-      "ui_contrast_offset": "[pt] UI Contrast (Alpha Offset)",
-      "reset_contrast": "[pt] Reset"
+      "ui_contrast_offset": "Contraste da Interface",
+      "reset_contrast": "Redefinir"
     },
     "font": {
       "size": "Tamanho da Fonte",
@@ -162,24 +197,35 @@
       "code_text": "Texto",
       "preview_text": "Texto",
       "highlight": "Destacar",
-      "section_system": "",
-      "section_code": "",
-      "section_preview": "",
-      "title_bar_text": "",
-      "active_file_highlight": "",
-      "success_text": "",
-      "warning_text": "",
-      "error_text": "",
-      "button_background": "",
-      "button_active_background": "",
-      "splash_background": "",
-      "splash_progress": "",
-      "fullscreen_overlay": "",
-      "line_number_text": "",
-      "line_number_active_text": "",
-      "current_line_background": "",
-      "hover_line_background": "",
-      "file_tree_text": ""
+      "section_system": "Sistema",
+      "section_code": "Código",
+      "section_preview": "Visualização",
+      "title_bar_text": "Barra de Título",
+      "active_file_highlight": "Destaque do Arquivo Ativo",
+      "success_text": "Texto de Sucesso",
+      "warning_text": "Texto de Aviso",
+      "error_text": "Texto de Erro",
+      "button_background": "Fundo do Botão",
+      "button_active_background": "Botão Ativo",
+      "splash_background": "Fundo da Tela Inicial",
+      "splash_progress": "Progresso da Tela Inicial",
+      "fullscreen_overlay": "Sobreposição Tela Cheia",
+      "line_number_text": "Números de Linha",
+      "line_number_active_text": "Linha Ativa",
+      "current_line_background": "Fundo da Linha",
+      "hover_line_background": "Pairar sobre Linha",
+      "file_tree_text": "Árvore de Arquivos"
+    },
+    "workspace": {
+      "max_depth": "Profundidade Máx de Busca",
+      "ignored_directories": "Ignorados",
+      "ignored_directories_hint": "Lista de diretórios separados por vírgula para excluir da busca (ex., .git, node_modules, .terraform)",
+      "visible_extensions": "Extensões Visíveis",
+      "no_extension_label": "Sem Extensão",
+      "no_extension_warning_title": "Aviso",
+      "no_extension_warning": "Não há garantia de que arquivos sem extensões possam ser exibidos corretamente como Markdown. Além disso, o aplicativo pode travar devido a um comportamento inesperado. Tem certeza de que deseja ativar isso?",
+      "extensionless_excludes": "Sem Extensão Ignorados",
+      "extensionless_excludes_hint": "Separados por vírgula..."
     },
     "tabs": [
       {
@@ -215,25 +261,14 @@
         "name": "Comportamento"
       }
     ],
-    "workspace": {
-      "max_depth": "Profundidade Máx de Busca",
-      "ignored_directories": "[pt] Ignored Directories",
-      "ignored_directories_hint": "Lista de diretórios separados por vírgula para excluir da busca (ex., .git, node_modules, .terraform)",
-      "visible_extensions": "Extensões Visíveis",
-      "no_extension_label": "Sem Extensão",
-      "no_extension_warning_title": "Aviso",
-      "no_extension_warning": "Não há garantia de que arquivos sem extensões possam ser exibidos corretamente como Markdown. Além disso, o aplicativo pode travar devido a um comportamento inesperado. Tem certeza de que deseja ativar isso?",
-      "extensionless_excludes": "[pt] Ignored Extensionless Files",
-      "extensionless_excludes_hint": "[pt] List of exact file names to ignore when 'No Extension' is enabled (e.g. .DS_Store, .gitignore)."
-    },
     "updates": {
-      "section_title": "[pt] App Updates",
-      "interval": "[pt] Check for updates automatically",
-      "never": "[pt] Never",
-      "daily": "[pt] Daily",
-      "weekly": "[pt] Weekly",
-      "monthly": "[pt] Monthly",
-      "check_now": "[pt] Check for Updates Now"
+      "section_title": "Atualizações",
+      "interval": "Intervalo",
+      "never": "Nunca",
+      "daily": "Quotidiano",
+      "weekly": "Semanalmente",
+      "monthly": "Mensalmente",
+      "check_now": "Verificar Agora"
     },
     "behavior": {
       "section_title": "Comportamento",
@@ -246,9 +281,9 @@
       "close_confirm_msg": "'{name}' tem alterações não salvas. Descartar?",
       "close_confirm_discard": "Descartar",
       "close_confirm_cancel": "Cancelar",
-      "clear_http_cache": "[pt] Clear All Caches",
-      "cache_retention_days": "[pt] Cache Retention Days",
-      "days_suffix": "[pt]  days"
+      "clear_http_cache": "Limpar Todos os Caches",
+      "cache_retention_days": "Dias de Retenção do Cache",
+      "days_suffix": " dias"
     }
   },
   "tab": {
@@ -274,41 +309,6 @@
     "title": "Sumário",
     "empty": "Nenhum cabeçalho encontrado"
   },
-  "about": {
-    "basic_info": "Informações básicas",
-    "version": "Versão",
-    "build": "Build",
-    "copyright": "Copyright",
-    "runtime": "Runtime",
-    "platform": "Plataforma",
-    "architecture": "Arquitetura",
-    "rust": "Rust",
-    "license": "Licença",
-    "links": "Links",
-    "source_code": "Código fonte",
-    "documentation": "Documentação",
-    "report_issue": "Relatar problema",
-    "support": "Suporte",
-    "sponsor": "Patrocinar",
-    "coming_soon": "Em breve"
-  },
-  "update": {
-    "update_available": "Atualização disponível",
-    "update_available_desc": "Uma nova versione do KatanA ({version}) está disponível. Execute `brew update && brew upgrade --cask katana-desktop` para atualizar.",
-    "up_to_date": "Atualizado",
-    "up_to_date_desc": "O KatanA está atualizado.",
-    "failed_to_check": "Falha ao verificar atualizações.",
-    "action_close": "OK",
-    "title": "Verificar atualizações",
-    "checking_for_updates": "Verificando atualizações...",
-    "install_update": "Instalar e Reiniciar",
-    "downloading": "Baixando atualização...",
-    "installing": "Instalando atualização...",
-    "restart_confirm": "A atualização está pronta. Reiniciar agora?",
-    "action_later": "Mais tarde",
-    "action_skip_version": "Pular esta versão",
-    "action_restart": "Reiniciar agora"
-  },
   "export": {
     "success": "Exportado para {format} em: {path}",
     "failed": "Exportação para {format} falhou: {error}",
@@ -326,10 +326,10 @@
     "decline": "Recusar"
   },
   "dialog": {
-    "new_file_title": "[pt] New File",
-    "new_directory_title": "[pt] New Folder",
-    "rename_title": "[pt] Rename",
-    "delete_title": "[pt] Confirm Deletion",
-    "delete_confirm_msg": "[pt] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+    "new_file_title": "Criar Arquivo",
+    "new_directory_title": "Criar Pasta",
+    "rename_title": "Renomear",
+    "delete_title": "Excluir",
+    "delete_confirm_msg": "Tem certeza que deseja excluir? {name}"
   }
 }
