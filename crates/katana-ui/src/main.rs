@@ -385,7 +385,7 @@ mod tests {
     // ── Font Family Ordering Tests ──
 
     const PROP_CANDIDATES: &[&str] = &[
-        "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+        "/System/Library/Fonts/\u{30d2}\u{30e9}\u{30ae}\u{30ce}\u{89d2}\u{30b4}\u{30b7}\u{30c3}\u{30af} W3.ttc",
         "/System/Library/Fonts/AquaKana.ttc",
     ];
 

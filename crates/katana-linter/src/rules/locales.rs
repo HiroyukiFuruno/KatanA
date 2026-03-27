@@ -316,21 +316,21 @@ struct LocaleException {
     value: &'static str,
 }
 
-/// 翻訳値の検証から除外する例外リスト。
+/// Exclusion list for translation value validation.
 ///
-/// 【運用ルール】
-/// 1. 原則として、すべての言語で同一の値（英語と同一）になるものはここに追加する。
-/// 2. 固有名詞（アプリ名、ツール名等）、プログラミング用語（Rust等）、およびバージョン番号が対象。
-/// 3. キー(`key`) または 値(`value`) に `*` を使用することで、広範なマッチングが可能。
-/// 4. ただし、意味のある単語（"File", "Search" 等）を広範に除外してはならない。それらは翻訳が必要。
+/// [Operating Rules]
+/// 1. As a general rule, values that are identical across all languages (same as English) should be added here.
+/// 2. Applies to proper nouns (App names, Tool names, etc.), programming terms (Rust, etc.), and version numbers.
+/// 3. Using `*` for the key (`key`) or value (`value`) allows for broad matching.
+/// 4. However, meaningful words ("File", "Search", etc.) MUST NOT be broadly excluded. They require translation.
 ///
-/// 【除外してはいけないパターンの例】
-/// - "Edit", "View", "Help" などの一般的なメニュー項目（各言語で翻訳すべき）。
-/// - 文章の断片や、ユーザーに意味を伝えるメッセージ本文。
+/// [Examples of patterns that must NOT be excluded]
+/// - Common menu items like "Edit", "View", "Help" (should be translated in each language).
+/// - Sentence fragments or message text that conveys meaning to the user.
 ///
-/// 【追加の手順】
-/// 新しい固有名詞や普遍的な識別子（v1.0.0等）が導入された際に、Linterが誤検知した場合は
-/// 慎重に検討した上でこのリストに追加すること。
+/// [Procedure for adding]
+/// When new proper nouns or universal identifiers (e.g. v1.0.0) are introduced, if the Linter generates false positives,
+/// carefully review and consider before adding them to this list.
 const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
     LocaleException {
         key: "rust",
@@ -520,7 +520,7 @@ mod tests {
         let en_path = tmp.path().join("en.json");
         std::fs::write(
             &ja_path,
-            r#"{"status":{"saved":"保存しました。","failed":"失敗: {error}"}}"#,
+            r#"{"status":{"saved":"saved","failed":"failed: {error}"}}"#,
         )
         .unwrap();
         std::fs::write(

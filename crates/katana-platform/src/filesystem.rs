@@ -198,18 +198,18 @@ mod tests {
         // Without empty string in visible_extensions
         let visible_exts_without_empty = vec!["md".to_string()];
         assert!(!has_any_visible(
-            &[file_with_no_ext.clone()],
+            std::slice::from_ref(&file_with_no_ext),
             &visible_exts_without_empty
         ));
         assert!(has_any_visible(
-            &[file_with_ext.clone()],
+            std::slice::from_ref(&file_with_ext),
             &visible_exts_without_empty
         ));
 
         // With empty string in visible_extensions
         let visible_exts_with_empty = vec!["md".to_string(), "".to_string()];
         assert!(has_any_visible(
-            &[file_with_no_ext.clone()],
+            std::slice::from_ref(&file_with_no_ext),
             &visible_exts_with_empty
         ));
 
@@ -219,7 +219,7 @@ mod tests {
             children: vec![file_with_no_ext],
         };
         assert!(!has_any_visible(
-            &[dir.clone()],
+            std::slice::from_ref(&dir),
             &visible_exts_without_empty
         ));
         assert!(has_any_visible(&[dir], &visible_exts_with_empty));
