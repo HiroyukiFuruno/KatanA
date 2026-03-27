@@ -1,4 +1,4 @@
-//! `AppSettings` のメソッド実装。
+//! Method implementations for `AppSettings`.
 
 use crate::theme::ThemeColors;
 

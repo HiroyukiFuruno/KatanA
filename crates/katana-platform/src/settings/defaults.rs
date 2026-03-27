@@ -1,4 +1,4 @@
-//! serde デフォルト値関数群および各構造体の Default 実装。
+//! Serde default value functions and `Default` implementations for each struct.
 
 use crate::theme::ThemePreset;
 

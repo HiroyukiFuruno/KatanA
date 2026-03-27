@@ -19,6 +19,41 @@
     "help": "Aide",
     "check_updates": "Vérifier les mises à jour..."
   },
+  "about": {
+    "basic_info": "Informations de base",
+    "version": "Version",
+    "build": "Build",
+    "copyright": "Droits",
+    "runtime": "Exécution",
+    "platform": "Plateforme",
+    "architecture": "Architecture",
+    "rust": "Rust",
+    "license": "Licence",
+    "links": "Liens",
+    "source_code": "Code source",
+    "documentation": "Documentation",
+    "report_issue": "Signaler un problème",
+    "support": "Support",
+    "sponsor": "Soutenir",
+    "coming_soon": "Bientôt disponible"
+  },
+  "update": {
+    "title": "Vérifier les mises à jour",
+    "checking_for_updates": "Vérification des mises à jour...",
+    "update_available": "Mise à jour disponible",
+    "update_available_desc": "Une nouvelle version de KatanA ({version}) est disponible. Veuillez exécuter `brew update && brew upgrade --cask katana-desktop` pour mettre à jour.",
+    "up_to_date": "À jour",
+    "up_to_date_desc": "KatanA est à jour.",
+    "failed_to_check": "Échec de la vérification des mises à jour.",
+    "action_close": "OK",
+    "install_update": "Installer et Relancer",
+    "downloading": "Téléchargement de la mise à jour...",
+    "installing": "Installation de la mise à jour...",
+    "restart_confirm": "La mise à jour est prête. Redémarrer maintenant ?",
+    "action_later": "Plus tard",
+    "action_skip_version": "Ignorer cette version",
+    "action_restart": "Redémarrer maintenant"
+  },
   "workspace": {
     "no_workspace_open": "Aucun espace de travail ouvert.",
     "no_document_selected": "Aucun document ouvert.",
@@ -38,7 +73,7 @@
       "pan_left": "Gauche",
       "pan_right": "Droite",
       "zoom_in": "Zoom avant",
-      "zoom_out": "Zoom arrière",
+      "zoom_out": "Dézoomer",
       "reset": "Réinitialiser",
       "fullscreen": "Plein écran",
       "close": "Fermer",
@@ -53,7 +88,7 @@
   "view_mode": {
     "preview": "Aperçu",
     "code": "Code",
-    "split": "Fractionner"
+    "split": "Séparer"
   },
   "split_toggle": {
     "horizontal": "Passer au fractionnement horizontal (gauche/droite)",
@@ -76,28 +111,28 @@
     "cannot_open_file": "Impossible d'ouvrir le fichier : {error}"
   },
   "action": {
-    "expand_all": "[fr] Tout développer",
-    "collapse_all": "[fr] Tout réduire",
-    "collapse_sidebar": "[fr] Masquer la sidebar",
-    "refresh_workspace": "[fr] Actualiser l'espace de travail",
-    "toggle_filter": "[fr] Basculer le filtre",
-    "remove_workspace": "[fr] Supprimer de l'historique",
-    "recursive_expand": "[fr] Expansion récursive",
-    "recursive_open_all": "[fr] Tout ouvrir récursivement",
-    "toggle_toc": "[fr] Basculer la table des matières",
-    "show_meta_info": "[fr] Afficher Média",
-    "new_file": "[fr] New File",
-    "new_directory": "[fr] New Folder",
-    "open": "[fr] Open",
-    "rename": "[fr] Rename",
-    "delete": "[fr] Delete",
-    "copy_path": "[fr] Copy Path",
-    "reveal_in_os": "[fr] Reveal in OS",
-    "save": "[fr] 保存",
-    "cancel": "[fr] キャンセル",
+    "expand_all": "Tout développer",
+    "collapse_all": "Tout réduire",
+    "collapse_sidebar": "Réduire",
+    "refresh_workspace": "Actualiser",
+    "toggle_filter": "Filtre",
+    "remove_workspace": "Supprimer",
+    "recursive_expand": "Développement récursif",
+    "recursive_open_all": "Ouvrir tout",
+    "toggle_toc": "Table des matières",
+    "show_meta_info": "Infos",
+    "new_file": "Nouveau",
+    "new_directory": "Dossier",
+    "open": "Ouvrir",
+    "rename": "Renommer",
+    "delete": "Supprimer",
+    "copy_path": "Copier le chemin",
+    "reveal_in_os": "Afficher",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
     "discard": "Ignorer",
     "confirm": "Confirmer",
-    "copy_relative_path": "[fr] Copy Relative Path"
+    "copy_relative_path": "Copier relatif"
   },
   "ai": {
     "ai_unconfigured": "[AI : non configuré]"
@@ -122,8 +157,8 @@
       "save_custom_theme_title": "Enregistrer le thème personnalisé",
       "theme_name_label": "Nom du thème :",
       "duplicate": "Dupliquer...",
-      "ui_contrast_offset": "[fr] UI Contrast (Alpha Offset)",
-      "reset_contrast": "[fr] Reset"
+      "ui_contrast_offset": "Contraste UI",
+      "reset_contrast": "Réinitialiser"
     },
     "font": {
       "size": "Taille de la police",
@@ -163,23 +198,34 @@
       "preview_text": "Texte",
       "highlight": "Surbrillance",
       "section_system": "Système",
-      "section_code": "",
+      "section_code": "Code",
       "section_preview": "Aperçu",
-      "title_bar_text": "",
-      "active_file_highlight": "",
-      "success_text": "",
-      "warning_text": "",
-      "error_text": "",
-      "button_background": "",
-      "button_active_background": "",
-      "splash_background": "",
-      "splash_progress": "",
-      "fullscreen_overlay": "",
-      "line_number_text": "",
-      "line_number_active_text": "",
-      "current_line_background": "",
-      "hover_line_background": "",
-      "file_tree_text": ""
+      "title_bar_text": "Texte titre",
+      "active_file_highlight": "Fichier actif",
+      "success_text": "Succès",
+      "warning_text": "Avertissement",
+      "error_text": "Erreur",
+      "button_background": "Fond bouton",
+      "button_active_background": "Bouton actif",
+      "splash_background": "Fond splash",
+      "splash_progress": "Progression splash",
+      "fullscreen_overlay": "Plein écran",
+      "line_number_text": "Numéros de ligne",
+      "line_number_active_text": "Ligne active",
+      "current_line_background": "Fond ligne",
+      "hover_line_background": "Survol",
+      "file_tree_text": "Arborescence"
+    },
+    "workspace": {
+      "max_depth": "Profondeur max. d'analyse",
+      "ignored_directories": "Ignorés",
+      "ignored_directories_hint": "Liste séparée par des virgules des répertoires à exclure de l'analyse (ex., .git, node_modules, .terraform)",
+      "visible_extensions": "Extensions visibles",
+      "no_extension_label": "Sans extension",
+      "no_extension_warning_title": "Avertissement",
+      "no_extension_warning": "Il n'y a aucune garantie que les fichiers sans extension puissent être affichés correctement comme Markdown. De plus, l'application peut planter en raison d'un comportement inattendu. Êtes-vous sûr de vouloir activer cela?",
+      "extensionless_excludes": "Sans extension",
+      "extensionless_excludes_hint": "Séparés par des virgules..."
     },
     "tabs": [
       {
@@ -215,25 +261,14 @@
         "name": "Comportement"
       }
     ],
-    "workspace": {
-      "max_depth": "Profondeur max. d'analyse",
-      "ignored_directories": "[fr] Ignored Directories",
-      "ignored_directories_hint": "Liste séparée par des virgules des répertoires à exclure de l'analyse (ex., .git, node_modules, .terraform)",
-      "visible_extensions": "Extensions visibles",
-      "no_extension_label": "Sans extension",
-      "no_extension_warning_title": "Avertissement",
-      "no_extension_warning": "Il n'y a aucune garantie que les fichiers sans extension puissent être affichés correctement comme Markdown. De plus, l'application peut planter en raison d'un comportement inattendu. Êtes-vous sûr de vouloir activer cela?",
-      "extensionless_excludes": "[fr] Ignored Extensionless Files",
-      "extensionless_excludes_hint": "[fr] List of exact file names to ignore when 'No Extension' is enabled (e.g. .DS_Store, .gitignore)."
-    },
     "updates": {
-      "section_title": "[fr] App Updates",
-      "interval": "[fr] Check for updates automatically",
-      "never": "[fr] Never",
-      "daily": "[fr] Daily",
-      "weekly": "[fr] Weekly",
-      "monthly": "[fr] Monthly",
-      "check_now": "[fr] Check for Updates Now"
+      "section_title": "Mises à jour",
+      "interval": "Intervalle",
+      "never": "Jamais",
+      "daily": "Quotidien",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel",
+      "check_now": "Vérifier"
     },
     "behavior": {
       "section_title": "Comportement",
@@ -246,9 +281,9 @@
       "close_confirm_msg": "'{name}' a des modifications non enregistrées. Les supprimer ?",
       "close_confirm_discard": "Supprimer",
       "close_confirm_cancel": "Annuler",
-      "clear_http_cache": "[fr] Clear All Caches",
-      "cache_retention_days": "[fr] Cache Retention Days",
-      "days_suffix": "[fr]  days"
+      "clear_http_cache": "Vider cache",
+      "cache_retention_days": "Rétention",
+      "days_suffix": " j"
     }
   },
   "tab": {
@@ -274,41 +309,6 @@
     "title": "Table des matières",
     "empty": "Aucun titre trouvé"
   },
-  "about": {
-    "basic_info": "Informations de base",
-    "version": "Version",
-    "build": "Build",
-    "copyright": "Copyright",
-    "runtime": "Runtime",
-    "platform": "Plateforme",
-    "architecture": "Architecture",
-    "rust": "Rust",
-    "license": "Licence",
-    "links": "Liens",
-    "source_code": "Code source",
-    "documentation": "Documentation",
-    "report_issue": "Signaler un problème",
-    "support": "Support",
-    "sponsor": "Soutenir",
-    "coming_soon": "Bientôt disponible"
-  },
-  "update": {
-    "update_available": "Mise à jour disponible",
-    "update_available_desc": "Une nouvelle version de KatanA ({version}) est disponible. Veuillez exécuter `brew update && brew upgrade --cask katana-desktop` pour mettre à jour.",
-    "up_to_date": "À jour",
-    "up_to_date_desc": "KatanA est à jour.",
-    "failed_to_check": "Échec de la vérification des mises à jour.",
-    "action_close": "OK",
-    "title": "Vérifier les mises à jour",
-    "checking_for_updates": "Vérification des mises à jour...",
-    "install_update": "Installer et Relancer",
-    "downloading": "Téléchargement de la mise à jour...",
-    "installing": "Installation de la mise à jour...",
-    "restart_confirm": "La mise à jour est prête. Redémarrer maintenant ?",
-    "action_later": "Plus tard",
-    "action_skip_version": "Ignorer cette version",
-    "action_restart": "Redémarrer maintenant"
-  },
   "export": {
     "success": "Exporté vers {format} : {path}",
     "failed": "L'exportation vers {format} a échoué : {error}",
@@ -326,10 +326,10 @@
     "decline": "Décliner"
   },
   "dialog": {
-    "new_file_title": "[fr] New File",
-    "new_directory_title": "[fr] New Folder",
-    "rename_title": "[fr] Rename",
-    "delete_title": "[fr] Confirm Deletion",
-    "delete_confirm_msg": "[fr] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+    "new_file_title": "Créer fichier",
+    "new_directory_title": "Créer dossier",
+    "rename_title": "Renommer",
+    "delete_title": "Supprimer",
+    "delete_confirm_msg": "Sûr de supprimer ? {name}"
   }
 }

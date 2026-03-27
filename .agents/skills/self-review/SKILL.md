@@ -124,12 +124,14 @@ Verify the correct language is used in Git-managed files.
 | Files with `_ja` / `.ja` suffix (e.g. `*.ja.md`) | Japanese OK |
 | Other `.md`, `.txt` documents without `_ja` suffix | **English** |
 | Git commit messages | **Japanese** (project convention) |
+| Locale files (`locales/*.json`) | **Native language of the target locale** |
 
 ### Checklist
 - [ ] Comments in new/modified files are written in English
 - [ ] Any remaining Japanese comments are translated to English
 - [ ] Test function `///` doc comments and `assert!` messages are in English
 - [ ] Exception: files with `_ja` suffix may use Japanese
+- [ ] `locales/*.json` files are properly translated into their respective optimal native languages (no English fallbacks left behind)
 
 ---
 

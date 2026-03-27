@@ -377,7 +377,7 @@ fn readme_html_patterns_parsed_as_html_blocks_for_render_html_fn() {
 </p>
 
 <p align="center">
-  English | <a href="README.ja.md">日本語</a>
+  English | <a href="README.ja.md">\u{65e5}\u{672c}\u{8a9e}</a>
 </p>
 
 ---

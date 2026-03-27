@@ -2225,9 +2225,9 @@ fn test_ui_all_languages_load_successfully() {
 
     let supported_langs = [
         ("en", "English"),
-        ("ja", "日本語"),
-        ("zh-CN", "简体中文"),
-        ("zh-TW", "繁體中文"),
+        ("ja", "\u{65e5}\u{672c}\u{8a9e}"),
+        ("zh-CN", "\u{7b80}\u{4f53}\u{4e2d}\u{6587}"),
+        ("zh-TW", "\u{7e41}\u{9ad4}\u{4e2d}\u{6587}"),
         ("ko", "한국어"),
         ("pt", "Português"),
         ("fr", "Français"),
@@ -3247,4 +3247,211 @@ fn test_integration_auto_save_interval_precision_preserved_by_ui() {
         5.1,
         "Strict IT Check: The Settings UI MUST preserve exactly 1 decimal of precision (0.1 step) for the Auto-save interval and must NOT round it to integers."
     );
+}
+
+/// AST Linter for UI Locales
+/// Strictly ensures that no locale JSON file contains empty strings or fallback badges (like `[fr] `).
+#[test]
+fn test_ast_linter_locales() {
+    let locales_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("locales");
+    let mut failures = vec![];
+    let mut locales = std::collections::HashMap::new();
+
+    // 1. Load all json files
+    for entry in std::fs::read_dir(locales_dir).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+
+        if path.extension().is_some_and(|ext| ext == "json") {
+            let filename = path.file_name().unwrap().to_str().unwrap().to_string();
+            if filename == "languages.json" {
+                continue;
+            }
+            let file_contents = std::fs::read_to_string(&path).unwrap();
+            let json: serde_json::Value = serde_json::from_str(&file_contents).unwrap();
+            locales.insert(filename, json);
+        }
+    }
+
+    let en_json = locales.get("en.json").expect("en.json missing");
+
+    // 2. Build flat maps for cross-language leaf comparison
+    let mut all_leaves = std::collections::HashMap::new();
+    fn get_leaves(
+        val: &serde_json::Value,
+        path: &str,
+        leaves: &mut std::collections::HashMap<String, String>,
+    ) {
+        if path.contains(".key") && path.starts_with("settings.tabs[") {
+            return;
+        }
+        if path == "error.render_error" || path == "terms.version_label" {
+            return;
+        }
+        match val {
+            serde_json::Value::String(s) => {
+                leaves.insert(path.to_string(), s.trim().to_string());
+            }
+            serde_json::Value::Object(map) => {
+                for (k, v) in map {
+                    let new_path = if path.is_empty() {
+                        k.clone()
+                    } else {
+                        format!("{path}.{k}")
+                    };
+                    get_leaves(v, &new_path, leaves);
+                }
+            }
+            serde_json::Value::Array(arr) => {
+                for (i, v) in arr.iter().enumerate() {
+                    let new_path = format!("{path}[{i}]");
+                    get_leaves(v, &new_path, leaves);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    for (filename, json) in &locales {
+        let mut leaves = std::collections::HashMap::new();
+        get_leaves(json, "", &mut leaves);
+        all_leaves.insert(filename.clone(), leaves);
+    }
+
+    let allowed_overlaps = [
+        "Abrir", "Architecture", "Aumentar", "Build", "Cancelar", "Claro", "Code", "Comportamento", "Confirmar", "Copyright", "Código", "Descartar", "Dividir", "Documentation", "Documento HTML (.html)", "Documento PDF (.pdf)", "Duplicar...", "Exportar", "File", "Filtro", "Idioma (Language)", "Info", "Infos", "Intervalo", "Layout", "Links", "Nunca", "OK", "Ocultar KatanA", "Patrocinar", "Personalizado", "Plataforma", "Pronto", "Quotidiano", "Renderizando {kind}...", "Runtime", "Rust", "Semanalmente", "Sistema", "Sponsor", "Support", "System", "Tema", "Terms content.", "Text", "Texto", "Version", "[AI: \u{672a}\u{8a2d}\u{5b9a}]", "[AI: unconfigured]", "fn main() { println!(\"\u{4f60}\u{597d}!\"); }", "segundos", "{kind} \u{6e32}\u{67d3}\u{4e2d}...", "⏳ Exportando {filename}...", "\u{4e0a}\u{79fb}", "\u{4e0b}\u{79fb}", "\u{4f8b}\u{5982} node_modules, target, .git", "\u{4fdd}\u{5b58}", "\u{5168}\u{5c4f}", "\u{5206}\u{5272}", "\u{5206}\u{5272}\u{65b9}\u{5411}", "\u{53d6}\u{6d88}", "\u{53d6}\u{6d88}\u{56fa}\u{5b9a}", "\u{53f3}\u{79fb}", "\u{56fa}\u{5b9a}", "\u{5782}\u{76f4}\u{ff08}\u{4e0a} / \u{4e0b}\u{ff09}", "\u{5929}", "\u{5de6}\u{79fb}", "\u{5df2}\u{662f}\u{6700}\u{65b0}\u{7248}\u{672c}", "\u{5e73}\u{53f0}", "\u{60a8}\u{4f7f}\u{7528}\u{7684}\u{662f}\u{6700}\u{65b0}\u{7248}\u{672c}\u{7684} KatanA\u{3002}", "\u{63a5}\u{53d7}", "\u{652f}\u{6301}", "\u{653e}\u{5927}", "\u{66f4}\u{65b0}", "\u{6709}\u{65b0}\u{7248}\u{672c}\u{53ef}\u{7528}", "\u{6bcf}\u{5929}", "\u{6bcf}\u{6708}", "\u{6c34}\u{5e73}\u{ff08}\u{5de6} / \u{53f3}\u{ff09}", "\u{6df1}\u{8272}", "\u{7248}\u{672c}", "\u{78ba}\u{8a8d}", "\u{79d2}", "\u{7e2e}\u{5c0f}", "\u{80cc}\u{666f}", "\u{8a2d}\u{5b9a}", "\u{8b66}\u{544a}", "\u{9000}\u{51fa} KatanA", "\u{91cd}\u{7f6e}\u{4f4d}\u{7f6e}\u{548c}\u{5927}\u{5c0f}", "\u{9762}\u{677f}\u{80cc}\u{666f}"
+    ];
+
+    // 3. Perform structural checks AND cross-language checks
+    for (filename, target_json) in &locales {
+        if filename == "en.json" {
+            continue;
+        } // en is the baseline structure
+
+        fn check_structure_and_values(
+            en_val: &serde_json::Value,
+            target_val: Option<&serde_json::Value>,
+            path_str: &str,
+            filename: &str,
+            all_leaves: &std::collections::HashMap<
+                String,
+                std::collections::HashMap<String, String>,
+            >,
+            allowed_overlaps: &[&str],
+            failures: &mut Vec<String>,
+        ) {
+            let Some(target) = target_val else {
+                failures.push(format!("{filename}: [LOOPHOLE CLOSED] Missing required key '{path_str}' which exists in en.json"));
+                return;
+            };
+
+            let is_ignored_path = (path_str.contains(".key")
+                && path_str.starts_with("settings.tabs["))
+                || path_str == "error.render_error"
+                || path_str == "terms.version_label";
+
+            match (en_val, target) {
+                (serde_json::Value::String(_), serde_json::Value::String(s)) => {
+                    if is_ignored_path {
+                        return;
+                    }
+
+                    let trimmed = s.trim();
+                    if trimmed.is_empty() {
+                        failures.push(format!(
+                            "{filename}: Key '{path_str}' is an explicitly empty string"
+                        ));
+                    } else if s.starts_with('[') {
+                        if let Some(end) = s.find(']') {
+                            let inside = &s[1..end];
+                            let is_lang_code =
+                                inside.chars().all(|c| c.is_ascii_alphabetic() || c == '-');
+                            if is_lang_code && inside.len() >= 2 && inside.len() <= 5 {
+                                failures.push(format!("{filename}: Key '{path_str}' contains forbidden placeholder badge: '{s}'"));
+                            }
+                        }
+                    }
+
+                    // Strict ALL-LANGUAGES cross-match detection
+                    for (other_filename, other_leaves) in all_leaves {
+                        if other_filename != filename {
+                            if let Some(other_s) = other_leaves.get(path_str) {
+                                if trimmed == other_s && !allowed_overlaps.contains(&trimmed) {
+                                    failures.push(format!("{filename}: [LOOPHOLE CLOSED] Key '{path_str}' exactly matches '{other_filename}' fallback: '{s}'. MUST be translated natively without copying another language."));
+                                }
+                            }
+                        }
+                    }
+                }
+                (serde_json::Value::Object(en_map), serde_json::Value::Object(t_map)) => {
+                    for k in t_map.keys() {
+                        if !en_map.contains_key(k) {
+                            failures.push(format!("{filename}: [LOOPHOLE CLOSED] Extra key '{path_str}.{k}' exists in target but not in en.json"));
+                        }
+                    }
+                    for (k, en_child) in en_map {
+                        let new_path = if path_str.is_empty() {
+                            k.clone()
+                        } else {
+                            format!("{path_str}.{k}")
+                        };
+                        let t_child = t_map.get(k);
+                        check_structure_and_values(
+                            en_child,
+                            t_child,
+                            &new_path,
+                            filename,
+                            all_leaves,
+                            allowed_overlaps,
+                            failures,
+                        );
+                    }
+                }
+                (serde_json::Value::Array(en_arr), serde_json::Value::Array(t_arr)) => {
+                    if en_arr.len() != t_arr.len() {
+                        failures.push(format!("{filename}: [LOOPHOLE CLOSED] Array '{path_str}' length mismatch. en.json has {}, target has {}", en_arr.len(), t_arr.len()));
+                    }
+                    for (i, en_child) in en_arr.iter().enumerate() {
+                        let new_path = format!("{path_str}[{i}]");
+                        let t_child = t_arr.get(i);
+                        check_structure_and_values(
+                            en_child,
+                            t_child,
+                            &new_path,
+                            filename,
+                            all_leaves,
+                            allowed_overlaps,
+                            failures,
+                        );
+                    }
+                }
+                (serde_json::Value::Number(_), serde_json::Value::Number(_)) => {}
+                (serde_json::Value::Bool(_), serde_json::Value::Bool(_)) => {}
+                (serde_json::Value::Null, serde_json::Value::Null) => {}
+                _ => {
+                    failures.push(format!("{filename}: [LOOPHOLE CLOSED] Type mismatch at '{path_str}' between en.json and target file"));
+                }
+            }
+        }
+
+        check_structure_and_values(
+            en_json,
+            Some(target_json),
+            "",
+            filename,
+            &all_leaves,
+            &allowed_overlaps,
+            &mut failures,
+        );
+    }
+
+    if !failures.is_empty() {
+        failures.sort();
+        failures.dedup();
+        panic!(
+            "AST Linter found {} layout/translation violations in locales:\n{}",
+            failures.len(),
+            failures.join("\n")
+        );
+    }
 }
