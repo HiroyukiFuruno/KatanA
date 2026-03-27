@@ -121,9 +121,9 @@ pub(crate) const ROSE_PINE_DAWN: PresetColorData = PresetColorData {
         },
         hover_line_background: Rgba {
             r: 0,
-            g: 0,
-            b: 0,
-            a: 10,
+            g: 100,
+            b: 200,
+            a: 25,
         },
         selection: Rgb {
             r: 200,
@@ -166,9 +166,9 @@ pub(crate) const ROSE_PINE_DAWN: PresetColorData = PresetColorData {
 
         hover_line_background: Rgba {
             r: 0,
-            g: 0,
-            b: 0,
-            a: 20,
+            g: 100,
+            b: 200,
+            a: 25,
         },
     },
 };

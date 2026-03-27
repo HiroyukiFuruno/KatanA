@@ -108,10 +108,10 @@ pub(crate) const NIGHT_OWL: PresetColorData = PresetColorData {
             a: 50,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 50,
+            r: 100,
+            g: 150,
+            b: 255,
+            a: 25,
         },
         selection: Rgb {
             r: 80,
@@ -149,10 +149,10 @@ pub(crate) const NIGHT_OWL: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 255,
-            g: 255,
+            r: 100,
+            g: 150,
             b: 255,
-            a: 50,
+            a: 25,
         },
     },
 };

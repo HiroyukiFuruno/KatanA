@@ -121,9 +121,9 @@ pub(crate) const KATANA_LIGHT: PresetColorData = PresetColorData {
         },
         hover_line_background: Rgba {
             r: 0,
-            g: 0,
-            b: 0,
-            a: 10,
+            g: 120,
+            b: 212,
+            a: 25,
         },
         selection: Rgb {
             r: 173,
@@ -166,9 +166,9 @@ pub(crate) const KATANA_LIGHT: PresetColorData = PresetColorData {
 
         hover_line_background: Rgba {
             r: 0,
-            g: 0,
-            b: 0,
-            a: 20,
+            g: 120,
+            b: 212,
+            a: 25,
         },
     },
 };

@@ -116,10 +116,10 @@ pub(crate) const SOLARIZED_LIGHT: PresetColorData = PresetColorData {
             a: 15,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 10,
+            r: 38,
+            g: 139,
+            b: 210,
+            a: 25,
         },
         selection: Rgb {
             r: 238,
@@ -161,10 +161,10 @@ pub(crate) const SOLARIZED_LIGHT: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 20,
+            r: 38,
+            g: 139,
+            b: 210,
+            a: 25,
         },
     },
 };

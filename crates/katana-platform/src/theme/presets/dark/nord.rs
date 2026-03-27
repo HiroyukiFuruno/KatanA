@@ -120,10 +120,10 @@ pub(crate) const NORD: PresetColorData = PresetColorData {
             a: 50,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 50,
+            r: 136,
+            g: 192,
+            b: 208,
+            a: 25,
         },
         selection: Rgb {
             r: 67,
@@ -165,10 +165,10 @@ pub(crate) const NORD: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 255,
-            g: 255,
-            b: 255,
-            a: 50,
+            r: 136,
+            g: 192,
+            b: 208,
+            a: 25,
         },
     },
 };
