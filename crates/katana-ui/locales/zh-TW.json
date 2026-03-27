@@ -19,6 +19,41 @@
     "help": "幫助",
     "check_updates": "檢查更新..."
   },
+  "about": {
+    "basic_info": "基本資訊",
+    "version": "版本",
+    "build": "組建",
+    "copyright": "版權",
+    "runtime": "執行階段",
+    "platform": "平台",
+    "architecture": "架構",
+    "rust": "Rust",
+    "license": "許可證",
+    "links": "連結",
+    "source_code": "源代碼",
+    "documentation": "文檔",
+    "report_issue": "報告問題",
+    "support": "支持",
+    "sponsor": "贊助",
+    "coming_soon": "敬請期待"
+  },
+  "update": {
+    "title": "檢查更新",
+    "checking_for_updates": "正在檢查更新...",
+    "update_available": "有新版本可用",
+    "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
+    "up_to_date": "已是最新版本",
+    "up_to_date_desc": "您使用的是最新版本的 KatanA。",
+    "failed_to_check": "檢查更新失敗。",
+    "action_close": "確定",
+    "install_update": "安裝並重啟",
+    "downloading": "正在下載更新...",
+    "installing": "正在安裝更新...",
+    "restart_confirm": "更新已就緒，現在重啟嗎？",
+    "action_later": "稍後",
+    "action_skip_version": "跳過此版本",
+    "action_restart": "立即重啟"
+  },
   "workspace": {
     "no_workspace_open": "未開啟工作區。",
     "no_document_selected": "未開啟文件。",
@@ -76,28 +111,28 @@
     "cannot_open_file": "無法開啟檔案: {error}"
   },
   "action": {
-    "expand_all": "[zh-TW] 全部展開",
-    "collapse_all": "[zh-TW] 全部折疊",
-    "collapse_sidebar": "[zh-TW] 隱藏側邊欄",
-    "refresh_workspace": "[zh-TW] 刷新工作區",
-    "toggle_filter": "[zh-TW] 切換篩選器",
-    "remove_workspace": "[zh-TW] 從歷史記錄中移除",
-    "recursive_expand": "[zh-TW] 遞迴展開",
-    "recursive_open_all": "[zh-TW] 遞迴打開所有文件",
-    "toggle_toc": "[zh-TW] 切換目錄",
-    "show_meta_info": "[zh-TW] 顯示中繼資料",
-    "new_file": "[zh-TW] New File",
-    "new_directory": "[zh-TW] New Folder",
-    "open": "[zh-TW] Open",
-    "rename": "[zh-TW] Rename",
-    "delete": "[zh-TW] Delete",
-    "copy_path": "[zh-TW] Copy Path",
-    "reveal_in_os": "[zh-TW] Reveal in OS",
-    "save": "[zh-TW] 保存",
-    "cancel": "[zh-TW] キャンセル",
+    "expand_all": "展開全部",
+    "collapse_all": "摺疊全部",
+    "collapse_sidebar": "摺疊側邊欄",
+    "refresh_workspace": "重新整理工作區",
+    "toggle_filter": "切換篩選器",
+    "remove_workspace": "移除工作區",
+    "recursive_expand": "遞迴展開",
+    "recursive_open_all": "遞迴打開全部",
+    "toggle_toc": "切換目錄",
+    "show_meta_info": "顯示中介資訊",
+    "new_file": "新增檔案",
+    "new_directory": "新增資料夾",
+    "open": "打開",
+    "rename": "重新命名",
+    "delete": "刪除",
+    "copy_path": "複製路徑",
+    "reveal_in_os": "在系統中顯示",
+    "save": "儲存",
+    "cancel": "取消",
     "discard": "丟棄",
     "confirm": "確認",
-    "copy_relative_path": "[zh-TW] Copy Relative Path"
+    "copy_relative_path": "複製相對路徑"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -121,9 +156,9 @@
       "save_custom_theme": "另存為自訂主題...",
       "save_custom_theme_title": "儲存自訂主題",
       "theme_name_label": "主題名稱:",
-      "duplicate": "複製...",
-      "ui_contrast_offset": "[zh-TW] UI Contrast (Alpha Offset)",
-      "reset_contrast": "[zh-TW] Reset"
+      "duplicate": "建立複本...",
+      "ui_contrast_offset": "介面對比偏移",
+      "reset_contrast": "重設"
     },
     "font": {
       "size": "字體大小",
@@ -138,8 +173,8 @@
       "editor_first": "編輯器優先",
       "preview_first": "預覽優先",
       "toc_position": "目錄位置",
-      "left": "左側",
-      "right": "右側"
+      "left": "左",
+      "right": "右"
     },
     "preview": {
       "title": "預覽",
@@ -165,21 +200,32 @@
       "section_system": "系統",
       "section_code": "程式碼",
       "section_preview": "預覽",
-      "title_bar_text": "",
-      "active_file_highlight": "",
-      "success_text": "",
-      "warning_text": "",
-      "error_text": "",
-      "button_background": "",
-      "button_active_background": "",
-      "splash_background": "",
-      "splash_progress": "",
-      "fullscreen_overlay": "",
-      "line_number_text": "",
-      "line_number_active_text": "",
-      "current_line_background": "",
-      "hover_line_background": "",
-      "file_tree_text": ""
+      "title_bar_text": "標題列文字",
+      "active_file_highlight": "作用中檔案反白",
+      "success_text": "成功文字",
+      "warning_text": "警告文字",
+      "error_text": "錯誤文字",
+      "button_background": "按鈕背景",
+      "button_active_background": "按鈕作用中背景",
+      "splash_background": "啟動頁背景",
+      "splash_progress": "啟動頁進度",
+      "fullscreen_overlay": "全螢幕覆蓋",
+      "line_number_text": "行號文字",
+      "line_number_active_text": "作用中行號文字",
+      "current_line_background": "目前行背景",
+      "hover_line_background": "懸停行背景",
+      "file_tree_text": "檔案樹狀結構文字"
+    },
+    "workspace": {
+      "max_depth": "最大目錄掃描深度",
+      "ignored_directories": "忽略的目錄",
+      "ignored_directories_hint": "例如 node_modules, target, .git",
+      "visible_extensions": "顯示的副檔名",
+      "no_extension_label": "無副檔名",
+      "no_extension_warning_title": "警告",
+      "no_extension_warning": "不能保證沒有副檔名的檔案能正確顯示為 Markdown。此外，應用程式可能會因意外行為而崩潰。確定要啟用嗎？",
+      "extensionless_excludes": "忽略的無副檔名檔案",
+      "extensionless_excludes_hint": "以逗號分隔的精確檔案名稱清單..."
     },
     "tabs": [
       {
@@ -192,7 +238,7 @@
       },
       {
         "key": "layout",
-        "name": "配置"
+        "name": "版面配置"
       },
       {
         "key": "workspace",
@@ -215,25 +261,14 @@
         "name": "行為"
       }
     ],
-    "workspace": {
-      "max_depth": "最大目錄掃描深度",
-      "ignored_directories": "[zh-TW] Ignored Directories",
-      "ignored_directories_hint": "例: node_modules, target, .git",
-      "visible_extensions": "顯示的副檔名",
-      "no_extension_label": "無副檔名",
-      "no_extension_warning_title": "警告",
-      "no_extension_warning": "不能保證沒有副檔名的檔案能正確顯示為 Markdown。此外，應用程式可能會因意外行為而崩潰。確定要啟用嗎？",
-      "extensionless_excludes": "[zh-TW] Ignored Extensionless Files",
-      "extensionless_excludes_hint": "[zh-TW] List of exact file names to ignore when 'No Extension' is enabled (e.g. .DS_Store, .gitignore)."
-    },
     "updates": {
-      "section_title": "[zh-TW] App Updates",
-      "interval": "[zh-TW] Check for updates automatically",
-      "never": "[zh-TW] Never",
-      "daily": "[zh-TW] Daily",
-      "weekly": "[zh-TW] Weekly",
-      "monthly": "[zh-TW] Monthly",
-      "check_now": "[zh-TW] Check for Updates Now"
+      "section_title": "更新",
+      "interval": "檢查間隔",
+      "never": "從不",
+      "daily": "每天",
+      "weekly": "每週",
+      "monthly": "每月",
+      "check_now": "立即檢查"
     },
     "behavior": {
       "section_title": "行為",
@@ -246,9 +281,9 @@
       "close_confirm_msg": "'{name}' 有未儲存的變更。是否捨棄？",
       "close_confirm_discard": "捨棄",
       "close_confirm_cancel": "取消",
-      "clear_http_cache": "[zh-TW] Clear All Caches",
-      "cache_retention_days": "[zh-TW] Cache Retention Days",
-      "days_suffix": "[zh-TW]  days"
+      "clear_http_cache": "清除所有快取",
+      "cache_retention_days": "快取保留天數",
+      "days_suffix": " 天"
     }
   },
   "tab": {
@@ -274,41 +309,6 @@
     "title": "目錄",
     "empty": "未找到標題。"
   },
-  "about": {
-    "basic_info": "基本資訊",
-    "version": "版本",
-    "build": "構建",
-    "copyright": "版權",
-    "runtime": "執行階段",
-    "platform": "平台",
-    "architecture": "架構",
-    "rust": "Rust",
-    "license": "許可證",
-    "links": "連結",
-    "source_code": "源代碼",
-    "documentation": "文檔",
-    "report_issue": "報告問題",
-    "support": "支持",
-    "sponsor": "贊助",
-    "coming_soon": "敬請期待"
-  },
-  "update": {
-    "update_available": "有新版本可用",
-    "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
-    "up_to_date": "已是最新版本",
-    "up_to_date_desc": "您使用的是最新版本的 KatanA。",
-    "failed_to_check": "檢查更新失敗。",
-    "action_close": "確定",
-    "title": "檢查更新",
-    "checking_for_updates": "正在檢查更新...",
-    "install_update": "安裝並重啟",
-    "downloading": "正在下載更新...",
-    "installing": "正在安裝更新...",
-    "restart_confirm": "更新已就緒，現在重啟嗎？",
-    "action_later": "稍後",
-    "action_skip_version": "跳過此版本",
-    "action_restart": "立即重啟"
-  },
   "export": {
     "success": "已成功匯出 {format} 至 {path}",
     "failed": "{format} 匯出失敗: {error}",
@@ -326,10 +326,10 @@
     "decline": "拒絶"
   },
   "dialog": {
-    "new_file_title": "[zh-TW] New File",
-    "new_directory_title": "[zh-TW] New Folder",
-    "rename_title": "[zh-TW] Rename",
-    "delete_title": "[zh-TW] Confirm Deletion",
-    "delete_confirm_msg": "[zh-TW] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+    "new_file_title": "建立新檔案",
+    "new_directory_title": "建立新資料夾",
+    "rename_title": "重新命名",
+    "delete_title": "刪除",
+    "delete_confirm_msg": "確定要刪除嗎？ {name}"
   }
 }

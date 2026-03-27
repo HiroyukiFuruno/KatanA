@@ -423,7 +423,7 @@ mod tests {
             "UI symbol glyphs should keep using egui/built-in fallback fonts"
         );
     }
-    // --- TDD: Font Jitter (ガタツキ) Reproduction Tests ---
+    // --- TDD: Font Jitter Reproduction Tests ---
 
     fn assert_font_jitter(context_name: &str, font_size: f32) {
         let preset = DiagramColorPreset::current();
@@ -437,7 +437,10 @@ mod tests {
         let ctx = Context::default();
         ctx.set_fonts(fonts.into_inner());
 
-        let text = format!("Katana — {} Lambdaアップデート手順.md", context_name);
+        let text = format!(
+            "Katana — {} Lambda\u{30a2}\u{30c3}\u{30d7}\u{30c7}\u{30fc}\u{30c8}\u{624b}\u{9806}.md",
+            context_name
+        );
         let mut eng_glyph = None;
         let mut jpn_glyph = None;
 
@@ -452,7 +455,7 @@ mod tests {
                 jpn_glyph = galley.rows[0]
                     .glyphs
                     .iter()
-                    .find(|g| g.chr == 'ア')
+                    .find(|g| g.chr == '\u{30a2}')
                     .copied();
             });
         });
@@ -462,7 +465,7 @@ mod tests {
 
         assert_eq!(
             eng_glyph.pos.y, jpn_glyph.pos.y,
-            "ガタツキ (Jitter) in {}: English 'L' y={} vs Japanese 'ア' y={}",
+            "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in {}: English 'L' y={} vs Japanese '\u{30a2}' y={}",
             context_name, eng_glyph.pos.y, jpn_glyph.pos.y
         );
     }
@@ -510,7 +513,8 @@ mod tests {
         let ctx = Context::default();
         ctx.set_fonts(fonts.into_inner());
 
-        let text = "cd infrastructures/tools/crypt-decrypt の復号化".to_string();
+        let text =
+            "cd infrastructures/tools/crypt-decrypt \u{306e}\u{5fa9}\u{53f7}\u{5316}".to_string();
         let mut eng_glyph = None;
         let mut jpn_glyph = None;
 
@@ -526,7 +530,7 @@ mod tests {
                 jpn_glyph = galley.rows[0]
                     .glyphs
                     .iter()
-                    .find(|g| g.chr == '復')
+                    .find(|g| g.chr == '\u{5fa9}')
                     .copied();
 
                 let shapes = vec![egui::epaint::ClippedShape {
@@ -568,7 +572,7 @@ mod tests {
         let diff = (eng_min_y - jpn_min_y).abs();
         assert!(
             diff <= 1.5,
-            "ガタツキ (Jitter) in Monospace visual mesh: English 'c' y={} vs Japanese '復' y={} (Diff: {})",
+            "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in Monospace visual mesh: English 'c' y={} vs Japanese '\u{5fa9}' y={} (Diff: {})",
             eng_min_y, jpn_min_y, diff
         );
     }
@@ -596,7 +600,7 @@ mod tests {
 
         // Simulate a code block comment with mixed JP/EN,
         // exactly as seen in the user's app.
-        let code_text = "# 全件実行";
+        let code_text = "# \u{5168}\u{4ef6}\u{5b9f}\u{884c}";
 
         let mut hash_glyph = None;
         let mut jp_glyph = None;
@@ -624,7 +628,7 @@ mod tests {
                         if g.chr == '#' {
                             hash_glyph = Some(*g);
                         }
-                        if g.chr == '全' {
+                        if g.chr == '\u{5168}' {
                             jp_glyph = Some(*g);
                         }
                     }
@@ -643,7 +647,7 @@ mod tests {
         });
 
         let hash_glyph = hash_glyph.expect("'#' glyph not found");
-        let jp_glyph = jp_glyph.expect("'全' glyph not found");
+        let jp_glyph = jp_glyph.expect("'\u{5168}' glyph not found");
 
         // Find visual min y from tessellated mesh (actual pixel positions)
         let mut hash_min_y = f32::INFINITY;
@@ -667,7 +671,7 @@ mod tests {
         let diff = (hash_min_y - jp_min_y).abs();
         assert!(
             diff <= 1.5,
-            "ガタツキ (Jitter) in CodeBlock LayoutJob visual mesh: '#' y={} vs '全' y={} (Diff: {}). \
+            "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in CodeBlock LayoutJob visual mesh: '#' y={} vs '\u{5168}' y={} (Diff: {}). \
              Mixed JP/EN text must share a common baseline.",
             hash_min_y, jp_min_y, diff
         );
@@ -705,7 +709,7 @@ mod tests {
             egui::CentralPanel::default().show(ctx, |ui| {
                 // Build a LayoutJob with mixed Proportional and Monospace sections,
                 // exactly like inline code in body text:
-                // "インストール後、`mmdc` は自動的に検出されます"
+                // "After installation, `mmdc` is automatically detected"
                 let mut job = LayoutJob::default();
 
                 let prop_format = TextFormat {
@@ -718,19 +722,19 @@ mod tests {
                 };
 
                 // Proportional section
-                job.append("インストール後、", 0.0, prop_format.clone());
+                job.append("\u{30a4}\u{30f3}\u{30b9}\u{30c8}\u{30fc}\u{30eb}\u{5f8c}\u{3001}", 0.0, prop_format.clone());
                 // Monospace section (inline code)
                 job.append("mmdc", 0.0, mono_format);
                 // Proportional section
-                job.append(" は自動的に検出されます", 0.0, prop_format);
+                job.append(" \u{306f}\u{81ea}\u{52d5}\u{7684}\u{306b}\u{691c}\u{51fa}\u{3055}\u{308c}\u{307e}\u{3059}", 0.0, prop_format);
 
                 let galley = ui.fonts_mut(|f| f.layout_job(job));
 
-                // Find glyphs: 'イ' from Proportional, 'm' from Monospace
+                // Find glyphs: '\u{30a4}' from Proportional, 'm' from Monospace
                 let prop_glyph = galley.rows[0]
                     .glyphs
                     .iter()
-                    .find(|g| g.chr == 'イ')
+                    .find(|g| g.chr == '\u{30a4}')
                     .copied();
                 let mono_glyph = galley.rows[0].glyphs.iter().find(|g| g.chr == 'm').copied();
 
@@ -774,7 +778,7 @@ mod tests {
         let diff = (prop_min_y - mono_min_y).abs();
         assert!(
             diff <= 10.0,
-            "ガタツキ (Jitter) in inline code: Proportional 'イ' y={} vs Monospace 'm' y={} (Diff: {}). \
+            "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in inline code: Proportional '\u{30a4}' y={} vs Monospace 'm' y={} (Diff: {}). \
              Cross-family alignment is not enforced at font-level; handle at LayoutJob level.",
             prop_min_y, mono_min_y, diff
         );

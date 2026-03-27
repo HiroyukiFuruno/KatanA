@@ -3699,7 +3699,7 @@ mod tests {
     fn split_preview_wraps_long_lines_without_horizontal_overflow() {
         let ctx = test_context();
         let path = PathBuf::from("/tmp/long-line.md");
-        let long_line = "あ".repeat(240);
+        let long_line = "\u{3042}".repeat(240);
         let mut app = app_with_preview_doc(&path, &long_line);
 
         let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
@@ -3740,7 +3740,7 @@ mod tests {
     fn split_preview_wraps_long_inline_code_without_horizontal_overflow() {
         let ctx = test_context();
         let path = PathBuf::from("/tmp/long-inline-code.md");
-        let inline_code = format!("`{}`", "あ".repeat(240));
+        let inline_code = format!("`{}`", "\u{3042}".repeat(240));
         let mut app = app_with_preview_doc(&path, &inline_code);
 
         let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
@@ -3758,7 +3758,7 @@ mod tests {
             .iter()
             .find_map(|shape| match shape {
                 egui::epaint::Shape::Text(text)
-                    if text.galley.job.text.contains(&"あ".repeat(60)) =>
+                    if text.galley.job.text.contains(&"\u{3042}".repeat(60)) =>
                 {
                     Some(text)
                 }

@@ -1,6 +1,6 @@
-//! Settings型定義。
+//! Settings type definitions.
 //!
-//! すべての設定関連の構造体・列挙型・定数をここに集約する。
+//! All settings-related structs, enums, and constants are consolidated here.
 
 use crate::theme::{ThemeColors, ThemePreset};
 use serde::{Deserialize, Serialize};

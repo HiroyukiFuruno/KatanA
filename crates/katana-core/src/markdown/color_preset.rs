@@ -98,7 +98,7 @@ impl DiagramColorPreset {
             preview_text: "#E0E0E0",
             proportional_font_candidates: vec![
                 // macOS — Hiragino Sans (high-quality CJK + Latin rendering)
-                "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+                "/System/Library/Fonts/\u{30d2}\u{30e9}\u{30ae}\u{30ce}\u{89d2}\u{30b4}\u{30b7}\u{30c3}\u{30af} W3.ttc",
                 "/System/Library/Fonts/Hiragino Sans GB.ttc",
                 "/System/Library/Fonts/AquaKana.ttc",
                 // Windows — Yu Gothic UI / Meiryo (CJK + Latin)
@@ -157,7 +157,7 @@ impl DiagramColorPreset {
             preview_text: "#333333",
             proportional_font_candidates: vec![
                 // macOS
-                "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+                "/System/Library/Fonts/\u{30d2}\u{30e9}\u{30ae}\u{30ce}\u{89d2}\u{30b4}\u{30b7}\u{30c3}\u{30af} W3.ttc",
                 "/System/Library/Fonts/Hiragino Sans GB.ttc",
                 "/System/Library/Fonts/AquaKana.ttc",
                 // Windows

@@ -675,7 +675,7 @@ fn centered_badges_render_on_same_horizontal_row() {
 fn centered_text_link_is_clickable() {
     let html = concat!(
         "<p align=\"center\">\n",
-        "  English | <a href=\"README.ja.md\">日本語</a>\n",
+        "  English | <a href=\"README.ja.md\">\u{65e5}\u{672c}\u{8a9e}</a>\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -689,7 +689,7 @@ fn centered_text_link_is_clickable() {
     harness.step();
     harness.run();
     // Verify the link label exists in the accessibility tree
-    let _link_node = harness.get_by_label("日本語");
+    let _link_node = harness.get_by_label("\u{65e5}\u{672c}\u{8a9e}");
 }
 
 /// Verifies that mixed inline text is emitted as a single wrapped text run.
@@ -698,7 +698,7 @@ fn centered_text_link_is_clickable() {
 /// for CJK text and makes long lines wrap inconsistently.
 #[test]
 fn inline_html_text_fragments_are_not_split_into_multiple_widgets() {
-    let html = "<p>前文<strong>強調</strong>後文</p>\n";
+    let html = "<p>\u{524d}\u{6587}<strong>\u{5f37}\u{8abf}</strong>\u{5f8c}\u{6587}</p>\n";
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::Markdown(html.to_string())];
 
@@ -712,13 +712,13 @@ fn inline_html_text_fragments_are_not_split_into_multiple_widgets() {
     harness.step();
     harness.run();
 
-    let _combined = harness.get_by_label("前文強調後文");
+    let _combined = harness.get_by_label("\u{524d}\u{6587}\u{5f37}\u{8abf}\u{5f8c}\u{6587}");
     assert!(
-        harness.query_by_label("前文").is_none(),
+        harness.query_by_label("\u{524d}\u{6587}").is_none(),
         "inline text should not be emitted as separate widgets"
     );
     assert!(
-        harness.query_by_label("強調").is_none(),
+        harness.query_by_label("\u{5f37}\u{8abf}").is_none(),
         "strong text should participate in the same text run"
     );
 }
@@ -1196,7 +1196,7 @@ fn inline_emoji_stays_within_text_line_height_budget() {
 fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
     let mut pane = PreviewPane::default();
     pane.update_markdown_sections(
-        "KatanA は AIエージェントと共に仕様駆動開発を行う時代のために設計されたツールです。\n",
+        "KatanA \u{306f} AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}\u{3092}\u{884c}\u{3046}\u{6642}\u{4ee3}\u{306e}\u{305f}\u{3081}\u{306b}\u{8a2d}\u{8a08}\u{3055}\u{308c}\u{305f}\u{30c4}\u{30fc}\u{30eb}\u{3067}\u{3059}\u{3002}\n",
         std::path::Path::new("/tmp/cjk-baseline.md"),
     );
 
@@ -1232,7 +1232,7 @@ fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
                     .galley
                     .job
                     .text
-                    .contains("AIエージェントと共に仕様駆動開発") =>
+                    .contains("AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}") =>
             {
                 Some(text)
             }
@@ -1256,7 +1256,7 @@ fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
 fn html_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::Markdown(
-        "<p>KatanA は AIエージェントと共に仕様駆動開発を行う時代のために設計されたツールです。</p>\n"
+        "<p>KatanA \u{306f} AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}\u{3092}\u{884c}\u{3046}\u{6642}\u{4ee3}\u{306e}\u{305f}\u{3081}\u{306b}\u{8a2d}\u{8a08}\u{3055}\u{308c}\u{305f}\u{30c4}\u{30fc}\u{30eb}\u{3067}\u{3059}\u{3002}</p>\n"
             .to_string(),
     )];
 
@@ -1292,7 +1292,7 @@ fn html_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
                     .galley
                     .job
                     .text
-                    .contains("AIエージェントと共に仕様駆動開発") =>
+                    .contains("AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}") =>
             {
                 Some(text)
             }
@@ -1316,7 +1316,7 @@ fn html_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
 fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_monospace() {
     let mut pane = PreviewPane::default();
     pane.update_markdown_sections(
-        "KatanA は AIエージェントと共に仕様駆動開発を行う時代のために設計されたツールです。\n",
+        "KatanA \u{306f} AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}\u{3092}\u{884c}\u{3046}\u{6642}\u{4ee3}\u{306e}\u{305f}\u{3081}\u{306b}\u{8a2d}\u{8a08}\u{3055}\u{308c}\u{305f}\u{30c4}\u{30fc}\u{30eb}\u{3067}\u{3059}\u{3002}\n",
         std::path::Path::new("/tmp/preview-font-markdown.md"),
     );
 
@@ -1352,7 +1352,7 @@ fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_mono
                     .galley
                     .job
                     .text
-                    .contains("AIエージェントと共に仕様駆動開発") =>
+                    .contains("AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}") =>
             {
                 Some(text)
             }
@@ -1376,7 +1376,7 @@ fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_mono
 fn preview_html_uses_proportional_body_font_even_when_ui_font_family_is_monospace() {
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::Markdown(
-        "<p>KatanA は AIエージェントと共に仕様駆動開発を行う時代のために設計されたツールです。</p>\n"
+        "<p>KatanA \u{306f} AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}\u{3092}\u{884c}\u{3046}\u{6642}\u{4ee3}\u{306e}\u{305f}\u{3081}\u{306b}\u{8a2d}\u{8a08}\u{3055}\u{308c}\u{305f}\u{30c4}\u{30fc}\u{30eb}\u{3067}\u{3059}\u{3002}</p>\n"
             .to_string(),
     )];
 
@@ -1412,7 +1412,7 @@ fn preview_html_uses_proportional_body_font_even_when_ui_font_family_is_monospac
                     .galley
                     .job
                     .text
-                    .contains("AIエージェントと共に仕様駆動開発") =>
+                    .contains("AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}") =>
             {
                 Some(text)
             }
@@ -1436,7 +1436,7 @@ fn preview_html_uses_proportional_body_font_even_when_ui_font_family_is_monospac
 fn preview_code_blocks_keep_monospace_font_when_body_text_is_proportional() {
     let mut pane = PreviewPane::default();
     pane.update_markdown_sections(
-        "本文です。\n\n```rust\nfn main() {}\n```\n",
+        "\u{672c}\u{6587}\u{3067}\u{3059}\u{3002}\n\n```rust\nfn main() {}\n```\n",
         std::path::Path::new("/tmp/preview-font-code.md"),
     );
 
@@ -1556,7 +1556,7 @@ fn readme_header_full_structure_renders() {
         "  <a href=\"ci\"><img src=\"badge2.svg\" alt=\"CI\"></a>\n",
         "</p>\n\n",
         "<p align=\"center\">\n",
-        "  English | <a href=\"README.ja.md\">日本語</a>\n",
+        "  English | <a href=\"README.ja.md\">\u{65e5}\u{672c}\u{8a9e}</a>\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -1573,7 +1573,7 @@ fn readme_header_full_structure_renders() {
     // Verify key widgets exist in the accessibility tree
     let _heading = harness.get_by_label("KatanA Desktop");
     let _description = harness.get_by_label("A fast, lightweight Markdown workspace for macOS.");
-    let _lang_link = harness.get_by_label("日本語");
+    let _lang_link = harness.get_by_label("\u{65e5}\u{672c}\u{8a9e}");
 }
 
 /// Verifies that a single centered text is horizontally centered within the
@@ -1619,7 +1619,7 @@ fn centered_single_text_is_horizontally_centered() {
 fn centered_text_and_link_share_same_row() {
     let html = concat!(
         "<p align=\"center\">\n",
-        "  English | <a href=\"README.ja.md\">日本語</a>\n",
+        "  English | <a href=\"README.ja.md\">\u{65e5}\u{672c}\u{8a9e}</a>\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -1635,9 +1635,9 @@ fn centered_text_and_link_share_same_row() {
     harness.step();
     harness.run();
 
-    // Both "English |" text and "日本語" link should exist
+    // Both "English |" text and "\u{65e5}\u{672c}\u{8a9e}" link should exist
     let text_node = harness.get_by_label("English |");
-    let link_node = harness.get_by_label("日本語");
+    let link_node = harness.get_by_label("\u{65e5}\u{672c}\u{8a9e}");
 
     let text_bounds = text_node
         .accesskit_node()
@@ -1722,7 +1722,7 @@ fn centered_heading_h1_is_horizontally_centered() {
 fn centered_description_paragraph_is_horizontally_centered() {
     let html = concat!(
         "<p align=\"center\">\n",
-        "  macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。\n",
+        "  macOS\u{5411}\u{3051}\u{306e}\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a}Markdown\u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9} — Rust\u{3068}egui\u{3067}\u{69cb}\u{7bc9}\u{3002}\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -1740,7 +1740,7 @@ fn centered_description_paragraph_is_horizontally_centered() {
     harness.run();
 
     let node =
-        harness.get_by_label("macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。");
+        harness.get_by_label("macOS\u{5411}\u{3051}\u{306e}\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a}Markdown\u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9} — Rust\u{3068}egui\u{3067}\u{69cb}\u{7bc9}\u{3002}");
     let bounds = node
         .accesskit_node()
         .raw_bounds()
@@ -1767,7 +1767,7 @@ fn readme_header_all_elements_horizontally_centered() {
         "</p>\n\n",
         "<h1 align=\"center\">KatanA Desktop</h1>\n\n",
         "<p align=\"center\">\n",
-        "  macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。\n",
+        "  macOS\u{5411}\u{3051}\u{306e}\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a}Markdown\u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9} — Rust\u{3068}egui\u{3067}\u{69cb}\u{7bc9}\u{3002}\n",
         "</p>\n\n",
         "<p align=\"center\">\n",
         "  <a href=\"LICENSE\"><img src=\"https://img.shields.io/badge/License-MIT-blue.svg\" alt=\"License: MIT\"></a>\n",
@@ -1776,7 +1776,7 @@ fn readme_header_all_elements_horizontally_centered() {
         "  <img src=\"https://img.shields.io/badge/platform-macOS-lightgrey\" alt=\"Platform: macOS\">\n",
         "</p>\n\n",
         "<p align=\"center\">\n",
-        "  <a href=\"README.md\">English</a> | 日本語\n",
+        "  <a href=\"README.md\">English</a> | \u{65e5}\u{672c}\u{8a9e}\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -1812,7 +1812,7 @@ fn readme_header_all_elements_horizontally_centered() {
 
     // Verify description text is centered
     let desc =
-        harness.get_by_label("macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。");
+        harness.get_by_label("macOS\u{5411}\u{3051}\u{306e}\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a}Markdown\u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9} — Rust\u{3068}egui\u{3067}\u{69cb}\u{7bc9}\u{3002}");
     let desc_bounds = desc
         .accesskit_node()
         .raw_bounds()
@@ -1835,8 +1835,8 @@ fn readme_header_all_elements_horizontally_centered() {
         .accesskit_node()
         .raw_bounds()
         .expect("English link should have bounds");
-    // The "| 日本語" is plain text (pipe + space + Japanese text)
-    let ja_node = harness.get_by_label("| 日本語");
+    // The "| \u{65e5}\u{672c}\u{8a9e}" is plain text (pipe + space + Japanese text)
+    let ja_node = harness.get_by_label("| \u{65e5}\u{672c}\u{8a9e}");
     let ja_bounds = ja_node
         .accesskit_node()
         .raw_bounds()
@@ -1858,7 +1858,7 @@ fn centered_heading_then_description_both_centered() {
     let html = concat!(
         "<h1 align=\"center\">KatanA Desktop</h1>\n\n",
         "<p align=\"center\">\n",
-        "  macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。\n",
+        "  macOS\u{5411}\u{3051}\u{306e}\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a}Markdown\u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9} — Rust\u{3068}egui\u{3067}\u{69cb}\u{7bc9}\u{3002}\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -1887,7 +1887,7 @@ fn centered_heading_then_description_both_centered() {
     );
 
     let desc =
-        harness.get_by_label("macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。");
+        harness.get_by_label("macOS\u{5411}\u{3051}\u{306e}\u{9ad8}\u{901f}\u{30fb}\u{8efd}\u{91cf}\u{306a}Markdown\u{30ef}\u{30fc}\u{30af}\u{30b9}\u{30da}\u{30fc}\u{30b9} — Rust\u{3068}egui\u{3067}\u{69cb}\u{7bc9}\u{3002}");
     let desc_bounds = desc.accesskit_node().raw_bounds().expect("bounds");
     let desc_cx = (desc_bounds.x0 + desc_bounds.x1) / 2.0;
     assert!(
@@ -1906,7 +1906,7 @@ fn badges_then_language_selector_both_centered() {
         "  <a href=\"ci\"><img src=\"https://github.com/repo/ci.yml/badge.svg\" alt=\"CI\"></a>\n",
         "</p>\n\n",
         "<p align=\"center\">\n",
-        "  <a href=\"README.md\">English</a> | 日本語\n",
+        "  <a href=\"README.md\">English</a> | \u{65e5}\u{672c}\u{8a9e}\n",
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
@@ -1929,7 +1929,7 @@ fn badges_then_language_selector_both_centered() {
     // Verify the language selector after badges is still centered
     let english_link = harness.get_by_label("English");
     let english_bounds = english_link.accesskit_node().raw_bounds().expect("bounds");
-    let ja_node = harness.get_by_label("| 日本語");
+    let ja_node = harness.get_by_label("| \u{65e5}\u{672c}\u{8a9e}");
     let ja_bounds = ja_node.accesskit_node().raw_bounds().expect("bounds");
     let group_left = english_bounds.x0.min(ja_bounds.x0);
     let group_right = english_bounds.x1.max(ja_bounds.x1);

@@ -1,7 +1,7 @@
-//! アプリケーション設定サービス。
+//! Application settings service.
 //!
-//! `SettingsService` はリポジトリ経由で設定の読み書きを行い、
-//! 初回起動時のOS連携（テーマ・言語）を管理する。
+//! `SettingsService` handles reading and writing settings via the repository,
+//! and manages OS integration (theme, language) on first launch.
 
 use super::defaults::select_initial_preset;
 use super::repository::{InMemoryRepository, SettingsRepository};

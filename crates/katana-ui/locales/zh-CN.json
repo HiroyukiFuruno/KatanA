@@ -19,6 +19,41 @@
     "help": "帮助",
     "check_updates": "检查更新..."
   },
+  "about": {
+    "basic_info": "基本信息",
+    "version": "版本",
+    "build": "构建",
+    "copyright": "版权",
+    "runtime": "运行时",
+    "platform": "平台",
+    "architecture": "架构",
+    "rust": "Rust",
+    "license": "许可证",
+    "links": "链接",
+    "source_code": "源代码",
+    "documentation": "文档",
+    "report_issue": "报告问题",
+    "support": "支持",
+    "sponsor": "赞助",
+    "coming_soon": "敬请期待"
+  },
+  "update": {
+    "title": "检查更新",
+    "checking_for_updates": "正在检查更新...",
+    "update_available": "有新版本可用",
+    "update_available_desc": "KatanA 有新版本 ({version}) 可用。请运行 `brew update && brew upgrade --cask katana-desktop` 进行更新。",
+    "up_to_date": "已是最新版本",
+    "up_to_date_desc": "您使用的是最新版本的 KatanA。",
+    "failed_to_check": "检查更新失败。",
+    "action_close": "确定",
+    "install_update": "安装并重启",
+    "downloading": "正在下载更新...",
+    "installing": "正在安装更新...",
+    "restart_confirm": "更新已就绪，现在重启吗？",
+    "action_later": "稍后",
+    "action_skip_version": "跳过此版本",
+    "action_restart": "立即重启"
+  },
   "workspace": {
     "no_workspace_open": "未打开工作区。",
     "no_document_selected": "未打开文档。",
@@ -76,28 +111,28 @@
     "cannot_open_file": "无法打开文件: {error}"
   },
   "action": {
-    "expand_all": "[zh-CN] 全部展开",
-    "collapse_all": "[zh-CN] 全部折叠",
-    "collapse_sidebar": "[zh-CN] 隐藏侧边栏",
-    "refresh_workspace": "[zh-CN] 刷新工作区",
-    "toggle_filter": "[zh-CN] 切换过滤器",
-    "remove_workspace": "[zh-CN] 从历史记录中移除",
-    "recursive_expand": "[zh-CN] 递归展开",
-    "recursive_open_all": "[zh-CN] 递归打开所有文件",
-    "toggle_toc": "[zh-CN] 切换目录",
-    "show_meta_info": "[zh-CN] 显示元数据",
-    "new_file": "[zh-CN] New File",
-    "new_directory": "[zh-CN] New Folder",
-    "open": "[zh-CN] Open",
-    "rename": "[zh-CN] Rename",
-    "delete": "[zh-CN] Delete",
-    "copy_path": "[zh-CN] Copy Path",
-    "reveal_in_os": "[zh-CN] Reveal in OS",
-    "save": "[zh-CN] 保存",
-    "cancel": "[zh-CN] キャンセル",
+    "expand_all": "展开全部",
+    "collapse_all": "折叠全部",
+    "collapse_sidebar": "折叠侧边栏",
+    "refresh_workspace": "刷新工作区",
+    "toggle_filter": "切换过滤器",
+    "remove_workspace": "移除工作区",
+    "recursive_expand": "递归展开",
+    "recursive_open_all": "递归打开全部",
+    "toggle_toc": "切换目录",
+    "show_meta_info": "显示元信息",
+    "new_file": "新建文件",
+    "new_directory": "新建文件夹",
+    "open": "打开",
+    "rename": "重命名",
+    "delete": "删除",
+    "copy_path": "复制路径",
+    "reveal_in_os": "在系统中显示",
+    "save": "保存",
+    "cancel": "取消",
     "discard": "丢弃",
     "confirm": "确认",
-    "copy_relative_path": "[zh-CN] Copy Relative Path"
+    "copy_relative_path": "复制相对路径"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未配置]"
@@ -122,8 +157,8 @@
       "save_custom_theme_title": "保存自定义主题",
       "theme_name_label": "主题名称:",
       "duplicate": "复制...",
-      "ui_contrast_offset": "[zh-CN] UI Contrast (Alpha Offset)",
-      "reset_contrast": "[zh-CN] Reset"
+      "ui_contrast_offset": "界面对比度偏移",
+      "reset_contrast": "重置"
     },
     "font": {
       "size": "字体大小",
@@ -165,32 +200,32 @@
       "section_system": "系统",
       "section_code": "代码",
       "section_preview": "预览",
-      "title_bar_text": "",
-      "active_file_highlight": "",
-      "success_text": "",
-      "warning_text": "",
-      "error_text": "",
-      "button_background": "",
-      "button_active_background": "",
-      "splash_background": "",
-      "splash_progress": "",
-      "fullscreen_overlay": "",
-      "line_number_text": "",
-      "line_number_active_text": "",
-      "current_line_background": "",
-      "hover_line_background": "",
-      "file_tree_text": ""
+      "title_bar_text": "标题栏文本",
+      "active_file_highlight": "活动文件高亮",
+      "success_text": "成功文本",
+      "warning_text": "警告文本",
+      "error_text": "错误文本",
+      "button_background": "按钮背景",
+      "button_active_background": "按钮活动背景",
+      "splash_background": "启动页背景",
+      "splash_progress": "启动页进度",
+      "fullscreen_overlay": "全屏覆盖",
+      "line_number_text": "行号文本",
+      "line_number_active_text": "活动行号文本",
+      "current_line_background": "当前行背景",
+      "hover_line_background": "悬停行背景",
+      "file_tree_text": "文件树文本"
     },
     "workspace": {
       "max_depth": "最大目录扫描深度",
-      "ignored_directories": "[zh-CN] Ignored Directories",
-      "ignored_directories_hint": "例: node_modules, target, .git",
+      "ignored_directories": "忽略的目录",
+      "ignored_directories_hint": "例如 node_modules, target, .git",
       "visible_extensions": "显示的扩展名",
       "no_extension_label": "无扩展名",
       "no_extension_warning_title": "警告",
       "no_extension_warning": "不能保证没有扩展名的文件能正确显示为 Markdown。此外，应用程序可能会因意外行为而崩溃。确定要启用吗？",
-      "extensionless_excludes": "[zh-CN] Ignored Extensionless Files",
-      "extensionless_excludes_hint": "[zh-CN] List of exact file names to ignore when 'No Extension' is enabled (e.g. .DS_Store, .gitignore)."
+      "extensionless_excludes": "忽略的无扩展名文件",
+      "extensionless_excludes_hint": "以逗号分隔的精确文件名列表..."
     },
     "tabs": [
       {
@@ -227,13 +262,13 @@
       }
     ],
     "updates": {
-      "section_title": "[zh-CN] App Updates",
-      "interval": "[zh-CN] Check for updates automatically",
-      "never": "[zh-CN] Never",
-      "daily": "[zh-CN] Daily",
-      "weekly": "[zh-CN] Weekly",
-      "monthly": "[zh-CN] Monthly",
-      "check_now": "[zh-CN] Check for Updates Now"
+      "section_title": "更新",
+      "interval": "检查间隔",
+      "never": "从不",
+      "daily": "每天",
+      "weekly": "每周",
+      "monthly": "每月",
+      "check_now": "立即检查"
     },
     "behavior": {
       "section_title": "行为",
@@ -246,9 +281,9 @@
       "close_confirm_msg": "'{name}' 有未保存的更改。是否丢弃？",
       "close_confirm_discard": "丢弃",
       "close_confirm_cancel": "取消",
-      "clear_http_cache": "[zh-CN] Clear All Caches",
-      "cache_retention_days": "[zh-CN] Cache Retention Days",
-      "days_suffix": "[zh-CN]  days"
+      "clear_http_cache": "清除所有缓存",
+      "cache_retention_days": "缓存保留天数",
+      "days_suffix": " 天"
     }
   },
   "tab": {
@@ -274,41 +309,6 @@
     "title": "目录",
     "empty": "未找到标题。"
   },
-  "about": {
-    "basic_info": "基本信息",
-    "version": "版本",
-    "build": "构建",
-    "copyright": "版权",
-    "runtime": "运行时",
-    "platform": "平台",
-    "architecture": "架构",
-    "rust": "Rust",
-    "license": "许可证",
-    "links": "链接",
-    "source_code": "源代码",
-    "documentation": "文档",
-    "report_issue": "报告问题",
-    "support": "支持",
-    "sponsor": "赞助",
-    "coming_soon": "敬请期待"
-  },
-  "update": {
-    "update_available": "有新版本可用",
-    "update_available_desc": "KatanA 有新版本 ({version}) 可用。请运行 `brew update && brew upgrade --cask katana-desktop` 进行更新。",
-    "up_to_date": "已是最新版本",
-    "up_to_date_desc": "您使用的是最新版本的 KatanA。",
-    "failed_to_check": "检查更新失败。",
-    "action_close": "确定",
-    "title": "检查更新",
-    "checking_for_updates": "正在检查更新...",
-    "install_update": "安装并重启",
-    "downloading": "正在下载更新...",
-    "installing": "正在安装更新...",
-    "restart_confirm": "更新已就绪，现在重启吗？",
-    "action_later": "稍后",
-    "action_skip_version": "跳过此版本",
-    "action_restart": "立即重启"
-  },
   "export": {
     "success": "已成功导出 {format} 至 {path}",
     "failed": "{format} 导出失败: {error}",
@@ -326,10 +326,10 @@
     "decline": "拒绝"
   },
   "dialog": {
-    "new_file_title": "[zh-CN] New File",
-    "new_directory_title": "[zh-CN] New Folder",
-    "rename_title": "[zh-CN] Rename",
-    "delete_title": "[zh-CN] Confirm Deletion",
-    "delete_confirm_msg": "[zh-CN] Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+    "new_file_title": "创建新文件",
+    "new_directory_title": "创建新文件夹",
+    "rename_title": "重命名",
+    "delete_title": "删除",
+    "delete_confirm_msg": "确定要删除吗？ {name}"
   }
 }

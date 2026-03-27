@@ -161,3 +161,62 @@ fn ast_linter_no_hardcoded_colors() {
         &all_violations,
     );
 }
+
+#[test]
+fn ast_linter_no_japanese_in_crates() {
+    use ignore::WalkBuilder;
+    let root = workspace_root().join("crates");
+
+    // We walk in parallel for maximum performance without degrading test speed
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    let walker = WalkBuilder::new(root).build_parallel();
+
+    walker.run(|| {
+        let tx = tx.clone();
+        Box::new(move |result| {
+            if let Ok(entry) = result {
+                let path = entry.path();
+                if path.is_file() {
+                    // Exclude ja.json (the only allowed source of Japanese truth)
+                    if path.file_name().is_some_and(|name| name == "ja.json") {
+                        return ignore::WalkState::Continue;
+                    }
+
+                    if let Ok(content) = std::fs::read_to_string(path) {
+                        for (line_idx, line) in content.lines().enumerate() {
+                            // Detect Japanese specifically combining Hiragana and Katakana.
+                            // We intentionally exclude pure Han ideographs (\p{Han}) because Katana includes Chinese locales (zh-TW, zh-CN)
+                            // which must not trigger the Japanese check.
+                            if line.chars().any(|c| matches!(c, '\u{3040}'..='\u{309F}' | '\u{30A0}'..='\u{30FF}')) {
+                                let _ = tx.send(format!("{}:{}: Please remove Japanese text or use Unicode escapes for test strings.", path.display(), line_idx + 1));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            ignore::WalkState::Continue
+        })
+    });
+
+    drop(tx); // Close the transmitter
+
+    let mut violations = Vec::new();
+    for failure in rx {
+        violations.push(katana_linter::Violation {
+            file: std::path::PathBuf::from(""), // dummy
+            line: 0,
+            column: 0,
+            message: failure,
+        });
+    }
+
+    if !violations.is_empty() {
+        panic_with_violations(
+            "no-japanese-in-workspace",
+            "Fix: No Japanese text (Hiragana/Katakana) is allowed in any files except ja.json. Please translate comments to English or use Unicode escapes for test data.",
+            &violations,
+        );
+    }
+}
