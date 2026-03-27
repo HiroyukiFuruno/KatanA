@@ -120,10 +120,10 @@ pub(crate) const AYU_LIGHT: PresetColorData = PresetColorData {
             a: 15,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 10,
+            r: 255,
+            g: 170,
+            b: 51,
+            a: 25,
         },
         selection: Rgb {
             r: 224,
@@ -165,10 +165,10 @@ pub(crate) const AYU_LIGHT: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 20,
+            r: 255,
+            g: 170,
+            b: 51,
+            a: 25,
         },
     },
 };

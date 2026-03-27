@@ -120,10 +120,10 @@ pub(crate) const GRUVBOX_LIGHT: PresetColorData = PresetColorData {
             a: 15,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 10,
+            r: 69,
+            g: 133,
+            b: 136,
+            a: 25,
         },
         selection: Rgb {
             r: 213,
@@ -165,10 +165,10 @@ pub(crate) const GRUVBOX_LIGHT: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 20,
+            r: 69,
+            g: 133,
+            b: 136,
+            a: 25,
         },
     },
 };

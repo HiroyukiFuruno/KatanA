@@ -120,10 +120,10 @@ pub(crate) const GITHUB_LIGHT: PresetColorData = PresetColorData {
             a: 15,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 10,
+            r: 9,
+            g: 105,
+            b: 218,
+            a: 25,
         },
         selection: Rgb {
             r: 218,
@@ -165,10 +165,10 @@ pub(crate) const GITHUB_LIGHT: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 20,
+            r: 9,
+            g: 105,
+            b: 218,
+            a: 25,
         },
     },
 };

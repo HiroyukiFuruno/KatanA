@@ -120,10 +120,10 @@ pub(crate) const DRACULA: PresetColorData = PresetColorData {
             a: 50,
         },
         hover_line_background: Rgba {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 50,
+            r: 139,
+            g: 233,
+            b: 253,
+            a: 25,
         },
         selection: Rgb {
             r: 68,
@@ -165,10 +165,10 @@ pub(crate) const DRACULA: PresetColorData = PresetColorData {
         },
 
         hover_line_background: Rgba {
-            r: 255,
-            g: 255,
-            b: 255,
-            a: 50,
+            r: 139,
+            g: 233,
+            b: 253,
+            a: 25,
         },
     },
 };
