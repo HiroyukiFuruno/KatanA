@@ -1374,7 +1374,7 @@ checksum = "d01d34e845f01c62e3fded726961092e70417d66570c499b9817ab24674ca4ed"
 dependencies = [
  "ahash",
  "egui",
- "ehttp",
+ "ehttp 0.6.0",
  "enum-map",
  "image",
  "log",
@@ -1427,6 +1427,20 @@ dependencies = [
  "document-features",
  "js-sys",
  "ureq 2.12.1",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "ehttp"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2f1b93eb2e039aaff63ce07cca59bd1dca02f2ce30075a17b619d2c42f56efc"
+dependencies = [
+ "document-features",
+ "js-sys",
+ "ureq 3.3.0",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -2572,7 +2586,7 @@ dependencies = [
  "egui_commonmark",
  "egui_extras",
  "egui_kittest",
- "ehttp",
+ "ehttp 0.7.1",
  "image",
  "katana-core",
  "katana-platform",

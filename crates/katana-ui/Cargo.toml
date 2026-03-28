@@ -21,7 +21,7 @@ image = { version = "0.25", default-features = false, features = ["png"] }
 serde_json.workspace = true
 open = "5.3.3"
 resvg = { version = "0.45.1", default-features = true }
-ehttp = "0.6.0"
+ehttp = "0.7.1"
 dirs = "6.0.0"
 sha2 = "0.10"
 regex = "1.12.3"
