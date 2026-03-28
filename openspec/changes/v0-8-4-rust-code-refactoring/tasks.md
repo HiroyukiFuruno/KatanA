@@ -51,9 +51,12 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 1.4 `lint_nesting_depth`: ネスト深度制限（3レベル上限）
   - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
 
+- [x] 1.7 `lint_error_first`: エラーファースト原則の強制
+  - `docs/coding-rules.ja.md` §4 で禁止されている `if let Ok(...) = expr`（成功パスの後回し/ネスト）をASTレベルで検出し禁止する。
+
 ### 1-B. clippy `#![deny]` 設定の統一
 
-- [ ] 1.5 各クレートの `lib.rs` / `main.rs` に coding-rules §9 の `#![deny]` を追加
+- [x] 1.5 各クレートの `lib.rs` / `main.rs` に coding-rules §9 の `#![deny]` を追加
   - 現状は `#![deny(warnings)]` のみ → 個別ルールの明示的な `#![deny]` を設定
   - 対象: `clippy::too_many_lines`, `clippy::cognitive_complexity`, `clippy::wildcard_imports`, `clippy::unwrap_used`, `clippy::panic`, `clippy::todo`, `clippy::unimplemented`
   - `#![warn]`: `clippy::expect_used`, `clippy::indexing_slicing`, `clippy::missing_errors_doc`, `missing_docs`

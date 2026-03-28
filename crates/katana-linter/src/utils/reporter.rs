@@ -39,3 +39,12 @@ pub fn format_violations(
         report
     ))
 }
+
+pub fn panic_with_violations(rule_name: &str, hint: &str, violations: &[Violation]) {
+    if let Err(e) = format_violations(rule_name, hint, violations) {
+        #[allow(clippy::panic)]
+        {
+            panic!("{e}");
+        }
+    }
+}
