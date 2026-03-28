@@ -2,34 +2,34 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
-## [0.7.10] - 2026-03-28
+## [0.7.10] - 2026-03-28 04:31:08 (UTC)
 
 ### 🐛 Bug Fixes
 
-- **Theme Contrast Offset**: Restored the missing UI Contrast Offset logic for `ThemeColors`, ensuring transparent background colors (like hover and active rows) correctly adapt their visibility against dark themes.
+- **Theme Contrast Offset**: Restored the missing UI Contrast logic, ensuring transparent background colors (like hover and active rows) correctly adapt their visibility against dark themes.
 
-## [0.7.9] - 2026-03-28
+## [0.7.9] - 2026-03-28 02:54:09 (UTC)
 
 ### 🐛 Bug Fixes
 
-- **Markdown Rendering**: Implemented geometry-based physical underline drawing to bypass corrupted macOS font metrics for `<u>` tags.
-- **Theme Color Inheritance**: Fixed an issue where bullet points, footnotes, and accordion summaries inherited static default colors rather than dynamic theme definitions.
-- **Buffer Invalidation**: Resolved a destructive cache invalidation bug during theme changes, explicitly isolating texture teardowns from file IO operations.
-- **Accented Hover Colors**: Unified block highlight hover and selection colors with the active accent color across all themes.
+- **Markdown Rendering**: Improved the rendering of underlined text to fix an issue where underlines were not displayed correctly on certain macOS environments.
+- **Theme Color Inheritance**: Fixed an issue where list markers, footnotes, and collapsible text did not properly update their colors when the theme was changed.
+- **Buffer Invalidation**: Fixed an issue where changing the theme could cause unsaved documents to be unexpectedly reloaded or discarded.
+- **Accented Hover Colors**: Unified hover and text selection highlight colors to match the active accent color across all themes.
 
 ### 🎨 UI/UX
 
-- **Settings Framework**: Rebuilt the Custom Themes tab using a two-stage settings accordion for cleaner organizational scaling and integration of type-safe `LabeledColorPicker` components.
+- **Settings Framework**: Redesigned the Custom Themes settings layout for better usability and a cleaner interface.
 
 ### 🔧 Miscellaneous
 
-- **OpenSpec Compliance**: Performed a mass-migration of all 24 specifications and 10 active change proposals to enforce the strict OpenSpec structural schema.
+- **OpenSpec Compliance**: Standardized project documentation to improve maintainability.
 
 ## [0.7.8] - 2026-03-27 13:03:25 (UTC)
 
 ### 🚀 Features
 
-- **Theme Contrast Offset**: Introduced a `ui_contrast_offset` slider in the Appearance settings, allowing fine-grained control over UI contrast limits.
+- **Theme Contrast Offset**: Introduced a UI contrast slider in the Appearance settings, allowing fine-grained control over visual contrast limits.
 - **Cache Management**: Added a dedicated 'Clear HTTP Cache' button within the System settings tab for on-demand cache directory purging.
 
 ### 🎨 UI/UX
@@ -38,8 +38,8 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🔧 Miscellaneous
 
-- **Internal**: Enforced absolute source code sanitization across the entire crate workspace by strictly prohibiting all Japanese comments and unescaped characters outside of locale definitions.
-- **Internal**: Upgraded the generic AST Linter infrastructure with `ignore::WalkBuilder` for parallelized recursive directory scanning, significantly improving CI inspection speed.
+- **Internal**: Improved internal codebase quality by enforcing stricter translation standards.
+- **Internal**: Improved the performance of background analysis tools.
 - **Ops**: Restructured OpenSpec workflow documents and configuration models within the repository layout.
 
 
@@ -47,17 +47,17 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🎨 UI/UX
 
-- **Theme Contrast Baseline**: Standardize code and preview hover/current-line background colors to an alpha baseline of 50 across all 30+ Dark themes for optimal visibility.
-- **Preview Rendering**: Fix additive blending (white-out) issues when rendering semi-transparent markdown highlights by transitioning to unmultiplied RGBA structures in the egui_commonmark pipeline.
-- **Color Settings Architecture**: Overhaul the theme settings architecture by introducing `ColorSettingDef` schemas, resolving rigid hardcoded color mappings and dynamically exposing multi-layered themes (System/Code/Preview) directly to the UI.
+- **Theme Contrast Baseline**: Optimized hover and current-line background transparency across all dark themes to improve text visibility.
+- **Preview Rendering**: Fixed a visual glitch where semi-transparent highlights would appear overly bright or washed out.
+- **Color Settings Architecture**: Overhauled the theme customization system to allow detailed adjustments for system elements, code blocks, and preview areas independently.
 
 ### 🐛 Bug Fixes
 
-- **Image Cache Directory Deletion**: Resolve severe macOS filesystem conflicts (`os error 66`) during HTTP cache clearances. Replaced the error-prone root directory deletion with safe, recursive internal content deletion strategies.
+- **Image Cache Directory Deletion**: Resolved an error that could occur when clearing the image cache on macOS.
 
 ### 🔧 Miscellaneous
 
-- **Internal**: Introduce the `ast_linter_no_hardcoded_colors` strict AST Lint rule within `katana-linter` to entirely eradicate unmanageable hardcoded coloration from the UI codebase, maintaining 100% test coverage limits.
+- **Internal**: Eliminated hardcoded color values from the application to improve maintainability and theme stability.
 - **Ops**: Bake OpenSpec change auto-archival into the official pipeline for seamless transitions.
 
 ## [0.7.6] - 2026-03-26 21:20:00 (UTC)
@@ -70,18 +70,18 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🎨 UI/UX
 
-- **ComboBox Standardization**: Deprecate raw `egui::ComboBox` usage in favor of the newly introduced, unified `StyledComboBox` component globally.
+- **ComboBox Standardization**: Standardized all dropdown menus across the application for improved appearance and hover interactions.
 - **Preview Sync Configuration**: Transition scroll synchronization configuration to an intuitive toggle switch and streamline layout order.
 - **Theme Builder Polish**: Rearrange custom theme color pickers vertically to dramatically improve visibility and usability within constrained side panels.
 
 ### 🐛 Bug Fixes
 
-- **i18n Validation**: Synchronize translation tokens across all 10 locales to eliminate strict AST linter panics regarding identical string declarations.
-- **Lint Stabilisation**: Apply necessary UI layout test clipping fixes and resolve Markdown Lint discrepancies.
+- **i18n Validation**: Fixed potential translation errors that could occur when switching application languages.
+- **Lint Stabilisation**: Fixed minor layout glitches and formatting issues.
 
 ### 🔧 Miscellaneous
 
-- **Internal**: Comprehensive Unit and Integration test expansions to strictly maintain the 100% coverage quality gate.
+- **Internal**: Expanded UI and integration tests to improve application stability.
 - **Ops**: Archive finished OpenSpec documentation artifacts (`v0.7.4`, `v0.7.5`) and properly segment subsequent workflow proposals (`v0.7.7`, `v0.8.0`).
 
 ## [0.7.5] - 2026-03-26 05:43:00 (UTC)
@@ -122,13 +122,13 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - **Code Blocks**: Fix syntax highlight background color rendering issue caused by `syntect` override by switching to direct `Painter::rect_filled` layer drawing.
 
-## [0.7.2] - 2026-03-26
+## [0.7.2] - 2026-03-25 21:37:57 (UTC)
 
 ### 🐛 Bug Fixes
 
 - **UI Layout**: Fix update checker dialog stretching vertically in the “up to date” state. Changed `ScrollArea::auto_shrink` from `[false; 2]` to `[true, true]` and added `default_height(0.0)` to the `egui::Window` so the window height follows content size. Added regression test to prevent recurrence.
 
-## [0.7.1] - 2026-03-26 05:00:00 (JST)
+## [0.7.1] - 2026-03-25 20:00:00 (UTC)
 
 ### 🐛 Bug Fixes
 
