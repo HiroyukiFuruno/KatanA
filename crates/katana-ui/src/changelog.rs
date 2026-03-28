@@ -73,8 +73,17 @@ pub(crate) fn get_changelog_url(language: &str, current_version: &str) -> String
         "CHANGELOG.md"
     };
 
-    // Append the version string to bypass GitHub's edge cache specifically for new upgrades
-    format!("{}/{}?v={}", GITHUB_RAW_BASE, filename, current_version)
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let ts = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    // Append the version string and a timestamp to bypass GitHub's edge cache specifically for new upgrades
+    format!(
+        "{}/{}?v={}&t={}",
+        GITHUB_RAW_BASE, filename, current_version, ts
+    )
 }
 
 pub fn fetch_changelog(
@@ -484,23 +493,23 @@ mod tests {
     fn test_get_changelog_url_cache_busting() {
         // Assert that the English default is correct and appends the cache buster string
         let url_en = get_changelog_url("en", "0.8.0");
-        assert_eq!(
-            url_en,
-            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=0.8.0"
+        assert!(
+            url_en.starts_with("https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=0.8.0&t="),
+            "URL {} does not contain expected prefix", url_en
         );
 
         // Assert that the Japanese localized file is correct and appends the cache buster
         let url_ja = get_changelog_url("ja", "0.8.1-beta");
-        assert_eq!(
-            url_ja,
-            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.ja.md?v=0.8.1-beta"
+        assert!(
+            url_ja.starts_with("https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.ja.md?v=0.8.1-beta&t="),
+            "URL {} does not contain expected prefix", url_ja
         );
 
         // Assert that unknown locales fallback to English as intended
         let url_unknown = get_changelog_url("it", "1.0.0");
-        assert_eq!(
-            url_unknown,
-            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=1.0.0"
+        assert!(
+            url_unknown.starts_with("https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=1.0.0&t="),
+            "URL {} does not contain expected prefix", url_unknown
         );
     }
 }
