@@ -73,7 +73,9 @@ fn ast_linter_no_prohibited_types() {
 
 #[test]
 fn ast_linter_locale_files_match_base_structure() {
-    let locale_dir = workspace_root().expect("Test requirement").join("crates/katana-ui/locales");
+    let locale_dir = workspace_root()
+        .expect("Test requirement")
+        .join("crates/katana-ui/locales");
     let all_violations = lint_locale_files(&locale_dir);
     panic_with_violations(
         "locale-structure",
@@ -109,7 +111,8 @@ fn ast_linter_markdown_heading_pairs_match() {
 
 #[test]
 fn ast_linter_changelog_contains_current_workspace_version() {
-    let all_violations = lint_changelog_contains_current_version(workspace_root().expect("Test requirement"));
+    let all_violations =
+        lint_changelog_contains_current_version(workspace_root().expect("Test requirement"));
     panic_with_violations(
         "changelog-version-sync",
         "Fix: Add a `## [x.y.z]` release heading to CHANGELOG.md that matches workspace.package.version in Cargo.toml.",
@@ -246,8 +249,9 @@ fn ast_linter_no_pub_free_fn() {
 
 #[test]
 fn ast_linter_no_unused_theme_colors() {
-    let all_violations =
-        katana_linter::rules::domains::theme::lint_unused_theme_colors(workspace_root().expect("Test requirement"));
+    let all_violations = katana_linter::rules::domains::theme::lint_unused_theme_colors(
+        workspace_root().expect("Test requirement"),
+    );
     panic_with_violations(
         "unused-theme-colors",
         "Fix: A theme color property is defined in `ThemeColors` but never accessed in UI code. Please use it or remove it.",
@@ -257,8 +261,9 @@ fn ast_linter_no_unused_theme_colors() {
 
 #[test]
 fn ast_linter_no_hardcoded_colors() {
-    let all_violations =
-        katana_linter::rules::domains::theme::lint_no_hardcoded_colors(workspace_root().expect("Test requirement"));
+    let all_violations = katana_linter::rules::domains::theme::lint_no_hardcoded_colors(
+        workspace_root().expect("Test requirement"),
+    );
     panic_with_violations(
         "hardcoded-colors",
         "Fix: A hardcoded UI color was found. Map it to a property in `ThemeColors` and use `theme_bridge::rgb_to_color32`.",
@@ -268,8 +273,9 @@ fn ast_linter_no_hardcoded_colors() {
 
 #[test]
 fn ast_linter_theme_builder_enforcement() {
-    let all_violations =
-        katana_linter::rules::domains::theme::lint_theme_builder_enforcement(workspace_root().expect("Test requirement"));
+    let all_violations = katana_linter::rules::domains::theme::lint_theme_builder_enforcement(
+        workspace_root().expect("Test requirement"),
+    );
     panic_with_violations(
         "theme-builder-enforcement",
         "Fix: Theme presets must use `ThemePresetBuilder::new(...)` to enforce DRY design. Do not instantiate `PresetColorData` directly.",

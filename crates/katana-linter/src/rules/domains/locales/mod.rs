@@ -1,4 +1,6 @@
-use crate::utils::{collect_json_placeholders, collect_json_shape, collect_json_values, parse_json_file};
+use crate::utils::{
+    collect_json_placeholders, collect_json_shape, collect_json_values, parse_json_file,
+};
 use crate::Violation;
 use std::collections::BTreeMap;
 use std::path::Path;
