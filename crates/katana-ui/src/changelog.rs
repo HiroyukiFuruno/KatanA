@@ -65,12 +65,8 @@ fn handle_fetch_result(
     }
 }
 
-pub fn fetch_changelog(
-    language: &str,
-    current_version: String,
-    previous_version: Option<String>,
-    tx: Sender<ChangelogEvent>,
-) {
+/// Generates the URL for fetching the changelog, including a cache-busting version parameter.
+pub(crate) fn get_changelog_url(language: &str, current_version: &str) -> String {
     let filename = if language.starts_with("ja") {
         "CHANGELOG.ja.md"
     } else {
@@ -78,7 +74,16 @@ pub fn fetch_changelog(
     };
 
     // Append the version string to bypass GitHub's edge cache specifically for new upgrades
-    let url = format!("{}/{}?v={}", GITHUB_RAW_BASE, filename, current_version);
+    format!("{}/{}?v={}", GITHUB_RAW_BASE, filename, current_version)
+}
+
+pub fn fetch_changelog(
+    language: &str,
+    current_version: String,
+    previous_version: Option<String>,
+    tx: Sender<ChangelogEvent>,
+) {
+    let url = get_changelog_url(language, &current_version);
     let request = ehttp::Request::get(&url);
 
     fn do_fetch(
@@ -473,5 +478,29 @@ mod tests {
             }
             _ => panic!("Expected Success"),
         }
+    }
+
+    #[test]
+    fn test_get_changelog_url_cache_busting() {
+        // Assert that the English default is correct and appends the cache buster string
+        let url_en = get_changelog_url("en", "0.8.0");
+        assert_eq!(
+            url_en,
+            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/master/CHANGELOG.md?v=0.8.0"
+        );
+
+        // Assert that the Japanese localized file is correct and appends the cache buster
+        let url_ja = get_changelog_url("ja", "0.8.1-beta");
+        assert_eq!(
+            url_ja,
+            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/master/CHANGELOG.ja.md?v=0.8.1-beta"
+        );
+
+        // Assert that unknown locales fallback to English as intended
+        let url_unknown = get_changelog_url("it", "1.0.0");
+        assert_eq!(
+            url_unknown,
+            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/master/CHANGELOG.md?v=1.0.0"
+        );
     }
 }
