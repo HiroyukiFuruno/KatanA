@@ -3,7 +3,9 @@ use crate::Violation;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 
-use super::helpers::{extract_type_from_call, is_raw_icon, ui_functions, ui_methods, ui_types_for_new};
+use super::helpers::{
+    extract_type_from_call, is_raw_icon, ui_functions, ui_methods, ui_types_for_new,
+};
 
 struct IconFacadeVisitor {
     file: PathBuf,
