@@ -1,4 +1,7 @@
-use crate::utils::{collect_json_placeholders, collect_json_shape, collect_json_values, locale_violation, parse_json_file};
+use crate::utils::{
+    collect_json_placeholders, collect_json_shape, collect_json_values, locale_violation,
+    parse_json_file,
+};
 use crate::{JsonNodeKind, Violation};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -9,7 +12,10 @@ type LocaleBaseline = (
     BTreeMap<String, String>,
 );
 
-pub fn build_locale_baseline(ja_path: &Path, en_path: &Path) -> Result<LocaleBaseline, Vec<Violation>> {
+pub fn build_locale_baseline(
+    ja_path: &Path,
+    en_path: &Path,
+) -> Result<LocaleBaseline, Vec<Violation>> {
     let ja_value = parse_json_file(ja_path)?;
     let en_value = parse_json_file(en_path)?;
 
