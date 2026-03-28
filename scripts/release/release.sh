@@ -152,6 +152,15 @@ for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
         ARCHIVE_DIR="openspec/changes/archive/$(date +%Y-%m-%d)-${CHANGE_NAME}"
         
         info "Found OpenSpec change: $CHANGE_NAME"
+        
+        if [[ -f "$CHANGE_DIR/tasks.md" ]]; then
+            if grep -E '^\s*-\s*\[(\s|\/)\]' "$CHANGE_DIR/tasks.md" >/dev/null 2>&1; then
+                error "OpenSpec change '$CHANGE_NAME' has incomplete tasks in tasks.md."
+                error "Please complete all tasks (all done) or rename the change directory before releasing."
+                exit 1
+            fi
+        fi
+        
         mkdir -p openspec/changes/archive
         if [[ -d "$ARCHIVE_DIR" ]]; then
             warn "Archive directory $ARCHIVE_DIR already exists. Skipping move."
