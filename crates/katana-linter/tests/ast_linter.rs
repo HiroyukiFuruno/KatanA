@@ -167,10 +167,7 @@ fn ast_linter_file_length() {
     run_ast_lint(
         "file-length",
         "Fix: File exceeds 200-line limit (excluding tests). Split into smaller modules.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &[root.join("crates/katana-linter/src")],
         lint_file_length,
     );
 }
