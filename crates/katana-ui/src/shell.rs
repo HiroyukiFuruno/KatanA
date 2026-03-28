@@ -731,6 +731,7 @@ impl KatanaApp {
             .open_documents
             .iter()
             .map(|d| d.path.display().to_string())
+            .filter(|p| !p.starts_with("Katana://"))
             .collect();
         let idx = self.state.active_doc_idx;
         let expanded: std::collections::HashSet<String> = self

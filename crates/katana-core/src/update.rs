@@ -256,6 +256,15 @@ set -e
 # Wait a brief moment to ensure the old process has fully exited
 sleep 1
 
+# If Homebrew is managing KatanA, cleanly untap it so it stops managing our updates
+if command -v brew >/dev/null 2>&1; then
+    if brew list --cask | grep -q "^katana-desktop$"; then
+        echo "Removing KatanA from Homebrew management..."
+        brew uninstall --cask katana-desktop --force || true
+        brew untap HiroyukiFuruno/katana || true
+    fi
+fi
+
 echo "Replacing application..."
 rm -rf "{target}"
 mv "{extracted}" "{target}"
@@ -430,6 +439,7 @@ mod tests {
             extracted_path.display(),
             target_path.display()
         )));
+        assert!(content.contains("brew uninstall --cask katana-desktop --force"));
         assert!(content.contains(&format!("xattr -cr \"{}\"", target_path.display())));
         assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
 
