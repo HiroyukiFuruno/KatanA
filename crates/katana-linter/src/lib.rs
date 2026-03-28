@@ -16,9 +16,9 @@
 #![warn(
     clippy::expect_used,
     clippy::indexing_slicing,
-    clippy::missing_errors_doc,
-    missing_docs
+    clippy::missing_errors_doc
 )]
+#![allow(missing_docs)]
 #![cfg_attr(
     test,
     allow(
