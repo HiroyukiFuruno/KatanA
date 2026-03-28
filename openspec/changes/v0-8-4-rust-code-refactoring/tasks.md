@@ -8,16 +8,24 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ---
 
-## 0. 解析フェーズ（設計の確定）
+## 0. 解析フェーズ（設計の確定）+ 依存関係の最新化
 
-> design.md に詳細な現状分析を記載済み。本フェーズでは設計確定に必要な残作業を行う。
+> design.md に詳細な現状分析を記載済み。本フェーズでは設計確定に必要な残作業と、リファクタリング前の土台整備を行う。
 
 - [x] 0.1 4レイヤー（core, linter, platform, ui）の全ソースファイルの行数・責務・SOLID違反の洗い出し
 - [x] 0.2 レイヤー間依存関係の分析（`cargo metadata`）
 - [x] 0.3 各レイヤーの分割単位の設計（design.md に記載済み）
 - [x] 0.4 4レイヤー共通処理の切り出し可否の分析 → **不要**と結論（design.md 参照）
-- [ ] 0.5 `emoji.rs`（データ量起因の行数超過）の扱いを確定
-- [ ] 0.6 `i18n.rs`（翻訳文字列定義）の外部ファイル化 vs Rustコード分割の方針確定
+- [x] 0.5 `emoji.rs`（データ量起因の行数超過）の扱いを確定 → **外部データファイル化**
+- [x] 0.6 `i18n.rs`（翻訳文字列定義）の方針確定 → **Rustコードのまま `i18n/` サブモジュール分割**
+- [/] 0.7 未マージPRの整理（<https://github.com/HiroyukiFuruno/KatanA/pulls）>
+  - マージ可能なPRをマージ
+  - 不要なPRをクローズ
+  - コンフリクト解消が必要なPRの対応
+- [ ] 0.8 依存関係（Cargo.toml）の最新化
+  - `cargo outdated` で確認
+  - SemVer互換のアップデートを適用
+  - Breaking changeがあるものはリスト化して個別対応
 
 ---
 
@@ -28,28 +36,20 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### 1-A. 新規 ast_linter ルール
 
-- [ ] 1.1 `lint_file_length`: ファイル行数制限（200行ハードリミット、テストコード除外）
-  - テストモジュール (`#[cfg(test)]`) の行数を計測から除外する
-  - エラーメッセージに分離設計のガイダンスを含める
-  - 既存の違反ファイルは初回導入時に除外リスト化し、段階的に解消する
+- [x] 1.1 `lint_file_length`: ファイル行数制限（200行ハードリミット、テストコード除外）
+  - テストモジュール (`#[cfg(test)]`) の行数を計測から除外
+  - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
 
-- [ ] 1.2 `lint_function_length`: 関数行数制限（30行ハードリミット）
-  - `fn` / `impl fn` の本体行数を計測（コメント行・空行含む）
+- [x] 1.2 `lint_function_length`: 関数行数制限（30行ハードリミット）
   - テスト関数（`#[cfg(test)]` / `#[test]`）は除外
-  - coding-rules §2 の「関数サイズ: 30行を上限」を機械的に強制
-  - 既存の違反関数は初回導入時に除外リスト化し、段階的に解消
+  - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
 
-- [ ] 1.3 `lint_pub_free_fn`: pub free function 禁止
-  - coding-rules §1.1 の「ドメインロジックは必ず struct + impl ブロック」を強制
-  - `pub fn` / `pub(crate) fn` がモジュールトップレベルに定義されている場合にエラー
+- [x] 1.3 `lint_pub_free_fn`: pub free function 禁止
   - 除外: `main()`, `#[test]` 関数, `mod tests` 内の関数
-  - 既存の違反は除外リスト化し、段階的に解消
+  - 統合テストは `#[ignore]` 付き（Phase 2-5で既存違反を解消後に有効化）
 
-- [ ] 1.4 `lint_nesting_depth`: ネスト深度制限（3レベル上限）
-  - coding-rules §3 の「ネスト最大3レベル」を強制
-  - `if` / `match` / `for` / `while` / `loop` のネスト深度が3を超える場合にエラー
-  - テスト関数は除外
-  - 注: clippy `cognitive_complexity` は認知的複雑さであり、純粋なネスト深度とは異なる
+- [x] 1.4 `lint_nesting_depth`: ネスト深度制限（3レベル上限）
+  - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
 
 ### 1-B. clippy `#![deny]` 設定の統一
 
@@ -60,15 +60,16 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### 1-C. linterルールファイルの分割
 
-- [ ] 1.6 既存の `rust.rs`（969行）の分割
-  - 6つの既存Visitor + 4つの新規ルールを個別ファイルに分離（design.md の構造に従う）
+- [x] 1.6 既存の `rust.rs`（969行）の分割
+  - 6つの既存Visitor + 4つの新規ルールを10個の個別ファイルに分離完了
   - `rules/rust/mod.rs` で公開APIを集約
 
 ### Definition of Done (DoD)
-- [ ] 新規linterルール（file_length, function_length, pub_free_fn, nesting_depth）が `make check` で実行される
+
+- [x] 新規linterルール（file_length, function_length, pub_free_fn, nesting_depth）が `make check` で実行される
 - [ ] clippy `#![deny]` が全クレートで統一設定済み
-- [ ] 既存の6 Visitorが個別ファイルに分離済み
-- [ ] linterクレート内の全ファイルが200行以下（テスト除外）
+- [x] 既存の6 Visitorが個別ファイルに分離済み
+- [ ] linterクレート内の全ファイルが200行以下（テスト除外）← Phase 2で達成予定
 - [ ] Execute `/openspec-delivery` workflow
 
 ---
@@ -93,6 +94,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 2.5 `rules/markdown.rs`（204行）のボーダーライン確認・必要に応じて分割
 
 ### Definition of Done (DoD)
+
 - [ ] linterクレート内の全ファイルが200行以下（テスト除外）
 - [ ] 全ファイルの関数が30行以下
 - [ ] `make check` がパス
@@ -134,6 +136,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - `types.rs` + `impls.rs` パターン
 
 ### Definition of Done (DoD)
+
 - [ ] coreクレート内の全ファイルが200行以下（テスト除外）
 - [ ] 全ファイルの関数が30行以下
 - [ ] `make check` がパス
@@ -164,6 +167,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 4.8 `settings/defaults.rs`（201行）のボーダーライン確認
 
 ### Definition of Done (DoD)
+
 - [ ] platformクレート内の全ファイルが200行以下（テスト除外）
 - [ ] 全ファイルの関数が30行以下
 - [ ] `make check` がパス
@@ -222,6 +226,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 5.23 `theme_bridge.rs`（313行）→ 分割
 
 ### Definition of Done (DoD)
+
 - [ ] uiクレート内の全ファイルが200行以下（テスト除外）
 - [ ] 全ファイルの関数が30行以下
 - [ ] God Object（KatanaApp, AppState）が責務ごとのサブ構造体・モジュールに分離済み
@@ -234,9 +239,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [ ] 6.1 `docs/coding-rules.ja.md` にファイル行数制限（150行推奨 / 200行ハード）と関数行数制限（30行）を明記
 - [ ] 6.2 `coding_rules.md`（エージェントルール）にRust固有のファイルサイズガイドラインを追加
-- [ ] 6.3 ast_linterの除外リスト（`emoji.rs` 等のデータファイル）を定義・管理方法を確立
+- [ ] 6.3 `emoji.rs` の絵文字マッピングデータを外部データファイル（JSON等）に移行
+- [ ] 6.4 ast_linterの除外リスト管理方法の確立（必要に応じて）
 
 ### Definition of Done (DoD)
+
 - [ ] ドキュメントが更新済み
 - [ ] Execute `/openspec-delivery` workflow
 

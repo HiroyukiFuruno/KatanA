@@ -1,11 +1,12 @@
-use katana_linter::rules::changelog::lint_changelog_contains_current_version;
-use katana_linter::rules::i18n::lint_i18n;
-use katana_linter::rules::i18n::lint_icon_facade;
-use katana_linter::rules::locales::lint_locale_files;
-use katana_linter::rules::markdown::lint_markdown_heading_pairs;
-use katana_linter::rules::rust::{
-    lint_font_normalization, lint_lazy_code, lint_magic_numbers, lint_performance,
-    lint_prohibited_attributes, lint_prohibited_types,
+use katana_linter::rules::domains::changelog::lint_changelog_contains_current_version;
+use katana_linter::rules::domains::i18n::lint_i18n;
+use katana_linter::rules::domains::i18n::lint_icon_facade;
+use katana_linter::rules::domains::locales::lint_locale_files;
+use katana_linter::rules::domains::markdown::lint_markdown_heading_pairs;
+use katana_linter::rules::{
+    lint_comment_style, lint_file_length, lint_font_normalization, lint_function_length,
+    lint_lazy_code, lint_magic_numbers, lint_nesting_depth, lint_performance,
+    lint_prohibited_attributes, lint_prohibited_types, lint_pub_free_fn,
 };
 use katana_linter::run_ast_lint;
 use katana_linter::utils::{panic_with_violations, workspace_root};
@@ -158,8 +159,80 @@ fn ast_linter_no_allow_dead_code() {
 }
 
 #[test]
+fn ast_linter_file_length() {
+    let root = workspace_root();
+    run_ast_lint(
+        "file-length",
+        "Fix: File exceeds 200-line limit (excluding tests). Split into smaller modules.",
+        &[
+            root.join("crates/katana-linter/src/rules/coding"),
+            root.join("crates/katana-linter/src/rules/structure"),
+        ],
+        lint_file_length,
+    );
+}
+
+#[test]
+fn ast_linter_function_length() {
+    let root = workspace_root();
+    run_ast_lint(
+        "function-length",
+        "Fix: Function exceeds 30-line limit. Extract helper methods.",
+        &[
+            root.join("crates/katana-linter/src/rules/coding"),
+            root.join("crates/katana-linter/src/rules/structure"),
+        ],
+        lint_function_length,
+    );
+}
+
+#[test]
+fn ast_linter_nesting_depth() {
+    let root = workspace_root();
+    run_ast_lint(
+        "nesting-depth",
+        "Fix: Nesting depth exceeds 3 levels. Use early returns or extract helpers.",
+        &[
+            root.join("crates/katana-linter/src/rules/coding"),
+            root.join("crates/katana-linter/src/rules/structure"),
+        ],
+        lint_nesting_depth,
+    );
+}
+
+#[test]
+fn ast_linter_comment_style() {
+    let root = workspace_root();
+    run_ast_lint(
+        "comment-style",
+        "Fix: Comments must start with `// WHY:` or `// SAFETY:`. Code should be self-documenting.",
+        &[
+            root.join("crates/katana-linter/src/rules/coding"),
+            root.join("crates/katana-linter/src/rules/structure"),
+        ],
+        lint_comment_style,
+    );
+}
+
+#[test]
+#[ignore] // WHY: existing codebase has widespread pub free functions; enable after refactoring
+fn ast_linter_no_pub_free_fn() {
+    let root = workspace_root();
+    run_ast_lint(
+        "pub-free-fn",
+        "Fix: Public free functions are prohibited. Use struct + impl blocks (coding-rules §1.1).",
+        &[
+            root.join("crates/katana-core/src"),
+            root.join("crates/katana-platform/src"),
+            root.join("crates/katana-ui/src"),
+        ],
+        lint_pub_free_fn,
+    );
+}
+
+#[test]
 fn ast_linter_no_unused_theme_colors() {
-    let all_violations = katana_linter::rules::theme::lint_unused_theme_colors(workspace_root());
+    let all_violations = katana_linter::rules::domains::theme::lint_unused_theme_colors(workspace_root());
     panic_with_violations(
         "unused-theme-colors",
         "Fix: A theme color property is defined in `ThemeColors` but never accessed in UI code. Please use it or remove it.",
@@ -169,7 +242,7 @@ fn ast_linter_no_unused_theme_colors() {
 
 #[test]
 fn ast_linter_no_hardcoded_colors() {
-    let all_violations = katana_linter::rules::theme::lint_no_hardcoded_colors(workspace_root());
+    let all_violations = katana_linter::rules::domains::theme::lint_no_hardcoded_colors(workspace_root());
     panic_with_violations(
         "hardcoded-colors",
         "Fix: A hardcoded UI color was found. Map it to a property in `ThemeColors` and use `theme_bridge::rgb_to_color32`.",
@@ -180,7 +253,7 @@ fn ast_linter_no_hardcoded_colors() {
 #[test]
 fn ast_linter_theme_builder_enforcement() {
     let all_violations =
-        katana_linter::rules::theme::lint_theme_builder_enforcement(workspace_root());
+        katana_linter::rules::domains::theme::lint_theme_builder_enforcement(workspace_root());
     panic_with_violations(
         "theme-builder-enforcement",
         "Fix: Theme presets must use `ThemePresetBuilder::new(...)` to enforce DRY design. Do not instantiate `PresetColorData` directly.",
