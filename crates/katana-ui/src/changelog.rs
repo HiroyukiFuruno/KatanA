@@ -22,6 +22,49 @@ pub enum ChangelogEvent {
 }
 
 /// Start fetching the changelog in the background.
+fn handle_fetch_result(
+    result: Result<ehttp::Response, String>,
+    tx: &Sender<ChangelogEvent>,
+    current_version: &str,
+    previous_version: Option<&str>,
+) {
+    match result {
+        Ok(response) => {
+            let text = match response.text() {
+                Some(t) => t.to_string(),
+                None => {
+                    if response.ok {
+                        let _ = tx.send(ChangelogEvent::Error(
+                            "Failed to decode response text".to_string(),
+                        ));
+                    } else {
+                        let _ = tx.send(ChangelogEvent::Error(format!(
+                            "HTTP error: {}",
+                            response.status
+                        )));
+                    }
+                    return;
+                }
+            };
+
+            if !response.ok {
+                let _ = tx.send(ChangelogEvent::Error(format!(
+                    "HTTP error {}: {}",
+                    response.status,
+                    text.chars().take(200).collect::<String>()
+                )));
+                return;
+            }
+
+            let sections = parse_changelog(&text, current_version, previous_version);
+            let _ = tx.send(ChangelogEvent::Success(sections));
+        }
+        Err(err) => {
+            let _ = tx.send(ChangelogEvent::Error(err));
+        }
+    }
+}
+
 pub fn fetch_changelog(
     language: &str,
     current_version: String,
@@ -43,41 +86,8 @@ pub fn fetch_changelog(
         current_version: String,
         previous_version: Option<String>,
     ) {
-        ehttp::fetch(request, move |result| match result {
-            Ok(response) => {
-                let text = match response.text() {
-                    Some(t) => t.to_string(),
-                    None => {
-                        if response.ok {
-                            let _ = tx.send(ChangelogEvent::Error(
-                                "Failed to decode response text".to_string(),
-                            ));
-                        } else {
-                            let _ = tx.send(ChangelogEvent::Error(format!(
-                                "HTTP error: {}",
-                                response.status
-                            )));
-                        }
-                        return;
-                    }
-                };
-
-                if !response.ok {
-                    let _ = tx.send(ChangelogEvent::Error(format!(
-                        "HTTP error {}: {}",
-                        response.status,
-                        text.chars().take(200).collect::<String>()
-                    )));
-                    return;
-                }
-
-                let sections =
-                    parse_changelog(&text, &current_version, previous_version.as_deref());
-                let _ = tx.send(ChangelogEvent::Success(sections));
-            }
-            Err(err) => {
-                let _ = tx.send(ChangelogEvent::Error(err));
-            }
+        ehttp::fetch(request, move |result| {
+            handle_fetch_result(result, &tx, &current_version, previous_version.as_deref());
         });
     }
 
@@ -192,7 +202,6 @@ pub(crate) fn render_release_notes_tab(
     const TAB_TITLE_SPACING: f32 = 16.0;
     const TAB_INNER_MARGIN_X: i8 = 16;
     const TAB_INNER_MARGIN_Y: i8 = 8;
-    const TAB_BODY_INDENT: f32 = 20.0;
     const TAB_BOTTOM_PADDING: f32 = 8.0;
     const TAB_SPINNER_SIZE: f32 = 32.0;
 
@@ -232,75 +241,43 @@ pub(crate) fn render_release_notes_tab(
                                 section.default_open,
                             );
 
-                        let mut is_header_clicked = false;
-                        const TAB_HEADER_HEIGHT: f32 = 20.0;
-                        let (rect, response) = ui.allocate_exact_size(
-                            egui::vec2(ui.available_width(), TAB_HEADER_HEIGHT),
-                            egui::Sense::click(),
+                        let icon = if state.is_open() { "▼" } else { "▶" };
+                        let text = format!("{} {}", icon, section.heading);
+
+                        let response = ui.add(
+                            egui::Label::new(egui::RichText::new(text).strong())
+                                .sense(egui::Sense::click()),
                         );
 
                         if response.hovered() {
                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+
+                            let stroke = egui::Stroke::new(1.0, ui.visuals().strong_text_color());
+                            const UNDERLINE_Y_OFFSET: f32 = 1.5;
+                            let underline_y = response.rect.max.y - UNDERLINE_Y_OFFSET;
+                            ui.painter()
+                                .hline(response.rect.x_range(), underline_y, stroke);
                         }
+
                         if response.clicked() {
-                            is_header_clicked = true;
-                        }
-
-                        let icon = if state.is_open() { "▼" } else { "▶" };
-                        let text = format!("{} {}", icon, section.heading);
-
-                        let color = if response.hovered() {
-                            ui.visuals().strong_text_color()
-                        } else {
-                            ui.visuals().hyperlink_color
-                        };
-
-                        let galley = ui.painter().layout_no_wrap(
-                            text,
-                            egui::TextStyle::Body.resolve(ui.style()),
-                            color,
-                        );
-
-                        let text_pos = egui::pos2(
-                            rect.min.x,
-                            rect.min.y + (rect.height() - galley.rect.height()) / 2.0,
-                        );
-
-                        ui.painter().galley(text_pos, galley.clone(), color);
-
-                        if response.hovered() {
-                            let text_rect = egui::Rect::from_min_size(text_pos, galley.rect.size());
-                            ui.painter().line_segment(
-                                [text_rect.left_bottom(), text_rect.right_bottom()],
-                                egui::Stroke::new(1.0, color),
-                            );
-                        }
-
-                        if is_header_clicked {
                             state.toggle(ui);
                         }
 
-                        state.show_body_unindented(ui, |ui| {
-                            ui.horizontal(|ui| {
-                                ui.add_space(TAB_BODY_INDENT); // Indent body manually since we use unindented
-                                ui.vertical(|ui| {
-                                    egui::Frame::default()
-                                        .inner_margin(egui::Margin::symmetric(
-                                            TAB_INNER_MARGIN_X,
-                                            TAB_INNER_MARGIN_Y,
-                                        ))
-                                        .show(ui, |ui| {
-                                            // Render body as markdown
-                                            let mut cache =
-                                                egui_commonmark::CommonMarkCache::default();
-                                            egui_commonmark::CommonMarkViewer::new().show(
-                                                ui,
-                                                &mut cache,
-                                                &section.body,
-                                            );
-                                        });
+                        state.show_body_indented(&response, ui, |ui| {
+                            egui::Frame::default()
+                                .inner_margin(egui::Margin::symmetric(
+                                    TAB_INNER_MARGIN_X,
+                                    TAB_INNER_MARGIN_Y,
+                                ))
+                                .show(ui, |ui| {
+                                    // Render body as markdown
+                                    let mut cache = egui_commonmark::CommonMarkCache::default();
+                                    egui_commonmark::CommonMarkViewer::new().show(
+                                        ui,
+                                        &mut cache,
+                                        &section.body,
+                                    );
                                 });
-                            });
                         });
 
                         ui.add_space(2.0);
@@ -381,7 +358,119 @@ mod tests {
     #[test]
     fn test_fetch_changelog_coverage() {
         let (tx, _rx) = std::sync::mpsc::channel();
-        crate::changelog::fetch_changelog("en", "0.8.0".to_string(), None, tx.clone());
-        crate::changelog::fetch_changelog("ja", "0.8.0".to_string(), None, tx);
+        fetch_changelog("en", "0.8.0".to_string(), None, tx.clone());
+        fetch_changelog("ja", "0.8.0".to_string(), None, tx);
+    }
+
+    #[test]
+    fn test_render_release_notes_tab_ui() {
+        let ctx = egui::Context::default();
+        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let sections = vec![ChangelogSection {
+                    version: "0.8.0".to_string(),
+                    heading: "v0.8.0".to_string(),
+                    body: "# Test\n- Item".to_string(),
+                    default_open: true,
+                }];
+
+                // Test loading state
+                render_release_notes_tab(ui, &[], true);
+
+                // Test content state
+                render_release_notes_tab(ui, &sections, false);
+
+                // Test empty state
+                render_release_notes_tab(ui, &[], false);
+            });
+        });
+    }
+
+    #[test]
+    fn test_handle_fetch_result_network_error() {
+        let (tx, rx) = std::sync::mpsc::channel();
+        handle_fetch_result(Err("Offline".to_string()), &tx, "0.1.0", None);
+        match rx.try_recv().unwrap() {
+            ChangelogEvent::Error(e) => assert_eq!(e, "Offline"),
+            _ => panic!("Expected Error event"),
+        }
+    }
+
+    #[test]
+    fn test_handle_fetch_result_http_error_with_text() {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let response = ehttp::Response {
+            url: "https://example.com".to_string(),
+            ok: false,
+            status: 404,
+            status_text: "Not Found".to_string(),
+            bytes: b"Not Found Data".to_vec(),
+            headers: ehttp::Headers::new(&[]),
+        };
+        handle_fetch_result(Ok(response), &tx, "0.1.0", None);
+        match rx.try_recv().unwrap() {
+            ChangelogEvent::Error(e) => assert_eq!(e, "HTTP error 404: Not Found Data"),
+            _ => panic!("Expected Error"),
+        }
+    }
+
+    #[test]
+    fn test_handle_fetch_result_ok_response_decode_error() {
+        let (tx, rx) = std::sync::mpsc::channel();
+        // A response with invalid utf8 bytes
+        let response = ehttp::Response {
+            url: "https://example.com".to_string(),
+            ok: true,
+            status: 200,
+            status_text: "OK".to_string(),
+            bytes: vec![0xFF, 0xFE, 0xFD],
+            headers: ehttp::Headers::new(&[]),
+        };
+        handle_fetch_result(Ok(response), &tx, "0.1.0", None);
+        match rx.try_recv().unwrap() {
+            ChangelogEvent::Error(e) => assert_eq!(e, "Failed to decode response text"),
+            _ => panic!("Expected Error"),
+        }
+    }
+
+    #[test]
+    fn test_handle_fetch_result_failure_response_decode_error() {
+        let (tx, rx) = std::sync::mpsc::channel();
+        // A bad status response with invalid utf8 bytes
+        let response = ehttp::Response {
+            url: "https://example.com".to_string(),
+            ok: false,
+            status: 500,
+            status_text: "Server Error".to_string(),
+            bytes: vec![0xFF, 0xFE, 0xFD],
+            headers: ehttp::Headers::new(&[]),
+        };
+        handle_fetch_result(Ok(response), &tx, "0.1.0", None);
+        match rx.try_recv().unwrap() {
+            ChangelogEvent::Error(e) => assert_eq!(e, "HTTP error: 500"),
+            _ => panic!("Expected Error"),
+        }
+    }
+
+    #[test]
+    fn test_handle_fetch_result_success() {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let md = "# Changelog\n## [0.8.0]\n### Added\n- Ok!";
+        let response = ehttp::Response {
+            url: "https://example.com".to_string(),
+            ok: true,
+            status: 200,
+            status_text: "OK".to_string(),
+            bytes: md.as_bytes().to_vec(),
+            headers: ehttp::Headers::new(&[]),
+        };
+        handle_fetch_result(Ok(response), &tx, "0.8.0", None);
+        match rx.try_recv().unwrap() {
+            ChangelogEvent::Success(sections) => {
+                assert_eq!(sections.len(), 1);
+                assert_eq!(sections[0].version, "0.8.0");
+            }
+            _ => panic!("Expected Success"),
+        }
     }
 }

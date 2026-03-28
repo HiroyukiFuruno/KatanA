@@ -858,6 +858,12 @@ mod tests {
         assert_eq!(default_action_reveal_in_os(), "Reveal in OS");
         assert_eq!(default_action_save(), "Save");
         assert_eq!(default_action_cancel(), "Cancel");
+        assert_eq!(default_show_more(), "Show more...");
+        assert_eq!(default_show_less(), "Show less...");
+        assert_eq!(default_ui_contrast_offset(), "UI Contrast Offset");
+        assert_eq!(default_duplicate(), "Duplicate...");
+        assert_eq!(default_custom_section(), "Custom");
+        assert_eq!(default_delete_custom(), "Delete Custom Theme");
     }
 
     #[test]

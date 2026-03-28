@@ -63,6 +63,8 @@ pub struct Modal<'a> {
 
 /// Default width of the progress bar inside the modal.
 const DEFAULT_BAR_WIDTH: f32 = 280.0;
+/// Default width of the modal dialog.
+const DEFAULT_DIALOG_WIDTH: f32 = 450.0;
 /// Spacing between body content and the progress bar.
 const BODY_TO_BAR_SPACING: f32 = 12.0;
 /// Spacing between progress bar (or body) and the footer buttons.
@@ -124,7 +126,7 @@ impl<'a> Modal<'a> {
     ) -> Option<T> {
         let mut result: Option<T> = None;
 
-        let dialog_width = self.width.unwrap_or(450.0);
+        let dialog_width = self.width.unwrap_or(DEFAULT_DIALOG_WIDTH);
 
         egui::Window::new(self.title)
             .id(egui::Id::new(self.id))

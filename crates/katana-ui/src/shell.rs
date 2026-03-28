@@ -234,6 +234,26 @@ impl KatanaApp {
         self.show_update_dialog = true;
     }
 
+    /// Test-only helper to inspect app state.
+    #[doc(hidden)]
+    pub fn app_state_for_test(&self) -> &AppState {
+        &self.state
+    }
+
+    /// Test-only helper to set changelog sections.
+    #[doc(hidden)]
+    pub fn set_changelog_sections_for_test(
+        &mut self,
+        sections: Vec<crate::changelog::ChangelogSection>,
+    ) {
+        self.changelog_sections = sections;
+    }
+
+    /// Test-only helper to clear the changelog receiver.
+    pub fn clear_changelog_rx_for_test(&mut self) {
+        self.changelog_rx = None;
+    }
+
     pub(crate) fn take_action(&mut self) -> AppAction {
         std::mem::replace(&mut self.pending_action, AppAction::None)
     }
@@ -1215,6 +1235,23 @@ impl KatanaApp {
 
         crate::changelog::fetch_changelog(&lang, current_version, previous, tx);
         tracing::info!("Triggered ShowReleaseNotes background fetch.");
+
+        // Open/select the changelog tab immediately (it will show a loading state until data arrives)
+        let virtual_path =
+            std::path::PathBuf::from(format!("Katana://ChangeLog v{}", env!("CARGO_PKG_VERSION")));
+        if !self
+            .state
+            .open_documents
+            .iter()
+            .any(|d| d.path == virtual_path)
+        {
+            self.state
+                .open_documents
+                .push(katana_core::document::Document::new_empty(
+                    virtual_path.clone(),
+                ));
+        }
+        self.handle_select_document(virtual_path, true);
     }
 
     pub(crate) fn poll_changelog(&mut self, _ctx: &egui::Context) {

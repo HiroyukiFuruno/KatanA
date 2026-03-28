@@ -898,87 +898,14 @@ pub(crate) fn render_tab_bar(ui: &mut egui::Ui, state: &mut AppState, action: &m
                                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
 
                                 let t_resp = if is_changelog {
-                                    let padding = ui.spacing().button_padding;
-                                    let icon_img = crate::Icon::Info
-                                        .ui_image(ui, crate::icon::IconSize::Small);
-
-                                    const ICON_DEFAULT_SIZE: f32 = 16.0;
-                                    const PADDING_WIDTH_MULTIPLIER: f32 = 3.5;
-                                    const PADDING_HEIGHT_MULTIPLIER: f32 = 2.0;
-                                    const TEXT_X_OFFSET_MULTIPLIER: f32 = 1.5;
-                                    const Y_OFFSET_PIXELS: f32 = 1.0;
-                                    const HALF_DENOM: f32 = 2.0;
-
-                                    let img_size = icon_img.size().unwrap_or(egui::vec2(
-                                        ICON_DEFAULT_SIZE,
-                                        ICON_DEFAULT_SIZE,
-                                    ));
-
-                                    let galley = ui.painter().layout_no_wrap(
-                                        title.clone(),
-                                        egui::TextStyle::Button.resolve(ui.style()),
-                                        ui.style().visuals.text_color(),
-                                    );
-                                    let text_size = galley.size();
-
-                                    let desired_size = egui::vec2(
-                                        padding.x * PADDING_WIDTH_MULTIPLIER
-                                            + img_size.x
-                                            + text_size.x,
-                                        (padding.y * PADDING_HEIGHT_MULTIPLIER
-                                            + img_size.y.max(text_size.y))
-                                        .max(ui.spacing().interact_size.y),
-                                    );
-
-                                    let (rect, response) =
-                                        ui.allocate_exact_size(desired_size, egui::Sense::click());
-
-                                    if ui.is_rect_visible(rect) {
-                                        let visuals =
-                                            ui.style().interact_selectable(&response, is_active);
-                                        let bg_fill = if is_active {
-                                            ui.visuals().selection.bg_fill
-                                        } else {
-                                            visuals.bg_fill
-                                        };
-                                        if bg_fill.a() > 0 {
-                                            ui.painter().rect(
-                                                rect,
-                                                ui.style().visuals.widgets.active.corner_radius,
-                                                bg_fill,
-                                                visuals.bg_stroke,
-                                                egui::StrokeKind::Middle,
-                                            );
-                                        }
-
-                                        // User explicitly requested to move text down 2px or icon up 2px.
-                                        let icon_y = rect.center().y
-                                            - (img_size.y / HALF_DENOM)
-                                            - Y_OFFSET_PIXELS;
-                                        let text_y = rect.center().y - (text_size.y / HALF_DENOM)
-                                            + Y_OFFSET_PIXELS;
-
-                                        let icon_pos = egui::pos2(rect.min.x + padding.x, icon_y);
-                                        let text_pos = egui::pos2(
-                                            icon_pos.x
-                                                + img_size.x
-                                                + padding.x * TEXT_X_OFFSET_MULTIPLIER,
-                                            text_y,
-                                        );
-
-                                        icon_img.paint_at(
-                                            ui,
-                                            egui::Rect::from_min_size(icon_pos, img_size),
-                                        );
-
-                                        let text_color = if is_active {
-                                            ui.visuals().selection.stroke.color
-                                        } else {
-                                            visuals.text_color()
-                                        };
-                                        ui.painter().galley(text_pos, galley, text_color);
-                                    }
-                                    response
+                                    ui.add(
+                                        egui::Button::image_and_text(
+                                            crate::Icon::Info
+                                                .ui_image(ui, crate::icon::IconSize::Small),
+                                            &title,
+                                        )
+                                        .selected(is_active),
+                                    )
                                 } else {
                                     ui.add(egui::Button::selectable(is_active, &title))
                                 };
