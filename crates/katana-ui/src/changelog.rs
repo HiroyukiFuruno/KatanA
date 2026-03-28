@@ -77,7 +77,8 @@ pub fn fetch_changelog(
         "CHANGELOG.md"
     };
 
-    let url = format!("{}/{}", GITHUB_RAW_BASE, filename);
+    // Append the version string to bypass GitHub's edge cache specifically for new upgrades
+    let url = format!("{}/{}?v={}", GITHUB_RAW_BASE, filename, current_version);
     let request = ehttp::Request::get(&url);
 
     fn do_fetch(

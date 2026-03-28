@@ -298,11 +298,24 @@ fn test_integration_changelog_tab_display() {
     harness
         .state_mut()
         .trigger_action(AppAction::ShowReleaseNotes);
-    for _ in 0..10 {
+
+    // Process the pending action (which sets up the channel and fetch)
+    harness.step();
+
+    // Now overwrite it with test data BEFORE subsequent steps render it
+    harness.state_mut().clear_changelog_rx_for_test();
+    harness
+        .state_mut()
+        .set_changelog_sections_for_test(vec![ChangelogSection {
+            version: "0.8.0".to_string(),
+            heading: "v0.8.0".to_string(),
+            body: "### Features\n- Fixed the close button overlap".to_string(),
+            default_open: true,
+        }]);
+
+    for _ in 0..9 {
         harness.step();
     }
-
-    // Verify a tab is opened with the ChangeLog path
     {
         let state = harness.state();
         let app = state.app_state_for_test();
@@ -312,17 +325,6 @@ fn test_integration_changelog_tab_display() {
             .to_string_lossy()
             .starts_with("Katana://ChangeLog"));
     }
-
-    // Mock sections to exercise interaction logic
-    harness
-        .state_mut()
-        .set_changelog_sections_for_test(vec![ChangelogSection {
-            version: "0.8.0".to_string(),
-            heading: "v0.8.0".to_string(),
-            body: "### Features\n- Fixed the close button overlap".to_string(),
-            default_open: true,
-        }]);
-    harness.state_mut().clear_changelog_rx_for_test();
     harness.step();
     harness.step();
 
