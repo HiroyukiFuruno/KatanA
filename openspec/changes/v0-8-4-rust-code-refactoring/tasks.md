@@ -95,7 +95,8 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 2.4 `rules/theme.rs`（313行）の分割
   - 責務ごとにサブモジュール化
 
-- [ ] 2.5 `rules/markdown.rs`（204行）のボーダーライン確認・必要に応じて分割
+- [x] 2.5 `rules/markdown.rs`（204行）のボーダーライン確認・必要に応じて分割
+  - 責務ごとにサブモジュール化（`discovery.rs`, `structure.rs` に分割）
 
 ### Definition of Done (DoD)
 

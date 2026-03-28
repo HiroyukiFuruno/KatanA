@@ -1,86 +1,16 @@
 use crate::utils::locale_violation;
 use crate::Violation;
-use ignore::WalkBuilder;
-use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+
+use super::discovery::MarkdownPair;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct MarkdownHeading {
-    level: u8,
-    line: usize,
+pub struct MarkdownHeading {
+    pub level: u8,
+    pub line: usize,
 }
 
-#[derive(Debug, Clone)]
-struct MarkdownPair {
-    base: PathBuf,
-    ja: PathBuf,
-}
-
-pub fn lint_markdown_heading_pairs(root: &Path) -> Vec<Violation> {
-    let mut violations = Vec::new();
-    for pair in collect_markdown_pairs(root) {
-        violations.extend(compare_markdown_heading_structure(&pair));
-    }
-    violations
-}
-
-fn collect_markdown_files(root: &Path) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    let walker = WalkBuilder::new(root)
-        .standard_filters(true)
-        .require_git(false)
-        .build();
-
-    for entry in walker.flatten() {
-        let path = entry.path();
-        if path.is_file() && path.extension().is_some_and(|ext| ext == "md") {
-            files.push(path.to_path_buf());
-        }
-    }
-
-    files.sort();
-    files
-}
-
-fn markdown_pair_key(path: &Path) -> Option<(String, bool)> {
-    let path_str = path.to_string_lossy();
-    if let Some(prefix) = path_str.strip_suffix(".ja.md") {
-        return Some((prefix.to_string(), true));
-    }
-    if let Some(prefix) = path_str.strip_suffix("_ja.md") {
-        return Some((prefix.to_string(), true));
-    }
-    path_str
-        .strip_suffix(".md")
-        .map(|prefix| (prefix.to_string(), false))
-}
-
-fn collect_markdown_pairs(root: &Path) -> Vec<MarkdownPair> {
-    let files = collect_markdown_files(root);
-    let mut base_files = BTreeMap::<String, PathBuf>::new();
-    let mut ja_files = BTreeMap::<String, PathBuf>::new();
-
-    for file in files {
-        if let Some((key, is_ja)) = markdown_pair_key(&file) {
-            if is_ja {
-                ja_files.insert(key, file);
-            } else {
-                base_files.insert(key, file);
-            }
-        }
-    }
-
-    let mut pairs = Vec::new();
-    for (key, base) in base_files {
-        if let Some(ja) = ja_files.remove(&key) {
-            pairs.push(MarkdownPair { base, ja });
-        }
-    }
-
-    pairs
-}
-
-fn extract_markdown_headings(path: &Path) -> Result<Vec<MarkdownHeading>, Vec<Violation>> {
+pub fn extract_markdown_headings(path: &Path) -> Result<Vec<MarkdownHeading>, Vec<Violation>> {
     let source = std::fs::read_to_string(path).map_err(|err| {
         vec![Violation {
             file: path.to_path_buf(),
@@ -122,7 +52,7 @@ fn extract_markdown_headings(path: &Path) -> Result<Vec<MarkdownHeading>, Vec<Vi
     Ok(headings)
 }
 
-fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation> {
+pub fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation> {
     let base_headings = match extract_markdown_headings(&pair.base) {
         Ok(headings) => headings,
         Err(violations) => return violations,
