@@ -86,7 +86,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - `utils/parser.rs`: synパースロジック
   - `utils/reporter.rs`: 違反レポートロジック
 
-- [ ] 2.2 `rules/locales.rs`（549行）の分割
+- [x] 2.2 `rules/locales.rs`（549行）の分割
   - 責務ごとにサブモジュール化
 
 - [ ] 2.3 `rules/i18n.rs`（391行）の分割
