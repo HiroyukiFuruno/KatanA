@@ -486,21 +486,21 @@ mod tests {
         let url_en = get_changelog_url("en", "0.8.0");
         assert_eq!(
             url_en,
-            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/master/CHANGELOG.md?v=0.8.0"
+            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=0.8.0"
         );
 
         // Assert that the Japanese localized file is correct and appends the cache buster
         let url_ja = get_changelog_url("ja", "0.8.1-beta");
         assert_eq!(
             url_ja,
-            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/master/CHANGELOG.ja.md?v=0.8.1-beta"
+            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.ja.md?v=0.8.1-beta"
         );
 
         // Assert that unknown locales fallback to English as intended
         let url_unknown = get_changelog_url("it", "1.0.0");
         assert_eq!(
             url_unknown,
-            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/master/CHANGELOG.md?v=1.0.0"
+            "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=1.0.0"
         );
     }
 }
