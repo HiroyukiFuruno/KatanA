@@ -18,11 +18,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 0.4 4レイヤー共通処理の切り出し可否の分析 → **不要**と結論（design.md 参照）
 - [x] 0.5 `emoji.rs`（データ量起因の行数超過）の扱いを確定 → **外部データファイル化**
 - [x] 0.6 `i18n.rs`（翻訳文字列定義）の方針確定 → **Rustコードのまま `i18n/` サブモジュール分割**
-- [/] 0.7 未マージPRの整理（<https://github.com/HiroyukiFuruno/KatanA/pulls）>
+- [x] 0.7 未マージPRの整理（<https://github.com/HiroyukiFuruno/KatanA/pulls）>
   - マージ可能なPRをマージ
   - 不要なPRをクローズ
   - コンフリクト解消が必要なPRの対応
-- [ ] 0.8 依存関係（Cargo.toml）の最新化
+- [/] 0.8 依存関係（Cargo.toml）の最新化
   - `cargo outdated` で確認
   - SemVer互換のアップデートを適用
   - Breaking changeがあるものはリスト化して個別対応

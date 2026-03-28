@@ -10,6 +10,10 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    groups:
+      cargo-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -19,3 +23,7 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"
