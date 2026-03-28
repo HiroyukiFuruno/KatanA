@@ -123,6 +123,11 @@ impl Style {
     pub fn to_richtext(&self, ui: &Ui, text: &str) -> RichText {
         let mut text = RichText::new(text);
 
+        if self.heading.is_some() || self.strong {
+            text = text.color(ui.visuals().text_color());
+        }
+
+
         if let Some(level) = self.heading {
             let max_height = ui
                 .style()

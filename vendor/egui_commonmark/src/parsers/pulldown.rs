@@ -762,7 +762,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
                     let id_salt = egui::Id::new(&summary).with(id);
                     let collapsing = egui::CollapsingHeader::new(
-                        egui::RichText::new(&summary).strong()
+                        egui::RichText::new(&summary).strong().color(ui.visuals().text_color())
                     )
                     .id_salt(id_salt)
                     .icon(crate::ui_components::centering::AccordionIcon::paint_optically_centered);

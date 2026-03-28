@@ -27,7 +27,7 @@ pub fn bullet_point(ui: &mut Ui) {
     ui.painter().circle_filled(
         rect.center(),
         rect.height() / 6.0,
-        ui.visuals().strong_text_color(),
+        ui.visuals().text_color(),
     );
 }
 
@@ -40,7 +40,7 @@ pub fn bullet_point_hollow(ui: &mut Ui) {
         rect.center(),
         rect.height() / 6.0,
         egui::Color32::TRANSPARENT,
-        egui::Stroke::new(0.6, ui.visuals().strong_text_color()),
+        egui::Stroke::new(0.6, ui.visuals().text_color()),
     );
 }
 
@@ -54,7 +54,7 @@ pub fn number_point(ui: &mut Ui, number: &str) {
         egui::Align2::RIGHT_TOP,
         format!("{number}."),
         TextStyle::Body.resolve(ui.style()),
-        ui.visuals().strong_text_color(),
+        ui.visuals().text_color(),
     );
 }
 
@@ -73,7 +73,7 @@ pub fn footnote(ui: &mut Ui, text: &str) {
         egui::Align2::RIGHT_TOP,
         format!("{text}."),
         TextStyle::Small.resolve(ui.style()),
-        ui.visuals().strong_text_color(),
+        ui.visuals().text_color(),
     );
 }
 
