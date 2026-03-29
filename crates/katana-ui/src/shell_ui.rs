@@ -829,7 +829,7 @@ impl eframe::App for KatanaApp {
         }
 
         // Settings window
-        if let Some(settings_action) = crate::settings_window::render_settings_window(
+        if let Some(settings_action) = crate::settings::render_settings_window(
             ctx,
             &mut self.state,
             &mut self.settings_preview,

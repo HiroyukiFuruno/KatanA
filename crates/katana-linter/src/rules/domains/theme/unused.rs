@@ -128,7 +128,7 @@ fn scan_ui_files(workspace_root: &Path) -> (FieldAccessVisitor, FieldAccessVisit
             continue;
         };
         general_access.visit_file(&ast);
-        if file.file_name().unwrap_or_default() == "settings_window.rs" {
+        if file.file_name().unwrap_or_default() == "theme.rs" {
             settings_access.visit_file(&ast);
         }
     }
@@ -170,7 +170,7 @@ fn check_unexposed_property(
             line,
             column: col,
             message: format!(
-                "Theme color property `{}` is not exposed in `settings_window.rs`. All custom colors must be editable by the user.",
+                "Theme color property `{}` is not exposed in `theme.rs`. All custom colors must be editable by the user.",
                 prop_name
             ),
         });
