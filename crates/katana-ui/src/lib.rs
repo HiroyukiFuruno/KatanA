@@ -27,7 +27,7 @@ pub mod changelog;
 pub mod diagram_controller;
 pub mod preview_pane;
 pub mod preview_pane_ui;
-pub mod settings_window;
+pub mod settings;
 pub mod shell;
 pub mod shell_logic;
 pub mod shell_ui;
