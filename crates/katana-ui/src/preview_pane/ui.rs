@@ -69,7 +69,7 @@ impl PreviewPane {
         self.content_top_y = ui.next_widget_position().y;
         self.heading_anchors.clear();
         let mut fullscreen_request: Option<usize> = None;
-        let (request, actions) = crate::preview_pane_ui::render_sections(
+        let (request, actions) = crate::preview_pane::render_sections(
             ui,
             &mut self.commonmark_cache,
             &self.sections,
@@ -93,7 +93,7 @@ impl PreviewPane {
     /// Renders the fullscreen modal overlay (requires egui Context).
     /// Delegates to preview_pane_ui which is coverage-excluded.
     pub(crate) fn render_fullscreen_modal(&mut self, ctx: &egui::Context) {
-        let result = crate::preview_pane_ui::render_fullscreen_if_active(
+        let result = crate::preview_pane::render_fullscreen_if_active(
             ctx,
             &self.sections,
             self.fullscreen_image,
