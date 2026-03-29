@@ -6,6 +6,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. Failure Contract Alignment
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 1.1 `shell.rs` と `settings_window.rs` の `settings.save()` 呼び出し箇所を棚卸しし、silent failure をなくす対象を確定する
 - [ ] 1.2 settings / update / release の failure contract（何を守り、どこで止め、何を表示するか）をコード単位で確定する
 - [ ] 1.3 失敗系を含む追加テストケース（settings save failure, corrupted settings, staged update swap, release preflight）を洗い出す
@@ -16,6 +21,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. Settings Persistence Hardening
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 2.1 `JsonFileRepository` に temp file + rename ベースの atomic save を実装する
 - [ ] 2.2 破損した `settings.json` を backup 名で退避し、default への fallback と load diagnostics を追加する
@@ -29,6 +39,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 3. Update Install Hardening
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 3.1 update relaunch script を staged swap + rollback 方式に置き換える
 - [ ] 3.2 `prepare_update` と relaunch path に bundle 検証、swap failure handling、actionable error message を追加する
 - [ ] 3.3 更新準備失敗と swap failure を検証する自動テストを追加する
@@ -39,6 +54,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 4. Release Pipeline Consistency
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 4.1 ローカル release と GitHub Actions release が共有する preflight entrypoint を抽出する
 - [ ] 4.2 changelog / OpenSpec / artifact naming の検証を共通 preflight に集約する
@@ -53,6 +73,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ---
 
 ## 5. Final Verification & Release Work
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
 - [ ] 5.2 Ensure `make check` passes with exit code 0

@@ -333,6 +333,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ## 8. Final Verification & Release Work
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
