@@ -12,6 +12,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. 左アクティビティレールの実装
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 1.1 `shell_ui.rs` に固定幅の左アクティビティレールを追加し、ワークスペース表示切り替え・検索・履歴ボタンを縦配置する
 - [ ] 1.2 ワークスペース表示切り替えを既存の `show_workspace` 状態と連動させ、ペインを閉じてもレールが残るようにする
 - [ ] 1.3 履歴ボタンを既存の `settings.workspace.paths` と `OpenWorkspace` / `RemoveWorkspace` に接続し、最近のワークスペース履歴メニューをレール側へ移す
@@ -29,6 +34,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ---
 
 ## 2. ワークスペースヘッダーの再配置
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 2.1 ワークスペースペインから `Workspace` / `ワークスペース` の見出し文言を削除する
 - [ ] 2.2 更新ボタンをヘッダー先頭側へ移し、全展開・全閉ボタンを末尾側へ再配置する
@@ -48,6 +58,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 3. 検索導線と回帰確認
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 3.1 左レールの検索ボタンから既存の検索モーダルを開けるようにし、ショートカット導線を維持する
 - [ ] 3.2 レール化に伴うツールチップ・i18n 文言・アクセシビリティラベルを整理する
 - [ ] 3.3 UI テストまたはハーネスで、左レール起点の表示切り替え・検索・履歴操作の回帰を追加確認する
@@ -64,6 +79,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ---
 
 ## 4. Final Verification & Release Work
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 4.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
 - [ ] 4.2 Ensure `make check` passes with exit code 0

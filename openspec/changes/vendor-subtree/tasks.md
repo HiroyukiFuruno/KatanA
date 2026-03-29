@@ -4,6 +4,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. vendor/egui_commonmark サブツリー化の実行
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 1.1 `vendor/egui_commonmark` 全体を履歴から退避、あるいはコミット上で一旦削除する。
 - [ ] 1.2 `git subtree add` を使用して、指定されたリモートリポジトリ・特定のリビジョンから `vendor/egui_commonmark` を導入する。
 - [ ] 1.3 `pulldown.rs` 等に存在した Katana 固有の改修内容を再抽出・パッチとして分離してコミットする。
@@ -17,6 +22,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 2. vendor/egui_commonmark ユニットテスト整備
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 2.1 `vendor/egui_commonmark` に対するユニットテストの構成方針を決定（`tests/` ディレクトリ or インラインテスト）
 - [ ] 2.2 `pulldown.rs` の主要ロジック（テーブル解析、インライン装飾、取り消し線描画、中央寄せ等）のユニットテストを追加
 - [ ] 2.3 Katana固有パッチ部分のリグレッションテストを追加
@@ -25,6 +35,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ---
 
 ## 3. Final Verification & Release Work
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 3.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
 - [ ] 3.2 Ensure `make check` passes with exit code 0

@@ -2,6 +2,11 @@
 
 ## 1. タブグルーピング機能の実装
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 1.1 `TabGroup { id, name, color, tab_ids }` データモデルを定義
 - [ ] 1.2 プリセット8色（赤・橙・黄・緑・青・紫・ピンク・グレー）の定数定義
 - [ ] 1.3 コンテキストメニューに「グループに追加」→「新しいグループ」「既存グループ名」を追加
@@ -26,6 +31,11 @@
 
 ## 2. セッション復元（タブ履歴永続化）の実装
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 2.1 `SessionState { tabs: Vec<TabEntry>, active_tab: Option<TabId> }` を定義
 - [ ] 2.2 アプリ終了時に `last_session.json` をアプリデータディレクトリに書き込む処理を追加
 - [ ] 2.3 アプリ起動時に `last_session.json` を読み込み、タブを復元する処理を追加
@@ -45,6 +55,11 @@
 
 ## 3. ピン留め機能の改善
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 3.1 ピン留め中のタブの閉じるボタン（×）を非表示にする、ピンを解除しないと閉じれないようにする。ピン留めの状態は、task2のセッション復元機能で復元されるようにする。
 - [ ] 3.2 ピン留め中のタブサイズを既存のもの + アイコンの幅とする
 - [ ] 3.3 ピン留め中でもホバー時にタイトルをツールチップで表示する
@@ -63,6 +78,11 @@
 ---
 
 ## 4. Final Verification & Release Work
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 4.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
 - [ ] 4.2 Ensure `make check` passes with exit code 0

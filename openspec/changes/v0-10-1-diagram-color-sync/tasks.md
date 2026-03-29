@@ -8,6 +8,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. Requirement Refinement
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 1.1 DiagramColorPresetのライフサイクルとOnceLockの廃止要件を整理
 - [ ] 1.2 テーマの色情報（ui.visuals().text_color()等）をプレビューペインやDiagramレンダラまでどのように伝達するかの構造設計
 - [ ] ### Definition of Done (DoD)
@@ -15,6 +20,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. Diagram Color Dynamic Resolution Implementation
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 2.1 PreviewPaneの`DiagramColorPreset`から`OnceLock`を排除し、レンダリング毎に解決を試みるか、依存関係パイプラインを通すように修正
 - [ ] 2.2 `shell.rs`等のThemeStoreへの依存経路を通じて、現在の`preview.text`または`preview.border`の実際の色を取得するように連携
@@ -27,6 +37,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ---
 
 ## 3. Final Verification & Release Work
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 3.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
 - [ ] 3.2 Ensure `make check` passes with exit code 0
