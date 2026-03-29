@@ -67,7 +67,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - 6つの既存Visitor + 4つの新規ルールを10個の個別ファイルに分離完了
   - `rules/rust/mod.rs` で公開APIを集約
 
-- [ ] 1.8 `lint_type_separation`: 型とロジックの分離の強制
+- [x] 1.8 `lint_type_separation`: 型とロジックの分離の強制
   - `pub struct` や `pub enum`（公開の型定義）を記述するファイルは、ファイル名が `types.rs` または `types/` 配下などの専用名であるか、あるいはファイル内に `impl` による固有メソッドの実装（関数）を含んではいけない（データクラスの分離）。
   - ※ 厳格すぎる場合は行数閾値（50行以上など）を設けるハイブリッド制約とする。
 
