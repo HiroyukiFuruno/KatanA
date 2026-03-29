@@ -65,7 +65,7 @@ impl<'a> StatusBar<'a> {
 
             ui.add_space(STATUS_BAR_ICON_SPACING);
             if let Some(i) = icon {
-                ui.add(egui::Image::new(i.uri()).tint(color));
+                ui.add(i.image(crate::icon::IconSize::Medium).tint(color));
                 ui.add_space(2.0);
             }
             ui.colored_label(color, msg);
@@ -87,7 +87,10 @@ impl<'a> StatusBar<'a> {
                     ui.add(
                         egui::Image::new(crate::Icon::Dot.uri())
                             .tint(ui.visuals().text_color())
-                            .max_height(DIRTY_DOT_MAX_HEIGHT),
+                            .fit_to_exact_size(egui::vec2(
+                                DIRTY_DOT_MAX_HEIGHT,
+                                DIRTY_DOT_MAX_HEIGHT,
+                            )),
                     );
                 }
             });
@@ -670,18 +673,19 @@ impl ViewModeBar {
 
                     const TOGGLE_LABEL_SPACING: f32 = 8.0;
 
-                    let resp = ui.add(
-                        crate::widgets::LabeledToggle::new(
-                            crate::i18n::get().settings.behavior.scroll_sync.clone(),
-                            &mut is_on,
-                        )
-                        .position(crate::widgets::TogglePosition::Right)
-                        .alignment(
-                            crate::widgets::ToggleAlignment::Attached(TOGGLE_LABEL_SPACING),
-                        ),
+                    let toggle_resp = crate::widgets::toggle_switch(ui, &mut is_on);
+                    ui.add_space(TOGGLE_LABEL_SPACING);
+                    let text_resp = ui.selectable_label(
+                        false,
+                        crate::i18n::get().settings.behavior.scroll_sync.clone(),
                     );
 
-                    if resp.clicked() {
+                    let toggled = text_resp.clicked() || toggle_resp.clicked();
+                    if text_resp.clicked() && !toggle_resp.clicked() {
+                        is_on = !is_on;
+                    }
+
+                    if toggled {
                         action = Some(AppAction::ToggleScrollSync(is_on));
                     }
                 }
