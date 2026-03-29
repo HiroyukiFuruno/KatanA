@@ -1,7 +1,7 @@
 use crate::cache::{read_guard, write_guard, CacheFacade};
 use std::sync::RwLock;
 
-/// An in-memory only CacheFacade for tests.
+// WHY: An in-memory only CacheFacade for tests.
 #[derive(Default)]
 pub struct InMemoryCacheService {
     memory: RwLock<Vec<(String, String)>>,

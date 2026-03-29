@@ -1,32 +1,32 @@
 use serde::{Deserialize, Serialize};
 
-/// Split direction for editor/preview layout.
+// WHY: Split direction for editor/preview layout.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum SplitDirection {
-    /// Editor on left, preview on right.
+    // WHY: Editor on left, preview on right.
     #[default]
     Horizontal,
-    /// Editor on top, preview on bottom.
+    // WHY: Editor on top, preview on bottom.
     Vertical,
 }
 
-/// Position of the Table of Contents panel in the workspace.
+// WHY: Position of the Table of Contents panel in the workspace.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum TocPosition {
-    /// Left side of the workspace.
+    // WHY: Left side of the workspace.
     #[default]
     Left,
-    /// Right side of the workspace.
+    // WHY: Right side of the workspace.
     Right,
 }
 
-/// Pane order within the split view.
+// WHY: Pane order within the split view.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum PaneOrder {
-    /// Editor first (left or top), preview second.
+    // WHY: Editor first (left or top), preview second.
     #[default]
     EditorFirst,
-    /// Preview first (left or top), editor second.
+    // WHY: Preview first (left or top), editor second.
     PreviewFirst,
 }
 

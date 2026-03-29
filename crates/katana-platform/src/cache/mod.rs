@@ -1,6 +1,6 @@
-//! General-purpose caching facade for Katana.
-//!
-//! Provides both an in-memory ephemeral cache and a persistent on-disk cache.
+/* WHY: General-purpose caching facade for Katana.
+
+Provides both an in-memory ephemeral cache and a persistent on-disk cache. */
 
 mod default;
 mod memory;
@@ -11,16 +11,16 @@ pub use memory::InMemoryCacheService;
 use serde::{Deserialize, Serialize};
 use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-/// A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
+// WHY: A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
 pub trait CacheFacade: Send + Sync {
-    /// Retrieves a value from the in-memory cache.
+    // WHY: Retrieves a value from the in-memory cache.
     fn get_memory(&self, key: &str) -> Option<String>;
-    /// Stores a value in the in-memory cache. Note: this does not persist across application restarts.
+    // WHY: Stores a value in the in-memory cache. Note: this does not persist across application restarts.
     fn set_memory(&self, key: &str, value: String);
 
-    /// Retrieves a value from the persistent cache.
+    // WHY: Retrieves a value from the persistent cache.
     fn get_persistent(&self, key: &str) -> Option<String>;
-    /// Stores a value in the persistent cache, syncing to disk.
+    // WHY: Stores a value in the persistent cache, syncing to disk.
     fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()>;
 }
 

@@ -4,10 +4,9 @@ pub(crate) const ERROR_R: u8 = 0xFF;
 pub(crate) const ERROR_G: u8 = 0x55;
 pub(crate) const ERROR_B: u8 = 0x55;
 
-// ── Migration fallback color constants ──────────────────────────
-// Default values used when converting from legacy format to the new 3-layer structure.
-// Defined in dark/light pairs for use in the "is_dark" branch.
-
+/* WHY: ── Migration fallback color constants ──────────────────────────
+Default values used when converting from legacy format to the new 3-layer structure.
+Defined in dark/light pairs for use in the "is_dark" branch. */
 pub(crate) const LEGACY_SUCCESS_DARK: Rgb = Rgb {
     r: 80,
     g: 200,

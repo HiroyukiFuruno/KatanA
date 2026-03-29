@@ -1,7 +1,7 @@
 use super::MigrationStrategy;
 use serde_json::{json, Value};
 
-/// Migrates settings from v0.1.2 (flat structure) to v0.1.3 (hierarchical).
+// WHY: Migrates settings from v0.1.2 (flat structure) to v0.1.3 (hierarchical).
 pub struct Migration0_1_2;
 
 impl MigrationStrategy for Migration0_1_2 {
@@ -10,55 +10,45 @@ impl MigrationStrategy for Migration0_1_2 {
     }
 
     fn migrate(&self, json: Value) -> Value {
-        if let serde_json::Value::Object(mut map) = json {
-            let mut theme_map = serde_json::Map::new();
-            if let Some(theme) = map.remove("theme") {
-                theme_map.insert("theme".to_string(), theme);
-            } else {
-                theme_map.insert("theme".to_string(), json!("dark"));
-            }
-            if let Some(preset) = map.remove("selected_preset") {
-                theme_map.insert("preset".to_string(), preset);
-            }
-            if let Some(custom) = map.remove("custom_color_overrides") {
-                theme_map.insert("custom_color_overrides".to_string(), custom);
-            }
+        let serde_json::Value::Object(mut map) = json else {
+            return json;
+        };
 
-            let mut font_map = serde_json::Map::new();
-            if let Some(size) = map.remove("font_size") {
-                font_map.insert("size".to_string(), size);
-            } else {
-                font_map.insert("size".to_string(), json!(14.0));
-            }
-            if let Some(family) = map.remove("font_family") {
-                font_map.insert("family".to_string(), family);
-            } else {
-                font_map.insert("family".to_string(), json!("monospace"));
-            }
-
-            let mut layout_map = serde_json::Map::new();
-            if let Some(split) = map.remove("split_direction") {
-                layout_map.insert("split_direction".to_string(), split);
-            } else {
-                layout_map.insert("split_direction".to_string(), json!("Horizontal"));
-            }
-            if let Some(order) = map.remove("pane_order") {
-                layout_map.insert("pane_order".to_string(), order);
-            } else {
-                layout_map.insert("pane_order".to_string(), json!("EditorFirst"));
-            }
-
-            // `toc_visible` and `last_workspace` remain at the top level;
-            // only theme/font/layout are grouped into nested objects.
-            map.insert("version".to_string(), json!("0.1.3"));
-            map.insert("theme".to_string(), serde_json::Value::Object(theme_map));
-            map.insert("font".to_string(), serde_json::Value::Object(font_map));
-            map.insert("layout".to_string(), serde_json::Value::Object(layout_map));
-
-            serde_json::Value::Object(map)
-        } else {
-            json
+        let mut theme_map = serde_json::Map::new();
+        theme_map.insert("theme".into(), map.remove("theme").unwrap_or(json!("dark")));
+        if let Some(preset) = map.remove("selected_preset") {
+            theme_map.insert("preset".into(), preset);
         }
+        if let Some(custom) = map.remove("custom_color_overrides") {
+            theme_map.insert("custom_color_overrides".into(), custom);
+        }
+
+        let mut font_map = serde_json::Map::new();
+        font_map.insert(
+            "size".into(),
+            map.remove("font_size").unwrap_or(json!(14.0)),
+        );
+        font_map.insert(
+            "family".into(),
+            map.remove("font_family").unwrap_or(json!("monospace")),
+        );
+
+        let mut layout_map = serde_json::Map::new();
+        layout_map.insert(
+            "split_direction".into(),
+            map.remove("split_direction").unwrap_or(json!("Horizontal")),
+        );
+        layout_map.insert(
+            "pane_order".into(),
+            map.remove("pane_order").unwrap_or(json!("EditorFirst")),
+        );
+
+        map.insert("version".into(), json!("0.1.3"));
+        map.insert("theme".into(), serde_json::Value::Object(theme_map));
+        map.insert("font".into(), serde_json::Value::Object(font_map));
+        map.insert("layout".into(), serde_json::Value::Object(layout_map));
+
+        serde_json::Value::Object(map)
     }
 }
 

@@ -5,10 +5,10 @@ use katana_core::{
 };
 use std::path::PathBuf;
 
-/// Platform-layer filesystem service.
-///
-/// Implements all disk I/O so that higher layers (core, ui) remain free of
-/// direct `std::fs` calls.
+/* WHY: Platform-layer filesystem service.
+
+Implements all disk I/O so that higher layers (core, ui) remain free of
+direct `std::fs` calls. */
 pub struct FilesystemService;
 
 impl FilesystemService {
@@ -16,10 +16,10 @@ impl FilesystemService {
         Self
     }
 
-    /// Attempt to open `path` as a workspace root.
-    ///
-    /// On success, returns a [`Workspace`] with the directory tree populated.  
-    /// On failure (unreadable path), returns a recoverable [`WorkspaceError`].
+    /* WHY: Attempt to open `path` as a workspace root.
+
+    On success, returns a [`Workspace`] with the directory tree populated.
+    On failure (unreadable path), returns a recoverable [`WorkspaceError`]. */
     #[allow(clippy::too_many_arguments)]
     pub fn open_workspace(
         &self,
@@ -47,7 +47,7 @@ impl FilesystemService {
         Ok(Workspace::new(root, tree))
     }
 
-    /// Load a document from `path`, returning its in-memory representation.
+    // WHY: Load a document from `path`, returning its in-memory representation.
     pub fn load_document(&self, path: impl Into<PathBuf>) -> Result<Document, DocumentError> {
         let path = path.into();
         let content = std::fs::read_to_string(&path)
@@ -55,10 +55,10 @@ impl FilesystemService {
         Ok(Document::new(path, content))
     }
 
-    /// Save a document's current buffer to its source path on disk.
-    ///
-    /// This is the *only* path that writes to the source file. There is no
-    /// implicit or background save.
+    /* WHY: Save a document's current buffer to its source path on disk.
+
+    This is the *only* path that writes to the source file. There is no
+    implicit or background save. */
     pub fn save_document(&self, doc: &mut Document) -> Result<(), DocumentError> {
         std::fs::write(&doc.path, &doc.buffer)
             .map_err(|e| DocumentError::save_failed(doc.path.clone(), e))?;
