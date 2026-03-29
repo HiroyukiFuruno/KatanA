@@ -311,6 +311,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - 対象: `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn`
   - `crates/katana-linter/tests/ast_linter.rs` の target 範囲に `katana-ui/src` を追加する
 - [ ] 6.30 `pub_free_fn` の統合テストから `#[ignore]` を外し、Task 4.4 で整理した条件に従って最終ルールとして有効化する
+- [ ] 6.31 `views/`, `app/`, `state/` モジュールに抽出された元 `shell_ui.rs` のコアロジックに対するカバレッジ免除（`COVERAGE_IGNORE`）を、コンポーネント化に合わせて解除し、適切な単体・結合テストを追加する
 
 ### Definition of Done (DoD)
 
