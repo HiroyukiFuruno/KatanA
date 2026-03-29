@@ -1,307 +1,17 @@
-#![allow(clippy::useless_vec)]
-use egui::{
-    load::{Bytes, BytesLoadResult, BytesLoader, BytesPoll, LoadError},
-    mutex::Mutex,
-    Context,
-};
-use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
-use std::{
-    fmt::Write as _,
-    path::{Path, PathBuf},
-    sync::Arc,
-    task::Poll,
-};
-
-const HTTP_PROTOCOL: &str = "http://";
-const HTTPS_PROTOCOL: &str = "https://";
-const CACHE_NAMESPACE_DIR: &str = "KatanA";
-const HTTP_IMAGE_CACHE_DIR: &str = "http-image-cache";
-const CACHE_BODY_EXTENSION: &str = "bin";
-const CACHE_META_EXTENSION: &str = "json";
-
-#[derive(Clone)]
-struct CachedFile {
-    bytes: Arc<[u8]>,
-    mime: Option<String>,
-}
-
-impl CachedFile {
-    fn from_response(uri: &str, response: ehttp::Response) -> Result<Self, String> {
-        if !response.ok {
-            match response.text() {
-                Some(response_text) => Err(format!(
-                    "failed to load {uri:?}: {} {} {response_text}",
-                    response.status, response.status_text
-                )),
-                None => Err(format!(
-                    "failed to load {uri:?}: {} {}",
-                    response.status, response.status_text
-                )),
-            }
-        } else {
-            let mime = response.content_type().map(ToOwned::to_owned);
-            let bytes = response.bytes.into();
-            Ok(Self { bytes, mime })
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-struct CacheMetadata {
-    mime: Option<String>,
-}
-
-type Entry = Poll<Result<CachedFile, String>>;
-
-struct HttpCacheEntry {
-    uri: String,
-    entry: Entry,
-}
-
-pub struct PersistentHttpLoader {
-    cache: Arc<Mutex<Vec<HttpCacheEntry>>>,
-    cache_dir: PathBuf,
-}
-
-impl PersistentHttpLoader {
-    pub const ID: &'static str = egui::generate_loader_id!(PersistentHttpLoader);
-
-    pub fn new(cache_dir: PathBuf) -> Self {
-        Self {
-            cache: Arc::new(Mutex::new(Vec::new())),
-            cache_dir,
-        }
-    }
-
-    fn cache_paths(&self, uri: &str) -> (PathBuf, PathBuf) {
-        let key = cache_key(uri);
-        let body = self.cache_dir.join(format!("{key}.{CACHE_BODY_EXTENSION}"));
-        let meta = self.cache_dir.join(format!("{key}.{CACHE_META_EXTENSION}"));
-        (body, meta)
-    }
-
-    fn read_from_disk(&self, uri: &str) -> Option<CachedFile> {
-        let (body_path, meta_path) = self.cache_paths(uri);
-        read_cached_file(&body_path, &meta_path)
-    }
-
-    #[cfg(test)]
-    fn write_to_disk(&self, uri: &str, file: &CachedFile) -> anyhow::Result<()> {
-        let (body_path, meta_path) = self.cache_paths(uri);
-        write_cached_file(&body_path, &meta_path, file)
-    }
-
-    fn remove_from_disk(&self, uri: &str) {
-        let (body_path, meta_path) = self.cache_paths(uri);
-        remove_cache_file(&body_path, &meta_path);
-    }
-}
-
-impl Default for PersistentHttpLoader {
-    fn default() -> Self {
-        Self::new(default_http_cache_dir())
-    }
-}
-
-impl BytesLoader for PersistentHttpLoader {
-    fn id(&self) -> &str {
-        Self::ID
-    }
-
-    fn load(&self, ctx: &Context, uri: &str) -> BytesLoadResult {
-        if !is_http_uri(uri) {
-            return Err(LoadError::NotSupported);
-        }
-
-        let mut cache = self.cache.lock();
-        if let Some(entry) = cache.iter().find(|e| e.uri == uri).map(|e| e.entry.clone()) {
-            return entry_to_bytes_result(entry);
-        }
-
-        if let Some(file) = self.read_from_disk(uri) {
-            let entry = Poll::Ready(Ok(file.clone()));
-            cache.push(HttpCacheEntry {
-                uri: uri.to_owned(),
-                entry: entry.clone(),
-            });
-            return entry_to_bytes_result(entry);
-        }
-
-        let uri = uri.to_owned();
-        cache.push(HttpCacheEntry {
-            uri: uri.clone(),
-            entry: Poll::Pending,
-        });
-        drop(cache);
-
-        let cache = Arc::clone(&self.cache);
-        let cache_dir = self.cache_dir.clone();
-        let repaint_ctx = ctx.clone();
-        ehttp::fetch(ehttp::Request::get(uri.clone()), move |response| {
-            let result = process_fetch_response(&uri, &cache_dir, response);
-
-            let repaint = {
-                let mut cache = cache.lock();
-                if let Some(entry) = cache.iter_mut().find(|e| e.uri == uri) {
-                    entry.entry = Poll::Ready(result);
-                    true
-                } else {
-                    false
-                }
-            };
-
-            if repaint {
-                repaint_ctx.request_repaint();
-            }
-        });
-
-        Ok(BytesPoll::Pending { size: None })
-    }
-
-    fn forget(&self, uri: &str) {
-        self.cache.lock().retain(|e| e.uri != uri);
-        self.remove_from_disk(uri);
-    }
-
-    fn forget_all(&self) {
-        self.cache.lock().clear();
-
-        // macOS "Directory not empty" (os error 66) is often caused by Spotlight or Finder
-        // trying to index the directory while `remove_dir_all` attempts to delete the root folder.
-        // To safely clear the cache, we only delete its contents and keep the root directory intact.
-        if let Ok(entries) = std::fs::read_dir(&self.cache_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    if let Err(err) = std::fs::remove_dir_all(&path) {
-                        tracing::warn!("Failed to clear cache subdir {}: {err}", path.display());
-                    }
-                } else if let Err(err) = std::fs::remove_file(&path) {
-                    tracing::warn!("Failed to delete cache file {}: {err}", path.display());
-                }
-            }
-        }
-    }
-
-    fn byte_size(&self) -> usize {
-        self.cache
-            .lock()
-            .iter()
-            .map(|e| match &e.entry {
-                Poll::Ready(Ok(file)) => {
-                    file.bytes.len() + file.mime.as_ref().map_or(0, String::len)
-                }
-                Poll::Ready(Err(err)) => err.len(),
-                Poll::Pending => 0,
-            })
-            .sum()
-    }
-
-    fn has_pending(&self) -> bool {
-        self.cache.lock().iter().any(|e| e.entry.is_pending())
-    }
-}
-
-fn entry_to_bytes_result(entry: Entry) -> BytesLoadResult {
-    match entry {
-        Poll::Ready(Ok(file)) => Ok(BytesPoll::Ready {
-            size: None,
-            bytes: Bytes::Shared(file.bytes),
-            mime: file.mime,
-        }),
-        Poll::Ready(Err(err)) => Err(LoadError::Loading(err)),
-        Poll::Pending => Ok(BytesPoll::Pending { size: None }),
-    }
-}
-
-/// Extracted from the `ehttp::fetch` callback to make the logic testable.
-///
-/// Converts a raw HTTP result into a `CachedFile`, persisting successful
-/// responses to the disk cache.
-fn process_fetch_response(
-    uri: &str,
-    cache_dir: &Path,
-    response: ehttp::Result<ehttp::Response>,
-) -> Result<CachedFile, String> {
-    match response {
-        Ok(response) => CachedFile::from_response(uri, response).inspect(|file| {
-            if let Err(err) = write_cached_file_for_uri(cache_dir, uri, file) {
-                tracing::warn!("Failed to persist HTTP image cache for {uri}: {err}");
-            }
-        }),
-        Err(err) => {
-            tracing::error!("Failed to load {uri:?}: {err}");
-            Err(format!("Failed to load {uri:?}"))
-        }
-    }
-}
-
-fn is_http_uri(uri: &str) -> bool {
-    uri.starts_with(HTTP_PROTOCOL) || uri.starts_with(HTTPS_PROTOCOL)
-}
-
-fn default_http_cache_dir() -> PathBuf {
-    dirs::cache_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join(CACHE_NAMESPACE_DIR)
-        .join(HTTP_IMAGE_CACHE_DIR)
-}
-
-fn cache_key(uri: &str) -> String {
-    let digest = Sha256::digest(uri.as_bytes());
-    let mut key = String::with_capacity(digest.len() * 2);
-    for byte in digest {
-        let _ = write!(&mut key, "{byte:02x}");
-    }
-    key
-}
-
-fn write_cached_file_for_uri(cache_dir: &Path, uri: &str, file: &CachedFile) -> anyhow::Result<()> {
-    let key = cache_key(uri);
-    let body_path = cache_dir.join(format!("{key}.{CACHE_BODY_EXTENSION}"));
-    let meta_path = cache_dir.join(format!("{key}.{CACHE_META_EXTENSION}"));
-    write_cached_file(&body_path, &meta_path, file)
-}
-
-fn write_cached_file(body_path: &Path, meta_path: &Path, file: &CachedFile) -> anyhow::Result<()> {
-    if let Some(parent) = body_path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-
-    std::fs::write(body_path, &file.bytes)?;
-    let metadata = CacheMetadata {
-        mime: file.mime.clone(),
-    };
-    let meta_json = serde_json::to_vec(&metadata)?;
-    std::fs::write(meta_path, meta_json)?;
-    Ok(())
-}
-
-fn read_cached_file(body_path: &Path, meta_path: &Path) -> Option<CachedFile> {
-    let bytes = std::fs::read(body_path).ok()?;
-    let metadata = std::fs::read(meta_path)
-        .ok()
-        .and_then(|raw| serde_json::from_slice::<CacheMetadata>(&raw).ok())?;
-    Some(CachedFile {
-        bytes: bytes.into(),
-        mime: metadata.mime,
-    })
-}
-
-fn remove_cache_file(body_path: &Path, meta_path: &Path) {
-    for path in vec![body_path, meta_path] {
-        if let Err(err) = std::fs::remove_file(path) {
-            if err.kind() != std::io::ErrorKind::NotFound {
-                tracing::warn!("Failed to remove cache file {}: {err}", path.display());
-            }
-        }
-    }
-}
-
+#![cfg(test)]
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::http_cache_loader::disk::{
+        cache_key, read_cached_file, remove_cache_file, write_cached_file_for_uri,
+        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION,
+    };
+    use crate::http_cache_loader::fetch::{entry_to_bytes_result, process_fetch_response};
+    use crate::http_cache_loader::loader::PersistentHttpLoader;
+    use crate::http_cache_loader::types::{CachedFile, HttpCacheEntry};
+    use egui::load::{BytesLoader, BytesPoll};
+    use egui::Context;
+    use std::sync::Arc;
+    use std::task::Poll;
     use tempfile::TempDir;
 
     fn sample_file() -> CachedFile {
@@ -356,8 +66,8 @@ mod tests {
         loader.write_to_disk(uri, &file).expect("write cache");
         loader.forget(uri);
 
-        assert!(!body_path.exists());
-        assert!(!meta_path.exists());
+        assert!(!std::path::Path::new(&body_path).exists());
+        assert!(!std::path::Path::new(&meta_path).exists());
     }
 
     #[test]
@@ -404,7 +114,7 @@ mod tests {
         let result = CachedFile::from_response("https://example.com/img.svg", response);
         match result {
             Err(err) => {
-                assert!(err.contains("404"));
+                assert!(err.to_string().contains("404"));
                 assert!(err.contains("page not found"));
             }
             Ok(_) => panic!("should fail for non-ok response"),
@@ -432,7 +142,7 @@ mod tests {
     #[test]
     fn entry_to_bytes_result_ready_ok() {
         let file = sample_file();
-        let entry: Entry = Poll::Ready(Ok(file.clone()));
+        let entry: crate::http_cache_loader::types::Entry = Poll::Ready(Ok(file.clone()));
         let result = entry_to_bytes_result(entry).expect("should be ok");
         match result {
             BytesPoll::Ready { bytes, mime, .. } => {
@@ -445,14 +155,15 @@ mod tests {
 
     #[test]
     fn entry_to_bytes_result_ready_err() {
-        let entry: Entry = Poll::Ready(Err("load failed".to_string()));
+        let entry: crate::http_cache_loader::types::Entry =
+            Poll::Ready(Err("load failed".to_string()));
         let result = entry_to_bytes_result(entry);
         assert!(result.is_err());
     }
 
     #[test]
     fn entry_to_bytes_result_pending() {
-        let entry: Entry = Poll::Pending;
+        let entry: crate::http_cache_loader::types::Entry = Poll::Pending;
         let result = entry_to_bytes_result(entry).expect("Pending is not an error");
         assert!(matches!(result, BytesPoll::Pending { .. }));
     }
@@ -475,7 +186,7 @@ mod tests {
         let file = sample_file();
 
         // Pre-populate the in-memory cache
-        loader.cache.lock().push(HttpCacheEntry {
+        loader.get_cache_mutex().lock().push(HttpCacheEntry {
             uri: uri.to_owned(),
             entry: Poll::Ready(Ok(file.clone())),
         });
@@ -509,7 +220,7 @@ mod tests {
         let file = sample_file();
 
         {
-            let mut cache = loader.cache.lock();
+            let mut cache = loader.get_cache_mutex().lock();
             cache.push(HttpCacheEntry {
                 uri: "ok".to_owned(),
                 entry: Poll::Ready(Ok(file.clone())),
@@ -536,7 +247,7 @@ mod tests {
         let loader = PersistentHttpLoader::new(tmp.path().to_path_buf());
         assert!(!loader.has_pending());
 
-        loader.cache.lock().push(HttpCacheEntry {
+        loader.get_cache_mutex().lock().push(HttpCacheEntry {
             uri: "pending".to_owned(),
             entry: Poll::Pending,
         });
@@ -552,13 +263,13 @@ mod tests {
         loader
             .write_to_disk("https://example.com/a.svg", &file)
             .expect("write");
-        loader.cache.lock().push(HttpCacheEntry {
+        loader.get_cache_mutex().lock().push(HttpCacheEntry {
             uri: "a".to_owned(),
             entry: Poll::Ready(Ok(file)),
         });
 
         loader.forget_all();
-        assert!(loader.cache.lock().is_empty());
+        assert!(loader.get_cache_mutex().lock().is_empty());
         // cache_dir itself should be KEPT, but its contents should be removed
         assert!(tmp.path().exists());
         assert_eq!(std::fs::read_dir(tmp.path()).unwrap().count(), 0);
