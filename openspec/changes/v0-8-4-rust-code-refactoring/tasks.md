@@ -214,7 +214,9 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 5.5 `theme/migration.rs`（262行）の分割
   - `migration/mod.rs`、`migration/constants.rs`、`migration/legacy_types.rs`に分割してモジュール化
 
-- [ ] 5.6 `cache.rs`（291行）の分割
+- [x] 5.6 `cache.rs`（291行）の分割
+  - `DefaultCacheService` を `cache/default.rs` へ分離
+  - `InMemoryCacheService` を `cache/memory.rs` へ分離
 
 - [ ] 5.7 `filesystem.rs`（279行）の分割
 

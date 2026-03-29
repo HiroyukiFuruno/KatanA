@@ -1,28 +1,9 @@
-//! General-purpose caching facade for Katana.
-//!
-//! Provides both an in-memory ephemeral cache and a persistent on-disk cache.
-
-use serde::{Deserialize, Serialize};
+use crate::cache::{read_guard, write_guard, CacheFacade, PersistentData};
 use std::path::PathBuf;
-use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::RwLock;
 
-/// A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
-pub trait CacheFacade: Send + Sync {
-    /// Retrieves a value from the in-memory cache.
-    fn get_memory(&self, key: &str) -> Option<String>;
-    /// Stores a value in the in-memory cache. Note: this does not persist across application restarts.
-    fn set_memory(&self, key: &str, value: String);
-
-    /// Retrieves a value from the persistent cache.
-    fn get_persistent(&self, key: &str) -> Option<String>;
-    /// Stores a value in the persistent cache, syncing to disk.
-    fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()>;
-}
-
-#[derive(Serialize, Deserialize, Default)]
-struct PersistentData {
-    entries: Vec<(String, String)>,
-}
+// WHY: Extracted from monolithic cache module to provide file-based persistent cache functionality.
+// SAFETY: Implements thread-safe locking mechanisms via RwLock and gracefully handles OS cache paths.
 
 /// The default implementation of the `CacheFacade` using a JSON file for persistence.
 pub struct DefaultCacheService {
@@ -96,14 +77,6 @@ impl DefaultCacheService {
     }
 }
 
-fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
-    lock.read().unwrap_or_else(PoisonError::into_inner)
-}
-
-fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
-    lock.write().unwrap_or_else(PoisonError::into_inner)
-}
-
 impl Default for DefaultCacheService {
     fn default() -> Self {
         Self::with_default_path()
@@ -143,44 +116,6 @@ impl CacheFacade for DefaultCacheService {
             }
         }
         self.save_persistent()
-    }
-}
-
-/// An in-memory only CacheFacade for tests.
-#[derive(Default)]
-pub struct InMemoryCacheService {
-    memory: RwLock<Vec<(String, String)>>,
-    persistent: RwLock<Vec<(String, String)>>,
-}
-
-impl CacheFacade for InMemoryCacheService {
-    fn get_memory(&self, key: &str) -> Option<String> {
-        let map = read_guard(&self.memory);
-        map.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
-    }
-
-    fn set_memory(&self, key: &str, value: String) {
-        let mut map = write_guard(&self.memory);
-        if let Some(pos) = map.iter().position(|(k, _)| k == key) {
-            map[pos].1 = value;
-        } else {
-            map.push((key.to_string(), value));
-        }
-    }
-
-    fn get_persistent(&self, key: &str) -> Option<String> {
-        let data = read_guard(&self.persistent);
-        data.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
-    }
-
-    fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()> {
-        let mut data = write_guard(&self.persistent);
-        if let Some(pos) = data.iter().position(|(k, _)| k == key) {
-            data[pos].1 = value;
-        } else {
-            data.push((key.to_string(), value));
-        }
-        Ok(())
     }
 }
 
@@ -255,23 +190,6 @@ mod tests {
 
         // Cover dirs::cache_dir() invocation mapping
         DefaultCacheService::clear_all_directories();
-    }
-
-    #[test]
-    fn test_in_memory_cache_service() {
-        let cache = InMemoryCacheService::default();
-
-        assert_eq!(cache.get_memory("test"), None);
-        cache.set_memory("test", "val1".to_string());
-        assert_eq!(cache.get_memory("test"), Some("val1".to_string()));
-        cache.set_memory("test", "val2".to_string());
-        assert_eq!(cache.get_memory("test"), Some("val2".to_string()));
-
-        assert_eq!(cache.get_persistent("pkey"), None);
-        cache.set_persistent("pkey", "pval1".to_string()).unwrap();
-        assert_eq!(cache.get_persistent("pkey"), Some("pval1".to_string()));
-        cache.set_persistent("pkey", "pval2".to_string()).unwrap();
-        assert_eq!(cache.get_persistent("pkey"), Some("pval2".to_string()));
     }
 
     #[test]
