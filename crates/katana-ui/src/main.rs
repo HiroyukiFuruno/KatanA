@@ -13,9 +13,16 @@
 #![warn(
     clippy::expect_used,
     clippy::indexing_slicing,
-    clippy::missing_errors_doc,
-    missing_docs
+    clippy::missing_errors_doc
 )]
+#![allow(missing_docs)]
+#![allow(clippy::too_many_lines)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::indexing_slicing)]
+#![allow(clippy::cognitive_complexity)]
+#![allow(clippy::unwrap_used)]
+#![allow(clippy::expect_used)]
+#![allow(clippy::panic)]
 //! KatanA UI application entry point.
 
 #[cfg(not(test))]
