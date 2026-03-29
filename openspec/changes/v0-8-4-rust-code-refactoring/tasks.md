@@ -237,7 +237,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 全ファイルの関数が30行以下
 - [x] `katana-platform/src` が AST Linter の構造/コーディングルール対象に含まれている
 - [x] `make check` がパス
-- [ ] Execute `/openspec-delivery` workflow
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
@@ -248,9 +248,9 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-- [ ] Restore Task 6 (formerly Task 5) WIP files from stash (`git stash pop` or `git stash apply stash@{...}`)
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Restore Task 6 (formerly Task 5) WIP files from stash (`git stash pop` or `git stash apply stash@{...}`)
 
 ### 6-A. God Object (`KatanaApp`) の解体
 
