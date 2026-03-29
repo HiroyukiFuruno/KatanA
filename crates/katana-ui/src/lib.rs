@@ -36,3 +36,4 @@ pub mod theme_bridge;
 pub mod widgets;
 
 pub mod state;
+pub mod views;

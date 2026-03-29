@@ -1,10 +1,6 @@
-#![allow(unused_imports, dead_code)]
 use katana_platform::SplitDirection;
 
 use crate::app::preview::PreviewOps;
-use crate::app_state::AppAction;
-use crate::app_state::AppState;
-use crate::i18n;
 use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use crate::shell::SPLIT_PREVIEW_PANEL_MIN_WIDTH;
@@ -14,8 +10,6 @@ use crate::theme_bridge;
 use crate::views::panels::editor::render_editor_content;
 use crate::views::panels::preview::preview_panel_id;
 use crate::views::panels::preview::render_preview_content;
-use crate::Icon;
-use egui::{Context, Ui};
 use katana_platform::PaneOrder;
 pub(crate) fn render_split_mode(
     ctx: &egui::Context,

@@ -1,4 +1,3 @@
-#![allow(unused_imports, dead_code)]
 use crate::app_state::{AppAction, AppState, ScrollSource, ViewMode};
 use crate::i18n;
 use crate::preview_pane::{DownloadRequest, PreviewPane};

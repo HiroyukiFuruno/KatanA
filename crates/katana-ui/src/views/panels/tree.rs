@@ -1,14 +1,5 @@
-#![allow(unused_imports, dead_code)]
-use crate::app_state::AppAction;
-use crate::app_state::AppState;
-use crate::shell::KatanaApp;
 use crate::shell_ui::TreeRenderContext;
-use egui::{Context, Ui};
-use katana_core::workspace::Workspace;
 
-use crate::i18n;
-use crate::Icon;
-use std::path::{Path, PathBuf};
 pub(crate) fn render_tree_context_menu(
     ui: &mut egui::Ui,
     path: &std::path::Path,
