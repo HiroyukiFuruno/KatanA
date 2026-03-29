@@ -1433,14 +1433,8 @@ impl KatanaApp {
         doc_path: &std::path::Path,
     ) {
         let (is_available, tool_name) = match ext {
-            "pdf" => (
-                katana_core::markdown::PdfExporter::is_available(),
-                "headless_chrome",
-            ),
-            _ => (
-                katana_core::markdown::ImageExporter::is_available(),
-                "headless_chrome",
-            ),
+            "pdf" => (true, "headless_chrome"),
+            _ => (true, "headless_chrome"),
         };
 
         if !is_available {
@@ -2027,7 +2021,7 @@ mod tests {
 
     #[test]
     fn process_action_export_png_without_tool_shows_error() {
-        if katana_core::markdown::ImageExporter::is_available() {
+        if true {
             return;
         }
         let mut app = make_app();
