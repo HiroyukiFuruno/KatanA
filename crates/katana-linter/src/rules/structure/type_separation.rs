@@ -1,18 +1,21 @@
 use crate::Violation;
 use std::path::Path;
-use syn::{Item, ItemStruct, ItemEnum, ItemImpl, ImplItem};
+use syn::{ImplItem, Item, ItemEnum, ItemImpl, ItemStruct};
 
 pub fn lint_type_separation(path: &Path, syntax: &syn::File) -> Vec<Violation> {
     let max_length_for_mixed_file = 50;
     let mut violations = Vec::new();
 
     let path_str = path.to_string_lossy();
-    if path_str.contains("/tests/") || path_str.ends_with("_test.rs") || path_str.ends_with("tests.rs") {
+    if path_str.contains("/tests/")
+        || path_str.ends_with("_test.rs")
+        || path_str.ends_with("tests.rs")
+    {
         return violations;
     }
 
     let is_whitelisted = is_whitelisted_type_file(&path_str);
-    
+
     let source = match std::fs::read_to_string(path) {
         Ok(s) => s,
         Err(_) => return Vec::new(),
@@ -53,10 +56,11 @@ pub fn lint_type_separation(path: &Path, syntax: &syn::File) -> Vec<Violation> {
     }
 
     if has_pub_type && has_logic_impl {
-        let rel_path = path.strip_prefix(std::env::current_dir().unwrap_or_default())
+        let rel_path = path
+            .strip_prefix(std::env::current_dir().unwrap_or_default())
             .unwrap_or(path)
             .to_path_buf();
-            
+
         violations.push(Violation {
             file: rel_path,
             line: first_pub_type_line,
@@ -71,10 +75,16 @@ pub fn lint_type_separation(path: &Path, syntax: &syn::File) -> Vec<Violation> {
 }
 
 fn is_whitelisted_type_file(path_str: &str) -> bool {
-    if path_str.ends_with("types.rs") || path_str.ends_with("type.rs") || path_str.ends_with("models.rs") || path_str.ends_with("model.rs") || path_str.ends_with("state.rs") {
+    if path_str.ends_with("types.rs")
+        || path_str.ends_with("type.rs")
+        || path_str.ends_with("models.rs")
+        || path_str.ends_with("model.rs")
+        || path_str.ends_with("state.rs")
+    {
         return true;
     }
-    if path_str.contains("/types/") || path_str.contains("/models/") || path_str.contains("/state/") {
+    if path_str.contains("/types/") || path_str.contains("/models/") || path_str.contains("/state/")
+    {
         return true;
     }
     if path_str.ends_with("lib.rs") || path_str.ends_with("main.rs") {
