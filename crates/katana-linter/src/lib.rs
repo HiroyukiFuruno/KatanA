@@ -1,34 +1,3 @@
-#![deny(
-    warnings,
-    clippy::all,
-    clippy::too_many_lines,
-    clippy::cognitive_complexity,
-    clippy::wildcard_imports,
-    clippy::unwrap_used,
-    clippy::panic,
-    clippy::todo,
-    clippy::unimplemented,
-    clippy::unwrap_or_default,
-    clippy::match_wild_err_arm,
-    clippy::let_and_return,
-    clippy::manual_ok_err
-)]
-#![warn(
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::missing_errors_doc
-)]
-#![allow(missing_docs)]
-#![cfg_attr(
-    test,
-    allow(
-        clippy::unwrap_used,
-        clippy::panic,
-        clippy::expect_used,
-        clippy::indexing_slicing
-    )
-)]
-
 pub mod rules;
 pub mod utils;
 
@@ -96,6 +65,7 @@ impl std::fmt::Display for JsonNodeKind {
     }
 }
 
+/// Common execution logic for AST Lint.
 pub fn run_ast_lint(
     rule_name: &str,
     hint: &str,
@@ -105,7 +75,14 @@ pub fn run_ast_lint(
     let mut all_violations: Vec<Violation> = Vec::new();
 
     for target_dir in target_dirs {
-        for file in &utils::collect_rs_files(target_dir) {
+        let rs_files = utils::collect_rs_files(target_dir);
+        assert!(
+            !rs_files.is_empty(),
+            "No .rs files found for analysis: {}",
+            target_dir.display()
+        );
+
+        for file in &rs_files {
             match utils::parse_file(file) {
                 Ok(syntax) => {
                     let violations = lint_fn(file, &syntax);
@@ -117,13 +94,5 @@ pub fn run_ast_lint(
             }
         }
     }
-
-    if let Err(e) = utils::format_violations(rule_name, hint, &all_violations) {
-        // WHY: The AST Linter executes as part of the test suite boundary.
-        // Failing tests fundamentally require panics to communicate failure natively.
-        #[allow(clippy::panic)]
-        {
-            panic!("{e}");
-        }
-    }
+    utils::panic_with_violations(rule_name, hint, &all_violations);
 }

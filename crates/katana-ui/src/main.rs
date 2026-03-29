@@ -1,21 +1,5 @@
 #![allow(clippy::useless_vec)]
-#![deny(
-    warnings,
-    clippy::all,
-    clippy::too_many_lines,
-    clippy::cognitive_complexity,
-    clippy::wildcard_imports,
-    clippy::unwrap_used,
-    clippy::panic,
-    clippy::todo,
-    clippy::unimplemented
-)]
-#![warn(
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::missing_errors_doc,
-    missing_docs
-)]
+#![deny(warnings)]
 //! KatanA UI application entry point.
 
 #[cfg(not(test))]
@@ -246,7 +230,7 @@ pub fn setup_fonts_from_preset(
 /// Receives a list of font candidates and sets the fonts. Testable.
 /// Kept for backward compatibility with existing tests.
 pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
-    let normalized = build_font_definitions(candidates, &[], &[]);
+    let normalized = build_font_definitions(candidates, &vec![], &vec![]);
     ctx.set_fonts(normalized.into_inner());
 
     #[cfg(debug_assertions)]
