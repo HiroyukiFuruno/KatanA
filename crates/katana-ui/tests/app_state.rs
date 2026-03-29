@@ -137,11 +137,16 @@ fn set_active_split_direction_and_pane_order_adds_new_state() {
 
     state.set_active_split_direction(katana_platform::SplitDirection::Horizontal);
     assert_eq!(state.document.tab_split_states.len(), 1);
-    assert_eq!(state.document.tab_split_states[0].state.direction, katana_platform::SplitDirection::Horizontal);
+    assert_eq!(
+        state.document.tab_split_states[0].state.direction,
+        katana_platform::SplitDirection::Horizontal
+    );
 
     state.document.tab_split_states.clear();
     state.set_active_pane_order(katana_platform::PaneOrder::EditorFirst);
     assert_eq!(state.document.tab_split_states.len(), 1);
-    assert_eq!(state.document.tab_split_states[0].state.order, katana_platform::PaneOrder::EditorFirst);
+    assert_eq!(
+        state.document.tab_split_states[0].state.order,
+        katana_platform::PaneOrder::EditorFirst
+    );
 }
-
