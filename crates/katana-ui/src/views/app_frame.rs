@@ -192,33 +192,40 @@ impl<'a> TabToolbar<'a> {
                 let d_path = doc.path.to_string_lossy();
                 let is_changelog = d_path.starts_with("Katana://ChangeLog");
 
-                if !is_changelog {
-                    let doc_path = doc.path.clone();
-                    let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
-                    let rel = relative_full_path(&doc_path, ws_root.as_deref());
-                    let breadcrumb_action =
-                        Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui);
-                    if let Some(a) = breadcrumb_action {
-                        app.pending_action = a;
+                let mut out_action = None;
+                ui.horizontal(|ui| {
+                    if !is_changelog {
+                        let doc_path = doc.path.clone();
+                        let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
+                        let rel = relative_full_path(&doc_path, ws_root.as_deref());
+                        let breadcrumb_action =
+                            Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui);
+                        if let Some(a) = breadcrumb_action {
+                            out_action = Some(a);
+                        }
                     }
-                }
-                let view_action = crate::views::top_bar::ViewModeBar::new(
-                    app.state.active_view_mode(),
-                    is_changelog,
-                    app.state.active_split_direction(),
-                    app.state.active_pane_order(),
-                    app.state
-                        .config
-                        .settings
-                        .settings()
-                        .behavior
-                        .scroll_sync_enabled,
-                    app.state.scroll.sync_override,
-                    app.state.update.available.is_some(),
-                    app.state.update.checking,
-                )
-                .show(ui);
-                if let Some(a) = view_action {
+                    let view_action = crate::views::top_bar::ViewModeBar::new(
+                        app.state.active_view_mode(),
+                        is_changelog,
+                        app.state.active_split_direction(),
+                        app.state.active_pane_order(),
+                        app.state
+                            .config
+                            .settings
+                            .settings()
+                            .behavior
+                            .scroll_sync_enabled,
+                        app.state.scroll.sync_override,
+                        app.state.update.available.is_some(),
+                        app.state.update.checking,
+                    )
+                    .show(ui);
+                    if let Some(a) = view_action {
+                        out_action = Some(a);
+                    }
+                });
+
+                if let Some(a) = out_action {
                     app.pending_action = a;
                 }
             }
@@ -248,7 +255,7 @@ impl<'a> Breadcrumbs<'a> {
                     ui.add(
                         egui::Image::new(crate::Icon::ChevronRight.uri())
                             .tint(ui.visuals().text_color())
-                            .max_height(CHEVRON_ICON_SIZE),
+                            .fit_to_exact_size(egui::vec2(CHEVRON_ICON_SIZE, CHEVRON_ICON_SIZE)),
                     );
                 }
 
