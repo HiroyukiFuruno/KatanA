@@ -248,52 +248,28 @@ pub(crate) fn render_release_notes_tab(
                     ui.add_space(TAB_TITLE_SPACING);
 
                     for section in sections {
-                        let id = ui.make_persistent_id(&section.version);
-                        let mut state =
-                            egui::collapsing_header::CollapsingState::load_with_default_open(
-                                ui.ctx(),
-                                id,
-                                section.default_open,
-                            );
-
-                        let icon = if state.is_open() { "▼" } else { "▶" };
-                        let text = format!("{} {}", icon, section.heading);
-
-                        let response = ui.add(
-                            egui::Label::new(egui::RichText::new(text).strong())
-                                .sense(egui::Sense::click()),
-                        );
-
-                        if response.hovered() {
-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-
-                            let stroke = egui::Stroke::new(1.0, ui.visuals().strong_text_color());
-                            const UNDERLINE_Y_OFFSET: f32 = 1.5;
-                            let underline_y = response.rect.max.y - UNDERLINE_Y_OFFSET;
-                            ui.painter()
-                                .hline(response.rect.x_range(), underline_y, stroke);
-                        }
-
-                        if response.clicked() {
-                            state.toggle(ui);
-                        }
-
-                        state.show_body_indented(&response, ui, |ui| {
-                            egui::Frame::default()
-                                .inner_margin(egui::Margin::symmetric(
-                                    TAB_INNER_MARGIN_X,
-                                    TAB_INNER_MARGIN_Y,
-                                ))
-                                .show(ui, |ui| {
-                                    // Render body as markdown
-                                    let mut cache = egui_commonmark::CommonMarkCache::default();
-                                    egui_commonmark::CommonMarkViewer::new().show(
-                                        ui,
-                                        &mut cache,
-                                        &section.body,
-                                    );
-                                });
-                        });
+                        crate::widgets::Accordion::new(
+                            &section.version,
+                            egui::RichText::new(&section.heading).strong(),
+                            |ui| {
+                                egui::Frame::default()
+                                    .inner_margin(egui::Margin::symmetric(
+                                        TAB_INNER_MARGIN_X,
+                                        TAB_INNER_MARGIN_Y,
+                                    ))
+                                    .show(ui, |ui| {
+                                        // Render body as markdown
+                                        let mut cache = egui_commonmark::CommonMarkCache::default();
+                                        egui_commonmark::CommonMarkViewer::new().show(
+                                            ui,
+                                            &mut cache,
+                                            &section.body,
+                                        );
+                                    });
+                            },
+                        )
+                        .default_open(section.default_open)
+                        .show(ui);
 
                         ui.add_space(2.0);
                     }

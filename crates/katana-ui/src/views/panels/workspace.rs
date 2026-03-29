@@ -1,8 +1,7 @@
 use crate::app_state::{AppAction, AppState};
 use crate::shell::{
-    ACTIVE_FILE_HIGHLIGHT_ROUNDING, FILE_TREE_PANEL_DEFAULT_WIDTH, FILE_TREE_PANEL_MIN_WIDTH,
-    NO_WORKSPACE_BOTTOM_SPACING, RECENT_WORKSPACES_ITEM_SPACING, RECENT_WORKSPACES_SPACING,
-    TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT,
+    ACTIVE_FILE_HIGHLIGHT_ROUNDING, NO_WORKSPACE_BOTTOM_SPACING, RECENT_WORKSPACES_ITEM_SPACING,
+    RECENT_WORKSPACES_SPACING, TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT,
 };
 use crate::shell_ui::{
     indent_prefix, invisible_label, open_folder_dialog, TreeRenderContext,
@@ -21,221 +20,201 @@ impl<'a> WorkspacePanel<'a> {
         Self { state, action }
     }
 
-    pub fn show(self, ctx: &egui::Context) {
+    pub fn show(self, ui: &mut egui::Ui) {
         let state = self.state;
         let action = self.action;
-        egui::SidePanel::left("workspace_tree")
-            .resizable(true)
-            .min_width(FILE_TREE_PANEL_MIN_WIDTH)
-            .default_width(FILE_TREE_PANEL_DEFAULT_WIDTH)
-            .show(ctx, |ui| {
-                let panel_width = ui.available_width();
-                ui.set_max_width(panel_width);
-                ui.set_min_width(panel_width);
-                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-                ui.horizontal(|ui| {
-                    ui.heading(crate::i18n::get().workspace.workspace_title.clone());
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui
-                            .add(egui::Button::image(
-                                crate::icon::Icon::ChevronLeft
-                                    .ui_image(ui, crate::icon::IconSize::Small),
-                            ))
-                            .on_hover_text(crate::i18n::get().action.collapse_sidebar.clone())
-                            .clicked()
-                        {
-                            state.layout.show_workspace = false;
-                        }
-                    });
-                });
-                if state.workspace.data.is_some() {
-                    ui.horizontal(|ui| {
-                        let btn_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
-                            .on_hover_text(crate::i18n::get().action.expand_all.clone());
-                        btn_resp.widget_info(|| {
-                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
-                        });
-                        if btn_resp.clicked() {
-                            if let Some(ws) = &state.workspace.data {
-                                state
-                                    .workspace
-                                    .expanded_directories
-                                    .extend(ws.collect_all_directory_paths());
-                            }
-                        }
-                        let btn_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
-                            .on_hover_text(crate::i18n::get().action.collapse_all.clone());
-                        btn_resp.widget_info(|| {
-                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
-                        });
-                        if btn_resp.clicked() {
-                            state.workspace.force_tree_open = Some(false);
-                        }
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            let icon_bg = if ui.visuals().dark_mode {
-                                crate::theme_bridge::TRANSPARENT
-                            } else {
-                                crate::theme_bridge::from_gray(LIGHT_MODE_ICON_BG)
-                                // Always gray for icons in light mode
-                            };
-
-                            if !state.config.settings.settings().workspace.paths.is_empty() {
-                                let ws_history_img = crate::Icon::Document
-                                    .ui_image(ui, crate::icon::IconSize::Small);
-                                ui.scope(|ui| {
-                                    ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
-                                    ui.menu_image_button(ws_history_img, |ui| {
-                                        for path in state
-                                            .config
-                                            .settings
-                                            .settings()
-                                            .workspace
-                                            .paths
-                                            .iter()
-                                            .rev()
-                                        {
-                                            ui.horizontal(|ui| {
-                                                if ui
-                                                    .add(egui::Button::image_and_text(
-                                                        crate::Icon::Remove.ui_image(
-                                                            ui,
-                                                            crate::icon::IconSize::Small,
-                                                        ),
-                                                        invisible_label("x"),
-                                                    ))
-                                                    .on_hover_text(
-                                                        crate::i18n::get()
-                                                            .action
-                                                            .remove_workspace
-                                                            .clone(),
-                                                    )
-                                                    .clicked()
-                                                {
-                                                    *action =
-                                                        AppAction::RemoveWorkspace(path.clone());
-                                                    ui.close();
-                                                }
-                                                if ui.selectable_label(false, path).clicked() {
-                                                    *action = AppAction::OpenWorkspace(
-                                                        std::path::PathBuf::from(path),
-                                                    );
-                                                    ui.close();
-                                                }
-                                            });
-                                        }
-                                    })
-                                    .response
-                                    .on_hover_text(
-                                        crate::i18n::get().workspace.recent_workspaces.clone(),
-                                    );
-                                });
-                            }
-
-                            if ui
-                                .add(
-                                    egui::Button::image_and_text(
-                                        crate::Icon::Refresh
-                                            .ui_image(ui, crate::icon::IconSize::Small),
-                                        invisible_label("🔄"),
-                                    )
-                                    .fill(icon_bg),
-                                )
-                                .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
-                                .clicked()
-                            {
-                                *action = AppAction::RefreshWorkspace;
-                            }
-
-                            let filter_btn_color = if state.search.filter_enabled {
-                                if ui.visuals().dark_mode {
-                                    ui.visuals().selection.bg_fill
-                                } else {
-                                    crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
-                                    // Darker gray when active in light mode
-                                }
-                            } else {
-                                icon_bg
-                            };
-
-                            if ui
-                                .add(
-                                    egui::Button::image_and_text(
-                                        crate::Icon::Filter
-                                            .ui_image(ui, crate::icon::IconSize::Small),
-                                        invisible_label("\u{2207}"),
-                                    )
-                                    .fill(filter_btn_color),
-                                )
-                                .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
-                                .clicked()
-                            {
-                                state.search.filter_enabled = !state.search.filter_enabled;
-                            }
-
-                            if ui
-                                .add(
-                                    egui::Button::image_and_text(
-                                        crate::Icon::Search
-                                            .ui_image(ui, crate::icon::IconSize::Small),
-                                        invisible_label("🔍"),
-                                    )
-                                    .fill(icon_bg),
-                                )
-                                .on_hover_text(crate::i18n::get().search.modal_title.clone())
-                                .clicked()
-                            {
-                                state.layout.show_search_modal = true;
-                            }
-                        });
-                    });
-
-                    if state.search.filter_enabled {
-                        let mut is_valid_regex = true;
-                        if !state.search.filter_query.is_empty() {
-                            is_valid_regex = regex::Regex::new(&state.search.filter_query).is_ok();
-                        }
-                        ui.horizontal(|ui| {
-                            let text_color = if is_valid_regex {
-                                ui.visuals().text_color()
-                            } else {
-                                ui.ctx()
-                                    .data(|d| {
-                                        d.get_temp::<katana_platform::theme::ThemeColors>(
-                                            egui::Id::new("katana_theme_colors"),
-                                        )
-                                    })
-                                    .map_or(crate::theme_bridge::WHITE, |tc| {
-                                        crate::theme_bridge::rgb_to_color32(tc.system.error_text)
-                                    })
-                            };
-                            ui.add(
-                                egui::TextEdit::singleline(&mut state.search.filter_query)
-                                    .text_color(text_color)
-                                    .hint_text("Filter (Regex)...")
-                                    .desired_width(f32::INFINITY),
-                            );
-                        });
-                    }
-                }
-                ui.separator();
-                if state.workspace.is_loading {
-                    ui.add_space(WORKSPACE_SPINNER_OUTER_MARGIN);
-                    ui.horizontal(|ui| {
-                        ui.add_space(WORKSPACE_SPINNER_INNER_MARGIN);
-                        ui.spinner();
-                        ui.add_space(WORKSPACE_SPINNER_TEXT_MARGIN);
-                        ui.label(crate::i18n::get().action.refresh_workspace.clone());
-                    });
-                } else {
-                    WorkspaceContent::new(state, action).show(ui);
+        let panel_width = ui.available_width();
+        ui.set_max_width(panel_width);
+        ui.set_min_width(panel_width);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+        ui.horizontal(|ui| {
+            ui.heading(crate::i18n::get().workspace.workspace_title.clone());
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui
+                    .add(egui::Button::image(
+                        crate::icon::Icon::ChevronLeft.ui_image(ui, crate::icon::IconSize::Small),
+                    ))
+                    .on_hover_text(crate::i18n::get().action.collapse_sidebar.clone())
+                    .clicked()
+                {
+                    state.layout.show_workspace = false;
                 }
             });
+        });
+        if state.workspace.data.is_some() {
+            ui.horizontal(|ui| {
+                let btn_resp = ui
+                    .add(egui::Button::image(
+                        crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
+                    ))
+                    .on_hover_text(crate::i18n::get().action.expand_all.clone());
+                btn_resp
+                    .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+"));
+                if btn_resp.clicked() {
+                    if let Some(ws) = &state.workspace.data {
+                        state
+                            .workspace
+                            .expanded_directories
+                            .extend(ws.collect_all_directory_paths());
+                    }
+                }
+                let btn_resp = ui
+                    .add(egui::Button::image(
+                        crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
+                    ))
+                    .on_hover_text(crate::i18n::get().action.collapse_all.clone());
+                btn_resp
+                    .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-"));
+                if btn_resp.clicked() {
+                    state.workspace.force_tree_open = Some(false);
+                }
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let icon_bg = if ui.visuals().dark_mode {
+                        crate::theme_bridge::TRANSPARENT
+                    } else {
+                        crate::theme_bridge::from_gray(LIGHT_MODE_ICON_BG)
+                        // Always gray for icons in light mode
+                    };
+
+                    if !state.config.settings.settings().workspace.paths.is_empty() {
+                        let ws_history_img =
+                            crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Small);
+                        ui.scope(|ui| {
+                            ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
+                            ui.menu_image_button(ws_history_img, |ui| {
+                                for path in state
+                                    .config
+                                    .settings
+                                    .settings()
+                                    .workspace
+                                    .paths
+                                    .iter()
+                                    .rev()
+                                {
+                                    ui.horizontal(|ui| {
+                                        if ui
+                                            .add(egui::Button::image_and_text(
+                                                crate::Icon::Remove
+                                                    .ui_image(ui, crate::icon::IconSize::Small),
+                                                invisible_label("x"),
+                                            ))
+                                            .on_hover_text(
+                                                crate::i18n::get().action.remove_workspace.clone(),
+                                            )
+                                            .clicked()
+                                        {
+                                            *action = AppAction::RemoveWorkspace(path.clone());
+                                            ui.close();
+                                        }
+                                        if ui.selectable_label(false, path).clicked() {
+                                            *action = AppAction::OpenWorkspace(
+                                                std::path::PathBuf::from(path),
+                                            );
+                                            ui.close();
+                                        }
+                                    });
+                                }
+                            })
+                            .response
+                            .on_hover_text(crate::i18n::get().workspace.recent_workspaces.clone());
+                        });
+                    }
+
+                    if ui
+                        .add(
+                            egui::Button::image_and_text(
+                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
+                                invisible_label("🔄"),
+                            )
+                            .fill(icon_bg),
+                        )
+                        .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
+                        .clicked()
+                    {
+                        *action = AppAction::RefreshWorkspace;
+                    }
+
+                    let filter_btn_color = if state.search.filter_enabled {
+                        if ui.visuals().dark_mode {
+                            ui.visuals().selection.bg_fill
+                        } else {
+                            crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
+                            // Darker gray when active in light mode
+                        }
+                    } else {
+                        icon_bg
+                    };
+
+                    if ui
+                        .add(
+                            egui::Button::image_and_text(
+                                crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
+                                invisible_label("\u{2207}"),
+                            )
+                            .fill(filter_btn_color),
+                        )
+                        .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
+                        .clicked()
+                    {
+                        state.search.filter_enabled = !state.search.filter_enabled;
+                    }
+
+                    if ui
+                        .add(
+                            egui::Button::image_and_text(
+                                crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Small),
+                                invisible_label("🔍"),
+                            )
+                            .fill(icon_bg),
+                        )
+                        .on_hover_text(crate::i18n::get().search.modal_title.clone())
+                        .clicked()
+                    {
+                        state.layout.show_search_modal = true;
+                    }
+                });
+            });
+
+            if state.search.filter_enabled {
+                let mut is_valid_regex = true;
+                if !state.search.filter_query.is_empty() {
+                    is_valid_regex = regex::Regex::new(&state.search.filter_query).is_ok();
+                }
+                ui.horizontal(|ui| {
+                    let text_color = if is_valid_regex {
+                        ui.visuals().text_color()
+                    } else {
+                        ui.ctx()
+                            .data(|d| {
+                                d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                                    "katana_theme_colors",
+                                ))
+                            })
+                            .map_or(crate::theme_bridge::WHITE, |tc| {
+                                crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                            })
+                    };
+                    ui.add(
+                        egui::TextEdit::singleline(&mut state.search.filter_query)
+                            .text_color(text_color)
+                            .hint_text("Filter (Regex)...")
+                            .desired_width(f32::INFINITY),
+                    );
+                });
+            }
+        }
+        ui.separator();
+        if state.workspace.is_loading {
+            ui.add_space(WORKSPACE_SPINNER_OUTER_MARGIN);
+            ui.horizontal(|ui| {
+                ui.add_space(WORKSPACE_SPINNER_INNER_MARGIN);
+                ui.spinner();
+                ui.add_space(WORKSPACE_SPINNER_TEXT_MARGIN);
+                ui.label(crate::i18n::get().action.refresh_workspace.clone());
+            });
+        } else {
+            WorkspaceContent::new(state, action).show(ui);
+        }
     }
 }
 

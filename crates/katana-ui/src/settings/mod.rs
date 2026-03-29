@@ -88,169 +88,187 @@ pub(crate) use self::tabs::theme::*;
 pub(crate) use self::tabs::updates::*;
 pub(crate) use self::tabs::workspace::*;
 
-pub(crate) fn render_settings_window(
-    ctx: &egui::Context,
-    state: &mut crate::app_state::AppState,
-    preview_pane: &mut PreviewPane,
-) -> Option<AppAction> {
-    if !state.layout.show_settings {
-        return None;
+pub(crate) struct SettingsWindow<'a> {
+    pub state: &'a mut crate::app_state::AppState,
+    pub preview_pane: &'a mut PreviewPane,
+}
+
+impl<'a> SettingsWindow<'a> {
+    pub fn new(
+        state: &'a mut crate::app_state::AppState,
+        preview_pane: &'a mut PreviewPane,
+    ) -> Self {
+        Self {
+            state,
+            preview_pane,
+        }
     }
 
-    let mut triggered_action: Option<AppAction> = None;
+    pub fn show(self, ctx: &egui::Context) -> Option<AppAction> {
+        let state = self.state;
+        let preview_pane = self.preview_pane;
 
-    // Ensure preview pane has content loaded
-    if preview_pane.sections.is_empty() {
-        preview_pane.update_markdown_sections(
-            SAMPLE_MARKDOWN,
-            std::path::Path::new("/settings-preview.md"),
-        );
-    }
+        if !state.layout.show_settings {
+            return None;
+        }
 
-    let mut open = state.layout.show_settings;
-    egui::Window::new(crate::i18n::get().settings.title.clone())
-        .open(&mut open)
-        .fixed_size(egui::vec2(
-            SETTINGS_WINDOW_DEFAULT_WIDTH,
-            SETTINGS_WINDOW_DEFAULT_HEIGHT,
-        ))
-        .collapsible(false)
-        .resizable(false)
-        .show(ctx, |ui| {
-            ui.set_min_width(SETTINGS_WINDOW_DEFAULT_WIDTH);
-            ui.set_min_height(SETTINGS_WINDOW_DEFAULT_HEIGHT);
+        let mut triggered_action: Option<AppAction> = None;
 
-            egui::SidePanel::left("settings_left_panel")
-                .resizable(false)
-                .min_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
-                .max_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
-                .show_inside(ui, |ui| {
-                    // Expand All / Collapse All toolbar
-                    ui.horizontal(|ui| {
+        // Ensure preview pane has content loaded
+        if preview_pane.sections.is_empty() {
+            preview_pane.update_markdown_sections(
+                SAMPLE_MARKDOWN,
+                std::path::Path::new("/settings-preview.md"),
+            );
+        }
+
+        let mut open = state.layout.show_settings;
+        egui::Window::new(crate::i18n::get().settings.title.clone())
+            .open(&mut open)
+            .fixed_size(egui::vec2(
+                SETTINGS_WINDOW_DEFAULT_WIDTH,
+                SETTINGS_WINDOW_DEFAULT_HEIGHT,
+            ))
+            .collapsible(false)
+            .resizable(false)
+            .show(ctx, |ui| {
+                ui.set_min_width(SETTINGS_WINDOW_DEFAULT_WIDTH);
+                ui.set_min_height(SETTINGS_WINDOW_DEFAULT_HEIGHT);
+
+                egui::SidePanel::left("settings_left_panel")
+                    .resizable(false)
+                    .min_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
+                    .max_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
+                    .show_inside(ui, |ui| {
+                        // Expand All / Collapse All toolbar
+                        ui.horizontal(|ui| {
+                            const TAB_SPACING: f32 = 4.0;
+                            ui.add_space(TAB_SPACING);
+                            if ui
+                                .add(egui::Button::image_and_text(
+                                    crate::Icon::ExpandAll
+                                        .ui_image(ui, crate::icon::IconSize::Small),
+                                    "",
+                                ))
+                                .on_hover_text(crate::i18n::get().action.expand_all.clone())
+                                .clicked()
+                            {
+                                state.config.settings_tree_force_open = Some(true);
+                            }
+                            if ui
+                                .add(egui::Button::image_and_text(
+                                    crate::Icon::CollapseAll
+                                        .ui_image(ui, crate::icon::IconSize::Small),
+                                    "",
+                                ))
+                                .on_hover_text(crate::i18n::get().action.collapse_all.clone())
+                                .clicked()
+                            {
+                                state.config.settings_tree_force_open = Some(false);
+                            }
+                        });
                         const TAB_SPACING: f32 = 4.0;
                         ui.add_space(TAB_SPACING);
-                        if ui
-                            .add(egui::Button::image_and_text(
-                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
-                                "",
-                            ))
-                            .on_hover_text(crate::i18n::get().action.expand_all.clone())
-                            .clicked()
-                        {
-                            state.config.settings_tree_force_open = Some(true);
-                        }
-                        if ui
-                            .add(egui::Button::image_and_text(
-                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
-                                "",
-                            ))
-                            .on_hover_text(crate::i18n::get().action.collapse_all.clone())
-                            .clicked()
-                        {
-                            state.config.settings_tree_force_open = Some(false);
-                        }
+                        ui.separator();
+
+                        egui::ScrollArea::vertical()
+                            .id_salt("settings_nav_scroll")
+                            .auto_shrink(false)
+                            .show(ui, |ui| {
+                                render_settings_tree(ui, state);
+                            });
                     });
-                    const TAB_SPACING: f32 = 4.0;
-                    ui.add_space(TAB_SPACING);
-                    ui.separator();
+
+                let show_preview = matches!(
+                    state.config.active_settings_tab,
+                    SettingsTab::Theme | SettingsTab::Font | SettingsTab::Layout
+                );
+
+                if show_preview {
+                    egui::SidePanel::right("settings_right_panel")
+                        .resizable(false)
+                        .min_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
+                        .max_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
+                        .show_inside(ui, |ui| {
+                            section_header(ui, &crate::i18n::get().settings.preview.title);
+                            preview_pane.show(ui);
+                        });
+                }
+
+                egui::CentralPanel::default().show_inside(ui, |ui| {
+                    let tab_messages = &crate::i18n::get().settings.tabs;
+                    let title = match state.config.active_settings_tab {
+                        SettingsTab::Theme => tab_messages
+                            .iter()
+                            .find(|t| t.key == "theme")
+                            .map(|t| t.name.as_str())
+                            .unwrap_or("Theme"),
+                        SettingsTab::Font => tab_messages
+                            .iter()
+                            .find(|t| t.key == "font")
+                            .map(|t| t.name.as_str())
+                            .unwrap_or("Font"),
+                        SettingsTab::Layout => tab_messages
+                            .iter()
+                            .find(|t| t.key == "layout")
+                            .map(|t| t.name.as_str())
+                            .unwrap_or("Layout"),
+                        SettingsTab::Workspace => tab_messages
+                            .iter()
+                            .find(|t| t.key == "workspace")
+                            .map(|t| t.name.as_str())
+                            .unwrap_or("Workspace"),
+                        SettingsTab::Updates => tab_messages
+                            .iter()
+                            .find(|t| t.key == "updates")
+                            .map(|t| t.name.as_str())
+                            .unwrap_or("Updates"),
+                        SettingsTab::Behavior => tab_messages
+                            .iter()
+                            .find(|t| t.key == "behavior")
+                            .map(|t| t.name.as_str())
+                            .unwrap_or("Behavior"),
+                    };
+
+                    section_header(ui, title);
 
                     egui::ScrollArea::vertical()
-                        .id_salt("settings_nav_scroll")
+                        .id_salt("settings_form_scroll")
                         .auto_shrink(false)
                         .show(ui, |ui| {
-                            render_settings_tree(ui, state);
+                            egui::Frame::NONE
+                                .inner_margin(INNER_MARGIN)
+                                .show(ui, |ui| match state.config.active_settings_tab {
+                                    SettingsTab::Theme => {
+                                        render_theme_tab(ui, &mut state.config.settings)
+                                    }
+                                    SettingsTab::Font => {
+                                        render_font_tab(ui, &mut state.config.settings)
+                                    }
+                                    SettingsTab::Layout => render_layout_tab(ui, state),
+                                    SettingsTab::Workspace => render_workspace_tab(ui, state),
+                                    SettingsTab::Updates => {
+                                        if let Some(action) = render_updates_tab(ui, state) {
+                                            triggered_action = Some(action);
+                                        }
+                                    }
+                                    SettingsTab::Behavior => {
+                                        if let Some(action) = render_behavior_tab(ui, state) {
+                                            triggered_action = Some(action);
+                                        }
+                                    }
+                                });
                         });
                 });
 
-            let show_preview = matches!(
-                state.config.active_settings_tab,
-                SettingsTab::Theme | SettingsTab::Font | SettingsTab::Layout
-            );
-
-            if show_preview {
-                egui::SidePanel::right("settings_right_panel")
-                    .resizable(false)
-                    .min_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
-                    .max_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
-                    .show_inside(ui, |ui| {
-                        section_header(ui, &crate::i18n::get().settings.preview.title);
-                        preview_pane.show(ui);
-                    });
-            }
-
-            egui::CentralPanel::default().show_inside(ui, |ui| {
-                let tab_messages = &crate::i18n::get().settings.tabs;
-                let title = match state.config.active_settings_tab {
-                    SettingsTab::Theme => tab_messages
-                        .iter()
-                        .find(|t| t.key == "theme")
-                        .map(|t| t.name.as_str())
-                        .unwrap_or("Theme"),
-                    SettingsTab::Font => tab_messages
-                        .iter()
-                        .find(|t| t.key == "font")
-                        .map(|t| t.name.as_str())
-                        .unwrap_or("Font"),
-                    SettingsTab::Layout => tab_messages
-                        .iter()
-                        .find(|t| t.key == "layout")
-                        .map(|t| t.name.as_str())
-                        .unwrap_or("Layout"),
-                    SettingsTab::Workspace => tab_messages
-                        .iter()
-                        .find(|t| t.key == "workspace")
-                        .map(|t| t.name.as_str())
-                        .unwrap_or("Workspace"),
-                    SettingsTab::Updates => tab_messages
-                        .iter()
-                        .find(|t| t.key == "updates")
-                        .map(|t| t.name.as_str())
-                        .unwrap_or("Updates"),
-                    SettingsTab::Behavior => tab_messages
-                        .iter()
-                        .find(|t| t.key == "behavior")
-                        .map(|t| t.name.as_str())
-                        .unwrap_or("Behavior"),
-                };
-
-                section_header(ui, title);
-
-                egui::ScrollArea::vertical()
-                    .id_salt("settings_form_scroll")
-                    .auto_shrink(false)
-                    .show(ui, |ui| {
-                        egui::Frame::NONE.inner_margin(INNER_MARGIN).show(ui, |ui| {
-                            match state.config.active_settings_tab {
-                                SettingsTab::Theme => {
-                                    render_theme_tab(ui, &mut state.config.settings)
-                                }
-                                SettingsTab::Font => {
-                                    render_font_tab(ui, &mut state.config.settings)
-                                }
-                                SettingsTab::Layout => render_layout_tab(ui, state),
-                                SettingsTab::Workspace => render_workspace_tab(ui, state),
-                                SettingsTab::Updates => {
-                                    if let Some(action) = render_updates_tab(ui, state) {
-                                        triggered_action = Some(action);
-                                    }
-                                }
-                                SettingsTab::Behavior => {
-                                    if let Some(action) = render_behavior_tab(ui, state) {
-                                        triggered_action = Some(action);
-                                    }
-                                }
-                            }
-                        });
-                    });
+                // Clear the force open flag after rendering the tree once
+                if state.config.settings_tree_force_open.is_some() {
+                    state.config.settings_tree_force_open = None;
+                }
             });
-
-            // Clear the force open flag after rendering the tree once
-            if state.config.settings_tree_force_open.is_some() {
-                state.config.settings_tree_force_open = None;
-            }
-        });
-    state.layout.show_settings = open;
-    triggered_action
+        state.layout.show_settings = open;
+        triggered_action
+    }
 }
 // ── Tree Navigation ──────────────────────────────────────────────────
 
@@ -267,44 +285,40 @@ pub(crate) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
         .map(|t| t.name.clone())
         .unwrap_or_else(|| "Appearance".to_string());
 
-    let mut appearance_header = egui::CollapsingHeader::new(
+    crate::widgets::Accordion::new(
+        "settings_grp_appearance",
         egui::RichText::new(title)
             .strong()
             .size(SETTINGS_HEADER_FONT_SIZE),
+        |ui| {
+            let theme_selected = state.config.active_settings_tab == SettingsTab::Theme;
+            if ui
+                .selectable_label(theme_selected, settings_msgs.tab_name("theme"))
+                .clicked()
+            {
+                state.config.active_settings_tab = SettingsTab::Theme;
+            }
+
+            let font_selected = state.config.active_settings_tab == SettingsTab::Font;
+            if ui
+                .selectable_label(font_selected, settings_msgs.tab_name("font"))
+                .clicked()
+            {
+                state.config.active_settings_tab = SettingsTab::Font;
+            }
+
+            let layout_selected = state.config.active_settings_tab == SettingsTab::Layout;
+            if ui
+                .selectable_label(layout_selected, settings_msgs.tab_name("layout"))
+                .clicked()
+            {
+                state.config.active_settings_tab = SettingsTab::Layout;
+            }
+        },
     )
     .default_open(true)
-    .id_salt("settings_grp_appearance")
-    .icon(egui_commonmark::ui_components::centering::AccordionIcon::paint_optically_centered);
-
-    if let Some(force_open) = state.config.settings_tree_force_open {
-        appearance_header = appearance_header.open(Some(force_open));
-    }
-
-    appearance_header.show(ui, |ui| {
-        let theme_selected = state.config.active_settings_tab == SettingsTab::Theme;
-        if ui
-            .selectable_label(theme_selected, settings_msgs.tab_name("theme"))
-            .clicked()
-        {
-            state.config.active_settings_tab = SettingsTab::Theme;
-        }
-
-        let font_selected = state.config.active_settings_tab == SettingsTab::Font;
-        if ui
-            .selectable_label(font_selected, settings_msgs.tab_name("font"))
-            .clicked()
-        {
-            state.config.active_settings_tab = SettingsTab::Font;
-        }
-
-        let layout_selected = state.config.active_settings_tab == SettingsTab::Layout;
-        if ui
-            .selectable_label(layout_selected, settings_msgs.tab_name("layout"))
-            .clicked()
-        {
-            state.config.active_settings_tab = SettingsTab::Layout;
-        }
-    });
+    .open(state.config.settings_tree_force_open)
+    .show(ui);
 
     ui.add_space(SETTINGS_GROUP_SPACING);
 
@@ -317,44 +331,40 @@ pub(crate) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
         .map(|t| t.name.clone())
         .unwrap_or_else(|| "System".to_string());
 
-    let mut system_header = egui::CollapsingHeader::new(
+    crate::widgets::Accordion::new(
+        "settings_grp_system",
         egui::RichText::new(title)
             .strong()
             .size(SETTINGS_HEADER_FONT_SIZE),
+        |ui| {
+            let workspace_selected = state.config.active_settings_tab == SettingsTab::Workspace;
+            if ui
+                .selectable_label(workspace_selected, settings_msgs.tab_name("workspace"))
+                .clicked()
+            {
+                state.config.active_settings_tab = SettingsTab::Workspace;
+            }
+
+            let updates_selected = state.config.active_settings_tab == SettingsTab::Updates;
+            if ui
+                .selectable_label(updates_selected, settings_msgs.tab_name("updates"))
+                .clicked()
+            {
+                state.config.active_settings_tab = SettingsTab::Updates;
+            }
+
+            let behavior_selected = state.config.active_settings_tab == SettingsTab::Behavior;
+            if ui
+                .selectable_label(behavior_selected, settings_msgs.tab_name("behavior"))
+                .clicked()
+            {
+                state.config.active_settings_tab = SettingsTab::Behavior;
+            }
+        },
     )
     .default_open(true)
-    .id_salt("settings_grp_system")
-    .icon(egui_commonmark::ui_components::centering::AccordionIcon::paint_optically_centered);
-
-    if let Some(force_open) = state.config.settings_tree_force_open {
-        system_header = system_header.open(Some(force_open));
-    }
-
-    system_header.show(ui, |ui| {
-        let workspace_selected = state.config.active_settings_tab == SettingsTab::Workspace;
-        if ui
-            .selectable_label(workspace_selected, settings_msgs.tab_name("workspace"))
-            .clicked()
-        {
-            state.config.active_settings_tab = SettingsTab::Workspace;
-        }
-
-        let updates_selected = state.config.active_settings_tab == SettingsTab::Updates;
-        if ui
-            .selectable_label(updates_selected, settings_msgs.tab_name("updates"))
-            .clicked()
-        {
-            state.config.active_settings_tab = SettingsTab::Updates;
-        }
-
-        let behavior_selected = state.config.active_settings_tab == SettingsTab::Behavior;
-        if ui
-            .selectable_label(behavior_selected, settings_msgs.tab_name("behavior"))
-            .clicked()
-        {
-            state.config.active_settings_tab = SettingsTab::Behavior;
-        }
-    });
+    .open(state.config.settings_tree_force_open)
+    .show(ui);
 }
 
 // ── Section header helper ────────────────────────────────────────────

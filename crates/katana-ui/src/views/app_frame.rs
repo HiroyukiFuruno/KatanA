@@ -39,7 +39,9 @@ impl<'a> MainPanels<'a> {
             .iter()
             .map(|t| t.filename.clone())
             .collect();
-        crate::views::top_bar::StatusBar::new(&app.state, &export_filenames).show(ctx);
+        egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
+            crate::views::top_bar::StatusBar::new(&app.state, &export_filenames).show(ui);
+        });
 
         // Window title
         WindowTitle::new(app).show(ctx);
@@ -139,11 +141,17 @@ impl<'a> WorkspaceSidebar<'a> {
                     });
                 });
         } else {
-            crate::views::panels::workspace::WorkspacePanel::new(
-                &mut app.state,
-                &mut app.pending_action,
-            )
-            .show(ctx);
+            egui::SidePanel::left("workspace_tree")
+                .resizable(true)
+                .min_width(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
+                .default_width(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
+                .show(ctx, |ui| {
+                    crate::views::panels::workspace::WorkspacePanel::new(
+                        &mut app.state,
+                        &mut app.pending_action,
+                    )
+                    .show(ui);
+                });
         }
     }
 }

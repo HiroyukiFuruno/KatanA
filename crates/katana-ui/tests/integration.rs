@@ -354,7 +354,7 @@ fn test_integration_changelog_tab_display() {
     harness.get_by_label("Fixed the close button overlap");
 
     // Test header click (icon transition) it should also be active
-    let header_label = "▼ v0.8.0"; // It's open by default now!
+    let header_label = "v0.8.0"; // It's open by default now!
     harness.get_by_label(header_label).hover();
     harness.step();
     harness.get_by_label(header_label).click();

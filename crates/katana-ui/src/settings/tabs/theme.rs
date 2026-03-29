@@ -33,16 +33,17 @@ pub(crate) fn render_theme_tab(ui: &mut egui::Ui, settings: &mut SettingsService
 
     ui.add_space(SECTION_SPACING);
 
-    egui::CollapsingHeader::new(
+    let is_open = settings.settings().theme.custom_color_overrides.is_some();
+
+    crate::widgets::Accordion::new(
+        "custom_color_overrides_accordion",
         egui::RichText::new(crate::i18n::get().settings.theme.custom_colors.clone())
             .strong()
             .size(SECTION_HEADER_SIZE),
+        |ui| render_custom_color_editor(ui, settings),
     )
-    .default_open(settings.settings().theme.custom_color_overrides.is_some())
-    .icon(egui_commonmark::ui_components::centering::AccordionIcon::paint_optically_centered)
-    .show(ui, |ui| {
-        render_custom_color_editor(ui, settings);
-    });
+    .default_open(is_open)
+    .show(ui);
 }
 
 pub(crate) fn render_theme_preset_selector(ui: &mut egui::Ui, settings: &mut SettingsService) {
@@ -427,35 +428,41 @@ pub(crate) fn render_custom_color_editor(ui: &mut egui::Ui, settings: &mut Setti
     ];
 
     for (section_name, grouped_settings) in sections {
-        egui::CollapsingHeader::new(
+        crate::widgets::Accordion::new(
+            section_name.clone(),
             egui::RichText::new(section_name.clone())
                 .strong()
                 .size(SECTION_HEADER_SIZE),
-        )
-        .default_open(true)
-        .show(ui, |ui| {
-            ui.add_space(SUBSECTION_SPACING);
-            for (group_opt, settings_list) in grouped_settings {
+            |ui| {
                 ui.add_space(SUBSECTION_SPACING);
-                if let Some(group_name) = group_opt {
-                    egui::CollapsingHeader::new(group_name.clone())
-                        .default_open(true)
-                        .show(ui, |ui| {
-                            ui.add_space(SUBSECTION_SPACING);
-                            for def in settings_list {
-                                changed |=
-                                    render_color_row(ui, &mut new_colors, def.label, &def.prop);
+                for (group_opt, settings_list) in grouped_settings {
+                    ui.add_space(SUBSECTION_SPACING);
+                    if let Some(group_name) = group_opt {
+                        crate::widgets::Accordion::new(
+                            group_name.clone(),
+                            group_name.clone(),
+                            |ui| {
                                 ui.add_space(SUBSECTION_SPACING);
-                            }
-                        });
-                } else {
-                    for def in settings_list {
-                        changed |= render_color_row(ui, &mut new_colors, def.label, &def.prop);
-                        ui.add_space(SUBSECTION_SPACING);
+                                for def in settings_list {
+                                    changed |=
+                                        render_color_row(ui, &mut new_colors, def.label, &def.prop);
+                                    ui.add_space(SUBSECTION_SPACING);
+                                }
+                            },
+                        )
+                        .default_open(true)
+                        .show(ui);
+                    } else {
+                        for def in settings_list {
+                            changed |= render_color_row(ui, &mut new_colors, def.label, &def.prop);
+                            ui.add_space(SUBSECTION_SPACING);
+                        }
                     }
                 }
-            }
-        });
+            },
+        )
+        .default_open(true)
+        .show(ui);
         ui.add_space(SECTION_SPACING);
     }
 

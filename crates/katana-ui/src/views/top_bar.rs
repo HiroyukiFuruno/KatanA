@@ -22,73 +22,72 @@ impl<'a> StatusBar<'a> {
         }
     }
 
-    pub fn show(self, ctx: &egui::Context) {
+    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let state = self.state;
         let export_filenames = self.export_filenames;
-        egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                let (msg, kind) = if let Some((msg, kind)) = &state.layout.status_message {
-                    (msg.as_str(), Some(kind))
-                } else {
-                    (crate::i18n::get().status.ready.as_str(), None)
-                };
+        ui.horizontal(|ui| {
+            let (msg, kind) = if let Some((msg, kind)) = &state.layout.status_message {
+                (msg.as_str(), Some(kind))
+            } else {
+                (crate::i18n::get().status.ready.as_str(), None)
+            };
 
-                let (color, icon) = match kind {
-                    Some(crate::app_state::StatusType::Error) => (
-                        ui.ctx()
-                            .data(|d| {
-                                d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                                    "katana_theme_colors",
-                                ))
-                            })
-                            .map_or(crate::theme_bridge::WHITE, |tc| {
-                                crate::theme_bridge::rgb_to_color32(tc.system.error_text)
-                            }),
-                        Some(crate::Icon::Error),
-                    ),
-                    Some(crate::app_state::StatusType::Warning) => {
-                        (ui.visuals().warn_fg_color, Some(crate::Icon::Warning))
-                    }
-                    Some(crate::app_state::StatusType::Success) => (
-                        crate::theme_bridge::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
-                        Some(crate::Icon::Success),
-                    ),
-                    Some(crate::app_state::StatusType::Info) => {
-                        (ui.visuals().text_color(), Some(crate::Icon::Info))
-                    }
-                    _ => (ui.visuals().text_color(), None),
-                };
-
-                ui.add_space(STATUS_BAR_ICON_SPACING);
-                if let Some(i) = icon {
-                    ui.add(egui::Image::new(i.uri()).tint(color));
-                    ui.add_space(2.0);
+            let (color, icon) = match kind {
+                Some(crate::app_state::StatusType::Error) => (
+                    ui.ctx()
+                        .data(|d| {
+                            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                                "katana_theme_colors",
+                            ))
+                        })
+                        .map_or(crate::theme_bridge::WHITE, |tc| {
+                            crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                        }),
+                    Some(crate::Icon::Error),
+                ),
+                Some(crate::app_state::StatusType::Warning) => {
+                    (ui.visuals().warn_fg_color, Some(crate::Icon::Warning))
                 }
-                ui.colored_label(color, msg);
+                Some(crate::app_state::StatusType::Success) => (
+                    crate::theme_bridge::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
+                    Some(crate::Icon::Success),
+                ),
+                Some(crate::app_state::StatusType::Info) => {
+                    (ui.visuals().text_color(), Some(crate::Icon::Info))
+                }
+                _ => (ui.visuals().text_color(), None),
+            };
 
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if !export_filenames.is_empty() {
-                        let total = export_filenames.len();
-                        ui.spinner();
-                        for (i, filename) in export_filenames.iter().enumerate() {
-                            let numbered = crate::i18n::tf(
-                                &crate::i18n::get().export.exporting,
-                                &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
-                            );
-                            ui.label(numbered);
-                        }
-                    }
-                    const DIRTY_DOT_MAX_HEIGHT: f32 = 10.0;
-                    if state.is_dirty() {
-                        ui.add(
-                            egui::Image::new(crate::Icon::Dot.uri())
-                                .tint(ui.visuals().text_color())
-                                .max_height(DIRTY_DOT_MAX_HEIGHT),
+            ui.add_space(STATUS_BAR_ICON_SPACING);
+            if let Some(i) = icon {
+                ui.add(egui::Image::new(i.uri()).tint(color));
+                ui.add_space(2.0);
+            }
+            ui.colored_label(color, msg);
+
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if !export_filenames.is_empty() {
+                    let total = export_filenames.len();
+                    ui.spinner();
+                    for (i, filename) in export_filenames.iter().enumerate() {
+                        let numbered = crate::i18n::tf(
+                            &crate::i18n::get().export.exporting,
+                            &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
                         );
+                        ui.label(numbered);
                     }
-                });
+                }
+                const DIRTY_DOT_MAX_HEIGHT: f32 = 10.0;
+                if state.is_dirty() {
+                    ui.add(
+                        egui::Image::new(crate::Icon::Dot.uri())
+                            .tint(ui.visuals().text_color())
+                            .max_height(DIRTY_DOT_MAX_HEIGHT),
+                    );
+                }
             });
-        });
+        })
+        .response
     }
 }
 
@@ -102,7 +101,7 @@ impl<'a> TabBar<'a> {
         Self { state, action }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) {
+    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let state = self.state;
         let action = self.action;
         const MAX_TAB_WIDTH: f32 = 200.0;
@@ -118,7 +117,7 @@ impl<'a> TabBar<'a> {
 
         ui.style_mut().interaction.tooltip_delay = TAB_TOOLTIP_SHOW_DELAY_SECS;
 
-        ui.horizontal(|ui| {
+        let resp = ui.horizontal(|ui| {
             let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
             let scroll_width = ui.available_width() - nav_button_width;
 
@@ -128,7 +127,7 @@ impl<'a> TabBar<'a> {
                     .unwrap_or(false)
             });
 
-            egui::ScrollArea::horizontal()
+            let scroll_resp = egui::ScrollArea::horizontal()
                 .max_width(scroll_width)
                 .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                 .id_salt("tab_scroll")
@@ -443,6 +442,8 @@ impl<'a> TabBar<'a> {
                     ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
                 }
             }
+
+            scroll_resp.inner
         });
 
         if let Some((src_idx, ghost_center_x)) = dragged_source {
@@ -483,6 +484,8 @@ impl<'a> TabBar<'a> {
         } else if let Some(idx) = close_idx {
             *action = AppAction::CloseDocument(idx);
         }
+
+        resp.response
     }
 }
 
@@ -499,14 +502,14 @@ impl<'a> ViewModeBar<'a> {
         }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) {
+    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let state = self.state;
         let pending_action = self.pending_action;
         let mut mode = state.active_view_mode();
         let prev = mode;
         let bar_height = ui.spacing().interact_size.y;
         let available_width = ui.available_width();
-        ui.allocate_ui_with_layout(
+        let resp = ui.allocate_ui_with_layout(
             egui::vec2(available_width, bar_height),
             egui::Layout::right_to_left(egui::Align::Center),
             |ui| {
@@ -663,5 +666,6 @@ impl<'a> ViewModeBar<'a> {
             }
             state.set_active_view_mode(mode);
         }
+        resp.response
     }
 }
