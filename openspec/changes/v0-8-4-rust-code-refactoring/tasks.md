@@ -211,7 +211,8 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 5.4 `theme/types.rs`（241行）の分割
   - `ThemePreset` および `PresetColorData` を `theme/preset.rs` へ分離
 
-- [ ] 5.5 `theme/migration.rs`（262行）の分割
+- [x] 5.5 `theme/migration.rs`（262行）の分割
+  - `migration/mod.rs`、`migration/constants.rs`、`migration/legacy_types.rs`に分割してモジュール化
 
 - [ ] 5.6 `cache.rs`（291行）の分割
 
