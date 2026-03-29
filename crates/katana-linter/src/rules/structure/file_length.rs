@@ -2,8 +2,6 @@ use crate::utils::has_cfg_test_attr;
 use crate::Violation;
 use std::path::Path;
 
-/// Checks that a file does not exceed the maximum line count (excluding test code).
-/// Test modules (`#[cfg(test)] mod tests { ... }`) are excluded from the count.
 pub fn lint_file_length(path: &Path, syntax: &syn::File) -> Vec<Violation> {
     const MAX_LINES: usize = 200;
 
@@ -11,6 +9,10 @@ pub fn lint_file_length(path: &Path, syntax: &syn::File) -> Vec<Violation> {
         Ok(s) => s,
         Err(_) => return Vec::new(),
     };
+
+    if has_cfg_test_attr(&syntax.attrs) {
+        return Vec::new();
+    }
 
     let total_lines = source.lines().count();
 
@@ -32,7 +34,6 @@ pub fn lint_file_length(path: &Path, syntax: &syn::File) -> Vec<Violation> {
     }
 }
 
-/// Count the number of lines inside `#[cfg(test)] mod ...` blocks.
 fn count_test_module_lines(syntax: &syn::File, source: &str) -> usize {
     use syn::spanned::Spanned;
 

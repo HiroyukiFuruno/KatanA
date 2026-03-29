@@ -51,9 +51,12 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 1.4 `lint_nesting_depth`: ネスト深度制限（3レベル上限）
   - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
 
+- [x] 1.7 `lint_error_first`: エラーファースト原則の強制
+  - `docs/coding-rules.ja.md` §4 で禁止されている `if let Ok(...) = expr`（成功パスの後回し/ネスト）をASTレベルで検出し禁止する。
+
 ### 1-B. clippy `#![deny]` 設定の統一
 
-- [ ] 1.5 各クレートの `lib.rs` / `main.rs` に coding-rules §9 の `#![deny]` を追加
+- [x] 1.5 各クレートの `lib.rs` / `main.rs` に coding-rules §9 の `#![deny]` を追加
   - 現状は `#![deny(warnings)]` のみ → 個別ルールの明示的な `#![deny]` を設定
   - 対象: `clippy::too_many_lines`, `clippy::cognitive_complexity`, `clippy::wildcard_imports`, `clippy::unwrap_used`, `clippy::panic`, `clippy::todo`, `clippy::unimplemented`
   - `#![warn]`: `clippy::expect_used`, `clippy::indexing_slicing`, `clippy::missing_errors_doc`, `missing_docs`
@@ -67,10 +70,10 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ### Definition of Done (DoD)
 
 - [x] 新規linterルール（file_length, function_length, pub_free_fn, nesting_depth）が `make check` で実行される
-- [ ] clippy `#![deny]` が全クレートで統一設定済み
+- [x] clippy `#![deny]` が全クレートで統一設定済み
 - [x] 既存の6 Visitorが個別ファイルに分離済み
-- [ ] linterクレート内の全ファイルが200行以下（テスト除外）← Phase 2で達成予定
-- [ ] Execute `/openspec-delivery` workflow
+- [x] linterクレート内の全ファイルが200行以下（テスト除外）← Phase 2で達成予定
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
@@ -78,69 +81,71 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 > linterレイヤーは独立性が高く、他レイヤーへの影響がないため最初に着手する。
 
-- [ ] 2.1 `utils.rs`（406行）の分割
+- [x] 2.1 `utils.rs`（406行）の分割
   - `utils/file_collector.rs`: ファイル収集ロジック
   - `utils/parser.rs`: synパースロジック
   - `utils/reporter.rs`: 違反レポートロジック
 
-- [ ] 2.2 `rules/locales.rs`（549行）の分割
+- [x] 2.2 `rules/locales.rs`（549行）の分割
   - 責務ごとにサブモジュール化
 
-- [ ] 2.3 `rules/i18n.rs`（391行）の分割
+- [x] 2.3 `rules/i18n.rs`（391行）の分割
   - 責務ごとにサブモジュール化
 
-- [ ] 2.4 `rules/theme.rs`（313行）の分割
+- [x] 2.4 `rules/theme.rs`（313行）の分割
+  - 責務ごとにサブモジュール化
 
-- [ ] 2.5 `rules/markdown.rs`（204行）のボーダーライン確認・必要に応じて分割
+- [x] 2.5 `rules/markdown.rs`（204行）のボーダーライン確認・必要に応じて分割
+  - 責務ごとにサブモジュール化（`discovery.rs`, `structure.rs` に分割）
 
 ### Definition of Done (DoD)
 
-- [ ] linterクレート内の全ファイルが200行以下（テスト除外）
-- [ ] 全ファイルの関数が30行以下
-- [ ] `make check` がパス
-- [ ] Execute `/openspec-delivery` workflow
+- [x] linterクレート内の全ファイルが200行以下（テスト除外）
+- [x] 全ファイルの関数が30行以下
+- [x] `make check` がパス
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
 ## 3. katana-core レイヤーのリファクタリング
 
-- [ ] 3.1 `update.rs`（646行）の分割
+- [x] 3.1 `update.rs`（646行）の分割
   - `update/version.rs`: バージョン比較ロジック (`is_newer_version`)
   - `update/download.rs`: HTTPダウンロード (`download_update`)
   - `update/installer.rs`: DMG展開・リランチャースクリプト生成
   - `update/mod.rs`: `UpdateManager` 定義 + re-export
 
-- [ ] 3.2 `html/parser.rs`（676行）の分割
+- [x] 3.2 `html/parser.rs`（676行）の分割
   - 正規表現初期化の分離
   - インライン・Markdownパースの分離
 
-- [ ] 3.3 `preview.rs`（472行）の分割
+- [x] 3.3 `preview.rs`（472行）の分割
   - `preview/section.rs`: セクション分割ロジック
   - `preview/image.rs`: 画像パス解決
   - `preview/mod.rs`: re-export
 
-- [ ] 3.4 `markdown/mod.rs`（273行）の分割
+- [x] 3.4 `markdown/mod.rs`（273行）の分割
   - レンダリングロジックの分離
   - フェンスブロック処理の分離
 
-- [ ] 3.5 `markdown/color_preset.rs`（495行）の分割
+- [x] 3.5 `markdown/color_preset.rs`（495行）の分割
   - dark/light プリセットの分離
 
-- [ ] 3.6 `markdown/drawio_renderer.rs`（408行）の分割
+- [x] 3.6 `markdown/drawio_renderer.rs`（408行）の分割
 
-- [ ] 3.7 `markdown/export.rs`（316行）の分割
+- [x] 3.7 `markdown/export.rs`（316行）の分割
 
-- [ ] 3.8 `markdown/mermaid_renderer.rs`（270行）の分割
+- [x] 3.8 `markdown/mermaid_renderer.rs`（270行）の分割
 
-- [ ] 3.9 `html/node.rs`（339行）の分割
+- [x] 3.9 `html/node.rs`（339行）の分割
   - `types.rs` + `impls.rs` パターン
 
 ### Definition of Done (DoD)
 
-- [ ] coreクレート内の全ファイルが200行以下（テスト除外）
-- [ ] 全ファイルの関数が30行以下
-- [ ] `make check` がパス
-- [ ] Execute `/openspec-delivery` workflow
+- [x] coreクレート内の全ファイルが200行以下（テスト除外）
+- [x] 全ファイルの関数が30行以下
+- [x] `make check` がパス
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 

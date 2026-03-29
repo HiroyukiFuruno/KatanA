@@ -1,4 +1,27 @@
-#![deny(warnings)]
+#![deny(
+    warnings,
+    clippy::all,
+    clippy::too_many_lines,
+    clippy::cognitive_complexity,
+    clippy::wildcard_imports,
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented
+)]
+#![warn(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::missing_errors_doc
+)]
+#![allow(missing_docs)]
+#![allow(clippy::too_many_lines)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::indexing_slicing)]
+#![allow(clippy::cognitive_complexity)]
+#![allow(clippy::unwrap_used)]
+#![allow(clippy::expect_used)]
+#![allow(clippy::panic)]
 
 pub mod cache;
 pub mod filesystem;

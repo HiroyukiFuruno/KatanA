@@ -34,6 +34,10 @@ fn parse_workspace_version_from_cargo_toml(path: &Path) -> Result<String, Vec<Vi
         }]
     })?;
 
+    parse_workspace_version_from_str(&source, path)
+}
+
+fn parse_workspace_version_from_str(source: &str, path: &Path) -> Result<String, Vec<Violation>> {
     let mut in_workspace_package = false;
 
     for raw_line in source.lines() {
@@ -47,29 +51,9 @@ fn parse_workspace_version_from_cargo_toml(path: &Path) -> Result<String, Vec<Vi
             continue;
         }
 
-        let line = line.split('#').next().unwrap_or_default().trim();
-        if line.is_empty() {
-            continue;
+        if let Some(version) = extract_version_value(line, path)? {
+            return Ok(version);
         }
-
-        let Some((key, value)) = line.split_once('=') else {
-            continue;
-        };
-        if key.trim() != "version" {
-            continue;
-        }
-
-        let value = value.trim();
-        let Some(value) = value.strip_prefix('"').and_then(|it| it.strip_suffix('"')) else {
-            return Err(vec![Violation {
-                file: path.to_path_buf(),
-                line: 0,
-                column: 0,
-                message: "workspace.package.version must be a TOML string.".to_string(),
-            }]);
-        };
-
-        return Ok(value.to_string());
     }
 
     Err(vec![Violation {
@@ -78,6 +62,32 @@ fn parse_workspace_version_from_cargo_toml(path: &Path) -> Result<String, Vec<Vi
         column: 0,
         message: "Missing workspace.package.version in Cargo.toml.".to_string(),
     }])
+}
+
+fn extract_version_value(line: &str, path: &Path) -> Result<Option<String>, Vec<Violation>> {
+    let line = line.split('#').next().unwrap_or_default().trim();
+    if line.is_empty() {
+        return Ok(None);
+    }
+
+    let Some((key, value)) = line.split_once('=') else {
+        return Ok(None);
+    };
+    if key.trim() != "version" {
+        return Ok(None);
+    }
+
+    let value = value.trim();
+    let Some(value) = value.strip_prefix('"').and_then(|it| it.strip_suffix('"')) else {
+        return Err(vec![Violation {
+            file: path.to_path_buf(),
+            line: 0,
+            column: 0,
+            message: "workspace.package.version must be a TOML string.".to_string(),
+        }]);
+    };
+
+    Ok(Some(value.to_string()))
 }
 
 fn changelog_contains_version_heading(path: &Path, version: &str) -> Result<bool, Vec<Violation>> {

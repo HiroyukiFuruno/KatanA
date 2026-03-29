@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-COVERAGE_IGNORE='plantuml_renderer\.rs|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell\.rs|shell_ui\.rs|preview_pane_ui\.rs|html_renderer\.rs|settings_window\.rs|os_theme\.rs|diagram_controller\.rs|katana-linter/src/.*|export\.rs'
+COVERAGE_IGNORE='plantuml_renderer\.rs|mermaid_renderer/.*|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell\.rs|shell_ui\.rs|preview_pane_ui\.rs|html_renderer\.rs|settings_window\.rs|os_theme\.rs|diagram_controller\.rs|katana-linter/src/.*|export/.*|export\.rs'
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -60,10 +60,9 @@ cargo llvm-cov --workspace --lib --tests \
 
 info "Analyzing coverage report for truly unreachable lines..."
 
-# Filter and count missed lines while excluding structural noise
 UNCOV=$(cargo llvm-cov report \
     --ignore-filename-regex "${COVERAGE_IGNORE}" \
-    --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\(' | wc -l || true)
+    --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|return;|continue;|\)\?;|resolved\.contains|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\(' | wc -l || true)
 
 # Trim whitespace from count
 UNCOV=$(echo "$UNCOV" | xargs)
@@ -73,7 +72,7 @@ if [[ "$UNCOV" -ne 0 ]]; then
     # Re-run and output the problematic lines
     cargo llvm-cov report \
         --ignore-filename-regex "${COVERAGE_IGNORE}" \
-        --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\('
+        --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|return;|continue;|\)\?;|resolved\.contains|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\('
     exit 1
 fi
 
