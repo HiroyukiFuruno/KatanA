@@ -243,11 +243,10 @@ impl eframe::App for KatanaApp {
         }
 
         // Settings window
-        if let Some(settings_action) = crate::settings::render_settings_window(
-            ctx,
-            &mut self.state,
-            &mut self.settings_preview,
-        ) {
+        if let Some(settings_action) =
+            crate::settings::SettingsWindow::new(&mut self.state, &mut self.settings_preview)
+                .show(ctx)
+        {
             self.pending_action = settings_action;
         }
 

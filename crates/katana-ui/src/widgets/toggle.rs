@@ -24,9 +24,21 @@ pub fn toggle_switch(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
         egui::WidgetInfo::selected(egui::WidgetType::Checkbox, ui.is_enabled(), *on, "")
     });
 
+    paint_toggle_switch(ui, rect, &response, *on);
+
+    response
+}
+
+/// Extracted painting logic for reuse without click sensing
+pub(crate) fn paint_toggle_switch(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    response: &egui::Response,
+    on: bool,
+) {
     if ui.is_rect_visible(rect) {
-        let how_on = ui.ctx().animate_bool(response.id, *on);
-        let visuals = ui.style().interact_selectable(&response, *on);
+        let how_on = ui.ctx().animate_bool(response.id, on);
+        let visuals = ui.style().interact_selectable(response, on);
         let rect = rect.expand(visuals.expansion);
         const TOGGLE_RADIUS_RATIO: f32 = 0.5;
         let radius = TOGGLE_RADIUS_RATIO * rect.height();
@@ -47,8 +59,6 @@ pub fn toggle_switch(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
             visuals.fg_stroke,
         );
     }
-
-    response
 }
 
 #[cfg(test)]
@@ -140,137 +150,58 @@ impl<'a> LabeledToggle<'a> {
 
 impl<'a> egui::Widget for LabeledToggle<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        const TOGGLE_Y_OFFSET: f32 = 0.0;
+        let mut list_item = crate::widgets::ListItem::new().interactive(true);
 
-        let toggle_size = ui.spacing().interact_size.y * egui::vec2(2.0, 1.0);
-        let text_galley = self.text.into_galley(
-            ui,
-            Some(egui::TextWrapMode::Extend),
-            f32::INFINITY,
-            egui::TextStyle::Body,
-        );
-        let text_size = text_galley.size();
-
-        let available_width = ui.available_width();
-        let total_width = match self.alignment {
-            ToggleAlignment::Attached(margin) => text_size.x + margin + toggle_size.x,
-            ToggleAlignment::SpaceBetween => available_width.max(text_size.x + toggle_size.x),
-        };
-
-        let height = text_size.y.max(toggle_size.y);
-        let desired_size = egui::vec2(total_width, height);
-
-        let (rect, mut response) = ui.allocate_exact_size(desired_size, egui::Sense::click());
-
-        if response.clicked() {
-            *self.on = !*self.on;
-            response.mark_changed();
+        match self.alignment {
+            ToggleAlignment::Attached(margin) => {
+                list_item = list_item.spacing(margin);
+            }
+            ToggleAlignment::SpaceBetween => (),
         }
 
-        response.widget_info(|| {
+        let toggle_rect = std::rc::Rc::new(std::cell::Cell::new(egui::Rect::NOTHING));
+        let rect_clone = toggle_rect.clone();
+
+        let toggle_node: Box<dyn FnOnce(&mut egui::Ui) -> egui::Response + '_> =
+            Box::new(move |ui: &mut egui::Ui| {
+                let desired_size = ui.spacing().interact_size.y * egui::vec2(2.0, 1.0);
+                let (rect, resp) = ui.allocate_exact_size(desired_size, egui::Sense::hover());
+                rect_clone.set(rect);
+                resp
+            });
+
+        let text_node: Box<dyn FnOnce(&mut egui::Ui) -> egui::Response + '_> =
+            Box::new(|ui: &mut egui::Ui| ui.label(self.text));
+
+        match (self.position, self.alignment) {
+            (TogglePosition::Right, ToggleAlignment::SpaceBetween) => {
+                list_item = list_item.left(text_node).right(toggle_node);
+            }
+            (TogglePosition::Left, ToggleAlignment::SpaceBetween) => {
+                list_item = list_item.left(toggle_node).right(text_node);
+            }
+            (TogglePosition::Right, ToggleAlignment::Attached(_)) => {
+                list_item = list_item.left(text_node).left(toggle_node);
+            }
+            (TogglePosition::Left, ToggleAlignment::Attached(_)) => {
+                list_item = list_item.left(toggle_node).left(text_node);
+            }
+        }
+
+        let mut row_resp = list_item.show(ui);
+
+        if row_resp.clicked() {
+            *self.on = !*self.on;
+            row_resp.mark_changed();
+        }
+
+        row_resp.widget_info(|| {
             egui::WidgetInfo::selected(egui::WidgetType::Checkbox, ui.is_enabled(), *self.on, "")
         });
 
-        if ui.is_rect_visible(rect) {
-            let (text_rect, toggle_rect) = match (self.position, self.alignment) {
-                (TogglePosition::Right, ToggleAlignment::SpaceBetween) => {
-                    let text_rect = egui::Rect::from_min_size(
-                        egui::pos2(rect.min.x, rect.center().y - text_size.y / 2.0),
-                        text_size,
-                    );
-                    let toggle_rect = egui::Rect::from_min_size(
-                        egui::pos2(
-                            rect.max.x - toggle_size.x,
-                            rect.center().y - toggle_size.y / 2.0 - TOGGLE_Y_OFFSET,
-                        ),
-                        toggle_size,
-                    );
-                    (text_rect, toggle_rect)
-                }
-                (TogglePosition::Left, ToggleAlignment::SpaceBetween) => {
-                    let toggle_rect = egui::Rect::from_min_size(
-                        egui::pos2(
-                            rect.min.x,
-                            rect.center().y - toggle_size.y / 2.0 - TOGGLE_Y_OFFSET,
-                        ),
-                        toggle_size,
-                    );
-                    let text_rect = egui::Rect::from_min_size(
-                        egui::pos2(
-                            rect.max.x - text_size.x,
-                            rect.center().y - text_size.y / 2.0,
-                        ),
-                        text_size,
-                    );
-                    (text_rect, toggle_rect)
-                }
-                (TogglePosition::Right, ToggleAlignment::Attached(margin)) => {
-                    let text_rect = egui::Rect::from_min_size(
-                        egui::pos2(rect.min.x, rect.center().y - text_size.y / 2.0),
-                        text_size,
-                    );
-                    let toggle_rect = egui::Rect::from_min_size(
-                        egui::pos2(
-                            rect.min.x + text_size.x + margin,
-                            rect.center().y - toggle_size.y / 2.0 - TOGGLE_Y_OFFSET,
-                        ),
-                        toggle_size,
-                    );
-                    (text_rect, toggle_rect)
-                }
-                (TogglePosition::Left, ToggleAlignment::Attached(margin)) => {
-                    let toggle_rect = egui::Rect::from_min_size(
-                        egui::pos2(
-                            rect.min.x,
-                            rect.center().y - toggle_size.y / 2.0 - TOGGLE_Y_OFFSET,
-                        ),
-                        toggle_size,
-                    );
-                    let text_rect = egui::Rect::from_min_size(
-                        egui::pos2(
-                            rect.min.x + toggle_size.x + margin,
-                            rect.center().y - text_size.y / 2.0,
-                        ),
-                        text_size,
-                    );
-                    (text_rect, toggle_rect)
-                }
-            };
+        paint_toggle_switch(ui, toggle_rect.get(), &row_resp, *self.on);
 
-            let text_color = ui.style().interact(&response).text_color();
-            let text_pos = egui::Align2::LEFT_TOP
-                .align_size_within_rect(text_galley.size(), text_rect)
-                .min;
-            ui.painter()
-                .galley_with_override_text_color(text_pos, text_galley, text_color);
-
-            let how_on = ui.ctx().animate_bool(response.id, *self.on);
-            let visuals = ui.style().interact_selectable(&response, *self.on);
-            let expanded_toggle_rect = toggle_rect.expand(visuals.expansion);
-            const TOGGLE_RADIUS_RATIO: f32 = 0.5;
-            let radius = TOGGLE_RADIUS_RATIO * expanded_toggle_rect.height();
-            ui.painter().rect(
-                expanded_toggle_rect,
-                radius,
-                visuals.bg_fill,
-                visuals.bg_stroke,
-                egui::StrokeKind::Inside,
-            );
-            let circle_x = egui::lerp(
-                (expanded_toggle_rect.left() + radius)..=(expanded_toggle_rect.right() - radius),
-                how_on,
-            );
-            let center = egui::pos2(circle_x, expanded_toggle_rect.center().y);
-            const TOGGLE_CIRCLE_RATIO: f32 = 0.75;
-            ui.painter().circle(
-                center,
-                TOGGLE_CIRCLE_RATIO * radius,
-                visuals.bg_fill,
-                visuals.fg_stroke,
-            );
-        }
-
-        response
+        row_resp
     }
 }
 
