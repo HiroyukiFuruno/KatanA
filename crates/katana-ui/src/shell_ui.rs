@@ -228,18 +228,15 @@ impl eframe::App for KatanaApp {
                 .terms_accepted_version
                 .as_ref();
             if accepted_ver != Some(&terms_ver) {
-                crate::views::modals::terms::render_terms_modal(
-                    ctx,
-                    &terms_ver,
-                    &mut self.pending_action,
-                );
+                crate::views::modals::terms::TermsModal::new(&terms_ver, &mut self.pending_action)
+                    .show(ctx);
                 return;
             }
         }
 
         if !splash_is_opaque {
             let download_req =
-                crate::views::app_frame::render_main_panels(ctx, self, &theme_colors);
+                crate::views::app_frame::MainPanels::new(self, &theme_colors).show(ctx);
             if let Some(req) = download_req {
                 self.start_download(req);
             }
@@ -255,21 +252,21 @@ impl eframe::App for KatanaApp {
         }
 
         if self.state.layout.show_search_modal {
-            crate::views::modals::search::render_search_modal(
-                ctx,
+            crate::views::modals::search::SearchModal::new(
                 &mut self.state,
                 &mut self.pending_action,
-            );
+            )
+            .show(ctx);
         }
 
         // About dialog
         if self.show_about {
-            crate::views::modals::about::render_about_window(
-                ctx,
+            crate::views::modals::about::AboutModal::new(
                 &mut self.show_about,
                 self.about_icon.as_ref(),
                 &mut self.pending_action,
-            );
+            )
+            .show(ctx);
             if matches!(self.pending_action, AppAction::ShowReleaseNotes) {
                 self.show_about = false;
             }
@@ -278,7 +275,7 @@ impl eframe::App for KatanaApp {
         // Meta info dialog
         if let Some(path) = self.show_meta_info_for.clone() {
             let mut is_open = true;
-            crate::views::modals::meta_info::render_meta_info_window(ctx, &mut is_open, &path);
+            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path).show(ctx);
             if !is_open {
                 self.show_meta_info_for = None;
             }
@@ -286,36 +283,36 @@ impl eframe::App for KatanaApp {
 
         // File system operation modals
         if self.state.layout.create_fs_node_modal.is_some() {
-            crate::views::modals::file_ops::render_create_fs_node_modal(
-                ctx,
+            crate::views::modals::file_ops::CreateFsNodeModal::new(
                 &mut self.state,
                 &mut self.pending_action,
-            );
+            )
+            .show(ctx);
         }
         if self.state.layout.rename_modal.is_some() {
-            crate::views::modals::file_ops::render_rename_modal(
-                ctx,
+            crate::views::modals::file_ops::RenameModal::new(
                 &mut self.state,
                 &mut self.pending_action,
-            );
+            )
+            .show(ctx);
         }
         if self.state.layout.delete_modal.is_some() {
-            crate::views::modals::file_ops::render_delete_modal(
-                ctx,
+            crate::views::modals::file_ops::DeleteModal::new(
                 &mut self.state,
                 &mut self.pending_action,
-            );
+            )
+            .show(ctx);
         }
 
         // Update notification dialog
         if self.show_update_dialog {
-            crate::views::modals::update::render_update_window(
-                ctx,
+            crate::views::modals::update::UpdateModal::new(
                 &mut self.show_update_dialog,
                 &self.state,
                 &mut self.update_markdown_cache,
                 &mut self.pending_action,
-            );
+            )
+            .show(ctx);
         }
 
         // Intercept all URL opening requests globally
@@ -325,7 +322,8 @@ impl eframe::App for KatanaApp {
         if let Some(start) = self.splash_start {
             let elapsed = start.elapsed().as_secs_f32();
             let dismissed =
-                crate::views::splash::render_splash_overlay(ctx, elapsed, self.about_icon.as_ref());
+                crate::views::splash::SplashOverlay::new(elapsed, self.about_icon.as_ref())
+                    .show(ctx);
             if dismissed {
                 self.splash_start = None;
             }
