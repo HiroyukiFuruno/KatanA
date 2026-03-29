@@ -98,3 +98,50 @@ fn active_path_returns_path_of_active_document() {
     state.document.active_doc_idx = None;
     assert_eq!(state.active_path(), None);
 }
+
+#[test]
+fn set_active_split_direction_with_no_document_does_nothing() {
+    let mut state = AppState::new(
+        AiProviderRegistry::new(),
+        PluginRegistry::new(),
+        katana_platform::SettingsService::default(),
+        std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+    );
+    state.set_active_split_direction(katana_platform::SplitDirection::Vertical);
+    assert!(state.document.tab_split_states.is_empty());
+}
+
+#[test]
+fn set_active_pane_order_with_no_document_does_nothing() {
+    let mut state = AppState::new(
+        AiProviderRegistry::new(),
+        PluginRegistry::new(),
+        katana_platform::SettingsService::default(),
+        std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+    );
+    state.set_active_pane_order(katana_platform::PaneOrder::PreviewFirst);
+    assert!(state.document.tab_split_states.is_empty());
+}
+
+#[test]
+fn set_active_split_direction_and_pane_order_adds_new_state() {
+    let mut state = AppState::new(
+        AiProviderRegistry::new(),
+        PluginRegistry::new(),
+        katana_platform::SettingsService::default(),
+        std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+    );
+    let doc1 = Document::new("doc1.md", "Doc1");
+    state.document.open_documents.push(doc1);
+    state.document.active_doc_idx = Some(0);
+
+    state.set_active_split_direction(katana_platform::SplitDirection::Horizontal);
+    assert_eq!(state.document.tab_split_states.len(), 1);
+    assert_eq!(state.document.tab_split_states[0].state.direction, katana_platform::SplitDirection::Horizontal);
+
+    state.document.tab_split_states.clear();
+    state.set_active_pane_order(katana_platform::PaneOrder::EditorFirst);
+    assert_eq!(state.document.tab_split_states.len(), 1);
+    assert_eq!(state.document.tab_split_states[0].state.order, katana_platform::PaneOrder::EditorFirst);
+}
+
