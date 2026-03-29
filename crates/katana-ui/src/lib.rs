@@ -25,6 +25,7 @@ pub mod icon;
 pub use icon::*;
 pub mod changelog;
 pub mod diagram_controller;
+pub mod native_menu;
 pub mod preview_pane;
 pub mod settings;
 pub mod shell;
