@@ -32,7 +32,6 @@ struct EmojiCacheEntry {
     png: Option<Vec<u8>>,
 }
 
-/// Rasterizes a single emoji grapheme into PNG bytes using Apple Color Emoji on macOS.
 #[cfg(not(target_os = "macos"))]
 pub fn render_apple_color_emoji_png(_grapheme: &str, _pixel_size: u32) -> Option<Vec<u8>> {
     None
