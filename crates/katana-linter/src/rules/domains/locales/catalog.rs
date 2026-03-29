@@ -20,58 +20,45 @@ pub fn parse_languages_catalog(locale_dir: &Path) -> Result<BTreeSet<String>, Ve
     let mut violations = Vec::new();
 
     for (index, entry) in entries.iter().enumerate() {
-        let Value::Object(entry_obj) = entry else {
-            violations.push(locale_violation(
-                &path,
-                format!("languages.json entry at index {index} must be an object."),
-            ));
-            continue;
-        };
-
-        let Some(code_value) = entry_obj.get("code") else {
-            violations.push(locale_violation(
-                &path,
-                format!("languages.json entry at index {index} is missing `code`."),
-            ));
-            continue;
-        };
-        let Some(name_value) = entry_obj.get("name") else {
-            violations.push(locale_violation(
-                &path,
-                format!("languages.json entry at index {index} is missing `name`."),
-            ));
-            continue;
-        };
-
-        let Value::String(code) = code_value else {
-            violations.push(locale_violation(
-                &path,
-                format!("languages.json entry at index {index} has non-string `code`."),
-            ));
-            continue;
-        };
-        let Value::String(_) = name_value else {
-            violations.push(locale_violation(
-                &path,
-                format!("languages.json entry at index {index} has non-string `name`."),
-            ));
-            continue;
-        };
-
-        if !codes.insert(code.clone()) {
-            violations.push(locale_violation(
-                &path,
-                format!("languages.json contains duplicate code `{code}`."),
-            ));
+        match validate_catalog_entry(entry, &path, index) {
+            Ok(code) => {
+                if !codes.insert(code.clone()) {
+                    violations.push(locale_violation(
+                        &path,
+                        format!("languages.json contains duplicate code `{code}`."),
+                    ));
+                }
+            }
+            Err(violation) => violations.push(violation),
         }
     }
 
-    if violations.is_empty() {
-        Ok(codes)
-    } else {
-        Err(violations)
-    }
+    if violations.is_empty() { Ok(codes) } else { Err(violations) }
 }
+
+fn validate_catalog_entry(entry: &Value, path: &Path, index: usize) -> Result<String, Violation> {
+    let Value::Object(entry_obj) = entry else {
+        return Err(locale_violation(path, format!("languages.json entry at index {index} must be an object.")));
+    };
+
+    let Some(code_value) = entry_obj.get("code") else {
+        return Err(locale_violation(path, format!("languages.json entry at index {index} is missing `code`.")));
+    };
+    let Some(name_value) = entry_obj.get("name") else {
+        return Err(locale_violation(path, format!("languages.json entry at index {index} is missing `name`.")));
+    };
+
+    let Value::String(code) = code_value else {
+        return Err(locale_violation(path, format!("languages.json entry at index {index} has non-string `code`.")));
+    };
+    let Value::String(_) = name_value else {
+        return Err(locale_violation(path, format!("languages.json entry at index {index} has non-string `name`.")));
+    };
+
+    Ok(code.clone())
+}
+
+
 
 pub fn compare_languages_catalog(
     locale_dir: &Path,

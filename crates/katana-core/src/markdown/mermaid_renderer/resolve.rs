@@ -1,0 +1,147 @@
+use std::{
+    path::PathBuf,
+    process::{Command, Stdio},
+    sync::OnceLock,
+};
+
+/// Process-wide cache for the resolved `mmdc` binary path (excluding env-var override).
+static MMDC_RESOLVED_PATH: OnceLock<PathBuf> = OnceLock::new();
+
+/// Returns the `mmdc` binary path using a fast multi-tier strategy.
+pub fn resolve_mmdc_binary() -> PathBuf {
+    // WHY: Always check env var first (not cached — allows runtime override)
+    if let Some(p) = std::env::var("MERMAID_MMDC").ok() {
+        return PathBuf::from(p);
+    }
+
+    MMDC_RESOLVED_PATH
+        .get_or_init(|| {
+            probe_well_known_paths()
+                .or_else(which_from_current_path)
+                .or_else(resolve_via_login_shell)
+                .unwrap_or_else(|| PathBuf::from("mmdc"))
+        })
+        .clone()
+}
+
+/// Probes well-known binary directories for `mmdc`.
+fn probe_well_known_paths() -> Option<PathBuf> {
+    let home = std::env::var("HOME").ok()?;
+
+    // WHY: --- Homebrew ---
+    #[allow(clippy::useless_vec)]
+    for brew_prefix in vec!["/opt/homebrew/bin/mmdc", "/usr/local/bin/mmdc"] {
+        let p = PathBuf::from(brew_prefix);
+        if p.is_file() {
+            return Some(p);
+        }
+    }
+
+    // WHY: --- nvm ---
+    let nvm_dir = std::env::var("NVM_DIR").unwrap_or_else(|_| format!("{home}/.nvm"));
+    if let Some(path) = probe_nvm_mmdc(&nvm_dir) {
+        return Some(path);
+    }
+
+    // WHY: --- volta ---
+    let volta_bin = PathBuf::from(format!("{home}/.volta/bin/mmdc"));
+    if volta_bin.is_file() {
+        return Some(volta_bin);
+    }
+
+    // WHY: --- fnm ---
+    let fnm_bin = PathBuf::from(format!("{home}/.local/share/fnm/aliases/default/bin/mmdc"));
+    if fnm_bin.is_file() {
+        return Some(fnm_bin);
+    }
+
+    None
+}
+
+/// Resolves `mmdc` under the nvm default alias without spawning a shell.
+fn probe_nvm_mmdc(nvm_dir: &str) -> Option<PathBuf> {
+    let alias_file = PathBuf::from(format!("{nvm_dir}/alias/default"));
+    let alias = std::fs::read_to_string(&alias_file).ok()?;
+    let alias = alias.trim();
+    if alias.is_empty() {
+        return None;
+    }
+
+    let versions_dir = PathBuf::from(format!("{nvm_dir}/versions/node"));
+    // WHY: Try exact match first
+    let exact = versions_dir.join(alias).join("bin/mmdc");
+    if exact.is_file() {
+        return Some(exact);
+    }
+
+    // WHY: Prefix match
+    let prefix = if alias.starts_with('v') {
+        alias.to_string()
+    } else {
+        format!("v{alias}")
+    };
+    let entries = std::fs::read_dir(&versions_dir).ok()?;
+    let mut best: Option<PathBuf> = None;
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with(&prefix) {
+            let candidate = entry.path().join("bin/mmdc");
+            if candidate.is_file() {
+                best = Some(candidate);
+            }
+        }
+    }
+    best
+}
+
+/// Tries `which mmdc` using the current process PATH (no shell spawn).
+fn which_from_current_path() -> Option<PathBuf> {
+    let output = Command::new("which")
+        .arg("mmdc")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .output()
+        .ok()?;
+    if output.status.success() {
+        let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if !path.is_empty() {
+            return Some(PathBuf::from(path));
+        }
+    }
+    None
+}
+
+/// Spawns a zsh login shell to resolve `mmdc`.
+fn resolve_via_login_shell() -> Option<PathBuf> {
+    let output = Command::new("/bin/zsh")
+        .args(vec!["-l", "-c", "which mmdc"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .output()
+        .ok()?;
+    if output.status.success() {
+        let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if !path.is_empty() {
+            return Some(PathBuf::from(path));
+        }
+    }
+    None
+}
+
+/// Builds a [`Command`] for the resolved `mmdc` binary with a PATH
+/// that includes the binary's own directory.
+pub fn build_mmdc_command() -> Command {
+    let mmdc = resolve_mmdc_binary();
+    let mut cmd = Command::new(&mmdc);
+
+    // WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`.
+    if let Some(bin_dir) = mmdc.parent() {
+        let current_path = std::env::var("PATH").unwrap_or_default();
+        let bin_dir_str = bin_dir.to_string_lossy();
+        if !current_path.split(':').any(|p| p == bin_dir_str.as_ref()) {
+            cmd.env("PATH", format!("{bin_dir_str}:{current_path}"));
+        }
+    }
+    cmd
+}

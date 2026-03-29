@@ -11,17 +11,23 @@ use katana_linter::rules::{
 use katana_linter::run_ast_lint;
 use katana_linter::utils::{panic_with_violations, workspace_root};
 
+
+fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
+    vec![
+        root.join("crates/katana-linter/src"),
+        root.join("crates/katana-core/src"),
+        // root.join("crates/katana-platform/src"), // Phase 4
+        // root.join("crates/katana-ui/src"), // Phase 5
+    ]
+}
+
 #[test]
 fn ast_linter_i18n_no_hardcoded_strings() {
     let root = workspace_root().expect("Test requirement");
     run_ast_lint(
         "i18n",
         "Fix: Replace string literals with i18n::t(\"key\") or i18n::tf(\"key\", &[...]).",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_i18n,
     );
 }
@@ -32,11 +38,7 @@ fn ast_linter_no_magic_numbers() {
     run_ast_lint(
         "magic-number",
         "Fix: Extract numeric literals into named constants (const).",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_magic_numbers,
     );
 }
@@ -47,11 +49,7 @@ fn ast_linter_no_lazy_code() {
     run_ast_lint(
         "lazy-code",
         "Fix: Remove `todo!()`, `unimplemented!()`, and `dbg!()` macros. Implement the actual logic.",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_lazy_code,
     );
 }
@@ -62,11 +60,7 @@ fn ast_linter_no_prohibited_types() {
     run_ast_lint(
         "prohibited-types",
         "Fix: Use `Vec` instead of `HashMap`, `[T; N]` or `[...]`.",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_prohibited_types,
     );
 }
@@ -90,11 +84,7 @@ fn ast_linter_no_raw_icons() {
     run_ast_lint(
         "icon-facade",
         "Fix: Use `Icon::Name.as_str()` instead of raw icon string literals like \"🔄\".",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_icon_facade,
     );
 }
@@ -126,11 +116,7 @@ fn ast_linter_font_normalization() {
     run_ast_lint(
         "font-normalization",
         "Fix: Use `NormalizeFonts` from `font_loader` instead of raw `FontDefinitions::default()`/`::empty()`.",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_font_normalization,
     );
 }
@@ -152,11 +138,7 @@ fn ast_linter_no_allow_dead_code() {
     run_ast_lint(
         "prohibited-attributes",
         "Fix: Remove `#[allow(dead_code)]`. Dead code should be deleted, not silenced.",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_prohibited_attributes,
     );
 }
@@ -167,7 +149,7 @@ fn ast_linter_file_length() {
     run_ast_lint(
         "file-length",
         "Fix: File exceeds 200-line limit (excluding tests). Split into smaller modules.",
-        &[root.join("crates/katana-linter/src")],
+        &target_crates(root),
         lint_file_length,
     );
 }
@@ -178,10 +160,7 @@ fn ast_linter_function_length() {
     run_ast_lint(
         "function-length",
         "Fix: Function exceeds 30-line limit. Extract helper methods.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         lint_function_length,
     );
 }
@@ -192,10 +171,7 @@ fn ast_linter_nesting_depth() {
     run_ast_lint(
         "nesting-depth",
         "Fix: Nesting depth exceeds 3 levels. Use early returns or extract helpers.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         lint_nesting_depth,
     );
 }
@@ -206,10 +182,7 @@ fn ast_linter_comment_style() {
     run_ast_lint(
         "comment-style",
         "Fix: Comments must start with `// WHY:` or `// SAFETY:`. Code should be self-documenting.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         lint_comment_style,
     );
 }
@@ -220,10 +193,7 @@ fn ast_linter_error_first() {
     run_ast_lint(
         "error-first",
         "Fix: Do not nest success paths with `if let Ok(...)`. Use `?` or `let-else` to fail early.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         lint_error_first,
     );
 }
@@ -235,11 +205,7 @@ fn ast_linter_no_pub_free_fn() {
     run_ast_lint(
         "pub-free-fn",
         "Fix: Public free functions are prohibited. Use struct + impl blocks (coding-rules §1.1).",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         lint_pub_free_fn,
     );
 }

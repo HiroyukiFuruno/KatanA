@@ -42,7 +42,7 @@ pub fn lint_theme_builder_enforcement(workspace_root: &Path) -> Vec<Violation> {
             continue;
         }
 
-        if let Ok(ast) = parse_file(&file) {
+        if let Some(ast) = parse_file(&file).ok() {
             let mut visitor = BuilderEnforcementVisitor {
                 file_path: &file,
                 violations: Vec::new(),

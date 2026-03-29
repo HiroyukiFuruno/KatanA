@@ -1,10 +1,5 @@
 #[cfg(target_os = "macos")]
-use regex::Regex;
-#[cfg(target_os = "macos")]
 use resvg::{render, usvg};
-
-#[cfg(target_os = "macos")]
-use std::path::Path;
 #[cfg(target_os = "macos")]
 use std::sync::{Arc, Mutex, OnceLock};
 #[cfg(target_os = "macos")]
@@ -47,8 +42,6 @@ struct EmojiCacheEntry {
 }
 
 /// Rasterizes a single emoji grapheme into PNG bytes using Apple Color Emoji on macOS.
-///
-/// Returns `None` when the system font is unavailable or when the grapheme cannot be rasterized.
 pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<Vec<u8>> {
     #[cfg(not(target_os = "macos"))]
     {
@@ -59,7 +52,7 @@ pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<V
 
     #[cfg(target_os = "macos")]
     {
-        if grapheme.is_empty() || !Path::new(APPLE_COLOR_EMOJI_FONT_PATH).exists() {
+        if grapheme.is_empty() || !std::path::Path::new(APPLE_COLOR_EMOJI_FONT_PATH).exists() {
             return None;
         }
 
@@ -85,32 +78,6 @@ pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<V
                 png: rendered.clone(),
             });
         rendered
-    }
-}
-
-/// Rewrites SVG `<text>` nodes containing emoji to prefer Apple Color Emoji on macOS.
-///
-/// This is used for badge services such as shields.io where emoji are embedded inside SVG text.
-pub fn prefer_apple_color_emoji_in_svg(svg: &str) -> String {
-    #[cfg(not(target_os = "macos"))]
-    {
-        svg.to_owned()
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        svg_text_regex()
-            .replace_all(svg, |caps: &regex::Captures<'_>| {
-                let attrs = caps.name("attrs").map_or("", |m| m.as_str());
-                let text = caps.name("text").map_or("", |m| m.as_str());
-                if !contains_emoji(text) {
-                    caps.get(0)
-                        .map_or_else(String::new, |full| full.as_str().to_owned())
-                } else {
-                    format!("<text{}>{}</text>", ensure_emoji_font_family(attrs), text)
-                }
-            })
-            .into_owned()
     }
 }
 
@@ -222,92 +189,6 @@ fn escape_svg_text(text: &str) -> String {
         .replace('\'', "&apos;")
 }
 
-#[cfg(target_os = "macos")]
-fn svg_text_regex() -> &'static Regex {
-    static REGEX: OnceLock<Regex> = OnceLock::new();
-    REGEX.get_or_init(|| {
-        Regex::new(r#"(?s)<text(?P<attrs>[^>]*)>(?P<text>.*?)</text>"#)
-            .expect("valid svg text regex")
-    })
-}
-
-#[cfg(target_os = "macos")]
-fn font_family_double_quote_regex() -> &'static Regex {
-    static REGEX: OnceLock<Regex> = OnceLock::new();
-    REGEX.get_or_init(|| {
-        Regex::new(r#"font-family\s*=\s*"(?P<family>[^"]*)""#)
-            .expect("valid double-quoted font-family regex")
-    })
-}
-
-#[cfg(target_os = "macos")]
-fn font_family_single_quote_regex() -> &'static Regex {
-    static REGEX: OnceLock<Regex> = OnceLock::new();
-    REGEX.get_or_init(|| {
-        Regex::new(r#"font-family\s*=\s*'(?P<family>[^']*)'"#)
-            .expect("valid single-quoted font-family regex")
-    })
-}
-
-#[cfg(target_os = "macos")]
-fn ensure_emoji_font_family(attrs: &str) -> String {
-    #[allow(clippy::useless_vec)]
-    for (regex, quote) in vec![
-        (font_family_double_quote_regex(), '"'),
-        (font_family_single_quote_regex(), '\''),
-    ] {
-        if let Some(caps) = regex.captures(attrs) {
-            let family = caps.name("family").map_or("", |m| m.as_str());
-            if family.contains(APPLE_COLOR_EMOJI_FONT_FAMILY) {
-                return attrs.to_owned();
-            }
-
-            let replacement = format!(
-                "font-family={quote}{font_family}, {family}{quote}",
-                font_family = APPLE_COLOR_EMOJI_FONT_FAMILY,
-            );
-            return regex.replace(attrs, replacement).into_owned();
-        }
-    }
-
-    format!(r#"{attrs} font-family="{APPLE_COLOR_EMOJI_FONT_FAMILY}""#)
-}
-
-#[cfg(target_os = "macos")]
-fn contains_emoji(text: &str) -> bool {
-    text.chars().any(is_emoji_scalar)
-}
-
-#[cfg(target_os = "macos")]
-fn is_emoji_scalar(ch: char) -> bool {
-    matches!(
-        ch as u32,
-        0x00A9
-            | 0x00AE
-            | 0x203C
-            | 0x2049
-            | 0x2122
-            | 0x2139
-            | 0x2194..=0x21AA
-            | 0x231A..=0x2328
-            | 0x23CF
-            | 0x23E9..=0x23FA
-            | 0x24C2
-            | 0x25AA..=0x25AB
-            | 0x25B6
-            | 0x25C0
-            | 0x25FB..=0x25FE
-            | 0x2600..=0x27BF
-            | 0x2934..=0x2935
-            | 0x2B05..=0x2B55
-            | 0x3030
-            | 0x303D
-            | 0x3297
-            | 0x3299
-            | 0x1F000..=0x1FAFF
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -331,69 +212,7 @@ mod tests {
 
     #[test]
     #[cfg(target_os = "macos")]
-    fn prefer_apple_color_emoji_in_svg_prefixes_existing_font_family() {
-        let svg = r#"<svg><text x="10" font-family="Verdana" font-size="14">❤️</text></svg>"#;
-
-        let processed = prefer_apple_color_emoji_in_svg(svg);
-
-        assert!(processed.contains(r#"font-family="Apple Color Emoji, Verdana""#));
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn prefer_apple_color_emoji_in_svg_adds_font_family_when_missing() {
-        let svg = r#"<svg><text x="10">❤️ Sponsor</text></svg>"#;
-
-        let processed = prefer_apple_color_emoji_in_svg(svg);
-
-        assert!(processed.contains(r#"font-family="Apple Color Emoji""#));
-    }
-
-    #[test]
-    fn prefer_apple_color_emoji_in_svg_leaves_plain_text_unchanged() {
-        let svg = r#"<svg><text x="10" font-family="Verdana">Sponsor</text></svg>"#;
-
-        let processed = prefer_apple_color_emoji_in_svg(svg);
-
-        assert_eq!(processed, svg);
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
     fn render_apple_color_emoji_returns_none_for_empty_grapheme() {
         assert!(render_apple_color_emoji_png("", 24).is_none());
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn prefer_apple_color_emoji_in_svg_preserves_existing_emoji_font_family() {
-        let svg = r#"<svg><text x="10" font-family="Apple Color Emoji, Verdana">❤️</text></svg>"#;
-        let processed = prefer_apple_color_emoji_in_svg(svg);
-        // Already has Apple Color Emoji — should not duplicate
-        assert!(processed.contains(r#"font-family="Apple Color Emoji, Verdana""#));
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn is_emoji_scalar_covers_supplemental_arrows_range() {
-        // 0x2934 = ⤴ (ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS)
-        assert!(is_emoji_scalar('\u{2934}'));
-        assert!(is_emoji_scalar('\u{2935}'));
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn is_emoji_scalar_covers_misc_symbols_range() {
-        // 0x2B05 = ⬅ (LEFTWARDS BLACK ARROW)
-        assert!(is_emoji_scalar('\u{2B05}'));
-        assert!(is_emoji_scalar('\u{2B55}'));
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn is_emoji_scalar_covers_emoticons_range() {
-        // 0x1F000..=0x1FAFF — Mahjong Tiles through Symbols Extended-A
-        assert!(is_emoji_scalar('\u{1F600}')); // grinning face
-        assert!(is_emoji_scalar('\u{1F000}')); // mahjong tile
     }
 }

@@ -18,24 +18,24 @@ use super::diagram::{DiagramBlock, DiagramResult};
 
 /// Returns candidate paths to search for the PlantUML JAR.
 pub fn jar_candidate_paths() -> Vec<PathBuf> {
-    // If the environment variable is set, use only that path (ignore other candidates).
-    if let Ok(env_path) = std::env::var("PLANTUML_JAR") {
+    // WHY: If the environment variable is set, use only that path (ignore other candidates).
+    if let Some(env_path) = std::env::var("PLANTUML_JAR").ok() {
         return vec![PathBuf::from(env_path)];
     }
     let mut paths = Vec::new();
-    // Homebrew (Apple Silicon / Intel)
+    // WHY: Homebrew (Apple Silicon / Intel)
     #[allow(clippy::useless_vec)]
     for prefix in vec!["/opt/homebrew", "/usr/local"] {
         paths.push(PathBuf::from(prefix).join("opt/plantuml/libexec/plantuml.jar"));
     }
-    // Same directory as the binary
-    if let Ok(exe) = std::env::current_exe() {
+    // WHY: Same directory as the binary
+    if let Some(exe) = std::env::current_exe().ok() {
         if let Some(dir) = exe.parent() {
             paths.push(dir.join("plantuml.jar"));
             paths.push(dir.join("renderers").join("plantuml.jar"));
         }
     }
-    // XDG / macOS app data
+    // WHY: XDG / macOS app data
     if let Some(home) = dirs_sys::home_dir() {
         paths.push(home.join(".local").join("katana").join("plantuml.jar"));
     }
@@ -115,7 +115,7 @@ skinparam sequenceArrowColor {arrow}
             &source[insert_at..]
         )
     } else {
-        // If no @startuml delimiter, wrap the source.
+        // WHY: If no @startuml delimiter, wrap the source.
         format!("@startuml\n{skinparams}{source}\n@enduml")
     }
 }
@@ -142,7 +142,7 @@ pub fn run_plantuml_process(jar: &Path, source: &str) -> Result<String, String> 
         .spawn()
         .map_err(|e| format!("java startup failed: {e}"))?;
 
-    // Write to stdin in a separate scope to drop it and send EOF.
+    // WHY: Write to stdin in a separate scope to drop it and send EOF.
     {
         let stdin = child.stdin.as_mut().ok_or("stdin acquisition failed")?;
         stdin
