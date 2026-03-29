@@ -1,5 +1,5 @@
 use crate::theme::builder::ThemePresetBuilder;
-use crate::theme::types::{PresetColorData, Rgb, ThemeMode};
+use crate::theme::types::*;
 
 pub(crate) const CATPPUCCIN_LATTE: PresetColorData = ThemePresetBuilder::new(
     ThemeMode::Light,

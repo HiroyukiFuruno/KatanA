@@ -1,5 +1,5 @@
 use crate::theme::builder::ThemePresetBuilder;
-use crate::theme::types::{PresetColorData, Rgb, ThemeMode};
+use crate::theme::types::*;
 
 pub(crate) const NIGHT_OWL: PresetColorData = ThemePresetBuilder::new(
     ThemeMode::Dark,

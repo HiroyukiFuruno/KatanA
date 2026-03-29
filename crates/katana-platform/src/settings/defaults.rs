@@ -2,11 +2,7 @@
 
 use crate::theme::ThemePreset;
 
-use super::types::{
-    AppSettings, BehaviorSettings, ExportSettings, FontSettings, LayoutSettings,
-    PerformanceSettings, ThemeSettings, UpdateSettings, WorkspaceSettings,
-    DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH,
-};
+use super::types::*;
 
 // ── Constants ──
 

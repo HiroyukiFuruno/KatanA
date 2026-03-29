@@ -2,7 +2,7 @@
 
 use crate::theme::ThemeColors;
 
-use super::types::{AppSettings, MAX_FONT_SIZE, MIN_FONT_SIZE};
+use super::types::*;
 
 impl AppSettings {
     /// Returns the effective theme colours.
