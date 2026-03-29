@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 use super::*;
 use crate::theme::{Rgb, ThemeColors, ThemeMode, ThemePreset};
 use defaults::select_preset_for_mode;
@@ -31,7 +33,7 @@ fn test_app_settings_default_values() {
     assert_eq!(s.language, "en");
     assert!(s.workspace.last_workspace.is_none());
     assert!(s.workspace.paths.is_empty());
-    // Behavior defaults
+    // WHY: Behavior defaults
     assert!(s.behavior.confirm_close_dirty_tab);
     assert!(s.behavior.scroll_sync_enabled);
     assert!(!s.behavior.auto_save);
@@ -242,7 +244,7 @@ fn test_behavior_settings_fractional_auto_save_interval() {
         "Must roundtrip 0.1 float boundaries precisely to support egui interval sliding"
     );
 
-    // Edge boundary testing
+    // WHY: Edge boundary testing
     b.auto_save_interval_secs = 0.0;
     let parsed: BehaviorSettings =
         serde_json::from_str(&serde_json::to_string(&b).unwrap()).unwrap();
@@ -367,9 +369,9 @@ fn test_layout_settings_roundtrip() {
     assert_eq!(loaded.layout.pane_order, PaneOrder::PreviewFirst);
 }
 
-// ── Task 5.3: OS theme auto-selection tests ──
+// WHY: ── Task 5.3: OS theme auto-selection tests ──
 
-/// Helper: a test repository that reports `FirstLaunch` and holds a preset.
+// WHY: Helper: a test repository that reports `FirstLaunch` and holds a preset.
 struct FirstLaunchRepo {
     preset: ThemePreset,
 }

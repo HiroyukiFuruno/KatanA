@@ -2,10 +2,10 @@ use crate::cache::{read_guard, write_guard, CacheFacade, PersistentData};
 use std::path::PathBuf;
 use std::sync::RwLock;
 
-// WHY: Extracted from monolithic cache module to provide file-based persistent cache functionality.
-// SAFETY: Implements thread-safe locking mechanisms via RwLock and gracefully handles OS cache paths.
+/* WHY: Extracted from monolithic cache module to provide file-based persistent cache functionality.
+SAFETY: Implements thread-safe locking mechanisms via RwLock and gracefully handles OS cache paths. */
 
-/// The default implementation of the `CacheFacade` using a JSON file for persistence.
+// WHY: The default implementation of the `CacheFacade` using a JSON file for persistence.
 pub struct DefaultCacheService {
     memory: RwLock<Vec<(String, String)>>,
     persistent_path: PathBuf,
@@ -13,7 +13,7 @@ pub struct DefaultCacheService {
 }
 
 impl DefaultCacheService {
-    /// Creates a new `DefaultCacheService` with the specified persistent path.
+    // WHY: Creates a new `DefaultCacheService` with the specified persistent path.
     pub fn new(persistent_path: PathBuf) -> Self {
         let persistent = Self::load_persistent(&persistent_path).unwrap_or_default();
         Self {
@@ -23,7 +23,7 @@ impl DefaultCacheService {
         }
     }
 
-    /// Creates a new `DefaultCacheService` with the standard OS cache directory.
+    // WHY: Creates a new `DefaultCacheService` with the standard OS cache directory.
     pub fn with_default_path() -> Self {
         let base = dirs::cache_dir().unwrap_or_else(|| PathBuf::from("."));
         Self::new(base.join("KatanA").join("cache.json"))
@@ -48,8 +48,8 @@ impl DefaultCacheService {
         Ok(())
     }
 
-    /// Clears all subdirectories in the Katana cache directory (e.g., http-image-cache, plantuml, tmp)
-    /// while preserving files in the root like `cache.json`.
+    /* WHY: Clears all subdirectories in the Katana cache directory (e.g., http-image-cache, plantuml, tmp)
+    while preserving files in the root like `cache.json`. */
     pub fn clear_all_directories() {
         let base = dirs::cache_dir()
             .unwrap_or_else(|| PathBuf::from("."))
@@ -57,21 +57,30 @@ impl DefaultCacheService {
         Self::clear_all_directories_in(&base);
     }
 
+    fn clear_directory(path: &std::path::Path) {
+        let Ok(sub_entries) = std::fs::read_dir(path) else {
+            let _ = std::fs::remove_dir_all(path);
+            return;
+        };
+
+        for sub_entry in sub_entries.flatten() {
+            let _ = std::fs::remove_file(sub_entry.path());
+        }
+        let _ = std::fs::remove_dir_all(path);
+    }
+
     pub fn clear_all_directories_in(base: &std::path::Path) {
-        if let Ok(entries) = std::fs::read_dir(base) {
-            for entry in entries.flatten() {
-                if let Ok(file_type) = entry.file_type() {
-                    if file_type.is_dir() {
-                        let path = entry.path();
-                        // Best effort clear contents to prevent macOS directory not empty errors
-                        if let Ok(sub_entries) = std::fs::read_dir(&path) {
-                            for sub_entry in sub_entries.flatten() {
-                                let _ = std::fs::remove_file(sub_entry.path());
-                            }
-                        }
-                        let _ = std::fs::remove_dir_all(&path);
-                    }
-                }
+        let Ok(entries) = std::fs::read_dir(base) else {
+            return;
+        };
+
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+
+            if file_type.is_dir() {
+                Self::clear_directory(&entry.path());
             }
         }
     }

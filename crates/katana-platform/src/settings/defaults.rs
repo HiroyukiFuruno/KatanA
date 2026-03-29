@@ -1,7 +1,7 @@
-//! Serde default value functions and `Default` implementations for each struct.
-//!
-//! // WHY: Consolidates all settings default value generators to keep types.rs clean. Extracted to handle Serde defaults safely.
-//! // SAFETY: Contains no stateful logic or new type definitions, only purely functional value generation and `Default` trait implementations.
+/* WHY: Serde default value functions and `Default` implementations for each struct.
+
+Consolidates all settings default value generators to keep types.rs clean. Extracted to handle Serde defaults safely.
+SAFETY: Contains no stateful logic or new type definitions, only purely functional value generation and `Default` trait implementations. */
 use crate::theme::ThemePreset;
 
 use super::types::{
@@ -10,13 +10,13 @@ use super::types::{
     DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH,
 };
 
-// ── Constants ──
+// WHY: ── Constants ──
 
 const DEFAULT_FONT_SIZE: f32 = 14.0;
 const DEFAULT_DIAGRAM_CONCURRENCY: usize = 4;
 const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
 
-// ── Serde default functions ──
+// WHY: ── Serde default functions ──
 
 pub(crate) fn default_version() -> String {
     "0.2.0".to_string()
@@ -55,22 +55,17 @@ pub(crate) fn default_html_output_dir() -> String {
 }
 
 pub(crate) fn default_visible_extensions() -> Vec<String> {
-    vec![
-        "md".to_string(),
-        "markdown".to_string(),
-        "mdx".to_string(),
-        "txt".to_string(),
-        "adr".to_string(),
-    ]
+    vec!["md", "markdown", "mdx", "txt", "adr"]
+        .into_iter()
+        .map(String::from)
+        .collect()
 }
 
 pub(crate) fn default_extensionless_excludes() -> Vec<String> {
-    vec![
-        ".DS_Store".to_string(),
-        ".gitignore".to_string(),
-        ".gitattributes".to_string(),
-        "Makefile".to_string(),
-    ]
+    vec![".DS_Store", ".gitignore", ".gitattributes", "Makefile"]
+        .into_iter()
+        .map(String::from)
+        .collect()
 }
 
 pub(crate) fn default_ignored_directories() -> Vec<String> {
@@ -84,26 +79,26 @@ pub(crate) fn default_max_depth() -> usize {
     DEFAULT_MAX_DEPTH
 }
 
-// ── OS theme auto-detection ──
+// WHY: ── OS theme auto-detection ──
 
-/// Selects the initial theme preset based on the OS dark/light mode setting.
-///
-/// Called only on first launch. Returns `KatanaDark` when the OS is in dark mode
-/// (or when detection is unavailable), and `KatanaLight` otherwise.
+/* WHY: Selects the initial theme preset based on the OS dark/light mode setting.
+
+Called only on first launch. Returns `KatanaDark` when the OS is in dark mode
+(or when detection is unavailable), and `KatanaLight` otherwise. */
 pub(crate) fn select_initial_preset() -> ThemePreset {
     select_preset_for_mode(crate::os_theme::is_dark_mode())
 }
 
-/// Pure helper: selects the preset for a given dark-mode query result.
-/// Factored out to allow unit testing of both branches without OS dependency.
+/* WHY: Pure helper: selects the preset for a given dark-mode query result.
+Factored out to allow unit testing of both branches without OS dependency. */
 pub(crate) fn select_preset_for_mode(is_dark: Option<bool>) -> ThemePreset {
     match is_dark {
         Some(false) => ThemePreset::KatanaLight,
-        _ => ThemePreset::KatanaDark, // dark mode or unknown -> dark by default
+        _ => ThemePreset::KatanaDark, // WHY: dark mode or unknown -> dark by default
     }
 }
 
-// ── Default impls ──
+// WHY: ── Default impls ──
 
 impl Default for AppSettings {
     fn default() -> Self {

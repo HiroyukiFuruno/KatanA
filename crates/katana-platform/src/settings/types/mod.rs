@@ -1,6 +1,6 @@
-//! Settings type definitions.
-//!
-//! All settings-related structs, enums, and constants are consolidated here.
+/* WHY: Settings type definitions.
+
+All settings-related structs, enums, and constants are consolidated here. */
 
 pub mod app;
 pub mod behavior;

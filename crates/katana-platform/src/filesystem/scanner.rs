@@ -1,7 +1,97 @@
 use katana_core::workspace::TreeEntry;
 use std::path::{Path, PathBuf};
 
-/// Recursively and in parallel scans a directory, returning a tree containing only visible files.
+#[derive(Clone, Copy)]
+pub(crate) struct ScanContext<'a> {
+    pub ignored_directories: &'a [String],
+    pub max_depth: usize,
+    pub visible_extensions: &'a [String],
+    pub extensionless_excludes: &'a [String],
+    pub cancel_token: &'a std::sync::Arc<std::sync::atomic::AtomicBool>,
+    pub in_memory_dirs: &'a std::collections::HashSet<PathBuf>,
+}
+
+fn process_file(path: PathBuf, file_name: &str, ctx: ScanContext<'_>) -> Option<TreeEntry> {
+    let is_visible = match path.extension().and_then(|e| e.to_str()) {
+        Some(ext) => ctx
+            .visible_extensions
+            .iter()
+            .any(|v| v.eq_ignore_ascii_case(ext)),
+        None => {
+            let no_ext_enabled = ctx.visible_extensions.iter().any(|v| v.is_empty());
+            no_ext_enabled
+                && !ctx
+                    .extensionless_excludes
+                    .iter()
+                    .any(|excl| excl == file_name)
+        }
+    };
+    if is_visible {
+        Some(TreeEntry::File { path })
+    } else {
+        None
+    }
+}
+
+fn process_dir(path: PathBuf, current_depth: usize, ctx: ScanContext<'_>) -> Option<TreeEntry> {
+    let children = scan_directory_internal(&path, ctx, current_depth + 1).unwrap_or_default();
+    if has_any_visible(&children, ctx.visible_extensions) || ctx.in_memory_dirs.contains(&path) {
+        Some(TreeEntry::Directory { path, children })
+    } else {
+        None
+    }
+}
+
+fn process_entry(
+    entry: &std::fs::DirEntry,
+    current_depth: usize,
+    ctx: ScanContext<'_>,
+) -> Option<TreeEntry> {
+    if ctx.cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
+        return None;
+    }
+    let path = entry.path();
+    let file_name_os = entry.file_name();
+    let file_name = file_name_os.to_str()?;
+    if ctx
+        .ignored_directories
+        .iter()
+        .any(|ignored| ignored == file_name)
+    {
+        return None;
+    }
+    if path.is_dir() {
+        process_dir(path, current_depth, ctx)
+    } else {
+        process_file(path, file_name, ctx)
+    }
+}
+
+fn scan_directory_internal(
+    dir: &Path,
+    ctx: ScanContext<'_>,
+    current_depth: usize,
+) -> std::io::Result<Vec<TreeEntry>> {
+    if current_depth >= ctx.max_depth || ctx.cancel_token.load(std::sync::atomic::Ordering::Relaxed)
+    {
+        return Ok(Vec::new());
+    }
+    use rayon::prelude::*;
+    let iter = std::fs::read_dir(dir)?;
+    let child_entries: Vec<_> = iter.filter_map(Result::ok).collect();
+    let mut entries: Vec<TreeEntry> = child_entries
+        .into_par_iter()
+        .filter_map(|entry| process_entry(&entry, current_depth, ctx))
+        .collect();
+    entries.sort_by(|a, b| match (a, b) {
+        (TreeEntry::Directory { .. }, TreeEntry::File { .. }) => std::cmp::Ordering::Less,
+        (TreeEntry::File { .. }, TreeEntry::Directory { .. }) => std::cmp::Ordering::Greater,
+        (a, b) => a.path().cmp(b.path()),
+    });
+    Ok(entries)
+}
+
+// WHY: Recursively and in parallel scans a directory, returning a tree containing only visible files.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn scan_directory(
     dir: &Path,
@@ -13,86 +103,18 @@ pub(crate) fn scan_directory(
     cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
     in_memory_dirs: &std::collections::HashSet<PathBuf>,
 ) -> std::io::Result<Vec<TreeEntry>> {
-    if current_depth >= max_depth || cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
-        return Ok(Vec::new());
-    }
-
-    use rayon::prelude::*;
-
-    let iter = std::fs::read_dir(dir)?;
-    let child_entries: Vec<_> = iter.filter_map(Result::ok).collect();
-
-    let mut entries: Vec<TreeEntry> = child_entries
-        .into_par_iter()
-        .filter_map(|entry| {
-            if cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
-                return None;
-            }
-
-            let path = entry.path();
-            let file_name = path.file_name().and_then(|n| n.to_str())?;
-
-            if ignored_directories
-                .iter()
-                .any(|ignored| ignored == file_name)
-            {
-                return None;
-            }
-
-            if path.is_dir() {
-                let children = scan_directory(
-                    &path,
-                    ignored_directories,
-                    max_depth,
-                    current_depth + 1,
-                    visible_extensions,
-                    extensionless_excludes,
-                    cancel_token,
-                    in_memory_dirs,
-                )
-                .unwrap_or_default();
-                // Show directory if it has visible files OR it is an explicitly created empty directory.
-                if has_any_visible(&children, visible_extensions) || in_memory_dirs.contains(&path)
-                {
-                    Some(TreeEntry::Directory { path, children })
-                } else {
-                    None
-                }
-            } else {
-                let is_visible = match path.extension().and_then(|e| e.to_str()) {
-                    Some(ext) => visible_extensions
-                        .iter()
-                        .any(|v| v.eq_ignore_ascii_case(ext)),
-                    None => {
-                        let no_ext_enabled = visible_extensions.iter().any(|v| v.is_empty());
-                        if no_ext_enabled {
-                            let is_excluded =
-                                extensionless_excludes.iter().any(|excl| excl == file_name);
-                            !is_excluded
-                        } else {
-                            false
-                        }
-                    }
-                };
-                if is_visible {
-                    Some(TreeEntry::File { path })
-                } else {
-                    None
-                }
-            }
-        })
-        .collect();
-
-    // Sort: directories first, then files, both alphabetically.
-    entries.sort_by(|a, b| match (a, b) {
-        (TreeEntry::Directory { .. }, TreeEntry::File { .. }) => std::cmp::Ordering::Less,
-        (TreeEntry::File { .. }, TreeEntry::Directory { .. }) => std::cmp::Ordering::Greater,
-        (a, b) => a.path().cmp(b.path()),
-    });
-    Ok(entries)
+    let ctx = ScanContext {
+        ignored_directories,
+        max_depth,
+        visible_extensions,
+        extensionless_excludes,
+        cancel_token,
+        in_memory_dirs,
+    };
+    scan_directory_internal(dir, ctx, current_depth)
 }
 
-/// Recursively checks if there is at least one visible file in the tree.
+// WHY: Recursively checks if there is at least one visible file in the tree.
 pub(crate) fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[String]) -> bool {
     entries.iter().any(|e| match e {
         TreeEntry::File { path } => match path.extension().and_then(|ext| ext.to_str()) {
