@@ -29,27 +29,32 @@ pub fn extract_markdown_headings(path: &Path) -> Result<Vec<MarkdownHeading>, Ve
             in_fence = !in_fence;
             continue;
         }
-        if in_fence {
-            continue;
-        }
+        if in_fence { continue; }
 
-        let hashes = trimmed.chars().take_while(|char| *char == '#').count();
-        if !(1..=6).contains(&hashes) {
-            continue;
+        if let Some(heading) = parse_markdown_heading(trimmed, index) {
+            headings.push(heading);
         }
-
-        let rest = &trimmed[hashes..];
-        if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
-            continue;
-        }
-
-        headings.push(MarkdownHeading {
-            level: hashes as u8,
-            line: index + 1,
-        });
     }
 
     Ok(headings)
+}
+
+fn parse_markdown_heading(trimmed: &str, line_index: usize) -> Option<MarkdownHeading> {
+    let hashes = trimmed.chars().take_while(|char| *char == '#').count();
+    const MAX_HEADING_LEVEL: usize = 6;
+    if !(1..=MAX_HEADING_LEVEL).contains(&hashes) {
+        return None;
+    }
+
+    let rest = &trimmed[hashes..];
+    if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
+        return None;
+    }
+
+    Some(MarkdownHeading {
+        level: hashes as u8,
+        line: line_index + 1,
+    })
 }
 
 pub fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation> {
@@ -62,24 +67,31 @@ pub fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation>
         Err(violations) => return violations,
     };
 
-    let mut violations = Vec::new();
+    let mut violations = check_heading_counts(pair, &base_headings, &ja_headings);
+    violations.extend(check_heading_levels(pair, &base_headings, &ja_headings));
+    violations
+}
 
-    if base_headings.len() != ja_headings.len() {
-        violations.push(locale_violation(
+fn check_heading_counts(pair: &MarkdownPair, base: &[MarkdownHeading], ja: &[MarkdownHeading]) -> Vec<Violation> {
+    if base.len() != ja.len() {
+        vec![locale_violation(
             &pair.ja,
             format!(
                 "Markdown heading count mismatch between `{}` and `{}`: {} vs {}.",
                 pair.base.display(),
                 pair.ja.display(),
-                base_headings.len(),
-                ja_headings.len()
+                base.len(),
+                ja.len()
             ),
-        ));
+        )]
+    } else {
+        Vec::new()
     }
+}
 
-    for (index, (base_heading, ja_heading)) in
-        base_headings.iter().zip(ja_headings.iter()).enumerate()
-    {
+fn check_heading_levels(pair: &MarkdownPair, base: &[MarkdownHeading], ja: &[MarkdownHeading]) -> Vec<Violation> {
+    let mut violations = Vec::new();
+    for (index, (base_heading, ja_heading)) in base.iter().zip(ja.iter()).enumerate() {
         if base_heading.level != ja_heading.level {
             violations.push(Violation {
                 file: pair.ja.clone(),
@@ -95,7 +107,6 @@ pub fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation>
             });
         }
     }
-
     violations
 }
 

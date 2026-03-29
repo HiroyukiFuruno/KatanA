@@ -48,7 +48,7 @@ impl DiagramBlock {
     pub fn validate(&self) -> Result<(), DiagramValidationError> {
         match self.kind {
             DiagramKind::Mermaid => {
-                // Any non-empty source is accepted.
+                // WHY: Any non-empty source is accepted.
                 if self.source.trim().is_empty() {
                     return Err(DiagramValidationError::EmptySource {
                         kind: self.kind.display_name(),
@@ -128,7 +128,7 @@ pub struct NoOpRenderer;
 
 impl DiagramRenderer for NoOpRenderer {
     fn render(&self, block: &DiagramBlock) -> DiagramResult {
-        // Pass through as a code block — the diagram source is visible but not rendered.
+        // WHY: Pass through as a code block — the diagram source is visible but not rendered.
         let html = format!(
             "<pre><code class=\"language-{kind}\">{source}</code></pre>",
             kind = match block.kind {

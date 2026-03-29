@@ -1,4 +1,4 @@
-use crate::utils::{collect_rs_files, parse_file, span_location};
+use crate::utils::{collect_rs_files, parse_file};
 use crate::Violation;
 use std::collections::HashSet;
 use std::path::Path;
@@ -10,27 +10,34 @@ struct ThemePropertyExtractor {
 
 impl<'ast> Visit<'ast> for ThemePropertyExtractor {
     fn visit_item_struct(&mut self, node: &'ast syn::ItemStruct) {
+        self.extract_color_properties(node);
+        syn::visit::visit_item_struct(self, node);
+    }
+}
+
+impl ThemePropertyExtractor {
+    fn extract_color_properties(&mut self, node: &syn::ItemStruct) {
+        use crate::utils::span_location;
         let name = node.ident.to_string();
-        if name == "ThemeColors"
-            || name == "SystemColors"
-            || name == "CodeColors"
-            || name == "PreviewColors"
+        if name != "ThemeColors"
+            && name != "SystemColors"
+            && name != "CodeColors"
+            && name != "PreviewColors"
         {
-            for field in &node.fields {
-                if let Some(ident) = &field.ident {
-                    if let syn::Type::Path(type_path) = &field.ty {
-                        if let Some(segment) = type_path.path.segments.last() {
-                            let type_name = segment.ident.to_string();
-                            if type_name == "Rgb" || type_name == "Rgba" {
-                                let (line, col) = span_location(ident.span());
-                                self.properties.push((ident.to_string(), line, col));
-                            }
-                        }
-                    }
-                }
+            return;
+        }
+
+        for field in &node.fields {
+            let Some(ident) = &field.ident else { continue };
+            let syn::Type::Path(type_path) = &field.ty else { continue };
+            let Some(segment) = type_path.path.segments.last() else { continue };
+            
+            let type_name = segment.ident.to_string();
+            if type_name == "Rgb" || type_name == "Rgba" {
+                let (line, col) = span_location(ident.span());
+                self.properties.push((ident.to_string(), line, col));
             }
         }
-        syn::visit::visit_item_struct(self, node);
     }
 }
 
@@ -48,9 +55,9 @@ impl<'ast> Visit<'ast> for FieldAccessVisitor {
 
     fn visit_macro(&mut self, node: &'ast syn::Macro) {
         if node.path.is_ident("vec") {
-            if let Ok(exprs) = node.parse_body_with(
+            if let Some(exprs) = node.parse_body_with(
                 syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated,
-            ) {
+            ).ok() {
                 for expr in exprs {
                     self.visit_expr(&expr);
                 }
@@ -85,7 +92,7 @@ pub fn lint_unused_theme_colors(workspace_root: &Path) -> Vec<Violation> {
     };
 
     for file in ui_files {
-        if let Ok(ast) = parse_file(&file) {
+        if let Some(ast) = parse_file(&file).ok() {
             general_access.visit_file(&ast);
 
             if file.file_name().unwrap_or_default() == "settings_window.rs" {

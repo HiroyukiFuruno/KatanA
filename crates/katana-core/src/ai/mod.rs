@@ -119,8 +119,8 @@ impl AiProviderRegistry {
     /// or when the active provider reports itself unavailable.
     pub fn execute(&self, request: &AiRequest) -> Result<AiResponse, AiError> {
         let id = self.active_id.as_deref().ok_or(AiError::NotConfigured)?;
-        // `set_active` returns `true` only if it exists in providers.
-        // Therefore, if `active_id` is `Some`, it must exist in providers.
+        // WHY: `set_active` returns `true` only if it exists in providers.
+        // WHY: Therefore, if `active_id` is `Some`, it must exist in providers.
         let provider = self
             .providers
             .iter()

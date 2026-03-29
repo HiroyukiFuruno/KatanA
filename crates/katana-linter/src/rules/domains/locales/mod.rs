@@ -2,7 +2,8 @@ use crate::utils::{
     collect_json_placeholders, collect_json_shape, collect_json_values, parse_json_file,
 };
 use crate::Violation;
-use std::collections::BTreeMap;
+use crate::JsonNodeKind;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 pub mod catalog;
@@ -45,37 +46,53 @@ pub fn lint_locale_files(locale_dir: &Path) -> Vec<Violation> {
         };
 
     for file in locale_files {
-        let is_base_locale = file.ends_with("ja.json") || file.ends_with("en.json");
-        if is_base_locale {
-            continue;
-        }
-
-        let value = match parse_json_file(&file) {
-            Ok(value) => value,
-            Err(violations) => {
-                all_violations.extend(violations);
-                continue;
-            }
-        };
-
-        let mut shape = BTreeMap::new();
-        let mut placeholders = BTreeMap::new();
-        let mut values = BTreeMap::new();
-        collect_json_shape(&value, None, &mut shape);
-        collect_json_placeholders(&value, None, &mut placeholders);
-        collect_json_values(&value, None, &mut values);
-
-        all_violations.extend(compare_locale_shape(&file, &baseline_shape, &shape));
-        all_violations.extend(compare_locale_placeholders(
+        process_single_locale_file(
             &file,
             &baseline_shape,
             &baseline_placeholders,
-            &placeholders,
-        ));
-        all_violations.extend(compare_locale_values(&file, &en_values, &values));
+            &en_values,
+            &mut all_violations,
+        );
     }
 
     all_violations
+}
+
+fn process_single_locale_file(
+    file: &Path,
+    baseline_shape: &BTreeMap<String, JsonNodeKind>,
+    baseline_placeholders: &BTreeMap<String, BTreeSet<String>>,
+    en_values: &BTreeMap<String, String>,
+    all_violations: &mut Vec<Violation>,
+) {
+    let is_base_locale = file.ends_with("ja.json") || file.ends_with("en.json");
+    if is_base_locale {
+        return;
+    }
+
+    let value = match parse_json_file(file) {
+        Ok(value) => value,
+        Err(violations) => {
+            all_violations.extend(violations);
+            return;
+        }
+    };
+
+    let mut shape = BTreeMap::new();
+    let mut placeholders = BTreeMap::new();
+    let mut values = BTreeMap::new();
+    collect_json_shape(&value, None, &mut shape);
+    collect_json_placeholders(&value, None, &mut placeholders);
+    collect_json_values(&value, None, &mut values);
+
+    all_violations.extend(compare_locale_shape(file, baseline_shape, &shape));
+    all_violations.extend(compare_locale_placeholders(
+        file,
+        baseline_shape,
+        baseline_placeholders,
+        &placeholders,
+    ));
+    all_violations.extend(compare_locale_values(file, en_values, &values));
 }
 
 #[cfg(test)]

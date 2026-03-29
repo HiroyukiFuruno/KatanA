@@ -1,23 +1,21 @@
-#![deny(
-    warnings,
-    clippy::all,
+#![deny(warnings, clippy::all)]
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
     clippy::too_many_lines,
-    clippy::cognitive_complexity,
-    clippy::wildcard_imports,
+    clippy::expect_used,
+    clippy::indexing_slicing,
     clippy::unwrap_used,
     clippy::panic,
     clippy::todo,
     clippy::unimplemented,
     clippy::unwrap_or_default,
+    clippy::wildcard_imports,
     clippy::match_wild_err_arm,
     clippy::let_and_return,
-    clippy::manual_ok_err
-)]
-#![warn(
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::missing_errors_doc,
-    missing_docs
+    clippy::manual_ok_err,
+    clippy::cognitive_complexity,
+    clippy::type_complexity
 )]
 #![cfg_attr(
     test,

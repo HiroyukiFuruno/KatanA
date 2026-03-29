@@ -5,7 +5,7 @@ use std::path::Path;
 pub fn has_cfg_test_attr(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| {
         if attr.path().is_ident("cfg") {
-            if let Ok(syn::Meta::Path(path)) = attr.parse_args::<syn::Meta>() {
+            if let Some(syn::Meta::Path(path)) = attr.parse_args::<syn::Meta>().ok() {
                 return path.is_ident("test");
             }
         }
@@ -52,7 +52,6 @@ pub fn parse_file(path: &Path) -> Result<syn::File, Vec<Violation>> {
         }]
     })
 }
-
 
 /// Identifies non-standard strings like ui icons or typical symbols to avoid false positives.
 pub fn is_allowed_string(s: &str) -> bool {
@@ -149,6 +148,4 @@ mod tests {
         };
         assert!(violations[0].message.contains("Syntax parse error"));
     }
-
-
 }

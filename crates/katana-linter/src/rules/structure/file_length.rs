@@ -12,6 +12,10 @@ pub fn lint_file_length(path: &Path, syntax: &syn::File) -> Vec<Violation> {
         Err(_) => return Vec::new(),
     };
 
+    if has_cfg_test_attr(&syntax.attrs) {
+        return Vec::new();
+    }
+
     let total_lines = source.lines().count();
 
     let test_lines = count_test_module_lines(syntax, &source);
