@@ -1,6 +1,5 @@
 use crate::update::UpdateProgress;
 
-/// Downloads a file from the given URL to the destination path.
 pub fn download_update<P: AsRef<std::path::Path>, F>(
     url: &str,
     dest_path: P,
@@ -40,7 +39,6 @@ where
     Ok(())
 }
 
-/// Extracts a ZIP archive into the destination directory.
 pub fn extract_update<P: AsRef<std::path::Path>, D: AsRef<std::path::Path>, F>(
     zip_path: P,
     extract_to_dir: D,

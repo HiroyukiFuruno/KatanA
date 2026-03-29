@@ -9,7 +9,6 @@ use super::data::is_emoji_scalar;
 #[cfg(target_os = "macos")]
 const APPLE_COLOR_EMOJI_FONT_FAMILY: &str = "Apple Color Emoji";
 
-/// Rewrites SVG `<text>` nodes containing emoji to prefer Apple Color Emoji on macOS.
 pub fn prefer_apple_color_emoji_in_svg(svg: &str) -> String {
     #[cfg(not(target_os = "macos"))]
     {

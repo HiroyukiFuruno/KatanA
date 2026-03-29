@@ -1,18 +1,13 @@
 use crate::update::download::{download_update, extract_update};
 use crate::update::UpdateProgress;
 
-/// Represents a fully prepared update that is ready to be executed.
 #[derive(Debug)]
 pub struct UpdatePreparation {
-    /// The temporary directory holding the extracted update.
     pub temp_dir: tempfile::TempDir,
-    /// The path to the newly extracted KatanA app bundle.
     pub app_bundle_path: std::path::PathBuf,
-    /// The path to the custom bash relauncher script.
     pub script_path: std::path::PathBuf,
 }
 
-/// Prepares the update by downloading, extracting, and generating the relauncher script.
 pub fn prepare_update<F>(
     download_url: &str,
     target_app_path: &std::path::Path,
@@ -52,7 +47,6 @@ where
     })
 }
 
-/// Executes the background relauncher and exits the current process.
 #[cfg(not(test))]
 #[cfg(not(coverage))]
 pub fn execute_relauncher(prep: UpdatePreparation) -> anyhow::Result<()> {
@@ -63,7 +57,6 @@ pub fn execute_relauncher(prep: UpdatePreparation) -> anyhow::Result<()> {
     std::process::exit(0);
 }
 
-/// Generates the bash script used for atomic replacement and quarantine removal.
 pub fn generate_relauncher_script(
     extracted_app: &std::path::Path,
     target_app: &std::path::Path,

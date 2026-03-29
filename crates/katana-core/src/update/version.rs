@@ -1,20 +1,13 @@
 use serde::Deserialize;
 
-/// Information about a new release fetched from the upstream repository.
 #[derive(Debug, Deserialize, PartialEq, Clone)]
 pub struct ReleaseInfo {
-    /// The tag name of the release, e.g., "v0.7.0".
     pub tag_name: String,
-    /// The URL to view the release in a browser.
     pub html_url: String,
-    /// The body or description of the release.
     pub body: String,
-    /// The direct download URL for the update package.
     pub download_url: String,
 }
 
-/// Parses the semver versions (stripping 'v' prefix if present)
-/// and returns true if `upstream` is strictly greater than `current`.
 pub fn is_newer_version(current: &str, upstream: &str) -> bool {
     let current_clean = current.strip_prefix('v').unwrap_or(current);
     let upstream_clean = upstream.strip_prefix('v').unwrap_or(upstream);
@@ -47,7 +40,6 @@ fn build_release_info(tag_name: String) -> ReleaseInfo {
     }
 }
 
-/// Checks the upstream API for a newer version than the `current_version`.
 pub fn check_for_updates(
     current_version: &str,
     api_url_override: Option<&str>,
