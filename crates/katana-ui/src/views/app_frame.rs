@@ -17,242 +17,310 @@ const CHEVRON_ICON_SIZE: f32 = 10.0;
 /// Renders the main application panels (everything inside the `if !splash_is_opaque` guard).
 ///
 /// Returns an optional `DownloadRequest` produced by split preview rendering.
-pub(crate) fn render_main_panels(
-    ctx: &egui::Context,
-    app: &mut KatanaApp,
-    theme_colors: &katana_platform::theme::ThemeColors,
-) -> Option<DownloadRequest> {
-    // Menu bar & status bar
-    crate::views::top_bar::render_menu_bar(ctx, &mut app.state, &mut app.pending_action);
-    let export_filenames: Vec<String> = app
-        .export_tasks
-        .iter()
-        .map(|t| t.filename.clone())
-        .collect();
-    crate::views::top_bar::render_status_bar(ctx, &app.state, &export_filenames);
-
-    // Window title
-    render_window_title(ctx, app);
-
-    // In-app title bar
-    render_title_bar(ctx, app, theme_colors);
-
-    // Workspace sidebar
-    render_workspace_sidebar(ctx, app);
-
-    // Tab toolbar (tabs + breadcrumbs + view mode)
-    render_tab_toolbar(ctx, app);
-
-    // Central content area
-    render_central_content(ctx, app)
+pub(crate) struct MainPanels<'a> {
+    pub app: &'a mut KatanaApp,
+    pub theme_colors: &'a katana_platform::theme::ThemeColors,
 }
 
-fn render_window_title(ctx: &egui::Context, app: &mut KatanaApp) {
-    let ws_root_for_title = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
-    let title_text = match app.state.active_document() {
-        Some(doc) => {
-            let fname = doc.file_name().unwrap_or("");
-            let rel = relative_full_path(&doc.path, ws_root_for_title.as_deref());
-            crate::shell_logic::format_window_title(
-                fname,
-                &rel,
-                &crate::i18n::get().menu.release_notes,
-            )
-        }
-        None => "KatanA".to_string(),
-    };
-    if app.state.layout.last_window_title != title_text {
-        ctx.send_viewport_cmd(egui::ViewportCommand::Title(title_text.clone()));
-        app.state.layout.last_window_title = title_text;
+impl<'a> MainPanels<'a> {
+    pub fn new(
+        app: &'a mut KatanaApp,
+        theme_colors: &'a katana_platform::theme::ThemeColors,
+    ) -> Self {
+        Self { app, theme_colors }
+    }
+
+    pub fn show(self, ctx: &egui::Context) -> Option<DownloadRequest> {
+        let app = self.app;
+        let theme_colors = self.theme_colors;
+        // Menu bar & status bar
+        crate::views::top_bar::MenuBar::new(&mut app.state, &mut app.pending_action).show(ctx);
+        let export_filenames: Vec<String> = app
+            .export_tasks
+            .iter()
+            .map(|t| t.filename.clone())
+            .collect();
+        crate::views::top_bar::StatusBar::new(&app.state, &export_filenames).show(ctx);
+
+        // Window title
+        WindowTitle::new(app).show(ctx);
+
+        // In-app title bar
+        TitleBar::new(app, theme_colors).show(ctx);
+
+        // Workspace sidebar
+        WorkspaceSidebar::new(app).show(ctx);
+
+        // Tab toolbar (tabs + breadcrumbs + view mode)
+        TabToolbar::new(app).show(ctx);
+
+        // Central content area
+        CentralContent::new(app).show(ctx)
     }
 }
 
-fn render_title_bar(
-    ctx: &egui::Context,
-    app: &KatanaApp,
-    theme_colors: &katana_platform::theme::ThemeColors,
-) {
-    let title_text = &app.state.layout.last_window_title;
-    egui::TopBottomPanel::top("app_title_bar").show(ctx, |ui| {
-        ui.horizontal(|ui| {
-            ui.centered_and_justified(|ui| {
-                let title_color = theme_bridge::rgb_to_color32(theme_colors.system.title_bar_text);
-                ui.label(egui::RichText::new(title_text).small().color(title_color));
-            });
-        });
-    });
+struct WindowTitle<'a> {
+    app: &'a mut KatanaApp,
+}
+impl<'a> WindowTitle<'a> {
+    fn new(app: &'a mut KatanaApp) -> Self {
+        Self { app }
+    }
+    fn show(self, ctx: &egui::Context) {
+        let app = self.app;
+        let ws_root_for_title = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
+        let title_text = match app.state.active_document() {
+            Some(doc) => {
+                let fname = doc.file_name().unwrap_or("");
+                let rel = relative_full_path(&doc.path, ws_root_for_title.as_deref());
+                crate::shell_logic::format_window_title(
+                    fname,
+                    &rel,
+                    &crate::i18n::get().menu.release_notes,
+                )
+            }
+            None => "KatanA".to_string(),
+        };
+        if app.state.layout.last_window_title != title_text {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Title(title_text.clone()));
+            app.state.layout.last_window_title = title_text;
+        }
+    }
 }
 
-fn render_workspace_sidebar(ctx: &egui::Context, app: &mut KatanaApp) {
-    if !app.state.layout.show_workspace {
-        egui::SidePanel::left("workspace_collapsed")
-            .resizable(false)
-            .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
-            .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
-                    if ui
-                        .add(egui::Button::image(
-                            crate::Icon::ChevronRight.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
-                        .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
-                        .clicked()
-                    {
-                        app.state.layout.show_workspace = true;
-                    }
+struct TitleBar<'a> {
+    app: &'a KatanaApp,
+    theme_colors: &'a katana_platform::theme::ThemeColors,
+}
+impl<'a> TitleBar<'a> {
+    fn new(app: &'a KatanaApp, theme_colors: &'a katana_platform::theme::ThemeColors) -> Self {
+        Self { app, theme_colors }
+    }
+    fn show(self, ctx: &egui::Context) {
+        let app = self.app;
+        let theme_colors = self.theme_colors;
+        let title_text = &app.state.layout.last_window_title;
+        egui::TopBottomPanel::top("app_title_bar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.centered_and_justified(|ui| {
+                    let title_color =
+                        theme_bridge::rgb_to_color32(theme_colors.system.title_bar_text);
+                    ui.label(egui::RichText::new(title_text).small().color(title_color));
                 });
             });
-    } else {
-        crate::views::panels::workspace::render_workspace_panel(
-            ctx,
-            &mut app.state,
-            &mut app.pending_action,
-        );
+        });
     }
 }
 
-fn render_tab_toolbar(ctx: &egui::Context, app: &mut KatanaApp) {
-    egui::TopBottomPanel::top("tab_toolbar").show(ctx, |ui| {
-        crate::views::top_bar::render_tab_bar(ui, &mut app.state, &mut app.pending_action);
-        let active_doc_props = app.state.active_document();
-        if let Some(doc) = active_doc_props {
-            let d_path = doc.path.to_string_lossy();
-            let is_changelog = d_path.starts_with("Katana://ChangeLog");
-
-            if !is_changelog {
-                let doc_path = doc.path.clone();
-                let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
-                let rel = relative_full_path(&doc_path, ws_root.as_deref());
-                let breadcrumb_action = render_breadcrumbs(ui, app, &rel, ws_root.as_deref());
-                if let Some(a) = breadcrumb_action {
-                    app.pending_action = a;
-                }
-            }
-            crate::views::top_bar::render_view_mode_bar(
-                ui,
+struct WorkspaceSidebar<'a> {
+    app: &'a mut KatanaApp,
+}
+impl<'a> WorkspaceSidebar<'a> {
+    fn new(app: &'a mut KatanaApp) -> Self {
+        Self { app }
+    }
+    fn show(self, ctx: &egui::Context) {
+        let app = self.app;
+        if !app.state.layout.show_workspace {
+            egui::SidePanel::left("workspace_collapsed")
+                .resizable(false)
+                .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
+                .show(ctx, |ui| {
+                    ui.vertical_centered(|ui| {
+                        if ui
+                            .add(egui::Button::image(
+                                crate::Icon::ChevronRight
+                                    .ui_image(ui, crate::icon::IconSize::Medium),
+                            ))
+                            .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
+                            .clicked()
+                        {
+                            app.state.layout.show_workspace = true;
+                        }
+                    });
+                });
+        } else {
+            crate::views::panels::workspace::WorkspacePanel::new(
                 &mut app.state,
                 &mut app.pending_action,
-            );
-        }
-    });
-}
-
-fn render_breadcrumbs(
-    ui: &mut egui::Ui,
-    app: &KatanaApp,
-    rel: &str,
-    ws_root: Option<&std::path::Path>,
-) -> Option<AppAction> {
-    let mut breadcrumb_action = None;
-    ui.horizontal(|ui| {
-        let segments: Vec<&str> = rel.split('/').collect();
-        let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
-        for (i, seg) in segments.iter().enumerate() {
-            if i > 0 {
-                ui.add(
-                    egui::Image::new(crate::Icon::ChevronRight.uri())
-                        .tint(ui.visuals().text_color())
-                        .max_height(CHEVRON_ICON_SIZE),
-                );
-            }
-
-            if ws_root.is_none() {
-                ui.label(egui::RichText::new(*seg).small());
-                continue;
-            }
-
-            current_path = current_path.join(seg);
-            let is_last = i == segments.len() - 1;
-
-            if is_last {
-                ui.add(
-                    egui::Label::new(egui::RichText::new(*seg).small()).sense(egui::Sense::hover()),
-                );
-            } else {
-                ui.menu_button(egui::RichText::new(*seg).small(), |ui| {
-                    let mut ctx_action = crate::app_state::AppAction::None;
-
-                    if let Some(ws) = &app.state.workspace.data {
-                        if let Some(katana_core::workspace::TreeEntry::Directory {
-                            children, ..
-                        }) =
-                            crate::views::panels::tree::find_node_in_tree(&ws.tree, &current_path)
-                        {
-                            crate::views::panels::workspace::render_breadcrumb_menu(
-                                ui,
-                                children,
-                                &mut ctx_action,
-                            );
-                        }
-                    }
-
-                    if !matches!(ctx_action, crate::app_state::AppAction::None) {
-                        breadcrumb_action = Some(ctx_action);
-                        ui.close();
-                    }
-                });
-            }
-        }
-    });
-    breadcrumb_action
-}
-
-fn render_central_content(ctx: &egui::Context, app: &mut KatanaApp) -> Option<DownloadRequest> {
-    let mut download_req: Option<DownloadRequest> = None;
-    let current_mode = app.state.active_view_mode();
-    let is_split = current_mode == ViewMode::Split;
-    let mut is_changelog_tab = false;
-
-    if let Some(doc) = app.state.active_document() {
-        if doc.path.to_string_lossy().starts_with("Katana://ChangeLog") {
-            is_changelog_tab = true;
+            )
+            .show(ctx);
         }
     }
+}
 
-    if app.state.layout.show_toc && app.state.config.settings.settings().layout.toc_visible {
-        if let Some(doc) = app.state.active_document() {
-            if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-                crate::views::panels::toc::render_toc_panel(ctx, &mut preview.pane, &app.state);
-            }
-        }
+struct TabToolbar<'a> {
+    app: &'a mut KatanaApp,
+}
+impl<'a> TabToolbar<'a> {
+    fn new(app: &'a mut KatanaApp) -> Self {
+        Self { app }
     }
+    fn show(self, ctx: &egui::Context) {
+        let app = self.app;
+        egui::TopBottomPanel::top("tab_toolbar").show(ctx, |ui| {
+            crate::views::top_bar::TabBar::new(&mut app.state, &mut app.pending_action).show(ui);
+            let active_doc_props = app.state.active_document();
+            if let Some(doc) = active_doc_props {
+                let d_path = doc.path.to_string_lossy();
+                let is_changelog = d_path.starts_with("Katana://ChangeLog");
 
-    if is_changelog_tab {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            crate::changelog::render_release_notes_tab(
-                ui,
-                &app.changelog_sections,
-                app.changelog_rx.is_some(),
-            );
+                if !is_changelog {
+                    let doc_path = doc.path.clone();
+                    let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
+                    let rel = relative_full_path(&doc_path, ws_root.as_deref());
+                    let breadcrumb_action =
+                        Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui);
+                    if let Some(a) = breadcrumb_action {
+                        app.pending_action = a;
+                    }
+                }
+                crate::views::top_bar::ViewModeBar::new(&mut app.state, &mut app.pending_action)
+                    .show(ui);
+            }
         });
-    } else {
-        if is_split {
-            let split_dir = app.state.active_split_direction();
-            let pane_order = app.state.active_pane_order();
-            download_req =
-                crate::views::layout::split::render_split_mode(ctx, app, split_dir, pane_order);
-        }
-
-        if !is_split {
-            egui::CentralPanel::default()
-                .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-                .show(ctx, |ui| match current_mode {
-                    ViewMode::CodeOnly => {
-                        crate::views::panels::editor::render_editor_content(
-                            ui,
-                            &mut app.state,
-                            &mut app.pending_action,
-                            false,
-                        );
-                    }
-                    ViewMode::PreviewOnly => {
-                        crate::views::layout::split::render_preview_only(ui, app);
-                    }
-                    ViewMode::Split => {}
-                });
-        }
     }
+}
 
-    download_req
+struct Breadcrumbs<'a> {
+    app: &'a KatanaApp,
+    rel: &'a str,
+    ws_root: Option<&'a std::path::Path>,
+}
+impl<'a> Breadcrumbs<'a> {
+    fn new(app: &'a KatanaApp, rel: &'a str, ws_root: Option<&'a std::path::Path>) -> Self {
+        Self { app, rel, ws_root }
+    }
+    fn show(self, ui: &mut egui::Ui) -> Option<AppAction> {
+        let app = self.app;
+        let rel = self.rel;
+        let ws_root = self.ws_root;
+        let mut breadcrumb_action = None;
+        ui.horizontal(|ui| {
+            let segments: Vec<&str> = rel.split('/').collect();
+            let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
+            for (i, seg) in segments.iter().enumerate() {
+                if i > 0 {
+                    ui.add(
+                        egui::Image::new(crate::Icon::ChevronRight.uri())
+                            .tint(ui.visuals().text_color())
+                            .max_height(CHEVRON_ICON_SIZE),
+                    );
+                }
+
+                if ws_root.is_none() {
+                    ui.label(egui::RichText::new(*seg).small());
+                    continue;
+                }
+
+                current_path = current_path.join(seg);
+                let is_last = i == segments.len() - 1;
+
+                if is_last {
+                    ui.add(
+                        egui::Label::new(egui::RichText::new(*seg).small())
+                            .sense(egui::Sense::hover()),
+                    );
+                } else {
+                    ui.menu_button(egui::RichText::new(*seg).small(), |ui| {
+                        let mut ctx_action = crate::app_state::AppAction::None;
+
+                        if let Some(ws) = &app.state.workspace.data {
+                            if let Some(katana_core::workspace::TreeEntry::Directory {
+                                children,
+                                ..
+                            }) = crate::views::panels::tree::find_node_in_tree(
+                                &ws.tree,
+                                &current_path,
+                            ) {
+                                crate::views::panels::workspace::BreadcrumbMenu::new(
+                                    children,
+                                    &mut ctx_action,
+                                )
+                                .show(ui);
+                            }
+                        }
+
+                        if !matches!(ctx_action, crate::app_state::AppAction::None) {
+                            breadcrumb_action = Some(ctx_action);
+                            ui.close();
+                        }
+                    });
+                }
+            }
+        });
+        breadcrumb_action
+    }
+}
+
+struct CentralContent<'a> {
+    app: &'a mut KatanaApp,
+}
+impl<'a> CentralContent<'a> {
+    fn new(app: &'a mut KatanaApp) -> Self {
+        Self { app }
+    }
+    fn show(self, ctx: &egui::Context) -> Option<DownloadRequest> {
+        let app = self.app;
+        let mut download_req: Option<DownloadRequest> = None;
+        let current_mode = app.state.active_view_mode();
+        let is_split = current_mode == ViewMode::Split;
+        let mut is_changelog_tab = false;
+
+        if let Some(doc) = app.state.active_document() {
+            if doc.path.to_string_lossy().starts_with("Katana://ChangeLog") {
+                is_changelog_tab = true;
+            }
+        }
+
+        if app.state.layout.show_toc && app.state.config.settings.settings().layout.toc_visible {
+            if let Some(doc) = app.state.active_document() {
+                if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path) {
+                    crate::views::panels::toc::TocPanel::new(&mut preview.pane, &app.state)
+                        .show(ctx);
+                }
+            }
+        }
+
+        if is_changelog_tab {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                crate::changelog::render_release_notes_tab(
+                    ui,
+                    &app.changelog_sections,
+                    app.changelog_rx.is_some(),
+                );
+            });
+        } else {
+            if is_split {
+                let split_dir = app.state.active_split_direction();
+                let pane_order = app.state.active_pane_order();
+                download_req =
+                    crate::views::layout::split::SplitMode::new(ctx, app, split_dir, pane_order)
+                        .show();
+            }
+
+            if !is_split {
+                egui::CentralPanel::default()
+                    .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+                    .show(ctx, |ui| match current_mode {
+                        ViewMode::CodeOnly => {
+                            crate::views::panels::editor::EditorContent::new(
+                                &mut app.state,
+                                &mut app.pending_action,
+                                false,
+                            )
+                            .show(ui);
+                        }
+                        ViewMode::PreviewOnly => {
+                            crate::views::layout::split::PreviewOnly::new(ui, app).show();
+                        }
+                        ViewMode::Split => {}
+                    });
+            }
+        }
+
+        download_req
+    }
 }
 
 /// Intercepts URL opening requests from egui output commands.

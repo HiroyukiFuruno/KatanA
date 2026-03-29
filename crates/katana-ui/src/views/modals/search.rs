@@ -22,145 +22,157 @@ use eframe::egui;
 use katana_core::workspace::{TreeEntry, Workspace};
 use std::path::{Path, PathBuf};
 
-pub(crate) fn render_search_modal(
-    ctx: &egui::Context,
-    state: &mut AppState,
-    action: &mut AppAction,
-) {
-    let mut is_open = state.layout.show_search_modal;
-    egui::Window::new(crate::i18n::get().search.modal_title.clone())
-        .open(&mut is_open)
-        .collapsible(false)
-        .resizable(true)
-        .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
-        .show(ctx, |ui| {
-            // Focus on the text edit automatically
-            let response = ui.add(
-                egui::TextEdit::singleline(&mut state.search.query)
-                    .hint_text(crate::i18n::get().search.query_hint.clone())
-                    .desired_width(f32::INFINITY),
-            );
-            response.request_focus();
+pub(crate) struct SearchModal<'a> {
+    pub state: &'a mut AppState,
+    pub action: &'a mut AppAction,
+}
 
-            let mut include_regexes = Vec::new();
-            let mut include_valid = true;
-            if !state.search.include_pattern.is_empty() {
-                for pat in state.search.include_pattern.split(',') {
-                    let pat = pat.trim();
-                    if !pat.is_empty() {
-                        match regex::Regex::new(pat) {
-                            Ok(re) => include_regexes.push(re),
-                            Err(_) => include_valid = false,
-                        }
-                    }
-                }
-            }
+impl<'a> SearchModal<'a> {
+    pub fn new(state: &'a mut AppState, action: &'a mut AppAction) -> Self {
+        Self { state, action }
+    }
 
-            let mut exclude_regexes = Vec::new();
-            let mut exclude_valid = true;
-            if !state.search.exclude_pattern.is_empty() {
-                for pat in state.search.exclude_pattern.split(',') {
-                    let pat = pat.trim();
-                    if !pat.is_empty() {
-                        match regex::Regex::new(pat) {
-                            Ok(re) => exclude_regexes.push(re),
-                            Err(_) => exclude_valid = false,
-                        }
-                    }
-                }
-            }
+    pub fn show(self, ctx: &egui::Context) {
+        let state = self.state;
+        let action = self.action;
+        let mut is_open = state.layout.show_search_modal;
+        egui::Window::new(crate::i18n::get().search.modal_title.clone())
+            .open(&mut is_open)
+            .collapsible(false)
+            .resizable(true)
+            .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
+            .show(ctx, |ui| {
+                // Focus on the text edit automatically
+                let response = ui.add(
+                    egui::TextEdit::singleline(&mut state.search.query)
+                        .hint_text(crate::i18n::get().search.query_hint.clone())
+                        .desired_width(f32::INFINITY),
+                );
+                response.request_focus();
 
-            let include_color = if include_valid {
-                ui.visuals().text_color()
-            } else {
-                ui.ctx()
-                    .data(|d| {
-                        d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                            "katana_theme_colors",
-                        ))
-                    })
-                    .map_or(crate::theme_bridge::WHITE, |tc| {
-                        crate::theme_bridge::rgb_to_color32(tc.system.error_text)
-                    })
-            };
-
-            let exclude_color = if exclude_valid {
-                ui.visuals().text_color()
-            } else {
-                ui.ctx()
-                    .data(|d| {
-                        d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                            "katana_theme_colors",
-                        ))
-                    })
-                    .map_or(crate::theme_bridge::WHITE, |tc| {
-                        crate::theme_bridge::rgb_to_color32(tc.system.error_text)
-                    })
-            };
-
-            ui.add(
-                egui::TextEdit::singleline(&mut state.search.include_pattern)
-                    .hint_text(crate::i18n::get().search.include_pattern_hint.clone())
-                    .text_color(include_color)
-                    .desired_width(f32::INFINITY),
-            );
-
-            ui.add(
-                egui::TextEdit::singleline(&mut state.search.exclude_pattern)
-                    .hint_text(crate::i18n::get().search.exclude_pattern_hint.clone())
-                    .text_color(exclude_color)
-                    .desired_width(f32::INFINITY),
-            );
-
-            let current_params = (
-                state.search.query.clone(),
-                state.search.include_pattern.clone(),
-                state.search.exclude_pattern.clone(),
-            );
-
-            if state.search.last_params.as_ref() != Some(&current_params) {
-                state.search.last_params = Some(current_params);
-
-                let query = state.search.query.to_lowercase();
-                if query.is_empty() && include_regexes.is_empty() && exclude_regexes.is_empty() {
-                    state.search.results.clear();
-                } else if let Some(ws) = &state.workspace.data {
-                    let mut results = Vec::new();
-                    crate::shell_logic::collect_matches(
-                        &ws.tree,
-                        &query,
-                        &include_regexes,
-                        &exclude_regexes,
-                        &ws.root,
-                        &mut results,
-                    );
-                    state.search.results = results;
-                }
-            }
-
-            ui.separator();
-
-            egui::ScrollArea::vertical()
-                .auto_shrink([false; 2])
-                .show(ui, |ui| {
-                    if state.search.results.is_empty() && !state.search.query.is_empty() {
-                        ui.label(crate::i18n::get().search.no_results.clone());
-                    } else {
-                        let ws_root = state.workspace.data.as_ref().map(|ws| ws.root.clone());
-                        for path in &state.search.results {
-                            let rel =
-                                crate::shell_logic::relative_full_path(path, ws_root.as_deref());
-                            if ui.selectable_label(false, rel).clicked() && path.exists() {
-                                *action = AppAction::SelectDocument(path.to_path_buf());
-                                // Close the modal by updating state directly
-                                state.layout.show_search_modal = false;
+                let mut include_regexes = Vec::new();
+                let mut include_valid = true;
+                if !state.search.include_pattern.is_empty() {
+                    for pat in state.search.include_pattern.split(',') {
+                        let pat = pat.trim();
+                        if !pat.is_empty() {
+                            match regex::Regex::new(pat) {
+                                Ok(re) => include_regexes.push(re),
+                                Err(_) => include_valid = false,
                             }
                         }
                     }
-                });
-        });
+                }
 
-    if !is_open {
-        state.layout.show_search_modal = false;
+                let mut exclude_regexes = Vec::new();
+                let mut exclude_valid = true;
+                if !state.search.exclude_pattern.is_empty() {
+                    for pat in state.search.exclude_pattern.split(',') {
+                        let pat = pat.trim();
+                        if !pat.is_empty() {
+                            match regex::Regex::new(pat) {
+                                Ok(re) => exclude_regexes.push(re),
+                                Err(_) => exclude_valid = false,
+                            }
+                        }
+                    }
+                }
+
+                let include_color = if include_valid {
+                    ui.visuals().text_color()
+                } else {
+                    ui.ctx()
+                        .data(|d| {
+                            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                                "katana_theme_colors",
+                            ))
+                        })
+                        .map_or(crate::theme_bridge::WHITE, |tc| {
+                            crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                        })
+                };
+
+                let exclude_color = if exclude_valid {
+                    ui.visuals().text_color()
+                } else {
+                    ui.ctx()
+                        .data(|d| {
+                            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                                "katana_theme_colors",
+                            ))
+                        })
+                        .map_or(crate::theme_bridge::WHITE, |tc| {
+                            crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                        })
+                };
+
+                ui.add(
+                    egui::TextEdit::singleline(&mut state.search.include_pattern)
+                        .hint_text(crate::i18n::get().search.include_pattern_hint.clone())
+                        .text_color(include_color)
+                        .desired_width(f32::INFINITY),
+                );
+
+                ui.add(
+                    egui::TextEdit::singleline(&mut state.search.exclude_pattern)
+                        .hint_text(crate::i18n::get().search.exclude_pattern_hint.clone())
+                        .text_color(exclude_color)
+                        .desired_width(f32::INFINITY),
+                );
+
+                let current_params = (
+                    state.search.query.clone(),
+                    state.search.include_pattern.clone(),
+                    state.search.exclude_pattern.clone(),
+                );
+
+                if state.search.last_params.as_ref() != Some(&current_params) {
+                    state.search.last_params = Some(current_params);
+
+                    let query = state.search.query.to_lowercase();
+                    if query.is_empty() && include_regexes.is_empty() && exclude_regexes.is_empty()
+                    {
+                        state.search.results.clear();
+                    } else if let Some(ws) = &state.workspace.data {
+                        let mut results = Vec::new();
+                        crate::shell_logic::collect_matches(
+                            &ws.tree,
+                            &query,
+                            &include_regexes,
+                            &exclude_regexes,
+                            &ws.root,
+                            &mut results,
+                        );
+                        state.search.results = results;
+                    }
+                }
+
+                ui.separator();
+
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false; 2])
+                    .show(ui, |ui| {
+                        if state.search.results.is_empty() && !state.search.query.is_empty() {
+                            ui.label(crate::i18n::get().search.no_results.clone());
+                        } else {
+                            let ws_root = state.workspace.data.as_ref().map(|ws| ws.root.clone());
+                            for path in &state.search.results {
+                                let rel = crate::shell_logic::relative_full_path(
+                                    path,
+                                    ws_root.as_deref(),
+                                );
+                                if ui.selectable_label(false, rel).clicked() && path.exists() {
+                                    *action = AppAction::SelectDocument(path.to_path_buf());
+                                    // Close the modal by updating state directly
+                                    state.layout.show_search_modal = false;
+                                }
+                            }
+                        }
+                    });
+            });
+
+        if !is_open {
+            state.layout.show_search_modal = false;
+        }
     }
 }

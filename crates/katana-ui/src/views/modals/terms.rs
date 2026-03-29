@@ -23,147 +23,162 @@ const TERMS_LANG_SELECT_WIDTH: f32 = 140.0;
 
 /// Renders the Terms of Service modal as a blocking UI overlay.
 /// Returns the `AppAction` the user chose, or `None`.
-pub(crate) fn render_terms_modal(
-    ctx: &egui::Context,
-    version: &str,
-    pending_action: &mut AppAction,
-) {
-    let terms = crate::i18n::get().terms.clone();
+pub(crate) struct TermsModal<'a> {
+    pub version: &'a str,
+    pub pending_action: &'a mut AppAction,
+}
 
-    egui::CentralPanel::default()
-        .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-        .show(ctx, |ui| {
-            let width = ui.available_width();
-            let height = ui.available_height();
-            let content_width = width.min(TERMS_MODAL_WIDTH);
+impl<'a> TermsModal<'a> {
+    pub fn new(version: &'a str, pending_action: &'a mut AppAction) -> Self {
+        Self {
+            version,
+            pending_action,
+        }
+    }
 
-            ui.vertical_centered(|ui| {
-                ui.add_space(height * TERMS_CENTER_OFFSET_RATIO);
+    pub fn show(self, ctx: &egui::Context) {
+        let version = self.version;
+        let pending_action = self.pending_action;
+        let terms = crate::i18n::get().terms.clone();
 
-                ui.set_width(content_width);
+        egui::CentralPanel::default()
+            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+            .show(ctx, |ui| {
+                let width = ui.available_width();
+                let height = ui.available_height();
+                let content_width = width.min(TERMS_MODAL_WIDTH);
 
-                egui::Frame::window(ui.style())
-                    .inner_margin(TERMS_INNER_MARGIN)
-                    .corner_radius(TERMS_ROUNDING_LARGE)
-                    .show(ui, |ui| {
-                        ui.vertical_centered(|ui| {
-                            ui.heading(
-                                egui::RichText::new(&terms.title)
-                                    .size(TERMS_TITLE_SIZE)
-                                    .strong()
-                                    .color(ui.visuals().strong_text_color()),
-                            );
-                            ui.add_space(TERMS_SPACING_SMALL);
+                ui.vertical_centered(|ui| {
+                    ui.add_space(height * TERMS_CENTER_OFFSET_RATIO);
 
-                            ui.horizontal(|ui| {
-                                ui.label(
-                                    egui::RichText::new(crate::i18n::tf(
-                                        &terms.version_label,
-                                        &[("version", version)],
-                                    ))
-                                    .weak(),
+                    ui.set_width(content_width);
+
+                    egui::Frame::window(ui.style())
+                        .inner_margin(TERMS_INNER_MARGIN)
+                        .corner_radius(TERMS_ROUNDING_LARGE)
+                        .show(ui, |ui| {
+                            ui.vertical_centered(|ui| {
+                                ui.heading(
+                                    egui::RichText::new(&terms.title)
+                                        .size(TERMS_TITLE_SIZE)
+                                        .strong()
+                                        .color(ui.visuals().strong_text_color()),
                                 );
+                                ui.add_space(TERMS_SPACING_SMALL);
 
-                                ui.with_layout(
-                                    egui::Layout::right_to_left(egui::Align::Center),
-                                    |ui| {
-                                        let current_lang = crate::i18n::get_language();
-                                        let current_name = crate::i18n::supported_languages()
-                                            .iter()
-                                            .find(|(code, _)| *code == current_lang)
-                                            .map(|(_, name)| name.as_str())
-                                            .unwrap_or("English");
-
-                                        StyledComboBox::new("terms_lang_select", current_name)
-                                            .width(TERMS_LANG_SELECT_WIDTH)
-                                            .show(ui, |ui| {
-                                                for (code, name) in
-                                                    crate::i18n::supported_languages()
-                                                {
-                                                    if ui
-                                                        .selectable_label(
-                                                            current_lang == *code,
-                                                            name,
-                                                        )
-                                                        .clicked()
-                                                    {
-                                                        *pending_action =
-                                                            AppAction::ChangeLanguage(code.clone());
-                                                    }
-                                                }
-                                            });
-                                    },
-                                );
-                            });
-
-                            ui.add_space(TERMS_SPACING_MEDIUM);
-                            ui.separator();
-                            ui.add_space(TERMS_SPACING_MEDIUM);
-
-                            egui::Frame::canvas(ui.style())
-                                .inner_margin(TERMS_CONVAS_MARGIN)
-                                .corner_radius(TERMS_ROUNDING_SMALL)
-                                .show(ui, |ui| {
-                                    ui.set_min_height(
-                                        ui.available_height() * TERMS_SCROLL_HEIGHT_RATIO,
+                                ui.horizontal(|ui| {
+                                    ui.label(
+                                        egui::RichText::new(crate::i18n::tf(
+                                            &terms.version_label,
+                                            &[("version", version)],
+                                        ))
+                                        .weak(),
                                     );
-                                    egui::ScrollArea::vertical()
-                                        .max_height(
-                                            ui.available_height() * TERMS_SCROLL_HEIGHT_RATIO,
-                                        )
-                                        .show(ui, |ui| {
-                                            ui.add(egui::Label::new(&terms.content).wrap());
-                                        });
+
+                                    ui.with_layout(
+                                        egui::Layout::right_to_left(egui::Align::Center),
+                                        |ui| {
+                                            let current_lang = crate::i18n::get_language();
+                                            let current_name = crate::i18n::supported_languages()
+                                                .iter()
+                                                .find(|(code, _)| *code == current_lang)
+                                                .map(|(_, name)| name.as_str())
+                                                .unwrap_or("English");
+
+                                            StyledComboBox::new("terms_lang_select", current_name)
+                                                .width(TERMS_LANG_SELECT_WIDTH)
+                                                .show(ui, |ui| {
+                                                    for (code, name) in
+                                                        crate::i18n::supported_languages()
+                                                    {
+                                                        if ui
+                                                            .selectable_label(
+                                                                current_lang == *code,
+                                                                name,
+                                                            )
+                                                            .clicked()
+                                                        {
+                                                            *pending_action =
+                                                                AppAction::ChangeLanguage(
+                                                                    code.clone(),
+                                                                );
+                                                        }
+                                                    }
+                                                });
+                                        },
+                                    );
                                 });
 
-                            ui.add_space(TERMS_SPACING_XLARGE);
+                                ui.add_space(TERMS_SPACING_MEDIUM);
+                                ui.separator();
+                                ui.add_space(TERMS_SPACING_MEDIUM);
 
-                            ui.horizontal(|ui| {
-                                let total_buttons_width =
-                                    TERMS_BUTTON_WIDTH * 2.0 + TERMS_BUTTON_SPACING;
-                                let available = ui.available_width();
-                                let outer_spacing = (available - total_buttons_width) / 2.0;
+                                egui::Frame::canvas(ui.style())
+                                    .inner_margin(TERMS_CONVAS_MARGIN)
+                                    .corner_radius(TERMS_ROUNDING_SMALL)
+                                    .show(ui, |ui| {
+                                        ui.set_min_height(
+                                            ui.available_height() * TERMS_SCROLL_HEIGHT_RATIO,
+                                        );
+                                        egui::ScrollArea::vertical()
+                                            .max_height(
+                                                ui.available_height() * TERMS_SCROLL_HEIGHT_RATIO,
+                                            )
+                                            .show(ui, |ui| {
+                                                ui.add(egui::Label::new(&terms.content).wrap());
+                                            });
+                                    });
 
-                                if outer_spacing > 0.0 {
-                                    ui.add_space(outer_spacing);
-                                }
+                                ui.add_space(TERMS_SPACING_XLARGE);
 
-                                let accept_btn = egui::Button::new(
-                                    egui::RichText::new(&terms.accept)
-                                        .strong()
-                                        .size(TERMS_BUTTON_TEXT_SIZE),
-                                )
-                                .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
-                                .corner_radius(TERMS_ROUNDING_SMALL);
+                                ui.horizontal(|ui| {
+                                    let total_buttons_width =
+                                        TERMS_BUTTON_WIDTH * 2.0 + TERMS_BUTTON_SPACING;
+                                    let available = ui.available_width();
+                                    let outer_spacing = (available - total_buttons_width) / 2.0;
 
-                                if ui
-                                    .add(accept_btn)
-                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                    .clicked()
-                                {
-                                    *pending_action = AppAction::AcceptTerms(version.to_string());
-                                }
+                                    if outer_spacing > 0.0 {
+                                        ui.add_space(outer_spacing);
+                                    }
 
-                                ui.add_space(TERMS_BUTTON_SPACING);
+                                    let accept_btn = egui::Button::new(
+                                        egui::RichText::new(&terms.accept)
+                                            .strong()
+                                            .size(TERMS_BUTTON_TEXT_SIZE),
+                                    )
+                                    .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
+                                    .corner_radius(TERMS_ROUNDING_SMALL);
 
-                                let decline_btn = egui::Button::new(
-                                    egui::RichText::new(&terms.decline)
-                                        .size(TERMS_BUTTON_TEXT_SIZE),
-                                )
-                                .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
-                                .corner_radius(TERMS_ROUNDING_SMALL);
+                                    if ui
+                                        .add(accept_btn)
+                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                        .clicked()
+                                    {
+                                        *pending_action =
+                                            AppAction::AcceptTerms(version.to_string());
+                                    }
 
-                                if ui
-                                    .add(decline_btn)
-                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                    .clicked()
-                                {
-                                    *pending_action = AppAction::DeclineTerms;
-                                }
+                                    ui.add_space(TERMS_BUTTON_SPACING);
+
+                                    let decline_btn = egui::Button::new(
+                                        egui::RichText::new(&terms.decline)
+                                            .size(TERMS_BUTTON_TEXT_SIZE),
+                                    )
+                                    .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
+                                    .corner_radius(TERMS_ROUNDING_SMALL);
+
+                                    if ui
+                                        .add(decline_btn)
+                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                        .clicked()
+                                    {
+                                        *pending_action = AppAction::DeclineTerms;
+                                    }
+                                });
+                                ui.add_space(TERMS_SPACING_MEDIUM);
                             });
-                            ui.add_space(TERMS_SPACING_MEDIUM);
                         });
-                    });
+                });
             });
-        });
+    }
 }

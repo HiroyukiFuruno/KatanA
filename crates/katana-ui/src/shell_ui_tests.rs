@@ -152,7 +152,7 @@ mod tests {
                 .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
                 .show(ctx, |ui| {
                     before_height = ui.available_height();
-                    crate::views::panels::preview::render_preview_header(ui, &state, &mut action);
+                    crate::views::panels::preview::PreviewHeader::new(&state, &mut action).show(ui);
                     remaining_height = ui.available_height();
                 });
         });
@@ -183,12 +183,11 @@ mod tests {
                         expanded_directories: &mut expanded_directories,
                         disable_context_menu: false,
                     };
-                    crate::views::panels::workspace::render_file_entry(
-                        ui,
+                    crate::views::panels::workspace::FileEntryNode::new(
                         &entry,
                         &path,
                         &mut render_ctx,
-                    );
+                    ).show(ui);
                 });
         });
 
@@ -223,11 +222,11 @@ mod tests {
         let path = PathBuf::from("/tmp/padding.md");
         let mut app = app_with_preview_doc(&path, "# PaddingHeading\n\nBody");
         let output = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
 
         let preview_rect = egui::containers::panel::PanelState::load(
@@ -285,11 +284,11 @@ mod tests {
         });
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
 
         let preview_rect = egui::containers::panel::PanelState::load(
@@ -315,11 +314,11 @@ mod tests {
         let mut app = app_with_preview_doc(&active, "# Title\n\nBody");
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
         let first_rect = egui::containers::panel::PanelState::load(
             &ctx,
@@ -332,11 +331,11 @@ mod tests {
         .rect;
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
         let second_rect = egui::containers::panel::PanelState::load(
             &ctx,
@@ -375,11 +374,11 @@ mod tests {
         let mut app = app_with_preview_doc(&active, markdown);
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
         let first_rect = egui::containers::panel::PanelState::load(
             &ctx,
@@ -392,11 +391,11 @@ mod tests {
         .rect;
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
         let second_rect = egui::containers::panel::PanelState::load(
             &ctx,
@@ -437,11 +436,11 @@ mod tests {
         let mut app = app_with_preview_doc(&active, markdown);
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
         let first_rect = egui::containers::panel::PanelState::load(
             &ctx,
@@ -454,11 +453,11 @@ mod tests {
         .rect;
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
         let second_rect = egui::containers::panel::PanelState::load(
             &ctx,
@@ -503,11 +502,11 @@ mod tests {
         });
 
         let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            crate::views::layout::split::render_vertical_split(
+            crate::views::layout::split::VerticalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
 
         let preview_rect = egui::containers::panel::PanelState::load(
@@ -534,11 +533,11 @@ mod tests {
         let mut app = app_with_preview_doc(&path, &long_line);
 
         let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
 
         let preview_rect = egui::containers::panel::PanelState::load(
@@ -582,11 +581,11 @@ mod tests {
         let mut app = app_with_preview_doc(&path, &inline_code);
 
         let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
 
         let preview_rect = egui::containers::panel::PanelState::load(
@@ -633,11 +632,11 @@ mod tests {
         let mut app = app_with_preview_doc(&path, markdown);
 
         let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
-            crate::views::layout::split::render_horizontal_split(
+            crate::views::layout::split::HorizontalSplit::new(
                 ctx,
                 &mut app,
                 PaneOrder::EditorFirst,
-            );
+            ).show();
         });
 
         let preview_rect = egui::containers::panel::PanelState::load(
@@ -709,11 +708,11 @@ mod tests {
         // Run 3 frames for layout stabilization
         for _ in 0..3 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, total_height)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
@@ -759,11 +758,11 @@ mod tests {
         // Stabilize layout (5 frames)
         for _ in 0..5 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
@@ -774,11 +773,11 @@ mod tests {
         // Run 3 frames for sync to propagate
         for _ in 0..3 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
@@ -804,11 +803,11 @@ mod tests {
 
         for _ in 0..5 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_horizontal_split(
+                crate::views::layout::split::HorizontalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
@@ -817,11 +816,11 @@ mod tests {
 
         for _ in 0..3 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_horizontal_split(
+                crate::views::layout::split::HorizontalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
@@ -847,11 +846,11 @@ mod tests {
         // Use PreviewFirst (swapped order)
         for _ in 0..5 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::PreviewFirst,
-                );
+                ).show();
             });
         }
 
@@ -860,11 +859,11 @@ mod tests {
 
         for _ in 0..3 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::PreviewFirst,
-                );
+                ).show();
             });
         }
 
@@ -889,11 +888,11 @@ mod tests {
 
         for _ in 0..5 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
@@ -903,11 +902,11 @@ mod tests {
 
         for _ in 0..3 {
             let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-                crate::views::layout::split::render_vertical_split(
+                crate::views::layout::split::VerticalSplit::new(
                     ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
-                );
+                ).show();
             });
         }
 
