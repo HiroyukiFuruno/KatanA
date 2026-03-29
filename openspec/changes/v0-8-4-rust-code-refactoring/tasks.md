@@ -46,7 +46,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [x] 1.3 `lint_pub_free_fn`: pub free function 禁止
   - 除外: `main()`, `#[test]` 関数, `mod tests` 内の関数
-  - 統合テストは `#[ignore]` 付き（Phase 2-5で既存違反を解消後に有効化）
+  - 統合テストは `#[ignore]` 付き（Phase 2-6で既存違反を解消後に有効化）
 
 - [x] 1.4 `lint_nesting_depth`: ネスト深度制限（3レベル上限）
   - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
@@ -149,37 +149,71 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ---
 
-## 4. katana-platform レイヤーのリファクタリング
+## 4. AST Linter rollout の残課題整理と gate 化
 
-> Task 1-3 は実施済みであり、今回追加した React 的 UI コンポーネント化要件の影響範囲外であることを確認済みである。
->
-> - Task 1: ast_linter / clippy の品質ガードレール基盤整備は完了済みだが、`katana-platform` / `katana-ui` への rollout はこのフェーズ以降で完了させる
-> - Task 2: `katana-linter` 内部の分割であり、egui UI を含まない
-> - Task 3: `katana-core` の分割であり、UI の Props / `show()` / typed response 設計とは無関係
->
-> したがって、この計画更新で追加した要件の実対応は Task 4 以降で行う。
+> Task 1 は「全クレートに拡大」と書かれている一方で、Task 1-3 完了時点では `katana-platform` / `katana-ui` への rollout と `pub_free_fn` の本有効化が独立タスクとして定義されていなかった。
+> この漏れは UI 要件とは無関係の計画不整合であり、Task 5 以降の refactoring を破壊検知可能にする前提条件なので、ここで独立フェーズとして明文化する。
 
-- [ ] 4.1 `settings.rs`（653行）の完全移行
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 4.1 `crates/katana-linter/tests/ast_linter.rs` の target 範囲と staged rollout 方針を見直し、残り2クレートの適用順序を Task 5 / Task 6 に接続する
+  - `katana-platform/src` は Task 5 の完了条件として扱う
+  - `katana-ui/src` は Task 6 の完了条件として扱う
+
+- [ ] 4.2 `katana-platform/src` に対する AST Linter 既存違反の棚卸しを行い、Task 5 で解消すべき項目を fix list として明記する
+  - 対象: `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn`
+
+- [ ] 4.3 `katana-ui/src` に対する AST Linter 既存違反の棚卸しを行い、Task 6 で解消すべき項目を fix list として明記する
+  - 対象: `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn`
+
+- [ ] 4.4 `pub_free_fn` の staged enablement 条件を整理し、Task 6 完了条件と Final Verification に接続する
+  - `#[ignore]` を外すタイミングが Task 6 の終盤であることを明示する
+
+- [ ] 4.5 Task 5 / Task 6 / Final Verification の DoD が、Task 1 の「全クレートに拡大」という記述と矛盾しない状態になっていることを確認する
+
+### Definition of Done (DoD)
+
+- [ ] Task 1 rollout の残課題が top-level task として独立定義されている
+- [ ] `katana-platform/src` の rollout 完了条件が Task 5 に接続されている
+- [ ] `katana-ui/src` の rollout 完了条件と `pub_free_fn` 本有効化条件が Task 6 に接続されている
+- [ ] Final Verification が 4クレート全体の rollout 完了を確認する構造になっている
+- [ ] Execute `/openspec-delivery` workflow
+
+---
+
+## 5. katana-platform レイヤーのリファクタリング
+
+> Task 4 で定義した AST Linter rollout gate を満たしながら、platform レイヤーの責務分離を完了させる。
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 5.1 `settings.rs`（653行）の完全移行
   - 旧 `settings.rs` の内容を `settings/` サブモジュールに完全移行
   - `pub use` による外部API互換性の維持
 
-- [ ] 4.2 `settings/types.rs`（256行）の分割
+- [ ] 5.2 `settings/types.rs`（256行）の分割
   - `types/app.rs`, `types/editor.rs`, `types/window.rs`, `types/behavior.rs` 等
 
-- [ ] 4.3 `theme/builder.rs`（473行）の分割
+- [ ] 5.3 `theme/builder.rs`（473行）の分割
   - カラービルダー・フォントビルダーの分離
 
-- [ ] 4.4 `theme/types.rs`（241行）の分割
+- [ ] 5.4 `theme/types.rs`（241行）の分割
 
-- [ ] 4.5 `theme/migration.rs`（262行）の分割
+- [ ] 5.5 `theme/migration.rs`（262行）の分割
 
-- [ ] 4.6 `cache.rs`（291行）の分割
+- [ ] 5.6 `cache.rs`（291行）の分割
 
-- [ ] 4.7 `filesystem.rs`（279行）の分割
+- [ ] 5.7 `filesystem.rs`（279行）の分割
 
-- [ ] 4.8 `settings/defaults.rs`（201行）のボーダーライン確認
+- [ ] 5.8 `settings/defaults.rs`（201行）のボーダーライン確認
 
-- [ ] 4.9 AST Linter の構造/コーディングルール対象を `katana-platform/src` へ拡大し、既存違反を解消する
+- [ ] 5.9 AST Linter の構造/コーディングルール対象を `katana-platform/src` へ拡大し、Task 4.2 で棚卸しした既存違反を解消する
   - 対象: `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn`
   - `crates/katana-linter/tests/ast_linter.rs` の target 範囲に `katana-platform/src` を追加する
 
@@ -193,13 +227,19 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ---
 
-## 5. katana-ui レイヤーのリファクタリング（最重要・最大規模）
+## 6. katana-ui レイヤーのリファクタリング（最重要・最大規模）
 
-> UIレイヤーは最も深刻な技術的負債を抱えている。coreとplatformのリファクタリングで手法を確立してから着手する。追加した React的コンポーネント化要件は、このフェーズで回収する。
+> UIレイヤーは最も深刻な技術的負債を抱えている。core と platform のリファクタリングで手法を確立してから着手する。
+> React的コンポーネント化はこのフェーズで回収するが、AST Linter rollout 自体は Task 4 で独立に gate 化済みである。
 
-### 5-A. God Object (`KatanaApp`) の解体
+### Definition of Ready (DoR)
 
-- [ ] 5.1 `shell.rs`（3,144行）の `KatanaApp` 解体
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+### 6-A. God Object (`KatanaApp`) の解体
+
+- [ ] 6.1 `shell.rs`（3,144行）の `KatanaApp` 解体
   - `app/mod.rs`: KatanaApp構造体定義 + `eframe::App` impl
   - `app/workspace.rs`: ワークスペース操作
   - `app/document.rs`: ドキュメント操作
@@ -209,53 +249,53 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - `app/preview.rs`: プレビューキャッシュ管理
   - `app/action.rs`: AppAction処理ディスパッチ
 
-### 5-B. God Object (`AppState`) の解体
+### 6-B. God Object (`AppState`) の解体
 
-- [ ] 5.2 `app_state.rs`（795行）の `AppState` 解体
+- [ ] 6.2 `app_state.rs`（795行）の `AppState` 解体
   - 57フィールドを責務ごとのサブ構造体に分離
   - `state/mod.rs`: AppState定義（サブ構造体を合成）
   - `state/workspace.rs`, `state/editor.rs`, `state/search.rs`, `state/scroll.rs` 等
 
-### 5-C. shell_ui.rs（5,118行）の完全解体
+### 6-C. shell_ui.rs（5,118行）の完全解体
 
-- [ ] 5.3 メニューバー系（`render_menu_bar`, `render_file_menu`, `render_settings_menu`, `render_help_menu`）→ `ui/menu/`
-- [ ] 5.4 ヘッダー・ステータスバー → `ui/header.rs`, `ui/status_bar.rs`
-- [ ] 5.5 ワークスペースパネル・ファイルツリー → `ui/workspace/`
-- [ ] 5.6 タブバー → `ui/tab_bar.rs`
-- [ ] 5.7 ビューモード・エディター → `ui/view_mode.rs`, `ui/editor.rs`
-- [ ] 5.8 スプリットビュー → `ui/split/`
-- [ ] 5.9 検索モーダル・ToCパネル → `ui/search_modal.rs`, `ui/toc_panel.rs`
-- [ ] 5.10 各種モーダル → `ui/modals/`（about, meta_info, update, create_node, rename, delete, terms）
+- [ ] 6.3 メニューバー系（`render_menu_bar`, `render_file_menu`, `render_settings_menu`, `render_help_menu`）→ `ui/menu/`
+- [ ] 6.4 ヘッダー・ステータスバー → `ui/header.rs`, `ui/status_bar.rs`
+- [ ] 6.5 ワークスペースパネル・ファイルツリー → `ui/workspace/`
+- [ ] 6.6 タブバー → `ui/tab_bar.rs`
+- [ ] 6.7 ビューモード・エディター → `ui/view_mode.rs`, `ui/editor.rs`
+- [ ] 6.8 スプリットビュー → `ui/split/`
+- [ ] 6.9 検索モーダル・ToCパネル → `ui/search_modal.rs`, `ui/toc_panel.rs`
+- [ ] 6.10 各種モーダル → `ui/modals/`（about, meta_info, update, create_node, rename, delete, terms）
 
-### 5-D. その他UIファイルの分割
+### 6-D. その他UIファイルの分割
 
-- [ ] 5.11 `preview_pane.rs`（1,816行）→ `preview/` サブモジュール
-- [ ] 5.12 `preview_pane_ui.rs`（1,270行）→ `preview/` に統合
-- [ ] 5.13 `settings_window.rs`（1,666行）→ `settings/` タブごとに分割
-- [ ] 5.14 `i18n.rs`（1,092行）→ `i18n/` サブモジュール
-- [ ] 5.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割
-- [ ] 5.16 `font_loader.rs`（838行）→ 必要に応じて分割
-- [ ] 5.17 `svg_loader.rs`（795行）→ `loaders/svg.rs` + 分割
-- [ ] 5.18 `http_cache_loader.rs`（786行）→ `loaders/http_cache.rs` + 分割
-- [ ] 5.19 `html_renderer.rs`（635行）→ 分割
-- [ ] 5.20 `main.rs`（595行）→ `setup/` サブモジュール
-- [ ] 5.21 `changelog.rs`（515行）→ 分割
-- [ ] 5.22 `about_info.rs`（335行）→ 分割
-- [ ] 5.23 `theme_bridge.rs`（313行）→ 分割
+- [ ] 6.11 `preview_pane.rs`（1,816行）→ `preview/` サブモジュール
+- [ ] 6.12 `preview_pane_ui.rs`（1,270行）→ `preview/` に統合
+- [ ] 6.13 `settings_window.rs`（1,666行）→ `settings/` タブごとに分割
+- [ ] 6.14 `i18n.rs`（1,092行）→ `i18n/` サブモジュール
+- [ ] 6.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割
+- [ ] 6.16 `font_loader.rs`（838行）→ 必要に応じて分割
+- [ ] 6.17 `svg_loader.rs`（795行）→ `loaders/svg.rs` + 分割
+- [ ] 6.18 `http_cache_loader.rs`（786行）→ `loaders/http_cache.rs` + 分割
+- [ ] 6.19 `html_renderer.rs`（635行）→ 分割
+- [ ] 6.20 `main.rs`（595行）→ `setup/` サブモジュール
+- [ ] 6.21 `changelog.rs`（515行）→ 分割
+- [ ] 6.22 `about_info.rs`（335行）→ 分割
+- [ ] 6.23 `theme_bridge.rs`（313行）→ 分割
 
-### 5-E. React的な再利用可能UIコンポーネント化（UI最終フェーズ）
+### 6-E. React的な再利用可能UIコンポーネント化（UI最終フェーズ）
 
-> 5-A 〜 5-D の「構造分割」が終わった後、UI を単なる free function の寄せ集めではなく、再利用可能で再現性の高い component 境界に揃える。
+> 6-A 〜 6-D の「構造分割」が終わった後、UI を単なる free function の寄せ集めではなく、再利用可能で再現性の高い component 境界に揃える。
 
-- [ ] 5.24 `ui/menu`, `ui/header`, `ui/status_bar`, `ui/workspace`, `ui/tab_bar`, `ui/modals` を `struct + impl show() -> Response` パターンへ統一
-- [ ] 5.25 `settings/`, `preview/`, `widgets/` の各UIを props + typed response を持つ自己完結コンポーネントへ統一
-- [ ] 5.26 親子 UI 間の依存を最小 props + typed response に整理し、巨大な `AppState` / `KatanaApp` の横流しを段階的に排除
-- [ ] 5.27 release-critical UI 導線の統合テストを、component 境界再編後の構造に合わせて更新・追加
-- [ ] 5.28 `shell_ui.rs`, `settings_window.rs`, `preview_pane_ui.rs`, `widgets.rs` 起点の parameter-heavy な `render_*` free function が end-state に残っていないことを確認
-- [ ] 5.29 AST Linter の構造/コーディングルール対象を `katana-ui/src` へ拡大し、既存違反を解消する
+- [ ] 6.24 `ui/menu`, `ui/header`, `ui/status_bar`, `ui/workspace`, `ui/tab_bar`, `ui/modals` を `struct + impl show() -> Response` パターンへ統一
+- [ ] 6.25 `settings/`, `preview/`, `widgets/` の各UIを props + typed response を持つ自己完結コンポーネントへ統一
+- [ ] 6.26 親子 UI 間の依存を最小 props + typed response に整理し、巨大な `AppState` / `KatanaApp` の横流しを段階的に排除
+- [ ] 6.27 release-critical UI 導線の統合テストを、component 境界再編後の構造に合わせて更新・追加
+- [ ] 6.28 `shell_ui.rs`, `settings_window.rs`, `preview_pane_ui.rs`, `widgets.rs` 起点の parameter-heavy な `render_*` free function が end-state に残っていないことを確認
+- [ ] 6.29 AST Linter の構造/コーディングルール対象を `katana-ui/src` へ拡大し、Task 4.3 で棚卸しした既存違反を解消する
   - 対象: `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn`
   - `crates/katana-linter/tests/ast_linter.rs` の target 範囲に `katana-ui/src` を追加する
-- [ ] 5.30 `pub_free_fn` の統合テストから `#[ignore]` を外し、最終ルールとして有効化する
+- [ ] 6.30 `pub_free_fn` の統合テストから `#[ignore]` を外し、Task 4.4 で整理した条件に従って最終ルールとして有効化する
 
 ### Definition of Done (DoD)
 
@@ -271,12 +311,17 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ---
 
-## 6. コーディングルール適用・ドキュメント更新
+## 7. コーディングルール適用・ドキュメント更新
 
-- [ ] 6.1 `docs/coding-rules.ja.md` にファイル行数制限（150行推奨 / 200行ハード）と関数行数制限（30行）を明記
-- [ ] 6.2 `coding_rules.md`（エージェントルール）にRust固有のファイルサイズガイドラインを追加
-- [ ] 6.3 `emoji.rs` の絵文字マッピングデータを外部データファイル（JSON等）に移行
-- [ ] 6.4 ast_linterの除外リスト管理方法の確立（必要に応じて）
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 7.1 `docs/coding-rules.ja.md` にファイル行数制限（150行推奨 / 200行ハード）と関数行数制限（30行）を明記
+- [ ] 7.2 `coding_rules.md`（エージェントルール）にRust固有のファイルサイズガイドラインを追加
+- [ ] 7.3 `emoji.rs` の絵文字マッピングデータを外部データファイル（JSON等）に移行
+- [ ] 7.4 ast_linterの除外リスト管理方法の確立（必要に応じて）
 
 ### Definition of Done (DoD)
 
@@ -285,21 +330,25 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ---
 
-## 7. Final Verification & Release Work
+## 8. Final Verification & Release Work
 
-- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 7.2 Ensure `make check` passes with exit code 0
-- [ ] 7.3 全ファイルが200行以下（テスト除外）であることをast_linterで最終確認
-- [ ] 7.4 全関数が30行以下であることをast_linterで最終確認
-- [ ] 7.5 `katana-linter`, `katana-core`, `katana-platform`, `katana-ui` の対象クレートすべてが AST Linter の構造/コーディングルール対象に含まれていることを最終確認
-- [ ] 7.6 `pub_free_fn` の統合テストが `#[ignore]` なしで `make check` に含まれていることを最終確認
-- [ ] 7.7 `menu`, `workspace`, `tab_bar`, `settings`, `preview`, `modals`, `widgets` の主要導線が自己完結コンポーネントとして完了していることを最終確認
-- [ ] 7.8 component 化後の release-critical UI interaction tests が全てパスすることを最終確認
-- [ ] 7.9 Merge the intermediate base branch into the `master` branch
-- [ ] 7.10 Create a PR targeting `master`
-- [ ] 7.11 Merge into master (※ `--admin` is permitted)
-- [ ] 7.12 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md`
-- [ ] 7.13 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+### Definition of Ready (DoR)
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 8.2 Ensure `make check` passes with exit code 0
+- [ ] 8.3 全ファイルが200行以下（テスト除外）であることをast_linterで最終確認
+- [ ] 8.4 全関数が30行以下であることをast_linterで最終確認
+- [ ] 8.5 `katana-linter`, `katana-core`, `katana-platform`, `katana-ui` の対象クレートすべてが AST Linter の構造/コーディングルール対象に含まれていることを最終確認
+- [ ] 8.6 `pub_free_fn` の統合テストが `#[ignore]` なしで `make check` に含まれていることを最終確認
+- [ ] 8.7 `menu`, `workspace`, `tab_bar`, `settings`, `preview`, `modals`, `widgets` の主要導線が自己完結コンポーネントとして完了していることを最終確認
+- [ ] 8.8 component 化後の release-critical UI interaction tests が全てパスすることを最終確認
+- [ ] 8.9 Merge the intermediate base branch into the `master` branch
+- [ ] 8.10 Create a PR targeting `master`
+- [ ] 8.11 Merge into master (※ `--admin` is permitted)
+- [ ] 8.12 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md`
+- [ ] 8.13 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
 
 ---
 
