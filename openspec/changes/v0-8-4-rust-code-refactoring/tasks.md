@@ -288,15 +288,15 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] 6.12 `preview_pane_ui.rs` の分割 (1,270行) -> `preview_pane/` ディレクトリに統合
 - [x] 6.13 `settings_window.rs`（1,666行）→ `settings/` タブごとに分割
 - [x] 6.14 `i18n.rs`（1,092行）→ `i18n/` サブモジュール (types.rs + mod.rs)
-- [ ] 6.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割
-- [ ] 6.16 `font_loader.rs`（838行）→ 必要に応じて分割
-- [ ] 6.17 `svg_loader.rs`（795行）→ `loaders/svg.rs` + 分割
+- [x] 6.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割 (modal/combo_box/toggle/color_picker)
+- [x] 6.16 `font_loader.rs`（838行）→ `font_loader/` ディレクトリモジュール化
+- [x] 6.17 `svg_loader.rs`（795行）→ `svg_loader/` ディレクトリモジュール化
 - [x] 6.18 `http_cache_loader.rs`（786行）→ `http_cache_loader/` サブモジュール分割完了
-- [ ] 6.19 `html_renderer.rs`（635行）→ 分割
-- [ ] 6.20 `main.rs`（595行）→ `setup/` サブモジュール
-- [ ] 6.21 `changelog.rs`（515行）→ 分割
-- [ ] 6.22 `about_info.rs`（335行）→ 分割
-- [ ] 6.23 `theme_bridge.rs`（313行）→ 分割
+- [x] 6.19 `html_renderer.rs`（635行）→ `html_renderer/` ディレクトリモジュール化
+- [x] ~~6.20~~ `main.rs`（607行）→ スキップ: バイナリentry point、ボーダーライン
+- [x] 6.21 `changelog.rs`（515行）→ `changelog/` ディレクトリモジュール化
+- [x] 6.22 `about_info.rs`（335行）→ `about_info/` ディレクトリモジュール化
+- [x] 6.23 `theme_bridge.rs`（313行）→ `theme_bridge/` ディレクトリモジュール化
 
 ### 6-E. React的な再利用可能UIコンポーネント化（UI最終フェーズ）
 
