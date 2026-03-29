@@ -87,8 +87,8 @@ pub fn lint_no_hardcoded_colors(workspace_root: &Path) -> Vec<Violation> {
     let mut violations = Vec::new();
 
     for file in ui_files {
-        let file_name = file.file_name().unwrap_or_default().to_string_lossy();
-        if file_name == "theme_bridge.rs" || file_name == "svg_loader.rs" {
+        let path_str = file.to_string_lossy();
+        if path_str.contains("theme_bridge") || path_str.contains("svg_loader") {
             continue;
         }
 
