@@ -190,9 +190,9 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-- [ ] Restore Task 5 (formerly Task 4) WIP files from stash (`git stash pop` or `git stash apply stash@{...}`)
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Restore Task 5 (formerly Task 4) WIP files from stash (`git stash pop` or `git stash apply stash@{...}`)
 
 - [ ] 5.1 `settings.rs`（653行）の完全移行
   - 旧 `settings.rs` の内容を `settings/` サブモジュールに完全移行
@@ -271,14 +271,14 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### 6-D. その他UIファイルの分割
 
-- [ ] 6.11 `preview_pane.rs`（1,816行）→ `preview/` サブモジュール
+- [x] 6.11 `preview_pane.rs`（1,816行）→ `preview_pane/` サブモジュール
 - [ ] 6.12 `preview_pane_ui.rs`（1,270行）→ `preview/` に統合
 - [ ] 6.13 `settings_window.rs`（1,666行）→ `settings/` タブごとに分割
 - [ ] 6.14 `i18n.rs`（1,092行）→ `i18n/` サブモジュール
 - [ ] 6.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割
 - [ ] 6.16 `font_loader.rs`（838行）→ 必要に応じて分割
 - [ ] 6.17 `svg_loader.rs`（795行）→ `loaders/svg.rs` + 分割
-- [ ] 6.18 `http_cache_loader.rs`（786行）→ `loaders/http_cache.rs` + 分割
+- [x] 6.18 `http_cache_loader.rs`（786行）→ `http_cache_loader/` サブモジュール分割完了
 - [ ] 6.19 `html_renderer.rs`（635行）→ 分割
 - [ ] 6.20 `main.rs`（595行）→ `setup/` サブモジュール
 - [ ] 6.21 `changelog.rs`（515行）→ 分割
