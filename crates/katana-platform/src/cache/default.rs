@@ -1,30 +1,11 @@
-//! General-purpose caching facade for Katana.
-//!
-//! Provides both an in-memory ephemeral cache and a persistent on-disk cache.
-
-use serde::{Deserialize, Serialize};
+use crate::cache::{read_guard, write_guard, CacheFacade, PersistentData};
 use std::path::PathBuf;
-use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::RwLock;
 
-/// A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
-pub trait CacheFacade: Send + Sync {
-    /// Retrieves a value from the in-memory cache.
-    fn get_memory(&self, key: &str) -> Option<String>;
-    /// Stores a value in the in-memory cache. Note: this does not persist across application restarts.
-    fn set_memory(&self, key: &str, value: String);
+/* WHY: Extracted from monolithic cache module to provide file-based persistent cache functionality.
+SAFETY: Implements thread-safe locking mechanisms via RwLock and gracefully handles OS cache paths. */
 
-    /// Retrieves a value from the persistent cache.
-    fn get_persistent(&self, key: &str) -> Option<String>;
-    /// Stores a value in the persistent cache, syncing to disk.
-    fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()>;
-}
-
-#[derive(Serialize, Deserialize, Default)]
-struct PersistentData {
-    entries: Vec<(String, String)>,
-}
-
-/// The default implementation of the `CacheFacade` using a JSON file for persistence.
+// WHY: The default implementation of the `CacheFacade` using a JSON file for persistence.
 pub struct DefaultCacheService {
     memory: RwLock<Vec<(String, String)>>,
     persistent_path: PathBuf,
@@ -32,7 +13,7 @@ pub struct DefaultCacheService {
 }
 
 impl DefaultCacheService {
-    /// Creates a new `DefaultCacheService` with the specified persistent path.
+    // WHY: Creates a new `DefaultCacheService` with the specified persistent path.
     pub fn new(persistent_path: PathBuf) -> Self {
         let persistent = Self::load_persistent(&persistent_path).unwrap_or_default();
         Self {
@@ -42,7 +23,7 @@ impl DefaultCacheService {
         }
     }
 
-    /// Creates a new `DefaultCacheService` with the standard OS cache directory.
+    // WHY: Creates a new `DefaultCacheService` with the standard OS cache directory.
     pub fn with_default_path() -> Self {
         let base = dirs::cache_dir().unwrap_or_else(|| PathBuf::from("."));
         Self::new(base.join("KatanA").join("cache.json"))
@@ -67,8 +48,8 @@ impl DefaultCacheService {
         Ok(())
     }
 
-    /// Clears all subdirectories in the Katana cache directory (e.g., http-image-cache, plantuml, tmp)
-    /// while preserving files in the root like `cache.json`.
+    /* WHY: Clears all subdirectories in the Katana cache directory (e.g., http-image-cache, plantuml, tmp)
+    while preserving files in the root like `cache.json`. */
     pub fn clear_all_directories() {
         let base = dirs::cache_dir()
             .unwrap_or_else(|| PathBuf::from("."))
@@ -76,32 +57,33 @@ impl DefaultCacheService {
         Self::clear_all_directories_in(&base);
     }
 
+    fn clear_directory(path: &std::path::Path) {
+        let Ok(sub_entries) = std::fs::read_dir(path) else {
+            let _ = std::fs::remove_dir_all(path);
+            return;
+        };
+
+        for sub_entry in sub_entries.flatten() {
+            let _ = std::fs::remove_file(sub_entry.path());
+        }
+        let _ = std::fs::remove_dir_all(path);
+    }
+
     pub fn clear_all_directories_in(base: &std::path::Path) {
-        if let Ok(entries) = std::fs::read_dir(base) {
-            for entry in entries.flatten() {
-                if let Ok(file_type) = entry.file_type() {
-                    if file_type.is_dir() {
-                        let path = entry.path();
-                        // Best effort clear contents to prevent macOS directory not empty errors
-                        if let Ok(sub_entries) = std::fs::read_dir(&path) {
-                            for sub_entry in sub_entries.flatten() {
-                                let _ = std::fs::remove_file(sub_entry.path());
-                            }
-                        }
-                        let _ = std::fs::remove_dir_all(&path);
-                    }
-                }
+        let Ok(entries) = std::fs::read_dir(base) else {
+            return;
+        };
+
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+
+            if file_type.is_dir() {
+                Self::clear_directory(&entry.path());
             }
         }
     }
-}
-
-fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
-    lock.read().unwrap_or_else(PoisonError::into_inner)
-}
-
-fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
-    lock.write().unwrap_or_else(PoisonError::into_inner)
 }
 
 impl Default for DefaultCacheService {
@@ -119,7 +101,9 @@ impl CacheFacade for DefaultCacheService {
     fn set_memory(&self, key: &str, value: String) {
         let mut map = write_guard(&self.memory);
         if let Some(pos) = map.iter().position(|(k, _)| k == key) {
-            map[pos].1 = value;
+            if let Some(entry) = map.get_mut(pos) {
+                entry.1 = value;
+            }
         } else {
             map.push((key.to_string(), value));
         }
@@ -137,50 +121,14 @@ impl CacheFacade for DefaultCacheService {
         {
             let mut data = write_guard(&self.persistent);
             if let Some(pos) = data.entries.iter().position(|(k, _)| k == key) {
-                data.entries[pos].1 = value;
+                if let Some(entry) = data.entries.get_mut(pos) {
+                    entry.1 = value;
+                }
             } else {
                 data.entries.push((key.to_string(), value));
             }
         }
         self.save_persistent()
-    }
-}
-
-/// An in-memory only CacheFacade for tests.
-#[derive(Default)]
-pub struct InMemoryCacheService {
-    memory: RwLock<Vec<(String, String)>>,
-    persistent: RwLock<Vec<(String, String)>>,
-}
-
-impl CacheFacade for InMemoryCacheService {
-    fn get_memory(&self, key: &str) -> Option<String> {
-        let map = read_guard(&self.memory);
-        map.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
-    }
-
-    fn set_memory(&self, key: &str, value: String) {
-        let mut map = write_guard(&self.memory);
-        if let Some(pos) = map.iter().position(|(k, _)| k == key) {
-            map[pos].1 = value;
-        } else {
-            map.push((key.to_string(), value));
-        }
-    }
-
-    fn get_persistent(&self, key: &str) -> Option<String> {
-        let data = read_guard(&self.persistent);
-        data.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
-    }
-
-    fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()> {
-        let mut data = write_guard(&self.persistent);
-        if let Some(pos) = data.iter().position(|(k, _)| k == key) {
-            data[pos].1 = value;
-        } else {
-            data.push((key.to_string(), value));
-        }
-        Ok(())
     }
 }
 
@@ -258,23 +206,6 @@ mod tests {
     }
 
     #[test]
-    fn test_in_memory_cache_service() {
-        let cache = InMemoryCacheService::default();
-
-        assert_eq!(cache.get_memory("test"), None);
-        cache.set_memory("test", "val1".to_string());
-        assert_eq!(cache.get_memory("test"), Some("val1".to_string()));
-        cache.set_memory("test", "val2".to_string());
-        assert_eq!(cache.get_memory("test"), Some("val2".to_string()));
-
-        assert_eq!(cache.get_persistent("pkey"), None);
-        cache.set_persistent("pkey", "pval1".to_string()).unwrap();
-        assert_eq!(cache.get_persistent("pkey"), Some("pval1".to_string()));
-        cache.set_persistent("pkey", "pval2".to_string()).unwrap();
-        assert_eq!(cache.get_persistent("pkey"), Some("pval2".to_string()));
-    }
-
-    #[test]
     fn test_cache_recovers_from_poisoned_memory_lock() {
         let cache = DefaultCacheService::new(PathBuf::from("dummy.json"));
         let _ = catch_unwind(AssertUnwindSafe(|| {
@@ -287,5 +218,15 @@ mod tests {
 
         cache.set_memory("test", "recovered".to_string());
         assert_eq!(cache.get_memory("test"), Some("recovered".to_string()));
+    }
+
+    #[test]
+    fn test_clear_directory_fallback_on_file() {
+        let tmp = TempDir::new().unwrap();
+        let file_path = tmp.path().join("just_a_file.txt");
+        std::fs::write(&file_path, b"test").unwrap();
+
+        // Directly call clear_directory on a file to ensure the fallback block is covered
+        DefaultCacheService::clear_directory(&file_path);
     }
 }
