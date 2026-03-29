@@ -1,27 +1,10 @@
-#![allow(unused_imports, dead_code)]
-use crate::app_state::{AppAction, AppState, ScrollSource, ViewMode};
-use crate::i18n;
+use crate::app_state::{AppAction, AppState, ScrollSource};
 use crate::preview_pane::{DownloadRequest, PreviewPane};
-use crate::shell::{
-    ACTIVE_FILE_HIGHLIGHT_ROUNDING, EDITOR_INITIAL_VISIBLE_ROWS, FILE_TREE_PANEL_DEFAULT_WIDTH,
-    FILE_TREE_PANEL_MIN_WIDTH, NO_WORKSPACE_BOTTOM_SPACING, RECENT_WORKSPACES_ITEM_SPACING,
-    RECENT_WORKSPACES_SPACING, SCROLL_SYNC_DEAD_ZONE, TAB_DROP_ANIMATION_TIME,
-    TAB_DROP_INDICATOR_WIDTH, TAB_INTER_ITEM_SPACING, TAB_NAV_BUTTONS_AREA_WIDTH,
-    TAB_TOOLTIP_SHOW_DELAY_SECS, TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT,
-};
+use crate::shell::SCROLL_SYNC_DEAD_ZONE;
 use crate::shell_ui::{
-    indent_prefix, invisible_label, open_folder_dialog, relative_full_path, TreeRenderContext,
-    LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING, SEARCH_MODAL_HEIGHT,
-    SEARCH_MODAL_WIDTH, STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN,
-    TOC_HEADING_VISIBILITY_THRESHOLD, TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH,
-    TOC_PANEL_MARGIN, WORKSPACE_SPINNER_INNER_MARGIN, WORKSPACE_SPINNER_OUTER_MARGIN,
-    WORKSPACE_SPINNER_TEXT_MARGIN,
+    invisible_label, LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING,
 };
-use crate::theme_bridge;
-use crate::Icon;
 use eframe::egui;
-use katana_core::workspace::{TreeEntry, Workspace};
-use std::path::{Path, PathBuf};
 
 pub(crate) fn preview_panel_id(path: Option<&std::path::Path>, base: &'static str) -> egui::Id {
     match path {
