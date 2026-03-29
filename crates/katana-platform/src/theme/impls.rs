@@ -1,3 +1,4 @@
+use crate::theme::preset::{PresetColorData, ThemePreset};
 use crate::theme::presets::{
     ALABASTER, ANDROMEDA, AYU_LIGHT, CATPPUCCIN_LATTE, CATPPUCCIN_MOCHA, DRACULA, EVERFOREST_LIGHT,
     FLAT_UI_LIGHT, GITHUB_DARK, GITHUB_LIGHT, GRUVBOX_LIGHT, KATANA_DARK, KATANA_LIGHT,
@@ -5,7 +6,7 @@ use crate::theme::presets::{
     ONE_LIGHT, PALENIGHT, PAPERCOLOR_LIGHT, QUIET_LIGHT, ROSE_PINE, ROSE_PINE_DAWN,
     SOLARIZED_LIGHT, SYNTHWAVE_84, TOKYO_NIGHT,
 };
-use crate::theme::types::{PresetColorData, ThemeColors, ThemeMode, ThemePreset};
+use crate::theme::types::{ThemeColors, ThemeMode};
 
 impl ThemeMode {
     /// Returns the legacy theme string used for backward-compatible JSON persistence.

@@ -208,7 +208,8 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 5.3 `theme/builder.rs`（473行）の分割
   - カラービルダー・フォントビルダーの分離
 
-- [ ] 5.4 `theme/types.rs`（241行）の分割
+- [x] 5.4 `theme/types.rs`（241行）の分割
+  - `ThemePreset` および `PresetColorData` を `theme/preset.rs` へ分離
 
 - [ ] 5.5 `theme/migration.rs`（262行）の分割
 

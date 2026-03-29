@@ -1,6 +1,7 @@
 use crate::theme::palettes::*;
+use crate::theme::preset::PresetColorData;
 use crate::theme::types::{
-    CodeColors, PresetColorData, PreviewColors, Rgb, Rgba, SystemColors, ThemeMode,
+    CodeColors, PreviewColors, Rgb, Rgba, SystemColors, ThemeMode,
 };
 
 pub(crate) const fn lighten(color: Rgb, amount: u8) -> Rgb {
