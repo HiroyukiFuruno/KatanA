@@ -319,39 +319,7 @@ impl eframe::App for KatanaApp {
         }
 
         // Intercept all URL opening requests globally
-        let commands = ctx.output_mut(|o| std::mem::take(&mut o.commands));
-        let mut unprocessed_commands = Vec::new();
-
-        for cmd in commands {
-            if let egui::OutputCommand::OpenUrl(open) = &cmd {
-                let url = &open.url;
-                if url.starts_with("http://")
-                    || url.starts_with("https://")
-                    || url.starts_with("mailto:")
-                {
-                    // Let eframe natively handle external URLs so it respects same_tab vs new_tab
-                    unprocessed_commands.push(cmd);
-                } else {
-                    let mut path = std::path::PathBuf::from(url);
-                    if path.is_relative() {
-                        // Resolve relative link against current active document's parent char
-                        if let Some(doc) = self.state.active_document() {
-                            if let Some(parent) = doc.path.parent() {
-                                path = parent.join(path);
-                            }
-                        }
-                    }
-                    self.process_action(ctx, AppAction::SelectDocument(path));
-                }
-            } else {
-                unprocessed_commands.push(cmd);
-            }
-        }
-
-        // Put back the commands we didn't handle
-        if !unprocessed_commands.is_empty() {
-            ctx.output_mut(|o| o.commands.extend(unprocessed_commands));
-        }
+        crate::views::app_frame::intercept_url_commands(ctx, self);
 
         // --- Splash Screen Overlay ---
         if let Some(start) = self.splash_start {

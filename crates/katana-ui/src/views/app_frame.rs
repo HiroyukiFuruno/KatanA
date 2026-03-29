@@ -4,6 +4,7 @@
 //! menu bar, status bar, title bar, workspace sidebar, tab toolbar,
 //! breadcrumbs, and central content area.
 
+use crate::app::action::ActionOps;
 use crate::app_state::{AppAction, ViewMode};
 use crate::preview_pane::DownloadRequest;
 use crate::shell::{KatanaApp, SIDEBAR_COLLAPSED_TOGGLE_WIDTH};
@@ -252,4 +253,41 @@ fn render_central_content(ctx: &egui::Context, app: &mut KatanaApp) -> Option<Do
     }
 
     download_req
+}
+
+/// Intercepts URL opening requests from egui output commands.
+///
+/// External URLs (http/https/mailto) are passed through to the browser.
+/// Internal file paths are resolved and dispatched as `SelectDocument` actions.
+pub(crate) fn intercept_url_commands(ctx: &egui::Context, app: &mut KatanaApp) {
+    let commands = ctx.output_mut(|o| std::mem::take(&mut o.commands));
+    let mut unprocessed_commands = Vec::new();
+
+    for cmd in commands {
+        if let egui::OutputCommand::OpenUrl(open) = &cmd {
+            let url = &open.url;
+            if url.starts_with("http://")
+                || url.starts_with("https://")
+                || url.starts_with("mailto:")
+            {
+                unprocessed_commands.push(cmd);
+            } else {
+                let mut path = std::path::PathBuf::from(url);
+                if path.is_relative() {
+                    if let Some(doc) = app.state.active_document() {
+                        if let Some(parent) = doc.path.parent() {
+                            path = parent.join(path);
+                        }
+                    }
+                }
+                app.process_action(ctx, AppAction::SelectDocument(path));
+            }
+        } else {
+            unprocessed_commands.push(cmd);
+        }
+    }
+
+    if !unprocessed_commands.is_empty() {
+        ctx.output_mut(|o| o.commands.extend(unprocessed_commands));
+    }
 }
