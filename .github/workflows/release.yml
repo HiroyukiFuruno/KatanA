@@ -68,6 +68,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-release-
 
+      - name: Run release preflight logic
+        run: ./scripts/release/preflight.sh "${{ steps.tag.outputs.version }}"
+
       - name: Install cargo-bundle
         run: command -v cargo-bundle || cargo install cargo-bundle
 

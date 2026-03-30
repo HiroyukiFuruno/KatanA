@@ -220,8 +220,8 @@ impl ActionOps for KatanaApp {
                 crate::i18n::set_language(&lang);
                 crate::shell_ui::update_native_menu_strings_from_i18n();
                 self.state.config.settings.settings_mut().language = lang;
-                if let Err(e) = self.state.config.settings.save() {
-                    tracing::warn!("Failed to save settings: {e}");
+                if !self.state.config.try_save_settings() {
+                    tracing::warn!("Failed to save language setting");
                 }
             }
             AppAction::ToggleSettings => {
@@ -381,8 +381,8 @@ impl ActionOps for KatanaApp {
                     .settings
                     .settings_mut()
                     .terms_accepted_version = Some(version);
-                if let Err(e) = self.state.config.settings.save() {
-                    tracing::warn!("Failed to save terms acceptance: {e}");
+                if !self.state.config.try_save_settings() {
+                    tracing::warn!("Failed to save terms acceptance");
                 }
             }
             AppAction::DeclineTerms => {
@@ -398,7 +398,7 @@ impl ActionOps for KatanaApp {
                     .settings_mut()
                     .updates
                     .skipped_version = Some(version);
-                let _ = self.state.config.settings.save();
+                let _ = self.state.config.try_save_settings();
                 self.show_update_dialog = false;
             }
             AppAction::DismissUpdate => {
@@ -678,8 +678,8 @@ impl ActionOps for KatanaApp {
         }
 
         if show_changelog {
-            if let Err(e) = app.state.config.settings.save() {
-                tracing::warn!("Failed to save previous_app_version: {e}");
+            if !app.state.config.try_save_settings() {
+                tracing::warn!("Failed to save previous_app_version");
             }
             app.needs_changelog_display = true;
         }

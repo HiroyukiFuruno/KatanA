@@ -144,9 +144,13 @@ fn test_json_file_repository_load_corrupt_file_returns_defaults() {
     let tmp = TempDir::new().unwrap();
     let path = tmp.path().join("corrupt.json");
     std::fs::write(&path, "NOT VALID JSON").unwrap();
-    let repo = JsonFileRepository::new(path);
+    let repo = JsonFileRepository::new(path.clone());
     let settings = repo.load();
     assert_eq!(settings.theme.theme, "dark");
+    assert!(
+        tmp.path().join("corrupt.bak").exists(),
+        "Corrupted settings file should be backed up"
+    );
 }
 
 #[test]

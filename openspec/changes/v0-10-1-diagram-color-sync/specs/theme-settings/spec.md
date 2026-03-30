@@ -1,16 +1,16 @@
 ## MODIFIED Requirements
 
-### Requirement: Theme changes propagate to diagram preview without restart
+### Requirement: テーマ変更は再起動なしでダイアグラムプレビューへ反映される
 
-The system SHALL propagate runtime theme changes to diagram preview rendering without requiring an application restart.
+システムは、アプリケーションの再起動を要求せずに、runtime のテーマ変更をダイアグラムプレビュー描画へ反映しなければならない（SHALL）。
 
-#### Scenario: Theme mode changes
+#### Scenario: テーマモードが切り替わる
 
-- **WHEN** the user switches between dark and light theme modes
-- **THEN** diagram previews are refreshed using the newly active theme snapshot
+- **WHEN** ユーザーが dark theme と light theme の間で切り替えた時
+- **THEN** ダイアグラムプレビューは新しく active になったテーマスナップショットで更新される
 
-#### Scenario: Preview text color changes
+#### Scenario: プレビュー文字色が変更される
 
-- **WHEN** the user changes preview-specific text color from the settings UI
-- **THEN** diagram previews are refreshed using the new color values
-- **THEN** the result matches the current preview theme instead of the previous one
+- **WHEN** ユーザーが設定 UI から preview 専用の文字色を変更した時
+- **THEN** ダイアグラムプレビューは新しい色設定で更新される
+- **THEN** 結果は以前のテーマではなく、現在の preview theme と一致する

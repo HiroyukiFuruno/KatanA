@@ -1,57 +1,57 @@
 ## ADDED Requirements
 
-### Requirement: Users can organize tabs into named color groups
+### Requirement: ユーザーは名前付きのカラーグループでタブを整理できる
 
-The system SHALL allow users to organize open tabs into named, color-coded groups.
+システムは、ユーザーが開いているタブを名前付きかつ色付きのグループに整理できるようにしなければならない（SHALL）。
 
-#### Scenario: create a new group from a tab
+#### Scenario: タブから新しいグループを作成する
 
-- **WHEN** the user opens a tab context menu and selects the create-group action
-- **THEN** a new tab group is created with a name, a color, and the selected tab as its first member
-- **THEN** the selected tab belongs to at most one group
+- **WHEN** ユーザーがタブのコンテキストメニューを開き、グループ作成操作を選んだ時
+- **THEN** 名前と色を持つ新しいタブグループが作成され、選択中のタブが最初のメンバーになる
+- **THEN** 選択中のタブは高々 1 つのグループにのみ所属する
 
-#### Scenario: add a tab to an existing group
+#### Scenario: 既存グループへタブを追加する
 
-- **WHEN** the user selects an existing group from the tab context menu
-- **THEN** the selected tab becomes a member of that group
-- **THEN** the tab is removed from any previous group membership
+- **WHEN** ユーザーがタブのコンテキストメニューから既存グループを選んだ時
+- **THEN** 選択中のタブはそのグループのメンバーになる
+- **THEN** そのタブは以前所属していたグループから外れる
 
-#### Scenario: pinned tab is not grouped
+#### Scenario: pinned タブはグループ化されない
 
-- **WHEN** a tab is pinned
-- **THEN** it is not a member of any tab group
-- **THEN** group-add actions are not offered or are disabled for that tab
+- **WHEN** タブが pinned された時
+- **THEN** そのタブはどのタブグループにも所属しない
+- **THEN** そのタブに対するグループ追加操作は表示されない、または無効化される
 
-#### Scenario: collapse a tab group
+#### Scenario: タブグループを折りたたむ
 
-- **WHEN** the user collapses a tab group
-- **THEN** member tabs are hidden from the tab bar without being closed
-- **THEN** the group header remains visible and can be expanded again
+- **WHEN** ユーザーがタブグループを折りたたんだ時
+- **THEN** グループのメンバータブは閉じられずにタブバーから非表示になる
+- **THEN** グループヘッダーは表示されたままで、再度展開できる
 
-#### Scenario: collapsed group keeps active member visible
+#### Scenario: 折りたたまれたグループでも active メンバーは見える
 
-- **WHEN** the active tab belongs to a collapsed group
-- **THEN** the group header remains visible
-- **THEN** the active member tab remains visible while non-active members are hidden
+- **WHEN** active なタブが折りたたまれたグループに所属している時
+- **THEN** グループヘッダーは表示されたまま残る
+- **THEN** active なメンバータブは見えたままで、非 active メンバーだけが隠れる
 
-### Requirement: Pinned tabs are protected from normal close actions
+### Requirement: pinned タブは通常の close 操作から保護される
 
-The system SHALL protect pinned tabs from ordinary close affordances until they are explicitly unpinned.
+システムは、pinned タブが明示的に unpin されるまで、通常の close 操作から保護しなければならない（SHALL）。
 
-#### Scenario: pinned tab hides close button
+#### Scenario: pinned タブでは close ボタンを隠す
 
-- **WHEN** a tab is pinned
-- **THEN** its close button is not shown in the tab bar
-- **THEN** the tab still exposes its title through a tooltip or equivalent affordance
+- **WHEN** タブが pinned された時
+- **THEN** そのタブの close ボタンはタブバーに表示されない
+- **THEN** ただし tooltip など同等の手段でタイトルは確認できる
 
-#### Scenario: batch close skips pinned tabs
+#### Scenario: 一括 close は pinned タブをスキップする
 
-- **WHEN** the user triggers close-all, close-others, close-left, or close-right
-- **THEN** pinned tabs are not closed
-- **THEN** unpinned tabs continue to follow the requested close behavior
+- **WHEN** ユーザーが close-all、close-others、close-left、close-right のいずれかを実行した時
+- **THEN** pinned タブは閉じられない
+- **THEN** unpinned タブは指定された close 挙動に従って処理される
 
-#### Scenario: shortcut close does not close pinned tab
+#### Scenario: close shortcut では pinned タブを閉じない
 
-- **WHEN** the active tab is pinned and a normal close shortcut dispatches a close action
-- **THEN** the pinned tab remains open
-- **THEN** the user must unpin it before it can be normally closed
+- **WHEN** active タブが pinned されており、通常の close shortcut が close action を発行した時
+- **THEN** その pinned タブは開いたまま残る
+- **THEN** 通常の close を行うには、先にユーザーが unpin しなければならない

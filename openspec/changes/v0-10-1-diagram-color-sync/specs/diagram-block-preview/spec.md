@@ -1,27 +1,27 @@
 ## MODIFIED Requirements
 
-### Requirement: Diagram preview uses the current theme snapshot
+### Requirement: ダイアグラムプレビューは現在のテーマスナップショットを使用する
 
-The system SHALL render diagram previews from the current theme snapshot instead of an application-start snapshot or a global dark/light toggle alone.
+システムは、アプリ起動時点のスナップショットや dark/light 切り替えだけに依存するのではなく、現在のテーマスナップショットに基づいてダイアグラムプレビューを描画しなければならない（SHALL）。
 
-#### Scenario: Mermaid preview follows a same-mode color change
+#### Scenario: Mermaid プレビューが同一モード内の色変更へ追従する
 
-- **WHEN** the user changes preview text color or related theme colors while staying in the same dark/light mode
-- **THEN** Mermaid rendering uses the updated theme snapshot
-- **THEN** the preview does not reuse a stale diagram image rendered with the previous color set
+- **WHEN** ユーザーが dark/light モードを変えずに preview text color や関連テーマ色を変更した時
+- **THEN** Mermaid 描画は更新後のテーマスナップショットを使用する
+- **THEN** プレビューは旧色セットで描かれた古いダイアグラム画像を再利用しない
 
-#### Scenario: PlantUML preview follows a same-mode color change
+#### Scenario: PlantUML プレビューが同一モード内の色変更へ追従する
 
-- **WHEN** the user changes preview text color or related theme colors while staying in the same dark/light mode
-- **THEN** PlantUML rendering uses the updated theme snapshot
-- **THEN** the preview does not reuse a stale diagram image rendered with the previous color set
+- **WHEN** ユーザーが dark/light モードを変えずに preview text color や関連テーマ色を変更した時
+- **THEN** PlantUML 描画は更新後のテーマスナップショットを使用する
+- **THEN** プレビューは旧色セットで描かれた古いダイアグラム画像を再利用しない
 
-### Requirement: Diagram cache keys are theme-aware
+### Requirement: ダイアグラムキャッシュキーはテーマ差分を識別する
 
-The system SHALL include the active diagram theme fingerprint in the persistent diagram cache key.
+システムは、永続化されるダイアグラムキャッシュキーに active なダイアグラムテーマの fingerprint を含めなければならない（SHALL）。
 
-#### Scenario: Theme fingerprint changes
+#### Scenario: テーマ fingerprint が変化する
 
-- **WHEN** the active diagram theme fingerprint changes for the same markdown file, diagram kind, and source
-- **THEN** the cache key changes
-- **THEN** the system re-renders the diagram instead of reusing the stale cached result
+- **WHEN** 同じ markdown file、diagram kind、source に対して active なダイアグラムテーマ fingerprint が変わった時
+- **THEN** キャッシュキーは変化する
+- **THEN** システムは古いキャッシュ結果を再利用せず、ダイアグラムを再描画する
