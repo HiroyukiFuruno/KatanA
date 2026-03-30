@@ -17,6 +17,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 1.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] UIコンポーネント化とテスト導線の再構築が完了していること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
@@ -25,6 +26,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ## 2. AST LinterのUIレイヤー完全適用
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
@@ -33,6 +35,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 2.3 `pub_free_fn` の統合テストにかけられていた `#[ignore]` を外し、UIを含めた全域のコーディングルールとして有効化する
 
 ### Definition of Done (DoD)
+
 - [ ] Linterの違反が解消されテスト対象に組み込まれていること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
@@ -41,6 +44,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ## 3. COVERAGE_IGNORE 解除と「未検証ロジックゼロ」の達成
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
@@ -49,6 +53,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 3.3 `make check` にて実行行カバレッジ100%（Uncovered Lines = 0）のゲートを再突破し、恒久化する
 
 ### Definition of Done (DoD)
+
 - [ ] 全コアロジックファイルのカバレッジが100%に達していること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
@@ -57,6 +62,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ## 4. コーディングルール適用・ドキュメント更新
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
@@ -65,6 +71,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 4.3 ast_linterの除外リスト管理方法の確立（必要に応じて）（v0.8.4からの移行）
 
 ### Definition of Done (DoD)
+
 - [ ] ドキュメント更新と移行タスクが完了していること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 

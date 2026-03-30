@@ -38,20 +38,15 @@ confirm() {
 
 # ── Argument Validation ───────────────────────────────────────────────────────
 VERSION=${1:-$VERSION}
-USE_GITHUB_WORKFLOW=${USE_GITHUB_WORKFLOW:-${2:-0}}
-FORCE=${FORCE:-${3:-0}}
+FORCE=${FORCE:-${2:-0}}
 
 if [[ -z "$VERSION" ]]; then
-    error "VERSION is required. Usage: scripts/release/release.sh x.y.z [USE_GITHUB_WORKFLOW=1] [FORCE=1]"
+    error "VERSION is required. Usage: scripts/release/release.sh x.y.z [FORCE=1]"
     exit 1
 fi
 
 header "Releasing v${VERSION}"
-if [[ "$USE_GITHUB_WORKFLOW" = "1" ]]; then
-    info "Mode: GitHub Actions (CI) Release requested (USE_GITHUB_WORKFLOW=1)"
-else
-    info "Mode: Local Release"
-fi
+info "Mode: Local Release"
 
 # ── 0. Check for existing tag ─────────────────────────────────────────────────
 TAG_EXISTS=false
@@ -194,66 +189,50 @@ else
 fi
 
 # ── 5. Push and/or Publish ────────────────────────────────────────────────────
-if [[ "$USE_GITHUB_WORKFLOW" = "1" ]]; then
-    # CI Release Path
-    if confirm "Push to origin to trigger CI release?"; then
-        info "Pushing changes and tag..."
-        git push origin HEAD --no-verify
-        git push origin "v${VERSION}" --no-verify
-        
-        info "Triggering GitHub Actions release workflow..."
-        gh workflow run release.yml -f tag="v${VERSION}"
-        success "GitHub Actions release workflow triggered."
-    else
-        warn "Push skipped. You must push manually to trigger the release."
-    fi
-else
-    # Local Release Path
-    header "Building and Publishing locally..."
-    
-    info "Building DMG locally..."
-    make dmg
+header "Building and Publishing locally..."
 
-    DMG_PATH=$(find target/release -name "KatanA-Desktop-*.dmg" -maxdepth 1 | sort -V | tail -1)
-    if [[ -z "$DMG_PATH" ]]; then
-        error "Local DMG build failed or file not found."
-        exit 1
-    fi
-    success "Local DMG built: $DMG_PATH"
+info "Building DMG locally..."
+make dmg
 
-    ZIP_PATH="target/release/KatanA-macOS.zip"
-    rm -f "$ZIP_PATH"
-    info "Building ZIP locally ($ZIP_PATH)..."
-    APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
-    if [[ -n "$APP_PATH" ]]; then
-        (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
-        success "Local ZIP built: $ZIP_PATH"
-    else
-        error "Local APP bundle not found for zipping."
-        exit 1
-    fi
-
-    RELEASE_NOTES_PATH="/tmp/RELEASE_NOTES_${VERSION}.md"
-    info "Extracting release notes..."
-    ./scripts/release/extract-notes.sh "$VERSION" > "$RELEASE_NOTES_PATH"
-    
-    if confirm "Publish to GitHub and Update Homebrew now?"; then
-        info "Pushing changes and tag to origin..."
-        git push origin HEAD --no-verify
-        git push origin "v${VERSION}" --no-verify
-
-        ./scripts/release/publish-github.sh "$VERSION" "$DMG_PATH" "$RELEASE_NOTES_PATH"
-        
-        SHA256=$(shasum -a 256 "$DMG_PATH" | awk '{print $1}')
-        DMG_NAME=$(basename "$DMG_PATH")
-        ./scripts/release/update-homebrew.sh "$VERSION" "$SHA256" "$DMG_NAME"
-        
-        success "Local release and publication complete!"
-    else
-        warn "Publication skipped. You must publish manually."
-    fi
-    
-    rm -f "$RELEASE_NOTES_PATH"
+DMG_PATH=$(find target/release -name "KatanA-Desktop-*.dmg" -maxdepth 1 | sort -V | tail -1)
+if [[ -z "$DMG_PATH" ]]; then
+    error "Local DMG build failed or file not found."
+    exit 1
 fi
+success "Local DMG built: $DMG_PATH"
+
+ZIP_PATH="target/release/KatanA-macOS.zip"
+rm -f "$ZIP_PATH"
+info "Building ZIP locally ($ZIP_PATH)..."
+APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
+if [[ -n "$APP_PATH" ]]; then
+    (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
+    success "Local ZIP built: $ZIP_PATH"
+else
+    error "Local APP bundle not found for zipping."
+    exit 1
+fi
+
+RELEASE_NOTES_PATH="/tmp/RELEASE_NOTES_${VERSION}.md"
+info "Extracting release notes..."
+./scripts/release/extract-notes.sh "$VERSION" > "$RELEASE_NOTES_PATH"
+
+if confirm "Publish to GitHub and Update Homebrew now?"; then
+    info "Pushing changes and tag to origin..."
+    git push origin HEAD --no-verify
+    git push origin "v${VERSION}" --no-verify
+
+    ./scripts/release/publish-github.sh "$VERSION" "$DMG_PATH" "$RELEASE_NOTES_PATH"
+    
+    SHA256=$(shasum -a 256 "$DMG_PATH" | awk '{print $1}')
+    DMG_NAME=$(basename "$DMG_PATH")
+    ./scripts/release/update-homebrew.sh "$VERSION" "$SHA256" "$DMG_NAME"
+    
+    success "Local release and publication complete!"
+else
+    warn "Publication skipped. You must publish manually."
+fi
+
+rm -f "$RELEASE_NOTES_PATH"
 
 success "Release v${VERSION} process finished! 🚀"
