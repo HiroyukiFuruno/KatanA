@@ -1,8 +1,8 @@
 ### 全体の着手条件 (DoR)
 
-- [ ] `v0-8-7-preview-refresh-and-tasklist-fixes` が merge 済みで安定しており、同時に `vendor/*egui_commonmark*` を編集している branch が存在しない
-- [ ] このメンテナンス枠で使う target release version が確定している
-- [ ] 実装開始前に、`0.22.x` 系の互換 upstream revision または明示的な互換 fork revision が特定されている
+[x] `v0-8-7-preview-refresh-and-tasklist-fixes` が merge 済みで安定しており、同時に `vendor/*egui_commonmark*` を編集している branch が存在しない
+[x] このメンテナンス枠で使う target release version が確定している
+[x] 実装開始前に、`0.22.x` 系の互換 upstream revision または明示的な互換 fork revision が特定されている
 
 ## ブランチ運用ルール
 
@@ -20,7 +20,7 @@
 - [x] 現在の vendor-local delta が subtree import commit 前にすべて分類されている
 - [x] 互換 upstream revision が明示的に pin されている
 - [x] 中核前提が崩れた場合は artifact が先に修正されている
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+[x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
@@ -42,7 +42,7 @@
 - [x] Katana は legacy copied directory ではなく subtree root から両 vendored crate を解決している
 - [x] raw subtree import commit は Katana patch logic と混ざらず review 可能である
 - [x] 削除済み legacy vendor layout に依存する runtime / build path が残っていない
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+[x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
@@ -63,7 +63,7 @@
 - [x] 最終 commit stack が subtree base と Katana patch layer を明確に分離している
 - [x] vendor-dependent な runtime behavior が migration 前の契約を保っている
 - [x] patch layer が守るべき挙動に対して必要な regression coverage が存在する
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+[x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
@@ -82,7 +82,7 @@
 
 - [x] 別の AI agent や maintainer が、この会話に頼らず subtree 更新と再検証を実行できる
 - [x] runbook (`vendor/README.md`) に steady-state sync 手順と artifact 修正への escalation path の両方が記載されている
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+[x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
