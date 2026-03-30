@@ -11,14 +11,14 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 1.1 `shell.rs` と `settings_window.rs` の `settings.save()` 呼び出し箇所を棚卸しし、silent failure をなくす対象を確定する
-- [ ] 1.2 settings / update / release の failure contract（何を守り、どこで止め、何を表示するか）をコード単位で確定する
-- [ ] 1.3 失敗系を含む追加テストケース（settings save failure, corrupted settings, staged update swap, release preflight）を洗い出す
+- [x] 1.1 `shell.rs` と `settings_window.rs` の `settings.save()` 呼び出し箇所を棚卸しし、silent failure をなくす対象を確定する
+- [x] 1.2 settings / update / release の failure contract（何を守り、どこで止め、何を表示するか）をコード単位で確定する
+- [x] 1.3 失敗系を含む追加テストケース（settings save failure, corrupted settings, staged update swap, release preflight）を洗い出す
 
 ### Definition of Done (DoD)
 
-- [ ] 対象 call site、failure contract、必要テストが implementation 可能な粒度まで整理されている
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] 対象 call site、failure contract、必要テストが implementation 可能な粒度まで整理されている
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. Settings Persistence Hardening
 
