@@ -28,8 +28,10 @@ where
         .file_name()
         .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.app"));
     let extracted_app_path = extract_dir.join(app_name);
-    if !extracted_app_path.exists() {
-        anyhow::bail!("Extracted update does not contain the expected application bundle");
+
+    // Bundle verification: Check if it looks like a valid macOS App Bundle
+    if !extracted_app_path.exists() || !extracted_app_path.join("Contents/Info.plist").exists() {
+        anyhow::bail!("Extracted update does not contain a valid application bundle");
     }
 
     let script_path = temp_dir.path().join("relauncher.sh");
@@ -93,10 +95,32 @@ if command -v brew >/dev/null 2>&1; then
         brew untap HiroyukiFuruno/katana || true
     fi
 fi
-rm -rf "{target}"
-mv "{extracted}" "{target}"
-xattr -cr "{target}"
+
+TARGET_BAK="{target}.bak"
+rm -rf "$TARGET_BAK"
+
+if [ -d "{target}" ]; then
+    echo "Backing up existing installation..."
+    mv "{target}" "$TARGET_BAK"
+fi
+
+if ! mv "{extracted}" "{target}"; then
+    echo "Swap failed! Rolling back..."
+    osascript -e 'display alert "Update Failed" message "Could not complete the application update. The original version has been restored." as critical' || true
+    rm -rf "{target}"
+    
+    if [ -d "$TARGET_BAK" ]; then
+        mv "$TARGET_BAK" "{target}"
+    fi
+    
+    open "{target}" || true
+    rm -rf "{temp_dir}"
+    exit 1
+fi
+
+xattr -cr "{target}" || true
 open "{target}"
+rm -rf "$TARGET_BAK"
 rm -rf "{temp_dir}"
 "#,
         target = target_app.display(),
@@ -124,12 +148,15 @@ mod tests {
         assert!(script_path.exists());
 
         let content = std::fs::read_to_string(&script_path).unwrap();
-        assert!(content.contains(&format!("rm -rf \"{}\"", target_path.display())));
+        assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
+        assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
         assert!(content.contains(&format!(
-            "mv \"{}\" \"{}\"",
+            "if ! mv \"{}\" \"{}\"; then",
             extracted_path.display(),
             target_path.display()
         )));
+        assert!(content.contains("display alert \"Update Failed\""));
+        assert!(content.contains("Swap failed! Rolling back..."));
         assert!(content.contains("brew uninstall --cask katana-desktop --force"));
         assert!(content.contains(&format!("xattr -cr \"{}\"", target_path.display())));
         assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
@@ -163,6 +190,9 @@ mod tests {
                 let options =
                     SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
                 zip.add_directory("KatanA.app/", options).unwrap();
+                zip.add_directory("KatanA.app/Contents/", options).unwrap();
+                zip.start_file("KatanA.app/Contents/Info.plist", options)
+                    .unwrap();
                 zip.finish().unwrap();
             }
 
@@ -207,6 +237,8 @@ mod tests {
                 let options =
                     SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
                 zip.add_directory("Wrong.app/", options).unwrap();
+                zip.start_file("Wrong.app/Contents/Info.plist", options)
+                    .unwrap();
                 zip.finish().unwrap();
             }
 
@@ -223,7 +255,7 @@ mod tests {
         assert!(res.is_err());
         assert_eq!(
             res.unwrap_err().to_string(),
-            "Extracted update does not contain the expected application bundle"
+            "Extracted update does not contain a valid application bundle"
         );
     }
 }
