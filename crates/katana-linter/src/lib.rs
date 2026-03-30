@@ -1,24 +1,21 @@
-#![deny(
-    warnings,
-    clippy::all,
+#![deny(warnings, clippy::all)]
+#![allow(
+    missing_docs,
+    clippy::missing_errors_doc,
     clippy::too_many_lines,
-    clippy::cognitive_complexity,
-    clippy::wildcard_imports,
+    clippy::expect_used,
+    clippy::indexing_slicing,
     clippy::unwrap_used,
     clippy::panic,
     clippy::todo,
     clippy::unimplemented,
     clippy::unwrap_or_default,
+    clippy::wildcard_imports,
     clippy::match_wild_err_arm,
     clippy::let_and_return,
-    clippy::manual_ok_err
+    clippy::manual_ok_err,
+    clippy::cognitive_complexity
 )]
-#![warn(
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::missing_errors_doc
-)]
-#![allow(missing_docs)]
 #![cfg_attr(
     test,
     allow(
@@ -36,7 +33,7 @@ use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 // ─────────────────────────────────────────────
-// Violation Report
+// WHY: Violation Report
 // ─────────────────────────────────────────────
 
 #[derive(Debug, Clone)]
@@ -119,8 +116,8 @@ pub fn run_ast_lint(
     }
 
     if let Err(e) = utils::format_violations(rule_name, hint, &all_violations) {
-        // WHY: The AST Linter executes as part of the test suite boundary.
-        // Failing tests fundamentally require panics to communicate failure natively.
+        /* WHY: The AST Linter executes as part of the test suite boundary.
+        Failing tests fundamentally require panics to communicate failure natively. */
         #[allow(clippy::panic)]
         {
             panic!("{e}");

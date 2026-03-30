@@ -32,7 +32,6 @@ fn returns_multiple_candidates_when_jar_candidate_paths_env_var_is_not_set() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::remove_var("PLANTUML_JAR") };
     let paths = plantuml_renderer::jar_candidate_paths();
-    // Includes Homebrew path + binary adjacent + XDG candidates
     assert!(paths.len() >= 2);
 }
 
@@ -67,6 +66,5 @@ fn run_plantuml_process_errors_with_non_existent_jar() {
         std::path::Path::new("/nonexistent/plantuml.jar"),
         "@startuml\nA -> B\n@enduml",
     );
-    // Errors if java is not found or JAR is invalid
     assert!(result.is_err());
 }

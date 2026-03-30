@@ -50,35 +50,35 @@ impl<'a, 'ast> Visit<'ast> for HardcodedColorVisitor<'a> {
             .collect::<Vec<_>>()
             .join("::");
 
-        let forbidden_constants = [
-            "Color32::RED",
-            "Color32::GREEN",
-            "Color32::BLUE",
-            "Color32::YELLOW",
-            "Color32::WHITE",
-            "Color32::BLACK",
-            "Color32::TRANSPARENT",
-            "Color32::LIGHT_GRAY",
-            "Color32::DARK_GRAY",
-        ];
-
-        for c in forbidden_constants {
-            if path_str.ends_with(c) {
-                let (line, col) = span_location(node.span());
-                self.violations.push(Violation {
-                    file: self.file_path.to_path_buf(),
-                    line,
-                    column: col,
-                    message: format!(
-                        "Hardcoded color constant detected: `{}`. Please define this color in `ThemeColors` and use it via the theme system.",
-                        path_str
-                    ),
-                });
-                break;
-            }
+        if is_forbidden_color_constant(&path_str) {
+            let (line, col) = span_location(node.span());
+            self.violations.push(Violation {
+                file: self.file_path.to_path_buf(),
+                line,
+                column: col,
+                message: format!(
+                    "Hardcoded color constant detected: `{}`. Please define this color in `ThemeColors` and use it via the theme system.",
+                    path_str
+                ),
+            });
         }
         syn::visit::visit_expr_path(self, node);
     }
+}
+
+fn is_forbidden_color_constant(path_str: &str) -> bool {
+    let forbidden = vec![
+        "Color32::RED",
+        "Color32::GREEN",
+        "Color32::BLUE",
+        "Color32::YELLOW",
+        "Color32::WHITE",
+        "Color32::BLACK",
+        "Color32::TRANSPARENT",
+        "Color32::LIGHT_GRAY",
+        "Color32::DARK_GRAY",
+    ];
+    forbidden.iter().any(|&c| path_str.ends_with(c))
 }
 
 pub fn lint_no_hardcoded_colors(workspace_root: &Path) -> Vec<Violation> {
@@ -87,19 +87,20 @@ pub fn lint_no_hardcoded_colors(workspace_root: &Path) -> Vec<Violation> {
     let mut violations = Vec::new();
 
     for file in ui_files {
-        let file_name = file.file_name().unwrap_or_default().to_string_lossy();
-        if file_name == "theme_bridge.rs" || file_name == "svg_loader.rs" {
+        let path_str = file.to_string_lossy();
+        if path_str.contains("theme_bridge") || path_str.contains("svg_loader") {
             continue;
         }
 
-        if let Ok(ast) = parse_file(&file) {
-            let mut visitor = HardcodedColorVisitor {
-                file_path: &file,
-                violations: Vec::new(),
-            };
-            visitor.visit_file(&ast);
-            violations.extend(visitor.violations);
-        }
+        let Ok(ast) = parse_file(&file) else {
+            continue;
+        };
+        let mut visitor = HardcodedColorVisitor {
+            file_path: &file,
+            violations: Vec::new(),
+        };
+        visitor.visit_file(&ast);
+        violations.extend(visitor.violations);
     }
 
     violations

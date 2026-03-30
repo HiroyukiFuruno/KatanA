@@ -68,12 +68,24 @@ fn html_escape(s: &str) -> String { ... }
 
 ---
 
-## 2. 関数サイズ
+## 2. ファイルと関数のサイズ制約 (File & Function Size)
+
+### 2.1 ファイルサイズ (File Length)
+
+**1 ファイルは 150 行を推奨（Soft Limit）、200 行をハードリミット（Hard Limit）とする。**
+200行を超えるファイルは AST Linter (`file_length` ルール) により CI でブロックされる。
+
+**テスト容易性のための分離原則 (Separation for Testability)**
+行数超過を解消するためのファイル分割においては、単に行数で機械的にスライスするのではなく、必ず「描画層（UI）」と「状態計算・純粋ロジック層（Logic）」を物理ファイル単位で分離すること。
+- `egui::Ui` を引数に取る描画関数は `_ui.rs` などに隔離し、カバレッジ除外（COVERAGE_IGNORE）の対象とする。
+- `egui` に依存しない純粋なデータ処理は `_logic.rs` や `state/` モジュールに分離し、分岐網羅率100%の単体テスト（UT/IT）を義務付ける。
+
+### 2.2 関数サイズ (Function Length)
 
 **1 関数（メソッド・自由関数問わず）は 30 行を上限とする。**
 30 行を超える場合は SOLID の S 原則に従い責務を分離する。
 
-- linter: `clippy::too_many_lines`（`too-many-lines-threshold = 30`）で自動検出
+- Linter: `clippy::too_many_lines`（`too-many-lines-threshold = 30`）およびカスタム AST Linter で自動検出
 - `impl` ブロック自体の行数は対象外（メソッド単位で判定）
 
 ---

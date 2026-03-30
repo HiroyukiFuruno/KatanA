@@ -106,8 +106,9 @@ impl<'ast> Visit<'ast> for ProhibitedTypesVisitor {
             return;
         }
 
+        const MAX_INLINE_ARRAY_SIZE: usize = 8;
         // WHY: small array literals are used for UI sizes or i18n params
-        if node.elems.len() <= 8 {
+        if node.elems.len() <= MAX_INLINE_ARRAY_SIZE {
             syn::visit::visit_expr_array(self, node);
             return;
         }

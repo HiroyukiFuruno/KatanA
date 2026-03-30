@@ -16,43 +16,59 @@ pub fn build_locale_baseline(
     ja_path: &Path,
     en_path: &Path,
 ) -> Result<LocaleBaseline, Vec<Violation>> {
-    let ja_value = parse_json_file(ja_path)?;
-    let en_value = parse_json_file(en_path)?;
+    match parse_json_file(ja_path).and_then(|ja| parse_json_file(en_path).map(|en| (ja, en))) {
+        Ok((ja_val, en_val)) => {
+            let mut ja_sh = BTreeMap::new();
+            let mut en_sh = BTreeMap::new();
+            collect_json_shape(&ja_val, None, &mut ja_sh);
+            collect_json_shape(&en_val, None, &mut en_sh);
 
-    let mut ja_shape = BTreeMap::new();
-    let mut en_shape = BTreeMap::new();
-    collect_json_shape(&ja_value, None, &mut ja_shape);
-    collect_json_shape(&en_value, None, &mut en_shape);
+            let mut v = compare_locale_shape(ja_path, &en_sh, &ja_sh);
+            v.extend(compare_locale_shape(en_path, &ja_sh, &en_sh));
 
-    let mut violations = compare_locale_shape(ja_path, &en_shape, &ja_shape);
-    violations.extend(compare_locale_shape(en_path, &ja_shape, &en_shape));
+            let mut ja_pl = BTreeMap::new();
+            let mut en_pl = BTreeMap::new();
+            collect_json_placeholders(&ja_val, None, &mut ja_pl);
+            collect_json_placeholders(&en_val, None, &mut en_pl);
 
-    let mut ja_placeholders = BTreeMap::new();
-    let mut en_placeholders = BTreeMap::new();
-    collect_json_placeholders(&ja_value, None, &mut ja_placeholders);
-    collect_json_placeholders(&en_value, None, &mut en_placeholders);
+            let mut en_values = BTreeMap::new();
+            collect_json_values(&en_val, None, &mut en_values);
 
-    let mut en_values = BTreeMap::new();
-    collect_json_values(&en_value, None, &mut en_values);
+            validate_baseline_placeholders(
+                ja_path, en_path, &mut v, &ja_sh, &en_sh, &ja_pl, &en_pl,
+            );
 
+            if v.is_empty() {
+                Ok((ja_sh, ja_pl, en_values))
+            } else {
+                Err(v)
+            }
+        }
+        Err(e) => Err(e),
+    }
+}
+
+fn validate_baseline_placeholders(
+    ja_path: &Path,
+    en_path: &Path,
+    violations: &mut Vec<Violation>,
+    ja_shape: &BTreeMap<String, JsonNodeKind>,
+    en_shape: &BTreeMap<String, JsonNodeKind>,
+    ja_placeholders: &BTreeMap<String, BTreeSet<String>>,
+    en_placeholders: &BTreeMap<String, BTreeSet<String>>,
+) {
     violations.extend(compare_locale_placeholders(
         ja_path,
-        &en_shape,
-        &en_placeholders,
-        &ja_placeholders,
+        en_shape,
+        en_placeholders,
+        ja_placeholders,
     ));
     violations.extend(compare_locale_placeholders(
         en_path,
-        &ja_shape,
-        &ja_placeholders,
-        &en_placeholders,
+        ja_shape,
+        ja_placeholders,
+        en_placeholders,
     ));
-
-    if violations.is_empty() {
-        Ok((ja_shape, ja_placeholders, en_values))
-    } else {
-        Err(violations)
-    }
 }
 
 pub fn compare_locale_shape(
@@ -61,7 +77,18 @@ pub fn compare_locale_shape(
     actual_shape: &BTreeMap<String, JsonNodeKind>,
 ) -> Vec<Violation> {
     let mut violations = Vec::new();
+    check_missing_keys(file, expected_shape, actual_shape, &mut violations);
+    check_extra_keys(file, expected_shape, actual_shape, &mut violations);
+    check_kind_mismatches(file, expected_shape, actual_shape, &mut violations);
+    violations
+}
 
+fn check_missing_keys(
+    file: &Path,
+    expected_shape: &BTreeMap<String, JsonNodeKind>,
+    actual_shape: &BTreeMap<String, JsonNodeKind>,
+    violations: &mut Vec<Violation>,
+) {
     for missing in expected_shape
         .keys()
         .filter(|key| !actual_shape.contains_key(*key))
@@ -71,7 +98,14 @@ pub fn compare_locale_shape(
             format!("Missing locale key `{missing}` compared with ja.json/en.json."),
         ));
     }
+}
 
+fn check_extra_keys(
+    file: &Path,
+    expected_shape: &BTreeMap<String, JsonNodeKind>,
+    actual_shape: &BTreeMap<String, JsonNodeKind>,
+    violations: &mut Vec<Violation>,
+) {
     for extra in actual_shape
         .keys()
         .filter(|key| !expected_shape.contains_key(*key))
@@ -81,7 +115,14 @@ pub fn compare_locale_shape(
             format!("Unexpected locale key `{extra}` not present in ja.json/en.json."),
         ));
     }
+}
 
+fn check_kind_mismatches(
+    file: &Path,
+    expected_shape: &BTreeMap<String, JsonNodeKind>,
+    actual_shape: &BTreeMap<String, JsonNodeKind>,
+    violations: &mut Vec<Violation>,
+) {
     for (path, expected_kind) in expected_shape {
         let Some(actual_kind) = actual_shape.get(path) else {
             continue;
@@ -95,8 +136,6 @@ pub fn compare_locale_shape(
             ));
         }
     }
-
-    violations
 }
 
 pub fn compare_locale_placeholders(

@@ -29,7 +29,6 @@ fn mermaid_fence_is_split_into_diagram_section() {
 fn unknown_fence_remains_as_markdown() {
     let src = "intro\n```rust\nfn main() {}\n```\nfin";
     let sections = split_into_sections(src);
-    // rust fence is not a diagram so it is fully included in Markdown section.
     assert!(sections
         .iter()
         .all(|s| matches!(s, PreviewSection::Markdown(_))));
@@ -46,23 +45,17 @@ fn multiple_diagrams_are_split_correctly() {
     assert_eq!(diagram_count, 2);
 }
 
-// try_parse_diagram_fence: no closing fence -> None path (? at L65)
 #[test]
 fn diagram_without_closing_fence_remains_as_markdown() {
-    // Starts with ``` but lacks closing ``` -> does not become Diagram
     let src = "before\n```mermaid\ngraph TD; A-->B";
     let sections = split_into_sections(src);
-    // Treats everything as Markdown
     assert!(sections
         .iter()
         .all(|s| matches!(s, PreviewSection::Markdown(_))));
 }
 
-// try_parse_diagram_fence: no newline in info line -> None path (? at L61)
-// Case where there is nothing immediately after ``` at end of file
 #[test]
 fn markdown_if_fence_ends_without_newline() {
-    // No info line after ``` (EOF)
     let src = "text\n```";
     let sections = split_into_sections(src);
     assert!(sections
@@ -70,7 +63,6 @@ fn markdown_if_fence_ends_without_newline() {
         .all(|s| matches!(s, PreviewSection::Markdown(_))));
 }
 
-// Diagram fence at the very start of the file (no preceding newline).
 #[test]
 fn diagram_fence_at_start_of_file_is_detected() {
     let src = "```mermaid\ngraph TD; A-->B\n```\n";
@@ -85,7 +77,6 @@ fn diagram_fence_at_start_of_file_is_detected() {
     ));
 }
 
-// Diagram fence at the start with trailing text.
 #[test]
 fn diagram_fence_at_start_with_trailing_text() {
     let src = "```mermaid\ngraph TD; A-->B\n```\nSome text after";
@@ -101,8 +92,6 @@ fn diagram_fence_at_start_with_trailing_text() {
     assert!(matches!(sections[1], PreviewSection::Markdown(_)));
 }
 
-// ── resolve_image_paths tests ────────────────────────────────────────────
-
 use katana_core::preview::resolve_image_paths;
 use std::path::Path;
 
@@ -111,7 +100,6 @@ fn resolve_image_paths_converts_relative_to_absolute() {
     let dir = tempfile::tempdir().unwrap();
     let md_path = dir.path().join("docs").join("readme.md");
     std::fs::create_dir_all(md_path.parent().unwrap()).unwrap();
-    // Create the image file so canonicalize works.
     let img_dir = dir.path().join("assets");
     std::fs::create_dir_all(&img_dir).unwrap();
     std::fs::write(img_dir.join("logo.png"), b"png").unwrap();
@@ -166,8 +154,6 @@ fn resolve_image_paths_passes_through_non_image_text() {
     assert_eq!(result, source);
 }
 
-// ── flatten_list_code_blocks tests ───────────────────────────────────────
-
 use katana_core::preview::flatten_list_code_blocks;
 
 #[test]
@@ -195,7 +181,6 @@ fn flatten_leaves_toplevel_code_block_unchanged() {
 fn flatten_handles_multiple_code_blocks_in_one_item() {
     let source = "1. Step\n\n   ```bash\n   cmd1\n   ```\n\n   ```bash\n   cmd2\n   ```\n";
     let result = flatten_list_code_blocks(source);
-    // Both fences should be de-indented.
     let count = result.matches("\n```bash\n").count()
         + if result.starts_with("```bash\n") {
             1
@@ -220,12 +205,8 @@ fn flatten_preserves_no_trailing_newline() {
 
 #[test]
 fn html_blocks_remain_in_markdown_sections_for_pulldown_cmark() {
-    // After the render_html_fn refactor, flush_markdown no longer splits HTML blocks.
-    // HTML blocks remain inside Markdown sections and are handled by pulldown-cmark
-    // via egui_commonmark's render_html_fn callback at render time.
     let src = "text\n<p align=\"center\">\n  <img src=\"a.png\" alt=\"A\">\n</p>\nmore text\n<h1 align=\"center\">Title</h1>";
     let sections = split_into_sections(src);
-    // All content should be in a single Markdown section (no diagram fences present).
     assert_eq!(sections.len(), 1);
     if let PreviewSection::Markdown(ref s) = sections[0] {
         assert!(s.contains("text"), "Expected 'text' in markdown");
@@ -246,8 +227,6 @@ fn html_blocks_remain_in_markdown_sections_for_pulldown_cmark() {
         panic!("Expected Markdown section");
     }
 }
-
-// ── resolve_html_image_paths tests ──
 
 use katana_core::preview::resolve_html_image_paths;
 
@@ -290,15 +269,12 @@ fn resolve_html_image_absolute_path_unchanged() {
 fn resolve_html_image_multiple_tags() {
     let html = r#"<img src="a.png" alt="A"><img src="b.png" alt="B">"#;
     let result = resolve_html_image_paths(html, Path::new("/project/README.md"));
-    // Both relative images should be resolved
     let file_uri_count = result.matches("file://").count();
     assert_eq!(
         file_uri_count, 2,
         "Both img tags should be resolved, got: {result}"
     );
 }
-
-// ── wrap_standalone_inline_html tests ──
 
 use katana_core::preview::wrap_standalone_inline_html;
 
@@ -333,7 +309,6 @@ fn wrap_standalone_with_leading_whitespace() {
 fn verify_wrapped_html_is_parsed_as_html_block() {
     use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
-    // Simulate what flush_markdown does before passing to egui_commonmark
     let src = r#"<a href="foo"><img src="bar"></a>"#;
     let processed = wrap_standalone_inline_html(src);
 
@@ -352,15 +327,10 @@ fn verify_wrapped_html_is_parsed_as_html_block() {
     );
 }
 
-/// Verifies that real README-style HTML patterns are correctly parsed by pulldown-cmark
-/// as HtmlBlock events (not InlineHtml), which is the prerequisite for render_html_fn
-/// to handle them. This test simulates what egui_commonmark does: accumulate all
-/// Event::Html chunks within a HtmlBlock, then pass the accumulated string to render_html_fn.
 #[test]
 fn readme_html_patterns_parsed_as_html_blocks_for_render_html_fn() {
     use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
 
-    // Reproduce the exact structure from README.md
     let source = r#"<p align="center">
   <img src="assets/icon.iconset/icon_128x128.png" width="128" alt="KatanA Desktop">
 </p>
@@ -387,10 +357,8 @@ fn readme_html_patterns_parsed_as_html_blocks_for_render_html_fn() {
 Some text here.
 "#;
 
-    // Process through wrap_standalone_inline_html (same as flush_markdown does)
     let processed = wrap_standalone_inline_html(source);
 
-    // Simulate egui_commonmark's HTML block accumulation
     let parser = Parser::new_ext(&processed, Options::all());
     let mut html_blocks: Vec<String> = Vec::new();
     let mut in_html_block = false;
@@ -421,8 +389,6 @@ Some text here.
         }
     }
 
-    // Verify: we expect at least 5 HTML blocks from the README header
-    // (icon <p>, <h1>, description <p>, badges <p>, language <p>)
     assert!(
         html_blocks.len() >= 5,
         "Expected at least 5 HTML blocks from README header, got {}: {:?}",
@@ -430,7 +396,6 @@ Some text here.
         html_blocks
     );
 
-    // Verify badge block: must contain the complete <p> with all <a><img> children
     let badge_block = html_blocks
         .iter()
         .find(|b| b.contains("img.shields.io"))
@@ -448,7 +413,6 @@ Some text here.
         "Badge block must contain license link, got: {badge_block}"
     );
 
-    // Verify icon block
     let icon_block = html_blocks
         .iter()
         .find(|b| b.contains("icon_128x128"))
@@ -458,7 +422,6 @@ Some text here.
         "Icon block must be inside centered paragraph"
     );
 
-    // Verify centered heading - find block containing <h1
     let heading_block = html_blocks
         .iter()
         .find(|b| b.contains("<h1"))
@@ -469,8 +432,6 @@ Some text here.
     );
 }
 
-/// Verifies that a standalone sponsor badge link (outside <p>) is correctly
-/// wrapped and parsed as HtmlBlock after wrap_standalone_inline_html processing.
 #[test]
 fn standalone_sponsor_badge_parsed_as_html_block_after_wrapping() {
     use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
@@ -530,9 +491,6 @@ More text.
     );
 }
 
-/// Tags inside <p> blocks must NOT be wrapped with <div>.
-/// The <p> itself is already a block element recognised by pulldown-cmark.
-/// Wrapping its children breaks inline layout (badges won't be horizontal).
 #[test]
 fn do_not_wrap_tags_inside_p_block() {
     let src = concat!(
@@ -542,7 +500,6 @@ fn do_not_wrap_tags_inside_p_block() {
         "  <img src=\"badge3.svg\" alt=\"Platform\">\n",
         "</p>\n"
     );
-    // The content inside <p> should remain unchanged
     assert_eq!(
         wrap_standalone_inline_html(src),
         src,
@@ -550,7 +507,6 @@ fn do_not_wrap_tags_inside_p_block() {
     );
 }
 
-/// Tags inside <h1> blocks must NOT be wrapped with <div>.
 #[test]
 fn do_not_wrap_tags_inside_heading_block() {
     let src = "<h1 align=\"center\">Title</h1>\n";
