@@ -9,7 +9,7 @@ KatanA currently vendors patched crate snapshots under `vendor/egui_commonmark` 
 
 This means vendor changes recur as product work, but the repository currently has no upstream relationship recorded in git history. Every sync or diff against upstream becomes manual, and `egui_commonmark` onlyを見ても実態を説明しきれません。`egui_commonmark_backend` も同じ upstream repo と同じ runtime path に含まれているため、両方を一体で管理し直す必要があります。
 
-At the same time, this is not a blocking prerequisite for the current roadmap. `v0-8-6-preview-refresh-and-tasklist-fixes` is actively modifying vendored parser behavior, and upstream HEAD has already moved to `egui_commonmark 0.23 / egui 0.34`, while KatanA is still on `egui_commonmark 0.22 / egui 0.33`. The goal is therefore not "upgrade to latest now", but "represent the compatible upstream repository revision as a subtree and keep Katana patches reviewable on top of it".
+At the same time, this is not a blocking prerequisite for the current roadmap. `v0-8-7-preview-refresh-and-tasklist-fixes` is actively modifying vendored parser behavior, and upstream HEAD has already moved to `egui_commonmark 0.23 / egui 0.34`, while KatanA is still on `egui_commonmark 0.22 / egui 0.33`. The goal is therefore not "upgrade to latest now", but "represent the compatible upstream repository revision as a subtree and keep Katana patches reviewable on top of it".
 
 ## What Changes
 
@@ -21,7 +21,7 @@ At the same time, this is not a blocking prerequisite for the current roadmap. `
 
 ## Scheduling
 
-- Recommended execution window: after `v0-8-6-preview-refresh-and-tasklist-fixes` is merged and stabilized.
+- Recommended execution window: after `v0-8-7-preview-refresh-and-tasklist-fixes` is merged and stabilized.
 - Do not mix subtree migration into the same branch as active vendor behavior fixes.
 - Prefer landing this change immediately before the next planned modification under `vendor/*egui_commonmark*`.
 

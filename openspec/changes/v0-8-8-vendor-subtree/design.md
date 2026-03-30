@@ -29,9 +29,9 @@ Conclusion: subtree migration cannot be treated as a pure file move. It must inv
 
 - `crates/katana-core/src/preview/mod.rs` documents behavior that exists because of `egui_commonmark` limitations.
 - `crates/katana-ui/tests/underline_rendering.rs` references a vendor parser override as part of the expected rendering path.
-- `openspec/changes/v0-8-6-preview-refresh-and-tasklist-fixes/tasks.md` already plans new vendor-side task-list fixes in both `egui_commonmark` and `egui_commonmark_backend`.
+- `openspec/changes/v0-8-7-preview-refresh-and-tasklist-fixes/tasks.md` already plans new vendor-side task-list fixes in both `egui_commonmark` and `egui_commonmark_backend`.
 
-Conclusion: subtree conversion is valuable, but doing it while `v0-8-6` is still mutating the same surface area would create unnecessary churn and make review quality worse.
+Conclusion: subtree conversion is valuable, but doing it while `v0-8-7` is still mutating the same surface area would create unnecessary churn and make review quality worse.
 
 ### 4. "Use latest upstream" is the wrong target
 
@@ -60,7 +60,7 @@ After this change:
 
 ### 1. Necessity is medium, not low and not blocking
 
-This change is worth doing because vendor-local patches are now recurring product work. However, it does not unblock `v0-8-6` or any currently planned user-facing feature by itself. The right execution window is immediately after `v0-8-6` stabilization and before the next vendor-touching branch starts.
+This change is worth doing because vendor-local patches are now recurring product work. However, it does not unblock `v0-8-7` or any currently planned user-facing feature by itself. The right execution window is immediately after `v0-8-7` stabilization and before the next vendor-touching branch starts.
 
 ### 2. The subtree unit is the upstream repository root
 
@@ -139,7 +139,7 @@ This change is only "ready to implement" if the artifact stays ahead of reality.
 
 - Restore the `katana-core` integration and other required crate-manifest changes.
 - Reapply required parser/UI patches identified in the Phase 1 inventory.
-- Preserve or expand regression coverage for known vendor-dependent behavior such as underline rendering, inline emoji support, alert/code-block UI behavior, and any vendor fixes shipped in `v0-8-6`.
+- Preserve or expand regression coverage for known vendor-dependent behavior such as underline rendering, inline emoji support, alert/code-block UI behavior, and any vendor fixes shipped in `v0-8-7`.
 
 ### Phase 5: Document the maintenance workflow
 
@@ -160,6 +160,6 @@ Minimum verification for this change:
 
 ## Recommended Execution Window
 
-- After `v0-8-6-preview-refresh-and-tasklist-fixes` is merged and stable
+- After `v0-8-7-preview-refresh-and-tasklist-fixes` is merged and stable
 - Before the next branch that edits `vendor/*egui_commonmark*`
 - In a dedicated maintenance branch, not bundled with feature work

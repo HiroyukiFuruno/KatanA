@@ -95,7 +95,7 @@ release に必要な version/changelog/OpenSpec/artifact 契約の検証は、`s
 1. settings 保存処理を atomic write 化し、破損ファイル退避と UI 通知を追加する
 2. update relaunch script を staged swap + rollback 方式へ切り替え、既存の destructive path を廃止する
 3. release preflight を共通 script に抽出し、`make release` と `.github/workflows/release.yml` の両方から呼ぶ
-4. release helper smoke test を CI に追加してから、次の `v0.8.5` release で新フローを使う
+4. release helper smoke test を CI に追加してから、次の `v0.8.6` release で新フローを使う
 
 ## Open Questions
 

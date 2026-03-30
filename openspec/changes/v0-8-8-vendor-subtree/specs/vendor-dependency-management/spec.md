@@ -39,5 +39,5 @@ KatanA SHALL schedule this migration after active vendor behavior work is stabil
 #### Scenario: Scheduling the change
 
 - **WHEN** the team schedules implementation of `vendor-subtree`
-- **THEN** `v0-8-6-preview-refresh-and-tasklist-fixes` is already merged and stable
+- **THEN** `v0-8-7-preview-refresh-and-tasklist-fixes` is already merged and stable
 - **AND** the migration is not bundled into the same branch as another change that edits `vendor/*egui_commonmark*`
