@@ -76,13 +76,13 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 5.2 Ensure `make check` passes with exit code 0
-- [ ] 5.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 5.4 Create a PR targeting `master`
-- [ ] 5.5 Merge into master (※ `--admin` is permitted)
-- [ ] 5.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.8.7`
-- [ ] 5.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [x] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
+- [x] 5.2 Ensure `make check` passes with exit code 0
+- [x] 5.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
+- [x] 5.4 Create a PR targeting `master`
+- [x] 5.5 Merge into master (※ `--admin` is permitted)
+- [x] 5.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.8.7`
+- [x] 5.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
