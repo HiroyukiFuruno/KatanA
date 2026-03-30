@@ -50,19 +50,19 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 3.1 Task 1 で確定した Katana-specific manifest、parser、rendering、asset、UI patch を再適用する
-- [ ] 3.2 Katana が既に依存している vendor-dependent behavior について、regression coverage を維持または追加する
-- [ ] 3.3 subtree migration により KatanA が暗黙に upstream `0.23.x` / `egui 0.34.x` へ上がっていないことを確認する
-- [ ] 3.4 `v0-8-7-preview-refresh-and-tasklist-fixes` の vendor-dependent fix が migration 後も維持されていることを確認する
+- [x] 3.1 Task 1 で確定した Katana-specific manifest、parser、rendering、asset、UI patch を再適用する
+- [x] 3.2 Katana が既に依存している vendor-dependent behavior について、regression coverage を維持または追加する
+- [x] 3.3 subtree migration により KatanA が暗黙に upstream `0.23.x` / `egui 0.34.x` へ上がっていないことを確認する
+- [x] 3.4 `v0-8-7-preview-refresh-and-tasklist-fixes` の vendor-dependent fix が migration 後も維持されていることを確認する
 
 ### 完了条件 (DoD)
 
-- [ ] 最終 commit stack が subtree base と Katana patch layer を明確に分離している
-- [ ] vendor-dependent な runtime behavior が migration 前の契約を保っている
-- [ ] patch layer が守るべき挙動に対して必要な regression coverage が存在する
+- [x] 最終 commit stack が subtree base と Katana patch layer を明確に分離している
+- [x] vendor-dependent な runtime behavior が migration 前の契約を保っている
+- [x] patch layer が守るべき挙動に対して必要な regression coverage が存在する
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---

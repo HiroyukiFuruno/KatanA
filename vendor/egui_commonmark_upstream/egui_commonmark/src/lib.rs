@@ -74,12 +74,21 @@
 
 use egui::{self, Id};
 
-mod parsers;
+pub(crate) mod parsers;
+pub mod ui_components;
 
 pub use egui_commonmark_backend::RenderHtmlFn;
 pub use egui_commonmark_backend::RenderMathFn;
 pub use egui_commonmark_backend::alerts::{Alert, AlertBundle};
 pub use egui_commonmark_backend::misc::CommonMarkCache;
+
+/// An action emitted when a user interacts with a task list checkbox.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TaskListAction {
+    pub span: std::ops::Range<usize>,
+    pub new_state: char,
+}
+
 
 #[cfg(feature = "macros")]
 pub use egui_commonmark_macros::*;
@@ -91,14 +100,70 @@ pub use egui_commonmark_backend;
 
 use egui_commonmark_backend::*;
 
-#[derive(Debug, Default)]
 pub struct CommonMarkViewer<'f> {
     options: CommonMarkOptions<'f>,
+    scroll_to_heading_index: Option<usize>,
+    heading_anchors: Option<&'f mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+    heading_offset: usize,
+    active_char_range: Option<std::ops::Range<usize>>,
+    hovered_spans: Option<&'f mut Vec<std::ops::Range<usize>>>,
+    active_bg_color: Option<egui::Color32>,
+    hover_bg_color: Option<egui::Color32>,
+}
+
+impl<'f> Default for CommonMarkViewer<'f> {
+    fn default() -> Self {
+        Self {
+            options: Default::default(),
+            scroll_to_heading_index: None,
+            heading_anchors: None,
+            heading_offset: 0,
+            active_char_range: None,
+            hovered_spans: None,
+            active_bg_color: None,
+            hover_bg_color: None,
+        }
+    }
 }
 
 impl<'f> CommonMarkViewer<'f> {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn scroll_to_heading_index(mut self, index: usize) -> Self {
+        self.scroll_to_heading_index = Some(index);
+        self
+    }
+
+    pub fn heading_anchors(mut self, anchors: &'f mut Vec<(std::ops::Range<usize>, egui::Rect)>) -> Self {
+        self.heading_anchors = Some(anchors);
+        self
+    }
+
+    pub fn active_char_range(mut self, range: std::ops::Range<usize>) -> Self {
+        self.active_char_range = Some(range);
+        self
+    }
+
+    pub fn hovered_spans(mut self, spans: &'f mut Vec<std::ops::Range<usize>>) -> Self {
+        self.hovered_spans = Some(spans);
+        self
+    }
+
+    pub fn active_bg_color(mut self, color: Option<egui::Color32>) -> Self {
+        self.active_bg_color = color;
+        self
+    }
+
+    pub fn hover_bg_color(mut self, color: Option<egui::Color32>) -> Self {
+        self.hover_bg_color = color;
+        self
+    }
+
+    pub fn heading_offset(mut self, offset: usize) -> Self {
+        self.heading_offset = offset;
+        self
     }
 
     /// The amount of spaces a bullet point is indented. By default this is 4
@@ -231,7 +296,15 @@ impl<'f> CommonMarkViewer<'f> {
     ) -> egui::InnerResponse<()> {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
 
-        let (response, _) = parsers::pulldown::CommonMarkViewerInternal::new().show(
+        let (response, _) = parsers::pulldown::CommonMarkViewerInternal::new(
+            self.scroll_to_heading_index,
+            self.heading_anchors,
+            self.heading_offset,
+            self.active_char_range.clone(),
+            self.hovered_spans,
+            self.active_bg_color,
+            self.hover_bg_color,
+        ).show(
             ui,
             cache,
             &self.options,
@@ -244,7 +317,7 @@ impl<'f> CommonMarkViewer<'f> {
 
     /// Shows rendered markdown, and allows the rendered ui to mutate the source text.
     ///
-    /// The only currently implemented mutation is allowing checkboxes to be toggled through the ui.
+    /// Checkmarks can be toggled through the ui, supporting standard `[x]` and custom Katana states `[/]`.
     pub fn show_mut(
         mut self,
         ui: &mut egui::Ui,
@@ -255,7 +328,15 @@ impl<'f> CommonMarkViewer<'f> {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
 
         let (mut inner_response, checkmark_events) =
-            parsers::pulldown::CommonMarkViewerInternal::new().show(
+            parsers::pulldown::CommonMarkViewerInternal::new(
+                self.scroll_to_heading_index,
+                self.heading_anchors,
+                self.heading_offset,
+                self.active_char_range.clone(),
+                self.hovered_spans,
+                self.active_bg_color,
+                self.hover_bg_color,
+            ).show(
                 ui,
                 cache,
                 &self.options,
@@ -265,16 +346,71 @@ impl<'f> CommonMarkViewer<'f> {
 
         // Update source text for checkmarks that were clicked
         for ev in checkmark_events {
-            if ev.checked {
-                text.replace_range(ev.span, "[x]")
-            } else {
-                text.replace_range(ev.span, "[ ]")
-            }
-
+            text.replace_range(ev.span, &format!("[{}]", ev.new_state));
             inner_response.response.mark_changed();
         }
 
         inner_response
+    }
+}
+
+/// Helper to accurately map task list events back to the original text.
+/// Extracts the span of every task list item `[ ]`, `[x]`, `[/]` in the order they appear.
+pub fn extract_task_list_spans(text: &str) -> Vec<std::ops::Range<usize>> {
+    let mut options = pulldown_cmark::Options::empty();
+    options.insert(pulldown_cmark::Options::ENABLE_STRIKETHROUGH);
+    options.insert(pulldown_cmark::Options::ENABLE_TABLES);
+    options.insert(pulldown_cmark::Options::ENABLE_TASKLISTS);
+    options.insert(pulldown_cmark::Options::ENABLE_HEADING_ATTRIBUTES);
+    
+    let parser = pulldown_cmark::Parser::new_ext(text, options).into_offset_iter();
+    // Use the raw events vector to run our pre-pass
+    let events: Vec<_> = parser.collect();
+    let (processed, _) = crate::parsers::pulldown::extract_custom_task_lists(events);
+    
+    let mut spans = Vec::new();
+    for (event, span) in processed {
+        if let pulldown_cmark::Event::Html(html) = event {
+            if html.starts_with("<!-- KATANA_TASK:") {
+                spans.push(span);
+            }
+        }
+    }
+    
+    // pulldown-cmark sometimes emits the same HTML block multiple times if it wraps? 
+    // No, our pass shouldn't duplicate. We'll sort and deduplicate just in case.
+    spans.sort_by_key(|s| s.start);
+    spans.dedup();
+    spans
+}
+
+impl<'f> CommonMarkViewer<'f> {
+    /// Shows parsed markdown and returns any task list action events.
+    /// Used when the application needs to handle the text mutation externally.
+    pub fn show_with_events(
+        mut self,
+        ui: &mut egui::Ui,
+        cache: &mut CommonMarkCache,
+        text: &str,
+    ) -> (egui::InnerResponse<()>, Vec<TaskListAction>) {
+        self.options.mutable = true;
+        egui_commonmark_backend::prepare_show(cache, ui.ctx());
+
+        parsers::pulldown::CommonMarkViewerInternal::new(
+            self.scroll_to_heading_index,
+            self.heading_anchors,
+            self.heading_offset,
+            self.active_char_range.clone(),
+            self.hovered_spans,
+            self.active_bg_color,
+            self.hover_bg_color,
+        ).show(
+            ui,
+            cache,
+            &self.options,
+            text,
+            None,
+        )
     }
 
     /// Shows markdown inside a [`ScrollArea`].
@@ -300,7 +436,15 @@ impl<'f> CommonMarkViewer<'f> {
         text: &str,
     ) {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
-        parsers::pulldown::CommonMarkViewerInternal::new().show_scrollable(
+        parsers::pulldown::CommonMarkViewerInternal::new(
+            self.scroll_to_heading_index,
+            self.heading_anchors,
+            self.heading_offset,
+            self.active_char_range.clone(),
+            self.hovered_spans,
+            self.active_bg_color,
+            self.hover_bg_color,
+        ).show_scrollable(
             Id::new(source_id),
             ui,
             cache,
@@ -341,10 +485,12 @@ impl List {
         self.items.len() == 1
     }
 
-    pub fn start_item(&mut self, ui: &mut egui::Ui, options: &CommonMarkOptions) {
+    pub fn start_item(&mut self, ui: &mut egui::Ui, options: &CommonMarkOptions, inside_blockquote: bool, is_task_list: bool) {
         // To ensure that newlines are only inserted within the list and not before it
         if self.has_list_begun {
-            newline(ui);
+            if !inside_blockquote {
+                newline(ui);
+            }
         } else {
             self.has_list_begun = true;
         }
@@ -356,9 +502,9 @@ impl List {
             if let Some(number) = &mut item.current_number {
                 number_point(ui, &number.to_string());
                 *number += 1;
-            } else if len > 1 {
+            } else if !is_task_list && len > 1 {
                 bullet_point_hollow(ui);
-            } else {
+            } else if !is_task_list {
                 bullet_point(ui);
             }
         } else {

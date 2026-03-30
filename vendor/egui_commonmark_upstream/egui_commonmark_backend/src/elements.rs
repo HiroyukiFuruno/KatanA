@@ -27,7 +27,7 @@ pub fn bullet_point(ui: &mut Ui) {
     ui.painter().circle_filled(
         rect.center(),
         rect.height() / 6.0,
-        ui.visuals().strong_text_color(),
+        ui.visuals().text_color(),
     );
 }
 
@@ -40,7 +40,7 @@ pub fn bullet_point_hollow(ui: &mut Ui) {
         rect.center(),
         rect.height() / 6.0,
         egui::Color32::TRANSPARENT,
-        egui::Stroke::new(0.6, ui.visuals().strong_text_color()),
+        egui::Stroke::new(0.6, ui.visuals().text_color()),
     );
 }
 
@@ -50,11 +50,11 @@ pub fn number_point(ui: &mut Ui, number: &str) {
         Sense::hover(),
     );
     ui.painter().text(
-        rect.right_center(),
-        egui::Align2::RIGHT_CENTER,
+        rect.right_top() + egui::vec2(0.0, 3.0),
+        egui::Align2::RIGHT_TOP,
         format!("{number}."),
         TextStyle::Body.resolve(ui.style()),
-        ui.visuals().strong_text_color(),
+        ui.visuals().text_color(),
     );
 }
 
@@ -69,11 +69,11 @@ pub fn footnote(ui: &mut Ui, text: &str) {
         Sense::hover(),
     );
     ui.painter().text(
-        rect.right_top(),
+        rect.right_top() + egui::vec2(0.0, 3.0),
         egui::Align2::RIGHT_TOP,
         format!("{text}."),
         TextStyle::Small.resolve(ui.style()),
-        ui.visuals().strong_text_color(),
+        ui.visuals().text_color(),
     );
 }
 
@@ -122,31 +122,50 @@ pub fn code_block<'t>(
         ),
     );
 
-    // Copy icon
-    let spacing = &ui.style().spacing;
-    let position = egui::pos2(
-        frame_rect.right_top().x - spacing.icon_width * 0.5 - spacing.button_padding.x,
-        frame_rect.right_top().y + spacing.button_padding.y * 2.0,
-    );
-
-    // Check if we should show ✔ instead of 🗐 if the text was copied and the mouse is hovered
-    let persistent_id = ui.make_persistent_id(output.response.id);
-    let copied_icon = ui.memory_mut(|m| *m.data.get_temp_mut_or_default::<bool>(persistent_id));
-
-    let copy_button = ui
-        .put(
-            egui::Rect {
-                min: position,
-                max: position,
-            },
-            egui::Button::new(if copied_icon { "✔" } else { "🗐" })
-                .small()
-                .frame(false)
-                .fill(egui::Color32::TRANSPARENT),
-        )
-        // workaround for a regression after egui 0.27 where the edit cursor was shown even when
-        // hovering over the button. We try interact_cursor first to allow the cursor to be
-        // overriden
+    if !text.is_empty() {
+        // Copy icon
+        let spacing = &ui.style().spacing;
+        let icon_size = egui::vec2(20.0, 20.0);
+        let position = egui::pos2(
+            frame_rect.right_top().x - icon_size.x - spacing.button_padding.x - 8.0,
+            frame_rect.right_top().y + spacing.button_padding.y + 5.0,
+        );
+        let icon_rect = egui::Rect::from_min_size(position, icon_size);
+        // Check if we should show ✓ instead of copy icon
+        let persistent_id = ui.make_persistent_id(output.response.id);
+        let copied_icon = ui.memory_mut(|m| *m.data.get_temp_mut_or_default::<bool>(persistent_id));
+        // Draw copy icon using egui painter API directly
+        // instead of SVG to bypass image loader pipeline issues.
+        let copy_btn_response = ui.allocate_rect(icon_rect, egui::Sense::click());
+        let icon_color = if copy_btn_response.hovered() {
+            ui.visuals().strong_text_color()
+        } else {
+            ui.visuals().weak_text_color()
+        };
+        let painter = ui.painter();
+        let stroke = egui::Stroke::new(1.2, icon_color);
+        if copied_icon {
+            // Checkmark icon
+            let p1 = icon_rect.min + egui::vec2(4.0, 11.0);
+            let p2 = icon_rect.min + egui::vec2(8.0, 15.0);
+            let p3 = icon_rect.min + egui::vec2(16.0, 5.0);
+            painter.line_segment([p1, p2], stroke);
+            painter.line_segment([p2, p3], stroke);
+        } else {
+            // Two overlapping rectangles (copy icon)
+            let back = egui::Rect::from_min_size(
+                icon_rect.min + egui::vec2(2.0, 2.0),
+                egui::vec2(10.0, 12.0),
+            );
+            let front = egui::Rect::from_min_size(
+                icon_rect.min + egui::vec2(6.0, 0.0),
+                egui::vec2(10.0, 12.0),
+            );
+            painter.rect_stroke(back, 1.0, stroke, egui::StrokeKind::Outside);
+            painter.rect_filled(front, 1.0, ui.visuals().extreme_bg_color);
+            painter.rect_stroke(front, 1.0, stroke, egui::StrokeKind::Outside);
+        }
+        let copy_button = copy_btn_response
         .on_hover_cursor(
             ui.visuals()
                 .interact_cursor
@@ -176,8 +195,8 @@ pub fn code_block<'t>(
         };
         ui.ctx().copy_text(copy_text);
     }
+    }
 }
-
 // Stripped down version of egui's Checkbox. The only difference is that this
 // creates a noninteractive checkbox. ui.add_enabled could have been used instead,
 // but it makes the checkbox too grey.
