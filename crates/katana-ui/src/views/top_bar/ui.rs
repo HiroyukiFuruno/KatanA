@@ -9,6 +9,10 @@ use crate::shell_ui::{
 };
 use eframe::egui;
 
+use super::logic::{
+    compute_drop_points, find_best_drop_index, resolve_drag_drop, tab_display_title,
+};
+
 pub(crate) struct StatusBar<'a> {
     pub status: Option<&'a (String, crate::app_state::StatusType)>,
     pub is_dirty: bool,
@@ -160,24 +164,12 @@ impl<'a> TabBar<'a> {
                             let is_changelog =
                                 doc.path.to_string_lossy().starts_with("Katana://ChangeLog");
 
-                            let filename = if is_changelog {
-                                original_filename.to_string()
-                            } else if original_filename.starts_with("CHANGELOG_v")
-                                && original_filename.ends_with(".md")
-                            {
-                                let ver = original_filename
-                                    .trim_start_matches("CHANGELOG_v")
-                                    .trim_end_matches(".md");
-                                format!("📄 {} {}", crate::i18n::get().menu.release_notes, ver)
-                            } else {
-                                original_filename.to_string()
-                            };
-                            let dirty_suffix = if doc.is_dirty { " *" } else { "" };
-                            let title = if doc.is_pinned {
-                                format!("📌 {filename}{dirty_suffix}")
-                            } else {
-                                format!("{filename}{dirty_suffix}")
-                            };
+                            let title = tab_display_title(
+                                original_filename,
+                                is_changelog,
+                                doc.is_dirty,
+                                doc.is_pinned,
+                            );
                             let tooltip_path = relative_full_path(&doc.path, ws_root);
 
                             let (title_resp, close_resp) = ui
@@ -350,25 +342,19 @@ impl<'a> TabBar<'a> {
                             ui.add_space(TAB_INTER_ITEM_SPACING);
                         }
 
-                        let mut drop_points = Vec::new();
-                        if !tab_rects.is_empty() {
-                            for i in 0..tab_rects.len() {
-                                if i == 0 {
-                                    drop_points.push((0, tab_rects[i].1.left()));
-                                } else {
-                                    let prev_right = tab_rects[i - 1].1.right();
-                                    let current_left = tab_rects[i].1.left();
-                                    drop_points.push((i, (prev_right + current_left) / 2.0));
-                                }
-                            }
-                            drop_points
-                                .push((tab_rects.len(), tab_rects.last().unwrap().1.right()));
-                        }
+                        let drop_points = compute_drop_points(&tab_rects);
 
                         if let Some((ghost_rect, y_range)) = dragging_ghost_info {
+                            if let Some(best_x) =
+                                find_best_drop_index(&drop_points, ghost_rect.center().x)
+                                    .and_then(|idx| drop_points.get(idx).map(|(_, x)| *x))
+                            {
+                                // Fallback: find nearest x directly
+                                let _ = best_x;
+                            }
+                            // Use direct nearest-x logic for visual indicator
                             let mut best_dist = f32::MAX;
                             let mut best_x = None;
-
                             for (_insert_idx, x) in &drop_points {
                                 let dist = (ghost_rect.center().x - x).abs();
                                 if dist < best_dist {
@@ -459,35 +445,8 @@ impl<'a> TabBar<'a> {
         });
 
         if let Some((src_idx, ghost_center_x)) = dragged_source {
-            let mut drop_points = Vec::new();
-            if !tab_rects.is_empty() {
-                for i in 0..tab_rects.len() {
-                    if i == 0 {
-                        drop_points.push((0, tab_rects[i].1.left()));
-                    } else {
-                        let prev_right = tab_rects[i - 1].1.right();
-                        let current_left = tab_rects[i].1.left();
-                        drop_points.push((i, (prev_right + current_left) / 2.0));
-                    }
-                }
-                drop_points.push((tab_rects.len(), tab_rects.last().unwrap().1.right()));
-            }
-
-            let mut best_dist = f32::MAX;
-            let mut best_insert_idx = None;
-
-            for (insert_idx, x) in drop_points {
-                let dist = (ghost_center_x - x).abs();
-                if dist < best_dist {
-                    best_dist = dist;
-                    best_insert_idx = Some(insert_idx);
-                }
-            }
-
-            if let Some(to) = best_insert_idx {
-                if src_idx != to && src_idx + 1 != to {
-                    tab_action = Some(AppAction::ReorderDocument { from: src_idx, to });
-                }
+            if let Some(action) = resolve_drag_drop(src_idx, ghost_center_x, &tab_rects) {
+                tab_action = Some(action);
             }
         }
 
