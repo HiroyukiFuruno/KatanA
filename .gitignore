@@ -97,3 +97,6 @@ split_*.py
 patch*.py
 test_out.txt
 print_used.rs
+
+/*.rs
+/*.py

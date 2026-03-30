@@ -87,6 +87,7 @@ pub struct UpdateMessages {
     pub checking_for_updates: String,
     pub update_available: String,
     pub update_available_desc: String,
+    #[serde(default = "default_release_notes_template")]
     pub release_notes_template: String,
     pub up_to_date: String,
     pub up_to_date_desc: String,
@@ -106,6 +107,10 @@ pub struct UpdateMessages {
     pub action_skip_version: String,
     #[serde(default = "default_action_restart")]
     pub action_restart: String,
+}
+
+pub(crate) fn default_release_notes_template() -> String {
+    "### 🚀 New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.".to_string()
 }
 
 pub(crate) fn default_install_update() -> String {

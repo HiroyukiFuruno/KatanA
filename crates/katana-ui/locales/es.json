@@ -42,7 +42,7 @@
     "checking_for_updates": "Buscando actualizaciones...",
     "update_available": "Actualización disponible",
     "update_available_desc": "Una nueva versión de KatanA ({version}) está disponible. Por favor, ejecute `brew update && brew upgrade --cask katana-desktop` para actualizar.",
-    "release_notes_template": "### 🚀 New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
+    "release_notes_template": "### 🚀 Nueva versión {version} disponible\n\nPor favor, consulte la [página de GitHub Releases]({url}) para ver detalles de los cambios.\nHaga clic en \"Instalar y reiniciar\" para aplicar la actualización automáticamente.",
     "up_to_date": "Actualizado",
     "up_to_date_desc": "KatanA está actualizado.",
     "failed_to_check": "Error al buscar actualizaciones.",

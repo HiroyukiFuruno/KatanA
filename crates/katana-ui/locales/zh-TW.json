@@ -42,7 +42,7 @@
     "checking_for_updates": "正在檢查更新...",
     "update_available": "有新版本可用",
     "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
-    "release_notes_template": "### 🚀 New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
+    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有關詳細的變更和發行說明，請查看 [GitHub 發行頁面]({url})。\n點擊 \"安裝並重新啟動\" 即可自動套用更新。",
     "up_to_date": "已是最新版本",
     "up_to_date_desc": "您使用的是最新版本的 KatanA。",
     "failed_to_check": "檢查更新失敗。",
