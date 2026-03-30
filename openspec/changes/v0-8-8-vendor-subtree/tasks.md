@@ -28,20 +28,20 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 2.1 upstream `lampsitter/egui_commonmark` repository root を `vendor/egui_commonmark_upstream/` 配下へ `git subtree` で取り込む
-- [ ] 2.2 raw subtree import と Katana-specific change を別 commit に分ける
-- [ ] 2.3 `Cargo.toml` の `[patch.crates-io]` を更新し、`egui_commonmark` と `egui_commonmark_backend` が subtree root 内の crate subdirectory から解決されるようにする
-- [ ] 2.4 `crates/katana-ui/src/svg_loader/mod.rs` など direct file consumer を新しい subtree asset path へ更新する
-- [ ] 2.5 legacy `vendor/egui_commonmark` / `vendor/egui_commonmark_backend` directory への build / runtime 参照を除去する
+- [x] 2.1 upstream `lampsitter/egui_commonmark` repository root を `vendor/egui_commonmark_upstream/` 配下へ `git subtree` で取り込む
+- [x] 2.2 raw subtree import と Katana-specific change を別 commit に分ける
+- [x] 2.3 `Cargo.toml` の `[patch.crates-io]` を更新し、`egui_commonmark` と `egui_commonmark_backend` が subtree root 内の crate subdirectory から解決されるようにする
+- [x] 2.4 `crates/katana-ui/src/svg_loader/mod.rs` など direct file consumer を新しい subtree asset path へ更新する
+- [x] 2.5 legacy `vendor/egui_commonmark` / `vendor/egui_commonmark_backend` directory への build / runtime 参照を除去する
 
 ### 完了条件 (DoD)
 
-- [ ] Katana は legacy copied directory ではなく subtree root から両 vendored crate を解決している
-- [ ] raw subtree import commit は Katana patch logic と混ざらず review 可能である
-- [ ] 削除済み legacy vendor layout に依存する runtime / build path が残っていない
+- [x] Katana は legacy copied directory ではなく subtree root から両 vendored crate を解決している
+- [x] raw subtree import commit は Katana patch logic と混ざらず review 可能である
+- [x] 削除済み legacy vendor layout に依存する runtime / build path が残っていない
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
