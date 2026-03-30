@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Clippy
+      run: cargo clippy -- -Dwarnings
+
+    - name: Check all features pulldown
+      run: cargo check --no-default-features --features pulldown_cmark,better_syntax_highlighting,macros,embedded_image
+
+    - name: Cargo fmt
+      run: cargo fmt --check -q
+
+    - name: Test
+      run: cargo test --features macros
