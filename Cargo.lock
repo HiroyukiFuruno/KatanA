@@ -6560,7 +6560,3 @@ dependencies = [
  "syn",
  "winnow 0.7.15",
 ]
-
-[[patch.unused]]
-name = "egui_commonmark_macros"
-version = "0.22.0"
