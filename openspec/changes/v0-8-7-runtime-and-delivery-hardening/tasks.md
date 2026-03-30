@@ -60,15 +60,15 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 4.1 ローカル release と GitHub Actions release が共有する preflight entrypoint を抽出する
-- [ ] 4.2 changelog / OpenSpec / artifact naming の検証を共通 preflight に集約する
-- [ ] 4.3 `.github/workflows/release.yml` を共通 preflight と artifact verification に合わせて更新する
-- [ ] 4.4 publish なしで実行できる release helper smoke test を追加する
+- [x] 4.1 ローカル release と GitHub Actions release が共有する preflight entrypoint を抽出する
+- [x] 4.2 changelog / OpenSpec / artifact naming の検証を共通 preflight に集約する
+- [x] 4.3 `.github/workflows/release.yml` を共通 preflight と artifact verification に合わせて更新する
+- [x] 4.4 publish なしで実行できる release helper smoke test を追加する
 
 ### Definition of Done (DoD)
 
-- [ ] ローカルと CI の release 条件差分がなくなり、publish 前に helper regression を検出できる
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] ローカルと CI の release 条件差分がなくなり、publish 前に helper regression を検出できる
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
