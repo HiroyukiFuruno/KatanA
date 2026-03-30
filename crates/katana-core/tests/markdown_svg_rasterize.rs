@@ -1,6 +1,5 @@
 use katana_core::markdown::svg_rasterize::*;
 
-// Minimal valid SVG.
 const MINIMAL_SVG: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>"#;
 
 #[test]

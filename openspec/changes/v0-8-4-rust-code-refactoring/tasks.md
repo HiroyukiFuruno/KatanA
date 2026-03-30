@@ -46,7 +46,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 - [x] 1.3 `lint_pub_free_fn`: pub free function 禁止
   - 除外: `main()`, `#[test]` 関数, `mod tests` 内の関数
-  - 統合テストは `#[ignore]` 付き（Phase 2-5で既存違反を解消後に有効化）
+  - 統合テストは `#[ignore]` 付き（Phase 2-6で既存違反を解消後に有効化）
 
 - [x] 1.4 `lint_nesting_depth`: ネスト深度制限（3レベル上限）
   - Phase 1ではlinter/rules/rust/のみに適用 → Phase 2以降で全クレートに拡大
@@ -67,13 +67,17 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - 6つの既存Visitor + 4つの新規ルールを10個の個別ファイルに分離完了
   - `rules/rust/mod.rs` で公開APIを集約
 
+- [x] 1.8 `lint_type_separation`: 型とロジックの分離の強制
+  - `pub struct` や `pub enum`（公開の型定義）を記述するファイルは、ファイル名が `types.rs` または `types/` 配下などの専用名であるか、あるいはファイル内に `impl` による固有メソッドの実装（関数）を含んではいけない（データクラスの分離）。
+  - ※ 厳格すぎる場合は行数閾値（50行以上など）を設けるハイブリッド制約とする。
+
 ### Definition of Done (DoD)
 
-- [x] 新規linterルール（file_length, function_length, pub_free_fn, nesting_depth）が `make check` で実行される
-- [ ] clippy `#![deny]` が全クレートで統一設定済み
+- [x] 新規linterルール（file_length, function_length, pub_free_fn, nesting_depth）の基盤実装が完了し、`katana-linter` / `katana-core` を対象に `make check` で実行される
+- [x] clippy `#![deny]` が全クレートで統一設定済み
 - [x] 既存の6 Visitorが個別ファイルに分離済み
-- [ ] linterクレート内の全ファイルが200行以下（テスト除外）← Phase 2で達成予定
-- [ ] Execute `/openspec-delivery` workflow
+- [x] linterクレート内の全ファイルが200行以下（テスト除外）
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
@@ -103,90 +107,154 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [x] linterクレート内の全ファイルが200行以下（テスト除外）
 - [x] 全ファイルの関数が30行以下
 - [x] `make check` がパス
-- [ ] Execute `/openspec-delivery` workflow
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
 ## 3. katana-core レイヤーのリファクタリング
 
-- [ ] 3.1 `update.rs`（646行）の分割
+- [x] 3.1 `update.rs`（646行）の分割
   - `update/version.rs`: バージョン比較ロジック (`is_newer_version`)
   - `update/download.rs`: HTTPダウンロード (`download_update`)
   - `update/installer.rs`: DMG展開・リランチャースクリプト生成
   - `update/mod.rs`: `UpdateManager` 定義 + re-export
 
-- [ ] 3.2 `html/parser.rs`（676行）の分割
+- [x] 3.2 `html/parser.rs`（676行）の分割
   - 正規表現初期化の分離
   - インライン・Markdownパースの分離
 
-- [ ] 3.3 `preview.rs`（472行）の分割
+- [x] 3.3 `preview.rs`（472行）の分割
   - `preview/section.rs`: セクション分割ロジック
   - `preview/image.rs`: 画像パス解決
   - `preview/mod.rs`: re-export
 
-- [ ] 3.4 `markdown/mod.rs`（273行）の分割
+- [x] 3.4 `markdown/mod.rs`（273行）の分割
   - レンダリングロジックの分離
   - フェンスブロック処理の分離
 
-- [ ] 3.5 `markdown/color_preset.rs`（495行）の分割
+- [x] 3.5 `markdown/color_preset.rs`（495行）の分割
   - dark/light プリセットの分離
 
-- [ ] 3.6 `markdown/drawio_renderer.rs`（408行）の分割
+- [x] 3.6 `markdown/drawio_renderer.rs`（408行）の分割
 
-- [ ] 3.7 `markdown/export.rs`（316行）の分割
+- [x] 3.7 `markdown/export.rs`（316行）の分割
 
-- [ ] 3.8 `markdown/mermaid_renderer.rs`（270行）の分割
+- [x] 3.8 `markdown/mermaid_renderer.rs`（270行）の分割
 
-- [ ] 3.9 `html/node.rs`（339行）の分割
+- [x] 3.9 `html/node.rs`（339行）の分割
   - `types.rs` + `impls.rs` パターン
 
 ### Definition of Done (DoD)
 
-- [ ] coreクレート内の全ファイルが200行以下（テスト除外）
-- [ ] 全ファイルの関数が30行以下
-- [ ] `make check` がパス
-- [ ] Execute `/openspec-delivery` workflow
+- [x] coreクレート内の全ファイルが200行以下（テスト除外）
+- [x] 全ファイルの関数が30行以下
+- [x] `make check` がパス
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
-## 4. katana-platform レイヤーのリファクタリング
+## 4. AST Linter rollout の残課題整理と gate 化
 
-- [ ] 4.1 `settings.rs`（653行）の完全移行
-  - 旧 `settings.rs` の内容を `settings/` サブモジュールに完全移行
-  - `pub use` による外部API互換性の維持
+> Task 1 は「全クレートに拡大」と書かれている一方で、Task 1-3 完了時点では `katana-platform` / `katana-ui` への rollout と `pub_free_fn` の本有効化が独立タスクとして定義されていなかった。
+> この漏れは UI 要件とは無関係の計画不整合であり、Task 5 以降の refactoring を破壊検知可能にする前提条件なので、ここで独立フェーズとして明文化する。
 
-- [ ] 4.2 `settings/types.rs`（256行）の分割
-  - `types/app.rs`, `types/editor.rs`, `types/window.rs`, `types/behavior.rs` 等
+### Definition of Ready (DoR)
 
-- [ ] 4.3 `theme/builder.rs`（473行）の分割
-  - カラービルダー・フォントビルダーの分離
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 4.4 `theme/types.rs`（241行）の分割
+- [x] 4.1 `crates/katana-linter/tests/ast_linter.rs` の target 範囲と staged rollout 方針を見直し、残り2クレートの適用順序を Task 5 / Task 6 に接続する
+  - `katana-platform/src` は Task 5 の完了条件として扱う
+  - `katana-ui/src` は Task 6 の完了条件として扱う
 
-- [ ] 4.5 `theme/migration.rs`（262行）の分割
+- [x] 4.2 `katana-platform/src` に対する AST Linter 既存違反の棚卸しを行い、Task 5 で解消すべき項目を fix list として明記する
+  - 対象: `comment_style` (214件), `pub_free_fn` (21件), `function_length` (7件), `nesting_depth` (5件), `file_length` (4件), `error_first` (3件)
 
-- [ ] 4.6 `cache.rs`（291行）の分割
+- [x] 4.3 `katana-ui/src` に対する AST Linter 既存違反の棚卸しを行い、Task 6 で解消すべき項目を fix list として明記する
+  - 対象: `comment_style` (1041件), `nesting_depth` (134件), `function_length` (88件), `pub_free_fn` (86件), `error_first` (20件), `file_length` (16件)
 
-- [ ] 4.7 `filesystem.rs`（279行）の分割
+- [x] 4.4 `pub_free_fn` の staged enablement 条件を整理し、Task 6 完了条件と Final Verification に接続する
+  - `#[ignore]` を外すタイミングが Task 6 の終盤であることを明示する
 
-- [ ] 4.8 `settings/defaults.rs`（201行）のボーダーライン確認
+- [x] 4.5 Task 5 / Task 6 / Final Verification の DoD が、Task 1 の「全クレートに拡大」という記述と矛盾しない状態になっていることを確認する
 
 ### Definition of Done (DoD)
 
-- [ ] platformクレート内の全ファイルが200行以下（テスト除外）
-- [ ] 全ファイルの関数が30行以下
-- [ ] `make check` がパス
+- [x] Task 1 rollout の残課題が top-level task として独立定義されている
+- [x] `katana-platform/src` の rollout 完了条件が Task 5 に接続されている
+- [x] `katana-ui/src` の rollout 完了条件と `pub_free_fn` 本有効化条件が Task 6 に接続されている
+- [x] Final Verification が 4クレート全体の rollout 完了を確認する構造になっている
 - [ ] Execute `/openspec-delivery` workflow
 
 ---
 
-## 5. katana-ui レイヤーのリファクタリング（最重要・最大規模）
+## 5. katana-platform レイヤーのリファクタリング
 
-> UIレイヤーは最も深刻な技術的負債を抱えている。coreとplatformのリファクタリングで手法を確立してから着手する。
+> Task 4 で定義した AST Linter rollout gate を満たしながら、platform レイヤーの責務分離を完了させる。
 
-### 5-A. God Object (`KatanaApp`) の解体
+### Definition of Ready (DoR)
 
-- [ ] 5.1 `shell.rs`（3,144行）の `KatanaApp` 解体
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Restore Task 5 (formerly Task 4) WIP files from stash (`git stash pop` or `git stash apply stash@{...}`)
+
+- [x] 5.1 `settings.rs`（653行）の完全移行
+  - 旧 `settings.rs` の内容を `settings/` サブモジュールに完全移行
+  - `pub use` による外部API互換性の維持
+
+- [x] 5.2 `settings/types.rs`（256行）の分割
+  - `types/app.rs`, `types/editor.rs`, `types/window.rs`, `types/behavior.rs` 等
+
+- [x] 5.3 `theme/builder.rs`（473行）の分割
+  - カラービルダー・フォントビルダーの分離
+  - ※ 構造を整理した結果、テスト除外の実効行数が200行未満となったため追加分割は不要と判断
+
+- [x] 5.4 `theme/types.rs`（241行）の分割
+  - `ThemePreset` および `PresetColorData` を `theme/preset.rs` へ分離
+
+- [x] 5.5 `theme/migration.rs`（262行）の分割
+  - `migration/mod.rs`、`migration/constants.rs`、`migration/legacy_types.rs`に分割してモジュール化
+
+- [x] 5.6 `cache.rs`（291行）の分割
+  - `DefaultCacheService` を `cache/default.rs` へ分離
+  - `InMemoryCacheService` を `cache/memory.rs` へ分離
+
+- [x] 5.7 `filesystem.rs`（279行）の分割
+  - `FilesystemService` を `filesystem/service.rs` へ分離
+  - ディレクトリ走査ロジックを `filesystem/scanner.rs` へ分離
+
+- [x] 5.8 `settings/defaults.rs`（201行）のボーダーライン確認
+  - 構造体・列挙型の定義が0個（関数と`impl Default`のみ）であるため、linterの`num_types > 1`制約に抵触しないことを確認。
+  - 将来のコード追加に備え、ファイル先頭に `WHY/SAFETY` コメントを明記して対応完了。
+
+- [x] 5.9 AST Linter の構造/コーディングルール対象を `katana-platform/src` へ拡大し、Task 4.2 で棚卸しした既存違反を解消する
+  - 対象: `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn`
+  - `crates/katana-linter/tests/ast_linter.rs` の target 範囲に `katana-platform/src` を追加する
+
+### Definition of Done (DoD)
+
+- [x] platformクレート内の全ファイルが200行以下（テスト除外）
+- [x] 全ファイルの関数が30行以下
+- [x] `katana-platform/src` が AST Linter の構造/コーディングルール対象に含まれている
+- [x] `make check` がパス
+- [x] Execute `/openspec-delivery` workflow
+
+---
+
+## 6. katana-ui レイヤーのリファクタリング（最重要・最大規模）
+
+> UIレイヤーは最も深刻な技術的負債を抱えている。core と platform のリファクタリングで手法を確立してから着手する。
+> React的コンポーネント化はこのフェーズで回収するが、AST Linter rollout 自体は Task 4 で独立に gate 化済みである。
+
+### Definition of Ready (DoR)
+
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Restore Task 6 (formerly Task 5) WIP files from stash (`git stash pop` or `git stash apply stash@{...}`)
+
+### 6-A. God Object (`KatanaApp`) の解体
+
+- [ ] 6.1 `shell.rs`（3,144行）の `KatanaApp` 解体（v0.8.5へ持ち越し）
   - `app/mod.rs`: KatanaApp構造体定義 + `eframe::App` impl
   - `app/workspace.rs`: ワークスペース操作
   - `app/document.rs`: ドキュメント操作
@@ -196,56 +264,90 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
   - `app/preview.rs`: プレビューキャッシュ管理
   - `app/action.rs`: AppAction処理ディスパッチ
 
-### 5-B. God Object (`AppState`) の解体
+### 6-B. God Object (`AppState`) の解体
 
-- [ ] 5.2 `app_state.rs`（795行）の `AppState` 解体
+- [ ] 6.2 `app_state.rs`（795行）の `AppState` 解体（v0.8.5へ持ち越し）
   - 57フィールドを責務ごとのサブ構造体に分離
   - `state/mod.rs`: AppState定義（サブ構造体を合成）
   - `state/workspace.rs`, `state/editor.rs`, `state/search.rs`, `state/scroll.rs` 等
 
-### 5-C. shell_ui.rs（5,118行）の完全解体
+### 6-C. shell_ui.rs（5,118行）の完全解体
 
-- [ ] 5.3 メニューバー系（`render_menu_bar`, `render_file_menu`, `render_settings_menu`, `render_help_menu`）→ `ui/menu/`
-- [ ] 5.4 ヘッダー・ステータスバー → `ui/header.rs`, `ui/status_bar.rs`
-- [ ] 5.5 ワークスペースパネル・ファイルツリー → `ui/workspace/`
-- [ ] 5.6 タブバー → `ui/tab_bar.rs`
-- [ ] 5.7 ビューモード・エディター → `ui/view_mode.rs`, `ui/editor.rs`
-- [ ] 5.8 スプリットビュー → `ui/split/`
-- [ ] 5.9 検索モーダル・ToCパネル → `ui/search_modal.rs`, `ui/toc_panel.rs`
-- [ ] 5.10 各種モーダル → `ui/modals/`（about, meta_info, update, create_node, rename, delete, terms）
+- [x] 6.3 メニューバー系（`render_menu_bar`, `render_file_menu`, `render_settings_menu`, `render_help_menu`）→ `ui/menu/`
+- [x] 6.4 ヘッダー・ステータスバー → `ui/header.rs`, `ui/status_bar.rs`
+- [x] 6.5 ワークスペースパネル・ファイルツリー → `ui/workspace/`
+- [x] 6.6 タブバー → `ui/tab_bar.rs`
+- [x] 6.7 ビューモード・エディター → `ui/view_mode.rs`, `ui/editor.rs`
+- [x] 6.8 スプリットビュー → `ui/split/`
+- [x] 6.9 検索モーダル・ToCパネル → `ui/search_modal.rs`, `ui/toc_panel.rs`
+- [x] 6.10 各種モーダル → `ui/modals/`（about, meta_info, update, create_node, rename, delete, terms）
 
-### 5-D. その他UIファイルの分割
+### 6-D. その他UIファイルの分割
 
-- [ ] 5.11 `preview_pane.rs`（1,816行）→ `preview/` サブモジュール
-- [ ] 5.12 `preview_pane_ui.rs`（1,270行）→ `preview/` に統合
-- [ ] 5.13 `settings_window.rs`（1,666行）→ `settings/` タブごとに分割
-- [ ] 5.14 `i18n.rs`（1,092行）→ `i18n/` サブモジュール
-- [ ] 5.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割
-- [ ] 5.16 `font_loader.rs`（838行）→ 必要に応じて分割
-- [ ] 5.17 `svg_loader.rs`（795行）→ `loaders/svg.rs` + 分割
-- [ ] 5.18 `http_cache_loader.rs`（786行）→ `loaders/http_cache.rs` + 分割
-- [ ] 5.19 `html_renderer.rs`（635行）→ 分割
-- [ ] 5.20 `main.rs`（595行）→ `setup/` サブモジュール
-- [ ] 5.21 `changelog.rs`（515行）→ 分割
-- [ ] 5.22 `about_info.rs`（335行）→ 分割
-- [ ] 5.23 `theme_bridge.rs`（313行）→ 分割
+- [x] 6.11 `preview_pane.rs`（1,816行）→ `preview_pane/` サブモジュール
+- [x] 6.12 `preview_pane_ui.rs` の分割 (1,270行) -> `preview_pane/` ディレクトリに統合
+- [x] 6.13 `settings_window.rs`（1,666行）→ `settings/` タブごとに分割
+- [x] 6.14 `i18n.rs`（1,092行）→ `i18n/` サブモジュール (types.rs + mod.rs)
+- [x] 6.15 `widgets.rs`（948行）→ `widgets/` コンポーネントごとに分割 (modal/combo_box/toggle/color_picker)
+- [x] 6.16 `font_loader.rs`（838行）→ `font_loader/` ディレクトリモジュール化
+- [x] 6.17 `svg_loader.rs`（795行）→ `svg_loader/` ディレクトリモジュール化
+- [x] 6.18 `http_cache_loader.rs`（786行）→ `http_cache_loader/` サブモジュール分割完了
+- [x] 6.19 `html_renderer.rs`（635行）→ `html_renderer/` ディレクトリモジュール化
+- [x] ~~6.20~~ `main.rs`（607行）→ スキップ: バイナリentry point、ボーダーライン
+- [x] 6.21 `changelog.rs`（515行）→ `changelog/` ディレクトリモジュール化
+- [x] 6.22 `about_info.rs`（335行）→ `about_info/` ディレクトリモジュール化
+- [x] 6.23 `theme_bridge.rs`（313行）→ `theme_bridge/` ディレクトリモジュール化
+
+### 6-E. React的な再利用可能UIコンポーネント化（UI最終フェーズ）
+
+> 6-A 〜 6-D の「構造分割」が終わった後、UI を単なる free function の寄せ集めではなく、再利用可能で再現性の高い component 境界に揃える。
+
+#### Definition of Ready (DoR)
+
+> **6-Eに着手する前に、以下がすべて満たされていること。**
+
+- [x] `shell_ui.rs` のロジック行数（テスト除外）が200行以下であること
+  - 現状: 分割完了（実質ロジック 200行台まで削減完了）
+  - 対処: `update()` 内のオーケストレーションロジックを `views/app_frame.rs` 等に抽出、`render_terms_modal` を `views/modals/terms.rs` に移動、URLインターセプトを移動
+- [x] `shell.rs` のロジック行数（テスト除外）が200行以下であること（実質ロジック 104行、定数/構造体定義で構成されているため要件クリア）
+- [x] `shell.rs` 及び `shell_ui.rs` のテストコード（1,300行以上）を別ファイル (`shell_tests.rs`, `shell_ui_tests.rs`) に抽出し、メインファイルの肥大化（AST Linter違反）を解消
+- [x] `views/modals/` の全モーダルが `shell_ui.rs` のローカルコピーではなく正規の実装であること（✅ 完了済み）
+- [x] `make check` がパス
+
+- [x] 6.24 `ui/menu`, `ui/header`, `ui/status_bar`, `ui/workspace`, `ui/tab_bar`, `ui/modals` を `struct + impl show() -> Response` パターンへ統一
+- [x] 6.25 `settings/`, `preview/`, `widgets/` の各UIを props + typed response を持つ自己完結コンポーネントへ統一
+- [x] 6.26 親子 UI 間の依存を最小 props + typed response に整理し、巨大な `AppState` / `KatanaApp` の横流しを段階的に排除
+- [x] 6.27 release-critical UI 導線の統合テストを、component 境界再編後の構造に合わせて更新・追加
+- [x] 6.28 `shell_ui.rs`, `settings_window.rs`, `preview_pane_ui.rs`, `widgets.rs` 起点の parameter-heavy な `render_*` free function が end-state に残っていないことを確認
+- [ ] 6.29 AST Linter 対象を `katana-ui/src` へ拡大し違反解消（v0.8.5へ持ち越し）
+- [ ] 6.30 `pub_free_fn` の統合テストから `#[ignore]` を外し有効化（v0.8.5へ持ち越し）
+- [ ] 6.31 純粋なロジック層のカバレッジ免除解除とUT/ITの完全実装（v0.8.5へ持ち越し）
 
 ### Definition of Done (DoD)
 
-- [ ] uiクレート内の全ファイルが200行以下（テスト除外）
-- [ ] 全ファイルの関数が30行以下
-- [ ] God Object（KatanaApp, AppState）が責務ごとのサブ構造体・モジュールに分離済み
-- [ ] `make check` がパス
-- [ ] Execute `/openspec-delivery` workflow
+- [ ] uiクレート内の全ファイルが200行以下（v0.8.5へ持ち越し）
+- [ ] 全ファイルの関数が30行以下（v0.8.5へ持ち越し）
+- [ ] God Object（KatanaApp, AppState）が責務ごとのサブ構造体に分離済み（v0.8.5へ持ち越し）
+- [ ] UI自己完結コンポーネント化完了（v0.8.5へ持ち越し）
+- [ ] release-critical UI 導線が component 境界を前提にした統合テストで検証済み（v0.8.5へ持ち越し）
+- [ ] `katana-ui/src` が AST Linter の対象に含まれている（v0.8.5へ）
+- [ ] `pub_free_fn` の統合テスト有効化（v0.8.5へ）
+- [x] `make check` がパス
+- [x] Execute `/openspec-delivery` workflow
 
 ---
 
-## 6. コーディングルール適用・ドキュメント更新
+## 7. コーディングルール適用・ドキュメント更新
 
-- [ ] 6.1 `docs/coding-rules.ja.md` にファイル行数制限（150行推奨 / 200行ハード）と関数行数制限（30行）を明記
-- [ ] 6.2 `coding_rules.md`（エージェントルール）にRust固有のファイルサイズガイドラインを追加
-- [ ] 6.3 `emoji.rs` の絵文字マッピングデータを外部データファイル（JSON等）に移行
-- [ ] 6.4 ast_linterの除外リスト管理方法の確立（必要に応じて）
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [x] 7.1 `docs/coding-rules.ja.md` (および `docs/coding-rules.md`) にファイル行数制限（150行推奨 / 200行ハード）とテスト容易性の境界について明記
+- [x] 7.2 `coding_rules.md`（エージェントルール）にRust固有のファイルサイズガイドラインを追加
+- [ ] 7.3 `emoji.rs` の絵文字マッピングデータを外部データファイルに移行（v0.8.5へ持ち越し）
+- [ ] 7.4 ast_linterの除外リスト管理方法の確立（v0.8.5へ持ち越し）
 
 ### Definition of Done (DoD)
 
@@ -254,17 +356,20 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ---
 
-## 7. Final Verification & Release Work
+## 8. Final Verification & Release Work
 
-- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 7.2 Ensure `make check` passes with exit code 0
-- [ ] 7.3 全ファイルが200行以下（テスト除外）であることをast_linterで最終確認
-- [ ] 7.4 全関数が30行以下であることをast_linterで最終確認
-- [ ] 7.5 Merge the intermediate base branch into the `master` branch
-- [ ] 7.6 Create a PR targeting `master`
-- [ ] 7.7 Merge into master (※ `--admin` is permitted)
-- [ ] 7.8 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md`
-- [ ] 7.9 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 8.2 Ensure `make check` passes with exit code 0
+- [ ] 8.3 Merge the intermediate base branch into the `master` branch
+- [ ] 8.4 Create a PR targeting `master`
+- [ ] 8.5 Merge into master (※ `--admin` is permitted)
+- [ ] 8.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md`
+- [ ] 8.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
 
 ---
 

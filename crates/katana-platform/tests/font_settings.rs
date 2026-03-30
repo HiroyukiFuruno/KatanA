@@ -1,7 +1,5 @@
 use katana_platform::{AppSettings, SettingsService};
 
-// ── Font Size Range ──
-
 #[test]
 fn font_size_default_is_14() {
     let settings = AppSettings::default();
@@ -43,8 +41,6 @@ fn font_size_at_boundary_32_is_accepted() {
     assert!((settings.font.size - 32.0).abs() < f32::EPSILON);
 }
 
-// ── Font Family ──
-
 #[test]
 fn font_family_default_is_monospace() {
     let settings = AppSettings::default();
@@ -57,8 +53,6 @@ fn font_family_can_be_changed() {
     settings.font.family = "sans-serif".to_string();
     assert_eq!(settings.font.family, "sans-serif");
 }
-
-// ── Persistence ──
 
 #[test]
 fn font_size_roundtrip_via_json_repository() {
@@ -94,7 +88,6 @@ fn font_family_roundtrip_via_json_repository() {
 fn font_size_deserialization_clamps_out_of_range_value() {
     let json = r#"{"font": {"size": 100.0}}"#;
     let settings: AppSettings = serde_json::from_str(json).unwrap();
-    // clamped_font_size() should clamp out-of-range values after deserialization
     assert!((settings.clamped_font_size() - 32.0).abs() < f32::EPSILON);
 }
 

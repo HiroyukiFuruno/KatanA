@@ -1,28 +1,20 @@
-//! SVG rasterization utility.
-//!
-//! Uses `resvg` + `usvg` to convert SVG text to an RGBA pixel buffer.
-//! Returns the result as raw bytes compatible with egui's `ColorImage`.
+/* WHY: SVG rasterization utility.
+Uses `resvg` + `usvg` to convert SVG text to an RGBA pixel buffer.
+Returns the result as raw bytes compatible with egui's `ColorImage`. */
 
 use resvg::{render, usvg};
 use tiny_skia::Pixmap;
 
-/// Rasterized SVG image.
 #[derive(Debug, Clone)]
 pub struct RasterizedSvg {
-    /// Pixel width.
     pub width: u32,
-    /// Pixel height.
     pub height: u32,
-    /// RGBA bytes (row-major).
     pub rgba: Vec<u8>,
 }
 
-/// Converts SVG text to an RGBA pixel buffer.
-///
-/// Use `scale` to adjust the output resolution (1.0 = original size).
 pub fn rasterize_svg(svg_text: &str, scale: f32) -> Result<RasterizedSvg, SvgRasterizeError> {
     let opts = usvg::Options {
-        // Text inside SVG becomes invisible if system fonts are not provided.
+        // WHY: Text inside SVG becomes invisible if system fonts are not provided.
         fontdb: font_db(),
         ..usvg::Options::default()
     };
@@ -31,16 +23,16 @@ pub fn rasterize_svg(svg_text: &str, scale: f32) -> Result<RasterizedSvg, SvgRas
     let size = tree.size();
     let width = ((size.width() * scale) as u32).max(1);
     let height = ((size.height() * scale) as u32).max(1);
-    // `Pixmap::new` is always `Some` because `max(1)` guarantees width/height >= 1.
+    // WHY: `Pixmap::new` is always `Some` because `max(1)` guarantees width/height >= 1.
     let mut pixmap =
         Pixmap::new(width, height).expect("BUG: width/height >= 1 guaranteed by max(1)");
-    // Start with a transparent canvas. Each diagram renderer is responsible
-    // for setting the correct background via the DiagramColorPreset:
-    //   - PlantUML: `skinparam backgroundColor transparent`
-    //   - DrawIo:   SVG has no background rect — transparent by default
-    //   - Mermaid:  renders to PNG with `--backgroundColor transparent`
-    // The transparent base lets diagram content blend naturally with the
-    // host application's dark/light theme.
+    /* WHY: Start with a transparent canvas. Each diagram renderer is responsible
+    for setting the correct background via the DiagramColorPreset:
+      - PlantUML: `skinparam backgroundColor transparent`
+      - DrawIo:   SVG has no background rect — transparent by default
+      - Mermaid:  renders to PNG with `--backgroundColor transparent`
+    The transparent base lets diagram content blend naturally with the
+    host application's dark/light theme. */
     let transform = tiny_skia::Transform::from_scale(scale, scale);
     render(&tree, transform, &mut pixmap.as_mut());
     Ok(RasterizedSvg {
@@ -60,7 +52,6 @@ fn font_db() -> std::sync::Arc<usvg::fontdb::Database> {
     }))
 }
 
-/// Errors that occur during SVG rasterization.
 #[derive(Debug, thiserror::Error)]
 pub enum SvgRasterizeError {
     #[error("Failed to parse SVG: {0}")]

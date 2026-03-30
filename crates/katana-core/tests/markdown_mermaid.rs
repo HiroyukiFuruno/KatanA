@@ -31,7 +31,6 @@ fn searches_system_path_when_resolve_mmdc_binary_env_var_is_not_set() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::remove_var("MERMAID_MMDC") };
     let path = mermaid_renderer::resolve_mmdc_binary();
-    // Even if mmdc is not found, "mmdc" is returned as fallback
     assert!(!path.as_os_str().is_empty());
 }
 
@@ -51,7 +50,6 @@ fn fake_binary_is_false_in_is_mmdc_available() {
     unsafe { std::env::remove_var("MERMAID_MMDC") };
 }
 
-// Integration test that runs only when mmdc is available on the system.
 #[test]
 fn returns_png_correctly_if_mmdc_is_available() {
     let _guard = ENV_LOCK.lock().unwrap();
@@ -69,7 +67,6 @@ fn returns_png_correctly_if_mmdc_is_available() {
     assert!(matches!(result, DiagramResult::OkPng(_)));
 }
 
-// run_mmdc_process error path when mmdc is not found
 #[test]
 fn run_mmdc_process_errors_when_mmdc_is_absent() {
     let _guard = ENV_LOCK.lock().unwrap();

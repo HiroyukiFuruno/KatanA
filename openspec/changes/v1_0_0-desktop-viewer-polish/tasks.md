@@ -25,6 +25,11 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 >
 > これらはプロセスの信頼性を根底から覆す行為です。以下の手順は**絶対に独自解釈でスキップ・代替実行せず**、一つずつ確実に完了させてください。エラー発生時は即座に中断し、人間に報告すること。
 
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
 - [ ] 1.1 アプリをビルド起動し、v0.1.0〜v0.5.0で追加した全機能を通したE2E操作（手動テスト）を実施し、表示乱れやクラッシュがないか確認する
 - [ ] 1.2 `cargo clippy --workspace -- -D warnings` と `cargo fmt --all --check` が通ることを確認する
 - [ ] 1.3 `cargo llvm-cov` などのカバレッジ計測において、**すべての追加機能・エラーパスが網羅されているか**再監査し、100%（または既存基準）をクリアしていることを確認する

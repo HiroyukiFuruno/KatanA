@@ -1,0 +1,124 @@
+   Compiling katana-ui v0.8.3 (/Users/hiroyuki_furuno/works/private/katana/crates/katana-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.45s
+     Running unittests src/lib.rs (target/debug/deps/katana_ui-a7af28d38ef8476d)
+
+running 17 tests
+test shell_ui::tests::active_file_highlight_is_painted_before_text ... ok
+test shell_ui::tests::preview_header_leaves_height_for_preview_body ... ok
+test shell_ui::tests::horizontal_split_width_stays_stable_with_changelog_like_list_content ... FAILED
+test shell_ui::tests::split_preview_wraps_long_inline_code_without_horizontal_overflow ... FAILED
+test shell_ui::tests::split_preview_wraps_long_lines_without_horizontal_overflow ... FAILED
+test shell_ui::tests::new_horizontal_split_starts_at_half_width_even_if_another_tab_has_panel_state ... FAILED
+test shell_ui::tests::split_preview_left_padding_is_consistent ... FAILED
+test shell_ui::tests::split_preview_wraps_long_markdown_with_mixed_inline_styles ... FAILED
+test shell_ui::tests::horizontal_split_editor_to_preview_scroll_sync ... FAILED
+test shell_ui::tests::new_vertical_split_starts_at_half_height_even_if_another_tab_has_panel_state ... FAILED
+test shell_ui::tests::vertical_split_editor_has_sufficient_height_for_scrolling ... FAILED
+test shell_ui::tests::horizontal_split_width_stays_stable_with_readme_like_preview_content ... FAILED
+test shell_ui::tests::horizontal_split_width_stays_stable_across_initial_frames ... FAILED
+test shell_ui::tests::refresh_diagrams_update_clears_image_caches ... ok
+test shell_ui::tests::vertical_split_editor_to_preview_scroll_sync ... FAILED
+test shell_ui::tests::vertical_split_preview_to_editor_scroll_sync ... FAILED
+test shell_ui::tests::vertical_split_editor_to_preview_scroll_sync_after_swap ... FAILED
+
+failures:
+
+---- shell_ui::tests::horizontal_split_width_stays_stable_with_changelog_like_list_content stdout ----
+
+thread 'shell_ui::tests::horizontal_split_width_stays_stable_with_changelog_like_list_content' (6149633) panicked at crates/katana-ui/src/shell_ui_tests.rs:452:10:
+preview panel rect after first frame
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- shell_ui::tests::split_preview_wraps_long_inline_code_without_horizontal_overflow stdout ----
+
+thread 'shell_ui::tests::split_preview_wraps_long_inline_code_without_horizontal_overflow' (6149640) panicked at crates/katana-ui/src/shell_ui_tests.rs:598:10:
+preview panel rect
+
+---- shell_ui::tests::split_preview_wraps_long_lines_without_horizontal_overflow stdout ----
+
+thread 'shell_ui::tests::split_preview_wraps_long_lines_without_horizontal_overflow' (6149641) panicked at crates/katana-ui/src/shell_ui_tests.rs:550:10:
+preview panel rect
+
+---- shell_ui::tests::new_horizontal_split_starts_at_half_width_even_if_another_tab_has_panel_state stdout ----
+
+thread 'shell_ui::tests::new_horizontal_split_starts_at_half_width_even_if_another_tab_has_panel_state' (6149635) panicked at crates/katana-ui/src/shell_ui_tests.rs:301:10:
+preview panel rect
+
+---- shell_ui::tests::split_preview_left_padding_is_consistent stdout ----
+
+thread 'shell_ui::tests::split_preview_left_padding_is_consistent' (6149639) panicked at crates/katana-ui/src/shell_ui_tests.rs:239:10:
+preview panel rect
+
+---- shell_ui::tests::split_preview_wraps_long_markdown_with_mixed_inline_styles stdout ----
+
+thread 'shell_ui::tests::split_preview_wraps_long_markdown_with_mixed_inline_styles' (6149642) panicked at crates/katana-ui/src/shell_ui_tests.rs:649:10:
+preview panel rect
+
+---- shell_ui::tests::horizontal_split_editor_to_preview_scroll_sync stdout ----
+
+thread 'shell_ui::tests::horizontal_split_editor_to_preview_scroll_sync' (6149631) panicked at crates/katana-ui/src/shell_ui_tests.rs:827:9:
+assertion `left == right` failed: Editor→Preview sync must settle to Neither in horizontal split. Got Editor, fraction=0.5000
+  left: Editor
+ right: Neither
+
+---- shell_ui::tests::new_vertical_split_starts_at_half_height_even_if_another_tab_has_panel_state stdout ----
+
+thread 'shell_ui::tests::new_vertical_split_starts_at_half_height_even_if_another_tab_has_panel_state' (6149636) panicked at crates/katana-ui/src/shell_ui_tests.rs:519:10:
+preview panel rect
+
+---- shell_ui::tests::vertical_split_editor_has_sufficient_height_for_scrolling stdout ----
+
+thread 'shell_ui::tests::vertical_split_editor_has_sufficient_height_for_scrolling' (6149643) panicked at crates/katana-ui/src/shell_ui_tests.rs:726:10:
+preview panel rect
+
+---- shell_ui::tests::horizontal_split_width_stays_stable_with_readme_like_preview_content stdout ----
+
+thread 'shell_ui::tests::horizontal_split_width_stays_stable_with_readme_like_preview_content' (6149634) panicked at crates/katana-ui/src/shell_ui_tests.rs:390:10:
+preview panel rect after first frame
+
+---- shell_ui::tests::horizontal_split_width_stays_stable_across_initial_frames stdout ----
+
+thread 'shell_ui::tests::horizontal_split_width_stays_stable_across_initial_frames' (6149632) panicked at crates/katana-ui/src/shell_ui_tests.rs:330:10:
+preview panel rect after first frame
+
+---- shell_ui::tests::vertical_split_editor_to_preview_scroll_sync stdout ----
+
+thread 'shell_ui::tests::vertical_split_editor_to_preview_scroll_sync' (6149657) panicked at crates/katana-ui/src/shell_ui_tests.rs:786:9:
+assertion `left == right` failed: Editor→Preview sync must settle to Neither after consumption. Got Editor, fraction=0.5000
+  left: Editor
+ right: Neither
+
+---- shell_ui::tests::vertical_split_preview_to_editor_scroll_sync stdout ----
+
+thread 'shell_ui::tests::vertical_split_preview_to_editor_scroll_sync' (6149659) panicked at crates/katana-ui/src/shell_ui_tests.rs:913:9:
+assertion `left == right` failed: Preview→Editor sync must settle to Neither in vertical split. Got Preview, fraction=0.5000
+  left: Preview
+ right: Neither
+
+---- shell_ui::tests::vertical_split_editor_to_preview_scroll_sync_after_swap stdout ----
+
+thread 'shell_ui::tests::vertical_split_editor_to_preview_scroll_sync_after_swap' (6149658) panicked at crates/katana-ui/src/shell_ui_tests.rs:870:9:
+assertion `left == right` failed: Editor→Preview sync must settle to Neither after order swap. Got Editor, fraction=0.5000
+  left: Editor
+ right: Neither
+
+
+failures:
+    shell_ui::tests::horizontal_split_editor_to_preview_scroll_sync
+    shell_ui::tests::horizontal_split_width_stays_stable_across_initial_frames
+    shell_ui::tests::horizontal_split_width_stays_stable_with_changelog_like_list_content
+    shell_ui::tests::horizontal_split_width_stays_stable_with_readme_like_preview_content
+    shell_ui::tests::new_horizontal_split_starts_at_half_width_even_if_another_tab_has_panel_state
+    shell_ui::tests::new_vertical_split_starts_at_half_height_even_if_another_tab_has_panel_state
+    shell_ui::tests::split_preview_left_padding_is_consistent
+    shell_ui::tests::split_preview_wraps_long_inline_code_without_horizontal_overflow
+    shell_ui::tests::split_preview_wraps_long_lines_without_horizontal_overflow
+    shell_ui::tests::split_preview_wraps_long_markdown_with_mixed_inline_styles
+    shell_ui::tests::vertical_split_editor_has_sufficient_height_for_scrolling
+    shell_ui::tests::vertical_split_editor_to_preview_scroll_sync
+    shell_ui::tests::vertical_split_editor_to_preview_scroll_sync_after_swap
+    shell_ui::tests::vertical_split_preview_to_editor_scroll_sync
+
+test result: FAILED. 3 passed; 14 failed; 0 ignored; 0 measured; 318 filtered out; finished in 0.30s
+
+error: test failed, to rerun pass `-p katana-ui --lib`

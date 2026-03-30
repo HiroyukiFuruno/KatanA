@@ -2,7 +2,12 @@
 
 ### Requirement: `coding-rules.ja.md` のルールをast_linterで網羅的に機械化
 
-`docs/coding-rules.ja.md` に記載されたルールのうち、機械的にチェック可能なものをすべてast_linterまたはclippy `#![deny]` で強制する。「定義はあるが守られる保証がない規約は無意味」の哲学に基づく。
+`docs/coding-rules.ja.md` に記載されたルールのうち、機械的にチェック可能なものをすべてast_linterまたはclippy `#![deny]` で強制する (MUST be enforced).
+
+#### Scenario: Verify AST linter rules additions
+- **Given** the coding rules
+- **When** linter runs
+- **Then** rules are checked mechanically.
 
 ---
 
@@ -65,18 +70,18 @@
   - `pub_free_fn.rs` (★新規)
   - `nesting_depth.rs` (★新規)
 
----
+#### Scenario: platform クレートへ構造ルールを拡大する
 
-### Status: coding-rules.ja.md のルール vs linter実装状況
+- **WHEN** `katana-platform` レイヤーのリファクタリングを進める
+- **THEN** `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn` を含む構造/コーディングルールが `katana-platform/src` に適用される
 
-| coding-rules 条項 | ルール内容 | 強制手段 | 状態 |
-|---|---|---|---|
-| §1.1 | struct+implベース（pub free fn禁止） | ast_linter `pub_free_fn` | ⬜ 未実装 |
-| §2 | 関数30行制限 | clippy `too_many_lines` + ast_linter `function_length` | ⚠️ `.clippy.toml` のみ。`#![deny]` 未設定 |
-| §3 | ネスト深度3以下 | clippy `cognitive_complexity` + ast_linter `nesting_depth` | ⚠️ `.clippy.toml` のみ。`#![deny]` 未設定 |
-| §5.1 | 禁止型 (HashMap等) | ast_linter `prohibited_types` | ✅ 実装済み |
-| §5.2 | unwrap/panic/todo禁止 | clippy `#![deny]` | ⚠️ `#![deny]` 未設定 |
-| §6 | コメント英語 | ast_linter (既存i18nルールで一部カバー) | ⚠️ 部分的 |
-| §8 | 省略変数名禁止 | — | ❌ Linter化困難（静的解析の限界） |
-| §11 | i18n ハードコーディング禁止 | ast_linter `i18n` | ✅ 実装済み |
-| — | ファイル行数制限 (200行) | ast_linter `file_length` | ⬜ 未実装 |
+#### Scenario: ui クレートへ構造ルールを拡大する
+
+- **WHEN** `katana-ui` レイヤーのリファクタリングを進める
+- **THEN** `file_length`, `function_length`, `nesting_depth`, `error_first`, `pub_free_fn` を含む構造/コーディングルールが `katana-ui/src` に適用される
+
+#### Scenario: `pub free fn` 禁止ルールを最終的に有効化する
+
+- **WHEN** 既存の公開 free function 違反が解消された後に `make check` を実行する
+- **THEN** `pub_free_fn` の統合テストは `#[ignore]` なしで有効になっている
+- **THEN** `struct + impl` ベースのルールが linter/core/platform/ui の対象クレートで機械的に検証される

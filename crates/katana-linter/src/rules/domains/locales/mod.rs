@@ -1,8 +1,9 @@
 use crate::utils::{
     collect_json_placeholders, collect_json_shape, collect_json_values, parse_json_file,
 };
+use crate::JsonNodeKind;
 use crate::Violation;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 pub mod catalog;
@@ -16,16 +17,10 @@ use structure::{build_locale_baseline, compare_locale_placeholders, compare_loca
 use values::compare_locale_values;
 
 pub fn lint_locale_files(locale_dir: &Path) -> Vec<Violation> {
-    let locale_files = collect_locale_json_files(locale_dir);
-    if locale_files.is_empty() {
-        return vec![crate::utils::locale_violation(
-            locale_dir,
-            format!(
-                "No locale JSON files found for analysis: {}",
-                locale_dir.display()
-            ),
-        )];
-    }
+    let locale_files = match get_locale_files_or_error(locale_dir) {
+        Ok(files) => files,
+        Err(v) => return v,
+    };
 
     let language_codes = match parse_languages_catalog(locale_dir) {
         Ok(codes) => codes,
@@ -35,47 +30,93 @@ pub fn lint_locale_files(locale_dir: &Path) -> Vec<Violation> {
 
     let ja_path = locale_dir.join("ja.json");
     let en_path = locale_dir.join("en.json");
-    let (baseline_shape, baseline_placeholders, en_values) =
-        match build_locale_baseline(&ja_path, &en_path) {
-            Ok(baseline) => baseline,
-            Err(violations) => {
-                all_violations.extend(violations);
-                return all_violations;
-            }
-        };
+    let Some((baseline_shape, baseline_placeholders, en_values)) =
+        load_locale_baseline(&ja_path, &en_path, &mut all_violations)
+    else {
+        return all_violations;
+    };
 
     for file in locale_files {
-        let is_base_locale = file.ends_with("ja.json") || file.ends_with("en.json");
-        if is_base_locale {
-            continue;
-        }
-
-        let value = match parse_json_file(&file) {
-            Ok(value) => value,
-            Err(violations) => {
-                all_violations.extend(violations);
-                continue;
-            }
-        };
-
-        let mut shape = BTreeMap::new();
-        let mut placeholders = BTreeMap::new();
-        let mut values = BTreeMap::new();
-        collect_json_shape(&value, None, &mut shape);
-        collect_json_placeholders(&value, None, &mut placeholders);
-        collect_json_values(&value, None, &mut values);
-
-        all_violations.extend(compare_locale_shape(&file, &baseline_shape, &shape));
-        all_violations.extend(compare_locale_placeholders(
+        process_single_locale_file(
             &file,
             &baseline_shape,
             &baseline_placeholders,
-            &placeholders,
-        ));
-        all_violations.extend(compare_locale_values(&file, &en_values, &values));
+            &en_values,
+            &mut all_violations,
+        );
     }
 
     all_violations
+}
+
+fn get_locale_files_or_error(locale_dir: &Path) -> Result<Vec<std::path::PathBuf>, Vec<Violation>> {
+    let locale_files = collect_locale_json_files(locale_dir);
+    if locale_files.is_empty() {
+        return Err(vec![crate::utils::locale_violation(
+            locale_dir,
+            format!(
+                "No locale JSON files found for analysis: {}",
+                locale_dir.display()
+            ),
+        )]);
+    }
+    Ok(locale_files)
+}
+
+#[allow(clippy::type_complexity)]
+fn load_locale_baseline(
+    ja_path: &Path,
+    en_path: &Path,
+    all_violations: &mut Vec<Violation>,
+) -> Option<(
+    BTreeMap<String, JsonNodeKind>,
+    BTreeMap<String, BTreeSet<String>>,
+    BTreeMap<String, String>,
+)> {
+    match build_locale_baseline(ja_path, en_path) {
+        Ok(baseline) => Some(baseline),
+        Err(violations) => {
+            all_violations.extend(violations);
+            None
+        }
+    }
+}
+
+fn process_single_locale_file(
+    file: &Path,
+    baseline_shape: &BTreeMap<String, JsonNodeKind>,
+    baseline_placeholders: &BTreeMap<String, BTreeSet<String>>,
+    en_values: &BTreeMap<String, String>,
+    all_violations: &mut Vec<Violation>,
+) {
+    let is_base_locale = file.ends_with("ja.json") || file.ends_with("en.json");
+    if is_base_locale {
+        return;
+    }
+
+    let value = match parse_json_file(file) {
+        Ok(value) => value,
+        Err(violations) => {
+            all_violations.extend(violations);
+            return;
+        }
+    };
+
+    let mut shape = BTreeMap::new();
+    let mut placeholders = BTreeMap::new();
+    let mut values = BTreeMap::new();
+    collect_json_shape(&value, None, &mut shape);
+    collect_json_placeholders(&value, None, &mut placeholders);
+    collect_json_values(&value, None, &mut values);
+
+    all_violations.extend(compare_locale_shape(file, baseline_shape, &shape));
+    all_violations.extend(compare_locale_placeholders(
+        file,
+        baseline_shape,
+        baseline_placeholders,
+        &placeholders,
+    ));
+    all_violations.extend(compare_locale_values(file, en_values, &values));
 }
 
 #[cfg(test)]

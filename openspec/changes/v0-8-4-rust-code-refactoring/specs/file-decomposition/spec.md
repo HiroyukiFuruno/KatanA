@@ -2,7 +2,12 @@
 
 ### Requirement: 肥大化ファイルの責務分離
 
-テスト除外で200行を超える全ファイルを、責務単位でサブモジュールに分割する。
+テスト除外で200行を超える全ファイルを、責務単位でサブモジュールに分割する (MUST be separated).
+
+#### Scenario: Verify file decomposition
+- **Given** a file with more than 200 lines excluding tests
+- **When** the code is refactored
+- **Then** the file is split into submodules by responsibility
 
 #### katana-ui（最重要: 15ファイルが200行超）
 
@@ -23,6 +28,8 @@
 | `main.rs` | 595 | `setup/` サブモジュール |
 | `changelog.rs` | 515 | 分割 |
 | `about_info.rs` | 335 | 分割 |
+
+katana-ui の対象ファイルは、単なる `render_*` free function の別ファイル移設ではなく、Reactコンポーネント相当の component 境界に沿って分割する。
 
 #### katana-core（7ファイルが200行超）
 

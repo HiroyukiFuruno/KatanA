@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-/// An entry in the workspace project tree.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TreeEntry {
     File {
@@ -65,17 +64,13 @@ impl TreeEntry {
     }
 }
 
-/// An open workspace rooted at a local directory.
 #[derive(Debug, Clone)]
 pub struct Workspace {
-    /// Absolute path to the workspace root directory.
     pub root: PathBuf,
-    /// Flat snapshot of the directory tree under `root`.
     pub tree: Vec<TreeEntry>,
 }
 
 impl Workspace {
-    /// Build a workspace from a root path and a pre-scanned tree.
     pub fn new(root: impl Into<PathBuf>, tree: Vec<TreeEntry>) -> Self {
         Self {
             root: root.into(),
@@ -83,7 +78,6 @@ impl Workspace {
         }
     }
 
-    /// Returns workspace name (the root directory's base name), if available.
     pub fn name(&self) -> Option<&str> {
         self.root.file_name()?.to_str()
     }
@@ -105,7 +99,6 @@ impl Workspace {
     }
 }
 
-/// Errors related to workspace operations.
 #[derive(Debug, Error)]
 pub enum WorkspaceError {
     #[error("Cannot read workspace directory at {path}: {source}")]
