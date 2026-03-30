@@ -51,14 +51,14 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ### Definition of Done (DoD)
 
 - [x] destructive replacement を廃止し、更新失敗時でも既存アプリの可用性が保たれる
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 4. Release Pipeline Consistency
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [ ] 4.1 ローカル release と GitHub Actions release が共有する preflight entrypoint を抽出する
 - [ ] 4.2 changelog / OpenSpec / artifact naming の検証を共通 preflight に集約する
@@ -84,5 +84,5 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 5.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
 - [ ] 5.4 Create a PR targeting `master`
 - [ ] 5.5 Merge into master (※ `--admin` is permitted)
-- [ ] 5.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.8.5`
+- [ ] 5.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.8.7`
 - [ ] 5.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
