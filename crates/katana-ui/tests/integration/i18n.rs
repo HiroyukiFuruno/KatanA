@@ -1,15 +1,15 @@
 use katana_ui::i18n::*;
 
-const EN_JSON: &str = include_str!("../locales/en.json");
-const JA_JSON: &str = include_str!("../locales/ja.json");
-const ZH_CN_JSON: &str = include_str!("../locales/zh-CN.json");
-const ZH_TW_JSON: &str = include_str!("../locales/zh-TW.json");
-const KO_JSON: &str = include_str!("../locales/ko.json");
-const PT_JSON: &str = include_str!("../locales/pt.json");
-const FR_JSON: &str = include_str!("../locales/fr.json");
-const DE_JSON: &str = include_str!("../locales/de.json");
-const ES_JSON: &str = include_str!("../locales/es.json");
-const IT_JSON: &str = include_str!("../locales/it.json");
+const EN_JSON: &str = include_str!("../../locales/en.json");
+const JA_JSON: &str = include_str!("../../locales/ja.json");
+const ZH_CN_JSON: &str = include_str!("../../locales/zh-CN.json");
+const ZH_TW_JSON: &str = include_str!("../../locales/zh-TW.json");
+const KO_JSON: &str = include_str!("../../locales/ko.json");
+const PT_JSON: &str = include_str!("../../locales/pt.json");
+const FR_JSON: &str = include_str!("../../locales/fr.json");
+const DE_JSON: &str = include_str!("../../locales/de.json");
+const ES_JSON: &str = include_str!("../../locales/es.json");
+const IT_JSON: &str = include_str!("../../locales/it.json");
 
 #[test]
 fn all_locale_files_deserialize_to_strong_struct() {
@@ -34,7 +34,7 @@ fn all_locale_files_deserialize_to_strong_struct() {
 
 #[test]
 fn shell_rs_has_no_i18n_leaks() {
-    let source = include_str!("../src/shell.rs");
+    let source = include_str!("../../src/shell.rs");
     let forbidden_patterns = [".on_hover_text(\"", "ui.heading(\""];
 
     for pattern in &forbidden_patterns {

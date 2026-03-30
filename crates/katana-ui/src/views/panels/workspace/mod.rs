@@ -5,3 +5,6 @@ pub mod tree_node;
 
 pub(crate) use breadcrumb::BreadcrumbMenu;
 pub(crate) use panel::WorkspacePanel;
+
+#[cfg(test)]
+pub(crate) use tree_node::FileEntryNode;
