@@ -2,6 +2,18 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.6] - 2026-03-30 10:00:00 (UTC)
+
+### ♻️ Refactoring
+
+- Decomposed monolithic UI modules (`workspace`, `editor`, `top_bar`) into separate `ui.rs` and `logic.rs` layers for improved testability and maintainability.
+- Extracted pure logic functions (tab drag-drop calculations, scroll synchronization, line-to-char mapping, color resolution) into dedicated testable modules with comprehensive unit tests.
+- Consolidated 7 workspace panel files into 2 cohesive modules (ui + logic), reducing code fragmentation.
+
+### 🧪 Testing
+
+- Added unit tests for editor logic (scroll sync, line mapping, highlight colors) and tab bar logic (drop-point computation, drag-drop resolution, title formatting).
+
 ## [0.8.5] - 2026-03-30 02:35:00 (UTC)
 
 ### 🐛 Bug Fixes
