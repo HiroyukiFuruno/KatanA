@@ -1,7 +1,5 @@
 use katana_core::plugin::*;
 
-/// Initialize the tracing subscriber (only once).
-/// Required to cover the code expanded by tracing::warn!/info! macros.
 fn init_tracing() {
     let _ = tracing_subscriber::fmt().with_test_writer().try_init();
 }
@@ -23,7 +21,6 @@ fn register_overwrites_existing_plugin() {
         make_meta("p1", PLUGIN_API_VERSION, vec![ExtensionPoint::AiTool]),
         || Ok(()),
     );
-    // Re-register to cover the overwrite path
     registry.register(
         make_meta("p1", PLUGIN_API_VERSION, vec![ExtensionPoint::AiTool]),
         || Ok(()),
@@ -104,7 +101,6 @@ fn active_plugins_for_returns_only_matching_active() {
     assert_eq!(renderers[0].id, "r1");
 }
 
-// L120-125: active_count()
 #[test]
 fn active_count_reflects_active_plugins() {
     let mut registry = PluginRegistry::new();
@@ -120,18 +116,15 @@ fn active_count_reflects_active_plugins() {
         make_meta("p2", PLUGIN_API_VERSION, vec![ExtensionPoint::UiPanel]),
         || Err("fail".to_string()),
     );
-    // p2 is disabled, so still 1
     assert_eq!(registry.active_count(), 1);
 
     registry.register(
         make_meta("p3", 999, vec![ExtensionPoint::RendererEnhancement]),
         || Ok(()),
     );
-    // p3 is incompatible, so still 1
     assert_eq!(registry.active_count(), 1);
 }
 
-// status() returns None for unknown plugin
 #[test]
 fn status_returns_none_for_unknown_plugin() {
     let registry = PluginRegistry::new();

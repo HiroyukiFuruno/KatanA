@@ -36,15 +36,12 @@ fn file_name_returns_basename() {
     assert_eq!(doc.file_name(), Some("spec.md"));
 }
 
-// L41: file_name() returns None when path has no file component
 #[test]
 fn file_name_returns_none_for_root_path() {
     let doc = Document::new("/", "");
-    // "/" has no file component
     assert_eq!(doc.file_name(), None);
 }
 
-// L71-76: DocumentError::save_failed
 #[test]
 fn document_error_save_failed() {
     let source = std::io::Error::new(std::io::ErrorKind::PermissionDenied, "denied");
@@ -53,7 +50,6 @@ fn document_error_save_failed() {
     assert!(msg.contains("readonly") || msg.contains("save") || msg.contains("Save"));
 }
 
-// L64-69: DocumentError::read_failed
 #[test]
 fn document_error_read_failed() {
     let source = std::io::Error::new(std::io::ErrorKind::NotFound, "not found");

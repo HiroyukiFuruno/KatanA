@@ -77,7 +77,6 @@ fn noop_renderer_returns_ok_with_code_block() {
     }
 }
 
-// L27-33: display_name() for PlantUML and DrawIO
 #[test]
 fn display_name_returns_correct_strings() {
     assert_eq!(DiagramKind::Mermaid.display_name(), "Mermaid");
@@ -85,7 +84,6 @@ fn display_name_returns_correct_strings() {
     assert_eq!(DiagramKind::DrawIo.display_name(), "Draw.io");
 }
 
-// L50-54: validate() for Mermaid with empty source
 #[test]
 fn mermaid_validation_fails_with_empty_source() {
     let block = DiagramBlock {
@@ -104,7 +102,6 @@ fn mermaid_validation_passes_with_non_empty_source() {
     assert!(block.validate().is_ok());
 }
 
-// L134-135: NoOpRenderer for PlantUML and DrawIO
 #[test]
 fn noop_renderer_handles_plantuml() {
     let block = DiagramBlock {
@@ -131,7 +128,6 @@ fn noop_renderer_handles_drawio() {
     }
 }
 
-// NoOpRenderer html_escape: source with special characters
 #[test]
 fn noop_renderer_escapes_html_chars_in_source() {
     let block = DiagramBlock {

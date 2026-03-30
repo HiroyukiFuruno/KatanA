@@ -10,9 +10,6 @@
     clippy::todo,
     clippy::unimplemented
 )]
-//! KatanA UI library.
-//!
-//! Exposes main editor components, allowing access for testing and external tools.
 
 pub mod about_info;
 pub mod app;
@@ -25,9 +22,9 @@ pub mod icon;
 pub use icon::*;
 pub mod changelog;
 pub mod diagram_controller;
+pub mod native_menu;
 pub mod preview_pane;
-pub mod preview_pane_ui;
-pub mod settings_window;
+pub mod settings;
 pub mod shell;
 pub mod shell_logic;
 pub mod shell_ui;
