@@ -87,6 +87,7 @@ pub struct UpdateMessages {
     pub checking_for_updates: String,
     pub update_available: String,
     pub update_available_desc: String,
+    pub release_notes_template: String,
     pub up_to_date: String,
     pub up_to_date_desc: String,
     pub failed_to_check: String,

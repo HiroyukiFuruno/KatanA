@@ -128,6 +128,7 @@ pub(crate) fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[Strin
 }
 
 #[cfg(test)]
+#[allow(clippy::indexing_slicing)]
 mod tests {
     use super::*;
     use std::path::PathBuf;

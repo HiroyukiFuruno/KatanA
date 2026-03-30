@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.8-1] - 2026-03-30 23:00:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where the new version update dialog rendered English markdown text instead of localized strings.
+- Resolved multiple Clippy lint warnings to stabilize the CI/CD pipeline.
+
 ## [0.8.8] - 2026-03-30 14:30:00 (UTC)
 
 ### 🔧 System

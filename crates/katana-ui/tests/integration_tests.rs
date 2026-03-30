@@ -1,4 +1,5 @@
 #![cfg(test)]
+#![allow(clippy::module_inception)]
 
 pub mod integration {
     pub mod app_state;

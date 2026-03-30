@@ -1,4 +1,5 @@
 #![cfg(test)]
+#![allow(clippy::module_inception)]
 #[cfg(test)]
 mod tests {
     use crate::http_cache_loader::disk::{

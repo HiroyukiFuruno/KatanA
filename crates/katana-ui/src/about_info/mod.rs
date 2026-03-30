@@ -90,7 +90,10 @@ mod tests {
         let parts: Vec<&str> = APP_VERSION.split('.').collect();
         assert!(parts.len() >= 2, "Version should be semver: {APP_VERSION}");
         for part in &parts {
-            let clean_part = part.split(|c| c == '-' || c == '+').next().unwrap_or(part);
+            let clean_part = part
+                .split(|c| ['-', '+'].contains(&c))
+                .next()
+                .unwrap_or(part);
             assert!(
                 clean_part.parse::<u32>().is_ok(),
                 "'{clean_part}' is not a number in version {APP_VERSION}"

@@ -133,6 +133,7 @@ impl CacheFacade for DefaultCacheService {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::*;
     use std::panic::{catch_unwind, AssertUnwindSafe};

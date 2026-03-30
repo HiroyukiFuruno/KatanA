@@ -35,6 +35,7 @@ impl MigrationStrategy for Migration013To014 {
 }
 
 #[cfg(test)]
+#[allow(clippy::indexing_slicing)]
 mod tests {
     use super::*;
     use serde_json::json;

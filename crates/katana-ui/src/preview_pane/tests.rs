@@ -1,7 +1,11 @@
 use super::*;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::field_reassign_with_default)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::field_reassign_with_default,
+    clippy::module_inception
+)]
 mod tests {
     use super::*;
     use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};

@@ -167,7 +167,10 @@ impl<'a> UpdateModal<'a> {
             }
         } else if let Some(latest) = &state.update.available {
             let tag = latest.tag_name.clone();
-            let body_text = latest.body.clone();
+            let body_text = msgs
+                .release_notes_template
+                .replace("{version}", tag.as_str())
+                .replace("{url}", &latest.html_url);
             let desc = msgs
                 .update_available_desc
                 .replace("{version}", tag.as_str());

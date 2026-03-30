@@ -238,8 +238,10 @@ mod tests {
 
     #[test]
     fn update_scroll_sync_consuming_preview_resets_source() {
-        let mut scroll = crate::app_state::ScrollState::default();
-        scroll.source = ScrollSource::Preview;
+        let mut scroll = crate::app_state::ScrollState {
+            source: ScrollSource::Preview,
+            ..Default::default()
+        };
         update_scroll_sync(&mut scroll, 1000.0, 500.0, 250.0, true, 0.01);
         assert_eq!(scroll.source, ScrollSource::Neither);
         assert!((scroll.fraction - 0.5).abs() < 0.01);
@@ -247,8 +249,10 @@ mod tests {
 
     #[test]
     fn update_scroll_sync_editor_scrolled_beyond_dead_zone() {
-        let mut scroll = crate::app_state::ScrollState::default();
-        scroll.fraction = 0.0;
+        let mut scroll = crate::app_state::ScrollState {
+            fraction: 0.0,
+            ..Default::default()
+        };
         update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
         assert_eq!(scroll.source, ScrollSource::Editor);
         assert!((scroll.fraction - 0.8).abs() < 0.01);
@@ -256,9 +260,11 @@ mod tests {
 
     #[test]
     fn update_scroll_sync_within_dead_zone_no_change() {
-        let mut scroll = crate::app_state::ScrollState::default();
-        scroll.fraction = 0.5;
-        scroll.source = ScrollSource::Neither;
+        let mut scroll = crate::app_state::ScrollState {
+            fraction: 0.5,
+            source: ScrollSource::Neither,
+            ..Default::default()
+        };
         update_scroll_sync(&mut scroll, 1000.0, 500.0, 252.0, false, 0.01);
         assert_eq!(scroll.source, ScrollSource::Neither);
     }

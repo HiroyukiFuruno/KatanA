@@ -68,6 +68,7 @@ fn migrate_layout(map: &mut serde_json::Map<String, Value>) -> serde_json::Map<S
 }
 
 #[cfg(test)]
+#[allow(clippy::indexing_slicing)]
 mod tests {
     use super::*;
 
