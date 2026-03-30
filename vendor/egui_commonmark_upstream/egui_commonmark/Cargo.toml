@@ -92,7 +92,7 @@ version = "0.33"
 default-features = false
 
 [dependencies.katana-core]
-path = "../../crates/katana-core"
+path = "../../../crates/katana-core"
 
 [dependencies.pulldown-cmark]
 version = "0.13"
