@@ -96,8 +96,8 @@
 - [x] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
 - [x] 5.2 `make check` が exit code 0 で通過することを確認する
 - [x] 5.3 legacy `vendor/egui_commonmark*` directory を参照する code path が残っていないことを確認する
-- [ ] 5.4 中間 base branch（もともと master から派生した branch）を `master` へ merge する
-- [ ] 5.5 `master` 向け PR を作成する
-- [ ] 5.6 `master` へ merge する（`--admin` 許可）
-- [ ] 5.7 全体の着手条件で確定した target version に対して `.agents/skills/release_workflow/SKILL.md` を使い release tagging と release 作成を実施する
-- [ ] 5.8 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
+- [x] 5.4 中間 base branch（もともと master から派生した branch）を `master` へ merge する
+- [x] 5.5 `master` 向け PR を作成する
+- [x] 5.6 `master` へ merge する（`--admin` 許可）
+- [x] 5.7 全体の着手条件で確定した target version に対して `.agents/skills/release_workflow/SKILL.md` を使い release tagging と release 作成を実施する
+- [x] 5.8 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
