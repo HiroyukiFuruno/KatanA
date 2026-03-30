@@ -6,8 +6,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🔧 System
 
-- Re-architected the internal application foundation to dramatically improve the responsiveness and maintainability of the user interface.
-- Upgraded internal code hygiene standards by introducing strict architectural limits and autonomous quality enforcement mechanisms.
+- Optimized internal processing and improved the foundational stability of the application for future updates.
 
 ## [0.8.3] - 2026-03-28 18:56:00 (UTC)
 
