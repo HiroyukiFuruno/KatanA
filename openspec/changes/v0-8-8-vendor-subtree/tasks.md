@@ -10,16 +10,16 @@
 
 ## 1. 現在の patch 棚卸しと前提固定
 
-- [ ] 1.1 `vendor/egui_commonmark` と `vendor/egui_commonmark_backend` を、選定した互換 upstream revision と diff する
-- [ ] 1.2 各 local delta を「保存すべき Katana patch」「除去可能な drift」「path / layout migration 対応」のいずれかへ分類する
-- [ ] 1.3 `katana-core` 統合、parser / rendering override、backend UI / layout 変更、vendored SVG asset を含む必須 patch inventory を明文化する
-- [ ] 1.4 upstream layout、互換 revision、local patch inventory のいずれかがこの change の前提と大きく異なる場合、続行前に `proposal.md`、`design.md`、`specs/`、`tasks.md` を更新する
+- [x] 1.1 `vendor/egui_commonmark` と `vendor/egui_commonmark_backend` を、選定した互換 upstream revision と diff する
+- [x] 1.2 各 local delta を「保存すべき Katana patch」「除去可能な drift」「path / layout migration 対応」のいずれかへ分類する
+- [x] 1.3 `katana-core` 統合、parser / rendering override、backend UI / layout 変更、vendored SVG asset を含む必須 patch inventory を明文化する
+- [x] 1.4 upstream layout、互換 revision、local patch inventory のいずれかがこの change の前提と大きく異なる場合、続行前に `proposal.md`、`design.md`、`specs/`、`tasks.md` を更新する
 
 ### 完了条件 (DoD)
 
-- [ ] 現在の vendor-local delta が subtree import commit 前にすべて分類されている
-- [ ] 互換 upstream revision が明示的に pin されている
-- [ ] 中核前提が崩れた場合は artifact が先に修正されている
+- [x] 現在の vendor-local delta が subtree import commit 前にすべて分類されている
+- [x] 互換 upstream revision が明示的に pin されている
+- [x] 中核前提が崩れた場合は artifact が先に修正されている
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
@@ -74,14 +74,14 @@
 - [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 4.1 例えば `docs/vendor-egui-commonmark.md` のような maintainer runbook を追加し、subtree remote、prefix、互換 revision 方針、patch layer ルールを記述する
+- [ ] 4.1 `vendor/README.md` として maintainer runbook を追加し、subtree remote、prefix、互換 revision 方針、patch layer ルールを記述する
 - [ ] 4.2 今後の subtree pull に必要な command と verification 手順を文書化する
 - [ ] 4.3 互換性前提が変わった場合は OpenSpec artifact を先に更新する stop-and-correct rule を文書化する
 
 ### 完了条件 (DoD)
 
 - [ ] 別の AI agent や maintainer が、この会話に頼らず subtree 更新と再検証を実行できる
-- [ ] runbook に steady-state sync 手順と artifact 修正への escalation path の両方が記載されている
+- [ ] runbook (`vendor/README.md`) に steady-state sync 手順と artifact 修正への escalation path の両方が記載されている
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
