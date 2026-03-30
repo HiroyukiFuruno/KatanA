@@ -35,22 +35,22 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ### Definition of Done (DoD)
 
 - [x] settings 保存は atomic write になり、破損時と保存失敗時の UI/log 振る舞いが spec を満たす
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 3. Update Install Hardening
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 update relaunch script を staged swap + rollback 方式に置き換える
-- [ ] 3.2 `prepare_update` と relaunch path に bundle 検証、swap failure handling、actionable error message を追加する
-- [ ] 3.3 更新準備失敗と swap failure を検証する自動テストを追加する
+- [x] 3.1 update relaunch script を staged swap + rollback 方式に置き換える
+- [x] 3.2 `prepare_update` と relaunch path に bundle 検証、swap failure handling、actionable error message を追加する
+- [x] 3.3 更新準備失敗と swap failure を検証する自動テストを追加する
 
 ### Definition of Done (DoD)
 
-- [ ] destructive replacement を廃止し、更新失敗時でも既存アプリの可用性が保たれる
+- [x] destructive replacement を廃止し、更新失敗時でも既存アプリの可用性が保たれる
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 4. Release Pipeline Consistency
