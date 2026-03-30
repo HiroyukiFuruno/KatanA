@@ -220,10 +220,10 @@ impl<'a> SettingsWindow<'a> {
                                 .inner_margin(INNER_MARGIN)
                                 .show(ui, |ui| match state.config.active_settings_tab {
                                     SettingsTab::Theme => {
-                                        render_theme_tab(ui, &mut state.config.settings)
+                                        render_theme_tab(ui, state)
                                     }
                                     SettingsTab::Font => {
-                                        render_font_tab(ui, &mut state.config.settings)
+                                        render_font_tab(ui, state)
                                     }
                                     SettingsTab::Layout => render_layout_tab(ui, state),
                                     SettingsTab::Workspace => render_workspace_tab(ui, state),

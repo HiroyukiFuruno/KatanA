@@ -8,8 +8,8 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 - [x] 1.1 `shell.rs` と `settings_window.rs` の `settings.save()` 呼び出し箇所を棚卸しし、silent failure をなくす対象を確定する
 - [x] 1.2 settings / update / release の failure contract（何を守り、どこで止め、何を表示するか）をコード単位で確定する
@@ -24,17 +24,17 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 `JsonFileRepository` に temp file + rename ベースの atomic save を実装する
-- [ ] 2.2 破損した `settings.json` を backup 名で退避し、default への fallback と load diagnostics を追加する
-- [ ] 2.3 `let _ = settings.save()` を共通の recoverable error handling に置き換える
-- [ ] 2.4 settings 保存失敗と破損復旧に対する unit / integration test を追加する
+- [x] 2.1 `JsonFileRepository` に temp file + rename ベースの atomic save を実装する
+- [x] 2.2 破損した `settings.json` を backup 名で退避し、default への fallback と load diagnostics を追加する
+- [x] 2.3 `let _ = settings.save()` を共通の recoverable error handling に置き換える
+- [x] 2.4 settings 保存失敗と破損復旧に対する unit / integration test を追加する
 
 ### Definition of Done (DoD)
 
-- [ ] settings 保存は atomic write になり、破損時と保存失敗時の UI/log 振る舞いが spec を満たす
+- [x] settings 保存は atomic write になり、破損時と保存失敗時の UI/log 振る舞いが spec を満たす
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 3. Update Install Hardening

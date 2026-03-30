@@ -1,16 +1,16 @@
 use crate::settings::*;
-use katana_platform::settings::{SettingsService, MAX_FONT_SIZE, MIN_FONT_SIZE};
+use katana_platform::settings::{MAX_FONT_SIZE, MIN_FONT_SIZE};
 
-pub(crate) fn render_font_tab(ui: &mut egui::Ui, settings: &mut SettingsService) {
+pub(crate) fn render_font_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
     section_header(ui, &crate::i18n::get().settings.font.size);
-    render_font_size_slider(ui, settings);
+    render_font_size_slider(ui, state);
     ui.add_space(SECTION_SPACING);
     section_header(ui, &crate::i18n::get().settings.font.family);
-    render_font_family_selector(ui, settings);
+    render_font_family_selector(ui, state);
 }
 
-pub(crate) fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut SettingsService) {
-    let current = settings.settings().font.family.clone();
+pub(crate) fn render_font_family_selector(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+    let current = state.config.settings.settings().font.family.clone();
     let os_fonts = katana_platform::os_fonts::OsFontScanner::cached_fonts();
 
     let open_id = egui::Id::new("font_selector_open");
@@ -79,8 +79,8 @@ pub(crate) fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut Sett
                 });
 
             if let Some(new_font) = selected {
-                settings.settings_mut().font.family = new_font;
-                let _ = settings.save();
+                state.config.settings.settings_mut().font.family = new_font;
+                let _ = state.config.try_save_settings();
             }
             let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
             if should_close {
@@ -92,8 +92,8 @@ pub(crate) fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut Sett
         });
 }
 
-pub(crate) fn render_font_size_slider(ui: &mut egui::Ui, settings: &mut SettingsService) {
-    let mut size = settings.settings().clamped_font_size();
+pub(crate) fn render_font_size_slider(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+    let mut size = state.config.settings.settings().clamped_font_size();
     let slider = egui::Slider::new(&mut size, MIN_FONT_SIZE..=MAX_FONT_SIZE)
         .step_by(FONT_SIZE_STEP)
         .suffix(" px");
@@ -102,7 +102,7 @@ pub(crate) fn render_font_size_slider(ui: &mut egui::Ui, settings: &mut Settings
         .on_hover_text(crate::i18n::get().settings.font.size_slider_hint.clone())
         .changed()
     {
-        settings.settings_mut().set_font_size(size);
-        let _ = settings.save();
+        state.config.settings.settings_mut().set_font_size(size);
+        let _ = state.config.try_save_settings();
     }
 }
