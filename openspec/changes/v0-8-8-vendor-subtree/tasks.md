@@ -1,6 +1,6 @@
 ### Global Definition of Ready (DoR)
 
-- [ ] `v0-8-6-preview-refresh-and-tasklist-fixes` is merged and stabilized, and no concurrent branch is editing `vendor/*egui_commonmark*`
+- [ ] `v0-8-7-preview-refresh-and-tasklist-fixes` is merged and stabilized, and no concurrent branch is editing `vendor/*egui_commonmark*`
 - [ ] The target release version for this maintenance window is assigned
 - [ ] A compatible upstream revision in the `0.22.x` line, or an explicit compatible fork revision, is identified before implementation starts
 
@@ -56,7 +56,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 3.1 Reapply the required Katana-specific manifest, parser, rendering, asset, and UI patches identified in Task 1
 - [ ] 3.2 Preserve or add regression coverage for vendor-dependent behaviors already relied on by Katana
 - [ ] 3.3 Verify that subtree migration did not silently upgrade KatanA to upstream `0.23.x` / `egui 0.34.x`
-- [ ] 3.4 Confirm that vendor-dependent fixes from `v0-8-6-preview-refresh-and-tasklist-fixes` remain intact after the migration
+- [ ] 3.4 Confirm that vendor-dependent fixes from `v0-8-7-preview-refresh-and-tasklist-fixes` remain intact after the migration
 
 ### Definition of Done (DoD)
 

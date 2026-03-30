@@ -16,6 +16,17 @@ pub fn is_newer_version(current: &str, upstream: &str) -> bool {
         semver::Version::parse(current_clean),
         semver::Version::parse(upstream_clean),
     ) {
+        // If versions share the same major.minor.patch, but upstream has a pre-release (e.g. -1 hotfix)
+        // and current does not, treat upstream as newer, overriding SemVer's default `pre-release < normal` precedence.
+        if curr_ver.major == up_ver.major
+            && curr_ver.minor == up_ver.minor
+            && curr_ver.patch == up_ver.patch
+            && curr_ver.pre.is_empty()
+            && !up_ver.pre.is_empty()
+        {
+            return true;
+        }
+
         up_ver > curr_ver
     } else {
         false
@@ -73,6 +84,10 @@ mod tests {
         assert!(is_newer_version("0.6.4", "v0.7.0"));
         assert!(!is_newer_version("v0.6.4", "v0.6.4"));
         assert!(!is_newer_version("0.7.0", "v0.6.4"));
+
+        // Hotfix custom precedence
+        assert!(is_newer_version("0.8.4", "v0.8.4-1")); // 0.8.4 -> 0.8.4-1 (hotfix)
+        assert!(is_newer_version("0.8.4-1", "v0.8.4-2")); // standard semver covers this
     }
 
     #[test]
