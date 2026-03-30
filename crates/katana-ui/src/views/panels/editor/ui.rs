@@ -2,6 +2,11 @@ use crate::app_state::{AppAction, ScrollSource};
 use crate::shell::{EDITOR_INITIAL_VISIBLE_ROWS, SCROLL_SYNC_DEAD_ZONE};
 use eframe::egui;
 
+use super::logic::{
+    char_index_to_line, current_line_highlight_color, hover_line_highlight_color,
+    line_range_to_char_range, line_to_char_index, resolve_editor_colors, update_scroll_sync,
+};
+
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
     pub scroll: &'a mut crate::app_state::ScrollState,
@@ -39,39 +44,7 @@ impl<'a> EditorContent<'a> {
                 hover_line_bg,
                 ln_text,
                 ln_active_text,
-            ) = ui.ctx().data(|d| {
-                if let Some(tc) = d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                    "katana_theme_colors",
-                )) {
-                    (
-                        crate::theme_bridge::rgb_to_color32(tc.code.background),
-                        crate::theme_bridge::rgb_to_color32(tc.code.text),
-                        Some(crate::theme_bridge::rgb_to_color32(tc.code.selection)),
-                        Some(crate::theme_bridge::rgba_to_color32(
-                            tc.code.current_line_background,
-                        )),
-                        Some(crate::theme_bridge::rgba_to_color32(
-                            tc.code.hover_line_background,
-                        )),
-                        Some(crate::theme_bridge::rgb_to_color32(
-                            tc.code.line_number_text,
-                        )),
-                        Some(crate::theme_bridge::rgb_to_color32(
-                            tc.code.line_number_active_text,
-                        )),
-                    )
-                } else {
-                    (
-                        ui.visuals().extreme_bg_color,
-                        ui.visuals().text_color(),
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                    )
-                }
-            });
+            ) = resolve_editor_colors(ui);
 
             let mut scroll_area = egui::ScrollArea::vertical().id_salt("editor_scroll");
 
@@ -114,84 +87,44 @@ impl<'a> EditorContent<'a> {
 
                         if response.clicked() {
                             if let Some(c) = text_output.cursor_range {
-                                let char_idx = c.primary.index;
-                                let line = galley
-                                    .text()
-                                    .chars()
-                                    .take(char_idx)
-                                    .filter(|&ch| ch == '\n')
-                                    .count();
+                                let line = char_index_to_line(&buffer, c.primary.index);
                                 scroll.scroll_to_line = Some(line);
                             }
                         }
 
                         let mut current_cursor_y = None;
                         if let Some(c) = text_output.cursor_range {
-                            let char_idx = c.primary.index;
-                            let paragraph = galley
-                                .text()
-                                .chars()
-                                .take(char_idx)
-                                .filter(|&ch| ch == '\n')
-                                .count();
+                            let paragraph = char_index_to_line(&buffer, c.primary.index);
                             scroll.active_editor_line = Some(paragraph);
 
                             let cursor_rect = galley.pos_from_cursor(c.primary);
                             current_cursor_y = Some(cursor_rect.min.y);
 
-                            let min_y = cursor_rect.min.y;
-                            let max_y = cursor_rect.max.y;
-
                             let highlight_rect = egui::Rect::from_min_max(
-                                egui::pos2(ln_rect.min.x, response.rect.min.y + min_y),
-                                egui::pos2(response.rect.max.x, response.rect.min.y + max_y),
+                                egui::pos2(ln_rect.min.x, response.rect.min.y + cursor_rect.min.y),
+                                egui::pos2(
+                                    response.rect.max.x,
+                                    response.rect.min.y + cursor_rect.max.y,
+                                ),
                             );
 
-                            const HIGHLIGHT_ALPHA: u8 = 15;
-                            let highlight_color = current_line_bg.unwrap_or_else(|| {
-                                if ui.visuals().dark_mode {
-                                    crate::theme_bridge::from_white_alpha(HIGHLIGHT_ALPHA)
-                                } else {
-                                    crate::theme_bridge::from_black_alpha(HIGHLIGHT_ALPHA)
-                                }
-                            });
+                            let highlight_color = current_line_highlight_color(
+                                ui.visuals().dark_mode,
+                                current_line_bg,
+                            );
                             ui.painter()
                                 .rect_filled(highlight_rect, 1.0, highlight_color);
                         } else {
                             scroll.active_editor_line = None;
                         }
 
-                        const HOVER_HIGHLIGHT_ALPHA: u8 = 10;
-                        let hover_color = hover_line_bg.unwrap_or_else(|| {
-                            if ui.visuals().dark_mode {
-                                crate::theme_bridge::from_white_alpha(HOVER_HIGHLIGHT_ALPHA)
-                            } else {
-                                crate::theme_bridge::from_black_alpha(HOVER_HIGHLIGHT_ALPHA)
-                            }
-                        });
+                        let hover_color =
+                            hover_line_highlight_color(ui.visuals().dark_mode, hover_line_bg);
 
                         for line_range in &scroll.hovered_preview_lines {
-                            let mut current_line = 0;
-                            let mut start_char = None;
-                            let mut end_char = None;
-
-                            for (char_idx, c) in buffer.chars().enumerate() {
-                                if current_line == line_range.start && start_char.is_none() {
-                                    start_char = Some(char_idx);
-                                }
-                                if current_line == line_range.end + 1 {
-                                    end_char = Some(char_idx.saturating_sub(1));
-                                    break;
-                                }
-                                if c == '\n' {
-                                    current_line += 1;
-                                }
-                            }
-                            if start_char.is_some() && end_char.is_none() {
-                                end_char = Some(buffer.chars().count().saturating_sub(1));
-                            }
-
-                            if let (Some(start_idx), Some(end_idx)) = (start_char, end_char) {
+                            if let Some((start_idx, end_idx)) =
+                                line_range_to_char_range(&buffer, line_range.start, line_range.end)
+                            {
                                 let cursor_start = egui::text::CCursor {
                                     index: start_idx,
                                     prefer_next_row: false,
@@ -290,18 +223,7 @@ impl<'a> EditorContent<'a> {
                         }
 
                         if let Some(target_line) = scroll.scroll_to_line.take() {
-                            let mut current_line = 0;
-                            let mut target_char = None;
-                            for (char_idx, c) in buffer.chars().enumerate() {
-                                if current_line == target_line && target_char.is_none() {
-                                    target_char = Some(char_idx);
-                                    break;
-                                }
-                                if c == '\n' {
-                                    current_line += 1;
-                                }
-                            }
-                            if let Some(idx) = target_char {
+                            if let Some(idx) = line_to_char_index(&buffer, target_line) {
                                 let cursor = egui::text::CCursor {
                                     index: idx,
                                     prefer_next_row: false,
@@ -327,27 +249,14 @@ impl<'a> EditorContent<'a> {
             });
 
             if sync_scroll {
-                let max_scroll =
-                    (output.inner.content_size.y - output.inner.inner_rect.height()).max(0.0);
-                scroll.editor_max = max_scroll;
-
-                if consuming_preview {
-                    scroll.source = ScrollSource::Neither;
-                    if max_scroll > 0.0 {
-                        scroll.fraction =
-                            (output.inner.state.offset.y / max_scroll).clamp(0.0, 1.0);
-                    }
-                } else {
-                    if max_scroll > 0.0 {
-                        let current_fraction =
-                            (output.inner.state.offset.y / max_scroll).clamp(0.0, 1.0);
-                        let diff = (current_fraction - scroll.fraction).abs();
-                        if diff > SCROLL_SYNC_DEAD_ZONE {
-                            scroll.fraction = current_fraction;
-                            scroll.source = ScrollSource::Editor;
-                        }
-                    }
-                }
+                update_scroll_sync(
+                    scroll,
+                    output.inner.content_size.y,
+                    output.inner.inner_rect.height(),
+                    output.inner.state.offset.y,
+                    consuming_preview,
+                    SCROLL_SYNC_DEAD_ZONE,
+                );
             }
         }
     }
