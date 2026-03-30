@@ -1,4 +1,3 @@
-
 use crate::app::*;
 
 use eframe::egui;
@@ -53,7 +52,6 @@ pub(crate) struct TreeRenderContext<'a, 'b> {
 pub(crate) fn indent_prefix(depth: usize) -> String {
     "  ".repeat(depth)
 }
-
 
 pub use crate::native_menu::update_native_menu_strings_from_i18n;
 

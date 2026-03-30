@@ -50,7 +50,6 @@ impl PreviewPane {
                 }
             }
 
-
             if disconnected {
                 self.is_loading = false;
                 self.render_rx = None;

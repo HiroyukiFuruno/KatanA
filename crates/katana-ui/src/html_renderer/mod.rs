@@ -1,11 +1,9 @@
-
 use std::path::Path;
 
 use eframe::egui;
 use eframe::egui::text::LayoutJob;
 
 use katana_core::html::{HtmlNode, LinkAction, TextAlign};
-
 
 fn svg_badge_hosts() -> Vec<&'static str> {
     vec!["img.shields.io"]
@@ -22,7 +20,6 @@ const HEADING_BLOCK_MARGIN_Y: f32 = 6.0;
 const HEADING_LEVEL_1: u8 = 1;
 const HEADING_LEVEL_2: u8 = 2;
 const HEADING_LEVEL_3: u8 = 3;
-
 
 pub struct HtmlRenderer<'a> {
     ui: &'a mut egui::Ui,
@@ -55,7 +52,6 @@ impl<'a> HtmlRenderer<'a> {
     pub fn render(mut self, nodes: &[HtmlNode]) -> Option<LinkAction> {
         self.render_nodes(nodes)
     }
-
 
     fn render_nodes(&mut self, nodes: &[HtmlNode]) -> Option<LinkAction> {
         let mut action: Option<LinkAction> = None;
@@ -94,9 +90,7 @@ impl<'a> HtmlRenderer<'a> {
     fn render_block(&mut self, node: &HtmlNode) -> Option<LinkAction> {
         match node {
             HtmlNode::Paragraph { align, children } => match align {
-                Some(TextAlign::Center) => {
-                    self.render_centered_children(children)
-                }
+                Some(TextAlign::Center) => self.render_centered_children(children),
                 _ => self.render_nodes(children),
             },
             HtmlNode::Heading {
@@ -456,7 +450,6 @@ impl<'a> HtmlRenderer<'a> {
         }
     }
 }
-
 
 fn collect_text(nodes: &[HtmlNode]) -> String {
     let mut s = String::new();

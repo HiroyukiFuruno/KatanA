@@ -57,7 +57,6 @@ fn ellipse_style_is_processed() {
 
 #[test]
 fn fillcolor_style_is_reflected_in_svg_output() {
-    // extract_style_value behavior is verified through render_drawio
     let xml = r#"<mxGraphModel><root>
 <mxCell id="0"/><mxCell id="1" parent="0"/>
 <mxCell id="2" value="Colored" style="fillColor=#ff0000;strokeColor=#00ff00;" vertex="1" parent="1">
@@ -81,7 +80,6 @@ fn fillcolor_style_is_reflected_in_svg_output() {
     }
 }
 
-// Edge rendering (L147-261): src/target vertices + edge cell
 #[test]
 fn edge_cell_is_drawn_as_arrow() {
     let xml = r#"<mxGraphModel><root>
@@ -104,12 +102,10 @@ fn edge_cell_is_drawn_as_arrow() {
     let result = render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
-        // Should contain polyline for the edge
         assert!(html.contains("polyline") || html.contains("line"));
     }
 }
 
-// Edge with label (append_edge_label L273-286)
 #[test]
 fn edge_label_is_drawn() {
     let xml = r#"<mxGraphModel><root>
@@ -135,7 +131,6 @@ fn edge_label_is_drawn() {
     }
 }
 
-// Edge with waypoints in mxGeometry/Array/mxPoint (collect_waypoints L289-312)
 #[test]
 fn edge_with_waypoints_is_drawn() {
     let xml = r#"<mxGraphModel><root>
@@ -163,12 +158,10 @@ fn edge_with_waypoints_is_drawn() {
     let result = render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
-        // Waypoints should be included in the polyline
         assert!(html.contains("polyline"));
     }
 }
 
-// Edge without source/target (should be skipped, L221-226)
 #[test]
 fn edge_without_source_is_skipped() {
     let xml = r#"<mxGraphModel><root>
@@ -185,13 +178,10 @@ fn edge_without_source_is_skipped() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    // Should not panic; edge without source is skipped
     let result = render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// border_point: same-point case (dx, dy both near zero, L318-319)
-// This is tested via edge where src and target centers are very close
 #[test]
 fn edge_with_cells_at_same_position_does_not_panic() {
     let xml = r#"<mxGraphModel><root>
@@ -211,12 +201,10 @@ fn edge_with_cells_at_same_position_does_not_panic() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    // Should not panic
     let result = render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// border_point: vertical edge case (dx small, dy large → top/bottom border, L329-334)
 #[test]
 fn vertical_edge_uses_top_bottom_border_points() {
     let xml = r#"<mxGraphModel><root>
@@ -240,7 +228,6 @@ fn vertical_edge_uses_top_bottom_border_points() {
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// xml_escape in SVG text: label with & < >
 #[test]
 fn special_characters_in_label_are_escaped() {
     let xml = r#"<mxGraphModel><root>
@@ -256,12 +243,10 @@ fn special_characters_in_label_are_escaped() {
     };
     let result = render_drawio(&block);
     if let DiagramResult::Ok(html) = result {
-        // The SVG text should have escaped or properly contain the label
         assert!(!html.is_empty());
     }
 }
 
-// mxGraphModel without root element returns empty SVG (L67-68: None branch)
 #[test]
 fn mxgraphmodel_without_root_returns_empty_svg() {
     let xml = r#"<mxGraphModel></mxGraphModel>"#;
@@ -273,7 +258,6 @@ fn mxgraphmodel_without_root_returns_empty_svg() {
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// Unsupported root element error (L61)
 #[test]
 fn unsupported_root_element_returns_error() {
     let xml = r#"<svg><g></g></svg>"#;
@@ -285,7 +269,6 @@ fn unsupported_root_element_returns_error() {
     assert!(matches!(result, DiagramResult::Err { .. }));
 }
 
-// L183: vertex cell without mxGeometry returns early in render_vertex
 #[test]
 fn vertex_without_mxgeometry_is_skipped() {
     let xml = r#"<mxGraphModel><root>
@@ -299,12 +282,10 @@ fn vertex_without_mxgeometry_is_skipped() {
     let result = render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
-        // The shape for this vertex is not drawn due to missing mxGeometry, but does not panic
         assert!(html.contains("<svg"));
     }
 }
 
-// L221-225: edge without source, L223-225: edge without target
 #[test]
 fn edge_without_source_target_is_skipped() {
     let xml = r#"<mxGraphModel><root>
@@ -323,7 +304,6 @@ fn edge_without_source_target_is_skipped() {
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// L227-231: edge with source/target ID not in geo_map
 #[test]
 fn edge_with_non_existent_source_target_id_is_skipped() {
     let xml = r#"<mxGraphModel><root>
@@ -342,7 +322,6 @@ fn edge_with_non_existent_source_target_id_is_skipped() {
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// L342: vertex without value attribute (no label)
 #[test]
 fn vertex_without_label_outputs_no_text_element() {
     let xml = r#"<mxGraphModel><root>
@@ -362,7 +341,6 @@ fn vertex_without_label_outputs_no_text_element() {
     }
 }
 
-// L275-285: empty edge label / no label
 #[test]
 fn empty_edge_label_outputs_no_text() {
     let xml = r#"<mxGraphModel><root>
@@ -388,10 +366,8 @@ fn empty_edge_label_outputs_no_text() {
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// L290-311: edge without mxGeometry in collect_waypoints + Array/mxPoint processing
 #[test]
 fn edge_waypoint_without_mxgeometry_is_empty() {
-    // Valid edge with source/target but lacking mxGeometry
     let xml = r#"<mxGraphModel><root>
 <mxCell id="0"/><mxCell id="1" parent="0"/>
 <mxCell id="2" value="A" vertex="1" parent="1">
@@ -410,13 +386,8 @@ fn edge_waypoint_without_mxgeometry_is_empty() {
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
-// L296, L301, L309: text node and non-Array child elements within collect_waypoints
 #[test]
 fn collect_waypoints_skips_text_node_and_non_array_child_elements() {
-    // Case where mxGeometry contains text nodes (newlines, etc.) and non-Array child elements
-    // as_element() returns None -> continue (L296)
-    // el.name != "Array" -> continue (L309)
-    // Text node within Array -> continue (L301)
     let xml = r#"<mxGraphModel><root>
 <mxCell id="0"/><mxCell id="1" parent="0"/>
 <mxCell id="2" value="A" vertex="1" parent="1">

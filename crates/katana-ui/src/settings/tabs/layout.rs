@@ -135,7 +135,6 @@ pub(crate) fn render_pane_order_selector(
     });
 }
 
-
 pub(crate) fn render_string_list_editor(ui: &mut egui::Ui, list: &mut Vec<String>) -> bool {
     let mut changed = false;
     let mut to_remove = None;

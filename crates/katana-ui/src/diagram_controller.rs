@@ -1,4 +1,3 @@
-
 use crate::i18n;
 use crate::icon::{Icon, IconSize};
 use crate::preview_pane::ViewerState;

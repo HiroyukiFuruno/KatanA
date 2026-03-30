@@ -1,4 +1,3 @@
-
 use katana_ui::theme_bridge::apply_font_size;
 
 #[test]

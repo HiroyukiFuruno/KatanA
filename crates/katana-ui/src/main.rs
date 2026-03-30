@@ -176,20 +176,17 @@ fn main() -> eframe::Result<()> {
             let mut app = KatanaApp::new(state);
 
             let icon_png = include_bytes!("../../../assets/icon.iconset/icon_128x128.png");
-            match image::load_from_memory(icon_png) {
-                Ok(icon_image) => {
-                    let rgba = icon_image.to_rgba8();
-                    let size = [rgba.width() as usize, rgba.height() as usize];
-                    let pixels = rgba.into_raw();
-                    let color_image = egui::ColorImage::from_rgba_unmultiplied(size, &pixels);
-                    let texture = cc.egui_ctx.load_texture(
-                        "about_icon",
-                        color_image,
-                        egui::TextureOptions::LINEAR,
-                    );
-                    app.about_icon = Some(texture);
-                }
-                Err(_) => {}
+            if let Ok(icon_image) = image::load_from_memory(icon_png) {
+                let rgba = icon_image.to_rgba8();
+                let size = [rgba.width() as usize, rgba.height() as usize];
+                let pixels = rgba.into_raw();
+                let color_image = egui::ColorImage::from_rgba_unmultiplied(size, &pixels);
+                let texture = cc.egui_ctx.load_texture(
+                    "about_icon",
+                    color_image,
+                    egui::TextureOptions::LINEAR,
+                );
+                app.about_icon = Some(texture);
             }
 
             if let Some(ws_path) = saved_workspace {
@@ -246,7 +243,9 @@ pub fn build_font_definitions(
 
 pub fn load_first_font(candidates: &[&str]) -> Option<(String, Vec<u8>)> {
     for &path in candidates {
-        let Ok(data) = std::fs::read(path) else { continue };
+        let Ok(data) = std::fs::read(path) else {
+            continue;
+        };
         let name = std::path::Path::new(path)
             .file_stem()
             .and_then(|s| s.to_str())
@@ -339,14 +338,12 @@ mod tests {
         assert_eq!(registry.active_count(), 3);
     }
 
-
     #[test]
     fn test_install_image_loaders_does_not_panic() {
         let ctx = egui::Context::default();
         katana_ui::svg_loader::install_image_loaders(&ctx);
         assert!(ctx.is_loader_installed(katana_ui::svg_loader::KatanaSvgLoader::ID));
     }
-
 
     const PROP_CANDIDATES: &[&str] = &[
         "/System/Library/Fonts/\u{30d2}\u{30e9}\u{30ae}\u{30ce}\u{89d2}\u{30b4}\u{30b7}\u{30c3}\u{30af} W3.ttc",
@@ -452,7 +449,6 @@ mod tests {
         setup_fonts_from_preset(&ctx, preset);
     }
 
-
     #[test]
     fn test_preset_syntax_themes_are_valid_identifiers() {
         use katana_core::markdown::color_preset::DiagramColorPreset;
@@ -488,7 +484,6 @@ mod tests {
             "DARK and LIGHT presets should have different preview text colors"
         );
     }
-
 
     const EMOJI_CANDIDATES: &[&str] = &[
         "/System/Library/Fonts/Apple Color Emoji.ttc",

@@ -298,7 +298,6 @@ mod tests {
         remove_cache_file(&body, &meta);
     }
 
-
     #[test]
     fn process_fetch_response_success_persists_to_disk() {
         let tmp = TempDir::new().expect("tempdir");
@@ -382,7 +381,6 @@ mod tests {
         let loader = PersistentHttpLoader::new(cache_dir);
         loader.forget_all();
     }
-
 
     #[test]
     fn remove_cache_file_warns_on_non_not_found_error() {

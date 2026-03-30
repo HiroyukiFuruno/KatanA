@@ -95,7 +95,7 @@ impl<'a> Accordion<'a> {
 
         const TRIANGLE_RADIUS_RATIO: f32 = 0.3;
         const TRIANGLE_BACK_RATIO: f32 = 0.6;
-        
+
         let center = icon_rect.center();
         let triangle_radius = icon_size * TRIANGLE_RADIUS_RATIO; // WHY: Make the triangle nice and small!
 
@@ -105,8 +105,14 @@ impl<'a> Accordion<'a> {
 
         let points = vec![
             transform(egui::pos2(triangle_radius, 0.0)),
-            transform(egui::pos2(-triangle_radius * TRIANGLE_BACK_RATIO, -triangle_radius)),
-            transform(egui::pos2(-triangle_radius * TRIANGLE_BACK_RATIO, triangle_radius)),
+            transform(egui::pos2(
+                -triangle_radius * TRIANGLE_BACK_RATIO,
+                -triangle_radius,
+            )),
+            transform(egui::pos2(
+                -triangle_radius * TRIANGLE_BACK_RATIO,
+                triangle_radius,
+            )),
         ];
 
         ui.painter().add(egui::Shape::convex_polygon(

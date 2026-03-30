@@ -1,4 +1,3 @@
-
 use eframe::egui;
 
 const SPLASH_REPAINT_INTERVAL_MS: u64 = 32;

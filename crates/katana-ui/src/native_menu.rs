@@ -1,4 +1,3 @@
-
 use crate::app_state::AppAction;
 
 #[cfg(target_os = "macos")]

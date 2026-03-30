@@ -137,8 +137,7 @@ impl UpdateOps for KatanaApp {
                     self.state.update.check_error = Some(err);
                     self.update_rx = None;
                 }
-                Err(std::sync::mpsc::TryRecvError::Empty) => {
-                }
+                Err(std::sync::mpsc::TryRecvError::Empty) => {}
                 Err(_) => {
                     self.state.update.checking = false;
                     self.update_rx = None;

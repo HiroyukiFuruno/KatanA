@@ -35,7 +35,6 @@ impl<'a> StyledComboBox<'a> {
 mod tests {
     use super::*;
 
-
     #[test]
     fn test_styled_combobox_builder_defaults() {
         let combo = StyledComboBox::new("test_id", "Selected");

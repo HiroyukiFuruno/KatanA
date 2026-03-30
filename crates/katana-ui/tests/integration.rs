@@ -250,8 +250,6 @@ fn test_integration_toc_panel_hides_when_disabled() {
     harness.step();
     harness.step();
 
-
-
     let is_panel_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         harness.query_all_by_label(&toc_title).count()
     }))
@@ -573,7 +571,6 @@ fn test_integration_workspace_directory_toggle_non_recursive() {
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
-
 
 #[test]
 fn test_integration_update_buffer() {
@@ -1283,7 +1280,6 @@ fn test_integration_tab_navigation_and_close() {
     harness.step();
 }
 
-
 #[test]
 fn test_integration_directory_entry_click_toggle() {
     let mut harness = setup_harness();
@@ -1370,7 +1366,6 @@ fn test_integration_refresh_button_click() {
     }
     harness.step();
 }
-
 
 fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'static, KatanaApp> {
     let path = settings_path.to_path_buf();
@@ -1760,7 +1755,6 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
     );
 }
 
-
 #[test]
 fn test_action_set_split_direction_horizontal_to_vertical() {
     let mut harness = setup_harness();
@@ -1909,7 +1903,6 @@ fn test_action_set_pane_order_roundtrip() {
     );
 }
 
-
 #[test]
 fn test_file_entry_label_is_left_aligned() {
     let mut harness = setup_harness();
@@ -2039,7 +2032,6 @@ fn test_tab_nav_buttons_have_tooltips() {
         next_tooltip, "tab_nav_next",
         "tab_nav_next i18n key must resolve to translated text"
     );
-
 }
 
 #[test]

@@ -71,25 +71,19 @@ pub(crate) fn render_math(ui: &mut egui::Ui, tex: &str, is_inline: bool) {
                     let height_re = regex::Regex::new(r#"height="([\d\.]+)ex""#).unwrap();
 
                     if let Some(caps) = width_re.captures(&processed_svg) {
-                        match caps.get(1).unwrap().as_str().parse::<f32>() {
-                            Ok(w_ex) => {
-                                let w_px = w_ex * EX_TO_PX;
-                                processed_svg = width_re
-                                    .replace(&processed_svg, format!("width=\"{w_px}px\""))
-                                    .into_owned();
-                            }
-                            Err(_) => {}
+                        if let Ok(w_ex) = caps.get(1).unwrap().as_str().parse::<f32>() {
+                            let w_px = w_ex * EX_TO_PX;
+                            processed_svg = width_re
+                                .replace(&processed_svg, format!("width=\"{w_px}px\""))
+                                .into_owned();
                         }
                     }
                     if let Some(caps) = height_re.captures(&processed_svg) {
-                        match caps.get(1).unwrap().as_str().parse::<f32>() {
-                            Ok(h_ex) => {
-                                let h_px = h_ex * EX_TO_PX;
-                                processed_svg = height_re
-                                    .replace(&processed_svg, format!("height=\"{h_px}px\""))
-                                    .into_owned();
-                            }
-                            Err(_) => {}
+                        if let Ok(h_ex) = caps.get(1).unwrap().as_str().parse::<f32>() {
+                            let h_px = h_ex * EX_TO_PX;
+                            processed_svg = height_re
+                                .replace(&processed_svg, format!("height=\"{h_px}px\""))
+                                .into_owned();
                         }
                     }
 
