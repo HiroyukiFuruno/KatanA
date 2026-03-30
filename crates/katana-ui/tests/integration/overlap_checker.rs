@@ -2,8 +2,9 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::PathBuf;
 
-fn main() {
-    let locales_dir = PathBuf::from("crates/katana-ui/locales");
+#[test]
+fn overlap_checker() {
+    let locales_dir = PathBuf::from("../../crates/katana-ui/locales");
     let mut locales = HashMap::new();
 
     for entry in fs::read_dir(locales_dir).unwrap() {
