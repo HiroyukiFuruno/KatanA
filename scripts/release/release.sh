@@ -136,9 +136,9 @@ fi
 # ── 3.8 Archive OpenSpec Changes ───────────────────────────────────────────────
 info "Archiving OpenSpec changes for v${VERSION}..."
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
-# Note: Using bash array expansion to gracefully handle cases where no files match
+# Note: Using zsh array expansion to gracefully handle cases where no files match
 CHANGE_MATCHES=(openspec/changes/v${VERSION_DASHED}-*(N))
-if [[ ${#CHANGE_MATCHES[@]} -gt 0 && "${CHANGE_MATCHES[0]}" != "openspec/changes/v${VERSION_DASHED}-*(N)" ]]; then
+if (( ${#CHANGE_MATCHES[@]} > 0 )); then
     for CHANGE_DIR in "${CHANGE_MATCHES[@]}"; do
         if [[ -d "$CHANGE_DIR" ]]; then
             CHANGE_NAME=$(basename "$CHANGE_DIR")
