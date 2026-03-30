@@ -71,17 +71,17 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 4.1 `vendor/README.md` として maintainer runbook を追加し、subtree remote、prefix、互換 revision 方針、patch layer ルールを記述する
-- [ ] 4.2 今後の subtree pull に必要な command と verification 手順を文書化する
-- [ ] 4.3 互換性前提が変わった場合は OpenSpec artifact を先に更新する stop-and-correct rule を文書化する
+- [x] 4.1 `vendor/README.md` として maintainer runbook を追加し、subtree remote、prefix、互換 revision 方針、patch layer ルールを記述する
+- [x] 4.2 今後の subtree pull に必要な command と verification 手順を文書化する
+- [x] 4.3 互換性前提が変わった場合は OpenSpec artifact を先に更新する stop-and-correct rule を文書化する
 
 ### 完了条件 (DoD)
 
-- [ ] 別の AI agent や maintainer が、この会話に頼らず subtree 更新と再検証を実行できる
-- [ ] runbook (`vendor/README.md`) に steady-state sync 手順と artifact 修正への escalation path の両方が記載されている
+- [x] 別の AI agent や maintainer が、この会話に頼らず subtree 更新と再検証を実行できる
+- [x] runbook (`vendor/README.md`) に steady-state sync 手順と artifact 修正への escalation path の両方が記載されている
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
