@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.7] - 2026-03-30 13:25:00 (UTC)
+
+### 🔧 System
+
+- Strengthened internal application components and refined the release automation pipeline to guarantee delivery stability for future updates.
+
 ## [0.8.6] - 2026-03-30 10:00:00 (UTC)
 
 ### ♻️ Refactoring
