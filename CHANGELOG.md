@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.8] - 2026-03-30 14:30:00 (UTC)
+
+### 🔧 System
+
+- Migrated vendored Markdown preview dependencies to a structured Git subtree to improve long-term maintainability and patch separation.
+
 ## [0.8.7] - 2026-03-30 13:25:00 (UTC)
 
 ### 🔧 System
