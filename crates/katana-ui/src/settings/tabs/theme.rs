@@ -18,7 +18,12 @@ pub(crate) fn render_theme_tab(ui: &mut egui::Ui, state: &mut crate::app_state::
         .step_by(1.0)
         .suffix(" %");
     if add_styled_slider(ui, slider).changed() {
-        state.config.settings.settings_mut().theme.ui_contrast_offset = offset;
+        state
+            .config
+            .settings
+            .settings_mut()
+            .theme
+            .ui_contrast_offset = offset;
         if offset != original_offset {
             let colors = state.config.settings.settings().effective_theme_colors();
             ui.ctx()
@@ -32,7 +37,13 @@ pub(crate) fn render_theme_tab(ui: &mut egui::Ui, state: &mut crate::app_state::
 
     ui.add_space(SECTION_SPACING);
 
-    let is_open = state.config.settings.settings().theme.custom_color_overrides.is_some();
+    let is_open = state
+        .config
+        .settings
+        .settings()
+        .theme
+        .custom_color_overrides
+        .is_some();
 
     crate::widgets::Accordion::new(
         "custom_color_overrides_accordion",
@@ -45,7 +56,10 @@ pub(crate) fn render_theme_tab(ui: &mut egui::Ui, state: &mut crate::app_state::
     .show(ui);
 }
 
-pub(crate) fn render_theme_preset_selector(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+pub(crate) fn render_theme_preset_selector(
+    ui: &mut egui::Ui,
+    state: &mut crate::app_state::AppState,
+) {
     section_header(ui, &crate::i18n::get().settings.theme.preset);
 
     let show_more_id = ui.id().with("show_more_themes");
@@ -83,7 +97,13 @@ pub(crate) fn render_theme_preset_selector(ui: &mut egui::Ui, state: &mut crate:
             egui::RichText::new(crate::i18n::get().settings.theme.custom_section.clone()).weak(),
         );
         for (idx, custom_theme) in custom_themes.iter().enumerate() {
-            let is_selected = state.config.settings.settings().theme.custom_color_overrides.as_ref()
+            let is_selected = state
+                .config
+                .settings
+                .settings()
+                .theme
+                .custom_color_overrides
+                .as_ref()
                 == Some(&custom_theme.colors);
             let bg_color = theme_bridge::rgb_to_color32(custom_theme.colors.system.background);
             let accent_color = theme_bridge::rgb_to_color32(custom_theme.colors.system.accent);
@@ -100,10 +120,18 @@ pub(crate) fn render_theme_preset_selector(ui: &mut egui::Ui, state: &mut crate:
 
                 let response = ui.selectable_label(is_selected, &custom_theme.name);
                 if response.clicked() && !is_selected {
-                    state.config.settings.settings_mut().theme.custom_color_overrides =
-                        Some(custom_theme.colors.clone());
-                    state.config.settings.settings_mut().theme.active_custom_theme =
-                        Some(custom_theme.name.clone());
+                    state
+                        .config
+                        .settings
+                        .settings_mut()
+                        .theme
+                        .custom_color_overrides = Some(custom_theme.colors.clone());
+                    state
+                        .config
+                        .settings
+                        .settings_mut()
+                        .theme
+                        .active_custom_theme = Some(custom_theme.name.clone());
                     let _ = state.config.try_save_settings();
                 }
 
@@ -135,10 +163,26 @@ pub(crate) fn render_theme_preset_selector(ui: &mut egui::Ui, state: &mut crate:
                         .on_hover_text(crate::i18n::get().settings.theme.delete_custom.clone())
                         .clicked()
                     {
-                        state.config.settings.settings_mut().theme.custom_themes.remove(idx);
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .custom_themes
+                            .remove(idx);
                         if is_selected {
-                            state.config.settings.settings_mut().theme.custom_color_overrides = None;
-                            state.config.settings.settings_mut().theme.active_custom_theme = None;
+                            state
+                                .config
+                                .settings
+                                .settings_mut()
+                                .theme
+                                .custom_color_overrides = None;
+                            state
+                                .config
+                                .settings
+                                .settings_mut()
+                                .theme
+                                .active_custom_theme = None;
                         }
                         let _ = state.config.try_save_settings();
                     }
@@ -185,8 +229,18 @@ pub(crate) fn render_preset_group(
             let response = ui.selectable_label(is_selected, preset.display_name());
             if response.clicked() && !is_selected {
                 state.config.settings.settings_mut().theme.preset = **preset;
-                state.config.settings.settings_mut().theme.custom_color_overrides = None;
-                state.config.settings.settings_mut().theme.active_custom_theme = None;
+                state
+                    .config
+                    .settings
+                    .settings_mut()
+                    .theme
+                    .custom_color_overrides = None;
+                state
+                    .config
+                    .settings
+                    .settings_mut()
+                    .theme
+                    .active_custom_theme = None;
                 let _ = state.config.try_save_settings();
             }
 
@@ -213,7 +267,10 @@ pub(crate) fn render_preset_group(
     }
 }
 
-pub(crate) fn render_custom_color_editor(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+pub(crate) fn render_custom_color_editor(
+    ui: &mut egui::Ui,
+    state: &mut crate::app_state::AppState,
+) {
     let current_colors = state.config.settings.settings().effective_theme_colors();
     let color_i18n = &crate::i18n::get().settings.color;
 
@@ -464,13 +521,24 @@ pub(crate) fn render_custom_color_editor(ui: &mut egui::Ui, state: &mut crate::a
     }
 
     if changed {
-        state.config.settings.settings_mut().theme.custom_color_overrides = Some(new_colors);
+        state
+            .config
+            .settings
+            .settings_mut()
+            .theme
+            .custom_color_overrides = Some(new_colors);
         let _ = state.config.try_save_settings();
     }
 
     ui.add_space(SUBSECTION_SPACING);
 
-    let active_custom = state.config.settings.settings().theme.active_custom_theme.clone();
+    let active_custom = state
+        .config
+        .settings
+        .settings()
+        .theme
+        .active_custom_theme
+        .clone();
 
     ui.with_layout(
         egui::Layout::top_down_justified(egui::Align::Center),
@@ -496,29 +564,62 @@ pub(crate) fn render_custom_color_editor(ui: &mut egui::Ui, state: &mut crate::a
                 }
             });
 
-            if state.config.settings.settings().theme.custom_color_overrides.is_some() {
+            if state
+                .config
+                .settings
+                .settings()
+                .theme
+                .custom_color_overrides
+                .is_some()
+            {
                 ui.add_space(SUBSECTION_SPACING);
                 if ui
                     .button(crate::i18n::get().settings.theme.reset_custom.clone())
                     .clicked()
                 {
                     if let Some(name) = &active_custom {
-                        if let Some(theme) = state.config.settings
+                        if let Some(theme) = state
+                            .config
+                            .settings
                             .settings()
                             .theme
                             .custom_themes
                             .iter()
                             .find(|t| t.name == *name)
                         {
-                            state.config.settings.settings_mut().theme.custom_color_overrides =
-                                Some(theme.colors.clone());
+                            state
+                                .config
+                                .settings
+                                .settings_mut()
+                                .theme
+                                .custom_color_overrides = Some(theme.colors.clone());
                         } else {
-                            state.config.settings.settings_mut().theme.custom_color_overrides = None;
-                            state.config.settings.settings_mut().theme.active_custom_theme = None;
+                            state
+                                .config
+                                .settings
+                                .settings_mut()
+                                .theme
+                                .custom_color_overrides = None;
+                            state
+                                .config
+                                .settings
+                                .settings_mut()
+                                .theme
+                                .active_custom_theme = None;
                         }
                     } else {
-                        state.config.settings.settings_mut().theme.custom_color_overrides = None;
-                        state.config.settings.settings_mut().theme.active_custom_theme = None;
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .custom_color_overrides = None;
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .active_custom_theme = None;
                     }
                     let _ = state.config.try_save_settings();
                 }
@@ -568,10 +669,13 @@ pub(crate) fn render_custom_color_editor(ui: &mut egui::Ui, state: &mut crate::a
                         let dup_id = egui::Id::new("duplicate_theme_colors");
                         let mut theme_colors = ui
                             .data(|d| d.get_temp::<ThemeColors>(dup_id))
-                            .unwrap_or_else(|| state.config.settings.settings().effective_theme_colors());
+                            .unwrap_or_else(|| {
+                                state.config.settings.settings().effective_theme_colors()
+                            });
                         theme_colors.name = name.clone();
 
-                        let mut themes = state.config.settings.settings().theme.custom_themes.clone();
+                        let mut themes =
+                            state.config.settings.settings().theme.custom_themes.clone();
                         if let Some(existing) = themes.iter_mut().find(|t| t.name == name) {
                             existing.colors = theme_colors.clone();
                         } else {
@@ -581,8 +685,18 @@ pub(crate) fn render_custom_color_editor(ui: &mut egui::Ui, state: &mut crate::a
                             });
                         }
                         state.config.settings.settings_mut().theme.custom_themes = themes;
-                        state.config.settings.settings_mut().theme.custom_color_overrides = Some(theme_colors);
-                        state.config.settings.settings_mut().theme.active_custom_theme = Some(name.clone());
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .custom_color_overrides = Some(theme_colors);
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .active_custom_theme = Some(name.clone());
 
                         let _ = state.config.try_save_settings();
                         close = true;

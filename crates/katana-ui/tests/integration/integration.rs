@@ -15,7 +15,6 @@ fn wait_for_workspace_load(harness: &mut Harness<'static, KatanaApp>) {
 }
 
 fn setup_harness() -> Harness<'static, KatanaApp> {
-
     use std::sync::atomic::{AtomicUsize, Ordering};
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let id = COUNTER.fetch_add(1, Ordering::SeqCst);

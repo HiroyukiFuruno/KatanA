@@ -14,9 +14,20 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
     ui.add_space(SECTION_SPACING);
 
     section_header(ui, &workspace_msgs.ignored_directories);
-    let mut ignored = state.config.settings.settings().workspace.ignored_directories.clone();
+    let mut ignored = state
+        .config
+        .settings
+        .settings()
+        .workspace
+        .ignored_directories
+        .clone();
     if render_string_list_editor(ui, &mut ignored) {
-        state.config.settings.settings_mut().workspace.ignored_directories = ignored;
+        state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .ignored_directories = ignored;
         let _ = state.config.try_save_settings();
     }
     ui.label(
@@ -28,7 +39,13 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
     ui.add_space(SECTION_SPACING);
 
     section_header(ui, &workspace_msgs.visible_extensions);
-    let mut extensions = state.config.settings.settings().workspace.visible_extensions.clone();
+    let mut extensions = state
+        .config
+        .settings
+        .settings()
+        .workspace
+        .visible_extensions
+        .clone();
     let mut changed_ext = false;
 
     ui.horizontal_wrapped(|ui| {
@@ -66,11 +83,18 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
     });
 
     if changed_ext {
-        state.config.settings.settings_mut().workspace.visible_extensions = extensions;
+        state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions = extensions;
         let _ = state.config.try_save_settings();
     }
 
-    if state.config.settings
+    if state
+        .config
+        .settings
         .settings()
         .workspace
         .visible_extensions
@@ -79,9 +103,20 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
         ui.add_space(SECTION_SPACING);
 
         section_header(ui, &workspace_msgs.extensionless_excludes);
-        let mut excludes = state.config.settings.settings().workspace.extensionless_excludes.clone();
+        let mut excludes = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .extensionless_excludes
+            .clone();
         if render_string_list_editor(ui, &mut excludes) {
-            state.config.settings.settings_mut().workspace.extensionless_excludes = excludes;
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .extensionless_excludes = excludes;
             let _ = state.config.try_save_settings();
         }
         ui.label(
@@ -123,13 +158,17 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
         let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
 
         if confirm
-            && !state.config.settings
+            && !state
+                .config
+                .settings
                 .settings()
                 .workspace
                 .visible_extensions
                 .contains(&"".to_string())
         {
-            state.config.settings
+            state
+                .config
+                .settings
                 .settings_mut()
                 .workspace
                 .visible_extensions

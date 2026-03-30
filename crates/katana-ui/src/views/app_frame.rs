@@ -32,10 +32,7 @@ impl<'a> MainPanels<'a> {
         let mut resolved_status = app.state.layout.status_message.as_ref();
         let settings_err_tuple;
         if let Some(err) = &app.state.config.settings_save_error {
-            settings_err_tuple = (
-                err.clone(),
-                crate::app_state::StatusType::Error,
-            );
+            settings_err_tuple = (err.clone(), crate::app_state::StatusType::Error);
             resolved_status = Some(&settings_err_tuple);
         }
 

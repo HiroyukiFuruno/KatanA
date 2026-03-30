@@ -7,7 +7,12 @@ pub(crate) fn render_behavior_tab(
 ) -> Option<AppAction> {
     let behavior_msgs = &crate::i18n::get().settings.behavior;
 
-    let mut confirm = state.config.settings.settings().behavior.confirm_close_dirty_tab;
+    let mut confirm = state
+        .config
+        .settings
+        .settings()
+        .behavior
+        .confirm_close_dirty_tab;
     if ui
         .add(
             crate::widgets::LabeledToggle::new(
@@ -19,13 +24,23 @@ pub(crate) fn render_behavior_tab(
         )
         .changed()
     {
-        state.config.settings.settings_mut().behavior.confirm_close_dirty_tab = confirm;
+        state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_close_dirty_tab = confirm;
         let _ = state.config.try_save_settings();
     }
 
     ui.add_space(SUBSECTION_SPACING);
 
-    let mut scroll_sync = state.config.settings.settings().behavior.scroll_sync_enabled;
+    let mut scroll_sync = state
+        .config
+        .settings
+        .settings()
+        .behavior
+        .scroll_sync_enabled;
     if ui
         .add(
             crate::widgets::LabeledToggle::new(&behavior_msgs.scroll_sync, &mut scroll_sync)
@@ -34,7 +49,12 @@ pub(crate) fn render_behavior_tab(
         )
         .changed()
     {
-        state.config.settings.settings_mut().behavior.scroll_sync_enabled = scroll_sync;
+        state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .scroll_sync_enabled = scroll_sync;
         let _ = state.config.try_save_settings();
     }
 
@@ -58,7 +78,12 @@ pub(crate) fn render_behavior_tab(
     if enabled {
         ui.add_space(SETTINGS_TOGGLE_SPACING);
 
-        let interval = state.config.settings.settings().behavior.auto_save_interval_secs;
+        let interval = state
+            .config
+            .settings
+            .settings()
+            .behavior
+            .auto_save_interval_secs;
         ui.label(&behavior_msgs.auto_save_interval);
 
         let original_width = ui.spacing().slider_width;
@@ -90,7 +115,12 @@ pub(crate) fn render_behavior_tab(
             );
 
             if slider_response.changed() || drag_response.changed() {
-                state.config.settings.settings_mut().behavior.auto_save_interval_secs = display_val;
+                state
+                    .config
+                    .settings
+                    .settings_mut()
+                    .behavior
+                    .auto_save_interval_secs = display_val;
                 let _ = state.config.try_save_settings();
             }
         });

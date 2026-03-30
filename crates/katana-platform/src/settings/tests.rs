@@ -147,7 +147,10 @@ fn test_json_file_repository_load_corrupt_file_returns_defaults() {
     let repo = JsonFileRepository::new(path.clone());
     let settings = repo.load();
     assert_eq!(settings.theme.theme, "dark");
-    assert!(tmp.path().join("corrupt.bak").exists(), "Corrupted settings file should be backed up");
+    assert!(
+        tmp.path().join("corrupt.bak").exists(),
+        "Corrupted settings file should be backed up"
+    );
 }
 
 #[test]

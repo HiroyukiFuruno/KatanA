@@ -9,7 +9,10 @@ pub(crate) fn render_font_tab(ui: &mut egui::Ui, state: &mut crate::app_state::A
     render_font_family_selector(ui, state);
 }
 
-pub(crate) fn render_font_family_selector(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+pub(crate) fn render_font_family_selector(
+    ui: &mut egui::Ui,
+    state: &mut crate::app_state::AppState,
+) {
     let current = state.config.settings.settings().font.family.clone();
     let os_fonts = katana_platform::os_fonts::OsFontScanner::cached_fonts();
 

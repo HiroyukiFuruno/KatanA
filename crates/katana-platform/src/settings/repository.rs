@@ -42,7 +42,11 @@ impl JsonFileRepository {
 
     fn backup_corrupt_file(&self, reason: &str) {
         let backup_path = self.path.with_extension("bak");
-        tracing::error!("Settings file corrupted ({}). Backing up to: {}", reason, backup_path.display());
+        tracing::error!(
+            "Settings file corrupted ({}). Backing up to: {}",
+            reason,
+            backup_path.display()
+        );
         if self.path.exists() {
             if let Err(e) = std::fs::rename(&self.path, &backup_path) {
                 tracing::error!("Failed to create settings backup: {}", e);
@@ -87,20 +91,23 @@ impl SettingsRepository for JsonFileRepository {
     }
 
     fn save(&self, settings: &AppSettings) -> anyhow::Result<()> {
-        let parent = self.path.parent().unwrap_or_else(|| std::path::Path::new("."));
+        let parent = self
+            .path
+            .parent()
+            .unwrap_or_else(|| std::path::Path::new("."));
         if !parent.as_os_str().is_empty() {
             std::fs::create_dir_all(parent)?;
         }
-        
+
         let json = serde_json::to_string_pretty(settings)?;
-        
+
         let mut temp_file = tempfile::NamedTempFile::new_in(parent)?;
         use std::io::Write;
         temp_file.write_all(json.as_bytes())?;
         temp_file.flush()?; // WHY: Ensure data is fully flushed to OS before persisting
-        
+
         temp_file.persist(&self.path)?;
-        
+
         tracing::info!("Settings saved to {}", self.path.display());
         Ok(())
     }
