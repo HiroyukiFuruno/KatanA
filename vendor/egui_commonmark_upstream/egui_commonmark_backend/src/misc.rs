@@ -115,11 +115,18 @@ pub struct Style {
     pub strikethrough: bool,
     pub quote: bool,
     pub code: bool,
+    pub underline: bool,
+    pub highlight: bool,
 }
 
 impl Style {
     pub fn to_richtext(&self, ui: &Ui, text: &str) -> RichText {
         let mut text = RichText::new(text);
+
+        if self.heading.is_some() || self.strong {
+            text = text.color(ui.visuals().text_color());
+        }
+
 
         if let Some(level) = self.heading {
             let max_height = ui
@@ -180,7 +187,21 @@ impl Style {
         }
 
         if self.code {
-            text = text.code();
+            // Use monospace font + explicit background_color instead of `code()`.
+            // Both paths share the same TextFormat.background rendering, giving
+            // consistent vertical centering with `<mark>` highlight backgrounds.
+            let code_bg = ui.visuals().code_bg_color;
+            text = text.monospace().background_color(code_bg);
+        }
+
+        if self.underline {
+            text = text.underline();
+        }
+
+        if self.highlight {
+            // Semi-transparent yellow background for `<mark>` highlight rendering.
+            let highlight_bg = egui::Color32::from_rgba_unmultiplied(255, 255, 0, 60);
+            text = text.background_color(highlight_bg);
         }
 
         text
