@@ -1,9 +1,3 @@
-//! Shared application state.
-//!
-//! A single `AppState` container is owned by the egui application. UI
-//! components render from this state and dispatch `AppAction` values back
-//! through the update loop.
-
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
 pub use crate::state::document::{
     DocumentState, SplitViewState, TabSplitState, TabViewMode, ViewMode,
@@ -20,7 +14,6 @@ use katana_core::{ai::AiProviderRegistry, document::Document, plugin::PluginRegi
 use katana_platform::SettingsService;
 use std::path::PathBuf;
 
-/// User-visible actions dispatched from UI components to the core update loop.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ExportFormat {
     Html,
@@ -53,10 +46,27 @@ pub enum AppAction {
     ToggleSettings,
     ToggleAbout,
     ToggleToc,
+    ToggleWorkspace,
+    ToggleSearchModal,
+    ToggleWorkspaceFilter,
     CheckForUpdates,
     SetSplitDirection(katana_platform::SplitDirection),
     SetPaneOrder(katana_platform::PaneOrder),
+    SetViewMode(ViewMode),
+    ToggleScrollSync(bool),
     RefreshWorkspace,
+    CreateFsNode {
+        parent_dir: PathBuf,
+        is_dir: bool,
+        target_path: PathBuf,
+    },
+    RenameFsNode {
+        target_path: PathBuf,
+        new_path: PathBuf,
+    },
+    DeleteFsNode {
+        target_path: PathBuf,
+    },
     CloseOtherDocuments(usize),
     CloseAllDocuments,
     CloseDocumentsToRight(usize),
@@ -94,7 +104,6 @@ pub enum StatusType {
     Error,
 }
 
-/// Top-level application state shared across all UI components.
 pub struct AppState {
     pub document: DocumentState,
     pub workspace: WorkspaceState,

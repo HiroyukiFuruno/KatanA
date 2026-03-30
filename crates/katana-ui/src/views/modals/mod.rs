@@ -14,4 +14,5 @@ pub mod about;
 pub mod file_ops;
 pub mod meta_info;
 pub mod search;
+pub mod terms;
 pub mod update;
