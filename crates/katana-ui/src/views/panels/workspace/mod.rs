@@ -1,13 +1,7 @@
-pub mod breadcrumb;
-pub mod content;
-pub mod dir_node;
-pub mod file_node;
-pub mod header;
-pub mod panel;
-pub mod tree_node;
+pub mod logic;
+pub mod ui;
 
-pub(crate) use breadcrumb::BreadcrumbMenu;
-pub(crate) use panel::WorkspacePanel;
+pub(crate) use ui::{BreadcrumbMenu, WorkspacePanel};
 
 #[cfg(test)]
-pub(crate) use file_node::FileEntryNode;
+pub(crate) use ui::FileEntryNode;
