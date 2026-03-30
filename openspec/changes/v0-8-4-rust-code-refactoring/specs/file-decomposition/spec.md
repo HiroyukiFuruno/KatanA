@@ -2,7 +2,12 @@
 
 ### Requirement: 肥大化ファイルの責務分離
 
-テスト除外で200行を超える全ファイルを、責務単位でサブモジュールに分割する。
+テスト除外で200行を超える全ファイルを、責務単位でサブモジュールに分割する (MUST be separated).
+
+#### Scenario: Verify file decomposition
+- **Given** a file with more than 200 lines excluding tests
+- **When** the code is refactored
+- **Then** the file is split into submodules by responsibility
 
 #### katana-ui（最重要: 15ファイルが200行超）
 

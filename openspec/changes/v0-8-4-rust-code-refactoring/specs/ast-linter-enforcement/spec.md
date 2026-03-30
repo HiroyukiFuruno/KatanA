@@ -2,7 +2,12 @@
 
 ### Requirement: `coding-rules.ja.md` のルールをast_linterで網羅的に機械化
 
-`docs/coding-rules.ja.md` に記載されたルールのうち、機械的にチェック可能なものをすべてast_linterまたはclippy `#![deny]` で強制する。「定義はあるが守られる保証がない規約は無意味」の哲学に基づく。
+`docs/coding-rules.ja.md` に記載されたルールのうち、機械的にチェック可能なものをすべてast_linterまたはclippy `#![deny]` で強制する (MUST be enforced).
+
+#### Scenario: Verify AST linter rules additions
+- **Given** the coding rules
+- **When** linter runs
+- **Then** rules are checked mechanically.
 
 ---
 
