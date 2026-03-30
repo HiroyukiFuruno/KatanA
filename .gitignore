@@ -87,3 +87,13 @@ tmp
 
 # local history
 .history
+
+# Local Dev Exclusions
+cov.json
+test_*.py
+tmp_*.py
+fix_*.py
+split_*.py
+patch*.py
+test_out.txt
+print_used.rs
