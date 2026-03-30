@@ -2,11 +2,11 @@
 name = "egui_commonmark_macros"
 authors = ["Erlend Walstad"]
 
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-rust-version.workspace = true
-repository.workspace = true
+version = "0.22.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.80"
+repository = "https://github.com/lampsitter/egui_commonmark"
 
 description = "Embed markdown directly into the binary as egui widgets"
 keywords = ["commonmark", "egui"]
@@ -24,12 +24,12 @@ syn = "2.0"
 quote = { version = "1.0", default-features = false }
 proc-macro2 = { version = "1.0", default-features = false }
 
-pulldown-cmark = { workspace = true, default-features = false }
+pulldown-cmark = { version = "0.13", default-features = false }
 
-egui_commonmark_backend = { workspace = true }
-egui = { workspace = true }
+egui_commonmark_backend = { path = "../egui_commonmark_backend" }
+egui = "0.33"
 
-document-features = { workspace = true, optional = true }
+document-features = { version = "0.2", optional = true }
 
 # Dependency resolution is hard...
 proc-macro-crate = "3.1"
