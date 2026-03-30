@@ -37,7 +37,6 @@ fn flatten_shapes<'a>(
     flat
 }
 
-
 #[test]
 fn unsaved_buffer_changes_are_reflected_in_preview() {
     let mut pane = PreviewPane::default();
@@ -180,7 +179,6 @@ fn verification_that_preview_updates_do_not_depend_on_file_saves() {
     assert!(doc.is_dirty, "Document should not have been saved");
 }
 
-
 #[test]
 fn valid_svg_is_extracted() {
     let html = r#"<div><svg width="100" height="100"><rect/></svg></div>"#;
@@ -202,7 +200,6 @@ fn covers_from_start_to_end_if_multiple_svgs_are_present() {
     assert!(svg.contains("first"));
     assert!(svg.contains("second"));
 }
-
 
 #[test]
 fn valid_png_is_decoded() {
@@ -226,7 +223,6 @@ fn invalid_data_returns_error() {
     let result = decode_png_rgba(b"not a png");
     assert!(result.is_err());
 }
-
 
 #[test]
 fn markdown_only_input_is_sectioned_correctly() {
@@ -278,7 +274,6 @@ fn centered_html_stays_in_markdown_section_full_render() {
     assert_eq!(pane.sections.len(), 1);
     assert!(matches!(pane.sections[0], RenderedSection::Markdown(_)));
 }
-
 
 #[test]
 fn show_section_markdown_variant_renders() {
@@ -450,7 +445,6 @@ fn show_section_image_full_render_with_texture() {
     harness.run();
 }
 
-
 #[test]
 fn image_path_resolved_in_rendered_markdown_section() {
     let dir = tempfile::tempdir().unwrap();
@@ -533,7 +527,6 @@ fn standalone_local_image_is_split_into_local_image_section() {
     assert!(matches!(pane.sections[2], RenderedSection::Markdown(_)));
 }
 
-
 #[test]
 fn preset_colors_applied_without_crash_in_harness() {
     let mut pane = PreviewPane::default();
@@ -581,7 +574,6 @@ fn show_section_centered_markdown_variant_renders() {
     });
     harness.run();
 }
-
 
 #[test]
 fn centered_badges_render_on_same_horizontal_row() {
@@ -1588,7 +1580,6 @@ fn centered_text_and_link_share_same_row() {
     );
 }
 
-
 #[test]
 fn centered_heading_h1_is_horizontally_centered() {
     let html = "<h1 align=\"center\">KatanA Desktop</h1>\n";
@@ -1832,7 +1823,6 @@ fn badges_then_language_selector_both_centered() {
     );
 }
 
-
 #[test]
 fn markdown_table_stretches_to_full_width() {
     let table_md = concat!(
@@ -1897,7 +1887,6 @@ fn markdown_table_stretches_to_full_width() {
          (table_frame_width={table_frame_width:.1}, content_width={content_width:.1})"
     );
 }
-
 
 #[test]
 fn markdown_table_cells_in_same_row_share_y_coordinate() {
@@ -2003,7 +1992,6 @@ fn markdown_table_cells_in_same_row_share_y_coordinate() {
     );
 }
 
-
 #[test]
 fn markdown_table_has_visible_vertical_lines() {
     let table_md = concat!(
@@ -2072,7 +2060,6 @@ fn markdown_table_has_visible_vertical_lines() {
         );
     }
 }
-
 
 #[test]
 fn markdown_table_no_trailing_whitespace() {
@@ -2159,7 +2146,6 @@ fn markdown_table_no_trailing_whitespace() {
          Expected < 20px."
     );
 }
-
 
 #[test]
 fn blockquote_lines_uniform_thickness() {

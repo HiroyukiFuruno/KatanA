@@ -1,4 +1,3 @@
-
 pub const APP_DISPLAY_NAME: &str = "KatanA";
 
 pub const APP_PRODUCT_NAME: &str = "KatanA Desktop";
@@ -23,7 +22,6 @@ pub const APP_ISSUES_URL: &str = "https://github.com/HiroyukiFuruno/KatanA/issue
 pub const APP_SPONSOR_URL: &str = "https://github.com/sponsors/HiroyukiFuruno";
 
 pub const APP_DESCRIPTION: &str = "A fast, keyboard-driven Markdown editor built with Rust.";
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SystemInfo {
@@ -75,7 +73,6 @@ pub fn about_info() -> AboutInfo {
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
-
 
     #[test]
     fn display_name_is_katana() {
@@ -176,7 +173,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn system_info_os_is_valid() {
         let info = system_info();
@@ -221,12 +217,10 @@ mod tests {
         );
     }
 
-
     #[test]
     fn license_is_mit() {
         assert_eq!(APP_LICENSE, "MIT License");
     }
-
 
     #[test]
     fn repository_url_is_https() {
@@ -234,19 +228,16 @@ mod tests {
         assert!(APP_REPOSITORY.contains("github.com"));
     }
 
-
     #[test]
     fn docs_url_is_under_repository() {
         assert!(APP_DOCS_URL.starts_with(APP_REPOSITORY));
     }
-
 
     #[test]
     fn issues_url_is_under_repository() {
         assert!(APP_ISSUES_URL.starts_with(APP_REPOSITORY));
         assert!(APP_ISSUES_URL.contains("issues"));
     }
-
 
     #[test]
     fn sponsor_url_is_valid() {
@@ -259,7 +250,6 @@ mod tests {
             "Sponsor URL must point to GitHub Sponsors"
         );
     }
-
 
     #[test]
     fn about_info_contains_all_fields() {

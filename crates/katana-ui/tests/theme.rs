@@ -1,4 +1,3 @@
-
 use katana_platform::theme::{Rgb, ThemeMode, ThemePreset};
 use katana_platform::{InMemoryRepository, SettingsService};
 use katana_ui::theme_bridge::visuals_from_theme;

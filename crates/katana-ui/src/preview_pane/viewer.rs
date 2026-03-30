@@ -1,6 +1,5 @@
 use eframe::egui;
 
-
 pub(crate) const VIEWER_ZOOM_STEP: f32 = 0.25;
 pub(crate) const VIEWER_ZOOM_MIN: f32 = 0.25;
 pub(crate) const VIEWER_ZOOM_MAX: f32 = 4.0;

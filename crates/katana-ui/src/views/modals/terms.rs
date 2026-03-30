@@ -1,4 +1,3 @@
-
 use crate::app_state::AppAction;
 use crate::widgets::StyledComboBox;
 use eframe::egui;

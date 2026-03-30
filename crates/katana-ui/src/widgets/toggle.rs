@@ -138,7 +138,7 @@ impl<'a> egui::Widget for LabeledToggle<'a> {
         );
         let text_size = text_galley.size();
         let toggle_size = ui.spacing().interact_size.y * egui::vec2(2.0, 1.0);
-        
+
         let margin = match self.alignment {
             ToggleAlignment::Attached(m) => m,
             ToggleAlignment::SpaceBetween => 0.0,
@@ -153,12 +153,14 @@ impl<'a> egui::Widget for LabeledToggle<'a> {
         };
 
         let row_pad = ui.spacing().button_padding.y;
-        let row_height = text_size.y.max(toggle_size.y).max(ui.spacing().interact_size.y) + row_pad * 2.0;
-        
-        let (rect, mut response) = ui.allocate_exact_size(
-            egui::vec2(desired_width, row_height),
-            egui::Sense::click(),
-        );
+        let row_height = text_size
+            .y
+            .max(toggle_size.y)
+            .max(ui.spacing().interact_size.y)
+            + row_pad * 2.0;
+
+        let (rect, mut response) =
+            ui.allocate_exact_size(egui::vec2(desired_width, row_height), egui::Sense::click());
 
         if response.clicked() {
             *self.on = !*self.on;

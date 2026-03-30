@@ -1,4 +1,3 @@
-
 use eframe::egui;
 use egui_kittest::kittest::{NodeT, Queryable};
 use egui_kittest::Harness;
@@ -8,7 +7,6 @@ use std::path::Path;
 const PANEL_WIDTH: f32 = 800.0;
 const PANEL_HEIGHT: f32 = 8000.0;
 const CENTERING_TOLERANCE: f64 = 50.0;
-
 
 fn load_fixture(filename: &str) -> (PreviewPane, std::path::PathBuf, String) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -211,7 +209,6 @@ fn assert_gap_at_least(
     );
 }
 
-
 #[test]
 fn fixture_en_produces_many_sections() {
     let (pane, _, _) = load_fixture("sample.md");
@@ -308,7 +305,6 @@ fn fixture_en_diagram_independence() {
     );
 }
 
-
 #[test]
 fn fixture_en_s1_1_centered_heading_h1() {
     let (_, _, source) = load_fixture("sample.md");
@@ -399,7 +395,6 @@ fn fixture_en_s1_6_readme_header_centered() {
     );
 }
 
-
 #[test]
 fn fixture_en_s2_1_heading_levels_render_and_order() {
     let (_, _, source) = load_fixture("sample.md");
@@ -444,7 +439,6 @@ fn fixture_en_s2_3_links_render() {
     let _link = harness.get_by_label("Normal link");
     let _email = harness.get_by_label("Email link");
 }
-
 
 #[test]
 fn fixture_ja_structural_integrity() {
@@ -554,12 +548,10 @@ fn fixture_ja_drawio_renders() {
     );
 }
 
-
 fn load_fixture_harness(filename: &str) -> Harness<'static> {
     let (pane, _, _) = load_fixture(filename);
     build_harness(pane.sections.clone(), PANEL_WIDTH, PANEL_HEIGHT)
 }
-
 
 #[test]
 fn html_fixture_en_semantic_layout() {
@@ -602,7 +594,6 @@ fn html_fixture_ja_semantic_layout() {
         "sample_html_ja full document order",
     );
 }
-
 
 #[test]
 fn basic_fixture_en_semantic_smoke() {
@@ -716,7 +707,6 @@ fn basic_fixture_en_s12_accordion_renders_summary() {
     );
 }
 
-
 #[test]
 fn basic_fixture_en_s13_block_math_renders() {
     let (_, _, source) = load_fixture("sample_basic.md");
@@ -755,7 +745,6 @@ fn basic_fixture_en_s13_singleline_math_renders() {
         "Single-line $$ math content should be rendered and visible"
     );
 }
-
 
 fn build_harness_accordion_open(sections: Vec<RenderedSection>) -> Harness<'static> {
     let mut fonts_loaded = false;
@@ -834,7 +823,6 @@ fn basic_fixture_en_s12_accordion_open_nested_list_indented() {
         s_bounds.x0
     );
 }
-
 
 #[test]
 fn basic_fixture_en_s12_accordion_has_bottom_margin() {
@@ -995,7 +983,6 @@ fn basic_fixture_en_s12_accordion_open_no_vertical_left_line() {
     );
 }
 
-
 #[test]
 fn basic_fixture_en_s11_4_footnote_reference_rendered() {
     let (_, _, source) = load_fixture("sample_basic.md");
@@ -1116,7 +1103,6 @@ fn basic_fixture_en_s11_4_return_link_vertically_centered() {
         diff
     );
 }
-
 
 #[test]
 fn regression_footnote_x_not_shifted_after_accordion() {

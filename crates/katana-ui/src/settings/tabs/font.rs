@@ -92,7 +92,6 @@ pub(crate) fn render_font_family_selector(ui: &mut egui::Ui, settings: &mut Sett
         });
 }
 
-
 pub(crate) fn render_font_size_slider(ui: &mut egui::Ui, settings: &mut SettingsService) {
     let mut size = settings.settings().clamped_font_size();
     let slider = egui::Slider::new(&mut size, MIN_FONT_SIZE..=MAX_FONT_SIZE)

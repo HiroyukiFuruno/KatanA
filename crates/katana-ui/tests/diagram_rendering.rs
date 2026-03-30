@@ -1,8 +1,6 @@
-
 use egui_kittest::{kittest::Queryable, Harness};
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
-
 
 const DRAWIO_SOURCE: &str = r#"<mxGraphModel>
   <root>
@@ -13,7 +11,6 @@ const DRAWIO_SOURCE: &str = r#"<mxGraphModel>
     </mxCell>
   </root>
 </mxGraphModel>"#;
-
 
 fn diagram_md(lang: &str, body: &str) -> String {
     format!("# Diagram Test\n\n```{lang}\n{body}\n```\n\n## Footer\n")
@@ -84,7 +81,6 @@ fn drawio_render_error_ui() {
     let _ = harness.get_by_label(&expected_error);
 }
 
-
 const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
@@ -145,7 +141,6 @@ fn mermaid_both_states_render_semantically() {
     }
 }
 
-
 const PLANTUML_SOURCE: &str = "@startuml\nAlice -> Bob : Hello\n@enduml";
 
 #[test]
@@ -205,7 +200,6 @@ fn plantuml_both_states_render_semantically() {
     }
 }
 
-
 #[test]
 fn mixed_diagram_document_renders_all_independently() {
     let source = format!(
@@ -259,7 +253,6 @@ fn mixed_diagram_document_renders_all_independently() {
         pane.sections[5]
     );
 }
-
 
 #[test]
 fn mixed_diagrams_with_fallbacks_render_semantically() {
@@ -331,7 +324,6 @@ fn snapshot_diagram_pending_spinner() {
     harness.step();
     harness.run_steps(5);
 }
-
 
 #[test]
 fn update_after_render_preserves_diagram_images() {

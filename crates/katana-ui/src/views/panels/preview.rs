@@ -175,8 +175,7 @@ impl<'a> PreviewContent<'a> {
 
             if consuming_editor {
                 *source = ScrollSource::Neither;
-                if max_scroll > 0.0 {
-                }
+                if max_scroll > 0.0 {}
             } else {
                 if max_scroll > 0.0 {
                     let preview_y = output.state.offset.y;

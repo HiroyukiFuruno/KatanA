@@ -1,4 +1,3 @@
-
 use eframe::egui;
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_platform::theme::{Rgb, Rgba, ThemeColors, ThemeMode};
@@ -41,7 +40,6 @@ pub fn visuals_from_theme(colors: &ThemeColors) -> egui::Visuals {
 
     visuals.selection.bg_fill = selection_bg;
     visuals.selection.stroke = egui::Stroke::new(STROKE_NORMAL, accent);
-
 
     visuals.widgets.noninteractive.bg_fill = panel_bg;
     visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);

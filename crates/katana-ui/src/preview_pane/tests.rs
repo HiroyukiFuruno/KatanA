@@ -8,7 +8,6 @@ mod tests {
 
     use katana_platform::CacheFacade;
 
-
     const BADGE_PREFIX_LEN: usize = "[![".len();
 
     #[derive(Debug, Clone, PartialEq, Eq)]
@@ -338,7 +337,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn parse_md_image_simple_image() {
         let input = "![alt text](path/to/image.png)";
@@ -433,7 +431,6 @@ mod tests {
             Some(12)
         );
     }
-
 
     #[test]
     fn test_coverage_gap_fillers_rendering_logic() {
@@ -562,7 +559,6 @@ mod tests {
         assert!(pane.image_preload_queue.is_empty());
         assert!(pane.image_cache.contains(&path));
     }
-
 
     #[test]
     fn viewer_state_default_is_zoom_1_pan_zero() {

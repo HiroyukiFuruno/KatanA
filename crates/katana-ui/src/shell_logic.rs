@@ -1,4 +1,3 @@
-
 use std::path::Path;
 
 const FNV1A_OFFSET_BASIS: u64 = 0xcbf29ce484222325;

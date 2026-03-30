@@ -5,7 +5,6 @@ use katana_core::markdown::{
     svg_rasterize::{rasterize_svg, RasterizedSvg},
 };
 
-
 #[cfg(test)]
 pub fn render_diagram(kind: &DiagramKind, source: &str, source_lines: usize) -> RenderedSection {
     let block = DiagramBlock {

@@ -1,4 +1,3 @@
-
 pub struct Modal<'a> {
     id: &'a str,
     title: &'a str,
@@ -101,7 +100,6 @@ impl<'a> Modal<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     #[test]
     fn test_modal_builder_defaults() {

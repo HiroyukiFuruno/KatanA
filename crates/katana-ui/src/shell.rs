@@ -1,4 +1,3 @@
-
 #![allow(clippy::useless_vec)]
 
 use eframe::egui;
@@ -11,7 +10,6 @@ use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
 };
-
 
 pub(crate) const SIDEBAR_COLLAPSED_TOGGLE_WIDTH: f32 = 24.0;
 
@@ -46,7 +44,6 @@ pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
 pub(crate) const TREE_LABEL_HOFFSET: f32 = 4.0;
 
 pub(crate) const DOWNLOAD_STATUS_CHECK_INTERVAL_MS: u64 = 200;
-
 
 pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
 
@@ -249,7 +246,6 @@ fn _download_with_cmd(cmd: &str, url: &str, dest: &std::path::Path) -> Result<()
         Err(crate::i18n::get().error.download_failed.clone())
     }
 }
-
 
 #[cfg(test)]
 include!("shell_tests.rs");

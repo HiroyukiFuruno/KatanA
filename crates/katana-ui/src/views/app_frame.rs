@@ -1,4 +1,3 @@
-
 use crate::app::action::ActionOps;
 use crate::app_state::{AppAction, ViewMode};
 use crate::preview_pane::DownloadRequest;

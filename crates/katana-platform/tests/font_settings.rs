@@ -1,6 +1,5 @@
 use katana_platform::{AppSettings, SettingsService};
 
-
 #[test]
 fn font_size_default_is_14() {
     let settings = AppSettings::default();
@@ -42,7 +41,6 @@ fn font_size_at_boundary_32_is_accepted() {
     assert!((settings.font.size - 32.0).abs() < f32::EPSILON);
 }
 
-
 #[test]
 fn font_family_default_is_monospace() {
     let settings = AppSettings::default();
@@ -55,7 +53,6 @@ fn font_family_can_be_changed() {
     settings.font.family = "sans-serif".to_string();
     assert_eq!(settings.font.family, "sans-serif");
 }
-
 
 #[test]
 fn font_size_roundtrip_via_json_repository() {

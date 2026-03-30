@@ -1,4 +1,3 @@
-
 use katana_ui::app_state::AppState;
 use katana_ui::shell::KatanaApp;
 

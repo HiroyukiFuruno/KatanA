@@ -1,4 +1,3 @@
-
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
 pub use crate::state::document::{
     DocumentState, SplitViewState, TabSplitState, TabViewMode, ViewMode,

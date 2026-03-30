@@ -209,17 +209,11 @@ impl ImageLoader for KatanaSvgLoader {
                         let mut i = 0;
                         while i < bytes.len() {
                             if bytes[i] == b'%' && i + 2 < bytes.len() {
-                                match std::str::from_utf8(&bytes[i + 1..=i + 2]) {
-                                    Ok(hex) => match u8::from_str_radix(hex, HEX_RADIX) {
-                                        Ok(byte) => {
-                                            decoded.push(byte);
-                                            i += PERCENT_ENCODE_LEN;
-                                            continue;
-                                        }
-                                        Err(_) => {}
-                                    },
-                                    Err(_) => {}
-                                }
+                                if let Ok(hex) = std::str::from_utf8(&bytes[i + 1..=i + 2]) { if let Ok(byte) = u8::from_str_radix(hex, HEX_RADIX) {
+                                    decoded.push(byte);
+                                    i += PERCENT_ENCODE_LEN;
+                                    continue;
+                                } }
                             }
                             decoded.push(bytes[i]);
                             i += 1;
@@ -467,7 +461,6 @@ mod tests {
         pixels
     }
 
-
     fn sample_svg() -> &'static [u8] {
         br#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><rect width="100" height="50" fill="red"/></svg>"#
     }
@@ -541,7 +534,6 @@ mod tests {
         assert_eq!(image.size[0], 300);
         assert_eq!(image.size[1], 150);
     }
-
 
     #[test]
     fn svg_loader_load_unsupported_uri_returns_not_supported() {
@@ -659,7 +651,6 @@ mod tests {
             "stale entry should have been evicted"
         );
     }
-
 
     #[test]
     fn svg_loader_load_data_uri_rasterizes_and_caches() {
