@@ -39,6 +39,16 @@ impl JsonFileRepository {
         let base = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
         Self::new(base.join("KatanA").join("settings.json"))
     }
+
+    fn backup_corrupt_file(&self, reason: &str) {
+        let backup_path = self.path.with_extension("bak");
+        tracing::error!("Settings file corrupted ({}). Backing up to: {}", reason, backup_path.display());
+        if self.path.exists() {
+            if let Err(e) = std::fs::rename(&self.path, &backup_path) {
+                tracing::error!("Failed to create settings backup: {}", e);
+            }
+        }
+    }
 }
 
 impl SettingsRepository for JsonFileRepository {
@@ -53,23 +63,44 @@ impl SettingsRepository for JsonFileRepository {
                         runner.add_strategy(Box::new(v0_1_3_to_0_1_4::Migration013To014));
                         runner.add_strategy(Box::new(v0_1_4_to_0_2_0::Migration014To020));
                         value = runner.migrate(value);
-                        serde_json::from_value(value).unwrap_or_default()
+
+                        match serde_json::from_value(value) {
+                            Ok(settings) => settings,
+                            Err(e) => {
+                                self.backup_corrupt_file(&e.to_string());
+                                AppSettings::default()
+                            }
+                        }
                     }
-                    Err(_) => AppSettings::default(),
+                    Err(e) => {
+                        self.backup_corrupt_file(&e.to_string());
+                        AppSettings::default()
+                    }
                 }
             }
-            Err(_) => AppSettings::default(),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => AppSettings::default(),
+            Err(e) => {
+                tracing::error!("Failed to read settings file: {}", e);
+                AppSettings::default()
+            }
         }
     }
 
     fn save(&self, settings: &AppSettings) -> anyhow::Result<()> {
-        /* WHY: Ensure the parent directory exists. filter(|p| !p.as_os_str().is_empty())
-        skips the no-op case when the path has no parent component. */
-        if let Some(parent) = self.path.parent().filter(|p| !p.as_os_str().is_empty()) {
+        let parent = self.path.parent().unwrap_or_else(|| std::path::Path::new("."));
+        if !parent.as_os_str().is_empty() {
             std::fs::create_dir_all(parent)?;
         }
+        
         let json = serde_json::to_string_pretty(settings)?;
-        std::fs::write(&self.path, json)?;
+        
+        let mut temp_file = tempfile::NamedTempFile::new_in(parent)?;
+        use std::io::Write;
+        temp_file.write_all(json.as_bytes())?;
+        temp_file.flush()?; // WHY: Ensure data is fully flushed to OS before persisting
+        
+        temp_file.persist(&self.path)?;
+        
         tracing::info!("Settings saved to {}", self.path.display());
         Ok(())
     }

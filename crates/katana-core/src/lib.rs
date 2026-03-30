@@ -17,15 +17,6 @@
     clippy::cognitive_complexity,
     clippy::type_complexity
 )]
-#![cfg_attr(
-    test,
-    allow(
-        clippy::unwrap_used,
-        clippy::panic,
-        clippy::expect_used,
-        clippy::indexing_slicing
-    )
-)]
 
 pub mod ai;
 pub mod document;

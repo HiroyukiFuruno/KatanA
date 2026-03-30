@@ -15,7 +15,6 @@ fn wait_for_workspace_load(harness: &mut Harness<'static, KatanaApp>) {
 }
 
 fn setup_harness() -> Harness<'static, KatanaApp> {
-    std::env::set_var("MERMAID_MMDC", "dummy_missing_executable_for_kittest");
 
     use std::sync::atomic::{AtomicUsize, Ordering};
     static COUNTER: AtomicUsize = AtomicUsize::new(0);

@@ -16,15 +16,6 @@
     clippy::manual_ok_err,
     clippy::cognitive_complexity
 )]
-#![cfg_attr(
-    test,
-    allow(
-        clippy::unwrap_used,
-        clippy::panic,
-        clippy::expect_used,
-        clippy::indexing_slicing
-    )
-)]
 
 pub mod rules;
 pub mod utils;
