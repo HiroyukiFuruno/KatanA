@@ -1,33 +1,33 @@
 ## MODIFIED Requirements
 
-### Requirement: Workspace tab session persistence
+### Requirement: ワークスペース単位のタブセッション永続化
 
-The system SHALL persist workspace-scoped tab session state and restore it when the workspace is reopened, subject to user settings.
+システムは、ユーザー設定に従ってワークスペース単位のタブセッション状態を保存し、ワークスペース再オープン時に復元しなければならない（SHALL）。
 
-#### Scenario: restore workspace tab session
+#### Scenario: ワークスペースのタブセッションを復元する
 
-- **WHEN** the user reopens a workspace and tab session restore is enabled
-- **THEN** the previously open tabs are restored for that workspace
-- **THEN** the active tab, pinned states, expanded directories, and tab groups are restored from the saved workspace session
+- **WHEN** ユーザーがワークスペースを再度開き、タブセッション復元が有効になっている時
+- **THEN** そのワークスペースで以前開いていたタブが復元される
+- **THEN** active タブ、pinned 状態、展開ディレクトリ、タブグループが保存済みのワークスペースセッションから復元される
 
-#### Scenario: restore disabled by setting
+#### Scenario: 設定により復元が無効化されている
 
-- **WHEN** the user disables tab session restore and opens a workspace
-- **THEN** the saved workspace tab session is not automatically applied
-- **THEN** the workspace can still be opened normally
+- **WHEN** ユーザーがタブセッション復元を無効にした状態でワークスペースを開いた時
+- **THEN** 保存済みのワークスペースタブセッションは自動適用されない
+- **THEN** それでもワークスペース自体は通常どおり開ける
 
-### Requirement: Workspace session payload is versioned and backward compatible
+### Requirement: ワークスペースセッション payload は versioned で後方互換を保つ
 
-The system SHALL read legacy workspace tab session payloads and upgrade them to the new session model without breaking existing users.
+システムは、legacy なワークスペースタブセッション payload を読み込み、新しいセッションモデルへ昇格させても既存ユーザーを壊さないようにしなければならない（SHALL）。
 
-#### Scenario: legacy session payload without version
+#### Scenario: version を持たない legacy session payload
 
-- **WHEN** the system loads an older workspace tab session payload that contains only tabs and active index
-- **THEN** the payload is interpreted as a legacy version
-- **THEN** missing pinned and group fields are filled with default values
+- **WHEN** システムが tabs と active index だけを持つ旧ワークスペースタブセッション payload を読み込んだ時
+- **THEN** その payload は legacy version として解釈される
+- **THEN** 不足している pinned と group の項目は既定値で補完される
 
-#### Scenario: new session payload is saved
+#### Scenario: 新しい session payload を保存する
 
-- **WHEN** the system saves workspace tab session state in the new format
-- **THEN** the payload includes an explicit version
-- **THEN** the saved data is sufficient to restore grouped and pinned tabs for that workspace
+- **WHEN** システムが新形式でワークスペースタブセッション状態を保存した時
+- **THEN** payload には明示的な version が含まれる
+- **THEN** 保存データは、そのワークスペースの grouped / pinned タブを復元するのに十分である

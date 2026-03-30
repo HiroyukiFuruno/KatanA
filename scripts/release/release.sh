@@ -124,49 +124,39 @@ cargo check --workspace >/dev/null 2>&1 || true
 info "Updating version in Info.plist..."
 perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$1v'"${VERSION}"'$2/' crates/katana-ui/Info.plist
 
-# ── 3.5. Validate CHANGELOG via AST Linter ────────────────────────────────────
-info "Validating CHANGELOG.md using AST Linter..."
-if ! cargo test -p katana-linter --test ast_linter ast_linter_changelog_contains_current_workspace_version -q >/dev/null 2>&1; then
-    error "AST Linter failed: Version v${VERSION} not found in CHANGELOG.md."
-    error "Please update CHANGELOG.md (and CHANGELOG.ja.md) with the new release notes and run 'make release' again."
+# ── 3.5. Preflight Verification ───────────────────────────────────────────────
+info "Running release preflight..."
+if ! ./scripts/release/preflight.sh "$VERSION"; then
+    error "Preflight failed! Please fix errors and try again."
     # Discard version bumps to keep repository clean for the retry
     git checkout Cargo.toml Cargo.lock crates/*/Cargo.toml crates/katana-ui/Info.plist 2>/dev/null || true
     exit 1
 fi
 
-if ! grep -q "^## \[${VERSION}\]" CHANGELOG.ja.md; then
-    warn "Version v${VERSION} not found in CHANGELOG.ja.md. You may want to update the Japanese changelog."
-fi
-
 # ── 3.8 Archive OpenSpec Changes ───────────────────────────────────────────────
 info "Archiving OpenSpec changes for v${VERSION}..."
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
-for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
-    if [[ -d "$CHANGE_DIR" ]]; then
-        CHANGE_NAME=$(basename "$CHANGE_DIR")
-        ARCHIVE_DIR="openspec/changes/archive/$(date +%Y-%m-%d)-${CHANGE_NAME}"
-        
-        info "Found OpenSpec change: $CHANGE_NAME"
-        
-        if [[ -f "$CHANGE_DIR/tasks.md" ]]; then
-            if grep -E '^\s*-\s*\[(\s|\/)\]' "$CHANGE_DIR/tasks.md" >/dev/null 2>&1; then
-                error "OpenSpec change '$CHANGE_NAME' has incomplete tasks in tasks.md."
-                error "Please complete all tasks (all done) or rename the change directory before releasing."
-                exit 1
+# Note: Using bash array expansion to gracefully handle cases where no files match
+CHANGE_MATCHES=(openspec/changes/v${VERSION_DASHED}-*(N))
+if [[ ${#CHANGE_MATCHES[@]} -gt 0 && "${CHANGE_MATCHES[0]}" != "openspec/changes/v${VERSION_DASHED}-*(N)" ]]; then
+    for CHANGE_DIR in "${CHANGE_MATCHES[@]}"; do
+        if [[ -d "$CHANGE_DIR" ]]; then
+            CHANGE_NAME=$(basename "$CHANGE_DIR")
+            ARCHIVE_DIR="openspec/changes/archive/$(date +%Y-%m-%d)-${CHANGE_NAME}"
+            
+            info "Found OpenSpec change: $CHANGE_NAME"
+            mkdir -p openspec/changes/archive
+            if [[ -d "$ARCHIVE_DIR" ]]; then
+                warn "Archive directory $ARCHIVE_DIR already exists. Skipping move."
+            else
+                mv "$CHANGE_DIR" "$ARCHIVE_DIR"
+                # Add to the git staging area so it gets included in the release commit
+                git add "openspec/changes/archive/$(basename "$ARCHIVE_DIR")" "$CHANGE_DIR"
+                success "Archived $CHANGE_NAME"
             fi
         fi
-        
-        mkdir -p openspec/changes/archive
-        if [[ -d "$ARCHIVE_DIR" ]]; then
-            warn "Archive directory $ARCHIVE_DIR already exists. Skipping move."
-        else
-            mv "$CHANGE_DIR" "$ARCHIVE_DIR"
-            # Add to the git staging area so it gets included in the release commit
-            git add "openspec/changes/archive/$(basename "$ARCHIVE_DIR")" "$CHANGE_DIR"
-            success "Archived $CHANGE_NAME"
-        fi
-    fi
-done
+    done
+fi
 
 # ── 4. Commit and Tag ─────────────────────────────────────────────────────────
 info "Staging release changes..."

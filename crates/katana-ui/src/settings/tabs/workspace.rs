@@ -2,23 +2,33 @@ use crate::settings::*;
 
 pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
     let workspace_msgs = &crate::i18n::get().settings.workspace;
-    let settings = &mut state.config.settings;
 
     section_header(ui, &workspace_msgs.max_depth);
-    let mut max_depth = settings.settings().workspace.max_depth;
+    let mut max_depth = state.config.settings.settings().workspace.max_depth;
     let slider = egui::Slider::new(&mut max_depth, 1..=100);
     if add_styled_slider(ui, slider).changed() {
-        settings.settings_mut().workspace.max_depth = max_depth;
-        let _ = settings.save();
+        state.config.settings.settings_mut().workspace.max_depth = max_depth;
+        let _ = state.config.try_save_settings();
     }
 
     ui.add_space(SECTION_SPACING);
 
     section_header(ui, &workspace_msgs.ignored_directories);
-    let mut ignored = settings.settings().workspace.ignored_directories.clone();
+    let mut ignored = state
+        .config
+        .settings
+        .settings()
+        .workspace
+        .ignored_directories
+        .clone();
     if render_string_list_editor(ui, &mut ignored) {
-        settings.settings_mut().workspace.ignored_directories = ignored;
-        let _ = settings.save();
+        state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .ignored_directories = ignored;
+        let _ = state.config.try_save_settings();
     }
     ui.label(
         egui::RichText::new(&workspace_msgs.ignored_directories_hint)
@@ -29,7 +39,13 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
     ui.add_space(SECTION_SPACING);
 
     section_header(ui, &workspace_msgs.visible_extensions);
-    let mut extensions = settings.settings().workspace.visible_extensions.clone();
+    let mut extensions = state
+        .config
+        .settings
+        .settings()
+        .workspace
+        .visible_extensions
+        .clone();
     let mut changed_ext = false;
 
     ui.horizontal_wrapped(|ui| {
@@ -67,11 +83,18 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
     });
 
     if changed_ext {
-        settings.settings_mut().workspace.visible_extensions = extensions;
-        let _ = settings.save();
+        state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions = extensions;
+        let _ = state.config.try_save_settings();
     }
 
-    if settings
+    if state
+        .config
+        .settings
         .settings()
         .workspace
         .visible_extensions
@@ -80,10 +103,21 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
         ui.add_space(SECTION_SPACING);
 
         section_header(ui, &workspace_msgs.extensionless_excludes);
-        let mut excludes = settings.settings().workspace.extensionless_excludes.clone();
+        let mut excludes = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .extensionless_excludes
+            .clone();
         if render_string_list_editor(ui, &mut excludes) {
-            settings.settings_mut().workspace.extensionless_excludes = excludes;
-            let _ = settings.save();
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .extensionless_excludes = excludes;
+            let _ = state.config.try_save_settings();
         }
         ui.label(
             egui::RichText::new(&workspace_msgs.extensionless_excludes_hint)
@@ -124,18 +158,22 @@ pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_sta
         let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
 
         if confirm
-            && !settings
+            && !state
+                .config
+                .settings
                 .settings()
                 .workspace
                 .visible_extensions
                 .contains(&"".to_string())
         {
-            settings
+            state
+                .config
+                .settings
                 .settings_mut()
                 .workspace
                 .visible_extensions
                 .push("".to_string());
-            let _ = settings.save();
+            let _ = state.config.try_save_settings();
         }
 
         if should_close {

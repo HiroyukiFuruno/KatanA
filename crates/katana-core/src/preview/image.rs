@@ -50,35 +50,6 @@ fn find_image_replacements<'a>(
     replacements
 }
 
-#[cfg(test)]
-mod additional_tests {
-    use super::*;
-    use std::path::PathBuf;
-
-    #[test]
-    fn test_resolve_image_paths() {
-        let source = "![local](../img.png) ![abs](file:///img.png)";
-        let file_path = PathBuf::from("/docs/doc.md");
-        let (resolved, extracted) = resolve_image_paths(source, &file_path);
-        assert!(
-            resolved.contains("file:///docs/../img.png")
-                || resolved.contains("file:///docs/img.png")
-        ); // Depends on canonicalization
-        assert!(resolved.contains("file:///img.png"));
-        assert!(extracted.len() >= 1);
-    }
-
-    #[test]
-    fn test_find_image_replacements() {
-        use comrak::{parse_document, Arena, Options};
-        let arena = Arena::new();
-        let source = "![test](test.png)\n![test2](http://example.com/test.png)";
-        let root = parse_document(&arena, source, &Options::default());
-        let replacements = find_image_replacements(root, source);
-        assert_eq!(replacements.len(), 2);
-    }
-}
-
 fn process_image_node(
     node: &comrak::nodes::AstNode<'_>,
     source: &str,
@@ -127,4 +98,33 @@ pub fn resolve_html_image_paths(html: &str, md_file_path: &Path) -> String {
         }
     })
     .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_resolve_image_paths() {
+        let source = "![local](../img.png) ![abs](file:///img.png)";
+        let file_path = PathBuf::from("/docs/doc.md");
+        let (resolved, extracted) = resolve_image_paths(source, &file_path);
+        assert!(
+            resolved.contains("file:///docs/../img.png")
+                || resolved.contains("file:///docs/img.png")
+        ); // Depends on canonicalization
+        assert!(resolved.contains("file:///img.png"));
+        assert!(!extracted.is_empty());
+    }
+
+    #[test]
+    fn test_find_image_replacements() {
+        use comrak::{parse_document, Arena, Options};
+        let arena = Arena::new();
+        let source = "![test](test.png)\n![test2](http://example.com/test.png)";
+        let root = parse_document(&arena, source, &Options::default());
+        let replacements = find_image_replacements(root, source);
+        assert_eq!(replacements.len(), 2);
+    }
 }

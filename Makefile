@@ -171,6 +171,13 @@ ifndef VERSION
 endif
 	@USE_GITHUB_WORKFLOW=$(USE_GITHUB_WORKFLOW) FORCE=$(FORCE) scripts/release/release.sh $(VERSION)
 
+.PHONY: release-preflight
+release-preflight: ## Run preflight release checks without publishing (usage: make release-preflight VERSION=x.y.z)
+ifndef VERSION
+	$(error VERSION is required. Usage: make release-preflight VERSION=x.y.z)
+endif
+	@scripts/release/preflight.sh $(VERSION)
+
 ###################################
 # Maintenance
 ###################################

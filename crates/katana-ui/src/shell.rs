@@ -155,8 +155,8 @@ impl KatanaApp {
         }
 
         if show_changelog {
-            if let Err(e) = app.state.config.settings.save() {
-                tracing::warn!("Failed to save previous_app_version: {e}");
+            if !app.state.config.try_save_settings() {
+                tracing::warn!("Failed to save previous_app_version");
             }
             app.needs_changelog_display = true;
         }

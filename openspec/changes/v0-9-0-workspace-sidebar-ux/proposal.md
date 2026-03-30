@@ -1,10 +1,10 @@
 # OpenSpec Change Proposal: ワークスペースサイドバー UX 改善 (v0.9.0)
 
-## Why
+## 背景
 
 現在のワークスペースサイドバーは、タイトル文字列と複数の小型アイコンを同じヘッダー周辺に集約しており、検索・履歴・表示切り替えといった頻出操作の発見性と操作効率が低い。ワークスペースは KatanA の主要導線であるため、`v0.9.0` では左側アクティビティレールへの整理とヘッダーの再配置によって、より迷いにくい UI に更新する。
 
-## What Changes
+## 変更内容
 
 - ワークスペースペインから `Workspace` / `ワークスペース` の見出し文言を削除し、表示領域を操作とツリー本体に優先配分する。
 - 添付イメージのような左側アクティビティレールを追加し、ワークスペース表示切り替え、ファイル検索、最近のワークスペース履歴をそこから呼び出せるようにする。
@@ -14,19 +14,19 @@
 - 履歴ボタンは履歴 0 件でもレール内に残し、非活性表示でレイアウトの安定性を保つ。
 - 既存の collapsed toggle 専用サイドパネルは廃止し、レールが常時その役割を担う。
 
-## Capabilities
+## ケイパビリティ
 
-### New Capabilities
+### 追加されるケイパビリティ
 
 - `workspace-activity-rail`: 左側アクティビティレールでワークスペース表示切り替えと最近のワークスペース履歴を提供する。
 
-### Modified Capabilities
+### 変更されるケイパビリティ
 
 - `workspace-shell`: ワークスペースペインのタイトル表示を廃止し、ヘッダー操作の配置を再構成する。
 - `workspace-file-search`: ファイル検索モーダルを左側アクティビティレールから起動できるようにする。
 - `workspace-file-filter`: フィルタートグルと入力 UI を新しいヘッダー配置に合わせて維持する。
 
-## Impact
+## 影響範囲
 
 - 主な影響範囲は `crates/katana-ui/src/views/app_frame.rs`、`crates/katana-ui/src/views/panels/workspace.rs`、`crates/katana-ui/src/app_state.rs`、`crates/katana-ui/locales/*.json`。
 - 最近のワークスペース履歴は既存の `settings.workspace.paths` を再利用し、新しい永続化形式の導入は行わない。

@@ -1,11 +1,11 @@
 use crate::settings::*;
-use katana_platform::settings::SettingsService;
+
 use katana_platform::{PaneOrder, SplitDirection};
 
 pub(crate) fn render_layout_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
     let title = crate::i18n::get().settings.tab_name("layout");
     section_header(ui, &title);
-    render_toc_toggle(ui, &mut state.config.settings);
+    render_toc_toggle(ui, state);
     ui.add_space(SECTION_SPACING);
     render_toc_position_selector(ui, state);
     ui.add_space(SECTION_SPACING);
@@ -14,8 +14,8 @@ pub(crate) fn render_layout_tab(ui: &mut egui::Ui, state: &mut crate::app_state:
     render_pane_order_selector(ui, state);
 }
 
-pub(crate) fn render_toc_toggle(ui: &mut egui::Ui, settings: &mut SettingsService) {
-    let mut toc_visible = settings.settings().layout.toc_visible;
+pub(crate) fn render_toc_toggle(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+    let mut toc_visible = state.config.settings.settings().layout.toc_visible;
     if ui
         .add(
             crate::widgets::LabeledToggle::new(
@@ -27,8 +27,8 @@ pub(crate) fn render_toc_toggle(ui: &mut egui::Ui, settings: &mut SettingsServic
         )
         .changed()
     {
-        settings.settings_mut().layout.toc_visible = toc_visible;
-        let _ = settings.save();
+        state.config.settings.settings_mut().layout.toc_visible = toc_visible;
+        let _ = state.config.try_save_settings();
     }
 }
 
@@ -54,7 +54,7 @@ pub(crate) fn render_toc_position_selector(
             && current != TocPosition::Left
         {
             state.config.settings.settings_mut().layout.toc_position = TocPosition::Left;
-            let _ = state.config.settings.save();
+            let _ = state.config.try_save_settings();
         }
         if ui
             .selectable_label(
@@ -65,7 +65,7 @@ pub(crate) fn render_toc_position_selector(
             && current != TocPosition::Right
         {
             state.config.settings.settings_mut().layout.toc_position = TocPosition::Right;
-            let _ = state.config.settings.save();
+            let _ = state.config.try_save_settings();
         }
     });
 }
@@ -87,7 +87,7 @@ pub(crate) fn render_split_direction_selector(
         {
             state.config.settings.settings_mut().layout.split_direction =
                 SplitDirection::Horizontal;
-            let _ = state.config.settings.save();
+            let _ = state.config.try_save_settings();
         }
         if ui
             .selectable_label(
@@ -98,7 +98,7 @@ pub(crate) fn render_split_direction_selector(
             && current != SplitDirection::Vertical
         {
             state.config.settings.settings_mut().layout.split_direction = SplitDirection::Vertical;
-            let _ = state.config.settings.save();
+            let _ = state.config.try_save_settings();
         }
     });
 }
@@ -119,7 +119,7 @@ pub(crate) fn render_pane_order_selector(
             && current != PaneOrder::EditorFirst
         {
             state.config.settings.settings_mut().layout.pane_order = PaneOrder::EditorFirst;
-            let _ = state.config.settings.save();
+            let _ = state.config.try_save_settings();
         }
         if ui
             .selectable_label(
@@ -130,7 +130,7 @@ pub(crate) fn render_pane_order_selector(
             && current != PaneOrder::PreviewFirst
         {
             state.config.settings.settings_mut().layout.pane_order = PaneOrder::PreviewFirst;
-            let _ = state.config.settings.save();
+            let _ = state.config.try_save_settings();
         }
     });
 }

@@ -1,6 +1,6 @@
-# OpenSpec Change Proposal: Tab Groups and Session UX Improvements (v0.11.0)
+# OpenSpec 変更提案: タブグループとセッション UX 改善 (v0.11.0)
 
-## Why
+## 背景
 
 KatanA には既に次の土台がある。
 
@@ -15,7 +15,7 @@ KatanA には既に次の土台がある。
 
 したがって本 change は「last_session.json を新設する greenfield session 機能」ではなく、「既存の workspace-scoped session state を versioned に拡張し、tab groups と pin safeguards を載せる」変更として整理する。
 
-## What Changes
+## 変更内容
 
 - workspace-scoped `workspace_tabs` session envelope を versioned schema に拡張し、group / pinned / active / expanded state を保存できるようにする
 - tab group 機能を追加し、名前・色・collapsed state を持つグループへ tab を所属させられるようにする
@@ -23,19 +23,19 @@ KatanA には既に次の土台がある。
 - pinned tabs は close button、close shortcut、close all / others / left / right といった通常 close action から保護する
 - pinned / grouped session の backward compatibility を保つため、旧 session payload を read 時に既定値補完で受け入れる
 
-## Capabilities
+## ケイパビリティ
 
-### New Capabilities
+### 追加されるケイパビリティ
 
 - `editor-tab-groups`: 名前・色・collapsed state を持つ tab group
 
-### Modified Capabilities
+### 変更されるケイパビリティ
 
 - `workspace-shell`: workspace-scoped session restore の強化
 - `settings-persistence`: session restore setting と session schema version
 - `editor-tabs`: pinned tab safeguard と grouped tab rendering
 
-## Impact
+## 影響範囲
 
 - `crates/katana-ui/src/state/document.rs`: tab group state の導入
 - `crates/katana-ui/src/views/top_bar.rs`: grouped tab rendering、context menu、pinned close safeguard

@@ -29,9 +29,16 @@ impl<'a> MainPanels<'a> {
             .iter()
             .map(|t| t.filename.clone())
             .collect();
+        let mut resolved_status = app.state.layout.status_message.as_ref();
+        let settings_err_tuple;
+        if let Some(err) = &app.state.config.settings_save_error {
+            settings_err_tuple = (err.clone(), crate::app_state::StatusType::Error);
+            resolved_status = Some(&settings_err_tuple);
+        }
+
         egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
             crate::views::top_bar::StatusBar::new(
-                app.state.layout.status_message.as_ref(),
+                resolved_status,
                 app.state.is_dirty(),
                 &export_filenames,
             )

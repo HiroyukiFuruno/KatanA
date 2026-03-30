@@ -1,15 +1,15 @@
 ## MODIFIED Requirements
 
-### Requirement: The shell layout preserves the MVP navigation model
+### Requirement: シェルレイアウトは MVP ナビゲーションモデルを維持する
 
-The system SHALL present a desktop shell with dedicated areas for a workspace utility rail, workspace navigation, document editing, and preview rendering.
+システムは、ワークスペースユーティリティレール、ワークスペースナビゲーション、ドキュメント編集、プレビュー描画の各領域を持つデスクトップシェルを提供しなければならない（SHALL）。
 
-#### Scenario: Show the default MVP layout
+#### Scenario: 既定の MVP レイアウトを表示する
 
-- **WHEN** the application starts with an active workspace
-- **THEN** the user sees a workspace utility rail, a workspace pane, an editor pane, and a preview pane
-- **THEN** the workspace utility rail remains available even when the workspace pane is collapsed
-- **THEN** the shell reserves a consistent location for future menu and AI panel expansion
+- **WHEN** アクティブなワークスペースを持つ状態でアプリケーションが起動した時
+- **THEN** ユーザーにはワークスペースユーティリティレール、ワークスペースペイン、エディタペイン、プレビューペインが表示される
+- **THEN** ワークスペースペインが折りたたまれても、ワークスペースユーティリティレールは利用可能なまま残る
+- **THEN** シェルは将来の menu や AI panel 拡張のために一貫した配置領域を確保する
 
 ## ADDED Requirements
 

@@ -187,8 +187,8 @@ impl WorkspaceOps for KatanaApp {
             }
         }
 
-        if let Err(e) = self.state.config.settings.save() {
-            tracing::warn!("Failed to save settings: {e}");
+        if !self.state.config.try_save_settings() {
+            tracing::warn!("Failed to save settings");
         }
     }
     fn handle_refresh_workspace(&mut self) {
@@ -290,8 +290,8 @@ impl WorkspaceOps for KatanaApp {
             settings.workspace.last_workspace = None;
         }
 
-        if let Err(e) = self.state.config.settings.save() {
-            tracing::warn!("Failed to save settings after removing workspace: {e}");
+        if !self.state.config.try_save_settings() {
+            tracing::warn!("Failed to save settings after removing workspace");
         }
     }
     fn save_workspace_state(&mut self) {
@@ -315,8 +315,8 @@ impl WorkspaceOps for KatanaApp {
         let settings = self.state.config.settings.settings_mut();
         settings.workspace.open_tabs = open_tabs.clone();
         settings.workspace.active_tab_idx = idx;
-        if let Err(e) = self.state.config.settings.save() {
-            tracing::warn!("Failed to save workspace tab state: {e}");
+        if !self.state.config.try_save_settings() {
+            tracing::warn!("Failed to save workspace tab state");
         }
 
         if let Some(ws) = &self.state.workspace.data {

@@ -7,7 +7,6 @@ pub(crate) fn render_updates_tab(
     state: &mut crate::app_state::AppState,
 ) -> Option<AppAction> {
     let update_msgs = &crate::i18n::get().settings.updates;
-    let settings = &mut state.config.settings;
 
     section_header(ui, &update_msgs.section_title);
 
@@ -17,7 +16,7 @@ pub(crate) fn render_updates_tab(
     ui.horizontal(|ui| {
         ui.label(&update_msgs.interval);
 
-        let mut interval = settings.settings().updates.interval;
+        let mut interval = state.config.settings.settings().updates.interval;
         use katana_platform::settings::UpdateInterval;
         let mut changed = false;
 
@@ -46,8 +45,8 @@ pub(crate) fn render_updates_tab(
         });
 
         if changed {
-            settings.settings_mut().updates.interval = interval;
-            let _ = settings.save();
+            state.config.settings.settings_mut().updates.interval = interval;
+            let _ = state.config.try_save_settings();
         }
     });
 
