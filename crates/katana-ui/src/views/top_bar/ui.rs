@@ -534,7 +534,7 @@ impl ViewModeBar {
                         .on_hover_text(crate::i18n::get().action.refresh_document.clone())
                         .clicked()
                     {
-                        action = Some(AppAction::RefreshDocument);
+                        action = Some(AppAction::RefreshDocument { is_manual: true });
                     }
                     ui.separator();
 

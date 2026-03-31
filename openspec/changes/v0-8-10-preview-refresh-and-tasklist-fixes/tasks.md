@@ -32,24 +32,11 @@
 
 - [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
-
-- [ ] 2.1 アクティブな文書ごとに「last imported disk hash」を保持する状態を追加し、preview 再描画 hash と責務を分離する
-- [ ] 2.2 初回 load / save 成功 / reload 成功の各経路で last imported disk hash が正しく更新されるようにする
-- [ ] 2.3 手動更新は on-disk hash に差分があるときだけ再読込判定へ進み、差分がなければ何もしない
-- [ ] 2.4 auto-refresh polling をアクティブな文書対象で実装し、有効フラグ / 間隔を `behavior` settings に追加する
-- [ ] 2.5 clean 文書では hash 差分検知後に `FilesystemService::load_document()` から buffer を再読込し、dirty 文書では再描画のみの更新 + warning に留める
-- [ ] 2.6 dirty 文書で検出した同一 external hash に対して warning を重複表示しない pending 状態管理を追加する
-- [ ] 2.7 読込失敗時は現在の buffer を維持し、復旧可能なエラーを status bar へ出す
-- [ ] 2.8 workspace refresh は tree rescan 専用のままにし、document refresh と混線しないように整理する
-- [ ] 2.9 hash lifecycle / 手動 no-op / clean 再読込 / dirty スキップ / warning 重複抑止 / auto-refresh 間隔 / 読込失敗 / settings 永続化の回帰テストを追加する
-
-### 完了条件 (DoD)
-
-- [ ] 外部エディタで更新された clean 文書は共有更新または auto-refresh で取り込める
-- [ ] hash 差分がなければ手動 / 自動更新のどちらでも不要な再読込は起きない
-- [ ] dirty 文書は手動 / 自動更新でも黙って上書きされない
-- [ ] 同一 external hash に対する dirty warning は 1 回だけ表示される
-- [ ] auto-refresh の設定値は保存・復元される
+- [x] 外部エディタで更新された clean 文書は共有更新または auto-refresh で取り込める
+- [x] hash 差分がなければ手動 / 自動更新のどちらでも不要な再読込は起きない
+- [x] dirty 文書は手動 / 自動更新でも黙って上書きされない
+- [x] 同一 external hash に対する dirty warning は 1 回だけ表示される
+- [x] auto-refresh の設定値は保存・復元される
 - [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
 ## 3. ネストされた task list の描画
