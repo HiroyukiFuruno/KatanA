@@ -1,23 +1,23 @@
 ## ADDED Requirements
 
-### Requirement: Document auto-refresh behavior settings are persisted
+### Requirement: 文書の自動更新に関する挙動設定が永続化される
 
-The system SHALL persist the document auto-refresh enable flag and refresh interval as part of application behavior settings, and SHALL restore those values on the next launch.
+システムは、文書の自動更新の有効フラグと更新間隔をアプリケーションの挙動設定の一部として永続化し、次回起動時にそれらの値を復元しなければならない。
 
-#### Scenario: Save auto-refresh settings
+#### Scenario: 自動更新設定を保存する
 
-- **WHEN** the user changes the document auto-refresh enable flag or refresh interval in settings
-- **THEN** the updated values are saved to the application settings store
-- **THEN** the next launch restores the same values
+- **WHEN** ユーザーが settings で文書の自動更新の有効フラグまたは更新間隔を変更したとき
+- **THEN** 更新後の値がアプリケーション設定ストアに保存される
+- **THEN** 次回起動時に同じ値が復元される
 
-#### Scenario: Apply default auto-refresh settings
+#### Scenario: 既定の自動更新設定を適用する
 
-- **WHEN** the settings file does not yet contain document auto-refresh configuration
-- **THEN** the application applies the agreed default enable flag and default interval
-- **THEN** those defaults are exposed to the user through the settings UI
+- **WHEN** settings file にまだ文書の自動更新設定が含まれていないとき
+- **THEN** アプリケーションは合意済みの既定の有効フラグと既定間隔を適用する
+- **THEN** それらの既定値は settings UI を通じてユーザーに提示される
 
-#### Scenario: Invalid auto-refresh setting is encountered
+#### Scenario: 不正な自動更新設定に遭遇する
 
-- **WHEN** the persisted document auto-refresh interval is missing, malformed, or outside the supported range
-- **THEN** the application falls back to the defined default interval
-- **THEN** the rest of the settings payload remains recoverable
+- **WHEN** 永続化された文書の自動更新間隔が欠落している、形式不正である、またはサポート範囲外であるとき
+- **THEN** アプリケーションは定義済みの既定間隔へフォールバックする
+- **THEN** settings payload の残りは復旧可能なままである

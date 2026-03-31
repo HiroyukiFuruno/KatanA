@@ -1,70 +1,70 @@
 ## MODIFIED Requirements
 
-### Requirement: GitHub Flavored Markdown is supported in preview output
+### Requirement: プレビュー出力で GitHub Flavored Markdown をサポートする
 
-The system SHALL parse and render GitHub Flavored Markdown constructs supported by the chosen Markdown engine, including nested task lists, without introducing duplicate list markers for task items.
+システムは、選択された Markdown エンジンが対応する GitHub Flavored Markdown 構文を、ネストした task list を含めて解析および描画し、task 項目に重複した list marker を導入してはならない。
 
-#### Scenario: Render common GFM structures
+#### Scenario: 一般的な GFM 構造を描画する
 
-- **WHEN** the active document contains headings, lists, fenced code blocks, and tables supported by the Markdown engine
-- **THEN** the preview output preserves those structures in rendered form
-- **THEN** unsupported content degrades gracefully without crashing the application
+- **WHEN** アクティブな文書に Markdown エンジンが対応する見出し、list、fenced code block、table が含まれているとき
+- **THEN** preview 出力はそれらの構造を描画結果として維持する
+- **THEN** 未対応の内容もアプリケーションを crash させずに穏当に劣化する
 
-#### Scenario: Render a task list item that owns nested children
+#### Scenario: ネストした子要素を持つ task list item を描画する
 
-- **WHEN** the active document contains a task list item whose line begins with a checkbox marker and whose children contain nested bullet or ordered list items
-- **THEN** the parent line is rendered with the checkbox as its only leading marker
-- **THEN** the nested child list retains the existing bullet / ordered marker style and indentation rules
+- **WHEN** アクティブな文書に、行頭が checkbox marker で始まり、その子要素にネストした bullet または ordered list item を含む task list item があるとき
+- **THEN** 親行は checkbox を唯一の先頭 marker として描画される
+- **THEN** ネストされた子 list は既存の bullet / ordered marker のスタイルと indentation ルールを維持する
 
 ## ADDED Requirements
 
-### Requirement: Active Markdown documents use hash-managed disk refresh without implicit save
+### Requirement: アクティブな Markdown 文書は暗黙保存なしで hash 管理された disk 更新を利用する
 
-The system SHALL track a content hash for the last disk state imported into the active Markdown document, and SHALL use that hash for both user-triggered refresh and periodic automatic refresh without performing an implicit save.
+システムは、アクティブな Markdown 文書へ最後に取り込んだ disk state の content hash を追跡しなければならず、暗黙保存を行うことなく、その hash をユーザー起点の更新と定期的な自動更新の両方で利用しなければならない。
 
-#### Scenario: Initialize or advance the imported disk hash after successful synchronization
+#### Scenario: 同期成功後に imported disk hash を初期化または更新する
 
-- **WHEN** the active Markdown document is loaded from disk, saved successfully, or reloaded successfully
-- **THEN** the stored last imported disk hash is updated to match the synchronized disk contents
-- **THEN** subsequent refresh decisions compare against that updated hash
+- **WHEN** アクティブな Markdown 文書が disk から load されたとき、save に成功したとき、または reload に成功したとき
+- **THEN** 保存されている last imported disk hash は、同期済みの disk 内容と一致する値へ更新される
+- **THEN** 以後の更新判定はその更新済み hash と比較される
 
-#### Scenario: Manual refresh with unchanged hash
+#### Scenario: hash が変わっていない状態で手動更新する
 
-- **WHEN** the user triggers the shared refresh action and the current on-disk content hash matches the last imported disk hash
-- **THEN** the system skips document reload
-- **THEN** the in-memory buffer remains unchanged
+- **WHEN** ユーザーが共有更新 action を実行し、現在の on-disk content hash が last imported disk hash と一致しているとき
+- **THEN** システムは文書再読込を skip する
+- **THEN** in-memory buffer は変更されないままである
 
-#### Scenario: Reload a clean document after an external edit
+#### Scenario: 外部編集後に clean な文書を再読込する
 
-- **WHEN** the active Markdown document has no unsaved changes and its source file hash differs from the last imported disk hash
-- **THEN** the system reloads the file contents into the in-memory document buffer
-- **THEN** the stored disk hash is updated to the new imported value
-- **THEN** the preview is rerendered from the reloaded buffer, including supported diagram blocks
-- **THEN** the document remains marked as clean
+- **WHEN** アクティブな Markdown 文書に未保存変更がなく、その source file hash が last imported disk hash と異なるとき
+- **THEN** システムは file 内容を in-memory document buffer へ再読込する
+- **THEN** 保存されている disk hash は新たに取り込んだ値へ更新される
+- **THEN** preview は、対応する diagram block を含めて、再読込した buffer から再描画される
+- **THEN** 文書は clean のまま維持される
 
-#### Scenario: Automatic refresh detects an external edit on a clean document
+#### Scenario: 自動更新が clean な文書への外部編集を検出する
 
-- **WHEN** automatic refresh polling is enabled and the active Markdown document is clean
-- **THEN** the system periodically checks whether the current on-disk content hash differs from the last imported disk hash
-- **THEN** it reloads and rerenders only when the hash changed
+- **WHEN** automatic refresh polling が有効であり、アクティブな Markdown 文書が clean なとき
+- **THEN** システムは現在の on-disk content hash が last imported disk hash と異なるかを定期的に確認する
+- **THEN** hash が変わった場合にだけ reload と再描画を行う
 
-#### Scenario: Refresh a dirty document
+#### Scenario: dirty な文書を更新する
 
-- **WHEN** the active Markdown document has unsaved in-memory changes and either manual or automatic refresh detects that the on-disk content hash changed
-- **THEN** the system MUST NOT silently replace the in-memory buffer with on-disk contents
-- **THEN** the preview is refreshed from the current in-memory buffer instead
-- **THEN** the user is shown a recoverable warning that disk reload was skipped because the document is dirty
+- **WHEN** アクティブな Markdown 文書に未保存の in-memory 変更があり、手動更新または自動更新のいずれかで on-disk content hash の変更を検出したとき
+- **THEN** システムは in-memory buffer を on-disk 内容で黙って置き換えてはならない
+- **THEN** 代わりに preview は現在の in-memory buffer から更新される
+- **THEN** ユーザーには、文書が dirty のため disk reload を skip したことを示す復旧可能な警告が表示される
 
-#### Scenario: Dirty document warning is not repeated for the same external hash
+#### Scenario: 同じ external hash に対して dirty 文書の warning を繰り返さない
 
-- **WHEN** automatic refresh polling repeatedly observes the same changed on-disk content hash while the active document remains dirty
-- **THEN** the system records that an external change is pending for that hash
-- **THEN** it MUST NOT repeatedly emit the same warning on every polling interval
-- **THEN** the pending state is cleared only after a successful save, a successful reload, or the on-disk hash returns to the stored imported hash
+- **WHEN** automatic refresh polling が、アクティブな文書が dirty のまま同じ変更済み on-disk content hash を繰り返し観測したとき
+- **THEN** システムは、その hash に対して外部変更が pending であることを記録する
+- **THEN** すべての polling interval ごとに同じ warning を繰り返し出してはならない
+- **THEN** pending 状態は、save 成功、reload 成功、または on-disk hash が保存済み imported hash に戻った後にのみ解消される
 
-#### Scenario: Reload fails because the source file cannot be read
+#### Scenario: source file を読めずに再読込が失敗する
 
-- **WHEN** the active Markdown document is clean and refresh cannot read the source file from disk
-- **THEN** the current in-memory buffer is preserved
-- **THEN** the stored last imported disk hash remains unchanged
-- **THEN** the user is shown a recoverable error state
+- **WHEN** アクティブな Markdown 文書が clean であり、更新処理が source file を disk から読めないとき
+- **THEN** 現在の in-memory buffer は保持される
+- **THEN** 保存されている last imported disk hash は変更されないままである
+- **THEN** ユーザーには復旧可能なエラー状態が表示される

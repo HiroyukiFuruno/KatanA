@@ -1,23 +1,23 @@
 ## ADDED Requirements
 
-### Requirement: Shared document refresh is available from the common shell chrome
+### Requirement: 共通 shell chrome から文書の共有更新を利用できる
 
-The system SHALL expose a single active-document refresh control from common shell chrome, and that control SHALL remain available regardless of whether the active document is shown in CodeOnly, PreviewOnly, or Split mode.
+システムは、共通 shell chrome から単一のアクティブ文書更新コントロールを提供しなければならず、そのコントロールはアクティブな文書が CodeOnly、PreviewOnly、Split のいずれの mode で表示されている場合でも利用可能でなければならない。
 
-#### Scenario: Use shared refresh in CodeOnly mode
+#### Scenario: CodeOnly mode で共有更新を使う
 
-- **WHEN** an active Markdown document is open and the user switches to CodeOnly mode
-- **THEN** the shared refresh control remains visible in the common shell chrome
-- **THEN** invoking it applies the same refresh semantics as in other view modes
+- **WHEN** アクティブな Markdown 文書が開かれており、ユーザーが CodeOnly mode に切り替えたとき
+- **THEN** 共通 shell chrome で共有更新コントロールが表示されたままである
+- **THEN** それを実行すると、他の view mode と同じ更新セマンティクスが適用される
 
-#### Scenario: Use shared refresh in PreviewOnly or Split mode
+#### Scenario: PreviewOnly または Split mode で共有更新を使う
 
-- **WHEN** an active Markdown document is open and the user is in PreviewOnly or Split mode
-- **THEN** the same shared refresh control is available without requiring a preview-local alternative
-- **THEN** there is no second refresh control whose behavior diverges from the shared refresh semantics
+- **WHEN** アクティブな Markdown 文書が開かれており、ユーザーが PreviewOnly または Split mode にいるとき
+- **THEN** preview ローカルな代替手段を必要とせず、同じ共有更新コントロールを利用できる
+- **THEN** 共有更新セマンティクスと異なる挙動を持つ第 2 の更新コントロールは存在しない
 
-#### Scenario: No active document is selected
+#### Scenario: アクティブな文書が選択されていない
 
-- **WHEN** there is no active document
-- **THEN** the shared refresh control is disabled
-- **THEN** invoking refresh does not mutate workspace or preview state
+- **WHEN** アクティブな文書が存在しないとき
+- **THEN** 共有更新コントロールは無効化される
+- **THEN** 更新を実行しても workspace や preview の状態は変更されない
