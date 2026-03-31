@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.8-2] - Unreleased
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where version comparison logic failed to correctly parse hyphenated pre-release versions (e.g., `0.8.8-1`), preventing the Release Notes tab from automatically activating upon update.
+
 ## [0.8.8-1] - 2026-03-30 23:00:00 (UTC)
 
 ### 🐛 Bug Fixes
