@@ -343,5 +343,10 @@
     "rename_title": "名前変更",
     "delete_title": "削除の確認",
     "delete_confirm_msg": "'{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。"
+  },
+  "markdown": {
+    "task_todo": "未実施 [ ]",
+    "task_in_progress": "実施中 [/]",
+    "task_done": "完了 [x]"
   }
 }

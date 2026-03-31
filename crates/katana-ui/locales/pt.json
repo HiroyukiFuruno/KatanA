@@ -343,5 +343,10 @@
     "rename_title": "Renomear",
     "delete_title": "Excluir",
     "delete_confirm_msg": "Tem certeza que deseja excluir? {name}"
+  },
+  "markdown": {
+    "task_todo": "Tarefa [ ]",
+    "task_in_progress": "Em andamento [/]",
+    "task_done": "Concluído [x]"
   }
 }

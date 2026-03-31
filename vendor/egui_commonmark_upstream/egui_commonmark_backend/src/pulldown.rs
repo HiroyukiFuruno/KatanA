@@ -17,12 +17,12 @@ pub type EventIteratorItem<'e> = (usize, (pulldown_cmark::Event<'e>, Range<usize
 pub fn delayed_events<'e>(
     events: &mut impl Iterator<Item = EventIteratorItem<'e>>,
     end_at: impl Fn(pulldown_cmark::TagEnd) -> bool,
-) -> Vec<(pulldown_cmark::Event<'e>, Range<usize>)> {
+) -> Vec<EventIteratorItem<'e>> {
     let mut curr_event = events.next();
     let mut total_events = Vec::new();
     loop {
         if let Some(event) = curr_event.take() {
-            total_events.push(event.1.clone());
+            total_events.push(event.clone());
             if let (_, (pulldown_cmark::Event::End(tag), _range)) = event {
                 if end_at(tag) {
                     return total_events;
@@ -38,12 +38,12 @@ pub fn delayed_events<'e>(
 
 pub fn delayed_events_list_item<'e>(
     events: &mut impl Iterator<Item = EventIteratorItem<'e>>,
-) -> Vec<(pulldown_cmark::Event<'e>, Range<usize>)> {
+) -> Vec<EventIteratorItem<'e>> {
     let mut curr_event = events.next();
     let mut total_events = Vec::new();
     loop {
         if let Some(event) = curr_event.take() {
-            total_events.push(event.1.clone());
+            total_events.push(event.clone());
             if let (_, (pulldown_cmark::Event::End(pulldown_cmark::TagEnd::Item), _range)) = event {
                 return total_events;
             }
@@ -60,7 +60,7 @@ pub fn delayed_events_list_item<'e>(
     }
 }
 
-type Column<'e> = Vec<(pulldown_cmark::Event<'e>, Range<usize>)>;
+type Column<'e> = Vec<EventIteratorItem<'e>>;
 type Row<'e> = Vec<Column<'e>>;
 
 pub struct Table<'e> {
@@ -69,12 +69,12 @@ pub struct Table<'e> {
 }
 
 fn parse_row<'e>(
-    events: &mut impl Iterator<Item = (pulldown_cmark::Event<'e>, Range<usize>)>,
+    events: &mut impl Iterator<Item = EventIteratorItem<'e>>,
 ) -> Vec<Column<'e>> {
     let mut row = Vec::new();
     let mut column = Vec::new();
 
-    for (e, src_span) in events.by_ref() {
+    for (index, (e, src_span)) in events.by_ref() {
         match &e {
             pulldown_cmark::Event::End(pulldown_cmark::TagEnd::TableCell) => {
                 row.push(column);
@@ -94,7 +94,7 @@ fn parse_row<'e>(
             _ => {}
         }
 
-        column.push((e, src_span));
+        column.push((index, (e, src_span)));
     }
 
     row
@@ -123,7 +123,7 @@ pub fn parse_table<'e>(events: &mut impl Iterator<Item = EventIteratorItem<'e>>)
 /// Assumes that the first element is a Paragraph
 pub fn parse_alerts<'a>(
     alerts: &'a AlertBundle,
-    events: &mut Vec<(pulldown_cmark::Event<'_>, Range<usize>)>,
+    events: &mut Vec<EventIteratorItem<'_>>,
 ) -> Option<&'a Alert> {
     // no point in parsing if there are no alerts to render
     if !alerts.is_empty() {
@@ -131,7 +131,7 @@ pub fn parse_alerts<'a>(
         let mut alert_ident_ends_at = 0;
         let mut has_extra_line = false;
 
-        for (i, (e, _src_span)) in events.iter().enumerate() {
+        for (i, (_, (e, _src_span))) in events.iter().enumerate() {
             if let pulldown_cmark::Event::End(_) = e {
                 // > [!TIP]
                 // >

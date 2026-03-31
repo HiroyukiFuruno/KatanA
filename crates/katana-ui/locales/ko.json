@@ -343,5 +343,10 @@
     "rename_title": "이름 바꾸기",
     "delete_title": "삭제",
     "delete_confirm_msg": "삭제하시겠습니까? {name}"
+  },
+  "markdown": {
+    "task_todo": "할 일 [ ]",
+    "task_in_progress": "진행 중 [/]",
+    "task_done": "완료 [x]"
   }
 }

@@ -343,5 +343,10 @@
     "rename_title": "Renommer",
     "delete_title": "Supprimer",
     "delete_confirm_msg": "Sûr de supprimer ? {name}"
+  },
+  "markdown": {
+    "task_todo": "Tâche [ ]",
+    "task_in_progress": "En cours [/]",
+    "task_done": "Terminé [x]"
   }
 }

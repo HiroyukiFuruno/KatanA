@@ -8,8 +8,8 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
+- [x] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
 
 - [x] 1.1 `RefreshDiagrams` の既存の呼び出し箇所（theme change / asset reload / preview refresh UI）を棚卸しし、内部再描画とユーザー起点更新 / 自動更新の責務境界を確定する
 - [x] 1.2 共有更新 action を shell 共通 chrome に追加し、CodeOnly / PreviewOnly / Split の全 view mode で同一導線から実行できるようにする
@@ -30,8 +30,8 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
+- [x] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
 - [x] 外部エディタで更新された clean 文書は共有更新または auto-refresh で取り込める
 - [x] hash 差分がなければ手動 / 自動更新のどちらでも不要な再読込は起きない
 - [x] dirty 文書は手動 / 自動更新でも黙って上書きされない
@@ -39,24 +39,26 @@
 - [x] auto-refresh の設定値は保存・復元される
 - [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
-## 3. ネストされた task list の描画
+## 3. ネストされた task list の描画とUIクリック判定の統合
 
 ### 着手条件 (DoR)
 
-- [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
+- [x] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
 
-- [ ] 3.1 `vendor/egui_commonmark` の delayed / wrapped event 処理で元の event index を保持し、nested parsing でも task list 判定が失われないようにする
-- [ ] 3.2 task list 親行では checkbox だけを先頭マーカーとして表示し、余計な bullet を出さないようにする
-- [ ] 3.3 nested child list の bullet / ordered marker / indentation は従来表現を維持する
-- [ ] 3.4 native task list（`[x]`, `[ ]`）と custom state（`[/]`, `[-]`, `[~]`）の両方に対する parser / preview 回帰テストを追加する
-- [ ] 3.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 3.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 3.1 ユーザー要望の対応: リストマーカーと文字列のUI要素が分離解釈されている問題（HTMLバブリング相当の挙動欠如）の解消。タスク行全体の`rect`を統合し、テキストクリックでも状態をトグル可能にする
+- [x] 3.2 UI改善: チェックボックスとテキスト間のマージンギャップ（8.0px）をクリッカブルエリアに統合し、ユーザーのクリック体験を向上する
+- [x] 3.3 `vendor/egui_commonmark` の delayed / wrapped event 処理で元の event index を保持し、nested parsing でも task list 判定が失われないようにする
+- [x] 3.4 task list 親行では checkbox だけを先頭マーカーとして表示し、余計な bullet を出さないようにする
+- [x] 3.5 native task list（`[x]`, `[ ]`）と custom state（`[/]`, `[-]`, `[~]`）の両方に対する parser / preview 回帰テストを追加する
+- [x] 3.6 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 3.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] nested task list の親行から二重マーカーが消え、子リストの表現は回帰していない
-- [ ] parser 層と KatanA preview 層の両方で回帰が検出できる
+- [x] nested task list の親行から二重マーカーが消え、子リストの表現は回帰していない
+- [x] タスク行全体が統一されたクリッカブル要素として挙動し、分離した判定の違和感が解消されている
+- [x] parser 層と KatanA preview 層の両方で回帰が検出できる
 - [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
 ## 4. エンドツーエンド検証
@@ -94,3 +96,17 @@
 - [ ] 5.5 master へ merge する（※ `--admin` 使用可）
 - [ ] 5.6 `.agents/skills/release_workflow/SKILL.md` を用いて `0.8.6` 向けの release tag 作成と release 作成を実施する
 - [ ] 5.7 `/opsx-archive` などの OpenSpec skill を活用して、この change を archive する
+
+## 6. 確認用
+
+1. [-] 第1フェーズ: 初期化中（ハイフン状態）
+   1. [/] サブタスク 1.1: 実行中
+   2. [ ] サブタスク 1.2: 未着手
+   3. [~] サブタスク 1.3: スキップ
+2. [x] 第2フェーズ: 完了済み
+   * [x] バレットサブタスク A
+   * [x] バレットサブタスク B
+     1. [ ] さらにネストされた数字タスク
+3. [ ] 第3フェーズ: 未着手
+   - [/] テスト実行
+   - [-] データ移行

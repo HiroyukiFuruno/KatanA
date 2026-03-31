@@ -343,5 +343,10 @@
     "rename_title": "重新命名",
     "delete_title": "刪除",
     "delete_confirm_msg": "確定要刪除嗎？ {name}"
+  },
+  "markdown": {
+    "task_todo": "待辦 [ ]",
+    "task_in_progress": "進行中 [/]",
+    "task_done": "完成 [x]"
   }
 }

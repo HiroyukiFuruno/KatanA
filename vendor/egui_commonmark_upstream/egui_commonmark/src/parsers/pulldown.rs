@@ -114,9 +114,13 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     block_states: Vec<(f32, std::ops::Range<usize>)>,
     active_bg_color: Option<egui::Color32>,
     hover_bg_color: Option<egui::Color32>,
+    custom_task_box_fn: Option<&'a dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
+    custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
+    custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         scroll_to_heading_index: Option<usize>,
         heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
@@ -125,6 +129,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
         hovered_spans: Option<&'a mut Vec<std::ops::Range<usize>>>,
         active_bg_color: Option<egui::Color32>,
         hover_bg_color: Option<egui::Color32>,
+        custom_task_box_fn: Option<&'a dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
+        custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
+        custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
     ) -> Self {
         Self {
             curr_table: 0,
@@ -157,6 +164,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
             block_states: Vec::new(),
             active_bg_color,
             hover_bg_color,
+            custom_task_box_fn,
+            custom_emoji_fn,
+            custom_task_context_menu_fn,
         }
     }
 }
@@ -301,36 +311,30 @@ impl<'a> CommonMarkViewerInternal<'a> {
             // Render text using Label (identical to non-strikethrough path)
             // so that list indentation, wrapping, and positioning are correct.
             let layout_job_for_galley = layout_job.clone();
-            let mut response = ui.add(egui::Label::new(layout_job).wrap().halign(halign));
+            let sense = if let Some((_, _, mutable)) = self.active_task_context_menu.clone() {
+                if mutable { egui::Sense::click() } else { egui::Sense::hover() }
+            } else {
+                egui::Sense::hover()
+            };
 
-            // Attach context menu to the text response if we are within an active task
-            if let Some((_state, ref span, mutable)) = self.active_task_context_menu {
-                response = ui.interact(response.rect, response.id.with("hitbox"), if mutable { egui::Sense::click() } else { egui::Sense::hover() });
-                
+            let mut response = ui.add(egui::Label::new(layout_job).wrap().halign(halign).sense(sense));
+            
+            // Attach interactions to the text response if we are within an active task
+            if let Some((state, span, mutable)) = self.active_task_context_menu.clone() {
+                // If it is mutable, it might be clicked, we also change cursor to a hand
                 if mutable {
-                    response.context_menu(|ui| {
-                        if ui.button("未実施 [ ]").clicked() {
-                            self.checkbox_events.push(crate::TaskListAction {
-                                span: span.clone(),
-                                new_state: ' ',
-                            });
-                            ui.close();
-                        }
-                        if ui.button("実施中 [/]").clicked() {
-                            self.checkbox_events.push(crate::TaskListAction {
-                                span: span.clone(),
-                                new_state: '/',
-                            });
-                            ui.close();
-                        }
-                        if ui.button("完了 [x]").clicked() {
-                            self.checkbox_events.push(crate::TaskListAction {
-                                span: span.clone(),
-                                new_state: 'x',
-                            });
-                            ui.close();
-                        }
-                    });
+                    response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                    
+                    if let Some(menu_fn) = self.custom_task_context_menu_fn {
+                        menu_fn(&response, state, span.clone(), mutable, &mut self.checkbox_events);
+                    } else if response.clicked() {
+                        let new_state = if state == ' ' { 'x' } else { ' ' };
+                        self.checkbox_events.push(crate::TaskListAction {
+                            span: span.clone(),
+                            new_state,
+                        });
+                        self.active_task_context_menu = Some((new_state, span.clone(), mutable));
+                    }
                 }
             }
 
@@ -388,36 +392,29 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
             }
         } else {
-            let mut response = ui.add(egui::Label::new(layout_job).wrap().halign(halign));
+            let sense = if let Some((_, _, mutable)) = self.active_task_context_menu.clone() {
+                if mutable { egui::Sense::click() } else { egui::Sense::hover() }
+            } else {
+                egui::Sense::hover()
+            };
+
+            let mut response = ui.add(egui::Label::new(layout_job).wrap().halign(halign).sense(sense));
             
-            // Attach context menu to the text response if we are within an active task
-            if let Some((_state, ref span, mutable)) = self.active_task_context_menu {
-                response = ui.interact(response.rect, response.id.with("hitbox"), if mutable { egui::Sense::click() } else { egui::Sense::hover() });
-                
+            // Attach interactions to the text response if we are within an active task
+            if let Some((state, span, mutable)) = self.active_task_context_menu.clone() {
                 if mutable {
-                    response.context_menu(|ui| {
-                        if ui.button("未実施 [ ]").clicked() {
-                            self.checkbox_events.push(crate::TaskListAction {
-                                span: span.clone(),
-                                new_state: ' ',
-                            });
-                            ui.close();
-                        }
-                        if ui.button("実施中 [/]").clicked() {
-                            self.checkbox_events.push(crate::TaskListAction {
-                                span: span.clone(),
-                                new_state: '/',
-                            });
-                            ui.close();
-                        }
-                        if ui.button("完了 [x]").clicked() {
-                            self.checkbox_events.push(crate::TaskListAction {
-                                span: span.clone(),
-                                new_state: 'x',
-                            });
-                            ui.close();
-                        }
-                    });
+                    response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                    
+                    if let Some(menu_fn) = self.custom_task_context_menu_fn {
+                        menu_fn(&response, state, span.clone(), mutable, &mut self.checkbox_events);
+                    } else if response.clicked() {
+                        let new_state = if state == ' ' { 'x' } else { ' ' };
+                        self.checkbox_events.push(crate::TaskListAction {
+                            span: span.clone(),
+                            new_state,
+                        });
+                        self.active_task_context_menu = Some((new_state, span.clone(), mutable));
+                    }
                 }
             }
         }
@@ -465,16 +462,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
     }
 
     fn try_render_inline_emoji(&mut self, ui: &mut Ui, max_width: f32, grapheme: &str) -> bool {
-        #[cfg(target_os = "macos")]
-        {
+        if let Some(emoji_fn) = self.custom_emoji_fn {
             let pixel_size = self
                 .current_inline_font_size(ui)
                 .ceil()
                 .max(INLINE_EMOJI_MIN_PIXEL_SIZE as f32) as u32;
             let display_size = pixel_size as f32 * INLINE_EMOJI_DISPLAY_SCALE;
-            if let Some(bytes) =
-                katana_core::emoji::render_apple_color_emoji_png(grapheme, pixel_size)
-            {
+            
+            if let Some(bytes) = emoji_fn(grapheme, pixel_size) {
                 self.flush_pending_inline(ui, max_width);
                 ui.add(
                     egui::Image::from_bytes(inline_emoji_uri(grapheme, pixel_size), bytes)
@@ -483,13 +478,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 self.after_inline_widget = true;
                 return true;
             }
-        }
-
-        #[cfg(not(target_os = "macos"))]
-        {
-            let _ = ui;
-            let _ = max_width;
-            let _ = grapheme;
         }
 
         false
@@ -1138,14 +1126,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 matches!(tag, pulldown_cmark::TagEnd::DefinitionListDefinition)
             });
 
-            let mut events_iter = item_events.into_iter().enumerate().peekable();
+            let mut events_iter = item_events.into_iter().peekable();
 
             self.line.try_insert_start(ui);
 
             // Proccess a single event separately so that we do not insert spaces where we do not
             // want them
             self.line.should_start_newline = false;
-            if let Some((_, (e, src_span))) = events_iter.next() {
+            if let Some((index, (e, src_span))) = events_iter.next() {
+                self.current_event_idx = index;
                 self.process_event(ui, &mut events_iter, e, src_span, cache, options, max_width);
             }
 
@@ -1154,7 +1143,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
             self.line.should_end_newline = false;
             // Required to ensure that the content is aligned with the identation
             ui.horizontal_wrapped(|ui| {
-                while let Some((_, (e, src_span))) = events_iter.next() {
+                while let Some((index, (e, src_span))) = events_iter.next() {
+                    self.current_event_idx = index;
                     self.process_event(
                         ui,
                         &mut events_iter,
@@ -1196,19 +1186,35 @@ impl<'a> CommonMarkViewerInternal<'a> {
             self.is_list_item = false;
 
             let item_events = delayed_events_list_item(events);
-            let mut events_iter = item_events.into_iter().enumerate().peekable();
+            let mut events_iter = item_events.clone().into_iter().peekable();
 
-            // Required to ensure that the content of the list item is aligned with
-            // the * or - when wrapping
-            ui.horizontal_wrapped(|ui| {
-                // Inside blockquotes, the bullet was NOT added by start_tag(Item) because
-                // that would place it in a separate top_down row.  Draw it here so that
-                // bullet and text share the same horizontal_wrapped row.
-                if self.inside_blockquote {
-                    let is_task_list = self.task_list_indices.contains(&self.current_event_idx);
-                    self.list.start_item(ui, options, true, is_task_list);
+            // Check if this item is a task list by scanning the events until we find Text or another Item/Block
+            // Tasks usually have Start(Paragraph) then TaskListMarker or Html(KATANA_TASK).
+            let mut is_task_list = false;
+            for (_, (e, _)) in item_events.iter().take(5) {
+                match e {
+                    pulldown_cmark::Event::Html(html) if html.starts_with("<!-- KATANA_TASK:") => {
+                        is_task_list = true;
+                        break;
+                    }
+                    pulldown_cmark::Event::TaskListMarker(_) => {
+                        is_task_list = true;
+                        break;
+                    }
+                    pulldown_cmark::Event::Text(_) => break, // Stop checking if we hit text
+                    _ => {}
                 }
-                while let Some((_, (e, src_span))) = events_iter.next() {
+            }
+
+            self.list.start_item_newline(ui, self.inside_blockquote);
+
+            ui.horizontal_wrapped(|ui| {
+                // Call start_item_content here instead of in Tag::Item so that the bullet/number
+                // is grouped within the same flex layout as the actual content.
+                self.list.start_item_content(ui, options, is_task_list);
+
+                while let Some((index, (e, src_span))) = events_iter.next() {
+                    self.current_event_idx = index;
                     self.process_event(
                         ui,
                         &mut events_iter,
@@ -1246,8 +1252,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
             if let Some(alert) = parse_alerts(&options.alerts, &mut collected_events) {
                 egui_commonmark_backend::alert_ui(alert, ui, |ui| {
-                    let mut events_iter = collected_events.into_iter().enumerate().peekable();
-                    while let Some((_, (e, src_span))) = events_iter.next() {
+                    let mut events_iter = collected_events.into_iter().peekable();
+                    while let Some((index, (e, src_span))) = events_iter.next() {
+                        self.current_event_idx = index;
                         self.process_event(
                             ui,
                             &mut events_iter,
@@ -1264,8 +1271,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     // Reduce vertical spacing between inner elements for a compact look.
                     ui.spacing_mut().item_spacing.y = 2.0;
                     self.text_style.quote = true;
-                    let mut events_iter = collected_events.into_iter().enumerate().peekable();
-                    while let Some((_, (e, src_span))) = events_iter.next() {
+                    let mut events_iter = collected_events.into_iter().peekable();
+                    while let Some((index, (e, src_span))) = events_iter.next() {
+                        self.current_event_idx = index;
                         self.process_event(
                             ui,
                             &mut events_iter,
@@ -1388,7 +1396,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                         .unwrap_or(&pulldown_cmark::Alignment::None);
 
                                     Self::apply_alignment(ui, alignment, min_col, |ui| {
-                                        for (e, src_span) in col {
+                                        for (index, (e, src_span)) in col {
                                             let tmp_start = std::mem::replace(
                                                 &mut self.line.should_start_newline,
                                                 false,
@@ -1397,6 +1405,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                                 &mut self.line.should_end_newline,
                                                 false,
                                             );
+                                            self.current_event_idx = *index;
                                             self.event(
                                                 ui,
                                                 e.clone(),
@@ -1432,7 +1441,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                                 .unwrap_or(&pulldown_cmark::Alignment::None);
 
                                             Self::apply_alignment(ui, alignment, min_col, |ui| {
-                                                for (e, src_span) in col_data {
+                                                for (index, (e, src_span)) in col_data {
                                                     let tmp_start = std::mem::replace(
                                                         &mut self.line.should_start_newline,
                                                         false,
@@ -1441,6 +1450,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                                         &mut self.line.should_end_newline,
                                                         false,
                                                     );
+                                                    self.current_event_idx = *index;
                                                     self.event(
                                                         ui,
                                                         e.clone(),
@@ -1551,31 +1561,39 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             egui::pos2(ui.min_rect().left(), start_y),
                             egui::pos2(ui.min_rect().right(), end_y),
                         );
-                        if let Some(active) = &self.active_char_range {
-                            if active.start <= span.end && active.end >= span.start {
-                                self.active_rects.push((rect, span.clone()));
-                                let highlight_color = self.active_bg_color.unwrap_or_else(|| {
-                                    if ui.visuals().dark_mode {
-                                        egui::Color32::from_white_alpha(15)
-                                    } else {
-                                        egui::Color32::from_black_alpha(15)
-                                    }
-                                });
-                                ui.painter().rect_filled(rect, 1.0, highlight_color);
-                            }
-                        }
-                        if let Some(hovered) = &mut self.hovered_spans {
-                            if let Some(pos) = ui.ctx().pointer_hover_pos() {
-                                if rect.contains(pos) {
-                                    hovered.push(span.clone());
-                                    let hover_color = self.hover_bg_color.unwrap_or_else(|| {
+                        let is_container = matches!(
+                            tag,
+                            pulldown_cmark::TagEnd::Item
+                                | pulldown_cmark::TagEnd::List(_)
+                                | pulldown_cmark::TagEnd::BlockQuote(_)
+                        );
+                        if !is_container {
+                            if let Some(active) = &self.active_char_range {
+                                if active.start <= span.end && active.end >= span.start {
+                                    self.active_rects.push((rect, span.clone()));
+                                    let highlight_color = self.active_bg_color.unwrap_or_else(|| {
                                         if ui.visuals().dark_mode {
-                                            egui::Color32::from_white_alpha(8)
+                                            egui::Color32::from_white_alpha(15)
                                         } else {
-                                            egui::Color32::from_black_alpha(8)
+                                            egui::Color32::from_black_alpha(15)
                                         }
                                     });
-                                    ui.painter().rect_filled(rect, 1.0, hover_color);
+                                    ui.painter().rect_filled(rect, 1.0, highlight_color);
+                                }
+                            }
+                            if let Some(hovered) = &mut self.hovered_spans {
+                                if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                                    if rect.contains(pos) {
+                                        hovered.push(span.clone());
+                                        let hover_color = self.hover_bg_color.unwrap_or_else(|| {
+                                            if ui.visuals().dark_mode {
+                                                egui::Color32::from_white_alpha(8)
+                                            } else {
+                                                egui::Color32::from_black_alpha(8)
+                                            }
+                                        });
+                                        ui.painter().rect_filled(rect, 1.0, hover_color);
+                                    }
                                 }
                             }
                         }
@@ -1616,13 +1634,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             // Activate context menu state for subsequent text events in this list item
                             self.active_task_context_menu = Some((state_char, src_span.clone(), options.mutable));
                             
-                            crate::ui_components::task_list::katana_task_box(
-                                ui, 
-                                state_char, 
-                                src_span, 
-                                options.mutable, 
-                                &mut self.checkbox_events
-                            );
+                            if let Some(task_box_fn) = self.custom_task_box_fn {
+                                task_box_fn(
+                                    ui, 
+                                    state_char, 
+                                    src_span, 
+                                    options.mutable, 
+                                    &mut self.checkbox_events
+                                );
+                            }
                             return;
                         }
                     }
@@ -1696,6 +1716,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
             pulldown_cmark::Event::TaskListMarker(mut checkbox) => {
                 self.after_inline_widget = false;
                 self.flush_pending_inline(ui, max_width);
+                
+                // Keep the row text clickable and active for context menu
+                let state_char = if checkbox { 'x' } else { ' ' };
+                self.active_task_context_menu = Some((state_char, src_span.clone(), options.mutable));
+                
                 if options.mutable {
                     let mut is_checked = checkbox;
                     let response = ui.add(egui::Checkbox::without_text(&mut is_checked));
@@ -1827,11 +1852,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 // Clear any active task context if a new item starts (safety)
                 self.active_task_context_menu = None;
                 self.is_list_item = true;
-                let is_task_list = self.task_list_indices.contains(&self.current_event_idx);
-
-                if !self.inside_blockquote {
-                    self.list.start_item(ui, options, false, is_task_list);
-                }
+                
+                // Bullet rendering and is_task_list logic is now handled in item_list_wrapping 
+                // so that the bullet perfectly aligns horizontally with the child text content.
             }
 
             pulldown_cmark::Tag::FootnoteDefinition(note) => {
@@ -2171,24 +2194,39 @@ pub(crate) fn extract_custom_task_lists<'e>(
             let item_start_idx = out.len();
             out.push(events[i].clone());
 
+            // The start of the item content. Usually it is a Start(Paragraph), but sometimes directly the marker.
+            let mut offset = 1;
+
+            if i + offset < events.len() {
+                if let pulldown_cmark::Event::Start(pulldown_cmark::Tag::Paragraph) = &events[i + offset].0 {
+                    offset += 1;
+                }
+            }
+
             // Check for native TaskListMarker
-            if i + 1 < events.len() {
-                if let pulldown_cmark::Event::TaskListMarker(checked) = &events[i + 1].0 {
+            if i + offset < events.len() {
+                if let pulldown_cmark::Event::TaskListMarker(checked) = &events[i + offset].0 {
                     task_list_indices.insert(item_start_idx);
                     let c = if *checked { 'x' } else { ' ' };
-                    let span = events[i + 1].1.clone();
+                    let span = events[i + offset].1.clone();
                     let marker = format!("<!-- KATANA_TASK:{} -->", c);
                     out.push((pulldown_cmark::Event::Html(marker.into()), span));
-                    i += 2;
+                    
+                    // We need to inject the paragraph start if it was there
+                    if offset > 1 {
+                        out.insert(out.len() - 1, events[i + 1].clone());
+                    }
+                    
+                    i += offset + 1;
                     continue;
                 }
             }
 
             // Check for custom task list e.g. [/], [-], [~] as Text
-            if i + 3 < events.len() {
-                if let (pulldown_cmark::Event::Text(t1), span1) = &events[i + 1] {
-                    if let (pulldown_cmark::Event::Text(t2), _) = &events[i + 2] {
-                        if let (pulldown_cmark::Event::Text(t3), span3) = &events[i + 3] {
+            if i + offset + 2 < events.len() {
+                if let (pulldown_cmark::Event::Text(t1), span1) = &events[i + offset] {
+                    if let (pulldown_cmark::Event::Text(t2), _) = &events[i + offset + 1] {
+                        if let (pulldown_cmark::Event::Text(t3), span3) = &events[i + offset + 2] {
                             if t1.as_ref() == "[" && t3.as_ref() == "]" && t2.as_ref().len() == 1 {
                                 task_list_indices.insert(item_start_idx);
                                 let c = t2.as_ref().chars().next().unwrap();
@@ -2196,7 +2234,12 @@ pub(crate) fn extract_custom_task_lists<'e>(
                                 let marker = format!("<!-- KATANA_TASK:{} -->", c);
                                 out.push((pulldown_cmark::Event::Html(marker.into()), merged_span));
 
-                                i += 4;
+                                // Inject paragraph start if present
+                                if offset > 1 {
+                                    out.insert(out.len() - 1, events[i + 1].clone());
+                                }
+
+                                i += offset + 3;
                                 // Strip leading space from the subsequent text event
                                 if i < events.len() {
                                     if let (pulldown_cmark::Event::Text(t4), span4) = &events[i] {

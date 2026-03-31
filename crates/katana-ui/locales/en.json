@@ -343,5 +343,10 @@
     "rename_title": "Rename",
     "delete_title": "Confirm Deletion",
     "delete_confirm_msg": "Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+  },
+  "markdown": {
+    "task_todo": "Todo [ ]",
+    "task_in_progress": "In Progress [/]",
+    "task_done": "Done [x]"
   }
 }

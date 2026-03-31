@@ -62,7 +62,10 @@ pub(crate) fn show_section(
                     .heading_offset(heading_offset)
                     .render_html_fn(Some(&binding))
                     .render_math_fn(Some(&math_binding))
-                    .hover_bg_color(hover_bg_color);
+                    .hover_bg_color(hover_bg_color)
+                    .custom_task_box_fn(Some(&crate::widgets::katana_task_box))
+                    .custom_task_context_menu_fn(Some(&crate::widgets::katana_task_context_menu))
+                    .custom_emoji_fn(Some(&katana_core::emoji::render_apple_color_emoji_png));
 
                 if let Some(idx) = scroll_to_heading_index {
                     viewer = viewer.scroll_to_heading_index(idx);

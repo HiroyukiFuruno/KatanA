@@ -158,7 +158,49 @@ pub mod task_list {
             });
         }
         
-        // Add margin between checkbox and text
-        ui.add_space(8.0);
+        // Add interactable margin between checkbox and text (Task 3.2 UI Improvement)
+        let mut gap_response = ui.allocate_response(
+            egui::vec2(8.0, ui.spacing().icon_width), // Match height of checkbox to prevent stretching
+            if mutable { egui::Sense::click() } else { egui::Sense::hover() }
+        );
+        
+        if mutable {
+            gap_response = gap_response.on_hover_cursor(egui::CursorIcon::PointingHand);
+            if gap_response.clicked() {
+                let new_state = match state {
+                    ' ' => 'x',
+                    '/' | '-' | '~' => 'x',
+                    'x' | 'X' => ' ',
+                    _ => ' ',
+                };
+                events.push(crate::TaskListAction {
+                    span: span.clone(),
+                    new_state,
+                });
+            }
+            gap_response.context_menu(|ui| {
+                if ui.button("未実施 [ ]").clicked() {
+                    events.push(crate::TaskListAction {
+                        span: span.clone(),
+                        new_state: ' ',
+                    });
+                    ui.close();
+                }
+                if ui.button("実施中 [/]").clicked() {
+                    events.push(crate::TaskListAction {
+                        span: span.clone(),
+                        new_state: '/',
+                    });
+                    ui.close();
+                }
+                if ui.button("完了 [x]").clicked() {
+                    events.push(crate::TaskListAction {
+                        span: span.clone(),
+                        new_state: 'x',
+                    });
+                    ui.close();
+                }
+            });
+        }
     }
 }

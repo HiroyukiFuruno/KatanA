@@ -25,6 +25,8 @@ pub struct I18nMessages {
     pub terms: TermsMessages,
     #[serde(default)]
     pub dialog: DialogMessages,
+    #[serde(default)]
+    pub markdown: MarkdownMessages,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -787,4 +789,26 @@ pub(crate) fn d_hover_bg() -> String {
 }
 pub(crate) fn d_file_tree_text() -> String {
     "File Tree Text".to_string()
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct MarkdownMessages {
+    #[serde(default = "default_markdown_task_todo")]
+    pub task_todo: String,
+    #[serde(default = "default_markdown_task_in_progress")]
+    pub task_in_progress: String,
+    #[serde(default = "default_markdown_task_done")]
+    pub task_done: String,
+}
+
+pub(crate) fn default_markdown_task_todo() -> String {
+    "Todo [ ]".to_string()
+}
+
+pub(crate) fn default_markdown_task_in_progress() -> String {
+    "In Progress [/]".to_string()
+}
+
+pub(crate) fn default_markdown_task_done() -> String {
+    "Done [x]".to_string()
 }

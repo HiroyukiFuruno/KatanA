@@ -343,5 +343,10 @@
     "rename_title": "Renombrar",
     "delete_title": "Eliminar",
     "delete_confirm_msg": "¿Eliminar? {name}"
+  },
+  "markdown": {
+    "task_todo": "Tarea [ ]",
+    "task_in_progress": "En progreso [/]",
+    "task_done": "Hecho [x]"
   }
 }
