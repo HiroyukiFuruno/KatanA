@@ -171,8 +171,8 @@ fn is_older(ver_a: &str, ver_b: &str) -> bool {
 }
 
 fn compare_versions(a: &str, b: &str) -> i32 {
-    let a_parts: Vec<u32> = a.split('.').filter_map(|s| s.parse().ok()).collect();
-    let b_parts: Vec<u32> = b.split('.').filter_map(|s| s.parse().ok()).collect();
+    let a_parts: Vec<u32> = a.split(['.', '-']).filter_map(|s| s.parse().ok()).collect();
+    let b_parts: Vec<u32> = b.split(['.', '-']).filter_map(|s| s.parse().ok()).collect();
     for i in 0..std::cmp::max(a_parts.len(), b_parts.len()) {
         let va = a_parts.get(i).unwrap_or(&0);
         let vb = b_parts.get(i).unwrap_or(&0);
@@ -309,6 +309,14 @@ mod tests {
         assert_eq!(compare_versions("0.8.0", "0.8.0"), 0);
         assert_eq!(compare_versions("1.0.0", "0.9.9"), 1);
         assert_eq!(compare_versions("0.8.0.1", "0.8.0"), 1);
+    }
+
+    #[test]
+    fn test_compare_versions_with_hyphen() {
+        // Reproduce issue: "0.8.8-1" should be considered > "0.8.8" in KatanA's versioning (patch increment).
+        assert_eq!(compare_versions("0.8.8-1", "0.8.8"), 1);
+        assert_eq!(compare_versions("0.8.8", "0.8.8-1"), -1);
+        assert_eq!(compare_versions("0.8.8-2", "0.8.8-1"), 1);
     }
 
     #[test]
