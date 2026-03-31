@@ -88,15 +88,6 @@ fn generate_script_content(
         r#"#!/bin/bash
 set -e
 sleep 1
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-if command -v brew >/dev/null 2>&1; then
-    if brew list --cask | grep -q "^katana-desktop$"; then
-        echo "Removing KatanA from Homebrew management..."
-        brew uninstall --cask katana-desktop --force || true
-        brew untap HiroyukiFuruno/katana || true
-    fi
-fi
-
 TARGET_BAK="{target}.bak"
 rm -rf "$TARGET_BAK"
 
@@ -158,7 +149,6 @@ mod tests {
         )));
         assert!(content.contains("display alert \"Update Failed\""));
         assert!(content.contains("Swap failed! Rolling back..."));
-        assert!(content.contains("brew uninstall --cask katana-desktop --force"));
         assert!(content.contains(&format!("xattr -cr \"{}\"", target_path.display())));
         assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
 

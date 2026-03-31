@@ -1,7 +1,9 @@
+pub mod cleanup;
 pub mod download;
 pub mod installer;
 pub mod version;
 
+pub use cleanup::*;
 pub use download::*;
 pub use installer::*;
 pub use version::*;

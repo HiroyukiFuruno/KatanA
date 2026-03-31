@@ -161,6 +161,7 @@ impl KatanaApp {
             app.needs_changelog_display = true;
         }
 
+        katana_core::update::perform_background_cleanup();
         app.start_update_check(false);
         app
     }
