@@ -216,6 +216,10 @@ impl ActionOps for KatanaApp {
                     self.full_refresh_preview(&path, &src, true, concurrency);
                 }
             }
+            AppAction::RefreshDocument => {
+                // TODO(v0.8.10): Implement hash-based document refresh logic in Task 2.
+                tracing::info!("RefreshDocument requested");
+            }
             AppAction::ChangeLanguage(lang) => {
                 crate::i18n::set_language(&lang);
                 crate::shell_ui::update_native_menu_strings_from_i18n();

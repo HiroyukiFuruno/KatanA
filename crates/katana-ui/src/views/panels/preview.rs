@@ -259,7 +259,7 @@ impl<'a> PreviewHeader<'a> {
         let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
         let margin = f32::from(PREVIEW_CONTENT_PADDING);
         let spacing = ui.spacing().item_spacing.x;
-        let mut button_count = 2.0; // WHY: Refresh + Export
+        let mut button_count = 1.0; // WHY: Export
         if self.toc_visible {
             button_count += 1.0;
         }
@@ -283,22 +283,6 @@ impl<'a> PreviewHeader<'a> {
         } else {
             crate::theme_bridge::from_gray(LIGHT_MODE_ICON_BG)
         };
-
-        if overlay_ui
-            .add_enabled(
-                has_doc,
-                egui::Button::image_and_text(
-                    crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
-                    invisible_label("🔄"),
-                )
-                .min_size(button_size)
-                .fill(icon_bg),
-            )
-            .on_hover_text(crate::i18n::get().preview.refresh_diagrams.clone())
-            .clicked()
-        {
-            *action = AppAction::RefreshDiagrams;
-        }
 
         let export_img = egui::Image::new(crate::icon::Icon::Export.uri())
             .tint(overlay_ui.visuals().text_color());
