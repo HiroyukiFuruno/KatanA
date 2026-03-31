@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.8-4] - 2026-03-31 01:05:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where the native auto-updater silently failed to remove the Homebrew link when updating KatanA from within the app. The auto-updater now correctly identifies Homebrew and untaps the cask upon successful transition.
+
 ## [0.8.8-3] - 2026-03-31 00:20:00 (UTC)
 
 ### 🔧 System
