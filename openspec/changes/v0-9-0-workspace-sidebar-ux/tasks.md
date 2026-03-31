@@ -2,7 +2,7 @@
 
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
 - [ ] 対象バージョン 0.9.0 の変更 ID とスコープが確認されていること
-- [ ] 現行のワークスペースヘッダー配置と左レール化対象（表示切替・検索・履歴）を `views/app_frame.rs` / `views/panels/workspace.rs` で再確認していること
+- [ ] 現行のワークスペースヘッダー配置と左レール化対象（表示切替・検索・履歴）を `views/app_frame.rs` / `views/panels/workspace/ui.rs` で再確認していること
 
 ## ブランチ運用ルール
 
@@ -36,32 +36,38 @@
 
 ---
 
-## 2. ワークスペースヘッダーの再配置
+## 2. ワークスペースヘッダーと表示メニューの再配置
 
 ### 着手条件 (DoR)
 
 - [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 2.1 `views/panels/workspace.rs` のヘッダー 1 行目から `Workspace` / `ワークスペース` 見出しと collapse ボタンを除去する
+- [ ] 2.1 `views/panels/workspace/ui.rs` のヘッダー 1 行目から `Workspace` / `ワークスペース` 見出しと collapse ボタンを除去する
 - [ ] 2.2 pane ヘッダーから search / history ボタンを除去し、refresh + filter を左グループ、expand all + collapse all を右グループへ再配置する
 - [ ] 2.3 フィルタートグルと正規表現入力 UI をヘッダー内に維持し、既存の `filter_enabled` / `filter_query` / `filter_cache` の挙動が変わらないことを確認する
 - [ ] 2.4 workspace 表示切り替え後も expanded directories・filter 状態・loading 表示が破綻しないよう整合を取る
-- [ ] 2.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 2.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [ ] 2.5 ヘッダー末尾側に `...` メニューを追加し、`表示 -> フラット表示` の checkable toggle を提供する
+ - [ ] 2.6 `WorkspaceState` に workspace ごとの flat 表示フラグを持たせ、既定値を `false` として tree 表示が既定になるようにする
+ - [ ] 2.7 flat 表示が有効な時は `✔フラット表示` のように active 状態を示し、再度選択で tree 表示へ戻れるようにする
+ - [ ] 2.8 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+ - [ ] 2.9 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
 - [ ] 見出し文言が消え、更新と全展開・全閉の配置が要求どおりになっていること
+- [ ] `...` メニューから `表示 -> フラット表示` を toggle できること
+- [ ] flat 表示フラグの既定値が `false` であり、初期表示が tree になること
+- [ ] workspace ごとの選択状態を再読み込み後に復元できること
 - [ ] フィルターの表示・入力・絞り込み結果が既存どおり動作すること
 - [ ] pane ヘッダーの責務が「現 workspace 操作」に限定され、主要導線がレールへ集約されていること
-- [ ] 実装対象 file (`app_frame.rs`, `workspace.rs`) と state (`show_workspace`, `show_search_modal`, `settings.workspace.paths`) が design と一致していること
+- [ ] 実装対象 file (`app_frame.rs`, `workspace/ui.rs`, `workspace/logic.rs`, `scanner.rs`) と state (`show_workspace`, `settings.workspace.paths`, flat 表示フラグ) が design と一致していること
 - [ ] `make check` が exit code 0 で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
-## 3. 検索導線と回帰確認
+## 3. 検索導線・表示モード・回帰確認
 
 ### 着手条件 (DoR)
 
@@ -70,17 +76,26 @@
 
 - [ ] 3.1 左レールの検索ボタンから既存の検索モーダルを開けるようにし、ショートカット導線を維持する
 - [ ] 3.2 レール化に伴う tooltip・i18n 文言・アクセシビリティラベルを整理する
-- [ ] 3.3 history 0 件・workspace 未選択・workspace collapsed の 3 状態でレール挙動を確認する
-- [ ] 3.4 UI テストまたはハーネスで、左レール起点の表示切り替え・検索・履歴操作の回帰を追加確認する
-- [ ] 3.4.1 試作結果が spec の UX detail と合わない場合は、UI 微調整前に artifact を更新する
-- [ ] 3.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 3.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [ ] 3.3 version-aware sort を tree 表示と flat 表示の両方に適用し、`v0-9-x` が `v0-11-x` より先に来ることを保証する
+- [ ] 3.4 flat 表示では directory node を描かず、workspace-relative path で file row を識別できるようにする
+- [ ] 3.5 flat 表示フラグ `false -> true -> false` の切り替えで tree / flat / tree へ戻ることを確認する
+- [ ] 3.6 workspace を閉じて再度開いた時に、最後の表示モードが復元されることを確認する
+- [ ] 3.7 flat 表示中は expand all / collapse all を無効化し、refresh / filter は継続利用できるようにする
+- [ ] 3.8 history 0 件・workspace 未選択・workspace collapsed・flat 表示の各状態でレールとワークスペース一覧の挙動を確認する
+- [ ] 3.9 UI テストまたはハーネスで、左レール起点の表示切り替え・検索・履歴操作、tree / flat 切り替え、sort order の回帰を追加確認する
+- [ ] 3.9.1 試作結果が spec の UX detail と合わない場合は、UI 微調整前に artifact を更新する
+- [ ] 3.10 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [ ] 3.11 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
 - [ ] 検索はショートカットと左レールの両方から開けること
 - [ ] 履歴メニューの開く・削除・ワークスペース再オープンが回帰していないこと
+- [ ] tree / flat の両表示で sort order が安定し、`v0-9-x` が `v0-11-x` より先に来ること
+- [ ] flat 表示フラグ `false` が既定であり、toggle 後に `false` へ戻せること
+- [ ] workspace ごとの表示モードが永続化されること
 - [ ] history 0 件と no workspace 状態でもレールの配置と tooltip が破綻しないこと
+- [ ] flat 表示が file-only 一覧として機能し、同名 file も workspace-relative path で識別できること
 - [ ] `make check` が exit code 0 で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 

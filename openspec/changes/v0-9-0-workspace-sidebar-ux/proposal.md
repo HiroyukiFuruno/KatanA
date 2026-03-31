@@ -10,7 +10,10 @@
 - 添付イメージのような左側アクティビティレールを追加し、ワークスペース表示切り替え、ファイル検索、最近のワークスペース履歴をそこから呼び出せるようにする。
 - 左側アクティビティレールのアイコンは既存資産をそのまま再利用し、現行ヘッダー内の小型ボタンより一段大きく描画する。
 - 現ワークスペースの操作ヘッダーを再構成し、更新を左寄せ、全展開・全閉を右寄せに再配置する。
+- ワークスペース一覧の並び順を version-aware sort へ更新し、`v0-9-x` と `v0-11-x` のような数値を含む名前でも自然順で表示する。
 - フィルター機能はワークスペースヘッダー内に残し、現行の正規表現入力 UI と挙動を維持する。
+- ワークスペースヘッダーに新しい `...` メニューを追加し、`表示 -> フラット表示` から tree / flat の表示モードを切り替えられるようにする。
+- flat 表示はディレクトリ概念を持たない file 単位の一覧とし、flat 表示フラグの既定値は `false`、既定表示は tree とする。選択状態は workspace ごとに永続化する。
 - 履歴ボタンは履歴 0 件でもレール内に残し、非活性表示でレイアウトの安定性を保つ。
 - 既存の collapsed toggle 専用サイドパネルは廃止し、レールが常時その役割を担う。
 
@@ -22,13 +25,13 @@
 
 ### 変更されるケイパビリティ
 
-- `workspace-shell`: ワークスペースペインのタイトル表示を廃止し、ヘッダー操作の配置を再構成する。
+- `workspace-shell`: ワークスペースペインのタイトル表示を廃止し、ヘッダー操作、表示モード切り替え、一覧 sort order を再構成する。
 - `workspace-file-search`: ファイル検索モーダルを左側アクティビティレールから起動できるようにする。
 - `workspace-file-filter`: フィルタートグルと入力 UI を新しいヘッダー配置に合わせて維持する。
 
 ## 影響範囲
 
-- 主な影響範囲は `crates/katana-ui/src/views/app_frame.rs`、`crates/katana-ui/src/views/panels/workspace.rs`、`crates/katana-ui/src/app_state.rs`、`crates/katana-ui/locales/*.json`。
-- 最近のワークスペース履歴は既存の `settings.workspace.paths` を再利用し、新しい永続化形式の導入は行わない。
-- 既存の検索モーダル、フィルター、ワークスペース再読み込み、全展開・全閉のロジックは維持し、呼び出し導線と配置のみを整理する。
-- 実装は新しい左レール component と既存 `WorkspacePanel` ヘッダー整理に分け、検索モーダルや履歴 action 自体は再利用する。
+- 主な影響範囲は `crates/katana-ui/src/views/app_frame.rs`、`crates/katana-ui/src/views/panels/workspace/ui.rs`、`crates/katana-ui/src/views/panels/workspace/logic.rs`、`crates/katana-ui/src/state/workspace.rs`、`crates/katana-platform/src/filesystem/scanner.rs`、`crates/katana-ui/locales/*.json`。
+- 最近のワークスペース履歴は既存の `settings.workspace.paths` を再利用し、flat / tree の表示選択は workspace ごとに既存設定へ追記する形で保持する。
+- 既存の検索モーダル、フィルター、ワークスペース再読み込み、全展開・全閉のロジックは維持しつつ、sort comparator と表示モード projection を追加する。
+- 実装は新しい左レール component、既存 `WorkspacePanel` ヘッダー整理、workspace 一覧の sort / flat projection 追加に分け、検索モーダルや履歴 action 自体は再利用する。
