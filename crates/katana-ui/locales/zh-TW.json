@@ -109,7 +109,11 @@
     "save_failed": "儲存失敗: {error}",
     "opened_workspace": "已開啟工作區: {name}",
     "cannot_open_workspace": "無法開啟工作區: {error}",
-    "cannot_open_file": "無法開啟檔案: {error}"
+    "cannot_open_file": "無法開啟檔案: {error}",
+    "refresh_success": "已從磁碟重新整理文件。",
+    "refresh_skipped_dirty": "已略過重新整理以保留未儲存的變更。",
+    "refresh_no_changes": "未偵測到外部變更。",
+    "refresh_failed": "重新整理文件失敗: {error}"
   },
   "action": {
     "expand_all": "展開全部",
@@ -133,7 +137,8 @@
     "cancel": "取消",
     "discard": "丟棄",
     "confirm": "確認",
-    "copy_relative_path": "複製相對路徑"
+    "copy_relative_path": "複製相對路徑",
+    "refresh_document": "重新整理文件"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "取消",
       "clear_http_cache": "清除所有快取",
       "cache_retention_days": "快取保留天數",
-      "days_suffix": " 天"
+      "days_suffix": " 天",
+      "auto_refresh": "自動重新整理",
+      "auto_refresh_interval": "自動重新整理間隔"
     }
   },
   "tab": {

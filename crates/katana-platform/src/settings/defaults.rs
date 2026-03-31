@@ -15,6 +15,7 @@ use super::types::{
 pub(crate) const DEFAULT_FONT_SIZE: f32 = 14.0;
 pub(crate) const DEFAULT_DIAGRAM_CONCURRENCY: usize = 4;
 pub(crate) const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
+pub(crate) const DEFAULT_AUTO_REFRESH_INTERVAL_SECS: f64 = 2.0;
 
 // WHY: ── Serde default functions ──
 
@@ -48,6 +49,10 @@ pub fn default_true() -> bool {
 
 pub(crate) fn default_auto_save_interval_secs() -> f64 {
     DEFAULT_AUTO_SAVE_INTERVAL_SECS
+}
+
+pub(crate) fn default_auto_refresh_interval_secs() -> f64 {
+    DEFAULT_AUTO_REFRESH_INTERVAL_SECS
 }
 
 pub(crate) fn default_html_output_dir() -> String {

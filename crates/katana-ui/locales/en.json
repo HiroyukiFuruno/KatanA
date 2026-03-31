@@ -109,7 +109,11 @@
     "save_failed": "Save failed: {error}",
     "opened_workspace": "Opened workspace: {name}",
     "cannot_open_workspace": "Cannot open workspace: {error}",
-    "cannot_open_file": "Cannot open file: {error}"
+    "cannot_open_file": "Cannot open file: {error}",
+    "refresh_success": "Document refreshed from disk.",
+    "refresh_skipped_dirty": "Refresh skipped to preserve unsaved changes.",
+    "refresh_no_changes": "No external changes detected.",
+    "refresh_failed": "Failed to refresh document: {error}"
   },
   "action": {
     "expand_all": "Expand all",
@@ -130,6 +134,7 @@
     "copy_path": "Copy Path",
     "reveal_in_os": "Reveal in OS",
     "save": "Save",
+    "refresh_document": "Refresh Document",
     "cancel": "Cancel",
     "discard": "Discard",
     "confirm": "Confirm",
@@ -281,6 +286,8 @@
       "scroll_sync": "Scroll Sync",
       "auto_save": "Auto-save",
       "auto_save_interval": "Auto-save interval",
+      "auto_refresh": "Auto-refresh",
+      "auto_refresh_interval": "Auto-refresh interval",
       "seconds": "seconds",
       "close_confirm_title": "Unsaved Changes",
       "close_confirm_msg": "'{name}' has unsaved changes. Discard them?",

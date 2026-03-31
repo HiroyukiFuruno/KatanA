@@ -109,7 +109,11 @@
     "save_failed": "Falha ao salvar: {error}",
     "opened_workspace": "Espaço de trabalho aberto: {name}",
     "cannot_open_workspace": "Não foi possível abrir o espaço de trabalho: {error}",
-    "cannot_open_file": "Não foi possível abrir o arquivo: {error}"
+    "cannot_open_file": "Não foi possível abrir o arquivo: {error}",
+    "refresh_success": "Documento atualizado do disco.",
+    "refresh_skipped_dirty": "Atualização ignorada para preservar alterações não salvas.",
+    "refresh_no_changes": "Nenhuma alteração externa detectada.",
+    "refresh_failed": "Falha ao atualizar o documento: {error}"
   },
   "action": {
     "expand_all": "Expandir Tudo",
@@ -133,7 +137,8 @@
     "cancel": "Cancelar",
     "discard": "Descartar",
     "confirm": "Confirmar",
-    "copy_relative_path": "Caminho Relativo"
+    "copy_relative_path": "Caminho Relativo",
+    "refresh_document": "Atualizar documento"
   },
   "ai": {
     "ai_unconfigured": "[AI: não configurado]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "Cancelar",
       "clear_http_cache": "Limpar Todos os Caches",
       "cache_retention_days": "Dias de Retenção do Cache",
-      "days_suffix": " dias"
+      "days_suffix": " dias",
+      "auto_refresh": "Atualização automática",
+      "auto_refresh_interval": "Intervalo de atualização"
     }
   },
   "tab": {
