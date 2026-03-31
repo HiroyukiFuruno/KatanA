@@ -1,6 +1,6 @@
 use crate::app_state::{AppAction, ScrollSource};
 use crate::preview_pane::{DownloadRequest, PreviewPane};
-use crate::shell::SCROLL_SYNC_DEAD_ZONE;
+
 use crate::shell_ui::{
     invisible_label, LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING,
 };
@@ -27,7 +27,6 @@ pub(crate) struct PreviewContent<'a> {
     pub show_toc: bool,
     pub action: &'a mut AppAction,
     pub scroll_sync: bool,
-    pub scroll_state: &'a mut (f32, ScrollSource, f32),
 }
 
 impl<'a> PreviewContent<'a> {
@@ -40,7 +39,6 @@ impl<'a> PreviewContent<'a> {
         show_toc: bool,
         action: &'a mut AppAction,
         scroll_sync: bool,
-        scroll_state: &'a mut (f32, ScrollSource, f32),
     ) -> Self {
         Self {
             preview,
@@ -50,7 +48,6 @@ impl<'a> PreviewContent<'a> {
             show_toc,
             action,
             scroll_sync,
-            scroll_state,
         }
     }
 
@@ -62,54 +59,19 @@ impl<'a> PreviewContent<'a> {
         let show_toc = self.show_toc;
         let action = self.action;
         let scroll_sync = self.scroll_sync;
-        let scroll_state = self.scroll_state;
         let mut download_req = None;
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Wrap);
         let outer_rect = ui.available_rect_before_wrap();
         ui.allocate_rect(outer_rect, egui::Sense::hover());
 
-        let (fraction, source, prev_max_scroll) = scroll_state;
         let mut scroll_area = egui::ScrollArea::vertical()
             .id_salt("preview_scroll")
             .auto_shrink(std::array::from_fn(|_| false));
 
-        let mut target_scroll_offset = *fraction * (*prev_max_scroll).max(1.0);
-        let consuming_editor = scroll_sync && *source == ScrollSource::Editor;
+        let consuming_editor = scroll_sync && scroll.source == ScrollSource::Editor;
         if consuming_editor {
-            if let Some(doc) = document {
-                let _buffer = &doc.buffer;
-                let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-                let editor_y = *fraction * scroll.editor_max.max(1.0);
-
-                let mut points = Vec::new();
-                points.push((0.0, 0.0));
-                for (span, rect) in &preview.heading_anchors {
-                    let e_y = span.start as f32 * row_height;
-                    let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-                    points.push((e_y, p_y));
-                }
-                points.push((scroll.editor_max.max(1.0), (*prev_max_scroll).max(1.0)));
-
-                let mut mapped_y = 0.0;
-                for i in 0..points.len() - 1 {
-                    let (e_y1, p_y1) = points[i];
-                    let (e_y2, p_y2) = points[i + 1];
-                    if editor_y >= e_y1 && editor_y <= e_y2 {
-                        if e_y2 > e_y1 {
-                            let t = (editor_y - e_y1) / (e_y2 - e_y1);
-                            mapped_y = p_y1 + t * (p_y2 - p_y1);
-                        } else {
-                            mapped_y = p_y1;
-                        }
-                        break;
-                    }
-                }
-                if editor_y > points.last().unwrap().0 {
-                    mapped_y = points.last().unwrap().1;
-                }
-                target_scroll_offset = mapped_y;
-            }
-
+            let target_scroll_offset = scroll.mapper.logical_to_preview(scroll.logical_position);
+            scroll.preview_echo.record(target_scroll_offset);
             scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
         }
 
@@ -145,7 +107,7 @@ impl<'a> PreviewContent<'a> {
                                 scroll.active_editor_line,
                                 Some(&mut hovered_lines),
                             );
-                            if scroll_sync && *source != ScrollSource::Preview {
+                            if scroll_sync && scroll.source != ScrollSource::Preview {
                                 scroll.hovered_preview_lines = hovered_lines.clone();
                             }
 
@@ -171,55 +133,31 @@ impl<'a> PreviewContent<'a> {
 
         if scroll_sync {
             let max_scroll = (output.content_size.y - output.inner_rect.height()).max(0.0);
-            *prev_max_scroll = max_scroll;
+            scroll.preview_max = max_scroll;
+            
+            let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+            let mut computed_anchors = Vec::with_capacity(preview.heading_anchors.len());
+            for (span, rect) in &preview.heading_anchors {
+                let p_y = (rect.min.y - preview.content_top_y).max(0.0);
+                computed_anchors.push((span.clone(), p_y));
+            }
+
+            scroll.mapper = crate::state::scroll_sync::ScrollMapper::build(
+                scroll.editor_max,
+                scroll.preview_max,
+                row_height,
+                &computed_anchors,
+            );
 
             if consuming_editor {
-                *source = ScrollSource::Neither;
-                if max_scroll > 0.0 {}
-            } else {
-                if max_scroll > 0.0 {
-                    let preview_y = output.state.offset.y;
-                    let mut editor_target_y = preview_y;
-
-                    if let Some(doc) = document {
-                        let _buffer = &doc.buffer;
-                        let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-
-                        let mut points = Vec::new();
-                        points.push((0.0, 0.0));
-                        for (span, rect) in &preview.heading_anchors {
-                            let e_y = span.start as f32 * row_height;
-                            let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-                            points.push((e_y, p_y));
-                        }
-                        points.push((scroll.editor_max.max(1.0), max_scroll));
-
-                        let mut mapped_y = 0.0;
-                        for i in 0..points.len() - 1 {
-                            let (e_y1, p_y1) = points[i];
-                            let (e_y2, p_y2) = points[i + 1];
-                            if preview_y >= p_y1 && preview_y <= p_y2 {
-                                if p_y2 > p_y1 {
-                                    let t = (preview_y - p_y1) / (p_y2 - p_y1);
-                                    mapped_y = e_y1 + t * (e_y2 - e_y1);
-                                } else {
-                                    mapped_y = e_y1;
-                                }
-                                break;
-                            }
-                        }
-                        if preview_y > points.last().unwrap().1 {
-                            mapped_y = points.last().unwrap().0;
-                        }
-                        editor_target_y = mapped_y;
-                    }
-
-                    let current_fraction =
-                        (editor_target_y / scroll.editor_max.max(1.0)).clamp(0.0, 1.0);
-                    let diff = (current_fraction - *fraction).abs();
-                    if diff > SCROLL_SYNC_DEAD_ZONE {
-                        *fraction = current_fraction;
-                        *source = ScrollSource::Preview;
+                scroll.source = ScrollSource::Neither;
+            } else if max_scroll > 0.0 {
+                let preview_y = output.state.offset.y;
+                if !scroll.preview_echo.is_echo(preview_y) {
+                    let next_logical = scroll.mapper.preview_to_logical(preview_y);
+                    if next_logical != scroll.logical_position {
+                        scroll.logical_position = next_logical;
+                        scroll.source = ScrollSource::Preview;
                     }
                 }
             }
