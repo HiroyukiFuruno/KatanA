@@ -187,6 +187,7 @@ fn crop_non_transparent(pixmap: &Pixmap) -> Option<Pixmap> {
     Some(cropped)
 }
 
+#[cfg(target_os = "macos")]
 fn escape_svg_text(text: &str) -> String {
     text.replace('&', "&amp;")
         .replace('<', "&lt;")
