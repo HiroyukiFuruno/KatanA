@@ -88,6 +88,7 @@ fn generate_script_content(
         r#"#!/bin/bash
 set -e
 sleep 1
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 if command -v brew >/dev/null 2>&1; then
     if brew list --cask | grep -q "^katana-desktop$"; then
         echo "Removing KatanA from Homebrew management..."
