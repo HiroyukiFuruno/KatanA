@@ -80,11 +80,11 @@ brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
 
 No additional steps required — the app is ready to use immediately.
 
-### Updating via Homebrew
+### Updating KatanA
 
-```sh
-brew update && brew upgrade --cask katana-desktop
-```
+KatanA features a built-in auto-updater. Once installed (whether via Homebrew or manually), you can update the app directly from within the UI by clicking the **"Update & Restart"** button when a new release is available.
+
+> **Note on Homebrew**: If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues. Future updates are handled entirely natively by the app.
 
 ### Manual Download
 
@@ -139,7 +139,7 @@ Once installed, `mmdc` will be detected automatically. No additional configurati
 brew install openjdk@25
 ```
 
-2. Open a Markdown file containing a PlantUML block in KatanA and click the **⬇ Download** button that appears in the preview pane. The `plantuml.jar` will be downloaded automatically.
+1. Open a Markdown file containing a PlantUML block in KatanA and click the **⬇ Download** button that appears in the preview pane. The `plantuml.jar` will be downloaded automatically.
 
 ### Draw.io
 

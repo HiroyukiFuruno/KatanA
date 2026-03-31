@@ -80,11 +80,11 @@ brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
 
 追加の手順は不要で、すぐに使い始められます。
 
-### Homebrew でのアップデート
+### アプリのアップデート
 
-```sh
-brew update && brew upgrade --cask katana-desktop
-```
+KatanA Desktop には自動アップデータが内蔵されています。一度インストールすれば（Homebrew経由でも手動でも）、新しいリリースが利用可能になった際にアプリ内の **"Update & Restart"** ボタンをクリックするだけで自動的に更新されます。
+
+> **Homebrewをご利用の方へ**: Homebrew経由で初回インストールした場合、アプリ内から初めてアップデートを行った際に、二重管理を防ぐため自動的にHomebrewの管理から外れる（`brew untap`される）仕組みになっています。以後のアップデートはすべてアプリ自身によって安全に行われます。
 
 ### 手動ダウンロード
 
