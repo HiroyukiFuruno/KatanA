@@ -1,5 +1,4 @@
 ---
-name: release_workflow
 description: katanaプロジェクトの公式リリース手順。make releaseによるバージョン更新からDMGビルド、GitHub Releaseまでのフローを定義。
 ---
 
