@@ -527,6 +527,18 @@ impl ViewModeBar {
 
                 if !is_changelog {
                     if ui
+                        .add(egui::Button::image_and_text(
+                            crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
+                            invisible_label("🔄"),
+                        ))
+                        .on_hover_text(crate::i18n::get().action.refresh_document.clone())
+                        .clicked()
+                    {
+                        action = Some(AppAction::RefreshDocument);
+                    }
+                    ui.separator();
+
+                    if ui
                         .selectable_label(is_split, crate::i18n::get().view_mode.split.clone())
                         .clicked()
                         && !is_split

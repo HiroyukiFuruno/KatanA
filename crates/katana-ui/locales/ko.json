@@ -109,7 +109,11 @@
     "save_failed": "저장 실패: {error}",
     "opened_workspace": "워크스페이스 열림: {name}",
     "cannot_open_workspace": "워크스페이스 열기 실패: {error}",
-    "cannot_open_file": "파일 열기 실패: {error}"
+    "cannot_open_file": "파일 열기 실패: {error}",
+    "refresh_success": "디스크에서 문서가 새로 고침되었습니다.",
+    "refresh_skipped_dirty": "저장되지 않은 변경 사항을 유지하기 위해 새로 고침을 건너뛰었습니다.",
+    "refresh_no_changes": "외부 변경 사항이 감지되지 않았습니다.",
+    "refresh_failed": "문서 새로 고침 실패: {error}"
   },
   "action": {
     "expand_all": "모두 확장",
@@ -133,7 +137,8 @@
     "cancel": "취소",
     "discard": "버리기",
     "confirm": "확인",
-    "copy_relative_path": "상대 경로 복사"
+    "copy_relative_path": "상대 경로 복사",
+    "refresh_document": "문서 새로 고침"
   },
   "ai": {
     "ai_unconfigured": "[AI: 설정되지 않음]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "취소",
       "clear_http_cache": "모든 캐시 지우기",
       "cache_retention_days": "캐시 보존 일수",
-      "days_suffix": " 일"
+      "days_suffix": " 일",
+      "auto_refresh": "자동 새로 고침",
+      "auto_refresh_interval": "자동 새로 고침 간격"
     }
   },
   "tab": {

@@ -11,20 +11,20 @@
 - [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
 
-- [ ] 1.1 `RefreshDiagrams` の既存の呼び出し箇所（theme change / asset reload / preview refresh UI）を棚卸しし、内部再描画とユーザー起点更新 / 自動更新の責務境界を確定する
-- [ ] 1.2 共有更新 action を shell 共通 chrome に追加し、CodeOnly / PreviewOnly / Split の全 view mode で同一導線から実行できるようにする
-- [ ] 1.3 preview pane 専用 refresh ボタンを撤去し、preview 側には export / ToC など preview 固有操作だけを残す
-- [ ] 1.4 更新成功 / dirty スキップ / hash 不変 / 再読込失敗の status / i18n 契約を追加する
-- [ ] 1.5 自動更新の既定値の提案理由をユーザーへ提示し、`auto_refresh_interval_secs` の合意を取得する
-- [ ] 1.6 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 1.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 1.1 `RefreshDiagrams` の既存の呼び出し箇所（theme change / asset reload / preview refresh UI）を棚卸しし、内部再描画とユーザー起点更新 / 自動更新の責務境界を確定する
+- [x] 1.2 共有更新 action を shell 共通 chrome に追加し、CodeOnly / PreviewOnly / Split の全 view mode で同一導線から実行できるようにする
+- [x] 1.3 preview pane 専用 refresh ボタンを撤去し、preview 側には export / ToC など preview 固有操作だけを残す
+- [x] 1.4 更新成功 / dirty スキップ / hash 不変 / 再読込失敗の status / i18n 契約を追加する
+- [x] 1.5 自動更新の既定値の提案理由をユーザーへ提示し、`auto_refresh_interval_secs` の合意を取得する
+- [x] 1.6 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 1.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] 共有更新の正式導線が 1 つだけになり、Code / Preview / Split で同じ挙動になる
-- [ ] 内部再描画経路は disk 再読込を伴わないまま維持される
-- [ ] auto-refresh の既定値はユーザー合意済みである
-- [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
+- [x] 共有更新の正式導線が 1 つだけになり、Code / Preview / Split で同じ挙動になる
+- [x] 内部再描画経路は disk 再読込を伴わないまま維持される
+- [x] auto-refresh の既定値はユーザー合意済みである
+- [x] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
 ## 2. Hash 管理された更新と設定
 

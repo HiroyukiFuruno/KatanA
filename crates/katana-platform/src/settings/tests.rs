@@ -38,6 +38,8 @@ fn test_app_settings_default_values() {
     assert!(s.behavior.scroll_sync_enabled);
     assert!(!s.behavior.auto_save);
     assert_eq!(s.behavior.auto_save_interval_secs, 5.0);
+    assert!(s.behavior.auto_refresh);
+    assert_eq!(s.behavior.auto_refresh_interval_secs, 2.0);
 }
 
 #[test]
@@ -47,6 +49,8 @@ fn test_behavior_settings_defaults() {
     assert!(b.scroll_sync_enabled);
     assert!(!b.auto_save);
     assert_eq!(b.auto_save_interval_secs, 5.0);
+    assert!(b.auto_refresh);
+    assert_eq!(b.auto_refresh_interval_secs, 2.0);
 }
 
 #[test]
@@ -56,6 +60,8 @@ fn test_behavior_settings_serde_roundtrip() {
         scroll_sync_enabled: false,
         auto_save: true,
         auto_save_interval_secs: 10.0,
+        auto_refresh: false,
+        auto_refresh_interval_secs: 10.0,
     };
     let json = serde_json::to_string(&b).unwrap();
     let loaded: BehaviorSettings = serde_json::from_str(&json).unwrap();
@@ -63,6 +69,8 @@ fn test_behavior_settings_serde_roundtrip() {
     assert!(!loaded.scroll_sync_enabled);
     assert!(loaded.auto_save);
     assert_eq!(loaded.auto_save_interval_secs, 10.0);
+    assert!(!loaded.auto_refresh);
+    assert_eq!(loaded.auto_refresh_interval_secs, 10.0);
 }
 
 #[test]
@@ -73,6 +81,8 @@ fn test_behavior_settings_serde_missing_fields_use_defaults() {
     assert!(loaded.scroll_sync_enabled);
     assert!(!loaded.auto_save);
     assert_eq!(loaded.auto_save_interval_secs, 5.0);
+    assert!(loaded.auto_refresh);
+    assert_eq!(loaded.auto_refresh_interval_secs, 2.0);
 }
 
 #[test]

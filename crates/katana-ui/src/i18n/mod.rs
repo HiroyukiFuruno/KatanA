@@ -274,6 +274,22 @@ mod additional_coverage_tests {
         assert_eq!(default_section_preview(), "Preview");
         assert_eq!(default_code_text(), "Code Text");
         assert_eq!(default_preview_text(), "Preview Text");
+        assert_eq!(default_action_refresh_document(), "Refresh Document");
+        assert_eq!(default_auto_refresh(), "Auto-refresh");
+        assert_eq!(default_auto_refresh_interval(), "Auto-refresh interval");
+        assert_eq!(default_refresh_success(), "Document refreshed from disk.");
+        assert_eq!(
+            default_refresh_skipped_dirty(),
+            "Refresh skipped to preserve unsaved changes."
+        );
+        assert_eq!(
+            default_refresh_no_changes(),
+            "No external changes detected."
+        );
+        assert_eq!(
+            default_refresh_failed(),
+            "Failed to refresh document: {error}"
+        );
     }
 }
 #[cfg(test)]

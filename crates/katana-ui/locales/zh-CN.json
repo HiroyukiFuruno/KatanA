@@ -109,7 +109,11 @@
     "save_failed": "保存失败: {error}",
     "opened_workspace": "已打开工作区: {name}",
     "cannot_open_workspace": "无法打开工作区: {error}",
-    "cannot_open_file": "无法打开文件: {error}"
+    "cannot_open_file": "无法打开文件: {error}",
+    "refresh_success": "已从磁盘刷新文档。",
+    "refresh_skipped_dirty": "已跳过刷新以保留未保存的更改。",
+    "refresh_no_changes": "未检测到外部更改。",
+    "refresh_failed": "刷新文档失败: {error}"
   },
   "action": {
     "expand_all": "展开全部",
@@ -133,7 +137,8 @@
     "cancel": "取消",
     "discard": "丢弃",
     "confirm": "确认",
-    "copy_relative_path": "复制相对路径"
+    "copy_relative_path": "复制相对路径",
+    "refresh_document": "刷新文档"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未配置]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "取消",
       "clear_http_cache": "清除所有缓存",
       "cache_retention_days": "缓存保留天数",
-      "days_suffix": " 天"
+      "days_suffix": " 天",
+      "auto_refresh": "自动刷新",
+      "auto_refresh_interval": "自动刷新间隔"
     }
   },
   "tab": {
