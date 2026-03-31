@@ -2,6 +2,7 @@ pub mod config;
 pub mod document;
 pub mod layout;
 pub mod scroll;
+pub mod scroll_sync;
 pub mod search;
 pub mod update;
 pub mod workspace;

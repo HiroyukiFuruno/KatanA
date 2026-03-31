@@ -4,9 +4,9 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. 同期契約
 
-- [ ] 1.1 split mode の scroll sync が扱う source / target / logical position / 収束条件を、他の AI エージェントが推測なしで導けるように定義する
-- [ ] 1.2 文書末尾、最後の見出し以降の tail 区間、heading 0 件文書の fallback を同じ契約の中で明示する
-- [ ] 1.3 同期適用後の pane が即座に逆方向の source にならない条件を定義する
+- [x] 1.1 split mode の scroll sync が扱う source / target / logical position / 収束条件を、他の AI エージェントが推測なしで導けるように定義する
+- [x] 1.2 文書末尾、最後の見出し以降の tail 区間、heading 0 件文書の fallback を同じ契約の中で明示する
+- [x] 1.3 同期適用後の pane が即座に逆方向の source にならない条件を定義する
 
 ### Definition of Done (DoD)
 
