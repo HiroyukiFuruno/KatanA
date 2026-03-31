@@ -134,7 +134,7 @@ impl<'a> PreviewContent<'a> {
         if scroll_sync {
             let max_scroll = (output.content_size.y - output.inner_rect.height()).max(0.0);
             scroll.preview_max = max_scroll;
-            
+
             let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
             let mut computed_anchors = Vec::with_capacity(preview.heading_anchors.len());
             for (span, rect) in &preview.heading_anchors {

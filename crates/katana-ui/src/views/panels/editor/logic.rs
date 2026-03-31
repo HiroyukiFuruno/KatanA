@@ -255,9 +255,7 @@ mod tests {
     #[test]
     fn update_scroll_sync_editor_scrolled_beyond_epsilon() {
         let mut scroll = crate::app_state::ScrollState {
-            mapper: crate::state::scroll_sync::ScrollMapper::build(
-                500.0, 500.0, 20.0, &[]
-            ),
+            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
             ..Default::default()
         };
         // 400.0 offset on 500.0 max_scroll means progress=0.8

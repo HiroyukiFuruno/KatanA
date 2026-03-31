@@ -116,38 +116,53 @@ impl ScrollMapper {
 
     /// Convert a logical position back to an editor pixel offset.
     pub fn logical_to_editor(&self, pos: LogicalPosition) -> f32 {
-        self.from_logical(pos, |p| p.editor_y)
+        self.eval_logical_to_offset(pos, |p| p.editor_y)
     }
 
     /// Convert a logical position back to a preview pixel offset.
     pub fn logical_to_preview(&self, pos: LogicalPosition) -> f32 {
-        self.from_logical(pos, |p| p.preview_y)
+        self.eval_logical_to_offset(pos, |p| p.preview_y)
     }
 
     fn to_logical(&self, src: f32, get_src: impl Fn(&MapPoint) -> f32) -> LogicalPosition {
         let pts = &self.points;
         if pts.is_empty() {
-            return LogicalPosition { segment_index: 0, progress: 0.0 };
+            return LogicalPosition {
+                segment_index: 0,
+                progress: 0.0,
+            };
         }
         if src <= get_src(&pts[0]) {
-            return LogicalPosition { segment_index: 0, progress: 0.0 };
+            return LogicalPosition {
+                segment_index: 0,
+                progress: 0.0,
+            };
         }
         let last_idx = pts.len() - 1;
         if src >= get_src(&pts[last_idx]) {
-            return LogicalPosition { segment_index: last_idx, progress: 1.0 };
+            return LogicalPosition {
+                segment_index: last_idx,
+                progress: 1.0,
+            };
         }
         for i in 0..last_idx {
             let s0 = get_src(&pts[i]);
             let s1 = get_src(&pts[i + 1]);
             if src >= s0 && src <= s1 {
                 let progress = if s1 > s0 { (src - s0) / (s1 - s0) } else { 0.0 };
-                return LogicalPosition { segment_index: i, progress };
+                return LogicalPosition {
+                    segment_index: i,
+                    progress,
+                };
             }
         }
-        LogicalPosition { segment_index: last_idx, progress: 1.0 }
+        LogicalPosition {
+            segment_index: last_idx,
+            progress: 1.0,
+        }
     }
 
-    fn from_logical(&self, pos: LogicalPosition, get_dst: impl Fn(&MapPoint) -> f32) -> f32 {
+    fn eval_logical_to_offset(&self, pos: LogicalPosition, get_dst: impl Fn(&MapPoint) -> f32) -> f32 {
         let pts = &self.points;
         if pts.is_empty() {
             return 0.0;
