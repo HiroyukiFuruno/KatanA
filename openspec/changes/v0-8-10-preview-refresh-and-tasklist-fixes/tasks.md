@@ -86,13 +86,13 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
+- [x] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
 
-- [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を用いて self-review を実施する（各ファイルで version 更新漏れがないか確認する）
-- [ ] 5.2 `make check` が exit code 0 で通ることを確認する
-- [ ] 5.3 中間 base branch（もともと master から派生した branch）を `master` branch に merge する
-- [ ] 5.4 `master` を向いた PR を作成する
-- [ ] 5.5 master へ merge する（※ `--admin` 使用可）
-- [ ] 5.6 `.agents/skills/release_workflow/SKILL.md` を用いて `0.8.6` 向けの release tag 作成と release 作成を実施する
-- [ ] 5.7 `/opsx-archive` などの OpenSpec skill を活用して、この change を archive する
+- [x] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を用いて self-review を実施する（各ファイルで version 更新漏れがないか確認する）
+- [x] 5.2 `make check` が exit code 0 で通ることを確認する
+- [x] 5.3 中間 base branch（もともと master から派生した branch）を `master` branch に merge する
+- [x] 5.4 `master` を向いた PR を作成する
+- [x] 5.5 master へ merge する（※ `--admin` 使用可）
+- [x] 5.6 `.agents/skills/release_workflow/SKILL.md` を用いて `0.8.6` 向けの release tag 作成と release 作成を実施する
+- [x] 5.7 `/opsx-archive` などの OpenSpec skill を活用して、この change を archive する

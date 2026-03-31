@@ -2,12 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.10] - 2026-03-31 22:30:00 (UTC)
+
+### ✨ Improvements
+
+- Optimized the rendering flow when files are updated from external editors, reducing unnecessary flickering in the preview and applying updates faster.
+- Improved nested task lists formatting by allowing the entire row to be clicked to toggle checks.
+
+### 🐛 Bug Fixes
+
+- Resolved a visual bug where multiple lines would highlight simultaneously on hover; the highlight is now precisely constrained to the row under the cursor.
+
 ## [0.8.9] - 2026-03-31 02:17:00 (UTC)
 
 ### 🐛 Bug Fixes
 
 - Completely resolved the issue with Homebrew auto-updater conflicts. The application will now securely untap and detach itself from Homebrew package management silently in the background simply by launching the KatanA app normally.
-
 
 ## [0.8.8-4] - 2026-03-31 01:05:00 (UTC)
 
