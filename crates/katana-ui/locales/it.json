@@ -109,7 +109,11 @@
     "save_failed": "Salvataggio non riuscito: {error}",
     "opened_workspace": "Spazio di lavoro aperto: {name}",
     "cannot_open_workspace": "Impossibile aprire lo spazio di lavoro: {error}",
-    "cannot_open_file": "Impossibile aprire il file: {error}"
+    "cannot_open_file": "Impossibile aprire il file: {error}",
+    "refresh_success": "Documento ricaricato dal disco.",
+    "refresh_skipped_dirty": "Aggiornamento saltato per salvare le modifiche.",
+    "refresh_no_changes": "Nessuna modifica esterna rilevata.",
+    "refresh_failed": "Impossibile aggiornare il documento: {error}"
   },
   "action": {
     "expand_all": "Espandi Tutto",
@@ -133,7 +137,8 @@
     "cancel": "Annulla",
     "discard": "Scarta",
     "confirm": "Conferma",
-    "copy_relative_path": "Copia Relativo"
+    "copy_relative_path": "Copia Relativo",
+    "refresh_document": "Aggiorna documento"
   },
   "ai": {
     "ai_unconfigured": "[AI: non configurato]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "Annulla",
       "clear_http_cache": "Cancella tutte le cache",
       "cache_retention_days": "Giorni di conservazione della cache",
-      "days_suffix": " giorni"
+      "days_suffix": " giorni",
+      "auto_refresh": "Aggiornamento automatico",
+      "auto_refresh_interval": "Intervallo di aggiornamento"
     }
   },
   "tab": {
@@ -336,5 +343,10 @@
     "rename_title": "Rinomina",
     "delete_title": "Elimina",
     "delete_confirm_msg": "Eliminare? {name}"
+  },
+  "markdown": {
+    "task_todo": "Da fare [ ]",
+    "task_in_progress": "In corso [/]",
+    "task_done": "Fatto [x]"
   }
 }

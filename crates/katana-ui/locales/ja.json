@@ -109,7 +109,11 @@
     "save_failed": "保存に失敗しました: {error}",
     "opened_workspace": "{name} を開きました",
     "cannot_open_workspace": "ワークスペースを開けませんでした: {error}",
-    "cannot_open_file": "ファイルを開けませんでした: {error}"
+    "cannot_open_file": "ファイルを開けませんでした: {error}",
+    "refresh_success": "ディスクの内容を再読込しました。",
+    "refresh_skipped_dirty": "未保存の変更があるため、再読込をスキップしました。",
+    "refresh_no_changes": "外部での変更はありません。",
+    "refresh_failed": "再読込に失敗しました: {error}"
   },
   "action": {
     "expand_all": "すべて展開",
@@ -129,6 +133,7 @@
     "delete": "削除",
     "copy_path": "パスのコピー",
     "save": "保存",
+    "refresh_document": "ドキュメントを再読込",
     "cancel": "キャンセル",
     "discard": "破棄",
     "confirm": "確認",
@@ -281,6 +286,8 @@
       "scroll_sync": "スクロール同期",
       "auto_save": "自動保存",
       "auto_save_interval": "自動保存間隔",
+      "auto_refresh": "自動再読込",
+      "auto_refresh_interval": "自動再読込ポーリング間隔",
       "seconds": "秒",
       "close_confirm_title": "未保存の変更",
       "close_confirm_msg": "'{name}' に未保存の変更があります。破棄しますか？",
@@ -336,5 +343,10 @@
     "rename_title": "名前変更",
     "delete_title": "削除の確認",
     "delete_confirm_msg": "'{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。"
+  },
+  "markdown": {
+    "task_todo": "未実施 [ ]",
+    "task_in_progress": "実施中 [/]",
+    "task_done": "完了 [x]"
   }
 }

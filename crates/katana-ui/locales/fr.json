@@ -109,7 +109,11 @@
     "save_failed": "Échec de l'enregistrement : {error}",
     "opened_workspace": "Espace de travail ouvert : {name}",
     "cannot_open_workspace": "Impossible d'ouvrir l'espace de travail : {error}",
-    "cannot_open_file": "Impossible d'ouvrir le fichier : {error}"
+    "cannot_open_file": "Impossible d'ouvrir le fichier : {error}",
+    "refresh_success": "Document actualisé depuis le disque.",
+    "refresh_skipped_dirty": "Actualisation ignorée pour préserver les modifications.",
+    "refresh_no_changes": "Aucune modification externe détectée.",
+    "refresh_failed": "Impossible d\"actualiser le document: {error}"
   },
   "action": {
     "expand_all": "Tout développer",
@@ -133,7 +137,8 @@
     "cancel": "Annuler",
     "discard": "Ignorer",
     "confirm": "Confirmer",
-    "copy_relative_path": "Copier relatif"
+    "copy_relative_path": "Copier relatif",
+    "refresh_document": "Actualiser le document"
   },
   "ai": {
     "ai_unconfigured": "[AI : non configuré]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "Annuler",
       "clear_http_cache": "Vider cache",
       "cache_retention_days": "Rétention",
-      "days_suffix": " j"
+      "days_suffix": " j",
+      "auto_refresh": "Actualisation automatique",
+      "auto_refresh_interval": "Intervalle d\"actualisation"
     }
   },
   "tab": {
@@ -336,5 +343,10 @@
     "rename_title": "Renommer",
     "delete_title": "Supprimer",
     "delete_confirm_msg": "Sûr de supprimer ? {name}"
+  },
+  "markdown": {
+    "task_todo": "Tâche [ ]",
+    "task_in_progress": "En cours [/]",
+    "task_done": "Terminé [x]"
   }
 }

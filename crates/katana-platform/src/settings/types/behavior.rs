@@ -15,6 +15,12 @@ pub struct BehaviorSettings {
     // WHY: Interval in seconds between auto-save triggers.
     #[serde(default = "super::super::defaults::default_auto_save_interval_secs")]
     pub auto_save_interval_secs: f64,
+    // WHY: Enable automatic document refresh from disk.
+    #[serde(default = "super::super::defaults::default_true")]
+    pub auto_refresh: bool,
+    // WHY: Interval in seconds to poll for disk changes.
+    #[serde(default = "super::super::defaults::default_auto_refresh_interval_secs")]
+    pub auto_refresh_interval_secs: f64,
 }
 
 impl Default for BehaviorSettings {
@@ -24,6 +30,9 @@ impl Default for BehaviorSettings {
             scroll_sync_enabled: true,
             auto_save: false,
             auto_save_interval_secs: crate::settings::defaults::DEFAULT_AUTO_SAVE_INTERVAL_SECS,
+            auto_refresh: true,
+            auto_refresh_interval_secs:
+                crate::settings::defaults::DEFAULT_AUTO_REFRESH_INTERVAL_SECS,
         }
     }
 }

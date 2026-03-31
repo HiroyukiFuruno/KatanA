@@ -1111,3 +1111,349 @@ Paragraph with a footnote reference[^1].
         text_width
     );
 }
+
+// ============================================================================
+// TDD RED: Task List Rendering Regression Tests
+// These tests reproduce reported bugs. They MUST fail with unfixed code.
+// ============================================================================
+
+/// RED test: Task list items must NOT have bullets.
+/// Detects the bug by comparing X positions: if a bullet is rendered before
+/// the checkbox, the text label will be shifted further right than necessary.
+///
+/// Layout WITHOUT bullet (correct):
+///   [indent][checkbox][8px gap][text]
+///
+/// Layout WITH bullet (bug):
+///   [indent][bullet][4px gap][checkbox][8px gap][text]
+///
+/// We compare the task text X position against a regular bullet list text X.
+/// The task text should NOT be significantly further right than bullet text.
+#[test]
+fn red_task_list_no_bullet_before_checkbox() {
+    // Render a regular bullet list and a task list side by side
+    let md_regular = "- Regular item\n- Second regular\n";
+    let md_task = "- [ ] Task item\n- [x] Done task\n";
+
+    let pane_regular = render_snippet(md_regular);
+    let harness_regular = build_harness(pane_regular.sections.clone(), 800.0, 200.0);
+
+    let pane_task = render_snippet(md_task);
+    let harness_task = build_harness(pane_task.sections.clone(), 800.0, 200.0);
+
+    // Get X position of text in regular list (has bullet)
+    let regular_text = harness_regular.get_by_label("Regular item");
+    let regular_x = regular_text
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Regular item should have bounds")
+        .x0;
+
+    // Get X position of text in task list (should have checkbox but NO bullet)
+    let task_text = harness_task.get_by_label("Task item");
+    let task_x = task_text
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Task item should have bounds")
+        .x0;
+
+    // If a bullet is rendered BEFORE the checkbox, the task text would be
+    // shifted right by approximately bullet_width + gaps.
+    // The task text should start at roughly the same X as regular text,
+    // plus the checkbox width and its gap (which replaces the bullet).
+    // But it should NOT be double-offset (bullet + checkbox).
+    //
+    // With bug: task_x ≈ regular_x + checkbox_width + extra_gap (much further right)
+    // Without bug: task_x ≈ regular_x + (checkbox_width - bullet_width)
+    //
+    // A simple assertion: task_x should be less than regular_x + 60px.
+    // The checkbox is ~18px, bullet is ~24px, so offset should be small.
+    // With the double-marker bug, offset would be 40+ px extra.
+    let max_allowed_offset = 60.0;
+    eprintln!("=== red_task_list_no_bullet_before_checkbox ===");
+    eprintln!(
+        "  regular_x={:.1}, task_x={:.1}, diff={:.1}",
+        regular_x,
+        task_x,
+        task_x - regular_x
+    );
+    assert!(
+        task_x < regular_x + max_allowed_offset,
+        "BUG: Task list text at x={:.1} is too far right vs regular text at x={:.1}. \
+         Difference={:.1}px > {:.1}px max. Likely a bullet is rendered before the checkbox!",
+        task_x,
+        regular_x,
+        task_x - regular_x,
+        max_allowed_offset
+    );
+}
+
+/// RED test: Task list items inside blockquotes must NOT have bullets.
+/// This is the critical path where delayed_events strips indices.
+#[test]
+fn red_blockquote_task_list_no_bullet() {
+    let md_bq_regular = "> - Regular in blockquote\n";
+    let md_bq_task = "> - [ ] Task in blockquote\n> - [x] Done in blockquote\n";
+
+    let pane_regular = render_snippet(md_bq_regular);
+    let harness_regular = build_harness(pane_regular.sections.clone(), 800.0, 200.0);
+
+    let pane_task = render_snippet(md_bq_task);
+    let harness_task = build_harness(pane_task.sections.clone(), 800.0, 200.0);
+
+    let regular_text = harness_regular.get_by_label("Regular in blockquote");
+    let regular_x = regular_text
+        .accesskit_node()
+        .raw_bounds()
+        .expect("BQ regular item should have bounds")
+        .x0;
+
+    let task_text = harness_task.get_by_label("Task in blockquote");
+    let task_x = task_text
+        .accesskit_node()
+        .raw_bounds()
+        .expect("BQ task item should have bounds")
+        .x0;
+
+    let max_allowed_offset = 60.0;
+    assert!(
+        task_x < regular_x + max_allowed_offset,
+        "BUG: Blockquote task text at x={:.1} is too far right vs regular at x={:.1}. \
+         Difference={:.1}px > {:.1}px max. Bullet rendered before checkbox in blockquote!",
+        task_x,
+        regular_x,
+        task_x - regular_x,
+        max_allowed_offset
+    );
+}
+
+/// RED test: DoR pattern from tasks.md — multiple task list groups separated
+/// by blank lines should all have consistent alignment (no stray bullets).
+#[test]
+fn red_dor_pattern_consistent_alignment() {
+    let md = r#"### DoR (Definition of Ready)
+
+- [ ] Previous task must complete delivery cycle.
+- [ ] Base branch must be synced.
+
+- [x] 1.1 Perform inventory check
+- [x] 1.2 Add shared update action
+- [ ] 1.3 Remove preview-only button
+"#;
+    let pane = render_snippet(md);
+    let harness = build_harness(pane.sections.clone(), 800.0, 800.0);
+
+    // Instead of doing it dynamically, let's just get specific item names
+    let labels = [
+        "Previous task must",
+        "Base branch must",
+        "1.1 Perform",
+        "1.2 Add",
+        "1.3 Remove",
+    ];
+
+    for label in &labels {
+        let text = harness.get_by_label_contains(label);
+        let bounds = text.accesskit_node().raw_bounds().unwrap();
+        println!("Text '{}' bounds: {:?}", label, bounds);
+    }
+
+    let x1 = harness
+        .get_by_label_contains("Previous task must")
+        .accesskit_node()
+        .raw_bounds()
+        .unwrap()
+        .x0;
+    let x2 = harness
+        .get_by_label_contains("1.1 Perform")
+        .accesskit_node()
+        .raw_bounds()
+        .unwrap()
+        .x0;
+    let x3 = harness
+        .get_by_label_contains("1.3 Remove")
+        .accesskit_node()
+        .raw_bounds()
+        .unwrap()
+        .x0;
+
+    // All task items should have the same X alignment (within tolerance)
+    let tolerance = 5.0;
+    assert!(
+        (x1 - x2).abs() < tolerance,
+        "BUG: DoR group 1 text x={:.1} vs group 2 text x={:.1}, diff={:.1}px. \
+         Task list groups have inconsistent alignment!",
+        x1,
+        x2,
+        (x1 - x2).abs()
+    );
+    assert!(
+        (x2 - x3).abs() < tolerance,
+        "BUG: Checked task x={:.1} vs unchecked task x={:.1}, diff={:.1}px. \
+         Checked/unchecked states have different alignment!",
+        x2,
+        x3,
+        (x2 - x3).abs()
+    );
+}
+
+/// RED test: Custom task states ([/], [-], [~]) must also suppress bullets.
+#[test]
+fn red_custom_task_states_no_bullet() {
+    let md_native = "- [ ] Native unchecked\n";
+    let md_custom = "- [/] Progress item\n- [-] Cancelled item\n";
+
+    let pane_native = render_snippet(md_native);
+    let harness_native = build_harness(pane_native.sections.clone(), 800.0, 200.0);
+
+    let pane_custom = render_snippet(md_custom);
+    let harness_custom = build_harness(pane_custom.sections.clone(), 800.0, 200.0);
+
+    let native_text = harness_native.get_by_label("Native unchecked");
+    let native_x = native_text
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Native task should have bounds")
+        .x0;
+
+    let custom_text = harness_custom.get_by_label_contains("Progress item");
+    let custom_x = custom_text
+        .accesskit_node()
+        .raw_bounds()
+        .expect("Custom task should have bounds")
+        .x0;
+
+    let tolerance = 5.0;
+    assert!(
+        (native_x - custom_x).abs() < tolerance,
+        "BUG: Native task text x={:.1} vs custom task text x={:.1}, diff={:.1}px. \
+         Custom task states have different alignment than native!",
+        native_x,
+        custom_x,
+        (native_x - custom_x).abs()
+    );
+}
+
+/// RED test 3.1: The text label within a task list item should respond
+/// to left-click and toggle the task state.
+/// Currently only the checkbox (allocate_exact_size) handles Sense::click().
+/// The text label has ui.interact() for context menu but does NOT generate
+/// TaskListAction events on left-click.
+#[test]
+fn red_text_click_toggles_task_state() {
+    let md = "- [ ] Click this text to toggle\n";
+    let pane = render_snippet(md);
+    let mut fonts_loaded = false;
+    let sections = pane.sections.clone();
+    let captured_actions = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let captured_actions_clone = captured_actions.clone();
+
+    let mut harness = Harness::builder()
+        .with_size(egui::vec2(800.0, 200.0))
+        .build_ui(move |ui| {
+            if !fonts_loaded {
+                load_test_fonts(ui.ctx());
+                fonts_loaded = true;
+            }
+            let mut test_pane = PreviewPane::default();
+            test_pane.sections = sections.clone();
+            let (_req, actions) = test_pane.show_content(ui, None, None);
+            if !actions.is_empty() {
+                *captured_actions_clone.lock().unwrap() = actions;
+            }
+        });
+
+    // Step to render the initial frame
+    for _ in 0..5 {
+        harness.step();
+    }
+    harness.run();
+
+    // Find the text label - it should be interactable (have Sense::click)
+    let text_node = harness.get_by_label("Click this text to toggle");
+
+    text_node.click();
+    harness.run();
+
+    // After clicking text, we should find that the pane generated a TaskListAction
+    let captured_actions = captured_actions.lock().unwrap();
+    assert!(
+        !captured_actions.is_empty(),
+        "BUG 3.1: Clicking the task text did not generate a TaskListAction! \
+         Text should toggle the task state on click."
+    );
+    assert_eq!(captured_actions[0].1, 'x');
+}
+
+#[test]
+fn test_multiple_siblings() {
+    let md = "- [x] Item 1\n- [ ] Item 2\n- [x] Item 3\n";
+    let pane = render_snippet(md);
+    let mut fonts_loaded = false;
+    let sections = pane.sections.clone();
+
+    let mut harness = Harness::builder()
+        .with_size(egui::vec2(800.0, 200.0))
+        .build_ui(move |ui| {
+            if !fonts_loaded {
+                load_test_fonts(ui.ctx());
+                fonts_loaded = true;
+            }
+            let mut test_pane = PreviewPane::default();
+            test_pane.sections = sections.clone();
+            test_pane.show_content(ui, None, None);
+        });
+    harness.step();
+}
+
+#[test]
+fn test_numbered_task_lists_increment() {
+    let md = [
+        "1. [ ] First numbered task",
+        "2. [x] Second numbered task",
+        "   1. [ ] Nested numbered 1",
+        "   2. [ ] Nested numbered 2",
+        "3. [ ] Third numbered task",
+    ]
+    .join("\n");
+
+    let pane = render_snippet(&md);
+    let mut fonts_loaded = false;
+    let sections = pane.sections.clone();
+
+    let mut harness = Harness::builder()
+        .with_size(egui::vec2(800.0, 400.0))
+        .build_ui(move |ui| {
+            if !fonts_loaded {
+                load_test_fonts(ui.ctx());
+                fonts_loaded = true;
+            }
+            let mut test_pane = PreviewPane::default();
+            test_pane.sections = sections.clone();
+            test_pane.show_content(ui, None, None);
+        });
+
+    harness.step();
+    harness.run();
+
+    // Verify that the numbered list renders text properly
+    let first = harness.get_by_label("First numbered task");
+    assert!(first.rect().height() > 0.0, "First text must exist");
+
+    let second = harness.get_by_label("Second numbered task");
+    let third = harness.get_by_label("Third numbered task");
+
+    let nested_first = harness.get_by_label("Nested numbered 1");
+    let nested_second = harness.get_by_label("Nested numbered 2");
+
+    assert!(second.rect().height() > 0.0);
+    assert!(third.rect().height() > 0.0);
+    assert!(nested_first.rect().height() > 0.0);
+    assert!(nested_second.rect().height() > 0.0);
+
+    // Verify Y increasing coordinates strictly
+    assert!(first.rect().top() < second.rect().top());
+    assert!(second.rect().top() < nested_first.rect().top());
+    assert!(nested_first.rect().top() < nested_second.rect().top());
+    assert!(nested_second.rect().top() < third.rect().top());
+}

@@ -216,6 +216,65 @@ impl ActionOps for KatanaApp {
                     self.full_refresh_preview(&path, &src, true, concurrency);
                 }
             }
+            AppAction::RefreshDocument { is_manual } => {
+                let Some(doc) = self.state.active_document_mut() else {
+                    return;
+                };
+
+                let path = doc.path.clone();
+                match std::fs::read_to_string(&path) {
+                    Ok(new_content) => {
+                        let new_hash = katana_core::document::compute_content_hash(&new_content);
+
+                        if doc.last_imported_disk_hash == Some(new_hash) {
+                            if is_manual {
+                                self.state.layout.status_message = Some((
+                                    crate::i18n::get().status.refresh_no_changes.clone(),
+                                    crate::app_state::StatusType::Success,
+                                ));
+                            }
+                        } else {
+                            if doc.is_dirty {
+                                if doc.pending_dirty_warning_hash != Some(new_hash) {
+                                    doc.pending_dirty_warning_hash = Some(new_hash);
+                                    self.state.layout.status_message = Some((
+                                        crate::i18n::get().status.refresh_skipped_dirty.clone(),
+                                        crate::app_state::StatusType::Warning,
+                                    ));
+                                }
+
+                                // Since content changed externally, diagram redraw might be required if it's dependent (very edge case)
+                                // Standard behavior remains to keep dirty buffer.
+                            } else {
+                                doc.buffer = new_content.clone();
+                                doc.last_imported_disk_hash = Some(new_hash);
+                                doc.pending_dirty_warning_hash = None; // clear warning
+                                self.state.layout.status_message = Some((
+                                    crate::i18n::get().status.refresh_success.clone(),
+                                    crate::app_state::StatusType::Success,
+                                ));
+
+                                let concurrency = self
+                                    .state
+                                    .config
+                                    .settings
+                                    .settings()
+                                    .performance
+                                    .diagram_concurrency;
+                                self.full_refresh_preview(&path, &new_content, true, concurrency);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        let msg = crate::i18n::get()
+                            .status
+                            .refresh_failed
+                            .replace("{error}", &e.to_string());
+                        self.state.layout.status_message =
+                            Some((msg, crate::app_state::StatusType::Error));
+                    }
+                }
+            }
             AppAction::ChangeLanguage(lang) => {
                 crate::i18n::set_language(&lang);
                 crate::shell_ui::update_native_menu_strings_from_i18n();

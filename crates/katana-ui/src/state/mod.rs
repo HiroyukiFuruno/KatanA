@@ -44,6 +44,8 @@ pub mod app_state_tests {
             is_dirty: false,
             is_loaded: true,
             is_pinned: false,
+            last_imported_disk_hash: None,
+            pending_dirty_warning_hash: None,
         };
         state.document.open_documents.push(doc);
         state.document.active_doc_idx = Some(0);
@@ -84,6 +86,8 @@ pub mod app_state_tests {
             is_dirty: false,
             is_loaded: true,
             is_pinned: false,
+            last_imported_disk_hash: None,
+            pending_dirty_warning_hash: None,
         };
         state.document.open_documents.push(doc);
         state.document.active_doc_idx = Some(1);

@@ -109,6 +109,13 @@ pub struct CommonMarkViewer<'f> {
     hovered_spans: Option<&'f mut Vec<std::ops::Range<usize>>>,
     active_bg_color: Option<egui::Color32>,
     hover_bg_color: Option<egui::Color32>,
+    custom_task_box_fn: Option<&'f dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>)>,
+    custom_emoji_fn: Option<&'f dyn Fn(&str, u32) -> Option<Vec<u8>>>,
+    custom_task_context_menu_fn: Option<&'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>)>,
+    /// Called after a list item is fully rendered. Receives the correct bounding rect
+    /// (from `horizontal_wrapped` response) and the item's source span.
+    /// Returns `(active_highlighted, hovered)` so the renderer can update internal bookkeeping.
+    custom_list_item_highlight_fn: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
 }
 
 impl<'f> Default for CommonMarkViewer<'f> {
@@ -122,6 +129,10 @@ impl<'f> Default for CommonMarkViewer<'f> {
             hovered_spans: None,
             active_bg_color: None,
             hover_bg_color: None,
+            custom_task_box_fn: None,
+            custom_emoji_fn: None,
+            custom_task_context_menu_fn: None,
+            custom_list_item_highlight_fn: None,
         }
     }
 }
@@ -129,6 +140,29 @@ impl<'f> Default for CommonMarkViewer<'f> {
 impl<'f> CommonMarkViewer<'f> {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn custom_task_box_fn(mut self, func: Option<&'f dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<TaskListAction>)>) -> Self {
+        self.custom_task_box_fn = func;
+        self
+    }
+
+    pub fn custom_emoji_fn(mut self, func: Option<&'f dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>) -> Self {
+        self.custom_emoji_fn = func;
+        self
+    }
+
+    pub fn custom_task_context_menu_fn(mut self, func: Option<&'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<TaskListAction>)>) -> Self {
+        self.custom_task_context_menu_fn = func;
+        self
+    }
+
+    /// Set a callback for list item highlight/hover rendering.
+    /// The callback receives the correct bounding rect and the item's source span.
+    /// It should paint any highlight/hover visuals and return `(active_highlighted, hovered)`.
+    pub fn custom_list_item_highlight_fn(mut self, func: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>) -> Self {
+        self.custom_list_item_highlight_fn = func;
+        self
     }
 
     pub fn scroll_to_heading_index(mut self, index: usize) -> Self {
@@ -304,6 +338,10 @@ impl<'f> CommonMarkViewer<'f> {
             self.hovered_spans,
             self.active_bg_color,
             self.hover_bg_color,
+            self.custom_task_box_fn,
+            self.custom_emoji_fn,
+            self.custom_task_context_menu_fn,
+            self.custom_list_item_highlight_fn,
         ).show(
             ui,
             cache,
@@ -324,8 +362,8 @@ impl<'f> CommonMarkViewer<'f> {
         cache: &mut CommonMarkCache,
         text: &mut String,
     ) -> egui::InnerResponse<()> {
-        self.options.mutable = true;
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
+        self.options.mutable = true;
 
         let (mut inner_response, checkmark_events) =
             parsers::pulldown::CommonMarkViewerInternal::new(
@@ -336,6 +374,10 @@ impl<'f> CommonMarkViewer<'f> {
                 self.hovered_spans,
                 self.active_bg_color,
                 self.hover_bg_color,
+                self.custom_task_box_fn,
+                self.custom_emoji_fn,
+                self.custom_task_context_menu_fn,
+                self.custom_list_item_highlight_fn,
             ).show(
                 ui,
                 cache,
@@ -404,6 +446,10 @@ impl<'f> CommonMarkViewer<'f> {
             self.hovered_spans,
             self.active_bg_color,
             self.hover_bg_color,
+            self.custom_task_box_fn,
+            self.custom_emoji_fn,
+            self.custom_task_context_menu_fn,
+            self.custom_list_item_highlight_fn,
         ).show(
             ui,
             cache,
@@ -444,6 +490,10 @@ impl<'f> CommonMarkViewer<'f> {
             self.hovered_spans,
             self.active_bg_color,
             self.hover_bg_color,
+            self.custom_task_box_fn,
+            self.custom_emoji_fn,
+            self.custom_task_context_menu_fn,
+            self.custom_list_item_highlight_fn,
         ).show_scrollable(
             Id::new(source_id),
             ui,
@@ -485,7 +535,7 @@ impl List {
         self.items.len() == 1
     }
 
-    pub fn start_item(&mut self, ui: &mut egui::Ui, options: &CommonMarkOptions, inside_blockquote: bool, is_task_list: bool) {
+    pub fn start_item_newline(&mut self, ui: &mut egui::Ui, inside_blockquote: bool) {
         // To ensure that newlines are only inserted within the list and not before it
         if self.has_list_begun {
             if !inside_blockquote {
@@ -494,7 +544,9 @@ impl List {
         } else {
             self.has_list_begun = true;
         }
+    }
 
+    pub fn start_item_content(&mut self, ui: &mut egui::Ui, options: &CommonMarkOptions, is_task_list: bool) {
         let len = self.items.len();
         if let Some(item) = self.items.last_mut() {
             ui.label(" ".repeat((len - 1) * options.indentation_spaces));

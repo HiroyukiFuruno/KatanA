@@ -42,6 +42,9 @@ pub enum AppAction {
     },
     SaveDocument,
     RefreshDiagrams,
+    RefreshDocument {
+        is_manual: bool,
+    },
     ChangeLanguage(String),
     ToggleSettings,
     ToggleAbout,

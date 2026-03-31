@@ -253,6 +253,7 @@ mod visuals_tests {
 }
 
 pub const WHITE: egui::Color32 = egui::Color32::WHITE;
+pub const BLACK: egui::Color32 = egui::Color32::BLACK;
 pub const TRANSPARENT: egui::Color32 = egui::Color32::TRANSPARENT;
 
 pub fn from_rgb(r: u8, g: u8, b: u8) -> egui::Color32 {

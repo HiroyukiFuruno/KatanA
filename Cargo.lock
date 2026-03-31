@@ -1351,7 +1351,6 @@ dependencies = [
  "egui",
  "egui_commonmark_backend",
  "egui_extras",
- "katana-core",
  "pulldown-cmark",
  "unicode-segmentation",
 ]

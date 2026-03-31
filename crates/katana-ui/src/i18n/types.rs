@@ -25,6 +25,8 @@ pub struct I18nMessages {
     pub terms: TermsMessages,
     #[serde(default)]
     pub dialog: DialogMessages,
+    #[serde(default)]
+    pub markdown: MarkdownMessages,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -265,6 +267,27 @@ pub struct StatusMessages {
     pub opened_workspace: String,
     pub cannot_open_workspace: String,
     pub cannot_open_file: String,
+    #[serde(default = "default_refresh_success")]
+    pub refresh_success: String,
+    #[serde(default = "default_refresh_skipped_dirty")]
+    pub refresh_skipped_dirty: String,
+    #[serde(default = "default_refresh_no_changes")]
+    pub refresh_no_changes: String,
+    #[serde(default = "default_refresh_failed")]
+    pub refresh_failed: String,
+}
+
+pub(crate) fn default_refresh_success() -> String {
+    "Document refreshed from disk.".to_string()
+}
+pub(crate) fn default_refresh_skipped_dirty() -> String {
+    "Refresh skipped to preserve unsaved changes.".to_string()
+}
+pub(crate) fn default_refresh_no_changes() -> String {
+    "No external changes detected.".to_string()
+}
+pub(crate) fn default_refresh_failed() -> String {
+    "Failed to refresh document: {error}".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -300,6 +323,8 @@ pub struct ActionMessages {
     pub reveal_in_os: String,
     #[serde(default = "default_action_save")]
     pub save: String,
+    #[serde(default = "default_action_refresh_document")]
+    pub refresh_document: String,
     #[serde(default = "default_action_cancel")]
     pub cancel: String,
     #[serde(default = "default_action_discard")]
@@ -338,6 +363,9 @@ pub(crate) fn default_action_reveal_in_os() -> String {
 }
 pub(crate) fn default_action_save() -> String {
     "Save".to_string()
+}
+pub(crate) fn default_action_refresh_document() -> String {
+    "Refresh Document".to_string()
 }
 pub(crate) fn default_action_cancel() -> String {
     "Cancel".to_string()
@@ -552,6 +580,10 @@ pub struct SettingsBehaviorMessages {
     pub scroll_sync: String,
     pub auto_save: String,
     pub auto_save_interval: String,
+    #[serde(default = "default_auto_refresh")]
+    pub auto_refresh: String,
+    #[serde(default = "default_auto_refresh_interval")]
+    pub auto_refresh_interval: String,
     pub seconds: String,
     pub close_confirm_title: String,
     pub close_confirm_msg: String,
@@ -576,6 +608,12 @@ pub(crate) fn default_cache_retention_days() -> String {
 }
 pub(crate) fn default_days_suffix() -> String {
     " days".to_string()
+}
+pub(crate) fn default_auto_refresh() -> String {
+    "Auto-refresh".to_string()
+}
+pub(crate) fn default_auto_refresh_interval() -> String {
+    "Auto-refresh interval".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -751,4 +789,38 @@ pub(crate) fn d_hover_bg() -> String {
 }
 pub(crate) fn d_file_tree_text() -> String {
     "File Tree Text".to_string()
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct MarkdownMessages {
+    #[serde(default = "default_markdown_task_todo")]
+    pub task_todo: String,
+    #[serde(default = "default_markdown_task_in_progress")]
+    pub task_in_progress: String,
+    #[serde(default = "default_markdown_task_done")]
+    pub task_done: String,
+}
+
+pub(crate) fn default_markdown_task_todo() -> String {
+    "Todo [ ]".to_string()
+}
+
+pub(crate) fn default_markdown_task_in_progress() -> String {
+    "In Progress [/]".to_string()
+}
+
+pub(crate) fn default_markdown_task_done() -> String {
+    "Done [x]".to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn markdown_task_defaults_are_non_empty() {
+        assert!(!default_markdown_task_todo().is_empty());
+        assert!(!default_markdown_task_in_progress().is_empty());
+        assert!(!default_markdown_task_done().is_empty());
+    }
 }

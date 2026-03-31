@@ -8,16 +8,34 @@ pub struct Document {
     pub is_dirty: bool,
     pub is_loaded: bool,
     pub is_pinned: bool,
+    pub last_imported_disk_hash: Option<u64>,
+    pub pending_dirty_warning_hash: Option<u64>,
+}
+
+const FNV1A_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+const FNV1A_PRIME: u64 = 0x100000001b3;
+
+pub fn compute_content_hash(s: &str) -> u64 {
+    let mut h: u64 = FNV1A_OFFSET_BASIS;
+    for b in s.bytes() {
+        h ^= b as u64;
+        h = h.wrapping_mul(FNV1A_PRIME);
+    }
+    h
 }
 
 impl Document {
     pub fn new(path: impl Into<PathBuf>, content: impl Into<String>) -> Self {
+        let content = content.into();
+        let hash = compute_content_hash(&content);
         Self {
             path: path.into(),
-            buffer: content.into(),
+            buffer: content,
             is_dirty: false,
             is_loaded: true,
             is_pinned: false,
+            last_imported_disk_hash: Some(hash),
+            pending_dirty_warning_hash: None,
         }
     }
 
@@ -28,6 +46,8 @@ impl Document {
             is_dirty: false,
             is_loaded: false,
             is_pinned: false,
+            last_imported_disk_hash: None,
+            pending_dirty_warning_hash: None,
         }
     }
 
@@ -41,6 +61,8 @@ impl Document {
 
     pub fn mark_clean(&mut self) {
         self.is_dirty = false;
+        self.last_imported_disk_hash = Some(compute_content_hash(&self.buffer));
+        self.pending_dirty_warning_hash = None;
     }
 
     pub fn file_name(&self) -> Option<&str> {
@@ -92,5 +114,33 @@ mod tests {
         assert_eq!(doc.path, path);
         assert!(doc.buffer.is_empty());
         assert!(!doc.is_loaded);
+        assert_eq!(doc.last_imported_disk_hash, None);
+        assert_eq!(doc.pending_dirty_warning_hash, None);
+    }
+
+    #[test]
+    fn test_document_new_with_content() {
+        let path = PathBuf::from("test.md");
+        let doc = Document::new(path.clone(), "hello");
+        assert_eq!(doc.path, path);
+        assert_eq!(doc.buffer, "hello");
+        assert!(!doc.is_dirty);
+        assert!(doc.is_loaded);
+        assert!(doc.last_imported_disk_hash.is_some());
+        assert_eq!(doc.pending_dirty_warning_hash, None);
+    }
+
+    #[test]
+    fn test_document_mark_clean_updates_hash() {
+        let mut doc = Document::new("test.md", "hello");
+        doc.update_buffer("world");
+        assert!(doc.is_dirty);
+        doc.mark_clean();
+        assert!(!doc.is_dirty);
+        assert_eq!(
+            doc.last_imported_disk_hash,
+            Some(compute_content_hash("world"))
+        );
+        assert_eq!(doc.pending_dirty_warning_hash, None);
     }
 }

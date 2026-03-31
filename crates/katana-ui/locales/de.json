@@ -109,7 +109,11 @@
     "save_failed": "Speichern fehlgeschlagen: {error}",
     "opened_workspace": "Arbeitsbereich geöffnet: {name}",
     "cannot_open_workspace": "Arbeitsbereich konnte nicht geöffnet werden: {error}",
-    "cannot_open_file": "Datei konnte nicht geöffnet werden: {error}"
+    "cannot_open_file": "Datei konnte nicht geöffnet werden: {error}",
+    "refresh_success": "Dokument vom Datenträger neu geladen.",
+    "refresh_skipped_dirty": "Aktualisierung übersprungen, um ungespeicherte Änderungen zu erhalten.",
+    "refresh_no_changes": "Keine externen Änderungen erkannt.",
+    "refresh_failed": "Dokument konnte nicht aktualisiert werden: {error}"
   },
   "action": {
     "expand_all": "Alle erweitern",
@@ -133,7 +137,8 @@
     "cancel": "Abbrechen",
     "discard": "Verwerfen",
     "confirm": "Bestätigen",
-    "copy_relative_path": "Relativ kopieren"
+    "copy_relative_path": "Relativ kopieren",
+    "refresh_document": "Dokument aktualisieren"
   },
   "ai": {
     "ai_unconfigured": "[AI: nicht konfiguriert]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "Abbrechen",
       "clear_http_cache": "Cache leeren",
       "cache_retention_days": "Aufbewahrung",
-      "days_suffix": " Tage"
+      "days_suffix": " Tage",
+      "auto_refresh": "Automatisches Aktualisieren",
+      "auto_refresh_interval": "Intervall für autom. Aktualisierung"
     }
   },
   "tab": {
@@ -336,5 +343,10 @@
     "rename_title": "Umbenennen",
     "delete_title": "Löschen",
     "delete_confirm_msg": "Wirklich löschen? {name}"
+  },
+  "markdown": {
+    "task_todo": "Aufgabe [ ]",
+    "task_in_progress": "In Bearbeitung [/]",
+    "task_done": "Erledigt [x]"
   }
 }

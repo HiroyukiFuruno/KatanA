@@ -109,7 +109,11 @@
     "save_failed": "Error al guardar: {error}",
     "opened_workspace": "Espacio de trabajo abierto: {name}",
     "cannot_open_workspace": "No se pudo abrir el espacio de trabajo: {error}",
-    "cannot_open_file": "No se pudo abrir el archivo: {error}"
+    "cannot_open_file": "No se pudo abrir el archivo: {error}",
+    "refresh_success": "Documento actualizado desde el disco.",
+    "refresh_skipped_dirty": "Actualización omitida para conservar cambios no guardados.",
+    "refresh_no_changes": "No se detectaron cambios externos.",
+    "refresh_failed": "Error al actualizar el documento: {error}"
   },
   "action": {
     "expand_all": "Expandir todo",
@@ -133,7 +137,8 @@
     "cancel": "Cancelar",
     "discard": "Descartar",
     "confirm": "Confirmar",
-    "copy_relative_path": "Copiar ruta relativa"
+    "copy_relative_path": "Copiar ruta relativa",
+    "refresh_document": "Actualizar documento"
   },
   "ai": {
     "ai_unconfigured": "[IA: no configurado]"
@@ -288,7 +293,9 @@
       "close_confirm_cancel": "Cancelar",
       "clear_http_cache": "Borrar todas las cachés",
       "cache_retention_days": "Días de retención",
-      "days_suffix": " días"
+      "days_suffix": " días",
+      "auto_refresh": "Actualización automática",
+      "auto_refresh_interval": "Intervalo de act. automática"
     }
   },
   "tab": {
@@ -336,5 +343,10 @@
     "rename_title": "Renombrar",
     "delete_title": "Eliminar",
     "delete_confirm_msg": "¿Eliminar? {name}"
+  },
+  "markdown": {
+    "task_todo": "Tarea [ ]",
+    "task_in_progress": "En progreso [/]",
+    "task_done": "Hecho [x]"
   }
 }
