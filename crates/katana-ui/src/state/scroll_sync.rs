@@ -162,7 +162,11 @@ impl ScrollMapper {
         }
     }
 
-    fn eval_logical_to_offset(&self, pos: LogicalPosition, get_dst: impl Fn(&MapPoint) -> f32) -> f32 {
+    fn eval_logical_to_offset(
+        &self,
+        pos: LogicalPosition,
+        get_dst: impl Fn(&MapPoint) -> f32,
+    ) -> f32 {
         let pts = &self.points;
         if pts.is_empty() {
             return 0.0;

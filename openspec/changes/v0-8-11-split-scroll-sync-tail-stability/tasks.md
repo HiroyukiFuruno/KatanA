@@ -16,17 +16,17 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 editor / preview の双方で別々に持っている scroll 補間ロジックを、共有できる mapper または同等の責務分離へ整理する
-- [ ] 2.2 heading anchor に加えて EOF を含む対応表を扱えるようにし、tail 区間の末尾同期を成立させる
-- [ ] 2.3 geometry snapshot の更新と同期適用の順序を整理し、前フレーム依存の末尾ずれを抑える
-- [ ] 2.4 consumer 側の write-back suppression を導入し、上下にガタつく往復同期を止める
+- [x] 2.1 editor / preview の双方で別々に持っている scroll 補間ロジックを、共有できる mapper または同等の責務分離へ整理する
+- [x] 2.2 heading anchor に加えて EOF を含む対応表を扱えるようにし、tail 区間の末尾同期を成立させる
+- [x] 2.3 geometry snapshot の更新と同期適用の順序を整理し、前フレーム依存の末尾ずれを抑える
+- [x] 2.4 consumer 側の write-back suppression を導入し、上下にガタつく往復同期を止める
 
 ### Definition of Done (DoD)
 
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 3. 回帰テスト
 
