@@ -96,6 +96,32 @@ impl eframe::App for KatanaApp {
             self.state.document.last_auto_save = None;
         }
 
+        let auto_refresh_enabled = self.state.config.settings.settings().behavior.auto_refresh;
+        let auto_refresh_interval = self
+            .state
+            .config
+            .settings
+            .settings()
+            .behavior
+            .auto_refresh_interval_secs;
+        if auto_refresh_enabled && auto_refresh_interval > 0.0 {
+            let now = std::time::Instant::now();
+            if let Some(last) = self.state.document.last_auto_refresh {
+                if now.duration_since(last).as_secs_f64() >= auto_refresh_interval {
+                    if self.state.active_document().is_some() {
+                        self.pending_action =
+                            crate::app_state::AppAction::RefreshDocument { is_manual: false };
+                    }
+                    self.state.document.last_auto_refresh = Some(now);
+                }
+            } else {
+                self.state.document.last_auto_refresh = Some(now);
+            }
+            ctx.request_repaint_after(std::time::Duration::from_secs_f64(auto_refresh_interval));
+        } else {
+            self.state.document.last_auto_refresh = None;
+        }
+
         let splash_opacity = self
             .splash_start
             .map(|s| crate::shell_logic::calculate_splash_opacity(s.elapsed().as_secs_f32()))

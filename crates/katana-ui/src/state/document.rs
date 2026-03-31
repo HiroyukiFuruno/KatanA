@@ -35,6 +35,7 @@ pub struct DocumentState {
     pub tab_split_states: Vec<TabSplitState>,
     pub recently_closed_tabs: VecDeque<PathBuf>,
     pub last_auto_save: Option<Instant>,
+    pub last_auto_refresh: Option<Instant>,
 }
 
 impl Default for DocumentState {
@@ -54,6 +55,7 @@ impl DocumentState {
             tab_split_states: Vec::new(),
             recently_closed_tabs: VecDeque::with_capacity(Self::MAX_RECENTLY_CLOSED_TABS),
             last_auto_save: None,
+            last_auto_refresh: None,
         }
     }
 
