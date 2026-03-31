@@ -281,7 +281,36 @@ let code = "directly after quote";
 
 ---
 
-## 7. Accordion
+## 7. Note Blocks
+
+### 7.1 Note
+
+> **Note**
+> GitHub では note 系ブロックを blockquote として表現する。
+
+### 7.2 Tip
+
+> **Tip**
+> 短い補足は、読みやすい 2 行程度にまとめると確認しやすい。
+
+### 7.3 Important
+
+> **Important**
+> 強調したい注意は、見出し2 配下で独立した blockquote にする。
+
+### 7.4 Warning
+
+> **Warning**
+> 危険な操作や壊れやすい表現は、引用ブロックで明示する。
+
+### 7.5 Caution
+
+> **Caution**
+> 読者に作業前提を意識させたい場合に使う。
+
+---
+
+## 8. Accordion
 
 <details><summary>Show details</summary><div>
 
@@ -292,7 +321,7 @@ let code = "directly after quote";
 
 </div></details>
 
-## 8. Math
+## 9. Math
 
 ### 8.1 Block Math
 

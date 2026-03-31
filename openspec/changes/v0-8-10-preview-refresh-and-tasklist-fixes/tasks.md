@@ -37,7 +37,7 @@
 - [x] dirty 文書は手動 / 自動更新でも黙って上書きされない
 - [x] 同一 external hash に対する dirty warning は 1 回だけ表示される
 - [x] auto-refresh の設定値は保存・復元される
-- [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
+- [x] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
 ## 3. ネストされた task list の描画とUIクリック判定の統合
 
@@ -59,7 +59,7 @@
 - [x] nested task list の親行から二重マーカーが消え、子リストの表現は回帰していない
 - [x] タスク行全体が統一されたクリッカブル要素として挙動し、分離した判定の違和感が解消されている
 - [x] parser 層と KatanA preview 層の両方で回帰が検出できる
-- [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
+- [x] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
 ## 4. エンドツーエンド検証
 
