@@ -112,6 +112,10 @@ pub struct CommonMarkViewer<'f> {
     custom_task_box_fn: Option<&'f dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>)>,
     custom_emoji_fn: Option<&'f dyn Fn(&str, u32) -> Option<Vec<u8>>>,
     custom_task_context_menu_fn: Option<&'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>)>,
+    /// Called after a list item is fully rendered. Receives the correct bounding rect
+    /// (from `horizontal_wrapped` response) and the item's source span.
+    /// Returns `(active_highlighted, hovered)` so the renderer can update internal bookkeeping.
+    custom_list_item_highlight_fn: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
 }
 
 impl<'f> Default for CommonMarkViewer<'f> {
@@ -128,6 +132,7 @@ impl<'f> Default for CommonMarkViewer<'f> {
             custom_task_box_fn: None,
             custom_emoji_fn: None,
             custom_task_context_menu_fn: None,
+            custom_list_item_highlight_fn: None,
         }
     }
 }
@@ -149,6 +154,14 @@ impl<'f> CommonMarkViewer<'f> {
 
     pub fn custom_task_context_menu_fn(mut self, func: Option<&'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<TaskListAction>)>) -> Self {
         self.custom_task_context_menu_fn = func;
+        self
+    }
+
+    /// Set a callback for list item highlight/hover rendering.
+    /// The callback receives the correct bounding rect and the item's source span.
+    /// It should paint any highlight/hover visuals and return `(active_highlighted, hovered)`.
+    pub fn custom_list_item_highlight_fn(mut self, func: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>) -> Self {
+        self.custom_list_item_highlight_fn = func;
         self
     }
 
@@ -328,6 +341,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_task_box_fn,
             self.custom_emoji_fn,
             self.custom_task_context_menu_fn,
+            self.custom_list_item_highlight_fn,
         ).show(
             ui,
             cache,
@@ -363,6 +377,7 @@ impl<'f> CommonMarkViewer<'f> {
                 self.custom_task_box_fn,
                 self.custom_emoji_fn,
                 self.custom_task_context_menu_fn,
+                self.custom_list_item_highlight_fn,
             ).show(
                 ui,
                 cache,
@@ -434,6 +449,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_task_box_fn,
             self.custom_emoji_fn,
             self.custom_task_context_menu_fn,
+            self.custom_list_item_highlight_fn,
         ).show(
             ui,
             cache,
@@ -477,6 +493,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_task_box_fn,
             self.custom_emoji_fn,
             self.custom_task_context_menu_fn,
+            self.custom_list_item_highlight_fn,
         ).show_scrollable(
             Id::new(source_id),
             ui,

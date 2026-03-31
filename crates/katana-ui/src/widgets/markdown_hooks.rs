@@ -12,6 +12,8 @@ const CHECK_PT3_X: f32 = 0.3;
 const CHECK_PT3_Y: f32 = -0.25;
 const PROG_HALF_W: f32 = 0.35;
 
+const HIGHLIGHT_ROUNDING: f32 = 1.0;
+
 pub fn katana_task_box(
     ui: &mut egui::Ui,
     state: char,
@@ -258,4 +260,123 @@ pub fn katana_task_context_menu(
             ui.close();
         }
     });
+}
+
+/// Factory for the list-item highlight/hover callback.
+///
+/// All highlight logic is owned by katana-ui; pulldown.rs only provides
+/// the correct bounding `Rect` (from `horizontal_wrapped` response) and
+/// the item's source `Range<usize>`.
+///
+/// Returns `(active_highlighted, hovered)`.
+pub fn katana_list_item_highlight(
+    active_char_range: Option<Range<usize>>,
+    active_bg_color: egui::Color32,
+    hover_bg_color: egui::Color32,
+) -> impl Fn(&mut egui::Ui, egui::Rect, &Range<usize>) -> (bool, bool) {
+    move |ui: &mut egui::Ui, rect: egui::Rect, span: &Range<usize>| {
+        let mut highlighted = false;
+        let mut hovered = false;
+
+        // Active highlight (editor cursor line)
+        if let Some(ref active) = active_char_range {
+            if active.start <= span.end && active.end >= span.start {
+                highlighted = true;
+                ui.painter()
+                    .rect_filled(rect, HIGHLIGHT_ROUNDING, active_bg_color);
+            }
+        }
+
+        // Hover highlight (mouse pointer).
+        if let Some(pos) = ui.ctx().pointer_hover_pos() {
+            if rect.contains(pos) {
+                hovered = true;
+                ui.painter()
+                    .rect_filled(rect, HIGHLIGHT_ROUNDING, hover_bg_color);
+            }
+        }
+
+        (highlighted, hovered)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn render_and_inspect(md: &str, hover_pos: egui::Pos2) -> Vec<Range<usize>> {
+        let ctx = egui::Context::default();
+        let mut hovered_spans = Vec::new();
+
+        let mut raw_input = egui::RawInput::default();
+        raw_input.screen_rect = Some(egui::Rect::from_min_size(
+            egui::Pos2::ZERO,
+            egui::vec2(800.0, 600.0),
+        ));
+        raw_input.events.push(egui::Event::PointerMoved(hover_pos));
+
+        let _ = ctx.run(raw_input, |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut cache = egui_commonmark::CommonMarkCache::default();
+
+                let highlight_fn = super::katana_list_item_highlight(
+                    None,
+                    crate::theme_bridge::TRANSPARENT,
+                    crate::theme_bridge::TRANSPARENT,
+                );
+
+                let viewer = egui_commonmark::CommonMarkViewer::new()
+                    .hovered_spans(&mut hovered_spans)
+                    .custom_list_item_highlight_fn(Some(&highlight_fn));
+
+                viewer.show(ui, &mut cache, md);
+            });
+        });
+
+        hovered_spans
+    }
+
+    #[test]
+    fn hover_on_task_list_item_produces_single_span() {
+        let md = "- [x] **bold** task text\n- [ ] second item\n";
+        // Center of first list item area
+        let spans = render_and_inspect(md, egui::pos2(50.0, 15.0));
+        assert!(
+            spans.len() <= 1,
+            "Expected at most 1 hovered span for task list item, got {}: {:?}",
+            spans.len(),
+            spans
+        );
+    }
+
+    #[test]
+    fn hover_on_mixed_content_produces_single_span() {
+        let md = "## Heading\n\n- item one\n- item two\n\nParagraph after list.\n";
+        // Target the list item area (below heading)
+        let spans = render_and_inspect(md, egui::pos2(50.0, 65.0));
+        assert!(
+            spans.len() <= 1,
+            "Expected at most 1 hovered span, got {}: {:?}",
+            spans.len(),
+            spans
+        );
+    }
+
+    #[test]
+    fn hover_at_item_boundary_produces_single_span() {
+        // Adjacent list items share boundary (item1.max_y == item2.min_y).
+        // Hovering at that boundary must NOT produce 2 hovered spans.
+        let md = "- item one\n- item two\n";
+        // Item height is typically 15px starting at y=8.
+        // Boundary between items is at y=23 (8+15).
+        let boundary_y = 23.0;
+        let spans = render_and_inspect(md, egui::pos2(50.0, boundary_y));
+        assert!(
+            spans.len() <= 1,
+            "At boundary y={}, expected at most 1 hovered span, got {}: {:?}",
+            boundary_y,
+            spans.len(),
+            spans
+        );
+    }
 }

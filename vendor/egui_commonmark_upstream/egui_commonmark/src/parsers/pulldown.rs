@@ -117,6 +117,7 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     custom_task_box_fn: Option<&'a dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
     custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
     custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
+    custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
@@ -132,6 +133,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
         custom_task_box_fn: Option<&'a dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
         custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
         custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
+        custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
     ) -> Self {
         Self {
             curr_table: 0,
@@ -167,6 +169,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             custom_task_box_fn,
             custom_emoji_fn,
             custom_task_context_menu_fn,
+            custom_list_item_highlight_fn,
         }
     }
 }
@@ -1208,7 +1211,12 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
             self.list.start_item_newline(ui, self.inside_blockquote);
 
-            ui.horizontal_wrapped(|ui| {
+            // Save item span before horizontal_wrapped consumes End(Item) and pops block_states.
+            let item_span = self.block_states.last().map(|(_, span)| span.clone());
+
+            let wrapped_resp = ui.with_layout(
+                egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true),
+                |ui| {
                 // Call start_item_content here instead of in Tag::Item so that the bullet/number
                 // is grouped within the same flex layout as the actual content.
                 self.list.start_item_content(ui, options, is_task_list);
@@ -1226,6 +1234,31 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     );
                 }
             });
+
+            // Per-item hover/active detection using the wrapped layout's rect.
+            // This is the ONLY place that pushes to hovered_spans for list items.
+            if let Some(span) = item_span {
+                let rect = wrapped_resp.response.rect;
+
+                // Visual rendering via callback (if set)
+                if let Some(cb) = self.custom_list_item_highlight_fn {
+                    let (highlighted, _) = cb(ui, rect, &span);
+                    if highlighted {
+                        self.active_rects.push((rect, span.clone()));
+                    }
+                }
+
+                // Hover span collection (direct, no callback)
+                if let Some(hovered) = &mut self.hovered_spans {
+                    if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                        // Use exclusive bottom edge so adjacent items
+                        // don't both match at their shared boundary.
+                        if rect.contains(pos) && pos.y < rect.max.y {
+                            hovered.push(span);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1567,7 +1600,10 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 | pulldown_cmark::TagEnd::List(_)
                                 | pulldown_cmark::TagEnd::BlockQuote(_)
                         );
-                        if !is_container {
+                        // Inside list items, item_list_wrapping handles
+                        // hover/active exclusively at the item level.
+                        let inside_list_item = !self.list.items.is_empty();
+                        if !is_container && !inside_list_item {
                             if let Some(active) = &self.active_char_range {
                                 if active.start <= span.end && active.end >= span.start {
                                     self.active_rects.push((rect, span.clone()));

@@ -65,20 +65,20 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
+- [x] 前の task が self-review、必要に応じた recovery、PR 作成、merge、branch 削除まで含む完全なデリバリーサイクルを完了していること。
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されていること。
 
-- [ ] 4.1 外部エディタで Markdown を変更し、CodeOnly / PreviewOnly / Split の各モードから共有更新で反映できることを検証する
-- [ ] 4.2 auto-refresh interval 経過後に clean 文書は自動反映され、dirty 文書は warning のみで保護されることを確認する
-- [ ] 4.3 hash 不変時には手動 / 自動更新のどちらでも何もしないことを確認する
-- [ ] 4.4 共有更新実行時に図・画像キャッシュが適切に再描画され、theme change 等の内部再描画経路は従来どおり再描画のみで動くことを確認する
-- [ ] 4.5 dirty 文書で同一 external hash を維持したまま複数 polling interval が経過しても warning が重複しないことを確認する
-- [ ] 4.6 `katana-ui` と vendored parser と settings の対象テストを実行し、nested task list と refresh contract の回帰がないことを確認する
+- [x] 4.1 外部エディタで Markdown を変更し、CodeOnly / PreviewOnly / Split の各モードから共有更新で反映できることを検証する
+- [x] 4.2 auto-refresh interval 経過後に clean 文書は自動反映され、dirty 文書は warning のみで保護されることを確認する
+- [x] 4.3 hash 不変時には手動 / 自動更新のどちらでも何もしないことを確認する
+- [x] 4.4 共有更新実行時に図・画像キャッシュが適切に再描画され、theme change 等の内部再描画経路は従来どおり再描画のみで動くことを確認する
+- [x] 4.5 dirty 文書で同一 external hash を維持したまま複数 polling interval が経過しても warning が重複しないことを確認する
+- [x] 4.6 `katana-ui` と vendored parser と settings の対象テストを実行し、nested task list と refresh contract の回帰がないことを確認する
 
 ### 完了条件 (DoD)
 
-- [ ] ユーザー操作・自動更新・内部自動再描画・nested task list 表示の各経路が spec どおりに整合している
-- [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
+- [x] ユーザー操作・自動更新・内部自動再描画・nested task list 表示の各経路が spec どおりに整合している
+- [x] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、Self-review、Commit、PR 作成、Merge を含む包括的なデリバリー手順を完了する。
 
 ---
 

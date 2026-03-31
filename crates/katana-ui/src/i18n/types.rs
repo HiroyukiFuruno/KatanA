@@ -812,3 +812,15 @@ pub(crate) fn default_markdown_task_in_progress() -> String {
 pub(crate) fn default_markdown_task_done() -> String {
     "Done [x]".to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn markdown_task_defaults_are_non_empty() {
+        assert!(!default_markdown_task_todo().is_empty());
+        assert!(!default_markdown_task_in_progress().is_empty());
+        assert!(!default_markdown_task_done().is_empty());
+    }
+}

@@ -76,6 +76,9 @@ pub(crate) fn show_section(
                     viewer = viewer.heading_anchors(anchors);
                 }
 
+                // Compute the active char range once so it can be shared with the
+                // list-item highlight callback and the viewer builder.
+                let mut computed_active_range: Option<std::ops::Range<usize>> = None;
                 if let Some(global_line) = active_editor_line {
                     let lines_in_md = md.chars().filter(|c| *c == '\n').count();
                     if global_line >= global_line_offset
@@ -101,10 +104,26 @@ pub(crate) fn show_section(
                             start_byte = Some(0);
                         }
                         if let Some(s) = start_byte {
-                            viewer = viewer.active_char_range(s..end_byte.unwrap_or(md.len()));
+                            computed_active_range = Some(s..end_byte.unwrap_or(md.len()));
                         }
                     }
                 }
+
+                if let Some(ref range) = computed_active_range {
+                    viewer = viewer.active_char_range(range.clone());
+                }
+
+                // List item highlight/hover callback — all logic lives in katana-ui.
+                // Both colors resolved from ThemeColors; fallback to hover_line_background
+                // since PreviewColors has no dedicated active_line_background.
+                let resolved_hover = hover_bg_color.unwrap_or(crate::theme_bridge::TRANSPARENT);
+                let list_highlight_fn = crate::widgets::katana_list_item_highlight(
+                    computed_active_range.clone(),
+                    resolved_hover,
+                    resolved_hover,
+                );
+
+                viewer = viewer.custom_list_item_highlight_fn(Some(&list_highlight_fn));
 
                 let mut local_hovered_spans = Vec::new();
                 if hovered_lines.is_some() {
@@ -150,8 +169,11 @@ pub(crate) fn show_section(
                                 .chars()
                                 .filter(|c| *c == '\n')
                                 .count();
+                        // Use saturating_sub(1) to exclude trailing newline
+                        // that pulldown_cmark includes in source spans.
+                        let end_pos = local_span.end.saturating_sub(1).max(local_span.start);
                         let end_line = global_line_offset
-                            + md[..local_span.end].chars().filter(|c| *c == '\n').count();
+                            + md[..end_pos].chars().filter(|c| *c == '\n').count();
                         hovered.push(start_line..end_line);
                     }
                 }
