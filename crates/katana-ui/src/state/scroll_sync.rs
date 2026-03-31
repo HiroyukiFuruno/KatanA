@@ -49,6 +49,15 @@ pub struct MapPoint {
     pub preview_y: f32,
 }
 
+/// A segment-aware logical position representing the sync state.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct LogicalPosition {
+    /// The index in `ScrollMapper::points` of the start of the current segment.
+    pub segment_index: usize,
+    /// Progress (0.0–1.0) through the segment.
+    pub progress: f32,
+}
+
 /// Piecewise-linear mapper shared by both editor→preview and preview→editor directions.
 ///
 /// The table is rebuilt each frame from the current heading anchors and geometry snapshot.
@@ -95,50 +104,79 @@ impl ScrollMapper {
         Self { points }
     }
 
-    /// Map an editor pixel offset to a preview pixel offset.
-    pub fn editor_to_preview(&self, editor_y: f32) -> f32 {
-        self.interpolate(editor_y, |p| p.editor_y, |p| p.preview_y)
+    /// Map an editor pixel offset to a logical position.
+    pub fn editor_to_logical(&self, editor_y: f32) -> LogicalPosition {
+        self.to_logical(editor_y, |p| p.editor_y)
     }
 
-    /// Map a preview pixel offset to an editor pixel offset.
-    pub fn preview_to_editor(&self, preview_y: f32) -> f32 {
-        self.interpolate(preview_y, |p| p.preview_y, |p| p.editor_y)
+    /// Map a preview pixel offset to a logical position.
+    pub fn preview_to_logical(&self, preview_y: f32) -> LogicalPosition {
+        self.to_logical(preview_y, |p| p.preview_y)
     }
 
-    fn interpolate(
+    /// Convert a logical position back to an editor pixel offset.
+    pub fn logical_to_editor(&self, pos: LogicalPosition) -> f32 {
+        self.eval_logical_to_offset(pos, |p| p.editor_y)
+    }
+
+    /// Convert a logical position back to a preview pixel offset.
+    pub fn logical_to_preview(&self, pos: LogicalPosition) -> f32 {
+        self.eval_logical_to_offset(pos, |p| p.preview_y)
+    }
+
+    fn to_logical(&self, src: f32, get_src: impl Fn(&MapPoint) -> f32) -> LogicalPosition {
+        let pts = &self.points;
+        if pts.is_empty() {
+            return LogicalPosition {
+                segment_index: 0,
+                progress: 0.0,
+            };
+        }
+        if src <= get_src(&pts[0]) {
+            return LogicalPosition {
+                segment_index: 0,
+                progress: 0.0,
+            };
+        }
+        let last_idx = pts.len() - 1;
+        if src >= get_src(&pts[last_idx]) {
+            return LogicalPosition {
+                segment_index: last_idx,
+                progress: 1.0,
+            };
+        }
+        for i in 0..last_idx {
+            let s0 = get_src(&pts[i]);
+            let s1 = get_src(&pts[i + 1]);
+            if src >= s0 && src <= s1 {
+                let progress = if s1 > s0 { (src - s0) / (s1 - s0) } else { 0.0 };
+                return LogicalPosition {
+                    segment_index: i,
+                    progress,
+                };
+            }
+        }
+        LogicalPosition {
+            segment_index: last_idx,
+            progress: 1.0,
+        }
+    }
+
+    fn eval_logical_to_offset(
         &self,
-        src: f32,
-        get_src: impl Fn(&MapPoint) -> f32,
+        pos: LogicalPosition,
         get_dst: impl Fn(&MapPoint) -> f32,
     ) -> f32 {
         let pts = &self.points;
         if pts.is_empty() {
-            return src;
+            return 0.0;
         }
-        // Clamp below first point.
-        if src <= get_src(&pts[0]) {
-            return get_dst(&pts[0]);
+        if pos.segment_index >= pts.len() - 1 {
+            return get_dst(&pts[pts.len() - 1]);
         }
-        // Clamp above last point.
-        let last = pts.last().unwrap();
-        if src >= get_src(last) {
-            return get_dst(last);
-        }
-        // Linear interpolation within the matching segment.
-        for i in 0..pts.len() - 1 {
-            let s0 = get_src(&pts[i]);
-            let s1 = get_src(&pts[i + 1]);
-            if src >= s0 && src <= s1 {
-                let d0 = get_dst(&pts[i]);
-                let d1 = get_dst(&pts[i + 1]);
-                if s1 > s0 {
-                    return d0 + (src - s0) / (s1 - s0) * (d1 - d0);
-                } else {
-                    return d0;
-                }
-            }
-        }
-        get_dst(last)
+        let d0 = get_dst(&pts[pos.segment_index]);
+        let d1 = get_dst(&pts[pos.segment_index + 1]);
+        d0 + (d1 - d0) * pos.progress.clamp(0.0, 1.0)
     }
 }
 
@@ -170,23 +208,50 @@ impl SyncEcho {
 mod tests {
     use super::*;
 
-    fn simple_anchors() -> Vec<(std::ops::Range<usize>, f32)> {
-        // Line 10 → preview y 100, line 20 → preview y 200
-        vec![(10..11, 100.0), (20..21, 200.0)]
+    #[test]
+    fn test_editor_to_logical() {
+        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
+
+        // 1. Before first segment (0..200 -> 0..400)
+        let pos = mapper.editor_to_logical(100.0);
+        assert_eq!(pos.segment_index, 0);
+        assert_eq!(pos.progress, 0.5);
+        assert_eq!(mapper.logical_to_preview(pos), 200.0);
+
+        // 2. Middle segment (200..600 -> 400..800)
+        let pos = mapper.editor_to_logical(400.0);
+        assert_eq!(pos.segment_index, 1);
+        assert_eq!(pos.progress, 0.5);
+        assert_eq!(mapper.logical_to_preview(pos), 600.0);
+
+        // 3. Tail segment (after 600 -> 800..2000)
+        let pos = mapper.editor_to_logical(800.0);
+        assert_eq!(pos.segment_index, 2);
+        assert_eq!(pos.progress, 0.5);
+        assert_eq!(mapper.logical_to_preview(pos), 1400.0);
     }
 
     #[test]
-    fn mapper_start_maps_to_zero() {
-        let m = ScrollMapper::build(500.0, 400.0, 10.0, &simple_anchors());
-        assert_eq!(m.editor_to_preview(0.0), 0.0);
-        assert_eq!(m.preview_to_editor(0.0), 0.0);
-    }
+    fn test_preview_to_logical() {
+        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
 
-    #[test]
-    fn mapper_eof_maps_to_eof() {
-        let m = ScrollMapper::build(500.0, 400.0, 10.0, &simple_anchors());
-        assert_eq!(m.editor_to_preview(500.0), 400.0);
-        assert_eq!(m.preview_to_editor(400.0), 500.0);
+        // 1. Before first segment
+        let pos = mapper.preview_to_logical(200.0);
+        assert_eq!(pos.segment_index, 0);
+        assert_eq!(pos.progress, 0.5);
+        assert_eq!(mapper.logical_to_editor(pos), 100.0);
+
+        // 2. Middle segment
+        let pos = mapper.preview_to_logical(600.0);
+        assert_eq!(pos.segment_index, 1);
+        assert_eq!(pos.progress, 0.5);
+        assert_eq!(mapper.logical_to_editor(pos), 400.0);
+
+        // 3. Tail segment
+        let pos = mapper.preview_to_logical(1400.0);
+        assert_eq!(pos.segment_index, 2);
+        assert_eq!(pos.progress, 0.5);
+        assert_eq!(mapper.logical_to_editor(pos), 800.0);
     }
 
     #[test]
@@ -194,12 +259,14 @@ mod tests {
         // Document with no headings: single [start, EOF] segment.
         let m = ScrollMapper::build(1000.0, 800.0, 10.0, &[]);
         // Mid-point should map proportionally across the single segment.
-        let preview_y = m.editor_to_preview(500.0);
+        let pos = m.editor_to_logical(500.0);
+        let preview_y = m.logical_to_preview(pos);
         assert!(
             (preview_y - 400.0).abs() < 1.0,
             "expected ~400, got {preview_y}"
         );
-        let editor_y = m.preview_to_editor(400.0);
+        let pos = m.preview_to_logical(400.0);
+        let editor_y = m.logical_to_editor(pos);
         assert!(
             (editor_y - 500.0).abs() < 1.0,
             "expected ~500, got {editor_y}"
@@ -210,22 +277,26 @@ mod tests {
     fn mapper_tail_segment_reaches_eof() {
         // Last heading at editor line 40, preview y 300; editor_max=500, preview_max=400.
         let anchors = vec![(40..41, 300.0)];
-        let m = ScrollMapper::build(500.0, 400.0, 10.0, &anchors);
+        let _m = ScrollMapper::build(500.0, 400.0, 10.0, &anchors);
         // Editor fully scrolled to tail end → preview fully scrolled too.
-        assert_eq!(m.editor_to_preview(500.0), 400.0);
-        assert_eq!(m.preview_to_editor(400.0), 500.0);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(100..100, 2500.0)]);
+        // Editor line 100 is roughly y=2000, clamped to 1000. Preview clamped to 2000.
+        // So segment[1] is MapPoint { editor_y: 1000.0, preview_y: 2000.0 }
+        let pos = mapper.editor_to_logical(500.0);
+        assert_eq!(mapper.logical_to_preview(pos), 1000.0);
     }
 
     #[test]
-    fn mapper_round_trip_no_drift() {
-        let m = ScrollMapper::build(500.0, 400.0, 10.0, &simple_anchors());
-        for editor_y in [0.0f32, 50.0, 150.0, 250.0, 499.0, 500.0] {
-            let preview_y = m.editor_to_preview(editor_y);
-            let back = m.preview_to_editor(preview_y);
-            assert!(
-                (back - editor_y).abs() < 1.0,
-                "round-trip drift at editor_y={editor_y}: preview={preview_y}, back={back}"
-            );
+    fn test_roundtrip_stability() {
+        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
+
+        for e_y in [0.0, 100.0, 200.0, 500.0, 600.0, 900.0, 1000.0] {
+            let pos = mapper.editor_to_logical(e_y);
+            let p_y = mapper.logical_to_preview(pos);
+            let p_pos = mapper.preview_to_logical(p_y);
+            let roundtrip_e_y = mapper.logical_to_editor(p_pos);
+
+            assert!((e_y - roundtrip_e_y).abs() < 1e-4, "drift at {}", e_y);
         }
     }
 

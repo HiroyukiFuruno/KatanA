@@ -50,8 +50,9 @@ impl<'a> EditorContent<'a> {
 
             let consuming_preview = sync_scroll && scroll.source == ScrollSource::Preview;
             if consuming_preview {
-                scroll_area = scroll_area
-                    .vertical_scroll_offset(scroll.fraction * scroll.editor_max.max(1.0));
+                scroll_area = scroll_area.vertical_scroll_offset(
+                    scroll.mapper.logical_to_editor(scroll.logical_position),
+                );
             }
 
             let output = egui::Frame::NONE.fill(code_bg).show(ui, |ui| {
