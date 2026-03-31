@@ -692,7 +692,7 @@ fn basic_fixture_ja_s11_2_long_inline_code_wraps_within_panel() {
 #[test]
 fn basic_fixture_en_s12_accordion_renders_summary() {
     let (_, _, source) = load_fixture("sample_basic.md");
-    let section_md = extract_section(&source, "## 7", "## 8");
+    let section_md = extract_section(&source, "## 8", "## 9");
     let pane = render_snippet(&section_md);
     let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 300.0);
     let node = harness.get_by_label("Show details");
@@ -774,7 +774,7 @@ fn build_harness_accordion_open(sections: Vec<RenderedSection>) -> Harness<'stat
 #[test]
 fn basic_fixture_en_s12_accordion_open_list_items_inline() {
     let (_, _, source) = load_fixture("sample_basic.md");
-    let section_md = extract_section(&source, "## 7", "## 8");
+    let section_md = extract_section(&source, "## 8", "## 9");
     let pane = render_snippet(&section_md);
     let harness = build_harness_accordion_open(pane.sections.clone());
 
@@ -794,7 +794,7 @@ fn basic_fixture_en_s12_accordion_open_list_items_inline() {
 #[test]
 fn basic_fixture_en_s12_accordion_open_nested_list_indented() {
     let (_, _, source) = load_fixture("sample_basic.md");
-    let section_md = extract_section(&source, "## 7", "## 8");
+    let section_md = extract_section(&source, "## 8", "## 9");
     let pane = render_snippet(&section_md);
     let harness = build_harness_accordion_open(pane.sections.clone());
 
