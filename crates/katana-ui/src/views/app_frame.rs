@@ -1,12 +1,13 @@
 use crate::app::action::ActionOps;
 use crate::app_state::{AppAction, ViewMode};
 use crate::preview_pane::DownloadRequest;
-use crate::shell::{KatanaApp, SIDEBAR_COLLAPSED_TOGGLE_WIDTH};
+use crate::shell::KatanaApp;
 use crate::shell_ui::relative_full_path;
 use crate::theme_bridge;
 use eframe::egui;
 
 const CHEVRON_ICON_SIZE: f32 = 10.0;
+const ACTIVITY_RAIL_PADDING: f32 = 8.0;
 
 pub(crate) struct MainPanels<'a> {
     pub app: &'a mut KatanaApp,
@@ -119,25 +120,295 @@ impl<'a> WorkspaceSidebar<'a> {
     }
     fn show(self, ctx: &egui::Context) {
         let app = self.app;
-        if !app.state.layout.show_workspace {
-            egui::SidePanel::left("workspace_collapsed")
-                .resizable(false)
-                .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
-                .show(ctx, |ui| {
-                    ui.vertical_centered(|ui| {
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::ChevronRight
-                                    .ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
-                            .clicked()
-                        {
-                            app.state.layout.show_workspace = true;
+
+        egui::SidePanel::left("activity_rail")
+            .resizable(false)
+            .exact_width(crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + ACTIVITY_RAIL_PADDING)
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.add_space(ACTIVITY_RAIL_PADDING);
+
+                    let order = app.state.config.settings.settings().layout.activity_rail_order.clone();
+                    let recent_paths = app.state.config.settings.settings().workspace.paths.clone();
+
+                    let compute_drop_points_y = |rects: &[(usize, egui::Rect)]| -> Vec<(usize, f32)> {
+                        let mut points = Vec::new();
+                        if rects.is_empty() { return points; }
+                        for i in 0..rects.len() {
+                            if i == 0 {
+                                points.push((0, rects[i].1.top()));
+                            } else {
+                                points.push((i, (rects[i - 1].1.bottom() + rects[i].1.top()) / 2.0));
+                            }
                         }
-                    });
+                        points.push((rects.len(), rects.last().unwrap().1.bottom()));
+                        points
+                    };
+
+                    let resolve_drag_drop_y = |src_idx: usize, ghost_y: f32, rects: &[(usize, egui::Rect)]| -> Option<crate::app_state::AppAction> {
+                        let points = compute_drop_points_y(rects);
+                        let mut best_dist = f32::MAX;
+                        let mut best_to = None;
+                        for (insert_idx, y) in points {
+                            let dist = (ghost_y - y).abs();
+                            if dist < best_dist {
+                                best_dist = dist;
+                                best_to = Some(insert_idx);
+                            }
+                        }
+                        if let Some(to) = best_to {
+                            if src_idx != to && src_idx + 1 != to {
+                                return Some(crate::app_state::AppAction::ReorderActivityRail { from: src_idx, to });
+                            }
+                        }
+                        None
+                    };
+
+                    let mut rail_rects = Vec::new();
+                    let mut dragged_source: Option<(usize, f32)> = None;
+                    let mut reorder_action = None;
+                    let mut current_hovered_drop_y = None;
+
+                    for (idx, item) in order.iter().enumerate() {
+                        let interact_id = egui::Id::new("rail_drag").with(idx);
+                        let is_being_dragged = ui.ctx().is_being_dragged(interact_id);
+
+                        let act_resp = if is_being_dragged {
+                            let (rect, _) = ui.allocate_exact_size(
+                                egui::vec2(ui.available_width(), crate::icon::IconSize::Large.to_vec2().y + ACTIVITY_RAIL_PADDING),
+                                egui::Sense::hover(),
+                            );
+                            Some(ui.interact(rect, interact_id, egui::Sense::click_and_drag()))
+                        } else {
+                            match item {
+                                katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
+                                    let ws_icon = if app.state.layout.show_workspace {
+                                        crate::Icon::FolderOpen
+                                    } else {
+                                        crate::Icon::FolderClosed
+                                    };
+                                    let mut btn = egui::Button::image_and_text(ws_icon.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("≡"))
+                                        .sense(egui::Sense::hover());
+                                    if app.state.layout.show_workspace {
+                                        btn = btn.fill(ui.visuals().selection.bg_fill);
+                                    }
+                                    let resp = ui.add(btn);
+                                    let interact_resp = ui
+                                        .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
+                                        .on_hover_text(crate::i18n::get().workspace.workspace_title.clone());
+                                    if interact_resp.clicked() {
+                                        app.pending_action = crate::app_state::AppAction::ToggleWorkspace;
+                                    }
+                                    Some(interact_resp)
+                                }
+                                katana_platform::settings::ActivityRailItem::Search => {
+                                    let mut btn = egui::Button::image_and_text(
+                                        crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("🔍")
+                                    )
+                                    .sense(egui::Sense::hover());
+                                    if app.state.layout.show_search_modal {
+                                        btn = btn.fill(ui.visuals().selection.bg_fill);
+                                    }
+                                    let resp = ui.add(btn);
+                                    let interact_resp = ui
+                                        .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
+                                        .on_hover_text(crate::i18n::get().search.modal_title.clone());
+                                    if interact_resp.clicked() {
+                                        app.pending_action = crate::app_state::AppAction::ToggleSearchModal;
+                                    }
+                                    Some(interact_resp)
+                                }
+                                katana_platform::settings::ActivityRailItem::History => {
+                                    let history_menu_id = egui::Id::new("history_menu").with(idx);
+                                    let is_open = ui
+                                        .data(|data| data.get_temp::<bool>(history_menu_id).unwrap_or(false));
+
+                                    let mut btn = egui::Button::image_and_text(
+                                        crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("📄")
+                                    )
+                                    .sense(egui::Sense::hover());
+                                    if is_open {
+                                        btn = btn.fill(ui.visuals().selection.bg_fill);
+                                    }
+                                    let resp = ui.add_enabled(!recent_paths.is_empty(), btn);
+                                    let hover_text = crate::i18n::get().workspace.recent_workspaces.clone();
+
+                                    let interact_resp =
+                                        ui.interact(resp.rect, interact_id, egui::Sense::click_and_drag());
+                                    let interact_resp = if recent_paths.is_empty() {
+                                        interact_resp.on_disabled_hover_text(hover_text)
+                                    } else {
+                                        interact_resp.on_hover_text(hover_text)
+                                    };
+
+                                    if interact_resp.clicked() && !recent_paths.is_empty() {
+                                        ui.data_mut(|data| data.insert_temp(history_menu_id, !is_open));
+                                    }
+
+                                    if is_open {
+                                        const HISTORY_MENU_X_OFFSET: f32 = 4.0;
+                                        const HISTORY_MENU_MAX_WIDTH: f32 = 320.0;
+
+                                        let popup_area = egui::Area::new(egui::Id::new("history_menu_area").with(idx))
+                                            .order(egui::Order::Foreground)
+                                            .fixed_pos(interact_resp.rect.right_top() + egui::vec2(HISTORY_MENU_X_OFFSET, 0.0))
+                                            .show(ui.ctx(), |ui| {
+                                                egui::Frame::popup(ui.style()).show(ui, |ui| {
+                                                    ui.set_max_width(HISTORY_MENU_MAX_WIDTH);
+                                                    for path in recent_paths.iter().rev() {
+                                                        ui.horizontal(|ui| {
+                                                            if ui
+                                                                .add(egui::Button::image_and_text(
+                                                                    crate::Icon::Remove.ui_image(
+                                                                        ui,
+                                                                        crate::icon::IconSize::Small,
+                                                                    ),
+                                                                    crate::shell_ui::invisible_label("x"),
+                                                                ))
+                                                                .on_hover_text(
+                                                                    crate::i18n::get().action.remove_workspace.clone(),
+                                                                )
+                                                                .clicked()
+                                                            {
+                                                                app.pending_action =
+                                                                    crate::app_state::AppAction::RemoveWorkspace(
+                                                                        path.clone(),
+                                                                    );
+                                                                ui.data_mut(|data| {
+                                                                    data.insert_temp(history_menu_id, false)
+                                                                });
+                                                            }
+                                                            if ui.selectable_label(false, path).clicked() {
+                                                                app.pending_action =
+                                                                    crate::app_state::AppAction::OpenWorkspace(
+                                                                        std::path::PathBuf::from(path),
+                                                                    );
+                                                                ui.data_mut(|data| {
+                                                                    data.insert_temp(history_menu_id, false)
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            });
+
+                                        let clicked_elsewhere = ui.input(|i| {
+                                            if i.pointer.any_click() {
+                                                if let Some(pos) = i.pointer.interact_pos() {
+                                                    !popup_area.response.rect.contains(pos)
+                                                        && !interact_resp.rect.contains(pos)
+                                                } else {
+                                                    true
+                                                }
+                                            } else {
+                                                false
+                                            }
+                                        });
+
+                                        if clicked_elsewhere || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                                            ui.data_mut(|data| data.insert_temp(history_menu_id, false));
+                                        }
+                                    }
+                                    Some(interact_resp)
+                                }
+                            }
+                        };
+
+                        if let Some(interact_resp) = act_resp {
+                                rail_rects.push((idx, interact_resp.rect));
+
+                                if interact_resp.drag_started() || is_being_dragged {
+                                if let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
+                                    let press_origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(pointer_pos);
+                                    let drag_offset = pointer_pos - press_origin;
+                                    let ghost_rect = interact_resp.rect.translate(drag_offset);
+
+                                    ui.memory_mut(|mem| {
+                                        mem.data.insert_temp(
+                                            egui::Id::new("drag_ghost_y").with(idx),
+                                            ghost_rect.center().y,
+                                        )
+                                    });
+
+                                    egui::Area::new(egui::Id::new("rail_ghost").with(idx))
+                                        .fixed_pos(ghost_rect.min)
+                                        .order(egui::Order::Tooltip)
+                                        .show(ui.ctx(), |ui| {
+                                            match item {
+                                                katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
+                                                    let icon = if app.state.layout.show_workspace { crate::Icon::FolderOpen } else { crate::Icon::FolderClosed };
+                                                    let mut b = egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Large));
+                                                    if app.state.layout.show_workspace { b = b.fill(ui.visuals().selection.bg_fill); }
+                                                    ui.add(b);
+                                                }
+                                                katana_platform::settings::ActivityRailItem::Search => {
+                                                    let mut b = egui::Button::image_and_text(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("🔍"));
+                                                    if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
+                                                    ui.add(b);
+                                                }
+                                                katana_platform::settings::ActivityRailItem::History => {
+                                                    ui.add(egui::Button::image_and_text(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("📄")));
+                                                }
+                                            }
+                                        });
+                                }
+                            }
+
+                            if interact_resp.drag_stopped() {
+                                if let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
+                                    dragged_source = Some((idx, ghost_y));
+                                }
+                            }
+                        }
+
+                        if is_being_dragged {
+                            if let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
+                                let drop_points = compute_drop_points_y(&rail_rects);
+                                let mut best_dist = f32::MAX;
+                                let mut best_y = None;
+                                for (_insert_idx, y) in drop_points {
+                                    let dist = (ghost_y - y).abs();
+                                    if dist < best_dist {
+                                        best_dist = dist;
+                                        best_y = Some(y);
+                                    }
+                                }
+                                if let Some(best_y) = best_y {
+                                    current_hovered_drop_y = Some((best_y, rail_rects[idx].1.x_range()));
+                                }
+                            }
+                        }
+
+                        ui.add_space(ACTIVITY_RAIL_PADDING);
+                    }
+
+                    if let Some((target_y, x_range)) = current_hovered_drop_y {
+                        let indicator_id = egui::Id::new("rail_drop_indicator");
+                        let animated_y = ui.ctx().animate_value_with_time(
+                            indicator_id,
+                            target_y,
+                            crate::shell::TAB_DROP_ANIMATION_TIME,
+                        );
+                        let stroke = egui::Stroke::new(
+                            crate::shell::TAB_DROP_INDICATOR_WIDTH,
+                            ui.visuals().selection.bg_fill,
+                        );
+                        ui.painter().hline(x_range, animated_y, stroke);
+                    }
+
+                    if let Some((src_idx, ghost_center_y)) = dragged_source {
+                        if let Some(action) = resolve_drag_drop_y(src_idx, ghost_center_y, &rail_rects) {
+                            reorder_action = Some(action);
+                        }
+                    }
+
+                    if let Some(act) = reorder_action {
+                        app.pending_action = act;
+                    }
                 });
-        } else {
+            });
+
+        if app.state.layout.show_workspace {
             egui::SidePanel::left("workspace_tree")
                 .resizable(true)
                 .min_width(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)

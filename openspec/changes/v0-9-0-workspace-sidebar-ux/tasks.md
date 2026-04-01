@@ -14,24 +14,27 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 1.1 `views/app_frame.rs` の `WorkspaceSidebar` を改修し、既存 `workspace_collapsed` 専用サイドパネルを常設レールへ置き換える
-- [ ] 1.2 レールに workspace toggle / search / history を縦配置し、workspace pane 非表示時もレールが残るようにする
-- [ ] 1.3 履歴ボタンを既存の `settings.workspace.paths` と `OpenWorkspace` / `RemoveWorkspace` に接続し、最近のワークスペース履歴メニューをレール側へ移す
-- [ ] 1.4 履歴 0 件時は history ボタンを非活性表示で残し、レイアウトを崩さない挙動を実装する
-- [ ] 1.5 左レールのアイコンを既存資産のまま一段大きく描画し、ホバー説明とアクティブ状態を整理する
-- [ ] 1.5.1 `show_workspace` / `show_search_modal` 以外の新 layout state が必要と判明した場合は、実装継続前に `design.md` / `specs` / `tasks.md` を更新する
-- [ ] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 1.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 1.1 `views/app_frame.rs` の `WorkspaceSidebar` を改修し、既存 `workspace_collapsed` 専用サイドパネルを常設レールへ置き換える
+- [x] 1.2 レールに workspace toggle / search / history を縦配置し、workspace pane 非表示時もレールが残るようにする
+- [x] 1.3 履歴ボタンを既存の `settings.workspace.paths` と `OpenWorkspace` / `RemoveWorkspace` に接続し、最近のワークスペース履歴メニューをレール側へ移す
+- [x] 1.4 履歴 0 件時は history ボタンを非活性表示で残し、レイアウトを崩さない挙動を実装する
+- [x] 1.5 左レールのアイコンを既存資産のまま一段大きく描画し、ホバー説明とアクティブ状態を整理する
+- [x] 1.5.1 `show_workspace` / `show_search_modal` 以外の新 layout state が必要と判明した場合は、実装継続前に `design.md` / `specs` / `tasks.md` を更新する
+- [x] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 1.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+  - [x] 1.7.1 アクティビティレールの「履歴（切り替え）」アイコンを最上部へ配置する
+  - [x] 1.7.2 アクティビティレールの並び順をドラッグ＆ドロップで変更し、設定(`LayoutSettings`)として永続化できるようにする
+  - [x] 1.7.3 不要になったヘッダー内の一部の要素（タイトル等）は Task 2 へ先送りまたは先行対応する
 
 ### 完了条件 (DoD)
 
-- [ ] 左レールからワークスペース表示切り替え・検索・履歴が利用できること
-- [ ] ワークスペースペインを閉じても左レールが残り、同じ導線で再表示できること
-- [ ] collapsed 専用サイドパネルが不要になり、導線が `WorkspaceSidebar` 側へ一元化されていること
-- [ ] `make check` が exit code 0 で通過すること
+- [x] 左レールからワークスペース表示切り替え・検索・履歴が利用できること
+- [x] ワークスペースペインを閉じても左レールが残り、同じ導線で再表示できること
+- [x] collapsed 専用サイドパネルが不要になり、導線が `WorkspaceSidebar` 側へ一元化されていること
+- [x] `make check` が exit code 0 で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
