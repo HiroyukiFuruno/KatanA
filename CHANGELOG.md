@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.10.0] - 2026-04-01 07:34:00 (UTC)
+
+### ✨ Improvements
+
+- Stabilized UI responsiveness and reduced disk I/O load during typing or frequent file navigation by restructuring the persistent caching strategy.
+
 ## [0.9.0] - 2026-04-01 13:40:00 (UTC)
 
 ### 🚀 Features

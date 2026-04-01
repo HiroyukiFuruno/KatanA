@@ -140,3 +140,48 @@ fn deterministic_hash(data: &str) -> u64 {
     }
     hash
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn list_uncovered_lines_test() {
+        let key = PersistentKey::Diagram {
+            document_path: std::path::PathBuf::from("/a/b/c.md"),
+            diagram_kind: "mermaid".to_string(),
+            theme: "dark".to_string(),
+            source_hash: "123".to_string(),
+        };
+        let raw = key.to_raw_key().unwrap();
+        assert_eq!(raw, "diagram:/a/b/c.md:mermaid:dark:123");
+
+        let decoded = PersistentKey::from_raw_key(&raw).unwrap();
+        match decoded {
+            PersistentKey::Diagram {
+                document_path,
+                diagram_kind,
+                theme,
+                source_hash,
+            } => {
+                assert_eq!(document_path.to_str().unwrap(), "/a/b/c.md");
+                assert_eq!(diagram_kind, "mermaid");
+                assert_eq!(theme, "dark");
+                assert_eq!(source_hash, "123");
+            }
+            _ => panic!("Wrong type"),
+        }
+
+        let fname = key.target_filename().unwrap();
+        assert!(fname.starts_with("diagram_"));
+        assert!(fname.ends_with(".json"));
+
+        assert_eq!(PersistentKey::Unknown.to_raw_key(), None);
+        assert_eq!(PersistentKey::Unknown.target_filename(), None);
+        assert!(matches!(
+            PersistentKey::from_raw_key("invalid:format:string"),
+            None
+        ));
+        assert!(matches!(PersistentKey::from_raw_key("invalid"), None));
+    }
+}
