@@ -172,6 +172,13 @@ impl ActionOps for KatanaApp {
                     && idx < self.state.document.open_documents.len()
                     && self.state.document.open_documents[idx].is_dirty;
 
+                if idx < self.state.document.open_documents.len() {
+                    let doc = &self.state.document.open_documents[idx];
+                    if doc.is_pinned {
+                        return;
+                    }
+                }
+
                 if should_confirm {
                     self.state.layout.pending_close_confirm = Some(idx);
                 } else {
@@ -316,65 +323,95 @@ impl ActionOps for KatanaApp {
             AppAction::CloseOtherDocuments(idx) => {
                 if idx < self.state.document.open_documents.len() {
                     let mut keep = Vec::new();
+                    let mut new_active_idx = None;
+                    let target_doc_path = self.state.document.open_documents[idx].path.clone();
+
                     let old_docs = std::mem::take(&mut self.state.document.open_documents);
-                    for (i, doc) in old_docs.into_iter().enumerate() {
-                        if i == idx {
+                    for doc in old_docs.into_iter() {
+                        let is_target = doc.path == target_doc_path;
+                        if is_target || doc.is_pinned {
+                            if is_target {
+                                new_active_idx = Some(keep.len());
+                            }
                             keep.push(doc);
                         } else {
                             self.state.push_recently_closed(doc.path);
                         }
                     }
                     self.state.document.open_documents = keep;
-                    self.state.document.active_doc_idx = Some(0);
+                    if let Some(a_idx) = new_active_idx {
+                        self.state.document.active_doc_idx = Some(a_idx);
+                    }
                 }
                 self.save_workspace_state();
             }
             AppAction::CloseAllDocuments => {
-                let old_docs = std::mem::take(&mut self.state.document.open_documents);
-                for doc in old_docs.into_iter() {
-                    self.state.push_recently_closed(doc.path);
-                }
-                self.state.document.active_doc_idx = None;
-                self.save_workspace_state();
-                self.cleanup_closed_tab_previews();
-            }
-            AppAction::CloseDocumentsToRight(idx) => {
                 let mut keep = Vec::new();
                 let old_docs = std::mem::take(&mut self.state.document.open_documents);
-                for (i, doc) in old_docs.into_iter().enumerate() {
-                    if i <= idx {
+                for doc in old_docs.into_iter() {
+                    if doc.is_pinned {
                         keep.push(doc);
                     } else {
                         self.state.push_recently_closed(doc.path);
                     }
                 }
                 self.state.document.open_documents = keep;
-                if let Some(a_idx) = self.state.document.active_doc_idx {
-                    if a_idx > idx {
-                        self.state.document.active_doc_idx = Some(idx);
+                if self.state.document.open_documents.is_empty() {
+                    self.state.document.active_doc_idx = None;
+                } else if self.state.document.active_doc_idx.is_some() {
+                    self.state.document.active_doc_idx = Some(0);
+                }
+                self.save_workspace_state();
+                self.cleanup_closed_tab_previews();
+            }
+            AppAction::CloseDocumentsToRight(idx) => {
+                let mut keep = Vec::new();
+                let active_path = self.state.active_document().map(|d| d.path.clone());
+
+                let old_docs = std::mem::take(&mut self.state.document.open_documents);
+                for (i, doc) in old_docs.into_iter().enumerate() {
+                    if i <= idx || doc.is_pinned {
+                        keep.push(doc);
+                    } else {
+                        self.state.push_recently_closed(doc.path);
                     }
+                }
+                self.state.document.open_documents = keep;
+                if let Some(p) = active_path {
+                    let new_idx = self
+                        .state
+                        .document
+                        .open_documents
+                        .iter()
+                        .position(|d| d.path == p);
+                    self.state.document.active_doc_idx = new_idx.or(Some(
+                        idx.min(self.state.document.open_documents.len().saturating_sub(1)),
+                    ));
                 }
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
             }
             AppAction::CloseDocumentsToLeft(idx) => {
                 let mut keep = Vec::new();
-                let new_active_idx = self.state.document.active_doc_idx;
+                let active_path = self.state.active_document().map(|d| d.path.clone());
+
                 let old_docs = std::mem::take(&mut self.state.document.open_documents);
                 for (i, doc) in old_docs.into_iter().enumerate() {
-                    if i >= idx {
+                    if i >= idx || doc.is_pinned {
                         keep.push(doc);
                     } else {
                         self.state.push_recently_closed(doc.path);
                     }
                 }
                 self.state.document.open_documents = keep;
-                if let Some(a_idx) = new_active_idx {
-                    if a_idx < idx {
-                        self.state.document.active_doc_idx = Some(0);
-                    } else {
-                        self.state.document.active_doc_idx = Some(a_idx - idx);
-                    }
+                if let Some(p) = active_path {
+                    let new_idx = self
+                        .state
+                        .document
+                        .open_documents
+                        .iter()
+                        .position(|d| d.path == p);
+                    self.state.document.active_doc_idx = new_idx.or(Some(0));
                 }
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
