@@ -309,7 +309,13 @@
     "close_left": "左側を閉じる",
     "pin": "ピン留め",
     "unpin": "ピン留め解除",
-    "restore_closed": "閉じたタブを復元"
+    "restore_closed": "閉じたタブを復元",
+    "group_name_placeholder": "グループ名",
+    "create_group_button": "作成",
+    "close_group": "グループを閉じる",
+    "ungroup": "グループを解除",
+    "add_tab_to_group": "タブをグループに追加",
+    "remove_from_group": "グループから削除"
   },
   "search": {
     "modal_title": "ファイル検索",

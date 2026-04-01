@@ -309,7 +309,13 @@
     "close_left": "关闭左侧",
     "pin": "固定",
     "unpin": "取消固定",
-    "restore_closed": "恢复关闭的标签页"
+    "restore_closed": "恢复关闭的标签页",
+    "remove_from_group": "从组中删除",
+    "group_name_placeholder": "群组名称",
+    "create_group_button": "创建",
+    "close_group": "关闭组",
+    "ungroup": "取消分组",
+    "add_tab_to_group": "将标签页添加到组"
   },
   "search": {
     "modal_title": "搜索文件",

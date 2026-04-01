@@ -309,7 +309,13 @@
     "close_left": "Fechar à esquerda",
     "pin": "Fixar",
     "unpin": "Desafixar",
-    "restore_closed": "Restaurar aba fechada"
+    "restore_closed": "Restaurar aba fechada",
+    "remove_from_group": "Remover do grupo",
+    "group_name_placeholder": "Nome do grupo",
+    "create_group_button": "Criar",
+    "close_group": "Fechar grupo",
+    "ungroup": "Desagrupar_pt",
+    "add_tab_to_group": "Adicionar guia ao grupo"
   },
   "search": {
     "modal_title": "Buscar arquivos",

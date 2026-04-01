@@ -18,20 +18,20 @@
 - [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 1.1 `TabBar::show()` の描画ループを 3 フェーズ（グループブロック → ピン留めタブ → 通常タブ）に分割する
-- [ ] 1.2 グループヘッダーをコンパクトチップデザインに変更する（色ドット ● + 縮小フォント名前）
-- [ ] 1.3 グループ所属タブの下部に 2px カラーアンダーラインを描画する
-- [ ] 1.4 折りたたみ時のグループヘッダーをドット + ▸ + メンバー数表示に変更する
-- [ ] 1.5 既存テストの描画順序関連を更新し、新しい 3 フェーズ描画の regression test を追加する
-- [ ] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 1.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 1.1 `TabBar::show()` の描画ループを 3 フェーズ（グループブロック → ピン留めタブ → 通常タブ）に分割する
+- [x] 1.2 グループヘッダーをコンパクトチップデザインに変更する（色ドット ● + 縮小フォント名前）
+- [x] 1.3 グループ所属タブの下部に 2px カラーアンダーラインを描画する
+- [x] 1.4 折りたたみ時のグループヘッダーをドット + ▸ + メンバー数表示に変更する
+- [x] 1.5 既存テストの描画順序関連を更新し、新しい 3 フェーズ描画の regression test を追加する
+- [x] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 1.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] グループブロックがピン留めタブより左に描画されること
-- [ ] グループヘッダーが通常タブと視覚的に明確に区別できること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] グループブロックがピン留めタブより左に描画されること
+- [x] グループヘッダーが通常タブと視覚的に明確に区別できること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
@@ -39,23 +39,23 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 2.1 コンテキストメニューの「新しいグループを作成」をサブメニューパネル（名前入力欄 + 色パレット + 作成ボタン）に変更する
-- [ ] 2.2 名前が空の場合は作成ボタンを無効化する
-- [ ] 2.3 7 色固定パレット（Blue, Red, Green, Orange, Purple, Yellow, Teal）を横並び円形ボタンとして実装する
-- [ ] 2.4 `CreateTabGroup` Action のデフォルト名・色のハードコードを除去し、ユーザー入力値を使用する
-- [ ] 2.5 必要な i18n キーを追加する（`group_name_placeholder`, `create_group_button` 等）
-- [ ] 2.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 2.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 2.1 コンテキストメニューの「新しいグループを作成」をサブメニューパネル（名前入力欄 + 色パレット + 作成ボタン）に変更する
+- [x] 2.2 名前が空の場合は作成ボタンを無効化する
+- [x] 2.3 7 色固定パレット（Blue, Red, Green, Orange, Purple, Yellow, Teal）を横並び円形ボタンとして実装する
+- [x] 2.4 `CreateTabGroup` Action のデフォルト名・色のハードコードを除去し、ユーザー入力値を使用する
+- [x] 2.5 必要な i18n キーを追加する（`group_name_placeholder`, `create_group_button` 等）
+- [x] 2.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 2.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] グループ作成時に名前入力と色選択が必須であること
-- [ ] 名前なしではグループを作成できないこと
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] グループ作成時に名前入力と色選択が必須であること
+- [x] 名前なしではグループを作成できないこと
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
@@ -63,26 +63,26 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 3.1 グループヘッダーのダブルクリックでインラインリネームモードに入る実装（`layout.rs` の `inline_rename_group` state 使用）
-- [ ] 3.2 Enter キーまたはフォーカス離脱でリネーム確定、空名前は元に戻す
-- [ ] 3.3 シングルクリック（collapse toggle）とダブルクリック（rename）の競合回避
-- [ ] 3.4 グループコンテキストメニューに「グループ解散」（Ungroup）を追加し、`UngroupTabGroup` Action を実装する
-- [ ] 3.5 グループコンテキストメニューに「グループを閉じる」（Close Group）を追加し、`CloseTabGroup` Action を実装する
-- [ ] 3.6 グループコンテキストメニューに色変更パレット（7色横並び）を追加する
-- [ ] 3.7 コンテキストメニュー内の旧式 TextEdit リネーム UI を削除する
-- [ ] 3.8 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 3.9 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 3.1 グループヘッダーのダブルクリックでインラインリネームモードに入る実装（`layout.rs` の `inline_rename_group` state 使用）
+- [x] 3.2 Enter キーまたはフォーカス離脱でリネーム確定、空名前は元に戻す
+- [x] 3.3 シングルクリック（collapse toggle）とダブルクリック（rename）の競合回避
+- [x] 3.4 グループコンテキストメニューに「グループ解散」（Ungroup）を追加し、`UngroupTabGroup` Action を実装する
+- [x] 3.5 グループコンテキストメニューに「グループを閉じる」（Close Group）を追加し、`CloseTabGroup` Action を実装する
+- [x] 3.6 グループコンテキストメニューに色変更パレット（7色横並び）を追加する
+- [x] 3.7 コンテキストメニュー内の旧式 TextEdit リネーム UI を削除する
+- [x] 3.8 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 3.9 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] ダブルクリックでインラインリネームが動作すること
-- [ ] Ungroup / Close Group がコンテキストメニューから実行できること
-- [ ] 色変更がコンテキストメニュー内パレットから即時反映されること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] ダブルクリックでインラインリネームが動作すること
+- [x] Ungroup / Close Group がコンテキストメニューから実行できること
+- [x] 色変更がコンテキストメニュー内パレットから即時反映されること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
@@ -90,23 +90,23 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 4.1 グループヘッダーに `Sense::click_and_drag()` を設定し、ドラッグ操作を検出する
-- [ ] 4.2 `ReorderTabGroup { from: usize, to: usize }` Action を `AppAction` に追加する
-- [ ] 4.3 ドラッグ中のゴースト表示（グループヘッダーのみ）を実装する
-- [ ] 4.4 ドロップ位置の判定とグループ順序の更新ロジックを実装する
-- [ ] 4.5 ドラッグ＆ドロップの regression test を追加する
-- [ ] 4.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 4.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 4.1 グループヘッダーに `Sense::click_and_drag()` を設定し、ドラッグ操作を検出する
+- [x] 4.2 `ReorderTabGroup { from: usize, to: usize }` Action を `AppAction` に追加する
+- [x] 4.3 ドラッグ中のゴースト表示（グループヘッダーのみ）を実装する
+- [x] 4.4 ドロップ位置の判定とグループ順序の更新ロジックを実装する
+- [x] 4.5 ドラッグ＆ドロップの regression test を追加する
+- [x] 4.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 4.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] グループヘッダーのドラッグでグループ順序を変更できること
-- [ ] ドラッグ＆ドロップ後もセッション永続化が正常に動作すること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] グループヘッダーのドラッグでグループ順序を変更できること
+- [x] ドラッグ＆ドロップ後もセッション永続化が正常に動作すること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 

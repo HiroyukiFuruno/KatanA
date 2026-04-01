@@ -309,7 +309,13 @@
     "close_left": "Close to the Left",
     "pin": "Pin",
     "unpin": "Unpin",
-    "restore_closed": "Restore Closed Tab"
+    "restore_closed": "Restore Closed Tab",
+    "group_name_placeholder": "Group name",
+    "create_group_button": "Create",
+    "close_group": "Close group",
+    "ungroup": "Ungroup",
+    "add_tab_to_group": "Add tab to group",
+    "remove_from_group": "Remove from group"
   },
   "search": {
     "modal_title": "Search Files",

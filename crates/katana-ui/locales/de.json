@@ -309,7 +309,13 @@
     "close_left": "Links schließen",
     "pin": "Anpinnen",
     "unpin": "Abpinnen",
-    "restore_closed": "Geschlossenen Tab wiederherstellen"
+    "restore_closed": "Geschlossenen Tab wiederherstellen",
+    "remove_from_group": "Aus Gruppe entfernen",
+    "group_name_placeholder": "Gruppenname",
+    "create_group_button": "Erstellen",
+    "close_group": "Gruppe schließen",
+    "ungroup": "Gruppierung aufheben",
+    "add_tab_to_group": "Tab zur Gruppe hinzufügen"
   },
   "search": {
     "modal_title": "Dateien suchen",

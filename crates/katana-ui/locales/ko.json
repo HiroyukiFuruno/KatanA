@@ -309,7 +309,13 @@
     "close_left": "왼쪽 탭 닫기",
     "pin": "고정",
     "unpin": "고정 해제",
-    "restore_closed": "닫힌 탭 복원"
+    "restore_closed": "닫힌 탭 복원",
+    "remove_from_group": "그룹에서 삭제",
+    "group_name_placeholder": "그룹 이름",
+    "create_group_button": "만들기",
+    "close_group": "그룹 닫기",
+    "ungroup": "그룹 해제",
+    "add_tab_to_group": "탭을 그룹에 추가"
   },
   "search": {
     "modal_title": "파일 찾기",

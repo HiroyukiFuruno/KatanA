@@ -2741,7 +2741,11 @@ fn test_integration_tab_reorder() {
 
     harness
         .state_mut()
-        .trigger_action(AppAction::ReorderDocument { from: 0, to: 2 });
+        .trigger_action(AppAction::ReorderDocument {
+            from: 0,
+            to: 2,
+            new_group_id: None,
+        });
     harness.step();
 
     assert_eq!(
@@ -2768,7 +2772,11 @@ fn test_integration_tab_reorder() {
 
     harness
         .state_mut()
-        .trigger_action(AppAction::ReorderDocument { from: 2, to: 0 });
+        .trigger_action(AppAction::ReorderDocument {
+            from: 2,
+            to: 0,
+            new_group_id: None,
+        });
     harness.step();
 
     assert_eq!(
@@ -2795,7 +2803,11 @@ fn test_integration_tab_reorder() {
 
     harness
         .state_mut()
-        .trigger_action(AppAction::ReorderDocument { from: 5, to: 10 });
+        .trigger_action(AppAction::ReorderDocument {
+            from: 5,
+            to: 10,
+            new_group_id: None,
+        });
     harness.step();
     assert_eq!(
         harness

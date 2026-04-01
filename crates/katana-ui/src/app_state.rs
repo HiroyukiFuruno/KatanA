@@ -22,7 +22,7 @@ pub enum ExportFormat {
     Jpg,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum AppAction {
     InstallUpdate,
     OpenWorkspace(PathBuf),
@@ -83,6 +83,7 @@ pub enum AppAction {
     ReorderDocument {
         from: usize,
         to: usize,
+        new_group_id: Option<Option<String>>,
     },
     ExportDocument(ExportFormat),
     AcceptTerms(String),
@@ -114,6 +115,8 @@ pub enum AppAction {
         group_id: String,
         new_name: String,
     },
+    CloseTabGroup(String),
+    UngroupTabGroup(String),
     RecolorTabGroup {
         group_id: String,
         new_color: String,

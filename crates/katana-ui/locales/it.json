@@ -309,7 +309,13 @@
     "close_left": "Chiudi a sinistra",
     "pin": "Fissa",
     "unpin": "Rimuovi fissaggio",
-    "restore_closed": "Ripristina scheda chiusa"
+    "restore_closed": "Ripristina scheda chiusa",
+    "remove_from_group": "Rimuovi dal gruppo",
+    "group_name_placeholder": "Nome del gruppo",
+    "create_group_button": "Crea",
+    "close_group": "Chiudi gruppo",
+    "ungroup": "Separa",
+    "add_tab_to_group": "Aggiungi scheda al gruppo"
   },
   "search": {
     "modal_title": "Cerca file",

@@ -776,6 +776,17 @@ pub struct TabMessages {
     pub remove_from_group: String,
     #[serde(default = "default_rename_group")]
     pub rename_group: String,
+    #[serde(default = "default_group_name_placeholder")]
+    pub group_name_placeholder: String,
+    #[serde(default = "default_create_group_button")]
+    pub create_group_button: String,
+    // Note: add_tab_to_group replaces create_new_group from English, acting as the parent
+    #[serde(default = "default_add_tab_to_group")]
+    pub add_tab_to_group: String,
+    #[serde(default = "default_close_group")]
+    pub close_group: String,
+    #[serde(default = "default_ungroup")]
+    pub ungroup: String,
 }
 
 pub(crate) fn default_tab_group() -> String {
@@ -798,6 +809,21 @@ pub(crate) fn default_remove_from_group() -> String {
 }
 pub(crate) fn default_rename_group() -> String {
     "Rename Group".to_string()
+}
+pub(crate) fn default_group_name_placeholder() -> String {
+    "Group name".to_string()
+}
+pub(crate) fn default_create_group_button() -> String {
+    "Create".to_string()
+}
+pub(crate) fn default_add_tab_to_group() -> String {
+    "Add tab to group".to_string()
+}
+pub(crate) fn default_close_group() -> String {
+    "Close group".to_string()
+}
+pub(crate) fn default_ungroup() -> String {
+    "Ungroup".to_string()
 }
 pub(crate) fn d_title_bar_text() -> String {
     "Title Bar Text".to_string()

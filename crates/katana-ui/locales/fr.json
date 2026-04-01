@@ -309,7 +309,13 @@
     "close_left": "Fermer à gauche",
     "pin": "Épingler",
     "unpin": "Désépingler",
-    "restore_closed": "Restaurer l'onglet fermé"
+    "restore_closed": "Restaurer l'onglet fermé",
+    "remove_from_group": "Supprimer du groupe",
+    "group_name_placeholder": "Nom du groupe",
+    "create_group_button": "Créer",
+    "close_group": "Fermer le groupe",
+    "ungroup": "Dégrouper",
+    "add_tab_to_group": "Ajouter l'onglet au groupe"
   },
   "search": {
     "modal_title": "Rechercher des fichiers",

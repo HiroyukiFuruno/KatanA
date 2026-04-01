@@ -43,7 +43,11 @@ pub fn resolve_drag_drop(
     let drop_points = compute_drop_points(tab_rects);
     if let Some(to) = find_best_drop_index(&drop_points, ghost_center_x) {
         if src_idx != to && src_idx + 1 != to {
-            return Some(AppAction::ReorderDocument { from: src_idx, to });
+            return Some(AppAction::ReorderDocument {
+                from: src_idx,
+                to,
+                new_group_id: None,
+            });
         }
     }
     None
@@ -144,11 +148,14 @@ mod tests {
     #[test]
     fn resolve_drag_drop_reorder_action() {
         let rects = make_rects(&[(10.0, 100.0), (110.0, 200.0), (210.0, 300.0)]);
-        let action = resolve_drag_drop(0, 260.0, &rects);
-        assert!(matches!(
-            action,
-            Some(AppAction::ReorderDocument { from: 0, to: 3 })
-        ));
+        assert_eq!(
+            resolve_drag_drop(0, 260.0, &rects),
+            Some(AppAction::ReorderDocument {
+                from: 0,
+                to: 3,
+                new_group_id: None
+            })
+        );
     }
 
     #[test]
