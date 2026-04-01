@@ -747,7 +747,7 @@ mod tests {
             });
         }
 
-        app.state.scroll.fraction = 0.5;
+        app.state.scroll.logical_position.progress = 0.5;
         app.state.scroll.source = ScrollSource::Editor;
 
         for _ in 0..3 {
@@ -766,7 +766,7 @@ mod tests {
             "Editor→Preview sync must settle to Neither after consumption. \
              Got {:?}, fraction={:.4}",
             app.state.scroll.source,
-            app.state.scroll.fraction,
+            app.state.scroll.logical_position.progress,
         );
     }
 
@@ -787,7 +787,7 @@ mod tests {
             });
         }
 
-        app.state.scroll.fraction = 0.5;
+        app.state.scroll.logical_position.progress = 0.5;
         app.state.scroll.source = ScrollSource::Editor;
 
         for _ in 0..3 {
@@ -806,7 +806,7 @@ mod tests {
             "Editor→Preview sync must settle to Neither in horizontal split. \
              Got {:?}, fraction={:.4}",
             app.state.scroll.source,
-            app.state.scroll.fraction,
+            app.state.scroll.logical_position.progress,
         );
     }
 
@@ -827,7 +827,7 @@ mod tests {
             });
         }
 
-        app.state.scroll.fraction = 0.5;
+        app.state.scroll.logical_position.progress = 0.5;
         app.state.scroll.source = ScrollSource::Editor;
 
         for _ in 0..3 {
@@ -846,7 +846,7 @@ mod tests {
             "Editor→Preview sync must settle to Neither after order swap. \
              Got {:?}, fraction={:.4}",
             app.state.scroll.source,
-            app.state.scroll.fraction,
+            app.state.scroll.logical_position.progress,
         );
     }
 
@@ -867,7 +867,7 @@ mod tests {
             });
         }
 
-        app.state.scroll.fraction = 0.5;
+        app.state.scroll.logical_position.progress = 0.5;
         app.state.scroll.source = ScrollSource::Preview;
 
         for _ in 0..3 {
@@ -886,7 +886,7 @@ mod tests {
             "Preview→Editor sync must settle to Neither in vertical split. \
              Got {:?}, fraction={:.4}",
             app.state.scroll.source,
-            app.state.scroll.fraction,
+            app.state.scroll.logical_position.progress,
         );
     }
 

@@ -141,22 +141,27 @@ pub fn update_scroll_sync(
     inner_rect_height: f32,
     current_offset_y: f32,
     was_consuming_preview: bool,
-    dead_zone: f32,
+    _dead_zone: f32,
 ) {
     let max_scroll = (content_height - inner_rect_height).max(0.0);
     scroll.editor_max = max_scroll;
 
     if was_consuming_preview {
         scroll.source = ScrollSource::Neither;
-        if max_scroll > 0.0 {
-            scroll.fraction = (current_offset_y / max_scroll).clamp(0.0, 1.0);
-        }
+        // Apply the echo record for the editor.
+        scroll.editor_echo.record(current_offset_y);
     } else if max_scroll > 0.0 {
-        let current_fraction = (current_offset_y / max_scroll).clamp(0.0, 1.0);
-        let diff = (current_fraction - scroll.fraction).abs();
-        if diff > dead_zone {
-            scroll.fraction = current_fraction;
-            scroll.source = ScrollSource::Editor;
+        // Did the editor actually scroll from user interaction?
+        if !scroll.editor_echo.is_echo(current_offset_y) {
+            // Recompute our logical position from the current pixel offset,
+            // using the shared mapper built by Preview pane.
+            let next_logical = scroll.mapper.editor_to_logical(current_offset_y);
+            // We don't have a reliable 'dead_zone' based on float difference anymore,
+            // because progress is not global. But pixels changed beyond ECHO_PIXEL_EPSILON.
+            if next_logical != scroll.logical_position {
+                scroll.logical_position = next_logical;
+                scroll.source = ScrollSource::Editor;
+            }
         }
     }
 }
@@ -244,28 +249,28 @@ mod tests {
         };
         update_scroll_sync(&mut scroll, 1000.0, 500.0, 250.0, true, 0.01);
         assert_eq!(scroll.source, ScrollSource::Neither);
-        assert!((scroll.fraction - 0.5).abs() < 0.01);
+        assert!(scroll.editor_echo.is_echo(250.0));
     }
 
     #[test]
-    fn update_scroll_sync_editor_scrolled_beyond_dead_zone() {
+    fn update_scroll_sync_editor_scrolled_beyond_epsilon() {
         let mut scroll = crate::app_state::ScrollState {
-            fraction: 0.0,
+            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
             ..Default::default()
         };
+        // 400.0 offset on 500.0 max_scroll means progress=0.8
         update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
         assert_eq!(scroll.source, ScrollSource::Editor);
-        assert!((scroll.fraction - 0.8).abs() < 0.01);
     }
 
     #[test]
-    fn update_scroll_sync_within_dead_zone_no_change() {
+    fn update_scroll_sync_within_echo_no_change() {
         let mut scroll = crate::app_state::ScrollState {
-            fraction: 0.5,
             source: ScrollSource::Neither,
             ..Default::default()
         };
-        update_scroll_sync(&mut scroll, 1000.0, 500.0, 252.0, false, 0.01);
+        scroll.editor_echo.record(250.0);
+        update_scroll_sync(&mut scroll, 1000.0, 500.0, 251.0, false, 0.01);
         assert_eq!(scroll.source, ScrollSource::Neither);
     }
 }

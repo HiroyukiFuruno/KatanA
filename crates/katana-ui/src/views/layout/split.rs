@@ -5,7 +5,7 @@ use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use crate::shell::SPLIT_PREVIEW_PANEL_MIN_WIDTH;
 use crate::shell_ui::{SPLIT_HALF_RATIO, SPLIT_PANEL_MAX_RATIO};
-use crate::state::ScrollSource;
+
 use crate::theme_bridge;
 use crate::views::panels::editor::EditorContent;
 use crate::views::panels::preview::preview_panel_id;
@@ -72,11 +72,6 @@ impl<'a> HorizontalSplit<'a> {
                 .background,
         );
         let active_path = app.state.active_document().map(|d| d.path.clone());
-        let mut scroll_state = (
-            app.state.scroll.fraction,
-            app.state.scroll.source,
-            app.state.scroll.preview_max,
-        );
         let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
@@ -122,15 +117,10 @@ impl<'a> HorizontalSplit<'a> {
                         show_toc,
                         &mut app.pending_action,
                         scroll_sync,
-                        &mut scroll_state,
                     )
                     .show(ui);
                 }
             });
-
-        app.state.scroll.fraction = scroll_state.0;
-        app.state.scroll.source = scroll_state.1;
-        app.state.scroll.preview_max = scroll_state.2;
 
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
@@ -177,11 +167,6 @@ impl<'a> VerticalSplit<'a> {
                 .background,
         );
         let active_path = app.state.active_document().map(|d| d.path.clone());
-        let mut scroll_state = (
-            app.state.scroll.fraction,
-            app.state.scroll.source,
-            app.state.scroll.preview_max,
-        );
         let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
@@ -224,15 +209,10 @@ impl<'a> VerticalSplit<'a> {
                             show_toc,
                             &mut app.pending_action,
                             scroll_sync,
-                            &mut scroll_state,
                         )
                         .show(ui);
                     }
                 });
-
-            app.state.scroll.fraction = scroll_state.0;
-            app.state.scroll.source = scroll_state.1;
-            app.state.scroll.preview_max = scroll_state.2;
 
             egui::CentralPanel::default()
                 .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
@@ -267,15 +247,10 @@ impl<'a> VerticalSplit<'a> {
                             show_toc,
                             &mut app.pending_action,
                             scroll_sync,
-                            &mut scroll_state,
                         )
                         .show(ui);
                     }
                 });
-
-            app.state.scroll.fraction = scroll_state.0;
-            app.state.scroll.source = scroll_state.1;
-            app.state.scroll.preview_max = scroll_state.2;
 
             egui::CentralPanel::default()
                 .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
@@ -319,7 +294,6 @@ impl<'a> PreviewOnly<'a> {
             ),
         );
         let active_path = app.state.active_document().map(|d| d.path.clone());
-        let mut scroll_state = (0.0_f32, ScrollSource::Neither, 0.0_f32);
         if let Some(path) = active_path {
             let pane = crate::shell::KatanaApp::get_preview_pane(&mut app.tab_previews, path);
             let toc_visible = app.state.config.settings.settings().layout.toc_visible;
@@ -332,7 +306,6 @@ impl<'a> PreviewOnly<'a> {
                 show_toc,
                 &mut app.pending_action,
                 false,
-                &mut scroll_state,
             )
             .show(ui);
         } else {
