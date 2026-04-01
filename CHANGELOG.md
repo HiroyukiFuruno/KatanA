@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.11.0] - 2026-04-01 11:45:00 (UTC)
+
+### 🚀 Features
+
+- Introduced the "Tab Groups" feature, allowing users to visually organize and consolidate multiple tabs. Groups can be assigned custom names and colors (from a curated palette of 7), and can be fully collapsed to maximize the editor screen area.
+- Enhanced accident prevention safeguards for "Pinned" tabs. Pinned files are now fully protected from bulk-close operations such as "Close Others" or "Close All".
+
+### ✨ Improvements
+
+- Upgraded the workspace tab restoration (session persistence) logic on application restart, ensuring that advanced states such as tab group affiliations and pinned statuses are seamlessly retained across sessions.
+
 ## [0.10.1] - 2026-04-01 09:35:00 (UTC)
 
 ### ✨ Improvements

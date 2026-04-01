@@ -2,8 +2,8 @@
 
 ## 着手条件 (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 現行の tab pinning / close actions / workspace-scoped session restore（`views/top_bar.rs`、`app/action.rs`、`app/workspace.rs`）を確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 現行の tab pinning / close actions / workspace-scoped session restore（`views/top_bar.rs`、`app/action.rs`、`app/workspace.rs`）を確認していること
 
 ## ブランチ運用ルール
 
@@ -109,13 +109,19 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
-- [ ] 5.2 `make check` が exit code 0 で通過することを確認する
-- [ ] 5.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
-- [ ] 5.4 `master` 向け PR を作成する
-- [ ] 5.5 `master` へ merge する（`--admin` 許可）
-- [ ] 5.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.11.0` の release tagging と release 作成を実施する
-- [ ] 5.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
+- [x] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
+- [x] 5.2 `make check` が exit code 0 で通過することを確認する
+- [x] 5.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
+- [x] 5.4 `master` 向け PR を作成する
+- [x] 5.5 `master` へ merge する（`--admin` 許可）
+- [x] 5.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.11.0` の release tagging と release 作成を実施する
+- [x] 5.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
+
+### 完了条件 (DoD)
+
+- [x] `master` branch に変更が統合されていること
+- [x] version 番号が正しく `v0.11.0` に更新されていること
+- [x] OpenSpec change が完全に archive されていること
