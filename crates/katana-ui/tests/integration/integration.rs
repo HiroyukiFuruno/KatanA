@@ -3497,3 +3497,192 @@ fn test_ast_linter_locales() {
         );
     }
 }
+
+#[test]
+fn test_integration_session_upgrade_from_legacy_payload() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_legacy_session");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let test_file = temp_dir.join("legacy_tab.md");
+    std::fs::write(&test_file, "# Legacy Tab").unwrap();
+    let abs_path = test_file.canonicalize().unwrap_or(test_file.clone());
+
+    // Inject legacy session JSON into persistent cache
+    let legacy_json = serde_json::json!({
+        "tabs": [abs_path.display().to_string()],
+        "active_idx": 0,
+        "expanded_directories": []
+    });
+
+    let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
+        workspace_path: temp_dir.clone(),
+    }
+    .to_raw_key()
+    .unwrap_or_default();
+
+    harness
+        .state_mut()
+        .app_state_mut()
+        .config
+        .cache
+        .set_persistent(&cache_key, legacy_json.to_string())
+        .unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    // Ensure the tab loaded normally (not pinned)
+    let app = harness.state_mut().app_state_mut();
+    assert_eq!(app.document.open_documents.len(), 1);
+    assert_eq!(app.document.open_documents[0].path, abs_path);
+    assert_eq!(app.document.open_documents[0].is_pinned, false);
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_session_restore_with_pinned_and_groups() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_v2_session");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let test_file1 = temp_dir.join("tab1.md");
+    let test_file2 = temp_dir.join("tab2.md");
+    std::fs::write(&test_file1, "# Tab 1").unwrap();
+    std::fs::write(&test_file2, "# Tab 2").unwrap();
+    let abs_path1 = test_file1.canonicalize().unwrap_or(test_file1.clone());
+    let abs_path2 = test_file2.canonicalize().unwrap_or(test_file2.clone());
+
+    let v2_json = serde_json::json!({
+        "version": 2,
+        "tabs": [
+            { "path": abs_path1.display().to_string(), "pinned": true },
+            { "path": abs_path2.display().to_string(), "pinned": false }
+        ],
+        "active_path": abs_path2.display().to_string(),
+        "expanded_directories": [],
+        "groups": [
+            { "id": "g1", "name": "Docs", "color_hex": "#ff0000", "collapsed": true, "members": [ abs_path2.display().to_string() ] }
+        ]
+    });
+
+    let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
+        workspace_path: temp_dir.clone(),
+    }
+    .to_raw_key()
+    .unwrap_or_default();
+
+    harness
+        .state_mut()
+        .app_state_mut()
+        .config
+        .settings
+        .settings_mut()
+        .workspace
+        .restore_session = true;
+
+    harness
+        .state_mut()
+        .app_state_mut()
+        .config
+        .cache
+        .set_persistent(&cache_key, v2_json.to_string())
+        .unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    let app = harness.state_mut().app_state_mut();
+    assert_eq!(app.document.open_documents.len(), 2);
+    assert_eq!(app.document.open_documents[0].path, abs_path1);
+    assert_eq!(app.document.open_documents[0].is_pinned, true);
+    assert_eq!(app.document.open_documents[1].path, abs_path2);
+    assert_eq!(app.document.open_documents[1].is_pinned, false);
+    assert_eq!(app.document.active_doc_idx, Some(1));
+    assert_eq!(app.document.tab_groups.len(), 1);
+    assert_eq!(app.document.tab_groups[0].name, "Docs");
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_close_policy_batch_skips_pinned() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_close_policy");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let test_file1 = temp_dir.join("tab1.md");
+    let test_file2 = temp_dir.join("tab2.md");
+    std::fs::write(&test_file1, "# Tab 1").unwrap();
+    std::fs::write(&test_file2, "# Tab 2").unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    let abs1 = test_file1.canonicalize().unwrap_or(test_file1);
+    let abs2 = test_file2.canonicalize().unwrap_or(test_file2);
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs1));
+    harness.step();
+    harness
+        .state_mut()
+        .trigger_action(AppAction::TogglePinDocument(0)); // pin first document
+    harness.step();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs2));
+    harness.step();
+
+    // Verify setup
+    assert_eq!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .document
+            .open_documents
+            .len(),
+        2
+    );
+    assert_eq!(
+        harness.state_mut().app_state_mut().document.open_documents[0].is_pinned,
+        true
+    );
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::CloseAllDocuments);
+    harness.step();
+
+    // The pinned tab should still be there, unpinned tab removed
+    assert_eq!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .document
+            .open_documents
+            .len(),
+        1
+    );
+    assert_eq!(
+        harness.state_mut().app_state_mut().document.open_documents[0].is_pinned,
+        true
+    );
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}

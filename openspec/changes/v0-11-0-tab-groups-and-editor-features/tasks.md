@@ -88,20 +88,20 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 4.1 legacy session payload の read-time upgrade を test で確認する
-- [ ] 4.2 grouped / pinned / restore setting OFF の各 session restore path を test で確認する
-- [ ] 4.3 close policy の regression test を追加し、pinned tab が batch close から保護されることを確認する
-- [ ] 4.4 実装途中に canonical order や session model の前提が崩れた場合、artifact が先に更新されていることを確認する
+- [x] 4.1 legacy session payload の read-time upgrade を test で確認する
+- [x] 4.2 grouped / pinned / restore setting OFF の各 session restore path を test で確認する
+- [x] 4.3 close policy の regression test を追加し、pinned tab が batch close から保護されることを確認する
+- [x] 4.4 実装途中に canonical order や session model の前提が崩れた場合、artifact が先に更新されていることを確認する
 
 ### 完了条件 (DoD)
 
-- [ ] session persistence / group rendering / pin safeguards の主要 regression が test 化されていること
-- [ ] upgrade path と restore setting OFF path が確認されていること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] session persistence / group rendering / pin safeguards の主要 regression が test 化されていること
+- [x] upgrade path と restore setting OFF path が確認されていること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
