@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.10.1] - 2026-04-01 09:35:00 (UTC)
+
+### ✨ Improvements
+
+- Ensured that diagram previews immediately reflect theme and color changes without requiring an application restart.
+- Prevented rendering glitches where outdated cached diagrams in the previous color scheme would incorrectly display after switching themes.
+
 ## [0.10.0] - 2026-04-01 07:34:00 (UTC)
 
 ### ✨ Improvements
