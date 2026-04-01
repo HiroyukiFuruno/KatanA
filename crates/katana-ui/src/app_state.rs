@@ -58,6 +58,10 @@ pub enum AppAction {
     SetViewMode(ViewMode),
     ToggleScrollSync(bool),
     RefreshWorkspace,
+    ReorderActivityRail {
+        from: usize,
+        to: usize,
+    },
     CreateFsNode {
         parent_dir: PathBuf,
         is_dir: bool,
