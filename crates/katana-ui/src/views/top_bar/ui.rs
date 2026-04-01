@@ -265,16 +265,26 @@ impl<'a> TabBar<'a> {
                                         ui.add(egui::Button::selectable(is_active, &title))
                                     };
 
-                                    let c_resp = ui.add(egui::Button::image_and_text(
-                                        crate::Icon::Close
-                                            .ui_image(ui, crate::icon::IconSize::Small),
-                                        invisible_label("x"),
-                                    ));
+                                    let c_resp = if !doc.is_pinned {
+                                        Some(
+                                            ui.add(egui::Button::image_and_text(
+                                                crate::Icon::Close
+                                                    .ui_image(ui, crate::icon::IconSize::Small),
+                                                invisible_label("x"),
+                                            )),
+                                        )
+                                    } else {
+                                        None
+                                    };
                                     (t_resp, c_resp)
                                 })
                                 .inner;
 
-                            let full_tab_rect = title_resp.rect.union(close_resp.rect);
+                            let full_tab_rect = if let Some(c) = &close_resp {
+                                title_resp.rect.union(c.rect)
+                            } else {
+                                title_resp.rect
+                            };
                             tab_rects.push((idx, full_tab_rect));
 
                             let tab_interact = ui.interact(
@@ -284,9 +294,11 @@ impl<'a> TabBar<'a> {
                             );
 
                             let mut clicked_tab = tab_interact.clicked();
-                            if close_resp.clicked() {
-                                close_idx = Some(idx);
-                                clicked_tab = false;
+                            if let Some(c) = close_resp {
+                                if c.clicked() {
+                                    close_idx = Some(idx);
+                                    clicked_tab = false;
+                                }
                             }
 
                             let is_being_dragged = ui.ctx().is_being_dragged(tab_interact.id);
@@ -336,11 +348,15 @@ impl<'a> TabBar<'a> {
                                                         is_active, &title,
                                                     ));
                                                 }
-                                                ui.add(egui::Button::image_and_text(
-                                                    crate::Icon::Close
-                                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                                    invisible_label("x"),
-                                                ));
+                                                if !doc.is_pinned {
+                                                    ui.add(egui::Button::image_and_text(
+                                                        crate::Icon::Close.ui_image(
+                                                            ui,
+                                                            crate::icon::IconSize::Small,
+                                                        ),
+                                                        invisible_label("x"),
+                                                    ));
+                                                }
                                             });
                                         });
 

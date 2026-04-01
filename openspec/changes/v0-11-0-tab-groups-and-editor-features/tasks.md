@@ -64,23 +64,23 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 3.1 pinned tab の close button を非表示にし、tooltip 表示は維持する
-- [ ] 3.2 `CloseDocument` が pinned tab を通常 close しないようにする
-- [ ] 3.3 `CloseAllDocuments` / `CloseOtherDocuments` / `CloseDocumentsToRight` / `CloseDocumentsToLeft` が pinned tab をスキップするようにする
-- [ ] 3.4 close shortcut から dispatch される close action でも pinned safeguard が有効であることを確認する
-- [ ] 3.5 unpin 後は通常 close path に戻ることを確認する
-- [ ] 3.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 3.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 3.1 pinned tab の close button を非表示にし、tooltip 表示は維持する
+- [x] 3.2 `CloseDocument` が pinned tab を通常 close しないようにする
+- [x] 3.3 `CloseAllDocuments` / `CloseOtherDocuments` / `CloseDocumentsToRight` / `CloseDocumentsToLeft` が pinned tab をスキップするようにする
+- [x] 3.4 close shortcut から dispatch される close action でも pinned safeguard が有効であることを確認する
+- [x] 3.5 unpin 後は通常 close path に戻ることを確認する
+- [x] 3.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 3.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] pinned tab が通常 UI と batch close から削除されないこと
-- [ ] unpin 後は通常 close できること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] pinned tab が通常 UI と batch close から削除されないこと
+- [x] unpin 後は通常 close できること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
