@@ -428,6 +428,31 @@ impl ActionOps for KatanaApp {
                 }
                 self.save_workspace_state();
             }
+            AppAction::ReorderActivityRail { from, to } => {
+                let mut order = self
+                    .state
+                    .config
+                    .settings
+                    .settings()
+                    .layout
+                    .activity_rail_order
+                    .clone();
+                let len = order.len();
+                if from < len && to <= len && from != to {
+                    let item = order.remove(from);
+                    let actual_to = if to > from { to - 1 } else { to };
+                    order.insert(actual_to, item);
+                    self.state
+                        .config
+                        .settings
+                        .settings_mut()
+                        .layout
+                        .activity_rail_order = order;
+                    if !self.state.config.try_save_settings() {
+                        tracing::warn!("Failed to save activity rail reorder");
+                    }
+                }
+            }
             AppAction::CheckForUpdates => {
                 self.start_update_check(true);
             }

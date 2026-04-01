@@ -61,7 +61,8 @@
     "workspace_title": "ワークスペース",
     "recent_workspaces": "最近のワークスペース",
     "metadata_tooltip": "サイズ: {size} B\n更新日時: {mod_time}",
-    "path_label": "パス"
+    "path_label": "パス",
+    "flat_view": "フラット表示"
   },
   "preview": {
     "preview_title": "プレビュー",

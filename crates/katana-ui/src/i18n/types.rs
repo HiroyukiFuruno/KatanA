@@ -179,6 +179,21 @@ pub struct WorkspaceMessages {
     #[serde(default = "default_metadata_tooltip")]
     pub metadata_tooltip: String,
     pub path_label: String,
+    #[serde(default = "default_flat_view")]
+    pub flat_view: String,
+}
+
+pub(crate) fn default_flat_view() -> String {
+    "Flat View".to_string()
+}
+
+#[cfg(test)]
+mod default_flat_view_tests {
+    use super::*;
+    #[test]
+    fn test_default_flat_view() {
+        assert_eq!(default_flat_view(), "Flat View".to_string());
+    }
 }
 
 pub(crate) fn default_metadata_tooltip() -> String {

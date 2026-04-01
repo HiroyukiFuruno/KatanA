@@ -61,7 +61,8 @@
     "workspace_title": "工作區",
     "recent_workspaces": "最近的工作區",
     "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
-    "path_label": "路徑"
+    "path_label": "路徑",
+    "flat_view": "扁平視圖"
   },
   "preview": {
     "preview_title": "預覽",

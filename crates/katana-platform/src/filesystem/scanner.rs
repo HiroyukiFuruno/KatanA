@@ -83,12 +83,62 @@ fn scan_directory_internal(
         .into_par_iter()
         .filter_map(|entry| process_entry(&entry, current_depth, ctx))
         .collect();
-    entries.sort_by(|a, b| match (a, b) {
+    entries.sort_by(compare_entries);
+    Ok(entries)
+}
+
+pub(crate) fn compare_entries(a: &TreeEntry, b: &TreeEntry) -> std::cmp::Ordering {
+    match (a, b) {
         (TreeEntry::Directory { .. }, TreeEntry::File { .. }) => std::cmp::Ordering::Less,
         (TreeEntry::File { .. }, TreeEntry::Directory { .. }) => std::cmp::Ordering::Greater,
-        (a, b) => a.path().cmp(b.path()),
-    });
-    Ok(entries)
+        (a, b) => {
+            const DECIMAL_BASE: u64 = 10;
+            let a_path = a.path().to_string_lossy();
+            let b_path = b.path().to_string_lossy();
+
+            let mut a_chars = a_path.chars().peekable();
+            let mut b_chars = b_path.chars().peekable();
+
+            loop {
+                match (a_chars.peek(), b_chars.peek()) {
+                    (Some(&ca), Some(&cb)) => {
+                        if ca.is_ascii_digit() && cb.is_ascii_digit() {
+                            let mut a_num = 0u64;
+                            while let Some(&c) = a_chars.peek() {
+                                if c.is_ascii_digit() {
+                                    a_num = a_num * DECIMAL_BASE + (c as u64 - '0' as u64);
+                                    a_chars.next();
+                                } else {
+                                    break;
+                                }
+                            }
+                            let mut b_num = 0u64;
+                            while let Some(&c) = b_chars.peek() {
+                                if c.is_ascii_digit() {
+                                    b_num = b_num * DECIMAL_BASE + (c as u64 - '0' as u64);
+                                    b_chars.next();
+                                } else {
+                                    break;
+                                }
+                            }
+                            if a_num != b_num {
+                                break a_num.cmp(&b_num);
+                            }
+                        } else {
+                            if ca != cb {
+                                break ca.cmp(&cb);
+                            }
+                            a_chars.next();
+                            b_chars.next();
+                        }
+                    }
+                    (Some(_), None) => break std::cmp::Ordering::Greater,
+                    (None, Some(_)) => break std::cmp::Ordering::Less,
+                    (None, None) => break std::cmp::Ordering::Equal,
+                }
+            }
+        }
+    }
 }
 
 // WHY: Recursively and in parallel scans a directory, returning a tree containing only visible files.
@@ -214,5 +264,72 @@ mod tests {
         )
         .unwrap();
         assert!(tree_without_empty.is_empty());
+    }
+
+    #[test]
+    fn test_natural_sort_ordering() {
+        use std::path::PathBuf;
+        let mut entries = vec![
+            TreeEntry::File {
+                path: PathBuf::from("v0-1-0"),
+            },
+            TreeEntry::File {
+                path: PathBuf::from("v0-10-0"),
+            },
+            TreeEntry::File {
+                path: PathBuf::from("v0-2-0"),
+            },
+            TreeEntry::File {
+                path: PathBuf::from("a"),
+            },
+            TreeEntry::File {
+                path: PathBuf::from("a1"),
+            },
+            TreeEntry::File {
+                path: PathBuf::from("a10"),
+            },
+            TreeEntry::File {
+                path: PathBuf::from("a2"),
+            },
+        ];
+        entries.sort_by(super::compare_entries);
+
+        let names: Vec<String> = entries
+            .iter()
+            .map(|e| e.path().to_string_lossy().to_string())
+            .collect();
+        assert_eq!(
+            names,
+            vec!["a", "a1", "a2", "a10", "v0-1-0", "v0-2-0", "v0-10-0"]
+        );
+    }
+
+    #[test]
+    fn test_natural_sort_edge_cases() {
+        use std::cmp::Ordering;
+        use std::path::PathBuf;
+
+        let a = TreeEntry::File {
+            path: PathBuf::from("a"),
+        };
+        let a_duplicate = TreeEntry::File {
+            path: PathBuf::from("a"),
+        };
+        assert_eq!(super::compare_entries(&a, &a_duplicate), Ordering::Equal);
+
+        let a10 = TreeEntry::File {
+            path: PathBuf::from("a10"),
+        };
+        let a1 = TreeEntry::File {
+            path: PathBuf::from("a1"),
+        };
+        assert_eq!(super::compare_entries(&a10, &a1), Ordering::Greater);
+        assert_eq!(super::compare_entries(&a1, &a10), Ordering::Less);
+
+        let ab = TreeEntry::File {
+            path: PathBuf::from("ab"),
+        };
+        assert_eq!(super::compare_entries(&a, &ab), Ordering::Less);
+        assert_eq!(super::compare_entries(&ab, &a), Ordering::Greater);
     }
 }

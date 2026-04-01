@@ -61,7 +61,8 @@
     "workspace_title": "Arbeitsbereich",
     "recent_workspaces": "Zuletzt verwendete Arbeitsbereiche",
     "metadata_tooltip": "Größe: {size} B\nGeändert: {mod_time}",
-    "path_label": "Pfad"
+    "path_label": "Pfad",
+    "flat_view": "Flache Ansicht"
   },
   "preview": {
     "preview_title": "Vorschau",
