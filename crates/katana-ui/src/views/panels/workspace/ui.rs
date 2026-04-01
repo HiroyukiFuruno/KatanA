@@ -474,7 +474,8 @@ impl<'a> WorkspaceHeader<'a> {
                 }
             });
         });
-        ui.add_space(4.0);
+        const HEADER_BOTTOM_PADDING: f32 = 4.0;
+        ui.add_space(HEADER_BOTTOM_PADDING);
 
         if workspace.data.is_some() {
             ui.horizontal(|ui| {
