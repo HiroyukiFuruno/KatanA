@@ -172,6 +172,13 @@ impl ActionOps for KatanaApp {
                     && idx < self.state.document.open_documents.len()
                     && self.state.document.open_documents[idx].is_dirty;
 
+                if idx < self.state.document.open_documents.len() {
+                    let doc = &self.state.document.open_documents[idx];
+                    if doc.is_pinned {
+                        return;
+                    }
+                }
+
                 if should_confirm {
                     self.state.layout.pending_close_confirm = Some(idx);
                 } else {
@@ -316,65 +323,95 @@ impl ActionOps for KatanaApp {
             AppAction::CloseOtherDocuments(idx) => {
                 if idx < self.state.document.open_documents.len() {
                     let mut keep = Vec::new();
+                    let mut new_active_idx = None;
+                    let target_doc_path = self.state.document.open_documents[idx].path.clone();
+
                     let old_docs = std::mem::take(&mut self.state.document.open_documents);
-                    for (i, doc) in old_docs.into_iter().enumerate() {
-                        if i == idx {
+                    for doc in old_docs.into_iter() {
+                        let is_target = doc.path == target_doc_path;
+                        if is_target || doc.is_pinned {
+                            if is_target {
+                                new_active_idx = Some(keep.len());
+                            }
                             keep.push(doc);
                         } else {
                             self.state.push_recently_closed(doc.path);
                         }
                     }
                     self.state.document.open_documents = keep;
-                    self.state.document.active_doc_idx = Some(0);
+                    if let Some(a_idx) = new_active_idx {
+                        self.state.document.active_doc_idx = Some(a_idx);
+                    }
                 }
                 self.save_workspace_state();
             }
             AppAction::CloseAllDocuments => {
-                let old_docs = std::mem::take(&mut self.state.document.open_documents);
-                for doc in old_docs.into_iter() {
-                    self.state.push_recently_closed(doc.path);
-                }
-                self.state.document.active_doc_idx = None;
-                self.save_workspace_state();
-                self.cleanup_closed_tab_previews();
-            }
-            AppAction::CloseDocumentsToRight(idx) => {
                 let mut keep = Vec::new();
                 let old_docs = std::mem::take(&mut self.state.document.open_documents);
-                for (i, doc) in old_docs.into_iter().enumerate() {
-                    if i <= idx {
+                for doc in old_docs.into_iter() {
+                    if doc.is_pinned {
                         keep.push(doc);
                     } else {
                         self.state.push_recently_closed(doc.path);
                     }
                 }
                 self.state.document.open_documents = keep;
-                if let Some(a_idx) = self.state.document.active_doc_idx {
-                    if a_idx > idx {
-                        self.state.document.active_doc_idx = Some(idx);
+                if self.state.document.open_documents.is_empty() {
+                    self.state.document.active_doc_idx = None;
+                } else if self.state.document.active_doc_idx.is_some() {
+                    self.state.document.active_doc_idx = Some(0);
+                }
+                self.save_workspace_state();
+                self.cleanup_closed_tab_previews();
+            }
+            AppAction::CloseDocumentsToRight(idx) => {
+                let mut keep = Vec::new();
+                let active_path = self.state.active_document().map(|d| d.path.clone());
+
+                let old_docs = std::mem::take(&mut self.state.document.open_documents);
+                for (i, doc) in old_docs.into_iter().enumerate() {
+                    if i <= idx || doc.is_pinned {
+                        keep.push(doc);
+                    } else {
+                        self.state.push_recently_closed(doc.path);
                     }
+                }
+                self.state.document.open_documents = keep;
+                if let Some(p) = active_path {
+                    let new_idx = self
+                        .state
+                        .document
+                        .open_documents
+                        .iter()
+                        .position(|d| d.path == p);
+                    self.state.document.active_doc_idx = new_idx.or(Some(
+                        idx.min(self.state.document.open_documents.len().saturating_sub(1)),
+                    ));
                 }
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
             }
             AppAction::CloseDocumentsToLeft(idx) => {
                 let mut keep = Vec::new();
-                let new_active_idx = self.state.document.active_doc_idx;
+                let active_path = self.state.active_document().map(|d| d.path.clone());
+
                 let old_docs = std::mem::take(&mut self.state.document.open_documents);
                 for (i, doc) in old_docs.into_iter().enumerate() {
-                    if i >= idx {
+                    if i >= idx || doc.is_pinned {
                         keep.push(doc);
                     } else {
                         self.state.push_recently_closed(doc.path);
                     }
                 }
                 self.state.document.open_documents = keep;
-                if let Some(a_idx) = new_active_idx {
-                    if a_idx < idx {
-                        self.state.document.active_doc_idx = Some(0);
-                    } else {
-                        self.state.document.active_doc_idx = Some(a_idx - idx);
-                    }
+                if let Some(p) = active_path {
+                    let new_idx = self
+                        .state
+                        .document
+                        .open_documents
+                        .iter()
+                        .position(|d| d.path == p);
+                    self.state.document.active_doc_idx = new_idx.or(Some(0));
                 }
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
@@ -383,7 +420,18 @@ impl ActionOps for KatanaApp {
                 if idx < self.state.document.open_documents.len() {
                     let active_path = self.state.active_document().map(|d| d.path.clone());
                     let doc = &mut self.state.document.open_documents[idx];
-                    doc.is_pinned = !doc.is_pinned;
+                    let is_now_pinned = !doc.is_pinned;
+                    doc.is_pinned = is_now_pinned;
+                    let doc_path = doc.path.clone();
+
+                    // 2.2.1: If pinned, remove from groups
+                    if is_now_pinned {
+                        let doc_str = doc_path.to_string_lossy().to_string();
+                        for g in &mut self.state.document.tab_groups {
+                            g.members.retain(|m| m != &doc_str);
+                        }
+                    }
+
                     self.state
                         .document
                         .open_documents
@@ -576,6 +624,88 @@ impl ActionOps for KatanaApp {
                     };
                     let _ = std::process::Command::new("xdg-open").arg(dir).spawn();
                 }
+            }
+            AppAction::CreateTabGroup {
+                name,
+                color_hex,
+                initial_member,
+            } => {
+                let id = format!("group_{}", chrono::Utc::now().timestamp_micros());
+                let members = vec![initial_member.to_string_lossy().to_string()];
+                self.state
+                    .document
+                    .tab_groups
+                    .push(crate::state::document::TabGroup {
+                        id,
+                        name,
+                        color_hex,
+                        collapsed: false,
+                        members,
+                    });
+                self.save_workspace_state();
+            }
+            AppAction::AddTabToGroup { group_id, member } => {
+                let member_str = member.to_string_lossy().to_string();
+                // Remove from any existing group first
+                for g in &mut self.state.document.tab_groups {
+                    g.members.retain(|m| m != &member_str);
+                }
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.members.push(member_str);
+                }
+                self.save_workspace_state();
+            }
+            AppAction::RemoveTabFromGroup(member) => {
+                let member_str = member.to_string_lossy().to_string();
+                for g in &mut self.state.document.tab_groups {
+                    g.members.retain(|m| m != &member_str);
+                }
+                self.save_workspace_state();
+            }
+            AppAction::RenameTabGroup { group_id, new_name } => {
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.name = new_name;
+                }
+                self.save_workspace_state();
+            }
+            AppAction::RecolorTabGroup {
+                group_id,
+                new_color,
+            } => {
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.color_hex = new_color;
+                }
+                self.save_workspace_state();
+            }
+            AppAction::ToggleCollapseTabGroup(group_id) => {
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.collapsed = !g.collapsed;
+                }
+                self.save_workspace_state();
             }
             AppAction::None => {}
             AppAction::InstallUpdate => {

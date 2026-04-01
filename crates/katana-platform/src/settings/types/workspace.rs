@@ -40,6 +40,10 @@ pub struct WorkspaceSettings {
     // WHY: Excluded exact file names when "no extension" files are visible.
     #[serde(default = "super::super::defaults::default_extensionless_excludes")]
     pub extensionless_excludes: Vec<String>,
+
+    // WHY: Whether to restore session tabs and groups when opening a workspace.
+    #[serde(default = "super::super::defaults::default_restore_session")]
+    pub restore_session: bool,
 }
 
 impl Default for WorkspaceSettings {
@@ -53,6 +57,7 @@ impl Default for WorkspaceSettings {
             max_depth: DEFAULT_MAX_DEPTH,
             visible_extensions: crate::settings::defaults::default_visible_extensions(),
             extensionless_excludes: crate::settings::defaults::default_extensionless_excludes(),
+            restore_session: crate::settings::defaults::default_restore_session(),
         }
     }
 }

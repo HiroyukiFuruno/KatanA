@@ -89,72 +89,101 @@ impl WorkspaceOps for KatanaApp {
         self.state.search.filter_cache = None;
         let path_str = path.display().to_string();
 
-        let mut to_open = Vec::new();
+        let mut to_open: Vec<(String, bool)> = Vec::new();
         let mut active_idx = None;
+
+        #[derive(serde::Deserialize, serde::Serialize)]
+        struct WorkspaceTabEntry {
+            path: String,
+            pinned: bool,
+        }
+        #[derive(serde::Deserialize, serde::Serialize)]
+        struct WorkspaceTabSessionV2 {
+            version: u32,
+            tabs: Vec<WorkspaceTabEntry>,
+            active_path: Option<String>,
+            #[serde(default)]
+            expanded_directories: std::collections::HashSet<String>,
+            #[serde(default)]
+            groups: Vec<crate::state::document::TabGroup>,
+        }
 
         let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
             workspace_path: path.clone(),
         }
         .to_raw_key()
         .unwrap_or_default();
-        if let Some(cache_json) = self.state.config.cache.get_persistent(&cache_key) {
-            #[derive(serde::Deserialize)]
-            struct TabState {
-                tabs: Vec<String>,
-                active_idx: Option<usize>,
-                #[serde(default)]
-                expanded_directories: std::collections::HashSet<String>,
-            }
-            match serde_json::from_str::<TabState>(&cache_json) {
-                Ok(state) => {
-                    to_open = state.tabs;
-                    active_idx = state.active_idx;
-                    self.state.workspace.expanded_directories = state
+
+        let settings = self.state.config.settings.settings_mut();
+
+        if settings.workspace.restore_session {
+            if let Some(cache_json) = self.state.config.cache.get_persistent(&cache_key) {
+                if let Ok(v2) = serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {
+                    to_open = v2.tabs.into_iter().map(|t| (t.path, t.pinned)).collect();
+                    if let Some(active_path) = v2.active_path {
+                        active_idx = to_open.iter().position(|(p, _)| p == &active_path);
+                    }
+                    self.state.workspace.expanded_directories = v2
                         .expanded_directories
                         .into_iter()
                         .map(std::path::PathBuf::from)
                         .collect();
+                    self.state.document.tab_groups = v2.groups;
+                } else {
+                    #[derive(serde::Deserialize)]
+                    struct LegacyTabState {
+                        tabs: Vec<String>,
+                        active_idx: Option<usize>,
+                        #[serde(default)]
+                        expanded_directories: std::collections::HashSet<String>,
+                    }
+                    match serde_json::from_str::<LegacyTabState>(&cache_json) {
+                        Ok(state) => {
+                            to_open = state.tabs.into_iter().map(|t| (t, false)).collect();
+                            active_idx = state.active_idx;
+                            self.state.workspace.expanded_directories = state
+                                .expanded_directories
+                                .into_iter()
+                                .map(std::path::PathBuf::from)
+                                .collect();
+                        }
+                        Err(e) => {
+                            tracing::warn!("Failed to deserialize tab state: {}", e);
+                        }
+                    }
                 }
-                Err(e) => {
-                    tracing::warn!("Failed to deserialize tab state: {}", e);
+            } else {
+                let is_same_as_last =
+                    settings.workspace.last_workspace.as_deref() == Some(path_str.as_str());
+                if is_same_as_last {
+                    to_open = settings
+                        .workspace
+                        .open_tabs
+                        .clone()
+                        .into_iter()
+                        .map(|t| (t, false))
+                        .collect();
+                    active_idx = settings.workspace.active_tab_idx;
                 }
-            }
-        } else {
-            let is_same_as_last = self
-                .state
-                .config
-                .settings
-                .settings()
-                .workspace
-                .last_workspace
-                .as_deref()
-                == Some(path_str.as_str());
-
-            if is_same_as_last {
-                let settings = self.state.config.settings.settings();
-                to_open = settings.workspace.open_tabs.clone();
-                active_idx = settings.workspace.active_tab_idx;
             }
         }
 
-        {
-            let settings = self.state.config.settings.settings_mut();
-            settings.workspace.last_workspace = Some(path_str.clone());
-
-            settings.workspace.paths.retain(|p| p != &path_str);
-            settings.workspace.paths.push(path_str);
-        }
+        settings.workspace.last_workspace = Some(path_str.clone());
+        settings.workspace.paths.retain(|p| p != &path_str);
+        settings.workspace.paths.push(path_str);
 
         if !to_open.is_empty() {
-            to_open.retain(|p| std::path::Path::new(p).exists());
+            to_open.retain(|(p, _)| std::path::Path::new(p).exists());
 
             let active_idx_val = active_idx.unwrap_or(0).min(to_open.len().saturating_sub(1));
 
-            for (i, p) in to_open.iter().enumerate() {
+            for (i, (p, pinned)) in to_open.iter().enumerate() {
                 let path = std::path::PathBuf::from(p);
                 if i == active_idx_val {
                     match self.fs.load_document(path) {
                         Ok(doc) => {
+                            let mut doc = doc;
+                            doc.is_pinned = *pinned;
                             self.state.document.open_documents.push(doc);
                             self.state
                                 .initialize_tab_split_state(std::path::PathBuf::from(p));
@@ -164,10 +193,9 @@ impl WorkspaceOps for KatanaApp {
                         }
                     }
                 } else {
-                    self.state
-                        .document
-                        .open_documents
-                        .push(katana_core::document::Document::new_empty(path));
+                    let mut doc = katana_core::document::Document::new_empty(path);
+                    doc.is_pinned = *pinned;
+                    self.state.document.open_documents.push(doc);
                     self.state
                         .initialize_tab_split_state(std::path::PathBuf::from(p));
                 }
@@ -329,16 +357,47 @@ impl WorkspaceOps for KatanaApp {
             }
             .to_raw_key()
             .unwrap_or_default();
-            #[derive(serde::Serialize)]
-            struct TabState {
-                tabs: Vec<String>,
-                active_idx: Option<usize>,
-                expanded_directories: std::collections::HashSet<String>,
+
+            #[derive(serde::Deserialize, serde::Serialize)]
+            struct WorkspaceTabEntry {
+                path: String,
+                pinned: bool,
             }
-            let state = TabState {
-                tabs: open_tabs,
-                active_idx: idx,
+            #[derive(serde::Deserialize, serde::Serialize)]
+            struct WorkspaceTabSessionV2 {
+                version: u32,
+                tabs: Vec<WorkspaceTabEntry>,
+                active_path: Option<String>,
+                #[serde(default)]
+                expanded_directories: std::collections::HashSet<String>,
+                #[serde(default)]
+                groups: Vec<crate::state::document::TabGroup>,
+            }
+
+            let tabs_v2: Vec<WorkspaceTabEntry> = self
+                .state
+                .document
+                .open_documents
+                .iter()
+                .filter(|d| !d.path.display().to_string().starts_with("Katana://"))
+                .map(|d| WorkspaceTabEntry {
+                    path: d.path.display().to_string(),
+                    pinned: d.is_pinned,
+                })
+                .collect();
+
+            let active_path = self
+                .state
+                .document
+                .active_document()
+                .map(|d| d.path.display().to_string());
+
+            let state = WorkspaceTabSessionV2 {
+                version: 2,
+                tabs: tabs_v2,
+                active_path,
                 expanded_directories: expanded,
+                groups: self.state.document.tab_groups.clone(),
             };
             match serde_json::to_string(&state) {
                 Ok(json) => {
