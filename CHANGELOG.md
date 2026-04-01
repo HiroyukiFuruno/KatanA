@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.8.11] - 2026-04-01 00:06:36 (UTC)
+
+### ✨ Improvements
+
+- Stabilized synchronization between the editor and preview panels to prevent jittering during scroll, particularly at the bottom of long documents and in documents without headings.
+
 ## [0.8.10] - 2026-03-31 22:30:00 (UTC)
 
 ### ✨ Improvements
