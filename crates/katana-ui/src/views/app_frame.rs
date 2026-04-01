@@ -124,6 +124,11 @@ impl<'a> WorkspaceSidebar<'a> {
         egui::SidePanel::left("activity_rail")
             .resizable(false)
             .exact_width(crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + ACTIVITY_RAIL_PADDING)
+            .frame(
+                egui::Frame::side_top_panel(&ctx.style())
+                    .inner_margin(egui::Margin::ZERO)
+                    .stroke(egui::Stroke::NONE),
+            )
             .show(ctx, |ui| {
                 ui.vertical_centered(|ui| {
                     ui.add_space(ACTIVITY_RAIL_PADDING);
@@ -165,6 +170,7 @@ impl<'a> WorkspaceSidebar<'a> {
                     };
 
                     let mut rail_rects = Vec::new();
+                    let mut responses = Vec::new();
                     let mut dragged_source: Option<(usize, f32)> = None;
                     let mut reorder_action = None;
                     let mut current_hovered_drop_y = None;
@@ -315,49 +321,54 @@ impl<'a> WorkspaceSidebar<'a> {
                         };
 
                         if let Some(interact_resp) = act_resp {
-                                rail_rects.push((idx, interact_resp.rect));
+                            rail_rects.push((idx, interact_resp.rect));
+                            responses.push((idx, item, interact_id, is_being_dragged, interact_resp));
+                        }
 
-                                if interact_resp.drag_started() || is_being_dragged {
-                                if let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
-                                    let press_origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(pointer_pos);
-                                    let drag_offset = pointer_pos - press_origin;
-                                    let ghost_rect = interact_resp.rect.translate(drag_offset);
+                        ui.add_space(ACTIVITY_RAIL_PADDING);
+                    }
 
-                                    ui.memory_mut(|mem| {
-                                        mem.data.insert_temp(
-                                            egui::Id::new("drag_ghost_y").with(idx),
-                                            ghost_rect.center().y,
-                                        )
-                                    });
+                    for (idx, item, _interact_id, is_being_dragged, interact_resp) in responses {
+                        if interact_resp.drag_started() || is_being_dragged {
+                            if let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
+                                let press_origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(pointer_pos);
+                                let drag_offset = pointer_pos - press_origin;
+                                let ghost_rect = interact_resp.rect.translate(drag_offset);
 
-                                    egui::Area::new(egui::Id::new("rail_ghost").with(idx))
-                                        .fixed_pos(ghost_rect.min)
-                                        .order(egui::Order::Tooltip)
-                                        .show(ui.ctx(), |ui| {
-                                            match item {
-                                                katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
-                                                    let icon = if app.state.layout.show_workspace { crate::Icon::FolderOpen } else { crate::Icon::FolderClosed };
-                                                    let mut b = egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Large));
-                                                    if app.state.layout.show_workspace { b = b.fill(ui.visuals().selection.bg_fill); }
-                                                    ui.add(b);
-                                                }
-                                                katana_platform::settings::ActivityRailItem::Search => {
-                                                    let mut b = egui::Button::image_and_text(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("🔍"));
-                                                    if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
-                                                    ui.add(b);
-                                                }
-                                                katana_platform::settings::ActivityRailItem::History => {
-                                                    ui.add(egui::Button::image_and_text(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("📄")));
-                                                }
+                                ui.memory_mut(|mem| {
+                                    mem.data.insert_temp(
+                                        egui::Id::new("drag_ghost_y").with(idx),
+                                        ghost_rect.center().y,
+                                    )
+                                });
+
+                                egui::Area::new(egui::Id::new("rail_ghost").with(idx))
+                                    .fixed_pos(ghost_rect.min)
+                                    .order(egui::Order::Tooltip)
+                                    .show(ui.ctx(), |ui| {
+                                        match item {
+                                            katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
+                                                let icon = if app.state.layout.show_workspace { crate::Icon::FolderOpen } else { crate::Icon::FolderClosed };
+                                                let mut b = egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Large));
+                                                if app.state.layout.show_workspace { b = b.fill(ui.visuals().selection.bg_fill); }
+                                                ui.add(b);
                                             }
-                                        });
-                                }
+                                            katana_platform::settings::ActivityRailItem::Search => {
+                                                let mut b = egui::Button::image_and_text(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("🔍"));
+                                                if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
+                                                ui.add(b);
+                                            }
+                                            katana_platform::settings::ActivityRailItem::History => {
+                                                ui.add(egui::Button::image_and_text(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("📄")));
+                                            }
+                                        }
+                                    });
                             }
+                        }
 
-                            if interact_resp.drag_stopped() {
-                                if let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
-                                    dragged_source = Some((idx, ghost_y));
-                                }
+                        if interact_resp.drag_stopped() {
+                            if let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
+                                dragged_source = Some((idx, ghost_y));
                             }
                         }
 
@@ -373,13 +384,11 @@ impl<'a> WorkspaceSidebar<'a> {
                                         best_y = Some(y);
                                     }
                                 }
-                                if let Some(best_y) = best_y {
-                                    current_hovered_drop_y = Some((best_y, rail_rects[idx].1.x_range()));
+                                if let Some(y) = best_y {
+                                    current_hovered_drop_y = Some((y, rail_rects[idx].1.x_range()));
                                 }
                             }
                         }
-
-                        ui.add_space(ACTIVITY_RAIL_PADDING);
                     }
 
                     if let Some((target_y, x_range)) = current_hovered_drop_y {

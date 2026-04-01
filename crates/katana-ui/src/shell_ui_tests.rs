@@ -183,6 +183,8 @@ mod tests {
                         filter_set: None,
                         expanded_directories: &mut expanded_directories,
                         disable_context_menu: false,
+                        is_flat_view: false,
+                        ws_root: None,
                     };
                     crate::views::panels::workspace::FileEntryNode::new(
                         &entry,

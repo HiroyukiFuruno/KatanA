@@ -61,7 +61,8 @@
     "workspace_title": "Workspace",
     "recent_workspaces": "Recent Workspaces",
     "metadata_tooltip": "Size: {size} B\nModified: {mod_time}",
-    "path_label": "Path"
+    "path_label": "Path",
+    "flat_view": "Flat View"
   },
   "preview": {
     "preview_title": "Preview",

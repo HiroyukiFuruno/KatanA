@@ -47,6 +47,8 @@ pub(crate) struct TreeRenderContext<'a, 'b> {
     pub filter_set: Option<&'b std::collections::HashSet<std::path::PathBuf>>,
     pub expanded_directories: &'a mut std::collections::HashSet<std::path::PathBuf>,
     pub disable_context_menu: bool,
+    pub is_flat_view: bool,
+    pub ws_root: Option<&'b std::path::Path>,
 }
 
 pub(crate) fn indent_prefix(depth: usize) -> String {
