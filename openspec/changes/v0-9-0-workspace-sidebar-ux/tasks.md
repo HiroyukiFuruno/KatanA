@@ -14,16 +14,16 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 1.1 `views/app_frame.rs` の `WorkspaceSidebar` を改修し、既存 `workspace_collapsed` 専用サイドパネルを常設レールへ置き換える
-- [ ] 1.2 レールに workspace toggle / search / history を縦配置し、workspace pane 非表示時もレールが残るようにする
-- [ ] 1.3 履歴ボタンを既存の `settings.workspace.paths` と `OpenWorkspace` / `RemoveWorkspace` に接続し、最近のワークスペース履歴メニューをレール側へ移す
-- [ ] 1.4 履歴 0 件時は history ボタンを非活性表示で残し、レイアウトを崩さない挙動を実装する
-- [ ] 1.5 左レールのアイコンを既存資産のまま一段大きく描画し、ホバー説明とアクティブ状態を整理する
-- [ ] 1.5.1 `show_workspace` / `show_search_modal` 以外の新 layout state が必要と判明した場合は、実装継続前に `design.md` / `specs` / `tasks.md` を更新する
-- [ ] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 1.1 `views/app_frame.rs` の `WorkspaceSidebar` を改修し、既存 `workspace_collapsed` 専用サイドパネルを常設レールへ置き換える
+- [x] 1.2 レールに workspace toggle / search / history を縦配置し、workspace pane 非表示時もレールが残るようにする
+- [x] 1.3 履歴ボタンを既存の `settings.workspace.paths` と `OpenWorkspace` / `RemoveWorkspace` に接続し、最近のワークスペース履歴メニューをレール側へ移す
+- [x] 1.4 履歴 0 件時は history ボタンを非活性表示で残し、レイアウトを崩さない挙動を実装する
+- [x] 1.5 左レールのアイコンを既存資産のまま一段大きく描画し、ホバー説明とアクティブ状態を整理する
+- [x] 1.5.1 `show_workspace` / `show_search_modal` 以外の新 layout state が必要と判明した場合は、実装継続前に `design.md` / `specs` / `tasks.md` を更新する
+- [x] 1.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
 - [ ] 1.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)

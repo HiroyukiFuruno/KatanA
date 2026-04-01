@@ -1,12 +1,13 @@
 use crate::app::action::ActionOps;
 use crate::app_state::{AppAction, ViewMode};
 use crate::preview_pane::DownloadRequest;
-use crate::shell::{KatanaApp, SIDEBAR_COLLAPSED_TOGGLE_WIDTH};
+use crate::shell::KatanaApp;
 use crate::shell_ui::relative_full_path;
 use crate::theme_bridge;
 use eframe::egui;
 
 const CHEVRON_ICON_SIZE: f32 = 10.0;
+const ACTIVITY_RAIL_PADDING: f32 = 8.0;
 
 pub(crate) struct MainPanels<'a> {
     pub app: &'a mut KatanaApp,
@@ -119,25 +120,104 @@ impl<'a> WorkspaceSidebar<'a> {
     }
     fn show(self, ctx: &egui::Context) {
         let app = self.app;
-        if !app.state.layout.show_workspace {
-            egui::SidePanel::left("workspace_collapsed")
-                .resizable(false)
-                .exact_width(SIDEBAR_COLLAPSED_TOGGLE_WIDTH)
-                .show(ctx, |ui| {
-                    ui.vertical_centered(|ui| {
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::ChevronRight
-                                    .ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
-                            .clicked()
-                        {
-                            app.state.layout.show_workspace = true;
-                        }
-                    });
+
+        egui::SidePanel::left("activity_rail")
+            .resizable(false)
+            .exact_width(crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + ACTIVITY_RAIL_PADDING)
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.add_space(ACTIVITY_RAIL_PADDING);
+
+                    // 1. Workspace Toggle
+                    let ws_icon = if app.state.layout.show_workspace {
+                        crate::Icon::FolderOpen
+                    } else {
+                        crate::Icon::FolderClosed
+                    };
+
+                    let mut ws_btn =
+                        egui::Button::image(ws_icon.ui_image(ui, crate::icon::IconSize::Large));
+                    if app.state.layout.show_workspace {
+                        ws_btn = ws_btn.fill(ui.visuals().selection.bg_fill);
+                    }
+
+                    if ui
+                        .add(ws_btn)
+                        .on_hover_text(crate::i18n::get().workspace.workspace_title.clone())
+                        .clicked()
+                    {
+                        app.state.layout.show_workspace = !app.state.layout.show_workspace;
+                    }
+
+                    ui.add_space(ACTIVITY_RAIL_PADDING);
+
+                    // 2. Search Modal
+                    let mut search_btn = egui::Button::image(
+                        crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large),
+                    );
+                    if app.state.layout.show_search_modal {
+                        search_btn = search_btn.fill(ui.visuals().selection.bg_fill);
+                    }
+                    if ui
+                        .add(search_btn)
+                        .on_hover_text(crate::i18n::get().search.modal_title.clone())
+                        .clicked()
+                    {
+                        app.pending_action = crate::app_state::AppAction::ToggleSearchModal;
+                    }
+
+                    ui.add_space(ACTIVITY_RAIL_PADDING);
+
+                    // 3. History Menu
+                    let recent_paths = app.state.config.settings.settings().workspace.paths.clone();
+                    if recent_paths.is_empty() {
+                        let history_btn = egui::Button::image(
+                            crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large),
+                        );
+                        ui.add_enabled(false, history_btn).on_disabled_hover_text(
+                            crate::i18n::get().workspace.recent_workspaces.clone(),
+                        );
+                    } else {
+                        ui.menu_image_button(
+                            crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large),
+                            |ui| {
+                                for path in recent_paths.iter().rev() {
+                                    ui.horizontal(|ui| {
+                                        if ui
+                                            .add(egui::Button::image_and_text(
+                                                crate::Icon::Remove
+                                                    .ui_image(ui, crate::icon::IconSize::Small),
+                                                crate::shell_ui::invisible_label("x"),
+                                            ))
+                                            .on_hover_text(
+                                                crate::i18n::get().action.remove_workspace.clone(),
+                                            )
+                                            .clicked()
+                                        {
+                                            app.pending_action =
+                                                crate::app_state::AppAction::RemoveWorkspace(
+                                                    path.clone(),
+                                                );
+                                            ui.close();
+                                        }
+                                        if ui.selectable_label(false, path).clicked() {
+                                            app.pending_action =
+                                                crate::app_state::AppAction::OpenWorkspace(
+                                                    std::path::PathBuf::from(path),
+                                                );
+                                            ui.close();
+                                        }
+                                    });
+                                }
+                            },
+                        )
+                        .response
+                        .on_hover_text(crate::i18n::get().workspace.recent_workspaces.clone());
+                    }
                 });
-        } else {
+            });
+
+        if app.state.layout.show_workspace {
             egui::SidePanel::left("workspace_tree")
                 .resizable(true)
                 .min_width(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
