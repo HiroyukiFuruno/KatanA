@@ -205,12 +205,11 @@ impl<'a> TabBar<'a> {
                                         ui.label(&i18n.tab.rename_group);
                                         let mut new_name = g.name.clone();
                                         if ui.text_edit_singleline(&mut new_name).changed() {
-                                            tab_action = Some(
-                                                crate::app_state::AppAction::RenameTabGroup {
+                                            tab_action =
+                                                Some(crate::app_state::AppAction::RenameTabGroup {
                                                     group_id: g.id.clone(),
                                                     new_name,
-                                                },
-                                            );
+                                                });
                                         }
                                     });
                                 });

@@ -100,6 +100,25 @@ pub enum AppAction {
     ConfirmRelaunch,
     ShowReleaseNotes,
     ClearAllCaches,
+    CreateTabGroup {
+        name: String,
+        color_hex: String,
+        initial_member: PathBuf,
+    },
+    AddTabToGroup {
+        group_id: String,
+        member: PathBuf,
+    },
+    RemoveTabFromGroup(PathBuf),
+    RenameTabGroup {
+        group_id: String,
+        new_name: String,
+    },
+    RecolorTabGroup {
+        group_id: String,
+        new_color: String,
+    },
+    ToggleCollapseTabGroup(String),
     None,
 }
 
