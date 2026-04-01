@@ -494,53 +494,45 @@ impl<'a> WorkspaceHeader<'a> {
         };
 
         if workspace.data.is_some() {
+            let ws_root = workspace
+                .data
+                .as_ref()
+                .map(|w| w.root.clone())
+                .unwrap_or_default();
+            let is_flat = workspace.is_flat_view(&ws_root);
+
             ui.horizontal(|ui| {
-                if ui
-                    .add(
-                        egui::Button::image_and_text(
-                            crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                            invisible_label("🔄"),
-                        )
-                        .fill(icon_bg),
-                    )
-                    .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
-                    .clicked()
-                {
-                    *action = AppAction::RefreshWorkspace;
-                }
-
-                let filter_btn_color = if search.filter_enabled {
-                    if ui.visuals().dark_mode {
-                        ui.visuals().selection.bg_fill
-                    } else {
-                        crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
+                ui.add_enabled_ui(!is_flat, |ui| {
+                    let btn_resp = ui
+                        .add(egui::Button::image(
+                            crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
+                        ))
+                        .on_hover_text(crate::i18n::get().action.expand_all.clone());
+                    btn_resp.widget_info(|| {
+                        egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
+                    });
+                    if btn_resp.clicked() {
+                        if let Some(ws) = &workspace.data {
+                            workspace
+                                .expanded_directories
+                                .extend(ws.collect_all_directory_paths());
+                        }
                     }
-                } else {
-                    icon_bg
-                };
 
-                if ui
-                    .add(
-                        egui::Button::image_and_text(
-                            crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
-                            invisible_label("∇"),
-                        )
-                        .fill(filter_btn_color),
-                    )
-                    .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
-                    .clicked()
-                {
-                    *action = AppAction::ToggleWorkspaceFilter;
-                }
+                    let btn_resp = ui
+                        .add(egui::Button::image(
+                            crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
+                        ))
+                        .on_hover_text(crate::i18n::get().action.collapse_all.clone());
+                    btn_resp.widget_info(|| {
+                        egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
+                    });
+                    if btn_resp.clicked() {
+                        workspace.force_tree_open = Some(false);
+                    }
+                });
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    let ws_root = workspace
-                        .data
-                        .as_ref()
-                        .map(|w| w.root.clone())
-                        .unwrap_or_default();
-                    let is_flat = workspace.is_flat_view(&ws_root);
-
                     ui.menu_button("...", |ui| {
                         let flat_label = format!(
                             "{} {}",
@@ -554,35 +546,43 @@ impl<'a> WorkspaceHeader<'a> {
                         }
                     });
 
-                    ui.add_enabled_ui(!is_flat, |ui| {
-                        let btn_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
-                            .on_hover_text(crate::i18n::get().action.collapse_all.clone());
-                        btn_resp.widget_info(|| {
-                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
-                        });
-                        if btn_resp.clicked() {
-                            workspace.force_tree_open = Some(false);
-                        }
+                    if ui
+                        .add(
+                            egui::Button::image_and_text(
+                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
+                                invisible_label("🔄"),
+                            )
+                            .fill(icon_bg),
+                        )
+                        .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
+                        .clicked()
+                    {
+                        *action = AppAction::RefreshWorkspace;
+                    }
 
-                        let btn_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
-                            .on_hover_text(crate::i18n::get().action.expand_all.clone());
-                        btn_resp.widget_info(|| {
-                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
-                        });
-                        if btn_resp.clicked() {
-                            if let Some(ws) = &workspace.data {
-                                workspace
-                                    .expanded_directories
-                                    .extend(ws.collect_all_directory_paths());
-                            }
+                    let filter_btn_color = if search.filter_enabled {
+                        if ui.visuals().dark_mode {
+                            ui.visuals().selection.bg_fill
+                        } else {
+                            crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
                         }
-                    });
+                    } else {
+                        icon_bg
+                    };
+
+                    if ui
+                        .add(
+                            egui::Button::image_and_text(
+                                crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
+                                invisible_label("∇"),
+                            )
+                            .fill(filter_btn_color),
+                        )
+                        .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
+                        .clicked()
+                    {
+                        *action = AppAction::ToggleWorkspaceFilter;
+                    }
                 });
             });
 
