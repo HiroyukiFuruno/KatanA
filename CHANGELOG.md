@@ -2,6 +2,19 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.9.0] - 2026-04-01 13:40:00 (UTC)
+
+### 🚀 Features
+
+- Introduced a permanent Activity Rail on the left side of the workspace, consolidating the workspace toggle, search modal, and recently opened workspaces into a unified navigation bar.
+- Added a new "Flat View" mode for the workspace tree, displaying all files in a single list with workspace-relative paths, bypassing deeply nested directory structures.
+- Implemented natural sort algorithm across both Tree and Flat views to ensure versioned directories and files (e.g., `v0-9` vs `v0-11`) are ordered intuitively by humans.
+
+### ✨ Improvements
+
+- Supported drag-and-drop reordering for icons within the Activity Rail, naturally persisting layout preferences to user settings.
+- Rearranged the workspace header layout based on user feedback to prioritize readability and group action icons (Expand All, Collapse All, Refresh, Filter) more logically.
+
 ## [0.8.11] - 2026-04-01 00:06:36 (UTC)
 
 ### ✨ Improvements

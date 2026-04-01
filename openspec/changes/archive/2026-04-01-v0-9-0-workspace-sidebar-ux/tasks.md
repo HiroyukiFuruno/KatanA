@@ -1,8 +1,8 @@
 ## 着手条件 (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.9.0 の変更 ID とスコープが確認されていること
-- [ ] 現行のワークスペースヘッダー配置と左レール化対象（表示切替・検索・履歴）を `views/app_frame.rs` / `views/panels/workspace/ui.rs` で再確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.9.0 の変更 ID とスコープが確認されていること
+- [x] 現行のワークスペースヘッダー配置と左レール化対象（表示切替・検索・履歴）を `views/app_frame.rs` / `views/panels/workspace/ui.rs` で再確認していること
 
 ## ブランチ運用ルール
 
@@ -108,13 +108,13 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
-- [ ] 4.2 `make check` が exit code 0 で通過することを確認する
-- [ ] 4.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
-- [ ] 4.4 `master` 向け PR を作成する
-- [ ] 4.5 `master` へ merge する（`--admin` 許可）
-- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.9.0` の release tagging と release 作成を実施する
-- [ ] 4.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
+- [x] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
+- [x] 4.2 `make check` が exit code 0 で通過することを確認する
+- [x] 4.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
+- [x] 4.4 `master` 向け PR を作成する
+- [x] 4.5 `master` へ merge する（`--admin` 許可）
+- [x] 4.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.9.0` の release tagging と release 作成を実施する
+- [x] 4.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
