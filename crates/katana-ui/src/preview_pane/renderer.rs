@@ -17,15 +17,26 @@ pub fn render_diagram(kind: &DiagramKind, source: &str, source_lines: usize) -> 
 
 pub fn get_cache_key(md_file_path: &std::path::Path, kind: &DiagramKind, source: &str) -> String {
     use katana_core::markdown::color_preset::DiagramColorPreset;
+    use katana_platform::cache::PersistentKey;
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
 
     let mut hasher = DefaultHasher::new();
-    md_file_path.hash(&mut hasher);
-    kind.display_name().hash(&mut hasher);
     source.hash(&mut hasher);
-    DiagramColorPreset::is_dark_mode().hash(&mut hasher);
-    format!("diagram_{:x}", hasher.finish())
+    let source_hash = format!("{:x}", hasher.finish());
+
+    PersistentKey::Diagram {
+        document_path: md_file_path.to_path_buf(),
+        diagram_kind: kind.display_name().to_string(),
+        theme: if DiagramColorPreset::is_dark_mode() {
+            "dark".to_string()
+        } else {
+            "light".to_string()
+        },
+        source_hash,
+    }
+    .to_raw_key()
+    .unwrap_or_default()
 }
 
 pub fn map_diagram_result(
