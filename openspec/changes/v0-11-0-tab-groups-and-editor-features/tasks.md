@@ -37,26 +37,26 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 2.1 runtime tab group state（`id`、`name`、`color_hex`、`collapsed`、`members`）を定義する
-- [ ] 2.2 tab context menu に group create / add / remove を追加し、1 tab が高々 1 group に所属する制約を守る
-- [ ] 2.2.1 pinned tab には group add UI を出さない、または無効化し、grouped tab を pin した場合は membership を外す
-- [ ] 2.3 group header の rename / color change / collapse toggle UI を実装する
-- [ ] 2.4 `views/top_bar.rs` で group block を描画し、open tab order の最初の member 位置に anchored する projection を実装する
-- [ ] 2.5 collapsed group が member tab を非表示にするだけで close しないことを保証する
-- [ ] 2.5.1 active tab が collapsed group に属する場合は、その active member だけ visible に保つ
-- [ ] 2.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 2.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 2.1 runtime tab group state（`id`、`name`、`color_hex`、`collapsed`、`members`）を定義する
+- [x] 2.2 tab context menu に group create / add / remove を追加し、1 tab が高々 1 group に所属する制約を守る
+- [x] 2.2.1 pinned tab には group add UI を出さない、または無効化し、grouped tab を pin した場合は membership を外す
+- [x] 2.3 group header の rename / color change / collapse toggle UI を実装する
+- [x] 2.4 `views/top_bar.rs` で group block を描画し、open tab order の最初の member 位置に anchored する projection を実装する
+- [x] 2.5 collapsed group が member tab を非表示にするだけで close しないことを保証する
+- [x] 2.5.1 active tab が collapsed group に属する場合は、その active member だけ visible に保つ
+- [x] 2.6 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 2.7 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### 完了条件 (DoD)
 
-- [ ] group create / rename / recolor / add / remove / collapse が一通り動作すること
-- [ ] grouped tab が workspace 再オープン後に復元されること
-- [ ] group / pin の相互作用が design どおりに固定されていること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] group create / rename / recolor / add / remove / collapse が一通り動作すること
+- [x] grouped tab が workspace 再オープン後に復元されること
+- [x] group / pin の相互作用が design どおりに固定されていること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 

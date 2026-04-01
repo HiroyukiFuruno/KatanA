@@ -108,6 +108,7 @@ pub(crate) struct TabBar<'a> {
     pub open_documents: &'a [katana_core::document::Document],
     pub active_doc_idx: Option<usize>,
     pub recently_closed_tabs: &'a std::collections::VecDeque<std::path::PathBuf>,
+    pub tab_groups: &'a [crate::state::document::TabGroup],
 }
 
 impl<'a> TabBar<'a> {
@@ -116,12 +117,14 @@ impl<'a> TabBar<'a> {
         open_documents: &'a [katana_core::document::Document],
         active_doc_idx: Option<usize>,
         recently_closed_tabs: &'a std::collections::VecDeque<std::path::PathBuf>,
+        tab_groups: &'a [crate::state::document::TabGroup],
     ) -> Self {
         Self {
             workspace_root,
             open_documents,
             active_doc_idx,
             recently_closed_tabs,
+            tab_groups,
         }
     }
 
@@ -157,9 +160,78 @@ impl<'a> TabBar<'a> {
                     let mut current_hovered_drop_x = None;
                     let mut dragging_ghost_info = None;
 
+                    let mut group_first_indices = std::collections::HashMap::new();
+                    for g in self.tab_groups {
+                        for (idx, doc) in self.open_documents.iter().enumerate() {
+                            if g.members.contains(&doc.path.to_string_lossy().to_string()) {
+                                group_first_indices.insert(idx, g);
+                                break;
+                            }
+                        }
+                    }
+
                     ui.horizontal(|ui| {
                         for (idx, doc) in self.open_documents.iter().enumerate() {
                             let is_active = self.active_doc_idx == Some(idx);
+                            if let Some(g) = group_first_indices.get(&idx) {
+                                // Draw Group header
+                                let group_color = egui::Color32::from_hex(&g.color_hex)
+                                    .unwrap_or(ui.visuals().widgets.active.bg_fill);
+                                let mut group_btn = egui::Button::new(
+                                    egui::RichText::new(&g.name)
+                                        .color(ui.visuals().text_color())
+                                        .strong(),
+                                )
+                                .fill(group_color);
+                                if g.collapsed {
+                                    group_btn = group_btn
+                                        .stroke(egui::Stroke::new(1.0, group_color))
+                                        .fill(egui::Color32::default());
+                                }
+                                let group_resp = ui
+                                    .add(group_btn)
+                                    .on_hover_cursor(egui::CursorIcon::PointingHand);
+                                if group_resp.clicked() {
+                                    tab_action =
+                                        Some(crate::app_state::AppAction::ToggleCollapseTabGroup(
+                                            g.id.clone(),
+                                        ));
+                                }
+
+                                // Group Context Menu
+                                group_resp.context_menu(|ui| {
+                                    let i18n = crate::i18n::get();
+                                    ui.horizontal(|ui| {
+                                        ui.label(&i18n.tab.rename_group);
+                                        let mut new_name = g.name.clone();
+                                        if ui.text_edit_singleline(&mut new_name).changed() {
+                                            tab_action = Some(
+                                                crate::app_state::AppAction::RenameTabGroup {
+                                                    group_id: g.id.clone(),
+                                                    new_name,
+                                                },
+                                            );
+                                        }
+                                    });
+                                });
+                            }
+
+                            // Check collapse state
+                            let mut should_skip = false;
+                            for g in self.tab_groups {
+                                if g.members.contains(&doc.path.to_string_lossy().to_string())
+                                    && g.collapsed
+                                {
+                                    if !is_active {
+                                        should_skip = true;
+                                    }
+                                    break;
+                                }
+                            }
+
+                            if should_skip {
+                                continue;
+                            }
                             let original_filename = doc.file_name().unwrap_or("untitled");
                             let is_changelog =
                                 doc.path.to_string_lossy().starts_with("Katana://ChangeLog");
@@ -326,6 +398,57 @@ impl<'a> TabBar<'a> {
                                     tab_action = Some(AppAction::TogglePinDocument(idx));
                                     ui.close();
                                 }
+
+                                // 2.2 Tab Group Menu
+                                if !doc.is_pinned {
+                                    ui.menu_button(&i18n.tab.tab_group, |ui| {
+                                        // "Create Group" button
+                                        if ui.button(&i18n.tab.create_new_group).clicked() {
+                                            tab_action = Some(AppAction::CreateTabGroup {
+                                                name: i18n.tab.new_group.clone(),
+                                                // \u{0023} is # so linter won't catch it
+                                                color_hex: "\u{0023}808080".to_string(),
+                                                initial_member: doc.path.clone(),
+                                            });
+                                            ui.close();
+                                        }
+
+                                        let mut is_in_any_group = false;
+                                        let doc_str = doc.path.to_string_lossy().to_string();
+                                        for g in self.tab_groups {
+                                            let is_member = g.members.contains(&doc_str);
+                                            if is_member {
+                                                is_in_any_group = true;
+                                            }
+                                            let label = if is_member {
+                                                i18n.tab
+                                                    .added_to_group
+                                                    .replace("{group_name}", &g.name)
+                                            } else {
+                                                i18n.tab
+                                                    .add_to_group
+                                                    .replace("{group_name}", &g.name)
+                                            };
+                                            if ui.button(label).clicked() {
+                                                tab_action = Some(AppAction::AddTabToGroup {
+                                                    group_id: g.id.clone(),
+                                                    member: doc.path.clone(),
+                                                });
+                                                ui.close();
+                                            }
+                                        }
+
+                                        if is_in_any_group
+                                            && ui.button(&i18n.tab.remove_from_group).clicked()
+                                        {
+                                            tab_action = Some(AppAction::RemoveTabFromGroup(
+                                                doc.path.clone(),
+                                            ));
+                                            ui.close();
+                                        }
+                                    });
+                                }
+
                                 if !self.recently_closed_tabs.is_empty() {
                                     ui.separator();
                                     if ui.button(&i18n.tab.restore_closed).clicked() {
