@@ -383,7 +383,18 @@ impl ActionOps for KatanaApp {
                 if idx < self.state.document.open_documents.len() {
                     let active_path = self.state.active_document().map(|d| d.path.clone());
                     let doc = &mut self.state.document.open_documents[idx];
-                    doc.is_pinned = !doc.is_pinned;
+                    let is_now_pinned = !doc.is_pinned;
+                    doc.is_pinned = is_now_pinned;
+                    let doc_path = doc.path.clone();
+
+                    // 2.2.1: If pinned, remove from groups
+                    if is_now_pinned {
+                        let doc_str = doc_path.to_string_lossy().to_string();
+                        for g in &mut self.state.document.tab_groups {
+                            g.members.retain(|m| m != &doc_str);
+                        }
+                    }
+
                     self.state
                         .document
                         .open_documents
@@ -576,6 +587,88 @@ impl ActionOps for KatanaApp {
                     };
                     let _ = std::process::Command::new("xdg-open").arg(dir).spawn();
                 }
+            }
+            AppAction::CreateTabGroup {
+                name,
+                color_hex,
+                initial_member,
+            } => {
+                let id = format!("group_{}", chrono::Utc::now().timestamp_micros());
+                let members = vec![initial_member.to_string_lossy().to_string()];
+                self.state
+                    .document
+                    .tab_groups
+                    .push(crate::state::document::TabGroup {
+                        id,
+                        name,
+                        color_hex,
+                        collapsed: false,
+                        members,
+                    });
+                self.save_workspace_state();
+            }
+            AppAction::AddTabToGroup { group_id, member } => {
+                let member_str = member.to_string_lossy().to_string();
+                // Remove from any existing group first
+                for g in &mut self.state.document.tab_groups {
+                    g.members.retain(|m| m != &member_str);
+                }
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.members.push(member_str);
+                }
+                self.save_workspace_state();
+            }
+            AppAction::RemoveTabFromGroup(member) => {
+                let member_str = member.to_string_lossy().to_string();
+                for g in &mut self.state.document.tab_groups {
+                    g.members.retain(|m| m != &member_str);
+                }
+                self.save_workspace_state();
+            }
+            AppAction::RenameTabGroup { group_id, new_name } => {
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.name = new_name;
+                }
+                self.save_workspace_state();
+            }
+            AppAction::RecolorTabGroup {
+                group_id,
+                new_color,
+            } => {
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.color_hex = new_color;
+                }
+                self.save_workspace_state();
+            }
+            AppAction::ToggleCollapseTabGroup(group_id) => {
+                if let Some(g) = self
+                    .state
+                    .document
+                    .tab_groups
+                    .iter_mut()
+                    .find(|g| g.id == group_id)
+                {
+                    g.collapsed = !g.collapsed;
+                }
+                self.save_workspace_state();
             }
             AppAction::None => {}
             AppAction::InstallUpdate => {

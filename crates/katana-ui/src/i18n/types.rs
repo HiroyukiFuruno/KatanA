@@ -762,6 +762,42 @@ pub struct TabMessages {
     pub unpin: String,
     #[serde(default)]
     pub restore_closed: String,
+    #[serde(default = "default_tab_group")]
+    pub tab_group: String,
+    #[serde(default = "default_new_group")]
+    pub new_group: String,
+    #[serde(default = "default_create_new_group")]
+    pub create_new_group: String,
+    #[serde(default = "default_add_to_group")]
+    pub add_to_group: String,
+    #[serde(default = "default_added_to_group")]
+    pub added_to_group: String,
+    #[serde(default = "default_remove_from_group")]
+    pub remove_from_group: String,
+    #[serde(default = "default_rename_group")]
+    pub rename_group: String,
+}
+
+pub(crate) fn default_tab_group() -> String {
+    "Tab Group".to_string()
+}
+pub(crate) fn default_new_group() -> String {
+    "New Group".to_string()
+}
+pub(crate) fn default_create_new_group() -> String {
+    "Create New Group".to_string()
+}
+pub(crate) fn default_add_to_group() -> String {
+    "Add to '{group_name}'".to_string()
+}
+pub(crate) fn default_added_to_group() -> String {
+    "✓ Add to '{group_name}'".to_string()
+}
+pub(crate) fn default_remove_from_group() -> String {
+    "Remove from Group".to_string()
+}
+pub(crate) fn default_rename_group() -> String {
+    "Rename Group".to_string()
 }
 pub(crate) fn d_title_bar_text() -> String {
     "Title Bar Text".to_string()
