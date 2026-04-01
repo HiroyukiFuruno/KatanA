@@ -28,11 +28,11 @@
 
 ### 完了条件 (DoD)
 
-- [ ] benchmark / tracing の結果が `design.md` に反映され、前提との一致または差分が説明されている
-- [ ] canonical key / filename codec / entry envelope / migration 方針が `proposal`・`design`・`spec` で矛盾なく読める
-- [ ] `workspace_tabs` は upgrade で保全対象、`diagram` は best-effort であることが実装と文書で一致している
-- [ ] `diagram_<hash>` が legacy key であり、新規 write path では使われていないことが実装と文書で一致している
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] benchmark / tracing の結果が `design.md` に反映され、前提との一致または差分が説明されている
+- [x] canonical key / filename codec / entry envelope / migration 方針が `proposal`・`design`・`spec` で矛盾なく読める
+- [x] `workspace_tabs` は upgrade で保全対象、`diagram` は best-effort であることが実装と文書で一致している
+- [x] `diagram_<hash>` が legacy key であり、新規 write path では使われていないことが実装と文書で一致している
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ## 2. テストと検証
 
