@@ -32,35 +32,35 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 editor -> preview の末尾同期を固定化するテストを追加する
-- [ ] 3.2 preview -> editor の末尾同期を固定化するテストを追加する
-- [ ] 3.3 最後の見出し以降に長い tail がある文書の同期テストを追加する
-- [ ] 3.4 heading がない文書の fallback 同期テストを追加する
-- [ ] 3.5 vertical / horizontal split の両方で、数フレーム後に収束しガタつかないことを検証する
+- [x] 3.1 editor -> preview の末尾同期を固定化するテストを追加する
+- [x] 3.2 preview -> editor の末尾同期を固定化するテストを追加する
+- [x] 3.3 最後の見出し以降に長い tail がある文書の同期テストを追加する
+- [x] 3.4 heading がない文書の fallback 同期テストを追加する
+- [x] 3.5 vertical / horizontal split の両方で、数フレーム後に収束しガタつかないことを検証する
 
 ### Definition of Done (DoD)
 
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 4. 検証
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 4.1 split scroll sync が既定有効の状態で従来の分割表示フローを壊していないことを確認する
-- [ ] 4.2 末尾同期と no-jitter が手動確認でも再現しないことを確認する
-- [ ] 4.3 関連する validation command を実行し、change が apply-ready であることを確認する
-- [ ] 4.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 4.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 4.1 split scroll sync が既定有効の状態で従来の分割表示フローを壊していないことを確認する
+- [x] 4.2 末尾同期と no-jitter が手動確認でも再現しないことを確認する
+- [x] 4.3 関連する validation command を実行し、change が apply-ready であることを確認する
+- [x] 4.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 4.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
