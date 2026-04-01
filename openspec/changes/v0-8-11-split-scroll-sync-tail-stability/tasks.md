@@ -10,7 +10,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Done (DoD)
 
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. 同期写像と state の整理
 
@@ -66,10 +66,10 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 5. Final Verification & Release Work
 
-- [ ] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 5.2 Ensure `make check` passes with exit code 0
-- [ ] 5.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 5.4 Create a PR targeting `master`
-- [ ] 5.5 Merge into master (※ `--admin` is permitted)
-- [ ] 5.6 Execute release tagging and creation using `.agents/workflows/release.md` for `0.8.11`
-- [ ] 5.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [x] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
+- [x] 5.2 Ensure `make check` passes with exit code 0
+- [x] 5.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
+- [x] 5.4 Create a PR targeting `master`
+- [x] 5.5 Merge into master (※ `--admin` is permitted)
+- [x] 5.6 Execute release tagging and creation using `.agents/workflows/release.md` for `0.8.11`
+- [x] 5.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
