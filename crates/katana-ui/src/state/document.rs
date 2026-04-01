@@ -22,6 +22,15 @@ pub struct TabViewMode {
     pub mode: ViewMode,
 }
 
+#[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TabGroup {
+    pub id: String,
+    pub name: String,
+    pub color_hex: String,
+    pub collapsed: bool,
+    pub members: Vec<String>,
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct TabSplitState {
     pub path: PathBuf,
@@ -33,6 +42,7 @@ pub struct DocumentState {
     pub active_doc_idx: Option<usize>,
     pub tab_view_modes: Vec<TabViewMode>,
     pub tab_split_states: Vec<TabSplitState>,
+    pub tab_groups: Vec<TabGroup>,
     pub recently_closed_tabs: VecDeque<PathBuf>,
     pub last_auto_save: Option<Instant>,
     pub last_auto_refresh: Option<Instant>,
@@ -53,6 +63,7 @@ impl DocumentState {
             active_doc_idx: None,
             tab_view_modes: Vec::new(),
             tab_split_states: Vec::new(),
+            tab_groups: Vec::new(),
             recently_closed_tabs: VecDeque::with_capacity(Self::MAX_RECENTLY_CLOSED_TABS),
             last_auto_save: None,
             last_auto_refresh: None,

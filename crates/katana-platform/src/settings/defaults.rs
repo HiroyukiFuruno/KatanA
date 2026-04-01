@@ -59,6 +59,10 @@ pub(crate) fn default_html_output_dir() -> String {
     std::env::temp_dir().to_string_lossy().to_string()
 }
 
+pub(crate) fn default_restore_session() -> bool {
+    true
+}
+
 pub(crate) fn default_visible_extensions() -> Vec<String> {
     ["md", "markdown", "mdx", "txt", "adr"]
         .iter()

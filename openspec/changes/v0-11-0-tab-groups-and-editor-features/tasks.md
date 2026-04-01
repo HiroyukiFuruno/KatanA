@@ -15,21 +15,21 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 1.1 既存 `workspace_tabs:{workspace_path}` payload を versioned session envelope に置き換える設計を実装する
-- [ ] 1.2 session envelope に `tabs`、`active_path`、`expanded_directories`、`groups`、`version` を保持できるようにする
-- [ ] 1.3 tab entry に pinned state を保存し、restore 時に `Document.is_pinned` へ反映する
-- [ ] 1.4 legacy payload（`tabs`、`active_idx`、`expanded_directories`）を read-time upgrade で受けられるようにする
-- [ ] 1.5 restore ON / OFF setting を workspace/session settings に追加し、既存 settings と serde 互換を保つ
+- [x] 1.1 既存 `workspace_tabs:{workspace_path}` payload を versioned session envelope に置き換える設計を実装する
+- [x] 1.2 session envelope に `tabs`、`active_path`、`expanded_directories`、`groups`、`version` を保持できるようにする
+- [x] 1.3 tab entry に pinned state を保存し、restore 時に `Document.is_pinned` へ反映する
+- [x] 1.4 legacy payload（`tabs`、`active_idx`、`expanded_directories`）を read-time upgrade で受けられるようにする
+- [x] 1.5 restore ON / OFF setting を workspace/session settings に追加し、既存 settings と serde 互換を保つ
 
 ### 完了条件 (DoD)
 
-- [ ] workspace-scoped session save / load が grouped / pinned tab を扱えること
-- [ ] 旧 payload からの read が default 補完で成立すること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] workspace-scoped session save / load が grouped / pinned tab を扱えること
+- [x] 旧 payload からの read が default 補完で成立すること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
