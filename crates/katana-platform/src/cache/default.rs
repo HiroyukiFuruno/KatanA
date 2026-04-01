@@ -253,24 +253,20 @@ mod tests {
 
     #[test]
     fn test_persistent_cache() {
-        let tmp = TempDir::new().unwrap();
+        let tmp = TempDir::new().expect("Failed to create temp dir");
         let path = tmp.path().join("cache.json");
         let cache = DefaultCacheService::new(path.clone());
 
-        // For tests using unknown keys.
-        assert_eq!(cache.get_persistent("key"), None);
-        cache.set_persistent("key", "val".to_string()).unwrap();
-        assert_eq!(cache.get_persistent("key"), Some("val".to_string()));
+        assert_eq!(cache.get_persistent("workspace_tabs:test1"), None);
+        cache.set_persistent("workspace_tabs:test1", "val".to_string()).expect("Failed to set");
+        assert_eq!(cache.get_persistent("workspace_tabs:test1"), Some("val".to_string()));
 
-        cache.set_persistent("key", "val2".to_string()).unwrap();
-        assert_eq!(cache.get_persistent("key"), Some("val2".to_string()));
+        cache.set_persistent("workspace_tabs:test1", "val2".to_string()).expect("Failed to set");
+        assert_eq!(cache.get_persistent("workspace_tabs:test1"), Some("val2".to_string()));
 
-        let _cache2 = DefaultCacheService::new(path);
-        // Because "key" maps to unknown and writes as unknown_3.json, loading it works
-        // Wait, loading unknown_3.json parses as PersistentKey::Unknown -> to_raw_key() will return None.
-        // So `get_persistent("key")` will be None across restarts!
-        // This confirms "downgrade and unknown behavior is not guaranteed".
-        // But the test demands it works? We'll see if the test complains.
+        // Create a new instance representing an app restart
+        let cache2 = DefaultCacheService::new(path);
+        assert_eq!(cache2.get_persistent("workspace_tabs:test1"), Some("val2".to_string()));
     }
 
     #[test]

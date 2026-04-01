@@ -41,23 +41,23 @@
 - [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 2.1 `cache/default.rs` と関連テストを per-key file store / key codec 構成に合わせて修正し、migration・lookup・write path を網羅する
-- [ ] 2.2 `workspace_tabs` の保存復元、diagram cache の保存読込、invalid key / missing file path をそれぞれ namespace 単位で検証する
-- [ ] 2.2.1 restart 後に同じ logical key から同じ filename を再計算して復元できること、および file content の metadata から key を検証できることを確認する
-- [ ] 2.2.2 `workspace_tabs` と `diagram` の caller が helper から canonical raw key を生成し、storage 層で filename hash が決まることを確認する
-- [ ] 2.3 既存の UI 操作（タブ切替、起動時の状態復元、画像キャッシュ復元等）による連携テストを実行し、デグレがないかを検証する
-- [ ] 2.4 キャッシュ全体クリア（`clear_all_directories_in`）が新しい `kv` ディレクトリ構造でも正常に作動し、孤立したファイルが一切残らないことを確認する
-- [ ] 2.5 benchmark / tracing の結果を記録し、改善の中心が JSON 置換ではなく storage unit と key 設計であることを確認する
-- [ ] 2.6 upgrade compatibility と downgrade 非保証の境界が `design` / `spec` / release-facing note のいずれかで明文化されていることを確認する
-- [ ] 2.7 migration の partial failure / retry / restart をテストし、`workspace_tabs` を失わずに再収束できることを確認する
-- [ ] 2.7.1 旧 `diagram_<hash>` entry が存在しても migration が失敗せず、diagram cache が再生成で回復することを確認する
-- [ ] 2.8 実装途中に design 前提と乖離した点があれば、関連 artifact が先に更新されていることを確認する
+- [x] 2.1 `cache/default.rs` と関連テストを per-key file store / key codec 構成に合わせて修正し、migration・lookup・write path を網羅する
+- [x] 2.2 `workspace_tabs` の保存復元、diagram cache の保存読込、invalid key / missing file path をそれぞれ namespace 単位で検証する
+- [x] 2.2.1 restart 後に同じ logical key から同じ filename を再計算して復元できること、および file content の metadata から key を検証できることを確認する
+- [x] 2.2.2 `workspace_tabs` と `diagram` の caller が helper から canonical raw key を生成し、storage 層で filename hash が決まることを確認する
+- [x] 2.3 既存の UI 操作（タブ切替、起動時の状態復元、画像キャッシュ復元等）による連携テストを実行し、デグレがないかを検証する
+- [x] 2.4 キャッシュ全体クリア（`clear_all_directories_in`）が新しい `kv` ディレクトリ構造でも正常に作動し、孤立したファイルが一切残らないことを確認する
+- [x] 2.5 benchmark / tracing の結果を記録し、改善の中心が JSON 置換ではなく storage unit と key 設計であることを確認する
+- [x] 2.6 upgrade compatibility と downgrade 非保証の境界が `design` / `spec` / release-facing note のいずれかで明文化されていることを確認する
+- [x] 2.7 migration の partial failure / retry / restart をテストし、`workspace_tabs` を失わずに再収束できることを確認する
+- [x] 2.7.1 旧 `diagram_<hash>` entry が存在しても migration が失敗せず、diagram cache が再生成で回復することを確認する
+- [x] 2.8 実装途中に design 前提と乖離した点があれば、関連 artifact が先に更新されていることを確認する
 
 ### 完了条件 (DoD)
 
-- [ ] test と manual verification で restart / migration / clear / restore が一通り確認されている
-- [ ] release-facing note または同等の記録に、upgrade 保証と downgrade 非保証が残されている
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
+- [x] test と manual verification で restart / migration / clear / restore が一通り確認されている
+- [x] release-facing note または同等の記録に、upgrade 保証と downgrade 非保証が残されている
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) を実行し、包括的な delivery 手順（Self-review、Commit、PR Creation、Merge）を完了する
 
 ---
 
