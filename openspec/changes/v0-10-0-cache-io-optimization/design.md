@@ -8,6 +8,7 @@
 - 一方で `set_persistent()` はどのキーが更新されても `PersistentData` 全体を `serde_json::to_string_pretty()` で再シリアライズし、`cache.json` を丸ごと書き直している。
 - `PersistentData.entries` は `Vec<(String, String)>` であり、キー探索も線形である。
 - 実際の persistent key には `workspace_tabs:/path` のような小さい状態と `diagram_<hash>` のような大きい値が混在している。
+  - **【計測結果による裏付け】**: 50個の巨大な図解キャッシュ (計25MB) をロードした状態でのベンチマーク計測結果、`get_persistent` はメモリ探索のみのため約 `1.25µs` で完了したが、小さい値の `set_persistent` は全体再シリアライズとディスク書き込みが発生するため約 `20.9ms` かかった。
 - したがって、問題の主因は Rust の JSON エンジン速度ではなく、保存単位の粗さとキー設計の曖昧さによる I/O 増幅およびロジック上の扱いにくさである。
 
 ## 目標 / 非目標

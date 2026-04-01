@@ -9,22 +9,22 @@
 
 `##` ごとに grouped された task は、`/openspec-branching` workflow（`.agents/workflows/openspec-branching.md`）で定義された branching standard を無条件で守って実装すること。
 
-- [ ] 1.1 現行 `DefaultCacheService` の read/write workload を計測し、問題が「JSON の遅さ」ではなく「全量再シリアライズ・全量書き込み・線形探索」にあることを benchmark / tracing で確認する
-- [ ] 1.1.1 benchmark / tracing の結果を `design.md` に要約し、前提が崩れた場合は 1.3 へ進む前に `proposal` / `design` / `spec` / `tasks` を更新する
-- [ ] 1.2 `workspace_tabs` / `diagram` などの persistent key namespace を整理し、内部ロジック用の key codec / filename codec を定義する
-- [ ] 1.2.1 filename hash を address 用 codec と位置づけ、各 file に `storage_version` と canonical key metadata を含める entry envelope を定義する
-- [ ] 1.2.2 `workspace_tabs` と `diagram` の canonical key field を文書化し、追加 namespace が必要と判明した場合は spec を先に更新する
-- [ ] 1.2.3 `CacheFacade` の `&str` key を canonical raw key として扱う helper を定義し、call site が直接 opaque key を組み立てない方針を実装に落とす
-- [ ] 1.3 `DefaultCacheService` を改修し、runtime の正規 persistent backend を `cache.json` から per-key file store へ切り替える
-- [ ] 1.4 `get_persistent` において、namespace-aware key から安全なファイル名を導出し、必要に応じて `kv` 配下から key 単位で読み込むロジックを実装する
-- [ ] 1.5 `set_persistent` において、指定キーのデータのみを `kv` 配下へ同期し、他キーの再シリアライズを行わない処理を実装する
-- [ ] 1.6 初期化（`new`）時、旧 `cache.json` が存在する場合はその中身を KVS へ one-shot migration し、完了後は runtime backend として併用しない構成にする
-- [ ] 1.6.1 migration の保証対象を `workspace_tabs` などのユーザー状態 namespace に明示し、旧 `cache.json` はその移送成功前に破棄しない
-- [ ] 1.6.2 `diagram` cache は再生成可能データとして扱い、旧 `diagram_<hash>` は migration 対象外としてスキップする方針を実装する
-- [ ] 1.6.3 migration を partial state から再実行しても壊れないよう、temp file / atomic rename / retry 前提の処理を実装する
-- [ ] 1.7 `PersistentData.entries` / `Vec<(String, String)>` 依存を見直し、オンメモリ探索構造も key 設計に合う形へ整理する
-- [ ] 1.8 `workspace.rs` の `workspace_tabs:*` call site を canonical raw key helper に置き換える
-- [ ] 1.9 `renderer.rs` / `core_render.rs` の `diagram_<hash>` write / read path を廃止し、canonical raw key + storage filename codec 構成へ置き換える
+- [x] 1.1 現行 `DefaultCacheService` の read/write workload を計測し、問題が「JSON の遅さ」ではなく「全量再シリアライズ・全量書き込み・線形探索」にあることを benchmark / tracing で確認する
+- [x] 1.1.1 benchmark / tracing の結果を `design.md` に要約し、前提が崩れた場合は 1.3 へ進む前に `proposal` / `design` / `spec` / `tasks` を更新する
+- [x] 1.2 `workspace_tabs` / `diagram` などの persistent key namespace を整理し、内部ロジック用の key codec / filename codec を定義する
+- [x] 1.2.1 filename hash を address 用 codec と位置づけ、各 file に `storage_version` と canonical key metadata を含める entry envelope を定義する
+- [x] 1.2.2 `workspace_tabs` と `diagram` の canonical key field を文書化し、追加 namespace が必要と判明した場合は spec を先に更新する
+- [x] 1.2.3 `CacheFacade` の `&str` key を canonical raw key として扱う helper を定義し、call site が直接 opaque key を組み立てない方針を実装に落とす
+- [x] 1.3 `DefaultCacheService` を改修し、runtime の正規 persistent backend を `cache.json` から per-key file store へ切り替える
+- [x] 1.4 `get_persistent` において、namespace-aware key から安全なファイル名を導出し、必要に応じて `kv` 配下から key 単位で読み込むロジックを実装する
+- [x] 1.5 `set_persistent` において、指定キーのデータのみを `kv` 配下へ同期し、他キーの再シリアライズを行わない処理を実装する
+- [x] 1.6 初期化（`new`）時、旧 `cache.json` が存在する場合はその中身を KVS へ one-shot migration し、完了後は runtime backend として併用しない構成にする
+- [x] 1.6.1 migration の保証対象を `workspace_tabs` などのユーザー状態 namespace に明示し、旧 `cache.json` はその移送成功前に破棄しない
+- [x] 1.6.2 `diagram` cache は再生成可能データとして扱い、旧 `diagram_<hash>` は migration 対象外としてスキップする方針を実装する
+- [x] 1.6.3 migration を partial state から再実行しても壊れないよう、temp file / atomic rename / retry 前提の処理を実装する
+- [x] 1.7 `PersistentData.entries` / `Vec<(String, String)>` 依存を見直し、オンメモリ探索構造も key 設計に合う形へ整理する
+- [x] 1.8 `workspace.rs` の `workspace_tabs:*` call site を canonical raw key helper に置き換える
+- [x] 1.9 `renderer.rs` / `core_render.rs` の `diagram_<hash>` write / read path を廃止し、canonical raw key + storage filename codec 構成へ置き換える
 
 ### 完了条件 (DoD)
 

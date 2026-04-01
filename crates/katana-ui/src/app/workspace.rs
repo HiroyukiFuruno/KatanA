@@ -92,7 +92,11 @@ impl WorkspaceOps for KatanaApp {
         let mut to_open = Vec::new();
         let mut active_idx = None;
 
-        let cache_key = format!("workspace_tabs:{}", path_str);
+        let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
+            workspace_path: path.clone(),
+        }
+        .to_raw_key()
+        .unwrap_or_default();
         if let Some(cache_json) = self.state.config.cache.get_persistent(&cache_key) {
             #[derive(serde::Deserialize)]
             struct TabState {
@@ -320,7 +324,11 @@ impl WorkspaceOps for KatanaApp {
         }
 
         if let Some(ws) = &self.state.workspace.data {
-            let key = format!("workspace_tabs:{}", ws.root.display());
+            let key = katana_platform::cache::PersistentKey::WorkspaceTabs {
+                workspace_path: ws.root.clone(),
+            }
+            .to_raw_key()
+            .unwrap_or_default();
             #[derive(serde::Serialize)]
             struct TabState {
                 tabs: Vec<String>,

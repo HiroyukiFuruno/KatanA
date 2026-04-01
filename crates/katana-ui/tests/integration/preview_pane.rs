@@ -1683,7 +1683,7 @@ fn readme_header_all_elements_horizontally_centered() {
     for _ in 0..5 {
         harness.step();
     }
-    harness.run();
+    harness.run_steps(20);
 
     let panel_center_x = f64::from(panel_width) / 2.0;
     let tolerance = 50.0;
