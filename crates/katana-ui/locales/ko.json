@@ -61,7 +61,8 @@
     "workspace_title": "워크스페이스",
     "recent_workspaces": "최근 워크스페이스",
     "metadata_tooltip": "크기: {size} B\n수정: {mod_time}",
-    "path_label": "경로"
+    "path_label": "경로",
+    "flat_view": "플랫 뷰"
   },
   "preview": {
     "preview_title": "미리보기",

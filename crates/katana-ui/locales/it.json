@@ -61,7 +61,8 @@
     "workspace_title": "Spazio di Lavoro",
     "recent_workspaces": "Spazi di lavoro recenti",
     "metadata_tooltip": "Dimensioni: {size} B\nModificato: {mod_time}",
-    "path_label": "Percorso"
+    "path_label": "Percorso",
+    "flat_view": "Vista piatta"
   },
   "preview": {
     "preview_title": "Anteprima",

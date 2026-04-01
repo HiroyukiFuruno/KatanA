@@ -61,7 +61,8 @@
     "workspace_title": "Espacio de Trabajo",
     "recent_workspaces": "Espacios de trabajo recientes",
     "metadata_tooltip": "Tamaño: {size} B\nModificado: {mod_time}",
-    "path_label": "Ruta"
+    "path_label": "Ruta",
+    "flat_view": "Vista plana"
   },
   "preview": {
     "preview_title": "Vista Previa",

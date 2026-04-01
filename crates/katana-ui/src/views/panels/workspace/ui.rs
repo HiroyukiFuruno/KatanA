@@ -69,7 +69,14 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
         let entry = self.entry;
         let path = self.path;
         let ctx = self.ctx;
-        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
+        let name = if ctx.is_flat_view {
+            crate::shell_logic::relative_full_path(path, ctx.ws_root)
+        } else {
+            path.file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("?")
+                .to_string()
+        };
 
         let accessible_label = format!("file {}", name);
 
@@ -375,6 +382,7 @@ impl<'a> WorkspaceContent<'a> {
                 .id_salt("workspace_tree_scroll")
                 .show(ui, |ui| {
                     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+                    let is_flat_view = workspace.is_flat_view(&ws_root);
                     let mut ctx = TreeRenderContext {
                         action,
                         depth: 0,
@@ -382,9 +390,37 @@ impl<'a> WorkspaceContent<'a> {
                         filter_set,
                         expanded_directories: &mut workspace.expanded_directories,
                         disable_context_menu: false,
+                        is_flat_view,
+                        ws_root: Some(&ws_root),
                     };
-                    for entry in &entries {
-                        TreeEntryNode::new(entry, &mut ctx).show(ui);
+
+                    if is_flat_view {
+                        let mut flat_entries = Vec::new();
+                        fn collect_files<'a>(
+                            entries: &'a [katana_core::workspace::TreeEntry],
+                            out: &mut Vec<&'a katana_core::workspace::TreeEntry>,
+                        ) {
+                            for e in entries {
+                                match e {
+                                    katana_core::workspace::TreeEntry::File { .. } => out.push(e),
+                                    katana_core::workspace::TreeEntry::Directory {
+                                        children,
+                                        ..
+                                    } => collect_files(children, out),
+                                }
+                            }
+                        }
+                        collect_files(&entries, &mut flat_entries);
+
+                        for entry in flat_entries {
+                            if let katana_core::workspace::TreeEntry::File { path } = entry {
+                                FileEntryNode::new(entry, path, &mut ctx).show(ui);
+                            }
+                        }
+                    } else {
+                        for entry in &entries {
+                            TreeEntryNode::new(entry, &mut ctx).show(ui);
+                        }
                     }
                 });
         } else {
@@ -457,90 +493,96 @@ impl<'a> WorkspaceHeader<'a> {
             crate::theme_bridge::from_gray(LIGHT_MODE_ICON_BG)
         };
 
-        ui.horizontal(|ui| {
-            ui.heading(crate::i18n::get().workspace.workspace_title.clone());
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        if workspace.data.is_some() {
+            ui.horizontal(|ui| {
                 if ui
                     .add(
                         egui::Button::image_and_text(
-                            crate::Icon::ChevronLeft.ui_image(ui, crate::icon::IconSize::Small),
-                            crate::shell_ui::invisible_label("<"),
+                            crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
+                            invisible_label("🔄"),
                         )
                         .fill(icon_bg),
                     )
+                    .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
                     .clicked()
                 {
-                    *action = AppAction::ToggleWorkspace;
+                    *action = AppAction::RefreshWorkspace;
                 }
-            });
-        });
-        const HEADER_BOTTOM_PADDING: f32 = 4.0;
-        ui.add_space(HEADER_BOTTOM_PADDING);
 
-        if workspace.data.is_some() {
-            ui.horizontal(|ui| {
-                let btn_resp = ui
-                    .add(egui::Button::image(
-                        crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
-                    ))
-                    .on_hover_text(crate::i18n::get().action.expand_all.clone());
-                btn_resp
-                    .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+"));
-                if btn_resp.clicked() {
-                    if let Some(ws) = &workspace.data {
-                        workspace
-                            .expanded_directories
-                            .extend(ws.collect_all_directory_paths());
-                    }
-                }
-                let btn_resp = ui
-                    .add(egui::Button::image(
-                        crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
-                    ))
-                    .on_hover_text(crate::i18n::get().action.collapse_all.clone());
-                btn_resp
-                    .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-"));
-                if btn_resp.clicked() {
-                    workspace.force_tree_open = Some(false);
-                }
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui
-                        .add(
-                            egui::Button::image_and_text(
-                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("🔄"),
-                            )
-                            .fill(icon_bg),
-                        )
-                        .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
-                        .clicked()
-                    {
-                        *action = AppAction::RefreshWorkspace;
-                    }
-
-                    let filter_btn_color = if search.filter_enabled {
-                        if ui.visuals().dark_mode {
-                            ui.visuals().selection.bg_fill
-                        } else {
-                            crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
-                        }
+                let filter_btn_color = if search.filter_enabled {
+                    if ui.visuals().dark_mode {
+                        ui.visuals().selection.bg_fill
                     } else {
-                        icon_bg
-                    };
-
-                    if ui
-                        .add(
-                            egui::Button::image_and_text(
-                                crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("∇"),
-                            )
-                            .fill(filter_btn_color),
-                        )
-                        .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
-                        .clicked()
-                    {
-                        *action = AppAction::ToggleWorkspaceFilter;
+                        crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
                     }
+                } else {
+                    icon_bg
+                };
+
+                if ui
+                    .add(
+                        egui::Button::image_and_text(
+                            crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
+                            invisible_label("∇"),
+                        )
+                        .fill(filter_btn_color),
+                    )
+                    .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
+                    .clicked()
+                {
+                    *action = AppAction::ToggleWorkspaceFilter;
+                }
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let ws_root = workspace
+                        .data
+                        .as_ref()
+                        .map(|w| w.root.clone())
+                        .unwrap_or_default();
+                    let is_flat = workspace.is_flat_view(&ws_root);
+
+                    ui.menu_button("...", |ui| {
+                        let flat_label = format!(
+                            "{} {}",
+                            if is_flat { "✔" } else { "  " },
+                            crate::i18n::get().workspace.flat_view
+                        );
+
+                        if ui.button(flat_label).clicked() {
+                            workspace.set_flat_view(ws_root, !is_flat);
+                            ui.close();
+                        }
+                    });
+
+                    ui.add_enabled_ui(!is_flat, |ui| {
+                        let btn_resp = ui
+                            .add(egui::Button::image(
+                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
+                            ))
+                            .on_hover_text(crate::i18n::get().action.collapse_all.clone());
+                        btn_resp.widget_info(|| {
+                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
+                        });
+                        if btn_resp.clicked() {
+                            workspace.force_tree_open = Some(false);
+                        }
+
+                        let btn_resp = ui
+                            .add(egui::Button::image(
+                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
+                            ))
+                            .on_hover_text(crate::i18n::get().action.expand_all.clone());
+                        btn_resp.widget_info(|| {
+                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
+                        });
+                        if btn_resp.clicked() {
+                            if let Some(ws) = &workspace.data {
+                                workspace
+                                    .expanded_directories
+                                    .extend(ws.collect_all_directory_paths());
+                            }
+                        }
+                    });
                 });
             });
 
