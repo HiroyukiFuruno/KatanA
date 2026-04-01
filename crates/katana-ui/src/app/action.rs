@@ -229,6 +229,13 @@ impl ActionOps for KatanaApp {
                 };
 
                 let path = doc.path.clone();
+
+                // Skip refresh for virtual documents (e.g. "Katana://ChangeLog v0.11.0")
+                // that don't exist on the filesystem.
+                if path.to_string_lossy().starts_with("Katana://") {
+                    return;
+                }
+
                 match std::fs::read_to_string(&path) {
                     Ok(new_content) => {
                         let new_hash = katana_core::document::compute_content_hash(&new_content);
