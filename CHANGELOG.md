@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.12.0] - 2026-04-02 04:45:00 (UTC)
+
+### 🚀 Features
+
+- Introduced an integrated in-document search feature. Users can now search for specific text within the active Markdown file using the search bar embedded in the ViewModeBar, complete with hit counts and jumping between matches.
+- Added comprehensive keyboard navigation for the new document search. Pressing the ArrowUp or ArrowDown keys while focused in the search input quickly jumps to the previous or next match.
+
+### ✨ Improvements
+
+- Silenced internal testing framework CLI noise to greatly improve developer application stability and reduce memory consumption during test cycles.
+
+### 🐛 Bug Fixes
+
+- Fixed a crash that occurred when searching for specific multi-byte Japanese characters due to invalid character boundaries.
+- Repaired regression on scroll synchronization. Searching and navigating through document matches will now consistently scroll both the editor and preview panels to highlight the correct position.
+
 ## [0.11.2] - 2026-04-02 00:30:00 (UTC)
 
 ### 🐛 Bug Fixes
