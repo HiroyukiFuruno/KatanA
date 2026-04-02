@@ -728,7 +728,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
             // Collect the body events up to </details>
             let mut body_events = Vec::new();
-            body_events.push((0, (event, src_span)));
+            body_events.push((0, (event, src_span.clone())));
             body_events.extend(self.collect_until_details_close(events));
 
             let mut auto_open = None;
@@ -787,7 +787,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         collapsing = collapsing.open(Some(o));
                     }
 
-                    let _header_res = collapsing.show(ui, |ui| {
+                    let header_res = collapsing.show(ui, |ui| {
                         let layout = egui::Layout::left_to_right(egui::Align::Center)
                             .with_main_wrap(true);
                         let body_width = ui.available_width();
@@ -801,14 +801,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 ui.spacing_mut().item_spacing.x = 0.0;
                                 let height = ui.text_style_height(&egui::TextStyle::Body);
                                 ui.set_row_height(height);
-                                let mut iter = body_events.into_iter().peekable();
-                                while let Some((index, (e, src_span))) = iter.next() {
+                                let mut iter = body_events.iter().cloned().peekable();
+                                while let Some((index, (e, span))) = iter.next() {
                                     self.current_event_idx = index;
                                     if iter.peek().is_none() {
                                         self.line.should_end_newline_forced = false;
                                     }
                                     self.process_event(
-                                        ui, &mut iter, e, src_span, cache, options, max_width,
+                                        ui, &mut iter, e, span, cache, options, max_width,
                                     );
                                     if index == 0 {
                                         self.line.should_not_start_newline_forced = false;
@@ -817,6 +817,44 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             },
                         );
                     });
+
+                    let accordion_rect = if let Some(body_response) = &header_res.body_response {
+                        header_res.header_response.rect.union(body_response.rect)
+                    } else {
+                        header_res.header_response.rect
+                    };
+
+                    let accordion_span = src_span.start..body_events.last().map(|e| e.1.1.end).unwrap_or(src_span.end);
+
+                    if let Some(active) = &self.active_char_range {
+                        if active.start <= accordion_span.end && active.end >= accordion_span.start {
+                            self.active_rects.push((accordion_rect, accordion_span.clone()));
+                            let highlight_color = self.active_bg_color.unwrap_or_else(|| {
+                                if ui.visuals().dark_mode {
+                                    egui::Color32::from_white_alpha(15)
+                                } else {
+                                    egui::Color32::from_black_alpha(15)
+                                }
+                            });
+                            ui.painter().rect_filled(accordion_rect, 1.0, highlight_color);
+                        }
+                    }
+
+                    if let Some(hovered) = &mut self.hovered_spans {
+                        if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                            if accordion_rect.contains(pos) {
+                                hovered.push(accordion_span.clone());
+                                let hover_color = self.hover_bg_color.unwrap_or_else(|| {
+                                    if ui.visuals().dark_mode {
+                                        egui::Color32::from_white_alpha(8)
+                                    } else {
+                                        egui::Color32::from_black_alpha(8)
+                                    }
+                                });
+                                ui.painter().rect_filled(accordion_rect, 1.0, hover_color);
+                            }
+                        }
+                    }
 
                     // 4.3: Because `egui_commonmark` inline HTML processing strips some block spacing,
                     // we add a small bottom margin so the next block (like heading 13) isn't crushed.
@@ -1581,6 +1619,38 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         mem.data.insert_temp(table_width_key, current_table_width);
                     });
                     ui.ctx().request_repaint();
+                }
+
+                if let Some((_start_y, span)) = self.block_states.pop() {
+                    let rect = frame_res.response.rect;
+                    if let Some(active) = &self.active_char_range {
+                        if active.start <= span.end && active.end >= span.start {
+                            self.active_rects.push((rect, span.clone()));
+                            let highlight_color = self.active_bg_color.unwrap_or_else(|| {
+                                if ui.visuals().dark_mode {
+                                    egui::Color32::from_white_alpha(15)
+                                } else {
+                                    egui::Color32::from_black_alpha(15)
+                                }
+                            });
+                            ui.painter().rect_filled(rect, 1.0, highlight_color);
+                        }
+                    }
+                    if let Some(hovered) = &mut self.hovered_spans {
+                        if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                            if rect.contains(pos) {
+                                hovered.push(span.clone());
+                                let hover_color = self.hover_bg_color.unwrap_or_else(|| {
+                                    if ui.visuals().dark_mode {
+                                        egui::Color32::from_white_alpha(8)
+                                    } else {
+                                        egui::Color32::from_black_alpha(8)
+                                    }
+                                });
+                                ui.painter().rect_filled(rect, 1.0, hover_color);
+                            }
+                        }
+                    }
                 }
             });
 

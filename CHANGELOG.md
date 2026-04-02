@@ -2,12 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.15.0] - 2026-04-02 23:30:14 (UTC)
+
+### ✨ Improvements
+
+- Implemented interactive hover highlights for Markdown tables and accordion (`<details>`) blocks, ensuring the code editor synchronously highlights the exact source lines corresponding to the UI element.
+
 ## [0.14.1] - 2026-04-02 15:10:57 (UTC)
 
 ### 🐛 Bug Fixes
 
 - Resolved a backwards-compatibility issue during workspace switching where tab states (pins and groups) saved in older versions were discarded and appeared lost upon restoration.
-
 
 ## [0.14.0] - 2026-04-02 14:05:45 (UTC)
 
