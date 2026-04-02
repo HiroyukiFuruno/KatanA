@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.13.0] - 2026-04-02 10:15:00 (UTC)
+
+### 🚀 Features
+
+- Introduced a realtime "Problems Panel", allowing users to quickly identify and navigate to Markdown authoring issues without leaving the editor canvas.
+- Added foundational local Markdown diagnostics, currently catching skipped heading levels and broken relative links, which are calculated in the background when documents are opened or saved.
+
 ## [0.12.0] - 2026-04-02 04:45:00 (UTC)
 
 ### 🚀 Features
