@@ -106,3 +106,16 @@ pub(crate) const LEGACY_DEFAULT_PREVIEW_BG: Rgb = Rgb {
     g: 35,
     b: 35,
 };
+
+pub(crate) const LEGACY_SEARCH_MATCH_COLOR: Rgba = Rgba {
+    r: 255,
+    g: 200,
+    b: 0,
+    a: 100,
+};
+pub(crate) const LEGACY_SEARCH_ACTIVE_COLOR: Rgba = Rgba {
+    r: 255,
+    g: 100,
+    b: 0,
+    a: 150,
+};

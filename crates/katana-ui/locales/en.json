@@ -324,7 +324,12 @@
     "query_hint": "Type to search by file name...",
     "include_pattern_hint": "Include (regex, comma-separated)",
     "exclude_pattern_hint": "Exclude (regex, comma-separated)",
-    "no_results": "No files found."
+    "no_results": "No files found.",
+    "doc_search_title": "Search Document",
+    "doc_search_prev": "Previous",
+    "doc_search_next": "Next",
+    "doc_search_close": "Close",
+    "doc_search_count": "{index}/{total}"
   },
   "toc": {
     "title": "Table of Contents",

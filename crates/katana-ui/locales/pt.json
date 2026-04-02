@@ -1,361 +1,366 @@
 {
-    "menu": {
-        "file": "Arquivo",
-        "settings": "Configurações",
-        "language": "Idioma (Language)",
-        "open_workspace": "Abrir Espaço de Trabalho…",
-        "save": "Salvar",
-        "open_all": "Abrir tudo",
-        "export": "Exportar",
-        "export_html": "Documento HTML (.html)",
-        "export_pdf": "Documento PDF (.pdf)",
-        "export_png": "Imagem PNG (.png)",
-        "export_jpg": "Imagem JPEG (.jpg)",
-        "about": "Sobre o KatanA",
-        "quit": "Sair do KatanA",
-        "hide": "Ocultar KatanA",
-        "hide_others": "Ocultar outros",
-        "show_all": "Mostrar tudo",
-        "help": "Ajuda",
-        "check_updates": "Verificar atualizações...",
-        "release_notes": "Notas de versão"
+  "menu": {
+    "file": "Arquivo",
+    "settings": "Configurações",
+    "language": "Idioma (Language)",
+    "open_workspace": "Abrir Espaço de Trabalho…",
+    "save": "Salvar",
+    "open_all": "Abrir tudo",
+    "export": "Exportar",
+    "export_html": "Documento HTML (.html)",
+    "export_pdf": "Documento PDF (.pdf)",
+    "export_png": "Imagem PNG (.png)",
+    "export_jpg": "Imagem JPEG (.jpg)",
+    "about": "Sobre o KatanA",
+    "quit": "Sair do KatanA",
+    "hide": "Ocultar KatanA",
+    "hide_others": "Ocultar outros",
+    "show_all": "Mostrar tudo",
+    "help": "Ajuda",
+    "check_updates": "Verificar atualizações...",
+    "release_notes": "Notas de versão"
+  },
+  "about": {
+    "basic_info": "Informações básicas",
+    "version": "Versão",
+    "build": "Build",
+    "copyright": "Direitos Autorais",
+    "runtime": "Execução",
+    "platform": "Plataforma",
+    "architecture": "Arquitetura",
+    "rust": "Rust",
+    "license": "Licença",
+    "links": "Links",
+    "source_code": "Código fonte",
+    "documentation": "Documentação",
+    "report_issue": "Relatar problema",
+    "support": "Suporte",
+    "sponsor": "Patrocinar"
+  },
+  "update": {
+    "title": "Verificar atualizações",
+    "checking_for_updates": "Verificando atualizações...",
+    "update_available": "Atualização disponível",
+    "update_available_desc": "Uma nova versione do KatanA ({version}) está disponível. Execute `brew update && brew upgrade --cask katana-desktop` para atualizar.",
+    "release_notes_template": "### 🚀 Nova versão {version} disponível\n\nVerifique a [página de Lançamentos do GitHub]({url}) para obter notas de lançamento.\nClique em \"Instalar e reiniciar\" para aplicar a atualização automaticamente.",
+    "up_to_date": "Atualizado",
+    "up_to_date_desc": "O KatanA está atualizado.",
+    "failed_to_check": "Falha ao verificar atualizações.",
+    "action_close": "OK",
+    "install_update": "Instalar e Reiniciar",
+    "downloading": "Baixando atualização...",
+    "installing": "Instalando atualização...",
+    "restart_confirm": "A atualização está pronta. Reiniciar agora?",
+    "action_later": "Mais tarde",
+    "action_skip_version": "Pular esta versão",
+    "action_restart": "Reiniciar agora"
+  },
+  "workspace": {
+    "no_workspace_open": "Nenhum espaço de trabalho aberto.",
+    "no_document_selected": "Nenhum documento aberto.",
+    "workspace_title": "Espaço de Trabalho",
+    "recent_workspaces": "Espaços de trabalho recentes",
+    "metadata_tooltip": "Tamanho: {size} B\nModificado: {mod_time}",
+    "path_label": "Caminho",
+    "flat_view": "Visualização Plana"
+  },
+  "preview": {
+    "preview_title": "Visualização",
+    "refresh_diagrams": "Atualizar diagramas",
+    "rendering": "Renderizando {kind}...",
+    "no_preview": "(Sem visualização)",
+    "diagram_controller": {
+      "pan_up": "Para cima",
+      "pan_down": "Para baixo",
+      "pan_left": "Esquerda",
+      "pan_right": "Direita",
+      "zoom_in": "Aumentar",
+      "zoom_out": "Diminuir zoom",
+      "reset": "Redefinir",
+      "fullscreen": "Tela cheia",
+      "close": "Fechar",
+      "trackpad_help": "Trackpad: use 2 dedos para zoom, 1 dedo para arrastar"
+    }
+  },
+  "plantuml": {
+    "downloading_plantuml": "⬇ Baixando PlantUML JAR...",
+    "plantuml_installed": "✅ PlantUML instalado. Atualizando visualização...",
+    "download_error": "❌ Erro no download: "
+  },
+  "view_mode": {
+    "preview": "Visualização",
+    "code": "Código",
+    "split": "Dividir"
+  },
+  "split_toggle": {
+    "horizontal": "Mudar para divisão horizontal (esquerda/direita)",
+    "vertical": "Mudar para divisão vertical (cima/baixo)",
+    "editor_first": "Colocar o editor à esquerda/cima",
+    "preview_first": "Colocar a visualização à esquerda/cima"
+  },
+  "error": {
+    "missing_dependency": "⚠️ {tool_name} não encontrado. Por favor, instale usando {install_hint}.",
+    "curl_launch_failed": "Falha ao iniciar o curl",
+    "download_failed": "Falha no download",
+    "render_error": "⚠ [{kind}] {message}"
+  },
+  "status": {
+    "ready": "Pronto",
+    "saved": "Salvo.",
+    "save_failed": "Falha ao salvar: {error}",
+    "opened_workspace": "Espaço de trabalho aberto: {name}",
+    "cannot_open_workspace": "Não foi possível abrir o espaço de trabalho: {error}",
+    "cannot_open_file": "Não foi possível abrir o arquivo: {error}",
+    "refresh_success": "Documento atualizado do disco.",
+    "refresh_skipped_dirty": "Atualização ignorada para preservar alterações não salvas.",
+    "refresh_no_changes": "Nenhuma alteração externa detectada.",
+    "refresh_failed": "Falha ao atualizar o documento: {error}"
+  },
+  "action": {
+    "expand_all": "Expandir Tudo",
+    "collapse_all": "Recolher Tudo",
+    "collapse_sidebar": "Recolher",
+    "refresh_workspace": "Atualizar",
+    "toggle_filter": "Filtro",
+    "remove_workspace": "Remover",
+    "recursive_expand": "Expansão Recursiva",
+    "recursive_open_all": "Abrir Tudo Recursivamente",
+    "toggle_toc": "Índice",
+    "show_meta_info": "Info",
+    "new_file": "Novo Arquivo",
+    "new_directory": "Nova Pasta",
+    "open": "Abrir",
+    "rename": "Renomear",
+    "delete": "Excluir",
+    "copy_path": "Copiar Caminho",
+    "reveal_in_os": "Revelar no SO",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "discard": "Descartar",
+    "confirm": "Confirmar",
+    "copy_relative_path": "Caminho Relativo",
+    "refresh_document": "Atualizar documento"
+  },
+  "ai": {
+    "ai_unconfigured": "[AI: não configurado]"
+  },
+  "tool": {
+    "not_installed": "⚠ {tool} não está instalado",
+    "install_path": "Caminho de instalação: {path}",
+    "download": "⬇ Baixar {tool}"
+  },
+  "settings": {
+    "title": "Configurações",
+    "toc_visible": "Mostrar sumário",
+    "theme": {
+      "preset": "Predefinição de Tema",
+      "dark_section": "Escuro",
+      "light_section": "Claro",
+      "custom_colors": "Cores Personalizadas",
+      "reset_custom": "Restaurar Predefinições",
+      "custom_section": "Personalizado",
+      "delete_custom": "Excluir tema",
+      "save_custom_theme": "Salvar como tema...",
+      "save_custom_theme_title": "Salvar Tema Personalizado",
+      "theme_name_label": "Nome do Tema:",
+      "duplicate": "Duplicar...",
+      "reset_contrast": "Redefinir",
+      "ui_contrast_offset": "Deslocamento de contraste da interface",
+      "show_more": "Exibir mais...",
+      "show_less": "Exibir menos..."
     },
-    "about": {
-        "basic_info": "Informações básicas",
-        "version": "Versão",
-        "build": "Build",
-        "copyright": "Direitos Autorais",
-        "runtime": "Execução",
-        "platform": "Plataforma",
-        "architecture": "Arquitetura",
-        "rust": "Rust",
-        "license": "Licença",
-        "links": "Links",
-        "source_code": "Código fonte",
-        "documentation": "Documentação",
-        "report_issue": "Relatar problema",
-        "support": "Suporte",
-        "sponsor": "Patrocinar"
+    "font": {
+      "size": "Tamanho da Fonte",
+      "family": "Fonte",
+      "size_slider_hint": "Arraste para a esquerda ou direita para ajustar"
     },
-    "update": {
-        "title": "Verificar atualizações",
-        "checking_for_updates": "Verificando atualizações...",
-        "update_available": "Atualização disponível",
-        "update_available_desc": "Uma nova versione do KatanA ({version}) está disponível. Execute `brew update && brew upgrade --cask katana-desktop` para atualizar.",
-        "release_notes_template": "### 🚀 Nova versão {version} disponível\n\nVerifique a [página de Lançamentos do GitHub]({url}) para obter notas de lançamento.\nClique em \"Instalar e reiniciar\" para aplicar a atualização automaticamente.",
-        "up_to_date": "Atualizado",
-        "up_to_date_desc": "O KatanA está atualizado.",
-        "failed_to_check": "Falha ao verificar atualizações.",
-        "action_close": "OK",
-        "install_update": "Instalar e Reiniciar",
-        "downloading": "Baixando atualização...",
-        "installing": "Instalando atualização...",
-        "restart_confirm": "A atualização está pronta. Reiniciar agora?",
-        "action_later": "Mais tarde",
-        "action_skip_version": "Pular esta versão",
-        "action_restart": "Reiniciar agora"
-    },
-    "workspace": {
-        "no_workspace_open": "Nenhum espaço de trabalho aberto.",
-        "no_document_selected": "Nenhum documento aberto.",
-        "workspace_title": "Espaço de Trabalho",
-        "recent_workspaces": "Espaços de trabalho recentes",
-        "metadata_tooltip": "Tamanho: {size} B\nModificado: {mod_time}",
-        "path_label": "Caminho",
-        "flat_view": "Visualização Plana"
+    "layout": {
+      "split_direction": "Direção da Divisão",
+      "horizontal": "Horizontal (Esquerda / Direita)",
+      "vertical": "Vertical (Cima / Baixo)",
+      "pane_order": "Ordem dos Painéis",
+      "editor_first": "Editor Primeiro",
+      "preview_first": "Visualização Primeiro",
+      "toc_position": "Posição do sumário",
+      "left": "Esquerda",
+      "right": "Direita"
     },
     "preview": {
-        "preview_title": "Visualização",
-        "refresh_diagrams": "Atualizar diagramas",
-        "rendering": "Renderizando {kind}...",
-        "no_preview": "(Sem visualização)",
-        "diagram_controller": {
-            "pan_up": "Para cima",
-            "pan_down": "Para baixo",
-            "pan_left": "Esquerda",
-            "pan_right": "Direita",
-            "zoom_in": "Aumentar",
-            "zoom_out": "Diminuir zoom",
-            "reset": "Redefinir",
-            "fullscreen": "Tela cheia",
-            "close": "Fechar",
-            "trackpad_help": "Trackpad: use 2 dedos para zoom, 1 dedo para arrastar"
-        }
+      "title": "Visualização",
+      "heading": "# Exemplo de Título",
+      "normal_text": "Texto normal e ",
+      "accent_link": "link destacado",
+      "secondary_text": "Exemplo de texto secundário",
+      "code_sample": "fn main() { println!(\"Olá!\"); }"
     },
-    "plantuml": {
-        "downloading_plantuml": "⬇ Baixando PlantUML JAR...",
-        "plantuml_installed": "✅ PlantUML instalado. Atualizando visualização...",
-        "download_error": "❌ Erro no download: "
+    "color": {
+      "background": "Fundo",
+      "panel_background": "Fundo do Painel",
+      "text": "Texto",
+      "text_secondary": "Texto Secundário",
+      "accent": "Destaque",
+      "border": "Borda",
+      "selection": "Seleção",
+      "code_background": "Fundo",
+      "preview_background": "Fundo",
+      "code_text": "Texto",
+      "preview_text": "Texto",
+      "highlight": "Destacar",
+      "section_system": "Sistema",
+      "section_code": "Código",
+      "section_preview": "Visualização",
+      "group_basic": "Básico",
+      "group_text": "Texto e Tipografia",
+      "group_ui_elements": "Elementos da UI",
+      "title_bar_text": "Barra de Título",
+      "active_file_highlight": "Destaque do Arquivo Ativo",
+      "success_text": "Texto de Sucesso",
+      "warning_text": "Texto de Aviso",
+      "error_text": "Texto de Erro",
+      "button_background": "Fundo do Botão",
+      "button_active_background": "Botão Ativo",
+      "splash_background": "Fundo da Tela Inicial",
+      "splash_progress": "Progresso da Tela Inicial",
+      "line_number_text": "Números de Linha",
+      "line_number_active_text": "Linha Ativa",
+      "current_line_background": "Fundo da Linha",
+      "hover_line_background": "Pairar sobre Linha",
+      "file_tree_text": "Árvore de Arquivos"
     },
-    "view_mode": {
-        "preview": "Visualização",
-        "code": "Código",
-        "split": "Dividir"
+    "workspace": {
+      "max_depth": "Profundidade Máx de Busca",
+      "ignored_directories": "Ignorados",
+      "ignored_directories_hint": "Lista de diretórios separados por vírgula para excluir da busca (ex., .git, node_modules, .terraform)",
+      "visible_extensions": "Extensões Visíveis",
+      "no_extension_label": "Sem Extensão",
+      "no_extension_warning_title": "Aviso",
+      "no_extension_warning": "Não há garantia de que arquivos sem extensões possam ser exibidos corretamente como Markdown. Além disso, o aplicativo pode travar devido a um comportamento inesperado. Tem certeza de que deseja ativar isso?",
+      "extensionless_excludes": "Sem Extensão Ignorados",
+      "extensionless_excludes_hint": "Separados por vírgula..."
     },
-    "split_toggle": {
-        "horizontal": "Mudar para divisão horizontal (esquerda/direita)",
-        "vertical": "Mudar para divisão vertical (cima/baixo)",
-        "editor_first": "Colocar o editor à esquerda/cima",
-        "preview_first": "Colocar a visualização à esquerda/cima"
+    "tabs": [
+      {
+        "key": "theme",
+        "name": "Tema"
+      },
+      {
+        "key": "font",
+        "name": "Fonte"
+      },
+      {
+        "key": "layout",
+        "name": "Layout"
+      },
+      {
+        "key": "workspace",
+        "name": "Espaço de trabalho"
+      },
+      {
+        "key": "group_appearance",
+        "name": "Aparência"
+      },
+      {
+        "key": "group_system",
+        "name": "Sistema (pt)"
+      },
+      {
+        "key": "updates",
+        "name": "Atualizações"
+      },
+      {
+        "key": "behavior",
+        "name": "Comportamento"
+      }
+    ],
+    "updates": {
+      "section_title": "Atualizações",
+      "interval": "Intervalo",
+      "never": "Nunca",
+      "daily": "Quotidiano",
+      "weekly": "Semanalmente",
+      "monthly": "Mensalmente",
+      "check_now": "Verificar Agora"
     },
-    "error": {
-        "missing_dependency": "⚠️ {tool_name} não encontrado. Por favor, instale usando {install_hint}.",
-        "curl_launch_failed": "Falha ao iniciar o curl",
-        "download_failed": "Falha no download",
-        "render_error": "⚠ [{kind}] {message}"
-    },
-    "status": {
-        "ready": "Pronto",
-        "saved": "Salvo.",
-        "save_failed": "Falha ao salvar: {error}",
-        "opened_workspace": "Espaço de trabalho aberto: {name}",
-        "cannot_open_workspace": "Não foi possível abrir o espaço de trabalho: {error}",
-        "cannot_open_file": "Não foi possível abrir o arquivo: {error}",
-        "refresh_success": "Documento atualizado do disco.",
-        "refresh_skipped_dirty": "Atualização ignorada para preservar alterações não salvas.",
-        "refresh_no_changes": "Nenhuma alteração externa detectada.",
-        "refresh_failed": "Falha ao atualizar o documento: {error}"
-    },
-    "action": {
-        "expand_all": "Expandir Tudo",
-        "collapse_all": "Recolher Tudo",
-        "collapse_sidebar": "Recolher",
-        "refresh_workspace": "Atualizar",
-        "toggle_filter": "Filtro",
-        "remove_workspace": "Remover",
-        "recursive_expand": "Expansão Recursiva",
-        "recursive_open_all": "Abrir Tudo Recursivamente",
-        "toggle_toc": "Índice",
-        "show_meta_info": "Info",
-        "new_file": "Novo Arquivo",
-        "new_directory": "Nova Pasta",
-        "open": "Abrir",
-        "rename": "Renomear",
-        "delete": "Excluir",
-        "copy_path": "Copiar Caminho",
-        "reveal_in_os": "Revelar no SO",
-        "save": "Salvar",
-        "cancel": "Cancelar",
-        "discard": "Descartar",
-        "confirm": "Confirmar",
-        "copy_relative_path": "Caminho Relativo",
-        "refresh_document": "Atualizar documento"
-    },
-    "ai": {
-        "ai_unconfigured": "[AI: não configurado]"
-    },
-    "tool": {
-        "not_installed": "⚠ {tool} não está instalado",
-        "install_path": "Caminho de instalação: {path}",
-        "download": "⬇ Baixar {tool}"
-    },
-    "settings": {
-        "title": "Configurações",
-        "toc_visible": "Mostrar sumário",
-        "theme": {
-            "preset": "Predefinição de Tema",
-            "dark_section": "Escuro",
-            "light_section": "Claro",
-            "custom_colors": "Cores Personalizadas",
-            "reset_custom": "Restaurar Predefinições",
-            "custom_section": "Personalizado",
-            "delete_custom": "Excluir tema",
-            "save_custom_theme": "Salvar como tema...",
-            "save_custom_theme_title": "Salvar Tema Personalizado",
-            "theme_name_label": "Nome do Tema:",
-            "duplicate": "Duplicar...",
-            "reset_contrast": "Redefinir",
-            "ui_contrast_offset": "Deslocamento de contraste da interface",
-            "show_more": "Exibir mais...",
-            "show_less": "Exibir menos..."
-        },
-        "font": {
-            "size": "Tamanho da Fonte",
-            "family": "Fonte",
-            "size_slider_hint": "Arraste para a esquerda ou direita para ajustar"
-        },
-        "layout": {
-            "split_direction": "Direção da Divisão",
-            "horizontal": "Horizontal (Esquerda / Direita)",
-            "vertical": "Vertical (Cima / Baixo)",
-            "pane_order": "Ordem dos Painéis",
-            "editor_first": "Editor Primeiro",
-            "preview_first": "Visualização Primeiro",
-            "toc_position": "Posição do sumário",
-            "left": "Esquerda",
-            "right": "Direita"
-        },
-        "preview": {
-            "title": "Visualização",
-            "heading": "# Exemplo de Título",
-            "normal_text": "Texto normal e ",
-            "accent_link": "link destacado",
-            "secondary_text": "Exemplo de texto secundário",
-            "code_sample": "fn main() { println!(\"Olá!\"); }"
-        },
-        "color": {
-            "background": "Fundo",
-            "panel_background": "Fundo do Painel",
-            "text": "Texto",
-            "text_secondary": "Texto Secundário",
-            "accent": "Destaque",
-            "border": "Borda",
-            "selection": "Seleção",
-            "code_background": "Fundo",
-            "preview_background": "Fundo",
-            "code_text": "Texto",
-            "preview_text": "Texto",
-            "highlight": "Destacar",
-            "section_system": "Sistema",
-            "section_code": "Código",
-            "section_preview": "Visualização",
-            "group_basic": "Básico",
-            "group_text": "Texto e Tipografia",
-            "group_ui_elements": "Elementos da UI",
-            "title_bar_text": "Barra de Título",
-            "active_file_highlight": "Destaque do Arquivo Ativo",
-            "success_text": "Texto de Sucesso",
-            "warning_text": "Texto de Aviso",
-            "error_text": "Texto de Erro",
-            "button_background": "Fundo do Botão",
-            "button_active_background": "Botão Ativo",
-            "splash_background": "Fundo da Tela Inicial",
-            "splash_progress": "Progresso da Tela Inicial",
-            "line_number_text": "Números de Linha",
-            "line_number_active_text": "Linha Ativa",
-            "current_line_background": "Fundo da Linha",
-            "hover_line_background": "Pairar sobre Linha",
-            "file_tree_text": "Árvore de Arquivos"
-        },
-        "workspace": {
-            "max_depth": "Profundidade Máx de Busca",
-            "ignored_directories": "Ignorados",
-            "ignored_directories_hint": "Lista de diretórios separados por vírgula para excluir da busca (ex., .git, node_modules, .terraform)",
-            "visible_extensions": "Extensões Visíveis",
-            "no_extension_label": "Sem Extensão",
-            "no_extension_warning_title": "Aviso",
-            "no_extension_warning": "Não há garantia de que arquivos sem extensões possam ser exibidos corretamente como Markdown. Além disso, o aplicativo pode travar devido a um comportamento inesperado. Tem certeza de que deseja ativar isso?",
-            "extensionless_excludes": "Sem Extensão Ignorados",
-            "extensionless_excludes_hint": "Separados por vírgula..."
-        },
-        "tabs": [
-            {
-                "key": "theme",
-                "name": "Tema"
-            },
-            {
-                "key": "font",
-                "name": "Fonte"
-            },
-            {
-                "key": "layout",
-                "name": "Layout"
-            },
-            {
-                "key": "workspace",
-                "name": "Espaço de trabalho"
-            },
-            {
-                "key": "group_appearance",
-                "name": "Aparência"
-            },
-            {
-                "key": "group_system",
-                "name": "Sistema (pt)"
-            },
-            {
-                "key": "updates",
-                "name": "Atualizações"
-            },
-            {
-                "key": "behavior",
-                "name": "Comportamento"
-            }
-        ],
-        "updates": {
-            "section_title": "Atualizações",
-            "interval": "Intervalo",
-            "never": "Nunca",
-            "daily": "Quotidiano",
-            "weekly": "Semanalmente",
-            "monthly": "Mensalmente",
-            "check_now": "Verificar Agora"
-        },
-        "behavior": {
-            "section_title": "Comportamento",
-            "confirm_close_dirty_tab": "Confirmar antes de fechar abas não salvas",
-            "scroll_sync": "Sincronizar rolagem do editor e da visualização",
-            "auto_save": "Salvamento automático",
-            "auto_save_interval": "Intervalo de salvamento automático",
-            "seconds": "segundos",
-            "close_confirm_title": "Alterações não salvas",
-            "close_confirm_msg": "'{name}' tem alterações não salvas. Descartar?",
-            "close_confirm_discard": "Descartar",
-            "close_confirm_cancel": "Cancelar",
-            "clear_http_cache": "Limpar Todos os Caches",
-            "cache_retention_days": "Dias de Retenção do Cache",
-            "days_suffix": " dias",
-            "auto_refresh": "Atualização automática",
-            "auto_refresh_interval": "Intervalo de atualização"
-        }
-    },
-    "tab": {
-        "nav_prev": "Ir para a aba anterior",
-        "nav_next": "Ir para a próxima aba",
-        "close": "Fechar",
-        "close_others": "Fechar outras",
-        "close_all": "Fechar todas",
-        "close_right": "Fechar à direita",
-        "close_left": "Fechar à esquerda",
-        "pin": "Fixar",
-        "unpin": "Desafixar",
-        "restore_closed": "Restaurar aba fechada",
-        "remove_from_group": "Remover do grupo",
-        "group_name_placeholder": "Nome do grupo",
-        "create_group_button": "Criar",
-        "close_group": "Fechar grupo",
-        "ungroup": "Desagrupar_pt",
-        "add_tab_to_group": "Adicionar guia ao grupo",
-        "add_to_group": "Adicionar ao grupo",
-        "create_new_group": "Novo grupo"
-    },
-    "search": {
-        "modal_title": "Buscar arquivos",
-        "query_hint": "Digite para buscar pelo nome do arquivo...",
-        "include_pattern_hint": "Incluir (regex, separado por vírgulas)",
-        "exclude_pattern_hint": "Excluir (regex, separado por vírgulas)",
-        "no_results": "Nenhum arquivo encontrado."
-    },
-    "toc": {
-        "title": "Sumário",
-        "empty": "Nenhum cabeçalho encontrado"
-    },
-    "export": {
-        "success": "Exportado para {format} em: {path}",
-        "failed": "Exportação para {format} falhou: {error}",
-        "tool_missing": "A ferramenta de exportação não está disponível. Certifique-se de que o Chrome ou Chromium está instalado para exportar como {format}.",
-        "temp_file_error": "Falha ao criar arquivo temporário: {error}",
-        "write_error": "Falha ao gravar conteúdo: {error}",
-        "persist_error": "Falha ao persistir arquivo temporário",
-        "exporting": "⏳ Exportando {filename}..."
-    },
-    "terms": {
-        "title": "Termos de Serviço",
-        "version_label": "Versão: {version}",
-        "content": "Terms content.",
-        "accept": "Aceitar",
-        "decline": "Recusar"
-    },
-    "dialog": {
-        "new_file_title": "Criar Arquivo",
-        "new_directory_title": "Criar Pasta",
-        "rename_title": "Renomear",
-        "delete_title": "Excluir",
-        "delete_confirm_msg": "Tem certeza que deseja excluir? {name}"
-    },
-    "markdown": {
-        "task_todo": "Tarefa [ ]",
-        "task_in_progress": "Em andamento [/]",
-        "task_done": "Concluído [x]"
+    "behavior": {
+      "section_title": "Comportamento",
+      "confirm_close_dirty_tab": "Confirmar antes de fechar abas não salvas",
+      "scroll_sync": "Sincronizar rolagem do editor e da visualização",
+      "auto_save": "Salvamento automático",
+      "auto_save_interval": "Intervalo de salvamento automático",
+      "seconds": "segundos",
+      "close_confirm_title": "Alterações não salvas",
+      "close_confirm_msg": "'{name}' tem alterações não salvas. Descartar?",
+      "close_confirm_discard": "Descartar",
+      "close_confirm_cancel": "Cancelar",
+      "clear_http_cache": "Limpar Todos os Caches",
+      "cache_retention_days": "Dias de Retenção do Cache",
+      "days_suffix": " dias",
+      "auto_refresh": "Atualização automática",
+      "auto_refresh_interval": "Intervalo de atualização"
     }
+  },
+  "tab": {
+    "nav_prev": "Ir para a aba anterior",
+    "nav_next": "Ir para a próxima aba",
+    "close": "Fechar",
+    "close_others": "Fechar outras",
+    "close_all": "Fechar todas",
+    "close_right": "Fechar à direita",
+    "close_left": "Fechar à esquerda",
+    "pin": "Fixar",
+    "unpin": "Desafixar",
+    "restore_closed": "Restaurar aba fechada",
+    "remove_from_group": "Remover do grupo",
+    "group_name_placeholder": "Nome do grupo",
+    "create_group_button": "Criar",
+    "close_group": "Fechar grupo",
+    "ungroup": "Desagrupar_pt",
+    "add_tab_to_group": "Adicionar guia ao grupo",
+    "add_to_group": "Adicionar ao grupo",
+    "create_new_group": "Novo grupo"
+  },
+  "search": {
+    "modal_title": "Buscar arquivos",
+    "query_hint": "Digite para buscar pelo nome do arquivo...",
+    "include_pattern_hint": "Incluir (regex, separado por vírgulas)",
+    "exclude_pattern_hint": "Excluir (regex, separado por vírgulas)",
+    "no_results": "Nenhum arquivo encontrado.",
+    "doc_search_title": "Pesquisar documento",
+    "doc_search_prev": "Anterior (PT)",
+    "doc_search_next": "Próximo",
+    "doc_search_close": "Fechar",
+    "doc_search_count": "{index} / {total} (PT)"
+  },
+  "toc": {
+    "title": "Sumário",
+    "empty": "Nenhum cabeçalho encontrado"
+  },
+  "export": {
+    "success": "Exportado para {format} em: {path}",
+    "failed": "Exportação para {format} falhou: {error}",
+    "tool_missing": "A ferramenta de exportação não está disponível. Certifique-se de que o Chrome ou Chromium está instalado para exportar como {format}.",
+    "temp_file_error": "Falha ao criar arquivo temporário: {error}",
+    "write_error": "Falha ao gravar conteúdo: {error}",
+    "persist_error": "Falha ao persistir arquivo temporário",
+    "exporting": "⏳ Exportando {filename}..."
+  },
+  "terms": {
+    "title": "Termos de Serviço",
+    "version_label": "Versão: {version}",
+    "content": "Terms content.",
+    "accept": "Aceitar",
+    "decline": "Recusar"
+  },
+  "dialog": {
+    "new_file_title": "Criar Arquivo",
+    "new_directory_title": "Criar Pasta",
+    "rename_title": "Renomear",
+    "delete_title": "Excluir",
+    "delete_confirm_msg": "Tem certeza que deseja excluir? {name}"
+  },
+  "markdown": {
+    "task_todo": "Tarefa [ ]",
+    "task_in_progress": "Em andamento [/]",
+    "task_done": "Concluído [x]"
+  }
 }

@@ -19,6 +19,7 @@ pub(crate) trait DocumentOps {
     fn handle_update_buffer(&mut self, content: String);
     fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String);
     fn handle_save_document(&mut self);
+    fn refresh_doc_search_matches(&mut self, content: &str);
 }
 
 impl DocumentOps for KatanaApp {
@@ -149,6 +150,9 @@ impl DocumentOps for KatanaApp {
             return;
         };
         self.refresh_preview(&path, &content);
+        if self.state.search.doc_search_open {
+            self.refresh_doc_search_matches(&content);
+        }
     }
     fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String) {
         let (path, content) = if let Some(doc) = self.state.active_document_mut() {
@@ -161,6 +165,9 @@ impl DocumentOps for KatanaApp {
             return;
         };
         self.refresh_preview(&path, &content);
+        if self.state.search.doc_search_open {
+            self.refresh_doc_search_matches(&content);
+        }
     }
     fn handle_save_document(&mut self) {
         let Some(doc) = self.state.active_document_mut() else {
@@ -185,5 +192,24 @@ impl DocumentOps for KatanaApp {
                 ));
             }
         }
+    }
+    fn refresh_doc_search_matches(&mut self, content: &str) {
+        let query = &self.state.search.doc_search_query;
+        self.state.search.doc_search_matches.clear();
+        if !query.is_empty() {
+            let lower_text = content.to_lowercase();
+            let lower_query = query.to_lowercase();
+            let mut start = 0;
+            while let Some(idx) = lower_text[start..].find(&lower_query) {
+                let match_start = start + idx;
+                let match_end = match_start + query.len();
+                self.state
+                    .search
+                    .doc_search_matches
+                    .push(match_start..match_end);
+                start = match_start + 1;
+            }
+        }
+        self.state.search.doc_search_active_index = 0;
     }
 }

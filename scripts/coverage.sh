@@ -32,7 +32,7 @@ cargo llvm-cov clean --workspace
 
 # ── Test Execution + Table Report ──
 info "Running tests with llvm-cov..."
-cargo llvm-cov --workspace --lib --tests \
+cargo llvm-cov --workspace --lib --tests -q \
     --ignore-filename-regex "${COVERAGE_IGNORE}" \
     -- --test-threads=1 --skip fixture
 

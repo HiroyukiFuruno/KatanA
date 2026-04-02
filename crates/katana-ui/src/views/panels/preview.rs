@@ -27,6 +27,7 @@ pub(crate) struct PreviewContent<'a> {
     pub show_toc: bool,
     pub action: &'a mut AppAction,
     pub scroll_sync: bool,
+    pub search_query: Option<String>,
 }
 
 impl<'a> PreviewContent<'a> {
@@ -39,6 +40,7 @@ impl<'a> PreviewContent<'a> {
         show_toc: bool,
         action: &'a mut AppAction,
         scroll_sync: bool,
+        search_query: Option<String>,
     ) -> Self {
         Self {
             preview,
@@ -48,6 +50,7 @@ impl<'a> PreviewContent<'a> {
             show_toc,
             action,
             scroll_sync,
+            search_query,
         }
     }
 
@@ -59,6 +62,7 @@ impl<'a> PreviewContent<'a> {
         let show_toc = self.show_toc;
         let action = self.action;
         let scroll_sync = self.scroll_sync;
+        let search_query = self.search_query.clone();
         let mut download_req = None;
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Wrap);
         let outer_rect = ui.available_rect_before_wrap();
@@ -68,9 +72,18 @@ impl<'a> PreviewContent<'a> {
             .id_salt("preview_scroll")
             .auto_shrink(std::array::from_fn(|_| false));
 
+        let mut forced_offset = None;
         let consuming_editor = scroll_sync && scroll.source == ScrollSource::Editor;
         if consuming_editor {
-            let target_scroll_offset = scroll.mapper.logical_to_preview(scroll.logical_position);
+            forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
+        } else if let Some(target_line) = scroll.scroll_to_line {
+            let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+            let editor_y = target_line as f32 * row_height;
+            scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
+            forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
+        }
+
+        if let Some(target_scroll_offset) = forced_offset {
             scroll.preview_echo.record(target_scroll_offset);
             scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
         }
@@ -106,6 +119,7 @@ impl<'a> PreviewContent<'a> {
                                 ui,
                                 scroll.active_editor_line,
                                 Some(&mut hovered_lines),
+                                search_query.clone(),
                             );
                             if scroll_sync && scroll.source != ScrollSource::Preview {
                                 scroll.hovered_preview_lines = hovered_lines.clone();

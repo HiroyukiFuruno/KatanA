@@ -185,6 +185,21 @@ impl eframe::App for KatanaApp {
             self.state.layout.show_search_modal = true;
         }
 
+        if ctx.input_mut(|i| {
+            i.consume_shortcut(&egui::KeyboardShortcut::new(
+                egui::Modifiers::COMMAND,
+                egui::Key::F,
+            ))
+        }) {
+            if !self.state.search.doc_search_open {
+                self.state.search.doc_search_open = true;
+                self.trigger_action(AppAction::DocSearchQueryChanged);
+            } else {
+                self.state.search.doc_search_open = false;
+                self.state.search.doc_search_matches.clear();
+            }
+        }
+
         self.poll_download(ctx);
         self.poll_workspace_load(ctx);
 
@@ -343,6 +358,7 @@ impl eframe::App for KatanaApp {
             .show(ctx);
         }
 
+        self.state.scroll.scroll_to_line = None;
         crate::views::app_frame::intercept_url_commands(ctx, self);
 
         if let Some(start) = self.splash_start {

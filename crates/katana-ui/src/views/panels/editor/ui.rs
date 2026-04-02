@@ -12,6 +12,8 @@ pub(crate) struct EditorContent<'a> {
     pub scroll: &'a mut crate::app_state::ScrollState,
     pub action: &'a mut AppAction,
     pub sync_scroll: bool,
+    pub doc_search_matches: &'a [std::ops::Range<usize>],
+    pub doc_search_active_index: usize,
 }
 
 impl<'a> EditorContent<'a> {
@@ -20,12 +22,16 @@ impl<'a> EditorContent<'a> {
         scroll: &'a mut crate::app_state::ScrollState,
         action: &'a mut AppAction,
         sync_scroll: bool,
+        doc_search_matches: &'a [std::ops::Range<usize>],
+        doc_search_active_index: usize,
     ) -> Self {
         Self {
             document,
             scroll,
             action,
             sync_scroll,
+            doc_search_matches,
+            doc_search_active_index,
         }
     }
 
@@ -152,6 +158,50 @@ impl<'a> EditorContent<'a> {
                             }
                         }
 
+                        let (search_match_color, search_active_color) = ui.ctx().data(|d| {
+                            let tc = d.get_temp::<katana_platform::theme::ThemeColors>(
+                                egui::Id::new("katana_theme_colors"),
+                            );
+                            if let Some(theme) = tc {
+                                (
+                                    crate::theme_bridge::rgba_to_color32(theme.code.search_match),
+                                    crate::theme_bridge::rgba_to_color32(theme.code.search_active),
+                                )
+                            } else {
+                                (ui.visuals().selection.bg_fill, ui.visuals().warn_fg_color)
+                            }
+                        });
+                        for (idx, range) in self.doc_search_matches.iter().enumerate() {
+                            let match_start = egui::text::CCursor {
+                                index: range.start,
+                                prefer_next_row: false,
+                            };
+                            let match_end = egui::text::CCursor {
+                                index: range.end,
+                                prefer_next_row: false,
+                            };
+                            let pos_start = galley.pos_from_cursor(match_start);
+                            let pos_end = galley.pos_from_cursor(match_end);
+
+                            let highlight_rect = egui::Rect::from_min_max(
+                                egui::pos2(
+                                    response.rect.min.x + pos_start.min.x.max(0.0),
+                                    response.rect.min.y + pos_start.min.y,
+                                ),
+                                egui::pos2(
+                                    response.rect.min.x + pos_end.min.x.max(0.0), // using min.x for both, since it's cursor position. Wait, pos_end's cursor is BEFORE the text? Actually wait, CCursor index.
+                                    response.rect.min.y + pos_end.max.y,
+                                ),
+                            );
+
+                            let color = if idx == self.doc_search_active_index {
+                                search_active_color
+                            } else {
+                                search_match_color
+                            };
+                            ui.painter().rect_filled(highlight_rect, 2.0, color);
+                        }
+
                         let clip_rect = ui.clip_rect().expand(100.0);
                         let mut p = 0;
                         let mut is_start_of_para = true;
@@ -223,7 +273,7 @@ impl<'a> EditorContent<'a> {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
 
-                        if let Some(target_line) = scroll.scroll_to_line.take() {
+                        if let Some(target_line) = scroll.scroll_to_line {
                             if let Some(idx) = line_to_char_index(&buffer, target_line) {
                                 let cursor = egui::text::CCursor {
                                     index: idx,

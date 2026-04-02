@@ -436,6 +436,17 @@ pub(crate) fn render_custom_color_editor(
                     |c, r| c.code.hover_line_background = r,
                 ),
             },
+            ColorSettingDef {
+                label: &color_i18n.search_match,
+                prop: ColorPropType::Rgba(|c| c.code.search_match, |c, r| c.code.search_match = r),
+            },
+            ColorSettingDef {
+                label: &color_i18n.search_active,
+                prop: ColorPropType::Rgba(
+                    |c| c.code.search_active,
+                    |c, r| c.code.search_active = r,
+                ),
+            },
         ],
     )];
 

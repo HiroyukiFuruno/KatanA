@@ -27,6 +27,12 @@ pub struct SearchState {
     pub md_last_query: Option<String>,
     pub md_results: Vec<katana_core::search::SearchResult>,
     pub md_history: katana_core::search::SearchHistory,
+
+    // Document search state (Cmd+F)
+    pub doc_search_open: bool,
+    pub doc_search_query: String,
+    pub doc_search_matches: Vec<std::ops::Range<usize>>,
+    pub doc_search_active_index: usize,
 }
 
 impl Default for SearchState {
@@ -54,6 +60,11 @@ impl SearchState {
             md_last_query: None,
             md_results: Vec::new(),
             md_history: katana_core::search::SearchHistory::default(),
+
+            doc_search_open: false,
+            doc_search_query: String::new(),
+            doc_search_matches: Vec::new(),
+            doc_search_active_index: 0,
         }
     }
 }

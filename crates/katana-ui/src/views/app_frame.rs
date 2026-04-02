@@ -465,15 +465,16 @@ impl<'a> TabToolbar<'a> {
             if let Some(a) = tab_action {
                 app.pending_action = a;
             }
-            let active_doc_props = app.state.active_document();
-            if let Some(doc) = active_doc_props {
+            let doc_info = app.state.active_document().map(|doc| {
                 let d_path = doc.path.to_string_lossy();
                 let is_changelog = d_path.starts_with("Katana://ChangeLog");
+                (doc.path.clone(), is_changelog)
+            });
 
+            if let Some((doc_path, is_changelog)) = doc_info {
                 let mut out_action = None;
-                ui.horizontal(|ui| {
+                ui.vertical(|ui| {
                     if !is_changelog {
-                        let doc_path = doc.path.clone();
                         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
                         let rel = relative_full_path(&doc_path, ws_root.as_deref());
                         let breadcrumb_action =
@@ -482,25 +483,37 @@ impl<'a> TabToolbar<'a> {
                             out_action = Some(a);
                         }
                     }
-                    let view_action = crate::views::top_bar::ViewModeBar::new(
-                        app.state.active_view_mode(),
-                        is_changelog,
-                        app.state.active_split_direction(),
-                        app.state.active_pane_order(),
-                        app.state
-                            .config
-                            .settings
-                            .settings()
-                            .behavior
-                            .scroll_sync_enabled,
-                        app.state.scroll.sync_override,
-                        app.state.update.available.is_some(),
-                        app.state.update.checking,
-                    )
-                    .show(ui);
-                    if let Some(a) = view_action {
-                        out_action = Some(a);
-                    }
+
+                    ui.horizontal(|ui| {
+                        let view_action = crate::views::top_bar::ViewModeBar::new(
+                            app.state.active_view_mode(),
+                            is_changelog,
+                            app.state.active_split_direction(),
+                            app.state.active_pane_order(),
+                            app.state
+                                .config
+                                .settings
+                                .settings()
+                                .behavior
+                                .scroll_sync_enabled,
+                            app.state.scroll.sync_override,
+                            app.state.update.available.is_some(),
+                            app.state.update.checking,
+                            true, // show_search
+                        )
+                        .show(ui, &mut app.state.search);
+                        if let Some(a) = view_action {
+                            if matches!(a, crate::app_state::AppAction::OpenDocSearch) {
+                                app.state.search.doc_search_open = true;
+                                ui.memory_mut(|m| {
+                                    m.data
+                                        .insert_temp(ui.id().with("search_newly_opened"), true)
+                                });
+                            } else {
+                                out_action = Some(a);
+                            }
+                        }
+                    });
                 });
 
                 if let Some(a) = out_action {
@@ -620,6 +633,8 @@ impl<'a> CentralContent<'a> {
                 );
             });
         } else {
+            // Search logic is now inline in ViewModeBar
+
             if is_split {
                 let split_dir = app.state.active_split_direction();
                 let pane_order = app.state.active_pane_order();
@@ -638,6 +653,8 @@ impl<'a> CentralContent<'a> {
                                 &mut app.state.scroll,
                                 &mut app.pending_action,
                                 false,
+                                &app.state.search.doc_search_matches,
+                                app.state.search.doc_search_active_index,
                             )
                             .show(ui);
                         }

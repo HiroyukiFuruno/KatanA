@@ -47,7 +47,7 @@ fn build_harness(sections: Vec<RenderedSection>, width: f32, height: f32) -> Har
         .build_ui(move |ui| {
             let mut pane = PreviewPane::default();
             pane.sections = sections.clone();
-            pane.show_content(ui, None, None);
+            pane.show_content(ui, None, None, None);
         });
     for _ in 0..5 {
         harness.step();
@@ -326,7 +326,7 @@ fn snapshot_diagram_pending_spinner() {
         .build_ui(move |ui| {
             let mut pane = PreviewPane::default();
             pane.sections = sections.clone();
-            pane.show_content(ui, None, None);
+            pane.show_content(ui, None, None, None);
         });
     harness.step();
     harness.run_steps(5);

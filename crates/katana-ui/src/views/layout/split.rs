@@ -117,6 +117,7 @@ impl<'a> HorizontalSplit<'a> {
                         show_toc,
                         &mut app.pending_action,
                         scroll_sync,
+                        Some(app.state.search.doc_search_query.clone()),
                     )
                     .show(ui);
                 }
@@ -130,6 +131,8 @@ impl<'a> HorizontalSplit<'a> {
                     &mut app.state.scroll,
                     &mut app.pending_action,
                     scroll_sync,
+                    &app.state.search.doc_search_matches,
+                    app.state.search.doc_search_active_index,
                 )
                 .show(ui);
             });
@@ -209,6 +212,7 @@ impl<'a> VerticalSplit<'a> {
                             show_toc,
                             &mut app.pending_action,
                             scroll_sync,
+                            Some(app.state.search.doc_search_query.clone()),
                         )
                         .show(ui);
                     }
@@ -222,6 +226,8 @@ impl<'a> VerticalSplit<'a> {
                         &mut app.state.scroll,
                         &mut app.pending_action,
                         scroll_sync,
+                        &app.state.search.doc_search_matches,
+                        app.state.search.doc_search_active_index,
                     )
                     .show(ui);
                 });
@@ -247,6 +253,7 @@ impl<'a> VerticalSplit<'a> {
                             show_toc,
                             &mut app.pending_action,
                             scroll_sync,
+                            Some(app.state.search.doc_search_query.clone()),
                         )
                         .show(ui);
                     }
@@ -260,6 +267,8 @@ impl<'a> VerticalSplit<'a> {
                         &mut app.state.scroll,
                         &mut app.pending_action,
                         scroll_sync,
+                        &app.state.search.doc_search_matches,
+                        app.state.search.doc_search_active_index,
                     )
                     .show(ui);
                 });
@@ -306,6 +315,7 @@ impl<'a> PreviewOnly<'a> {
                 show_toc,
                 &mut app.pending_action,
                 false,
+                Some(app.state.search.doc_search_query.clone()),
             )
             .show(ui);
         } else {

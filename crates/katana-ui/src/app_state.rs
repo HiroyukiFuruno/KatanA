@@ -128,6 +128,12 @@ pub enum AppAction {
     CloseTabGroup(String),
     UngroupTabGroup(String),
     ToggleCollapseTabGroup(String),
+
+    OpenDocSearch,
+    DocSearchQueryChanged,
+    DocSearchNext,
+    DocSearchPrev,
+
     None,
 }
 
