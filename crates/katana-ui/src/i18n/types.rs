@@ -62,6 +62,38 @@ pub struct SearchMessages {
     pub include_pattern_hint: String,
     pub exclude_pattern_hint: String,
     pub no_results: String,
+
+    #[serde(default = "default_tab_file_name")]
+    pub tab_file_name: String,
+    #[serde(default = "default_tab_markdown_content")]
+    pub tab_markdown_content: String,
+    #[serde(default = "default_md_query_hint")]
+    pub md_query_hint: String,
+    #[serde(default = "default_recent_searches")]
+    pub recent_searches: String,
+    #[serde(default = "default_clear_history")]
+    pub clear_history: String,
+    #[serde(default = "default_ln_prefix")]
+    pub ln_prefix: String,
+}
+
+pub(crate) fn default_tab_file_name() -> String {
+    "File Name".to_string()
+}
+pub(crate) fn default_tab_markdown_content() -> String {
+    "Markdown Content".to_string()
+}
+pub(crate) fn default_md_query_hint() -> String {
+    "Search markdown files...".to_string()
+}
+pub(crate) fn default_recent_searches() -> String {
+    "Recent Searches".to_string()
+}
+pub(crate) fn default_clear_history() -> String {
+    "Clear".to_string()
+}
+pub(crate) fn default_ln_prefix() -> String {
+    "Ln ".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize)]

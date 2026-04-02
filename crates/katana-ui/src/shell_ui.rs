@@ -252,6 +252,26 @@ impl eframe::App for KatanaApp {
             if !is_open {
                 self.pending_action = AppAction::ToggleSearchModal;
             }
+
+            if self.state.search.md_history.recent_terms
+                != self
+                    .state
+                    .config
+                    .settings
+                    .settings()
+                    .search
+                    .recent_md_queries
+            {
+                self.state
+                    .config
+                    .settings
+                    .settings_mut()
+                    .search
+                    .recent_md_queries = self.state.search.md_history.recent_terms.clone();
+                if !self.state.config.try_save_settings() {
+                    tracing::warn!("Failed to save search history settings");
+                }
+            }
         }
 
         if self.show_about {

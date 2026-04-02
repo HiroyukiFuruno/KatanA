@@ -4,7 +4,7 @@ pub use crate::state::document::{
 };
 pub use crate::state::layout::LayoutState;
 pub use crate::state::scroll::{ScrollSource, ScrollState};
-pub use crate::state::search::SearchState;
+pub use crate::state::search::{SearchState, SearchTab};
 pub use crate::state::update::{UpdatePhase, UpdateState};
 pub use crate::state::workspace::WorkspaceState;
 
@@ -27,6 +27,11 @@ pub enum AppAction {
     InstallUpdate,
     OpenWorkspace(PathBuf),
     SelectDocument(PathBuf),
+    SelectDocumentAndJump {
+        path: PathBuf,
+        line: usize,
+        byte_range: std::ops::Range<usize>,
+    },
     OpenMultipleDocuments(Vec<PathBuf>),
     RemoveWorkspace(String),
     CloseDocument(usize),
@@ -152,11 +157,14 @@ impl AppState {
         cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
     ) -> Self {
         let _ = ai_registry;
+        let mut search = SearchState::new();
+        search.md_history.recent_terms = settings.settings().search.recent_md_queries.clone();
+
         Self {
             document: DocumentState::new(),
             workspace: WorkspaceState::new(),
             layout: LayoutState::new(),
-            search: SearchState::new(),
+            search,
             scroll: ScrollState::new(),
             update: UpdateState::new(),
             config: ConfigState::new(plugin_registry, settings, cache),

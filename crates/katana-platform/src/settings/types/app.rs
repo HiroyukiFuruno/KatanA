@@ -1,7 +1,7 @@
 use super::{
     behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, layout::LayoutSettings,
-    performance::PerformanceSettings, theme::ThemeSettings, update::UpdateSettings,
-    workspace::WorkspaceSettings,
+    performance::PerformanceSettings, search::SearchSettings, theme::ThemeSettings,
+    update::UpdateSettings, workspace::WorkspaceSettings,
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +24,10 @@ pub struct AppSettings {
     // WHY: Workspace settings (nesting).
     #[serde(default)]
     pub workspace: WorkspaceSettings,
+
+    // WHY: Search configuration and history (nesting).
+    #[serde(default)]
+    pub search: SearchSettings,
 
     // WHY: Performance and advanced tuning (nesting).
     #[serde(default)]

@@ -151,6 +151,18 @@ impl ActionOps for KatanaApp {
                     self.state.layout.show_search_modal = false;
                 }
             }
+            AppAction::SelectDocumentAndJump {
+                path,
+                line,
+                byte_range: _byte_range,
+            } => {
+                self.handle_select_document(path, true);
+                if self.state.layout.show_search_modal {
+                    self.state.layout.show_search_modal = false;
+                }
+                self.state.scroll.scroll_to_line = Some(line);
+                // The byte_range can be used for editor cursor positioning later
+            }
             AppAction::OpenMultipleDocuments(paths) => {
                 let mut iter = paths.into_iter();
                 if let Some(first_path) = iter.next() {
