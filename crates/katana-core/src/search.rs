@@ -213,17 +213,15 @@ mod tests {
         let mut md3 = File::create(&md3_path).unwrap();
         writeln!(md3, "foo").unwrap();
         writeln!(md3, "foo").unwrap();
-        
+
         // Test limit breaking within a single line (inner loop break)
         writeln!(md3, "foo foo").unwrap();
 
         let ws2 = crate::Workspace::new(
             dir.path().to_path_buf(),
-            vec![
-                crate::workspace::TreeEntry::File {
-                    path: md3_path.clone(),
-                },
-            ],
+            vec![crate::workspace::TreeEntry::File {
+                path: md3_path.clone(),
+            }],
         );
 
         // 1. Break between lines
