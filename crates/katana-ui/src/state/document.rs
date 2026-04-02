@@ -43,7 +43,7 @@ pub struct DocumentState {
     pub tab_view_modes: Vec<TabViewMode>,
     pub tab_split_states: Vec<TabSplitState>,
     pub tab_groups: Vec<TabGroup>,
-    pub recently_closed_tabs: VecDeque<PathBuf>,
+    pub recently_closed_tabs: VecDeque<(PathBuf, bool)>,
     pub last_auto_save: Option<Instant>,
     pub last_auto_refresh: Option<Instant>,
 }

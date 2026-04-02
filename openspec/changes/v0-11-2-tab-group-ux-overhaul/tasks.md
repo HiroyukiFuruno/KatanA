@@ -2,8 +2,8 @@
 
 ## 着手条件 (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 現行の tab group 実装（`views/top_bar/ui.rs`、`app/action.rs`、`state/document.rs`）を確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 現行の tab group 実装（`views/top_bar/ui.rs`、`app/action.rs`、`state/document.rs`）を確認していること
 
 ## ブランチ運用ルール
 
@@ -15,8 +15,8 @@
 
 ### 着手条件 (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
 - [x] 1.1 `TabBar::show()` の描画ループを 3 フェーズ（グループブロック → ピン留めタブ → 通常タブ）に分割する
 - [x] 1.2 グループヘッダーをコンパクトチップデザインに変更する（色ドット ● + 縮小フォント名前）

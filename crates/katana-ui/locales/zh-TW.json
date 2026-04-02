@@ -1,359 +1,361 @@
 {
-  "menu": {
-    "file": "檔案",
-    "settings": "設定",
-    "language": "語言 (Language)",
-    "open_workspace": "開啟工作區…",
-    "save": "儲存",
-    "open_all": "全部開啟",
-    "export": "匯出",
-    "export_html": "HTML 文件 (.html)",
-    "export_pdf": "PDF 文件 (.pdf)",
-    "export_png": "PNG 圖片 (.png)",
-    "export_jpg": "JPEG 圖片 (.jpg)",
-    "about": "關於 KatanA",
-    "quit": "退出 KatanA",
-    "hide": "隱藏 KatanA",
-    "hide_others": "隱藏其他",
-    "show_all": "顯示全部",
-    "help": "幫助",
-    "check_updates": "檢查更新...",
-    "release_notes": "發行說明"
-  },
-  "about": {
-    "basic_info": "基本資訊",
-    "version": "版本",
-    "build": "組建",
-    "copyright": "版權",
-    "runtime": "執行階段",
-    "platform": "平台",
-    "architecture": "架構",
-    "rust": "Rust",
-    "license": "許可證",
-    "links": "連結",
-    "source_code": "源代碼",
-    "documentation": "文檔",
-    "report_issue": "報告問題",
-    "support": "支持",
-    "sponsor": "贊助"
-  },
-  "update": {
-    "title": "檢查更新",
-    "checking_for_updates": "正在檢查更新...",
-    "update_available": "有新版本可用",
-    "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
-    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有關詳細的變更和發行說明，請查看 [GitHub 發行頁面]({url})。\n點擊 \"安裝並重新啟動\" 即可自動套用更新。",
-    "up_to_date": "已是最新版本",
-    "up_to_date_desc": "您使用的是最新版本的 KatanA。",
-    "failed_to_check": "檢查更新失敗。",
-    "action_close": "確定",
-    "install_update": "安裝並重啟",
-    "downloading": "正在下載更新...",
-    "installing": "正在安裝更新...",
-    "restart_confirm": "更新已就緒，現在重啟嗎？",
-    "action_later": "稍後",
-    "action_skip_version": "跳過此版本",
-    "action_restart": "立即重啟"
-  },
-  "workspace": {
-    "no_workspace_open": "未開啟工作區。",
-    "no_document_selected": "未開啟文件。",
-    "workspace_title": "工作區",
-    "recent_workspaces": "最近的工作區",
-    "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
-    "path_label": "路徑",
-    "flat_view": "扁平視圖"
-  },
-  "preview": {
-    "preview_title": "預覽",
-    "refresh_diagrams": "重新整理圖表",
-    "rendering": "{kind} 渲染中...",
-    "no_preview": "(無預覽)",
-    "diagram_controller": {
-      "pan_up": "上移",
-      "pan_down": "下移",
-      "pan_left": "左移",
-      "pan_right": "右移",
-      "zoom_in": "放大",
-      "zoom_out": "縮小",
-      "reset": "重置位置和大小",
-      "fullscreen": "全屏",
-      "close": "關閉",
-      "trackpad_help": "觸控板：雙指捏合縮放，單指拖動平移"
-    }
-  },
-  "plantuml": {
-    "downloading_plantuml": "⬇ 正在下載 PlantUML JAR...",
-    "plantuml_installed": "✅ PlantUML 已安裝。正在重新整理預覽...",
-    "download_error": "❌ 下載錯誤: "
-  },
-  "view_mode": {
-    "preview": "預覽",
-    "code": "程式碼",
-    "split": "分割"
-  },
-  "split_toggle": {
-    "horizontal": "切換至水平分割（左/右）",
-    "vertical": "切換至垂直分割（上/下）",
-    "editor_first": "將編輯器放置在左/上",
-    "preview_first": "將預覽放置在左/上"
-  },
-  "error": {
-    "missing_dependency": "⚠️ {tool_name} 找不到。請使用 {install_hint} 安裝。",
-    "curl_launch_failed": "curl 啟動失敗",
-    "download_failed": "下載失敗",
-    "render_error": "⚠ [{kind}] {message}"
-  },
-  "status": {
-    "ready": "就緒",
-    "saved": "已儲存。",
-    "save_failed": "儲存失敗: {error}",
-    "opened_workspace": "已開啟工作區: {name}",
-    "cannot_open_workspace": "無法開啟工作區: {error}",
-    "cannot_open_file": "無法開啟檔案: {error}",
-    "refresh_success": "已從磁碟重新整理文件。",
-    "refresh_skipped_dirty": "已略過重新整理以保留未儲存的變更。",
-    "refresh_no_changes": "未偵測到外部變更。",
-    "refresh_failed": "重新整理文件失敗: {error}"
-  },
-  "action": {
-    "expand_all": "展開全部",
-    "collapse_all": "摺疊全部",
-    "collapse_sidebar": "摺疊側邊欄",
-    "refresh_workspace": "重新整理工作區",
-    "toggle_filter": "切換篩選器",
-    "remove_workspace": "移除工作區",
-    "recursive_expand": "遞迴展開",
-    "recursive_open_all": "遞迴打開全部",
-    "toggle_toc": "切換目錄",
-    "show_meta_info": "顯示中介資訊",
-    "new_file": "新增檔案",
-    "new_directory": "新增資料夾",
-    "open": "打開",
-    "rename": "重新命名",
-    "delete": "刪除",
-    "copy_path": "複製路徑",
-    "reveal_in_os": "在系統中顯示",
-    "save": "儲存",
-    "cancel": "取消",
-    "discard": "丟棄",
-    "confirm": "確認",
-    "copy_relative_path": "複製相對路徑",
-    "refresh_document": "重新整理文件"
-  },
-  "ai": {
-    "ai_unconfigured": "[AI: 未設定]"
-  },
-  "tool": {
-    "not_installed": "⚠ {tool} 未安裝",
-    "install_path": "安裝路徑: {path}",
-    "download": "⬇ 下載 {tool}"
-  },
-  "settings": {
-    "title": "設定",
-    "toc_visible": "顯示目錄",
-    "theme": {
-      "preset": "主題預設",
-      "dark_section": "深色",
-      "light_section": "淺色",
-      "custom_colors": "自訂顏色",
-      "reset_custom": "重設為預設",
-      "custom_section": "自訂",
-      "delete_custom": "刪除主題",
-      "save_custom_theme": "另存為自訂主題...",
-      "save_custom_theme_title": "儲存自訂主題",
-      "theme_name_label": "主題名稱:",
-      "duplicate": "建立複本...",
-      "reset_contrast": "重設",
-      "ui_contrast_offset": "UI 對比度偏移",
-      "show_more": "顯示更多...",
-      "show_less": "顯示更少..."
+    "menu": {
+        "file": "檔案",
+        "settings": "設定",
+        "language": "語言 (Language)",
+        "open_workspace": "開啟工作區…",
+        "save": "儲存",
+        "open_all": "全部開啟",
+        "export": "匯出",
+        "export_html": "HTML 文件 (.html)",
+        "export_pdf": "PDF 文件 (.pdf)",
+        "export_png": "PNG 圖片 (.png)",
+        "export_jpg": "JPEG 圖片 (.jpg)",
+        "about": "關於 KatanA",
+        "quit": "退出 KatanA",
+        "hide": "隱藏 KatanA",
+        "hide_others": "隱藏其他",
+        "show_all": "顯示全部",
+        "help": "幫助",
+        "check_updates": "檢查更新...",
+        "release_notes": "發行說明"
     },
-    "font": {
-      "size": "字體大小",
-      "family": "字體系列",
-      "size_slider_hint": "向左或向右拖曳以調整大小"
+    "about": {
+        "basic_info": "基本資訊",
+        "version": "版本",
+        "build": "組建",
+        "copyright": "版權",
+        "runtime": "執行階段",
+        "platform": "平台",
+        "architecture": "架構",
+        "rust": "Rust",
+        "license": "許可證",
+        "links": "連結",
+        "source_code": "源代碼",
+        "documentation": "文檔",
+        "report_issue": "報告問題",
+        "support": "支持",
+        "sponsor": "贊助"
     },
-    "layout": {
-      "split_direction": "分割方向",
-      "horizontal": "水平（左 / 右）",
-      "vertical": "垂直（上 / 下）",
-      "pane_order": "窗格順序",
-      "editor_first": "編輯器優先",
-      "preview_first": "預覽優先",
-      "toc_position": "目錄位置",
-      "left": "左",
-      "right": "右"
-    },
-    "preview": {
-      "title": "預覽",
-      "heading": "# 範例標題",
-      "normal_text": "正常文字與",
-      "accent_link": "強調連結",
-      "secondary_text": "次要文字範例",
-      "code_sample": "fn main() { println!(\"你好!\"); }"
-    },
-    "color": {
-      "background": "背景",
-      "panel_background": "面板背景",
-      "text": "文字",
-      "text_secondary": "次要文字",
-      "accent": "強調",
-      "border": "邊框",
-      "selection": "選擇",
-      "code_background": "背景",
-      "preview_background": "背景",
-      "code_text": "文字",
-      "preview_text": "文字",
-      "highlight": "標記",
-      "section_system": "系統",
-      "section_code": "程式碼",
-      "section_preview": "預覽",
-      "group_basic": "基礎",
-      "group_text": "字體與排版",
-      "group_ui_elements": "UI 元素",
-      "title_bar_text": "標題列文字",
-      "active_file_highlight": "作用中檔案反白",
-      "success_text": "成功文字",
-      "warning_text": "警告文字",
-      "error_text": "錯誤文字",
-      "button_background": "按鈕背景",
-      "button_active_background": "按鈕作用中背景",
-      "splash_background": "啟動頁背景",
-      "splash_progress": "啟動頁進度",
-      "line_number_text": "行號文字",
-      "line_number_active_text": "作用中行號文字",
-      "current_line_background": "目前行背景",
-      "hover_line_background": "懸停行背景",
-      "file_tree_text": "檔案樹狀結構文字"
+    "update": {
+        "title": "檢查更新",
+        "checking_for_updates": "正在檢查更新...",
+        "update_available": "有新版本可用",
+        "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
+        "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有關詳細的變更和發行說明，請查看 [GitHub 發行頁面]({url})。\n點擊 \"安裝並重新啟動\" 即可自動套用更新。",
+        "up_to_date": "已是最新版本",
+        "up_to_date_desc": "您使用的是最新版本的 KatanA。",
+        "failed_to_check": "檢查更新失敗。",
+        "action_close": "確定",
+        "install_update": "安裝並重啟",
+        "downloading": "正在下載更新...",
+        "installing": "正在安裝更新...",
+        "restart_confirm": "更新已就緒，現在重啟嗎？",
+        "action_later": "稍後",
+        "action_skip_version": "跳過此版本",
+        "action_restart": "立即重啟"
     },
     "workspace": {
-      "max_depth": "最大目錄掃描深度",
-      "ignored_directories": "忽略的目錄",
-      "ignored_directories_hint": "例如 node_modules, target, .git",
-      "visible_extensions": "顯示的副檔名",
-      "no_extension_label": "無副檔名",
-      "no_extension_warning_title": "警告",
-      "no_extension_warning": "不能保證沒有副檔名的檔案能正確顯示為 Markdown。此外，應用程式可能會因意外行為而崩潰。確定要啟用嗎？",
-      "extensionless_excludes": "忽略的無副檔名檔案",
-      "extensionless_excludes_hint": "以逗號分隔的精確檔案名稱清單..."
+        "no_workspace_open": "未開啟工作區。",
+        "no_document_selected": "未開啟文件。",
+        "workspace_title": "工作區",
+        "recent_workspaces": "最近的工作區",
+        "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
+        "path_label": "路徑",
+        "flat_view": "扁平視圖"
     },
-    "tabs": [
-      {
-        "key": "theme",
-        "name": "主題"
-      },
-      {
-        "key": "font",
-        "name": "字型"
-      },
-      {
-        "key": "layout",
-        "name": "版面配置"
-      },
-      {
-        "key": "workspace",
-        "name": "工作區"
-      },
-      {
-        "key": "group_appearance",
-        "name": "外觀"
-      },
-      {
-        "key": "group_system",
-        "name": "系統"
-      },
-      {
-        "key": "updates",
-        "name": "更新"
-      },
-      {
-        "key": "behavior",
-        "name": "行為"
-      }
-    ],
-    "updates": {
-      "section_title": "更新",
-      "interval": "檢查間隔",
-      "never": "從不",
-      "daily": "每天",
-      "weekly": "每週",
-      "monthly": "每月",
-      "check_now": "立即檢查"
+    "preview": {
+        "preview_title": "預覽",
+        "refresh_diagrams": "重新整理圖表",
+        "rendering": "{kind} 渲染中...",
+        "no_preview": "(無預覽)",
+        "diagram_controller": {
+            "pan_up": "上移",
+            "pan_down": "下移",
+            "pan_left": "左移",
+            "pan_right": "右移",
+            "zoom_in": "放大",
+            "zoom_out": "縮小",
+            "reset": "重置位置和大小",
+            "fullscreen": "全屏",
+            "close": "關閉",
+            "trackpad_help": "觸控板：雙指捏合縮放，單指拖動平移"
+        }
     },
-    "behavior": {
-      "section_title": "行為",
-      "confirm_close_dirty_tab": "關閉未儲存的分頁前確認",
-      "scroll_sync": "同步編輯器和預覽捲動",
-      "auto_save": "自動儲存",
-      "auto_save_interval": "自動儲存間隔",
-      "seconds": "秒",
-      "close_confirm_title": "未儲存的變更",
-      "close_confirm_msg": "'{name}' 有未儲存的變更。是否捨棄？",
-      "close_confirm_discard": "捨棄",
-      "close_confirm_cancel": "取消",
-      "clear_http_cache": "清除所有快取",
-      "cache_retention_days": "快取保留天數",
-      "days_suffix": " 天",
-      "auto_refresh": "自動重新整理",
-      "auto_refresh_interval": "自動重新整理間隔"
+    "plantuml": {
+        "downloading_plantuml": "⬇ 正在下載 PlantUML JAR...",
+        "plantuml_installed": "✅ PlantUML 已安裝。正在重新整理預覽...",
+        "download_error": "❌ 下載錯誤: "
+    },
+    "view_mode": {
+        "preview": "預覽",
+        "code": "程式碼",
+        "split": "分割"
+    },
+    "split_toggle": {
+        "horizontal": "切換至水平分割（左/右）",
+        "vertical": "切換至垂直分割（上/下）",
+        "editor_first": "將編輯器放置在左/上",
+        "preview_first": "將預覽放置在左/上"
+    },
+    "error": {
+        "missing_dependency": "⚠️ {tool_name} 找不到。請使用 {install_hint} 安裝。",
+        "curl_launch_failed": "curl 啟動失敗",
+        "download_failed": "下載失敗",
+        "render_error": "⚠ [{kind}] {message}"
+    },
+    "status": {
+        "ready": "就緒",
+        "saved": "已儲存。",
+        "save_failed": "儲存失敗: {error}",
+        "opened_workspace": "已開啟工作區: {name}",
+        "cannot_open_workspace": "無法開啟工作區: {error}",
+        "cannot_open_file": "無法開啟檔案: {error}",
+        "refresh_success": "已從磁碟重新整理文件。",
+        "refresh_skipped_dirty": "已略過重新整理以保留未儲存的變更。",
+        "refresh_no_changes": "未偵測到外部變更。",
+        "refresh_failed": "重新整理文件失敗: {error}"
+    },
+    "action": {
+        "expand_all": "展開全部",
+        "collapse_all": "摺疊全部",
+        "collapse_sidebar": "摺疊側邊欄",
+        "refresh_workspace": "重新整理工作區",
+        "toggle_filter": "切換篩選器",
+        "remove_workspace": "移除工作區",
+        "recursive_expand": "遞迴展開",
+        "recursive_open_all": "遞迴打開全部",
+        "toggle_toc": "切換目錄",
+        "show_meta_info": "顯示中介資訊",
+        "new_file": "新增檔案",
+        "new_directory": "新增資料夾",
+        "open": "打開",
+        "rename": "重新命名",
+        "delete": "刪除",
+        "copy_path": "複製路徑",
+        "reveal_in_os": "在系統中顯示",
+        "save": "儲存",
+        "cancel": "取消",
+        "discard": "丟棄",
+        "confirm": "確認",
+        "copy_relative_path": "複製相對路徑",
+        "refresh_document": "重新整理文件"
+    },
+    "ai": {
+        "ai_unconfigured": "[AI: 未設定]"
+    },
+    "tool": {
+        "not_installed": "⚠ {tool} 未安裝",
+        "install_path": "安裝路徑: {path}",
+        "download": "⬇ 下載 {tool}"
+    },
+    "settings": {
+        "title": "設定",
+        "toc_visible": "顯示目錄",
+        "theme": {
+            "preset": "主題預設",
+            "dark_section": "深色",
+            "light_section": "淺色",
+            "custom_colors": "自訂顏色",
+            "reset_custom": "重設為預設",
+            "custom_section": "自訂",
+            "delete_custom": "刪除主題",
+            "save_custom_theme": "另存為自訂主題...",
+            "save_custom_theme_title": "儲存自訂主題",
+            "theme_name_label": "主題名稱:",
+            "duplicate": "建立複本...",
+            "reset_contrast": "重設",
+            "ui_contrast_offset": "UI 對比度偏移",
+            "show_more": "顯示更多...",
+            "show_less": "顯示更少..."
+        },
+        "font": {
+            "size": "字體大小",
+            "family": "字體系列",
+            "size_slider_hint": "向左或向右拖曳以調整大小"
+        },
+        "layout": {
+            "split_direction": "分割方向",
+            "horizontal": "水平（左 / 右）",
+            "vertical": "垂直（上 / 下）",
+            "pane_order": "窗格順序",
+            "editor_first": "編輯器優先",
+            "preview_first": "預覽優先",
+            "toc_position": "目錄位置",
+            "left": "左",
+            "right": "右"
+        },
+        "preview": {
+            "title": "預覽",
+            "heading": "# 範例標題",
+            "normal_text": "正常文字與",
+            "accent_link": "強調連結",
+            "secondary_text": "次要文字範例",
+            "code_sample": "fn main() { println!(\"你好!\"); }"
+        },
+        "color": {
+            "background": "背景",
+            "panel_background": "面板背景",
+            "text": "文字",
+            "text_secondary": "次要文字",
+            "accent": "強調",
+            "border": "邊框",
+            "selection": "選擇",
+            "code_background": "背景",
+            "preview_background": "背景",
+            "code_text": "文字",
+            "preview_text": "文字",
+            "highlight": "標記",
+            "section_system": "系統",
+            "section_code": "程式碼",
+            "section_preview": "預覽",
+            "group_basic": "基礎",
+            "group_text": "字體與排版",
+            "group_ui_elements": "UI 元素",
+            "title_bar_text": "標題列文字",
+            "active_file_highlight": "作用中檔案反白",
+            "success_text": "成功文字",
+            "warning_text": "警告文字",
+            "error_text": "錯誤文字",
+            "button_background": "按鈕背景",
+            "button_active_background": "按鈕作用中背景",
+            "splash_background": "啟動頁背景",
+            "splash_progress": "啟動頁進度",
+            "line_number_text": "行號文字",
+            "line_number_active_text": "作用中行號文字",
+            "current_line_background": "目前行背景",
+            "hover_line_background": "懸停行背景",
+            "file_tree_text": "檔案樹狀結構文字"
+        },
+        "workspace": {
+            "max_depth": "最大目錄掃描深度",
+            "ignored_directories": "忽略的目錄",
+            "ignored_directories_hint": "例如 node_modules, target, .git",
+            "visible_extensions": "顯示的副檔名",
+            "no_extension_label": "無副檔名",
+            "no_extension_warning_title": "警告",
+            "no_extension_warning": "不能保證沒有副檔名的檔案能正確顯示為 Markdown。此外，應用程式可能會因意外行為而崩潰。確定要啟用嗎？",
+            "extensionless_excludes": "忽略的無副檔名檔案",
+            "extensionless_excludes_hint": "以逗號分隔的精確檔案名稱清單..."
+        },
+        "tabs": [
+            {
+                "key": "theme",
+                "name": "主題"
+            },
+            {
+                "key": "font",
+                "name": "字型"
+            },
+            {
+                "key": "layout",
+                "name": "版面配置"
+            },
+            {
+                "key": "workspace",
+                "name": "工作區"
+            },
+            {
+                "key": "group_appearance",
+                "name": "外觀"
+            },
+            {
+                "key": "group_system",
+                "name": "系統"
+            },
+            {
+                "key": "updates",
+                "name": "更新"
+            },
+            {
+                "key": "behavior",
+                "name": "行為"
+            }
+        ],
+        "updates": {
+            "section_title": "更新",
+            "interval": "檢查間隔",
+            "never": "從不",
+            "daily": "每天",
+            "weekly": "每週",
+            "monthly": "每月",
+            "check_now": "立即檢查"
+        },
+        "behavior": {
+            "section_title": "行為",
+            "confirm_close_dirty_tab": "關閉未儲存的分頁前確認",
+            "scroll_sync": "同步編輯器和預覽捲動",
+            "auto_save": "自動儲存",
+            "auto_save_interval": "自動儲存間隔",
+            "seconds": "秒",
+            "close_confirm_title": "未儲存的變更",
+            "close_confirm_msg": "'{name}' 有未儲存的變更。是否捨棄？",
+            "close_confirm_discard": "捨棄",
+            "close_confirm_cancel": "取消",
+            "clear_http_cache": "清除所有快取",
+            "cache_retention_days": "快取保留天數",
+            "days_suffix": " 天",
+            "auto_refresh": "自動重新整理",
+            "auto_refresh_interval": "自動重新整理間隔"
+        }
+    },
+    "tab": {
+        "nav_prev": "移至上一個標籤頁",
+        "nav_next": "移至下一個標籤頁",
+        "close": "關閉",
+        "close_others": "關閉其他",
+        "close_all": "全部關閉",
+        "close_right": "關閉右側",
+        "close_left": "關閉左側",
+        "pin": "固定",
+        "unpin": "取消固定",
+        "restore_closed": "恢復關閉的分頁",
+        "remove_from_group": "從群組中移除",
+        "group_name_placeholder": "群組名稱",
+        "create_group_button": "建立",
+        "close_group": "關閉群組",
+        "ungroup": "取消群組",
+        "add_tab_to_group": "將分頁加入群組",
+        "add_to_group": "新增至群組",
+        "create_new_group": "新群組"
+    },
+    "search": {
+        "modal_title": "搜尋檔案",
+        "query_hint": "輸入檔名進行搜尋...",
+        "include_pattern_hint": "包含（正則表示式，以逗號分隔）",
+        "exclude_pattern_hint": "排除（正則表示式，以逗號分隔）",
+        "no_results": "沒有找到檔案。"
+    },
+    "toc": {
+        "title": "目錄",
+        "empty": "未找到標題。"
+    },
+    "export": {
+        "success": "已成功匯出 {format} 至 {path}",
+        "failed": "{format} 匯出失敗: {error}",
+        "tool_missing": "匯出工具無法使用。請確認已安裝 Chrome 或 Chromium 以匯出為 {format}。",
+        "temp_file_error": "建立暫存檔案失敗: {error}",
+        "write_error": "寫入內容失敗: {error}",
+        "persist_error": "持久化暫存檔案失敗",
+        "exporting": "⏳ {filename} 匯出中..."
+    },
+    "terms": {
+        "title": "服務條款",
+        "version_label": "版本: {version}",
+        "content": "Terms content.",
+        "accept": "接受",
+        "decline": "拒絶"
+    },
+    "dialog": {
+        "new_file_title": "建立新檔案",
+        "new_directory_title": "建立新資料夾",
+        "rename_title": "重新命名",
+        "delete_title": "刪除",
+        "delete_confirm_msg": "確定要刪除嗎？ {name}"
+    },
+    "markdown": {
+        "task_todo": "待辦 [ ]",
+        "task_in_progress": "進行中 [/]",
+        "task_done": "完成 [x]"
     }
-  },
-  "tab": {
-    "nav_prev": "移至上一個標籤頁",
-    "nav_next": "移至下一個標籤頁",
-    "close": "關閉",
-    "close_others": "關閉其他",
-    "close_all": "全部關閉",
-    "close_right": "關閉右側",
-    "close_left": "關閉左側",
-    "pin": "固定",
-    "unpin": "取消固定",
-    "restore_closed": "恢復關閉的分頁",
-    "remove_from_group": "從群組中移除",
-    "group_name_placeholder": "群組名稱",
-    "create_group_button": "建立",
-    "close_group": "關閉群組",
-    "ungroup": "取消群組",
-    "add_tab_to_group": "將分頁加入群組"
-  },
-  "search": {
-    "modal_title": "搜尋檔案",
-    "query_hint": "輸入檔名進行搜尋...",
-    "include_pattern_hint": "包含（正則表示式，以逗號分隔）",
-    "exclude_pattern_hint": "排除（正則表示式，以逗號分隔）",
-    "no_results": "沒有找到檔案。"
-  },
-  "toc": {
-    "title": "目錄",
-    "empty": "未找到標題。"
-  },
-  "export": {
-    "success": "已成功匯出 {format} 至 {path}",
-    "failed": "{format} 匯出失敗: {error}",
-    "tool_missing": "匯出工具無法使用。請確認已安裝 Chrome 或 Chromium 以匯出為 {format}。",
-    "temp_file_error": "建立暫存檔案失敗: {error}",
-    "write_error": "寫入內容失敗: {error}",
-    "persist_error": "持久化暫存檔案失敗",
-    "exporting": "⏳ {filename} 匯出中..."
-  },
-  "terms": {
-    "title": "服務條款",
-    "version_label": "版本: {version}",
-    "content": "Terms content.",
-    "accept": "接受",
-    "decline": "拒絶"
-  },
-  "dialog": {
-    "new_file_title": "建立新檔案",
-    "new_directory_title": "建立新資料夾",
-    "rename_title": "重新命名",
-    "delete_title": "刪除",
-    "delete_confirm_msg": "確定要刪除嗎？ {name}"
-  },
-  "markdown": {
-    "task_todo": "待辦 [ ]",
-    "task_in_progress": "進行中 [/]",
-    "task_done": "完成 [x]"
-  }
 }

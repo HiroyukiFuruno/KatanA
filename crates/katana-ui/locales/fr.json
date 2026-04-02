@@ -1,359 +1,361 @@
 {
-  "menu": {
-    "file": "Fichier",
-    "settings": "Paramètres",
-    "language": "Langue (Language)",
-    "open_workspace": "Ouvrir un espace de travail…",
-    "save": "Enregistrer",
-    "open_all": "Tout ouvrir",
-    "export": "Exporter",
-    "export_html": "Document HTML (.html)",
-    "export_pdf": "Document PDF (.pdf)",
-    "export_png": "Image PNG (.png)",
-    "export_jpg": "Image JPEG (.jpg)",
-    "about": "À propos de KatanA",
-    "quit": "Quitter KatanA",
-    "hide": "Masquer KatanA",
-    "hide_others": "Masquer les autres",
-    "show_all": "Tout afficher",
-    "help": "Aide",
-    "check_updates": "Vérifier les mises à jour...",
-    "release_notes": "Notes de version"
-  },
-  "about": {
-    "basic_info": "Informations de base",
-    "version": "Version",
-    "build": "Build",
-    "copyright": "Droits",
-    "runtime": "Exécution",
-    "platform": "Plateforme",
-    "architecture": "Architecture",
-    "rust": "Rust",
-    "license": "Licence",
-    "links": "Liens",
-    "source_code": "Code source",
-    "documentation": "Documentation",
-    "report_issue": "Signaler un problème",
-    "support": "Support",
-    "sponsor": "Soutenir"
-  },
-  "update": {
-    "title": "Vérifier les mises à jour",
-    "checking_for_updates": "Vérification des mises à jour...",
-    "update_available": "Mise à jour disponible",
-    "update_available_desc": "Une nouvelle version de KatanA ({version}) est disponible. Veuillez exécuter `brew update && brew upgrade --cask katana-desktop` pour mettre à jour.",
-    "release_notes_template": "### 🚀 Nouvelle version {version} disponible\n\nVeuillez consulter la [page des versions GitHub]({url}) pour plus de détails.\nCliquez sur \"Installer et redémarrer\" pour appliquer automatiquement la mise à jour.",
-    "up_to_date": "À jour",
-    "up_to_date_desc": "KatanA est à jour.",
-    "failed_to_check": "Échec de la vérification des mises à jour.",
-    "action_close": "OK",
-    "install_update": "Installer et Relancer",
-    "downloading": "Téléchargement de la mise à jour...",
-    "installing": "Installation de la mise à jour...",
-    "restart_confirm": "La mise à jour est prête. Redémarrer maintenant ?",
-    "action_later": "Plus tard",
-    "action_skip_version": "Ignorer cette version",
-    "action_restart": "Redémarrer maintenant"
-  },
-  "workspace": {
-    "no_workspace_open": "Aucun espace de travail ouvert.",
-    "no_document_selected": "Aucun document ouvert.",
-    "workspace_title": "Espace de travail",
-    "recent_workspaces": "Espaces de travail récents",
-    "metadata_tooltip": "Taille: {size} B\nModifié: {mod_time}",
-    "path_label": "Chemin",
-    "flat_view": "Vue plate"
-  },
-  "preview": {
-    "preview_title": "Aperçu",
-    "refresh_diagrams": "Actualiser les diagrammes",
-    "rendering": "Rendu de {kind} en cours...",
-    "no_preview": "(Aucun aperçu)",
-    "diagram_controller": {
-      "pan_up": "Monter",
-      "pan_down": "Descendre",
-      "pan_left": "Gauche",
-      "pan_right": "Droite",
-      "zoom_in": "Zoom avant",
-      "zoom_out": "Dézoomer",
-      "reset": "Réinitialiser",
-      "fullscreen": "Plein écran",
-      "close": "Fermer",
-      "trackpad_help": "Pavé tactile : pincement à 2 doigts pour zoomer, glissement à 1 doigt pour panoramique"
-    }
-  },
-  "plantuml": {
-    "downloading_plantuml": "⬇ Téléchargement de PlantUML JAR...",
-    "plantuml_installed": "✅ PlantUML installé. Actualisation de l'aperçu...",
-    "download_error": "❌ Erreur de téléchargement : "
-  },
-  "view_mode": {
-    "preview": "Aperçu",
-    "code": "Code",
-    "split": "Séparer"
-  },
-  "split_toggle": {
-    "horizontal": "Passer au fractionnement horizontal (gauche/droite)",
-    "vertical": "Passer au fractionnement vertical (haut/bas)",
-    "editor_first": "Placer l'éditeur à gauche/en haut",
-    "preview_first": "Placer l'aperçu à gauche/en haut"
-  },
-  "error": {
-    "missing_dependency": "⚠️ {tool_name} introuvable. Veuillez l'installer à l'aide de {install_hint}.",
-    "curl_launch_failed": "échec du lancement de curl",
-    "download_failed": "Échec du téléchargement",
-    "render_error": "⚠ [{kind}] {message}"
-  },
-  "status": {
-    "ready": "Prêt",
-    "saved": "Enregistré.",
-    "save_failed": "Échec de l'enregistrement : {error}",
-    "opened_workspace": "Espace de travail ouvert : {name}",
-    "cannot_open_workspace": "Impossible d'ouvrir l'espace de travail : {error}",
-    "cannot_open_file": "Impossible d'ouvrir le fichier : {error}",
-    "refresh_success": "Document actualisé depuis le disque.",
-    "refresh_skipped_dirty": "Actualisation ignorée pour préserver les modifications.",
-    "refresh_no_changes": "Aucune modification externe détectée.",
-    "refresh_failed": "Impossible d\"actualiser le document: {error}"
-  },
-  "action": {
-    "expand_all": "Tout développer",
-    "collapse_all": "Tout réduire",
-    "collapse_sidebar": "Réduire",
-    "refresh_workspace": "Actualiser",
-    "toggle_filter": "Filtre",
-    "remove_workspace": "Supprimer",
-    "recursive_expand": "Développement récursif",
-    "recursive_open_all": "Ouvrir tout",
-    "toggle_toc": "Table des matières",
-    "show_meta_info": "Infos",
-    "new_file": "Nouveau",
-    "new_directory": "Dossier",
-    "open": "Ouvrir",
-    "rename": "Renommer",
-    "delete": "Supprimer",
-    "copy_path": "Copier le chemin",
-    "reveal_in_os": "Afficher",
-    "save": "Enregistrer",
-    "cancel": "Annuler",
-    "discard": "Ignorer",
-    "confirm": "Confirmer",
-    "copy_relative_path": "Copier relatif",
-    "refresh_document": "Actualiser le document"
-  },
-  "ai": {
-    "ai_unconfigured": "[AI : non configuré]"
-  },
-  "tool": {
-    "not_installed": "⚠ {tool} n'est pas installé",
-    "install_path": "Chemin d'installation : {path}",
-    "download": "⬇ Télécharger {tool}"
-  },
-  "settings": {
-    "title": "Paramètres",
-    "toc_visible": "Afficher la table des matières",
-    "theme": {
-      "preset": "Préréglage du thème",
-      "dark_section": "Sombre",
-      "light_section": "Clair",
-      "custom_colors": "Couleurs personnalisées",
-      "reset_custom": "Réinitialiser",
-      "custom_section": "Personnalisé",
-      "delete_custom": "Supprimer le thème",
-      "save_custom_theme": "Enregistrer sous...",
-      "save_custom_theme_title": "Enregistrer le thème personnalisé",
-      "theme_name_label": "Nom du thème :",
-      "duplicate": "Dupliquer...",
-      "reset_contrast": "Réinitialiser",
-      "ui_contrast_offset": "Décalage de contraste de l'interface",
-      "show_more": "Afficher plus...",
-      "show_less": "Afficher moins..."
+    "menu": {
+        "file": "Fichier",
+        "settings": "Paramètres",
+        "language": "Langue (Language)",
+        "open_workspace": "Ouvrir un espace de travail…",
+        "save": "Enregistrer",
+        "open_all": "Tout ouvrir",
+        "export": "Exporter",
+        "export_html": "Document HTML (.html)",
+        "export_pdf": "Document PDF (.pdf)",
+        "export_png": "Image PNG (.png)",
+        "export_jpg": "Image JPEG (.jpg)",
+        "about": "À propos de KatanA",
+        "quit": "Quitter KatanA",
+        "hide": "Masquer KatanA",
+        "hide_others": "Masquer les autres",
+        "show_all": "Tout afficher",
+        "help": "Aide",
+        "check_updates": "Vérifier les mises à jour...",
+        "release_notes": "Notes de version"
     },
-    "font": {
-      "size": "Taille de la police",
-      "family": "Police",
-      "size_slider_hint": "Faites glisser vers la gauche ou la droite pour ajuster"
+    "about": {
+        "basic_info": "Informations de base",
+        "version": "Version",
+        "build": "Build",
+        "copyright": "Droits",
+        "runtime": "Exécution",
+        "platform": "Plateforme",
+        "architecture": "Architecture",
+        "rust": "Rust",
+        "license": "Licence",
+        "links": "Liens",
+        "source_code": "Code source",
+        "documentation": "Documentation",
+        "report_issue": "Signaler un problème",
+        "support": "Support",
+        "sponsor": "Soutenir"
     },
-    "layout": {
-      "split_direction": "Direction de fractionnement",
-      "horizontal": "Horizontal (Gauche / Droite)",
-      "vertical": "Vertical (Haut / Bas)",
-      "pane_order": "Ordre des volets",
-      "editor_first": "Éditeur en premier",
-      "preview_first": "Aperçu en premier",
-      "toc_position": "Position de la table des matières",
-      "left": "Gauche",
-      "right": "Droite"
-    },
-    "preview": {
-      "title": "Aperçu",
-      "heading": "# Exemple de titre",
-      "normal_text": "Texte normal et ",
-      "accent_link": "lien d'accentuation",
-      "secondary_text": "Exemple de texte secondaire",
-      "code_sample": "fn main() { println!(\"Bonjour!\"); }"
-    },
-    "color": {
-      "background": "Arrière-plan",
-      "panel_background": "Arrière-plan du panneau",
-      "text": "Texte",
-      "text_secondary": "Texte secondaire",
-      "accent": "Accentuation",
-      "border": "Bordure",
-      "selection": "Sélection",
-      "code_background": "Arrière-plan",
-      "preview_background": "Arrière-plan",
-      "code_text": "Texte",
-      "preview_text": "Texte",
-      "highlight": "Surbrillance",
-      "section_system": "Système",
-      "section_code": "Code",
-      "section_preview": "Aperçu",
-      "group_basic": "Général",
-      "group_text": "Texte et Typographie",
-      "group_ui_elements": "Éléments d'UI",
-      "title_bar_text": "Texte titre",
-      "active_file_highlight": "Fichier actif",
-      "success_text": "Succès",
-      "warning_text": "Avertissement",
-      "error_text": "Erreur",
-      "button_background": "Fond bouton",
-      "button_active_background": "Bouton actif",
-      "splash_background": "Fond splash",
-      "splash_progress": "Progression splash",
-      "line_number_text": "Numéros de ligne",
-      "line_number_active_text": "Ligne active",
-      "current_line_background": "Fond ligne",
-      "hover_line_background": "Survol",
-      "file_tree_text": "Arborescence"
+    "update": {
+        "title": "Vérifier les mises à jour",
+        "checking_for_updates": "Vérification des mises à jour...",
+        "update_available": "Mise à jour disponible",
+        "update_available_desc": "Une nouvelle version de KatanA ({version}) est disponible. Veuillez exécuter `brew update && brew upgrade --cask katana-desktop` pour mettre à jour.",
+        "release_notes_template": "### 🚀 Nouvelle version {version} disponible\n\nVeuillez consulter la [page des versions GitHub]({url}) pour plus de détails.\nCliquez sur \"Installer et redémarrer\" pour appliquer automatiquement la mise à jour.",
+        "up_to_date": "À jour",
+        "up_to_date_desc": "KatanA est à jour.",
+        "failed_to_check": "Échec de la vérification des mises à jour.",
+        "action_close": "OK",
+        "install_update": "Installer et Relancer",
+        "downloading": "Téléchargement de la mise à jour...",
+        "installing": "Installation de la mise à jour...",
+        "restart_confirm": "La mise à jour est prête. Redémarrer maintenant ?",
+        "action_later": "Plus tard",
+        "action_skip_version": "Ignorer cette version",
+        "action_restart": "Redémarrer maintenant"
     },
     "workspace": {
-      "max_depth": "Profondeur max. d'analyse",
-      "ignored_directories": "Ignorés",
-      "ignored_directories_hint": "Liste séparée par des virgules des répertoires à exclure de l'analyse (ex., .git, node_modules, .terraform)",
-      "visible_extensions": "Extensions visibles",
-      "no_extension_label": "Sans extension",
-      "no_extension_warning_title": "Avertissement",
-      "no_extension_warning": "Il n'y a aucune garantie que les fichiers sans extension puissent être affichés correctement comme Markdown. De plus, l'application peut planter en raison d'un comportement inattendu. Êtes-vous sûr de vouloir activer cela?",
-      "extensionless_excludes": "Sans extension",
-      "extensionless_excludes_hint": "Séparés par des virgules..."
+        "no_workspace_open": "Aucun espace de travail ouvert.",
+        "no_document_selected": "Aucun document ouvert.",
+        "workspace_title": "Espace de travail",
+        "recent_workspaces": "Espaces de travail récents",
+        "metadata_tooltip": "Taille: {size} B\nModifié: {mod_time}",
+        "path_label": "Chemin",
+        "flat_view": "Vue plate"
     },
-    "tabs": [
-      {
-        "key": "theme",
-        "name": "Thème"
-      },
-      {
-        "key": "font",
-        "name": "Police"
-      },
-      {
-        "key": "layout",
-        "name": "Disposition"
-      },
-      {
-        "key": "workspace",
-        "name": "Espace de travail"
-      },
-      {
-        "key": "group_appearance",
-        "name": "Apparence"
-      },
-      {
-        "key": "group_system",
-        "name": "Système"
-      },
-      {
-        "key": "updates",
-        "name": "Mises à jour"
-      },
-      {
-        "key": "behavior",
-        "name": "Comportement"
-      }
-    ],
-    "updates": {
-      "section_title": "Mises à jour",
-      "interval": "Intervalle",
-      "never": "Jamais",
-      "daily": "Quotidien",
-      "weekly": "Hebdomadaire",
-      "monthly": "Mensuel",
-      "check_now": "Vérifier"
+    "preview": {
+        "preview_title": "Aperçu",
+        "refresh_diagrams": "Actualiser les diagrammes",
+        "rendering": "Rendu de {kind} en cours...",
+        "no_preview": "(Aucun aperçu)",
+        "diagram_controller": {
+            "pan_up": "Monter",
+            "pan_down": "Descendre",
+            "pan_left": "Gauche",
+            "pan_right": "Droite",
+            "zoom_in": "Zoom avant",
+            "zoom_out": "Dézoomer",
+            "reset": "Réinitialiser",
+            "fullscreen": "Plein écran",
+            "close": "Fermer",
+            "trackpad_help": "Pavé tactile : pincement à 2 doigts pour zoomer, glissement à 1 doigt pour panoramique"
+        }
     },
-    "behavior": {
-      "section_title": "Comportement",
-      "confirm_close_dirty_tab": "Confirmer avant de fermer les onglets non enregistrés",
-      "scroll_sync": "Synchroniser le défilement de l'éditeur et de l'aperçu",
-      "auto_save": "Sauvegarde automatique",
-      "auto_save_interval": "Intervalle de sauvegarde automatique",
-      "seconds": "secondes",
-      "close_confirm_title": "Modifications non enregistrées",
-      "close_confirm_msg": "'{name}' a des modifications non enregistrées. Les supprimer ?",
-      "close_confirm_discard": "Supprimer",
-      "close_confirm_cancel": "Annuler",
-      "clear_http_cache": "Vider cache",
-      "cache_retention_days": "Rétention",
-      "days_suffix": " j",
-      "auto_refresh": "Actualisation automatique",
-      "auto_refresh_interval": "Intervalle d\"actualisation"
+    "plantuml": {
+        "downloading_plantuml": "⬇ Téléchargement de PlantUML JAR...",
+        "plantuml_installed": "✅ PlantUML installé. Actualisation de l'aperçu...",
+        "download_error": "❌ Erreur de téléchargement : "
+    },
+    "view_mode": {
+        "preview": "Aperçu",
+        "code": "Code",
+        "split": "Séparer"
+    },
+    "split_toggle": {
+        "horizontal": "Passer au fractionnement horizontal (gauche/droite)",
+        "vertical": "Passer au fractionnement vertical (haut/bas)",
+        "editor_first": "Placer l'éditeur à gauche/en haut",
+        "preview_first": "Placer l'aperçu à gauche/en haut"
+    },
+    "error": {
+        "missing_dependency": "⚠️ {tool_name} introuvable. Veuillez l'installer à l'aide de {install_hint}.",
+        "curl_launch_failed": "échec du lancement de curl",
+        "download_failed": "Échec du téléchargement",
+        "render_error": "⚠ [{kind}] {message}"
+    },
+    "status": {
+        "ready": "Prêt",
+        "saved": "Enregistré.",
+        "save_failed": "Échec de l'enregistrement : {error}",
+        "opened_workspace": "Espace de travail ouvert : {name}",
+        "cannot_open_workspace": "Impossible d'ouvrir l'espace de travail : {error}",
+        "cannot_open_file": "Impossible d'ouvrir le fichier : {error}",
+        "refresh_success": "Document actualisé depuis le disque.",
+        "refresh_skipped_dirty": "Actualisation ignorée pour préserver les modifications.",
+        "refresh_no_changes": "Aucune modification externe détectée.",
+        "refresh_failed": "Impossible d\"actualiser le document: {error}"
+    },
+    "action": {
+        "expand_all": "Tout développer",
+        "collapse_all": "Tout réduire",
+        "collapse_sidebar": "Réduire",
+        "refresh_workspace": "Actualiser",
+        "toggle_filter": "Filtre",
+        "remove_workspace": "Supprimer",
+        "recursive_expand": "Développement récursif",
+        "recursive_open_all": "Ouvrir tout",
+        "toggle_toc": "Table des matières",
+        "show_meta_info": "Infos",
+        "new_file": "Nouveau",
+        "new_directory": "Dossier",
+        "open": "Ouvrir",
+        "rename": "Renommer",
+        "delete": "Supprimer",
+        "copy_path": "Copier le chemin",
+        "reveal_in_os": "Afficher",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "discard": "Ignorer",
+        "confirm": "Confirmer",
+        "copy_relative_path": "Copier relatif",
+        "refresh_document": "Actualiser le document"
+    },
+    "ai": {
+        "ai_unconfigured": "[AI : non configuré]"
+    },
+    "tool": {
+        "not_installed": "⚠ {tool} n'est pas installé",
+        "install_path": "Chemin d'installation : {path}",
+        "download": "⬇ Télécharger {tool}"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "toc_visible": "Afficher la table des matières",
+        "theme": {
+            "preset": "Préréglage du thème",
+            "dark_section": "Sombre",
+            "light_section": "Clair",
+            "custom_colors": "Couleurs personnalisées",
+            "reset_custom": "Réinitialiser",
+            "custom_section": "Personnalisé",
+            "delete_custom": "Supprimer le thème",
+            "save_custom_theme": "Enregistrer sous...",
+            "save_custom_theme_title": "Enregistrer le thème personnalisé",
+            "theme_name_label": "Nom du thème :",
+            "duplicate": "Dupliquer...",
+            "reset_contrast": "Réinitialiser",
+            "ui_contrast_offset": "Décalage de contraste de l'interface",
+            "show_more": "Afficher plus...",
+            "show_less": "Afficher moins..."
+        },
+        "font": {
+            "size": "Taille de la police",
+            "family": "Police",
+            "size_slider_hint": "Faites glisser vers la gauche ou la droite pour ajuster"
+        },
+        "layout": {
+            "split_direction": "Direction de fractionnement",
+            "horizontal": "Horizontal (Gauche / Droite)",
+            "vertical": "Vertical (Haut / Bas)",
+            "pane_order": "Ordre des volets",
+            "editor_first": "Éditeur en premier",
+            "preview_first": "Aperçu en premier",
+            "toc_position": "Position de la table des matières",
+            "left": "Gauche",
+            "right": "Droite"
+        },
+        "preview": {
+            "title": "Aperçu",
+            "heading": "# Exemple de titre",
+            "normal_text": "Texte normal et ",
+            "accent_link": "lien d'accentuation",
+            "secondary_text": "Exemple de texte secondaire",
+            "code_sample": "fn main() { println!(\"Bonjour!\"); }"
+        },
+        "color": {
+            "background": "Arrière-plan",
+            "panel_background": "Arrière-plan du panneau",
+            "text": "Texte",
+            "text_secondary": "Texte secondaire",
+            "accent": "Accentuation",
+            "border": "Bordure",
+            "selection": "Sélection",
+            "code_background": "Arrière-plan",
+            "preview_background": "Arrière-plan",
+            "code_text": "Texte",
+            "preview_text": "Texte",
+            "highlight": "Surbrillance",
+            "section_system": "Système",
+            "section_code": "Code",
+            "section_preview": "Aperçu",
+            "group_basic": "Général",
+            "group_text": "Texte et Typographie",
+            "group_ui_elements": "Éléments d'UI",
+            "title_bar_text": "Texte titre",
+            "active_file_highlight": "Fichier actif",
+            "success_text": "Succès",
+            "warning_text": "Avertissement",
+            "error_text": "Erreur",
+            "button_background": "Fond bouton",
+            "button_active_background": "Bouton actif",
+            "splash_background": "Fond splash",
+            "splash_progress": "Progression splash",
+            "line_number_text": "Numéros de ligne",
+            "line_number_active_text": "Ligne active",
+            "current_line_background": "Fond ligne",
+            "hover_line_background": "Survol",
+            "file_tree_text": "Arborescence"
+        },
+        "workspace": {
+            "max_depth": "Profondeur max. d'analyse",
+            "ignored_directories": "Ignorés",
+            "ignored_directories_hint": "Liste séparée par des virgules des répertoires à exclure de l'analyse (ex., .git, node_modules, .terraform)",
+            "visible_extensions": "Extensions visibles",
+            "no_extension_label": "Sans extension",
+            "no_extension_warning_title": "Avertissement",
+            "no_extension_warning": "Il n'y a aucune garantie que les fichiers sans extension puissent être affichés correctement comme Markdown. De plus, l'application peut planter en raison d'un comportement inattendu. Êtes-vous sûr de vouloir activer cela?",
+            "extensionless_excludes": "Sans extension",
+            "extensionless_excludes_hint": "Séparés par des virgules..."
+        },
+        "tabs": [
+            {
+                "key": "theme",
+                "name": "Thème"
+            },
+            {
+                "key": "font",
+                "name": "Police"
+            },
+            {
+                "key": "layout",
+                "name": "Disposition"
+            },
+            {
+                "key": "workspace",
+                "name": "Espace de travail"
+            },
+            {
+                "key": "group_appearance",
+                "name": "Apparence"
+            },
+            {
+                "key": "group_system",
+                "name": "Système"
+            },
+            {
+                "key": "updates",
+                "name": "Mises à jour"
+            },
+            {
+                "key": "behavior",
+                "name": "Comportement"
+            }
+        ],
+        "updates": {
+            "section_title": "Mises à jour",
+            "interval": "Intervalle",
+            "never": "Jamais",
+            "daily": "Quotidien",
+            "weekly": "Hebdomadaire",
+            "monthly": "Mensuel",
+            "check_now": "Vérifier"
+        },
+        "behavior": {
+            "section_title": "Comportement",
+            "confirm_close_dirty_tab": "Confirmer avant de fermer les onglets non enregistrés",
+            "scroll_sync": "Synchroniser le défilement de l'éditeur et de l'aperçu",
+            "auto_save": "Sauvegarde automatique",
+            "auto_save_interval": "Intervalle de sauvegarde automatique",
+            "seconds": "secondes",
+            "close_confirm_title": "Modifications non enregistrées",
+            "close_confirm_msg": "'{name}' a des modifications non enregistrées. Les supprimer ?",
+            "close_confirm_discard": "Supprimer",
+            "close_confirm_cancel": "Annuler",
+            "clear_http_cache": "Vider cache",
+            "cache_retention_days": "Rétention",
+            "days_suffix": " j",
+            "auto_refresh": "Actualisation automatique",
+            "auto_refresh_interval": "Intervalle d\"actualisation"
+        }
+    },
+    "tab": {
+        "nav_prev": "Passer à l'onglet précédent",
+        "nav_next": "Passer à l'onglet suivant",
+        "close": "Fermer",
+        "close_others": "Fermer les autres",
+        "close_all": "Tout fermer",
+        "close_right": "Fermer à droite",
+        "close_left": "Fermer à gauche",
+        "pin": "Épingler",
+        "unpin": "Désépingler",
+        "restore_closed": "Restaurer l'onglet fermé",
+        "remove_from_group": "Supprimer du groupe",
+        "group_name_placeholder": "Nom du groupe",
+        "create_group_button": "Créer",
+        "close_group": "Fermer le groupe",
+        "ungroup": "Dégrouper",
+        "add_tab_to_group": "Ajouter l'onglet au groupe",
+        "add_to_group": "Ajouter au groupe",
+        "create_new_group": "Nouveau groupe"
+    },
+    "search": {
+        "modal_title": "Rechercher des fichiers",
+        "query_hint": "Tapez pour rechercher par nom de fichier...",
+        "include_pattern_hint": "Inclure (regex, séparées par des virgules)",
+        "exclude_pattern_hint": "Exclure (regex, séparées par des virgules)",
+        "no_results": "Aucun fichier trouvé."
+    },
+    "toc": {
+        "title": "Table des matières",
+        "empty": "Aucun titre trouvé"
+    },
+    "export": {
+        "success": "Exporté vers {format} : {path}",
+        "failed": "L'exportation vers {format} a échoué : {error}",
+        "tool_missing": "L'outil d'exportation n'est pas disponible. Veuillez vous assurer que Chrome ou Chromium est installé pour exporter en {format}.",
+        "temp_file_error": "Échec de création du fichier temporaire : {error}",
+        "write_error": "Échec de l'écriture : {error}",
+        "persist_error": "Échec de persistance du fichier temporaire",
+        "exporting": "⏳ Export de {filename} en cours..."
+    },
+    "terms": {
+        "title": "Conditions d'utilisation",
+        "version_label": "Version : {version}",
+        "content": "Terms content.",
+        "accept": "Accepter",
+        "decline": "Décliner"
+    },
+    "dialog": {
+        "new_file_title": "Créer fichier",
+        "new_directory_title": "Créer dossier",
+        "rename_title": "Renommer",
+        "delete_title": "Supprimer",
+        "delete_confirm_msg": "Sûr de supprimer ? {name}"
+    },
+    "markdown": {
+        "task_todo": "Tâche [ ]",
+        "task_in_progress": "En cours [/]",
+        "task_done": "Terminé [x]"
     }
-  },
-  "tab": {
-    "nav_prev": "Passer à l'onglet précédent",
-    "nav_next": "Passer à l'onglet suivant",
-    "close": "Fermer",
-    "close_others": "Fermer les autres",
-    "close_all": "Tout fermer",
-    "close_right": "Fermer à droite",
-    "close_left": "Fermer à gauche",
-    "pin": "Épingler",
-    "unpin": "Désépingler",
-    "restore_closed": "Restaurer l'onglet fermé",
-    "remove_from_group": "Supprimer du groupe",
-    "group_name_placeholder": "Nom du groupe",
-    "create_group_button": "Créer",
-    "close_group": "Fermer le groupe",
-    "ungroup": "Dégrouper",
-    "add_tab_to_group": "Ajouter l'onglet au groupe"
-  },
-  "search": {
-    "modal_title": "Rechercher des fichiers",
-    "query_hint": "Tapez pour rechercher par nom de fichier...",
-    "include_pattern_hint": "Inclure (regex, séparées par des virgules)",
-    "exclude_pattern_hint": "Exclure (regex, séparées par des virgules)",
-    "no_results": "Aucun fichier trouvé."
-  },
-  "toc": {
-    "title": "Table des matières",
-    "empty": "Aucun titre trouvé"
-  },
-  "export": {
-    "success": "Exporté vers {format} : {path}",
-    "failed": "L'exportation vers {format} a échoué : {error}",
-    "tool_missing": "L'outil d'exportation n'est pas disponible. Veuillez vous assurer que Chrome ou Chromium est installé pour exporter en {format}.",
-    "temp_file_error": "Échec de création du fichier temporaire : {error}",
-    "write_error": "Échec de l'écriture : {error}",
-    "persist_error": "Échec de persistance du fichier temporaire",
-    "exporting": "⏳ Export de {filename} en cours..."
-  },
-  "terms": {
-    "title": "Conditions d'utilisation",
-    "version_label": "Version : {version}",
-    "content": "Terms content.",
-    "accept": "Accepter",
-    "decline": "Décliner"
-  },
-  "dialog": {
-    "new_file_title": "Créer fichier",
-    "new_directory_title": "Créer dossier",
-    "rename_title": "Renommer",
-    "delete_title": "Supprimer",
-    "delete_confirm_msg": "Sûr de supprimer ? {name}"
-  },
-  "markdown": {
-    "task_todo": "Tâche [ ]",
-    "task_in_progress": "En cours [/]",
-    "task_done": "Terminé [x]"
-  }
 }

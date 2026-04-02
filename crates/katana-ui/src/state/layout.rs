@@ -14,6 +14,7 @@ pub struct LayoutState {
     pub delete_modal: Option<PathBuf>,
     pub pending_close_confirm: Option<usize>,
     pub rename_tab_group_modal: Option<(usize, String)>,
+    pub inline_rename_group: Option<String>,
 }
 
 impl Default for LayoutState {
@@ -37,6 +38,7 @@ impl LayoutState {
             delete_modal: None,
             pending_close_confirm: None,
             rename_tab_group_modal: None,
+            inline_rename_group: None,
         }
     }
 }

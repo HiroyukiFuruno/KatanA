@@ -224,11 +224,10 @@ impl ActionOps for KatanaApp {
                 }
             }
             AppAction::RefreshDocument { is_manual } => {
-                let Some(doc) = self.state.active_document_mut() else {
+                let Some(idx) = self.state.document.active_doc_idx else {
                     return;
                 };
-
-                let path = doc.path.clone();
+                let path = self.state.document.open_documents[idx].path.clone();
 
                 // Skip refresh for virtual documents (e.g. "Katana://ChangeLog v0.11.0")
                 // that don't exist on the filesystem.
@@ -239,7 +238,9 @@ impl ActionOps for KatanaApp {
                 match std::fs::read_to_string(&path) {
                     Ok(new_content) => {
                         let new_hash = katana_core::document::compute_content_hash(&new_content);
+                        let mut did_update_buffer = false;
 
+                        let doc = &mut self.state.document.open_documents[idx];
                         if doc.last_imported_disk_hash == Some(new_hash) {
                             if is_manual {
                                 self.state.layout.status_message = Some((
@@ -256,9 +257,6 @@ impl ActionOps for KatanaApp {
                                         crate::app_state::StatusType::Warning,
                                     ));
                                 }
-
-                                // Since content changed externally, diagram redraw might be required if it's dependent (very edge case)
-                                // Standard behavior remains to keep dirty buffer.
                             } else {
                                 doc.buffer = new_content.clone();
                                 doc.last_imported_disk_hash = Some(new_hash);
@@ -267,16 +265,36 @@ impl ActionOps for KatanaApp {
                                     crate::i18n::get().status.refresh_success.clone(),
                                     crate::app_state::StatusType::Success,
                                 ));
-
-                                let concurrency = self
-                                    .state
-                                    .config
-                                    .settings
-                                    .settings()
-                                    .performance
-                                    .diagram_concurrency;
-                                self.full_refresh_preview(&path, &new_content, true, concurrency);
+                                did_update_buffer = true;
                             }
+                        }
+
+                        if is_manual {
+                            use katana_platform::cache::CacheFacade;
+                            katana_platform::cache::DefaultCacheService::default()
+                                .clear_diagram_cache();
+                            ctx.forget_all_images();
+                            crate::icon::IconRegistry::install(ctx);
+                            for tab in &mut self.tab_previews {
+                                tab.hash = 0;
+                                for viewer in tab.pane.viewer_states.iter_mut() {
+                                    viewer.texture = None;
+                                }
+                                tab.pane.fullscreen_viewer_state.texture = None;
+                            }
+                        }
+
+                        if did_update_buffer || is_manual {
+                            let concurrency = self
+                                .state
+                                .config
+                                .settings
+                                .settings()
+                                .performance
+                                .diagram_concurrency;
+                            let buffer_clone =
+                                self.state.document.open_documents[idx].buffer.clone();
+                            self.full_refresh_preview(&path, &buffer_clone, true, concurrency);
                         }
                     }
                     Err(e) => {
@@ -342,7 +360,7 @@ impl ActionOps for KatanaApp {
                             }
                             keep.push(doc);
                         } else {
-                            self.state.push_recently_closed(doc.path);
+                            self.state.push_recently_closed(doc.path, doc.is_pinned);
                         }
                     }
                     self.state.document.open_documents = keep;
@@ -359,7 +377,7 @@ impl ActionOps for KatanaApp {
                     if doc.is_pinned {
                         keep.push(doc);
                     } else {
-                        self.state.push_recently_closed(doc.path);
+                        self.state.push_recently_closed(doc.path, doc.is_pinned);
                     }
                 }
                 self.state.document.open_documents = keep;
@@ -380,7 +398,7 @@ impl ActionOps for KatanaApp {
                     if i <= idx || doc.is_pinned {
                         keep.push(doc);
                     } else {
-                        self.state.push_recently_closed(doc.path);
+                        self.state.push_recently_closed(doc.path, doc.is_pinned);
                     }
                 }
                 self.state.document.open_documents = keep;
@@ -407,7 +425,7 @@ impl ActionOps for KatanaApp {
                     if i >= idx || doc.is_pinned {
                         keep.push(doc);
                     } else {
-                        self.state.push_recently_closed(doc.path);
+                        self.state.push_recently_closed(doc.path, doc.is_pinned);
                     }
                 }
                 self.state.document.open_documents = keep;
@@ -458,8 +476,37 @@ impl ActionOps for KatanaApp {
                 self.save_workspace_state();
             }
             AppAction::RestoreClosedDocument => {
-                if let Some(path) = self.state.document.recently_closed_tabs.pop_back() {
-                    self.handle_select_document(path, true);
+                if let Some((path, is_pinned)) = self.state.document.recently_closed_tabs.pop_back()
+                {
+                    self.handle_select_document(path.clone(), true);
+                    if let Some(doc) = self
+                        .state
+                        .document
+                        .open_documents
+                        .iter_mut()
+                        .find(|d| d.path == path)
+                    {
+                        doc.is_pinned = is_pinned;
+                    }
+
+                    let active_path = self.state.active_document().map(|d| d.path.clone());
+                    self.state
+                        .document
+                        .open_documents
+                        .sort_by_key(|d| !d.is_pinned);
+                    if let Some(path) = active_path {
+                        if let Some(new_idx) = self
+                            .state
+                            .document
+                            .open_documents
+                            .iter()
+                            .position(|d| d.path == path)
+                        {
+                            self.state.document.active_doc_idx = Some(new_idx);
+                        }
+                    }
+
+                    self.save_workspace_state();
                 }
             }
             AppAction::ReorderDocument {
@@ -471,6 +518,7 @@ impl ActionOps for KatanaApp {
                 if from < len && to <= len && from != to {
                     let active_path = self.state.active_document().map(|d| d.path.clone());
                     let doc = self.state.document.open_documents.remove(from);
+                    let is_doc_pinned = doc.is_pinned;
 
                     if let Some(group_option) = new_group_id {
                         let doc_str = doc.path.to_string_lossy().to_string();
@@ -478,20 +526,28 @@ impl ActionOps for KatanaApp {
                             g.members.retain(|m| m != &doc_str);
                         }
                         if let Some(target_g_id) = group_option {
-                            if let Some(g) = self
-                                .state
-                                .document
-                                .tab_groups
-                                .iter_mut()
-                                .find(|g| g.id == target_g_id)
-                            {
-                                g.members.push(doc_str);
+                            if !is_doc_pinned {
+                                if let Some(g) = self
+                                    .state
+                                    .document
+                                    .tab_groups
+                                    .iter_mut()
+                                    .find(|g| g.id == target_g_id)
+                                {
+                                    g.members.push(doc_str);
+                                }
                             }
                         }
                     }
 
                     let actual_to = if to > from { to - 1 } else { to };
                     self.state.document.open_documents.insert(actual_to, doc);
+
+                    self.state
+                        .document
+                        .open_documents
+                        .sort_by_key(|d| !d.is_pinned);
+
                     if let Some(path) = active_path {
                         if let Some(new_idx) = self
                             .state
@@ -504,6 +560,8 @@ impl ActionOps for KatanaApp {
                         }
                     }
                 } else if from == to {
+                    let active_path = self.state.active_document().map(|d| d.path.clone());
+                    let is_doc_pinned = self.state.document.open_documents[from].is_pinned;
                     if let Some(group_option) = new_group_id {
                         let doc_str = self.state.document.open_documents[from]
                             .path
@@ -513,15 +571,33 @@ impl ActionOps for KatanaApp {
                             g.members.retain(|m| m != &doc_str);
                         }
                         if let Some(target_g_id) = group_option {
-                            if let Some(g) = self
-                                .state
-                                .document
-                                .tab_groups
-                                .iter_mut()
-                                .find(|g| g.id == target_g_id)
-                            {
-                                g.members.push(doc_str);
+                            if !is_doc_pinned {
+                                if let Some(g) = self
+                                    .state
+                                    .document
+                                    .tab_groups
+                                    .iter_mut()
+                                    .find(|g| g.id == target_g_id)
+                                {
+                                    g.members.push(doc_str);
+                                }
                             }
+                        }
+                    }
+
+                    self.state
+                        .document
+                        .open_documents
+                        .sort_by_key(|d| !d.is_pinned);
+                    if let Some(path) = active_path {
+                        if let Some(new_idx) = self
+                            .state
+                            .document
+                            .open_documents
+                            .iter()
+                            .position(|d| d.path == path)
+                        {
+                            self.state.document.active_doc_idx = Some(new_idx);
                         }
                     }
                 }
@@ -682,17 +758,38 @@ impl ActionOps for KatanaApp {
                 initial_member,
             } => {
                 let id = format!("group_{}", chrono::Utc::now().timestamp_micros());
-                let members = vec![initial_member.to_string_lossy().to_string()];
+                let member_str = initial_member.to_string_lossy().to_string();
+
+                // Remove from any existing group first
+                for g in &mut self.state.document.tab_groups {
+                    g.members.retain(|m| m != &member_str);
+                }
+
+                // Unpin if it was pinned
+                if let Some(doc) = self
+                    .state
+                    .document
+                    .open_documents
+                    .iter_mut()
+                    .find(|d| d.path == initial_member)
+                {
+                    doc.is_pinned = false;
+                }
+
+                let members = vec![member_str];
                 self.state
                     .document
                     .tab_groups
                     .push(crate::state::document::TabGroup {
-                        id,
+                        id: id.clone(),
                         name,
                         color_hex,
                         collapsed: false,
                         members,
                     });
+
+                // Trigger inline edit popup
+                self.state.layout.inline_rename_group = Some(id);
                 self.save_workspace_state();
             }
             AppAction::AddTabToGroup { group_id, member } => {
@@ -700,6 +797,16 @@ impl ActionOps for KatanaApp {
                 // Remove from any existing group first
                 for g in &mut self.state.document.tab_groups {
                     g.members.retain(|m| m != &member_str);
+                }
+                // Unpin if it was pinned
+                if let Some(doc) = self
+                    .state
+                    .document
+                    .open_documents
+                    .iter_mut()
+                    .find(|d| d.path == member)
+                {
+                    doc.is_pinned = false;
                 }
                 if let Some(g) = self
                     .state
@@ -717,6 +824,10 @@ impl ActionOps for KatanaApp {
                 for g in &mut self.state.document.tab_groups {
                     g.members.retain(|m| m != &member_str);
                 }
+                self.state
+                    .document
+                    .tab_groups
+                    .retain(|g| !g.members.is_empty());
                 self.save_workspace_state();
             }
             AppAction::RenameTabGroup { group_id, new_name } => {
@@ -730,6 +841,9 @@ impl ActionOps for KatanaApp {
                     g.name = new_name;
                 }
                 self.save_workspace_state();
+            }
+            AppAction::ClearInlineRename => {
+                self.state.layout.inline_rename_group = None;
             }
             AppAction::RecolorTabGroup {
                 group_id,
@@ -746,6 +860,7 @@ impl ActionOps for KatanaApp {
                 }
                 self.save_workspace_state();
             }
+
             AppAction::CloseTabGroup(group_id) => {
                 let mut members_to_close = Vec::new();
                 if let Some(g) = self
@@ -765,11 +880,7 @@ impl ActionOps for KatanaApp {
                     for doc in old_docs.into_iter() {
                         let doc_str = doc.path.to_string_lossy().to_string();
                         if members_to_close.contains(&doc_str) {
-                            if doc.is_dirty {
-                                self.state.push_recently_closed(doc.path); // Simplified, dirty handling is complex, rely on standard flow or force close
-                            } else {
-                                self.state.push_recently_closed(doc.path);
-                            }
+                            self.state.push_recently_closed(doc.path, doc.is_pinned);
                         } else {
                             keep.push(doc);
                         }
@@ -782,7 +893,17 @@ impl ActionOps for KatanaApp {
                             .open_documents
                             .iter()
                             .position(|d| d.path == p);
-                        self.state.document.active_doc_idx = new_idx.or(Some(0));
+                        if !self.state.document.open_documents.is_empty() {
+                            self.state.document.active_doc_idx =
+                                new_idx.or(Some(self.state.document.open_documents.len() - 1));
+                        } else {
+                            self.state.document.active_doc_idx = None;
+                        }
+                    } else if !self.state.document.open_documents.is_empty() {
+                        self.state.document.active_doc_idx =
+                            Some(self.state.document.open_documents.len() - 1);
+                    } else {
+                        self.state.document.active_doc_idx = None;
                     }
                 }
                 self.state.document.tab_groups.retain(|g| g.id != group_id);
@@ -793,6 +914,8 @@ impl ActionOps for KatanaApp {
                 self.save_workspace_state();
             }
             AppAction::ToggleCollapseTabGroup(group_id) => {
+                let mut collapsed = false;
+                let mut group_members = Vec::new();
                 if let Some(g) = self
                     .state
                     .document
@@ -801,9 +924,37 @@ impl ActionOps for KatanaApp {
                     .find(|g| g.id == group_id)
                 {
                     g.collapsed = !g.collapsed;
+                    collapsed = g.collapsed;
+                    group_members = g.members.clone();
+                }
+
+                // If we just collapsed a group and it contains the currently active tab,
+                // we should switch to another tab outside this group.
+                if collapsed {
+                    let active_idx = self.state.document.active_doc_idx.unwrap_or(0);
+                    if let Some(active_doc) = self.state.document.open_documents.get(active_idx) {
+                        let path_str = active_doc.path.to_string_lossy().to_string();
+                        if group_members.contains(&path_str) {
+                            if let Some(new_idx) =
+                                self.state.document.open_documents.iter().position(|d| {
+                                    let d_str = d.path.to_string_lossy().to_string();
+                                    !group_members.contains(&d_str)
+                                })
+                            {
+                                self.state.document.active_doc_idx = Some(new_idx);
+                            } else {
+                                // If no tabs exist outside, we just clear the active document
+                                // which allows the UI to show an empty state, properly collapsing the group
+                                self.state.document.active_doc_idx = None;
+                            }
+                        }
+                    } else if self.state.document.open_documents.is_empty() {
+                        self.state.document.active_doc_idx = None;
+                    }
                 }
                 self.save_workspace_state();
             }
+
             AppAction::None => {}
             AppAction::InstallUpdate => {
                 if let Some(release) = &self.state.update.available {

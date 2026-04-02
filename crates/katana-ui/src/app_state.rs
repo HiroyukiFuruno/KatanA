@@ -115,12 +115,13 @@ pub enum AppAction {
         group_id: String,
         new_name: String,
     },
-    CloseTabGroup(String),
-    UngroupTabGroup(String),
+    ClearInlineRename,
     RecolorTabGroup {
         group_id: String,
         new_color: String,
     },
+    CloseTabGroup(String),
+    UngroupTabGroup(String),
     ToggleCollapseTabGroup(String),
     None,
 }
@@ -303,10 +304,12 @@ impl AppState {
         }
     }
 
-    pub fn push_recently_closed(&mut self, path: std::path::PathBuf) {
+    pub fn push_recently_closed(&mut self, path: std::path::PathBuf, is_pinned: bool) {
         if self.document.recently_closed_tabs.len() >= DocumentState::MAX_RECENTLY_CLOSED_TABS {
             self.document.recently_closed_tabs.pop_front();
         }
-        self.document.recently_closed_tabs.push_back(path);
+        self.document
+            .recently_closed_tabs
+            .push_back((path, is_pinned));
     }
 }

@@ -459,6 +459,7 @@ impl<'a> TabToolbar<'a> {
                 app.state.document.active_doc_idx,
                 &app.state.document.recently_closed_tabs,
                 &app.state.document.tab_groups,
+                &app.state.layout.inline_rename_group,
             )
             .show(ui);
             if let Some(a) = tab_action {

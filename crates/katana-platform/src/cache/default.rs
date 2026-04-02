@@ -222,6 +222,25 @@ impl CacheFacade for DefaultCacheService {
 
         Ok(())
     }
+
+    fn clear_diagram_cache(&self) {
+        let Ok(entries) = std::fs::read_dir(&self.persistent_base_path) else {
+            return;
+        };
+
+        for entry in entries.flatten() {
+            let Ok(file_name) = entry.file_name().into_string() else {
+                continue;
+            };
+            if file_name.starts_with("diagram_") && file_name.ends_with(".json") {
+                let _ = std::fs::remove_file(entry.path());
+            }
+        }
+
+        // Also remove from in-memory cache
+        let mut map = write_guard(&self.persistent);
+        map.retain(|(k, _)| !k.starts_with("diagram:"));
+    }
 }
 
 #[cfg(test)]
@@ -271,6 +290,46 @@ mod tests {
             cache2.get_persistent("workspace_tabs:test1"),
             Some("val2".to_string())
         );
+    }
+
+    #[test]
+    fn test_clear_diagram_cache() {
+        let tmp = TempDir::new().expect("Failed to create temp dir");
+        let path = tmp.path().join("cache.json");
+        let cache = DefaultCacheService::new(path.clone());
+
+        let diagram_key = "diagram:/dummy/path:drawio:dark:abc123hash";
+        cache
+            .set_persistent(diagram_key, "svg data".to_string())
+            .expect("Failed to set");
+
+        assert_eq!(
+            cache.get_persistent(diagram_key),
+            Some("svg data".to_string())
+        );
+
+        // The file should exist
+        let mut found_file = false;
+        let kv_dir = tmp.path().join("kv");
+        for entry in std::fs::read_dir(&kv_dir).unwrap().flatten() {
+            if entry.file_name().to_string_lossy().starts_with("diagram_") {
+                found_file = true;
+            }
+        }
+        assert!(found_file);
+
+        // Clear it
+        cache.clear_diagram_cache();
+
+        assert_eq!(cache.get_persistent(diagram_key), None);
+
+        // Check if file is removed
+        let remaining_diagrams = std::fs::read_dir(&kv_dir)
+            .unwrap()
+            .flatten()
+            .filter(|e| e.file_name().to_string_lossy().starts_with("diagram_"))
+            .count();
+        assert_eq!(remaining_diagrams, 0, "Diagram file was not deleted");
     }
 
     #[test]

@@ -900,4 +900,16 @@ mod tests {
         assert!(!default_markdown_task_in_progress().is_empty());
         assert!(!default_markdown_task_done().is_empty());
     }
+
+    #[test]
+    fn test_tab_group_defaults() {
+        assert_eq!(default_create_new_group(), "Create New Group");
+        assert_eq!(default_add_to_group(), "Add to '{group_name}'");
+        assert_eq!(default_remove_from_group(), "Remove from Group");
+        assert_eq!(default_group_name_placeholder(), "Group name");
+        assert_eq!(default_create_group_button(), "Create");
+        assert_eq!(default_add_tab_to_group(), "Add tab to group");
+        assert_eq!(default_close_group(), "Close group");
+        assert_eq!(default_ungroup(), "Ungroup");
+    }
 }

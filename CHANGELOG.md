@@ -85,13 +85,12 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ### 🐛 Bug Fixes
 
 - Fixed an issue where the new version update dialog rendered English markdown text instead of localized strings.
-- Resolved multiple Clippy lint warnings to stabilize the CI/CD pipeline.
 
 ## [0.8.8] - 2026-03-30 14:30:00 (UTC)
 
 ### 🔧 System
 
-- Migrated vendored Markdown preview dependencies to a structured Git subtree to improve long-term maintainability and patch separation.
+- Optimized internal dependencies for the Markdown preview engine, improving long-term maintainability and stability.
 
 ## [0.8.7] - 2026-03-30 13:25:00 (UTC)
 
@@ -101,15 +100,10 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ## [0.8.6] - 2026-03-30 10:00:00 (UTC)
 
-### ♻️ Refactoring
+### 🔧 System
 
-- Decomposed monolithic UI modules (`workspace`, `editor`, `top_bar`) into separate `ui.rs` and `logic.rs` layers for improved testability and maintainability.
-- Extracted pure logic functions (tab drag-drop calculations, scroll synchronization, line-to-char mapping, color resolution) into dedicated testable modules with comprehensive unit tests.
-- Consolidated 7 workspace panel files into 2 cohesive modules (ui + logic), reducing code fragmentation.
-
-### 🧪 Testing
-
-- Added unit tests for editor logic (scroll sync, line mapping, highlight colors) and tab bar logic (drop-point computation, drag-drop resolution, title formatting).
+- Restructured internal UI logic and rendering pipelines to significantly improve stability and maintainability for future enhancements.
+- Expanded automated test coverage to ensure better quality assurance across updates.
 
 ## [0.8.5] - 2026-03-30 02:35:00 (UTC)
 
@@ -262,7 +256,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ### 🐛 Bug Fixes
 
 - Resolve a critical degradation where the close tab button was rendered unclickable due to the drag-and-drop interaction overlay.
-- Fix layout regressions where the window stretched horizontally out-of-bounds while the title bar rendered insufficiently short by enforcing rigorous geometry combinations (`fixed_size` with `min_width`).
+- Fixed layout regressions where the window stretched horizontally out-of-bounds and the title bar rendered insufficiently short.
 
 ## [0.7.3] - 2026-03-26 00:30:00 (UTC)
 
@@ -277,20 +271,20 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🐛 Bug Fixes
 
-- Fix syntax highlight background color rendering issue caused by `syntect` override by switching to direct `Painter::rect_filled` layer drawing.
+- Fixed an issue where the background color for syntax highlighting was improperly rendered.
 
 ## [0.7.2] - 2026-03-25 21:37:57 (UTC)
 
 ### 🐛 Bug Fixes
 
-- Fix update checker dialog stretching vertically in the “up to date” state. Changed `ScrollArea::auto_shrink` from `[false; 2]` to `[true, true]` and added `default_height(0.0)` to the `egui::Window` so the window height follows content size. Added regression test to prevent recurrence.
+- Fixed a bug where the update checker dialog would stretch vertically indefinitely in the \"up to date\" state. Added preventive measures against recurrence.
 
 ## [0.7.1] - 2026-03-25 20:00:00 (UTC)
 
 ### 🐛 Bug Fixes
 
-- Eliminated reliance on `api.github.com`, resolving the fundamental architecture flaw that forced rate-limited `HTTP 403 Forbidden` API crashes on consumer networks.
-- Repaired an `egui::Window` memory constraint bug that caused the update checker modal to unpredictably stretch vertically with blank whitespace.
+- Eliminated reliance on rate-limited connections, resolving a fundamental architecture flaw that caused false network errors and blocked updates.
+- Repaired a layout calculation bug that caused the update checker modal to unpredictably stretch vertically with blank whitespace.
 
 ## [0.7.0] - 2026-03-26 03:00:00 (UTC)
 
@@ -306,7 +300,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🔧 System
 
-- Implement `egui_kittest` integration tests and `pulldown-cmark` AST unit tests to permanently guarantee inline formatting integrity.
+- Implemented extensive internal unit tests to permanently guarantee inline formatting integrity and prevent visual regressions.
 
 ## [0.6.3] - 2026-03-25 08:26:00 (UTC)
 
@@ -328,14 +322,14 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🐛 Bug Fixes
 
-- Resolve multi-byte character panics (`byte index is not a char boundary`) and long-document drift by switching to char-iterator coordinate maps.
+- Resolved internal panics related to multi-byte characters and eliminated scroll position drifting in long documents.
 
 ## [0.6.1] - 2026-03-24 03:15:14 (UTC)
 
 ### ✨ Improvements
 
-- Replace `allocate_painter` with `Label` + `ui.painter()` overlay rendering. Resolves text clipping (left-side truncation) and misalignment within list items, with Y-position tuned for CJK glyph centering.
-- Replace manual margin calculations with native `Layout::top_down(Align::Center)`, providing stable CSS-like `margin: 0 auto` behavior for tables.
+- Resolved text clipping (left-side truncation) and misalignment within list items, tuning the positioning for CJK glyph centering.
+- Implemented stable, CSS-like centering behavior for tables using native layout calculations.
 - Expand clickable regions to cover both icon and name for directories/files, with hover effects and context menu support across the full row.
 - Active tab scrolls into view only on navigation button press, preventing unwanted scroll jumps during manual scrolling.
 - Apply consistent gray background to all sidebar icons (filter, TOC toggle, etc.) for improved visibility in light theme.
@@ -343,16 +337,15 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🐛 Bug Fixes
 
-- Change `egui::Align` from `BOTTOM` to `TOP` for inline code and strikethrough, correcting vertical positioning of background fills.
+- Corrected vertical positioning of background fills for inline code and strikethrough text.
 - Fix header-row border rendering that was being cut off midway.
 - Implement per-column text alignment (left/center/right) as specified in Markdown alignment syntax.
-- Explicitly read file content from disk and call `mark_clean()` on `AppAction::RefreshDiagrams` to prevent stale UI state.
+- Explicitly refresh file content from disk and correctly reset the visual state to prevent stale UI artifacts on diagram updates.
 - Ensure truly asynchronous/parallel tab loading when opening multiple files from a workspace directory, with the first file activated immediately.
 
 ### 🔧 System
 
-- Remove conditional branch around `katana_fonts_loaded` flag — always write the value unconditionally to guarantee coverage under `cargo llvm-cov`.
-- Move test fixture files from `crates/katana-ui/tests/fixtures/` to `assets/fixtures/` for centralized resource management.
+- Optimized internal testing environments and centralized resource management for overall quality improvements.
 
 ## [0.6.0] - 2026-03-22 21:52:53 (UTC)
 
@@ -363,13 +356,13 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Transition from SVG icons to direct `Painter` API drawing for reliability. Adjusted button positioning for better visibility and UX.
 - Stabilize centrally squeezed layout by enforcing fixed widths on side panels.
 - Skip splash screen natively in test harness context without causing false positives.
-- Expand `svg_loader` coverage with fallback logic tests to maintain 100% line coverage standards.
+- Expanded test coverage for image loading fallback logic to maintain code quality standards.
 
 ## [0.5.2] - 2026-03-22 12:44:52 (UTC)
 
 ### 🚀 Features
 
-- Add "Workspace" settings tab to configure `max_depth` and `ignored_directories` for directory scanning.
+- Added a \"Workspace\" settings tab allowing users to configure the maximum depth and ignored directories for scanning.
 
 ### ✨ Improvements
 
@@ -432,7 +425,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Skip Git hooks (`--no-verify`) during release push as quality checks are pre-verified
 - Enable full local release flow (DMG build, GitHub publication, Homebrew update) as default
 
-### ♻️ Refactoring
+### 🔧 System
 
 - Modularize release logic into independent scripts under `scripts/release/`
 - Move main release control script to `scripts/release/release.sh`
@@ -457,20 +450,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Restore signed tag generation config after GPG environment setup
 - Update dependencies (rustls-webpki)
 
-### 📚 Documentation
-
-- Add implementation plan workflow and exclude related artifacts
-- Enforce prohibition rule against deleting flaky tests in coding rules
-
-### 👷 CI/CD
-
-- Fix missing tool argument for cargo-llvm-cov in install-action
-
 ## [0.2.1] - 2026-03-21 00:53:02 (UTC)
-
-### 🚀 Features
-
-- Make init command implementation and release automatic push for development environment and flow enhancement
 
 ### 🔧 System
 
@@ -478,11 +458,11 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Fix coverage gap in preview_pane and codify release bypass rules
 - Resolve V0.2.0 archive omission and add AI warning block to next tasks
 
-### ♻️ Refactoring
+### 🔧 System
 
 - Rename repository to KatanA, reorganize documents, and support English translation
 
-### 🧪 Testing
+### 🔧 System
 
 - Specify language in settings window integration test to stabilize test
 - Collect_matches logic extraction and partial setting screen integration test addition for coverage improvement
@@ -506,14 +486,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - Refactor RwLock usage and fix external image caching on force reload
 
-### 👷 CI/CD
-
-- Automatically generate and attach SHA256 hashes (checksums.txt) for DMG
-
-### 📚 Documentation
-
-- Add release notes for v0.1.6 to CHANGELOG.ja.md and include in Makefile release target
-
 ## [0.1.6] - 2026-03-19 23:57:28 (UTC)
 
 ### 🚀 Features
@@ -525,21 +497,12 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ### 🐛 Bug Fixes
 
 - Automatically inject version into Info.plist during DMG build
-- Automatically sync Cargo.lock when running make release
+- Automatically sync internal version files during releases.
 
 ### 🔧 System
 
 - Prepare for v0.1.7 release
-- Update Cargo.lock (follow v0.1.7)
 - Prepare for v0.1.6 release
-
-### 📚 Documentation
-
-- Add project-specific skill "release_workflow"
-
-### 🧪 Testing
-
-- Add integration tests for Include/Exclude options in search filter
 
 ## [0.1.5] - 2026-03-19 21:12:34 (UTC)
 
@@ -551,11 +514,11 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - Bump version to 0.1.4
 
-### ♻️ Refactoring
+### 🔧 System
 
 - Unify HashMap and fixed-length arrays into Vec, and apply collectively including AST rules and migration functionality
 
-### 🧪 Testing
+### 🔧 System
 
 - Fix tests broken by workspace methods renaming
 - Add missing tests to meet 100% coverage gate
@@ -578,18 +541,10 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🔧 System
 
-- Exclude snapshot tests and redundant integration test executions from make check
-
-### ♻️ Refactoring
-
 - Hierarchize settings.json structure (ThemeSettings/FontSettings/LayoutSettings) and add migration mechanism
 - Fix coverage gate and improve code quality
 
-### 📚 Documentation
-
-- Migrate markdownlint settings to .vscode management and add v0.1.3 release notes
-
-### 🧪 Testing
+### 🔧 System
 
 - Update tests according to i18n type-safety, settings hierarchization, and theme expansion (integration/i18n/theme/diagram_rendering tests)
 
@@ -610,19 +565,8 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ### 🔧 System
 
 - Prepare for v0.1.2 release
-- Fix flaky view mode integration test by adding ui stabilization steps
 - Turn warnings into errors and remove unused code
 - Prepare for v0.1.2 release
-
-### 📚 Documentation
-
-- Add diagram display guide and brew update instructions to README
-- Add snapshot prohibition (NG) rule to coding-rules and self-review
-- Add brew update instructions to README
-
-### 🧪 Testing
-
-- Add TDD verification tests for UI bugs and update snapshots
 
 ## [0.1.1] - 2026-03-19 10:54:34 (UTC)
 
@@ -634,7 +578,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - Add error handling to Homebrew Cask update step
 - Prevent contamination of cached old DMG files
-- Add cfg guards to macOS-specific code in emoji.rs (fix Linux CI Lint)
 
 ## [0.1.0] - 2026-03-19 09:33:46 (UTC)
 
@@ -651,7 +594,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Add strict quality checks to linter (prohibit use of todo! macro, etc.)
 - Improve UI functions such as font search, emoji support, and preview
 - Implement emoji inline rendering foundation and separate SVG/HTTP cache loaders
-- Add lazy code detection tests and #[cfg(test)] module exclusion to AST Linter
+- Enhanced internal mechanisms for early detection of potential implementation issues.
 
 ### 🐛 Bug Fixes
 
@@ -663,34 +606,15 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - Add glob filters to pre-push hook and skip CI execution for pushes without code changes
 - Prepare for v0.0.4 release
-- Exclude fixture tests from make check-light
 - Exclude unnecessary old backup images (.old.png) when updating snapshots from Git tracking
 - Expand coverage gate exclusion rules (return None/false/display/Pending)
 - Prepare for v0.1.0 release (update version number)
 
-### ⏪ Reverted
+### 🔧 System
 
-- Revert release.yml and README to v0.0.3 state
-- Undo v0.0.4 changes and revert to v0.0.3 state
+- Optimized codebase structure and brought comments up to international development standards.
 
-### ♻️ Refactoring
-
-- Rename make ci -> make check and create new make check-light
-- Move inline tests in os_fonts.rs to tests/ and translate Japanese comments to English
-
-### 🎨 Styling
-
-- Add reason comments to #[allow] attributes (compliant with coding-rules section 10)
-
-### 📚 Documentation
-
-- Define versioning policy and refine CI triggers
-- Unify indentation of make check command with other commands
-- Update coding rules and self-review criteria
-- Unify code block language specification (text) in English and Japanese versions
-- Append CHANGELOG v0.1.0-dev and fix synchronization for README.ja.md
-
-### 🧪 Testing
+### 🔧 System
 
 - Add tests for coverage improvement
 
@@ -711,16 +635,12 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Prepare for v0.0.3 release
 - Change release notes to be extracted from CHANGELOG.md
 
-### ♻️ Refactoring
+### 🔧 System
 
 - Constantize magic numbers and expand AST linter tests
 - Unify Ignore tags to limited_local
 
-### 📚 Documentation
-
-- Change version fixed section in README to dynamic status notation
-
-### 🧪 Testing
+### 🔧 System
 
 - Fix CI environment dependent errors in snapshot tests
 - Fix global state conflict errors in multiple i18n tests
@@ -741,11 +661,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Release v0.0.2
 - Include Cargo.lock and CHANGELOG.ja.md in release v0.0.2
 
-### 📚 Documentation
-
-- Restore xattr command procedure for initial startup
-
-### 🧪 Testing
+### 🔧 System
 
 - Update integration test snapshot
 - Increase snapshot tolerance to 4000 to absorb CI/local macOS text rendering differences
@@ -806,11 +722,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Add configuration to exclude CI bot commits from cliff.toml
 - Prepare for v0.0.1 release
 
-### ⏪ Reverted
-
-- Retract sccache, maintain only cache path optimization
-
-### ♻️ Refactoring
+### 🔧 System
 
 - Fix clippy warnings in drawio_renderer
 - Migrate tests from src/ to tests/ directory and tighten Clippy
@@ -822,20 +734,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Translate Japanese comments and strings in source code and tests to English
 - Improve UI layout and add linter module
 
-### 📚 Documentation
-
-- Mark test compilation, tab UI, and plantuml macos bug as done
-- Add i18n conventions (Section 11) to coding-rules
-- Add README and document templates, change .obsidian to gitignored
-- Add project foundation files — LICENSE (MIT), README, development environment setup script
-- Add ADR (Architecture Decision Records) and integration test scenarios
-- Add technical debt memo (TECHNICAL_DEBT.md)
-- Unify project name to KatanA (README, Cargo.toml, setting comments)
-- Restructure documents for general distribution (#21)
-- Add "What is KatanA" section (English/Japanese)
-- Append origin of "A" as Agent in KatanA
-
-### 🧪 Testing
+### 🔧 System
 
 - Task 6.2 — add preview synchronization tests
 - Add app state unit tests and fix java headless mode for plantuml

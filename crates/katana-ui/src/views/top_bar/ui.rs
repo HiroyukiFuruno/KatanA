@@ -21,6 +21,10 @@ const GROUP_HEADER_DOT_RADIUS: f32 = 4.0;
 const GROUP_HEADER_ITEM_SPACING: f32 = 4.0;
 const GROUP_HEADER_FONT_SIZE: f32 = 11.0;
 
+const GROUP_POPUP_MIN_WIDTH: f32 = 200.0;
+const GROUP_MENU_ICON_SIZE: f32 = 12.0;
+const GROUP_MENU_ICON_RADIUS: f32 = 4.0;
+
 pub(crate) struct StatusBar<'a> {
     pub status: Option<&'a (String, crate::app_state::StatusType)>,
     pub is_dirty: bool,
@@ -115,8 +119,9 @@ pub(crate) struct TabBar<'a> {
     pub workspace_root: Option<&'a std::path::Path>,
     pub open_documents: &'a [katana_core::document::Document],
     pub active_doc_idx: Option<usize>,
-    pub recently_closed_tabs: &'a std::collections::VecDeque<std::path::PathBuf>,
+    pub recently_closed_tabs: &'a std::collections::VecDeque<(std::path::PathBuf, bool)>,
     pub tab_groups: &'a [crate::state::document::TabGroup],
+    pub inline_rename_group: &'a Option<String>,
 }
 
 impl<'a> TabBar<'a> {
@@ -124,8 +129,9 @@ impl<'a> TabBar<'a> {
         workspace_root: Option<&'a std::path::Path>,
         open_documents: &'a [katana_core::document::Document],
         active_doc_idx: Option<usize>,
-        recently_closed_tabs: &'a std::collections::VecDeque<std::path::PathBuf>,
+        recently_closed_tabs: &'a std::collections::VecDeque<(std::path::PathBuf, bool)>,
         tab_groups: &'a [crate::state::document::TabGroup],
+        inline_rename_group: &'a Option<String>,
     ) -> Self {
         Self {
             workspace_root,
@@ -133,9 +139,11 @@ impl<'a> TabBar<'a> {
             active_doc_idx,
             recently_closed_tabs,
             tab_groups,
+            inline_rename_group,
         }
     }
 
+    #[allow(deprecated)]
     pub fn show(self, ui: &mut egui::Ui) -> Option<AppAction> {
         const MAX_TAB_WIDTH: f32 = 200.0;
         const PINNED_TAB_MAX_WIDTH: f32 = 60.0;
@@ -187,21 +195,21 @@ impl<'a> TabBar<'a> {
 
                     let mut draw_items: Vec<DrawItem> = Vec::new();
 
+                    for (idx, doc) in self.open_documents.iter().enumerate() {
+                        if doc.is_pinned {
+                            draw_items.push(DrawItem::Tab { idx, group: None });
+                        }
+                    }
+
                     for g in self.tab_groups {
                         draw_items.push(DrawItem::GroupHeader(g));
                         for (idx, doc) in self.open_documents.iter().enumerate() {
-                            if g.members.contains(&doc.path.to_string_lossy().to_string()) {
+                            if !doc.is_pinned && g.members.contains(&doc.path.to_string_lossy().to_string()) {
                                 draw_items.push(DrawItem::Tab {
                                     idx,
                                     group: Some(g),
                                 });
                             }
-                        }
-                    }
-
-                    for (idx, doc) in self.open_documents.iter().enumerate() {
-                        if doc.is_pinned && !grouped_doc_indices.contains(&idx) {
-                            draw_items.push(DrawItem::Tab { idx, group: None });
                         }
                     }
 
@@ -280,12 +288,26 @@ impl<'a> TabBar<'a> {
                                         );
                                     }
 
-                                    group_resp.context_menu(|ui| {
-                                        let i18n = crate::i18n::get();
+                                    if group_resp.secondary_clicked() {
+                                        ui.memory_mut(|mem: &mut egui::Memory| { #[allow(deprecated)] { mem.toggle_popup(egui::Id::new("group_popup").with(&g.id)); } });
+                                    }
 
+                                    let popup_id = egui::Id::new("group_popup").with(&g.id);
+                                    if self.inline_rename_group.as_ref() == Some(&g.id) {
+                                        ui.memory_mut(|mem: &mut egui::Memory| { #[allow(deprecated)] { mem.open_popup(popup_id); } });
+                                        tab_action = Some(crate::app_state::AppAction::ClearInlineRename);
+                                    }
+
+                                    let popup_resp = egui::popup_below_widget(ui, popup_id, &group_resp, egui::PopupCloseBehavior::IgnoreClicks, |ui: &mut egui::Ui| {
+                                        ui.set_min_width(GROUP_POPUP_MIN_WIDTH);
+                                        let i18n = crate::i18n::get();
                                         let mut new_name = g.name.clone();
-                                        ui.horizontal(|ui| {
-                                            ui.add(egui::TextEdit::singleline(&mut new_name).hint_text(&i18n.tab.group_name_placeholder));
+                                        let mut new_color = g.color_hex.clone();
+                                        ui.horizontal(|ui: &mut egui::Ui| {
+                                            let resp = ui.add(egui::TextEdit::singleline(&mut new_name).hint_text(&i18n.tab.group_name_placeholder));
+                                            if self.inline_rename_group.as_ref() == Some(&g.id) {
+                                                resp.request_focus();
+                                            }
                                         });
 
                                         const SPACING: f32 = 4.0;
@@ -294,14 +316,12 @@ impl<'a> TabBar<'a> {
                                         const PALETTE_STROKE: f32 = 2.0;
 
                                         ui.add_space(SPACING);
-                                        let mut new_color = g.color_hex.clone();
-                                        ui.horizontal(|ui| {
+                                        ui.horizontal(|ui: &mut egui::Ui| {
                                             let colors = ["#4A90D9", "#D94A4A", "#4AD97A", "#D9A04A", "#9B59B6", "#F1C40F", "#1ABC9C"];
                                             for c in colors {
-                                                let color32 = egui::Color32::from_hex(c).unwrap_or(ui.visuals().text_color());
+                                                let color32 = egui::Color32::from_hex(c).unwrap_or_default();
                                                 let (rect, resp) = ui.allocate_exact_size(egui::vec2(PALETTE_SIZE, PALETTE_SIZE), egui::Sense::click());
-                                                let fill_color = crate::theme_bridge::from_rgba_unmultiplied(color32.r(), color32.g(), color32.b(), u8::MAX);
-                                                ui.painter().circle_filled(rect.center(), PALETTE_RADIUS, fill_color);
+                                                ui.painter().circle_filled(rect.center(), PALETTE_RADIUS, color32);
                                                 if new_color == c {
                                                     ui.painter().circle_stroke(rect.center(), PALETTE_RADIUS, egui::Stroke::new(PALETTE_STROKE, ui.visuals().text_color()));
                                                 }
@@ -310,6 +330,7 @@ impl<'a> TabBar<'a> {
                                                 }
                                             }
                                         });
+                                        ui.add_space(SPACING);
 
                                         if new_name != g.name || new_color != g.color_hex {
                                             if new_name != g.name {
@@ -325,24 +346,38 @@ impl<'a> TabBar<'a> {
                                                 });
                                             }
                                         }
-
                                         ui.separator();
                                         if ui.button(&i18n.tab.ungroup).clicked() {
                                             tab_action = Some(crate::app_state::AppAction::UngroupTabGroup(g.id.clone()));
-                                            ui.close();
+                                            ui.memory_mut(|mem| { #[allow(deprecated)] { mem.close_popup(popup_id); } });
                                         }
                                         if ui.button(&i18n.tab.close_group).clicked() {
                                             tab_action = Some(crate::app_state::AppAction::CloseTabGroup(g.id.clone()));
-                                            ui.close();
+                                            ui.memory_mut(|mem| { #[allow(deprecated)] { mem.close_popup(popup_id); } });
                                         }
+
+                                        ui.min_rect()
                                     });
+
+                                    // Manually implement CloseOnClickOutside to avoid 'focusing text field closes popup' bug in older egui
+                                    if ui.memory(|mem| mem.is_popup_open(popup_id))
+                                        && ui.input(|i| i.pointer.any_pressed() && i.pointer.primary_pressed())
+                                    {
+                                        if let Some(pos) = ui.input(|i| i.pointer.interact_pos()) {
+                                            let click_outside_popup = popup_resp.is_none_or(|r| !r.contains(pos));
+                                            let click_outside_header = !group_resp.rect.contains(pos);
+                                            if click_outside_popup && click_outside_header {
+                                                ui.memory_mut(|mem| { #[allow(deprecated)] { mem.close_popup(popup_id); } });
+                                            }
+                                        }
+                                    }
                                 }
                                 DrawItem::Tab { idx, group } => {
                                     let doc = &self.open_documents[idx];
                                     let is_active = self.active_doc_idx == Some(idx);
 
                                     if let Some(g) = group {
-                                        if g.collapsed && !is_active {
+                                        if g.collapsed {
                                             continue;
                                         }
                                     }
@@ -551,66 +586,6 @@ impl<'a> TabBar<'a> {
                                         }
 
                                         if !doc.is_pinned {
-                                            ui.menu_button(&i18n.tab.create_new_group, |ui| {
-                                                let mut temp_name = ui.memory_mut(|mem| {
-                                                    mem.data.get_temp::<String>(egui::Id::new("tmp_group_name").with(idx))
-                                                }).unwrap_or_else(String::new);
-                                                let mut temp_color = ui.memory_mut(|mem| {
-                                                    mem.data.get_temp::<String>(egui::Id::new("tmp_group_color").with(idx))
-                                                }).unwrap_or_else(|| "#4A90D9".to_string());
-
-                                                ui.horizontal(|ui| {
-                                                    ui.add(egui::TextEdit::singleline(&mut temp_name)
-                                                        .hint_text(&i18n.tab.group_name_placeholder));
-                                                });
-
-                                                const SPACING: f32 = 4.0;
-                                                const PALETTE_SIZE: f32 = 16.0;
-                                                const PALETTE_RADIUS: f32 = 8.0;
-                                                const PALETTE_STROKE: f32 = 2.0;
-
-                                                ui.add_space(SPACING);
-                                                ui.horizontal(|ui| {
-                                                    let colors = ["#4A90D9", "#D94A4A", "#4AD97A", "#D9A04A", "#9B59B6", "#F1C40F", "#1ABC9C"];
-                                                    for c in colors {
-                                                        let color32 = egui::Color32::from_hex(c).unwrap_or(ui.visuals().text_color());
-                                                        let (rect, resp) = ui.allocate_exact_size(egui::vec2(PALETTE_SIZE, PALETTE_SIZE), egui::Sense::click());
-                                                        // Calculate alpha to respect linter (though test is disabled)
-                                                        let fill_color = crate::theme_bridge::from_rgba_unmultiplied(
-                                                            color32.r(), color32.g(), color32.b(), u8::MAX
-                                                        );
-                                                        ui.painter().circle_filled(rect.center(), PALETTE_RADIUS, fill_color);
-                                                        if temp_color == c {
-                                                            ui.painter().circle_stroke(rect.center(), PALETTE_RADIUS, egui::Stroke::new(PALETTE_STROKE, ui.visuals().text_color()));
-                                                        }
-                                                        if resp.clicked() {
-                                                            temp_color = c.to_string();
-                                                        }
-                                                    }
-                                                });
-                                                ui.add_space(SPACING);
-
-                                                ui.add_enabled_ui(!temp_name.trim().is_empty(), |ui| {
-                                                    if ui.button(&i18n.tab.create_group_button).clicked() {
-                                                        tab_action = Some(AppAction::CreateTabGroup {
-                                                            name: temp_name.trim().to_string(),
-                                                            color_hex: temp_color.clone(),
-                                                            initial_member: doc.path.clone(),
-                                                        });
-                                                        ui.memory_mut(|mem| {
-                                                            mem.data.remove::<String>(egui::Id::new("tmp_group_name").with(idx));
-                                                            mem.data.remove::<String>(egui::Id::new("tmp_group_color").with(idx));
-                                                        });
-                                                        ui.close();
-                                                    }
-                                                });
-
-                                                ui.memory_mut(|mem| {
-                                                    mem.data.insert_temp(egui::Id::new("tmp_group_name").with(idx), temp_name);
-                                                    mem.data.insert_temp(egui::Id::new("tmp_group_color").with(idx), temp_color);
-                                                });
-                                            });
-
                                             let mut is_in_any_group = false;
                                             let doc_str = doc.path.to_string_lossy().to_string();
                                             for g in self.tab_groups {
@@ -620,32 +595,60 @@ impl<'a> TabBar<'a> {
                                                 }
                                             }
 
-                                            if !self.tab_groups.is_empty() {
-                                                ui.menu_button(&i18n.tab.tab_group, |ui| {
-                                                    for g in self.tab_groups {
-                                                        let is_member = g.members.contains(&doc_str);
-                                                        let label = if is_member {
-                                                            i18n.tab.added_to_group.replace("{group_name}", &g.name)
-                                                        } else {
-                                                            i18n.tab.add_to_group.replace("{group_name}", &g.name)
-                                                        };
-                                                        if ui.radio(is_member, label).clicked() {
-                                                            tab_action = Some(AppAction::AddTabToGroup {
-                                                                group_id: g.id.clone(),
-                                                                member: doc.path.clone(),
-                                                            });
-                                                            ui.close();
-                                                        }
-                                                    }
-                                                });
-                                            }
-
-                                            if is_in_any_group {
-                                                ui.separator();
+                                            // Chrome logic:
+                                            // Top-level: "Add tab to new group" (if not in any group)
+                                            // If in a group: "Remove from group"
+                                            if !is_in_any_group {
+                                                if ui.button(&i18n.tab.create_new_group).clicked() {
+                                                    tab_action = Some(AppAction::CreateTabGroup {
+                                                        name: String::new(),
+                                                        color_hex: "#4A90D9".to_string(),
+                                                        initial_member: doc.path.clone(),
+                                                    });
+                                                    ui.close();
+                                                }
+                                            } else {
                                                 if ui.button(&i18n.tab.remove_from_group).clicked() {
                                                     tab_action = Some(AppAction::RemoveTabFromGroup(doc.path.clone()));
                                                     ui.close();
                                                 }
+                                            }
+
+                                            // Submenu "Add to group" should appear if there's any other group OR if it's already in a group (so they can move to a 'New group').
+                                            let has_other_groups = self.tab_groups.iter().any(|g| !g.members.contains(&doc_str));
+                                            if has_other_groups || is_in_any_group {
+                                                ui.menu_button(&i18n.tab.add_to_group, |ui| {
+                                                    if is_in_any_group {
+                                                        if ui.button(&i18n.tab.create_new_group).clicked() {
+                                                            tab_action = Some(AppAction::CreateTabGroup {
+                                                                name: String::new(),
+                                                                color_hex: "#4A90D9".to_string(),
+                                                                initial_member: doc.path.clone(),
+                                                            });
+                                                            ui.close();
+                                                        }
+                                                        ui.separator();
+                                                    }
+
+                                                    for g in self.tab_groups {
+                                                        if g.members.contains(&doc_str) {
+                                                            continue;
+                                                        }
+                                                        ui.horizontal(|ui: &mut egui::Ui| {
+                                                            let color32 = egui::Color32::from_hex(&g.color_hex).unwrap_or(ui.visuals().widgets.active.bg_fill);
+                                                            let (rect, _) = ui.allocate_exact_size(egui::vec2(GROUP_MENU_ICON_SIZE, GROUP_MENU_ICON_SIZE), egui::Sense::hover());
+                                                            ui.painter().circle_filled(rect.center(), GROUP_MENU_ICON_RADIUS, color32);
+
+                                                            if ui.selectable_label(false, &g.name).clicked() {
+                                                                tab_action = Some(AppAction::AddTabToGroup {
+                                                                    group_id: g.id.clone(),
+                                                                    member: doc.path.clone(),
+                                                                });
+                                                                ui.close();
+                                                            }
+                                                        });
+                                                    }
+                                                });
                                             }
                                         }
 
@@ -773,24 +776,19 @@ impl<'a> TabBar<'a> {
 
                 let mut new_group_id = Some(None); // Default is ungrouped
 
-                if to_visual < tab_rects.len() {
-                    let neighbor_idx = tab_rects[to_visual].0;
-                    if let Some(doc) = self.open_documents.get(neighbor_idx) {
-                        let path_str = doc.path.to_string_lossy().to_string();
+                if to_visual > 0 && to_visual < tab_rects.len() {
+                    let prev_idx = tab_rects[to_visual - 1].0;
+                    let next_idx = tab_rects[to_visual].0;
+
+                    if let (Some(prev_doc), Some(next_doc)) = (
+                        self.open_documents.get(prev_idx),
+                        self.open_documents.get(next_idx),
+                    ) {
+                        let prev_path = prev_doc.path.to_string_lossy().to_string();
+                        let next_path = next_doc.path.to_string_lossy().to_string();
+
                         for g in self.tab_groups {
-                            if g.members.contains(&path_str) {
-                                new_group_id = Some(Some(g.id.clone()));
-                                break;
-                            }
-                        }
-                    }
-                } else if to_visual > 0 {
-                    // check the last element if we insert at the end
-                    let neighbor_idx = tab_rects[to_visual - 1].0;
-                    if let Some(doc) = self.open_documents.get(neighbor_idx) {
-                        let path_str = doc.path.to_string_lossy().to_string();
-                        for g in self.tab_groups {
-                            if g.members.contains(&path_str) {
+                            if g.members.contains(&prev_path) && g.members.contains(&next_path) {
                                 new_group_id = Some(Some(g.id.clone()));
                                 break;
                             }
@@ -885,6 +883,7 @@ impl ViewModeBar {
         }
     }
 
+    #[allow(deprecated)]
     pub fn show(self, ui: &mut egui::Ui) -> Option<AppAction> {
         let mut action: Option<AppAction> = None;
         let mut mode = self.view_mode;

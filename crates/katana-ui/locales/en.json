@@ -315,7 +315,9 @@
     "close_group": "Close group",
     "ungroup": "Ungroup",
     "add_tab_to_group": "Add tab to group",
-    "remove_from_group": "Remove from group"
+    "remove_from_group": "Remove from group",
+    "create_new_group": "Create new group",
+    "add_to_group": "Add to group"
   },
   "search": {
     "modal_title": "Search Files",

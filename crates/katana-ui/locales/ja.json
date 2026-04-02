@@ -315,7 +315,9 @@
     "close_group": "グループを閉じる",
     "ungroup": "グループを解除",
     "add_tab_to_group": "タブをグループに追加",
-    "remove_from_group": "グループから削除"
+    "remove_from_group": "グループから削除",
+    "create_new_group": "新しいグループを作成",
+    "add_to_group": "グループにタブを追加"
   },
   "search": {
     "modal_title": "ファイル検索",

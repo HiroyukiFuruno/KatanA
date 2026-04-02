@@ -23,6 +23,9 @@ pub trait CacheFacade: Send + Sync {
     // WHY: Stores a value in the persistent cache, syncing to disk.
     #[allow(clippy::missing_errors_doc)]
     fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()>;
+
+    // WHY: Clears diagram cache entries from persistent storage
+    fn clear_diagram_cache(&self) {}
 }
 
 #[derive(Serialize, Deserialize, Default)]
@@ -183,5 +186,29 @@ mod tests {
             None
         ));
         assert!(matches!(PersistentKey::from_raw_key("invalid"), None));
+    }
+
+    #[test]
+    fn test_cache_facade_default_method() {
+        struct MockFacade;
+        impl CacheFacade for MockFacade {
+            fn get_memory(&self, _key: &str) -> Option<String> {
+                None
+            }
+            fn set_memory(&self, _key: &str, _value: String) {}
+            fn get_persistent(&self, _key: &str) -> Option<String> {
+                None
+            }
+            fn set_persistent(&self, _key: &str, _value: String) -> anyhow::Result<()> {
+                Ok(())
+            }
+        }
+
+        let m = MockFacade;
+        assert_eq!(m.get_memory(""), None);
+        m.set_memory("", String::new());
+        assert_eq!(m.get_persistent(""), None);
+        let _ = m.set_persistent("", String::new());
+        m.clear_diagram_cache(); // Execute default impl for coverage
     }
 }
