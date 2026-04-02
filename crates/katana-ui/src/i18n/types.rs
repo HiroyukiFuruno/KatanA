@@ -1106,9 +1106,17 @@ mod default_coverage_tests {
         assert_eq!(default_menu_view(), "View");
         assert_eq!(default_problems_panel_title(), "Problems");
         assert_eq!(default_problems_panel_close(), "Close");
-        assert_eq!(default_no_problems_found(), "No problems found in the workspace.");
+        assert_eq!(
+            default_no_problems_found(),
+            "No problems found in the workspace."
+        );
         assert_eq!(default_toggle_problems_panel(), "Toggle Problems Panel");
         assert_eq!(default_problems_count_format(), "⚠️ Problems: {count}");
+        assert_eq!(default_command_settings(), "Toggle Settings");
+        assert_eq!(default_command_workspace(), "Toggle Workspace Panel");
+        assert_eq!(default_command_close_all(), "Close All Documents");
+        assert_eq!(default_command_refresh(), "Refresh Workspace");
+        assert_eq!(default_command_updates(), "Check for Updates");
+        assert_eq!(default_command_about(), "Toggle About");
     }
 }
-
