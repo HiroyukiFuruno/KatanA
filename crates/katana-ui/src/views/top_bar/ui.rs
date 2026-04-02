@@ -897,6 +897,7 @@ impl ViewModeBar {
         let prev = mode;
         let bar_height = ui.spacing().interact_size.y;
         let available_width = ui.available_width();
+
         ui.allocate_ui_with_layout(
             egui::vec2(available_width, bar_height),
             egui::Layout::right_to_left(egui::Align::Center),
@@ -914,112 +915,6 @@ impl ViewModeBar {
                         .clicked()
                     {
                         action = Some(AppAction::CheckForUpdates);
-                    }
-                    ui.separator();
-                }
-
-                if self.show_search {
-                    if search_state.doc_search_open {
-                        // Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input
-
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(crate::i18n::get().search.doc_search_close.clone())
-                            .clicked()
-                        {
-                            search_state.doc_search_open = false;
-                        }
-
-                        const DOC_SEARCH_INPUT_WIDTH: f32 = 200.0;
-                        let response = ui.add(
-                            egui::TextEdit::singleline(&mut search_state.doc_search_query)
-                                .desired_width(DOC_SEARCH_INPUT_WIDTH),
-                        );
-
-                        let enter_pressed = ui.input(|i| i.key_pressed(egui::Key::Enter));
-                        let shift_pressed = ui.input(|i| i.modifiers.shift);
-                        let up_pressed =
-                            response.has_focus() && ui.input(|i| i.key_pressed(egui::Key::ArrowUp));
-                        let down_pressed = response.has_focus()
-                            && ui.input(|i| i.key_pressed(egui::Key::ArrowDown));
-
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(crate::i18n::get().search.doc_search_next.clone())
-                            .clicked()
-                            || (enter_pressed && !shift_pressed)
-                            || down_pressed
-                        {
-                            action = Some(AppAction::DocSearchNext);
-                        }
-
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(crate::i18n::get().search.doc_search_prev.clone())
-                            .clicked()
-                            || (enter_pressed && shift_pressed)
-                            || up_pressed
-                        {
-                            action = Some(AppAction::DocSearchPrev);
-                        }
-
-                        let match_count = search_state.doc_search_matches.len();
-                        if match_count > 0 {
-                            ui.label(crate::i18n::tf(
-                                &crate::i18n::get().search.doc_search_count,
-                                &[
-                                    (
-                                        "index",
-                                        &format!("{}", search_state.doc_search_active_index + 1),
-                                    ),
-                                    ("total", &format!("{}", match_count)),
-                                ],
-                            ));
-                        } else if !search_state.doc_search_query.is_empty() {
-                            ui.label(crate::i18n::tf(
-                                &crate::i18n::get().search.doc_search_count,
-                                &[("index", "0"), ("total", "0")],
-                            ));
-                        }
-
-                        if response.changed() {
-                            action = Some(AppAction::DocSearchQueryChanged);
-                        }
-
-                        if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-                            search_state.doc_search_open = false;
-                        }
-
-                        let is_newly_opened = ui.memory(|m| {
-                            m.data
-                                .get_temp::<bool>(ui.id().with("search_newly_opened"))
-                                .unwrap_or(true)
-                        });
-                        if is_newly_opened {
-                            response.request_focus();
-                            ui.memory_mut(|m| {
-                                m.data
-                                    .insert_temp(ui.id().with("search_newly_opened"), false)
-                            });
-                        }
-                    } else {
-                        let doc_search_tooltip =
-                            format!("{} (Cmd+F)", crate::i18n::get().search.doc_search_title);
-                        if ui
-                            .add(egui::Button::image(
-                                crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
-                            .on_hover_text(doc_search_tooltip)
-                            .clicked()
-                        {
-                            action = Some(AppAction::OpenDocSearch);
-                        }
                     }
                     ui.separator();
                 }
@@ -1153,8 +1048,171 @@ impl ViewModeBar {
                         action = Some(AppAction::ToggleScrollSync(is_on));
                     }
                 }
+
+                // Add the search button to the far left of the right-aligned layout
+                if self.show_search {
+                    ui.separator();
+                    let doc_search_tooltip =
+                        format!("{} (Cmd+F)", crate::i18n::get().search.doc_search_title);
+
+                    let btn_color = if search_state.doc_search_open {
+                        ui.visuals().widgets.active.bg_fill
+                    } else {
+                        egui::Color32::default()
+                    };
+
+                    let toggle_resp = ui
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .fill(btn_color),
+                        )
+                        .on_hover_text(doc_search_tooltip);
+
+                    if toggle_resp.clicked() {
+                        if search_state.doc_search_open {
+                            search_state.doc_search_open = false;
+                        } else {
+                            action = Some(AppAction::OpenDocSearch);
+                        }
+                    }
+                }
             },
         );
+
+        if self.show_search && search_state.doc_search_open {
+            ui.separator();
+            ui.allocate_ui_with_layout(
+                egui::vec2(available_width, bar_height),
+                egui::Layout::right_to_left(egui::Align::Center),
+                |ui| {
+                    // Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input
+                    if ui
+                        .add(egui::Button::image(
+                            crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
+                        ))
+                        .on_hover_text(crate::i18n::get().search.doc_search_close.clone())
+                        .clicked()
+                    {
+                        search_state.doc_search_open = false;
+                    }
+
+                    if ui
+                        .add(egui::Button::image(
+                            crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
+                        ))
+                        .on_hover_text(crate::i18n::get().search.doc_search_next.clone())
+                        .clicked()
+                    {
+                        action = Some(AppAction::DocSearchNext);
+                    }
+
+                    if ui
+                        .add(egui::Button::image(
+                            crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
+                        ))
+                        .on_hover_text(crate::i18n::get().search.doc_search_prev.clone())
+                        .clicked()
+                    {
+                        action = Some(AppAction::DocSearchPrev);
+                    }
+
+                    let match_count = search_state.doc_search_matches.len();
+                    if match_count > 0 {
+                        ui.label(crate::i18n::tf(
+                            &crate::i18n::get().search.doc_search_count,
+                            &[
+                                (
+                                    "index",
+                                    &format!("{}", search_state.doc_search_active_index + 1),
+                                ),
+                                ("total", &format!("{}", match_count)),
+                            ],
+                        ));
+                    } else if !search_state.doc_search_query.is_empty() {
+                        ui.label(crate::i18n::tf(
+                            &crate::i18n::get().search.doc_search_count,
+                            &[("index", "0"), ("total", "0")],
+                        ));
+                    }
+
+                    const DOC_SEARCH_INPUT_WIDTH: f32 = 200.0;
+                    let is_newly_opened = ui.memory(|m| {
+                        m.data
+                            .get_temp::<bool>(egui::Id::new("search_newly_opened"))
+                            .unwrap_or(false)
+                    });
+
+                    let response = ui.add(
+                        egui::TextEdit::singleline(&mut search_state.doc_search_query)
+                            .desired_width(DOC_SEARCH_INPUT_WIDTH)
+                            .id_source("doc_search_input_stable_id"),
+                    );
+
+                    // Add an inline clear button 'x' overlaying the right side of the TextEdit
+                    if !search_state.doc_search_query.is_empty() {
+                        const DOC_SEARCH_CLEAR_BTN_WIDTH: f32 = 20.0;
+                        const DOC_SEARCH_CLEAR_BTN_FONT_SIZE: f32 = 14.0;
+                        const DOC_SEARCH_CLEAR_BTN_ALPHA: f32 = 0.5;
+
+                        let rect = response.rect;
+                        let btn_rect = egui::Rect::from_min_size(
+                            egui::pos2(rect.max.x - DOC_SEARCH_CLEAR_BTN_WIDTH, rect.min.y),
+                            egui::vec2(DOC_SEARCH_CLEAR_BTN_WIDTH, rect.height()),
+                        );
+                        ui.allocate_ui_at_rect(btn_rect, |ui| {
+                            let btn = egui::Button::new(
+                                egui::RichText::new("×")
+                                    .size(DOC_SEARCH_CLEAR_BTN_FONT_SIZE)
+                                    .color(
+                                        ui.visuals()
+                                            .text_color()
+                                            .gamma_multiply(DOC_SEARCH_CLEAR_BTN_ALPHA),
+                                    ),
+                            )
+                            .frame(false);
+
+                            if ui.centered_and_justified(|ui| ui.add(btn)).inner.clicked() {
+                                search_state.doc_search_query.clear();
+                                action = Some(AppAction::DocSearchQueryChanged);
+                                response.request_focus();
+                            }
+                        });
+                    }
+
+                    if is_newly_opened {
+                        response.request_focus();
+                        ui.memory_mut(|m| {
+                            m.data
+                                .insert_temp(egui::Id::new("search_newly_opened"), false)
+                        });
+                    }
+
+                    let enter_pressed = ui.input(|i| i.key_pressed(egui::Key::Enter));
+                    let shift_pressed = ui.input(|i| i.modifiers.shift);
+                    let up_pressed =
+                        response.has_focus() && ui.input(|i| i.key_pressed(egui::Key::ArrowUp));
+                    let down_pressed =
+                        response.has_focus() && ui.input(|i| i.key_pressed(egui::Key::ArrowDown));
+
+                    if (enter_pressed && !shift_pressed) || down_pressed {
+                        action = Some(AppAction::DocSearchNext);
+                    } else if (enter_pressed && shift_pressed) || up_pressed {
+                        action = Some(AppAction::DocSearchPrev);
+                    }
+
+                    if response.changed() {
+                        action = Some(AppAction::DocSearchQueryChanged);
+                    }
+
+                    if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                        search_state.doc_search_open = false;
+                    }
+                },
+            );
+        }
+
         if mode != prev {
             action = Some(AppAction::SetViewMode(mode));
         }

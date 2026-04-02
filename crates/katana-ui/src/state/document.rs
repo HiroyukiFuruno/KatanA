@@ -74,4 +74,16 @@ impl DocumentState {
         self.active_doc_idx
             .and_then(|idx| self.open_documents.get(idx))
     }
+
+    pub fn cleanup_empty_groups(&mut self) {
+        let open_paths: std::collections::HashSet<String> = self
+            .open_documents
+            .iter()
+            .map(|d| d.path.to_string_lossy().to_string())
+            .collect();
+        for g in &mut self.tab_groups {
+            g.members.retain(|m| open_paths.contains(m));
+        }
+        self.tab_groups.retain(|g| !g.members.is_empty());
+    }
 }

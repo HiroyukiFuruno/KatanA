@@ -318,6 +318,10 @@ impl<'a> PreviewOnly<'a> {
                 Some(app.state.search.doc_search_query.clone()),
             )
             .show(ui);
+
+            // In PreviewOnly mode, there is no editor to consume the scroll_to_line request.
+            // We consume it here right after PreviewContent has processed it.
+            app.state.scroll.scroll_to_line = None;
         } else {
             ui.centered_and_justified(|ui| {
                 ui.label(crate::i18n::get().workspace.no_document_selected.clone());

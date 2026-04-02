@@ -484,36 +484,34 @@ impl<'a> TabToolbar<'a> {
                         }
                     }
 
-                    ui.horizontal(|ui| {
-                        let view_action = crate::views::top_bar::ViewModeBar::new(
-                            app.state.active_view_mode(),
-                            is_changelog,
-                            app.state.active_split_direction(),
-                            app.state.active_pane_order(),
-                            app.state
-                                .config
-                                .settings
-                                .settings()
-                                .behavior
-                                .scroll_sync_enabled,
-                            app.state.scroll.sync_override,
-                            app.state.update.available.is_some(),
-                            app.state.update.checking,
-                            true, // show_search
-                        )
-                        .show(ui, &mut app.state.search);
-                        if let Some(a) = view_action {
-                            if matches!(a, crate::app_state::AppAction::OpenDocSearch) {
-                                app.state.search.doc_search_open = true;
-                                ui.memory_mut(|m| {
-                                    m.data
-                                        .insert_temp(ui.id().with("search_newly_opened"), true)
-                                });
-                            } else {
-                                out_action = Some(a);
-                            }
+                    let view_action = crate::views::top_bar::ViewModeBar::new(
+                        app.state.active_view_mode(),
+                        is_changelog,
+                        app.state.active_split_direction(),
+                        app.state.active_pane_order(),
+                        app.state
+                            .config
+                            .settings
+                            .settings()
+                            .behavior
+                            .scroll_sync_enabled,
+                        app.state.scroll.sync_override,
+                        app.state.update.available.is_some(),
+                        app.state.update.checking,
+                        true, // show_search
+                    )
+                    .show(ui, &mut app.state.search);
+                    if let Some(a) = view_action {
+                        if matches!(a, crate::app_state::AppAction::OpenDocSearch) {
+                            app.state.search.doc_search_open = true;
+                            ui.memory_mut(|m| {
+                                m.data
+                                    .insert_temp(egui::Id::new("search_newly_opened"), true)
+                            });
+                        } else {
+                            out_action = Some(a);
                         }
-                    });
+                    }
                 });
 
                 if let Some(a) = out_action {

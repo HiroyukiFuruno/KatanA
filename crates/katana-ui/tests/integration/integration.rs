@@ -3698,3 +3698,126 @@ fn test_integration_close_policy_batch_skips_pinned() {
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
+
+#[test]
+fn test_integration_search_stale_matches_on_tab_switch() {
+    use katana_ui::app_state::AppAction;
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_search_tab_switch");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let file1 = temp_dir.join("a.md");
+    let file2 = temp_dir.join("b.md");
+    std::fs::write(&file1, "# Found Target KatanA").unwrap();
+    std::fs::write(&file2, "# Missing Target").unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    let abs1 = file1.canonicalize().unwrap_or(file1);
+    let abs2 = file2.canonicalize().unwrap_or(file2);
+
+    // Open first file
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs1));
+    harness.step();
+
+    // Perform search
+    harness.state_mut().trigger_action(AppAction::OpenDocSearch);
+    harness.step();
+    harness.state_mut().app_state_mut().search.doc_search_query = "KatanA".to_string();
+    harness
+        .state_mut()
+        .trigger_action(AppAction::DocSearchQueryChanged);
+    harness.step();
+    harness.step();
+
+    // Verify match found in a.md
+    assert_eq!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .search
+            .doc_search_matches
+            .len(),
+        1,
+        "Should find 1 match in a.md"
+    );
+
+    // Switch to second file
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs2));
+    harness.step();
+    harness.step();
+
+    // Verify match is updated and cleared for b.md
+    assert_eq!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .search
+            .doc_search_matches
+            .len(),
+        0,
+        "Should find 0 matches in b.md due to tab switch refresh"
+    );
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_search_multibyte_character_offsets() {
+    use katana_ui::app_state::AppAction;
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_search_multibyte");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let file1 = temp_dir.join("multibyte.md");
+    // "\u{3042}\u{3044}\u{3046}" is 3 chars, 9 bytes. length of "\u{3042}\u{3044}\u{3046}" = 3 chars. "Search" starts at char index 3, but byte index 9.
+    std::fs::write(&file1, "\u{3042}\u{3044}\u{3046}Search").unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    let abs1 = file1.canonicalize().unwrap_or(file1);
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs1));
+    harness.step();
+
+    harness.state_mut().trigger_action(AppAction::OpenDocSearch);
+    harness.step();
+    harness.state_mut().app_state_mut().search.doc_search_query = "Search".to_string();
+    harness
+        .state_mut()
+        .trigger_action(AppAction::DocSearchQueryChanged);
+    harness.step();
+    harness.step();
+
+    let matches = &harness
+        .state_mut()
+        .app_state_mut()
+        .search
+        .doc_search_matches;
+    assert_eq!(matches.len(), 1, "Should find exactly 1 match");
+    // If the index used byte offsets, it would report range 9..15.
+    // If it correctly uses char offsets, it should report 3..9.
+    assert_eq!(
+        matches[0],
+        3..9,
+        "Mismatch found! The search index must be character-based, not byte-based!"
+    );
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}

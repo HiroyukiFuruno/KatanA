@@ -728,6 +728,21 @@ impl<'a> CommonMarkViewerInternal<'a> {
             body_events.push((0, (event, src_span)));
             body_events.extend(self.collect_until_details_close(events));
 
+            let mut auto_open = None;
+            if let Some(re) = &self.search_query {
+                for (_, (ev, _)) in &body_events {
+                    match ev {
+                        pulldown_cmark::Event::Text(t) | pulldown_cmark::Event::Html(t) | pulldown_cmark::Event::Code(t) => {
+                            if re.is_match(t) {
+                                auto_open = Some(true);
+                                break;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+
             // Flush inline content first, then render accordion in a top_down scope.
             // A top_down scope is required so that ui.add_space() works as VERTICAL spacing;
             // in the outer left_to_right+main_wrap layout add_space is horizontal (4.3 fix).
@@ -759,11 +774,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     ui.spacing_mut().interact_size.y = OPTICAL_DEFAULT_INTERACT_HEIGHT;
 
                     let id_salt = egui::Id::new(&summary).with(id);
-                    let collapsing = egui::CollapsingHeader::new(
+                    let mut collapsing = egui::CollapsingHeader::new(
                         egui::RichText::new(&summary).strong().color(ui.visuals().text_color())
                     )
                     .id_salt(id_salt)
                     .icon(crate::ui_components::centering::AccordionIcon::paint_optically_centered);
+
+                    if let Some(o) = auto_open {
+                        collapsing = collapsing.open(Some(o));
+                    }
 
                     let _header_res = collapsing.show(ui, |ui| {
                         let layout = egui::Layout::left_to_right(egui::Align::Center)

@@ -347,52 +347,11 @@ impl ActionOps for KatanaApp {
             }
             AppAction::DocSearchQueryChanged => {
                 if let Some(doc) = self.state.document.active_document() {
-                    let text = &doc.buffer;
-                    let query = &self.state.search.doc_search_query;
-                    self.state.search.doc_search_matches.clear();
-                    self.state.search.doc_search_active_index = 0;
-                    if !query.is_empty() {
-                        if let Ok(re) = regex::RegexBuilder::new(&regex::escape(query))
-                            .case_insensitive(true)
-                            .build()
-                        {
-                            let mut char_count = 0;
-                            let mut last_byte = 0;
-                            for mat in re.find_iter(text) {
-                                let mut start_b = mat.start();
-                                while start_b > 0 && !text.is_char_boundary(start_b) {
-                                    start_b -= 1;
-                                }
-                                let mut end_b = mat.end();
-                                while end_b < text.len() && !text.is_char_boundary(end_b) {
-                                    end_b += 1;
-                                }
-
-                                if start_b < last_byte {
-                                    start_b = last_byte;
-                                }
-                                if end_b < start_b {
-                                    end_b = start_b;
-                                }
-
-                                char_count += text[last_byte..start_b].chars().count();
-                                let char_start = char_count;
-                                let match_len = text[start_b..end_b].chars().count();
-                                let char_end = char_start + match_len;
-
-                                self.state
-                                    .search
-                                    .doc_search_matches
-                                    .push(char_start..char_end);
-
-                                char_count += match_len;
-                                last_byte = end_b;
-                            }
-                        }
-                    }
+                    let text = doc.buffer.clone();
+                    self.refresh_doc_search_matches(&text);
                     if let Some(r) = self.state.search.doc_search_matches.first() {
                         let line =
-                            crate::views::panels::editor::logic::char_index_to_line(text, r.start);
+                            crate::views::panels::editor::logic::char_index_to_line(&text, r.start);
                         self.state.scroll.scroll_to_line = Some(line);
                     }
                 }
@@ -465,6 +424,7 @@ impl ActionOps for KatanaApp {
                         self.state.document.active_doc_idx = Some(a_idx);
                     }
                 }
+                self.state.document.cleanup_empty_groups();
                 self.save_workspace_state();
             }
             AppAction::CloseAllDocuments => {
@@ -483,6 +443,7 @@ impl ActionOps for KatanaApp {
                 } else if self.state.document.active_doc_idx.is_some() {
                     self.state.document.active_doc_idx = Some(0);
                 }
+                self.state.document.cleanup_empty_groups();
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
             }
@@ -510,6 +471,7 @@ impl ActionOps for KatanaApp {
                         idx.min(self.state.document.open_documents.len().saturating_sub(1)),
                     ));
                 }
+                self.state.document.cleanup_empty_groups();
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
             }
@@ -535,6 +497,7 @@ impl ActionOps for KatanaApp {
                         .position(|d| d.path == p);
                     self.state.document.active_doc_idx = new_idx.or(Some(0));
                 }
+                self.state.document.cleanup_empty_groups();
                 self.save_workspace_state();
                 self.cleanup_closed_tab_previews();
             }

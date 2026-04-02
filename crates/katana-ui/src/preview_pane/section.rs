@@ -131,7 +131,7 @@ pub(crate) fn show_section(
                 if hovered_lines.is_some() {
                     viewer = viewer.hovered_spans(&mut local_hovered_spans);
                 }
-                
+
                 viewer = viewer.search_query(search_query.clone());
 
                 let (_, newly_captured) = ui

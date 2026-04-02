@@ -128,8 +128,17 @@ impl WorkspaceOps for KatanaApp {
                         .into_iter()
                         .map(std::path::PathBuf::from)
                         .collect();
-                    self.state.document.tab_groups = v2.groups;
+
+                    let open_paths: std::collections::HashSet<String> =
+                        to_open.iter().map(|(p, _)| p.clone()).collect();
+                    let mut cleaned_groups = v2.groups;
+                    for g in &mut cleaned_groups {
+                        g.members.retain(|m| open_paths.contains(m));
+                    }
+                    cleaned_groups.retain(|g| !g.members.is_empty());
+                    self.state.document.tab_groups = cleaned_groups;
                 } else {
+                    tracing::error!("DEBUG: Failed to parse WorkspaceTabSessionV2!");
                     #[derive(serde::Deserialize)]
                     struct LegacyTabState {
                         tabs: Vec<String>,
