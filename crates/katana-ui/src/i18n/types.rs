@@ -347,6 +347,16 @@ pub struct StatusMessages {
     pub refresh_no_changes: String,
     #[serde(default = "default_refresh_failed")]
     pub refresh_failed: String,
+    #[serde(default = "default_no_problems_found")]
+    pub no_problems_found: String,
+    #[serde(default = "default_problems_panel_title")]
+    pub problems_panel_title: String,
+    #[serde(default = "default_problems_panel_close")]
+    pub problems_panel_close: String,
+    #[serde(default = "default_toggle_problems_panel")]
+    pub toggle_problems_panel: String,
+    #[serde(default = "default_problems_count_format")]
+    pub problems_count_format: String,
 }
 
 pub(crate) fn default_refresh_success() -> String {
@@ -360,6 +370,21 @@ pub(crate) fn default_refresh_no_changes() -> String {
 }
 pub(crate) fn default_refresh_failed() -> String {
     "Failed to refresh document: {error}".to_string()
+}
+pub(crate) fn default_no_problems_found() -> String {
+    "No problems found in the workspace.".to_string()
+}
+pub(crate) fn default_problems_panel_title() -> String {
+    "Problems".to_string()
+}
+pub(crate) fn default_problems_panel_close() -> String {
+    "Close".to_string()
+}
+pub(crate) fn default_toggle_problems_panel() -> String {
+    "Toggle Problems Panel".to_string()
+}
+pub(crate) fn default_problems_count_format() -> String {
+    "⚠️ Problems: {count}".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

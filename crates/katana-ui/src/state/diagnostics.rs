@@ -1,17 +1,17 @@
 use katana_linter::markdown::MarkdownDiagnostic;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Default)]
 pub struct DiagnosticsState {
-    pub problems: HashMap<PathBuf, Vec<MarkdownDiagnostic>>,
+    pub problems: BTreeMap<PathBuf, Vec<MarkdownDiagnostic>>,
     pub is_panel_open: bool,
 }
 
 impl DiagnosticsState {
     pub fn new() -> Self {
         Self {
-            problems: HashMap::new(),
+            problems: BTreeMap::new(),
             is_panel_open: false,
         }
     }

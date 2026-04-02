@@ -165,10 +165,6 @@ The long-term vision is to build a **lightweight documentation workspace** that 
 
 ## We Want Your Ideas
 
-This project is still in its early stages.
-
-## We Want Your Ideas
-
 This project is still in its early stages. We welcome features ideas, usability suggestions, and bug reports. 
 If you have thoughts on how KatanA can improve the documentation workflow for developers, please open an [issue](https://github.com/HiroyukiFuruno/KatanA/issues) or [discussion](https://github.com/HiroyukiFuruno/KatanA/discussions).
 

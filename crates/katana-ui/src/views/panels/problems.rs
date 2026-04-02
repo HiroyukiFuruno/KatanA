@@ -18,6 +18,8 @@ impl<'a> ProblemsPanel<'a> {
     }
 
     pub fn show(self, ctx: &egui::Context) {
+        const SPACING: f32 = 4.0;
+
         if !self.state.diagnostics.is_panel_open {
             return;
         }
@@ -26,11 +28,11 @@ impl<'a> ProblemsPanel<'a> {
             .resizable(true)
             .min_height(100.0)
             .show(ctx, |ui| {
-                ui.add_space(4.0);
+                ui.add_space(SPACING);
                 ui.horizontal(|ui| {
-                    ui.heading("Problems");
+                    ui.heading(crate::i18n::get().status.problems_panel_title.clone());
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button("Close").clicked() {
+                        if ui.button(crate::i18n::get().status.problems_panel_close.clone()).clicked() {
                             self.state.diagnostics.is_panel_open = false;
                         }
                     });
@@ -40,7 +42,12 @@ impl<'a> ProblemsPanel<'a> {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     let total = self.state.diagnostics.total_problems();
                     if total == 0 {
-                        ui.label(egui::RichText::new("No problems found in the workspace.").weak());
+                        ui.label(
+                            egui::RichText::new(
+                                crate::i18n::get().status.no_problems_found.clone(),
+                            )
+                            .weak(),
+                        );
                     } else {
                         for (path, diagnostics) in &self.state.diagnostics.problems {
                             let filename = path.file_name().unwrap_or_default().to_string_lossy();
@@ -71,7 +78,7 @@ impl<'a> ProblemsPanel<'a> {
                                     }
                                 });
                             }
-                            ui.add_space(4.0);
+                            ui.add_space(SPACING);
                         }
                     }
                 });

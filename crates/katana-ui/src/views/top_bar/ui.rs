@@ -88,8 +88,11 @@ impl<'a> StatusBar<'a> {
             ui.colored_label(color, msg);
 
             if ui
-                .button(format!("⚠️ Problems: {}", problem_count))
-                .on_hover_text("Toggle Problems Panel")
+                .button(crate::i18n::tf(
+                    &crate::i18n::get().status.problems_count_format,
+                    &[("count", &problem_count.to_string())],
+                ))
+                .on_hover_text(crate::i18n::get().status.toggle_problems_panel.clone())
                 .clicked()
             {
                 action = Some(AppAction::ToggleProblemsPanel);
