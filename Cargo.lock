@@ -2575,6 +2575,7 @@ dependencies = [
  "ehttp",
  "image",
  "katana-core",
+ "katana-linter",
  "katana-platform",
  "mathjax_svg",
  "open",

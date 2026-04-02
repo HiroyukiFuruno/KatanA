@@ -161,6 +161,7 @@ impl ActionOps for KatanaApp {
                     self.state.layout.show_search_modal = false;
                 }
                 self.state.scroll.scroll_to_line = Some(line);
+                self.state.scroll.preview_search_scroll_pending = true;
                 // The byte_range can be used for editor cursor positioning later
             }
             AppAction::OpenMultipleDocuments(paths) => {
@@ -387,6 +388,21 @@ impl ActionOps for KatanaApp {
                     );
                     self.state.scroll.scroll_to_line = Some(line);
                     self.state.scroll.preview_search_scroll_pending = true;
+                }
+            }
+            AppAction::ToggleProblemsPanel => {
+                self.state.diagnostics.is_panel_open = !self.state.diagnostics.is_panel_open;
+            }
+            AppAction::RefreshDiagnostics => {
+                if let Some(doc) = self.state.active_document() {
+                    let path = doc.path.clone();
+                    let content = doc.buffer.clone();
+                    use katana_linter::markdown::MarkdownRule;
+                    let heading_rule = katana_linter::markdown::HeadingStructureRule;
+                    let link_rule = katana_linter::markdown::BrokenLinkRule;
+                    let mut diagnostics = heading_rule.evaluate(&path, &content);
+                    diagnostics.extend(link_rule.evaluate(&path, &content));
+                    self.state.diagnostics.update_diagnostics(path, diagnostics);
                 }
             }
             AppAction::ToggleWorkspaceFilter => {

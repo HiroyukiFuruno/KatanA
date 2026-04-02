@@ -8,6 +8,7 @@ description = "KatanA UI: egui application shell, panes, menu wiring, and presen
 [dependencies]
 katana-core = { path = "../katana-core" }
 katana-platform = { path = "../katana-platform" }
+katana-linter = { path = "../katana-linter" }
 eframe.workspace = true
 egui.workspace = true
 egui_extras.workspace = true

@@ -38,13 +38,19 @@ impl<'a> MainPanels<'a> {
         }
 
         egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
-            crate::views::top_bar::StatusBar::new(
+            let action = crate::views::top_bar::StatusBar::new(
                 resolved_status,
                 app.state.is_dirty(),
                 &export_filenames,
             )
-            .show(ui);
+            .show(ui, app.state.diagnostics.total_problems());
+            if let Some(a) = action {
+                app.pending_action = a;
+            }
         });
+
+        crate::views::panels::problems::ProblemsPanel::new(&mut app.state, &mut app.pending_action)
+            .show(ctx);
 
         WindowTitle::new(app).show(ctx);
 

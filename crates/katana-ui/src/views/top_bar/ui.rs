@@ -44,8 +44,9 @@ impl<'a> StatusBar<'a> {
         }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
+    pub fn show(self, ui: &mut egui::Ui, problem_count: usize) -> Option<AppAction> {
         let export_filenames = self.export_filenames;
+        let mut action = None;
         ui.horizontal(|ui| {
             let (msg, kind) = if let Some((msg, kind)) = self.status {
                 (msg.as_str(), Some(kind))
@@ -86,6 +87,14 @@ impl<'a> StatusBar<'a> {
             }
             ui.colored_label(color, msg);
 
+            if ui
+                .button(format!("⚠️ Problems: {}", problem_count))
+                .on_hover_text("Toggle Problems Panel")
+                .clicked()
+            {
+                action = Some(AppAction::ToggleProblemsPanel);
+            }
+
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if !export_filenames.is_empty() {
                     let total = export_filenames.len();
@@ -110,8 +119,8 @@ impl<'a> StatusBar<'a> {
                     );
                 }
             });
-        })
-        .response
+        });
+        action
     }
 }
 

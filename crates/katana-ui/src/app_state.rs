@@ -1,4 +1,5 @@
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
+pub use crate::state::diagnostics::DiagnosticsState;
 pub use crate::state::document::{
     DocumentState, SplitViewState, TabSplitState, TabViewMode, ViewMode,
 };
@@ -134,6 +135,9 @@ pub enum AppAction {
     DocSearchNext,
     DocSearchPrev,
 
+    ToggleProblemsPanel,
+    RefreshDiagnostics,
+
     None,
 }
 
@@ -153,6 +157,7 @@ pub struct AppState {
     pub scroll: ScrollState,
     pub update: UpdateState,
     pub config: ConfigState,
+    pub diagnostics: DiagnosticsState,
 }
 
 impl AppState {
@@ -174,6 +179,7 @@ impl AppState {
             scroll: ScrollState::new(),
             update: UpdateState::new(),
             config: ConfigState::new(plugin_registry, settings, cache),
+            diagnostics: DiagnosticsState::new(),
         }
     }
 

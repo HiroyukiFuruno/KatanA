@@ -68,6 +68,7 @@ impl DocumentOps for KatanaApp {
                 if self.state.search.doc_search_open {
                     self.refresh_doc_search_matches(&src);
                 }
+                self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
             }
             return;
         }
@@ -92,6 +93,7 @@ impl DocumentOps for KatanaApp {
                         Some(self.state.document.open_documents.len() - 1);
                     self.state.initialize_tab_split_state(path.clone());
                     self.save_workspace_state();
+                    self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
                 }
                 Err(e) => {
                     let error = e.to_string();
@@ -186,6 +188,7 @@ impl DocumentOps for KatanaApp {
                     crate::app_state::StatusType::Success,
                 ));
                 self.save_workspace_state();
+                self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
             }
             Err(e) => {
                 let error = e.to_string();
