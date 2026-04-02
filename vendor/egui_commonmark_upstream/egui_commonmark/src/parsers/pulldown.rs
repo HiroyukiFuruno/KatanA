@@ -119,6 +119,8 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
     custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
     pub search_query: Option<regex::Regex>,
+    /// When true, the first rendered search highlight will trigger scroll_to_me.
+    pub search_scroll_pending: bool,
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
@@ -177,6 +179,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             custom_task_context_menu_fn,
             custom_list_item_highlight_fn,
             search_query: compiled_regex,
+            search_scroll_pending: false,
         }
     }
 }
@@ -1841,6 +1844,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 self.text_style.highlight = true;
                                 self.push_inline_text(&text[mat.start()..mat.end()], ui, max_width);
                                 self.text_style.highlight = prev_highlight;
+                                // When search scroll is pending, flush immediately so the
+                                // highlighted text is laid out and we can scroll to it.
+                                if self.search_scroll_pending {
+                                    self.flush_pending_inline(ui, max_width);
+                                    // Scroll the enclosing ScrollArea to show the cursor
+                                    // (which is now right after the highlighted text).
+                                    ui.scroll_to_cursor(Some(egui::Align::Center));
+                                    self.search_scroll_pending = false;
+                                }
                                 last_end = mat.end();
                             }
                             if last_end < text.len() {

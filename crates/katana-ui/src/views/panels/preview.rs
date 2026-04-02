@@ -77,26 +77,28 @@ impl<'a> PreviewContent<'a> {
         if consuming_editor {
             forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
         } else if let Some(target_line) = scroll.scroll_to_line {
-            if !scroll_sync {
-                let mut found_offset = None;
-                for (span, rect) in &preview.heading_anchors {
-                    if span.contains(&target_line) || span.start >= target_line {
-                        found_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
-                        break;
+            if !scroll.preview_search_scroll_pending {
+                if !scroll_sync {
+                    let mut found_offset = None;
+                    for (span, rect) in &preview.heading_anchors {
+                        if span.contains(&target_line) || span.start >= target_line {
+                            found_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
+                            break;
+                        }
                     }
-                }
-                if let Some(off) = found_offset {
-                    forced_offset = Some(off);
-                } else if let Some((_, rect)) = preview.heading_anchors.last() {
-                    forced_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
+                    if let Some(off) = found_offset {
+                        forced_offset = Some(off);
+                    } else if let Some((_, rect)) = preview.heading_anchors.last() {
+                        forced_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
+                    } else {
+                        forced_offset = Some(0.0);
+                    }
                 } else {
-                    forced_offset = Some(0.0);
+                    let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+                    let editor_y = target_line as f32 * row_height;
+                    scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
+                    forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
                 }
-            } else {
-                let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-                let editor_y = target_line as f32 * row_height;
-                scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
-                forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
             }
         }
 
@@ -137,7 +139,11 @@ impl<'a> PreviewContent<'a> {
                                 scroll.active_editor_line,
                                 Some(&mut hovered_lines),
                                 search_query.clone(),
+                                scroll.preview_search_scroll_pending,
                             );
+                            if scroll.preview_search_scroll_pending {
+                                scroll.preview_search_scroll_pending = false;
+                            }
                             if scroll_sync && scroll.source != ScrollSource::Preview {
                                 scroll.hovered_preview_lines = hovered_lines.clone();
                             }

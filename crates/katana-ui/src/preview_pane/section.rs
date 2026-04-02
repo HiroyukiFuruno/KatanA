@@ -19,6 +19,7 @@ pub(crate) fn show_section(
     hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     global_line_offset: usize,
     search_query: Option<String>,
+    search_scroll_pending: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut actions = Vec::new();
     match section {
@@ -61,6 +62,7 @@ pub(crate) fn show_section(
                     .syntax_theme_dark(preset.syntax_theme_dark)
                     .syntax_theme_light(preset.syntax_theme_light)
                     .search_query(search_query.clone())
+                    .search_scroll_pending(search_scroll_pending)
                     .heading_offset(heading_offset)
                     .render_html_fn(Some(&binding))
                     .render_math_fn(Some(&math_binding))
@@ -286,6 +288,7 @@ pub(crate) fn render_sections(
     active_editor_line: Option<usize>,
     mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     search_query: Option<String>,
+    search_scroll_pending: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut request: Option<DownloadRequest> = None;
     let mut actions = Vec::new();
@@ -352,6 +355,7 @@ pub(crate) fn render_sections(
                         hovered_lines.as_deref_mut(),
                         global_line_offset,
                         search_query.clone(),
+                        search_scroll_pending,
                     );
                     if let Some(r) = req {
                         request = Some(r);

@@ -117,6 +117,7 @@ pub struct CommonMarkViewer<'f> {
     /// Returns `(active_highlighted, hovered)` so the renderer can update internal bookkeeping.
     custom_list_item_highlight_fn: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
     search_query: Option<String>,
+    search_scroll_pending: bool,
 }
 
 impl<'f> Default for CommonMarkViewer<'f> {
@@ -135,6 +136,7 @@ impl<'f> Default for CommonMarkViewer<'f> {
             custom_task_context_menu_fn: None,
             custom_list_item_highlight_fn: None,
             search_query: None,
+            search_scroll_pending: false,
         }
     }
 }
@@ -204,6 +206,11 @@ impl<'f> CommonMarkViewer<'f> {
 
     pub fn search_query(mut self, query: Option<String>) -> Self {
         self.search_query = query;
+        self
+    }
+
+    pub fn search_scroll_pending(mut self, pending: bool) -> Self {
+        self.search_scroll_pending = pending;
         self
     }
 
@@ -337,7 +344,7 @@ impl<'f> CommonMarkViewer<'f> {
     ) -> egui::InnerResponse<()> {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
 
-        let (response, _) = parsers::pulldown::CommonMarkViewerInternal::new(
+        let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
             self.scroll_to_heading_index,
             self.heading_anchors,
             self.heading_offset,
@@ -350,7 +357,9 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_task_context_menu_fn,
             self.custom_list_item_highlight_fn,
             self.search_query.clone(),
-        ).show(
+        );
+        internal.search_scroll_pending = self.search_scroll_pending;
+        let (response, _) = internal.show(
             ui,
             cache,
             &self.options,
@@ -373,8 +382,8 @@ impl<'f> CommonMarkViewer<'f> {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
         self.options.mutable = true;
 
-        let (mut inner_response, checkmark_events) =
-            parsers::pulldown::CommonMarkViewerInternal::new(
+        let (mut inner_response, checkmark_events) = {
+            let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
                 self.scroll_to_heading_index,
                 self.heading_anchors,
                 self.heading_offset,
@@ -387,13 +396,16 @@ impl<'f> CommonMarkViewer<'f> {
                 self.custom_task_context_menu_fn,
                 self.custom_list_item_highlight_fn,
                 self.search_query.clone(),
-            ).show(
+            );
+            internal.search_scroll_pending = self.search_scroll_pending;
+            internal.show(
                 ui,
                 cache,
                 &self.options,
                 text,
                 None,
-            );
+            )
+        };
 
         // Update source text for checkmarks that were clicked
         for ev in checkmark_events {
@@ -447,7 +459,7 @@ impl<'f> CommonMarkViewer<'f> {
         self.options.mutable = true;
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
 
-        parsers::pulldown::CommonMarkViewerInternal::new(
+        let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
             self.scroll_to_heading_index,
             self.heading_anchors,
             self.heading_offset,
@@ -460,7 +472,9 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_task_context_menu_fn,
             self.custom_list_item_highlight_fn,
             self.search_query.clone(),
-        ).show(
+        );
+        internal.search_scroll_pending = self.search_scroll_pending;
+        internal.show(
             ui,
             cache,
             &self.options,
@@ -492,7 +506,7 @@ impl<'f> CommonMarkViewer<'f> {
         text: &str,
     ) {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
-        parsers::pulldown::CommonMarkViewerInternal::new(
+        let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
             self.scroll_to_heading_index,
             self.heading_anchors,
             self.heading_offset,
@@ -505,7 +519,9 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_task_context_menu_fn,
             self.custom_list_item_highlight_fn,
             self.search_query.clone(),
-        ).show_scrollable(
+        );
+        internal.search_scroll_pending = self.search_scroll_pending;
+        internal.show_scrollable(
             Id::new(source_id),
             ui,
             cache,

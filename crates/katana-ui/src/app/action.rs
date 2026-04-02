@@ -353,6 +353,7 @@ impl ActionOps for KatanaApp {
                         let line =
                             crate::views::panels::editor::logic::char_index_to_line(&text, r.start);
                         self.state.scroll.scroll_to_line = Some(line);
+                        self.state.scroll.preview_search_scroll_pending = true;
                     }
                 }
             }
@@ -369,6 +370,7 @@ impl ActionOps for KatanaApp {
                         r.start,
                     );
                     self.state.scroll.scroll_to_line = Some(line);
+                    self.state.scroll.preview_search_scroll_pending = true;
                 }
             }
             AppAction::DocSearchPrev => {
@@ -384,6 +386,7 @@ impl ActionOps for KatanaApp {
                         r.start,
                     );
                     self.state.scroll.scroll_to_line = Some(line);
+                    self.state.scroll.preview_search_scroll_pending = true;
                 }
             }
             AppAction::ToggleWorkspaceFilter => {

@@ -3821,3 +3821,250 @@ fn test_integration_search_multibyte_character_offsets() {
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
+
+/// Roundtrip test: operations -> save -> cache read -> JSON parse -> restore -> verify
+/// This is the definitive regression test for tab pinning + group persistence.
+#[test]
+fn test_integration_roundtrip_pinning_and_groups_persistence() {
+    // -- Phase 1: Build state via app actions --
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = std::env::temp_dir().join("katana_test_roundtrip_persist");
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let file1 = temp_dir.join("alpha.md");
+    let file2 = temp_dir.join("beta.md");
+    let file3 = temp_dir.join("gamma.md");
+    std::fs::write(&file1, "# Alpha").unwrap();
+    std::fs::write(&file2, "# Beta").unwrap();
+    std::fs::write(&file3, "# Gamma").unwrap();
+
+    // Enable session restore
+    harness
+        .state_mut()
+        .app_state_mut()
+        .config
+        .settings
+        .settings_mut()
+        .workspace
+        .restore_session = true;
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    let abs1 = file1.canonicalize().unwrap_or(file1.clone());
+    let abs2 = file2.canonicalize().unwrap_or(file2.clone());
+    let abs3 = file3.canonicalize().unwrap_or(file3.clone());
+
+    // Open 3 files
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs1.clone()));
+    harness.step();
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs2.clone()));
+    harness.step();
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs3.clone()));
+    harness.step();
+
+    // Pin first tab (alpha)
+    // After TogglePinDocument, the pinned tab is sorted to front
+    let alpha_idx = harness
+        .state_mut()
+        .app_state_mut()
+        .document
+        .open_documents
+        .iter()
+        .position(|d| d.path == abs1)
+        .expect("alpha must be open");
+    harness
+        .state_mut()
+        .trigger_action(AppAction::TogglePinDocument(alpha_idx));
+    harness.step();
+
+    // Verify pinning worked
+    let pinned_doc = &harness.state_mut().app_state_mut().document.open_documents[0];
+    assert!(
+        pinned_doc.is_pinned,
+        "First doc should be pinned after toggle"
+    );
+    assert_eq!(pinned_doc.path, abs1, "Pinned doc should be alpha");
+
+    // Create a tab group with beta
+    harness
+        .state_mut()
+        .trigger_action(AppAction::CreateTabGroup {
+            name: "TestGroup".to_string(),
+            color_hex: "#E74C3C".to_string(),
+            initial_member: abs2.clone(),
+        });
+    harness.step();
+
+    // Verify group was created
+    let groups = &harness.state_mut().app_state_mut().document.tab_groups;
+    assert_eq!(groups.len(), 1, "Should have 1 group");
+    assert_eq!(groups[0].name, "TestGroup");
+    assert_eq!(groups[0].color_hex, "#E74C3C");
+    assert_eq!(groups[0].members.len(), 1);
+    assert_eq!(groups[0].members[0], abs2.display().to_string());
+
+    // -- Phase 2: Read from cache and verify serialized JSON --
+    let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
+        workspace_path: temp_dir.clone(),
+    }
+    .to_raw_key()
+    .unwrap_or_default();
+
+    let cached_json = harness
+        .state_mut()
+        .app_state_mut()
+        .config
+        .cache
+        .get_persistent(&cache_key);
+    assert!(
+        cached_json.is_some(),
+        "Cache must contain serialized workspace state after operations"
+    );
+
+    let cached_json = cached_json.unwrap();
+    let parsed: serde_json::Value =
+        serde_json::from_str(&cached_json).expect("Cached JSON must be valid");
+
+    // Verify version
+    assert_eq!(parsed["version"], 2, "Session format must be V2");
+
+    // Verify tabs array contains all 3 with correct pinned flags
+    let tabs = parsed["tabs"].as_array().expect("tabs must be array");
+    assert_eq!(tabs.len(), 3, "Should have 3 tabs serialized");
+
+    // Find alpha in tabs and verify it's pinned
+    let alpha_str = abs1.display().to_string();
+    let alpha_tab = tabs
+        .iter()
+        .find(|t| t["path"].as_str() == Some(&alpha_str))
+        .expect("alpha must be in tabs");
+    assert_eq!(
+        alpha_tab["pinned"], true,
+        "alpha must be serialized as pinned"
+    );
+
+    // Find beta and gamma - should not be pinned
+    let beta_str = abs2.display().to_string();
+    let beta_tab = tabs
+        .iter()
+        .find(|t| t["path"].as_str() == Some(&beta_str))
+        .expect("beta must be in tabs");
+    assert_eq!(
+        beta_tab["pinned"], false,
+        "beta must be serialized as not pinned"
+    );
+
+    let gamma_str = abs3.display().to_string();
+    let gamma_tab = tabs
+        .iter()
+        .find(|t| t["path"].as_str() == Some(&gamma_str))
+        .expect("gamma must be in tabs");
+    assert_eq!(
+        gamma_tab["pinned"], false,
+        "gamma must be serialized as not pinned"
+    );
+
+    // Verify groups array
+    let groups_json = parsed["groups"].as_array().expect("groups must be array");
+    assert_eq!(groups_json.len(), 1, "Should have 1 group serialized");
+    assert_eq!(groups_json[0]["name"], "TestGroup");
+    assert_eq!(groups_json[0]["color_hex"], "#E74C3C");
+    let members = groups_json[0]["members"]
+        .as_array()
+        .expect("members must be array");
+    assert_eq!(members.len(), 1);
+    assert_eq!(members[0].as_str().unwrap(), beta_str);
+
+    // -- Phase 3: Restore from cached state in a new harness --
+    let mut harness2 = setup_harness();
+    harness2.step();
+
+    harness2
+        .state_mut()
+        .app_state_mut()
+        .config
+        .settings
+        .settings_mut()
+        .workspace
+        .restore_session = true;
+
+    // Inject the cached JSON (simulating app restart)
+    harness2
+        .state_mut()
+        .app_state_mut()
+        .config
+        .cache
+        .set_persistent(&cache_key, cached_json)
+        .unwrap();
+
+    harness2
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness2);
+
+    let app2 = harness2.state_mut().app_state_mut();
+
+    // Verify restored tabs count
+    assert_eq!(
+        app2.document.open_documents.len(),
+        3,
+        "Should restore all 3 tabs"
+    );
+
+    // Verify pinned state survived roundtrip
+    let restored_alpha = app2
+        .document
+        .open_documents
+        .iter()
+        .find(|d| d.path == abs1)
+        .expect("alpha must be restored");
+    assert!(
+        restored_alpha.is_pinned,
+        "alpha must be pinned after restore"
+    );
+
+    let restored_beta = app2
+        .document
+        .open_documents
+        .iter()
+        .find(|d| d.path == abs2)
+        .expect("beta must be restored");
+    assert!(
+        !restored_beta.is_pinned,
+        "beta must not be pinned after restore"
+    );
+
+    let restored_gamma = app2
+        .document
+        .open_documents
+        .iter()
+        .find(|d| d.path == abs3)
+        .expect("gamma must be restored");
+    assert!(
+        !restored_gamma.is_pinned,
+        "gamma must not be pinned after restore"
+    );
+
+    // Verify groups survived roundtrip
+    assert_eq!(app2.document.tab_groups.len(), 1, "Should restore 1 group");
+    assert_eq!(app2.document.tab_groups[0].name, "TestGroup");
+    assert_eq!(app2.document.tab_groups[0].color_hex, "#E74C3C");
+    assert_eq!(app2.document.tab_groups[0].members.len(), 1);
+    assert_eq!(
+        app2.document.tab_groups[0].members[0],
+        abs2.display().to_string()
+    );
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}

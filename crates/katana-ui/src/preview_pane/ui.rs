@@ -23,7 +23,7 @@ impl PreviewPane {
                         .max_rect(child_rect)
                         .layout(egui::Layout::top_down(egui::Align::Min)),
                     |ui| {
-                        let (req, act) = self.render_sections(ui, None, None, None);
+                        let (req, act) = self.render_sections(ui, None, None, None, false);
                         request = req;
                         actions = act;
                     },
@@ -39,11 +39,17 @@ impl PreviewPane {
         active_editor_line: Option<usize>,
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
+        search_scroll_pending: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         self.repaint_ctx = Some(ui.ctx().clone());
         self.poll_renders(ui.ctx());
-        let (request, actions) =
-            self.render_sections(ui, active_editor_line, hovered_lines, search_query);
+        let (request, actions) = self.render_sections(
+            ui,
+            active_editor_line,
+            hovered_lines,
+            search_query,
+            search_scroll_pending,
+        );
         self.render_fullscreen_modal(ui.ctx());
         (request, actions)
     }
@@ -54,6 +60,7 @@ impl PreviewPane {
         active_editor_line: Option<usize>,
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
+        search_scroll_pending: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         self.visible_rect = Some(ui.clip_rect());
         self.content_top_y = ui.next_widget_position().y;
@@ -71,6 +78,7 @@ impl PreviewPane {
             active_editor_line,
             hovered_lines,
             search_query,
+            search_scroll_pending,
         );
         self.scroll_request = None;
 

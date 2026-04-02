@@ -20,6 +20,8 @@ pub struct ScrollState {
     pub scroll_to_line: Option<usize>,
     pub hovered_preview_lines: Vec<std::ops::Range<usize>>,
     pub sync_override: Option<bool>,
+    /// When true, the preview renderer should scroll to the first rendered search match.
+    pub preview_search_scroll_pending: bool,
 }
 
 impl Default for ScrollState {
@@ -42,6 +44,7 @@ impl ScrollState {
             scroll_to_line: None,
             hovered_preview_lines: Vec::new(),
             sync_override: None,
+            preview_search_scroll_pending: false,
         }
     }
 }
