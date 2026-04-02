@@ -2,6 +2,14 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.11.2] - 2026-04-02 00:30:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where diagram cache files were not properly cleared from persistent storage.
+- Resolved missing localization keys for the new Tab Groups feature across multiple languages.
+- Polished Tab Group UI layouts and resolved various internal linter warnings.
+
 ## [0.11.0] - 2026-04-01 11:45:00 (UTC)
 
 ### 🚀 Features
