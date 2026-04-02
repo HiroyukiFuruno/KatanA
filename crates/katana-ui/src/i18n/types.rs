@@ -1088,3 +1088,27 @@ mod tests {
         assert_eq!(default_palette_no_results(), "No results found.");
     }
 }
+
+#[cfg(test)]
+mod default_coverage_tests {
+    use super::*;
+    #[test]
+    fn test_all_defaults() {
+        assert_eq!(default_command_type_action(), "Command");
+        assert_eq!(default_palette_query_hint(), "Type a command or search...");
+        assert_eq!(default_tab_file_name(), "File Name");
+        assert_eq!(default_tab_markdown_content(), "Markdown Content");
+        assert_eq!(default_md_query_hint(), "Search markdown files...");
+        assert_eq!(default_recent_searches(), "Recent Searches");
+        assert_eq!(default_clear_history(), "Clear");
+        assert_eq!(default_ln_prefix(), "Ln ");
+        assert_eq!(default_menu_command_palette(), "Command Palette…");
+        assert_eq!(default_menu_view(), "View");
+        assert_eq!(default_problems_panel_title(), "Problems");
+        assert_eq!(default_problems_panel_close(), "Close");
+        assert_eq!(default_no_problems_found(), "No problems found in the workspace.");
+        assert_eq!(default_toggle_problems_panel(), "Toggle Problems Panel");
+        assert_eq!(default_problems_count_format(), "⚠️ Problems: {count}");
+    }
+}
+
