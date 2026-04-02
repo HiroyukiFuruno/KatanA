@@ -18,7 +18,9 @@
     "show_all": "すべて表示",
     "help": "ヘルプ",
     "check_updates": "更新を確認...",
-    "release_notes": "ChangeLog"
+    "release_notes": "ChangeLog",
+    "view": "表示",
+    "command_palette": "コマンドパレット…"
   },
   "about": {
     "basic_info": "基本情報",
@@ -62,7 +64,8 @@
     "recent_workspaces": "最近のワークスペース",
     "metadata_tooltip": "サイズ: {size} B\n更新日時: {mod_time}",
     "path_label": "パス",
-    "flat_view": "フラット表示"
+    "flat_view": "フラット表示",
+    "filter_regex_hint": "フィルター (正規表現)..."
   },
   "preview": {
     "preview_title": "プレビュー",
@@ -114,7 +117,12 @@
     "refresh_success": "ディスクの内容を再読込しました。",
     "refresh_skipped_dirty": "未保存の変更があるため、再読込をスキップしました。",
     "refresh_no_changes": "外部での変更はありません。",
-    "refresh_failed": "再読込に失敗しました: {error}"
+    "refresh_failed": "再読込に失敗しました: {error}",
+    "problems_panel_title": "問題",
+    "problems_panel_close": "閉じる",
+    "no_problems_found": "問題は見つかりませんでした。",
+    "toggle_problems_panel": "問題パネルを表示/非表示",
+    "problems_count_format": "⚠️ 問題: {count}"
   },
   "action": {
     "expand_all": "すべて展開",
@@ -324,12 +332,27 @@
     "query_hint": "ファイル名で検索...",
     "include_pattern_hint": "含める（正規表現, カンマ区切り）",
     "exclude_pattern_hint": "除外する（正規表現, カンマ区切り）",
-    "no_results": "ファイルが見つかりません",
-    "doc_search_title": "ドキュメント内検索",
+    "no_results": "ファイルが見つかりません。",
+    "palette_no_results": "結果が見つかりません。",
+    "doc_search_title": "文書内検索",
     "doc_search_prev": "前へ",
     "doc_search_next": "次へ",
     "doc_search_close": "閉じる",
-    "doc_search_count": "{index} / {total}"
+    "doc_search_count": "{total} 件中 {index} 件目",
+    "tab_file_name": "ファイル名",
+    "tab_markdown_content": "文書内容",
+    "md_query_hint": "Markdownファイルを検索...",
+    "recent_searches": "最近の検索",
+    "clear_history": "履歴を消去",
+    "ln_prefix": "行 ",
+    "palette_query_hint": "コマンドを入力または検索...",
+    "command_settings": "設定の表示切替",
+    "command_workspace": "ワークスペースパネルの表示切替",
+    "command_close_all": "すべてのドキュメントを閉じる",
+    "command_refresh": "ワークスペースを更新",
+    "command_updates": "アップデートを確認",
+    "command_about": "KatanAについてを表示",
+    "command_type_action": "コマンド"
   },
   "toc": {
     "title": "目次",
@@ -356,7 +379,9 @@
     "new_directory_title": "新規フォルダ",
     "rename_title": "名前変更",
     "delete_title": "削除の確認",
-    "delete_confirm_msg": "'{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。"
+    "delete_confirm_msg": "'{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。",
+    "name_hint": "名前",
+    "new_name_hint": "新しい名前"
   },
   "markdown": {
     "task_todo": "未実施 [ ]",

@@ -62,6 +62,10 @@ pub struct SearchMessages {
     pub include_pattern_hint: String,
     pub exclude_pattern_hint: String,
     pub no_results: String,
+    #[serde(default = "default_palette_query_hint")]
+    pub palette_query_hint: String,
+    #[serde(default = "default_palette_no_results")]
+    pub palette_no_results: String,
     #[serde(default = "default_doc_search_title")]
     pub doc_search_title: String,
     #[serde(default = "default_doc_search_prev")]
@@ -85,6 +89,47 @@ pub struct SearchMessages {
     pub clear_history: String,
     #[serde(default = "default_ln_prefix")]
     pub ln_prefix: String,
+
+    #[serde(default = "default_command_settings")]
+    pub command_settings: String,
+    #[serde(default = "default_command_workspace")]
+    pub command_workspace: String,
+    #[serde(default = "default_command_close_all")]
+    pub command_close_all: String,
+    #[serde(default = "default_command_refresh")]
+    pub command_refresh: String,
+    #[serde(default = "default_command_updates")]
+    pub command_updates: String,
+    #[serde(default = "default_command_about")]
+    pub command_about: String,
+    #[serde(default = "default_command_type_action")]
+    pub command_type_action: String,
+}
+
+pub(crate) fn default_command_settings() -> String {
+    "Toggle Settings".to_string()
+}
+pub(crate) fn default_command_workspace() -> String {
+    "Toggle Workspace Panel".to_string()
+}
+pub(crate) fn default_command_close_all() -> String {
+    "Close All Documents".to_string()
+}
+pub(crate) fn default_command_refresh() -> String {
+    "Refresh Workspace".to_string()
+}
+pub(crate) fn default_command_updates() -> String {
+    "Check for Updates".to_string()
+}
+pub(crate) fn default_command_about() -> String {
+    "Toggle About".to_string()
+}
+pub(crate) fn default_command_type_action() -> String {
+    "Command".to_string()
+}
+
+pub(crate) fn default_palette_query_hint() -> String {
+    "Type a command or search...".to_string()
 }
 
 pub(crate) fn default_tab_file_name() -> String {
@@ -104,6 +149,10 @@ pub(crate) fn default_clear_history() -> String {
 }
 pub(crate) fn default_ln_prefix() -> String {
     "Ln ".to_string()
+}
+
+fn default_palette_no_results() -> String {
+    "No results found.".to_string()
 }
 pub(crate) fn default_doc_search_title() -> String {
     "Search Document".to_string()
@@ -221,6 +270,18 @@ pub struct MenuMessages {
     pub check_updates: String,
     #[serde(default = "default_menu_release_notes")]
     pub release_notes: String,
+    #[serde(default = "default_menu_command_palette")]
+    pub command_palette: String,
+    #[serde(default = "default_menu_view")]
+    pub view: String,
+}
+
+pub(crate) fn default_menu_command_palette() -> String {
+    "Command Palette…".to_string()
+}
+
+pub(crate) fn default_menu_view() -> String {
+    "View".to_string()
 }
 
 pub(crate) fn default_menu_release_notes() -> String {
@@ -238,6 +299,8 @@ pub struct WorkspaceMessages {
     pub path_label: String,
     #[serde(default = "default_flat_view")]
     pub flat_view: String,
+    #[serde(default)]
+    pub filter_regex_hint: String,
 }
 
 pub(crate) fn default_flat_view() -> String {
@@ -347,12 +410,12 @@ pub struct StatusMessages {
     pub refresh_no_changes: String,
     #[serde(default = "default_refresh_failed")]
     pub refresh_failed: String,
-    #[serde(default = "default_no_problems_found")]
-    pub no_problems_found: String,
     #[serde(default = "default_problems_panel_title")]
     pub problems_panel_title: String,
     #[serde(default = "default_problems_panel_close")]
     pub problems_panel_close: String,
+    #[serde(default = "default_no_problems_found")]
+    pub no_problems_found: String,
     #[serde(default = "default_toggle_problems_panel")]
     pub toggle_problems_panel: String,
     #[serde(default = "default_problems_count_format")]
@@ -371,14 +434,14 @@ pub(crate) fn default_refresh_no_changes() -> String {
 pub(crate) fn default_refresh_failed() -> String {
     "Failed to refresh document: {error}".to_string()
 }
-pub(crate) fn default_no_problems_found() -> String {
-    "No problems found in the workspace.".to_string()
-}
 pub(crate) fn default_problems_panel_title() -> String {
     "Problems".to_string()
 }
 pub(crate) fn default_problems_panel_close() -> String {
     "Close".to_string()
+}
+pub(crate) fn default_no_problems_found() -> String {
+    "No problems found in the workspace.".to_string()
 }
 pub(crate) fn default_toggle_problems_panel() -> String {
     "Toggle Problems Panel".to_string()
@@ -482,6 +545,10 @@ pub struct DialogMessages {
     pub unsaved_changes_title: String,
     #[serde(default = "default_unsaved_changes_msg")]
     pub unsaved_changes_msg: String,
+    #[serde(default)]
+    pub name_hint: String,
+    #[serde(default)]
+    pub new_name_hint: String,
 }
 
 pub(crate) fn default_unsaved_changes_title() -> String {
@@ -1018,5 +1085,6 @@ mod tests {
         assert_eq!(default_doc_search_count(), "{index}/{total}");
         assert_eq!(d_search_match(), "Search Match");
         assert_eq!(d_search_active(), "Search Active");
+        assert_eq!(default_palette_no_results(), "No results found.");
     }
 }

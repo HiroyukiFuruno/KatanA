@@ -41,7 +41,7 @@ impl<'a> AboutModal<'a> {
 
         let info = crate::about_info::about_info();
 
-        egui::Window::new(format!("About {}", crate::about_info::APP_DISPLAY_NAME))
+        egui::Window::new(crate::i18n::get().menu.about.clone())
             .open(open)
             .resizable(false)
             .collapsible(false)

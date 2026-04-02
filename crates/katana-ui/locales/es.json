@@ -18,7 +18,9 @@
     "show_all": "Mostrar todo",
     "help": "Ayuda",
     "check_updates": "Buscar actualizaciones...",
-    "release_notes": "Notas de la versión"
+    "release_notes": "Notas de la versión",
+    "view": "Ver",
+    "command_palette": "Paleta de comandos…"
   },
   "about": {
     "basic_info": "Información básica",
@@ -62,7 +64,8 @@
     "recent_workspaces": "Espacios de trabajo recientes",
     "metadata_tooltip": "Tamaño: {size} B\nModificado: {mod_time}",
     "path_label": "Ruta",
-    "flat_view": "Vista plana"
+    "flat_view": "Vista plana",
+    "filter_regex_hint": "Filtrar (Expresión regular)..."
   },
   "preview": {
     "preview_title": "Vista Previa",
@@ -114,7 +117,12 @@
     "refresh_success": "Documento actualizado desde el disco.",
     "refresh_skipped_dirty": "Actualización omitida para conservar cambios no guardados.",
     "refresh_no_changes": "No se detectaron cambios externos.",
-    "refresh_failed": "Error al actualizar el documento: {error}"
+    "refresh_failed": "Error al actualizar el documento: {error}",
+    "problems_panel_title": "Problemas",
+    "problems_panel_close": "Cerrar",
+    "no_problems_found": "No se encontraron problemas en el espacio de trabajo.",
+    "toggle_problems_panel": "Alternar panel de problemas",
+    "problems_count_format": "⚠️ Problemas: {count}"
   },
   "action": {
     "expand_all": "Expandir todo",
@@ -329,7 +337,22 @@
     "doc_search_prev": "Anterior",
     "doc_search_next": "Siguiente",
     "doc_search_close": "Cerrar",
-    "doc_search_count": "{index} de {total}"
+    "doc_search_count": "Resultado {index} / {total}",
+    "tab_file_name": "Nombre de archivo",
+    "tab_markdown_content": "Contenido Markdown",
+    "md_query_hint": "Buscar archivos markdown...",
+    "recent_searches": "Búsquedas recientes",
+    "clear_history": "Borrar historial",
+    "ln_prefix": "Lín ",
+    "palette_query_hint": "Escribe un comando o busca...",
+    "command_settings": "Alternar configuración",
+    "command_workspace": "Alternar panel de espacio de trabajo",
+    "command_close_all": "Cerrar todos los documentos",
+    "command_refresh": "Actualizar espacio de trabajo",
+    "command_updates": "Buscar actualizaciones",
+    "command_about": "Alternar Acerca de",
+    "command_type_action": "Comando",
+    "palette_no_results": "No se encontraron resultados."
   },
   "toc": {
     "title": "Tabla de contenidos",
@@ -356,7 +379,9 @@
     "new_directory_title": "Crear carpeta",
     "rename_title": "Renombrar",
     "delete_title": "Eliminar",
-    "delete_confirm_msg": "¿Eliminar? {name}"
+    "delete_confirm_msg": "¿Eliminar? {name}",
+    "name_hint": "Nombre",
+    "new_name_hint": "Nuevo nombre"
   },
   "markdown": {
     "task_todo": "Tarea [ ]",

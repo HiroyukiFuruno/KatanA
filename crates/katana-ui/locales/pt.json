@@ -18,7 +18,9 @@
     "show_all": "Mostrar tudo",
     "help": "Ajuda",
     "check_updates": "Verificar atualizações...",
-    "release_notes": "Notas de versão"
+    "release_notes": "Notas de versão",
+    "view": "Exibir",
+    "command_palette": "Painel de comandos…"
   },
   "about": {
     "basic_info": "Informações básicas",
@@ -62,7 +64,8 @@
     "recent_workspaces": "Espaços de trabalho recentes",
     "metadata_tooltip": "Tamanho: {size} B\nModificado: {mod_time}",
     "path_label": "Caminho",
-    "flat_view": "Visualização Plana"
+    "flat_view": "Visualização Plana",
+    "filter_regex_hint": "Filtrar (Expressão regular)..."
   },
   "preview": {
     "preview_title": "Visualização",
@@ -114,7 +117,12 @@
     "refresh_success": "Documento atualizado do disco.",
     "refresh_skipped_dirty": "Atualização ignorada para preservar alterações não salvas.",
     "refresh_no_changes": "Nenhuma alteração externa detectada.",
-    "refresh_failed": "Falha ao atualizar o documento: {error}"
+    "refresh_failed": "Falha ao atualizar o documento: {error}",
+    "problems_panel_title": "Lista de Problemas",
+    "problems_panel_close": "Fechar painel",
+    "no_problems_found": "Nenhum problema detectado no espaço de trabalho.",
+    "toggle_problems_panel": "Alternar painel de erros",
+    "problems_count_format": "⚠️ Problemas encontrados: {count}"
   },
   "action": {
     "expand_all": "Expandir Tudo",
@@ -326,10 +334,25 @@
     "exclude_pattern_hint": "Excluir (regex, separado por vírgulas)",
     "no_results": "Nenhum arquivo encontrado.",
     "doc_search_title": "Pesquisar documento",
-    "doc_search_prev": "Anterior (PT)",
-    "doc_search_next": "Próximo",
-    "doc_search_close": "Fechar",
-    "doc_search_count": "{index} / {total} (PT)"
+    "doc_search_prev": "Ir para anterior",
+    "doc_search_next": "Ir para seguinte",
+    "doc_search_close": "Fechar busca",
+    "doc_search_count": "Resultado {index} de {total}",
+    "tab_file_name": "Nome do arquivo",
+    "tab_markdown_content": "Conteúdo Markdown",
+    "md_query_hint": "Buscar arquivos markdown...",
+    "recent_searches": "Buscas recentes",
+    "clear_history": "Limpar histórico",
+    "ln_prefix": "Lin ",
+    "palette_query_hint": "Digite um comando ou busque...",
+    "command_settings": "Alternar configurações",
+    "command_workspace": "Alternar painel do espaço de trabalho",
+    "command_close_all": "Fechar todos os documentos",
+    "command_refresh": "Atualizar espaço de trabalho",
+    "command_updates": "Verificar atualizações",
+    "command_about": "Alternar Sobre",
+    "command_type_action": "Ação de comando",
+    "palette_no_results": "Resultados não encontrados."
   },
   "toc": {
     "title": "Sumário",
@@ -356,7 +379,9 @@
     "new_directory_title": "Criar Pasta",
     "rename_title": "Renomear",
     "delete_title": "Excluir",
-    "delete_confirm_msg": "Tem certeza que deseja excluir? {name}"
+    "delete_confirm_msg": "Tem certeza que deseja excluir? {name}",
+    "name_hint": "Nome do arquivo",
+    "new_name_hint": "Novo nome"
   },
   "markdown": {
     "task_todo": "Tarefa [ ]",

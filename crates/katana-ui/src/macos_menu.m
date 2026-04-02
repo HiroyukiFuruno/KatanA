@@ -19,6 +19,7 @@ enum {
     TAG_LANG_IT        = 14,
     TAG_CHECK_UPDATES  = 15,
     TAG_RELEASE_NOTES  = 16,
+    TAG_COMMAND_PALETTE = 17,
 };
 
 // Global: Tag of the last selected menu action.
@@ -41,6 +42,8 @@ static KatanaMenuTarget *g_target = nil;
 static NSMenu *g_file_menu = nil;
 static NSMenuItem *g_open_workspace_item = nil;
 static NSMenuItem *g_save_item = nil;
+static NSMenu *g_view_menu = nil;
+static NSMenuItem *g_command_palette_item = nil;
 static NSMenu *g_settings_menu = nil;
 static NSMenuItem *g_preferences_item = nil;
 static NSMenu *g_language_menu = nil;
@@ -149,6 +152,41 @@ void katana_setup_native_menu(void) {
     NSMenuItem *fileMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     [fileMenuItem setSubmenu:fileMenu];
 
+    // --- View Menu ---
+    NSMenu *viewMenu = [[NSMenu alloc] initWithTitle:@"View"];
+    g_view_menu = viewMenu;
+
+    NSMenuItem *paletteItem = [[NSMenuItem alloc]
+        initWithTitle:@"Command Palette…"
+        action:action
+        keyEquivalent:@"k"];
+    [paletteItem setTarget:g_target];
+    [paletteItem setTag:TAG_COMMAND_PALETTE];
+    [viewMenu addItem:paletteItem];
+
+    // Also alias Cmd+P to command palette for parity with VS Code
+    // We use the same TAG and a different key equivalent.
+    // To avoid duplication in the menu while supporting multiple shortcuts,
+    // we can add it as a hidden item or just rely on the shell_ui.rs handling for Cmd+P.
+    // However, to show it in the menu without a separate visible entry,
+    // we use a hidden menu item or just skip it if we want it clean.
+    // Let's add it as an 'alternate' to the same menu item if possible,
+    // but Cocoa NSMenuItem doesn't easily support two shortcuts for one item.
+    // A common trick is to add another item with the same action/tag but make it hidden.
+    NSMenuItem *paletteItem2 = [[NSMenuItem alloc]
+        initWithTitle:@"Command Palette…"
+        action:action
+        keyEquivalent:@"p"];
+    [paletteItem2 setTarget:g_target];
+    [paletteItem2 setTag:TAG_COMMAND_PALETTE];
+    [paletteItem2 setHidden:YES]; // Hide from view but keep shortcut active
+    [viewMenu addItem:paletteItem2];
+    
+    g_command_palette_item = paletteItem;
+
+    NSMenuItem *viewMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
+    [viewMenuItem setSubmenu:viewMenu];
+
     // --- Settings > Language ---
     NSMenu *langMenu = [[NSMenu alloc] initWithTitle:@"Language"];
     g_language_menu = langMenu;
@@ -251,6 +289,7 @@ void katana_setup_native_menu(void) {
     [NSApp setMainMenu:mainMenu];
     [mainMenu addItem:appMenuItem];
     [mainMenu addItem:fileMenuItem];
+    [mainMenu addItem:viewMenuItem];
     [mainMenu addItem:settingsMenuItem];
     [mainMenu addItem:helpMenuItem];
 
@@ -283,7 +322,9 @@ void katana_update_menu_strings(
     const char* show_all,
     const char* check_updates,
     const char* help,
-    const char* release_notes
+    const char* release_notes,
+    const char* command_palette,
+    const char* view
 ) {
     @autoreleasepool {
         if (g_file_menu && file) {
@@ -294,6 +335,18 @@ void katana_update_menu_strings(
         }
         if (g_save_item && save) {
             [g_save_item setTitle:[NSString stringWithUTF8String:save]];
+        }
+        if (g_view_menu && view) {
+            [g_view_menu setTitle:[NSString stringWithUTF8String:view]];
+        }
+        if (g_command_palette_item && command_palette) {
+            [g_command_palette_item setTitle:[NSString stringWithUTF8String:command_palette]];
+            // Also update the hidden parallel shortcut item if needed
+            for (NSMenuItem *item in [g_view_menu itemArray]) {
+                if ([item tag] == TAG_COMMAND_PALETTE) {
+                    [item setTitle:[NSString stringWithUTF8String:command_palette]];
+                }
+            }
         }
         if (g_settings_menu && settings) {
             [g_settings_menu setTitle:[NSString stringWithUTF8String:settings]];

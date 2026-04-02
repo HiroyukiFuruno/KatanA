@@ -14,6 +14,9 @@ pub fn ui_methods() -> Vec<&'static str> {
         "text_edit_singleline",
         "hyperlink_to",
         "collapsing",
+        "hint_text",
+        "menu_button",
+        "with_new_rect",
     ]
 }
 
@@ -22,7 +25,7 @@ pub fn ui_functions() -> Vec<&'static str> {
 }
 
 pub fn ui_types_for_new() -> Vec<&'static str> {
-    vec!["RichText", "Button"]
+    vec!["RichText", "Button", "Window"]
 }
 
 pub fn is_format_macro(mac: &syn::Macro) -> bool {

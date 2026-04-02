@@ -99,11 +99,12 @@ pub fn get_language() -> String {
 pub fn get() -> &'static I18nMessages {
     let lang = get_language();
     let dict = get_dictionary();
-    let fallback = &dict[0].messages;
     dict.iter()
         .find(|entry| entry.lang == lang.as_str())
         .map(|entry| &entry.messages)
-        .unwrap_or(fallback)
+        .expect(
+            "BUG: Language not found in dictionary. All supported languages must be initialized.",
+        )
 }
 
 pub fn tf(template: &str, params: &[(&str, &str)]) -> String {
@@ -146,11 +147,10 @@ mod tests {
     }
 
     #[test]
-    fn test_get_fallback_to_en() {
+    #[should_panic(expected = "BUG: Language not found in dictionary")]
+    fn test_get_panic_on_unsupported() {
         set_language("unsupported-lang-code");
-        let msgs = get();
-        assert!(!msgs.menu.file.is_empty());
-        set_language("en");
+        let _ = get();
     }
 
     #[test]

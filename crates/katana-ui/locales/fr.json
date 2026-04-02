@@ -18,7 +18,9 @@
     "show_all": "Tout afficher",
     "help": "Aide",
     "check_updates": "Vérifier les mises à jour...",
-    "release_notes": "Notes de version"
+    "release_notes": "Notes de version",
+    "view": "Affichage",
+    "command_palette": "Palette de commandes…"
   },
   "about": {
     "basic_info": "Informations de base",
@@ -62,7 +64,8 @@
     "recent_workspaces": "Espaces de travail récents",
     "metadata_tooltip": "Taille: {size} B\nModifié: {mod_time}",
     "path_label": "Chemin",
-    "flat_view": "Vue plate"
+    "flat_view": "Vue plate",
+    "filter_regex_hint": "Filtrer (Regex)..."
   },
   "preview": {
     "preview_title": "Aperçu",
@@ -114,7 +117,12 @@
     "refresh_success": "Document actualisé depuis le disque.",
     "refresh_skipped_dirty": "Actualisation ignorée pour préserver les modifications.",
     "refresh_no_changes": "Aucune modification externe détectée.",
-    "refresh_failed": "Impossible d\"actualiser le document: {error}"
+    "refresh_failed": "Échec de l'actualisation du document : {error}",
+    "problems_panel_title": "Problèmes",
+    "problems_panel_close": "Fermer",
+    "no_problems_found": "Aucun problème trouvé dans l'espace de travail.",
+    "toggle_problems_panel": "Basculer le panneau des problèmes",
+    "problems_count_format": "⚠️ Problèmes : {count}"
   },
   "action": {
     "expand_all": "Tout développer",
@@ -329,7 +337,22 @@
     "doc_search_prev": "Précédent",
     "doc_search_next": "Suivant",
     "doc_search_close": "Fermer",
-    "doc_search_count": "{index} sur {total}"
+    "doc_search_count": "Résultat {index} sur {total}",
+    "tab_file_name": "Nom du fichier",
+    "tab_markdown_content": "Contenu Markdown",
+    "md_query_hint": "Rechercher des fichiers markdown...",
+    "recent_searches": "Recherches récentes",
+    "clear_history": "Effacer l'historique",
+    "ln_prefix": "Lig ",
+    "palette_query_hint": "Tapez une commande ou recherchez...",
+    "command_settings": "Basculer les paramètres",
+    "command_workspace": "Basculer le panneau de l'espace de travail",
+    "command_close_all": "Fermer tous les documents",
+    "command_refresh": "Actualiser l'espace de travail",
+    "command_updates": "Vérifier les mises à jour",
+    "command_about": "Basculer À propos",
+    "command_type_action": "Commande",
+    "palette_no_results": "Aucun résultat trouvé."
   },
   "toc": {
     "title": "Table des matières",
@@ -356,7 +379,9 @@
     "new_directory_title": "Créer dossier",
     "rename_title": "Renommer",
     "delete_title": "Supprimer",
-    "delete_confirm_msg": "Sûr de supprimer ? {name}"
+    "delete_confirm_msg": "Sûr de supprimer ? {name}",
+    "name_hint": "Nom",
+    "new_name_hint": "Nouveau nom"
   },
   "markdown": {
     "task_todo": "Tâche [ ]",

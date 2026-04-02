@@ -18,7 +18,9 @@
     "show_all": "Show All",
     "help": "Help",
     "check_updates": "Check for Updates...",
-    "release_notes": "Changelog"
+    "release_notes": "Changelog",
+    "view": "View",
+    "command_palette": "Command Palette…"
   },
   "about": {
     "basic_info": "Basic Info",
@@ -62,7 +64,8 @@
     "recent_workspaces": "Recent Workspaces",
     "metadata_tooltip": "Size: {size} B\nModified: {mod_time}",
     "path_label": "Path",
-    "flat_view": "Flat View"
+    "flat_view": "Flat View",
+    "filter_regex_hint": "Filter (Regex)..."
   },
   "preview": {
     "preview_title": "Preview",
@@ -114,7 +117,12 @@
     "refresh_success": "Document refreshed from disk.",
     "refresh_skipped_dirty": "Refresh skipped to preserve unsaved changes.",
     "refresh_no_changes": "No external changes detected.",
-    "refresh_failed": "Failed to refresh document: {error}"
+    "refresh_failed": "Failed to refresh document: {error}",
+    "problems_panel_title": "Problems",
+    "problems_panel_close": "Close",
+    "no_problems_found": "No problems found in the workspace.",
+    "toggle_problems_panel": "Toggle Problems Panel",
+    "problems_count_format": "⚠️ Problems: {count}"
   },
   "action": {
     "expand_all": "Expand all",
@@ -325,11 +333,26 @@
     "include_pattern_hint": "Include (regex, comma-separated)",
     "exclude_pattern_hint": "Exclude (regex, comma-separated)",
     "no_results": "No files found.",
+    "palette_no_results": "No results found.",
     "doc_search_title": "Search Document",
     "doc_search_prev": "Previous",
     "doc_search_next": "Next",
     "doc_search_close": "Close",
-    "doc_search_count": "{index}/{total}"
+    "doc_search_count": "{index}/{total}",
+    "tab_file_name": "File Name",
+    "tab_markdown_content": "Markdown Content",
+    "md_query_hint": "Search markdown files...",
+    "recent_searches": "Recent Searches",
+    "clear_history": "Clear History",
+    "ln_prefix": "Ln ",
+    "palette_query_hint": "Type a command or search...",
+    "command_settings": "Toggle Settings",
+    "command_workspace": "Toggle Workspace Panel",
+    "command_close_all": "Close All Documents",
+    "command_refresh": "Refresh Workspace",
+    "command_updates": "Check for Updates",
+    "command_about": "Toggle About",
+    "command_type_action": "Command"
   },
   "toc": {
     "title": "Table of Contents",
@@ -356,7 +379,9 @@
     "new_directory_title": "New Folder",
     "rename_title": "Rename",
     "delete_title": "Confirm Deletion",
-    "delete_confirm_msg": "Are you sure you want to delete '{name}'?\nThis action cannot be undone."
+    "delete_confirm_msg": "Are you sure you want to delete '{name}'?\nThis action cannot be undone.",
+    "name_hint": "Name",
+    "new_name_hint": "New Name"
   },
   "markdown": {
     "task_todo": "Todo [ ]",

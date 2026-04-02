@@ -18,7 +18,9 @@
     "show_all": "显示全部",
     "help": "帮助",
     "check_updates": "检查更新...",
-    "release_notes": "发行说明"
+    "release_notes": "发行说明",
+    "view": "查看",
+    "command_palette": "命令面板…"
   },
   "about": {
     "basic_info": "基本信息",
@@ -62,7 +64,8 @@
     "recent_workspaces": "最近的工作区",
     "metadata_tooltip": "大小: {size} B\n修改时间: {mod_time}",
     "path_label": "路径",
-    "flat_view": "扁平视图"
+    "flat_view": "扁平视图",
+    "filter_regex_hint": "过滤 (正则表达式)..."
   },
   "preview": {
     "preview_title": "预览",
@@ -114,7 +117,12 @@
     "refresh_success": "已从磁盘刷新文档。",
     "refresh_skipped_dirty": "已跳过刷新以保留未保存的更改。",
     "refresh_no_changes": "未检测到外部更改。",
-    "refresh_failed": "刷新文档失败: {error}"
+    "refresh_failed": "刷新文档失败: {error}",
+    "problems_panel_title": "问题",
+    "problems_panel_close": "关闭",
+    "no_problems_found": "工作区内未发现问题。",
+    "toggle_problems_panel": "切换问题面板",
+    "problems_count_format": "⚠️ 问题: {count}"
   },
   "action": {
     "expand_all": "展开全部",
@@ -329,7 +337,22 @@
     "doc_search_prev": "上一个",
     "doc_search_next": "下一个",
     "doc_search_close": "关闭",
-    "doc_search_count": "第 {index} 个，共 {total} 个"
+    "doc_search_count": "第 {index} 个 / 共 {total} 个",
+    "tab_file_name": "文件名",
+    "tab_markdown_content": "Markdown 内容",
+    "md_query_hint": "搜索 markdown 文件...",
+    "recent_searches": "最近搜索",
+    "clear_history": "清除历史记录",
+    "ln_prefix": "📄 第 ",
+    "palette_query_hint": "输入命令或进行搜索...",
+    "command_settings": "切换设置",
+    "command_workspace": "切换工作区面板",
+    "command_close_all": "关闭所有文档",
+    "command_refresh": "刷新工作区",
+    "command_updates": "检查更新",
+    "command_about": "切换关于",
+    "command_type_action": "命令",
+    "palette_no_results": "未找到结果。"
   },
   "toc": {
     "title": "目录",
@@ -356,7 +379,9 @@
     "new_directory_title": "创建新文件夹",
     "rename_title": "重命名",
     "delete_title": "删除",
-    "delete_confirm_msg": "确定要删除吗？ {name}"
+    "delete_confirm_msg": "确定要删除吗？ {name}",
+    "name_hint": "名称",
+    "new_name_hint": "新名称"
   },
   "markdown": {
     "task_todo": "待办 [ ]",

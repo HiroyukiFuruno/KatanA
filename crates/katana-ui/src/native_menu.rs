@@ -18,6 +18,7 @@ mod ffi {
     pub const TAG_LANG_IT: i32 = 14;
     pub const TAG_CHECK_UPDATES: i32 = 15;
     pub const TAG_RELEASE_NOTES: i32 = 16;
+    pub const TAG_COMMAND_PALETTE: i32 = 17;
 
     #[allow(dead_code)]
     extern "C" {
@@ -41,6 +42,8 @@ mod ffi {
             check_updates: *const std::ffi::c_char,
             help: *const std::ffi::c_char,
             release_notes: *const std::ffi::c_char,
+            command_palette: *const std::ffi::c_char,
+            view: *const std::ffi::c_char,
         );
     }
 }
@@ -80,6 +83,8 @@ unsafe fn native_update_menu_strings(
     check_updates: &str,
     help: &str,
     release_notes: &str,
+    command_palette: &str,
+    view: &str,
 ) {
     let f = std::ffi::CString::new(file).unwrap_or_default();
     let ow = std::ffi::CString::new(open_workspace).unwrap_or_default();
@@ -95,6 +100,8 @@ unsafe fn native_update_menu_strings(
     let cu = std::ffi::CString::new(check_updates).unwrap_or_default();
     let hlp = std::ffi::CString::new(help).unwrap_or_default();
     let rn = std::ffi::CString::new(release_notes).unwrap_or_default();
+    let cp = std::ffi::CString::new(command_palette).unwrap_or_default();
+    let v = std::ffi::CString::new(view).unwrap_or_default();
     ffi::katana_update_menu_strings(
         f.as_ptr(),
         ow.as_ptr(),
@@ -110,6 +117,8 @@ unsafe fn native_update_menu_strings(
         cu.as_ptr(),
         hlp.as_ptr(),
         rn.as_ptr(),
+        cp.as_ptr(),
+        v.as_ptr(),
     );
 }
 
@@ -133,6 +142,8 @@ pub fn update_native_menu_strings_from_i18n() {
             &msgs.menu.check_updates,
             &msgs.menu.help,
             &msgs.menu.release_notes,
+            &msgs.menu.command_palette,
+            &msgs.menu.view,
         );
     }
 }
@@ -172,6 +183,7 @@ pub(crate) fn poll_native_menu(
         ffi::TAG_CHECK_UPDATES => AppAction::CheckForUpdates,
         ffi::TAG_RELEASE_NOTES => AppAction::ShowReleaseNotes,
         ffi::TAG_SETTINGS => AppAction::ToggleSettings,
+        ffi::TAG_COMMAND_PALETTE => AppAction::ToggleCommandPalette,
         _ => AppAction::None,
     }
 }

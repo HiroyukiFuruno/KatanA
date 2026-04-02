@@ -94,7 +94,11 @@ pub(crate) fn render_math(ui: &mut egui::Ui, tex: &str, is_inline: bool) {
                     format!("data:image/svg+xml;base64,{}", b64)
                 }
                 Err(e) => {
-                    tracing::error!("MathJax rendering failed for {:?}: {}", tex, e);
+                    tracing::debug!(
+                        "MathJax rendering failed for {:?}: {} (falling back to plain text)",
+                        tex,
+                        e
+                    );
                     String::new()
                 }
             };

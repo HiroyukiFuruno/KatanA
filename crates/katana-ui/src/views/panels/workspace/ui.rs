@@ -608,7 +608,7 @@ impl<'a> WorkspaceHeader<'a> {
                     ui.add(
                         egui::TextEdit::singleline(&mut search.filter_query)
                             .text_color(text_color)
-                            .hint_text("Filter (Regex)...")
+                            .hint_text(&crate::i18n::get().workspace.filter_regex_hint)
                             .desired_width(f32::INFINITY),
                     );
                 });

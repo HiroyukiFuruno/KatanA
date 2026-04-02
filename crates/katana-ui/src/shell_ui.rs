@@ -180,9 +180,15 @@ impl eframe::App for KatanaApp {
             i.consume_shortcut(&egui::KeyboardShortcut::new(
                 egui::Modifiers::COMMAND,
                 egui::Key::P,
+            )) || i.consume_shortcut(&egui::KeyboardShortcut::new(
+                egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
+                egui::Key::P,
+            )) || i.consume_shortcut(&egui::KeyboardShortcut::new(
+                egui::Modifiers::COMMAND,
+                egui::Key::K,
             ))
         }) {
-            self.state.layout.show_search_modal = true;
+            self.pending_action = AppAction::ToggleCommandPalette;
         }
 
         if ctx.input_mut(|i| {
@@ -252,6 +258,21 @@ impl eframe::App for KatanaApp {
                 .show(ctx)
         {
             self.pending_action = settings_action;
+        }
+
+        if self.state.command_palette.is_open {
+            let providers: Vec<Box<dyn crate::state::command_palette::CommandPaletteProvider>> = vec![
+                Box::new(crate::state::command_palette_providers::AppCommandProvider),
+                Box::new(crate::state::command_palette_providers::WorkspaceFileProvider),
+                Box::new(crate::state::command_palette_providers::MarkdownContentProvider),
+            ];
+            crate::views::modals::command_palette::CommandPaletteModal::new(
+                &mut self.state.command_palette,
+                self.state.workspace.data.as_ref(),
+                &mut self.pending_action,
+                &providers,
+            )
+            .show(ctx);
         }
 
         if self.state.layout.show_search_modal {

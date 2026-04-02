@@ -3,6 +3,7 @@
 
 pub mod integration {
     pub mod app_state;
+    pub mod command_palette;
     pub mod diagram_rendering;
     pub mod font_bridge;
     pub mod font_realtime;

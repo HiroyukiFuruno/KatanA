@@ -2,6 +2,21 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.14.0] - 2026-04-02 14:05:45 (UTC)
+
+### 🚀 Features
+
+- Introduced the global Command Palette (accessible via `Cmd+Shift+P` / `Ctrl+Shift+P`), providing unified access to application commands with a fuzzy-search interface.
+
+### ✨ Improvements
+
+- Enhanced command palette usability with dynamic height adjustment, window resizing support, and automatic focus tracking to keep the active selection visible.
+- Increased overall rendering stability by ensuring text with script-like characters gracefully falls back to plain text instead of triggering false-positive rendering errors.
+
+### 🔧 System
+
+- Increased 100% UI localization compliance across all 10 supported languages by integrating translation parameters into deep workspace and file-operation dialogs.
+
 ## [0.13.0] - 2026-04-02 10:15:00 (UTC)
 
 ### 🚀 Features

@@ -18,7 +18,9 @@
     "show_all": "Alle anzeigen",
     "help": "Hilfe",
     "check_updates": "Nach Updates suchen...",
-    "release_notes": "Versionshinweise"
+    "release_notes": "Versionshinweise",
+    "view": "Ansicht",
+    "command_palette": "Befehlspalette…"
   },
   "about": {
     "basic_info": "Basisinfo",
@@ -62,7 +64,8 @@
     "recent_workspaces": "Zuletzt verwendete Arbeitsbereiche",
     "metadata_tooltip": "Größe: {size} B\nGeändert: {mod_time}",
     "path_label": "Pfad",
-    "flat_view": "Flache Ansicht"
+    "flat_view": "Flache Ansicht",
+    "filter_regex_hint": "Filtern (Regex)..."
   },
   "preview": {
     "preview_title": "Vorschau",
@@ -114,7 +117,12 @@
     "refresh_success": "Dokument vom Datenträger neu geladen.",
     "refresh_skipped_dirty": "Aktualisierung übersprungen, um ungespeicherte Änderungen zu erhalten.",
     "refresh_no_changes": "Keine externen Änderungen erkannt.",
-    "refresh_failed": "Dokument konnte nicht aktualisiert werden: {error}"
+    "refresh_failed": "Aktualisierung fehlgeschlagen: {error}",
+    "problems_panel_title": "Probleme",
+    "problems_panel_close": "Schließen",
+    "no_problems_found": "Keine Probleme im Arbeitsbereich gefunden.",
+    "toggle_problems_panel": "Problempanel umschalten",
+    "problems_count_format": "⚠️ Probleme: {count}"
   },
   "action": {
     "expand_all": "Alle erweitern",
@@ -329,7 +337,22 @@
     "doc_search_prev": "Zurück",
     "doc_search_next": "Weiter",
     "doc_search_close": "Schließen",
-    "doc_search_count": "{index} von {total}"
+    "doc_search_count": "Ergebnis {index} von {total}",
+    "tab_file_name": "Dateiname",
+    "tab_markdown_content": "Markdown-Inhalt",
+    "md_query_hint": "Markdown-Dateien suchen...",
+    "recent_searches": "Letzte Suchanfragen",
+    "clear_history": "Verlauf löschen",
+    "ln_prefix": "Zl ",
+    "palette_query_hint": "Befehl eingeben oder suchen...",
+    "command_settings": "Einstellungen umschalten",
+    "command_workspace": "Arbeitsbereich umschalten",
+    "command_close_all": "Alle Dokumente schließen",
+    "command_refresh": "Arbeitsbereich aktualisieren",
+    "command_updates": "Auf Updates prüfen",
+    "command_about": "Über KatanA umschalten",
+    "command_type_action": "Befehl",
+    "palette_no_results": "Keine Ergebnisse gefunden."
   },
   "toc": {
     "title": "Inhaltsverzeichnis",
@@ -356,7 +379,9 @@
     "new_directory_title": "Neuer Ordner",
     "rename_title": "Umbenennen",
     "delete_title": "Löschen",
-    "delete_confirm_msg": "Wirklich löschen? {name}"
+    "delete_confirm_msg": "Wirklich löschen? {name}",
+    "name_hint": "Dateiname",
+    "new_name_hint": "Neuer Name"
   },
   "markdown": {
     "task_todo": "Aufgabe [ ]",

@@ -18,7 +18,9 @@
     "show_all": "顯示全部",
     "help": "幫助",
     "check_updates": "檢查更新...",
-    "release_notes": "發行說明"
+    "release_notes": "發行說明",
+    "view": "檢視",
+    "command_palette": "指令面板…"
   },
   "about": {
     "basic_info": "基本資訊",
@@ -62,7 +64,8 @@
     "recent_workspaces": "最近的工作區",
     "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
     "path_label": "路徑",
-    "flat_view": "扁平視圖"
+    "flat_view": "扁平視圖",
+    "filter_regex_hint": "篩選 (正則表達式)..."
   },
   "preview": {
     "preview_title": "預覽",
@@ -114,7 +117,12 @@
     "refresh_success": "已從磁碟重新整理文件。",
     "refresh_skipped_dirty": "已略過重新整理以保留未儲存的變更。",
     "refresh_no_changes": "未偵測到外部變更。",
-    "refresh_failed": "重新整理文件失敗: {error}"
+    "refresh_failed": "重新整理文件失敗: {error}",
+    "problems_panel_title": "問題報告",
+    "problems_panel_close": "關閉",
+    "no_problems_found": "工作區內未發現問題。",
+    "toggle_problems_panel": "切換問題面板",
+    "problems_count_format": "⚠️ 發現問題: {count}"
   },
   "action": {
     "expand_all": "展開全部",
@@ -329,7 +337,22 @@
     "doc_search_prev": "上一個",
     "doc_search_next": "下一個",
     "doc_search_close": "關閉",
-    "doc_search_count": "第 {index} 個，共 {total} 個"
+    "doc_search_count": "第 {index} 筆 / 共 {total} 筆",
+    "tab_file_name": "檔名",
+    "tab_markdown_content": "Markdown 內容",
+    "md_query_hint": "搜尋 markdown 檔案...",
+    "recent_searches": "最近搜尋",
+    "clear_history": "清除歷史紀錄",
+    "ln_prefix": "第 ",
+    "palette_query_hint": "輸入指令或進行搜尋...",
+    "command_settings": "切換設定",
+    "command_workspace": "切換工作區面板",
+    "command_close_all": "關閉所有文件",
+    "command_refresh": "重新整理工作區",
+    "command_updates": "檢查更新",
+    "command_about": "切換關於",
+    "command_type_action": "指令",
+    "palette_no_results": "找不到結果。"
   },
   "toc": {
     "title": "目錄",
@@ -356,7 +379,9 @@
     "new_directory_title": "建立新資料夾",
     "rename_title": "重新命名",
     "delete_title": "刪除",
-    "delete_confirm_msg": "確定要刪除嗎？ {name}"
+    "delete_confirm_msg": "確定要刪除嗎？ {name}",
+    "name_hint": "名稱",
+    "new_name_hint": "新名稱"
   },
   "markdown": {
     "task_todo": "待辦 [ ]",

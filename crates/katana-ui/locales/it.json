@@ -18,7 +18,9 @@
     "show_all": "Mostra tutti",
     "help": "Aiuto",
     "check_updates": "Controlla aggiornamenti...",
-    "release_notes": "Note di rilascio"
+    "release_notes": "Note di rilascio",
+    "view": "Visualizza",
+    "command_palette": "Tavolozza dei comandi…"
   },
   "about": {
     "basic_info": "Informazioni di base",
@@ -62,7 +64,8 @@
     "recent_workspaces": "Spazi di lavoro recenti",
     "metadata_tooltip": "Dimensioni: {size} B\nModificato: {mod_time}",
     "path_label": "Percorso",
-    "flat_view": "Vista piatta"
+    "flat_view": "Vista piatta",
+    "filter_regex_hint": "Filtra (Regex)..."
   },
   "preview": {
     "preview_title": "Anteprima",
@@ -114,7 +117,12 @@
     "refresh_success": "Documento ricaricato dal disco.",
     "refresh_skipped_dirty": "Aggiornamento saltato per salvare le modifiche.",
     "refresh_no_changes": "Nessuna modifica esterna rilevata.",
-    "refresh_failed": "Impossibile aggiornare il documento: {error}"
+    "refresh_failed": "Aggiornamento del documento fallito: {error}",
+    "problems_panel_title": "Problemi",
+    "problems_panel_close": "Chiudi",
+    "no_problems_found": "Nessun problema trovato nello spazio di lavoro.",
+    "toggle_problems_panel": "Attiva/disattiva pannello problemi",
+    "problems_count_format": "⚠️ Problemi: {count}"
   },
   "action": {
     "expand_all": "Espandi Tutto",
@@ -329,7 +337,22 @@
     "doc_search_prev": "Precedente",
     "doc_search_next": "Successivo",
     "doc_search_close": "Chiudi",
-    "doc_search_count": "{index} di {total}"
+    "doc_search_count": "Risultato {index} di {total}",
+    "tab_file_name": "Nome file",
+    "tab_markdown_content": "Contenuto Markdown",
+    "md_query_hint": "Cerca file markdown...",
+    "recent_searches": "Ricerche recenti",
+    "clear_history": "Cancella cronologia",
+    "ln_prefix": "Rig ",
+    "palette_query_hint": "Digita un comando o cerca...",
+    "command_settings": "Attiva/disattiva impostazioni",
+    "command_workspace": "Pannello area di lavoro",
+    "command_close_all": "Chiudi tutti i documenti",
+    "command_refresh": "Aggiorna area di lavoro",
+    "command_updates": "Controlla aggiornamenti",
+    "command_about": "Attiva/disattiva Informazioni",
+    "command_type_action": "Azione del comando",
+    "palette_no_results": "Nessun risultato disponibile."
   },
   "toc": {
     "title": "Indice",
@@ -356,7 +379,9 @@
     "new_directory_title": "Crea Nuova Cartella",
     "rename_title": "Rinomina",
     "delete_title": "Elimina",
-    "delete_confirm_msg": "Eliminare? {name}"
+    "delete_confirm_msg": "Eliminare? {name}",
+    "name_hint": "Nome del file",
+    "new_name_hint": "Nuovo nome"
   },
   "markdown": {
     "task_todo": "Da fare [ ]",

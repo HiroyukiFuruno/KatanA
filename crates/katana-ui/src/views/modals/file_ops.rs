@@ -52,7 +52,7 @@ impl<'a> CreateFsNodeModal<'a> {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
                         egui::TextEdit::singleline(name)
-                            .hint_text("Name")
+                            .hint_text(&crate::i18n::get().dialog.name_hint)
                             .desired_width(MODAL_INPUT_WIDTH),
                     );
                     re.request_focus();
@@ -157,7 +157,7 @@ impl<'a> RenameModal<'a> {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
                         egui::TextEdit::singleline(new_name)
-                            .hint_text("New Name")
+                            .hint_text(&crate::i18n::get().dialog.new_name_hint)
                             .desired_width(MODAL_INPUT_WIDTH),
                     );
                     re.request_focus();

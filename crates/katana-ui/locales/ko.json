@@ -18,7 +18,9 @@
     "show_all": "모두 표시",
     "help": "도움말",
     "check_updates": "업데이트 확인...",
-    "release_notes": "릴리스 노트"
+    "release_notes": "버전 정보",
+    "view": "보기",
+    "command_palette": "명령어 팔레트…"
   },
   "about": {
     "basic_info": "기본 정보",
@@ -62,7 +64,8 @@
     "recent_workspaces": "최근 워크스페이스",
     "metadata_tooltip": "크기: {size} B\n수정: {mod_time}",
     "path_label": "경로",
-    "flat_view": "플랫 뷰"
+    "flat_view": "플랫 뷰",
+    "filter_regex_hint": "필터 (정규식)..."
   },
   "preview": {
     "preview_title": "미리보기",
@@ -114,7 +117,12 @@
     "refresh_success": "디스크에서 문서가 새로 고침되었습니다.",
     "refresh_skipped_dirty": "저장되지 않은 변경 사항을 유지하기 위해 새로 고침을 건너뛰었습니다.",
     "refresh_no_changes": "외부 변경 사항이 감지되지 않았습니다.",
-    "refresh_failed": "문서 새로 고침 실패: {error}"
+    "refresh_failed": "문서 새로 고침 실패: {error}",
+    "problems_panel_title": "문제",
+    "problems_panel_close": "닫기",
+    "no_problems_found": "워크스페이스에서 문제를 찾을 수 없습니다.",
+    "toggle_problems_panel": "문제 패널 전환",
+    "problems_count_format": "⚠️ 문제: {count}"
   },
   "action": {
     "expand_all": "모두 확장",
@@ -329,7 +337,22 @@
     "doc_search_prev": "이전",
     "doc_search_next": "다음",
     "doc_search_close": "닫기",
-    "doc_search_count": "{total} 중 {index}"
+    "doc_search_count": "{index} 번째 / 총 {total} 개",
+    "tab_file_name": "파일 명칭",
+    "tab_markdown_content": "Markdown 내용",
+    "md_query_hint": "Markdown 파일 검색...",
+    "recent_searches": "최근 검색어",
+    "clear_history": "내역 삭제",
+    "ln_prefix": "라인 ",
+    "palette_query_hint": "명령어 입력 또는 검색...",
+    "command_settings": "설정 토글",
+    "command_workspace": "워크스페이스 패널 토글",
+    "command_close_all": "모든 문서 닫기",
+    "command_refresh": "워크스페이스 새로 고침",
+    "command_updates": "업데이트 확인",
+    "command_about": "KatanA 정보 토글",
+    "command_type_action": "명령어",
+    "palette_no_results": "결과가 없습니다."
   },
   "toc": {
     "title": "목차",
@@ -356,7 +379,9 @@
     "new_directory_title": "새 폴더 만들기",
     "rename_title": "이름 바꾸기",
     "delete_title": "삭제",
-    "delete_confirm_msg": "삭제하시겠습니까? {name}"
+    "delete_confirm_msg": "삭제하시겠습니까? {name}",
+    "name_hint": "이름",
+    "new_name_hint": "새 이름"
   },
   "markdown": {
     "task_todo": "할 일 [ ]",

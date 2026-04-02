@@ -1,3 +1,5 @@
+pub mod command_palette;
+pub mod command_palette_providers;
 pub mod config;
 pub mod diagnostics;
 pub mod document;

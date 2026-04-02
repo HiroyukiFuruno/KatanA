@@ -343,6 +343,9 @@ impl ActionOps for KatanaApp {
             AppAction::ToggleSearchModal => {
                 self.state.layout.show_search_modal = !self.state.layout.show_search_modal;
             }
+            AppAction::ToggleCommandPalette => {
+                self.state.command_palette.toggle();
+            }
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;
             }

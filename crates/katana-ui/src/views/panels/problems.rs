@@ -32,7 +32,10 @@ impl<'a> ProblemsPanel<'a> {
                 ui.horizontal(|ui| {
                     ui.heading(crate::i18n::get().status.problems_panel_title.clone());
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button(crate::i18n::get().status.problems_panel_close.clone()).clicked() {
+                        if ui
+                            .button(crate::i18n::get().status.problems_panel_close.clone())
+                            .clicked()
+                        {
                             self.state.diagnostics.is_panel_open = false;
                         }
                     });

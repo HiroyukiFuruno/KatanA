@@ -1,3 +1,4 @@
+pub use crate::state::command_palette::CommandPaletteState;
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
 pub use crate::state::diagnostics::DiagnosticsState;
 pub use crate::state::document::{
@@ -23,7 +24,7 @@ pub enum ExportFormat {
     Jpg,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum AppAction {
     InstallUpdate,
     OpenWorkspace(PathBuf),
@@ -57,6 +58,7 @@ pub enum AppAction {
     ToggleToc,
     ToggleWorkspace,
     ToggleSearchModal,
+    ToggleCommandPalette,
     ToggleWorkspaceFilter,
     CheckForUpdates,
     SetSplitDirection(katana_platform::SplitDirection),
@@ -158,6 +160,7 @@ pub struct AppState {
     pub update: UpdateState,
     pub config: ConfigState,
     pub diagnostics: DiagnosticsState,
+    pub command_palette: CommandPaletteState,
 }
 
 impl AppState {
@@ -180,6 +183,7 @@ impl AppState {
             update: UpdateState::new(),
             config: ConfigState::new(plugin_registry, settings, cache),
             diagnostics: DiagnosticsState::new(),
+            command_palette: CommandPaletteState::new(),
         }
     }
 

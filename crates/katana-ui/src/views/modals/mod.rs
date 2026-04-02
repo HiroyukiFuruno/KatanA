@@ -11,6 +11,7 @@ use egui::{Align, Layout};
 use std::path::{Path, PathBuf};
 
 pub mod about;
+pub mod command_palette;
 pub mod file_ops;
 pub mod meta_info;
 pub mod search;
