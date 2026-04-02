@@ -25,6 +25,7 @@ pub mod html;
 pub mod markdown;
 pub mod plugin;
 pub mod preview;
+pub mod search;
 pub mod update;
 pub mod workspace;
 
