@@ -23,7 +23,7 @@
   - [x] Extract magic numbers (`COMMAND_PALETTE_WIDTH`, margins, max items) into named constants.
   - [x] Extract `No results found.` text to localization strings.
   - [x] Replace `Color32::TRANSPARENT` with corresponding theme colors.
-- [ ] 4.2 palette result からの command execution、file open、Markdown content navigation を検証するテストを追加する
-- [ ] 4.3 keyboard-first の movement、confirm、dismiss 挙動を検証するテストを追加する
-- [ ] 4.4 一部 provider が unavailable でも palette が有用なままであることを確認する
-- [ ] 4.5 既存 file-search modal が compatibility fallback として引き続き動作することを確認する
+- [x] 4.2 palette result からの command execution、file open、Markdown content navigation を検証するテストを追加する
+- [x] 4.3 keyboard-first の movement、confirm、dismiss 挙動を検証するテストを追加する
+- [x] 4.4 一部 provider が unavailable でも palette が有用なままであることを確認する
+- [x] 4.5 既存 file-search modal が compatibility fallback として引き続き動作することを確認する
