@@ -471,8 +471,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Skip Git hooks (`--no-verify`) during release push as quality checks are pre-verified
 - Enable full local release flow (DMG build, GitHub publication, Homebrew update) as default
 
-### 🔧 System
-
 - Modularize release logic into independent scripts under `scripts/release/`
 - Move main release control script to `scripts/release/release.sh`
 
@@ -504,11 +502,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Fix coverage gap in preview_pane and codify release bypass rules
 - Resolve V0.2.0 archive omission and add AI warning block to next tasks
 
-### 🔧 System
-
 - Rename repository to KatanA, reorganize documents, and support English translation
-
-### 🔧 System
 
 - Specify language in settings window integration test to stabilize test
 - Collect_matches logic extraction and partial setting screen integration test addition for coverage improvement
@@ -560,11 +554,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - Bump version to 0.1.4
 
-### 🔧 System
-
 - Unify HashMap and fixed-length arrays into Vec, and apply collectively including AST rules and migration functionality
-
-### 🔧 System
 
 - Fix tests broken by workspace methods renaming
 - Add missing tests to meet 100% coverage gate
@@ -589,8 +579,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - Hierarchize settings.json structure (ThemeSettings/FontSettings/LayoutSettings) and add migration mechanism
 - Fix coverage gate and improve code quality
-
-### 🔧 System
 
 - Update tests according to i18n type-safety, settings hierarchization, and theme expansion (integration/i18n/theme/diagram_rendering tests)
 
@@ -656,11 +644,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Expand coverage gate exclusion rules (return None/false/display/Pending)
 - Prepare for v0.1.0 release (update version number)
 
-### 🔧 System
-
 - Optimized codebase structure and brought comments up to international development standards.
-
-### 🔧 System
 
 - Add tests for coverage improvement
 
@@ -681,12 +665,8 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Prepare for v0.0.3 release
 - Change release notes to be extracted from CHANGELOG.md
 
-### 🔧 System
-
 - Constantize magic numbers and expand AST linter tests
 - Unify Ignore tags to limited_local
-
-### 🔧 System
 
 - Fix CI environment dependent errors in snapshot tests
 - Fix global state conflict errors in multiple i18n tests
@@ -706,8 +686,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Kick ci to retry integration tests
 - Release v0.0.2
 - Include Cargo.lock and CHANGELOG.ja.md in release v0.0.2
-
-### 🔧 System
 
 - Update integration test snapshot
 - Increase snapshot tolerance to 4000 to absorb CI/local macOS text rendering differences
@@ -768,8 +746,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Add configuration to exclude CI bot commits from cliff.toml
 - Prepare for v0.0.1 release
 
-### 🔧 System
-
 - Fix clippy warnings in drawio_renderer
 - Migrate tests from src/ to tests/ directory and tighten Clippy
 - Refactor katana-ui into lib/binary structure and extract logic
@@ -779,8 +755,6 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - Separate egui rendering logic and event routing
 - Translate Japanese comments and strings in source code and tests to English
 - Improve UI layout and add linter module
-
-### 🔧 System
 
 - Task 6.2 — add preview synchronization tests
 - Add app state unit tests and fix java headless mode for plantuml
