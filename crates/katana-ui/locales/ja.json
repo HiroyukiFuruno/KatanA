@@ -324,7 +324,12 @@
     "query_hint": "ファイル名で検索...",
     "include_pattern_hint": "含める（正規表現, カンマ区切り）",
     "exclude_pattern_hint": "除外する（正規表現, カンマ区切り）",
-    "no_results": "ファイルが見つかりません"
+    "no_results": "ファイルが見つかりません",
+    "doc_search_title": "ドキュメント内検索",
+    "doc_search_prev": "前へ",
+    "doc_search_next": "次へ",
+    "doc_search_close": "閉じる",
+    "doc_search_count": "{index} / {total}"
   },
   "toc": {
     "title": "目次",

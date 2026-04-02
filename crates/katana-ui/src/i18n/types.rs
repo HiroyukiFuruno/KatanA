@@ -62,6 +62,63 @@ pub struct SearchMessages {
     pub include_pattern_hint: String,
     pub exclude_pattern_hint: String,
     pub no_results: String,
+    #[serde(default = "default_doc_search_title")]
+    pub doc_search_title: String,
+    #[serde(default = "default_doc_search_prev")]
+    pub doc_search_prev: String,
+    #[serde(default = "default_doc_search_next")]
+    pub doc_search_next: String,
+    #[serde(default = "default_doc_search_close")]
+    pub doc_search_close: String,
+    #[serde(default = "default_doc_search_count")]
+    pub doc_search_count: String,
+
+    #[serde(default = "default_tab_file_name")]
+    pub tab_file_name: String,
+    #[serde(default = "default_tab_markdown_content")]
+    pub tab_markdown_content: String,
+    #[serde(default = "default_md_query_hint")]
+    pub md_query_hint: String,
+    #[serde(default = "default_recent_searches")]
+    pub recent_searches: String,
+    #[serde(default = "default_clear_history")]
+    pub clear_history: String,
+    #[serde(default = "default_ln_prefix")]
+    pub ln_prefix: String,
+}
+
+pub(crate) fn default_tab_file_name() -> String {
+    "File Name".to_string()
+}
+pub(crate) fn default_tab_markdown_content() -> String {
+    "Markdown Content".to_string()
+}
+pub(crate) fn default_md_query_hint() -> String {
+    "Search markdown files...".to_string()
+}
+pub(crate) fn default_recent_searches() -> String {
+    "Recent Searches".to_string()
+}
+pub(crate) fn default_clear_history() -> String {
+    "Clear".to_string()
+}
+pub(crate) fn default_ln_prefix() -> String {
+    "Ln ".to_string()
+}
+pub(crate) fn default_doc_search_title() -> String {
+    "Search Document".to_string()
+}
+pub(crate) fn default_doc_search_count() -> String {
+    "{index}/{total}".to_string()
+}
+pub(crate) fn default_doc_search_prev() -> String {
+    "Previous".to_string()
+}
+pub(crate) fn default_doc_search_next() -> String {
+    "Next".to_string()
+}
+pub(crate) fn default_doc_search_close() -> String {
+    "Close".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -711,6 +768,20 @@ pub struct SettingsColorMessages {
 
     #[serde(default = "d_hover_bg")]
     pub hover_line_background: String,
+
+    #[serde(default = "d_search_match")]
+    pub search_match: String,
+
+    #[serde(default = "d_search_active")]
+    pub search_active: String,
+}
+
+pub(crate) fn d_search_match() -> String {
+    "Search Match".to_string()
+}
+
+pub(crate) fn d_search_active() -> String {
+    "Search Active".to_string()
 }
 
 pub(crate) fn default_highlight() -> String {
@@ -911,5 +982,16 @@ mod tests {
         assert_eq!(default_add_tab_to_group(), "Add tab to group");
         assert_eq!(default_close_group(), "Close group");
         assert_eq!(default_ungroup(), "Ungroup");
+    }
+
+    #[test]
+    fn test_search_defaults() {
+        assert_eq!(default_doc_search_title(), "Search Document");
+        assert_eq!(default_doc_search_prev(), "Previous");
+        assert_eq!(default_doc_search_next(), "Next");
+        assert_eq!(default_doc_search_close(), "Close");
+        assert_eq!(default_doc_search_count(), "{index}/{total}");
+        assert_eq!(d_search_match(), "Search Match");
+        assert_eq!(d_search_active(), "Search Active");
     }
 }

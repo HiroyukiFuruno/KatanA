@@ -80,6 +80,35 @@ pub struct CodeColors {
     pub current_line_background: Rgba,
     pub hover_line_background: Rgba,
     pub selection: Rgb,
+    #[serde(default = "default_search_match_color")]
+    pub search_match: Rgba,
+    #[serde(default = "default_search_active_color")]
+    pub search_active: Rgba,
+}
+
+const DEFAULT_SEARCH_MATCH_R: u8 = 255;
+const DEFAULT_SEARCH_MATCH_G: u8 = 200;
+const DEFAULT_SEARCH_MATCH_B: u8 = 0;
+const DEFAULT_SEARCH_MATCH_A: u8 = 100;
+const DEFAULT_SEARCH_ACTIVE_G: u8 = 100;
+const DEFAULT_SEARCH_ACTIVE_A: u8 = 150;
+
+fn default_search_match_color() -> Rgba {
+    Rgba {
+        r: DEFAULT_SEARCH_MATCH_R,
+        g: DEFAULT_SEARCH_MATCH_G,
+        b: DEFAULT_SEARCH_MATCH_B,
+        a: DEFAULT_SEARCH_MATCH_A,
+    }
+}
+
+fn default_search_active_color() -> Rgba {
+    Rgba {
+        r: DEFAULT_SEARCH_MATCH_R,
+        g: DEFAULT_SEARCH_ACTIVE_G,
+        b: DEFAULT_SEARCH_MATCH_B,
+        a: DEFAULT_SEARCH_ACTIVE_A,
+    }
 }
 
 /// WHY: Colours specific to the markdown preview.
@@ -219,5 +248,13 @@ mod tests {
                 .system
                 .active_file_highlight
         );
+    }
+
+    #[test]
+    fn test_search_match_colors_default() {
+        let match_c = default_search_match_color();
+        assert_eq!(match_c.r, DEFAULT_SEARCH_MATCH_R);
+        let active_c = default_search_active_color();
+        assert_eq!(active_c.a, DEFAULT_SEARCH_ACTIVE_A);
     }
 }

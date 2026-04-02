@@ -86,7 +86,7 @@ typecheck: ## cargo check (type check only, fast)
 
 .PHONY: test
 test: ## Run all unit tests
-	cargo test --workspace
+	cargo test --workspace -- --test-threads=2
 
 .PHONY: test-core
 test-core: ## Run tests for katana-core only
@@ -106,7 +106,7 @@ test-specific: ## Run a specific test (e.g., make test-specific T=test_name)
 
 .PHONY: test-integration
 test-integration: ## Run integration tests (UI tests, semantic assertions only) (requires: egui_kittest)
-	cargo test --workspace --test integration_tests -- --test-threads=1
+	cargo test -q --workspace --test integration_tests -- --test-threads=1
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
@@ -114,7 +114,7 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 
 .PHONY: check-light
 check-light: fmt-check lint ## Quick verification (skip slow fixture tests)
-	cargo test --workspace -- --skip fixture
+	cargo test --workspace -- --skip fixture --test-threads=2
 	@echo "✅ Light checks passed"
 
 .PHONY: check

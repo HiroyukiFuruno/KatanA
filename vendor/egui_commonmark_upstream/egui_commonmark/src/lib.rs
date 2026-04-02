@@ -116,6 +116,7 @@ pub struct CommonMarkViewer<'f> {
     /// (from `horizontal_wrapped` response) and the item's source span.
     /// Returns `(active_highlighted, hovered)` so the renderer can update internal bookkeeping.
     custom_list_item_highlight_fn: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
+    search_query: Option<String>,
 }
 
 impl<'f> Default for CommonMarkViewer<'f> {
@@ -133,6 +134,7 @@ impl<'f> Default for CommonMarkViewer<'f> {
             custom_emoji_fn: None,
             custom_task_context_menu_fn: None,
             custom_list_item_highlight_fn: None,
+            search_query: None,
         }
     }
 }
@@ -197,6 +199,11 @@ impl<'f> CommonMarkViewer<'f> {
 
     pub fn heading_offset(mut self, offset: usize) -> Self {
         self.heading_offset = offset;
+        self
+    }
+
+    pub fn search_query(mut self, query: Option<String>) -> Self {
+        self.search_query = query;
         self
     }
 
@@ -342,6 +349,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_emoji_fn,
             self.custom_task_context_menu_fn,
             self.custom_list_item_highlight_fn,
+            self.search_query.clone(),
         ).show(
             ui,
             cache,
@@ -378,6 +386,7 @@ impl<'f> CommonMarkViewer<'f> {
                 self.custom_emoji_fn,
                 self.custom_task_context_menu_fn,
                 self.custom_list_item_highlight_fn,
+                self.search_query.clone(),
             ).show(
                 ui,
                 cache,
@@ -450,6 +459,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_emoji_fn,
             self.custom_task_context_menu_fn,
             self.custom_list_item_highlight_fn,
+            self.search_query.clone(),
         ).show(
             ui,
             cache,
@@ -494,6 +504,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.custom_emoji_fn,
             self.custom_task_context_menu_fn,
             self.custom_list_item_highlight_fn,
+            self.search_query.clone(),
         ).show_scrollable(
             Id::new(source_id),
             ui,

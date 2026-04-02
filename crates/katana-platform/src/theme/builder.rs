@@ -148,6 +148,13 @@ impl ThemePresetBuilder {
         }
     }
 
+    const DEFAULT_SEARCH_MATCH_R: u8 = 255;
+    const DEFAULT_SEARCH_MATCH_G: u8 = 200;
+    const DEFAULT_SEARCH_MATCH_B: u8 = 0;
+    const DEFAULT_SEARCH_MATCH_A: u8 = 100;
+    const DEFAULT_SEARCH_ACTIVE_G: u8 = 100;
+    const DEFAULT_SEARCH_ACTIVE_A: u8 = 150;
+
     const fn build_code(&self, c_bg: Rgb, t_sec: Rgb, selection: Rgb, is_dark: bool) -> CodeColors {
         let current_line_background = Rgba {
             r: 0,
@@ -167,6 +174,18 @@ impl ThemePresetBuilder {
             current_line_background,
             hover_line_background: to_rgba(self.accent, DEFAULT_HOVER_LINE_HIGHLIGHT_ALPHA),
             selection,
+            search_match: Rgba {
+                r: Self::DEFAULT_SEARCH_MATCH_R,
+                g: Self::DEFAULT_SEARCH_MATCH_G,
+                b: Self::DEFAULT_SEARCH_MATCH_B,
+                a: Self::DEFAULT_SEARCH_MATCH_A,
+            },
+            search_active: Rgba {
+                r: Self::DEFAULT_SEARCH_MATCH_R,
+                g: Self::DEFAULT_SEARCH_ACTIVE_G,
+                b: Self::DEFAULT_SEARCH_MATCH_B,
+                a: Self::DEFAULT_SEARCH_ACTIVE_A,
+            },
         }
     }
 

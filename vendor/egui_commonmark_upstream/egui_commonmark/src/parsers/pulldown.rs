@@ -118,6 +118,7 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
     custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
     custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
+    pub search_query: Option<regex::Regex>,
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
@@ -134,7 +135,12 @@ impl<'a> CommonMarkViewerInternal<'a> {
         custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
         custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
         custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
+        search_query: Option<String>,
     ) -> Self {
+        let compiled_regex = search_query.filter(|q| !q.is_empty()).and_then(|q| {
+            regex::RegexBuilder::new(&regex::escape(&q)).case_insensitive(true).build().ok()
+        });
+
         Self {
             curr_table: 0,
             curr_heading: heading_offset,
@@ -170,6 +176,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             custom_emoji_fn,
             custom_task_context_menu_fn,
             custom_list_item_highlight_fn,
+            search_query: compiled_regex,
         }
     }
 }
@@ -1803,7 +1810,27 @@ impl<'a> CommonMarkViewerInternal<'a> {
         } else {
             for segment in split_inline_text_and_emoji(&text) {
                 match segment {
-                    InlineSegment::Text(text) => self.push_inline_text(text, ui, max_width),
+                    InlineSegment::Text(text) => {
+                        let regex_opt = self.search_query.clone();
+                        if let Some(regex) = regex_opt {
+                            let mut last_end = 0;
+                            for mat in regex.find_iter(text) {
+                                if mat.start() > last_end {
+                                    self.push_inline_text(&text[last_end..mat.start()], ui, max_width);
+                                }
+                                let prev_highlight = self.text_style.highlight;
+                                self.text_style.highlight = true;
+                                self.push_inline_text(&text[mat.start()..mat.end()], ui, max_width);
+                                self.text_style.highlight = prev_highlight;
+                                last_end = mat.end();
+                            }
+                            if last_end < text.len() {
+                                self.push_inline_text(&text[last_end..], ui, max_width);
+                            }
+                        } else {
+                            self.push_inline_text(text, ui, max_width);
+                        }
+                    }
                     InlineSegment::Emoji(grapheme) => {
                         if !self.try_render_inline_emoji(ui, max_width, grapheme) {
                             self.push_inline_text(grapheme, ui, max_width);

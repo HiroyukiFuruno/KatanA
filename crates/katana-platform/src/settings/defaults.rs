@@ -6,7 +6,7 @@ use crate::theme::ThemePreset;
 
 use super::types::{
     AppSettings, BehaviorSettings, ExportSettings, FontSettings, LayoutSettings,
-    PerformanceSettings, ThemeSettings, UpdateSettings, WorkspaceSettings,
+    PerformanceSettings, SearchSettings, ThemeSettings, UpdateSettings, WorkspaceSettings,
     DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH,
 };
 
@@ -117,6 +117,7 @@ impl Default for AppSettings {
             font: FontSettings::default(),
             layout: LayoutSettings::default(),
             workspace: WorkspaceSettings::default(),
+            search: SearchSettings::default(),
             performance: PerformanceSettings::default(),
             export: ExportSettings::default(),
             updates: UpdateSettings::default(),

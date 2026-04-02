@@ -70,6 +70,9 @@ svg = ["egui_extras/svg"]
 name = "egui_commonmark"
 path = "src/lib.rs"
 
+[dependencies]
+regex = "1.12.3"
+
 [dependencies.document-features]
 version = "0.2"
 optional = true

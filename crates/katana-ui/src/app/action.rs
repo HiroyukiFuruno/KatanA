@@ -151,6 +151,18 @@ impl ActionOps for KatanaApp {
                     self.state.layout.show_search_modal = false;
                 }
             }
+            AppAction::SelectDocumentAndJump {
+                path,
+                line,
+                byte_range: _byte_range,
+            } => {
+                self.handle_select_document(path, true);
+                if self.state.layout.show_search_modal {
+                    self.state.layout.show_search_modal = false;
+                }
+                self.state.scroll.scroll_to_line = Some(line);
+                // The byte_range can be used for editor cursor positioning later
+            }
             AppAction::OpenMultipleDocuments(paths) => {
                 let mut iter = paths.into_iter();
                 if let Some(first_path) = iter.next() {
@@ -329,6 +341,91 @@ impl ActionOps for KatanaApp {
             }
             AppAction::ToggleSearchModal => {
                 self.state.layout.show_search_modal = !self.state.layout.show_search_modal;
+            }
+            AppAction::OpenDocSearch => {
+                self.state.search.doc_search_open = true;
+            }
+            AppAction::DocSearchQueryChanged => {
+                if let Some(doc) = self.state.document.active_document() {
+                    let text = &doc.buffer;
+                    let query = &self.state.search.doc_search_query;
+                    self.state.search.doc_search_matches.clear();
+                    self.state.search.doc_search_active_index = 0;
+                    if !query.is_empty() {
+                        if let Ok(re) = regex::RegexBuilder::new(&regex::escape(query))
+                            .case_insensitive(true)
+                            .build()
+                        {
+                            let mut char_count = 0;
+                            let mut last_byte = 0;
+                            for mat in re.find_iter(text) {
+                                let mut start_b = mat.start();
+                                while start_b > 0 && !text.is_char_boundary(start_b) {
+                                    start_b -= 1;
+                                }
+                                let mut end_b = mat.end();
+                                while end_b < text.len() && !text.is_char_boundary(end_b) {
+                                    end_b += 1;
+                                }
+
+                                if start_b < last_byte {
+                                    start_b = last_byte;
+                                }
+                                if end_b < start_b {
+                                    end_b = start_b;
+                                }
+
+                                char_count += text[last_byte..start_b].chars().count();
+                                let char_start = char_count;
+                                let match_len = text[start_b..end_b].chars().count();
+                                let char_end = char_start + match_len;
+
+                                self.state
+                                    .search
+                                    .doc_search_matches
+                                    .push(char_start..char_end);
+
+                                char_count += match_len;
+                                last_byte = end_b;
+                            }
+                        }
+                    }
+                    if let Some(r) = self.state.search.doc_search_matches.first() {
+                        let line =
+                            crate::views::panels::editor::logic::char_index_to_line(text, r.start);
+                        self.state.scroll.scroll_to_line = Some(line);
+                    }
+                }
+            }
+            AppAction::DocSearchNext => {
+                if !self.state.search.doc_search_matches.is_empty() {
+                    self.state.search.doc_search_active_index =
+                        (self.state.search.doc_search_active_index + 1)
+                            % self.state.search.doc_search_matches.len();
+                    let r = self.state.search.doc_search_matches
+                        [self.state.search.doc_search_active_index]
+                        .clone();
+                    let line = crate::views::panels::editor::logic::char_index_to_line(
+                        &self.state.document.active_document().unwrap().buffer,
+                        r.start,
+                    );
+                    self.state.scroll.scroll_to_line = Some(line);
+                }
+            }
+            AppAction::DocSearchPrev => {
+                if !self.state.search.doc_search_matches.is_empty() {
+                    let len = self.state.search.doc_search_matches.len();
+                    self.state.search.doc_search_active_index =
+                        (self.state.search.doc_search_active_index + len - 1) % len;
+                    let r = self.state.search.doc_search_matches
+                        [self.state.search.doc_search_active_index]
+                        .clone();
+                    let line = crate::views::panels::editor::logic::char_index_to_line(
+                        &self.state.document.active_document().unwrap().buffer,
+                        r.start,
+                    );
+                    self.state.scroll.scroll_to_line = Some(line);
+                }
             }
             AppAction::ToggleWorkspaceFilter => {
                 self.state.search.filter_enabled = !self.state.search.filter_enabled;

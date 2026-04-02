@@ -88,6 +88,8 @@ impl ThemeColorsLegacyData {
                 LEGACY_HOVER_LINE_LIGHT
             },
             selection: self.selection,
+            search_match: crate::theme::migration::constants::LEGACY_SEARCH_MATCH_COLOR,
+            search_active: crate::theme::migration::constants::LEGACY_SEARCH_ACTIVE_COLOR,
         }
     }
 
