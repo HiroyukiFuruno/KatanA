@@ -86,6 +86,10 @@ impl WorkspaceOps for KatanaApp {
         self.state.workspace.data = Some(ws);
         self.state.document.open_documents.clear();
         self.state.document.active_doc_idx = None;
+        self.state.document.tab_groups.clear();
+        self.state.document.tab_view_modes.clear();
+        self.state.document.tab_split_states.clear();
+        self.state.document.recently_closed_tabs.clear();
         self.state.search.filter_cache = None;
         let path_str = path.display().to_string();
 

@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.15.1] - 2026-04-03 00:10:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- Resolved an issue where tab groups leaked across different workspaces; tab groups are now correctly isolated and persisted per workspace.
+
 ## [0.15.0] - 2026-04-02 23:30:14 (UTC)
 
 ### ✨ Improvements
