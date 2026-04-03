@@ -121,7 +121,22 @@ impl WorkspaceOps for KatanaApp {
         let settings = self.state.config.settings.settings_mut();
 
         if settings.workspace.restore_session {
-            if let Some(cache_json) = self.state.config.cache.get_persistent(&cache_key) {
+            let mut cache_json_opt = self.state.config.cache.get_persistent(&cache_key);
+
+            // Fallback for legacy trailing slash hash key (Katana <= 0.15.1)
+            if cache_json_opt.is_none() {
+                let legacy_path = format!("{}/", path.to_string_lossy().trim_end_matches('/'));
+                let legacy_key = format!(
+                    "workspace_tabs_{:x}",
+                    crate::shell_logic::hash_str(&legacy_path)
+                );
+                if let Some(legacy_json) = self.state.config.cache.get_persistent(&legacy_key) {
+                    tracing::info!("Recovered workspace_tabs using legacy hash key.");
+                    cache_json_opt = Some(legacy_json);
+                }
+            }
+
+            if let Some(cache_json) = cache_json_opt {
                 if let Ok(v2) = serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {
                     to_open = v2.tabs.into_iter().map(|t| (t.path, t.pinned)).collect();
                     if let Some(active_path) = v2.active_path {
@@ -433,5 +448,46 @@ impl WorkspaceOps for KatanaApp {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod cache_test_local {
+    use super::*;
+    use crate::state::document::TabGroup;
+    #[test]
+    fn test_v2() {
+        #[derive(serde::Deserialize, serde::Serialize)]
+        struct WorkspaceTabEntry {
+            path: String,
+            pinned: bool,
+        }
+        #[derive(serde::Deserialize, serde::Serialize)]
+        struct WorkspaceTabSessionV2 {
+            version: u32,
+            tabs: Vec<WorkspaceTabEntry>,
+            active_path: Option<String>,
+            #[serde(default)]
+            expanded_directories: std::collections::HashSet<String>,
+            #[serde(default)]
+            groups: Vec<crate::state::document::TabGroup>,
+        }
+
+        let state = WorkspaceTabSessionV2 {
+            version: 2,
+            tabs: vec![],
+            active_path: None,
+            expanded_directories: std::collections::HashSet::new(),
+            groups: vec![TabGroup {
+                id: "id1".to_string(),
+                name: "group1".to_string(),
+                color_hex: "#123456".to_string(),
+                collapsed: false,
+                members: vec!["mem1".to_string()],
+            }],
+        };
+        let json = serde_json::to_string(&state).unwrap();
+        let parsed: WorkspaceTabSessionV2 = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.groups.len(), 1);
     }
 }
