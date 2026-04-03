@@ -346,6 +346,9 @@ impl ActionOps for KatanaApp {
             AppAction::ToggleCommandPalette => {
                 self.state.command_palette.toggle();
             }
+            AppAction::ToggleSlideshow => {
+                self.state.layout.show_slideshow = !self.state.layout.show_slideshow;
+            }
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;
             }
