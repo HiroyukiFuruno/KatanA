@@ -121,7 +121,22 @@ impl WorkspaceOps for KatanaApp {
         let settings = self.state.config.settings.settings_mut();
 
         if settings.workspace.restore_session {
-            if let Some(cache_json) = self.state.config.cache.get_persistent(&cache_key) {
+            let mut cache_json_opt = self.state.config.cache.get_persistent(&cache_key);
+
+            // Fallback for legacy trailing slash hash key (Katana <= 0.15.1)
+            if cache_json_opt.is_none() {
+                let legacy_path = format!("{}/", path.to_string_lossy().trim_end_matches('/'));
+                let legacy_key = format!(
+                    "workspace_tabs_{:x}",
+                    crate::shell_logic::hash_str(&legacy_path)
+                );
+                if let Some(legacy_json) = self.state.config.cache.get_persistent(&legacy_key) {
+                    tracing::info!("Recovered workspace_tabs using legacy hash key.");
+                    cache_json_opt = Some(legacy_json);
+                }
+            }
+
+            if let Some(cache_json) = cache_json_opt {
                 if let Ok(v2) = serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {
                     to_open = v2.tabs.into_iter().map(|t| (t.path, t.pinned)).collect();
                     if let Some(active_path) = v2.active_path {
@@ -133,14 +148,14 @@ impl WorkspaceOps for KatanaApp {
                         .map(std::path::PathBuf::from)
                         .collect();
 
-                    let open_paths: std::collections::HashSet<String> =
-                        to_open.iter().map(|(p, _)| p.clone()).collect();
-                    let mut cleaned_groups = v2.groups;
-                    for g in &mut cleaned_groups {
-                        g.members.retain(|m| open_paths.contains(m));
-                    }
-                    cleaned_groups.retain(|g| !g.members.is_empty());
-                    self.state.document.tab_groups = cleaned_groups;
+                    // Temporarily keep raw groups, we will clean them AFTER checking file existence
+                    self.state.document.tab_groups = v2.groups;
+
+                    tracing::info!(
+                        "Loaded V2 cache with {} tabs and {} groups",
+                        to_open.len(),
+                        self.state.document.tab_groups.len()
+                    );
                 } else {
                     tracing::error!("DEBUG: Failed to parse WorkspaceTabSessionV2!");
                     #[derive(serde::Deserialize)]
@@ -185,9 +200,21 @@ impl WorkspaceOps for KatanaApp {
         settings.workspace.paths.retain(|p| p != &path_str);
         settings.workspace.paths.push(path_str);
 
-        if !to_open.is_empty() {
-            to_open.retain(|(p, _)| std::path::Path::new(p).exists());
+        tracing::info!("Verifying existence of {} tabs", to_open.len());
+        to_open.retain(|(p, _)| std::path::Path::new(p).exists());
 
+        // Clean groups based on the actual existing paths
+        let existing_paths: std::collections::HashSet<String> =
+            to_open.iter().map(|(p, _)| p.clone()).collect();
+        for g in &mut self.state.document.tab_groups {
+            g.members.retain(|m| existing_paths.contains(m));
+        }
+        self.state
+            .document
+            .tab_groups
+            .retain(|g| !g.members.is_empty());
+
+        if !to_open.is_empty() {
             let active_idx_val = active_idx.unwrap_or(0).min(to_open.len().saturating_sub(1));
 
             for (i, (p, pinned)) in to_open.iter().enumerate() {
@@ -421,5 +448,46 @@ impl WorkspaceOps for KatanaApp {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod cache_test_local {
+    use super::*;
+    use crate::state::document::TabGroup;
+    #[test]
+    fn test_v2() {
+        #[derive(serde::Deserialize, serde::Serialize)]
+        struct WorkspaceTabEntry {
+            path: String,
+            pinned: bool,
+        }
+        #[derive(serde::Deserialize, serde::Serialize)]
+        struct WorkspaceTabSessionV2 {
+            version: u32,
+            tabs: Vec<WorkspaceTabEntry>,
+            active_path: Option<String>,
+            #[serde(default)]
+            expanded_directories: std::collections::HashSet<String>,
+            #[serde(default)]
+            groups: Vec<crate::state::document::TabGroup>,
+        }
+
+        let state = WorkspaceTabSessionV2 {
+            version: 2,
+            tabs: vec![],
+            active_path: None,
+            expanded_directories: std::collections::HashSet::new(),
+            groups: vec![TabGroup {
+                id: "id1".to_string(),
+                name: "group1".to_string(),
+                color_hex: "#123456".to_string(),
+                collapsed: false,
+                members: vec!["mem1".to_string()],
+            }],
+        };
+        let json = serde_json::to_string(&state).unwrap();
+        let parsed: WorkspaceTabSessionV2 = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.groups.len(), 1);
     }
 }

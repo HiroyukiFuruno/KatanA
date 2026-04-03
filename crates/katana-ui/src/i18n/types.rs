@@ -464,6 +464,8 @@ pub struct ActionMessages {
     pub recursive_open_all: String,
     #[serde(default)]
     pub toggle_toc: String,
+    #[serde(default = "default_action_toggle_slideshow")]
+    pub toggle_slideshow: String,
     pub show_meta_info: String,
     #[serde(default = "default_action_new_file")]
     pub new_file: String,
@@ -495,6 +497,10 @@ pub struct ActionMessages {
 
 pub(crate) fn default_action_confirm() -> String {
     "Confirm".to_string()
+}
+
+pub(crate) fn default_action_toggle_slideshow() -> String {
+    "Slideshow".to_string()
 }
 
 pub(crate) fn default_action_new_file() -> String {
@@ -1118,5 +1124,10 @@ mod default_coverage_tests {
         assert_eq!(default_command_refresh(), "Refresh Workspace");
         assert_eq!(default_command_updates(), "Check for Updates");
         assert_eq!(default_command_about(), "Toggle About");
+    }
+
+    #[test]
+    fn test_default_action_toggle_slideshow() {
+        assert_eq!(super::default_action_toggle_slideshow(), "Slideshow");
     }
 }

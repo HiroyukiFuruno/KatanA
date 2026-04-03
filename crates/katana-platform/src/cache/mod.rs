@@ -70,10 +70,13 @@ impl PersistentKey {
     // WHY: Encode to a flat string for passing through CacheFacade
     pub fn to_raw_key(&self) -> Option<String> {
         match self {
-            Self::WorkspaceTabs { workspace_path } => Some(format!(
-                "workspace_tabs:{}",
-                workspace_path.to_string_lossy()
-            )),
+            Self::WorkspaceTabs { workspace_path } => {
+                let mut path_str = workspace_path.to_string_lossy().to_string();
+                if path_str.ends_with('/') || path_str.ends_with('\\') {
+                    path_str.pop();
+                }
+                Some(format!("workspace_tabs:{}", path_str))
+            }
             Self::Diagram {
                 document_path,
                 diagram_kind,
@@ -95,9 +98,15 @@ impl PersistentKey {
         const MAX_TOKEN_COUNT: usize = 5;
         let parts: Vec<&str> = raw_key.splitn(MAX_TOKEN_COUNT, ':').collect();
         match parts.as_slice() {
-            ["workspace_tabs", path] => Some(Self::WorkspaceTabs {
-                workspace_path: std::path::PathBuf::from(path),
-            }),
+            ["workspace_tabs", path] => {
+                let mut p = path.to_string();
+                if p.ends_with('/') || p.ends_with('\\') {
+                    p.pop();
+                }
+                Some(Self::WorkspaceTabs {
+                    workspace_path: std::path::PathBuf::from(p),
+                })
+            }
             ["diagram", doc_path, kind, theme, hash] => Some(Self::Diagram {
                 document_path: std::path::PathBuf::from(doc_path),
                 diagram_kind: kind.to_string(),
@@ -150,6 +159,38 @@ mod tests {
 
     #[test]
     fn list_uncovered_lines_test() {
+        // Test workspace tabs with trailing slashes
+        let keys_with_trailing = vec![
+            PersistentKey::WorkspaceTabs {
+                workspace_path: std::path::PathBuf::from("/a/b/c/"),
+            },
+            PersistentKey::WorkspaceTabs {
+                workspace_path: std::path::PathBuf::from("\\a\\b\\c\\"),
+            },
+        ];
+
+        for key in keys_with_trailing {
+            let raw = key.to_raw_key().unwrap();
+            let expected_base = if raw.contains('\\') {
+                "\\a\\b\\c"
+            } else {
+                "/a/b/c"
+            };
+            assert_eq!(raw, format!("workspace_tabs:{}", expected_base));
+
+            let decoded = PersistentKey::from_raw_key(&raw).unwrap();
+            match decoded {
+                PersistentKey::WorkspaceTabs { workspace_path } => {
+                    assert_eq!(workspace_path.to_str().unwrap(), expected_base);
+                }
+                _ => panic!("Wrong type"),
+            }
+            assert!(key
+                .target_filename()
+                .unwrap()
+                .starts_with("workspace_tabs_"));
+        }
+
         let key = PersistentKey::Diagram {
             document_path: std::path::PathBuf::from("/a/b/c.md"),
             diagram_kind: "mermaid".to_string(),
@@ -186,6 +227,15 @@ mod tests {
             None
         ));
         assert!(matches!(PersistentKey::from_raw_key("invalid"), None));
+
+        // Test trailing slash in from_raw_key directly
+        let decoded = PersistentKey::from_raw_key("workspace_tabs:/a/b/c/").unwrap();
+        match decoded {
+            PersistentKey::WorkspaceTabs { workspace_path } => {
+                assert_eq!(workspace_path.to_str().unwrap(), "/a/b/c");
+            }
+            _ => panic!("Wrong type"),
+        }
     }
 
     #[test]

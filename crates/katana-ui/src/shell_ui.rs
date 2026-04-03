@@ -253,6 +253,22 @@ impl eframe::App for KatanaApp {
             }
         }
 
+        if self.state.layout.show_slideshow {
+            if let Some(doc) = self.state.active_document() {
+                if let Some(preview) = self.tab_previews.iter_mut().find(|p| p.path == doc.path) {
+                    crate::preview_pane::fullscreen::render_slideshow_modal(
+                        ctx,
+                        &mut self.state.layout,
+                        &mut preview.pane,
+                    );
+                } else {
+                    self.state.layout.show_slideshow = false;
+                }
+            } else {
+                self.state.layout.show_slideshow = false;
+            }
+        }
+
         if let Some(settings_action) =
             crate::settings::SettingsWindow::new(&mut self.state, &mut self.settings_preview)
                 .show(ctx)

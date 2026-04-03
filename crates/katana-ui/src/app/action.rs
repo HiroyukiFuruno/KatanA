@@ -346,6 +346,21 @@ impl ActionOps for KatanaApp {
             AppAction::ToggleCommandPalette => {
                 self.state.command_palette.toggle();
             }
+            AppAction::ToggleSlideshow => {
+                self.state.layout.show_slideshow = !self.state.layout.show_slideshow;
+                if self.state.layout.show_slideshow {
+                    self.state.layout.slideshow_page = 0;
+                    let is_fs = ctx
+                        .input(|i: &egui::InputState| i.viewport().fullscreen)
+                        .unwrap_or(false);
+                    self.state.layout.was_os_fullscreen_before_slideshow = is_fs;
+                    if !is_fs {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
+                    }
+                } else if !self.state.layout.was_os_fullscreen_before_slideshow {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+                }
+            }
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;
             }

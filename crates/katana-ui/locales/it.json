@@ -147,7 +147,8 @@
     "discard": "Scarta",
     "confirm": "Conferma",
     "copy_relative_path": "Copia Relativo",
-    "refresh_document": "Aggiorna documento"
+    "refresh_document": "Aggiorna documento",
+    "toggle_slideshow": "Presentazione"
   },
   "ai": {
     "ai_unconfigured": "[AI: non configurato]"

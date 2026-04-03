@@ -147,7 +147,8 @@
     "discard": "버리기",
     "confirm": "확인",
     "copy_relative_path": "상대 경로 복사",
-    "refresh_document": "문서 새로 고침"
+    "refresh_document": "문서 새로 고침",
+    "toggle_slideshow": "슬라이드쇼"
   },
   "ai": {
     "ai_unconfigured": "[AI: 설정되지 않음]"

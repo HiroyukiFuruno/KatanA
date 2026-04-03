@@ -20,6 +20,7 @@ pub(crate) fn show_section(
     global_line_offset: usize,
     search_query: Option<String>,
     search_scroll_pending: bool,
+    is_slideshow: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut actions = Vec::new();
     match section {
@@ -67,6 +68,7 @@ pub(crate) fn show_section(
                     .render_html_fn(Some(&binding))
                     .render_math_fn(Some(&math_binding))
                     .hover_bg_color(hover_bg_color)
+                    .show_code_copy_button(!is_slideshow)
                     .custom_task_box_fn(Some(&crate::widgets::katana_task_box))
                     .custom_task_context_menu_fn(Some(&crate::widgets::katana_task_context_menu))
                     .custom_emoji_fn(Some(&katana_core::emoji::render_apple_color_emoji_png));
@@ -289,6 +291,7 @@ pub(crate) fn render_sections(
     mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     search_query: Option<String>,
     search_scroll_pending: bool,
+    is_slideshow: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut request: Option<DownloadRequest> = None;
     let mut actions = Vec::new();
@@ -356,6 +359,7 @@ pub(crate) fn render_sections(
                         global_line_offset,
                         search_query.clone(),
                         search_scroll_pending,
+                        is_slideshow,
                     );
                     if let Some(r) = req {
                         request = Some(r);

@@ -254,6 +254,12 @@ impl<'f> CommonMarkViewer<'f> {
         self
     }
 
+    /// Whether to show the code block copy button. Default is true.
+    pub fn show_code_copy_button(mut self, show: bool) -> Self {
+        self.options.show_code_copy_button = show;
+        self
+    }
+
     /// By default any image without a uri scheme such as `foo://` is assumed to
     /// be of the type `file://`. This assumption can sometimes be wrong or be done
     /// incorrectly, so if you want to always be explicit with the scheme then set

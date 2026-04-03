@@ -33,6 +33,7 @@ pub struct CommonMarkOptions<'f> {
     pub mutable: bool,
     pub math_fn: Option<&'f crate::RenderMathFn>,
     pub html_fn: Option<&'f crate::RenderHtmlFn>,
+    pub show_code_copy_button: bool,
 }
 
 impl std::fmt::Debug for CommonMarkOptions<'_> {
@@ -42,6 +43,7 @@ impl std::fmt::Debug for CommonMarkOptions<'_> {
         s.field("indentation_spaces", &self.indentation_spaces)
             .field("max_image_width", &self.max_image_width)
             .field("show_alt_text_on_hover", &self.show_alt_text_on_hover)
+            .field("show_code_copy_button", &self.show_code_copy_button)
             .field("default_width", &self.default_width);
 
         #[cfg(feature = "better_syntax_highlighting")]
@@ -76,6 +78,7 @@ impl Default for CommonMarkOptions<'_> {
             mutable: false,
             math_fn: None,
             html_fn: None,
+            show_code_copy_button: true,
         }
     }
 }
@@ -304,7 +307,7 @@ impl CodeBlock {
                 ui.fonts_mut(|f| f.layout_job(job))
             };
 
-            crate::elements::code_block(ui, max_width, &self.content, &mut layout);
+            crate::elements::code_block(ui, max_width, &self.content, options.show_code_copy_button, &mut layout);
         });
     }
 }
