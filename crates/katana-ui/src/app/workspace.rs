@@ -133,14 +133,14 @@ impl WorkspaceOps for KatanaApp {
                         .map(std::path::PathBuf::from)
                         .collect();
 
-                    let open_paths: std::collections::HashSet<String> =
-                        to_open.iter().map(|(p, _)| p.clone()).collect();
-                    let mut cleaned_groups = v2.groups;
-                    for g in &mut cleaned_groups {
-                        g.members.retain(|m| open_paths.contains(m));
-                    }
-                    cleaned_groups.retain(|g| !g.members.is_empty());
-                    self.state.document.tab_groups = cleaned_groups;
+                    // Temporarily keep raw groups, we will clean them AFTER checking file existence
+                    self.state.document.tab_groups = v2.groups;
+
+                    tracing::info!(
+                        "Loaded V2 cache with {} tabs and {} groups",
+                        to_open.len(),
+                        self.state.document.tab_groups.len()
+                    );
                 } else {
                     tracing::error!("DEBUG: Failed to parse WorkspaceTabSessionV2!");
                     #[derive(serde::Deserialize)]
@@ -185,9 +185,21 @@ impl WorkspaceOps for KatanaApp {
         settings.workspace.paths.retain(|p| p != &path_str);
         settings.workspace.paths.push(path_str);
 
-        if !to_open.is_empty() {
-            to_open.retain(|(p, _)| std::path::Path::new(p).exists());
+        tracing::info!("Verifying existence of {} tabs", to_open.len());
+        to_open.retain(|(p, _)| std::path::Path::new(p).exists());
 
+        // Clean groups based on the actual existing paths
+        let existing_paths: std::collections::HashSet<String> =
+            to_open.iter().map(|(p, _)| p.clone()).collect();
+        for g in &mut self.state.document.tab_groups {
+            g.members.retain(|m| existing_paths.contains(m));
+        }
+        self.state
+            .document
+            .tab_groups
+            .retain(|g| !g.members.is_empty());
+
+        if !to_open.is_empty() {
             let active_idx_val = active_idx.unwrap_or(0).min(to_open.len().saturating_sub(1));
 
             for (i, (p, pinned)) in to_open.iter().enumerate() {
