@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.1] - 2026-04-03 05:10:39 (UTC)
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where pinned tabs and tab groups were not successfully restored upon app restart due to inconsistent cached path resolution.
+
 ## [0.16.0] - 2026-04-03 03:59:11 (UTC)
 
 ### 🚀 Features
