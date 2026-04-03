@@ -12,14 +12,16 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 1. Icon Pack Contract and Asset Layout
 
-- [ ] 1.1 existing `assets/icons` を `katana-icon` pack として再編する
+- [ ] 1.1 existing `assets/icons` を `assets/icons/katana/...` 配下へ再編し、`katana-icon` pack の asset root を固定する
 - [ ] 1.2 icon pack manifest または同等 metadata を追加し、pack id、display name、render policy、license metadata を表現できるようにする
 - [ ] 1.3 `Icon` enum 全件を pack coverage table で確認できる contract を作る
 - [ ] 1.4 curated external pack 5 種類の採用候補と source / license を固定する
+- [ ] 1.5 built-in pack の directory 命名規則を `assets/icons/<pack-dir>/...` に統一する
 
 ### Definition of Done (DoD)
 
 - [ ] `katana-icon` が existing default として定義されていること
+- [ ] built-in pack が `assets/icons/katana`、`assets/icons/<external-pack>` のように pack 単位の階層へ整理されていること
 - [ ] shipping pack の metadata source of truth が 1 箇所に固定されていること
 - [ ] pack coverage を確認できる一覧または検証手段があること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).

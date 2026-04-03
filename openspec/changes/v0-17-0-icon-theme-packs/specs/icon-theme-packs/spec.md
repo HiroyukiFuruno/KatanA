@@ -4,6 +4,12 @@
 
 システムは、git 管理下で同梱された built-in icon pack から active pack を選択できなければならない（MUST）。
 
+#### Scenario: built-in pack asset は pack ごとの directory に整理される
+
+- **WHEN** maintainer が repository 上の built-in icon asset を確認する
+- **THEN** asset は `assets/icons/<pack-dir>/...` 配下に整理されている
+- **AND** 既存 default pack `katana-icon` の asset root は `assets/icons/katana/...` である
+
 #### Scenario: default pack は `katana-icon` である
 
 - **WHEN** ユーザーが icon pack を未変更のまま KatanA を起動する
