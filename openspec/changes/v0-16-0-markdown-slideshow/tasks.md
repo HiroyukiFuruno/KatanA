@@ -1,7 +1,7 @@
 ## 着手条件 (DoR)
 
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.17.0 の変更 ID とスコープが確認されていること
+- [ ] 対象バージョン 0.16.0 の変更 ID とスコープが確認されていること
 - [ ] 現行の Markdown preview 制御群、fullscreen viewer、theme 解決経路を `views/panels/preview.rs` / `preview_pane/*` / `markdown/*` で再確認していること
 
 ## Branch Rule
@@ -14,22 +14,22 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
 - [x] 1.1 `views/panels/preview.rs` の Markdown 制御群にスライドショー起動ボタンを追加する
 - [x] 1.2 スライドショー起動時に active Markdown 文書が対象になることを確認する
 - [x] 1.3 既存の preview 操作や fullscreen image 導線を壊さないことを確認する
-- [ ] 1.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 1.5 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 1.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 1.5 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] Markdown 系の制御群からスライドショーを起動できること
-- [ ] 起動対象が active Markdown 文書であること
-- [ ] 既存 preview の基本操作が回帰していないこと
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Markdown 系の制御群からスライドショーを起動できること
+- [x] 起動対象が active Markdown 文書であること
+- [x] 既存 preview の基本操作が回帰していないこと
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -37,23 +37,23 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 2.1 Markdown スライドショー用の全画面 viewer を実装する
-- [ ] 2.2 左右のページング操作で前後のページへ移動できるようにする
-- [ ] 2.3 先頭/末尾ページでの挙動が安定し、境界で破綻しないことを確認する
-- [ ] 2.4 全画面表示中のキーボード操作とフォーカス移動を整理する
-- [ ] 2.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 2.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 2.1 Markdown スライドショー用の全画面 viewer を実装する
+- [x] 2.2 左右のページング操作で前後のページへ移動できるようにする
+- [x] 2.3 先頭/末尾ページでの挙動が安定し、境界で破綻しないことを確認する
+- [x] 2.4 全画面表示中のキーボード操作とフォーカス移動を整理する
+- [x] 2.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 2.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] スライドショーは全画面で表示されること
-- [ ] 左右のページングで前後に移動できること
-- [ ] 先頭/末尾で境界挙動が安定していること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] スライドショーは全画面で表示されること
+- [x] 左右のページングで前後に移動できること
+- [x] 先頭/末尾で境界挙動が安定していること
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
