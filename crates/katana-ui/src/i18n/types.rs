@@ -1125,4 +1125,9 @@ mod default_coverage_tests {
         assert_eq!(default_command_updates(), "Check for Updates");
         assert_eq!(default_command_about(), "Toggle About");
     }
+
+    #[test]
+    fn test_default_action_toggle_slideshow() {
+        assert_eq!(super::default_action_toggle_slideshow(), "Slideshow");
+    }
 }

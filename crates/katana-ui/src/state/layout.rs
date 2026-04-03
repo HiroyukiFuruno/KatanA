@@ -16,6 +16,9 @@ pub struct LayoutState {
     pub rename_tab_group_modal: Option<(usize, String)>,
     pub inline_rename_group: Option<String>,
     pub show_slideshow: bool,
+    pub slideshow_page: usize,
+    pub was_os_fullscreen_before_slideshow: bool,
+    pub slideshow_last_active_time: f64,
 }
 
 impl Default for LayoutState {
@@ -41,6 +44,9 @@ impl LayoutState {
             rename_tab_group_modal: None,
             inline_rename_group: None,
             show_slideshow: false,
+            slideshow_page: 0,
+            was_os_fullscreen_before_slideshow: false,
+            slideshow_last_active_time: 0.0,
         }
     }
 }

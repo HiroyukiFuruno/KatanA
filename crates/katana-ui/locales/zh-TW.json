@@ -147,7 +147,8 @@
     "discard": "丟棄",
     "confirm": "確認",
     "copy_relative_path": "複製相對路徑",
-    "refresh_document": "重新整理文件"
+    "refresh_document": "重新整理文件",
+    "toggle_slideshow": "幻燈片"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"

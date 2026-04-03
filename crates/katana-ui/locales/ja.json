@@ -147,7 +147,8 @@
     "discard": "破棄",
     "confirm": "確認",
     "reveal_in_os": "OSの機能で表示する",
-    "copy_relative_path": "相対パスのコピー"
+    "copy_relative_path": "相対パスのコピー",
+    "toggle_slideshow": "スライドショー"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"

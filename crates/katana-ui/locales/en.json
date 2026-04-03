@@ -147,7 +147,8 @@
     "cancel": "Cancel",
     "discard": "Discard",
     "confirm": "Confirm",
-    "copy_relative_path": "Copy Relative Path"
+    "copy_relative_path": "Copy Relative Path",
+    "toggle_slideshow": "Slideshow"
   },
   "ai": {
     "ai_unconfigured": "[AI: unconfigured]"
