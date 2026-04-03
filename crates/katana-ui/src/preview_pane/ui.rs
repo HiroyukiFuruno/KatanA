@@ -112,10 +112,10 @@ impl PreviewPane {
     ) {
         if result.is_none() && self.fullscreen_image.is_some() {
             self.fullscreen_viewer_state.reset();
-            if let Some(ctx) = ctx {
-                if !self.was_os_fullscreen_before_modal {
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
-                }
+            if let Some(ctx) = ctx
+                && !self.was_os_fullscreen_before_modal
+            {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
             }
         }
         self.fullscreen_image = result;
@@ -127,13 +127,13 @@ impl PreviewPane {
         ctx: Option<&egui::Context>,
     ) {
         if let Some(idx) = request {
-            if self.fullscreen_image.is_none() {
-                if let Some(ctx) = ctx {
-                    let is_native_fs = ctx.input(|i| i.viewport().fullscreen).unwrap_or(false);
-                    self.was_os_fullscreen_before_modal = is_native_fs;
-                    if !is_native_fs {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
-                    }
+            if self.fullscreen_image.is_none()
+                && let Some(ctx) = ctx
+            {
+                let is_native_fs = ctx.input(|i| i.viewport().fullscreen).unwrap_or(false);
+                self.was_os_fullscreen_before_modal = is_native_fs;
+                if !is_native_fs {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
                 }
             }
             self.fullscreen_image = Some(idx);

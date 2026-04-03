@@ -185,10 +185,11 @@ mod tests {
                 }
                 _ => panic!("Wrong type"),
             }
-            assert!(key
-                .target_filename()
-                .unwrap()
-                .starts_with("workspace_tabs_"));
+            assert!(
+                key.target_filename()
+                    .unwrap()
+                    .starts_with("workspace_tabs_")
+            );
         }
 
         let key = PersistentKey::Diagram {

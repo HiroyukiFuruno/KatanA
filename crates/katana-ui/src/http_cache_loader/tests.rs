@@ -3,14 +3,14 @@
 #[cfg(test)]
 mod tests {
     use crate::http_cache_loader::disk::{
-        cache_key, read_cached_file, remove_cache_file, write_cached_file_for_uri,
-        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION,
+        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION, cache_key, read_cached_file, remove_cache_file,
+        write_cached_file_for_uri,
     };
     use crate::http_cache_loader::fetch::{entry_to_bytes_result, process_fetch_response};
     use crate::http_cache_loader::loader::PersistentHttpLoader;
     use crate::http_cache_loader::types::{CachedFile, HttpCacheEntry};
-    use egui::load::{BytesLoader, BytesPoll};
     use egui::Context;
+    use egui::load::{BytesLoader, BytesPoll};
     use std::sync::Arc;
     use std::task::Poll;
     use tempfile::TempDir;

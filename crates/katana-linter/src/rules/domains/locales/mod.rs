@@ -1,8 +1,8 @@
+use crate::JsonNodeKind;
+use crate::Violation;
 use crate::utils::{
     collect_json_placeholders, collect_json_shape, collect_json_values, parse_json_file,
 };
-use crate::JsonNodeKind;
-use crate::Violation;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
@@ -128,8 +128,10 @@ mod tests {
         let tmp = tempfile::TempDir::new().unwrap();
         let violations = lint_locale_files(tmp.path());
         assert_eq!(violations.len(), 1);
-        assert!(violations[0]
-            .message
-            .contains("No locale JSON files found for analysis"));
+        assert!(
+            violations[0]
+                .message
+                .contains("No locale JSON files found for analysis")
+        );
     }
 }

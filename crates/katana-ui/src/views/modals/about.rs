@@ -1,9 +1,9 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+use crate::Icon;
 use crate::app_state::{AppAction, AppState};
 use crate::shell::KatanaApp;
 use crate::state::update::UpdatePhase;
-use crate::Icon;
 use katana_core::update::ReleaseInfo;
 
 use crate::i18n;
@@ -47,7 +47,7 @@ impl<'a> AboutModal<'a> {
             .collapsible(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .default_width(ABOUT_WINDOW_WIDTH)
-            .frame(egui::Frame::window(&ctx.style()).inner_margin(INNER_PADDING))
+            .frame(egui::Frame::window(&ctx.global_style()).inner_margin(INNER_PADDING))
             .show(ctx, |ui| {
                 ui.vertical_centered(|ui| {
                     ui.add_space(HEADING_SPACING);

@@ -1,5 +1,5 @@
-use crate::utils::locale_violation;
 use crate::Violation;
+use crate::utils::locale_violation;
 use std::path::Path;
 
 use super::discovery::MarkdownPair;

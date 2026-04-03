@@ -1,5 +1,5 @@
-use egui_kittest::kittest::Queryable;
 use egui_kittest::Harness;
+use egui_kittest::kittest::Queryable;
 use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 use katana_ui::app_state::{AppAction, AppState, ViewMode};
 use katana_ui::shell::KatanaApp;
@@ -86,24 +86,28 @@ fn test_integration_workspace_and_tabs() {
     harness.step();
     harness.step();
 
-    assert!(harness
-        .state_mut()
-        .app_state_mut()
-        .document
-        .active_doc_idx
-        .is_some());
+    assert!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .document
+            .active_doc_idx
+            .is_some()
+    );
 
     harness
         .state_mut()
         .trigger_action(AppAction::CloseDocument(0));
     harness.step();
 
-    assert!(harness
-        .state_mut()
-        .app_state_mut()
-        .document
-        .active_doc_idx
-        .is_none());
+    assert!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .document
+            .active_doc_idx
+            .is_none()
+    );
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
 
@@ -296,10 +300,12 @@ fn test_integration_changelog_tab_display() {
         let state = harness.state();
         let app = state.app_state_for_test();
         let active_doc = app.active_document().expect("a document MUST be active");
-        assert!(active_doc
-            .path
-            .to_string_lossy()
-            .starts_with("Katana://ChangeLog"));
+        assert!(
+            active_doc
+                .path
+                .to_string_lossy()
+                .starts_with("Katana://ChangeLog")
+        );
     }
     harness.step();
     harness.step();
@@ -1127,12 +1133,14 @@ fn test_integration_multiple_tabs_close() {
             .len(),
         0
     );
-    assert!(harness
-        .state_mut()
-        .app_state_mut()
-        .document
-        .active_doc_idx
-        .is_none());
+    assert!(
+        harness
+            .state_mut()
+            .app_state_mut()
+            .document
+            .active_doc_idx
+            .is_none()
+    );
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -2383,10 +2391,12 @@ fn test_integration_remove_workspace() {
             .config
             .settings
             .settings();
-        assert!(settings
-            .workspace
-            .paths
-            .contains(&ws_dir.path().display().to_string()));
+        assert!(
+            settings
+                .workspace
+                .paths
+                .contains(&ws_dir.path().display().to_string())
+        );
     }
 
     harness
@@ -2403,10 +2413,12 @@ fn test_integration_remove_workspace() {
             .config
             .settings
             .settings();
-        assert!(!settings
-            .workspace
-            .paths
-            .contains(&ws_dir.path().display().to_string()));
+        assert!(
+            !settings
+                .workspace
+                .paths
+                .contains(&ws_dir.path().display().to_string())
+        );
     }
 }
 
@@ -3315,8 +3327,7 @@ fn test_integration_auto_save_interval_precision_preserved_by_ui() {
         .behavior
         .auto_save_interval_secs;
     assert_eq!(
-        final_val,
-        5.1,
+        final_val, 5.1,
         "Strict IT Check: The Settings UI MUST preserve exactly 1 decimal of precision (0.1 step) for the Auto-save interval and must NOT round it to integers."
     );
 }
@@ -3387,7 +3398,95 @@ fn test_ast_linter_locales() {
     }
 
     let allowed_overlaps = [
-        "Abrir", "Architecture", "Aumentar", "Build", "Cancelar", "Claro", "Code", "Comportamento", "Confirmar", "Copyright", "Código", "Descartar", "Dividir", "Documentation", "Documento HTML (.html)", "Documento PDF (.pdf)", "Duplicar...", "Exportar", "File", "Filtro", "Idioma (Language)", "Info", "Infos", "Intervalo", "Layout", "Links", "Nunca", "OK", "Ocultar KatanA", "Patrocinar", "Personalizado", "Plataforma", "Pronto", "Quotidiano", "Renderizando {kind}...", "Runtime", "Rust", "Semanalmente", "Sistema", "Sponsor", "Support", "System", "Tema", "Terms content.", "Text", "Texto", "Version", "[AI: \u{672a}\u{8a2d}\u{5b9a}]", "[AI: unconfigured]", "fn main() { println!(\"\u{4f60}\u{597d}!\"); }", "segundos", "{kind} \u{6e32}\u{67d3}\u{4e2d}...", "⏳ Exportando {filename}...", "\u{4e0a}\u{79fb}", "\u{4e0b}\u{79fb}", "\u{4f8b}\u{5982} node_modules, target, .git", "\u{4fdd}\u{5b58}", "\u{5168}\u{5c4f}", "\u{5206}\u{5272}", "\u{5206}\u{5272}\u{65b9}\u{5411}", "\u{53d6}\u{6d88}", "\u{53d6}\u{6d88}\u{56fa}\u{5b9a}", "\u{53f3}\u{79fb}", "\u{56fa}\u{5b9a}", "\u{5782}\u{76f4}\u{ff08}\u{4e0a} / \u{4e0b}\u{ff09}", "\u{5929}", "\u{5de6}\u{79fb}", "\u{5df2}\u{662f}\u{6700}\u{65b0}\u{7248}\u{672c}", "\u{5e73}\u{53f0}", "\u{60a8}\u{4f7f}\u{7528}\u{7684}\u{662f}\u{6700}\u{65b0}\u{7248}\u{672c}\u{7684} KatanA\u{3002}", "\u{63a5}\u{53d7}", "\u{652f}\u{6301}", "\u{653e}\u{5927}", "\u{66f4}\u{65b0}", "\u{6709}\u{65b0}\u{7248}\u{672c}\u{53ef}\u{7528}", "\u{6bcf}\u{5929}", "\u{6bcf}\u{6708}", "\u{6c34}\u{5e73}\u{ff08}\u{5de6} / \u{53f3}\u{ff09}", "\u{6df1}\u{8272}", "\u{7248}\u{672c}", "\u{78ba}\u{8a8d}", "\u{79d2}", "\u{7e2e}\u{5c0f}", "\u{80cc}\u{666f}", "\u{8a2d}\u{5b9a}", "\u{8b66}\u{544a}", "\u{9000}\u{51fa} KatanA", "\u{91cd}\u{7f6e}\u{4f4d}\u{7f6e}\u{548c}\u{5927}\u{5c0f}", "\u{9762}\u{677f}\u{80cc}\u{666f}"
+        "Abrir",
+        "Architecture",
+        "Aumentar",
+        "Build",
+        "Cancelar",
+        "Claro",
+        "Code",
+        "Comportamento",
+        "Confirmar",
+        "Copyright",
+        "Código",
+        "Descartar",
+        "Dividir",
+        "Documentation",
+        "Documento HTML (.html)",
+        "Documento PDF (.pdf)",
+        "Duplicar...",
+        "Exportar",
+        "File",
+        "Filtro",
+        "Idioma (Language)",
+        "Info",
+        "Infos",
+        "Intervalo",
+        "Layout",
+        "Links",
+        "Nunca",
+        "OK",
+        "Ocultar KatanA",
+        "Patrocinar",
+        "Personalizado",
+        "Plataforma",
+        "Pronto",
+        "Quotidiano",
+        "Renderizando {kind}...",
+        "Runtime",
+        "Rust",
+        "Semanalmente",
+        "Sistema",
+        "Sponsor",
+        "Support",
+        "System",
+        "Tema",
+        "Terms content.",
+        "Text",
+        "Texto",
+        "Version",
+        "[AI: \u{672a}\u{8a2d}\u{5b9a}]",
+        "[AI: unconfigured]",
+        "fn main() { println!(\"\u{4f60}\u{597d}!\"); }",
+        "segundos",
+        "{kind} \u{6e32}\u{67d3}\u{4e2d}...",
+        "⏳ Exportando {filename}...",
+        "\u{4e0a}\u{79fb}",
+        "\u{4e0b}\u{79fb}",
+        "\u{4f8b}\u{5982} node_modules, target, .git",
+        "\u{4fdd}\u{5b58}",
+        "\u{5168}\u{5c4f}",
+        "\u{5206}\u{5272}",
+        "\u{5206}\u{5272}\u{65b9}\u{5411}",
+        "\u{53d6}\u{6d88}",
+        "\u{53d6}\u{6d88}\u{56fa}\u{5b9a}",
+        "\u{53f3}\u{79fb}",
+        "\u{56fa}\u{5b9a}",
+        "\u{5782}\u{76f4}\u{ff08}\u{4e0a} / \u{4e0b}\u{ff09}",
+        "\u{5929}",
+        "\u{5de6}\u{79fb}",
+        "\u{5df2}\u{662f}\u{6700}\u{65b0}\u{7248}\u{672c}",
+        "\u{5e73}\u{53f0}",
+        "\u{60a8}\u{4f7f}\u{7528}\u{7684}\u{662f}\u{6700}\u{65b0}\u{7248}\u{672c}\u{7684} KatanA\u{3002}",
+        "\u{63a5}\u{53d7}",
+        "\u{652f}\u{6301}",
+        "\u{653e}\u{5927}",
+        "\u{66f4}\u{65b0}",
+        "\u{6709}\u{65b0}\u{7248}\u{672c}\u{53ef}\u{7528}",
+        "\u{6bcf}\u{5929}",
+        "\u{6bcf}\u{6708}",
+        "\u{6c34}\u{5e73}\u{ff08}\u{5de6} / \u{53f3}\u{ff09}",
+        "\u{6df1}\u{8272}",
+        "\u{7248}\u{672c}",
+        "\u{78ba}\u{8a8d}",
+        "\u{79d2}",
+        "\u{7e2e}\u{5c0f}",
+        "\u{80cc}\u{666f}",
+        "\u{8a2d}\u{5b9a}",
+        "\u{8b66}\u{544a}",
+        "\u{9000}\u{51fa} KatanA",
+        "\u{91cd}\u{7f6e}\u{4f4d}\u{7f6e}\u{548c}\u{5927}\u{5c0f}",
+        "\u{9762}\u{677f}\u{80cc}\u{666f}",
     ];
 
     for (filename, target_json) in &locales {

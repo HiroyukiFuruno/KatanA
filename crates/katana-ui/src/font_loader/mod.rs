@@ -32,6 +32,8 @@ impl NormalizeFonts {
 
     fn normalize_cjk_baseline(&mut self, proportional_candidates: &[&str]) {
         let tweaked_fallback = egui::FontTweak {
+            coords: Default::default(),
+            hinting_override: None,
             scale: 1.0,
             y_offset_factor: MONO_FALLBACK_Y_OFFSET_FACTOR + MONO_PRIMARY_Y_OFFSET_FACTOR,
             y_offset: 0.0,
@@ -86,7 +88,7 @@ impl SystemFontLoader {
         ctx.data_mut(|d| d.insert_temp(id, is_loaded));
 
         #[cfg(debug_assertions)]
-        ctx.style_mut(|style| {
+        ctx.global_style_mut(|style| {
             style.debug.debug_on_hover = false;
             style.debug.show_expand_width = false;
             style.debug.show_expand_height = false;
@@ -106,6 +108,8 @@ impl SystemFontLoader {
         let prop_name = Self::load_first_valid(&mut fonts, proportional_candidates, None, "");
 
         let markdown_tweak = egui::FontTweak {
+            coords: Default::default(),
+            hinting_override: None,
             scale: 1.0,
             y_offset_factor: MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR,
             y_offset: 0.0,
@@ -118,6 +122,8 @@ impl SystemFontLoader {
         );
 
         let mono_tweak = egui::FontTweak {
+            coords: Default::default(),
+            hinting_override: None,
             scale: 1.0,
             y_offset_factor: MONO_PRIMARY_Y_OFFSET_FACTOR,
             y_offset: 0.0,
@@ -519,7 +525,9 @@ mod tests {
         assert!(
             diff <= 1.5,
             "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in Monospace visual mesh: English 'c' y={} vs Japanese '\u{5fa9}' y={} (Diff: {})",
-            eng_min_y, jpn_min_y, diff
+            eng_min_y,
+            jpn_min_y,
+            diff
         );
     }
 
@@ -606,15 +614,17 @@ mod tests {
             diff <= 1.5,
             "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in CodeBlock LayoutJob visual mesh: '#' y={} vs '\u{5168}' y={} (Diff: {}). \
              Mixed JP/EN text must share a common baseline.",
-            hash_min_y, jp_min_y, diff
+            hash_min_y,
+            jp_min_y,
+            diff
         );
     }
 
     #[test]
     #[cfg(target_os = "macos")]
     fn test_font_jitter_8_inline_code_cross_family() {
-        use egui::text::{LayoutJob, TextFormat};
         use egui::TextStyle;
+        use egui::text::{LayoutJob, TextFormat};
 
         let preset = DiagramColorPreset::current();
         let fonts = SystemFontLoader::build_font_definitions(
@@ -698,7 +708,9 @@ mod tests {
             diff <= 10.0,
             "\u{30ac}\u{30bf}\u{30c4}\u{30ad} (Jitter) in inline code: Proportional '\u{30a4}' y={} vs Monospace 'm' y={} (Diff: {}). \
              Cross-family alignment is not enforced at font-level; handle at LayoutJob level.",
-            prop_min_y, mono_min_y, diff
+            prop_min_y,
+            mono_min_y,
+            diff
         );
     }
 

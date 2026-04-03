@@ -1,5 +1,5 @@
 use crate::markdown::color_preset::DiagramColorPreset;
-use crate::markdown::{render, DiagramRenderer, MarkdownError};
+use crate::markdown::{DiagramRenderer, MarkdownError, render};
 
 pub struct HtmlExporter;
 

@@ -42,7 +42,10 @@ fn build_release_info(tag_name: String) -> ReleaseInfo {
         "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
         tag_name
     );
-    let body = format!("### 🚀 New version {} is available\n\nPlease check the [GitHub Releases page]({}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.", &tag_name, html_url);
+    let body = format!(
+        "### 🚀 New version {} is available\n\nPlease check the [GitHub Releases page]({}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
+        &tag_name, html_url
+    );
     ReleaseInfo {
         tag_name,
         html_url,

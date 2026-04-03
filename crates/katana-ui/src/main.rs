@@ -1,4 +1,5 @@
 #![allow(clippy::useless_vec)]
+#![allow(unsafe_op_in_unsafe_fn)]
 #![deny(warnings, clippy::all)]
 #![allow(
     missing_docs,
@@ -15,7 +16,7 @@
 
 #[cfg(not(test))]
 use katana_core::ai::AiProviderRegistry;
-use katana_core::plugin::{ExtensionPoint, PluginMeta, PluginRegistry, PLUGIN_API_VERSION};
+use katana_core::plugin::{ExtensionPoint, PLUGIN_API_VERSION, PluginMeta, PluginRegistry};
 #[cfg(not(test))]
 use katana_platform::{JsonFileRepository, SettingsService};
 #[cfg(not(test))]
@@ -97,7 +98,7 @@ fn resolve_locale_to_lang(locale: &str) -> String {
 fn detect_initial_language() -> Option<String> {
     #[cfg(target_os = "macos")]
     {
-        extern "C" {
+        unsafe extern "C" {
             fn katana_get_mac_locale(buf: *mut std::ffi::c_char, max_len: usize);
         }
         let mut buf = [0u8; LOCALE_BUF_SIZE];
@@ -219,7 +220,7 @@ pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
     ctx.set_fonts(normalized.into_inner());
 
     #[cfg(debug_assertions)]
-    ctx.style_mut(|style| {
+    ctx.global_style_mut(|style| {
         style.debug.debug_on_hover = false;
         style.debug.show_expand_width = false;
         style.debug.show_expand_height = false;

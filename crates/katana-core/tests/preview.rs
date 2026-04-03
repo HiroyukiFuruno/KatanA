@@ -29,9 +29,11 @@ fn mermaid_fence_is_split_into_diagram_section() {
 fn unknown_fence_remains_as_markdown() {
     let src = "intro\n```rust\nfn main() {}\n```\nfin";
     let sections = split_into_sections(src);
-    assert!(sections
-        .iter()
-        .all(|s| matches!(s, PreviewSection::Markdown(_))));
+    assert!(
+        sections
+            .iter()
+            .all(|s| matches!(s, PreviewSection::Markdown(_)))
+    );
 }
 
 #[test]
@@ -49,18 +51,22 @@ fn multiple_diagrams_are_split_correctly() {
 fn diagram_without_closing_fence_remains_as_markdown() {
     let src = "before\n```mermaid\ngraph TD; A-->B";
     let sections = split_into_sections(src);
-    assert!(sections
-        .iter()
-        .all(|s| matches!(s, PreviewSection::Markdown(_))));
+    assert!(
+        sections
+            .iter()
+            .all(|s| matches!(s, PreviewSection::Markdown(_)))
+    );
 }
 
 #[test]
 fn markdown_if_fence_ends_without_newline() {
     let src = "text\n```";
     let sections = split_into_sections(src);
-    assert!(sections
-        .iter()
-        .all(|s| matches!(s, PreviewSection::Markdown(_))));
+    assert!(
+        sections
+            .iter()
+            .all(|s| matches!(s, PreviewSection::Markdown(_)))
+    );
 }
 
 #[test]

@@ -70,26 +70,26 @@ pub(crate) fn render_math(ui: &mut egui::Ui, tex: &str, is_inline: bool) {
                     let width_re = regex::Regex::new(r#"width="([\d\.]+)ex""#).unwrap();
                     let height_re = regex::Regex::new(r#"height="([\d\.]+)ex""#).unwrap();
 
-                    if let Some(caps) = width_re.captures(&processed_svg) {
-                        if let Ok(w_ex) = caps.get(1).unwrap().as_str().parse::<f32>() {
-                            let w_px = w_ex * EX_TO_PX;
-                            processed_svg = width_re
-                                .replace(&processed_svg, format!("width=\"{w_px}px\""))
-                                .into_owned();
-                        }
+                    if let Some(caps) = width_re.captures(&processed_svg)
+                        && let Ok(w_ex) = caps.get(1).unwrap().as_str().parse::<f32>()
+                    {
+                        let w_px = w_ex * EX_TO_PX;
+                        processed_svg = width_re
+                            .replace(&processed_svg, format!("width=\"{w_px}px\""))
+                            .into_owned();
                     }
-                    if let Some(caps) = height_re.captures(&processed_svg) {
-                        if let Ok(h_ex) = caps.get(1).unwrap().as_str().parse::<f32>() {
-                            let h_px = h_ex * EX_TO_PX;
-                            processed_svg = height_re
-                                .replace(&processed_svg, format!("height=\"{h_px}px\""))
-                                .into_owned();
-                        }
+                    if let Some(caps) = height_re.captures(&processed_svg)
+                        && let Ok(h_ex) = caps.get(1).unwrap().as_str().parse::<f32>()
+                    {
+                        let h_px = h_ex * EX_TO_PX;
+                        processed_svg = height_re
+                            .replace(&processed_svg, format!("height=\"{h_px}px\""))
+                            .into_owned();
                     }
 
                     processed_svg = processed_svg.replace("currentColor", &hex_color);
 
-                    use base64::{engine::general_purpose, Engine as _};
+                    use base64::{Engine as _, engine::general_purpose};
                     let b64 = general_purpose::STANDARD.encode(processed_svg.as_bytes());
                     format!("data:image/svg+xml;base64,{}", b64)
                 }

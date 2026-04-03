@@ -1,6 +1,6 @@
+use katana_core::Document;
 use katana_core::ai::AiProviderRegistry;
 use katana_core::plugin::PluginRegistry;
-use katana_core::Document;
 use katana_ui::app_state::*;
 
 #[test]

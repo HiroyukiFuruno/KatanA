@@ -87,8 +87,8 @@ impl ConfigState {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use katana_platform::settings::repository::JsonFileRepository;
     use katana_platform::SettingsService;
+    use katana_platform::settings::repository::JsonFileRepository;
     use tempfile::tempdir;
 
     struct DummyCache;

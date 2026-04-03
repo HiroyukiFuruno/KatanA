@@ -3,7 +3,7 @@ use super::*;
 #[cfg(test)]
 mod sourcepos_tests {
     use comrak::nodes::NodeValue;
-    use comrak::{parse_document, Arena, Options};
+    use comrak::{Arena, Options, parse_document};
 
     #[test]
     fn test_sourcepos_bytes() {

@@ -1,8 +1,8 @@
 #![allow(clippy::useless_vec)]
 
 use eframe::egui;
-use katana_platform::theme::ThemeColors;
 use katana_platform::FilesystemService;
+use katana_platform::theme::ThemeColors;
 
 use crate::app::*;
 

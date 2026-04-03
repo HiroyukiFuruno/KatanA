@@ -59,7 +59,7 @@ impl<'a> SplashOverlay<'a> {
     }
 
     fn draw_splash_content(&self, ui: &mut egui::Ui, ctx: &egui::Context, opacity: f32) {
-        let is_dark = ctx.style().visuals.dark_mode;
+        let is_dark = ctx.global_style().visuals.dark_mode;
         #[allow(deprecated)]
         let content_rect = ctx.screen_rect();
 

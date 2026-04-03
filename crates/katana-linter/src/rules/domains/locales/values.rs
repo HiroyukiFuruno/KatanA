@@ -1,5 +1,5 @@
-use crate::utils::{is_allowed_string, locale_violation};
 use crate::Violation;
+use crate::utils::{is_allowed_string, locale_violation};
 use std::collections::BTreeMap;
 use std::path::Path;
 

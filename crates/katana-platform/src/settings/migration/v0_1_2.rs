@@ -1,5 +1,5 @@
 use super::MigrationStrategy;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 // WHY: Migrates settings from v0.1.2 (flat structure) to v0.1.3 (hierarchical).
 pub struct Migration0_1_2;
@@ -144,11 +144,13 @@ mod tests {
                 .unwrap(),
             "Nord"
         );
-        assert!(new_json
-            .get("theme")
-            .unwrap()
-            .get("custom_color_overrides")
-            .is_some());
+        assert!(
+            new_json
+                .get("theme")
+                .unwrap()
+                .get("custom_color_overrides")
+                .is_some()
+        );
         assert_eq!(
             new_json
                 .get("font")

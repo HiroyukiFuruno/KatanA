@@ -1,4 +1,4 @@
-use crate::cache::{read_guard, write_guard, CacheFacade};
+use crate::cache::{CacheFacade, read_guard, write_guard};
 use std::sync::RwLock;
 
 // WHY: An in-memory only CacheFacade for tests.

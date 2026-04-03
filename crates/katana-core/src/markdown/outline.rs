@@ -1,5 +1,5 @@
 use comrak::nodes::{AstNode, NodeValue};
-use comrak::{parse_document, Arena, Options};
+use comrak::{Arena, Options, parse_document};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutlineItem {
@@ -18,8 +18,8 @@ fn extract_text<'a>(node: &'a AstNode<'a>) -> String {
 
 fn extract_text_from_node<'a>(node: &'a AstNode<'a>, out: &mut String) {
     match &node.data.borrow().value {
-        NodeValue::Text(ref text) => out.push_str(text),
-        NodeValue::Code(ref code) => out.push_str(&code.literal),
+        NodeValue::Text(text) => out.push_str(text),
+        NodeValue::Code(code) => out.push_str(&code.literal),
         NodeValue::SoftBreak | NodeValue::LineBreak => out.push(' '),
         _ => {}
     }

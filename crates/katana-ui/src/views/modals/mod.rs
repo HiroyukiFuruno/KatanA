@@ -1,9 +1,9 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+use crate::Icon;
 use crate::app_state::{AppAction, AppState};
 use crate::shell::KatanaApp;
 use crate::state::update::UpdatePhase;
-use crate::Icon;
 use katana_core::update::ReleaseInfo;
 
 use crate::i18n;

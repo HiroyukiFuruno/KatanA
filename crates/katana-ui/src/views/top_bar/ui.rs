@@ -4,8 +4,8 @@ use crate::shell::{
     TAB_NAV_BUTTONS_AREA_WIDTH, TAB_TOOLTIP_SHOW_DELAY_SECS,
 };
 use crate::shell_ui::{
-    invisible_label, relative_full_path, LIGHT_MODE_ICON_BG, STATUS_BAR_ICON_SPACING,
-    STATUS_SUCCESS_GREEN,
+    LIGHT_MODE_ICON_BG, STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN, invisible_label,
+    relative_full_path,
 };
 use eframe::egui;
 
@@ -379,25 +379,22 @@ impl<'a> TabBar<'a> {
                                     // Manually implement CloseOnClickOutside to avoid 'focusing text field closes popup' bug in older egui
                                     if ui.memory(|mem| mem.is_popup_open(popup_id))
                                         && ui.input(|i| i.pointer.any_pressed() && i.pointer.primary_pressed())
-                                    {
-                                        if let Some(pos) = ui.input(|i| i.pointer.interact_pos()) {
+                                        && let Some(pos) = ui.input(|i| i.pointer.interact_pos()) {
                                             let click_outside_popup = popup_resp.is_none_or(|r| !r.contains(pos));
                                             let click_outside_header = !group_resp.rect.contains(pos);
                                             if click_outside_popup && click_outside_header {
                                                 ui.memory_mut(|mem| { #[allow(deprecated)] { mem.close_popup(popup_id); } });
                                             }
                                         }
-                                    }
                                 }
                                 DrawItem::Tab { idx, group } => {
                                     let doc = &self.open_documents[idx];
                                     let is_active = self.active_doc_idx == Some(idx);
 
-                                    if let Some(g) = group {
-                                        if g.collapsed {
+                                    if let Some(g) = group
+                                        && g.collapsed {
                                             continue;
                                         }
-                                    }
 
                                     let original_filename = doc.file_name().unwrap_or("untitled");
                                     let is_changelog = doc
@@ -490,17 +487,16 @@ impl<'a> TabBar<'a> {
                                     );
 
                                     let mut clicked_tab = tab_interact.clicked();
-                                    if let Some(c) = close_resp {
-                                        if c.clicked() {
+                                    if let Some(c) = close_resp
+                                        && c.clicked() {
                                             close_idx = Some(idx);
                                             clicked_tab = false;
                                         }
-                                    }
 
                                     let is_being_dragged =
                                         ui.ctx().is_being_dragged(tab_interact.id);
-                                    if is_being_dragged {
-                                        if let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
+                                    if is_being_dragged
+                                        && let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
                                             let press_origin = ui
                                                 .input(|i| i.pointer.press_origin())
                                                 .unwrap_or(pointer_pos);
@@ -560,21 +556,19 @@ impl<'a> TabBar<'a> {
                                             dragging_ghost_info =
                                                 Some((ghost_rect, full_tab_rect.y_range()));
                                         }
-                                    }
 
                                     if is_active && should_scroll {
                                         tab_interact.scroll_to_me(Some(egui::Align::Center));
                                     }
 
-                                    if tab_interact.drag_stopped() {
-                                        if let Some(ghost_x) = ui.memory(|mem| {
+                                    if tab_interact.drag_stopped()
+                                        && let Some(ghost_x) = ui.memory(|mem| {
                                             mem.data.get_temp::<f32>(
                                                 egui::Id::new("drag_ghost_x").with(idx),
                                             )
                                         }) {
                                             dragged_source = Some((idx, ghost_x));
                                         }
-                                    }
 
                                     let tab_interact = tab_interact.on_hover_text(&tooltip_path);
 
@@ -760,15 +754,13 @@ impl<'a> TabBar<'a> {
                 )
                 .on_hover_text(crate::i18n::get().tab.nav_prev.clone())
                 .clicked()
-            {
-                if let Some(idx) = self.active_doc_idx {
+                && let Some(idx) = self.active_doc_idx {
                     let new_idx = crate::shell_logic::prev_tab_index(idx, doc_count);
                     tab_action = Some(AppAction::SelectDocument(
                         self.open_documents[new_idx].path.clone(),
                     ));
                     ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
                 }
-            }
             if ui
                 .add_enabled(
                     nav_enabled,
@@ -780,15 +772,13 @@ impl<'a> TabBar<'a> {
                 )
                 .on_hover_text(crate::i18n::get().tab.nav_next.clone())
                 .clicked()
-            {
-                if let Some(idx) = self.active_doc_idx {
+                && let Some(idx) = self.active_doc_idx {
                     let new_idx = crate::shell_logic::next_tab_index(idx, doc_count);
                     tab_action = Some(AppAction::SelectDocument(
                         self.open_documents[new_idx].path.clone(),
                     ));
                     ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
                 }
-            }
 
             scroll_resp.inner
         });

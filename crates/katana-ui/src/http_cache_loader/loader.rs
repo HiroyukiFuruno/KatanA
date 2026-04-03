@@ -1,15 +1,15 @@
 use std::{path::PathBuf, sync::Arc, task::Poll};
 
 use egui::{
+    Context,
     load::{BytesLoadResult, BytesLoader, BytesPoll, LoadError},
     mutex::Mutex,
-    Context,
 };
 
 use super::{
     disk::{
-        cache_key, default_http_cache_dir, read_cached_file, remove_cache_file,
-        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION,
+        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION, cache_key, default_http_cache_dir,
+        read_cached_file, remove_cache_file,
     },
     fetch::{entry_to_bytes_result, is_http_uri, process_fetch_response},
     types::{CachedFile, HttpCacheEntry},

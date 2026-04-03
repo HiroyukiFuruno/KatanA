@@ -56,8 +56,8 @@ mod tests {
 
     use eframe::egui;
     use egui_kittest::{
-        kittest::{NodeT, Queryable},
         Harness,
+        kittest::{NodeT, Queryable},
     };
 
     use super::render_html_block;

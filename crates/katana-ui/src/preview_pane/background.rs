@@ -29,10 +29,10 @@ impl PreviewPane {
                                     source: p_source,
                                     ..
                                 } = slot
+                                    && p_kind == &kind
+                                    && p_source == &source
                                 {
-                                    if p_kind == &kind && p_source == &source {
-                                        *slot = section.clone();
-                                    }
+                                    *slot = section.clone();
                                 }
                             }
                         }
@@ -74,10 +74,10 @@ impl PreviewPane {
                                 source: p_source,
                                 ..
                             } = slot
+                                && p_kind == &kind
+                                && p_source == &source
                             {
-                                if p_kind == &kind && p_source == &source {
-                                    *slot = section.clone();
-                                }
+                                *slot = section.clone();
                             }
                         }
                     }

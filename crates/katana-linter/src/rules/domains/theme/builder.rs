@@ -1,5 +1,5 @@
-use crate::utils::{collect_rs_files, parse_file, span_location};
 use crate::Violation;
+use crate::utils::{collect_rs_files, parse_file, span_location};
 use std::path::Path;
 use syn::spanned::Spanned;
 use syn::visit::Visit;

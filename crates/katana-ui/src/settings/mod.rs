@@ -116,10 +116,10 @@ impl<'a> SettingsWindow<'a> {
                 ui.set_min_width(SETTINGS_WINDOW_DEFAULT_WIDTH);
                 ui.set_min_height(SETTINGS_WINDOW_DEFAULT_HEIGHT);
 
-                egui::SidePanel::left("settings_left_panel")
+                egui::Panel::left("settings_left_panel")
                     .resizable(false)
-                    .min_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
-                    .max_width(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
+                    .min_size(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
+                    .max_size(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
                     .show_inside(ui, |ui| {
                         ui.horizontal(|ui| {
                             const TAB_SPACING: f32 = 4.0;
@@ -165,10 +165,10 @@ impl<'a> SettingsWindow<'a> {
                 );
 
                 if show_preview {
-                    egui::SidePanel::right("settings_right_panel")
+                    egui::Panel::right("settings_right_panel")
                         .resizable(false)
-                        .min_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
-                        .max_width(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
+                        .min_size(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
+                        .max_size(SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH)
                         .show_inside(ui, |ui| {
                             section_header(ui, &crate::i18n::get().settings.preview.title);
                             preview_pane.show(ui);

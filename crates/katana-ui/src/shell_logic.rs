@@ -25,11 +25,7 @@ pub fn prev_tab_index(current: usize, count: usize) -> usize {
     if count == 0 {
         return 0;
     }
-    if current == 0 {
-        count - 1
-    } else {
-        current - 1
-    }
+    if current == 0 { count - 1 } else { current - 1 }
 }
 
 pub fn next_tab_index(current: usize, count: usize) -> usize {

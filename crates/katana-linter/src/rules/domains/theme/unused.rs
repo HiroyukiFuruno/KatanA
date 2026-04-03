@@ -1,5 +1,5 @@
-use crate::utils::{collect_rs_files, parse_file};
 use crate::Violation;
+use crate::utils::{collect_rs_files, parse_file};
 use std::collections::HashSet;
 use std::path::Path;
 use syn::visit::Visit;

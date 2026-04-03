@@ -1,6 +1,6 @@
 use xmltree::Element;
 
-use super::utils::{attr_f64, CANVAS_EDGE_MARGIN, CANVAS_MIN_HEIGHT, CANVAS_MIN_WIDTH};
+use super::utils::{CANVAS_EDGE_MARGIN, CANVAS_MIN_HEIGHT, CANVAS_MIN_WIDTH, attr_f64};
 
 pub fn extract_graph_model(root: &Element) -> Result<&Element, String> {
     if root.name == "mxGraphModel" {

@@ -75,18 +75,18 @@ impl<'a> HtmlParser<'a> {
     }
 
     fn try_parse_br_or_img(&self, s: &str) -> Option<(HtmlNode, usize)> {
-        if let Some(m) = regex::regex_br().find(s) {
-            if m.start() == 0 {
-                return Some((HtmlNode::LineBreak, m.end()));
-            }
+        if let Some(m) = regex::regex_br().find(s)
+            && m.start() == 0
+        {
+            return Some((HtmlNode::LineBreak, m.end()));
         }
-        if let Some(caps) = regex::regex_img().captures(s) {
-            if caps.get(0)?.start() == 0 {
-                let attrs = caps.get(1)?.as_str();
-                let src = regex::extract_attr(attrs, "src").unwrap_or_default();
-                let alt = regex::extract_attr(attrs, "alt").unwrap_or_default();
-                return Some((HtmlNode::Image { src, alt }, caps.get(0)?.end()));
-            }
+        if let Some(caps) = regex::regex_img().captures(s)
+            && caps.get(0)?.start() == 0
+        {
+            let attrs = caps.get(1)?.as_str();
+            let src = regex::extract_attr(attrs, "src").unwrap_or_default();
+            let alt = regex::extract_attr(attrs, "alt").unwrap_or_default();
+            return Some((HtmlNode::Image { src, alt }, caps.get(0)?.end()));
         }
         None
     }
@@ -151,19 +151,19 @@ impl<'a> HtmlParser<'a> {
     }
 
     fn try_parse_em_or_strong(&self, s: &str) -> Option<(HtmlNode, usize)> {
-        if let Some(caps) = regex::regex_em().captures(s) {
-            if caps.get(0)?.start() == 0 {
-                let inner = caps.get(1)?.as_str();
-                let children = self.parse_fragment(inner);
-                return Some((HtmlNode::Emphasis(children), caps.get(0)?.end()));
-            }
+        if let Some(caps) = regex::regex_em().captures(s)
+            && caps.get(0)?.start() == 0
+        {
+            let inner = caps.get(1)?.as_str();
+            let children = self.parse_fragment(inner);
+            return Some((HtmlNode::Emphasis(children), caps.get(0)?.end()));
         }
-        if let Some(caps) = regex::regex_strong().captures(s) {
-            if caps.get(0)?.start() == 0 {
-                let inner = caps.get(1)?.as_str();
-                let children = self.parse_fragment(inner);
-                return Some((HtmlNode::Strong(children), caps.get(0)?.end()));
-            }
+        if let Some(caps) = regex::regex_strong().captures(s)
+            && caps.get(0)?.start() == 0
+        {
+            let inner = caps.get(1)?.as_str();
+            let children = self.parse_fragment(inner);
+            return Some((HtmlNode::Strong(children), caps.get(0)?.end()));
         }
         None
     }
@@ -225,8 +225,10 @@ mod additional_tests {
     #[test]
     fn test_try_parse_tag_fallback() {
         let parser = HtmlParser::new(std::path::Path::new("."));
-        assert!(parser
-            .try_parse_tag(r#"<p align="left">test</p>"#)
-            .is_some());
+        assert!(
+            parser
+                .try_parse_tag(r#"<p align="left">test</p>"#)
+                .is_some()
+        );
     }
 }

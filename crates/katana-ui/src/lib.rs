@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 #![deny(warnings, clippy::all)]
 #![allow(
     missing_docs,

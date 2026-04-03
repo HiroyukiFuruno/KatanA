@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use egui_kittest::kittest::Queryable;
     use egui_kittest::Harness;
+    use egui_kittest::kittest::Queryable;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
     use katana_ui::app_state::{AppAction, AppState};
     use katana_ui::shell::KatanaApp;

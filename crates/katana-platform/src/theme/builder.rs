@@ -1,7 +1,7 @@
 use crate::theme::palettes::*;
 use crate::theme::preset::PresetColorData;
 use crate::theme::types::{
-    darken, lighten, to_rgba, CodeColors, PreviewColors, Rgb, Rgba, SystemColors, ThemeMode,
+    CodeColors, PreviewColors, Rgb, Rgba, SystemColors, ThemeMode, darken, lighten, to_rgba,
 };
 
 pub(crate) struct ThemePresetBuilder {

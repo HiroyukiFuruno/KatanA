@@ -53,7 +53,9 @@ fn create_violation(path: &Path, line: usize, num_lines: usize) -> Violation {
         file: rel_path,
         line,
         column: 1,
-        message: format!("Mixed logic and data. File ({num_lines} lines) defines pub struct/enum but also contains method logic. Move types to `types.rs` or `types/` dir, or keep file under {MAX_LENGTH_FOR_MIXED_FILE} lines."),
+        message: format!(
+            "Mixed logic and data. File ({num_lines} lines) defines pub struct/enum but also contains method logic. Move types to `types.rs` or `types/` dir, or keep file under {MAX_LENGTH_FOR_MIXED_FILE} lines."
+        ),
     }
 }
 

@@ -155,12 +155,11 @@ pub(crate) fn find_node_in_tree<'a>(
                 if path == target {
                     return Some(entry);
                 }
-                if target.starts_with(path) {
-                    if let Some(found) =
+                if target.starts_with(path)
+                    && let Some(found) =
                         crate::views::panels::tree::find_node_in_tree(children, target)
-                    {
-                        return Some(found);
-                    }
+                {
+                    return Some(found);
                 }
             }
             katana_core::workspace::TreeEntry::File { path } => {

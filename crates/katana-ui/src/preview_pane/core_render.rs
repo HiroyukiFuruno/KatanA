@@ -1,7 +1,7 @@
 use egui_commonmark::CommonMarkCache;
 use katana_core::markdown::diagram::{DiagramBlock, DiagramResult};
 use katana_core::preview::{
-    flatten_list_code_blocks, resolve_image_paths, split_into_sections, PreviewSection,
+    PreviewSection, flatten_list_code_blocks, resolve_image_paths, split_into_sections,
 };
 
 use super::pane::*;
@@ -155,76 +155,78 @@ impl PreviewPane {
             let jobs_rx = jobs_rx.clone();
             let current_cancel_token = current_cancel_token.clone();
             let repaint_ctx = self.repaint_ctx.clone();
-            std::thread::spawn(move || loop {
-                let job = {
-                    let mut lock = jobs_rx.lock().unwrap();
-                    lock.next()
-                };
-                let Some(job) = job else {
-                    break;
-                };
+            std::thread::spawn(move || {
+                loop {
+                    let job = {
+                        let mut lock = jobs_rx.lock().unwrap();
+                        lock.next()
+                    };
+                    let Some(job) = job else {
+                        break;
+                    };
 
-                if current_cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
-                    break;
-                }
-
-                let cache_key = get_cache_key(&job.path, &job.kind, &job.src);
-                let is_http = job.src.contains("http://") || job.src.contains("https://");
-
-                let cached_result: Option<String> = if !job.force {
-                    if is_http {
-                        job.cache.get_memory(&cache_key)
-                    } else {
-                        job.cache.get_persistent(&cache_key)
+                    if current_cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
+                        break;
                     }
-                } else {
-                    None
-                };
 
-                let result = if let Some(json) = cached_result {
-                    match serde_json::from_str::<DiagramResult>(&json) {
-                        Ok(res) => res,
-                        Err(_) => {
-                            let res = dispatch_renderer(&DiagramBlock {
-                                kind: job.kind.clone(),
-                                source: job.src.clone(),
-                            });
-                            if matches!(res, DiagramResult::Err { .. }) {
-                                let _ = tx.send(RenderMessage::ReduceConcurrency);
-                            }
-                            res
-                        }
-                    }
-                } else {
-                    let res = dispatch_renderer(&DiagramBlock {
-                        kind: job.kind.clone(),
-                        source: job.src.clone(),
-                    });
+                    let cache_key = get_cache_key(&job.path, &job.kind, &job.src);
+                    let is_http = job.src.contains("http://") || job.src.contains("https://");
 
-                    if let Ok(json) = serde_json::to_string(&res) {
+                    let cached_result: Option<String> = if !job.force {
                         if is_http {
-                            job.cache.set_memory(&cache_key, json);
+                            job.cache.get_memory(&cache_key)
                         } else {
-                            let _ = job.cache.set_persistent(&cache_key, json);
+                            job.cache.get_persistent(&cache_key)
                         }
-                    }
-                    if matches!(res, DiagramResult::Err { .. }) {
-                        let _ = tx.send(RenderMessage::ReduceConcurrency);
-                    }
-                    res
-                };
+                    } else {
+                        None
+                    };
 
-                let section = map_diagram_result(&job.kind, &job.src, result, job.source_lines);
-                let msg = RenderMessage::Section {
-                    kind: format!("{:?}", job.kind),
-                    source: job.src.clone(),
-                    section,
-                };
-                if tx.send(msg).is_err() {
-                    break; // WHY: Receiver was dropped.
-                }
-                if let Some(ctx) = &repaint_ctx {
-                    ctx.request_repaint();
+                    let result = if let Some(json) = cached_result {
+                        match serde_json::from_str::<DiagramResult>(&json) {
+                            Ok(res) => res,
+                            Err(_) => {
+                                let res = dispatch_renderer(&DiagramBlock {
+                                    kind: job.kind.clone(),
+                                    source: job.src.clone(),
+                                });
+                                if matches!(res, DiagramResult::Err { .. }) {
+                                    let _ = tx.send(RenderMessage::ReduceConcurrency);
+                                }
+                                res
+                            }
+                        }
+                    } else {
+                        let res = dispatch_renderer(&DiagramBlock {
+                            kind: job.kind.clone(),
+                            source: job.src.clone(),
+                        });
+
+                        if let Ok(json) = serde_json::to_string(&res) {
+                            if is_http {
+                                job.cache.set_memory(&cache_key, json);
+                            } else {
+                                let _ = job.cache.set_persistent(&cache_key, json);
+                            }
+                        }
+                        if matches!(res, DiagramResult::Err { .. }) {
+                            let _ = tx.send(RenderMessage::ReduceConcurrency);
+                        }
+                        res
+                    };
+
+                    let section = map_diagram_result(&job.kind, &job.src, result, job.source_lines);
+                    let msg = RenderMessage::Section {
+                        kind: format!("{:?}", job.kind),
+                        source: job.src.clone(),
+                        section,
+                    };
+                    if tx.send(msg).is_err() {
+                        break; // WHY: Receiver was dropped.
+                    }
+                    if let Some(ctx) = &repaint_ctx {
+                        ctx.request_repaint();
+                    }
                 }
             });
         }

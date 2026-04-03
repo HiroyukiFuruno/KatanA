@@ -222,8 +222,8 @@ mod tests {
     #[test]
     fn test_scan_directory_empty_extension() {
         use std::fs;
-        use std::sync::atomic::AtomicBool;
         use std::sync::Arc;
+        use std::sync::atomic::AtomicBool;
         use tempfile::tempdir;
 
         let dir = tempdir().unwrap();

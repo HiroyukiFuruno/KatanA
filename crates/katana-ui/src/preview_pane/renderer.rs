@@ -2,7 +2,7 @@ use super::types::*;
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::{
     drawio_renderer, mermaid_renderer, plantuml_renderer,
-    svg_rasterize::{rasterize_svg, RasterizedSvg},
+    svg_rasterize::{RasterizedSvg, rasterize_svg},
 };
 
 #[cfg(test)]

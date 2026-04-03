@@ -1,3 +1,4 @@
+#![allow(unsafe_op_in_unsafe_fn)]
 use crate::app_state::AppAction;
 
 #[cfg(target_os = "macos")]
@@ -21,7 +22,7 @@ mod ffi {
     pub const TAG_COMMAND_PALETTE: i32 = 17;
 
     #[allow(dead_code)]
-    extern "C" {
+    unsafe extern "C" {
         pub fn katana_setup_native_menu();
         pub fn katana_poll_menu_action() -> i32;
         pub fn katana_set_app_icon_png(png_data: *const u8, png_len: std::ffi::c_ulong);

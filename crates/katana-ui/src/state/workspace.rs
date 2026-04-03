@@ -1,8 +1,8 @@
 use katana_core::workspace::Workspace;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 
 pub struct WorkspaceState {
     pub data: Option<Workspace>,

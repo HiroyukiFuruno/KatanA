@@ -9,9 +9,9 @@ use katana_platform::FilesystemService;
 
 use crate::app_state::*;
 use std::ffi::OsStr;
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
-use std::sync::Arc;
 
 pub(crate) trait UpdateOps {
     fn start_update_check(&mut self, is_manual: bool);

@@ -2,7 +2,7 @@ use crate::app_state::{AppAction, ScrollSource};
 use crate::preview_pane::{DownloadRequest, PreviewPane};
 
 use crate::shell_ui::{
-    invisible_label, LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING,
+    LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING, invisible_label,
 };
 use eframe::egui;
 
@@ -76,29 +76,29 @@ impl<'a> PreviewContent<'a> {
         let consuming_editor = scroll_sync && scroll.source == ScrollSource::Editor;
         if consuming_editor {
             forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
-        } else if let Some(target_line) = scroll.scroll_to_line {
-            if !scroll.preview_search_scroll_pending {
-                if !scroll_sync {
-                    let mut found_offset = None;
-                    for (span, rect) in &preview.heading_anchors {
-                        if span.contains(&target_line) || span.start >= target_line {
-                            found_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
-                            break;
-                        }
+        } else if let Some(target_line) = scroll.scroll_to_line
+            && !scroll.preview_search_scroll_pending
+        {
+            if !scroll_sync {
+                let mut found_offset = None;
+                for (span, rect) in &preview.heading_anchors {
+                    if span.contains(&target_line) || span.start >= target_line {
+                        found_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
+                        break;
                     }
-                    if let Some(off) = found_offset {
-                        forced_offset = Some(off);
-                    } else if let Some((_, rect)) = preview.heading_anchors.last() {
-                        forced_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
-                    } else {
-                        forced_offset = Some(0.0);
-                    }
-                } else {
-                    let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-                    let editor_y = target_line as f32 * row_height;
-                    scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
-                    forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
                 }
+                if let Some(off) = found_offset {
+                    forced_offset = Some(off);
+                } else if let Some((_, rect)) = preview.heading_anchors.last() {
+                    forced_offset = Some((rect.min.y - preview.content_top_y).max(0.0));
+                } else {
+                    forced_offset = Some(0.0);
+                }
+            } else {
+                let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+                let editor_y = target_line as f32 * row_height;
+                scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
+                forced_offset = Some(scroll.mapper.logical_to_preview(scroll.logical_position));
             }
         }
 
@@ -150,10 +150,9 @@ impl<'a> PreviewContent<'a> {
 
                             if ui.rect_contains_pointer(ui.min_rect())
                                 && ui.input(|i| i.pointer.primary_clicked())
+                                && let Some(hovered) = hovered_lines.first()
                             {
-                                if let Some(hovered) = hovered_lines.first() {
-                                    scroll.scroll_to_line = Some(hovered.start);
-                                }
+                                scroll.scroll_to_line = Some(hovered.start);
                             }
                             download_req = req;
                             if let Some((global_index, new_state)) = actions.into_iter().next() {

@@ -32,14 +32,14 @@ impl<'a> TermsModal<'a> {
         }
     }
 
-    pub fn show(self, ctx: &egui::Context) {
+    pub fn show(self, ui: &mut egui::Ui) {
         let version = self.version;
         let pending_action = self.pending_action;
         let terms = crate::i18n::get().terms.clone();
 
         egui::CentralPanel::default()
-            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-            .show(ctx, |ui| {
+            .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
+            .show_inside(ui, |ui| {
                 let width = ui.available_width();
                 let height = ui.available_height();
                 let content_width = width.min(TERMS_MODAL_WIDTH);

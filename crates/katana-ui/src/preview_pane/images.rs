@@ -78,15 +78,15 @@ pub(crate) fn show_rasterized(
     let (container_rect, response) =
         ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
 
-    if let Some(state) = state.as_mut() {
-        if response.hovered() {
-            let zoom_delta = ui.input(|i| i.zoom_delta());
-            if zoom_delta != 1.0 {
-                state.zoom = (state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
-            }
-            if response.dragged() {
-                state.pan += response.drag_delta();
-            }
+    if let Some(state) = state.as_mut()
+        && response.hovered()
+    {
+        let zoom_delta = ui.input(|i| i.zoom_delta());
+        if zoom_delta != 1.0 {
+            state.zoom = (state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
+        }
+        if response.dragged() {
+            state.pan += response.drag_delta();
         }
     }
 
@@ -139,10 +139,10 @@ pub(crate) fn show_rasterized(
     );
 
     if let Some(state) = state {
-        if crate::diagram_controller::draw_fullscreen_button(ui, container_rect) {
-            if let Some(req) = fullscreen_request {
-                *req = Some(idx);
-            }
+        if crate::diagram_controller::draw_fullscreen_button(ui, container_rect)
+            && let Some(req) = fullscreen_request
+        {
+            *req = Some(idx);
         }
 
         crate::diagram_controller::draw_controls(ui, state, container_rect);
@@ -158,25 +158,24 @@ pub(crate) fn show_local_image(
     fullscreen_request: Option<&mut Option<usize>>,
 ) {
     let texture_handle = if let Some(state) = viewer_state.as_mut() {
-        if state.texture.is_none() {
-            if let Ok(bytes) = std::fs::read(path) {
-                if let Ok(dyn_img) = image::load_from_memory(&bytes) {
-                    let rgba = dyn_img.into_rgba8();
-                    let size = std::array::from_fn(|i| {
-                        if i == 0 {
-                            rgba.width() as usize
-                        } else {
-                            rgba.height() as usize
-                        }
-                    });
-                    let color_img = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
-                    state.texture = Some(ui.ctx().load_texture(
-                        format!("local_image_{id}"),
-                        color_img,
-                        egui::TextureOptions::LINEAR,
-                    ));
+        if state.texture.is_none()
+            && let Ok(bytes) = std::fs::read(path)
+            && let Ok(dyn_img) = image::load_from_memory(&bytes)
+        {
+            let rgba = dyn_img.into_rgba8();
+            let size = std::array::from_fn(|i| {
+                if i == 0 {
+                    rgba.width() as usize
+                } else {
+                    rgba.height() as usize
                 }
-            }
+            });
+            let color_img = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
+            state.texture = Some(ui.ctx().load_texture(
+                format!("local_image_{id}"),
+                color_img,
+                egui::TextureOptions::LINEAR,
+            ));
         }
         state.texture.clone()
     } else {
@@ -203,15 +202,15 @@ pub(crate) fn show_local_image(
     let (container_rect, response) =
         ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
 
-    if let Some(state) = viewer_state.as_mut() {
-        if response.hovered() {
-            let zoom_delta = ui.input(|i| i.zoom_delta());
-            if zoom_delta != 1.0 {
-                state.zoom = (state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
-            }
-            if response.dragged() {
-                state.pan += response.drag_delta();
-            }
+    if let Some(state) = viewer_state.as_mut()
+        && response.hovered()
+    {
+        let zoom_delta = ui.input(|i| i.zoom_delta());
+        if zoom_delta != 1.0 {
+            state.zoom = (state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
+        }
+        if response.dragged() {
+            state.pan += response.drag_delta();
         }
     }
 
@@ -227,10 +226,10 @@ pub(crate) fn show_local_image(
     );
 
     if let Some(state) = viewer_state {
-        if crate::diagram_controller::draw_fullscreen_button(ui, container_rect) {
-            if let Some(req) = fullscreen_request {
-                *req = Some(id);
-            }
+        if crate::diagram_controller::draw_fullscreen_button(ui, container_rect)
+            && let Some(req) = fullscreen_request
+        {
+            *req = Some(id);
         }
         crate::diagram_controller::draw_controls(ui, state, container_rect);
     }

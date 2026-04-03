@@ -37,19 +37,19 @@ fn find_next_syntax_pos(text: &str) -> Option<usize> {
 
 fn process_syntax<'a>(text: &'a str, base_dir: &Path, nodes: &mut Vec<HtmlNode>) -> &'a str {
     // WHY: Try markdown image: ![alt](src)
-    if text.starts_with("![") {
-        if let Some((node, consumed)) = try_parse_md_image(text) {
-            nodes.push(node);
-            return &text[consumed..];
-        }
+    if text.starts_with("![")
+        && let Some((node, consumed)) = try_parse_md_image(text)
+    {
+        nodes.push(node);
+        return &text[consumed..];
     }
 
     // WHY: Try markdown link: [text](url)
-    if text.starts_with('[') {
-        if let Some((node, consumed)) = try_parse_md_link(text, base_dir) {
-            nodes.push(node);
-            return &text[consumed..];
-        }
+    if text.starts_with('[')
+        && let Some((node, consumed)) = try_parse_md_link(text, base_dir)
+    {
+        nodes.push(node);
+        return &text[consumed..];
     }
 
     // WHY: Not a valid syntax — emit the character and continue

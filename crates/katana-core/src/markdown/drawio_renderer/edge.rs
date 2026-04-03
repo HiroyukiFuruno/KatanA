@@ -2,7 +2,7 @@ use xmltree::Element;
 
 use crate::markdown::color_preset::DiagramColorPreset;
 
-use super::utils::{attr_f64, xml_escape, Rect};
+use super::utils::{Rect, attr_f64, xml_escape};
 
 const EDGE_LABEL_VERTICAL_OFFSET: f64 = 6.0;
 
@@ -78,16 +78,16 @@ fn append_edge_label(
     y2: f64,
     preset: &DiagramColorPreset,
 ) {
-    if let Some(label) = cell.attributes.get("value") {
-        if !label.is_empty() {
-            let mid_x = (x1 + x2) / 2.0;
-            let mid_y = (y1 + y2) / 2.0 - EDGE_LABEL_VERTICAL_OFFSET;
-            let text_color = preset.text;
-            shapes.push_str(&format!(
+    if let Some(label) = cell.attributes.get("value")
+        && !label.is_empty()
+    {
+        let mid_x = (x1 + x2) / 2.0;
+        let mid_y = (y1 + y2) / 2.0 - EDGE_LABEL_VERTICAL_OFFSET;
+        let text_color = preset.text;
+        shapes.push_str(&format!(
                 r#"<text x="{mid_x:.1}" y="{mid_y:.1}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="{text_color}">{}</text>"#,
                 xml_escape(label)
             ));
-        }
     }
 }
 

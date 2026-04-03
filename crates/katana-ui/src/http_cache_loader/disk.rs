@@ -70,10 +70,10 @@ pub(crate) fn read_cached_file(body_path: &Path, meta_path: &Path) -> Option<Cac
 
 pub(crate) fn remove_cache_file(body_path: &Path, meta_path: &Path) {
     for path in [body_path, meta_path] {
-        if let Err(err) = std::fs::remove_file(path) {
-            if err.kind() != std::io::ErrorKind::NotFound {
-                tracing::warn!("Failed to remove cache file {}: {err}", path.display());
-            }
+        if let Err(err) = std::fs::remove_file(path)
+            && err.kind() != std::io::ErrorKind::NotFound
+        {
+            tracing::warn!("Failed to remove cache file {}: {err}", path.display());
         }
     }
 }

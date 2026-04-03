@@ -99,7 +99,7 @@ const HEADING_SIZE_RATIO: f32 = 1.5;
 const SMALL_SIZE_RATIO: f32 = 0.75;
 
 pub fn apply_font_size(ctx: &egui::Context, font_size: f32) {
-    ctx.style_mut(|style| {
+    ctx.global_style_mut(|style| {
         let heading = font_size * HEADING_SIZE_RATIO;
         let small = font_size * SMALL_SIZE_RATIO;
         for (text_style, font_id) in style.text_styles.iter_mut() {
@@ -133,7 +133,7 @@ pub fn apply_font_family(ctx: &egui::Context, family_name: &str) {
 
     crate::font_loader::SystemFontLoader::setup_fonts(ctx, preset, custom_path, custom_name);
 
-    ctx.style_mut(|style| {
+    ctx.global_style_mut(|style| {
         for (text_style, font_id) in style.text_styles.iter_mut() {
             if *text_style != egui::TextStyle::Monospace {
                 font_id.family = default_family.clone();
@@ -150,7 +150,7 @@ mod apply_font_family_tests {
     fn test_apply_font_family_proportional() {
         let ctx = egui::Context::default();
         apply_font_family(&ctx, "Proportional");
-        let style = ctx.style();
+        let style = ctx.global_style();
         assert_eq!(
             style
                 .text_styles
@@ -165,7 +165,7 @@ mod apply_font_family_tests {
     fn test_apply_font_family_monospace() {
         let ctx = egui::Context::default();
         apply_font_family(&ctx, "Monospace");
-        let style = ctx.style();
+        let style = ctx.global_style();
         assert_eq!(
             style
                 .text_styles

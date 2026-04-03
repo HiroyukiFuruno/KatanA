@@ -8,11 +8,11 @@ pub fn perform_background_cleanup() {
     let mut app_path = exe_path.clone();
     let mut is_app_bundle = false;
     while app_path.pop() {
-        if let Some(ext) = app_path.extension() {
-            if ext == "app" {
-                is_app_bundle = true;
-                break;
-            }
+        if let Some(ext) = app_path.extension()
+            && ext == "app"
+        {
+            is_app_bundle = true;
+            break;
         }
     }
 

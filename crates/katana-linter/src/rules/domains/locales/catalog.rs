@@ -1,5 +1,5 @@
-use crate::utils::{locale_violation, parse_json_file};
 use crate::Violation;
+use crate::utils::{locale_violation, parse_json_file};
 use serde_json::Value;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};

@@ -8,59 +8,58 @@ use crate::shell_ui::{SPLIT_HALF_RATIO, SPLIT_PANEL_MAX_RATIO};
 
 use crate::theme_bridge;
 use crate::views::panels::editor::EditorContent;
-use crate::views::panels::preview::preview_panel_id;
 use crate::views::panels::preview::PreviewContent;
+use crate::views::panels::preview::preview_panel_id;
 use katana_platform::PaneOrder;
 pub(crate) struct SplitMode<'a> {
-    pub ctx: &'a egui::Context,
+    pub _ctx: &'a egui::Context,
     pub app: &'a mut KatanaApp,
     pub split_dir: SplitDirection,
     pub pane_order: PaneOrder,
 }
 impl<'a> SplitMode<'a> {
     pub fn new(
-        ctx: &'a egui::Context,
+        _ctx: &'a egui::Context,
         app: &'a mut KatanaApp,
         split_dir: SplitDirection,
         pane_order: PaneOrder,
     ) -> Self {
         Self {
-            ctx,
+            _ctx,
             app,
             split_dir,
             pane_order,
         }
     }
-    pub fn show(self) -> Option<DownloadRequest> {
-        let ctx = self.ctx;
+    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let split_dir = self.split_dir;
         let pane_order = self.pane_order;
+        let ctx = ui.ctx().clone();
         match split_dir {
-            SplitDirection::Horizontal => HorizontalSplit::new(ctx, app, pane_order).show(),
-            SplitDirection::Vertical => VerticalSplit::new(ctx, app, pane_order).show(),
+            SplitDirection::Horizontal => HorizontalSplit::new(&ctx, app, pane_order).show(ui),
+            SplitDirection::Vertical => VerticalSplit::new(&ctx, app, pane_order).show(ui),
         }
     }
 }
 
 pub(crate) struct HorizontalSplit<'a> {
-    pub ctx: &'a egui::Context,
+    pub _ctx: &'a egui::Context,
     pub app: &'a mut KatanaApp,
     pub pane_order: PaneOrder,
 }
 impl<'a> HorizontalSplit<'a> {
-    pub fn new(ctx: &'a egui::Context, app: &'a mut KatanaApp, pane_order: PaneOrder) -> Self {
+    pub fn new(_ctx: &'a egui::Context, app: &'a mut KatanaApp, pane_order: PaneOrder) -> Self {
         Self {
-            ctx,
+            _ctx,
             app,
             pane_order,
         }
     }
-    pub fn show(self) -> Option<DownloadRequest> {
-        let ctx = self.ctx;
+    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let pane_order = self.pane_order;
-        let available_width = ctx.available_rect().width();
+        let available_width = ui.ctx().content_rect().width();
         let half_width = (available_width * SPLIT_HALF_RATIO).max(SPLIT_PREVIEW_PANEL_MIN_WIDTH);
         let preview_bg = theme_bridge::rgb_to_color32(
             app.state
@@ -83,8 +82,8 @@ impl<'a> HorizontalSplit<'a> {
         };
 
         let panel_side = match pane_order {
-            PaneOrder::EditorFirst => egui::SidePanel::right(panel_id),
-            PaneOrder::PreviewFirst => egui::SidePanel::left(panel_id),
+            PaneOrder::EditorFirst => egui::Panel::right(panel_id),
+            PaneOrder::PreviewFirst => egui::Panel::left(panel_id),
         };
 
         let scroll_sync = app.state.scroll.sync_override.unwrap_or(
@@ -98,10 +97,10 @@ impl<'a> HorizontalSplit<'a> {
 
         panel_side
             .resizable(true)
-            .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
-            .default_width(half_width)
+            .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+            .default_size(half_width)
             .frame(egui::Frame::NONE.fill(preview_bg))
-            .show(ctx, |ui| {
+            .show_inside(ui, |ui| {
                 if let Some(path) = &active_path {
                     let pane = crate::shell::KatanaApp::get_preview_pane(
                         &mut app.tab_previews,
@@ -124,8 +123,8 @@ impl<'a> HorizontalSplit<'a> {
             });
 
         egui::CentralPanel::default()
-            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-            .show(ctx, |ui| {
+            .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
+            .show_inside(ui, |ui| {
                 EditorContent::new(
                     app.state.document.active_document(),
                     &mut app.state.scroll,
@@ -142,23 +141,22 @@ impl<'a> HorizontalSplit<'a> {
 }
 
 pub(crate) struct VerticalSplit<'a> {
-    pub ctx: &'a egui::Context,
+    pub _ctx: &'a egui::Context,
     pub app: &'a mut KatanaApp,
     pub pane_order: PaneOrder,
 }
 impl<'a> VerticalSplit<'a> {
-    pub fn new(ctx: &'a egui::Context, app: &'a mut KatanaApp, pane_order: PaneOrder) -> Self {
+    pub fn new(_ctx: &'a egui::Context, app: &'a mut KatanaApp, pane_order: PaneOrder) -> Self {
         Self {
-            ctx,
+            _ctx,
             app,
             pane_order,
         }
     }
-    pub fn show(self) -> Option<DownloadRequest> {
-        let ctx = self.ctx;
+    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let pane_order = self.pane_order;
-        let available_height = ctx.available_rect().height();
+        let available_height = ui.ctx().content_rect().height();
         let half_height = available_height * SPLIT_HALF_RATIO;
         let preview_bg = theme_bridge::rgb_to_color32(
             app.state
@@ -191,12 +189,12 @@ impl<'a> VerticalSplit<'a> {
         );
 
         if show_preview_top {
-            egui::TopBottomPanel::top(panel_id)
+            egui::Panel::top(panel_id)
                 .resizable(true)
-                .default_height(half_height)
-                .max_height(available_height * SPLIT_PANEL_MAX_RATIO)
+                .default_size(half_height)
+                .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
                 .frame(egui::Frame::NONE.fill(preview_bg))
-                .show(ctx, |ui| {
+                .show_inside(ui, |ui| {
                     if let Some(path) = &active_path {
                         let pane = crate::shell::KatanaApp::get_preview_pane(
                             &mut app.tab_previews,
@@ -219,8 +217,8 @@ impl<'a> VerticalSplit<'a> {
                 });
 
             egui::CentralPanel::default()
-                .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-                .show(ctx, |ui| {
+                .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
+                .show_inside(ui, |ui| {
                     EditorContent::new(
                         app.state.document.active_document(),
                         &mut app.state.scroll,
@@ -232,12 +230,12 @@ impl<'a> VerticalSplit<'a> {
                     .show(ui);
                 });
         } else {
-            egui::TopBottomPanel::bottom(panel_id)
+            egui::Panel::bottom(panel_id)
                 .resizable(true)
-                .default_height(half_height)
-                .max_height(available_height * SPLIT_PANEL_MAX_RATIO)
+                .default_size(half_height)
+                .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
                 .frame(egui::Frame::NONE.fill(preview_bg))
-                .show(ctx, |ui| {
+                .show_inside(ui, |ui| {
                     if let Some(path) = &active_path {
                         let pane = crate::shell::KatanaApp::get_preview_pane(
                             &mut app.tab_previews,
@@ -260,8 +258,8 @@ impl<'a> VerticalSplit<'a> {
                 });
 
             egui::CentralPanel::default()
-                .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-                .show(ctx, |ui| {
+                .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
+                .show_inside(ui, |ui| {
                     EditorContent::new(
                         app.state.document.active_document(),
                         &mut app.state.scroll,

@@ -87,16 +87,16 @@ impl<'a> EditorContent<'a> {
                                 top: 0,
                                 bottom: 0,
                             })
-                            .frame(false)
+                            .frame(egui::Frame::NONE)
                             .show(ui);
                         let response = text_output.response;
                         let galley = text_output.galley;
 
-                        if response.clicked() {
-                            if let Some(c) = text_output.cursor_range {
-                                let line = char_index_to_line(&buffer, c.primary.index);
-                                scroll.scroll_to_line = Some(line);
-                            }
+                        if response.clicked()
+                            && let Some(c) = text_output.cursor_range
+                        {
+                            let line = char_index_to_line(&buffer, c.primary.index);
+                            scroll.scroll_to_line = Some(line);
                         }
 
                         let mut current_cursor_y = None;
@@ -273,25 +273,19 @@ impl<'a> EditorContent<'a> {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
 
-                        if let Some(target_line) = scroll.scroll_to_line {
-                            if let Some(idx) = line_to_char_index(&buffer, target_line) {
-                                let cursor = egui::text::CCursor {
-                                    index: idx,
-                                    prefer_next_row: false,
-                                };
-                                let pos = galley.pos_from_cursor(cursor);
-                                let rect = egui::Rect::from_min_max(
-                                    egui::pos2(
-                                        response.rect.min.x,
-                                        response.rect.min.y + pos.min.y,
-                                    ),
-                                    egui::pos2(
-                                        response.rect.max.x,
-                                        response.rect.min.y + pos.max.y,
-                                    ),
-                                );
-                                ui.scroll_to_rect(rect, Some(egui::Align::Center));
-                            }
+                        if let Some(target_line) = scroll.scroll_to_line
+                            && let Some(idx) = line_to_char_index(&buffer, target_line)
+                        {
+                            let cursor = egui::text::CCursor {
+                                index: idx,
+                                prefer_next_row: false,
+                            };
+                            let pos = galley.pos_from_cursor(cursor);
+                            let rect = egui::Rect::from_min_max(
+                                egui::pos2(response.rect.min.x, response.rect.min.y + pos.min.y),
+                                egui::pos2(response.rect.max.x, response.rect.min.y + pos.max.y),
+                            );
+                            ui.scroll_to_rect(rect, Some(egui::Align::Center));
                         }
                         response
                     })

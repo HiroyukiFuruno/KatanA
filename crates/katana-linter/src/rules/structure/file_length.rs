@@ -1,5 +1,5 @@
-use crate::utils::has_cfg_test_attr;
 use crate::Violation;
+use crate::utils::has_cfg_test_attr;
 use std::path::Path;
 
 pub fn lint_file_length(path: &Path, syntax: &syn::File) -> Vec<Violation> {
@@ -41,20 +41,20 @@ fn count_test_module_lines(syntax: &syn::File, source: &str) -> usize {
     let mut test_lines = 0;
 
     for item in &syntax.items {
-        if let syn::Item::Mod(item_mod) = item {
-            if has_cfg_test_attr(&item_mod.attrs) {
-                let start = item_mod.span().start().line;
-                let end = item_mod.span().end().line;
-                // WHY: attributes like #[cfg(test)] sit above the mod keyword
-                let attr_start = item_mod
-                    .attrs
-                    .first()
-                    .map(|a| a.span().start().line)
-                    .unwrap_or(start);
-                let effective_start = attr_start.min(start);
-                let line_count = end.saturating_sub(effective_start) + 1;
-                test_lines += line_count.min(source_lines.len());
-            }
+        if let syn::Item::Mod(item_mod) = item
+            && has_cfg_test_attr(&item_mod.attrs)
+        {
+            let start = item_mod.span().start().line;
+            let end = item_mod.span().end().line;
+            // WHY: attributes like #[cfg(test)] sit above the mod keyword
+            let attr_start = item_mod
+                .attrs
+                .first()
+                .map(|a| a.span().start().line)
+                .unwrap_or(start);
+            let effective_start = attr_start.min(start);
+            let line_count = end.saturating_sub(effective_start) + 1;
+            test_lines += line_count.min(source_lines.len());
         }
     }
 

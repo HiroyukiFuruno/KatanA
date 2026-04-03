@@ -19,7 +19,7 @@ fn test_app_command_provider() {
     assert_eq!(results[0].label, "Toggle Settings");
 
     match &results[0].execute_payload {
-        CommandPaletteExecutePayload::DispatchAppAction(ref action) => {
+        CommandPaletteExecutePayload::DispatchAppAction(action) => {
             assert!(matches!(action, AppAction::ToggleSettings));
         }
         _ => panic!("Expected DispatchAppAction payload"),
@@ -89,10 +89,10 @@ fn test_integration_command_palette_ui() {
     harness.get_by_label("Toggle Settings").click();
 
     harness.step(); // UI processes click, sets is_open = false, BUT action is not set in interact.clicked() branch in show()!
-                    // Wait, looking at command_palette.rs:
-                    // if interact.clicked() { is_open = false; }
-                    // It DOES NOT set the action in the clicked() branch! It only sets it in the Enter key branch.
-                    // This is a bug in the implementation or I'm misreading.
+    // Wait, looking at command_palette.rs:
+    // if interact.clicked() { is_open = false; }
+    // It DOES NOT set the action in the clicked() branch! It only sets it in the Enter key branch.
+    // This is a bug in the implementation or I'm misreading.
 
     harness.step();
     harness.step();

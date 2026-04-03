@@ -186,14 +186,14 @@ pub fn render_str_with_icons(
 
 pub fn button_with_icon_str(ui: &mut egui::Ui, text: &str) -> egui::Response {
     let mut chars = text.chars();
-    if let Some(first_char) = chars.next() {
-        if let Some(icon) = Icon::try_from_emoji(first_char) {
-            let rest = chars.as_str().trim_start();
-            return ui.add(egui::Button::image_and_text(
-                icon.ui_image(ui, IconSize::Small),
-                rest,
-            ));
-        }
+    if let Some(first_char) = chars.next()
+        && let Some(icon) = Icon::try_from_emoji(first_char)
+    {
+        let rest = chars.as_str().trim_start();
+        return ui.add(egui::Button::image_and_text(
+            icon.ui_image(ui, IconSize::Small),
+            rest,
+        ));
     }
     ui.button(text)
 }

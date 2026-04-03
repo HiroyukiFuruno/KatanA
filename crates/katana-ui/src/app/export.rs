@@ -9,9 +9,9 @@ use katana_platform::FilesystemService;
 
 use crate::app_state::*;
 use std::ffi::OsStr;
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
-use std::sync::Arc;
 
 pub(crate) trait ExportOps {
     fn handle_export_document(&mut self, ctx: &egui::Context, fmt: crate::app_state::ExportFormat);
@@ -225,10 +225,10 @@ impl ExportOps for KatanaApp {
                     );
                     self.state.layout.status_message =
                         Some((msg, crate::app_state::StatusType::Success));
-                    if task.open_on_complete {
-                        if let Err(e) = open::that(&output_path) {
-                            tracing::warn!("Failed to open {}: {e}", output_path.display());
-                        }
+                    if task.open_on_complete
+                        && let Err(e) = open::that(&output_path)
+                    {
+                        tracing::warn!("Failed to open {}: {e}", output_path.display());
                     }
                     tracing::info!(
                         "Export complete: {} → {}",

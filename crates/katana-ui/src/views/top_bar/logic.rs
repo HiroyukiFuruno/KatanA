@@ -41,14 +41,15 @@ pub fn resolve_drag_drop(
     tab_rects: &[(usize, eframe::egui::Rect)],
 ) -> Option<AppAction> {
     let drop_points = compute_drop_points(tab_rects);
-    if let Some(to) = find_best_drop_index(&drop_points, ghost_center_x) {
-        if src_idx != to && src_idx + 1 != to {
-            return Some(AppAction::ReorderDocument {
-                from: src_idx,
-                to,
-                new_group_id: None,
-            });
-        }
+    if let Some(to) = find_best_drop_index(&drop_points, ghost_center_x)
+        && src_idx != to
+        && src_idx + 1 != to
+    {
+        return Some(AppAction::ReorderDocument {
+            from: src_idx,
+            to,
+            new_group_id: None,
+        });
     }
     None
 }

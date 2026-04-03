@@ -1,9 +1,9 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+use crate::Icon;
 use crate::app_state::{AppAction, AppState};
 use crate::shell::KatanaApp;
 use crate::state::update::UpdatePhase;
-use crate::Icon;
 use katana_core::update::ReleaseInfo;
 
 use crate::i18n;
@@ -57,18 +57,16 @@ impl<'a> CreateFsNodeModal<'a> {
                     );
                     re.request_focus();
 
-                    if !*is_dir {
-                        if let Some(ref mut ext) = selected_ext {
-                            const EXT_COMBOBOX_WIDTH: f32 = 80.0;
-                            let options = self.visible_extensions;
-                            crate::widgets::StyledComboBox::new("new_file_ext", ext.as_str())
-                                .width(EXT_COMBOBOX_WIDTH)
-                                .show(ui, |ui| {
-                                    for opt in options {
-                                        ui.selectable_value(ext, opt.clone(), opt.clone());
-                                    }
-                                });
-                        }
+                    if !*is_dir && let Some(ext) = selected_ext {
+                        const EXT_COMBOBOX_WIDTH: f32 = 80.0;
+                        let options = self.visible_extensions;
+                        crate::widgets::StyledComboBox::new("new_file_ext", ext.as_str())
+                            .width(EXT_COMBOBOX_WIDTH)
+                            .show(ui, |ui| {
+                                for opt in options {
+                                    ui.selectable_value(ext, opt.clone(), opt.clone());
+                                }
+                            });
                     }
 
                     if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
@@ -98,7 +96,7 @@ impl<'a> CreateFsNodeModal<'a> {
 
         if do_create && !name.is_empty() {
             let actual_name = if !*is_dir {
-                if let Some(ref ext) = selected_ext {
+                if let &mut Some(ref ext) = selected_ext {
                     if name.ends_with(&format!(".{}", ext)) {
                         name.clone()
                     } else {

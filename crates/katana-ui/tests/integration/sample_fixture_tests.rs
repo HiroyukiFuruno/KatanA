@@ -1,6 +1,6 @@
 use eframe::egui;
-use egui_kittest::kittest::{NodeT, Queryable};
 use egui_kittest::Harness;
+use egui_kittest::kittest::{NodeT, Queryable};
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
 
@@ -175,7 +175,8 @@ fn assert_right_of_same_row(harness: &Harness, label_left: &str, label_right: &s
     assert!(
         y_diff < 5.0,
         "[{context}] '{label_left}' (Y={:.1}) and '{label_right}' (Y={:.1}) should be on same row, diff={y_diff:.1}",
-        bounds_a.y0, bounds_b.y0
+        bounds_a.y0,
+        bounds_b.y0
     );
     assert!(
         bounds_b.x0 > bounds_a.x0,
@@ -987,7 +988,8 @@ fn basic_fixture_en_s11_4_footnote_definition_rendered() {
     assert!(
         bounds.x0 < PANEL_WIDTH as f64 * 0.5,
         "Footnote text x0={:.1} should be in left half of panel (width={:.1}). Right-side overflow detected!",
-        bounds.x0, PANEL_WIDTH
+        bounds.x0,
+        PANEL_WIDTH
     );
     let text_width = bounds.x1 - bounds.x0;
     assert!(

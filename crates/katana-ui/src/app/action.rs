@@ -9,9 +9,9 @@ use katana_platform::FilesystemService;
 
 use crate::app_state::*;
 use std::ffi::OsStr;
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
-use std::sync::Arc;
 
 pub(crate) trait ActionOps {
     fn take_action(&mut self) -> AppAction;
@@ -558,16 +558,15 @@ impl ActionOps for KatanaApp {
                         .document
                         .open_documents
                         .sort_by_key(|d| !d.is_pinned);
-                    if let Some(path) = active_path {
-                        if let Some(new_idx) = self
+                    if let Some(path) = active_path
+                        && let Some(new_idx) = self
                             .state
                             .document
                             .open_documents
                             .iter()
                             .position(|d| d.path == path)
-                        {
-                            self.state.document.active_doc_idx = Some(new_idx);
-                        }
+                    {
+                        self.state.document.active_doc_idx = Some(new_idx);
                     }
                 }
                 self.save_workspace_state();
@@ -591,16 +590,15 @@ impl ActionOps for KatanaApp {
                         .document
                         .open_documents
                         .sort_by_key(|d| !d.is_pinned);
-                    if let Some(path) = active_path {
-                        if let Some(new_idx) = self
+                    if let Some(path) = active_path
+                        && let Some(new_idx) = self
                             .state
                             .document
                             .open_documents
                             .iter()
                             .position(|d| d.path == path)
-                        {
-                            self.state.document.active_doc_idx = Some(new_idx);
-                        }
+                    {
+                        self.state.document.active_doc_idx = Some(new_idx);
                     }
 
                     self.save_workspace_state();
@@ -622,18 +620,16 @@ impl ActionOps for KatanaApp {
                         for g in &mut self.state.document.tab_groups {
                             g.members.retain(|m| m != &doc_str);
                         }
-                        if let Some(target_g_id) = group_option {
-                            if !is_doc_pinned {
-                                if let Some(g) = self
-                                    .state
-                                    .document
-                                    .tab_groups
-                                    .iter_mut()
-                                    .find(|g| g.id == target_g_id)
-                                {
-                                    g.members.push(doc_str);
-                                }
-                            }
+                        if let Some(target_g_id) = group_option
+                            && !is_doc_pinned
+                            && let Some(g) = self
+                                .state
+                                .document
+                                .tab_groups
+                                .iter_mut()
+                                .find(|g| g.id == target_g_id)
+                        {
+                            g.members.push(doc_str);
                         }
                     }
 
@@ -645,16 +641,15 @@ impl ActionOps for KatanaApp {
                         .open_documents
                         .sort_by_key(|d| !d.is_pinned);
 
-                    if let Some(path) = active_path {
-                        if let Some(new_idx) = self
+                    if let Some(path) = active_path
+                        && let Some(new_idx) = self
                             .state
                             .document
                             .open_documents
                             .iter()
                             .position(|d| d.path == path)
-                        {
-                            self.state.document.active_doc_idx = Some(new_idx);
-                        }
+                    {
+                        self.state.document.active_doc_idx = Some(new_idx);
                     }
                 } else if from == to {
                     let active_path = self.state.active_document().map(|d| d.path.clone());
@@ -667,18 +662,16 @@ impl ActionOps for KatanaApp {
                         for g in &mut self.state.document.tab_groups {
                             g.members.retain(|m| m != &doc_str);
                         }
-                        if let Some(target_g_id) = group_option {
-                            if !is_doc_pinned {
-                                if let Some(g) = self
-                                    .state
-                                    .document
-                                    .tab_groups
-                                    .iter_mut()
-                                    .find(|g| g.id == target_g_id)
-                                {
-                                    g.members.push(doc_str);
-                                }
-                            }
+                        if let Some(target_g_id) = group_option
+                            && !is_doc_pinned
+                            && let Some(g) = self
+                                .state
+                                .document
+                                .tab_groups
+                                .iter_mut()
+                                .find(|g| g.id == target_g_id)
+                        {
+                            g.members.push(doc_str);
                         }
                     }
 
@@ -686,16 +679,15 @@ impl ActionOps for KatanaApp {
                         .document
                         .open_documents
                         .sort_by_key(|d| !d.is_pinned);
-                    if let Some(path) = active_path {
-                        if let Some(new_idx) = self
+                    if let Some(path) = active_path
+                        && let Some(new_idx) = self
                             .state
                             .document
                             .open_documents
                             .iter()
                             .position(|d| d.path == path)
-                        {
-                            self.state.document.active_doc_idx = Some(new_idx);
-                        }
+                    {
+                        self.state.document.active_doc_idx = Some(new_idx);
                     }
                 }
                 self.save_workspace_state();
@@ -1093,12 +1085,12 @@ impl ActionOps for KatanaApp {
         self.cleanup_closed_tab_previews();
 
         let mut inactive_but_focused_path = None;
-        if let Some(active_idx) = self.state.document.active_doc_idx {
-            if let Some(doc) = self.state.document.open_documents.get(active_idx) {
-                let has_preview = self.tab_previews.iter().any(|t| t.path == doc.path);
-                if !doc.is_loaded || !has_preview {
-                    inactive_but_focused_path = Some(doc.path.clone());
-                }
+        if let Some(active_idx) = self.state.document.active_doc_idx
+            && let Some(doc) = self.state.document.open_documents.get(active_idx)
+        {
+            let has_preview = self.tab_previews.iter().any(|t| t.path == doc.path);
+            if !doc.is_loaded || !has_preview {
+                inactive_but_focused_path = Some(doc.path.clone());
             }
         }
         if let Some(path) = inactive_but_focused_path {

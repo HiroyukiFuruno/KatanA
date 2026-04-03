@@ -2,7 +2,7 @@ use regex::Regex;
 use std::path::Path;
 
 pub fn resolve_image_paths(source: &str, md_file_path: &Path) -> (String, Vec<std::path::PathBuf>) {
-    use comrak::{parse_document, Arena, Options};
+    use comrak::{Arena, Options, parse_document};
 
     let arena = Arena::new();
     let root = parse_document(&arena, source, &Options::default());
@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn test_find_image_replacements() {
-        use comrak::{parse_document, Arena, Options};
+        use comrak::{Arena, Options, parse_document};
         let arena = Arena::new();
         let source = "![test](test.png)\n![test2](http://example.com/test.png)";
         let root = parse_document(&arena, source, &Options::default());

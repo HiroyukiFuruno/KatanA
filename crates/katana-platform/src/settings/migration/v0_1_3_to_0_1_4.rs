@@ -1,5 +1,5 @@
 use super::MigrationStrategy;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /* WHY: Migrates settings from 0.1.3 to 0.1.4.
 

@@ -1,5 +1,5 @@
-use crate::update::download::{download_update, extract_update};
 use crate::update::UpdateProgress;
+use crate::update::download::{download_update, extract_update};
 
 #[derive(Debug)]
 pub struct UpdatePreparation {

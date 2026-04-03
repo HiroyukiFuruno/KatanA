@@ -226,8 +226,10 @@ mod tests {
         let violations =
             build_locale_baseline(&ja_path, &en_path).expect_err("base locales should mismatch");
         assert!(!violations.is_empty());
-        assert!(violations
-            .iter()
-            .any(|v| v.message.contains("Locale placeholder mismatch")));
+        assert!(
+            violations
+                .iter()
+                .any(|v| v.message.contains("Locale placeholder mismatch"))
+        );
     }
 }

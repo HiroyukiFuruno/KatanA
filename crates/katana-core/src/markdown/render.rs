@@ -1,4 +1,4 @@
-use comrak::{markdown_to_html, ComrakOptions};
+use comrak::{ComrakOptions, markdown_to_html};
 
 use super::diagram::{self, DiagramBlock, DiagramKind, DiagramRenderer, DiagramResult};
 use super::drawio_renderer;

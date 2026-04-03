@@ -197,7 +197,7 @@ pub fn code_block<'t>(
         ui.copy_text(copy_text);
     }
     }
-    output.response
+    output.response.response
 }
 // Stripped down version of egui's Checkbox. The only difference is that this
 // creates a noninteractive checkbox. ui.add_enabled could have been used instead,

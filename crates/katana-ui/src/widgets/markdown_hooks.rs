@@ -279,21 +279,22 @@ pub fn katana_list_item_highlight(
         let mut hovered = false;
 
         // Active highlight (editor cursor line)
-        if let Some(ref active) = active_char_range {
-            if active.start <= span.end && active.end >= span.start {
-                highlighted = true;
-                ui.painter()
-                    .rect_filled(rect, HIGHLIGHT_ROUNDING, active_bg_color);
-            }
+        if let Some(ref active) = active_char_range
+            && active.start <= span.end
+            && active.end >= span.start
+        {
+            highlighted = true;
+            ui.painter()
+                .rect_filled(rect, HIGHLIGHT_ROUNDING, active_bg_color);
         }
 
         // Hover highlight (mouse pointer).
-        if let Some(pos) = ui.ctx().pointer_hover_pos() {
-            if rect.contains(pos) {
-                hovered = true;
-                ui.painter()
-                    .rect_filled(rect, HIGHLIGHT_ROUNDING, hover_bg_color);
-            }
+        if let Some(pos) = ui.ctx().pointer_hover_pos()
+            && rect.contains(pos)
+        {
+            hovered = true;
+            ui.painter()
+                .rect_filled(rect, HIGHLIGHT_ROUNDING, hover_bg_color);
         }
 
         (highlighted, hovered)

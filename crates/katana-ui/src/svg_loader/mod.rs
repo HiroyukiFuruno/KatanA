@@ -1,14 +1,14 @@
 use std::mem::size_of;
 use std::sync::{
-    atomic::{AtomicU64, Ordering::Relaxed},
     Arc,
+    atomic::{AtomicU64, Ordering::Relaxed},
 };
 
 use egui::Vec2;
 use egui::{
+    ColorImage, Context,
     load::{BytesPoll, ImageLoadResult, ImageLoader, ImagePoll, LoadError, SizeHint},
     mutex::Mutex,
-    ColorImage, Context,
 };
 use resvg::{
     tiny_skia::Pixmap,
@@ -196,7 +196,7 @@ impl ImageLoader for KatanaSvgLoader {
             let bytes_load_result = if let Some(data) = uri.strip_prefix("data:") {
                 if let Some((meta, content)) = data.split_once(',') {
                     if meta.ends_with(";base64") {
-                        use base64::{engine::general_purpose, Engine as _};
+                        use base64::{Engine as _, engine::general_purpose};
                         match general_purpose::STANDARD.decode(content.trim()) {
                             Ok(bytes) => Ok(BytesPoll::Ready {
                                 size: None,
@@ -212,14 +212,14 @@ impl ImageLoader for KatanaSvgLoader {
                         let mut decoded = Vec::with_capacity(bytes.len());
                         let mut i = 0;
                         while i < bytes.len() {
-                            if bytes[i] == b'%' && i + 2 < bytes.len() {
-                                if let Ok(hex) = std::str::from_utf8(&bytes[i + 1..=i + 2]) {
-                                    if let Ok(byte) = u8::from_str_radix(hex, HEX_RADIX) {
-                                        decoded.push(byte);
-                                        i += PERCENT_ENCODE_LEN;
-                                        continue;
-                                    }
-                                }
+                            if bytes[i] == b'%'
+                                && i + 2 < bytes.len()
+                                && let Ok(hex) = std::str::from_utf8(&bytes[i + 1..=i + 2])
+                                && let Ok(byte) = u8::from_str_radix(hex, HEX_RADIX)
+                            {
+                                decoded.push(byte);
+                                i += PERCENT_ENCODE_LEN;
+                                continue;
                             }
                             decoded.push(bytes[i]);
                             i += 1;

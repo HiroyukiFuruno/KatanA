@@ -1,4 +1,4 @@
-use egui_kittest::{kittest::Queryable, Harness};
+use egui_kittest::{Harness, kittest::Queryable};
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
 use std::sync::Mutex;
@@ -91,7 +91,7 @@ fn mermaid_both_states_render_semantically() {
     let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
     let saved_mmdc = std::env::var("MERMAID_MMDC").ok();
 
-    std::env::set_var("MERMAID_MMDC", "nonexistent_mmdc_for_idempotent_test");
+    unsafe { std::env::set_var("MERMAID_MMDC", "nonexistent_mmdc_for_idempotent_test") };
 
     let pane = render_and_wait("mermaid", MERMAID_SOURCE);
     assert!(
@@ -121,8 +121,8 @@ fn mermaid_both_states_render_semantically() {
     }
 
     match &saved_mmdc {
-        Some(v) => std::env::set_var("MERMAID_MMDC", v),
-        None => std::env::remove_var("MERMAID_MMDC"),
+        Some(v) => unsafe { std::env::set_var("MERMAID_MMDC", v) },
+        None => unsafe { std::env::remove_var("MERMAID_MMDC") },
     }
 
     if katana_core::markdown::mermaid_renderer::is_mmdc_available() {
@@ -140,8 +140,8 @@ fn mermaid_both_states_render_semantically() {
     }
 
     match saved_mmdc {
-        Some(v) => std::env::set_var("MERMAID_MMDC", v),
-        None => std::env::remove_var("MERMAID_MMDC"),
+        Some(v) => unsafe { std::env::set_var("MERMAID_MMDC", v) },
+        None => unsafe { std::env::remove_var("MERMAID_MMDC") },
     }
 }
 
@@ -152,7 +152,7 @@ fn plantuml_both_states_render_semantically() {
     let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
     let saved_jar = std::env::var("PLANTUML_JAR").ok();
 
-    std::env::set_var("PLANTUML_JAR", "/nonexistent/path/for/idempotent/test.jar");
+    unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/path/for/idempotent/test.jar") };
 
     let pane = render_and_wait("plantuml", PLANTUML_SOURCE);
     assert!(
@@ -179,8 +179,8 @@ fn plantuml_both_states_render_semantically() {
     }
 
     match &saved_jar {
-        Some(v) => std::env::set_var("PLANTUML_JAR", v),
-        None => std::env::remove_var("PLANTUML_JAR"),
+        Some(v) => unsafe { std::env::set_var("PLANTUML_JAR", v) },
+        None => unsafe { std::env::remove_var("PLANTUML_JAR") },
     }
 
     if katana_core::markdown::plantuml_renderer::find_plantuml_jar().is_some() {
@@ -200,8 +200,8 @@ fn plantuml_both_states_render_semantically() {
     }
 
     match saved_jar {
-        Some(v) => std::env::set_var("PLANTUML_JAR", v),
-        None => std::env::remove_var("PLANTUML_JAR"),
+        Some(v) => unsafe { std::env::set_var("PLANTUML_JAR", v) },
+        None => unsafe { std::env::remove_var("PLANTUML_JAR") },
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::cache::{
-    read_guard, write_guard, CacheFacade, PersistentData, PersistentEntryEnvelope, PersistentKey,
+    CacheFacade, PersistentData, PersistentEntryEnvelope, PersistentKey, read_guard, write_guard,
 };
 use std::path::PathBuf;
 use std::sync::RwLock;
@@ -90,33 +90,30 @@ impl DefaultCacheService {
         let mut map = Vec::new();
         if let Ok(entries) = std::fs::read_dir(kv_dir) {
             for entry in entries.flatten() {
-                if let Ok(file_type) = entry.file_type() {
-                    if file_type.is_file() {
-                        let inner_path = entry.path();
-                        if inner_path.extension().and_then(|s| s.to_str()) != Some("json") {
-                            continue;
-                        }
-                        if let Ok(json) = std::fs::read_to_string(&inner_path) {
-                            if let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json)
-                            {
-                                if let Some(target_filename) = env.key.target_filename() {
-                                    if entry.file_name() != std::ffi::OsStr::new(&target_filename) {
-                                        let canonical_path = kv_dir.join(&target_filename);
-                                        if canonical_path.exists() {
-                                            let _ = std::fs::remove_file(&inner_path);
-                                            continue;
-                                        } else if std::fs::rename(&inner_path, &canonical_path)
-                                            .is_err()
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                }
-
-                                if let Some(raw_key) = env.key.to_raw_key() {
-                                    map.push((raw_key, env.value));
-                                }
+                if let Ok(file_type) = entry.file_type()
+                    && file_type.is_file()
+                {
+                    let inner_path = entry.path();
+                    if inner_path.extension().and_then(|s| s.to_str()) != Some("json") {
+                        continue;
+                    }
+                    if let Ok(json) = std::fs::read_to_string(&inner_path)
+                        && let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json)
+                    {
+                        if let Some(target_filename) = env.key.target_filename()
+                            && entry.file_name() != std::ffi::OsStr::new(&target_filename)
+                        {
+                            let canonical_path = kv_dir.join(&target_filename);
+                            if canonical_path.exists() {
+                                let _ = std::fs::remove_file(&inner_path);
+                                continue;
+                            } else if std::fs::rename(&inner_path, &canonical_path).is_err() {
+                                continue;
                             }
+                        }
+
+                        if let Some(raw_key) = env.key.to_raw_key() {
+                            map.push((raw_key, env.value));
                         }
                     }
                 }
@@ -261,7 +258,7 @@ impl CacheFacade for DefaultCacheService {
 #[allow(clippy::expect_used)]
 mod tests {
     use super::*;
-    use std::panic::{catch_unwind, AssertUnwindSafe};
+    use std::panic::{AssertUnwindSafe, catch_unwind};
     use tempfile::TempDir;
 
     #[test]

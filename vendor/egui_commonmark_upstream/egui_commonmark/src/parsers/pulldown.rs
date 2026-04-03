@@ -994,10 +994,10 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         });
                         let frame = if is_highlighted {
                             egui::Frame::NONE
-                                .fill(ctx.style().visuals.selection.bg_fill.linear_multiply(0.3))
+                                .fill(ctx.global_style().visuals.selection.bg_fill.linear_multiply(0.3))
                                 .stroke(egui::Stroke::new(
                                     1.0,
-                                    ctx.style().visuals.selection.bg_fill,
+                                    ctx.global_style().visuals.selection.bg_fill,
                                 ))
                                 .inner_margin(egui::Margin {
                                     left: 6,

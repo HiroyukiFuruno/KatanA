@@ -4,9 +4,9 @@ use crate::shell::{
     RECENT_WORKSPACES_SPACING, TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT,
 };
 use crate::shell_ui::{
-    indent_prefix, invisible_label, open_folder_dialog, TreeRenderContext,
-    LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, WORKSPACE_SPINNER_INNER_MARGIN,
-    WORKSPACE_SPINNER_OUTER_MARGIN, WORKSPACE_SPINNER_TEXT_MARGIN,
+    LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, TreeRenderContext,
+    WORKSPACE_SPINNER_INNER_MARGIN, WORKSPACE_SPINNER_OUTER_MARGIN, WORKSPACE_SPINNER_TEXT_MARGIN,
+    indent_prefix, invisible_label, open_folder_dialog,
 };
 use eframe::egui;
 
@@ -319,10 +319,10 @@ impl<'a, 'b, 'c> TreeEntryNode<'a, 'b, 'c> {
             TreeEntry::Directory { path, .. } => path,
             TreeEntry::File { path } => path,
         };
-        if let Some(fs) = ctx.filter_set {
-            if !fs.contains(entry_path) {
-                return;
-            }
+        if let Some(fs) = ctx.filter_set
+            && !fs.contains(entry_path)
+        {
+            return;
         }
         match entry {
             TreeEntry::Directory { path, children } => {
@@ -429,10 +429,9 @@ impl<'a> WorkspaceContent<'a> {
             if ui
                 .button(crate::i18n::get().menu.open_workspace.clone())
                 .clicked()
+                && let Some(path) = open_folder_dialog()
             {
-                if let Some(path) = open_folder_dialog() {
-                    *action = AppAction::OpenWorkspace(path);
-                }
+                *action = AppAction::OpenWorkspace(path);
             }
 
             if !recent_paths.is_empty() {
@@ -511,12 +510,12 @@ impl<'a> WorkspaceHeader<'a> {
                     btn_resp.widget_info(|| {
                         egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
                     });
-                    if btn_resp.clicked() {
-                        if let Some(ws) = &workspace.data {
-                            workspace
-                                .expanded_directories
-                                .extend(ws.collect_all_directory_paths());
-                        }
+                    if btn_resp.clicked()
+                        && let Some(ws) = &workspace.data
+                    {
+                        workspace
+                            .expanded_directories
+                            .extend(ws.collect_all_directory_paths());
                     }
 
                     let btn_resp = ui

@@ -235,7 +235,7 @@ impl CommonMarkViewerInternal {
         stream.extend(quote!(
             egui_commonmark_backend::prepare_show(#cache, ui.ctx());
             let options = egui_commonmark_backend::CommonMarkOptions::default();
-            let max_width = options.max_width(ui);
+            let max_width = options.max_size(ui);
             let layout = egui::Layout::left_to_right(egui::Align::BOTTOM).with_main_wrap(true);
 
             ui.allocate_ui_with_layout(egui::vec2(max_width, 0.0), layout, |ui| {
@@ -793,7 +793,7 @@ impl CommonMarkViewerInternal {
                     let response = ui.add(
                         egui::Image::from_uri(#uri)
                             .fit_to_original_size(1.0)
-                            .max_width(max_width)
+                            .max_size(max_width)
                     );
                     ));
 

@@ -1,9 +1,9 @@
 use eframe::egui;
-use egui_kittest::kittest::{NodeT, Queryable};
 use egui_kittest::Harness;
+use egui_kittest::kittest::{NodeT, Queryable};
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
-use katana_ui::preview_pane::{decode_png_rgba, extract_svg, PreviewPane, RenderedSection};
+use katana_ui::preview_pane::{PreviewPane, RenderedSection, decode_png_rgba, extract_svg};
 use std::path::PathBuf;
 
 fn markdown_texts(sections: &[RenderedSection]) -> Vec<&str> {
@@ -141,14 +141,17 @@ fn buffer_without_diagrams_does_not_generate_pending_sections() {
         4,
     );
 
-    assert!(pane
-        .sections
-        .iter()
-        .all(|s| matches!(s, RenderedSection::Markdown(_))));
-    assert!(!pane
-        .sections
-        .iter()
-        .any(|s| matches!(s, RenderedSection::Pending { .. })));
+    assert!(
+        pane.sections
+            .iter()
+            .all(|s| matches!(s, RenderedSection::Markdown(_)))
+    );
+    assert!(
+        !pane
+            .sections
+            .iter()
+            .any(|s| matches!(s, RenderedSection::Pending { .. }))
+    );
 }
 
 #[test]

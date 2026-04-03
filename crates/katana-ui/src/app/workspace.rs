@@ -10,9 +10,9 @@ use katana_platform::FilesystemService;
 
 use crate::app_state::*;
 use std::ffi::OsStr;
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
-use std::sync::Arc;
 
 pub(crate) trait WorkspaceOps {
     fn handle_open_workspace(&mut self, path: std::path::PathBuf);
@@ -157,15 +157,15 @@ impl WorkspaceOps for KatanaApp {
             // First load from proper state location
             state_json_opt = self.state.config.settings.load_workspace_state(&state_key);
             // Backward compatibility: migrate from cache if state doesn't exist yet but cache does
-            if state_json_opt.is_none() {
-                if let Some(cached_json) = self.state.config.cache.get_persistent(&cache_key) {
-                    let _ = self
-                        .state
-                        .config
-                        .settings
-                        .save_workspace_state(&state_key, &cached_json);
-                    state_json_opt = Some(cached_json);
-                }
+            if state_json_opt.is_none()
+                && let Some(cached_json) = self.state.config.cache.get_persistent(&cache_key)
+            {
+                let _ = self
+                    .state
+                    .config
+                    .settings
+                    .save_workspace_state(&state_key, &cached_json);
+                state_json_opt = Some(cached_json);
             }
         }
 
@@ -187,7 +187,7 @@ impl WorkspaceOps for KatanaApp {
                     // Temporarily keep raw groups, we will clean them AFTER checking file existence
                     self.state.document.tab_groups = v2.groups;
 
-                    tracing::info!(
+                    tracing::debug!(
                         "Loaded V2 cache with {} tabs and {} groups",
                         to_open.len(),
                         self.state.document.tab_groups.len()
@@ -236,7 +236,7 @@ impl WorkspaceOps for KatanaApp {
         settings.workspace.paths.retain(|p| p != &path_str);
         settings.workspace.paths.push(path_str);
 
-        tracing::info!("Verifying existence of {} tabs", to_open.len());
+        tracing::debug!("Verifying existence of {} tabs", to_open.len());
         to_open.retain(|(p, _)| std::path::Path::new(p).exists());
 
         // Clean groups based on the actual existing paths

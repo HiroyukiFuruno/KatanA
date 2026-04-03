@@ -47,5 +47,5 @@ category = "public.app-category.developer-tools"
 short_description = "A fast, lightweight Markdown workspace for macOS"
 
 [dev-dependencies]
-egui_kittest = { version = "0.33", features = ["snapshot", "wgpu", "eframe"] }
+egui_kittest = { version = "0.34", features = ["snapshot", "wgpu", "eframe"] }
 time = "0.3"

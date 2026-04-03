@@ -54,10 +54,10 @@ impl JsonFileRepository {
             reason,
             backup_path.display()
         );
-        if self.path.exists() {
-            if let Err(e) = std::fs::rename(&self.path, &backup_path) {
-                tracing::error!("Failed to create settings backup: {}", e);
-            }
+        if self.path.exists()
+            && let Err(e) = std::fs::rename(&self.path, &backup_path)
+        {
+            tracing::error!("Failed to create settings backup: {}", e);
         }
     }
 }

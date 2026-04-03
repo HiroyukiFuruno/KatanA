@@ -199,23 +199,23 @@ pub(crate) fn show_fullscreen_local_image(
             ui.painter().rect_filled(blocker_rect, 0.0, bg_color);
 
             let texture_handle = if viewer_state.texture.is_none() {
-                if let Ok(bytes) = std::fs::read(path) {
-                    if let Ok(dyn_img) = image::load_from_memory(&bytes) {
-                        let rgba = dyn_img.into_rgba8();
-                        let size = std::array::from_fn(|i| {
-                            if i == 0 {
-                                rgba.width() as usize
-                            } else {
-                                rgba.height() as usize
-                            }
-                        });
-                        let color_img = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
-                        viewer_state.texture = Some(ui.ctx().load_texture(
-                            format!("local_image_fs_{idx}"),
-                            color_img,
-                            egui::TextureOptions::LINEAR,
-                        ));
-                    }
+                if let Ok(bytes) = std::fs::read(path)
+                    && let Ok(dyn_img) = image::load_from_memory(&bytes)
+                {
+                    let rgba = dyn_img.into_rgba8();
+                    let size = std::array::from_fn(|i| {
+                        if i == 0 {
+                            rgba.width() as usize
+                        } else {
+                            rgba.height() as usize
+                        }
+                    });
+                    let color_img = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
+                    viewer_state.texture = Some(ui.ctx().load_texture(
+                        format!("local_image_fs_{idx}"),
+                        color_img,
+                        egui::TextureOptions::LINEAR,
+                    ));
                 }
                 viewer_state.texture.clone()
             } else {
@@ -382,10 +382,10 @@ pub(crate) fn render_slideshow_modal(
                 let pointer_pos = ctx.input(|i| i.pointer.latest_pos());
                 let mut hover_controls = false;
 
-                if let Some(pos) = pointer_pos {
-                    if control_rect.contains(pos) {
-                        hover_controls = true;
-                    }
+                if let Some(pos) = pointer_pos
+                    && control_rect.contains(pos)
+                {
+                    hover_controls = true;
                 }
 
                 let is_active = ctx.input(|i| {

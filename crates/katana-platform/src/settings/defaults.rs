@@ -5,9 +5,9 @@ SAFETY: Contains no stateful logic or new type definitions, only purely function
 use crate::theme::ThemePreset;
 
 use super::types::{
-    AppSettings, BehaviorSettings, ExportSettings, FontSettings, LayoutSettings,
-    PerformanceSettings, SearchSettings, ThemeSettings, UpdateSettings, WorkspaceSettings,
-    DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH,
+    AppSettings, BehaviorSettings, DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH, ExportSettings,
+    FontSettings, LayoutSettings, PerformanceSettings, SearchSettings, ThemeSettings,
+    UpdateSettings, WorkspaceSettings,
 };
 
 // WHY: ── Constants ──

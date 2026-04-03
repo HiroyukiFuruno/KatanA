@@ -17,17 +17,17 @@ impl<'a> ProblemsPanel<'a> {
         }
     }
 
-    pub fn show(self, ctx: &egui::Context) {
+    pub fn show(self, ui: &mut egui::Ui) {
         const SPACING: f32 = 4.0;
 
         if !self.state.diagnostics.is_panel_open {
             return;
         }
 
-        egui::TopBottomPanel::bottom("problems_panel")
+        egui::Panel::bottom("problems_panel")
             .resizable(true)
-            .min_height(100.0)
-            .show(ctx, |ui| {
+            .min_size(100.0)
+            .show_inside(ui, |ui| {
                 ui.add_space(SPACING);
                 ui.horizontal(|ui| {
                     ui.heading(crate::i18n::get().status.problems_panel_title.clone());

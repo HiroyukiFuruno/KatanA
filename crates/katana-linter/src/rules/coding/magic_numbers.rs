@@ -1,5 +1,5 @@
-use crate::utils::{has_cfg_test_attr, is_allowed_number, span_location};
 use crate::Violation;
+use crate::utils::{has_cfg_test_attr, is_allowed_number, span_location};
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 

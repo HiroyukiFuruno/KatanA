@@ -114,13 +114,13 @@ mod tests {
 
     #[test]
     fn dispatch_renderer_plantuml_when_no_jar_returns_not_installed() {
-        std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar");
+        unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
         let block = DiagramBlock {
             kind: DiagramKind::PlantUml,
             source: "@startuml\nA->B\n@enduml".to_string(),
         };
         let result = dispatch_renderer(&block);
-        std::env::remove_var("PLANTUML_JAR");
+        unsafe { std::env::remove_var("PLANTUML_JAR") };
         assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
 
@@ -758,7 +758,10 @@ mod tests {
         let msgs = i18n::get();
         let dc = &msgs.preview.diagram_controller;
         assert_eq!(dc.pan_up, "\u{4e0a}\u{3078}\u{79fb}\u{52d5}");
-        assert_eq!(dc.reset, "\u{521d}\u{671f}\u{4f4d}\u{7f6e}\u{30fb}\u{30b5}\u{30a4}\u{30ba}\u{306b}\u{30ea}\u{30bb}\u{30c3}\u{30c8}");
+        assert_eq!(
+            dc.reset,
+            "\u{521d}\u{671f}\u{4f4d}\u{7f6e}\u{30fb}\u{30b5}\u{30a4}\u{30ba}\u{306b}\u{30ea}\u{30bb}\u{30c3}\u{30c8}"
+        );
         assert_eq!(dc.fullscreen, "\u{5168}\u{753b}\u{9762}\u{8868}\u{793a}");
         i18n::set_language("en");
     }

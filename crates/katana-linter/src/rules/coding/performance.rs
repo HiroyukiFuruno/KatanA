@@ -1,5 +1,5 @@
-use crate::utils::span_location;
 use crate::Violation;
+use crate::utils::span_location;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 

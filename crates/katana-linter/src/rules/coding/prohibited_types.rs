@@ -1,5 +1,5 @@
-use crate::utils::{has_cfg_test_attr, span_location};
 use crate::Violation;
+use crate::utils::{has_cfg_test_attr, span_location};
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 
@@ -152,9 +152,11 @@ mod tests {
         let code = r#"fn foo() { let arr: [i32; 4] = [1, 2, 3, 4]; }"#;
         let syntax = syn::parse_file(code).unwrap();
         let violations = lint_prohibited_types(&PathBuf::from("fake.rs"), &syntax);
-        assert!(violations
-            .iter()
-            .any(|v| v.message.contains("Fixed-length array")));
+        assert!(
+            violations
+                .iter()
+                .any(|v| v.message.contains("Fixed-length array"))
+        );
     }
 
     #[test]
@@ -162,8 +164,10 @@ mod tests {
         let code = r#"fn foo() { let arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]; }"#;
         let syntax = syn::parse_file(code).unwrap();
         let violations = lint_prohibited_types(&PathBuf::from("fake.rs"), &syntax);
-        assert!(violations
-            .iter()
-            .any(|v| v.message.contains("Array literal")));
+        assert!(
+            violations
+                .iter()
+                .any(|v| v.message.contains("Array literal"))
+        );
     }
 }

@@ -80,29 +80,29 @@ impl<'a> CommandPaletteModal<'a> {
                     self.state.move_down();
                 } else if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
                     self.state.move_up();
-                } else if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                    if let Some(res) = self.state.results.get(self.state.selected_index) {
-                        match &res.execute_payload {
-                            CommandPaletteExecutePayload::DispatchAppAction(a) => {
-                                *self.action = a.clone();
-                            }
-                            CommandPaletteExecutePayload::OpenFile(path) => {
-                                *self.action = AppAction::SelectDocument(path.clone());
-                            }
-                            CommandPaletteExecutePayload::NavigateToContent {
-                                path,
-                                line,
-                                byte_range,
-                            } => {
-                                *self.action = AppAction::SelectDocumentAndJump {
-                                    path: path.clone(),
-                                    line: *line,
-                                    byte_range: byte_range.clone(),
-                                };
-                            }
+                } else if ui.input(|i| i.key_pressed(egui::Key::Enter))
+                    && let Some(res) = self.state.results.get(self.state.selected_index)
+                {
+                    match &res.execute_payload {
+                        CommandPaletteExecutePayload::DispatchAppAction(a) => {
+                            *self.action = a.clone();
                         }
-                        is_open = false; // dismiss after action
+                        CommandPaletteExecutePayload::OpenFile(path) => {
+                            *self.action = AppAction::SelectDocument(path.clone());
+                        }
+                        CommandPaletteExecutePayload::NavigateToContent {
+                            path,
+                            line,
+                            byte_range,
+                        } => {
+                            *self.action = AppAction::SelectDocumentAndJump {
+                                path: path.clone(),
+                                line: *line,
+                                byte_range: byte_range.clone(),
+                            };
+                        }
                     }
+                    is_open = false; // dismiss after action
                 }
 
                 // If just opened, request focus

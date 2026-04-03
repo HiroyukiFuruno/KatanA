@@ -17,24 +17,25 @@ impl<'a> TocPanel<'a> {
         Self { preview, state }
     }
 
-    pub fn show(self, ctx: &egui::Context) {
+    pub fn show(self, ui: &mut egui::Ui) {
         let preview = self.preview;
         let state = self.state;
         use katana_platform::settings::TocPosition;
         let position = state.config.settings.settings().layout.toc_position;
 
         let panel = match position {
-            TocPosition::Left => egui::SidePanel::left("toc_panel"),
-            TocPosition::Right => egui::SidePanel::right("toc_panel"),
+            TocPosition::Left => egui::Panel::left("toc_panel"),
+            TocPosition::Right => egui::Panel::right("toc_panel"),
         };
 
-        let frame = egui::Frame::side_top_panel(&ctx.style()).inner_margin(TOC_PANEL_MARGIN);
+        let frame =
+            egui::Frame::side_top_panel(&ui.ctx().global_style()).inner_margin(TOC_PANEL_MARGIN);
 
         panel
             .frame(frame)
             .resizable(true)
-            .default_width(TOC_PANEL_DEFAULT_WIDTH)
-            .show(ctx, |ui| {
+            .default_size(TOC_PANEL_DEFAULT_WIDTH)
+            .show_inside(ui, |ui| {
                 ui.heading(crate::i18n::get().toc.title.clone());
                 ui.separator();
 

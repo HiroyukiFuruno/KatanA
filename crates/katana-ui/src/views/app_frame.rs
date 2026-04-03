@@ -22,7 +22,7 @@ impl<'a> MainPanels<'a> {
         Self { app, theme_colors }
     }
 
-    pub fn show(self, ctx: &egui::Context) -> Option<DownloadRequest> {
+    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let theme_colors = self.theme_colors;
         let export_filenames: Vec<String> = app
@@ -37,7 +37,7 @@ impl<'a> MainPanels<'a> {
             resolved_status = Some(&settings_err_tuple);
         }
 
-        egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
+        egui::Panel::bottom("status_bar").show_inside(ui, |ui| {
             let action = crate::views::top_bar::StatusBar::new(
                 resolved_status,
                 app.state.is_dirty(),
@@ -50,17 +50,17 @@ impl<'a> MainPanels<'a> {
         });
 
         crate::views::panels::problems::ProblemsPanel::new(&mut app.state, &mut app.pending_action)
-            .show(ctx);
+            .show(ui);
 
-        WindowTitle::new(app).show(ctx);
+        WindowTitle::new(app).show(ui);
 
-        TitleBar::new(app, theme_colors).show(ctx);
+        TitleBar::new(app, theme_colors).show(ui);
 
-        WorkspaceSidebar::new(app).show(ctx);
+        WorkspaceSidebar::new(app).show(ui);
 
-        TabToolbar::new(app).show(ctx);
+        TabToolbar::new(app).show(ui);
 
-        CentralContent::new(app).show(ctx)
+        CentralContent::new(app).show(ui)
     }
 }
 
@@ -71,7 +71,7 @@ impl<'a> WindowTitle<'a> {
     fn new(app: &'a mut KatanaApp) -> Self {
         Self { app }
     }
-    fn show(self, ctx: &egui::Context) {
+    fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let ws_root_for_title = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
         let title_text = match app.state.active_document() {
@@ -87,7 +87,8 @@ impl<'a> WindowTitle<'a> {
             None => "KatanA".to_string(),
         };
         if app.state.layout.last_window_title != title_text {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Title(title_text.clone()));
+            ui.ctx()
+                .send_viewport_cmd(egui::ViewportCommand::Title(title_text.clone()));
             app.state.layout.last_window_title = title_text;
         }
     }
@@ -101,11 +102,11 @@ impl<'a> TitleBar<'a> {
     fn new(app: &'a KatanaApp, theme_colors: &'a katana_platform::theme::ThemeColors) -> Self {
         Self { app, theme_colors }
     }
-    fn show(self, ctx: &egui::Context) {
+    fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let theme_colors = self.theme_colors;
         let title_text = &app.state.layout.last_window_title;
-        egui::TopBottomPanel::top("app_title_bar").show(ctx, |ui| {
+        egui::Panel::top("app_title_bar").show_inside(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.centered_and_justified(|ui| {
                     let title_color =
@@ -124,18 +125,18 @@ impl<'a> WorkspaceSidebar<'a> {
     fn new(app: &'a mut KatanaApp) -> Self {
         Self { app }
     }
-    fn show(self, ctx: &egui::Context) {
+    fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
 
-        egui::SidePanel::left("activity_rail")
+        egui::Panel::left("activity_rail")
             .resizable(false)
-            .exact_width(crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + ACTIVITY_RAIL_PADDING)
+            .exact_size(crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + ACTIVITY_RAIL_PADDING)
             .frame(
-                egui::Frame::side_top_panel(&ctx.style())
+                egui::Frame::side_top_panel(&ui.ctx().global_style())
                     .inner_margin(egui::Margin::ZERO)
                     .stroke(egui::Stroke::NONE),
             )
-            .show(ctx, |ui| {
+            .show_inside(ui, |ui| {
                 ui.vertical_centered(|ui| {
                     ui.add_space(ACTIVITY_RAIL_PADDING);
 
@@ -167,11 +168,10 @@ impl<'a> WorkspaceSidebar<'a> {
                                 best_to = Some(insert_idx);
                             }
                         }
-                        if let Some(to) = best_to {
-                            if src_idx != to && src_idx + 1 != to {
+                        if let Some(to) = best_to
+                            && src_idx != to && src_idx + 1 != to {
                                 return Some(crate::app_state::AppAction::ReorderActivityRail { from: src_idx, to });
                             }
-                        }
                         None
                     };
 
@@ -335,8 +335,8 @@ impl<'a> WorkspaceSidebar<'a> {
                     }
 
                     for (idx, item, _interact_id, is_being_dragged, interact_resp) in responses {
-                        if interact_resp.drag_started() || is_being_dragged {
-                            if let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
+                        if (interact_resp.drag_started() || is_being_dragged)
+                            && let Some(pointer_pos) = ui.ctx().pointer_interact_pos() {
                                 let press_origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(pointer_pos);
                                 let drag_offset = pointer_pos - press_origin;
                                 let ghost_rect = interact_resp.rect.translate(drag_offset);
@@ -370,16 +370,14 @@ impl<'a> WorkspaceSidebar<'a> {
                                         }
                                     });
                             }
-                        }
 
-                        if interact_resp.drag_stopped() {
-                            if let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
+                        if interact_resp.drag_stopped()
+                            && let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
                                 dragged_source = Some((idx, ghost_y));
                             }
-                        }
 
-                        if is_being_dragged {
-                            if let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
+                        if is_being_dragged
+                            && let Some(ghost_y) = ui.memory(|mem| mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))) {
                                 let drop_points = compute_drop_points_y(&rail_rects);
                                 let mut best_dist = f32::MAX;
                                 let mut best_y = None;
@@ -394,7 +392,6 @@ impl<'a> WorkspaceSidebar<'a> {
                                     current_hovered_drop_y = Some((y, rail_rects[idx].1.x_range()));
                                 }
                             }
-                        }
                     }
 
                     if let Some((target_y, x_range)) = current_hovered_drop_y {
@@ -411,11 +408,10 @@ impl<'a> WorkspaceSidebar<'a> {
                         ui.painter().hline(x_range, animated_y, stroke);
                     }
 
-                    if let Some((src_idx, ghost_center_y)) = dragged_source {
-                        if let Some(action) = resolve_drag_drop_y(src_idx, ghost_center_y, &rail_rects) {
+                    if let Some((src_idx, ghost_center_y)) = dragged_source
+                        && let Some(action) = resolve_drag_drop_y(src_idx, ghost_center_y, &rail_rects) {
                             reorder_action = Some(action);
                         }
-                    }
 
                     if let Some(act) = reorder_action {
                         app.pending_action = act;
@@ -424,11 +420,11 @@ impl<'a> WorkspaceSidebar<'a> {
             });
 
         if app.state.layout.show_workspace {
-            egui::SidePanel::left("workspace_tree")
+            egui::Panel::left("workspace_tree")
                 .resizable(true)
-                .min_width(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
-                .default_width(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
-                .show(ctx, |ui| {
+                .min_size(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
+                .default_size(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
+                .show_inside(ui, |ui| {
                     let active_path = app.state.active_path().map(|p| p.to_path_buf());
                     crate::views::panels::workspace::WorkspacePanel::new(
                         &mut app.state.workspace,
@@ -450,9 +446,9 @@ impl<'a> TabToolbar<'a> {
     fn new(app: &'a mut KatanaApp) -> Self {
         Self { app }
     }
-    fn show(self, ctx: &egui::Context) {
+    fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
-        egui::TopBottomPanel::top("tab_toolbar").show(ctx, |ui| {
+        egui::Panel::top("tab_toolbar").show_inside(ui, |ui| {
             let ws_root = app
                 .state
                 .workspace
@@ -571,20 +567,20 @@ impl<'a> Breadcrumbs<'a> {
                     ui.menu_button(egui::RichText::new(*seg).small(), |ui| {
                         let mut ctx_action = crate::app_state::AppAction::None;
 
-                        if let Some(ws) = &app.state.workspace.data {
-                            if let Some(katana_core::workspace::TreeEntry::Directory {
+                        if let Some(ws) = &app.state.workspace.data
+                            && let Some(katana_core::workspace::TreeEntry::Directory {
                                 children,
                                 ..
                             }) = crate::views::panels::tree::find_node_in_tree(
                                 &ws.tree,
                                 &current_path,
-                            ) {
-                                crate::views::panels::workspace::BreadcrumbMenu::new(
-                                    children,
-                                    &mut ctx_action,
-                                )
-                                .show(ui);
-                            }
+                            )
+                        {
+                            crate::views::panels::workspace::BreadcrumbMenu::new(
+                                children,
+                                &mut ctx_action,
+                            )
+                            .show(ui);
                         }
 
                         if !matches!(ctx_action, crate::app_state::AppAction::None) {
@@ -606,30 +602,29 @@ impl<'a> CentralContent<'a> {
     fn new(app: &'a mut KatanaApp) -> Self {
         Self { app }
     }
-    fn show(self, ctx: &egui::Context) -> Option<DownloadRequest> {
+    fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let mut download_req: Option<DownloadRequest> = None;
         let current_mode = app.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
         let mut is_changelog_tab = false;
 
-        if let Some(doc) = app.state.active_document() {
-            if doc.path.to_string_lossy().starts_with("Katana://ChangeLog") {
-                is_changelog_tab = true;
-            }
+        if let Some(doc) = app.state.active_document()
+            && doc.path.to_string_lossy().starts_with("Katana://ChangeLog")
+        {
+            is_changelog_tab = true;
         }
 
-        if app.state.layout.show_toc && app.state.config.settings.settings().layout.toc_visible {
-            if let Some(doc) = app.state.active_document() {
-                if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-                    crate::views::panels::toc::TocPanel::new(&mut preview.pane, &app.state)
-                        .show(ctx);
-                }
-            }
+        if app.state.layout.show_toc
+            && app.state.config.settings.settings().layout.toc_visible
+            && let Some(doc) = app.state.active_document()
+            && let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path)
+        {
+            crate::views::panels::toc::TocPanel::new(&mut preview.pane, &app.state).show(ui);
         }
 
         if is_changelog_tab {
-            egui::CentralPanel::default().show(ctx, |ui| {
+            egui::CentralPanel::default().show_inside(ui, |ui| {
                 crate::changelog::render_release_notes_tab(
                     ui,
                     &app.changelog_sections,
@@ -642,15 +637,16 @@ impl<'a> CentralContent<'a> {
             if is_split {
                 let split_dir = app.state.active_split_direction();
                 let pane_order = app.state.active_pane_order();
+                let ctx = ui.ctx().clone();
                 download_req =
-                    crate::views::layout::split::SplitMode::new(ctx, app, split_dir, pane_order)
-                        .show();
+                    crate::views::layout::split::SplitMode::new(&ctx, app, split_dir, pane_order)
+                        .show(ui);
             }
 
             if !is_split {
                 egui::CentralPanel::default()
-                    .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
-                    .show(ctx, |ui| match current_mode {
+                    .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
+                    .show_inside(ui, |ui| match current_mode {
                         ViewMode::CodeOnly => {
                             crate::views::panels::editor::EditorContent::new(
                                 app.state.document.active_document(),
@@ -688,12 +684,11 @@ pub(crate) fn intercept_url_commands(ctx: &egui::Context, app: &mut KatanaApp) {
                 unprocessed_commands.push(cmd);
             } else {
                 let mut path = std::path::PathBuf::from(url);
-                if path.is_relative() {
-                    if let Some(doc) = app.state.active_document() {
-                        if let Some(parent) = doc.path.parent() {
-                            path = parent.join(path);
-                        }
-                    }
+                if path.is_relative()
+                    && let Some(doc) = app.state.active_document()
+                    && let Some(parent) = doc.path.parent()
+                {
+                    path = parent.join(path);
                 }
                 app.process_action(ctx, AppAction::SelectDocument(path));
             }

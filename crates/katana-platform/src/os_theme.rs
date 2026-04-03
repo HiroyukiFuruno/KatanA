@@ -37,7 +37,7 @@ fn detect_dark_mode_impl() -> Option<bool> {
 // WHY: ── macOS FFI ─────────────────────────────────────────────────────────
 
 #[cfg(target_os = "macos")]
-extern "C" {
+unsafe extern "C" {
     /* WHY: Returns the name of the NSApplication effective appearance as a C string.
 
     # Safety
