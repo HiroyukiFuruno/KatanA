@@ -85,13 +85,18 @@ impl<'a> StatusBar<'a> {
                 ui.add(i.image(crate::icon::IconSize::Medium).tint(color));
                 ui.add_space(2.0);
             }
-            ui.colored_label(color, msg);
+            crate::icon::render_str_with_icons(ui, msg, Some(color));
 
+            let problem_text = crate::i18n::tf(
+                &crate::i18n::get().status.problems_count_format,
+                &[("count", &problem_count.to_string())],
+            );
+            let btn = egui::Button::image_and_text(
+                crate::Icon::Warning.ui_image(ui, crate::icon::IconSize::Small),
+                problem_text,
+            );
             if ui
-                .button(crate::i18n::tf(
-                    &crate::i18n::get().status.problems_count_format,
-                    &[("count", &problem_count.to_string())],
-                ))
+                .add(btn)
                 .on_hover_text(crate::i18n::get().status.toggle_problems_panel.clone())
                 .clicked()
             {
@@ -107,7 +112,7 @@ impl<'a> StatusBar<'a> {
                             &crate::i18n::get().export.exporting,
                             &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
                         );
-                        ui.label(numbered);
+                        crate::icon::render_str_with_icons(ui, &numbered, None);
                     }
                 }
                 const DIRTY_DOT_MAX_HEIGHT: f32 = 10.0;
@@ -422,6 +427,17 @@ impl<'a> TabBar<'a> {
                                                 ui.add(
                                                     egui::Button::image_and_text(
                                                         crate::Icon::Info.ui_image(
+                                                            ui,
+                                                            crate::icon::IconSize::Small,
+                                                        ),
+                                                        &title,
+                                                    )
+                                                    .selected(is_active),
+                                                )
+                                            } else if doc.is_pinned {
+                                                ui.add(
+                                                    egui::Button::image_and_text(
+                                                        crate::Icon::Pin.ui_image(
                                                             ui,
                                                             crate::icon::IconSize::Small,
                                                         ),
@@ -916,13 +932,20 @@ impl ViewModeBar {
             |ui| {
                 if self.update_available && !self.update_checking {
                     const COLOR_SUCCESS_G: u8 = 200;
-                    let badge_str = format!("✨ {}", crate::i18n::get().update.update_available);
-                    let badge_text = egui::RichText::new(badge_str)
-                        .color(crate::theme_bridge::from_rgb(0, COLOR_SUCCESS_G, 100))
-                        .strong();
+                    let badge_str = crate::i18n::get().update.update_available.clone();
+                    let badge_color = crate::theme_bridge::from_rgb(0, COLOR_SUCCESS_G, 100);
+                    let badge_text = egui::RichText::new(badge_str).color(badge_color).strong();
+
+                    let btn = egui::Button::image_and_text(
+                        crate::icon::Icon::Action
+                            .image(crate::icon::IconSize::Small)
+                            .tint(badge_color),
+                        badge_text,
+                    )
+                    .sense(egui::Sense::click());
 
                     if ui
-                        .add(egui::Button::new(badge_text).sense(egui::Sense::click()))
+                        .add(btn)
                         .on_hover_cursor(egui::CursorIcon::PointingHand)
                         .clicked()
                     {
@@ -940,7 +963,7 @@ impl ViewModeBar {
                     if ui
                         .add(egui::Button::image_and_text(
                             crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
-                            invisible_label("🔄"),
+                            invisible_label("Refresh"),
                         ))
                         .on_hover_text(crate::i18n::get().action.refresh_document.clone())
                         .clicked()
@@ -1011,17 +1034,28 @@ impl ViewModeBar {
                     }
 
                     let current_order = self.pane_order;
-                    let (order_text, order_tip) = match current_order {
-                        katana_platform::PaneOrder::EditorFirst => (
-                            "📄|👁",
-                            crate::i18n::get().split_toggle.preview_first.clone(),
-                        ),
+                    let order_tip = match current_order {
+                        katana_platform::PaneOrder::EditorFirst => {
+                            crate::i18n::get().split_toggle.preview_first.clone()
+                        }
                         katana_platform::PaneOrder::PreviewFirst => {
-                            ("👁|📄", crate::i18n::get().split_toggle.editor_first.clone())
+                            crate::i18n::get().split_toggle.editor_first.clone()
                         }
                     };
+
+                    let order_icon =
+                        if self.split_direction == katana_platform::SplitDirection::Horizontal {
+                            crate::icon::Icon::SwapHorizontal
+                        } else {
+                            crate::icon::Icon::SwapVertical
+                        };
+
                     if ui
-                        .add(egui::Button::new(order_text).sense(egui::Sense::click()))
+                        .add(egui::Button::image(
+                            order_icon
+                                .image(crate::icon::IconSize::Medium)
+                                .tint(ui.visuals().text_color()),
+                        ))
                         .on_hover_text(order_tip)
                         .clicked()
                     {

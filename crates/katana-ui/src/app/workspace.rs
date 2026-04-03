@@ -72,7 +72,7 @@ impl WorkspaceOps for KatanaApp {
     }
     fn finish_open_workspace(
         &mut self,
-        path: std::path::PathBuf,
+        _path: std::path::PathBuf,
         ws: katana_core::workspace::Workspace,
     ) {
         let name = ws.name().unwrap_or("unknown").to_string();
@@ -91,7 +91,15 @@ impl WorkspaceOps for KatanaApp {
         self.state.document.tab_split_states.clear();
         self.state.document.recently_closed_tabs.clear();
         self.state.search.filter_cache = None;
-        let path_str = path.display().to_string();
+        let path_str = self
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .unwrap()
+            .root
+            .display()
+            .to_string();
 
         let mut to_open: Vec<(String, bool)> = Vec::new();
         let mut active_idx = None;
@@ -112,8 +120,9 @@ impl WorkspaceOps for KatanaApp {
             groups: Vec<crate::state::document::TabGroup>,
         }
 
+        let workspace_root = self.state.workspace.data.as_ref().unwrap().root.clone();
         let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
-            workspace_path: path.clone(),
+            workspace_path: workspace_root,
         }
         .to_raw_key()
         .unwrap_or_default();
@@ -121,20 +130,7 @@ impl WorkspaceOps for KatanaApp {
         let settings = self.state.config.settings.settings_mut();
 
         if settings.workspace.restore_session {
-            let mut cache_json_opt = self.state.config.cache.get_persistent(&cache_key);
-
-            // Fallback for legacy trailing slash hash key (Katana <= 0.15.1)
-            if cache_json_opt.is_none() {
-                let legacy_path = format!("{}/", path.to_string_lossy().trim_end_matches('/'));
-                let legacy_key = format!(
-                    "workspace_tabs_{:x}",
-                    crate::shell_logic::hash_str(&legacy_path)
-                );
-                if let Some(legacy_json) = self.state.config.cache.get_persistent(&legacy_key) {
-                    tracing::info!("Recovered workspace_tabs using legacy hash key.");
-                    cache_json_opt = Some(legacy_json);
-                }
-            }
+            let cache_json_opt = self.state.config.cache.get_persistent(&cache_key);
 
             if let Some(cache_json) = cache_json_opt {
                 if let Ok(v2) = serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {

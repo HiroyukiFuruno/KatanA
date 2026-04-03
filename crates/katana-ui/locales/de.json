@@ -44,7 +44,7 @@
     "checking_for_updates": "Suche nach Updates...",
     "update_available": "Update verfügbar",
     "update_available_desc": "Eine neue Version von KatanA ({version}) ist verfügbar. Bitte führen Sie `brew update && brew upgrade --cask katana-desktop` aus, um zu aktualisieren.",
-    "release_notes_template": "### 🚀 Neue Version {version} ist verfügbar\n\nBitte prüfen Sie die [GitHub Releases Seite]({url}) für detaillierte Änderungen und Versionshinweise.\nKlicken Sie auf \"Installieren und neu starten\", um das Update automatisch anzuwenden.",
+    "release_notes_template": "### Neue Version {version} ist verfügbar\n\nBitte prüfen Sie die [GitHub Releases Seite]({url}) für detaillierte Änderungen und Versionshinweise.\nKlicken Sie auf \"Installieren und neu starten\", um das Update automatisch anzuwenden.",
     "up_to_date": "Aktuell",
     "up_to_date_desc": "KatanA ist auf dem neuesten Stand.",
     "failed_to_check": "Fehler beim Prüfen auf Updates.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ PlantUML JAR wird heruntergeladen...",
-    "plantuml_installed": "✅ PlantUML installiert. Vorschau wird aktualisiert...",
-    "download_error": "❌ Downloadfehler: "
+    "plantuml_installed": "PlantUML installiert. Vorschau wird aktualisiert...",
+    "download_error": "Downloadfehler: "
   },
   "view_mode": {
     "preview": "Vorschau",
@@ -102,10 +102,10 @@
     "preview_first": "Vorschau links/oben platzieren"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} nicht gefunden. Bitte mit {install_hint} installieren.",
+    "missing_dependency": "{tool_name} nicht gefunden. Bitte mit {install_hint} installieren.",
     "curl_launch_failed": "curl start fehlgeschlagen",
     "download_failed": "Download fehlgeschlagen",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "Bereit",
@@ -122,7 +122,7 @@
     "problems_panel_close": "Schließen",
     "no_problems_found": "Keine Probleme im Arbeitsbereich gefunden.",
     "toggle_problems_panel": "Problempanel umschalten",
-    "problems_count_format": "⚠️ Probleme: {count}"
+    "problems_count_format": "Probleme: {count}"
   },
   "action": {
     "expand_all": "Alle erweitern",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI: nicht konfiguriert]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} ist nicht installiert",
+    "not_installed": "{tool} ist nicht installiert",
     "install_path": "Installationspfad: {path}",
     "download": "⬇ {tool} herunterladen"
   },

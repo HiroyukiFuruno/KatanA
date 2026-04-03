@@ -1359,7 +1359,7 @@ fn test_integration_refresh_button_click() {
         .trigger_action(AppAction::SelectDocument(md_path));
     harness.step();
 
-    if let Some(btn) = harness.query_all_by_label("🔄").next() {
+    if let Some(btn) = harness.query_all_by_label("Refresh").next() {
         btn.click();
     }
     harness.step();
@@ -1918,7 +1918,7 @@ fn test_file_entry_label_is_left_aligned() {
     let nodes: Vec<_> = harness.query_all_by_label("file alignment.md").collect();
     assert!(
         !nodes.is_empty(),
-        "File entry '📄 alignment.md' must be present in the workspace tree"
+        "File entry 'alignment.md' must be present in the workspace tree"
     );
 
     let node = &nodes[0];
@@ -2288,10 +2288,10 @@ fn test_search_sidebar_buttons() {
     wait_for_workspace_load(&mut harness);
     harness.step();
 
-    let search_nodes: Vec<_> = harness.query_all_by_label("🔍").collect();
+    let search_nodes: Vec<_> = harness.query_all_by_label("Search").collect();
     assert!(
         !search_nodes.is_empty(),
-        "Search button (🔍) must be present in the workspace sidebar"
+        "Search button (Search) must be present in the workspace sidebar"
     );
 
     let filter_nodes: Vec<_> = harness.query_all_by_label("\u{2207}").collect(); // ∇

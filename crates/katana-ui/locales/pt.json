@@ -44,7 +44,7 @@
     "checking_for_updates": "Verificando atualizações...",
     "update_available": "Atualização disponível",
     "update_available_desc": "Uma nova versione do KatanA ({version}) está disponível. Execute `brew update && brew upgrade --cask katana-desktop` para atualizar.",
-    "release_notes_template": "### 🚀 Nova versão {version} disponível\n\nVerifique a [página de Lançamentos do GitHub]({url}) para obter notas de lançamento.\nClique em \"Instalar e reiniciar\" para aplicar a atualização automaticamente.",
+    "release_notes_template": "### Nova versão {version} disponível\n\nVerifique a [página de Lançamentos do GitHub]({url}) para obter notas de lançamento.\nClique em \"Instalar e reiniciar\" para aplicar a atualização automaticamente.",
     "up_to_date": "Atualizado",
     "up_to_date_desc": "O KatanA está atualizado.",
     "failed_to_check": "Falha ao verificar atualizações.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Baixando PlantUML JAR...",
-    "plantuml_installed": "✅ PlantUML instalado. Atualizando visualização...",
-    "download_error": "❌ Erro no download: "
+    "plantuml_installed": "PlantUML instalado. Atualizando visualização...",
+    "download_error": "Erro no download: "
   },
   "view_mode": {
     "preview": "Visualização",
@@ -102,10 +102,10 @@
     "preview_first": "Colocar a visualização à esquerda/cima"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} não encontrado. Por favor, instale usando {install_hint}.",
+    "missing_dependency": "{tool_name} não encontrado. Por favor, instale usando {install_hint}.",
     "curl_launch_failed": "Falha ao iniciar o curl",
     "download_failed": "Falha no download",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "Pronto",
@@ -122,7 +122,7 @@
     "problems_panel_close": "Fechar painel",
     "no_problems_found": "Nenhum problema detectado no espaço de trabalho.",
     "toggle_problems_panel": "Alternar painel de erros",
-    "problems_count_format": "⚠️ Problemas encontrados: {count}"
+    "problems_count_format": "Problemas encontrados: {count}"
   },
   "action": {
     "expand_all": "Expandir Tudo",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI: não configurado]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} não está instalado",
+    "not_installed": "{tool} não está instalado",
     "install_path": "Caminho de instalação: {path}",
     "download": "⬇ Baixar {tool}"
   },

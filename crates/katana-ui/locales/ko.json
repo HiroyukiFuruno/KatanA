@@ -44,7 +44,7 @@
     "checking_for_updates": "업데이트 확인 중...",
     "update_available": "업데이트 가능",
     "update_available_desc": "KatanA의 새 버전({version})을 사용할 수 있습니다. `brew update && brew upgrade --cask katana-desktop`를 실행하여 업데이트하십시오.",
-    "release_notes_template": "### 🚀 새 버전 {version} 을 사용할 수 있습니다\n\n자세한 변경 사항 및 릴리스 노트는 [GitHub 릴리스 페이지]({url}) 에서 확인하세요.\n\"설치 및 다시 시작\" 을 클릭하면 업데이트가 자동으로 적용됩니다.",
+    "release_notes_template": "### 새 버전 {version} 을 사용할 수 있습니다\n\n자세한 변경 사항 및 릴리스 노트는 [GitHub 릴리스 페이지]({url}) 에서 확인하세요.\n\"설치 및 다시 시작\" 을 클릭하면 업데이트가 자동으로 적용됩니다.",
     "up_to_date": "최신 버전",
     "up_to_date_desc": "최신 버전의 KatanA를 사용하고 있습니다.",
     "failed_to_check": "업데이트 확인 실패.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중...",
-    "plantuml_installed": "✅ PlantUML 설치됨. 미리보기 새로고침 중...",
-    "download_error": "❌ 다운로드 오류: "
+    "plantuml_installed": "PlantUML 설치됨. 미리보기 새로고침 중...",
+    "download_error": "다운로드 오류: "
   },
   "view_mode": {
     "preview": "미리보기",
@@ -102,10 +102,10 @@
     "preview_first": "미리보기를 좌측/상단에 배치"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name}을(를) 찾을 수 없습니다. {install_hint}을(를) 사용하여 설치해 주세요.",
+    "missing_dependency": "{tool_name}을(를) 찾을 수 없습니다. {install_hint}을(를) 사용하여 설치해 주세요.",
     "curl_launch_failed": "curl 실행 실패",
     "download_failed": "다운로드 실패",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "준비됨",
@@ -122,7 +122,7 @@
     "problems_panel_close": "닫기",
     "no_problems_found": "워크스페이스에서 문제를 찾을 수 없습니다.",
     "toggle_problems_panel": "문제 패널 전환",
-    "problems_count_format": "⚠️ 문제: {count}"
+    "problems_count_format": "문제: {count}"
   },
   "action": {
     "expand_all": "모두 확장",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI: 설정되지 않음]"
   },
   "tool": {
-    "not_installed": "⚠ {tool}이(가) 설치되지 않았습니다.",
+    "not_installed": "{tool}이(가) 설치되지 않았습니다.",
     "install_path": "설치 경로: {path}",
     "download": "⬇ {tool} 다운로드"
   },

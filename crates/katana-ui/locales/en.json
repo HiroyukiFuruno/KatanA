@@ -44,7 +44,7 @@
     "checking_for_updates": "Checking for updates...",
     "update_available": "Update Available",
     "update_available_desc": "A new version of KatanA ({version}) is available. Please run `brew update && brew upgrade --cask katana-desktop` to update.",
-    "release_notes_template": "### 🚀 New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
+    "release_notes_template": "### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
     "up_to_date": "Up to Date",
     "up_to_date_desc": "KatanA is up to date.",
     "failed_to_check": "Failed to check for updates.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Downloading PlantUML JAR...",
-    "plantuml_installed": "✅ PlantUML installed. Refreshing preview...",
-    "download_error": "❌ Download error: "
+    "plantuml_installed": "PlantUML installed. Refreshing preview...",
+    "download_error": "Download error: "
   },
   "view_mode": {
     "preview": "Preview",
@@ -102,10 +102,10 @@
     "preview_first": "Place preview left/top"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} is not found. Please install it using {install_hint}.",
+    "missing_dependency": "{tool_name} is not found. Please install it using {install_hint}.",
     "curl_launch_failed": "curl launch failed",
     "download_failed": "Download failed",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "Ready",
@@ -122,7 +122,7 @@
     "problems_panel_close": "Close",
     "no_problems_found": "No problems found in the workspace.",
     "toggle_problems_panel": "Toggle Problems Panel",
-    "problems_count_format": "⚠️ Problems: {count}"
+    "problems_count_format": "Problems: {count}"
   },
   "action": {
     "expand_all": "Expand all",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI: unconfigured]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} is not installed",
+    "not_installed": "{tool} is not installed",
     "install_path": "Install path: {path}",
     "download": "⬇ Download {tool}"
   },

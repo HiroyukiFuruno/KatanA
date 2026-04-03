@@ -550,7 +550,7 @@ impl<'a> WorkspaceHeader<'a> {
                         .add(
                             egui::Button::image_and_text(
                                 crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("🔄"),
+                                invisible_label("Refresh"),
                             )
                             .fill(icon_bg),
                         )

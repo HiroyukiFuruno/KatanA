@@ -156,14 +156,24 @@ impl<'a> CommandPaletteModal<'a> {
                                 let response = frame
                                     .show(ui, |ui| {
                                         ui.horizontal(|ui| {
-                                            // Simple icon based on kind
                                             let icon = match result.kind {
-                                                CommandPaletteResultKind::Action => "⚡",
-                                                CommandPaletteResultKind::File => "📄",
-                                                CommandPaletteResultKind::MarkdownContent => "📝",
-                                                CommandPaletteResultKind::RecentOrCommon => "🕒",
+                                                CommandPaletteResultKind::Action => {
+                                                    crate::Icon::Action
+                                                }
+                                                CommandPaletteResultKind::File => {
+                                                    crate::Icon::Document
+                                                }
+                                                CommandPaletteResultKind::MarkdownContent => {
+                                                    crate::Icon::Markdown
+                                                }
+                                                CommandPaletteResultKind::RecentOrCommon => {
+                                                    crate::Icon::Recent
+                                                }
                                             };
-                                            ui.label(egui::RichText::new(icon).color(text_color));
+                                            ui.add(
+                                                icon.image(crate::icon::IconSize::Medium)
+                                                    .tint(text_color),
+                                            );
                                             ui.label(
                                                 egui::RichText::new(&result.label)
                                                     .color(text_color)

@@ -44,7 +44,7 @@
     "checking_for_updates": "Ricerca aggiornamenti...",
     "update_available": "Aggiornamento disponibile",
     "update_available_desc": "Una nuova versione di KatanA ({version}) è disponibile. Esegui `brew update && brew upgrade --cask katana-desktop` per aggiornare.",
-    "release_notes_template": "### 🚀 Nuova versione {version} disponibile\n\nControlla la [pagina delle release GitHub]({url}) per le note di rilascio.\nFai clic su \"Installa e riavvia\" per applicare automaticamente l'aggiornamento.",
+    "release_notes_template": "### Nuova versione {version} disponibile\n\nControlla la [pagina delle release GitHub]({url}) per le note di rilascio.\nFai clic su \"Installa e riavvia\" per applicare automaticamente l'aggiornamento.",
     "up_to_date": "Aggiornato",
     "up_to_date_desc": "KatanA è aggiornato.",
     "failed_to_check": "Ricerca aggiornamenti fallita.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Download di PlantUML JAR in corso...",
-    "plantuml_installed": "✅ PlantUML installato. Aggiornamento anteprima in corso...",
-    "download_error": "❌ Errore di download: "
+    "plantuml_installed": "PlantUML installato. Aggiornamento anteprima in corso...",
+    "download_error": "Errore di download: "
   },
   "view_mode": {
     "preview": "Anteprima",
@@ -102,10 +102,10 @@
     "preview_first": "Posiziona l'anteprima a sinistra/in alto"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} non trovato. Per favore, installalo usando {install_hint}.",
+    "missing_dependency": "{tool_name} non trovato. Per favore, installalo usando {install_hint}.",
     "curl_launch_failed": "Avvio di curl non riuscito",
     "download_failed": "Download non riuscito",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "Pronto",
@@ -122,7 +122,7 @@
     "problems_panel_close": "Chiudi",
     "no_problems_found": "Nessun problema trovato nello spazio di lavoro.",
     "toggle_problems_panel": "Attiva/disattiva pannello problemi",
-    "problems_count_format": "⚠️ Problemi: {count}"
+    "problems_count_format": "Problemi: {count}"
   },
   "action": {
     "expand_all": "Espandi Tutto",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI: non configurato]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} non è installato",
+    "not_installed": "{tool} non è installato",
     "install_path": "Percorso di installazione: {path}",
     "download": "⬇ Scarica {tool}"
   },

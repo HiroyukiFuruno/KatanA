@@ -36,12 +36,11 @@ pub(crate) fn show_not_installed(
             .small()
             .weak(),
         );
-        if ui
-            .button(crate::i18n::tf(
-                &crate::i18n::get().tool.download,
-                &[("tool", kind)],
-            ))
-            .clicked()
+        if crate::icon::button_with_icon_str(
+            ui,
+            &crate::i18n::tf(&crate::i18n::get().tool.download, &[("tool", kind)]),
+        )
+        .clicked()
         {
             request = Some(DownloadRequest {
                 url: download_url.to_string(),

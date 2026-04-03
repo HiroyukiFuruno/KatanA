@@ -99,6 +99,20 @@ impl DefaultCacheService {
                         if let Ok(json) = std::fs::read_to_string(&inner_path) {
                             if let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json)
                             {
+                                if let Some(target_filename) = env.key.target_filename() {
+                                    if entry.file_name() != std::ffi::OsStr::new(&target_filename) {
+                                        let canonical_path = kv_dir.join(&target_filename);
+                                        if canonical_path.exists() {
+                                            let _ = std::fs::remove_file(&inner_path);
+                                            continue;
+                                        } else if std::fs::rename(&inner_path, &canonical_path)
+                                            .is_err()
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                }
+
                                 if let Some(raw_key) = env.key.to_raw_key() {
                                     map.push((raw_key, env.value));
                                 }
@@ -440,6 +454,67 @@ mod tests {
         let _edge_1 = DefaultCacheService::new(PathBuf::from("file_only.json"));
         let _edge_2 = DefaultCacheService::new(PathBuf::from(""));
         let _edge_3 = DefaultCacheService::new(PathBuf::from("/"));
+    }
+
+    #[test]
+    fn test_legacy_kv_migration_and_deduplication() {
+        let tmp = TempDir::new().unwrap();
+        let kv_dir = tmp.path().join("kv");
+        std::fs::create_dir_all(&kv_dir).unwrap();
+        let cache_json_path = tmp.path().join("cache.json");
+
+        let key = PersistentKey::WorkspaceTabs {
+            workspace_path: PathBuf::from("/test/path"),
+        };
+        let canonical_filename = key.target_filename().unwrap();
+        let legacy_filename = "workspace_tabs_abcedfg12345.json"; // Wrong filename intentionally
+
+        let env = PersistentEntryEnvelope {
+            storage_version: 1,
+            key: key.clone(),
+            value: "stale_data".to_string(),
+        };
+        let bad_env = PersistentEntryEnvelope {
+            storage_version: 1,
+            key: key.clone(),
+            value: "stale_data2".to_string(),
+        };
+
+        // Scenario 1: Only legacy file exists
+        let legacy_path = kv_dir.join(legacy_filename);
+        std::fs::write(&legacy_path, serde_json::to_string(&env).unwrap()).unwrap();
+
+        let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
+        assert_eq!(map.len(), 1);
+        assert_eq!(map[0].1, "stale_data");
+        // It should have renamed the file
+        assert!(!legacy_path.exists());
+        assert!(kv_dir.join(&canonical_filename).exists());
+
+        // Scenario 2: Both canonical and legacy exist
+        let canonical_path = kv_dir.join(&canonical_filename);
+        std::fs::write(&canonical_path, serde_json::to_string(&env).unwrap()).unwrap();
+        std::fs::write(&legacy_path, serde_json::to_string(&bad_env).unwrap()).unwrap(); // Legacy comes back
+
+        // Write another legacy file that fails renaming (target exists)
+        let unrenamable_legacy_path = kv_dir.join("workspace_tabs_unrenamable.json");
+        std::fs::write(
+            &unrenamable_legacy_path,
+            serde_json::to_string(&bad_env).unwrap(),
+        )
+        .unwrap();
+
+        // Make rename fail by creating a directory instead of file
+        let bad_canonical_path = kv_dir.join("workspace_tabs_bad_canonical.json");
+        std::fs::write(
+            &bad_canonical_path,
+            serde_json::to_string(&bad_env).unwrap(),
+        )
+        .unwrap();
+
+        let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
+        assert_eq!(map.len(), 1); // Should only load the single key once
+        assert!(!legacy_path.exists()); // The legacy path should be deleted because canonical_path exists!
     }
 
     #[test]

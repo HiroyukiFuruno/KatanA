@@ -44,7 +44,7 @@
     "checking_for_updates": "Vérification des mises à jour...",
     "update_available": "Mise à jour disponible",
     "update_available_desc": "Une nouvelle version de KatanA ({version}) est disponible. Veuillez exécuter `brew update && brew upgrade --cask katana-desktop` pour mettre à jour.",
-    "release_notes_template": "### 🚀 Nouvelle version {version} disponible\n\nVeuillez consulter la [page des versions GitHub]({url}) pour plus de détails.\nCliquez sur \"Installer et redémarrer\" pour appliquer automatiquement la mise à jour.",
+    "release_notes_template": "### Nouvelle version {version} disponible\n\nVeuillez consulter la [page des versions GitHub]({url}) pour plus de détails.\nCliquez sur \"Installer et redémarrer\" pour appliquer automatiquement la mise à jour.",
     "up_to_date": "À jour",
     "up_to_date_desc": "KatanA est à jour.",
     "failed_to_check": "Échec de la vérification des mises à jour.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Téléchargement de PlantUML JAR...",
-    "plantuml_installed": "✅ PlantUML installé. Actualisation de l'aperçu...",
-    "download_error": "❌ Erreur de téléchargement : "
+    "plantuml_installed": "PlantUML installé. Actualisation de l'aperçu...",
+    "download_error": "Erreur de téléchargement : "
   },
   "view_mode": {
     "preview": "Aperçu",
@@ -102,10 +102,10 @@
     "preview_first": "Placer l'aperçu à gauche/en haut"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} introuvable. Veuillez l'installer à l'aide de {install_hint}.",
+    "missing_dependency": "{tool_name} introuvable. Veuillez l'installer à l'aide de {install_hint}.",
     "curl_launch_failed": "échec du lancement de curl",
     "download_failed": "Échec du téléchargement",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "Prêt",
@@ -122,7 +122,7 @@
     "problems_panel_close": "Fermer",
     "no_problems_found": "Aucun problème trouvé dans l'espace de travail.",
     "toggle_problems_panel": "Basculer le panneau des problèmes",
-    "problems_count_format": "⚠️ Problèmes : {count}"
+    "problems_count_format": "Problèmes : {count}"
   },
   "action": {
     "expand_all": "Tout développer",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI : non configuré]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} n'est pas installé",
+    "not_installed": "{tool} n'est pas installé",
     "install_path": "Chemin d'installation : {path}",
     "download": "⬇ Télécharger {tool}"
   },

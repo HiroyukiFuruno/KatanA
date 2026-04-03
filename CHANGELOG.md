@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.2] - 2026-04-03 09:08:06 (UTC)
+
+### ✨ Improvements
+
+- Fixed an issue where "mojibake" (character corruption) could occur across different operating systems by replacing OS-dependent emoji icons (e.g., download, hourglass, update badges) with natively rendered, cross-platform SVG icons.
+- Enhanced the UI for toggling between the editor and preview panels by introducing context-aware layout icons that dynamically reflect the horizontal or vertical split direction, making layout management more intuitive.
+
 ## [0.16.1] - 2026-04-03 05:10:39 (UTC)
 
 ### 🐛 Bug Fixes

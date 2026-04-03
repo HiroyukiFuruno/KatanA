@@ -58,7 +58,7 @@ pub fn tab_display_title(
     original_filename: &str,
     is_changelog: bool,
     is_dirty: bool,
-    is_pinned: bool,
+    _is_pinned: bool,
 ) -> String {
     let filename = if is_changelog {
         original_filename.to_string()
@@ -66,16 +66,12 @@ pub fn tab_display_title(
         let ver = original_filename
             .trim_start_matches("CHANGELOG_v")
             .trim_end_matches(".md");
-        format!("📄 {} {}", crate::i18n::get().menu.release_notes, ver)
+        format!("{} {}", crate::i18n::get().menu.release_notes, ver)
     } else {
         original_filename.to_string()
     };
     let dirty_suffix = if is_dirty { " *" } else { "" };
-    if is_pinned {
-        format!("📌 {filename}{dirty_suffix}")
-    } else {
-        format!("{filename}{dirty_suffix}")
-    }
+    format!("{filename}{dirty_suffix}")
 }
 
 #[cfg(test)]
@@ -173,13 +169,13 @@ mod tests {
     #[test]
     fn tab_display_title_pinned() {
         let title = tab_display_title("readme.md", false, false, true);
-        assert_eq!(title, "📌 readme.md");
+        assert_eq!(title, "readme.md");
     }
 
     #[test]
     fn tab_display_title_pinned_dirty() {
         let title = tab_display_title("readme.md", false, true, true);
-        assert_eq!(title, "📌 readme.md *");
+        assert_eq!(title, "readme.md *");
     }
 
     #[test]

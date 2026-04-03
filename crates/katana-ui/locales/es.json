@@ -44,7 +44,7 @@
     "checking_for_updates": "Buscando actualizaciones...",
     "update_available": "Actualización disponible",
     "update_available_desc": "Una nueva versión de KatanA ({version}) está disponible. Por favor, ejecute `brew update && brew upgrade --cask katana-desktop` para actualizar.",
-    "release_notes_template": "### 🚀 Nueva versión {version} disponible\n\nPor favor, consulte la [página de GitHub Releases]({url}) para ver detalles de los cambios.\nHaga clic en \"Instalar y reiniciar\" para aplicar la actualización automáticamente.",
+    "release_notes_template": "### Nueva versión {version} disponible\n\nPor favor, consulte la [página de GitHub Releases]({url}) para ver detalles de los cambios.\nHaga clic en \"Instalar y reiniciar\" para aplicar la actualización automáticamente.",
     "up_to_date": "Actualizado",
     "up_to_date_desc": "KatanA está actualizado.",
     "failed_to_check": "Error al buscar actualizaciones.",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Descargando PlantUML JAR...",
-    "plantuml_installed": "✅ PlantUML instalado. Actualizando vista previa...",
-    "download_error": "❌ Error de descarga: "
+    "plantuml_installed": "PlantUML instalado. Actualizando vista previa...",
+    "download_error": "Error de descarga: "
   },
   "view_mode": {
     "preview": "Vista Previa",
@@ -102,10 +102,10 @@
     "preview_first": "Colocar la vista previa a la izquierda/arriba"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} no encontrado. Por favor, instale utilizando {install_hint}.",
+    "missing_dependency": "{tool_name} no encontrado. Por favor, instale utilizando {install_hint}.",
     "curl_launch_failed": "Error al iniciar curl",
     "download_failed": "Fallo en la descarga",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "Listo",
@@ -122,7 +122,7 @@
     "problems_panel_close": "Cerrar",
     "no_problems_found": "No se encontraron problemas en el espacio de trabajo.",
     "toggle_problems_panel": "Alternar panel de problemas",
-    "problems_count_format": "⚠️ Problemas: {count}"
+    "problems_count_format": "Problemas: {count}"
   },
   "action": {
     "expand_all": "Expandir todo",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[IA: no configurado]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} no está instalado",
+    "not_installed": "{tool} no está instalado",
     "install_path": "Ruta de instalación: {path}",
     "download": "⬇ Descargar {tool}"
   },

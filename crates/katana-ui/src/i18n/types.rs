@@ -218,7 +218,7 @@ pub struct UpdateMessages {
 }
 
 pub(crate) fn default_release_notes_template() -> String {
-    "### 🚀 New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.".to_string()
+    "### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.".to_string()
 }
 
 pub(crate) fn default_install_update() -> String {
@@ -447,7 +447,7 @@ pub(crate) fn default_toggle_problems_panel() -> String {
     "Toggle Problems Panel".to_string()
 }
 pub(crate) fn default_problems_count_format() -> String {
-    "⚠️ Problems: {count}".to_string()
+    "Problems: {count}".to_string()
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -1117,7 +1117,7 @@ mod default_coverage_tests {
             "No problems found in the workspace."
         );
         assert_eq!(default_toggle_problems_panel(), "Toggle Problems Panel");
-        assert_eq!(default_problems_count_format(), "⚠️ Problems: {count}");
+        assert_eq!(default_problems_count_format(), "Problems: {count}");
         assert_eq!(default_command_settings(), "Toggle Settings");
         assert_eq!(default_command_workspace(), "Toggle Workspace Panel");
         assert_eq!(default_command_close_all(), "Close All Documents");

@@ -44,7 +44,7 @@
     "checking_for_updates": "更新を確認中...",
     "update_available": "アップデートが利用可能です",
     "update_available_desc": "新しいバージョンの KatanA ({version}) がリリースされています。\n`brew update && brew upgrade --cask katana-desktop` を実行して更新してください。",
-    "release_notes_template": "### 🚀 新バージョン {version} が利用可能です\n\n詳細な変更内容およびリリースノートについては、[GitHub Releases]({url}) をご確認ください。\n\n「アップデート＆再起動」をクリックすると自動的にアップデートが適用されます。",
+    "release_notes_template": "### 新バージョン {version} が利用可能です\n\n詳細な変更内容およびリリースノートについては、[GitHub Releases]({url}) をご確認ください。\n\n「アップデート＆再起動」をクリックすると自動的にアップデートが適用されます。",
     "up_to_date": "最新版です",
     "up_to_date_desc": "お使いの KatanA は最新バージョンです。",
     "failed_to_check": "更新の確認に失敗しました。",
@@ -87,8 +87,8 @@
   },
   "plantuml": {
     "downloading_plantuml": "⬇ PlantUML JAR をダウンロード中…",
-    "plantuml_installed": "✅ PlantUML のインストールが完了しました。プレビューを更新中…",
-    "download_error": "❌ ダウンロードエラー: "
+    "plantuml_installed": "PlantUML のインストールが完了しました。プレビューを更新中…",
+    "download_error": "ダウンロードエラー: "
   },
   "view_mode": {
     "preview": "プレビュー",
@@ -102,10 +102,10 @@
     "preview_first": "プレビューを左/上に配置"
   },
   "error": {
-    "missing_dependency": "⚠️ {tool_name} が見つかりません。{install_hint} を使用してインストールしてください。",
+    "missing_dependency": "{tool_name} が見つかりません。{install_hint} を使用してインストールしてください。",
     "curl_launch_failed": "curl 起動失敗",
     "download_failed": "ダウンロードに失敗しました",
-    "render_error": "⚠ [{kind}] {message}"
+    "render_error": "[{kind}] {message}"
   },
   "status": {
     "ready": "準備完了",
@@ -122,7 +122,7 @@
     "problems_panel_close": "閉じる",
     "no_problems_found": "問題は見つかりませんでした。",
     "toggle_problems_panel": "問題パネルを表示/非表示",
-    "problems_count_format": "⚠️ 問題: {count}"
+    "problems_count_format": "問題: {count}"
   },
   "action": {
     "expand_all": "すべて展開",
@@ -154,7 +154,7 @@
     "ai_unconfigured": "[AI: 未設定]"
   },
   "tool": {
-    "not_installed": "⚠ {tool} がインストールされていません",
+    "not_installed": "{tool} がインストールされていません",
     "install_path": "インストール先: {path}",
     "download": "⬇ {tool} をダウンロード"
   },

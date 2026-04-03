@@ -1,7 +1,7 @@
 ## 着手条件 (DoR)
 
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.18.0 の変更 ID とスコープが確認されていること
+- [ ] 対象バージョン 0.17.0 の変更 ID とスコープが確認されていること
 - [ ] 現行の macOS 固定箇所（theme / locale / menu / update / packaging / docs）を `crates/katana-platform`、`crates/katana-ui`、`crates/katana-core`、`scripts`、`.github/workflows` で再確認していること
 
 ## ブランチ運用ルール
