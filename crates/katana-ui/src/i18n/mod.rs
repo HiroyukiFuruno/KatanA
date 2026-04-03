@@ -1,5 +1,8 @@
+mod logic;
 mod types;
 pub use types::*;
+
+pub struct I18nOps;
 
 use std::sync::{OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 

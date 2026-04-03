@@ -6,7 +6,6 @@ use crate::shell::{
 use crate::shell_ui::{
     LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, TreeRenderContext,
     WORKSPACE_SPINNER_INNER_MARGIN, WORKSPACE_SPINNER_OUTER_MARGIN, WORKSPACE_SPINNER_TEXT_MARGIN,
-    indent_prefix, invisible_label, open_folder_dialog,
 };
 use eframe::egui;
 
@@ -70,7 +69,7 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
         let path = self.path;
         let ctx = self.ctx;
         let name = if ctx.is_flat_view {
-            crate::shell_logic::relative_full_path(path, ctx.ws_root)
+            crate::shell_logic::ShellLogicOps::relative_full_path(path, ctx.ws_root)
         } else {
             path.file_name()
                 .and_then(|n| n.to_str())
@@ -113,7 +112,7 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
             );
             child_ui.add_space(TREE_LABEL_HOFFSET);
 
-            let prefix_string = indent_prefix(ctx.depth);
+            let prefix_string = crate::shell_ui::ShellUiOps::indent_prefix(ctx.depth);
             child_ui.add(
                 egui::Label::new(egui::RichText::new(prefix_string).color(text_color))
                     .selectable(false),
@@ -231,7 +230,7 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
                     .layout(egui::Layout::left_to_right(egui::Align::Center)),
             );
             child_ui.add_space(TREE_LABEL_HOFFSET);
-            let prefix = indent_prefix(ctx.depth);
+            let prefix = crate::shell_ui::ShellUiOps::indent_prefix(ctx.depth);
             let arrow_icon = if is_open {
                 crate::icon::Icon::PanDown
             } else {
@@ -429,7 +428,7 @@ impl<'a> WorkspaceContent<'a> {
             if ui
                 .button(crate::i18n::get().menu.open_workspace.clone())
                 .clicked()
-                && let Some(path) = open_folder_dialog()
+                && let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog()
             {
                 *action = AppAction::OpenWorkspace(path);
             }
@@ -549,7 +548,7 @@ impl<'a> WorkspaceHeader<'a> {
                         .add(
                             egui::Button::image_and_text(
                                 crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("Refresh"),
+                                crate::shell_ui::ShellUiOps::invisible_label("Refresh"),
                             )
                             .fill(icon_bg),
                         )
@@ -573,7 +572,7 @@ impl<'a> WorkspaceHeader<'a> {
                         .add(
                             egui::Button::image_and_text(
                                 crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
-                                invisible_label("∇"),
+                                crate::shell_ui::ShellUiOps::invisible_label("∇"),
                             )
                             .fill(filter_btn_color),
                         )

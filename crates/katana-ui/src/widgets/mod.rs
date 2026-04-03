@@ -4,7 +4,7 @@ mod combo_box;
 mod list_item;
 pub mod markdown_hooks;
 mod modal;
-mod toggle;
+pub mod toggle;
 
 pub use accordion::*;
 pub use color_picker::*;

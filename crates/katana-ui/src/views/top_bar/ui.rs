@@ -3,10 +3,7 @@ use crate::shell::{
     TAB_DROP_ANIMATION_TIME, TAB_DROP_INDICATOR_WIDTH, TAB_INTER_ITEM_SPACING,
     TAB_NAV_BUTTONS_AREA_WIDTH, TAB_TOOLTIP_SHOW_DELAY_SECS,
 };
-use crate::shell_ui::{
-    LIGHT_MODE_ICON_BG, STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN, invisible_label,
-    relative_full_path,
-};
+use crate::shell_ui::{LIGHT_MODE_ICON_BG, STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN};
 use eframe::egui;
 
 use super::logic::{compute_drop_points, find_best_drop_index, tab_display_title};
@@ -408,7 +405,7 @@ impl<'a> TabBar<'a> {
                                         doc.is_dirty,
                                         doc.is_pinned,
                                     );
-                                    let tooltip_path = relative_full_path(&doc.path, ws_root);
+                                    let tooltip_path =crate::shell_logic::ShellLogicOps::relative_full_path(&doc.path, ws_root);
 
                                     let (title_resp, close_resp) = ui
                                         .push_id(format!("tab_{idx}"), |ui| {
@@ -453,7 +450,7 @@ impl<'a> TabBar<'a> {
                                                             ui,
                                                             crate::icon::IconSize::Small,
                                                         ),
-                                                        invisible_label("x"),
+                                                       crate::shell_ui::ShellUiOps::invisible_label("x"),
                                                     )))
                                                 } else {
                                                     None
@@ -547,7 +544,7 @@ impl<'a> TabBar<'a> {
                                                                     ui,
                                                                     crate::icon::IconSize::Small,
                                                                 ),
-                                                                invisible_label("x"),
+                                                               crate::shell_ui::ShellUiOps::invisible_label("x"),
                                                             ));
                                                         }
                                                     });
@@ -748,14 +745,14 @@ impl<'a> TabBar<'a> {
                     nav_enabled,
                     egui::Button::image_and_text(
                         crate::Icon::TriangleLeft.ui_image(ui, crate::icon::IconSize::Small),
-                        invisible_label("◀"),
+                       crate::shell_ui::ShellUiOps::invisible_label("◀"),
                     )
                     .fill(icon_bg),
                 )
                 .on_hover_text(crate::i18n::get().tab.nav_prev.clone())
                 .clicked()
                 && let Some(idx) = self.active_doc_idx {
-                    let new_idx = crate::shell_logic::prev_tab_index(idx, doc_count);
+                    let new_idx = crate::shell_logic::ShellLogicOps::prev_tab_index(idx, doc_count);
                     tab_action = Some(AppAction::SelectDocument(
                         self.open_documents[new_idx].path.clone(),
                     ));
@@ -766,14 +763,14 @@ impl<'a> TabBar<'a> {
                     nav_enabled,
                     egui::Button::image_and_text(
                         crate::Icon::TriangleRight.ui_image(ui, crate::icon::IconSize::Small),
-                        invisible_label("▶"),
+                       crate::shell_ui::ShellUiOps::invisible_label("▶"),
                     )
                     .fill(icon_bg),
                 )
                 .on_hover_text(crate::i18n::get().tab.nav_next.clone())
                 .clicked()
                 && let Some(idx) = self.active_doc_idx {
-                    let new_idx = crate::shell_logic::next_tab_index(idx, doc_count);
+                    let new_idx = crate::shell_logic::ShellLogicOps::next_tab_index(idx, doc_count);
                     tab_action = Some(AppAction::SelectDocument(
                         self.open_documents[new_idx].path.clone(),
                     ));
@@ -953,7 +950,7 @@ impl ViewModeBar {
                     if ui
                         .add(egui::Button::image_and_text(
                             crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
-                            invisible_label("Refresh"),
+                            crate::shell_ui::ShellUiOps::invisible_label("Refresh"),
                         ))
                         .on_hover_text(crate::i18n::get().action.refresh_document.clone())
                         .clicked()
@@ -1068,7 +1065,7 @@ impl ViewModeBar {
 
                     const TOGGLE_LABEL_SPACING: f32 = 8.0;
 
-                    let toggle_resp = crate::widgets::toggle_switch(ui, &mut is_on);
+                    let toggle_resp = crate::widgets::toggle::ToggleOps::switch(ui, &mut is_on);
                     ui.add_space(TOGGLE_LABEL_SPACING);
                     let text_resp = ui.selectable_label(
                         false,

@@ -4,7 +4,7 @@ use crate::app::*;
 use crate::shell::*;
 
 use crate::preview_pane::{DownloadRequest, PreviewPane};
-use crate::shell_logic::hash_str;
+use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 
 use crate::app_state::*;
@@ -45,7 +45,7 @@ impl PreviewOps for KatanaApp {
         }
     }
     fn refresh_preview(&mut self, path: &std::path::Path, source: &str) {
-        let h = hash_str(source);
+        let h = ShellLogicOps::hash_str(source);
         let path_buf = path.to_path_buf();
 
         let current_hash = self
@@ -73,7 +73,7 @@ impl PreviewOps for KatanaApp {
         force: bool,
         concurrency: usize,
     ) {
-        let h = hash_str(source);
+        let h = ShellLogicOps::hash_str(source);
         let path_buf = path.to_path_buf();
         let current_hash = self
             .tab_previews

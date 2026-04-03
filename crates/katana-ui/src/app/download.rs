@@ -4,7 +4,7 @@ use crate::app::*;
 use crate::shell::*;
 
 use crate::preview_pane::{DownloadRequest, PreviewPane};
-use crate::shell_logic::hash_str;
+use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 
 use crate::app_state::*;

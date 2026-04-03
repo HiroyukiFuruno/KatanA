@@ -84,7 +84,7 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
 
         if let Some(ws) = workspace {
             let mut file_matches = Vec::new();
-            crate::shell_logic::collect_matches(
+            crate::shell_logic::ShellLogicOps::collect_matches(
                 &ws.tree,
                 &query_lower,
                 &[], // no include
@@ -94,7 +94,10 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
             );
 
             for file_path in file_matches.into_iter().take(MAX_FILE_RESULTS) {
-                let rel_path = crate::shell_logic::relative_full_path(&file_path, Some(&ws.root));
+                let rel_path = crate::shell_logic::ShellLogicOps::relative_full_path(
+                    &file_path,
+                    Some(&ws.root),
+                );
 
                 // Keep the file name as the primary label
                 let file_name = file_path
@@ -140,7 +143,10 @@ impl CommandPaletteProvider for MarkdownContentProvider {
         if let Some(ws) = workspace {
             let matches = katana_core::search::search_workspace(ws, query, MAX_FILE_RESULTS);
             for m in matches {
-                let rel_path = crate::shell_logic::relative_full_path(&m.file_path, Some(&ws.root));
+                let rel_path = crate::shell_logic::ShellLogicOps::relative_full_path(
+                    &m.file_path,
+                    Some(&ws.root),
+                );
 
                 let mut label = m.snippet.clone();
                 if label.len() > 100 {

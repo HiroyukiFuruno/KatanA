@@ -3,28 +3,58 @@ use egui_kittest::kittest::Queryable;
 use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 use katana_ui::app_state::{AppAction, AppState, ViewMode};
 use katana_ui::shell::KatanaApp;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+fn unique_temp_path(prefix: &str) -> std::path::PathBuf {
+    static COUNTER: AtomicUsize = AtomicUsize::new(0);
+    let id = COUNTER.fetch_add(1, Ordering::SeqCst);
+    std::env::temp_dir().join(format!("{prefix}_{}_{}", std::process::id(), id))
+}
+
+fn fresh_temp_dir(prefix: &str) -> std::path::PathBuf {
+    let temp_dir = unique_temp_path(prefix);
+    let _ = std::fs::remove_dir_all(&temp_dir);
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    temp_dir
+}
 
 fn wait_for_workspace_load(harness: &mut Harness<'static, KatanaApp>) {
-    for _ in 0..50 {
+    for attempt in 0..100 {
         harness.step();
         if !harness.state_mut().app_state_mut().workspace.is_loading {
             break;
         }
-        std::thread::sleep(std::time::Duration::from_millis(10));
+        if attempt < 5 {
+            std::thread::yield_now();
+        } else {
+            std::thread::sleep(std::time::Duration::from_millis(2));
+        }
+    }
+}
+
+fn wait_for_workspace_tree(harness: &mut Harness<'static, KatanaApp>, min_entries: usize) {
+    for attempt in 0..100 {
+        harness.step();
+        let count = harness
+            .state_mut()
+            .app_state_mut()
+            .workspace
+            .data
+            .as_ref()
+            .map_or(0, |workspace| workspace.tree.len());
+        if count >= min_entries {
+            break;
+        }
+        if attempt < 5 {
+            std::thread::yield_now();
+        } else {
+            std::thread::sleep(std::time::Duration::from_millis(2));
+        }
     }
 }
 
 fn setup_harness() -> Harness<'static, KatanaApp> {
-    use std::sync::atomic::{AtomicUsize, Ordering};
-    static COUNTER: AtomicUsize = AtomicUsize::new(0);
-    let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-    let harness_dir = std::env::temp_dir().join(format!(
-        "katana_test_settings_harness_{}_{}",
-        std::process::id(),
-        id
-    ));
-    let _ = std::fs::remove_dir_all(&harness_dir);
-    std::fs::create_dir_all(&harness_dir).unwrap();
+    let harness_dir = fresh_temp_dir("katana_test_settings_harness");
     let settings_path = harness_dir.join("settings.json");
     let _ = std::fs::remove_file(&settings_path);
 
@@ -48,7 +78,6 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
             .updates
             .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
 
-        katana_ui::i18n::set_language("en");
         let mut app = KatanaApp::new(state);
         app.skip_splash();
         app
@@ -67,10 +96,7 @@ fn test_integration_workspace_and_tabs() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws");
-    let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws");
     let test_file = temp_dir.join("test1.md");
     std::fs::write(&test_file, "# Hello Katana").unwrap();
 
@@ -116,9 +142,7 @@ fn test_integration_toc_panel_display() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_toc");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_toc");
     let test_file1 = temp_dir.join("toc_test1.md");
     std::fs::write(&test_file1, "# Heading 1").unwrap();
     let test_file1 = test_file1.canonicalize().unwrap_or(test_file1);
@@ -158,10 +182,7 @@ fn test_integration_toc_enable_disable_setting() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_toc_setting");
-    let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_toc_setting");
     let test_file1 = temp_dir.join("toc_test_setting.md");
     std::fs::write(&test_file1, "# Heading 1").unwrap();
 
@@ -214,10 +235,7 @@ fn test_integration_toc_panel_hides_when_disabled() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_toc_hide");
-    let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_toc_hide");
     let test_file1 = temp_dir.join("toc_hide_test.md");
     std::fs::write(&test_file1, "# Heading 1").unwrap();
 
@@ -328,9 +346,7 @@ fn test_integration_view_modes() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_modes");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws_modes");
     let test_file = temp_dir.join("test_modes.md");
     std::fs::write(&test_file, "# Hello View Modes\n**Bold text here.**").unwrap();
 
@@ -380,7 +396,6 @@ fn test_integration_view_modes() {
 }
 #[test]
 fn test_integration_settings_window() {
-    katana_ui::i18n::set_language("en");
     let mut harness = setup_harness();
     harness.step();
 
@@ -432,9 +447,7 @@ fn test_integration_editor_line_numbers_and_highlight() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_editor_lines");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_editor_lines");
     let test_file = temp_dir.join("lines.md");
     std::fs::write(&test_file, "Line 1\nLine 2\nLine 3").unwrap();
 
@@ -481,14 +494,7 @@ fn test_integration_workspace_directory_toggle_non_recursive() {
     let mut harness = setup_harness();
     harness.step();
 
-    let unique_name = format!(
-        "katana_test_dir_toggle_{}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_millis()
-    );
-    let temp_dir = std::env::temp_dir().join(unique_name);
+    let temp_dir = unique_temp_path("katana_test_dir_toggle");
     let _ = std::fs::remove_dir_all(&temp_dir);
     let dir2 = temp_dir.join("dir1").join("dir2");
     std::fs::create_dir_all(&dir2).unwrap();
@@ -584,9 +590,7 @@ fn test_integration_update_buffer() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_buf");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws_buf");
     let test_file = temp_dir.join("buf_test.md");
     std::fs::write(&test_file, "# Original").unwrap();
 
@@ -623,9 +627,7 @@ fn test_integration_save_document() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_save");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws_save");
     let test_file = temp_dir.join("save_test.md");
     std::fs::write(&test_file, "# Hello").unwrap();
 
@@ -656,9 +658,7 @@ fn test_integration_multiple_documents_and_navigation() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_multi");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws_multi");
     let file1 = temp_dir.join("alpha.md");
     let file2 = temp_dir.join("beta.md");
     std::fs::write(&file1, "# Alpha").unwrap();
@@ -720,9 +720,7 @@ fn test_integration_preview_with_diagram_content() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_diag");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws_diag");
     let test_file = temp_dir.join("diagram_test.md");
     let content = "# Diagram Test\n\n```mermaid\ngraph TD; A-->B\n```\n\n```drawio\n<mxGraphModel><root><mxCell id=\"0\"/></mxGraphModel>\n```\n";
     std::fs::write(&test_file, content).unwrap();
@@ -756,8 +754,7 @@ fn test_integration_workspace_with_subdirectory() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_subdir");
-    let _ = std::fs::remove_dir_all(&temp_dir);
+    let temp_dir = fresh_temp_dir("katana_test_ws_subdir");
     std::fs::create_dir_all(temp_dir.join("docs")).unwrap();
     std::fs::write(temp_dir.join("root.md"), "# Root").unwrap();
     std::fs::write(temp_dir.join("docs").join("inner.md"), "# Inner").unwrap();
@@ -779,8 +776,7 @@ fn test_integration_open_all_markdown() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_open_all_md");
-    let _ = std::fs::remove_dir_all(&temp_dir);
+    let temp_dir = fresh_temp_dir("katana_test_open_all_md");
     std::fs::create_dir_all(temp_dir.join("docs")).unwrap();
 
     let md1 = temp_dir.join("docs").join("a.md");
@@ -845,9 +841,7 @@ fn test_integration_directory_collapse_bug() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_collapse");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_collapse");
     let parent_dir = temp_dir.join("parent");
     std::fs::create_dir_all(&parent_dir).unwrap();
     let sub_dir = parent_dir.join("child");
@@ -958,9 +952,7 @@ fn test_integration_workspace_tab_persistence() {
     let mut harness = setup_harness();
     harness.step();
 
-    let ws1 = std::env::temp_dir().join("katana_test_ws1");
-    let _ = std::fs::remove_dir_all(&ws1);
-    std::fs::create_dir_all(&ws1).unwrap();
+    let ws1 = fresh_temp_dir("katana_test_ws1");
     let file1 = ws1.join("file1.md");
     std::fs::write(&file1, "# WS1").unwrap();
 
@@ -984,9 +976,7 @@ fn test_integration_workspace_tab_persistence() {
         1
     );
 
-    let ws2 = std::env::temp_dir().join("katana_test_ws2");
-    let _ = std::fs::remove_dir_all(&ws2);
-    std::fs::create_dir_all(&ws2).unwrap();
+    let ws2 = fresh_temp_dir("katana_test_ws2");
 
     harness
         .state_mut()
@@ -1031,9 +1021,7 @@ fn test_integration_split_mode_with_document() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_split");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_split");
     let test_file = temp_dir.join("split_test.md");
     std::fs::write(&test_file, "# Split Mode Test\n\nContent here.").unwrap();
 
@@ -1076,9 +1064,7 @@ fn test_integration_multiple_tabs_close() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_multi_tab");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_multi_tab");
     std::fs::write(temp_dir.join("file1.md"), "# File 1").unwrap();
     std::fs::write(temp_dir.join("file2.md"), "# File 2").unwrap();
 
@@ -1150,8 +1136,7 @@ fn test_integration_workspace_tree_expand_collapse() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_tree_toggle");
-    let _ = std::fs::remove_dir_all(&temp_dir);
+    let temp_dir = fresh_temp_dir("katana_test_tree_toggle");
     std::fs::create_dir_all(temp_dir.join("subdir")).unwrap();
     std::fs::write(temp_dir.join("root.md"), "# Root").unwrap();
     std::fs::write(temp_dir.join("subdir").join("child.md"), "# Child").unwrap();
@@ -1405,7 +1390,6 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
             .updates
             .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
 
-        katana_ui::i18n::set_language("en");
         let mut app = KatanaApp::new(state);
         app.skip_splash();
         app
@@ -1453,76 +1437,6 @@ fn test_persistence_workspace_roundtrip() {
                 .contains(&ws_dir.path().display().to_string()),
             "Restored workspace should match the previously opened directory"
         );
-    }
-}
-
-#[test]
-fn test_persistence_language_roundtrip() {
-    let settings_dir = tempfile::tempdir().unwrap();
-    let settings_path = settings_dir.path().join("settings.json");
-
-    {
-        let mut harness = setup_harness_with_json_repo(&settings_path);
-        harness.step();
-
-        harness
-            .state_mut()
-            .trigger_action(AppAction::ChangeLanguage("ja".to_string()));
-        harness.step();
-
-        let json = std::fs::read_to_string(&settings_path).unwrap();
-        assert!(
-            json.contains("\"language\": \"ja\""),
-            "settings.json should contain language=ja, got: {json}"
-        );
-        katana_ui::i18n::set_language("en");
-    }
-
-    {
-        let repo = katana_platform::JsonFileRepository::new(settings_path.to_path_buf());
-        let settings = katana_platform::SettingsService::new(Box::new(repo));
-        assert_eq!(
-            settings.settings().language,
-            "ja",
-            "Language should be restored as 'ja' from disk"
-        );
-    }
-}
-
-#[test]
-fn test_persistence_multiple_changes_accumulate() {
-    let settings_dir = tempfile::tempdir().unwrap();
-    let settings_path = settings_dir.path().join("settings.json");
-
-    let ws_dir = tempfile::tempdir().unwrap();
-    std::fs::write(ws_dir.path().join("readme.md"), "# Readme").unwrap();
-
-    {
-        let mut harness = setup_harness_with_json_repo(&settings_path);
-        harness.step();
-
-        harness
-            .state_mut()
-            .trigger_action(AppAction::OpenWorkspace(ws_dir.path().to_path_buf()));
-        wait_for_workspace_load(&mut harness);
-
-        harness
-            .state_mut()
-            .trigger_action(AppAction::ChangeLanguage("ja".to_string()));
-        harness.step();
-    }
-
-    {
-        let repo = katana_platform::JsonFileRepository::new(settings_path.to_path_buf());
-        let settings = katana_platform::SettingsService::new(Box::new(repo));
-        let s = settings.settings();
-
-        assert!(
-            s.workspace.last_workspace.is_some(),
-            "last_workspace should be persisted"
-        );
-        assert_eq!(s.language, "ja", "language should be persisted");
-        katana_ui::i18n::set_language("en");
     }
 }
 
@@ -2185,55 +2099,6 @@ fn test_font_size_slider_has_visible_border() {
 }
 
 #[test]
-fn test_ui_all_languages_load_successfully() {
-    let mut harness = setup_harness();
-    harness.step();
-
-    let supported_langs = [
-        ("en", "English"),
-        ("ja", "\u{65e5}\u{672c}\u{8a9e}"),
-        ("zh-CN", "\u{7b80}\u{4f53}\u{4e2d}\u{6587}"),
-        ("zh-TW", "\u{7e41}\u{9ad4}\u{4e2d}\u{6587}"),
-        ("ko", "한국어"),
-        ("pt", "Português"),
-        ("fr", "Français"),
-        ("de", "Deutsch"),
-        ("es", "Español"),
-        ("it", "Italiano"),
-    ];
-
-    for (code, _name) in supported_langs {
-        harness
-            .state_mut()
-            .trigger_action(katana_ui::app_state::AppAction::ChangeLanguage(
-                code.to_string(),
-            ));
-        harness.step();
-        harness.step();
-
-        let settings = katana_ui::i18n::get();
-        assert!(
-            !settings.settings.tabs.is_empty(),
-            "Tabs shouldn't be empty for {}",
-            code
-        );
-        assert_eq!(
-            harness
-                .state_mut()
-                .app_state_mut()
-                .config
-                .settings
-                .settings()
-                .language,
-            code,
-            "Language setting should be updated to {}",
-            code
-        );
-    }
-    katana_ui::i18n::set_language("en");
-}
-
-#[test]
 fn test_search_modal_include_exclude_options() {
     let mut harness = setup_harness();
     harness.step();
@@ -2249,20 +2114,7 @@ fn test_search_modal_include_exclude_options() {
     wait_for_workspace_load(&mut harness);
     harness.step();
 
-    for _ in 0..50 {
-        let count = harness
-            .state_mut()
-            .app_state_mut()
-            .workspace
-            .data
-            .as_ref()
-            .map_or(0, |w| w.tree.len());
-        if count > 0 {
-            break;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(20));
-        harness.step();
-    }
+    wait_for_workspace_tree(&mut harness, 1);
 
     harness.state_mut().app_state_mut().layout.show_search_modal = true;
     harness.step();
@@ -2470,9 +2322,7 @@ fn test_integration_tab_context_menu_close_others() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_ws_context_menu");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_ws_context_menu");
     let file1 = temp_dir.join("a.md");
     let file2 = temp_dir.join("b.md");
     let file3 = temp_dir.join("c.md");
@@ -2537,9 +2387,7 @@ fn test_integration_tree_context_menu_actions() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_tree_actions");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_tree_actions");
     let file = temp_dir.join("test.md");
 
     harness
@@ -2580,14 +2428,7 @@ fn test_integration_ui_context_menu_close_others() {
     let mut harness = setup_harness();
     harness.step();
 
-    let unique_name = format!(
-        "katana_test_ws_context_menu_ui_{}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_millis()
-    );
-    let temp_dir = std::env::temp_dir().join(unique_name);
+    let temp_dir = unique_temp_path("katana_test_ws_context_menu_ui");
     let _ = std::fs::remove_dir_all(&temp_dir);
     std::fs::create_dir_all(&temp_dir).unwrap();
     let file1 = temp_dir.join("a.md");
@@ -3179,7 +3020,6 @@ fn test_integration_ui_terms_modal_visibility() {
 
     harness.step();
 
-    katana_ui::i18n::set_language("en");
     harness.step();
 
     harness.get_by_label("Terms of Service");
@@ -3219,7 +3059,6 @@ fn test_regression_update_dialog_up_to_date_renders_correctly() {
             );
             state.config.settings.settings_mut().terms_accepted_version =
                 Some(katana_ui::about_info::APP_VERSION.to_string());
-            katana_ui::i18n::set_language("en");
             let mut app = KatanaApp::new(state);
             app.skip_splash();
             app.disable_changelog_display_for_test();
@@ -3265,7 +3104,6 @@ fn test_regression_update_dialog_does_not_stretch_vertically() {
             );
             state.config.settings.settings_mut().terms_accepted_version =
                 Some(katana_ui::about_info::APP_VERSION.to_string());
-            katana_ui::i18n::set_language("en");
             let mut app = KatanaApp::new(state);
             app.skip_splash();
             app
@@ -3626,9 +3464,7 @@ fn test_integration_session_upgrade_from_legacy_payload() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_legacy_session");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_legacy_session");
     let test_file = temp_dir.join("legacy_tab.md");
     std::fs::write(&test_file, "# Legacy Tab").unwrap();
     let abs_path = test_file.canonicalize().unwrap_or(test_file.clone());
@@ -3673,9 +3509,7 @@ fn test_integration_session_restore_with_pinned_and_groups() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_v2_session");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_v2_session");
     let test_file1 = temp_dir.join("tab1.md");
     let test_file2 = temp_dir.join("tab2.md");
     std::fs::write(&test_file1, "# Tab 1").unwrap();
@@ -3742,9 +3576,7 @@ fn test_integration_close_policy_batch_skips_pinned() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_close_policy");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_close_policy");
     let test_file1 = temp_dir.join("tab1.md");
     let test_file2 = temp_dir.join("tab2.md");
     std::fs::write(&test_file1, "# Tab 1").unwrap();
@@ -3816,9 +3648,7 @@ fn test_integration_search_stale_matches_on_tab_switch() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_search_tab_switch");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_search_tab_switch");
     let file1 = temp_dir.join("a.md");
     let file2 = temp_dir.join("b.md");
     std::fs::write(&file1, "# Found Target KatanA").unwrap();
@@ -3888,9 +3718,7 @@ fn test_integration_search_multibyte_character_offsets() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_search_multibyte");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_search_multibyte");
     let file1 = temp_dir.join("multibyte.md");
     // "\u{3042}\u{3044}\u{3046}" is 3 chars, 9 bytes. length of "\u{3042}\u{3044}\u{3046}" = 3 chars. "Search" starts at char index 3, but byte index 9.
     std::fs::write(&file1, "\u{3042}\u{3044}\u{3046}Search").unwrap();
@@ -3941,9 +3769,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     let mut harness = setup_harness();
     harness.step();
 
-    let temp_dir = std::env::temp_dir().join("katana_test_roundtrip_persist");
-    let _ = std::fs::remove_dir_all(&temp_dir);
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let temp_dir = fresh_temp_dir("katana_test_roundtrip_persist");
     let file1 = temp_dir.join("alpha.md");
     let file2 = temp_dir.join("beta.md");
     let file3 = temp_dir.join("gamma.md");

@@ -5,10 +5,16 @@ mod tests {
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
     use katana_ui::app_state::{AppAction, AppState};
     use katana_ui::shell::KatanaApp;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    fn unique_temp_path(prefix: &str) -> std::path::PathBuf {
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
+        let id = COUNTER.fetch_add(1, Ordering::SeqCst);
+        std::env::temp_dir().join(format!("{prefix}_{}_{}", std::process::id(), id))
+    }
 
     fn setup_harness() -> Harness<'static, KatanaApp> {
-        let settings_path =
-            std::env::temp_dir().join(format!("katana_test_layout_{}.json", std::process::id()));
+        let settings_path = unique_temp_path("katana_test_layout").with_extension("json");
         let _ = std::fs::remove_file(&settings_path);
 
         Harness::builder().build_eframe(move |_cc| {
@@ -24,7 +30,6 @@ mod tests {
             );
             state.config.settings.settings_mut().terms_accepted_version =
                 Some(katana_ui::about_info::APP_VERSION.to_string());
-            katana_ui::i18n::set_language("en");
             let mut app = KatanaApp::new(state);
             app.skip_splash();
             app
@@ -35,8 +40,7 @@ mod tests {
     fn test_tree_entry_alignment_regression() {
         let mut harness = setup_harness();
 
-        let temp_dir = std::env::temp_dir().join("katana_layout_repro");
-        let temp_dir = temp_dir.canonicalize().unwrap_or(temp_dir);
+        let temp_dir = unique_temp_path("katana_layout_repro");
         let _ = std::fs::remove_dir_all(&temp_dir);
         std::fs::create_dir_all(&temp_dir).unwrap();
 
@@ -51,14 +55,18 @@ mod tests {
             .state_mut()
             .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
 
-        for _ in 0..100 {
+        for attempt in 0..100 {
             harness.step();
             if !harness.state_mut().app_state_mut().workspace.is_loading
                 && harness.state_mut().app_state_mut().workspace.data.is_some()
             {
                 break;
             }
-            std::thread::sleep(std::time::Duration::from_millis(10));
+            if attempt < 5 {
+                std::thread::yield_now();
+            } else {
+                std::thread::sleep(std::time::Duration::from_millis(2));
+            }
         }
         harness.step();
 

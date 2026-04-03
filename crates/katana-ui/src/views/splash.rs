@@ -44,7 +44,7 @@ impl<'a> SplashOverlay<'a> {
     }
 
     pub fn show(self, ctx: &egui::Context) -> bool {
-        let opacity = crate::shell_logic::calculate_splash_opacity(self.elapsed);
+        let opacity = crate::shell_logic::ShellLogicOps::calculate_splash_opacity(self.elapsed);
         if opacity <= 0.0 || ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             return true;
         }
@@ -121,7 +121,7 @@ impl<'a> SplashOverlay<'a> {
         is_dark: bool,
         opacity: f32,
     ) {
-        let progress = crate::shell_logic::calculate_splash_progress(self.elapsed);
+        let progress = crate::shell_logic::ShellLogicOps::calculate_splash_progress(self.elapsed);
         let text = if progress < SPLASH_PROGRESS_PHASE1 {
             "Initializing Katana engine..."
         } else if progress < SPLASH_PROGRESS_PHASE2 {

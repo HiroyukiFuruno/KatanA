@@ -172,7 +172,7 @@ fn main() -> eframe::Result<()> {
             }
 
             katana_ui::i18n::set_language(&saved_language);
-            katana_ui::shell_ui::update_native_menu_strings_from_i18n();
+            katana_ui::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
 
             let mut app = KatanaApp::new(state);
 

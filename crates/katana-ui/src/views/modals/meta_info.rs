@@ -24,7 +24,7 @@ impl<'a> MetaInfoModal<'a> {
         let open = self.open;
         let path = self.path;
         let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
-        let meta_text = crate::shell_logic::format_tree_tooltip(name, path);
+        let meta_text = crate::shell_logic::ShellLogicOps::format_tree_tooltip(name, path);
 
         const META_INFO_WINDOW_WIDTH: f32 = 400.0;
         egui::Window::new(crate::i18n::get().action.show_meta_info.clone())

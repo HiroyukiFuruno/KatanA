@@ -19,14 +19,14 @@ WORKSPACE_CRATES = {
 }
 SERIAL_UI_MODULES = {
     "diagram_rendering.rs",
-    "integration.rs",
-    "tree_layout.rs",
+    "integration_i18n.rs",
 }
 PARALLEL_UI_MODULES = {
     "app_state.rs",
     "command_palette.rs",
     "font_bridge.rs",
     "font_realtime.rs",
+    "integration.rs",
     "i18n.rs",
     "overlap_checker.rs",
     "preview_pane.rs",
@@ -35,6 +35,7 @@ PARALLEL_UI_MODULES = {
     "theme.rs",
     "theme_bridge.rs",
     "theme_rendering_sync.rs",
+    "tree_layout.rs",
     "underline_rendering.rs",
 }
 PARALLEL_UI_TARGET = "ui_integration_parallel"

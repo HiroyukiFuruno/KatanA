@@ -14,8 +14,7 @@ use crate::shell_ui::{
     SEARCH_MODAL_WIDTH, STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN,
     TOC_HEADING_VISIBILITY_THRESHOLD, TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH,
     TOC_PANEL_MARGIN, TreeRenderContext, WORKSPACE_SPINNER_INNER_MARGIN,
-    WORKSPACE_SPINNER_OUTER_MARGIN, WORKSPACE_SPINNER_TEXT_MARGIN, indent_prefix, invisible_label,
-    open_folder_dialog, relative_full_path,
+    WORKSPACE_SPINNER_OUTER_MARGIN, WORKSPACE_SPINNER_TEXT_MARGIN,
 };
 use crate::theme_bridge;
 use eframe::egui;
@@ -168,7 +167,7 @@ impl<'a> SearchModal<'a> {
                                 search.results.clear();
                             } else if let Some(ws) = workspace {
                                 let mut results = Vec::new();
-                                crate::shell_logic::collect_matches(
+                                crate::shell_logic::ShellLogicOps::collect_matches(
                                     &ws.tree,
                                     &query,
                                     &include_regexes,
@@ -190,10 +189,11 @@ impl<'a> SearchModal<'a> {
                                 } else {
                                     let ws_root = workspace.map(|ws| ws.root.clone());
                                     for path in &search.results {
-                                        let rel = crate::shell_logic::relative_full_path(
-                                            path,
-                                            ws_root.as_deref(),
-                                        );
+                                        let rel =
+                                            crate::shell_logic::ShellLogicOps::relative_full_path(
+                                                path,
+                                                ws_root.as_deref(),
+                                            );
                                         if ui.selectable_label(false, rel).clicked()
                                             && path.exists()
                                         {
@@ -278,10 +278,11 @@ impl<'a> SearchModal<'a> {
                                 } else {
                                     let ws_root = workspace.map(|ws| ws.root.clone());
                                     for result in &search.md_results {
-                                        let rel = crate::shell_logic::relative_full_path(
-                                            &result.file_path,
-                                            ws_root.as_deref(),
-                                        );
+                                        let rel =
+                                            crate::shell_logic::ShellLogicOps::relative_full_path(
+                                                &result.file_path,
+                                                ws_root.as_deref(),
+                                            );
                                         ui.group(|ui| {
                                             ui.horizontal(|ui| {
                                                 ui.label(egui::RichText::new(&rel).strong());

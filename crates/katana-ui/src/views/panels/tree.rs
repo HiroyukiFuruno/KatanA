@@ -125,7 +125,8 @@ pub(crate) fn gather_visible_paths(
     for entry in entries {
         match entry {
             katana_core::workspace::TreeEntry::File { path } => {
-                let rel = crate::shell_logic::relative_full_path(path, Some(ws_root));
+                let rel =
+                    crate::shell_logic::ShellLogicOps::relative_full_path(path, Some(ws_root));
                 let is_match = regex.is_match(&rel);
                 let should_show = if is_negated { !is_match } else { is_match };
 

@@ -3,7 +3,5 @@
 
 #[path = "integration/diagram_rendering.rs"]
 mod diagram_rendering;
-#[path = "integration/integration.rs"]
-mod integration;
-#[path = "integration/tree_layout.rs"]
-mod tree_layout;
+#[path = "integration/integration_i18n.rs"]
+mod integration_i18n;

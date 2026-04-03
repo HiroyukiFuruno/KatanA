@@ -243,10 +243,10 @@ pub(crate) fn render_release_notes_tab(
                                         let mut cache = egui_commonmark::CommonMarkCache::default();
                                         egui_commonmark::CommonMarkViewer::new()
                                             .custom_task_box_fn(Some(
-                                                &crate::widgets::katana_task_box,
+                                                &crate::widgets::MarkdownHooksOps::katana_task_box,
                                             ))
                                             .custom_task_context_menu_fn(Some(
-                                                &crate::widgets::katana_task_context_menu,
+                                                &crate::widgets::MarkdownHooksOps::katana_task_context_menu,
                                             ))
                                             .custom_emoji_fn(Some(
                                                 &katana_core::emoji::render_apple_color_emoji_png,

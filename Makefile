@@ -86,7 +86,7 @@ typecheck: ## cargo check (type check only, fast)
 
 .PHONY: test
 test: ## Run all unit tests
-	cargo test --workspace -- --test-threads=2
+	cargo test --workspace
 
 .PHONY: test-core
 test-core: ## Run tests for katana-core only
@@ -114,7 +114,7 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 
 .PHONY: check-light
 check-light: fmt-check lint ## Quick verification (skip slow fixture tests)
-	cargo test --workspace -- --skip fixture --test-threads=2
+	cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 .PHONY: check

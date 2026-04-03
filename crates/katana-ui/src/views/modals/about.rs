@@ -144,15 +144,24 @@ impl<'a> AboutModal<'a> {
                     let hover_text = release_notes_text.clone();
                     crate::widgets::ListItem::new()
                         .interactive(false)
-                        .left(|ui| ui.add(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Medium)))
-                        .left(move |ui| ui.label(egui::RichText::new(release_notes_text.clone()).weak()))
+                        .left(|ui| {
+                            ui.add(
+                                crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                        })
+                        .left(move |ui| {
+                            ui.label(egui::RichText::new(release_notes_text.clone()).weak())
+                        })
                         .right(move |ui| {
-                            let btn = ui.add(
-                                egui::Button::image(
-                                    crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
+                            let btn = ui
+                                .add(
+                                    egui::Button::image(
+                                        crate::Icon::ExternalLink
+                                            .ui_image(ui, crate::icon::IconSize::Small),
+                                    )
+                                    .frame(false),
                                 )
-                                .frame(false),
-                            ).on_hover_text(hover_text);
+                                .on_hover_text(hover_text);
                             if btn.clicked() {
                                 *action = AppAction::ShowReleaseNotes;
                             }
@@ -193,10 +202,14 @@ fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) 
         .left(move |ui| ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium)))
         .left(|ui| ui.label(egui::RichText::new(label).weak()))
         .right(move |ui| {
-            let btn = ui.add(
-                egui::Button::image(crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small))
-                    .frame(false)
-            ).on_hover_text(&url_copy);
+            let btn = ui
+                .add(
+                    egui::Button::image(
+                        crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
+                    )
+                    .frame(false),
+                )
+                .on_hover_text(&url_copy);
             if btn.clicked() {
                 ui.ctx().open_url(egui::OpenUrl::new_tab(&url_copy));
             }

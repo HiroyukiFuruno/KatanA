@@ -69,8 +69,10 @@ pub(crate) fn show_section(
                     .render_math_fn(Some(&math_binding))
                     .hover_bg_color(hover_bg_color)
                     .show_code_copy_button(!is_slideshow)
-                    .custom_task_box_fn(Some(&crate::widgets::katana_task_box))
-                    .custom_task_context_menu_fn(Some(&crate::widgets::katana_task_context_menu))
+                    .custom_task_box_fn(Some(&crate::widgets::MarkdownHooksOps::katana_task_box))
+                    .custom_task_context_menu_fn(Some(
+                        &crate::widgets::MarkdownHooksOps::katana_task_context_menu,
+                    ))
                     .custom_emoji_fn(Some(&katana_core::emoji::render_apple_color_emoji_png));
 
                 if let Some(idx) = scroll_to_heading_index {
@@ -123,11 +125,12 @@ pub(crate) fn show_section(
                 // Both colors resolved from ThemeColors; fallback to hover_line_background
                 // since PreviewColors has no dedicated active_line_background.
                 let resolved_hover = hover_bg_color.unwrap_or(crate::theme_bridge::TRANSPARENT);
-                let list_highlight_fn = crate::widgets::katana_list_item_highlight(
-                    computed_active_range.clone(),
-                    resolved_hover,
-                    resolved_hover,
-                );
+                let list_highlight_fn =
+                    crate::widgets::MarkdownHooksOps::katana_list_item_highlight(
+                        computed_active_range.clone(),
+                        resolved_hover,
+                        resolved_hover,
+                    );
 
                 viewer = viewer.custom_list_item_highlight_fn(Some(&list_highlight_fn));
 

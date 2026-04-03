@@ -2,7 +2,7 @@ use crate::app::action::ActionOps;
 use crate::app_state::{AppAction, ViewMode};
 use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
-use crate::shell_ui::relative_full_path;
+use crate::shell_logic::ShellLogicOps;
 use crate::theme_bridge;
 use eframe::egui;
 
@@ -77,8 +77,9 @@ impl<'a> WindowTitle<'a> {
         let title_text = match app.state.active_document() {
             Some(doc) => {
                 let fname = doc.file_name().unwrap_or("");
-                let rel = relative_full_path(&doc.path, ws_root_for_title.as_deref());
-                crate::shell_logic::format_window_title(
+                let rel =
+                    ShellLogicOps::relative_full_path(&doc.path, ws_root_for_title.as_deref());
+                crate::shell_logic::ShellLogicOps::format_window_title(
                     fname,
                     &rel,
                     &crate::i18n::get().menu.release_notes,
@@ -199,7 +200,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     } else {
                                         crate::Icon::FolderClosed
                                     };
-                                    let mut btn = egui::Button::image_and_text(ws_icon.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("≡"))
+                                    let mut btn = egui::Button::image_and_text(ws_icon.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("≡"))
                                         .sense(egui::Sense::hover());
                                     if app.state.layout.show_workspace {
                                         btn = btn.fill(ui.visuals().selection.bg_fill);
@@ -215,7 +216,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                 }
                                 katana_platform::settings::ActivityRailItem::Search => {
                                     let mut btn = egui::Button::image_and_text(
-                                        crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("Search")
+                                        crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("Search")
                                     )
                                     .sense(egui::Sense::hover());
                                     if app.state.layout.show_search_modal {
@@ -236,7 +237,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                         .data(|data| data.get_temp::<bool>(history_menu_id).unwrap_or(false));
 
                                     let mut btn = egui::Button::image_and_text(
-                                        crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("History")
+                                        crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("History")
                                     )
                                     .sense(egui::Sense::hover());
                                     if is_open {
@@ -275,7 +276,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                                                         ui,
                                                                         crate::icon::IconSize::Small,
                                                                     ),
-                                                                    crate::shell_ui::invisible_label("x"),
+                                                                    crate::shell_ui::ShellUiOps::invisible_label("x"),
                                                                 ))
                                                                 .on_hover_text(
                                                                     crate::i18n::get().action.remove_workspace.clone(),
@@ -360,12 +361,12 @@ impl<'a> WorkspaceSidebar<'a> {
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::Search => {
-                                                let mut b = egui::Button::image_and_text(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("Search"));
+                                                let mut b = egui::Button::image_and_text(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("Search"));
                                                 if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::History => {
-                                                ui.add(egui::Button::image_and_text(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::invisible_label("History")));
+                                                ui.add(egui::Button::image_and_text(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("History")));
                                             }
                                         }
                                     });
@@ -478,7 +479,7 @@ impl<'a> TabToolbar<'a> {
                 ui.vertical(|ui| {
                     if !is_changelog {
                         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
-                        let rel = relative_full_path(&doc_path, ws_root.as_deref());
+                        let rel = ShellLogicOps::relative_full_path(&doc_path, ws_root.as_deref());
                         let breadcrumb_action =
                             Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui);
                         if let Some(a) = breadcrumb_action {

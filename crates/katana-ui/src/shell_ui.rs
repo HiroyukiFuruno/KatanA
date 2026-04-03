@@ -21,13 +21,6 @@ impl ShellUiOps {
         crate::native_menu::update_native_menu_strings_from_i18n();
     }
 
-    pub(crate) fn relative_full_path(
-        path: &std::path::Path,
-        ws_root: Option<&std::path::Path>,
-    ) -> String {
-        crate::shell_logic::ShellLogicOps::relative_full_path(path, ws_root)
-    }
-
     pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
         rfd::FileDialog::new().pick_folder()
     }
@@ -224,9 +217,7 @@ impl eframe::App for KatanaApp {
         }
 
         let action = self.take_action();
-        crate::views::panels::preview::PreviewPanelOps::invalidate_preview_image_cache(
-            ctx, &action,
-        );
+        crate::views::panels::preview::invalidate_preview_image_cache(ctx, &action);
         self.process_action(ctx, action);
 
         let terms_ver = crate::about_info::APP_VERSION.to_string();

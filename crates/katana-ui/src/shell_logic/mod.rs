@@ -1,4 +1,4 @@
-mod logic;
+pub mod logic;
 
 pub struct ShellLogicOps;
 

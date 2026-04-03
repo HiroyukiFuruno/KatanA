@@ -11,6 +11,8 @@ mod font_bridge;
 mod font_realtime;
 #[path = "integration/i18n.rs"]
 mod i18n;
+#[path = "integration/integration.rs"]
+mod integration;
 #[path = "integration/overlap_checker.rs"]
 mod overlap_checker;
 #[path = "integration/preview_pane.rs"]
@@ -25,5 +27,7 @@ mod theme;
 mod theme_bridge;
 #[path = "integration/theme_rendering_sync.rs"]
 mod theme_rendering_sync;
+#[path = "integration/tree_layout.rs"]
+mod tree_layout;
 #[path = "integration/underline_rendering.rs"]
 mod underline_rendering;

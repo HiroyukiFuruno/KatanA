@@ -1,9 +1,7 @@
 use crate::app_state::{AppAction, ScrollSource};
 use crate::preview_pane::{DownloadRequest, PreviewPane};
 
-use crate::shell_ui::{
-    LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING, invisible_label,
-};
+use crate::shell_ui::{LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, PREVIEW_CONTENT_PADDING};
 use eframe::egui;
 
 pub(crate) fn preview_panel_id(path: Option<&std::path::Path>, base: &'static str) -> egui::Id {
@@ -268,7 +266,7 @@ impl<'a> PreviewHeader<'a> {
                     has_doc,
                     egui::Button::image_and_text(
                         crate::Icon::Preview.ui_image(ui, crate::icon::IconSize::Medium),
-                        invisible_label("toggle_slideshow"),
+                        crate::shell_ui::ShellUiOps::invisible_label("toggle_slideshow"),
                     )
                     .min_size(button_size)
                     .fill(icon_bg),
@@ -327,7 +325,7 @@ impl<'a> PreviewHeader<'a> {
                     has_doc,
                     egui::Button::image_and_text(
                         crate::Icon::Toc.ui_image(ui, crate::icon::IconSize::Medium),
-                        invisible_label("toggle_toc"),
+                        crate::shell_ui::ShellUiOps::invisible_label("toggle_toc"),
                     )
                     .min_size(button_size)
                     .fill(toc_bg),
