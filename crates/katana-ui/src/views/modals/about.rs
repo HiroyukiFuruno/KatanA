@@ -39,6 +39,9 @@ impl<'a> AboutModal<'a> {
         const HEADING_SPACING: f32 = 8.0;
         const SECTION_HEADER_BOTTOM: f32 = 2.0;
 
+        const ICON_BG_ROUNDING: f32 = 8.0;
+        const ICON_BG_INNER_MARGIN: f32 = 4.0;
+
         let info = crate::about_info::about_info();
 
         egui::Window::new(crate::i18n::get().menu.about.clone())
@@ -137,28 +140,25 @@ impl<'a> AboutModal<'a> {
                     SECTION_HEADER_BOTTOM,
                 );
                 if info.sponsor_url.is_empty() {
-                    ui.horizontal(|ui| {
-                        ui.add(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Medium));
-                        ui.label(
-                            egui::RichText::new(crate::i18n::get().menu.release_notes.clone())
-                                .weak(),
-                        );
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            if ui
-                                .add(
-                                    egui::Button::image(
-                                        crate::Icon::ExternalLink
-                                            .ui_image(ui, crate::icon::IconSize::Small),
-                                    )
-                                    .frame(false),
+                    let release_notes_text = crate::i18n::get().menu.release_notes.clone();
+                    let hover_text = release_notes_text.clone();
+                    crate::widgets::ListItem::new()
+                        .interactive(false)
+                        .left(|ui| ui.add(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Medium)))
+                        .left(move |ui| ui.label(egui::RichText::new(release_notes_text.clone()).weak()))
+                        .right(move |ui| {
+                            let btn = ui.add(
+                                egui::Button::image(
+                                    crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
                                 )
-                                .on_hover_text(crate::i18n::get().menu.release_notes.clone())
-                                .clicked()
-                            {
+                                .frame(false),
+                            ).on_hover_text(hover_text);
+                            if btn.clicked() {
                                 *action = AppAction::ShowReleaseNotes;
                             }
-                        });
-                    });
+                            btn
+                        })
+                        .show(ui);
                 } else {
                     about_link_row(
                         ui,
@@ -179,31 +179,28 @@ fn about_section_header(ui: &mut egui::Ui, title: &str, size: f32, bottom: f32) 
 }
 
 fn about_row(ui: &mut egui::Ui, label: &str, value: &str) {
-    ui.horizontal(|ui| {
-        ui.label(egui::RichText::new(label).weak());
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            ui.label(value);
-        });
-    });
+    crate::widgets::ListItem::new()
+        .interactive(false)
+        .left(|ui| ui.label(egui::RichText::new(label).weak()))
+        .right(|ui| ui.add(egui::Label::new(value).truncate()))
+        .show(ui);
 }
 
 fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) {
-    ui.horizontal(|ui| {
-        ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium));
-        ui.label(egui::RichText::new(label).weak());
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if ui
-                .add(
-                    egui::Button::image(
-                        crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
-                    )
-                    .frame(false),
-                )
-                .on_hover_text(url)
-                .clicked()
-            {
-                ui.ctx().open_url(egui::OpenUrl::new_tab(url));
+    let url_copy = url.to_string();
+    crate::widgets::ListItem::new()
+        .interactive(false)
+        .left(move |ui| ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium)))
+        .left(|ui| ui.label(egui::RichText::new(label).weak()))
+        .right(move |ui| {
+            let btn = ui.add(
+                egui::Button::image(crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small))
+                    .frame(false)
+            ).on_hover_text(&url_copy);
+            if btn.clicked() {
+                ui.ctx().open_url(egui::OpenUrl::new_tab(&url_copy));
             }
-        });
-    });
+            btn
+        })
+        .show(ui);
 }
