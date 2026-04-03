@@ -1,6 +1,16 @@
 # egui_commonmark changelog
 
-## Unreleased
+## 0.23.0 - 2026-03-26
+
+### Added
+
+- Re-export `syntect` when the `better_syntax_highlighting` feature is enabled
+
+### Changed
+
+- Return Result from `add_syntax_from_str`
+- Update egui to 0.34 ([#89](https://github.com/lampsitter/egui_commonmark/pull/89) by
+  [@emilk](https://github.com/emilk) and [@lucasmerlin](https://github.com/lucasmerlin))
 
 ## 0.22.0 - 2025-10-09
 

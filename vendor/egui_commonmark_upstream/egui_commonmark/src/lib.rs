@@ -89,6 +89,8 @@ pub struct TaskListAction {
     pub new_state: char,
 }
 
+#[cfg(feature = "better_syntax_highlighting")]
+pub use egui_commonmark_backend::syntect;
 
 #[cfg(feature = "macros")]
 pub use egui_commonmark_macros::*;
