@@ -91,8 +91,9 @@ pub fn code_block<'t>(
     ui: &mut Ui,
     max_width: f32,
     text: &str,
+    show_code_copy_button: bool,
     layouter: &'t mut dyn FnMut(&Ui, &dyn TextBuffer, f32) -> std::sync::Arc<egui::Galley>,
-) {
+) -> egui::Response {
     let mut text = text.strip_suffix('\n').unwrap_or(text);
 
     // To manually add background color to the code block, we imitate what
@@ -122,7 +123,7 @@ pub fn code_block<'t>(
         ),
     );
 
-    if !text.is_empty() {
+    if show_code_copy_button && !text.is_empty() {
         // Copy icon
         let spacing = &ui.style().spacing;
         let icon_size = egui::vec2(20.0, 20.0);
@@ -196,6 +197,7 @@ pub fn code_block<'t>(
         ui.ctx().copy_text(copy_text);
     }
     }
+    output.response
 }
 // Stripped down version of egui's Checkbox. The only difference is that this
 // creates a noninteractive checkbox. ui.add_enabled could have been used instead,

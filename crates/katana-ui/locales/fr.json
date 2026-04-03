@@ -147,7 +147,8 @@
     "discard": "Ignorer",
     "confirm": "Confirmer",
     "copy_relative_path": "Copier relatif",
-    "refresh_document": "Actualiser le document"
+    "refresh_document": "Actualiser le document",
+    "toggle_slideshow": "Diaporama"
   },
   "ai": {
     "ai_unconfigured": "[AI : non configuré]"
