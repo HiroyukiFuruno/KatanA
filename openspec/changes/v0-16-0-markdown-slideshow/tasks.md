@@ -1,8 +1,8 @@
 ## 着手条件 (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.16.0 の変更 ID とスコープが確認されていること
-- [ ] 現行の Markdown preview 制御群、fullscreen viewer、theme 解決経路を `views/panels/preview.rs` / `preview_pane/*` / `markdown/*` で再確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.16.0 の変更 ID とスコープが確認されていること
+- [x] 現行の Markdown preview 制御群、fullscreen viewer、theme 解決経路を `views/panels/preview.rs` / `preview_pane/*` / `markdown/*` で再確認していること
 
 ## Branch Rule
 
@@ -61,23 +61,23 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 3.1 `Esc` と右上 `[x]` でスライドショーを終了できるようにする
-- [ ] 3.2 現在の theme を継承し、preview と同じ色解決経路を使うようにする
-- [ ] 3.3 diagram を含む Markdown 文書でも印刷時と同様の自動ページ分割を使うようにする
-- [ ] 3.4 theme 切り替え後の再表示でも配色が維持されることを確認する
-- [ ] 3.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 3.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 3.1 `Esc` と右上 `[x]` でスライドショーを終了できるようにする
+- [x] 3.2 現在の theme を継承し、preview と同じ色解決経路を使うようにする
+- [x] 3.3 diagram を含む Markdown 文書でも印刷時と同様の自動ページ分割を使うようにする
+- [x] 3.4 theme 切り替え後の再表示でも配色が維持されることを確認する
+- [x] 3.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [x] 3.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] `Esc` と `[x]` の両方で終了できること
-- [ ] theme が preview から引き継がれていること
-- [ ] diagram の切れ目が自動ページ分割に従うこと
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] `Esc` と `[x]` の両方で終了できること
+- [x] theme が preview から引き継がれていること
+- [x] diagram の切れ目が自動ページ分割に従うこと
+- [x] `make check` が exit code 0 で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -85,13 +85,13 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
-- [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
+- [x] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
+- [x] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
-- [ ] 4.2 `make check` が exit code 0 で通過することを確認する
-- [ ] 4.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
-- [ ] 4.4 `master` 向け PR を作成する
-- [ ] 4.5 `master` へ merge する（`--admin` 許可）
-- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.17.0` の release tagging と release 作成を実施する
-- [ ] 4.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
+- [x] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` を使って self-review を実施する（各 file の version 更新漏れも確認する）
+- [x] 4.2 `make check` が exit code 0 で通過することを確認する
+- [x] 4.3 中間 base branch（もともと master から派生した branch）を `master` へ merge する
+- [x] 4.4 `master` 向け PR を作成する
+- [x] 4.5 `master` へ merge する（`--admin` 許可）
+- [x] 4.6 `.agents/skills/release_workflow/SKILL.md` を使って `0.17.0` の release tagging と release 作成を実施する
+- [x] 4.7 `/opsx-archive` など OpenSpec skill を使ってこの change を archive する
