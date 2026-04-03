@@ -17,9 +17,9 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 直前の task が self-review、recovery（必要時）、PR 作成、merge、branch 削除まで含めて完了している
 - [ ] base branch が同期済みであり、この task 用の新しい branch が明示的に作成されている
 
-- [ ] 1.1 `views/panels/preview.rs` の Markdown 制御群にスライドショー起動ボタンを追加する
-- [ ] 1.2 スライドショー起動時に active Markdown 文書が対象になることを確認する
-- [ ] 1.3 既存の preview 操作や fullscreen image 導線を壊さないことを確認する
+- [x] 1.1 `views/panels/preview.rs` の Markdown 制御群にスライドショー起動ボタンを追加する
+- [x] 1.2 スライドショー起動時に active Markdown 文書が対象になることを確認する
+- [x] 1.3 既存の preview 操作や fullscreen image 導線を壊さないことを確認する
 - [ ] 1.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
 - [ ] 1.5 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 

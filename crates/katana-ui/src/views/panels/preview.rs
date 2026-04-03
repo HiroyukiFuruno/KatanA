@@ -234,7 +234,7 @@ impl<'a> PreviewHeader<'a> {
         let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
         let margin = f32::from(PREVIEW_CONTENT_PADDING);
         let spacing = ui.spacing().item_spacing.x;
-        let mut button_count = 1.0; // WHY: Export
+        let mut button_count = 2.0; // WHY: Export, Slideshow
         if self.toc_visible {
             button_count += 1.0;
         }
@@ -263,6 +263,23 @@ impl<'a> PreviewHeader<'a> {
             .tint(overlay_ui.visuals().text_color());
         overlay_ui.scope(|ui| {
             ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
+
+            if ui
+                .add_enabled(
+                    has_doc,
+                    egui::Button::image_and_text(
+                        crate::Icon::Preview.ui_image(ui, crate::icon::IconSize::Medium),
+                        invisible_label("toggle_slideshow"),
+                    )
+                    .min_size(button_size)
+                    .fill(icon_bg),
+                )
+                .on_hover_text(crate::i18n::get().action.toggle_slideshow.clone())
+                .clicked()
+            {
+                *action = AppAction::ToggleSlideshow;
+            }
+
             ui.menu_image_button(export_img, |ui| {
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
                 if ui

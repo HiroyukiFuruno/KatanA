@@ -59,6 +59,7 @@ pub enum AppAction {
     ToggleWorkspace,
     ToggleSearchModal,
     ToggleCommandPalette,
+    ToggleSlideshow,
     ToggleWorkspaceFilter,
     CheckForUpdates,
     SetSplitDirection(katana_platform::SplitDirection),
