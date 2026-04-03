@@ -107,6 +107,7 @@ pub struct KatanaApp {
 
 impl KatanaApp {
     pub fn new(state: AppState) -> Self {
+        tracing::debug!("KatanaApp::new: Start");
         let mut app = Self {
             state,
             fs: FilesystemService::new(),
@@ -162,7 +163,9 @@ impl KatanaApp {
         }
 
         katana_core::update::perform_background_cleanup();
+        tracing::debug!("KatanaApp::new: Background cleanup done");
         app.start_update_check(false);
+        tracing::debug!("KatanaApp::new: End");
         app
     }
 
@@ -238,13 +241,13 @@ fn _download_with_cmd(cmd: &str, url: &str, dest: &std::path::Path) -> Result<()
         .map_err(|e| {
             format!(
                 "{}: {e}",
-                crate::i18n::get().error.curl_launch_failed.clone()
+                crate::i18n::I18nOps::get().error.curl_launch_failed.clone()
             )
         })?;
     if status.success() {
         Ok(())
     } else {
-        Err(crate::i18n::get().error.download_failed.clone())
+        Err(crate::i18n::I18nOps::get().error.download_failed.clone())
     }
 }
 

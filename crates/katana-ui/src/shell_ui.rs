@@ -1,21 +1,36 @@
 use crate::app::*;
-
-use eframe::egui;
-
 use crate::app_state::AppAction;
+use eframe::egui;
 
 const INVISIBLE_LABEL_SIZE: f32 = 0.1;
 
-pub(crate) fn invisible_label(text: &str) -> egui::RichText {
-    egui::RichText::new(text)
-        .size(INVISIBLE_LABEL_SIZE)
-        .color(crate::theme_bridge::TRANSPARENT)
-}
+pub struct ShellUiOps;
 
-use crate::theme_bridge;
+impl ShellUiOps {
+    pub(crate) fn invisible_label(text: &str) -> egui::RichText {
+        egui::RichText::new(text)
+            .size(INVISIBLE_LABEL_SIZE)
+            .color(crate::theme_bridge::TRANSPARENT)
+    }
 
-pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
-    rfd::FileDialog::new().pick_folder()
+    pub(crate) fn indent_prefix(depth: usize) -> String {
+        "  ".repeat(depth)
+    }
+
+    pub fn update_native_menu_strings_from_i18n() {
+        crate::native_menu::update_native_menu_strings_from_i18n();
+    }
+
+    pub(crate) fn relative_full_path(
+        path: &std::path::Path,
+        ws_root: Option<&std::path::Path>,
+    ) -> String {
+        crate::shell_logic::ShellLogicOps::relative_full_path(path, ws_root)
+    }
+
+    pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
+        rfd::FileDialog::new().pick_folder()
+    }
 }
 
 pub(crate) const WORKSPACE_SPINNER_OUTER_MARGIN: f32 = 10.0;
@@ -33,13 +48,6 @@ pub(crate) const TOC_INDENT_PER_LEVEL: f32 = 12.0;
 pub(crate) const LIGHT_MODE_ICON_BG: u8 = 235;
 pub(crate) const LIGHT_MODE_ICON_ACTIVE_BG: u8 = 200;
 
-pub(crate) fn relative_full_path(
-    path: &std::path::Path,
-    ws_root: Option<&std::path::Path>,
-) -> String {
-    crate::shell_logic::relative_full_path(path, ws_root)
-}
-
 pub(crate) struct TreeRenderContext<'a, 'b> {
     pub action: &'a mut AppAction,
     pub depth: usize,
@@ -51,12 +59,6 @@ pub(crate) struct TreeRenderContext<'a, 'b> {
     pub ws_root: Option<&'b std::path::Path>,
 }
 
-pub(crate) fn indent_prefix(depth: usize) -> String {
-    "  ".repeat(depth)
-}
-
-pub use crate::native_menu::update_native_menu_strings_from_i18n;
-
 #[cfg(all(target_os = "macos", not(test)))]
 pub use crate::native_menu::{native_menu_setup, native_set_app_icon_png, native_set_process_name};
 use crate::shell::KatanaApp;
@@ -66,9 +68,7 @@ pub(crate) const SPLIT_PANEL_MAX_RATIO: f32 = 0.7;
 pub(crate) const PREVIEW_CONTENT_PADDING: i8 = 12;
 
 impl eframe::App for KatanaApp {
-    fn update(&mut self, _ctx: &egui::Context, _frame: &mut eframe::Frame) {}
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        let ctx = ui.ctx().clone();
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if self.needs_splash {
             self.splash_start = Some(std::time::Instant::now());
             self.needs_splash = false;
@@ -126,12 +126,6 @@ impl eframe::App for KatanaApp {
             self.state.document.last_auto_refresh = None;
         }
 
-        let splash_opacity = self
-            .splash_start
-            .map(|s| crate::shell_logic::calculate_splash_opacity(s.elapsed().as_secs_f32()))
-            .unwrap_or(0.0);
-        let splash_is_opaque = self.splash_start.is_some() && splash_opacity >= 1.0;
-
         let theme_colors = self
             .state
             .config
@@ -140,7 +134,7 @@ impl eframe::App for KatanaApp {
             .effective_theme_colors();
         if self.cached_theme.as_ref() != Some(&theme_colors) {
             let dark = theme_colors.mode == katana_platform::theme::ThemeMode::Dark;
-            ctx.set_visuals(theme_bridge::visuals_from_theme(&theme_colors));
+            ctx.set_visuals(crate::theme_bridge::visuals_from_theme(&theme_colors));
             ctx.data_mut(|d| {
                 d.insert_temp(egui::Id::new("katana_theme_colors"), theme_colors.clone());
             });
@@ -154,13 +148,13 @@ impl eframe::App for KatanaApp {
 
         let font_size = self.state.config.settings.settings().clamped_font_size();
         if self.cached_font_size != Some(font_size) {
-            theme_bridge::apply_font_size(&ctx, font_size);
+            crate::theme_bridge::apply_font_size(ctx, font_size);
             self.cached_font_size = Some(font_size);
         }
 
         let font_family = self.state.config.settings.settings().font.family.clone();
         if self.cached_font_family.as_deref() != Some(&font_family) {
-            theme_bridge::apply_font_family(&ctx, &font_family);
+            crate::theme_bridge::apply_font_family(ctx, &font_family);
             self.cached_font_family = Some(font_family);
         }
 
@@ -208,58 +202,64 @@ impl eframe::App for KatanaApp {
             }
         }
 
-        self.poll_download(&ctx);
-        self.poll_workspace_load(&ctx);
+        self.poll_download(ctx);
+        self.poll_workspace_load(ctx);
 
         if let Some(path) = self.pending_document_loads.pop_front() {
             self.handle_select_document(path, false);
             ctx.request_repaint();
         }
 
-        self.poll_update_install(&ctx);
-        self.poll_update_check(&ctx);
-        self.poll_changelog(&ctx);
-        self.poll_export(&ctx);
+        self.poll_update_install(ctx);
+        self.poll_update_check(ctx);
+        self.poll_changelog(ctx);
+        self.poll_export(ctx);
 
-        let native_action =
-            crate::native_menu::poll_native_menu(&mut self.show_about, open_folder_dialog);
+        let native_action = crate::native_menu::poll_native_menu(
+            &mut self.show_about,
+            ShellUiOps::open_folder_dialog,
+        );
         if !matches!(native_action, AppAction::None) {
             self.pending_action = native_action;
         }
 
         let action = self.take_action();
-        crate::views::panels::preview::invalidate_preview_image_cache(&ctx, &action);
-        self.process_action(&ctx, action);
+        crate::views::panels::preview::PreviewPanelOps::invalidate_preview_image_cache(
+            ctx, &action,
+        );
+        self.process_action(ctx, action);
 
-        if !splash_is_opaque {
-            let terms_ver = crate::about_info::APP_VERSION.to_string();
-            let accepted_ver = self
-                .state
-                .config
-                .settings
-                .settings()
-                .terms_accepted_version
-                .as_ref();
-            if accepted_ver != Some(&terms_ver) {
+        let terms_ver = crate::about_info::APP_VERSION.to_string();
+        let accepted_ver = self
+            .state
+            .config
+            .settings
+            .settings()
+            .terms_accepted_version
+            .as_ref();
+        if accepted_ver != Some(&terms_ver) {
+            egui::CentralPanel::default().show(ctx, |ui| {
                 crate::views::modals::terms::TermsModal::new(&terms_ver, &mut self.pending_action)
                     .show(ui);
-                return;
-            }
+            });
+            return;
         }
 
-        if !splash_is_opaque {
-            let download_req =
-                crate::views::app_frame::MainPanels::new(self, &theme_colors).show(ui);
-            if let Some(req) = download_req {
-                self.start_download(req);
-            }
-        }
+        egui::CentralPanel::default()
+            .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
+            .show(ctx, |ui| {
+                let download_req =
+                    crate::views::app_frame::MainPanels::new(self, &theme_colors).show(ui);
+                if let Some(req) = download_req {
+                    self.start_download(req);
+                }
+            });
 
         if self.state.layout.show_slideshow {
             if let Some(doc) = self.state.active_document() {
                 if let Some(preview) = self.tab_previews.iter_mut().find(|p| p.path == doc.path) {
                     crate::preview_pane::fullscreen::render_slideshow_modal(
-                        &ctx,
+                        ctx,
                         &mut self.state.layout,
                         &mut preview.pane,
                     );
@@ -273,7 +273,7 @@ impl eframe::App for KatanaApp {
 
         if let Some(settings_action) =
             crate::settings::SettingsWindow::new(&mut self.state, &mut self.settings_preview)
-                .show(&ctx)
+                .show(ctx)
         {
             self.pending_action = settings_action;
         }
@@ -290,7 +290,7 @@ impl eframe::App for KatanaApp {
                 &mut self.pending_action,
                 &providers,
             )
-            .show(&ctx);
+            .show(ctx);
         }
 
         if self.state.layout.show_search_modal {
@@ -302,7 +302,7 @@ impl eframe::App for KatanaApp {
                 &mut is_open,
                 &mut self.pending_action,
             )
-            .show(&ctx);
+            .show(ctx);
             if !is_open {
                 self.pending_action = AppAction::ToggleSearchModal;
             }
@@ -334,7 +334,7 @@ impl eframe::App for KatanaApp {
                 self.about_icon.as_ref(),
                 &mut self.pending_action,
             )
-            .show(&ctx);
+            .show(ctx);
             if matches!(self.pending_action, AppAction::ShowReleaseNotes) {
                 self.show_about = false;
             }
@@ -342,7 +342,7 @@ impl eframe::App for KatanaApp {
 
         if let Some(path) = self.show_meta_info_for.clone() {
             let mut is_open = true;
-            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path).show(&ctx);
+            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path).show(ctx);
             if !is_open {
                 self.show_meta_info_for = None;
             }
@@ -361,7 +361,7 @@ impl eframe::App for KatanaApp {
                 visible_extensions,
                 &mut self.pending_action,
             )
-            .show(&ctx);
+            .show(ctx);
             if !close {
                 self.state.layout.create_fs_node_modal = Some(modal_data);
             }
@@ -371,7 +371,7 @@ impl eframe::App for KatanaApp {
                 &mut modal_data,
                 &mut self.pending_action,
             )
-            .show(&ctx);
+            .show(ctx);
             if !close {
                 self.state.layout.rename_modal = Some(modal_data);
             }
@@ -381,7 +381,7 @@ impl eframe::App for KatanaApp {
                 &modal_data,
                 &mut self.pending_action,
             )
-            .show(&ctx);
+            .show(ctx);
             if !close {
                 self.state.layout.delete_modal = Some(modal_data);
             }
@@ -394,21 +394,25 @@ impl eframe::App for KatanaApp {
                 &mut self.update_markdown_cache,
                 &mut self.pending_action,
             )
-            .show(&ctx);
+            .show(ctx);
         }
 
         self.state.scroll.scroll_to_line = None;
-        crate::views::app_frame::intercept_url_commands(&ctx, self);
+        crate::views::app_frame::intercept_url_commands(ctx, self);
 
         if let Some(start) = self.splash_start {
             let elapsed = start.elapsed().as_secs_f32();
             let dismissed =
                 crate::views::splash::SplashOverlay::new(elapsed, self.about_icon.as_ref())
-                    .show(&ctx);
+                    .show(ctx);
             if dismissed {
                 self.splash_start = None;
             }
         }
+    }
+
+    fn ui(&mut self, _ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        // WHY: eframe::App trait requires this method in some contexts or versions.
     }
 
     fn on_exit(&mut self) {

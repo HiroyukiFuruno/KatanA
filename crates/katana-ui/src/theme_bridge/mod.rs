@@ -113,6 +113,7 @@ pub fn apply_font_size(ctx: &egui::Context, font_size: f32) {
 }
 
 pub fn apply_font_family(ctx: &egui::Context, family_name: &str) {
+    tracing::debug!("apply_font_family: Start ({family_name})");
     let preset = DiagramColorPreset::current();
     let mut custom_path = None;
     let mut custom_name = None;
@@ -132,6 +133,7 @@ pub fn apply_font_family(ctx: &egui::Context, family_name: &str) {
     }
 
     crate::font_loader::SystemFontLoader::setup_fonts(ctx, preset, custom_path, custom_name);
+    tracing::debug!("apply_font_family: End ({family_name})");
 
     ctx.global_style_mut(|style| {
         for (text_style, font_id) in style.text_styles.iter_mut() {

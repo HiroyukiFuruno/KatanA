@@ -4,7 +4,7 @@ use crate::app::*;
 use crate::shell::*;
 
 use crate::preview_pane::{DownloadRequest, PreviewPane};
-use crate::shell_logic::hash_str;
+use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 
 use crate::app_state::*;
@@ -257,7 +257,10 @@ impl ActionOps for KatanaApp {
                         if doc.last_imported_disk_hash == Some(new_hash) {
                             if is_manual {
                                 self.state.layout.status_message = Some((
-                                    crate::i18n::get().status.refresh_no_changes.clone(),
+                                    crate::i18n::I18nOps::get()
+                                        .status
+                                        .refresh_no_changes
+                                        .clone(),
                                     crate::app_state::StatusType::Success,
                                 ));
                             }
@@ -266,7 +269,10 @@ impl ActionOps for KatanaApp {
                                 if doc.pending_dirty_warning_hash != Some(new_hash) {
                                     doc.pending_dirty_warning_hash = Some(new_hash);
                                     self.state.layout.status_message = Some((
-                                        crate::i18n::get().status.refresh_skipped_dirty.clone(),
+                                        crate::i18n::I18nOps::get()
+                                            .status
+                                            .refresh_skipped_dirty
+                                            .clone(),
                                         crate::app_state::StatusType::Warning,
                                     ));
                                 }
@@ -275,7 +281,7 @@ impl ActionOps for KatanaApp {
                                 doc.last_imported_disk_hash = Some(new_hash);
                                 doc.pending_dirty_warning_hash = None; // clear warning
                                 self.state.layout.status_message = Some((
-                                    crate::i18n::get().status.refresh_success.clone(),
+                                    crate::i18n::I18nOps::get().status.refresh_success.clone(),
                                     crate::app_state::StatusType::Success,
                                 ));
                                 did_update_buffer = true;
@@ -311,7 +317,7 @@ impl ActionOps for KatanaApp {
                         }
                     }
                     Err(e) => {
-                        let msg = crate::i18n::get()
+                        let msg = crate::i18n::I18nOps::get()
                             .status
                             .refresh_failed
                             .replace("{error}", &e.to_string());
@@ -321,8 +327,8 @@ impl ActionOps for KatanaApp {
                 }
             }
             AppAction::ChangeLanguage(lang) => {
-                crate::i18n::set_language(&lang);
-                crate::shell_ui::update_native_menu_strings_from_i18n();
+                crate::i18n::I18nOps::set_language(&lang);
+                crate::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
                 self.state.config.settings.settings_mut().language = lang;
                 if !self.state.config.try_save_settings() {
                     tracing::warn!("Failed to save language setting");
@@ -772,7 +778,7 @@ impl ActionOps for KatanaApp {
                 crate::icon::IconRegistry::install(ctx);
 
                 self.state.layout.status_message = Some((
-                    crate::i18n::get()
+                    crate::i18n::I18nOps::get()
                         .settings
                         .behavior
                         .clear_http_cache
