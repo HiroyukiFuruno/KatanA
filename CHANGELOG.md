@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.0] - 2026-04-03 03:59:11 (UTC)
+
+### 🚀 Features
+
+- Introduced a fullscreen slideshow viewer for Markdown documents, complete with pagination controls and seamless document activation.
+
+### 🐛 Bug Fixes
+
+- Fixed a backward compatibility issue where legacy cache paths caused workspace tab groups to be lost upon restart.
+
 ## [0.15.1] - 2026-04-03 00:10:00 (UTC)
 
 ### 🐛 Bug Fixes
