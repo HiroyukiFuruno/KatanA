@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.3] - 2026-04-03 09:50:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **UX Resilience**: Relocated workspace tab & group configuration storage from the transient OS Cache directory to the persistent Application Settings directory (`workspaces/*.json`). This ensures that running common disk cleanup tools or OS cache purges will no longer accidentally delete your carefully organized tab groups and pinned tabs.
+
 ## [0.16.2] - 2026-04-03 09:08:06 (UTC)
 
 ### ✨ Improvements
