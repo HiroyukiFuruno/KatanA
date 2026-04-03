@@ -18,6 +18,13 @@ pub trait SettingsRepository: Send {
         // WHY: Default: assume persisted to avoid false positives in tests.
         SettingsLoadOrigin::Persisted
     }
+
+    // WHY: Load structured workspace state (e.g. tabs, pins) distinct from transient cache.
+    fn load_workspace_state(&self, workspace_key: &str) -> Option<String>;
+
+    // WHY: Save structured workspace state.
+    #[allow(clippy::missing_errors_doc)]
+    fn save_workspace_state(&self, workspace_key: &str, state_json: &str) -> anyhow::Result<()>;
 }
 
 // WHY: ── JSON file repository ──
@@ -119,6 +126,31 @@ impl SettingsRepository for JsonFileRepository {
             SettingsLoadOrigin::FirstLaunch
         }
     }
+
+    fn load_workspace_state(&self, workspace_key: &str) -> Option<String> {
+        let parent = self.path.parent()?;
+        let path = parent
+            .join("workspaces")
+            .join(format!("{}.json", workspace_key));
+        std::fs::read_to_string(path).ok()
+    }
+
+    fn save_workspace_state(&self, workspace_key: &str, state_json: &str) -> anyhow::Result<()> {
+        let parent = self
+            .path
+            .parent()
+            .unwrap_or_else(|| std::path::Path::new("."));
+        let workspaces_dir = parent.join("workspaces");
+        std::fs::create_dir_all(&workspaces_dir)?;
+
+        let path = workspaces_dir.join(format!("{}.json", workspace_key));
+        let mut temp_file = tempfile::NamedTempFile::new_in(&workspaces_dir)?;
+        use std::io::Write;
+        temp_file.write_all(state_json.as_bytes())?;
+        temp_file.flush()?;
+        temp_file.persist(&path)?;
+        Ok(())
+    }
 }
 
 // WHY: ── In-memory repository (for tests) ──
@@ -132,6 +164,14 @@ impl SettingsRepository for InMemoryRepository {
     }
 
     fn save(&self, _settings: &AppSettings) -> anyhow::Result<()> {
+        Ok(())
+    }
+
+    fn load_workspace_state(&self, _workspace_key: &str) -> Option<String> {
+        None
+    }
+
+    fn save_workspace_state(&self, _workspace_key: &str, _state_json: &str) -> anyhow::Result<()> {
         Ok(())
     }
 }

@@ -401,7 +401,7 @@ mod tests_extra {
         app.tab_previews.push(TabPreviewCache {
             path: path.clone(),
             pane: PreviewPane::default(),
-            hash: 0xDEADBEEF,
+            hash: 42,
         });
 
         app.handle_select_document(path.clone(), true);
@@ -629,6 +629,13 @@ mod tests_extra {
         }
         fn save(&self, _settings: &katana_platform::settings::AppSettings) -> anyhow::Result<()> {
             anyhow::bail!("simulated save failure")
+        }
+
+        fn load_workspace_state(&self, _workspace_key: &str) -> Option<String> {
+            None
+        }
+        fn save_workspace_state(&self, _workspace_key: &str, _state_json: &str) -> anyhow::Result<()> {
+            Ok(())
         }
     }
 

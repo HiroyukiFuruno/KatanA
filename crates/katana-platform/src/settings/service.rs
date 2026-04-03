@@ -62,6 +62,22 @@ impl SettingsService {
             self.settings.language = lang;
         }
     }
+
+    // WHY: Load structured workspace state (e.g. tabs, pins) from the config directory.
+    pub fn load_workspace_state(&self, workspace_key: &str) -> Option<String> {
+        self.repository.load_workspace_state(workspace_key)
+    }
+
+    // WHY: Save structured workspace state to the config directory.
+    #[allow(clippy::missing_errors_doc)]
+    pub fn save_workspace_state(
+        &self,
+        workspace_key: &str,
+        state_json: &str,
+    ) -> anyhow::Result<()> {
+        self.repository
+            .save_workspace_state(workspace_key, state_json)
+    }
 }
 
 impl Default for SettingsService {

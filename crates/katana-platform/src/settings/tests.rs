@@ -391,6 +391,14 @@ struct FirstLaunchRepo {
 }
 
 impl SettingsRepository for FirstLaunchRepo {
+    fn load_workspace_state(&self, _workspace_key: &str) -> Option<String> {
+        None
+    }
+
+    fn save_workspace_state(&self, _workspace_key: &str, _state_json: &str) -> anyhow::Result<()> {
+        Ok(())
+    }
+
     fn load(&self) -> AppSettings {
         let mut s = AppSettings::default();
         s.theme.preset = self.preset;

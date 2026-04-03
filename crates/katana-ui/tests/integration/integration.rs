@@ -18,11 +18,14 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
     use std::sync::atomic::{AtomicUsize, Ordering};
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-    let settings_path = std::env::temp_dir().join(format!(
-        "katana_test_settings_harness_{}_{}.json",
+    let harness_dir = std::env::temp_dir().join(format!(
+        "katana_test_settings_harness_{}_{}",
         std::process::id(),
         id
     ));
+    let _ = std::fs::remove_dir_all(&harness_dir);
+    std::fs::create_dir_all(&harness_dir).unwrap();
+    let settings_path = harness_dir.join("settings.json");
     let _ = std::fs::remove_file(&settings_path);
 
     Harness::builder().build_eframe(move |_cc| {
@@ -984,18 +987,27 @@ fn test_integration_workspace_tab_persistence() {
         .trigger_action(AppAction::OpenWorkspace(ws2.clone()));
     wait_for_workspace_load(&mut harness);
 
-    let cache_key = format!("workspace_tabs:{}", ws1.display());
+    let mut ws_str = ws1.to_string_lossy().to_string();
+    if ws_str.ends_with('/') || ws_str.ends_with('\\') {
+        ws_str.pop();
+    }
+    let mut hash: u64 = 0xcbf29ce484222325;
+    for b in ws_str.bytes() {
+        hash ^= b as u64;
+        hash = hash.wrapping_mul(0x100000001b3);
+    }
+    let state_key = format!("{:x}", hash);
 
     let cache_json = harness
         .state_mut()
         .app_state_mut()
         .config
-        .cache
-        .get_persistent(&cache_key);
+        .settings
+        .load_workspace_state(&state_key);
     assert!(
         cache_json.is_some(),
-        "Workspace 1 tab state must be saved to cache before switching. Key was: {}",
-        cache_key
+        "Workspace 1 tab state must be saved to config before switching. Key was: {}",
+        state_key
     );
 
     let json_str = cache_json.unwrap();
@@ -3915,18 +3927,23 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     assert_eq!(groups[0].members[0], abs2.display().to_string());
 
     // -- Phase 2: Read from cache and verify serialized JSON --
-    let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
-        workspace_path: temp_dir.clone(),
+    let mut ws_str = temp_dir.to_string_lossy().to_string();
+    if ws_str.ends_with('/') || ws_str.ends_with('\\') {
+        ws_str.pop();
     }
-    .to_raw_key()
-    .unwrap_or_default();
+    let mut hash: u64 = 0xcbf29ce484222325;
+    for b in ws_str.bytes() {
+        hash ^= b as u64;
+        hash = hash.wrapping_mul(0x100000001b3);
+    }
+    let state_key = format!("{:x}", hash);
 
     let cached_json = harness
         .state_mut()
         .app_state_mut()
         .config
-        .cache
-        .get_persistent(&cache_key);
+        .settings
+        .load_workspace_state(&state_key);
     assert!(
         cached_json.is_some(),
         "Cache must contain serialized workspace state after operations"
@@ -4004,8 +4021,8 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         .state_mut()
         .app_state_mut()
         .config
-        .cache
-        .set_persistent(&cache_key, cached_json)
+        .settings
+        .save_workspace_state(&state_key, &cached_json)
         .unwrap();
 
     harness2

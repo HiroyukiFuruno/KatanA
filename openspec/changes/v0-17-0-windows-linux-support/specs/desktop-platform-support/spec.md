@@ -38,6 +38,22 @@
 - **THEN** 文書は editor に読み込まれる
 - **THEN** preview はその active document を表示する
 
+### Requirement: Windows / Linux の runtime smoke verification 観点は固定される
+
+システムは、Windows / Linux の正式サポート判定に使う runtime smoke verification 観点を文書化しなければならない（MUST）。
+
+#### Scenario: Windows の runtime smoke verification を実施する
+
+- **WHEN** maintainer または verifier が Windows 向け support verification を実施する
+- **THEN** checklist には startup、workspace open、Markdown 編集、preview 表示が含まれる
+- **THEN** verification result は screenshot または log として記録できる
+
+#### Scenario: Linux の runtime smoke verification を実施する
+
+- **WHEN** maintainer または verifier が Linux 向け support verification を実施する
+- **THEN** checklist には startup、workspace open、Markdown 編集、preview 表示が含まれる
+- **THEN** verification result は screenshot または log として記録できる
+
 ### Requirement: platform integration failure は recoverable fallback を持つ
 
 システムは、対応 OS 上で theme、locale、font、menu などの platform integration の一部が取得できなくても、recoverable fallback により起動と編集フローを継続しなければならない（MUST）。

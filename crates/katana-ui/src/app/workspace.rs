@@ -122,17 +122,57 @@ impl WorkspaceOps for KatanaApp {
 
         let workspace_root = self.state.workspace.data.as_ref().unwrap().root.clone();
         let cache_key = katana_platform::cache::PersistentKey::WorkspaceTabs {
-            workspace_path: workspace_root,
+            workspace_path: workspace_root.clone(),
         }
         .to_raw_key()
         .unwrap_or_default();
 
+        // Compute deterministic hash identically to cache to ensure key is stable
+        let mut workspace_path_str = workspace_root.to_string_lossy().to_string();
+        if workspace_path_str.ends_with('/') || workspace_path_str.ends_with('\\') {
+            workspace_path_str.pop();
+        }
+        const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+        const FNV_PRIME: u64 = 0x100000001b3;
+        let workspace_hash = {
+            let mut hash: u64 = FNV_OFFSET_BASIS;
+            for b in workspace_path_str.bytes() {
+                hash ^= b as u64;
+                hash = hash.wrapping_mul(FNV_PRIME);
+            }
+            hash
+        };
+        let state_key = format!("{:x}", workspace_hash);
+
+        let restore_session = self
+            .state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .restore_session;
+        let mut state_json_opt = None;
+
+        if restore_session {
+            // First load from proper state location
+            state_json_opt = self.state.config.settings.load_workspace_state(&state_key);
+            // Backward compatibility: migrate from cache if state doesn't exist yet but cache does
+            if state_json_opt.is_none() {
+                if let Some(cached_json) = self.state.config.cache.get_persistent(&cache_key) {
+                    let _ = self
+                        .state
+                        .config
+                        .settings
+                        .save_workspace_state(&state_key, &cached_json);
+                    state_json_opt = Some(cached_json);
+                }
+            }
+        }
+
         let settings = self.state.config.settings.settings_mut();
 
-        if settings.workspace.restore_session {
-            let cache_json_opt = self.state.config.cache.get_persistent(&cache_key);
-
-            if let Some(cache_json) = cache_json_opt {
+        if restore_session {
+            if let Some(cache_json) = state_json_opt {
                 if let Ok(v2) = serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {
                     to_open = v2.tabs.into_iter().map(|t| (t.path, t.pinned)).collect();
                     if let Some(active_path) = v2.active_path {
@@ -388,11 +428,20 @@ impl WorkspaceOps for KatanaApp {
         }
 
         if let Some(ws) = &self.state.workspace.data {
-            let key = katana_platform::cache::PersistentKey::WorkspaceTabs {
-                workspace_path: ws.root.clone(),
+            let mut workspace_path_str = ws.root.to_string_lossy().to_string();
+            if workspace_path_str.ends_with('/') || workspace_path_str.ends_with('\\') {
+                workspace_path_str.pop();
             }
-            .to_raw_key()
-            .unwrap_or_default();
+            let state_key = {
+                const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+                const FNV_PRIME: u64 = 0x100000001b3;
+                let mut hash: u64 = FNV_OFFSET_BASIS;
+                for b in workspace_path_str.bytes() {
+                    hash ^= b as u64;
+                    hash = hash.wrapping_mul(FNV_PRIME);
+                }
+                format!("{:x}", hash)
+            };
 
             #[derive(serde::Deserialize, serde::Serialize)]
             struct WorkspaceTabEntry {
@@ -437,7 +486,14 @@ impl WorkspaceOps for KatanaApp {
             };
             match serde_json::to_string(&state) {
                 Ok(json) => {
-                    let _ = self.state.config.cache.set_persistent(&key, json);
+                    if let Err(e) = self
+                        .state
+                        .config
+                        .settings
+                        .save_workspace_state(&state_key, &json)
+                    {
+                        tracing::warn!("Failed to save workspace state: {}", e);
+                    }
                 }
                 Err(e) => {
                     tracing::warn!("Failed to serialize tab state: {}", e);
