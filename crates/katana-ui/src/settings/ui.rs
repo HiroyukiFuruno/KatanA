@@ -237,8 +237,11 @@ impl SettingsOps {
                 let layout_selected = state.config.active_settings_tab == SettingsTab::Layout;
                 if ui
                     .add(
-                        egui::Button::selectable(layout_selected, settings_msgs.tab_name("layout"))
-                            .frame_when_inactive(true),
+                        egui::Button::selectable(
+                            layout_selected,
+                            settings_msgs.tab_name("layout"),
+                        )
+                        .frame_when_inactive(true),
                     )
                     .clicked()
                 {
@@ -266,7 +269,8 @@ impl SettingsOps {
                 .strong()
                 .size(SETTINGS_HEADER_FONT_SIZE),
             |ui| {
-                let workspace_selected = state.config.active_settings_tab == SettingsTab::Workspace;
+                let workspace_selected =
+                    state.config.active_settings_tab == SettingsTab::Workspace;
                 if ui
                     .add(
                         egui::Button::selectable(
@@ -294,7 +298,8 @@ impl SettingsOps {
                     state.config.active_settings_tab = SettingsTab::Updates;
                 }
 
-                let behavior_selected = state.config.active_settings_tab == SettingsTab::Behavior;
+                let behavior_selected =
+                    state.config.active_settings_tab == SettingsTab::Behavior;
                 if ui
                     .add(
                         egui::Button::selectable(
