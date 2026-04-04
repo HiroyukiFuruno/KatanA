@@ -3,7 +3,6 @@ use eframe::egui;
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_platform::theme::{Rgb, Rgba, ThemeColors, ThemeMode};
 
-
 const STROKE_NORMAL: f32 = 1.0;
 const STROKE_MEDIUM: f32 = 1.5;
 const STROKE_BOLD: f32 = 2.0;

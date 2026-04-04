@@ -196,10 +196,20 @@ impl ThemeTabOps {
                     });
 
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let icon_bg = if ui.visuals().dark_mode {
+                            crate::theme_bridge::TRANSPARENT
+                        } else {
+                            crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                crate::shell_ui::LIGHT_MODE_ICON_BG,
+                            )
+                        };
                         if ui
-                            .add(egui::Button::image(
-                                crate::Icon::Remove.ui_image(ui, crate::icon::IconSize::Medium),
-                            ))
+                            .add(
+                                egui::Button::image(
+                                    crate::Icon::Remove.ui_image(ui, crate::icon::IconSize::Medium),
+                                )
+                                .fill(icon_bg),
+                            )
                             .on_hover_text(
                                 crate::i18n::I18nOps::get()
                                     .settings

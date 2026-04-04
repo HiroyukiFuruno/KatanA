@@ -155,6 +155,7 @@ impl<'a> AboutModal<'a> {
                         .right(move |ui| {
                             let btn = ui
                                 .add(
+                                    // allow(icon_button_fill)
                                     egui::Button::image(
                                         crate::Icon::ExternalLink
                                             .ui_image(ui, crate::icon::IconSize::Small),
@@ -204,6 +205,7 @@ fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) 
         .right(move |ui| {
             let btn = ui
                 .add(
+                    // allow(icon_button_fill)
                     egui::Button::image(
                         crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
                     )

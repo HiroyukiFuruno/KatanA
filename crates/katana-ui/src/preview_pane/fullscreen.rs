@@ -455,6 +455,7 @@ impl FullscreenLogicOps {
                                         let mut icon_color = ui.visuals().text_color();
                                         icon_color = icon_color.gamma_multiply(opacity);
 
+                                        // allow(icon_button_fill)
                                         let mut prev_btn = egui::Button::image(
                                             crate::icon::Icon::ChevronLeft
                                                 .image(crate::icon::IconSize::Medium)
@@ -485,6 +486,7 @@ impl FullscreenLogicOps {
 
                                         ui.add_space(SLIDESHOW_CONTROL_SPACING);
 
+                                        // allow(icon_button_fill)
                                         let mut next_btn = egui::Button::image(
                                             crate::icon::Icon::ChevronRight
                                                 .image(crate::icon::IconSize::Medium)

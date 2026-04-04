@@ -183,6 +183,15 @@ impl<'a> TabBar<'a> {
 
         ui.style_mut().interaction.tooltip_delay = TAB_TOOLTIP_SHOW_DELAY_SECS;
 
+        // WHY: icon_bg is computed here (before the scroll area) so that pin/close
+        // icon buttons inside the tab strip can use it consistently. This matches the
+        // treatment of the nav buttons (◀▶) which also use icon_bg.
+        let icon_bg = if ui.visuals().dark_mode {
+            crate::theme_bridge::TRANSPARENT
+        } else {
+            crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
+        };
+
         // allow(horizontal_layout)
         ui.horizontal(|ui| {
             let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
@@ -434,6 +443,11 @@ impl<'a> TabBar<'a> {
                                                 egui::vec2(ui.available_width(), tab_height),
                                                 egui::Layout::left_to_right(egui::Align::Center),
                                                 |ui| {
+                                                    // WHY: frame_when_inactive(true) ensures inner_margin = button_padding
+                                                    // - stroke.width for ALL tabs (active and inactive). Without this,
+                                                    // Button::selectable sets frame_when_inactive=is_active, so inactive
+                                                    // tabs have inner_margin = button_padding (1px MORE than active tabs),
+                                                    // causing a visible vertical shift when switching tabs.
                                                     let t_resp = if is_changelog {
                                                         ui.add(
                                                             egui::Button::image_and_text(
@@ -443,12 +457,14 @@ impl<'a> TabBar<'a> {
                                                                 ),
                                                                 &title,
                                                             )
-                                                            .selected(is_active),
+                                                            .selected(is_active)
+                                                            .frame_when_inactive(true),
                                                         )
                                                     } else {
-                                                        ui.add(egui::Button::selectable(
-                                                            is_active, &title,
-                                                        ))
+                                                        ui.add(
+                                                            egui::Button::selectable(is_active, &title)
+                                                                .frame_when_inactive(true),
+                                                        )
                                                     };
 
                                                     let c_resp = if doc.is_pinned {
@@ -457,22 +473,29 @@ impl<'a> TabBar<'a> {
                                                         } else {
                                                             ui.visuals().text_color()
                                                         };
-                                                        Some(ui.add(egui::Button::image_and_text(
-                                                            crate::Icon::Pin
-                                                                .image(
-                                                                    crate::icon::IconSize::Small,
-                                                                )
-                                                                .tint(pin_color),
-                                                            crate::shell_ui::ShellUiOps::invisible_label(""),
-                                                        )))
+                                                        // WHY: .fill(icon_bg) gives pin/close buttons the same
+                                                        // background treatment as nav buttons (◀▶), preventing
+                                                        // inconsistent hover fills across the tab strip.
+                                                        Some(ui.add(
+                                                            egui::Button::image_and_text(
+                                                                crate::Icon::Pin
+                                                                    .image(crate::icon::IconSize::Small)
+                                                                    .tint(pin_color),
+                                                                crate::shell_ui::ShellUiOps::invisible_label(""),
+                                                            )
+                                                            .fill(icon_bg),
+                                                        ))
                                                     } else {
-                                                        Some(ui.add(egui::Button::image_and_text(
-                                                            crate::Icon::Close.ui_image(
-                                                                ui,
-                                                                crate::icon::IconSize::Small,
-                                                            ),
-                                                            crate::shell_ui::ShellUiOps::invisible_label("x"),
-                                                        )))
+                                                        Some(ui.add(
+                                                            egui::Button::image_and_text(
+                                                                crate::Icon::Close.ui_image(
+                                                                    ui,
+                                                                    crate::icon::IconSize::Small,
+                                                                ),
+                                                                crate::shell_ui::ShellUiOps::invisible_label("x"),
+                                                            )
+                                                            .fill(icon_bg),
+                                                        ))
                                                     };
                                                     (t_resp, c_resp)
                                                 },
@@ -686,8 +709,13 @@ impl<'a> TabBar<'a> {
                                                             let (rect, _) = ui.allocate_exact_size(egui::vec2(GROUP_MENU_ICON_SIZE, GROUP_MENU_ICON_SIZE), egui::Sense::hover());
                                                             ui.painter().circle_filled(rect.center(), GROUP_MENU_ICON_RADIUS, color32);
 
-                                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                                                            if ui.selectable_label(false, &g.name).clicked() {
+                                                            if ui
+                                                                .add(
+                                                                    egui::Button::new(&g.name)
+                                                                        .frame_when_inactive(true),
+                                                                )
+                                                                .clicked()
+                                                            {
                                                                 tab_action = Some(AppAction::AddTabToGroup {
                                                                     group_id: g.id.clone(),
                                                                     member: doc.path.clone(),
@@ -763,11 +791,6 @@ impl<'a> TabBar<'a> {
             ui.separator();
 
             let nav_enabled = doc_count > 1;
-            let icon_bg = if ui.visuals().dark_mode {
-                crate::theme_bridge::TRANSPARENT
-            } else {
-                crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
-            };
 
             if ui
                 .add_enabled(
@@ -946,6 +969,17 @@ impl ViewModeBar {
             egui::vec2(available_width, bar_height),
             egui::Layout::right_to_left(egui::Align::Center),
             |ui| {
+                // WHY: Consistent background for all icon-only buttons in this bar.
+                // Without explicit .fill(icon_bg), hover shows weak_bg_fill (highlight)
+                // while other icon buttons show transparent. This unifies the behaviour.
+                let icon_bg = if ui.visuals().dark_mode {
+                    crate::theme_bridge::TRANSPARENT
+                } else {
+                    crate::theme_bridge::ThemeBridgeOps::from_gray(
+                        crate::shell_ui::LIGHT_MODE_ICON_BG,
+                    )
+                };
+
                 if self.update_available && !self.update_checking {
                     const COLOR_SUCCESS_G: u8 = 200;
                     let badge_str = crate::i18n::I18nOps::get().update.update_available.clone();
@@ -978,10 +1012,13 @@ impl ViewModeBar {
 
                 if !is_changelog {
                     if ui
-                        .add(egui::Button::image_and_text(
-                            crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
-                            crate::shell_ui::ShellUiOps::invisible_label("Refresh"),
-                        ))
+                        .add(
+                            egui::Button::image_and_text(
+                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
+                                crate::shell_ui::ShellUiOps::invisible_label("Refresh"),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().action.refresh_document.clone())
                         .clicked()
                     {
@@ -991,8 +1028,11 @@ impl ViewModeBar {
 
                     if ui
                         .add(
-                            egui::Button::selectable(is_split, crate::i18n::I18nOps::get().view_mode.split.clone())
-                                .frame_when_inactive(true),
+                            egui::Button::selectable(
+                                is_split,
+                                crate::i18n::I18nOps::get().view_mode.split.clone(),
+                            )
+                            .frame_when_inactive(true),
                         )
                         .clicked()
                         && !is_split
@@ -1002,8 +1042,11 @@ impl ViewModeBar {
 
                     if ui
                         .add(
-                            egui::Button::selectable(mode == ViewMode::CodeOnly, crate::i18n::I18nOps::get().view_mode.code.clone())
-                                .frame_when_inactive(true),
+                            egui::Button::selectable(
+                                mode == ViewMode::CodeOnly,
+                                crate::i18n::I18nOps::get().view_mode.code.clone(),
+                            )
+                            .frame_when_inactive(true),
                         )
                         .clicked()
                     {
@@ -1011,8 +1054,11 @@ impl ViewModeBar {
                     }
                     if ui
                         .add(
-                            egui::Button::selectable(mode == ViewMode::PreviewOnly, crate::i18n::I18nOps::get().view_mode.preview.clone())
-                                .frame_when_inactive(true),
+                            egui::Button::selectable(
+                                mode == ViewMode::PreviewOnly,
+                                crate::i18n::I18nOps::get().view_mode.preview.clone(),
+                            )
+                            .frame_when_inactive(true),
                         )
                         .clicked()
                     {
@@ -1036,9 +1082,12 @@ impl ViewModeBar {
                     };
                     let icon_size = crate::icon::IconSize::Medium;
                     let resp_dir = ui
-                        .add(egui::Button::image(
-                            dir_icon.image(icon_size).tint(ui.visuals().text_color()),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                dir_icon.image(icon_size).tint(ui.visuals().text_color()),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(dir_tip);
 
                     resp_dir.widget_info(|| {
@@ -1081,11 +1130,14 @@ impl ViewModeBar {
                         };
 
                     if ui
-                        .add(egui::Button::image(
-                            order_icon
-                                .image(crate::icon::IconSize::Medium)
-                                .tint(ui.visuals().text_color()),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                order_icon
+                                    .image(crate::icon::IconSize::Medium)
+                                    .tint(ui.visuals().text_color()),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(order_tip)
                         .clicked()
                     {
@@ -1170,11 +1222,21 @@ impl ViewModeBar {
                 egui::vec2(available_width, bar_height),
                 egui::Layout::right_to_left(egui::Align::Center),
                 |ui| {
+                    let icon_bg = if ui.visuals().dark_mode {
+                        crate::theme_bridge::TRANSPARENT
+                    } else {
+                        crate::theme_bridge::ThemeBridgeOps::from_gray(
+                            crate::shell_ui::LIGHT_MODE_ICON_BG,
+                        )
+                    };
                     // Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input
                     if ui
-                        .add(egui::Button::image(
-                            crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_close.clone())
                         .clicked()
                     {
@@ -1182,9 +1244,12 @@ impl ViewModeBar {
                     }
 
                     if ui
-                        .add(egui::Button::image(
-                            crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
                         .clicked()
                     {
@@ -1192,9 +1257,12 @@ impl ViewModeBar {
                     }
 
                     if ui
-                        .add(egui::Button::image(
-                            crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())
                         .clicked()
                     {

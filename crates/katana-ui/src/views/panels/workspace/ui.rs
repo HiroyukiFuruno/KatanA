@@ -520,9 +520,12 @@ impl<'a> WorkspaceHeader<'a> {
             ui.horizontal(|ui| {
                 ui.add_enabled_ui(!is_flat, |ui| {
                     let btn_resp = ui
-                        .add(egui::Button::image(
-                            crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                     btn_resp.widget_info(|| {
                         egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
@@ -536,9 +539,12 @@ impl<'a> WorkspaceHeader<'a> {
                     }
 
                     let btn_resp = ui
-                        .add(egui::Button::image(
-                            crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
+                            )
+                            .fill(icon_bg),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                     btn_resp.widget_info(|| {
                         egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")

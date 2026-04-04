@@ -374,6 +374,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                         match item {
                                             katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
                                                 let icon = if app.state.layout.show_workspace { crate::Icon::FolderOpen } else { crate::Icon::FolderClosed };
+                                                // allow(icon_button_fill)
                                                 let mut b = egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Large));
                                                 if app.state.layout.show_workspace { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
