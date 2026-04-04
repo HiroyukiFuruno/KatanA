@@ -46,15 +46,19 @@ impl ThemeBridgeOps {
         visuals.widgets.noninteractive.bg_fill = panel_bg;
         visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);
         visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
-        // WHY: expansion must equal bg_stroke.width so that egui's Button formula
-        // (inner_margin += expansion - stroke.width, outer_margin -= expansion)
-        // keeps total widget size constant across all interaction states.
-        visuals.widgets.noninteractive.expansion = STROKE_THIN;
+        // WHY: All expansion values must be IDENTICAL across states.
+        // egui draws the visual frame at: outer_margin = -expansion.
+        // If expansion differs between states (e.g. inactive=0.5 vs hovered=1.0),
+        // the visual frame grows by (hovered_exp - inactive_exp) pixels on hover.
+        // Fixing to STROKE_NORMAL for all states keeps outer_margin = -1.0 always,
+        // eliminating the 0.5px visible "border inflation" on hover.
+        // Applies globally to Button::new, Button::image (frame_when_inactive=true default).
+        visuals.widgets.noninteractive.expansion = STROKE_NORMAL;
 
         visuals.widgets.inactive.bg_fill = panel_bg;
         visuals.widgets.inactive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
         visuals.widgets.inactive.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
-        visuals.widgets.inactive.expansion = STROKE_THIN;
+        visuals.widgets.inactive.expansion = STROKE_NORMAL;
 
         visuals.widgets.hovered.bg_fill = highlight_bg;
         visuals.widgets.hovered.fg_stroke = egui::Stroke::new(STROKE_MEDIUM, accent);
@@ -70,7 +74,7 @@ impl ThemeBridgeOps {
         visuals.widgets.open.bg_fill = panel_bg;
         visuals.widgets.open.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
         visuals.widgets.open.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
-        visuals.widgets.open.expansion = STROKE_THIN;
+        visuals.widgets.open.expansion = STROKE_NORMAL;
 
         visuals
     }
