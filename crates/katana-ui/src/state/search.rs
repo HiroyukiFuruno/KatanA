@@ -14,6 +14,7 @@ pub struct SearchState {
 
     // UI state
     pub active_tab: SearchTab,
+    pub focus_requested: bool,
 
     // File name search state
     pub query: String,
@@ -49,6 +50,7 @@ impl SearchState {
             filter_cache: None,
 
             active_tab: SearchTab::FileName,
+            focus_requested: false,
 
             query: String::new(),
             include_pattern: String::new(),

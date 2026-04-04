@@ -527,7 +527,8 @@ impl<'a> WorkspaceHeader<'a> {
                         let btn_resp = ui
                             .add(
                                 egui::Button::image(
-                                    crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
+                                    crate::Icon::ExpandAll
+                                        .ui_image(ui, crate::icon::IconSize::Small),
                                 )
                                 .fill(icon_bg)
                                 .min_size(icon_min_size),
@@ -547,7 +548,8 @@ impl<'a> WorkspaceHeader<'a> {
                         let btn_resp = ui
                             .add(
                                 egui::Button::image(
-                                    crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
+                                    crate::Icon::CollapseAll
+                                        .ui_image(ui, crate::icon::IconSize::Small),
                                 )
                                 .fill(icon_bg)
                                 .min_size(icon_min_size),
@@ -566,9 +568,11 @@ impl<'a> WorkspaceHeader<'a> {
                             ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
                             ui.spacing_mut().interact_size = icon_min_size;
                             ui.spacing_mut().button_padding = egui::vec2(0.0, 0.0);
-                            let more_img = crate::Icon::More.ui_image(ui, crate::icon::IconSize::Small);
+                            let more_img =
+                                crate::Icon::More.ui_image(ui, crate::icon::IconSize::Small);
                             ui.menu_image_button(more_img, |ui| {
-                                ui.visuals_mut().widgets.inactive.bg_fill = egui::Color32::TRANSPARENT;
+                                ui.visuals_mut().widgets.inactive.bg_fill =
+                                    egui::Color32::TRANSPARENT;
                                 let flat_label = format!(
                                     "{} {}",
                                     if is_flat { "✔" } else { "  " },
@@ -590,39 +594,42 @@ impl<'a> WorkspaceHeader<'a> {
                                 .fill(icon_bg)
                                 .min_size(icon_min_size),
                             )
-                        .on_hover_text(crate::i18n::I18nOps::get().action.refresh_workspace.clone())
-                        .clicked()
-                    {
-                        *action = AppAction::RefreshWorkspace;
-                    }
-
-                    let filter_btn_color = if search.filter_enabled {
-                        if ui.visuals().dark_mode {
-                            ui.visuals().selection.bg_fill
-                        } else {
-                            crate::theme_bridge::ThemeBridgeOps::from_gray(
-                                LIGHT_MODE_ICON_ACTIVE_BG,
+                            .on_hover_text(
+                                crate::i18n::I18nOps::get().action.refresh_workspace.clone(),
                             )
+                            .clicked()
+                        {
+                            *action = AppAction::RefreshWorkspace;
                         }
-                    } else {
-                        icon_bg
-                    };
 
-                    if ui
-                        .add(
-                            egui::Button::image(
-                                crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
+                        let filter_btn_color = if search.filter_enabled {
+                            if ui.visuals().dark_mode {
+                                ui.visuals().selection.bg_fill
+                            } else {
+                                crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                    LIGHT_MODE_ICON_ACTIVE_BG,
+                                )
+                            }
+                        } else {
+                            icon_bg
+                        };
+
+                        if ui
+                            .add(
+                                egui::Button::image(
+                                    crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
+                                )
+                                .fill(filter_btn_color)
+                                .min_size(icon_min_size),
                             )
-                            .fill(filter_btn_color)
-                            .min_size(icon_min_size),
-                        )
-                        .on_hover_text(crate::i18n::I18nOps::get().action.toggle_filter.clone())
-                        .clicked()
-                    {
-                        *action = AppAction::ToggleWorkspaceFilter;
-                    }
-                });
-            });
+                            .on_hover_text(crate::i18n::I18nOps::get().action.toggle_filter.clone())
+                            .clicked()
+                        {
+                            *action = AppAction::ToggleWorkspaceFilter;
+                        }
+                    });
+                },
+            );
 
             if search.filter_enabled {
                 let mut is_valid_regex = true;

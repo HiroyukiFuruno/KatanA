@@ -95,7 +95,10 @@ impl DefaultCacheService {
                     if let Ok(json) = std::fs::read_to_string(&inner_path)
                         && let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json)
                     {
-                        if let PersistentKey::Diagram { ref diagram_kind, .. } = env.key {
+                        if let PersistentKey::Diagram {
+                            ref diagram_kind, ..
+                        } = env.key
+                        {
                             // Drop legacy mermaid SVG caches (version < 2)
                             if diagram_kind == "mermaid" && env.storage_version < 2 {
                                 let _ = std::fs::remove_file(&inner_path);

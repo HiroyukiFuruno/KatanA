@@ -185,7 +185,9 @@ impl PreviewPane {
                     let result = if let Some(json) = cached_result {
                         match serde_json::from_str::<DiagramResult>(&json) {
                             Ok(res) => {
-                                if matches!(job.kind, katana_core::markdown::DiagramKind::Mermaid) && matches!(res, DiagramResult::Ok(_)) {
+                                if matches!(job.kind, katana_core::markdown::DiagramKind::Mermaid)
+                                    && matches!(res, DiagramResult::Ok(_))
+                                {
                                     // WHY: Old caches may still store Mermaid output as Ok(html) (SVG format).
                                     // Passing this legacy SVG to resvg/usvg can cause an infinite loop in the text parser
                                     // or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG.

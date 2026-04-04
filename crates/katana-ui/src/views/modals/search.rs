@@ -60,17 +60,21 @@ impl<'a> SearchModal<'a> {
                 // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    ui.selectable_value(
+                    if ui.selectable_value(
                         &mut search.active_tab,
                         crate::app_state::SearchTab::FileName,
                         crate::i18n::I18nOps::get().search.tab_file_name.clone(),
-                    );
+                    ).clicked() {
+                        search.focus_requested = false;
+                    }
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    ui.selectable_value(
+                    if ui.selectable_value(
                         &mut search.active_tab,
                         crate::app_state::SearchTab::MarkdownContent,
                         crate::i18n::I18nOps::get().search.tab_markdown_content.clone(),
-                    );
+                    ).clicked() {
+                        search.focus_requested = false;
+                    }
                 });
                 ui.separator();
 
@@ -81,7 +85,10 @@ impl<'a> SearchModal<'a> {
                                 .hint_text(crate::i18n::I18nOps::get().search.query_hint.clone())
                                 .desired_width(f32::INFINITY),
                         );
-                        response.request_focus();
+                        if !search.focus_requested {
+                            response.request_focus();
+                            search.focus_requested = true;
+                        }
 
                         let mut include_regexes = Vec::new();
                         let mut include_valid = true;
@@ -219,7 +226,10 @@ impl<'a> SearchModal<'a> {
                                     .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
                                     .desired_width(f32::INFINITY),
                             );
-                            response.request_focus();
+                            if !search.focus_requested {
+                                response.request_focus();
+                                search.focus_requested = true;
+                            }
 
                             if (response.changed()
                                 || response.lost_focus()

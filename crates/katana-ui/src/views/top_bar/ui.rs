@@ -1162,26 +1162,17 @@ impl ViewModeBar {
                         .scroll_sync_override
                         .unwrap_or(self.scroll_sync_enabled);
 
-                    const TOGGLE_LABEL_SPACING: f32 = 8.0;
-
-                    let toggle_resp = crate::widgets::toggle::ToggleOps::switch(ui, &mut is_on);
-                    ui.add_space(TOGGLE_LABEL_SPACING);
-                    // allow(conditional_frame) — click target for toggle only, not a selection indicator
-                    let text_resp = ui.selectable_label(
-                        false,
-                        crate::i18n::I18nOps::get()
-                            .settings
-                            .behavior
-                            .scroll_sync
-                            .clone(),
-                    );
-
-                    let toggled = text_resp.clicked() || toggle_resp.clicked();
-                    if text_resp.clicked() && !toggle_resp.clicked() {
-                        is_on = !is_on;
-                    }
-
-                    if toggled {
+                    if ui
+                        .add(
+                            crate::widgets::LabeledToggle::new(
+                                &crate::i18n::I18nOps::get().settings.behavior.scroll_sync,
+                                &mut is_on,
+                            )
+                            .position(crate::widgets::TogglePosition::Right)
+                            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                        )
+                        .changed()
+                    {
                         action = Some(AppAction::ToggleScrollSync(is_on));
                     }
                 }

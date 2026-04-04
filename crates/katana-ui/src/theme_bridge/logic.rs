@@ -42,7 +42,7 @@ impl ThemeBridgeOps {
         visuals.selection.bg_fill = selection_bg;
         visuals.selection.stroke = egui::Stroke::new(STROKE_NORMAL, accent);
 
-        let code_bg = if is_dark {
+        let code_bg = if visuals.dark_mode {
             egui::Color32::from_gray(30)
         } else {
             egui::Color32::from_gray(245)
