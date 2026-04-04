@@ -18,8 +18,11 @@ fn icon_size_to_vec2_returns_correct_dimensions() {
 
 #[test]
 fn icon_uri_follows_bytes_scheme() {
-    assert_eq!(Icon::Refresh.uri(), "bytes://icon/refresh.svg");
-    assert_eq!(Icon::ChevronLeft.uri(), "bytes://icon/chevron_left.svg");
+    assert_eq!(Icon::Refresh.uri(), "bytes://icon/system/refresh.svg");
+    assert_eq!(
+        Icon::ChevronLeft.uri(),
+        "bytes://icon/navigation/chevron_left.svg"
+    );
 }
 
 #[test]
