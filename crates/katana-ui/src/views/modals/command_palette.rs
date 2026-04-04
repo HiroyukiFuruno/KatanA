@@ -162,6 +162,7 @@ impl<'a> CommandPaletteModal<'a> {
 
                                 let response = frame
                                     .show(ui, |ui| {
+                                        // allow(horizontal_layout)
                                         ui.horizontal(|ui| {
                                             let icon = match result.kind {
                                                 CommandPaletteResultKind::Action => {

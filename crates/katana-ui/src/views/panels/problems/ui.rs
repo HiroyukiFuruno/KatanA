@@ -25,6 +25,7 @@ impl<'a> ProblemsPanel<'a> {
             .min_size(100.0)
             .show_inside(ui, |ui| {
                 ui.add_space(SPACING);
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     ui.heading(
                         crate::i18n::I18nOps::get()
@@ -62,6 +63,7 @@ impl<'a> ProblemsPanel<'a> {
                             let filename = path.file_name().unwrap_or_default().to_string_lossy();
                             ui.label(egui::RichText::new(filename).strong());
                             for diag in diagnostics {
+                                // allow(horizontal_layout)
                                 ui.horizontal(|ui| {
                                     let icon = match diag.severity {
                                         katana_linter::markdown::DiagnosticSeverity::Error => "🔴",

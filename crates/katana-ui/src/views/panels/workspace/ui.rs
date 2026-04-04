@@ -450,6 +450,7 @@ impl<'a> WorkspaceContent<'a> {
                 );
                 ui.add_space(RECENT_WORKSPACES_ITEM_SPACING);
                 for path in recent_paths.iter().rev() {
+                    // allow(horizontal_layout)
                     ui.horizontal(|ui| {
                         if ui
                             .button("×")
@@ -511,6 +512,7 @@ impl<'a> WorkspaceHeader<'a> {
                 .unwrap_or_default();
             let is_flat = workspace.is_flat_view(&ws_root);
 
+            // allow(horizontal_layout)
             ui.horizontal(|ui| {
                 ui.add_enabled_ui(!is_flat, |ui| {
                     let btn_resp = ui
@@ -603,6 +605,7 @@ impl<'a> WorkspaceHeader<'a> {
                 if !search.filter_query.is_empty() {
                     is_valid_regex = regex::Regex::new(&search.filter_query).is_ok();
                 }
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     let text_color = if is_valid_regex {
                         ui.visuals().text_color()
@@ -676,6 +679,7 @@ impl<'a> WorkspacePanel<'a> {
 
         if is_loading {
             ui.add_space(WORKSPACE_SPINNER_OUTER_MARGIN);
+            // allow(horizontal_layout)
             ui.horizontal(|ui| {
                 ui.add_space(WORKSPACE_SPINNER_INNER_MARGIN);
                 ui.spinner();

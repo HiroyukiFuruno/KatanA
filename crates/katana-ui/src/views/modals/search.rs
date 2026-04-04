@@ -57,6 +57,7 @@ impl<'a> SearchModal<'a> {
             .resizable(true)
             .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
             .show(ctx, |ui| {
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     ui.selectable_value(
                         &mut search.active_tab,
@@ -208,6 +209,7 @@ impl<'a> SearchModal<'a> {
                             });
                     }
                     crate::app_state::SearchTab::MarkdownContent => {
+                        // allow(horizontal_layout)
                         ui.horizontal(|ui| {
                             let response = ui.add(
                                 egui::TextEdit::singleline(&mut search.md_query)
@@ -242,6 +244,7 @@ impl<'a> SearchModal<'a> {
                         if search.md_query.is_empty() && !search.md_history.recent_terms.is_empty()
                         {
                             ui.separator();
+                            // allow(horizontal_layout)
                             ui.horizontal(|ui| {
                                 ui.label(
                                     egui::RichText::new(
@@ -288,6 +291,7 @@ impl<'a> SearchModal<'a> {
                                                 ws_root.as_deref(),
                                             );
                                         ui.group(|ui| {
+                                            // allow(horizontal_layout)
                                             ui.horizontal(|ui| {
                                                 ui.label(egui::RichText::new(&rel).strong());
                                                 let ln_text = format!(

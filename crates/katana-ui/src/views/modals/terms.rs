@@ -62,6 +62,7 @@ impl<'a> TermsModal<'a> {
                                 );
                                 ui.add_space(TERMS_SPACING_SMALL);
 
+                                // allow(horizontal_layout)
                                 ui.horizontal(|ui| {
                                     ui.label(
                                         egui::RichText::new(crate::i18n::I18nOps::tf(
@@ -128,6 +129,7 @@ impl<'a> TermsModal<'a> {
 
                                 ui.add_space(TERMS_SPACING_XLARGE);
 
+                                // allow(horizontal_layout)
                                 ui.horizontal(|ui| {
                                     let total_buttons_width =
                                         TERMS_BUTTON_WIDTH * 2.0 + TERMS_BUTTON_SPACING;

@@ -51,6 +51,7 @@ impl<'a> CreateFsNodeModal<'a> {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
@@ -78,6 +79,7 @@ impl<'a> CreateFsNodeModal<'a> {
                 });
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())
@@ -157,6 +159,7 @@ impl<'a> RenameModal<'a> {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
@@ -172,6 +175,7 @@ impl<'a> RenameModal<'a> {
                 });
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())
@@ -249,6 +253,7 @@ impl<'a> DeleteModal<'a> {
 
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())

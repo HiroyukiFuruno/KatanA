@@ -117,12 +117,16 @@ check-light: fmt-check lint ## Quick verification (skip slow fixture tests)
 	cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
+.PHONY: lint-align
+lint-align: ## Check AlignCenter usage (views must not use ui.horizontal directly)
+	bash scripts/lint-align-center.sh
+
 .PHONY: check
-check: fmt-check lint test-integration coverage ## Full verification (fmt + clippy + IT + 100% coverage enforced)
+check: fmt-check lint lint-align test-integration coverage ## Full verification (fmt + clippy + align-lint + IT + 100% coverage enforced)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: fmt lint test-integration coverage ## Full verification (fmt + clippy + IT + 100% coverage enforced)
+check-local: fmt lint lint-align test-integration coverage ## Full verification (fmt + clippy + align-lint + IT + 100% coverage enforced)
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push

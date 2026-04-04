@@ -49,93 +49,94 @@ impl<'a> StatusBar<'a> {
             egui::vec2(ui.available_width(), row_height),
             egui::Layout::left_to_right(egui::Align::Center),
             |ui| {
-            let (msg, kind) = if let Some((msg, kind)) = self.status {
-                (msg.as_str(), Some(kind))
-            } else {
-                (crate::i18n::I18nOps::get().status.ready.as_str(), None)
-            };
+                let (msg, kind) = if let Some((msg, kind)) = self.status {
+                    (msg.as_str(), Some(kind))
+                } else {
+                    (crate::i18n::I18nOps::get().status.ready.as_str(), None)
+                };
 
-            let (color, icon) = match kind {
-                Some(crate::app_state::StatusType::Error) => (
-                    ui.ctx()
-                        .data(|d| {
-                            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                                "katana_theme_colors",
-                            ))
-                        })
-                        .map_or(crate::theme_bridge::WHITE, |tc| {
-                            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                                tc.system.error_text,
-                            )
-                        }),
-                    Some(crate::Icon::Error),
-                ),
-                Some(crate::app_state::StatusType::Warning) => {
-                    (ui.visuals().warn_fg_color, Some(crate::Icon::Warning))
-                }
-                Some(crate::app_state::StatusType::Success) => (
-                    crate::theme_bridge::ThemeBridgeOps::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
-                    Some(crate::Icon::Success),
-                ),
-                Some(crate::app_state::StatusType::Info) => {
-                    (ui.visuals().text_color(), Some(crate::Icon::Info))
-                }
-                _ => (ui.visuals().text_color(), None),
-            };
-
-            ui.add_space(STATUS_BAR_ICON_SPACING);
-            if let Some(i) = icon {
-                ui.add(i.image(crate::icon::IconSize::Medium).tint(color));
-                ui.add_space(2.0);
-            }
-            crate::icon::IconOps::render_str_with_icons(ui, msg, Some(color));
-
-            let problem_text = crate::i18n::I18nOps::tf(
-                &crate::i18n::I18nOps::get().status.problems_count_format,
-                &[("count", &problem_count.to_string())],
-            );
-            let btn = egui::Button::image_and_text(
-                crate::Icon::Warning.ui_image(ui, crate::icon::IconSize::Small),
-                problem_text,
-            );
-            if ui
-                .add(btn)
-                .on_hover_text(
-                    crate::i18n::I18nOps::get()
-                        .status
-                        .toggle_problems_panel
-                        .clone(),
-                )
-                .clicked()
-            {
-                action = Some(AppAction::ToggleProblemsPanel);
-            }
-
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if !export_filenames.is_empty() {
-                    let total = export_filenames.len();
-                    ui.spinner();
-                    for (i, filename) in export_filenames.iter().enumerate() {
-                        let numbered = crate::i18n::I18nOps::tf(
-                            &crate::i18n::I18nOps::get().export.exporting,
-                            &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
-                        );
-                        crate::icon::IconOps::render_str_with_icons(ui, &numbered, None);
+                let (color, icon) = match kind {
+                    Some(crate::app_state::StatusType::Error) => (
+                        ui.ctx()
+                            .data(|d| {
+                                d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                                    "katana_theme_colors",
+                                ))
+                            })
+                            .map_or(crate::theme_bridge::WHITE, |tc| {
+                                crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                                    tc.system.error_text,
+                                )
+                            }),
+                        Some(crate::Icon::Error),
+                    ),
+                    Some(crate::app_state::StatusType::Warning) => {
+                        (ui.visuals().warn_fg_color, Some(crate::Icon::Warning))
                     }
+                    Some(crate::app_state::StatusType::Success) => (
+                        crate::theme_bridge::ThemeBridgeOps::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
+                        Some(crate::Icon::Success),
+                    ),
+                    Some(crate::app_state::StatusType::Info) => {
+                        (ui.visuals().text_color(), Some(crate::Icon::Info))
+                    }
+                    _ => (ui.visuals().text_color(), None),
+                };
+
+                ui.add_space(STATUS_BAR_ICON_SPACING);
+                if let Some(i) = icon {
+                    ui.add(i.image(crate::icon::IconSize::Medium).tint(color));
+                    ui.add_space(2.0);
                 }
-                const DIRTY_DOT_MAX_HEIGHT: f32 = 10.0;
-                if self.is_dirty {
-                    ui.add(
-                        egui::Image::new(crate::Icon::Dot.uri())
-                            .tint(ui.visuals().text_color())
-                            .fit_to_exact_size(egui::vec2(
-                                DIRTY_DOT_MAX_HEIGHT,
-                                DIRTY_DOT_MAX_HEIGHT,
-                            )),
-                    );
+                crate::icon::IconOps::render_str_with_icons(ui, msg, Some(color));
+
+                let problem_text = crate::i18n::I18nOps::tf(
+                    &crate::i18n::I18nOps::get().status.problems_count_format,
+                    &[("count", &problem_count.to_string())],
+                );
+                let btn = egui::Button::image_and_text(
+                    crate::Icon::Warning.ui_image(ui, crate::icon::IconSize::Small),
+                    problem_text,
+                );
+                if ui
+                    .add(btn)
+                    .on_hover_text(
+                        crate::i18n::I18nOps::get()
+                            .status
+                            .toggle_problems_panel
+                            .clone(),
+                    )
+                    .clicked()
+                {
+                    action = Some(AppAction::ToggleProblemsPanel);
                 }
-            });
-        });
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if !export_filenames.is_empty() {
+                        let total = export_filenames.len();
+                        ui.spinner();
+                        for (i, filename) in export_filenames.iter().enumerate() {
+                            let numbered = crate::i18n::I18nOps::tf(
+                                &crate::i18n::I18nOps::get().export.exporting,
+                                &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
+                            );
+                            crate::icon::IconOps::render_str_with_icons(ui, &numbered, None);
+                        }
+                    }
+                    const DIRTY_DOT_MAX_HEIGHT: f32 = 10.0;
+                    if self.is_dirty {
+                        ui.add(
+                            egui::Image::new(crate::Icon::Dot.uri())
+                                .tint(ui.visuals().text_color())
+                                .fit_to_exact_size(egui::vec2(
+                                    DIRTY_DOT_MAX_HEIGHT,
+                                    DIRTY_DOT_MAX_HEIGHT,
+                                )),
+                        );
+                    }
+                });
+            },
+        );
         action
     }
 }
@@ -182,6 +183,7 @@ impl<'a> TabBar<'a> {
 
         ui.style_mut().interaction.tooltip_delay = TAB_TOOLTIP_SHOW_DELAY_SECS;
 
+        // allow(horizontal_layout)
         ui.horizontal(|ui| {
             let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
             let scroll_width = ui.available_width() - nav_button_width;
@@ -243,6 +245,7 @@ impl<'a> TabBar<'a> {
                         }
                     }
 
+                    // allow(horizontal_layout)
                     ui.horizontal(|ui| {
                         for item in draw_items {
                             match item {
@@ -277,6 +280,7 @@ impl<'a> TabBar<'a> {
                                             GROUP_HEADER_PADDING_Y,
                                         ))
                                         .show(ui, |ui| {
+                                            // allow(horizontal_layout)
                                             ui.horizontal(|ui| {
                                                 ui.spacing_mut().item_spacing.x =
                                                     GROUP_HEADER_ITEM_SPACING;
@@ -327,6 +331,7 @@ impl<'a> TabBar<'a> {
                                         let i18n = crate::i18n::I18nOps::get();
                                         let mut new_name = g.name.clone();
                                         let mut new_color = g.color_hex.clone();
+                                        // allow(horizontal_layout)
                                         ui.horizontal(|ui: &mut egui::Ui| {
                                             let resp = ui.add(egui::TextEdit::singleline(&mut new_name).hint_text(&i18n.tab.group_name_placeholder));
                                             if self.inline_rename_group.as_ref() == Some(&g.id) {
@@ -340,6 +345,7 @@ impl<'a> TabBar<'a> {
                                         const PALETTE_STROKE: f32 = 2.0;
 
                                         ui.add_space(SPACING);
+                                        // allow(horizontal_layout)
                                         ui.horizontal(|ui: &mut egui::Ui| {
                                             let colors = ["#4A90D9", "#D94A4A", "#4AD97A", "#D9A04A", "#9B59B6", "#F1C40F", "#1ABC9C"];
                                             for c in colors {
@@ -533,6 +539,7 @@ impl<'a> TabBar<'a> {
                                                     ui.style_mut().wrap_mode =
                                                         Some(egui::TextWrapMode::Truncate);
 
+                                                    // allow(horizontal_layout)
                                                     ui.horizontal(|ui| {
                                                         ui.spacing_mut().item_spacing.x = 0.0;
                                                         if is_changelog {
@@ -671,6 +678,7 @@ impl<'a> TabBar<'a> {
                                                         if g.members.contains(&doc_str) {
                                                             continue;
                                                         }
+                                                        // allow(horizontal_layout)
                                                         ui.horizontal(|ui: &mut egui::Ui| {
                                                             let color32 = egui::Color32::from_hex(&g.color_hex).unwrap_or(ui.visuals().widgets.active.bg_fill);
                                                             let (rect, _) = ui.allocate_exact_size(egui::vec2(GROUP_MENU_ICON_SIZE, GROUP_MENU_ICON_SIZE), egui::Sense::hover());
