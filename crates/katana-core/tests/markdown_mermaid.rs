@@ -1,6 +1,7 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::mermaid_renderer;
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 static ENV_LOCK: Mutex<()> = Mutex::new(());
 
@@ -47,6 +48,25 @@ fn fake_binary_is_false_in_is_mmdc_available() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
     assert!(!mermaid_renderer::MermaidRenderOps::is_mmdc_available());
+    unsafe { std::env::remove_var("MERMAID_MMDC") };
+}
+
+#[test]
+fn hung_mmdc_probe_returns_false_instead_of_blocking() {
+    use std::{fs, os::unix::fs::PermissionsExt};
+
+    let _guard = ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let script_path = dir.path().join("fake-mmdc.sh");
+    fs::write(&script_path, "#!/bin/sh\nsleep 5\n").unwrap();
+    let mut permissions = fs::metadata(&script_path).unwrap().permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(&script_path, permissions).unwrap();
+
+    unsafe { std::env::set_var("MERMAID_MMDC", &script_path) };
+    let start = Instant::now();
+    assert!(!mermaid_renderer::MermaidRenderOps::is_mmdc_available());
+    assert!(start.elapsed() < Duration::from_secs(4));
     unsafe { std::env::remove_var("MERMAID_MMDC") };
 }
 

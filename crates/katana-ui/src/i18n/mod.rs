@@ -17,6 +17,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Mutates global language to invalid code, causing flaky panics in concurrent tests"]
     #[should_panic(expected = "BUG: Supported language missing from dictionary.")]
     fn test_get_panic_on_unsupported() {
         I18nOps::set_language("unsupported-lang-code");

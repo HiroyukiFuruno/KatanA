@@ -95,6 +95,14 @@ impl DefaultCacheService {
                     if let Ok(json) = std::fs::read_to_string(&inner_path)
                         && let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json)
                     {
+                        if let PersistentKey::Diagram { ref diagram_kind, .. } = env.key {
+                            // Drop legacy mermaid SVG caches (version < 2)
+                            if diagram_kind == "mermaid" && env.storage_version < 2 {
+                                let _ = std::fs::remove_file(&inner_path);
+                                continue;
+                            }
+                        }
+
                         if let Some(target_filename) = env.key.target_filename()
                             && entry.file_name() != std::ffi::OsStr::new(&target_filename)
                         {
@@ -198,7 +206,7 @@ impl CacheFacade for DefaultCacheService {
         // But for backwards compatibility, if they pass an unknown key, we can try to save it or drop it.
         // Actually, let's persist everything but with `unknown` format if needed.
         let env = PersistentEntryEnvelope {
-            storage_version: 1,
+            storage_version: 2,
             key: p_key.clone(),
             value: value.clone(),
         };

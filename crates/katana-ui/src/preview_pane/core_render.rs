@@ -184,32 +184,7 @@ impl PreviewPane {
 
                     let result = if let Some(json) = cached_result {
                         match serde_json::from_str::<DiagramResult>(&json) {
-                            Ok(res) => {
-                                if matches!(job.kind, katana_core::markdown::DiagramKind::Mermaid) && matches!(res, DiagramResult::Ok(_)) {
-                                    // WHY: Old caches may still store Mermaid output as Ok(html) (SVG format).
-                                    // Passing this legacy SVG to resvg/usvg can cause an infinite loop in the text parser
-                                    // or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG.
-                                    let new_res = RendererLogicOps::dispatch_renderer(
-                                        &katana_core::markdown::DiagramBlock {
-                                            kind: job.kind.clone(),
-                                            source: job.src.clone(),
-                                        },
-                                    );
-                                    if let Ok(json) = serde_json::to_string(&new_res) {
-                                        if is_http {
-                                            job.cache.set_memory(&cache_key, json);
-                                        } else {
-                                            let _ = job.cache.set_persistent(&cache_key, json);
-                                        }
-                                    }
-                                    if matches!(new_res, DiagramResult::Err { .. }) {
-                                        let _ = tx.send(RenderMessage::ReduceConcurrency);
-                                    }
-                                    new_res
-                                } else {
-                                    res
-                                }
-                            }
+                            Ok(res) => res,
                             Err(_) => {
                                 let res = RendererLogicOps::dispatch_renderer(
                                     &katana_core::markdown::DiagramBlock {

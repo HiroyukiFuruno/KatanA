@@ -3,6 +3,28 @@ use eframe::egui;
 
 use super::types::PreviewPane;
 impl PreviewPane {
+    fn finalize_disconnected_renders(&mut self) {
+        for slot in &mut self.sections {
+            if let RenderedSection::Pending {
+                kind,
+                source,
+                source_lines,
+            } = slot.clone()
+            {
+                *slot = RenderedSection::Error {
+                    kind,
+                    _source: source,
+                    message: "Diagram render worker disconnected before producing a result."
+                        .to_string(),
+                    source_lines,
+                };
+            }
+        }
+
+        self.is_loading = false;
+        self.render_rx = None;
+    }
+
     pub(crate) fn poll_renders(&mut self, ctx: &egui::Context) {
         while let Some(path) = self.image_preload_queue.pop() {
             if self.image_cache.insert(path.clone()) {
@@ -50,8 +72,7 @@ impl PreviewPane {
             }
 
             if disconnected {
-                self.is_loading = false;
-                self.render_rx = None;
+                self.finalize_disconnected_renders();
             }
         } else {
             self.is_loading = false;
@@ -60,31 +81,48 @@ impl PreviewPane {
 
     pub fn wait_for_renders(&mut self) {
         while let Some(rx) = &self.render_rx {
-            while let Ok(msg) = rx.try_recv() {
-                match msg {
-                    RenderMessage::Section {
-                        kind,
-                        source,
-                        section,
-                    } => {
-                        for slot in &mut self.sections {
-                            if let RenderedSection::Pending {
-                                kind: p_kind,
-                                source: p_source,
-                                ..
-                            } = slot
-                                && p_kind == &kind
-                                && p_source == &source
-                            {
-                                *slot = section.clone();
+            let mut disconnected = false;
+
+            loop {
+                match rx.try_recv() {
+                    Ok(msg) => match msg {
+                        RenderMessage::Section {
+                            kind,
+                            source,
+                            section,
+                        } => {
+                            for slot in &mut self.sections {
+                                if let RenderedSection::Pending {
+                                    kind: p_kind,
+                                    source: p_source,
+                                    ..
+                                } = slot
+                                    && p_kind == &kind
+                                    && p_source == &source
+                                {
+                                    *slot = section.clone();
+                                }
                             }
                         }
+                        RenderMessage::ReduceConcurrency => {
+                            self.concurrency_reduction_requested = true;
+                        }
+                    },
+                    Err(std::sync::mpsc::TryRecvError::Empty) => {
+                        break;
                     }
-                    RenderMessage::ReduceConcurrency => {
-                        self.concurrency_reduction_requested = true;
+                    Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                        disconnected = true;
+                        break;
                     }
                 }
             }
+
+            if disconnected {
+                self.finalize_disconnected_renders();
+                break;
+            }
+
             if self
                 .sections
                 .iter()

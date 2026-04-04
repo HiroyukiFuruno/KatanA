@@ -275,6 +275,28 @@ mod tests {
     }
 
     #[test]
+    fn poll_renders_disconnected_marks_pending_as_error() {
+        use std::sync::mpsc;
+        let mut pane = PreviewPane::default();
+
+        pane.sections = vec![RenderedSection::Pending {
+            kind: "Mermaid".to_string(),
+            source: "graph TD; A-->B".to_string(),
+            source_lines: 3,
+        }];
+
+        let (tx, rx) = mpsc::channel::<RenderMessage>();
+        pane.render_rx = Some(rx);
+        drop(tx);
+
+        let ctx = egui::Context::default();
+        pane.poll_renders(&ctx);
+
+        assert_variant!(pane.sections[0], RenderedSection::Error { .. });
+        assert!(pane.render_rx.is_none());
+    }
+
+    #[test]
     fn wait_for_renders_blocks_until_all_rendered() {
         use std::sync::mpsc;
         let mut pane = PreviewPane::default();
@@ -301,6 +323,27 @@ mod tests {
 
         assert!(pane.render_rx.is_none());
         assert_variant!(pane.sections[0], RenderedSection::Markdown(_));
+    }
+
+    #[test]
+    fn wait_for_renders_disconnected_marks_pending_as_error() {
+        use std::sync::mpsc;
+        let mut pane = PreviewPane::default();
+
+        pane.sections = vec![RenderedSection::Pending {
+            kind: "Mermaid".to_string(),
+            source: "graph TD; A-->B".to_string(),
+            source_lines: 3,
+        }];
+
+        let (tx, rx) = mpsc::channel::<RenderMessage>();
+        pane.render_rx = Some(rx);
+        drop(tx);
+
+        pane.wait_for_renders();
+
+        assert!(pane.render_rx.is_none());
+        assert_variant!(pane.sections[0], RenderedSection::Error { .. });
     }
 
     #[test]
