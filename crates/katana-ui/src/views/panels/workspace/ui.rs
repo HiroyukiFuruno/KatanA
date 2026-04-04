@@ -514,8 +514,8 @@ impl<'a> WorkspaceHeader<'a> {
                 .unwrap_or_default();
             let is_flat = workspace.is_flat_view(&ws_root);
 
-            let icon_btn_size = crate::icon::IconSize::Small.to_vec2()
-                + ui.spacing().button_padding * 2.0;
+            let icon_btn_size =
+                crate::icon::IconSize::Small.to_vec2() + ui.spacing().button_padding * 2.0;
             let square_size = icon_btn_size.max_elem();
             let icon_min_size = egui::vec2(square_size, square_size);
 
