@@ -8,8 +8,8 @@ use katana_linter::rules::domains::theme::{
 };
 use katana_linter::rules::{
     CommentStyleOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps, FunctionLengthOps,
-    LazyCodeOps, MagicNumberOps, NestingDepthOps, PerformanceOps, ProhibitedAttributesOps,
-    ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
+    HorizontalLayoutOps, LazyCodeOps, MagicNumberOps, NestingDepthOps, PerformanceOps,
+    ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -330,4 +330,18 @@ fn ast_linter_no_japanese_in_crates() {
             &violations,
         );
     }
+}
+
+#[test]
+fn ast_linter_no_horizontal_layout() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "horizontal-layout",
+        "Fix: Use `AlignCenter` instead of `ui.horizontal()` for vertical centering. Add `// allow(horizontal_layout)` above the line to suppress.",
+        &[
+            root.join("crates/katana-ui/src/views"),
+            root.join("crates/katana-ui/src/widgets"),
+        ],
+        HorizontalLayoutOps::lint,
+    );
 }

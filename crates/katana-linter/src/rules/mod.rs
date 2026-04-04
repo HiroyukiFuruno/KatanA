@@ -3,8 +3,8 @@ pub mod domains;
 pub mod structure;
 
 pub use coding::{
-    CommentStyleOps, ErrorFirstOps, LazyCodeOps, MagicNumberOps, PerformanceOps,
-    ProhibitedAttributesOps, ProhibitedTypesOps,
+    CommentStyleOps, ErrorFirstOps, HorizontalLayoutOps, LazyCodeOps, MagicNumberOps,
+    PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps,
 };
 
 pub use structure::{

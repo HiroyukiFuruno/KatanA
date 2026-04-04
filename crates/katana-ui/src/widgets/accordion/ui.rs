@@ -123,6 +123,7 @@ impl<'a> Accordion<'a> {
         }
 
         state.show_body_unindented(ui, |ui| {
+            // allow(horizontal_layout)
             ui.horizontal(|ui| {
                 ui.add_space(ui.spacing().indent);
                 ui.vertical(|ui| {

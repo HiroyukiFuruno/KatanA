@@ -76,6 +76,7 @@ impl<'a> Modal<'a> {
                 });
 
                 ui.add_space(BAR_TO_FOOTER_SPACING);
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     ui.set_max_width(dialog_width);
                     result = footer(ui);
