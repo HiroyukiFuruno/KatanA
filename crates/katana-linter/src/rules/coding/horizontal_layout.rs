@@ -33,10 +33,11 @@ impl<'ast, 'a> Visit<'ast> for HorizontalLayoutVisitor<'a> {
             // WHY: allow(horizontal_layout) on previous line suppresses this rule
             if line > 1
                 && let Some(prev) = self.source_lines.get(line - 2)
-                    && prev.contains("allow(horizontal_layout)") {
-                        syn::visit::visit_expr_method_call(self, node);
-                        return;
-                    }
+                && prev.contains("allow(horizontal_layout)")
+            {
+                syn::visit::visit_expr_method_call(self, node);
+                return;
+            }
 
             self.violations.push(Violation {
                 file: self.file_path.clone(),

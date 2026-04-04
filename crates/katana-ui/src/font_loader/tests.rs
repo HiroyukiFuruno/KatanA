@@ -488,7 +488,7 @@ fn test_font_jitter_8_inline_code_cross_family() {
 }
 
 #[test]
-fn test_proportional_primary_y_offset_is_zero() {
+fn test_proportional_primary_y_offset_matches_constant() {
     let preset = DiagramColorPreset::current();
     let fonts = SystemFontLoader::build_font_definitions(
         &preset.proportional_font_candidates,
@@ -508,11 +508,11 @@ fn test_proportional_primary_y_offset_is_zero() {
     if let Some(name) = prop_primary {
         let font_data = fonts.fonts().font_data.get(&name).expect("font data");
         let y_offset = font_data.tweak.y_offset_factor;
+        let expected = super::PROPORTIONAL_Y_OFFSET_FACTOR;
         assert!(
-            y_offset.abs() < 0.01,
-            "Proportional primary font y_offset_factor must be ~0 for correct vertical \
-             centering in widgets. Got: {}. Cross-family alignment should be achieved \
-             by adjusting the Monospace side instead.",
+            (y_offset - expected).abs() < 0.001,
+            "Proportional primary font y_offset_factor must match PROPORTIONAL_Y_OFFSET_FACTOR ({}). Got: {}.",
+            expected,
             y_offset
         );
     }

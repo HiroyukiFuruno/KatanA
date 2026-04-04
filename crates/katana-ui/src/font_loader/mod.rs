@@ -5,6 +5,9 @@ use std::fs;
 const MONO_FALLBACK_Y_OFFSET_FACTOR: f32 = 0.40;
 const MONO_PRIMARY_Y_OFFSET_FACTOR: f32 = -0.15;
 const MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.0;
+// WHY: Proportional font descender space causes text to appear ~3px above visual center.
+// This offset compensates for the unused descender area in CJK/UI text rendering.
+const PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.25;
 
 mod types;
 pub use types::{NormalizeFonts, SystemFontLoader};
@@ -101,7 +104,15 @@ impl SystemFontLoader {
     ) -> NormalizeFonts {
         let mut fonts = FontDefinitions::default();
 
-        let prop_name = Self::load_first_valid(&mut fonts, proportional_candidates, None, "");
+        let prop_tweak = egui::FontTweak {
+            coords: Default::default(),
+            hinting_override: None,
+            scale: 1.0,
+            y_offset_factor: PROPORTIONAL_Y_OFFSET_FACTOR,
+            y_offset: 0.0,
+        };
+        let prop_name =
+            Self::load_first_valid(&mut fonts, proportional_candidates, Some(prop_tweak), "");
 
         let markdown_tweak = egui::FontTweak {
             coords: Default::default(),

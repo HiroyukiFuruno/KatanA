@@ -46,23 +46,29 @@ impl ThemeBridgeOps {
         visuals.widgets.noninteractive.bg_fill = panel_bg;
         visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);
         visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
+        visuals.widgets.noninteractive.expansion = 0.0;
 
         visuals.widgets.inactive.bg_fill = panel_bg;
         visuals.widgets.inactive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
         visuals.widgets.inactive.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
+        visuals.widgets.inactive.expansion = 0.0;
 
         visuals.widgets.hovered.bg_fill = highlight_bg;
         visuals.widgets.hovered.fg_stroke = egui::Stroke::new(STROKE_MEDIUM, accent);
         visuals.widgets.hovered.bg_stroke = egui::Stroke::new(STROKE_NORMAL, accent);
+        // WHY: expansion=0 prevents widget rect from growing on hover (CSS box-sizing: border-box equivalent).
+        visuals.widgets.hovered.expansion = 0.0;
 
         let strong = strengthen_color(text, dark);
         visuals.widgets.active.bg_fill = accent;
         visuals.widgets.active.fg_stroke = egui::Stroke::new(STROKE_BOLD, strong);
         visuals.widgets.active.bg_stroke = egui::Stroke::new(STROKE_NORMAL, accent);
+        visuals.widgets.active.expansion = 0.0;
 
         visuals.widgets.open.bg_fill = panel_bg;
         visuals.widgets.open.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
         visuals.widgets.open.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
+        visuals.widgets.open.expansion = 0.0;
 
         visuals
     }
