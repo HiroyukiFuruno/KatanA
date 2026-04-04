@@ -8,9 +8,9 @@ use katana_linter::rules::domains::theme::{
 };
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
-    FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, LazyCodeOps, MagicNumberOps,
-    NestingDepthOps, PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps,
-    TypeSeparationOps,
+    FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps,
+    MagicNumberOps, NestingDepthOps, PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps,
+    PubFreeFnOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -363,5 +363,19 @@ fn ast_linter_no_conditional_frame() {
         "Fix: `selectable_label`, `selectable_value`, `menu_button` show frames only on hover, causing layout jitter. Use `Button::selectable(...).frame_when_inactive(true)` or add `// allow(conditional_frame)` above to suppress.",
         &[root.join("crates/katana-ui/src")],
         ConditionalFrameOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_icon_button_fill() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "icon-button-fill",
+        "Fix: `Button::image()` must have an explicit `.fill(icon_bg)` to ensure consistent \
+         backgrounds across all hover states. \
+         icon_bg = TRANSPARENT (dark) or from_gray(LIGHT_MODE_ICON_BG) (light). \
+         Add `// allow(icon_button_fill)` above the call to suppress (decorative icons only).",
+        &[root.join("crates/katana-ui/src")],
+        IconButtonFillOps::lint,
     );
 }

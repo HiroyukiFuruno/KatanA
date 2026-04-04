@@ -35,9 +35,10 @@ struct FrameStrokeVisitor<'a> {
 impl FrameStrokeVisitor<'_> {
     fn is_suppressed(&self, line: usize) -> bool {
         if line > 1
-            && let Some(prev) = self.source_lines.get(line - 2) {
-                return prev.contains("allow(frame_stroke)");
-            }
+            && let Some(prev) = self.source_lines.get(line - 2)
+        {
+            return prev.contains("allow(frame_stroke)");
+        }
         false
     }
 
@@ -50,14 +51,15 @@ impl FrameStrokeVisitor<'_> {
 
 impl<'ast> Visit<'ast> for FrameStrokeVisitor<'_> {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
-        // Skip theme_bridge — centralized expansion config lives there
+        // WHY: theme_bridge is the centralized expansion config — skip it to avoid false positives.
         if self.is_theme_bridge() {
             return;
         }
 
         let method_name = node.method.to_string();
 
-        // Detect: painter().rect_stroke(...)
+        // WHY: painter().rect_stroke() adds pixels outside the rect without expansion
+        // WHY: compensation, causing border inflation on hover. Detect and require shrink().
         if method_name == "rect_stroke" {
             let (line, column) = LinterParserOps::span_location(node.method.span());
             if !self.is_suppressed(line) {
@@ -70,20 +72,19 @@ impl<'ast> Visit<'ast> for FrameStrokeVisitor<'_> {
             }
         }
 
-        // Detect: .stroke(...) on Frame builder chains
-        // Heuristic: `.stroke(Stroke::new(...))` or `.stroke(egui::Stroke::new(...))`
-        if method_name == "stroke" && !node.args.is_empty()
-            && Self::is_frame_context(node) {
-                let (line, column) = LinterParserOps::span_location(node.method.span());
-                if !self.is_suppressed(line) {
-                    self.violations.push(Violation {
+        // WHY: .stroke() on a Frame builder adds pixels outside the widget rect. Detect this
+        // WHY: by walking the receiver chain for Frame builder method names (fill/margin etc).
+        if method_name == "stroke" && !node.args.is_empty() && Self::is_frame_context(node) {
+            let (line, column) = LinterParserOps::span_location(node.method.span());
+            if !self.is_suppressed(line) {
+                self.violations.push(Violation {
                         file: self.file_path.clone(),
                         line,
                         column,
                         message: "Frame `.stroke()` can cause layout jitter on hover. Use theme visuals (expansion-compensated) or wrap in a widget. Add `// allow(frame_stroke)` above to suppress.".to_string(),
                     });
-                }
             }
+        }
 
         syn::visit::visit_expr_method_call(self, node);
     }
@@ -98,7 +99,7 @@ impl FrameStrokeVisitor<'_> {
             match expr {
                 syn::Expr::MethodCall(inner) => {
                     let name = inner.method.to_string();
-                    // Frame builder methods
+                    // WHY: These are the chainable Frame builder methods — keep walking up.
                     if matches!(
                         name.as_str(),
                         "fill"
@@ -124,11 +125,12 @@ impl FrameStrokeVisitor<'_> {
                     return path_str.contains("Frame");
                 }
                 syn::Expr::Field(field) => {
-                    // Frame::NONE, Frame::default() etc
+                    // WHY: Frame::NONE and .frame are sentinel field accesses indicating a Frame builder start.
                     if let syn::Member::Named(ident) = &field.member
-                        && (ident == "NONE" || ident == "frame") {
-                            return true;
-                        }
+                        && (ident == "NONE" || ident == "frame")
+                    {
+                        return true;
+                    }
                     expr = &field.base;
                     continue;
                 }

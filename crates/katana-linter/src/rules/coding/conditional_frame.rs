@@ -45,10 +45,10 @@ struct ConditionalFrameVisitor<'a> {
 
 impl ConditionalFrameVisitor<'_> {
     fn is_suppressed(&self, line: usize) -> bool {
-        if line > 1 {
-            if let Some(prev) = self.source_lines.get(line - 2) {
-                return prev.contains("allow(conditional_frame)");
-            }
+        if line > 1
+            && let Some(prev) = self.source_lines.get(line - 2)
+        {
+            return prev.contains("allow(conditional_frame)");
         }
         false
     }
@@ -59,9 +59,8 @@ impl<'ast> Visit<'ast> for ConditionalFrameVisitor<'_> {
         let method_name = node.method.to_string();
 
         match method_name.as_str() {
-            // ui.selectable_label(is_selected, text)
-            // ui.selectable_value(&mut val, variant, text)
-            // ui.menu_button(text, |ui| { ... })
+            // WHY: selectable_label/selectable_value/menu_button all conditionally show
+            // WHY: the frame based on hover state, causing layout jitter. Match all three.
             "selectable_label" | "selectable_value" | "menu_button" => {
                 let (line, column) = LinterParserOps::span_location(node.method.span());
                 if !self.is_suppressed(line) {
