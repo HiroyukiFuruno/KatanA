@@ -1,34 +1,37 @@
+use super::types::EmojiSvgOps;
 #[cfg(target_os = "macos")]
 use regex::Regex;
 #[cfg(target_os = "macos")]
 use std::sync::OnceLock;
 
 #[cfg(target_os = "macos")]
-use super::data::is_emoji_scalar;
+use super::types::EmojiDataOps;
 
 #[cfg(target_os = "macos")]
 const APPLE_COLOR_EMOJI_FONT_FAMILY: &str = "Apple Color Emoji";
 
-pub fn prefer_apple_color_emoji_in_svg(svg: &str) -> String {
-    #[cfg(not(target_os = "macos"))]
-    {
-        svg.to_owned()
-    }
+impl EmojiSvgOps {
+    pub fn prefer_apple_color_emoji_in_svg(svg: &str) -> String {
+        #[cfg(not(target_os = "macos"))]
+        {
+            svg.to_owned()
+        }
 
-    #[cfg(target_os = "macos")]
-    {
-        svg_text_regex()
-            .replace_all(svg, |caps: &regex::Captures<'_>| {
-                let attrs = caps.name("attrs").map_or("", |m| m.as_str());
-                let text = caps.name("text").map_or("", |m| m.as_str());
-                if !contains_emoji(text) {
-                    caps.get(0)
-                        .map_or_else(String::new, |full| full.as_str().to_owned())
-                } else {
-                    format!("<text{}>{}</text>", ensure_emoji_font_family(attrs), text)
-                }
-            })
-            .into_owned()
+        #[cfg(target_os = "macos")]
+        {
+            svg_text_regex()
+                .replace_all(svg, |caps: &regex::Captures<'_>| {
+                    let attrs = caps.name("attrs").map_or("", |m| m.as_str());
+                    let text = caps.name("text").map_or("", |m| m.as_str());
+                    if !contains_emoji(text) {
+                        caps.get(0)
+                            .map_or_else(String::new, |full| full.as_str().to_owned())
+                    } else {
+                        format!("<text{}>{}</text>", ensure_emoji_font_family(attrs), text)
+                    }
+                })
+                .into_owned()
+        }
     }
 }
 
@@ -85,7 +88,7 @@ fn ensure_emoji_font_family(attrs: &str) -> String {
 
 #[cfg(target_os = "macos")]
 fn contains_emoji(text: &str) -> bool {
-    text.chars().any(is_emoji_scalar)
+    text.chars().any(EmojiDataOps::is_emoji_scalar)
 }
 
 #[cfg(test)]
@@ -97,7 +100,7 @@ mod tests {
     fn prefer_apple_color_emoji_in_svg_prefixes_existing_font_family() {
         let svg = r#"<svg><text x="10" font-family="Verdana" font-size="14">❤️</text></svg>"#;
 
-        let processed = prefer_apple_color_emoji_in_svg(svg);
+        let processed = EmojiSvgOps::prefer_apple_color_emoji_in_svg(svg);
 
         assert!(processed.contains(r#"font-family="Apple Color Emoji, Verdana""#));
     }
@@ -107,7 +110,7 @@ mod tests {
     fn prefer_apple_color_emoji_in_svg_adds_font_family_when_missing() {
         let svg = r#"<svg><text x="10">❤️ Sponsor</text></svg>"#;
 
-        let processed = prefer_apple_color_emoji_in_svg(svg);
+        let processed = EmojiSvgOps::prefer_apple_color_emoji_in_svg(svg);
 
         assert!(processed.contains(r#"font-family="Apple Color Emoji""#));
     }
@@ -116,7 +119,7 @@ mod tests {
     fn prefer_apple_color_emoji_in_svg_leaves_plain_text_unchanged() {
         let svg = r#"<svg><text x="10" font-family="Verdana">Sponsor</text></svg>"#;
 
-        let processed = prefer_apple_color_emoji_in_svg(svg);
+        let processed = EmojiSvgOps::prefer_apple_color_emoji_in_svg(svg);
 
         assert_eq!(processed, svg);
     }
@@ -125,7 +128,7 @@ mod tests {
     #[cfg(target_os = "macos")]
     fn prefer_apple_color_emoji_in_svg_preserves_existing_emoji_font_family() {
         let svg = r#"<svg><text x="10" font-family="Apple Color Emoji, Verdana">❤️</text></svg>"#;
-        let processed = prefer_apple_color_emoji_in_svg(svg);
+        let processed = EmojiSvgOps::prefer_apple_color_emoji_in_svg(svg);
         assert!(processed.contains(r#"font-family="Apple Color Emoji, Verdana""#));
     }
 }

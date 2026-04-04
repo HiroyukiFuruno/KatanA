@@ -5,8 +5,6 @@ pub const TOGGLE_RADIUS_RATIO: f32 = 0.5;
 pub const TOGGLE_CIRCLE_RATIO: f32 = 0.75;
 pub const TOGGLE_ATTACHED_DEFAULT_MARGIN: f32 = 8.0;
 
-pub struct ToggleOps;
-
 impl ToggleOps {
     pub fn switch(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
         let desired_size = ui.spacing().interact_size.y * egui::vec2(TOGGLE_WIDTH_RATIO, 1.0);
@@ -49,37 +47,9 @@ impl ToggleOps {
     }
 }
 
-pub struct LabeledToggle<'a> {
-    text: egui::WidgetText,
-    on: &'a mut bool,
-    position: TogglePosition,
-    alignment: ToggleAlignment,
-}
-
-impl<'a> LabeledToggle<'a> {
-    pub fn new(text: impl Into<egui::WidgetText>, on: &'a mut bool) -> Self {
-        Self {
-            text: text.into(),
-            on,
-            position: TogglePosition::Right,
-            alignment: ToggleAlignment::SpaceBetween,
-        }
-    }
-
-    pub fn position(mut self, position: TogglePosition) -> Self {
-        self.position = position;
-        self
-    }
-
-    pub fn alignment(mut self, alignment: ToggleAlignment) -> Self {
-        self.alignment = alignment;
-        self
-    }
-}
-
 impl<'a> egui::Widget for LabeledToggle<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let text_galley = self.text.into_galley(
+        let text_galley = self.text.clone().into_galley(
             ui,
             Some(egui::TextWrapMode::Extend),
             ui.available_width(),

@@ -19,7 +19,7 @@ impl CommandPaletteProvider for AppCommandProvider {
     }
 
     fn search(&self, query: &str, _workspace: Option<&Workspace>) -> Vec<CommandPaletteResult> {
-        let msgs = &crate::i18n::get().search;
+        let msgs = &crate::i18n::I18nOps::get().search;
         let commands = vec![
             (&msgs.command_settings, AppAction::ToggleSettings, 0.9),
             (&msgs.command_workspace, AppAction::ToggleWorkspace, 0.8),
@@ -141,7 +141,11 @@ impl CommandPaletteProvider for MarkdownContentProvider {
         }
 
         if let Some(ws) = workspace {
-            let matches = katana_core::search::search_workspace(ws, query, MAX_FILE_RESULTS);
+            let matches = katana_core::search::WorkspaceSearchOps::search_workspace(
+                ws,
+                query,
+                MAX_FILE_RESULTS,
+            );
             for m in matches {
                 let rel_path = crate::shell_logic::ShellLogicOps::relative_full_path(
                     &m.file_path,

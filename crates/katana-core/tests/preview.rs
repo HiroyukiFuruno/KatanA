@@ -4,7 +4,7 @@ use katana_core::preview::*;
 #[test]
 fn plain_markdown_becomes_one_section() {
     let src = "# Hello\n\nWorld";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 1);
     assert!(matches!(sections[0], PreviewSection::Markdown(_)));
 }
@@ -12,7 +12,7 @@ fn plain_markdown_becomes_one_section() {
 #[test]
 fn mermaid_fence_is_split_into_diagram_section() {
     let src = "before\n```mermaid\ngraph TD; A-->B\n```\nafter";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 3);
     assert!(matches!(sections[0], PreviewSection::Markdown(_)));
     assert!(matches!(
@@ -28,7 +28,7 @@ fn mermaid_fence_is_split_into_diagram_section() {
 #[test]
 fn unknown_fence_remains_as_markdown() {
     let src = "intro\n```rust\nfn main() {}\n```\nfin";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert!(
         sections
             .iter()
@@ -39,7 +39,7 @@ fn unknown_fence_remains_as_markdown() {
 #[test]
 fn multiple_diagrams_are_split_correctly() {
     let src = "A\n```mermaid\ngraph TD; A-->B\n```\nB\n```drawio\n<mxGraphModel/>\n```\nC";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     let diagram_count = sections
         .iter()
         .filter(|s| matches!(s, PreviewSection::Diagram { .. }))
@@ -50,7 +50,7 @@ fn multiple_diagrams_are_split_correctly() {
 #[test]
 fn diagram_without_closing_fence_remains_as_markdown() {
     let src = "before\n```mermaid\ngraph TD; A-->B";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert!(
         sections
             .iter()
@@ -61,7 +61,7 @@ fn diagram_without_closing_fence_remains_as_markdown() {
 #[test]
 fn markdown_if_fence_ends_without_newline() {
     let src = "text\n```";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert!(
         sections
             .iter()
@@ -72,7 +72,7 @@ fn markdown_if_fence_ends_without_newline() {
 #[test]
 fn diagram_fence_at_start_of_file_is_detected() {
     let src = "```mermaid\ngraph TD; A-->B\n```\n";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 1);
     assert!(matches!(
         sections[0],
@@ -86,7 +86,7 @@ fn diagram_fence_at_start_of_file_is_detected() {
 #[test]
 fn diagram_fence_at_start_with_trailing_text() {
     let src = "```mermaid\ngraph TD; A-->B\n```\nSome text after";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 2);
     assert!(matches!(
         sections[0],
@@ -98,7 +98,6 @@ fn diagram_fence_at_start_with_trailing_text() {
     assert!(matches!(sections[1], PreviewSection::Markdown(_)));
 }
 
-use katana_core::preview::resolve_image_paths;
 use std::path::Path;
 
 #[test]
@@ -111,7 +110,7 @@ fn resolve_image_paths_converts_relative_to_absolute() {
     std::fs::write(img_dir.join("logo.png"), b"png").unwrap();
 
     let source = "![logo](../assets/logo.png)";
-    let (result, paths) = resolve_image_paths(source, &md_path);
+    let (result, paths) = ImagePreviewOps::resolve_image_paths(source, &md_path);
     assert!(result.starts_with("![logo](file://"));
     assert!(result.contains("assets/logo.png"));
     assert!(!result.contains(".."));
@@ -121,51 +120,49 @@ fn resolve_image_paths_converts_relative_to_absolute() {
 #[test]
 fn resolve_image_paths_preserves_http_urls() {
     let source = "![img](https://example.com/image.png)";
-    let (result, _) = resolve_image_paths(source, Path::new("/tmp/test.md"));
+    let (result, _) = ImagePreviewOps::resolve_image_paths(source, Path::new("/tmp/test.md"));
     assert_eq!(result, source);
 }
 
 #[test]
 fn resolve_image_paths_preserves_absolute_paths() {
     let source = "![img](/absolute/path/image.png)";
-    let (result, _) = resolve_image_paths(source, Path::new("/tmp/test.md"));
+    let (result, _) = ImagePreviewOps::resolve_image_paths(source, Path::new("/tmp/test.md"));
     assert_eq!(result, source);
 }
 
 #[test]
 fn resolve_image_paths_preserves_file_uris() {
     let source = "![img](file:///some/image.png)";
-    let (result, _) = resolve_image_paths(source, Path::new("/tmp/test.md"));
+    let (result, _) = ImagePreviewOps::resolve_image_paths(source, Path::new("/tmp/test.md"));
     assert_eq!(result, source);
 }
 
 #[test]
 fn resolve_image_paths_handles_no_closing_paren() {
     let source = "![alt](path/without/close";
-    let (result, _) = resolve_image_paths(source, Path::new("/tmp/test.md"));
+    let (result, _) = ImagePreviewOps::resolve_image_paths(source, Path::new("/tmp/test.md"));
     assert!(result.contains("![alt]("));
 }
 
 #[test]
 fn resolve_image_paths_handles_no_alt_close_bracket() {
     let source = "![alt without close bracket";
-    let (result, _) = resolve_image_paths(source, Path::new("/tmp/test.md"));
+    let (result, _) = ImagePreviewOps::resolve_image_paths(source, Path::new("/tmp/test.md"));
     assert_eq!(result, source);
 }
 
 #[test]
 fn resolve_image_paths_passes_through_non_image_text() {
     let source = "# Hello\n\nSome text without images.";
-    let (result, _) = resolve_image_paths(source, Path::new("/tmp/test.md"));
+    let (result, _) = ImagePreviewOps::resolve_image_paths(source, Path::new("/tmp/test.md"));
     assert_eq!(result, source);
 }
-
-use katana_core::preview::flatten_list_code_blocks;
 
 #[test]
 fn flatten_strips_indented_code_fence_in_list() {
     let source = "1. Step one\n\n   ```bash\n   echo hello\n   ```\n\n1. Step two\n";
-    let result = flatten_list_code_blocks(source);
+    let result = PreviewFlattenOps::flatten_list_code_blocks(source);
     assert!(
         result.contains("\n```bash\n"),
         "Opening fence should be de-indented: {result:?}"
@@ -179,14 +176,14 @@ fn flatten_strips_indented_code_fence_in_list() {
 #[test]
 fn flatten_leaves_toplevel_code_block_unchanged() {
     let source = "# Title\n\n```rust\nfn main() {}\n```\n";
-    let result = flatten_list_code_blocks(source);
+    let result = PreviewFlattenOps::flatten_list_code_blocks(source);
     assert_eq!(result, source);
 }
 
 #[test]
 fn flatten_handles_multiple_code_blocks_in_one_item() {
     let source = "1. Step\n\n   ```bash\n   cmd1\n   ```\n\n   ```bash\n   cmd2\n   ```\n";
-    let result = flatten_list_code_blocks(source);
+    let result = PreviewFlattenOps::flatten_list_code_blocks(source);
     let count = result.matches("\n```bash\n").count()
         + if result.starts_with("```bash\n") {
             1
@@ -202,7 +199,7 @@ fn flatten_handles_multiple_code_blocks_in_one_item() {
 #[test]
 fn flatten_preserves_no_trailing_newline() {
     let source = "text\n   ```\n   code\n   ```";
-    let result = flatten_list_code_blocks(source);
+    let result = PreviewFlattenOps::flatten_list_code_blocks(source);
     assert!(
         !result.ends_with("\n\n"),
         "Should not add extra trailing newline"
@@ -212,7 +209,7 @@ fn flatten_preserves_no_trailing_newline() {
 #[test]
 fn html_blocks_remain_in_markdown_sections_for_pulldown_cmark() {
     let src = "text\n<p align=\"center\">\n  <img src=\"a.png\" alt=\"A\">\n</p>\nmore text\n<h1 align=\"center\">Title</h1>";
-    let sections = split_into_sections(src);
+    let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 1);
     if let PreviewSection::Markdown(ref s) = sections[0] {
         assert!(s.contains("text"), "Expected 'text' in markdown");
@@ -234,12 +231,10 @@ fn html_blocks_remain_in_markdown_sections_for_pulldown_cmark() {
     }
 }
 
-use katana_core::preview::resolve_html_image_paths;
-
 #[test]
 fn resolve_html_image_relative_path_to_file_uri() {
     let html = r#"<img src="logo.png" alt="Logo">"#;
-    let result = resolve_html_image_paths(html, Path::new("/project/README.md"));
+    let result = ImagePreviewOps::resolve_html_image_paths(html, Path::new("/project/README.md"));
     assert!(
         result.contains("file://"),
         "Relative img src must be resolved to file:// URI, got: {result}"
@@ -253,28 +248,28 @@ fn resolve_html_image_relative_path_to_file_uri() {
 #[test]
 fn resolve_html_image_absolute_url_unchanged() {
     let html = r#"<img src="https://example.com/badge.svg" alt="badge">"#;
-    let result = resolve_html_image_paths(html, Path::new("/project/README.md"));
+    let result = ImagePreviewOps::resolve_html_image_paths(html, Path::new("/project/README.md"));
     assert_eq!(result, html, "Absolute URL must not be modified");
 }
 
 #[test]
 fn resolve_html_image_file_uri_unchanged() {
     let html = r#"<img src="file:///absolute/path/logo.png" alt="Logo">"#;
-    let result = resolve_html_image_paths(html, Path::new("/project/README.md"));
+    let result = ImagePreviewOps::resolve_html_image_paths(html, Path::new("/project/README.md"));
     assert_eq!(result, html, "file:// URI must not be modified");
 }
 
 #[test]
 fn resolve_html_image_absolute_path_unchanged() {
     let html = r#"<img src="/usr/share/image.png" alt="img">"#;
-    let result = resolve_html_image_paths(html, Path::new("/project/README.md"));
+    let result = ImagePreviewOps::resolve_html_image_paths(html, Path::new("/project/README.md"));
     assert_eq!(result, html, "Absolute path must not be modified");
 }
 
 #[test]
 fn resolve_html_image_multiple_tags() {
     let html = r#"<img src="a.png" alt="A"><img src="b.png" alt="B">"#;
-    let result = resolve_html_image_paths(html, Path::new("/project/README.md"));
+    let result = ImagePreviewOps::resolve_html_image_paths(html, Path::new("/project/README.md"));
     let file_uri_count = result.matches("file://").count();
     assert_eq!(
         file_uri_count, 2,
@@ -282,33 +277,31 @@ fn resolve_html_image_multiple_tags() {
     );
 }
 
-use katana_core::preview::wrap_standalone_inline_html;
-
 #[test]
 fn wrap_standalone_a_tag() {
     let src = r#"<a href="foo"><img src="bar"></a>"#;
     let expected = format!("<div>\n{src}\n</div>");
-    assert_eq!(wrap_standalone_inline_html(src), expected);
+    assert_eq!(HtmlPreviewOps::wrap_standalone_inline_html(src), expected);
 }
 
 #[test]
 fn wrap_standalone_img_tag() {
     let src = r#"<img src="https://example.com/badge.svg">"#;
     let expected = format!("<div>\n{src}\n</div>");
-    assert_eq!(wrap_standalone_inline_html(src), expected);
+    assert_eq!(HtmlPreviewOps::wrap_standalone_inline_html(src), expected);
 }
 
 #[test]
 fn do_not_wrap_if_surrounded_by_text() {
     let src = r#"Here is a <a href="foo">link</a> inside text."#;
-    assert_eq!(wrap_standalone_inline_html(src), src);
+    assert_eq!(HtmlPreviewOps::wrap_standalone_inline_html(src), src);
 }
 
 #[test]
 fn wrap_standalone_with_leading_whitespace() {
     let src = "  <a href=\"foo\">link</a>  ";
     let expected = "<div>\n<a href=\"foo\">link</a>\n</div>".to_string();
-    assert_eq!(wrap_standalone_inline_html(src), expected);
+    assert_eq!(HtmlPreviewOps::wrap_standalone_inline_html(src), expected);
 }
 
 #[test]
@@ -316,7 +309,7 @@ fn verify_wrapped_html_is_parsed_as_html_block() {
     use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 
     let src = r#"<a href="foo"><img src="bar"></a>"#;
-    let processed = wrap_standalone_inline_html(src);
+    let processed = HtmlPreviewOps::wrap_standalone_inline_html(src);
 
     let parser = Parser::new(&processed);
     let mut found_html_block = false;
@@ -363,7 +356,7 @@ fn readme_html_patterns_parsed_as_html_blocks_for_render_html_fn() {
 Some text here.
 "#;
 
-    let processed = wrap_standalone_inline_html(source);
+    let processed = HtmlPreviewOps::wrap_standalone_inline_html(source);
 
     let parser = Parser::new_ext(&processed, Options::all());
     let mut html_blocks: Vec<String> = Vec::new();
@@ -449,7 +442,7 @@ fn standalone_sponsor_badge_parsed_as_html_block_after_wrapping() {
 More text.
 "#;
 
-    let processed = wrap_standalone_inline_html(source);
+    let processed = HtmlPreviewOps::wrap_standalone_inline_html(source);
 
     let parser = Parser::new_ext(&processed, Options::all());
     let mut html_blocks: Vec<String> = Vec::new();
@@ -507,7 +500,7 @@ fn do_not_wrap_tags_inside_p_block() {
         "</p>\n"
     );
     assert_eq!(
-        wrap_standalone_inline_html(src),
+        HtmlPreviewOps::wrap_standalone_inline_html(src),
         src,
         "Tags inside <p> blocks must not be wrapped with <div>"
     );
@@ -517,7 +510,7 @@ fn do_not_wrap_tags_inside_p_block() {
 fn do_not_wrap_tags_inside_heading_block() {
     let src = "<h1 align=\"center\">Title</h1>\n";
     assert_eq!(
-        wrap_standalone_inline_html(src),
+        HtmlPreviewOps::wrap_standalone_inline_html(src),
         src,
         "Content inside <h1> must not be modified"
     );

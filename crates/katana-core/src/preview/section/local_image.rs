@@ -1,36 +1,72 @@
-use super::PreviewSection;
-use regex::Regex;
+use crate::preview::types::{ImageSectionOps, PreviewSection};
 
-pub fn extract_standalone_images(initial_sections: Vec<PreviewSection>) -> Vec<PreviewSection> {
-    let img_re = Regex::new(r"(?m)^[ \t]*!\[([^\]]*)\]\(([^\)]+)\)[ \t]*$").unwrap();
-    let mut temp = Vec::new();
+impl ImageSectionOps {
+    pub fn extract_standalone_images(secs: Vec<PreviewSection>) -> Vec<PreviewSection> {
+        let mut result = Vec::with_capacity(secs.len());
+        for sec in secs {
+            if let PreviewSection::Markdown(ref md) = sec {
+                // WHY: Split the markdown section into paragraphs (separated by blank lines)
+                // and check each paragraph for standalone images. This allows images embedded
+                // within larger markdown sections to be extracted as LocalImage sections.
+                Self::split_paragraphs_extracting_images(md, &mut result);
+            } else {
+                result.push(sec);
+            }
+        }
+        result
+    }
 
-    for sec in initial_sections {
-        match sec {
-            PreviewSection::Markdown(text) => process_markdown_section(&text, &img_re, &mut temp),
-            other => temp.push(other),
+    /// Split markdown text into paragraphs and extract standalone image paragraphs
+    /// as `LocalImage` sections while keeping other paragraphs as `Markdown`.
+    fn split_paragraphs_extracting_images(md: &str, out: &mut Vec<PreviewSection>) {
+        // WHY: We need to handle the case where images are standalone paragraphs
+        // within a larger markdown section. Split on double-newlines (paragraph boundary).
+        let paragraphs: Vec<&str> = md.split("\n\n").collect();
+
+        if paragraphs.len() <= 1 {
+            // Single paragraph — try original logic, fall back to plain Markdown.
+            if let Some((path, alt)) = Self::try_parse_standalone_image(md) {
+                let lines = md.chars().filter(|c| *c == '\n').count();
+                out.push(PreviewSection::LocalImage { path, alt, lines });
+            } else if !md.is_empty() {
+                out.push(PreviewSection::Markdown(md.to_string()));
+            }
+            return;
+        }
+
+        let mut md_buf = String::new();
+        for (i, para) in paragraphs.iter().enumerate() {
+            if let Some((path, alt)) = Self::try_parse_standalone_image(para) {
+                // Flush accumulated markdown
+                if !md_buf.is_empty() {
+                    out.push(PreviewSection::Markdown(md_buf.clone()));
+                    md_buf.clear();
+                }
+                let lines = para.chars().filter(|c| *c == '\n').count();
+                out.push(PreviewSection::LocalImage { path, alt, lines });
+            } else {
+                if !md_buf.is_empty() {
+                    md_buf.push_str("\n\n");
+                }
+                md_buf.push_str(para);
+            }
+            // preserve trailing separator context except for last
+            let _ = i;
+        }
+        if !md_buf.is_empty() {
+            out.push(PreviewSection::Markdown(md_buf));
         }
     }
-    temp
-}
 
-fn process_markdown_section(text: &str, img_re: &Regex, temp: &mut Vec<PreviewSection>) {
-    let mut last_end = 0;
-    for cap in img_re.captures_iter(text) {
-        let m = cap.get(0).unwrap();
-        let before = &text[last_end..m.start()];
-        if !before.trim().is_empty() {
-            temp.push(PreviewSection::Markdown(before.to_string()));
+    fn try_parse_standalone_image(md: &str) -> Option<(String, String)> {
+        let trimmed = md.trim();
+        if trimmed.starts_with("![") && trimmed.ends_with(')') {
+            let alt_end = trimmed.find("](")?;
+            let alt = trimmed[2..alt_end].to_string();
+            let path = trimmed[alt_end + 2..trimmed.len() - 1].to_string();
+            Some((path, alt))
+        } else {
+            None
         }
-        temp.push(PreviewSection::LocalImage {
-            path: cap.get(2).unwrap().as_str().to_string(),
-            alt: cap.get(1).unwrap().as_str().to_string(),
-            lines: m.as_str().chars().filter(|c| *c == '\n').count(),
-        });
-        last_end = m.end();
-    }
-    let after = &text[last_end..];
-    if !after.trim().is_empty() {
-        temp.push(PreviewSection::Markdown(after.to_string()));
     }
 }

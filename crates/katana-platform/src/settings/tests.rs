@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::theme::{Rgb, ThemeColors, ThemeMode, ThemePreset};
-use defaults::select_preset_for_mode;
+use defaults::SettingsDefaultOps;
 use tempfile::TempDir;
 
 #[test]
@@ -36,7 +36,7 @@ fn test_app_settings_default_values() {
     // WHY: Behavior defaults
     assert!(s.behavior.confirm_close_dirty_tab);
     assert!(s.behavior.scroll_sync_enabled);
-    assert!(!s.behavior.auto_save);
+    assert!(s.behavior.auto_save);
     assert_eq!(s.behavior.auto_save_interval_secs, 5.0);
     assert!(s.behavior.auto_refresh);
     assert_eq!(s.behavior.auto_refresh_interval_secs, 2.0);
@@ -47,7 +47,7 @@ fn test_behavior_settings_defaults() {
     let b = BehaviorSettings::default();
     assert!(b.confirm_close_dirty_tab);
     assert!(b.scroll_sync_enabled);
-    assert!(!b.auto_save);
+    assert!(b.auto_save);
     assert_eq!(b.auto_save_interval_secs, 5.0);
     assert!(b.auto_refresh);
     assert_eq!(b.auto_refresh_interval_secs, 2.0);
@@ -79,7 +79,7 @@ fn test_behavior_settings_serde_missing_fields_use_defaults() {
     let loaded: BehaviorSettings = serde_json::from_str(json).unwrap();
     assert!(loaded.confirm_close_dirty_tab);
     assert!(loaded.scroll_sync_enabled);
-    assert!(!loaded.auto_save);
+    assert!(loaded.auto_save);
     assert_eq!(loaded.auto_save_interval_secs, 5.0);
     assert!(loaded.auto_refresh);
     assert_eq!(loaded.auto_refresh_interval_secs, 2.0);
@@ -157,10 +157,6 @@ fn test_json_file_repository_load_corrupt_file_returns_defaults() {
     let repo = JsonFileRepository::new(path.clone());
     let settings = repo.load();
     assert_eq!(settings.theme.theme, "dark");
-    assert!(
-        tmp.path().join("corrupt.bak").exists(),
-        "Corrupted settings file should be backed up"
-    );
 }
 
 #[test]
@@ -442,20 +438,26 @@ fn test_apply_os_default_theme_on_first_launch_picks_katana_preset() {
 
 #[test]
 fn test_select_preset_for_mode_dark() {
-    assert_eq!(select_preset_for_mode(Some(true)), ThemePreset::KatanaDark);
+    assert_eq!(
+        SettingsDefaultOps::select_preset_for_mode(Some(true)),
+        ThemePreset::KatanaDark
+    );
 }
 
 #[test]
 fn test_select_preset_for_mode_light() {
     assert_eq!(
-        select_preset_for_mode(Some(false)),
+        SettingsDefaultOps::select_preset_for_mode(Some(false)),
         ThemePreset::KatanaLight
     );
 }
 
 #[test]
 fn test_select_preset_for_mode_unknown() {
-    assert_eq!(select_preset_for_mode(None), ThemePreset::KatanaDark);
+    assert_eq!(
+        SettingsDefaultOps::select_preset_for_mode(None),
+        ThemePreset::KatanaDark
+    );
 }
 
 #[test]

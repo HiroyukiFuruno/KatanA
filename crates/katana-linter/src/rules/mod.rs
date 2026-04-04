@@ -1,22 +1,18 @@
-#![allow(
-    missing_docs,
-    clippy::missing_errors_doc,
-    clippy::expect_used,
-    clippy::indexing_slicing
-)]
-
 pub mod coding;
 pub mod domains;
 pub mod structure;
 
 pub use coding::{
-    lint_comment_style, lint_error_first, lint_lazy_code, lint_magic_numbers, lint_performance,
-    lint_prohibited_attributes, lint_prohibited_types,
+    CommentStyleOps, ErrorFirstOps, LazyCodeOps, MagicNumberOps, PerformanceOps,
+    ProhibitedAttributesOps, ProhibitedTypesOps,
 };
 
 pub use structure::{
-    lint_file_length, lint_function_length, lint_nesting_depth, lint_pub_free_fn,
-    lint_type_separation,
+    FileLengthOps, FunctionLengthOps, NestingDepthOps, PubFreeFnOps, TypeSeparationOps,
 };
 
-pub use domains::font_normalization::lint_font_normalization;
+pub use domains::changelog::ChangelogOps;
+pub use domains::font_normalization::FontNormalizationOps;
+pub use domains::i18n::{I18nOps, IconOps};
+pub use domains::locales::LocaleOps;
+pub use domains::theme::{HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps};

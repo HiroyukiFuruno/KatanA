@@ -6,7 +6,7 @@ use crate::shell::{
 use crate::shell_ui::{LIGHT_MODE_ICON_BG, STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN};
 use eframe::egui;
 
-use super::logic::{compute_drop_points, find_best_drop_index, tab_display_title};
+use super::types::TopBarOps;
 
 const GROUP_HEADER_CORNER_RADIUS: u8 = 4;
 const GROUP_HEADER_PADDING_X: i8 = 6;
@@ -44,11 +44,15 @@ impl<'a> StatusBar<'a> {
     pub fn show(self, ui: &mut egui::Ui, problem_count: usize) -> Option<AppAction> {
         let export_filenames = self.export_filenames;
         let mut action = None;
-        ui.horizontal(|ui| {
+        let row_height = ui.spacing().interact_size.y;
+        ui.allocate_ui_with_layout(
+            egui::vec2(ui.available_width(), row_height),
+            egui::Layout::left_to_right(egui::Align::Center),
+            |ui| {
             let (msg, kind) = if let Some((msg, kind)) = self.status {
                 (msg.as_str(), Some(kind))
             } else {
-                (crate::i18n::get().status.ready.as_str(), None)
+                (crate::i18n::I18nOps::get().status.ready.as_str(), None)
             };
 
             let (color, icon) = match kind {
@@ -60,7 +64,9 @@ impl<'a> StatusBar<'a> {
                             ))
                         })
                         .map_or(crate::theme_bridge::WHITE, |tc| {
-                            crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                                tc.system.error_text,
+                            )
                         }),
                     Some(crate::Icon::Error),
                 ),
@@ -68,7 +74,7 @@ impl<'a> StatusBar<'a> {
                     (ui.visuals().warn_fg_color, Some(crate::Icon::Warning))
                 }
                 Some(crate::app_state::StatusType::Success) => (
-                    crate::theme_bridge::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
+                    crate::theme_bridge::ThemeBridgeOps::from_rgb(0, STATUS_SUCCESS_GREEN, 0),
                     Some(crate::Icon::Success),
                 ),
                 Some(crate::app_state::StatusType::Info) => {
@@ -82,10 +88,10 @@ impl<'a> StatusBar<'a> {
                 ui.add(i.image(crate::icon::IconSize::Medium).tint(color));
                 ui.add_space(2.0);
             }
-            crate::icon::render_str_with_icons(ui, msg, Some(color));
+            crate::icon::IconOps::render_str_with_icons(ui, msg, Some(color));
 
-            let problem_text = crate::i18n::tf(
-                &crate::i18n::get().status.problems_count_format,
+            let problem_text = crate::i18n::I18nOps::tf(
+                &crate::i18n::I18nOps::get().status.problems_count_format,
                 &[("count", &problem_count.to_string())],
             );
             let btn = egui::Button::image_and_text(
@@ -94,7 +100,12 @@ impl<'a> StatusBar<'a> {
             );
             if ui
                 .add(btn)
-                .on_hover_text(crate::i18n::get().status.toggle_problems_panel.clone())
+                .on_hover_text(
+                    crate::i18n::I18nOps::get()
+                        .status
+                        .toggle_problems_panel
+                        .clone(),
+                )
                 .clicked()
             {
                 action = Some(AppAction::ToggleProblemsPanel);
@@ -105,11 +116,11 @@ impl<'a> StatusBar<'a> {
                     let total = export_filenames.len();
                     ui.spinner();
                     for (i, filename) in export_filenames.iter().enumerate() {
-                        let numbered = crate::i18n::tf(
-                            &crate::i18n::get().export.exporting,
+                        let numbered = crate::i18n::I18nOps::tf(
+                            &crate::i18n::I18nOps::get().export.exporting,
                             &[("filename", &format!("({}/{}) {}", i + 1, total, filename))],
                         );
-                        crate::icon::render_str_with_icons(ui, &numbered, None);
+                        crate::icon::IconOps::render_str_with_icons(ui, &numbered, None);
                     }
                 }
                 const DIRTY_DOT_MAX_HEIGHT: f32 = 10.0;
@@ -160,7 +171,6 @@ impl<'a> TabBar<'a> {
     #[allow(deprecated)]
     pub fn show(self, ui: &mut egui::Ui) -> Option<AppAction> {
         const MAX_TAB_WIDTH: f32 = 200.0;
-        const PINNED_TAB_MAX_WIDTH: f32 = 60.0;
 
         let mut close_idx: Option<usize> = None;
         let mut tab_action: Option<AppAction> = None;
@@ -242,14 +252,14 @@ impl<'a> TabBar<'a> {
                                     let text_color = ui.visuals().text_color();
 
                                     let frame_fill = if g.collapsed {
-                                        crate::theme_bridge::from_rgba_unmultiplied(
+                                        crate::theme_bridge::ThemeBridgeOps::from_rgba_unmultiplied(
                                             base_color.r(),
                                             base_color.g(),
                                             base_color.b(),
                                             GROUP_HEADER_COLLAPSED_ALPHA,
                                         )
                                     } else {
-                                        crate::theme_bridge::from_rgba_unmultiplied(
+                                        crate::theme_bridge::ThemeBridgeOps::from_rgba_unmultiplied(
                                             base_color.r(),
                                             base_color.g(),
                                             base_color.b(),
@@ -314,7 +324,7 @@ impl<'a> TabBar<'a> {
 
                                     let popup_resp = egui::popup_below_widget(ui, popup_id, &group_resp, egui::PopupCloseBehavior::IgnoreClicks, |ui: &mut egui::Ui| {
                                         ui.set_min_width(GROUP_POPUP_MIN_WIDTH);
-                                        let i18n = crate::i18n::get();
+                                        let i18n = crate::i18n::I18nOps::get();
                                         let mut new_name = g.name.clone();
                                         let mut new_color = g.color_hex.clone();
                                         ui.horizontal(|ui: &mut egui::Ui| {
@@ -399,7 +409,7 @@ impl<'a> TabBar<'a> {
                                         .to_string_lossy()
                                         .starts_with("Katana://ChangeLog");
 
-                                    let title = tab_display_title(
+                                    let title = TopBarOps::tab_display_title(
                                         original_filename,
                                         is_changelog,
                                         doc.is_dirty,
@@ -409,53 +419,58 @@ impl<'a> TabBar<'a> {
 
                                     let (title_resp, close_resp) = ui
                                         .push_id(format!("tab_{idx}"), |ui| {
-                                            ui.set_max_width(if doc.is_pinned {
-                                                PINNED_TAB_MAX_WIDTH
-                                            } else {
-                                                MAX_TAB_WIDTH
-                                            });
+                                            ui.set_max_width(MAX_TAB_WIDTH);
                                             ui.style_mut().wrap_mode =
                                                 Some(egui::TextWrapMode::Truncate);
+                                            let tab_height = ui.spacing().interact_size.y;
+                                            ui.allocate_ui_with_layout(
+                                                egui::vec2(ui.available_width(), tab_height),
+                                                egui::Layout::left_to_right(egui::Align::Center),
+                                                |ui| {
+                                                    let t_resp = if is_changelog {
+                                                        ui.add(
+                                                            egui::Button::image_and_text(
+                                                                crate::Icon::Info.ui_image(
+                                                                    ui,
+                                                                    crate::icon::IconSize::Small,
+                                                                ),
+                                                                &title,
+                                                            )
+                                                            .selected(is_active),
+                                                        )
+                                                    } else {
+                                                        ui.add(egui::Button::selectable(
+                                                            is_active, &title,
+                                                        ))
+                                                    };
 
-                                            let t_resp = if is_changelog {
-                                                ui.add(
-                                                    egui::Button::image_and_text(
-                                                        crate::Icon::Info.ui_image(
-                                                            ui,
-                                                            crate::icon::IconSize::Small,
-                                                        ),
-                                                        &title,
-                                                    )
-                                                    .selected(is_active),
-                                                )
-                                            } else if doc.is_pinned {
-                                                ui.add(
-                                                    egui::Button::image_and_text(
-                                                        crate::Icon::Pin.ui_image(
-                                                            ui,
-                                                            crate::icon::IconSize::Small,
-                                                        ),
-                                                        &title,
-                                                    )
-                                                    .selected(is_active),
-                                                )
-                                            } else {
-                                                ui.add(egui::Button::selectable(is_active, &title))
-                                            };
-
-                                            let c_resp =
-                                                if !doc.is_pinned {
-                                                    Some(ui.add(egui::Button::image_and_text(
-                                                        crate::Icon::Close.ui_image(
-                                                            ui,
-                                                            crate::icon::IconSize::Small,
-                                                        ),
-                                                       crate::shell_ui::ShellUiOps::invisible_label("x"),
-                                                    )))
-                                                } else {
-                                                    None
-                                                };
-                                            (t_resp, c_resp)
+                                                    let c_resp = if doc.is_pinned {
+                                                        let pin_color = if is_active {
+                                                            ui.visuals().selection.stroke.color
+                                                        } else {
+                                                            ui.visuals().text_color()
+                                                        };
+                                                        Some(ui.add(egui::Button::image_and_text(
+                                                            crate::Icon::Pin
+                                                                .image(
+                                                                    crate::icon::IconSize::Small,
+                                                                )
+                                                                .tint(pin_color),
+                                                            crate::shell_ui::ShellUiOps::invisible_label(""),
+                                                        )))
+                                                    } else {
+                                                        Some(ui.add(egui::Button::image_and_text(
+                                                            crate::Icon::Close.ui_image(
+                                                                ui,
+                                                                crate::icon::IconSize::Small,
+                                                            ),
+                                                            crate::shell_ui::ShellUiOps::invisible_label("x"),
+                                                        )))
+                                                    };
+                                                    (t_resp, c_resp)
+                                                },
+                                            )
+                                            .inner
                                         })
                                         .inner;
 
@@ -484,7 +499,8 @@ impl<'a> TabBar<'a> {
                                     );
 
                                     let mut clicked_tab = tab_interact.clicked();
-                                    if let Some(c) = close_resp
+                                    if !doc.is_pinned
+                                        && let Some(c) = close_resp
                                         && c.clicked() {
                                             close_idx = Some(idx);
                                             clicked_tab = false;
@@ -513,11 +529,7 @@ impl<'a> TabBar<'a> {
                                                 .fixed_pos(ghost_rect.min)
                                                 .order(egui::Order::Tooltip)
                                                 .show(ui.ctx(), |ui| {
-                                                    ui.set_max_width(if doc.is_pinned {
-                                                        PINNED_TAB_MAX_WIDTH
-                                                    } else {
-                                                        MAX_TAB_WIDTH
-                                                    });
+                                                    ui.set_max_width(MAX_TAB_WIDTH);
                                                     ui.style_mut().wrap_mode =
                                                         Some(egui::TextWrapMode::Truncate);
 
@@ -538,7 +550,13 @@ impl<'a> TabBar<'a> {
                                                                 is_active, &title,
                                                             ));
                                                         }
-                                                        if !doc.is_pinned {
+                                                        if doc.is_pinned {
+                                                            ui.add(
+                                                                crate::Icon::Pin
+                                                                    .image(crate::icon::IconSize::Small)
+                                                                    .tint(ui.visuals().text_color()),
+                                                            );
+                                                        } else {
                                                             ui.add(egui::Button::image_and_text(
                                                                 crate::Icon::Close.ui_image(
                                                                     ui,
@@ -570,7 +588,7 @@ impl<'a> TabBar<'a> {
                                     let tab_interact = tab_interact.on_hover_text(&tooltip_path);
 
                                     tab_interact.context_menu(|ui| {
-                                        let i18n = crate::i18n::get();
+                                        let i18n = crate::i18n::I18nOps::get();
 
                                         if ui.button(&i18n.tab.close).clicked() {
                                             tab_action = Some(AppAction::CloseDocument(idx));
@@ -690,13 +708,13 @@ impl<'a> TabBar<'a> {
                             }
                         }
 
-                        let drop_points = compute_drop_points(&tab_rects);
+                        let drop_points = TopBarOps::compute_drop_points(&tab_rects);
 
                         if let Some((ghost_rect, y_range)) = dragging_ghost_info {
                             let mut best_dist = f32::MAX;
                             let mut best_x = None;
                             for (_insert_idx, x) in &drop_points {
-                                let dist = (ghost_rect.center().x - x).abs();
+                                let dist: f32 = (ghost_rect.center().x - *x).abs();
                                 if dist < best_dist {
                                     best_dist = dist;
                                     best_x = Some(*x);
@@ -737,7 +755,7 @@ impl<'a> TabBar<'a> {
             let icon_bg = if ui.visuals().dark_mode {
                 crate::theme_bridge::TRANSPARENT
             } else {
-                crate::theme_bridge::from_gray(LIGHT_MODE_ICON_BG)
+                crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
             };
 
             if ui
@@ -749,7 +767,7 @@ impl<'a> TabBar<'a> {
                     )
                     .fill(icon_bg),
                 )
-                .on_hover_text(crate::i18n::get().tab.nav_prev.clone())
+                .on_hover_text(crate::i18n::I18nOps::get().tab.nav_prev.clone())
                 .clicked()
                 && let Some(idx) = self.active_doc_idx {
                     let new_idx = crate::shell_logic::ShellLogicOps::prev_tab_index(idx, doc_count);
@@ -767,7 +785,7 @@ impl<'a> TabBar<'a> {
                     )
                     .fill(icon_bg),
                 )
-                .on_hover_text(crate::i18n::get().tab.nav_next.clone())
+                .on_hover_text(crate::i18n::I18nOps::get().tab.nav_next.clone())
                 .clicked()
                 && let Some(idx) = self.active_doc_idx {
                     let new_idx = crate::shell_logic::ShellLogicOps::next_tab_index(idx, doc_count);
@@ -781,8 +799,8 @@ impl<'a> TabBar<'a> {
         });
 
         if let Some((src_idx, ghost_center_x)) = dragged_source {
-            let drop_points = compute_drop_points(&tab_rects);
-            if let Some(to_visual) = find_best_drop_index(&drop_points, ghost_center_x) {
+            let drop_points = TopBarOps::compute_drop_points(&tab_rects);
+            if let Some(to_visual) = TopBarOps::find_best_drop_index(&drop_points, ghost_center_x) {
                 let to_physical = if to_visual < tab_rects.len() {
                     tab_rects[to_visual].0 // insert before physical element at to_visual
                 } else {
@@ -919,8 +937,9 @@ impl ViewModeBar {
             |ui| {
                 if self.update_available && !self.update_checking {
                     const COLOR_SUCCESS_G: u8 = 200;
-                    let badge_str = crate::i18n::get().update.update_available.clone();
-                    let badge_color = crate::theme_bridge::from_rgb(0, COLOR_SUCCESS_G, 100);
+                    let badge_str = crate::i18n::I18nOps::get().update.update_available.clone();
+                    let badge_color =
+                        crate::theme_bridge::ThemeBridgeOps::from_rgb(0, COLOR_SUCCESS_G, 100);
                     let badge_text = egui::RichText::new(badge_str).color(badge_color).strong();
 
                     let btn = egui::Button::image_and_text(
@@ -952,7 +971,7 @@ impl ViewModeBar {
                             crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
                             crate::shell_ui::ShellUiOps::invisible_label("Refresh"),
                         ))
-                        .on_hover_text(crate::i18n::get().action.refresh_document.clone())
+                        .on_hover_text(crate::i18n::I18nOps::get().action.refresh_document.clone())
                         .clicked()
                     {
                         action = Some(AppAction::RefreshDocument { is_manual: true });
@@ -960,7 +979,10 @@ impl ViewModeBar {
                     ui.separator();
 
                     if ui
-                        .selectable_label(is_split, crate::i18n::get().view_mode.split.clone())
+                        .selectable_label(
+                            is_split,
+                            crate::i18n::I18nOps::get().view_mode.split.clone(),
+                        )
                         .clicked()
                         && !is_split
                     {
@@ -970,12 +992,12 @@ impl ViewModeBar {
                     ui.selectable_value(
                         &mut mode,
                         ViewMode::CodeOnly,
-                        crate::i18n::get().view_mode.code.clone(),
+                        crate::i18n::I18nOps::get().view_mode.code.clone(),
                     );
                     ui.selectable_value(
                         &mut mode,
                         ViewMode::PreviewOnly,
-                        crate::i18n::get().view_mode.preview.clone(),
+                        crate::i18n::I18nOps::get().view_mode.preview.clone(),
                     );
                 }
 
@@ -986,11 +1008,11 @@ impl ViewModeBar {
                     let (dir_icon, dir_tip) = match current_dir {
                         katana_platform::SplitDirection::Horizontal => (
                             crate::icon::Icon::SplitHorizontal,
-                            crate::i18n::get().split_toggle.vertical.clone(),
+                            crate::i18n::I18nOps::get().split_toggle.vertical.clone(),
                         ),
                         katana_platform::SplitDirection::Vertical => (
                             crate::icon::Icon::SplitVertical,
-                            crate::i18n::get().split_toggle.horizontal.clone(),
+                            crate::i18n::I18nOps::get().split_toggle.horizontal.clone(),
                         ),
                     };
                     let icon_size = crate::icon::IconSize::Medium;
@@ -1022,12 +1044,14 @@ impl ViewModeBar {
 
                     let current_order = self.pane_order;
                     let order_tip = match current_order {
-                        katana_platform::PaneOrder::EditorFirst => {
-                            crate::i18n::get().split_toggle.preview_first.clone()
-                        }
-                        katana_platform::PaneOrder::PreviewFirst => {
-                            crate::i18n::get().split_toggle.editor_first.clone()
-                        }
+                        katana_platform::PaneOrder::EditorFirst => crate::i18n::I18nOps::get()
+                            .split_toggle
+                            .preview_first
+                            .clone(),
+                        katana_platform::PaneOrder::PreviewFirst => crate::i18n::I18nOps::get()
+                            .split_toggle
+                            .editor_first
+                            .clone(),
                     };
 
                     let order_icon =
@@ -1069,7 +1093,11 @@ impl ViewModeBar {
                     ui.add_space(TOGGLE_LABEL_SPACING);
                     let text_resp = ui.selectable_label(
                         false,
-                        crate::i18n::get().settings.behavior.scroll_sync.clone(),
+                        crate::i18n::I18nOps::get()
+                            .settings
+                            .behavior
+                            .scroll_sync
+                            .clone(),
                     );
 
                     let toggled = text_resp.clicked() || toggle_resp.clicked();
@@ -1085,8 +1113,10 @@ impl ViewModeBar {
                 // Add the search button to the far left of the right-aligned layout
                 if self.show_search {
                     ui.separator();
-                    let doc_search_tooltip =
-                        format!("{} (Cmd+F)", crate::i18n::get().search.doc_search_title);
+                    let doc_search_tooltip = format!(
+                        "{} (Cmd+F)",
+                        crate::i18n::I18nOps::get().search.doc_search_title
+                    );
 
                     let btn_color = if search_state.doc_search_open {
                         ui.visuals().widgets.active.bg_fill
@@ -1125,7 +1155,7 @@ impl ViewModeBar {
                         .add(egui::Button::image(
                             crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
                         ))
-                        .on_hover_text(crate::i18n::get().search.doc_search_close.clone())
+                        .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_close.clone())
                         .clicked()
                     {
                         search_state.doc_search_open = false;
@@ -1135,7 +1165,7 @@ impl ViewModeBar {
                         .add(egui::Button::image(
                             crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
                         ))
-                        .on_hover_text(crate::i18n::get().search.doc_search_next.clone())
+                        .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
                         .clicked()
                     {
                         action = Some(AppAction::DocSearchNext);
@@ -1145,7 +1175,7 @@ impl ViewModeBar {
                         .add(egui::Button::image(
                             crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
                         ))
-                        .on_hover_text(crate::i18n::get().search.doc_search_prev.clone())
+                        .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())
                         .clicked()
                     {
                         action = Some(AppAction::DocSearchPrev);
@@ -1153,8 +1183,8 @@ impl ViewModeBar {
 
                     let match_count = search_state.doc_search_matches.len();
                     if match_count > 0 {
-                        ui.label(crate::i18n::tf(
-                            &crate::i18n::get().search.doc_search_count,
+                        ui.label(crate::i18n::I18nOps::tf(
+                            &crate::i18n::I18nOps::get().search.doc_search_count,
                             &[
                                 (
                                     "index",
@@ -1164,8 +1194,8 @@ impl ViewModeBar {
                             ],
                         ));
                     } else if !search_state.doc_search_query.is_empty() {
-                        ui.label(crate::i18n::tf(
-                            &crate::i18n::get().search.doc_search_count,
+                        ui.label(crate::i18n::I18nOps::tf(
+                            &crate::i18n::I18nOps::get().search.doc_search_count,
                             &[("index", "0"), ("total", "0")],
                         ));
                     }

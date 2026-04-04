@@ -1,11 +1,5 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum DiagramKind {
-    Mermaid,
-    PlantUml,
-    DrawIo,
-}
+pub use super::types::*;
+use base64::Engine;
 
 impl DiagramKind {
     pub fn from_info(info: &str) -> Option<Self> {
@@ -26,17 +20,10 @@ impl DiagramKind {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct DiagramBlock {
-    pub kind: DiagramKind,
-    pub source: String,
-}
-
 impl DiagramBlock {
     pub fn validate(&self) -> Result<(), DiagramValidationError> {
         match self.kind {
             DiagramKind::Mermaid => {
-                // WHY: Any non-empty source is accepted.
                 if self.source.trim().is_empty() {
                     return Err(DiagramValidationError::EmptySource {
                         kind: self.kind.display_name(),
@@ -64,49 +51,58 @@ impl DiagramBlock {
         }
         Ok(())
     }
+
+    pub fn render(&self) -> DiagramResult {
+        match self.kind {
+            DiagramKind::Mermaid => super::mermaid_renderer::MermaidRenderOps::render_mermaid(self),
+            DiagramKind::PlantUml => {
+                super::plantuml_renderer::PlantUmlRendererOps::render_plantuml(self)
+            }
+            DiagramKind::DrawIo => super::drawio_renderer::DrawioRendererOps::render_drawio(self),
+        }
+    }
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum DiagramValidationError {
-    #[error("{kind} block has empty source")]
-    EmptySource { kind: &'static str },
-
-    #[error("{kind} block is missing required delimiters: {message}")]
-    MissingDelimiters { kind: &'static str, message: String },
-
-    #[error("{kind} block uses an unsupported encoding: {message}")]
-    UnsupportedEncoding { kind: &'static str, message: String },
+impl DiagramResult {
+    pub fn to_html(&self) -> String {
+        match self {
+            Self::Ok(html) => html.clone(),
+            Self::OkPng(bytes) => {
+                let b64 = base64::engine::general_purpose::STANDARD.encode(bytes);
+                format!(r#"<img src="data:image/png;base64,{b64}" alt="Diagram">"#)
+            }
+            Self::Err { source, error } => format!(
+                r#"<div class="katana-diagram-error"><pre><code>{}</code></pre><p>{}</p></div>"#,
+                html_escape(source),
+                html_escape(error)
+            ),
+            Self::CommandNotFound {
+                tool_name,
+                install_hint,
+                source,
+            } => format!(
+                r#"<div class="katana-diagram-error"><p>{} not found.</p><p>Please install with: <code>{}</code></p><pre><code>{}</code></pre></div>"#,
+                html_escape(tool_name),
+                html_escape(install_hint),
+                html_escape(source)
+            ),
+            Self::NotInstalled {
+                kind,
+                download_url,
+                install_path,
+            } => format!(
+                r#"<div class="katana-diagram-error"><p>{} rendering engine is not installed.</p><p>Download from: <a href="{}">{}</a></p><p>Install to: <code>{}</code></p></div>"#,
+                html_escape(kind),
+                html_escape(download_url),
+                html_escape(download_url),
+                html_escape(&install_path.to_string_lossy())
+            ),
+        }
+    }
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum DiagramResult {
-    Ok(String),
-    OkPng(Vec<u8>),
-    Err {
-        source: String,
-        error: String,
-    },
-    CommandNotFound {
-        tool_name: String,
-        install_hint: String,
-        source: String,
-    },
-    NotInstalled {
-        kind: String,
-        download_url: String,
-        install_path: std::path::PathBuf,
-    },
-}
-
-pub trait DiagramRenderer: Send + Sync {
-    fn render(&self, block: &DiagramBlock) -> DiagramResult;
-}
-
-pub struct NoOpRenderer;
 
 impl DiagramRenderer for NoOpRenderer {
     fn render(&self, block: &DiagramBlock) -> DiagramResult {
-        // WHY: Pass through as a code block — the diagram source is visible but not rendered.
         let html = format!(
             "<pre><code class=\"language-{kind}\">{source}</code></pre>",
             kind = match block.kind {
@@ -126,3 +122,6 @@ fn html_escape(s: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
 }
+
+#[cfg(test)]
+mod tests;

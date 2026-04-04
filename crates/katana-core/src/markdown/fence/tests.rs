@@ -1,0 +1,62 @@
+use super::*;
+use crate::markdown::diagram::{DiagramBlock, DiagramRenderer, DiagramResult, NoOpRenderer};
+
+#[test]
+fn extract_fence_block_no_fence_prefix() {
+    assert!(MarkdownFenceOps::extract_fence_block("not a fence").is_none());
+}
+
+#[test]
+fn extract_fence_block_no_newline_after_info() {
+    assert!(MarkdownFenceOps::extract_fence_block("```mermaid").is_none());
+}
+
+#[test]
+fn extract_fence_block_no_closing_fence() {
+    assert!(MarkdownFenceOps::extract_fence_block("```mermaid\ngraph TD; A-->B").is_none());
+}
+
+#[test]
+fn extract_fence_block_valid() {
+    let result = MarkdownFenceOps::extract_fence_block("```mermaid\ngraph TD; A-->B\n```\nrest");
+    assert!(result.is_some());
+    let (block, rest) = result.unwrap();
+    assert_eq!(block.info, "mermaid");
+    assert_eq!(block.content, "graph TD; A-->B");
+    assert_eq!(rest, "rest");
+}
+
+#[test]
+fn transform_handles_fence_at_start_of_input() {
+    let source = "```mermaid\ngraph TD; A-->B\n```\nAfter";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &NoOpRenderer);
+    assert!(result.contains("After"));
+}
+
+struct PngTestRenderer;
+impl DiagramRenderer for PngTestRenderer {
+    fn render(&self, _block: &DiagramBlock) -> DiagramResult {
+        DiagramResult::OkPng(vec![0x89, 0x50, 0x4E, 0x47])
+    }
+}
+
+#[test]
+fn render_diagram_block_okpng_embeds_base64_img() {
+    let block = FenceBlock {
+        info: "mermaid".to_string(),
+        content: "graph TD; A-->B".to_string(),
+        raw: "```mermaid\ngraph TD; A-->B\n```".to_string(),
+    };
+    let result = MarkdownFenceOps::render_diagram_block(&block, &PngTestRenderer);
+    let html = result.expect("mermaid blocks should produce Some");
+    assert!(html.contains("data:image/png;base64,"));
+    assert!(html.contains("<img"));
+}
+
+#[test]
+fn transform_with_png_renderer_embeds_base64_in_output() {
+    let source = "# Hello\n\n```mermaid\ngraph TD; A-->B\n```\n\nAfter";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &PngTestRenderer);
+    assert!(result.contains("data:image/png;base64,"));
+    assert!(result.contains("After"));
+}

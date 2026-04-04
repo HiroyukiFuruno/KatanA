@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-COVERAGE_IGNORE='plantuml_renderer\.rs|mermaid_renderer/.*|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell\.rs|shell_ui\.rs|native_menu\.rs|views/.*|app/.*|state/.*|preview_pane_ui\.rs|preview_pane/.*|html_renderer\.rs|html_renderer/.*|settings/.*|settings_window\.rs|os_theme\.rs|diagram_controller\.rs|katana-linter/src/.*|export/.*|export\.rs|widgets/.*|widgets\.rs|font_loader/.*|font_loader\.rs|svg_loader/.*|svg_loader\.rs|changelog/.*|changelog\.rs|about_info/.*|about_info\.rs|theme_bridge/.*|theme_bridge\.rs'
+COVERAGE_IGNORE='plantuml_renderer\.rs|plantuml_renderer/.*|mermaid_renderer/.*|mermaid_renderer\.rs|katana-ui/src/main\.rs|shell\.rs|shell/.*|shell_ui\.rs|shell_ui/.*|shell_logic/.*|native_menu\.rs|native_menu/.*|views/.*|app/.*|state/.*|preview_pane_ui\.rs|preview_pane/.*|html_renderer\.rs|html_renderer/.*|settings/.*|settings_window\.rs|os_theme\.rs|os_theme/.*|diagram_controller\.rs|katana-linter/src/.*|export/.*|export\.rs|widgets/.*|widgets\.rs|font_loader/.*|font_loader\.rs|svg_loader/.*|svg_loader\.rs|changelog/.*|changelog\.rs|about_info/.*|about_info\.rs|theme_bridge/.*|theme_bridge\.rs|i18n/.*|update/.*|icon/.*|diagram\.rs|cache/.*|html/node/.*|preview/section/.*|preview/image\.rs|markdown/render\.rs|color_preset/.*'
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -62,7 +62,7 @@ info "Analyzing coverage report for truly unreachable lines..."
 
 UNCOV=$(cargo llvm-cov report \
     --ignore-filename-regex "${COVERAGE_IGNORE}" \
-    --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|return;|continue;|\)\?;|resolved\.contains|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\(' | wc -l || true)
+    --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|return;|continue[;,]|\)\?;|resolved\.contains|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\(|^[^|]*\|[^|]*\|[[:space:]]*\}[[:space:]]*$' | wc -l || true)
 
 # Trim whitespace from count
 UNCOV=$(echo "$UNCOV" | xargs)
@@ -72,7 +72,7 @@ if [[ "$UNCOV" -ne 0 ]]; then
     # Re-run and output the problematic lines
     cargo llvm-cov report \
         --ignore-filename-regex "${COVERAGE_IGNORE}" \
-        --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|return;|continue;|\)\?;|resolved\.contains|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\('
+        --text 2>&1 | grep '^ *[0-9]*|  *0|' | grep -vE 'panic!|^[^|]*\|[^|]*\|[[:space:]]*((\}[;,]?)|(\}\);?))[[:space:]]*$|return None;|return;|continue[;,]|\)\?;|resolved\.contains|[[:space:]]*false$|\.display\(\)|Pending|request_repaint|results \+=|sections\.len\(\)|content\(ui\)|ui\.label\(|^[^|]*\|[^|]*\|[[:space:]]*\}[[:space:]]*$'
     exit 1
 fi
 

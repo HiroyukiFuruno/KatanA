@@ -1,5 +1,5 @@
 use crate::Violation;
-use crate::utils::{collect_rs_files, parse_file, span_location};
+use crate::utils::{collect_rs_files, LinterParserOps};
 use quote::quote;
 use std::path::Path;
 use syn::spanned::Spanned;
@@ -53,7 +53,7 @@ impl<'a, 'ast> Visit<'ast> for TooltipVisitor<'a> {
         ) && !self.in_tooltip_chain
             && is_using_icon(node)
         {
-            let (line, col) = span_location(node.span());
+            let (line, col) = LinterParserOps::span_location(node.span());
             self.violations.push(Violation {
                 file: self.file_path.to_path_buf(),
                 line,
@@ -76,7 +76,7 @@ impl TooltipOps {
         let mut violations = Vec::new();
     
         for file in files {
-            let Ok(ast) = parse_file(&file) else {
+            let Ok(ast) = LinterParserOps::parse_file(&file) else {
                 continue;
             };
             let mut visitor = TooltipVisitor {

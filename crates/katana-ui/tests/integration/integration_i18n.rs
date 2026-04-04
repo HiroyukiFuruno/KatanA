@@ -1,6 +1,7 @@
 use egui_kittest::Harness;
 use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 use katana_ui::app_state::{AppAction, AppState};
+use katana_ui::i18n::I18nOps;
 use katana_ui::shell::KatanaApp;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -25,7 +26,7 @@ fn wait_for_workspace_load(harness: &mut Harness<'static, KatanaApp>) {
 }
 
 fn setup_harness() -> Harness<'static, KatanaApp> {
-    katana_ui::i18n::set_language("en");
+    I18nOps::set_language("en");
     let settings_path = unique_temp_path("katana_test_i18n_settings").with_extension("json");
     let _ = std::fs::remove_file(&settings_path);
     Harness::builder().build_eframe(move |_cc| {
@@ -55,7 +56,7 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
 }
 
 fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'static, KatanaApp> {
-    katana_ui::i18n::set_language("en");
+    I18nOps::set_language("en");
     let path = settings_path.to_path_buf();
     Harness::builder().build_eframe(move |_cc| {
         let repo = katana_platform::JsonFileRepository::new(path.clone());
@@ -100,7 +101,7 @@ fn test_persistence_language_roundtrip() {
             json.contains("\"language\": \"ja\""),
             "settings.json should contain language=ja, got: {json}"
         );
-        katana_ui::i18n::set_language("en");
+        I18nOps::set_language("en");
     }
 
     {
@@ -147,7 +148,7 @@ fn test_persistence_multiple_changes_accumulate() {
             "last_workspace should be persisted"
         );
         assert_eq!(s.language, "ja", "language should be persisted");
-        katana_ui::i18n::set_language("en");
+        I18nOps::set_language("en");
     }
 }
 
@@ -176,7 +177,7 @@ fn test_ui_all_languages_load_successfully() {
         harness.step();
         harness.step();
 
-        let settings = katana_ui::i18n::get();
+        let settings = I18nOps::get();
         assert!(
             !settings.settings.tabs.is_empty(),
             "Tabs shouldn't be empty for {}",
@@ -195,5 +196,5 @@ fn test_ui_all_languages_load_successfully() {
             code
         );
     }
-    katana_ui::i18n::set_language("en");
+    katana_ui::i18n::I18nOps::set_language("en");
 }

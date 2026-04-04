@@ -97,7 +97,12 @@ impl ExportOps for KatanaApp {
 
         let fname = filename.clone();
         std::thread::spawn(move || {
-            let result = export_html_to_tmp(&source, &fname, &preset, base_dir.as_deref());
+            let result = ShellLogicOps::export_named_html_to_tmp(
+                &source,
+                &fname,
+                &preset,
+                base_dir.as_deref(),
+            );
             let _ = tx.send(result);
         });
 
@@ -120,8 +125,8 @@ impl ExportOps for KatanaApp {
         };
 
         if !is_available {
-            let msg = crate::i18n::tf(
-                &crate::i18n::get().export.tool_missing,
+            let msg = crate::i18n::I18nOps::tf(
+                &crate::i18n::I18nOps::get().export.tool_missing,
                 &[("tool", tool_name), ("format", &ext.to_uppercase())],
             );
             self.state.layout.status_message = Some((msg, crate::app_state::StatusType::Error));
@@ -216,8 +221,8 @@ impl ExportOps for KatanaApp {
                         .extension()
                         .map(|e| e.to_string_lossy().to_uppercase())
                         .unwrap_or_default();
-                    let msg = crate::i18n::tf(
-                        &crate::i18n::get().export.success,
+                    let msg = crate::i18n::I18nOps::tf(
+                        &crate::i18n::I18nOps::get().export.success,
                         &[
                             ("format", &ext),
                             ("path", &output_path.display().to_string()),
@@ -237,8 +242,8 @@ impl ExportOps for KatanaApp {
                     );
                 }
                 Err(error) => {
-                    let msg = crate::i18n::tf(
-                        &crate::i18n::get().export.failed,
+                    let msg = crate::i18n::I18nOps::tf(
+                        &crate::i18n::I18nOps::get().export.failed,
                         &[("format", &task.filename), ("error", &error)],
                     );
                     self.state.layout.status_message =

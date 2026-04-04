@@ -13,7 +13,7 @@ fn returns_notinstalled_when_jar_not_found() {
         kind: DiagramKind::PlantUml,
         source: "@startuml\nA -> B\n@enduml".to_string(),
     };
-    let result = plantuml_renderer::render_plantuml(&block);
+    let result = plantuml_renderer::PlantUmlRendererOps::render_plantuml(&block);
     assert!(matches!(result, DiagramResult::NotInstalled { .. }));
     unsafe { std::env::remove_var("PLANTUML_JAR") };
 }
@@ -22,7 +22,7 @@ fn returns_notinstalled_when_jar_not_found() {
 fn returns_only_env_var_path_when_jar_candidate_paths_env_var_is_set() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("PLANTUML_JAR", "/custom/path/plantuml.jar") };
-    let paths = plantuml_renderer::jar_candidate_paths();
+    let paths = plantuml_renderer::PlantUmlRendererOps::jar_candidate_paths();
     assert_eq!(paths, vec![PathBuf::from("/custom/path/plantuml.jar")]);
     unsafe { std::env::remove_var("PLANTUML_JAR") };
 }
@@ -31,7 +31,7 @@ fn returns_only_env_var_path_when_jar_candidate_paths_env_var_is_set() {
 fn returns_multiple_candidates_when_jar_candidate_paths_env_var_is_not_set() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::remove_var("PLANTUML_JAR") };
-    let paths = plantuml_renderer::jar_candidate_paths();
+    let paths = plantuml_renderer::PlantUmlRendererOps::jar_candidate_paths();
     assert!(paths.len() >= 2);
 }
 
@@ -39,14 +39,14 @@ fn returns_multiple_candidates_when_jar_candidate_paths_env_var_is_not_set() {
 fn find_plantuml_jar_returns_none_if_not_exists() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/never/plantuml.jar") };
-    let result = plantuml_renderer::find_plantuml_jar();
+    let result = plantuml_renderer::PlantUmlRendererOps::find_plantuml_jar();
     assert!(result.is_none());
     unsafe { std::env::remove_var("PLANTUML_JAR") };
 }
 
 #[test]
 fn default_install_path_is_under_home_directory() {
-    let path = plantuml_renderer::default_install_path();
+    let path = plantuml_renderer::PlantUmlRendererOps::default_install_path();
     assert!(path.is_some());
     let p = path.unwrap();
     assert!(p.to_string_lossy().contains("plantuml.jar"));
@@ -54,7 +54,7 @@ fn default_install_path_is_under_home_directory() {
 
 #[test]
 fn svg_to_html_fragment_wraps_with_div() {
-    let html = plantuml_renderer::svg_to_html_fragment("<svg>test</svg>");
+    let html = plantuml_renderer::PlantUmlRendererOps::svg_to_html_fragment("<svg>test</svg>");
     assert!(html.contains("<div class=\"katana-diagram plantuml\">"));
     assert!(html.contains("<svg>test</svg>"));
     assert!(html.contains("</div>"));
@@ -62,7 +62,7 @@ fn svg_to_html_fragment_wraps_with_div() {
 
 #[test]
 fn run_plantuml_process_errors_with_non_existent_jar() {
-    let result = plantuml_renderer::run_plantuml_process(
+    let result = plantuml_renderer::PlantUmlRendererOps::run_plantuml_process(
         std::path::Path::new("/nonexistent/plantuml.jar"),
         "@startuml\nA -> B\n@enduml",
     );

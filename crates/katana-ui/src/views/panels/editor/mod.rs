@@ -1,4 +1,6 @@
 pub mod logic;
+pub mod types;
 pub mod ui;
 
-pub(crate) use ui::EditorContent;
+pub use types::*;
+pub(crate) use ui::*;

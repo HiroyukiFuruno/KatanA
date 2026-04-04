@@ -2,5 +2,6 @@
 
 mod scanner;
 mod service;
+mod types;
 
-pub use service::FilesystemService;
+pub use types::FilesystemService;

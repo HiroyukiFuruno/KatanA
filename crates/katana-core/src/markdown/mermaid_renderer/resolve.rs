@@ -6,22 +6,41 @@ use std::{
 
 static MMDC_RESOLVED_PATH: OnceLock<PathBuf> = OnceLock::new();
 
-pub fn resolve_mmdc_binary() -> PathBuf {
-    // WHY: Always check env var first (not cached — allows runtime override)
-    #[allow(clippy::single_match)]
-    match std::env::var("MERMAID_MMDC") {
-        Ok(p) => return PathBuf::from(p),
-        Err(_) => {}
+pub struct MermaidBinaryOps;
+
+impl MermaidBinaryOps {
+    pub fn resolve_mmdc_binary() -> PathBuf {
+        // WHY: Always check env var first (not cached — allows runtime override)
+        #[allow(clippy::single_match)]
+        match std::env::var("MERMAID_MMDC") {
+            Ok(p) => return PathBuf::from(p),
+            Err(_) => {}
+        }
+
+        MMDC_RESOLVED_PATH
+            .get_or_init(|| {
+                probe_well_known_paths()
+                    .or_else(which_from_current_path)
+                    .or_else(resolve_via_login_shell)
+                    .unwrap_or_else(|| PathBuf::from("mmdc"))
+            })
+            .clone()
     }
 
-    MMDC_RESOLVED_PATH
-        .get_or_init(|| {
-            probe_well_known_paths()
-                .or_else(which_from_current_path)
-                .or_else(resolve_via_login_shell)
-                .unwrap_or_else(|| PathBuf::from("mmdc"))
-        })
-        .clone()
+    pub fn build_mmdc_command() -> Command {
+        let mmdc = Self::resolve_mmdc_binary();
+        let mut cmd = Command::new(&mmdc);
+
+        // WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`.
+        if let Some(bin_dir) = mmdc.parent() {
+            let current_path = std::env::var("PATH").unwrap_or_default();
+            let bin_dir_str = bin_dir.to_string_lossy();
+            if !current_path.split(':').any(|p| p == bin_dir_str.as_ref()) {
+                cmd.env("PATH", format!("{bin_dir_str}:{current_path}"));
+            }
+        }
+        cmd
+    }
 }
 
 fn probe_well_known_paths() -> Option<PathBuf> {
@@ -123,19 +142,4 @@ fn resolve_via_login_shell() -> Option<PathBuf> {
         }
     }
     None
-}
-
-pub fn build_mmdc_command() -> Command {
-    let mmdc = resolve_mmdc_binary();
-    let mut cmd = Command::new(&mmdc);
-
-    // WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`.
-    if let Some(bin_dir) = mmdc.parent() {
-        let current_path = std::env::var("PATH").unwrap_or_default();
-        let bin_dir_str = bin_dir.to_string_lossy();
-        if !current_path.split(':').any(|p| p == bin_dir_str.as_ref()) {
-            cmd.env("PATH", format!("{bin_dir_str}:{current_path}"));
-        }
-    }
-    cmd
 }

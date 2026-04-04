@@ -33,14 +33,14 @@ fn all_locale_files_deserialize_to_strong_struct() {
 }
 
 #[test]
-fn shell_rs_has_no_i18n_leaks() {
-    let source = include_str!("../../src/shell.rs");
+fn shell_ui_mod_has_no_i18n_leaks() {
+    let source = include_str!("../../src/shell_ui/mod.rs");
     let forbidden_patterns = [".on_hover_text(\"", "ui.heading(\""];
 
     for pattern in &forbidden_patterns {
         assert!(
             !source.contains(pattern),
-            "Hardcoded UI strings detected in shell.rs: {pattern}\n\
+            "Hardcoded UI strings detected in shell_ui/mod.rs: {pattern}\n\
              Please use i18n::get().something."
         );
     }
@@ -48,7 +48,7 @@ fn shell_rs_has_no_i18n_leaks() {
 
 #[test]
 fn supported_languages_includes_all_requested() {
-    let langs = supported_languages();
+    let langs = I18nOps::supported_languages();
     let codes: Vec<&str> = langs.iter().map(|(c, _)| c.as_str()).collect();
 
     assert!(codes.contains(&"en"));
@@ -66,14 +66,14 @@ fn supported_languages_includes_all_requested() {
 
 #[test]
 fn display_name_returns_known_codes() {
-    assert_eq!(display_name("zz"), "???");
-    assert_ne!(display_name("en"), "???");
-    assert_ne!(display_name("ja"), "???");
+    assert_eq!(I18nOps::display_name("zz"), "???");
+    assert_ne!(I18nOps::display_name("en"), "???");
+    assert_ne!(I18nOps::display_name("ja"), "???");
 }
 
 #[test]
 fn tf_function_correctly_substitutes_parameters() {
     let string_format = "Hello {name}, welcome to {place}!";
-    let result = tf(string_format, &[("name", "world"), ("place", "Earth")]);
+    let result = I18nOps::tf(string_format, &[("name", "world"), ("place", "Earth")]);
     assert_eq!(result, "Hello world, welcome to Earth!");
 }

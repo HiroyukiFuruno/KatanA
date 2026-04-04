@@ -250,7 +250,8 @@ impl ActionOps for KatanaApp {
 
                 match std::fs::read_to_string(&path) {
                     Ok(new_content) => {
-                        let new_hash = katana_core::document::compute_content_hash(&new_content);
+                        let new_hash =
+                            katana_core::document::DocumentOps::compute_hash(&new_content);
                         let mut did_update_buffer = false;
 
                         let doc = &mut self.state.document.open_documents[idx];
@@ -376,7 +377,9 @@ impl ActionOps for KatanaApp {
                     self.refresh_doc_search_matches(&text);
                     if let Some(r) = self.state.search.doc_search_matches.first() {
                         let line =
-                            crate::views::panels::editor::logic::char_index_to_line(&text, r.start);
+                            crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
+                                &text, r.start,
+                            );
                         self.state.scroll.scroll_to_line = Some(line);
                         self.state.scroll.preview_search_scroll_pending = true;
                     }
@@ -390,10 +393,11 @@ impl ActionOps for KatanaApp {
                     let r = self.state.search.doc_search_matches
                         [self.state.search.doc_search_active_index]
                         .clone();
-                    let line = crate::views::panels::editor::logic::char_index_to_line(
-                        &self.state.document.active_document().unwrap().buffer,
-                        r.start,
-                    );
+                    let line =
+                        crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
+                            &self.state.document.active_document().unwrap().buffer,
+                            r.start,
+                        );
                     self.state.scroll.scroll_to_line = Some(line);
                     self.state.scroll.preview_search_scroll_pending = true;
                 }
@@ -406,10 +410,11 @@ impl ActionOps for KatanaApp {
                     let r = self.state.search.doc_search_matches
                         [self.state.search.doc_search_active_index]
                         .clone();
-                    let line = crate::views::panels::editor::logic::char_index_to_line(
-                        &self.state.document.active_document().unwrap().buffer,
-                        r.start,
-                    );
+                    let line =
+                        crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
+                            &self.state.document.active_document().unwrap().buffer,
+                            r.start,
+                        );
                     self.state.scroll.scroll_to_line = Some(line);
                     self.state.scroll.preview_search_scroll_pending = true;
                 }
@@ -762,7 +767,7 @@ impl ActionOps for KatanaApp {
                 if let Some(_prep) = self.pending_relaunch.take() {
                     #[cfg(all(not(test), not(coverage)))]
                     {
-                        let _ = katana_core::update::execute_relauncher(_prep);
+                        let _ = katana_core::update::UpdateInstallerOps::execute_relauncher(_prep);
                         std::process::exit(0);
                     }
                 }
@@ -1074,7 +1079,7 @@ impl ActionOps for KatanaApp {
 
                     std::thread::spawn(move || {
                         let tx_clone = tx.clone();
-                        let res = katana_core::update::prepare_update(
+                        let res = katana_core::update::UpdateInstallerOps::prepare_update(
                             &download_url,
                             &target_app_path,
                             move |progress| {
@@ -1121,7 +1126,7 @@ impl ActionOps for KatanaApp {
         let (tx, rx) = std::sync::mpsc::channel();
         self.changelog_rx = Some(rx);
 
-        crate::changelog::fetch_changelog(&lang, current_version, previous, tx);
+        crate::changelog::ChangelogOps::fetch_changelog(&lang, current_version, previous, tx);
         tracing::info!("Triggered ShowReleaseNotes background fetch.");
 
         let virtual_path =

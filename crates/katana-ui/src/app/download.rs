@@ -23,13 +23,16 @@ impl DownloadOps for KatanaApp {
         let (tx, rx) = std::sync::mpsc::channel();
         self.download_rx = Some(rx);
         self.state.layout.status_message = Some((
-            crate::i18n::get().plantuml.downloading_plantuml.clone(),
+            crate::i18n::I18nOps::get()
+                .plantuml
+                .downloading_plantuml
+                .clone(),
             crate::app_state::StatusType::Info,
         ));
         let url = req.url;
         let dest = req.dest;
         std::thread::spawn(move || {
-            let result = download_with_curl(&url, &dest);
+            let result = ShellLogicOps::download_with_curl(&url, &dest);
             let _ = tx.send(result);
         });
     }
@@ -38,7 +41,10 @@ impl DownloadOps for KatanaApp {
             match rx.try_recv() {
                 Ok(Ok(())) => {
                     self.state.layout.status_message = Some((
-                        crate::i18n::get().plantuml.plantuml_installed.clone(),
+                        crate::i18n::I18nOps::get()
+                            .plantuml
+                            .plantuml_installed
+                            .clone(),
                         crate::app_state::StatusType::Success,
                     ));
                     self.pending_action = AppAction::RefreshDiagrams;
@@ -48,7 +54,7 @@ impl DownloadOps for KatanaApp {
                     self.state.layout.status_message = Some((
                         format!(
                             "{}{}",
-                            crate::i18n::get().plantuml.download_error.clone(),
+                            crate::i18n::I18nOps::get().plantuml.download_error.clone(),
                             e
                         ),
                         crate::app_state::StatusType::Error,

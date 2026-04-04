@@ -1,12 +1,9 @@
-/* WHY: Settings type definitions.
-
-All settings-related structs, enums, and constants are consolidated here. */
-
 pub mod app;
 pub mod behavior;
 pub mod export;
 pub mod font;
 pub mod layout;
+pub mod ops;
 pub mod performance;
 pub mod search;
 pub mod theme;

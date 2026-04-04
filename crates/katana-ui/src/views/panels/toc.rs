@@ -36,7 +36,7 @@ impl<'a> TocPanel<'a> {
             .resizable(true)
             .default_size(TOC_PANEL_DEFAULT_WIDTH)
             .show_inside(ui, |ui| {
-                ui.heading(crate::i18n::get().toc.title.clone());
+                ui.heading(crate::i18n::I18nOps::get().toc.title.clone());
                 ui.separator();
 
                 ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
@@ -46,7 +46,7 @@ impl<'a> TocPanel<'a> {
                     .show(ui, |ui| {
                         if preview.outline_items.is_empty() {
                             ui.label(
-                                egui::RichText::new(crate::i18n::get().toc.empty.clone())
+                                egui::RichText::new(crate::i18n::I18nOps::get().toc.empty.clone())
                                     .weak()
                                     .italics(),
                             );

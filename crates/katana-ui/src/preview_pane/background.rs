@@ -1,8 +1,7 @@
-use super::pane::RenderMessage;
 use super::types::*;
 use eframe::egui;
 
-use super::pane::PreviewPane;
+use super::types::PreviewPane;
 impl PreviewPane {
     pub(crate) fn poll_renders(&mut self, ctx: &egui::Context) {
         while let Some(path) = self.image_preload_queue.pop() {

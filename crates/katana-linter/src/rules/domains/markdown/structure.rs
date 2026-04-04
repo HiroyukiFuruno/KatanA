@@ -1,5 +1,5 @@
 use crate::Violation;
-use crate::utils::locale_violation;
+use crate::utils::ViolationReporterOps;
 use std::path::Path;
 
 use super::discovery::MarkdownPair;
@@ -10,114 +10,122 @@ pub struct MarkdownHeading {
     pub line: usize,
 }
 
-pub fn extract_markdown_headings(path: &Path) -> Result<Vec<MarkdownHeading>, Vec<Violation>> {
-    let source = std::fs::read_to_string(path).map_err(|err| {
-        vec![Violation {
-            file: path.to_path_buf(),
-            line: 0,
-            column: 0,
-            message: format!("Markdown file read error: {err}"),
-        }]
-    })?;
+pub struct MarkdownStructureOps;
 
-    let mut in_fence = false;
-    let mut headings = Vec::new();
+impl MarkdownStructureOps {
+    pub fn extract_markdown_headings(path: &Path) -> Result<Vec<MarkdownHeading>, Vec<Violation>> {
+        let source = std::fs::read_to_string(path).map_err(|err| {
+            vec![Violation {
+                file: path.to_path_buf(),
+                line: 0,
+                column: 0,
+                message: format!("Markdown file read error: {err}"),
+            }]
+        })?;
 
-    for (index, line) in source.lines().enumerate() {
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
-            in_fence = !in_fence;
-            continue;
+        let mut in_fence = false;
+        let mut headings = Vec::new();
+
+        for (index, line) in source.lines().enumerate() {
+            let trimmed = line.trim_start();
+            if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+                in_fence = !in_fence;
+                continue;
+            }
+            if in_fence {
+                continue;
+            }
+
+            if let Some(heading) = Self::parse_markdown_heading(trimmed, index) {
+                headings.push(heading);
+            }
         }
-        if in_fence {
-            continue;
+
+        Ok(headings)
+    }
+
+    fn parse_markdown_heading(trimmed: &str, line_index: usize) -> Option<MarkdownHeading> {
+        let hashes = trimmed.chars().take_while(|char| *char == '#').count();
+        const MAX_HEADING_LEVEL: usize = 6;
+        if !(1..=MAX_HEADING_LEVEL).contains(&hashes) {
+            return None;
         }
 
-        if let Some(heading) = parse_markdown_heading(trimmed, index) {
-            headings.push(heading);
+        let rest = &trimmed[hashes..];
+        if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
+            return None;
         }
+
+        Some(MarkdownHeading {
+            level: hashes as u8,
+            line: line_index + 1,
+        })
     }
 
-    Ok(headings)
-}
+    pub fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation> {
+        let base_headings = match Self::extract_markdown_headings(&pair.base) {
+            Ok(headings) => headings,
+            Err(violations) => return violations,
+        };
+        let ja_headings = match Self::extract_markdown_headings(&pair.ja) {
+            Ok(headings) => headings,
+            Err(violations) => return violations,
+        };
 
-fn parse_markdown_heading(trimmed: &str, line_index: usize) -> Option<MarkdownHeading> {
-    let hashes = trimmed.chars().take_while(|char| *char == '#').count();
-    const MAX_HEADING_LEVEL: usize = 6;
-    if !(1..=MAX_HEADING_LEVEL).contains(&hashes) {
-        return None;
+        let mut violations = Self::check_heading_counts(pair, &base_headings, &ja_headings);
+        violations.extend(Self::check_heading_levels(
+            pair,
+            &base_headings,
+            &ja_headings,
+        ));
+        violations
     }
 
-    let rest = &trimmed[hashes..];
-    if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
-        return None;
-    }
-
-    Some(MarkdownHeading {
-        level: hashes as u8,
-        line: line_index + 1,
-    })
-}
-
-pub fn compare_markdown_heading_structure(pair: &MarkdownPair) -> Vec<Violation> {
-    let base_headings = match extract_markdown_headings(&pair.base) {
-        Ok(headings) => headings,
-        Err(violations) => return violations,
-    };
-    let ja_headings = match extract_markdown_headings(&pair.ja) {
-        Ok(headings) => headings,
-        Err(violations) => return violations,
-    };
-
-    let mut violations = check_heading_counts(pair, &base_headings, &ja_headings);
-    violations.extend(check_heading_levels(pair, &base_headings, &ja_headings));
-    violations
-}
-
-fn check_heading_counts(
-    pair: &MarkdownPair,
-    base: &[MarkdownHeading],
-    ja: &[MarkdownHeading],
-) -> Vec<Violation> {
-    if base.len() != ja.len() {
-        vec![locale_violation(
-            &pair.ja,
-            format!(
-                "Markdown heading count mismatch between `{}` and `{}`: {} vs {}.",
-                pair.base.display(),
-                pair.ja.display(),
-                base.len(),
-                ja.len()
-            ),
-        )]
-    } else {
-        Vec::new()
-    }
-}
-
-fn check_heading_levels(
-    pair: &MarkdownPair,
-    base: &[MarkdownHeading],
-    ja: &[MarkdownHeading],
-) -> Vec<Violation> {
-    let mut violations = Vec::new();
-    for (index, (base_heading, ja_heading)) in base.iter().zip(ja.iter()).enumerate() {
-        if base_heading.level != ja_heading.level {
-            violations.push(Violation {
-                file: pair.ja.clone(),
-                line: ja_heading.line,
-                column: 1,
-                message: format!(
-                    "Markdown heading level mismatch at heading {} compared with `{}`: expected H{}, found H{}.",
-                    index + 1,
+    fn check_heading_counts(
+        pair: &MarkdownPair,
+        base: &[MarkdownHeading],
+        ja: &[MarkdownHeading],
+    ) -> Vec<Violation> {
+        if base.len() != ja.len() {
+            vec![ViolationReporterOps::locale_violation(
+                &pair.ja,
+                format!(
+                    "Markdown heading count mismatch between `{}` and `{}`: {} vs {}.",
                     pair.base.display(),
-                    base_heading.level,
-                    ja_heading.level
+                    pair.ja.display(),
+                    base.len(),
+                    ja.len()
                 ),
-            });
+            )]
+        } else {
+            Vec::new()
         }
     }
-    violations
+
+    fn check_heading_levels(
+        pair: &MarkdownPair,
+        base: &[MarkdownHeading],
+        ja: &[MarkdownHeading],
+    ) -> Vec<Violation> {
+        let mut violations = Vec::new();
+        for (index, (base_heading, ja_heading)) in base.iter().zip(ja.iter()).enumerate() {
+            if base_heading.level != ja_heading.level {
+                violations.push(Violation {
+                    file: pair.ja.clone(),
+                    line: ja_heading.line,
+                    column: 1,
+                    message: format!(
+                        "Markdown heading level mismatch at heading {} compared with `{}`: expected H{}, found H{}.",
+                        index + 1,
+                        pair.base.display(),
+                        base_heading.level,
+                        ja_heading.level
+                    ),
+                });
+            }
+        }
+        violations
+    }
 }
 
 #[cfg(test)]
@@ -129,7 +137,7 @@ mod tests {
         let tmp = tempfile::NamedTempFile::with_suffix(".md").unwrap();
         std::fs::write(tmp.path(), "# H1\n```\n# Not a heading\n```\n## H2").unwrap();
 
-        let headings = extract_markdown_headings(tmp.path()).unwrap();
+        let headings = MarkdownStructureOps::extract_markdown_headings(tmp.path()).unwrap();
         assert_eq!(headings.len(), 2);
         assert_eq!(headings[0].level, 1);
         assert_eq!(headings[1].level, 2);
@@ -148,7 +156,7 @@ mod tests {
             base: base_path,
             ja: ja_path,
         };
-        let violations = compare_markdown_heading_structure(&pair);
+        let violations = MarkdownStructureOps::compare_markdown_heading_structure(&pair);
         assert_eq!(violations.len(), 1);
         assert!(violations[0].message.contains("expected H2, found H3"));
     }

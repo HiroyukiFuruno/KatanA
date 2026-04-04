@@ -40,7 +40,7 @@ impl<'a> CommandPaletteModal<'a> {
 
         let mut is_open = self.state.is_open;
 
-        egui::Window::new(crate::i18n::get().menu.command_palette.clone())
+        egui::Window::new(crate::i18n::I18nOps::get().menu.command_palette.clone())
             .title_bar(false)
             .collapsible(false)
             .resizable(true)
@@ -50,7 +50,12 @@ impl<'a> CommandPaletteModal<'a> {
                 ui.set_max_width(COMMAND_PALETTE_WIDTH);
 
                 let text_edit = egui::TextEdit::singleline(&mut self.state.current_query)
-                    .hint_text(crate::i18n::get().search.palette_query_hint.clone())
+                    .hint_text(
+                        crate::i18n::I18nOps::get()
+                            .search
+                            .palette_query_hint
+                            .clone(),
+                    )
                     .desired_width(f32::INFINITY)
                     .margin(egui::vec2(COMMAND_PALETTE_MARGIN, COMMAND_PALETTE_MARGIN));
 
@@ -118,8 +123,10 @@ impl<'a> CommandPaletteModal<'a> {
                     .show(ui, |ui| {
                         if self.state.results.is_empty() {
                             ui.label(
-                                egui::RichText::new(&crate::i18n::get().search.palette_no_results)
-                                    .weak(),
+                                egui::RichText::new(
+                                    &crate::i18n::I18nOps::get().search.palette_no_results,
+                                )
+                                .weak(),
                             );
                         } else {
                             for (idx, result) in self.state.results.iter().enumerate() {
@@ -133,7 +140,7 @@ impl<'a> CommandPaletteModal<'a> {
                                             egui::Id::new("katana_theme_colors"),
                                         )
                                         .map(|tc| {
-                                            crate::theme_bridge::rgb_to_color32(
+                                            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
                                                 tc.system.panel_background,
                                             )
                                         })

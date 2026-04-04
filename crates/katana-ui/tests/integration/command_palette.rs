@@ -1,5 +1,6 @@
 use egui_kittest::kittest::Queryable;
 use katana_ui::app_state::AppAction;
+use katana_ui::i18n::I18nOps;
 use katana_ui::state::command_palette::*;
 use katana_ui::state::command_palette_providers::*;
 
@@ -307,7 +308,7 @@ fn test_integration_search_modal_remains_functional() {
     );
 
     // Verify legacy modal title is present
-    let _ = harness.get_by_label(&katana_ui::i18n::get().search.modal_title);
+    let _ = harness.get_by_label(&I18nOps::get().search.modal_title);
 
     let _ = std::fs::remove_file(&settings_path);
 }

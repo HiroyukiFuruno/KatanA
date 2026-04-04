@@ -46,7 +46,7 @@ impl<'a> UpdateModal<'a> {
         const MAX_SCROLL_HEIGHT: f32 = 250.0;
         const UPDATE_DIALOG_WIDTH: f32 = 600.0;
 
-        let msgs = &crate::i18n::get().update;
+        let msgs = &crate::i18n::I18nOps::get().update;
 
         match &state.update.phase {
             Some(UpdatePhase::Downloading { progress }) => {
@@ -144,7 +144,9 @@ impl<'a> UpdateModal<'a> {
                                         )
                                     })
                                     .map_or(crate::theme_bridge::WHITE, |tc| {
-                                        crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                                        crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                                            tc.system.error_text,
+                                        )
                                     }),
                                 msgs.failed_to_check.clone(),
                             );
@@ -199,7 +201,7 @@ impl<'a> UpdateModal<'a> {
                                             &crate::widgets::MarkdownHooksOps::katana_task_context_menu,
                                         ))
                                         .custom_emoji_fn(Some(
-                                            &katana_core::emoji::render_apple_color_emoji_png,
+                                            &katana_core::emoji::EmojiRasterOps::render_apple_color_emoji_png,
                                         ))
                                         .show(ui, markdown_cache, &body_text);
                                 });
@@ -219,7 +221,7 @@ impl<'a> UpdateModal<'a> {
                                 return Some(AppAction::InstallUpdate);
                             }
                             if ui
-                                .button(crate::i18n::get().menu.release_notes.clone())
+                                .button(crate::i18n::I18nOps::get().menu.release_notes.clone())
                                 .clicked()
                             {
                                 return Some(AppAction::ShowReleaseNotes);

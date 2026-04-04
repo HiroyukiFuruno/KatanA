@@ -24,8 +24,6 @@ use katana_ui::app_state::AppState;
 #[cfg(not(test))]
 use katana_ui::shell::KatanaApp;
 #[cfg(all(target_os = "macos", not(test)))]
-use katana_ui::shell_ui;
-
 #[cfg(not(test))]
 const INITIAL_WIDTH: f32 = 1280.0;
 #[cfg(not(test))]
@@ -124,13 +122,13 @@ fn main() -> eframe::Result<()> {
 
     #[cfg(target_os = "macos")]
     unsafe {
-        shell_ui::native_set_process_name();
+        katana_ui::native_menu::NativeMenuOps::set_process_name();
     }
 
     let ai_registry = AiProviderRegistry::new();
 
     let mut plugin_registry = PluginRegistry::new();
-    register_builtin_plugins(&mut plugin_registry);
+    GuiSetupOps::register_builtin_plugins(&mut plugin_registry);
 
     let repo = JsonFileRepository::with_default_path();
     let mut settings = SettingsService::new(Box::new(repo));
@@ -159,19 +157,22 @@ fn main() -> eframe::Result<()> {
         "KatanA",
         native_options,
         Box::new(|cc| {
-            setup_fonts(&cc.egui_ctx);
-            katana_ui::svg_loader::install_image_loaders(&cc.egui_ctx);
+            GuiSetupOps::setup_fonts(&cc.egui_ctx);
+            katana_ui::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
             egui_extras::install_image_loaders(&cc.egui_ctx);
             katana_ui::icon::IconRegistry::install(&cc.egui_ctx);
 
             #[cfg(target_os = "macos")]
             unsafe {
-                shell_ui::native_menu_setup();
+                katana_ui::native_menu::NativeMenuOps::setup();
                 let png_bytes = include_bytes!("../../../assets/icon.iconset/icon_512x512.png");
-                shell_ui::native_set_app_icon_png(png_bytes.as_ptr(), png_bytes.len());
+                katana_ui::native_menu::NativeMenuOps::set_app_icon_png(
+                    png_bytes.as_ptr(),
+                    png_bytes.len(),
+                );
             }
 
-            katana_ui::i18n::set_language(&saved_language);
+            katana_ui::i18n::I18nOps::set_language(&saved_language);
             katana_ui::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
 
             let mut app = KatanaApp::new(state);
@@ -203,90 +204,94 @@ fn main() -> eframe::Result<()> {
     )
 }
 
-pub fn setup_fonts(ctx: &egui::Context) {
-    let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-    setup_fonts_from_preset(ctx, preset);
-}
+pub struct GuiSetupOps;
 
-pub fn setup_fonts_from_preset(
-    ctx: &egui::Context,
-    preset: &katana_core::markdown::color_preset::DiagramColorPreset,
-) {
-    katana_ui::font_loader::SystemFontLoader::setup_fonts(ctx, preset, None, None);
-}
-
-pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
-    let normalized = build_font_definitions(candidates, &[], &[]);
-    ctx.set_fonts(normalized.into_inner());
-
-    #[cfg(debug_assertions)]
-    ctx.global_style_mut(|style| {
-        style.debug.debug_on_hover = false;
-        style.debug.show_expand_width = false;
-        style.debug.show_expand_height = false;
-        style.debug.show_widget_hits = false;
-    });
-}
-
-pub fn build_font_definitions(
-    proportional_candidates: &[&str],
-    monospace_candidates: &[&str],
-    emoji_candidates: &[&str],
-) -> katana_ui::font_loader::NormalizeFonts {
-    katana_ui::font_loader::SystemFontLoader::build_font_definitions(
-        proportional_candidates,
-        monospace_candidates,
-        emoji_candidates,
-        None,
-        None,
-    )
-}
-
-pub fn load_first_font(candidates: &[&str]) -> Option<(String, Vec<u8>)> {
-    for &path in candidates {
-        let Ok(data) = std::fs::read(path) else {
-            continue;
-        };
-        let name = std::path::Path::new(path)
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("cjk_font")
-            .to_string();
-        return Some((name, data));
+impl GuiSetupOps {
+    pub fn setup_fonts(ctx: &egui::Context) {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
+        Self::setup_fonts_from_preset(ctx, preset);
     }
-    None
-}
 
-pub fn register_builtin_plugins(registry: &mut PluginRegistry) {
-    registry.register(
-        PluginMeta {
-            id: "builtin-mermaid-renderer".to_string(),
-            name: "Built-in Mermaid Renderer".to_string(),
-            api_version: PLUGIN_API_VERSION,
-            extension_points: vec![ExtensionPoint::RendererEnhancement],
-        },
-        || Ok(()), // WHY: Renderer logic is wired directly in the markdown pipeline.
-    );
+    pub fn setup_fonts_from_preset(
+        ctx: &egui::Context,
+        preset: &katana_core::markdown::color_preset::DiagramColorPreset,
+    ) {
+        katana_ui::font_loader::SystemFontLoader::setup_fonts(ctx, preset, None, None);
+    }
 
-    registry.register(
-        PluginMeta {
-            id: "builtin-plantuml-renderer".to_string(),
-            name: "Built-in PlantUML Renderer".to_string(),
-            api_version: PLUGIN_API_VERSION,
-            extension_points: vec![ExtensionPoint::RendererEnhancement],
-        },
-        || Ok(()),
-    );
+    pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
+        let normalized = Self::build_font_definitions(candidates, &[], &[]);
+        ctx.set_fonts(normalized.into_inner());
 
-    registry.register(
-        PluginMeta {
-            id: "builtin-drawio-renderer".to_string(),
-            name: "Built-in Draw.io Renderer".to_string(),
-            api_version: PLUGIN_API_VERSION,
-            extension_points: vec![ExtensionPoint::RendererEnhancement],
-        },
-        || Ok(()),
-    );
+        #[cfg(debug_assertions)]
+        ctx.global_style_mut(|style| {
+            style.debug.debug_on_hover = false;
+            style.debug.show_expand_width = false;
+            style.debug.show_expand_height = false;
+            style.debug.show_widget_hits = false;
+        });
+    }
+
+    pub fn build_font_definitions(
+        proportional_candidates: &[&str],
+        monospace_candidates: &[&str],
+        emoji_candidates: &[&str],
+    ) -> katana_ui::font_loader::NormalizeFonts {
+        katana_ui::font_loader::SystemFontLoader::build_font_definitions(
+            proportional_candidates,
+            monospace_candidates,
+            emoji_candidates,
+            None,
+            None,
+        )
+    }
+
+    pub fn load_first_font(candidates: &[&str]) -> Option<(String, Vec<u8>)> {
+        for &path in candidates {
+            let Ok(data) = std::fs::read(path) else {
+                continue;
+            };
+            let name = std::path::Path::new(path)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("cjk_font")
+                .to_string();
+            return Some((name, data));
+        }
+        None
+    }
+
+    pub fn register_builtin_plugins(registry: &mut PluginRegistry) {
+        registry.register(
+            PluginMeta {
+                id: "builtin-mermaid-renderer".to_string(),
+                name: "Built-in Mermaid Renderer".to_string(),
+                api_version: PLUGIN_API_VERSION,
+                extension_points: vec![ExtensionPoint::RendererEnhancement],
+            },
+            || Ok(()), // WHY: Renderer logic is wired directly in the markdown pipeline.
+        );
+
+        registry.register(
+            PluginMeta {
+                id: "builtin-plantuml-renderer".to_string(),
+                name: "Built-in PlantUML Renderer".to_string(),
+                api_version: PLUGIN_API_VERSION,
+                extension_points: vec![ExtensionPoint::RendererEnhancement],
+            },
+            || Ok(()),
+        );
+
+        registry.register(
+            PluginMeta {
+                id: "builtin-drawio-renderer".to_string(),
+                name: "Built-in Draw.io Renderer".to_string(),
+                api_version: PLUGIN_API_VERSION,
+                extension_points: vec![ExtensionPoint::RendererEnhancement],
+            },
+            || Ok(()),
+        );
+    }
 }
 
 #[cfg(test)]
@@ -300,7 +305,7 @@ mod tests {
     #[test]
     fn test_load_first_font_not_found() {
         let candidates = vec!["/invalid/path/to/never/found/font.ttc"];
-        let result = load_first_font(&candidates);
+        let result = GuiSetupOps::load_first_font(&candidates);
         assert!(result.is_none());
     }
 
@@ -310,7 +315,7 @@ mod tests {
             "/System/Library/Fonts/AquaKana.ttc",
             "/System/Library/Fonts/Hiragino Sans GB.ttc",
         ];
-        let result = load_first_font(&candidates);
+        let result = GuiSetupOps::load_first_font(&candidates);
         if let Some((name, data)) = result {
             assert!(!name.is_empty());
             assert!(!data.is_empty());
@@ -321,28 +326,28 @@ mod tests {
     fn test_setup_fonts_with_cjk() {
         init_tracing();
         let ctx = egui::Context::default();
-        setup_fonts(&ctx);
+        GuiSetupOps::setup_fonts(&ctx);
     }
 
     #[test]
     fn test_setup_fonts_without_cjk() {
         init_tracing();
         let ctx = egui::Context::default();
-        setup_fonts_with_candidates(&ctx, &["/nonexistent/font.ttc"]);
+        GuiSetupOps::setup_fonts_with_candidates(&ctx, &["/nonexistent/font.ttc"]);
     }
 
     #[test]
     fn test_register_builtin_plugins() {
         init_tracing();
         let mut registry = PluginRegistry::new();
-        register_builtin_plugins(&mut registry);
+        GuiSetupOps::register_builtin_plugins(&mut registry);
         assert_eq!(registry.active_count(), 3);
     }
 
     #[test]
     fn test_install_image_loaders_does_not_panic() {
         let ctx = egui::Context::default();
-        katana_ui::svg_loader::install_image_loaders(&ctx);
+        katana_ui::svg_loader::KatanaSvgLoader::install(&ctx);
         assert!(ctx.is_loader_installed(katana_ui::svg_loader::KatanaSvgLoader::ID));
     }
 
@@ -359,16 +364,16 @@ mod tests {
     #[test]
     fn test_proportional_font_is_primary_in_proportional_family() {
         init_tracing();
-        if load_first_font(PROP_CANDIDATES).is_none() {
+        if GuiSetupOps::load_first_font(PROP_CANDIDATES).is_none() {
             return;
         }
-        let fonts = build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, &[]);
+        let fonts = GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, &[]);
         let proportional = fonts
             .fonts()
             .families
             .get(&egui::FontFamily::Proportional)
             .expect("Proportional family missing");
-        let loaded_name = load_first_font(PROP_CANDIDATES).unwrap().0;
+        let loaded_name = GuiSetupOps::load_first_font(PROP_CANDIDATES).unwrap().0;
         assert_eq!(
             proportional.first().unwrap(),
             &loaded_name,
@@ -379,16 +384,16 @@ mod tests {
     #[test]
     fn test_monospace_font_is_primary_in_monospace_family() {
         init_tracing();
-        if load_first_font(MONO_CANDIDATES).is_none() {
+        if GuiSetupOps::load_first_font(MONO_CANDIDATES).is_none() {
             return;
         }
-        let fonts = build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, &[]);
+        let fonts = GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, &[]);
         let monospace = fonts
             .fonts()
             .families
             .get(&egui::FontFamily::Monospace)
             .expect("Monospace family missing");
-        let mono_name = load_first_font(MONO_CANDIDATES).unwrap().0;
+        let mono_name = GuiSetupOps::load_first_font(MONO_CANDIDATES).unwrap().0;
         assert_eq!(
             monospace.first().unwrap(),
             &mono_name,
@@ -399,23 +404,24 @@ mod tests {
     #[test]
     fn test_proportional_font_is_cjk_fallback_in_monospace() {
         init_tracing();
-        if load_first_font(PROP_CANDIDATES).is_none() || load_first_font(MONO_CANDIDATES).is_none()
+        if GuiSetupOps::load_first_font(PROP_CANDIDATES).is_none()
+            || GuiSetupOps::load_first_font(MONO_CANDIDATES).is_none()
         {
             return;
         }
-        let fonts = build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, &[]);
+        let fonts = GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, &[]);
         let monospace = fonts
             .fonts()
             .families
             .get(&egui::FontFamily::Monospace)
             .expect("Monospace family missing");
-        let prop_name = load_first_font(PROP_CANDIDATES).unwrap().0;
+        let prop_name = GuiSetupOps::load_first_font(PROP_CANDIDATES).unwrap().0;
         let mono_fallback_name = format!("{}_mono_fallback", prop_name);
         assert!(
             monospace.contains(&mono_fallback_name),
             "Proportional font should be in Monospace family as CJK fallback"
         );
-        let mono_name = load_first_font(MONO_CANDIDATES).unwrap().0;
+        let mono_name = GuiSetupOps::load_first_font(MONO_CANDIDATES).unwrap().0;
         let mono_pos = monospace.iter().position(|n| n == &mono_name).unwrap();
         let prop_pos = monospace
             .iter()
@@ -430,7 +436,7 @@ mod tests {
     #[test]
     fn test_build_font_definitions_without_candidates_returns_defaults() {
         init_tracing();
-        let fonts = build_font_definitions(&["/nonexistent/font.ttc"], &[], &[]);
+        let fonts = GuiSetupOps::build_font_definitions(&["/nonexistent/font.ttc"], &[], &[]);
         let proportional = fonts
             .fonts()
             .families
@@ -447,7 +453,7 @@ mod tests {
         init_tracing();
         let ctx = egui::Context::default();
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-        setup_fonts_from_preset(&ctx, preset);
+        GuiSetupOps::setup_fonts_from_preset(&ctx, preset);
     }
 
     #[test]
@@ -495,7 +501,7 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn test_emoji_font_available_on_macos() {
-        let result = load_first_font(EMOJI_CANDIDATES);
+        let result = GuiSetupOps::load_first_font(EMOJI_CANDIDATES);
         assert!(
             result.is_some(),
             "Apple Color Emoji font should be available on macOS"
@@ -505,16 +511,17 @@ mod tests {
     #[test]
     fn test_emoji_font_is_not_in_proportional_family() {
         init_tracing();
-        if load_first_font(EMOJI_CANDIDATES).is_none() {
+        if GuiSetupOps::load_first_font(EMOJI_CANDIDATES).is_none() {
             return;
         }
-        let fonts = build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
+        let fonts =
+            GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
         let proportional = fonts
             .fonts()
             .families
             .get(&egui::FontFamily::Proportional)
             .expect("Proportional family missing");
-        let emoji_name = load_first_font(EMOJI_CANDIDATES).unwrap().0;
+        let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
             !proportional.contains(&emoji_name),
             "Preview emoji should not replace UI fallback fonts in Proportional family"
@@ -524,16 +531,17 @@ mod tests {
     #[test]
     fn test_emoji_font_is_not_in_monospace_family() {
         init_tracing();
-        if load_first_font(EMOJI_CANDIDATES).is_none() {
+        if GuiSetupOps::load_first_font(EMOJI_CANDIDATES).is_none() {
             return;
         }
-        let fonts = build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
+        let fonts =
+            GuiSetupOps::build_font_definitions(PROP_CANDIDATES, MONO_CANDIDATES, EMOJI_CANDIDATES);
         let monospace = fonts
             .fonts()
             .families
             .get(&egui::FontFamily::Monospace)
             .expect("Monospace family missing");
-        let emoji_name = load_first_font(EMOJI_CANDIDATES).unwrap().0;
+        let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
             !monospace.contains(&emoji_name),
             "Preview emoji should not replace UI fallback fonts in Monospace family"

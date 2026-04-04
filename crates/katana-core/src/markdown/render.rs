@@ -1,63 +1,55 @@
 use comrak::{ComrakOptions, markdown_to_html};
 
-use super::diagram::{self, DiagramBlock, DiagramKind, DiagramRenderer, DiagramResult};
 use super::drawio_renderer;
+use super::fence::MarkdownFenceOps;
 use super::mermaid_renderer;
 use super::plantuml_renderer;
-
-use super::fence::transform_diagram_blocks;
-
-#[derive(Debug, Default)]
-pub struct KatanaRenderer;
+use super::types::*;
 
 impl DiagramRenderer for KatanaRenderer {
     fn render(&self, block: &DiagramBlock) -> DiagramResult {
         match block.kind {
-            DiagramKind::Mermaid => mermaid_renderer::render_mermaid(block),
-            DiagramKind::PlantUml => plantuml_renderer::render_plantuml(block),
-            DiagramKind::DrawIo => drawio_renderer::render_drawio(block),
+            DiagramKind::Mermaid => mermaid_renderer::MermaidRenderOps::render_mermaid(block),
+            DiagramKind::PlantUml => plantuml_renderer::PlantUmlRendererOps::render_plantuml(block),
+            DiagramKind::DrawIo => drawio_renderer::DrawioRendererOps::render_drawio(block),
         }
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct RenderOutput {
-    pub html: String,
-}
+impl MarkdownRenderOps {
+    pub fn gfm_options() -> ComrakOptions<'static> {
+        let mut opts = ComrakOptions::default();
+        opts.extension.strikethrough = true;
+        opts.extension.table = true;
+        opts.extension.autolink = true;
+        opts.extension.tasklist = true;
+        opts.extension.footnotes = true;
+        opts.render.unsafe_ = true;
+        opts
+    }
 
-#[derive(Debug, thiserror::Error)]
-pub enum MarkdownError {
-    #[error("Rendering failed: {0}")]
-    RenderFailed(String),
-    #[error("Export failed: {0}")]
-    ExportFailed(String),
-}
+    pub fn render_basic(source: &str) -> Result<RenderOutput, MarkdownError> {
+        Self::render(source, &NoOpRenderer)
+    }
 
-pub fn gfm_options() -> ComrakOptions<'static> {
-    let mut opts = ComrakOptions::default();
-    opts.extension.strikethrough = true;
-    opts.extension.table = true;
-    opts.extension.autolink = true;
-    opts.extension.tasklist = true;
-    opts.extension.footnotes = true;
-    // WHY: Required to output custom HTML (markup after diagram block conversion) as-is.
-    opts.render.unsafe_ = true;
-    opts
-}
+    pub fn render_with_katana_renderer(source: &str) -> Result<RenderOutput, MarkdownError> {
+        Self::render(source, &KatanaRenderer)
+    }
 
-pub fn render_with_katana_renderer(source: &str) -> Result<RenderOutput, MarkdownError> {
-    render(source, &KatanaRenderer)
-}
+    pub fn render<R: DiagramRenderer>(
+        source: &str,
+        renderer: &R,
+    ) -> Result<RenderOutput, MarkdownError> {
+        let transformed = MarkdownFenceOps::transform_diagram_blocks(source, renderer);
+        let html = markdown_to_html(&transformed, &Self::gfm_options());
+        Ok(RenderOutput { html })
+    }
 
-pub fn render<R: DiagramRenderer>(
-    source: &str,
-    renderer: &R,
-) -> Result<RenderOutput, MarkdownError> {
-    let transformed = transform_diagram_blocks(source, renderer);
-    let html = markdown_to_html(&transformed, &gfm_options());
-    Ok(RenderOutput { html })
-}
-
-pub fn render_basic(source: &str) -> Result<RenderOutput, MarkdownError> {
-    render(source, &diagram::NoOpRenderer)
+    pub fn transform_only<R: DiagramRenderer>(
+        source: &str,
+        renderer: &R,
+    ) -> Result<RenderOutput, MarkdownError> {
+        let html = MarkdownFenceOps::transform_diagram_blocks(source, renderer);
+        Ok(RenderOutput { html })
+    }
 }

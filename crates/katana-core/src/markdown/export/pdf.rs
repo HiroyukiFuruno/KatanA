@@ -1,6 +1,5 @@
+use super::types::PdfExporter;
 use crate::markdown::MarkdownError;
-
-pub struct PdfExporter;
 
 impl PdfExporter {
     pub fn is_available() -> bool {

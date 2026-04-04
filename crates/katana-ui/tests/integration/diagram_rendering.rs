@@ -1,4 +1,5 @@
 use egui_kittest::{Harness, kittest::Queryable};
+use katana_ui::i18n::I18nOps;
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
 use std::sync::Mutex;
@@ -74,8 +75,8 @@ fn drawio_render_error_ui() {
         RenderedSection::Markdown("## After diagram\n".to_string()),
     ];
     let harness = build_harness(sections, 600.0, 300.0);
-    let expected_error = katana_ui::i18n::tf(
-        &katana_ui::i18n::get().error.render_error,
+    let expected_error = I18nOps::tf(
+        &I18nOps::get().error.render_error,
         &[
             ("kind", "DrawIo"),
             ("message", "Failed to extract SVG from rendered HTML"),
@@ -110,7 +111,7 @@ fn mermaid_both_states_render_semantically() {
             install_hint.contains("npm"),
             "Install hint should mention npm"
         );
-        let expected = katana_ui::i18n::get()
+        let expected = I18nOps::get()
             .error
             .missing_dependency
             .replace("{tool_name}", tool_name)
@@ -125,7 +126,7 @@ fn mermaid_both_states_render_semantically() {
         None => unsafe { std::env::remove_var("MERMAID_MMDC") },
     }
 
-    if katana_core::markdown::mermaid_renderer::is_mmdc_available() {
+    if katana_core::markdown::mermaid_renderer::MermaidRenderOps::is_mmdc_available() {
         let pane = render_and_wait("mermaid", MERMAID_SOURCE);
         assert_image(&pane.sections, 1, "Mermaid rendered");
         if let RenderedSection::Image { svg_data, alt, .. } = &pane.sections[1] {
@@ -169,10 +170,7 @@ fn plantuml_both_states_render_semantically() {
             download_url.contains("plantuml"),
             "URL should mention plantuml"
         );
-        let tool_msg = katana_ui::i18n::tf(
-            &katana_ui::i18n::get().tool.not_installed,
-            &[("tool", kind)],
-        );
+        let tool_msg = I18nOps::tf(&I18nOps::get().tool.not_installed, &[("tool", kind)]);
         let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
         assert_standard_diagram_markdown_visible(&harness);
         let _fallback = harness.get_by_label(&tool_msg);
@@ -183,7 +181,8 @@ fn plantuml_both_states_render_semantically() {
         None => unsafe { std::env::remove_var("PLANTUML_JAR") },
     }
 
-    if katana_core::markdown::plantuml_renderer::find_plantuml_jar().is_some() {
+    if katana_core::markdown::plantuml_renderer::PlantUmlRendererOps::find_plantuml_jar().is_some()
+    {
         let pane = render_and_wait("plantuml", PLANTUML_SOURCE);
         assert_image(&pane.sections, 1, "PlantUML rendered");
         if let RenderedSection::Image { svg_data, alt, .. } = &pane.sections[1] {
@@ -288,15 +287,13 @@ fn mixed_diagrams_with_fallbacks_render_semantically() {
         },
         RenderedSection::Markdown("## End\n".to_string()),
     ];
-    let expected_missing = katana_ui::i18n::get()
+    let expected_missing = I18nOps::get()
         .error
         .missing_dependency
         .replace("{tool_name}", "mmdc (Mermaid CLI)")
         .replace("{install_hint}", "`npm install -g @mermaid-js/mermaid-cli`");
-    let expected_not_installed = katana_ui::i18n::tf(
-        &katana_ui::i18n::get().tool.not_installed,
-        &[("tool", "PlantUML")],
-    );
+    let expected_not_installed =
+        I18nOps::tf(&I18nOps::get().tool.not_installed, &[("tool", "PlantUML")]);
     let harness = build_harness(sections, 600.0, 600.0);
     let _heading = harness.get_by_label("Mixed Diagram Document");
     let _footer = harness.get_by_label("End");

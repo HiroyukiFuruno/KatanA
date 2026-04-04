@@ -23,49 +23,32 @@ pub const APP_SPONSOR_URL: &str = "https://github.com/sponsors/HiroyukiFuruno";
 
 pub const APP_DESCRIPTION: &str = "A fast, keyboard-driven Markdown editor built with Rust.";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SystemInfo {
-    pub os: String,
-    pub arch: String,
-    pub rustc_version: String,
-}
+mod types;
+pub use types::{AboutInfo, AboutInfoOps, SystemInfo};
 
-pub fn system_info() -> SystemInfo {
-    SystemInfo {
-        os: std::env::consts::OS.to_string(),
-        arch: std::env::consts::ARCH.to_string(),
-        rustc_version: env!("KATANA_RUSTC_VERSION").to_string(),
+impl AboutInfoOps {
+    pub fn system_info() -> SystemInfo {
+        SystemInfo {
+            os: std::env::consts::OS.to_string(),
+            arch: std::env::consts::ARCH.to_string(),
+            rustc_version: env!("KATANA_RUSTC_VERSION").to_string(),
+        }
     }
-}
 
-#[derive(Debug, Clone)]
-pub struct AboutInfo {
-    pub product_name: &'static str,
-    pub version: &'static str,
-    pub build: &'static str,
-    pub copyright: &'static str,
-    pub license: &'static str,
-    pub description: &'static str,
-    pub repository: &'static str,
-    pub docs_url: &'static str,
-    pub issues_url: &'static str,
-    pub sponsor_url: &'static str,
-    pub system: SystemInfo,
-}
-
-pub fn about_info() -> AboutInfo {
-    AboutInfo {
-        product_name: APP_PRODUCT_NAME,
-        version: APP_VERSION,
-        build: APP_BUILD,
-        copyright: APP_COPYRIGHT,
-        license: APP_LICENSE,
-        description: APP_DESCRIPTION,
-        repository: APP_REPOSITORY,
-        docs_url: APP_DOCS_URL,
-        issues_url: APP_ISSUES_URL,
-        sponsor_url: APP_SPONSOR_URL,
-        system: system_info(),
+    pub fn about_info() -> AboutInfo {
+        AboutInfo {
+            product_name: APP_PRODUCT_NAME,
+            version: APP_VERSION,
+            build: APP_BUILD,
+            copyright: APP_COPYRIGHT,
+            license: APP_LICENSE,
+            description: APP_DESCRIPTION,
+            repository: APP_REPOSITORY,
+            docs_url: APP_DOCS_URL,
+            issues_url: APP_ISSUES_URL,
+            sponsor_url: APP_SPONSOR_URL,
+            system: Self::system_info(),
+        }
     }
 }
 
@@ -182,7 +165,7 @@ mod tests {
 
     #[test]
     fn system_info_os_is_valid() {
-        let info = system_info();
+        let info = AboutInfoOps::system_info();
         assert!(!info.os.is_empty());
         let valid = ["macos", "linux", "windows"];
         assert!(
@@ -194,7 +177,7 @@ mod tests {
 
     #[test]
     fn system_info_arch_is_valid() {
-        let info = system_info();
+        let info = AboutInfoOps::system_info();
         assert!(!info.arch.is_empty());
         let valid = ["aarch64", "x86_64", "x86", "arm"];
         assert!(
@@ -206,7 +189,7 @@ mod tests {
 
     #[test]
     fn system_info_rustc_version_matches_toolchain() {
-        let info = system_info();
+        let info = AboutInfoOps::system_info();
         assert!(!info.rustc_version.is_empty());
         assert!(
             info.rustc_version.starts_with("rustc"),
@@ -260,7 +243,7 @@ mod tests {
 
     #[test]
     fn about_info_contains_all_fields() {
-        let info = about_info();
+        let info = AboutInfoOps::about_info();
         assert_eq!(info.product_name, APP_PRODUCT_NAME);
         assert_eq!(info.version, APP_VERSION);
         assert_eq!(info.build, APP_BUILD);
@@ -277,8 +260,8 @@ mod tests {
 
     #[test]
     fn about_info_system_matches_standalone() {
-        let info = about_info();
-        let standalone = system_info();
+        let info = AboutInfoOps::about_info();
+        let standalone = AboutInfoOps::system_info();
         assert_eq!(info.system, standalone);
     }
 }

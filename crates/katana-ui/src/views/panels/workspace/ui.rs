@@ -9,7 +9,7 @@ use crate::shell_ui::{
 };
 use eframe::egui;
 
-use super::logic::{update_search_filter_cache, update_tree_expansion};
+use super::types::WorkspaceLogicOps;
 
 // --- BreadcrumbMenu ---
 pub(crate) struct BreadcrumbMenu<'a> {
@@ -372,8 +372,8 @@ impl<'a> WorkspaceContent<'a> {
             let ws_root = ws.root.clone();
             let _ = ws;
 
-            update_tree_expansion(workspace);
-            update_search_filter_cache(search, &ws_root, &entries);
+            WorkspaceLogicOps::update_tree_expansion(workspace);
+            WorkspaceLogicOps::update_search_filter_cache(search, &ws_root, &entries);
 
             let filter_set = search.filter_cache.as_ref().map(|(_, v)| v);
 
@@ -423,10 +423,15 @@ impl<'a> WorkspaceContent<'a> {
                     }
                 });
         } else {
-            ui.label(crate::i18n::get().workspace.no_workspace_open.clone());
+            ui.label(
+                crate::i18n::I18nOps::get()
+                    .workspace
+                    .no_workspace_open
+                    .clone(),
+            );
             ui.add_space(NO_WORKSPACE_BOTTOM_SPACING);
             if ui
-                .button(crate::i18n::get().menu.open_workspace.clone())
+                .button(crate::i18n::I18nOps::get().menu.open_workspace.clone())
                 .clicked()
                 && let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog()
             {
@@ -437,13 +442,20 @@ impl<'a> WorkspaceContent<'a> {
                 ui.add_space(RECENT_WORKSPACES_SPACING);
                 ui.separator();
                 ui.add_space(RECENT_WORKSPACES_SPACING);
-                ui.heading(crate::i18n::get().workspace.recent_workspaces.clone());
+                ui.heading(
+                    crate::i18n::I18nOps::get()
+                        .workspace
+                        .recent_workspaces
+                        .clone(),
+                );
                 ui.add_space(RECENT_WORKSPACES_ITEM_SPACING);
                 for path in recent_paths.iter().rev() {
                     ui.horizontal(|ui| {
                         if ui
                             .button("×")
-                            .on_hover_text(crate::i18n::get().action.remove_workspace.clone())
+                            .on_hover_text(
+                                crate::i18n::I18nOps::get().action.remove_workspace.clone(),
+                            )
                             .clicked()
                         {
                             *action = AppAction::RemoveWorkspace(path.clone());
@@ -488,7 +500,7 @@ impl<'a> WorkspaceHeader<'a> {
         let icon_bg = if ui.visuals().dark_mode {
             crate::theme_bridge::TRANSPARENT
         } else {
-            crate::theme_bridge::from_gray(LIGHT_MODE_ICON_BG)
+            crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
         };
 
         if workspace.data.is_some() {
@@ -505,7 +517,7 @@ impl<'a> WorkspaceHeader<'a> {
                         .add(egui::Button::image(
                             crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
                         ))
-                        .on_hover_text(crate::i18n::get().action.expand_all.clone());
+                        .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                     btn_resp.widget_info(|| {
                         egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
                     });
@@ -521,7 +533,7 @@ impl<'a> WorkspaceHeader<'a> {
                         .add(egui::Button::image(
                             crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
                         ))
-                        .on_hover_text(crate::i18n::get().action.collapse_all.clone());
+                        .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                     btn_resp.widget_info(|| {
                         egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
                     });
@@ -535,7 +547,7 @@ impl<'a> WorkspaceHeader<'a> {
                         let flat_label = format!(
                             "{} {}",
                             if is_flat { "✔" } else { "  " },
-                            crate::i18n::get().workspace.flat_view
+                            crate::i18n::I18nOps::get().workspace.flat_view
                         );
 
                         if ui.button(flat_label).clicked() {
@@ -552,7 +564,7 @@ impl<'a> WorkspaceHeader<'a> {
                             )
                             .fill(icon_bg),
                         )
-                        .on_hover_text(crate::i18n::get().action.refresh_workspace.clone())
+                        .on_hover_text(crate::i18n::I18nOps::get().action.refresh_workspace.clone())
                         .clicked()
                     {
                         *action = AppAction::RefreshWorkspace;
@@ -562,7 +574,9 @@ impl<'a> WorkspaceHeader<'a> {
                         if ui.visuals().dark_mode {
                             ui.visuals().selection.bg_fill
                         } else {
-                            crate::theme_bridge::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
+                            crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                LIGHT_MODE_ICON_ACTIVE_BG,
+                            )
                         }
                     } else {
                         icon_bg
@@ -576,7 +590,7 @@ impl<'a> WorkspaceHeader<'a> {
                             )
                             .fill(filter_btn_color),
                         )
-                        .on_hover_text(crate::i18n::get().action.toggle_filter.clone())
+                        .on_hover_text(crate::i18n::I18nOps::get().action.toggle_filter.clone())
                         .clicked()
                     {
                         *action = AppAction::ToggleWorkspaceFilter;
@@ -600,13 +614,15 @@ impl<'a> WorkspaceHeader<'a> {
                                 ))
                             })
                             .map_or(crate::theme_bridge::WHITE, |tc| {
-                                crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                                crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                                    tc.system.error_text,
+                                )
                             })
                     };
                     ui.add(
                         egui::TextEdit::singleline(&mut search.filter_query)
                             .text_color(text_color)
-                            .hint_text(&crate::i18n::get().workspace.filter_regex_hint)
+                            .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
                             .desired_width(f32::INFINITY),
                     );
                 });
@@ -664,7 +680,7 @@ impl<'a> WorkspacePanel<'a> {
                 ui.add_space(WORKSPACE_SPINNER_INNER_MARGIN);
                 ui.spinner();
                 ui.add_space(WORKSPACE_SPINNER_TEXT_MARGIN);
-                ui.label(crate::i18n::get().action.refresh_workspace.clone());
+                ui.label(crate::i18n::I18nOps::get().action.refresh_workspace.clone());
             });
         } else {
             WorkspaceContent::new(workspace, search, recent_paths, active_path, action).show(ui);

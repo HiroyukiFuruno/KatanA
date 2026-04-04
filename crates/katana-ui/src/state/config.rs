@@ -103,6 +103,7 @@ mod tests {
         fn set_persistent(&self, _key: &str, _value: String) -> anyhow::Result<()> {
             Ok(())
         }
+        fn clear_all_directories(&self) {}
     }
 
     #[test]

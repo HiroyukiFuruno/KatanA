@@ -1,54 +1,72 @@
 use crate::Violation;
+use crate::utils::LinterParserOps;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 
-pub struct ErrorFirstVisitor {
-    path: PathBuf,
+pub struct ErrorFirstOps;
+
+impl ErrorFirstOps {
+    pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        let mut visitor = ErrorFirstVisitor::new(path.to_path_buf());
+        visitor.visit_file(syntax);
+        visitor.violations
+    }
+}
+
+struct ErrorFirstVisitor {
+    file: PathBuf,
     violations: Vec<Violation>,
 }
 
 impl ErrorFirstVisitor {
-    pub fn new(path: PathBuf) -> Self {
+    fn new(file: PathBuf) -> Self {
         Self {
-            path,
+            file,
             violations: Vec::new(),
+        }
+    }
+
+    fn check_if_let_ok(&mut self, node: &syn::ExprIf) {
+        if let syn::Expr::Let(let_expr) = &*node.cond {
+            let is_ok = match &*let_expr.pat {
+                syn::Pat::TupleStruct(ts) => {
+                    ts.path.segments.last().is_some_and(|s| s.ident == "Ok")
+                }
+                syn::Pat::Path(p) => p.path.segments.last().is_some_and(|s| s.ident == "Ok"),
+                _ => false,
+            };
+
+            if is_ok {
+                let (line, column) = LinterParserOps::span_location(let_expr.let_token.span);
+                self.violations.push(Violation {
+                    file: self.file.clone(),
+                    line,
+                    column,
+                    message: "Do not nest success paths with `if let Ok(...)`. Use `?` or `let-else` to fail early.".to_string(),
+                });
+            }
         }
     }
 }
 
 impl<'ast> Visit<'ast> for ErrorFirstVisitor {
     fn visit_expr_if(&mut self, node: &'ast syn::ExprIf) {
-        if let syn::Expr::Let(expr_let) = &*node.cond
-            && is_pat_ok(&expr_let.pat)
-        {
-            let start = node.if_token.span.start();
-            self.violations.push(Violation {
-                    file: self.path.clone(),
-                    line: start.line,
-                    column: start.column,
-                    message: "Do not use `if let Ok(...) = ...` to wrap success logic. Follow the Error First principle: handle errors early and return or continue. Use `?` or `let-else` instead.".to_string(),
-                });
-        }
+        self.check_if_let_ok(node);
         syn::visit::visit_expr_if(self, node);
     }
 }
 
-fn is_pat_ok(pat: &syn::Pat) -> bool {
-    match pat {
-        syn::Pat::TupleStruct(pat_tuple_struct) => {
-            if let Some(segment) = pat_tuple_struct.path.segments.last() {
-                segment.ident == "Ok"
-            } else {
-                false
-            }
-        }
-        syn::Pat::Ident(pat_ident) => pat_ident.ident == "Ok",
-        _ => false,
-    }
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
 
-pub fn lint_error_first(path: &Path, syntax: &syn::File) -> Vec<Violation> {
-    let mut visitor = ErrorFirstVisitor::new(path.to_path_buf());
-    visitor.visit_file(syntax);
-    visitor.violations
+    #[test]
+    fn detects_if_let_ok() {
+        let code = r#"fn foo() { if let Ok(val) = result { val } }"#;
+        let syntax = syn::parse_file(code).unwrap();
+        let violations = ErrorFirstOps::lint(&PathBuf::from("fake.rs"), &syntax);
+        assert_eq!(violations.len(), 1);
+        assert!(violations[0].message.contains("if let Ok"));
+    }
 }

@@ -8,8 +8,7 @@ use crate::shell_ui::{SPLIT_HALF_RATIO, SPLIT_PANEL_MAX_RATIO};
 
 use crate::theme_bridge;
 use crate::views::panels::editor::EditorContent;
-use crate::views::panels::preview::PreviewContent;
-use crate::views::panels::preview::preview_panel_id;
+use crate::views::panels::preview::{PreviewContent, PreviewLogicOps};
 use katana_platform::PaneOrder;
 pub(crate) struct SplitMode<'a> {
     pub _ctx: &'a egui::Context,
@@ -61,7 +60,7 @@ impl<'a> HorizontalSplit<'a> {
         let pane_order = self.pane_order;
         let available_width = ui.ctx().content_rect().width();
         let half_width = (available_width * SPLIT_HALF_RATIO).max(SPLIT_PREVIEW_PANEL_MIN_WIDTH);
-        let preview_bg = theme_bridge::rgb_to_color32(
+        let preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
             app.state
                 .config
                 .settings
@@ -74,10 +73,10 @@ impl<'a> HorizontalSplit<'a> {
         let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
-                preview_panel_id(active_path.as_deref(), "preview_panel_h_right")
+                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_h_right")
             }
             PaneOrder::PreviewFirst => {
-                preview_panel_id(active_path.as_deref(), "preview_panel_h_left")
+                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_h_left")
             }
         };
 
@@ -158,7 +157,7 @@ impl<'a> VerticalSplit<'a> {
         let pane_order = self.pane_order;
         let available_height = ui.ctx().content_rect().height();
         let half_height = available_height * SPLIT_HALF_RATIO;
-        let preview_bg = theme_bridge::rgb_to_color32(
+        let preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
             app.state
                 .config
                 .settings
@@ -171,10 +170,10 @@ impl<'a> VerticalSplit<'a> {
         let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
-                preview_panel_id(active_path.as_deref(), "preview_panel_v_bottom")
+                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_v_bottom")
             }
             PaneOrder::PreviewFirst => {
-                preview_panel_id(active_path.as_deref(), "preview_panel_v_top")
+                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_v_top")
             }
         };
 
@@ -290,7 +289,7 @@ impl<'a> PreviewOnly<'a> {
         ui.painter().rect_filled(
             ui.max_rect(),
             0.0,
-            theme_bridge::rgb_to_color32(
+            theme_bridge::ThemeBridgeOps::rgb_to_color32(
                 app.state
                     .config
                     .settings
@@ -322,7 +321,12 @@ impl<'a> PreviewOnly<'a> {
             app.state.scroll.scroll_to_line = None;
         } else {
             ui.centered_and_justified(|ui| {
-                ui.label(crate::i18n::get().workspace.no_document_selected.clone());
+                ui.label(
+                    crate::i18n::I18nOps::get()
+                        .workspace
+                        .no_document_selected
+                        .clone(),
+                );
             });
         }
     }

@@ -1,6 +1,6 @@
 use katana_platform::theme::{Rgb, ThemeMode, ThemePreset};
 use katana_platform::{InMemoryRepository, SettingsService};
-use katana_ui::theme_bridge::visuals_from_theme;
+use katana_ui::theme_bridge::ThemeBridgeOps;
 
 #[test]
 fn switching_preset_changes_effective_colors() {
@@ -27,11 +27,12 @@ fn switching_preset_changes_effective_colors() {
 fn switching_preset_changes_visuals() {
     let mut svc = SettingsService::new(Box::new(InMemoryRepository));
 
-    let dark_visuals = visuals_from_theme(&svc.settings().effective_theme_colors());
+    let dark_visuals = ThemeBridgeOps::visuals_from_theme(&svc.settings().effective_theme_colors());
     assert!(dark_visuals.dark_mode);
 
     svc.settings_mut().theme.preset = ThemePreset::GitHubLight;
-    let light_visuals = visuals_from_theme(&svc.settings().effective_theme_colors());
+    let light_visuals =
+        ThemeBridgeOps::visuals_from_theme(&svc.settings().effective_theme_colors());
     assert!(!light_visuals.dark_mode);
 
     let expected_panel = ThemePreset::GitHubLight.colors().system.panel_background;
@@ -74,7 +75,7 @@ fn all_presets_switch_correctly() {
             preset.display_name()
         );
 
-        let visuals = visuals_from_theme(&colors);
+        let visuals = ThemeBridgeOps::visuals_from_theme(&colors);
         let expected_dark = colors.mode == ThemeMode::Dark;
         assert_eq!(
             visuals.dark_mode,

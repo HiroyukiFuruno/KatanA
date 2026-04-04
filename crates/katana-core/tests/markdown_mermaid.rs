@@ -12,7 +12,7 @@ fn returns_commandnotfound_when_mmdc_not_found() {
         kind: DiagramKind::Mermaid,
         source: "graph TD; A-->B".to_string(),
     };
-    let result = mermaid_renderer::render_mermaid(&block);
+    let result = mermaid_renderer::MermaidRenderOps::render_mermaid(&block);
     assert!(matches!(result, DiagramResult::CommandNotFound { .. }));
     unsafe { std::env::remove_var("MERMAID_MMDC") };
 }
@@ -21,7 +21,7 @@ fn returns_commandnotfound_when_mmdc_not_found() {
 fn returns_its_path_when_resolve_mmdc_binary_env_var_is_set() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/custom/mmdc") };
-    let path = mermaid_renderer::resolve_mmdc_binary();
+    let path = mermaid_renderer::MermaidBinaryOps::resolve_mmdc_binary();
     assert_eq!(path, std::path::PathBuf::from("/custom/mmdc"));
     unsafe { std::env::remove_var("MERMAID_MMDC") };
 }
@@ -30,13 +30,13 @@ fn returns_its_path_when_resolve_mmdc_binary_env_var_is_set() {
 fn searches_system_path_when_resolve_mmdc_binary_env_var_is_not_set() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::remove_var("MERMAID_MMDC") };
-    let path = mermaid_renderer::resolve_mmdc_binary();
+    let path = mermaid_renderer::MermaidBinaryOps::resolve_mmdc_binary();
     assert!(!path.as_os_str().is_empty());
 }
 
 #[test]
 fn create_input_file_creates_a_temporary_file() {
-    let file = mermaid_renderer::create_input_file("graph TD; A-->B").unwrap();
+    let file = mermaid_renderer::MermaidRenderOps::create_input_file("graph TD; A-->B").unwrap();
     let path = file.path().to_path_buf();
     assert!(path.exists());
     assert!(path.to_string_lossy().ends_with(".mmd"));
@@ -46,7 +46,7 @@ fn create_input_file_creates_a_temporary_file() {
 fn fake_binary_is_false_in_is_mmdc_available() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
-    assert!(!mermaid_renderer::is_mmdc_available());
+    assert!(!mermaid_renderer::MermaidRenderOps::is_mmdc_available());
     unsafe { std::env::remove_var("MERMAID_MMDC") };
 }
 
@@ -56,14 +56,14 @@ fn returns_png_correctly_if_mmdc_is_available() {
     if std::env::var("MERMAID_MMDC").as_deref() == Ok("/nonexistent/mmdc") {
         return;
     }
-    if !mermaid_renderer::is_mmdc_available() {
+    if !mermaid_renderer::MermaidRenderOps::is_mmdc_available() {
         return;
     }
     let block = DiagramBlock {
         kind: DiagramKind::Mermaid,
         source: "graph TD; A-->B".to_string(),
     };
-    let result = mermaid_renderer::render_mermaid(&block);
+    let result = mermaid_renderer::MermaidRenderOps::render_mermaid(&block);
     assert!(matches!(result, DiagramResult::OkPng(_)));
 }
 
@@ -71,7 +71,7 @@ fn returns_png_correctly_if_mmdc_is_available() {
 fn run_mmdc_process_errors_when_mmdc_is_absent() {
     let _guard = ENV_LOCK.lock().unwrap();
     unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
-    let result = mermaid_renderer::run_mmdc_process("graph TD; A-->B");
+    let result = mermaid_renderer::MermaidRenderOps::run_mmdc_process("graph TD; A-->B");
     assert!(result.is_err());
     unsafe { std::env::remove_var("MERMAID_MMDC") };
 }

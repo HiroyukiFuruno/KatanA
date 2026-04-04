@@ -1,4 +1,4 @@
-use crate::filesystem::scanner::scan_directory;
+use crate::filesystem::scanner::ScannerOps;
 use katana_core::{
     document::{Document, DocumentError},
     workspace::{Workspace, WorkspaceError},
@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 Implements all disk I/O so that higher layers (core, ui) remain free of
 direct `std::fs` calls. */
-pub struct FilesystemService;
+pub use super::types::FilesystemService;
 
 impl FilesystemService {
     pub fn new() -> Self {
@@ -34,7 +34,7 @@ impl FilesystemService {
     ) -> Result<Workspace, WorkspaceError> {
         let root: PathBuf = path.into();
         const ROOT_DEPTH: usize = 0;
-        let tree = scan_directory(
+        let tree = ScannerOps::scan_directory(
             &root,
             ignored_directories,
             max_depth,

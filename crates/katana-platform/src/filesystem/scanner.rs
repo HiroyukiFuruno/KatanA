@@ -11,170 +11,180 @@ pub(crate) struct ScanContext<'a> {
     pub in_memory_dirs: &'a std::collections::HashSet<PathBuf>,
 }
 
-fn process_file(path: PathBuf, file_name: &str, ctx: ScanContext<'_>) -> Option<TreeEntry> {
-    let is_visible = match path.extension().and_then(|e| e.to_str()) {
-        Some(ext) => ctx
-            .visible_extensions
-            .iter()
-            .any(|v| v.eq_ignore_ascii_case(ext)),
-        None => {
-            let no_ext_enabled = ctx.visible_extensions.iter().any(|v| v.is_empty());
-            no_ext_enabled
-                && !ctx
-                    .extensionless_excludes
-                    .iter()
-                    .any(|excl| excl == file_name)
+pub(crate) struct ScannerOps;
+
+impl ScannerOps {
+    fn process_file(path: PathBuf, file_name: &str, ctx: ScanContext<'_>) -> Option<TreeEntry> {
+        let is_visible = match path.extension().and_then(|e| e.to_str()) {
+            Some(ext) => ctx
+                .visible_extensions
+                .iter()
+                .any(|v| v.eq_ignore_ascii_case(ext)),
+            None => {
+                let no_ext_enabled = ctx.visible_extensions.iter().any(|v| v.is_empty());
+                no_ext_enabled
+                    && !ctx
+                        .extensionless_excludes
+                        .iter()
+                        .any(|excl| excl == file_name)
+            }
+        };
+        if is_visible {
+            Some(TreeEntry::File { path })
+        } else {
+            None
         }
-    };
-    if is_visible {
-        Some(TreeEntry::File { path })
-    } else {
-        None
     }
-}
 
-fn process_dir(path: PathBuf, current_depth: usize, ctx: ScanContext<'_>) -> Option<TreeEntry> {
-    let children = scan_directory_internal(&path, ctx, current_depth + 1).unwrap_or_default();
-    if has_any_visible(&children, ctx.visible_extensions) || ctx.in_memory_dirs.contains(&path) {
-        Some(TreeEntry::Directory { path, children })
-    } else {
-        None
+    fn process_dir(path: PathBuf, current_depth: usize, ctx: ScanContext<'_>) -> Option<TreeEntry> {
+        let children =
+            Self::scan_directory_internal(&path, ctx, current_depth + 1).unwrap_or_default();
+        if Self::has_any_visible(&children, ctx.visible_extensions)
+            || ctx.in_memory_dirs.contains(&path)
+        {
+            Some(TreeEntry::Directory { path, children })
+        } else {
+            None
+        }
     }
-}
 
-fn process_entry(
-    entry: &std::fs::DirEntry,
-    current_depth: usize,
-    ctx: ScanContext<'_>,
-) -> Option<TreeEntry> {
-    if ctx.cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
-        return None;
+    fn process_entry(
+        entry: &std::fs::DirEntry,
+        current_depth: usize,
+        ctx: ScanContext<'_>,
+    ) -> Option<TreeEntry> {
+        if ctx.cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
+            return None;
+        }
+        let path = entry.path();
+        let file_name_os = entry.file_name();
+        let file_name = file_name_os.to_str()?;
+        if ctx
+            .ignored_directories
+            .iter()
+            .any(|ignored| ignored == file_name)
+        {
+            return None;
+        }
+        if path.is_dir() {
+            Self::process_dir(path, current_depth, ctx)
+        } else {
+            Self::process_file(path, file_name, ctx)
+        }
     }
-    let path = entry.path();
-    let file_name_os = entry.file_name();
-    let file_name = file_name_os.to_str()?;
-    if ctx
-        .ignored_directories
-        .iter()
-        .any(|ignored| ignored == file_name)
-    {
-        return None;
+
+    fn scan_directory_internal(
+        dir: &Path,
+        ctx: ScanContext<'_>,
+        current_depth: usize,
+    ) -> std::io::Result<Vec<TreeEntry>> {
+        if current_depth >= ctx.max_depth
+            || ctx.cancel_token.load(std::sync::atomic::Ordering::Relaxed)
+        {
+            return Ok(Vec::new());
+        }
+        use rayon::prelude::*;
+        let iter = std::fs::read_dir(dir)?;
+        let child_entries: Vec<_> = iter.filter_map(Result::ok).collect();
+        let mut entries: Vec<TreeEntry> = child_entries
+            .into_par_iter()
+            .filter_map(|entry| Self::process_entry(&entry, current_depth, ctx))
+            .collect();
+        entries.sort_by(Self::compare_entries);
+        Ok(entries)
     }
-    if path.is_dir() {
-        process_dir(path, current_depth, ctx)
-    } else {
-        process_file(path, file_name, ctx)
-    }
-}
 
-fn scan_directory_internal(
-    dir: &Path,
-    ctx: ScanContext<'_>,
-    current_depth: usize,
-) -> std::io::Result<Vec<TreeEntry>> {
-    if current_depth >= ctx.max_depth || ctx.cancel_token.load(std::sync::atomic::Ordering::Relaxed)
-    {
-        return Ok(Vec::new());
-    }
-    use rayon::prelude::*;
-    let iter = std::fs::read_dir(dir)?;
-    let child_entries: Vec<_> = iter.filter_map(Result::ok).collect();
-    let mut entries: Vec<TreeEntry> = child_entries
-        .into_par_iter()
-        .filter_map(|entry| process_entry(&entry, current_depth, ctx))
-        .collect();
-    entries.sort_by(compare_entries);
-    Ok(entries)
-}
+    pub(crate) fn compare_entries(a: &TreeEntry, b: &TreeEntry) -> std::cmp::Ordering {
+        match (a, b) {
+            (TreeEntry::Directory { .. }, TreeEntry::File { .. }) => std::cmp::Ordering::Less,
+            (TreeEntry::File { .. }, TreeEntry::Directory { .. }) => std::cmp::Ordering::Greater,
+            (a, b) => {
+                const DECIMAL_BASE: u64 = 10;
+                let a_path = a.path().to_string_lossy();
+                let b_path = b.path().to_string_lossy();
 
-pub(crate) fn compare_entries(a: &TreeEntry, b: &TreeEntry) -> std::cmp::Ordering {
-    match (a, b) {
-        (TreeEntry::Directory { .. }, TreeEntry::File { .. }) => std::cmp::Ordering::Less,
-        (TreeEntry::File { .. }, TreeEntry::Directory { .. }) => std::cmp::Ordering::Greater,
-        (a, b) => {
-            const DECIMAL_BASE: u64 = 10;
-            let a_path = a.path().to_string_lossy();
-            let b_path = b.path().to_string_lossy();
+                let mut a_chars = a_path.chars().peekable();
+                let mut b_chars = b_path.chars().peekable();
 
-            let mut a_chars = a_path.chars().peekable();
-            let mut b_chars = b_path.chars().peekable();
-
-            loop {
-                match (a_chars.peek(), b_chars.peek()) {
-                    (Some(&ca), Some(&cb)) => {
-                        if ca.is_ascii_digit() && cb.is_ascii_digit() {
-                            let mut a_num = 0u64;
-                            while let Some(&c) = a_chars.peek() {
-                                if c.is_ascii_digit() {
-                                    a_num = a_num * DECIMAL_BASE + (c as u64 - '0' as u64);
-                                    a_chars.next();
-                                } else {
-                                    break;
+                loop {
+                    match (a_chars.peek(), b_chars.peek()) {
+                        (Some(&ca), Some(&cb)) => {
+                            if ca.is_ascii_digit() && cb.is_ascii_digit() {
+                                let mut a_num = 0u64;
+                                while let Some(&c) = a_chars.peek() {
+                                    if c.is_ascii_digit() {
+                                        a_num = a_num * DECIMAL_BASE + (c as u64 - '0' as u64);
+                                        a_chars.next();
+                                    } else {
+                                        break;
+                                    }
                                 }
-                            }
-                            let mut b_num = 0u64;
-                            while let Some(&c) = b_chars.peek() {
-                                if c.is_ascii_digit() {
-                                    b_num = b_num * DECIMAL_BASE + (c as u64 - '0' as u64);
-                                    b_chars.next();
-                                } else {
-                                    break;
+                                let mut b_num = 0u64;
+                                while let Some(&c) = b_chars.peek() {
+                                    if c.is_ascii_digit() {
+                                        b_num = b_num * DECIMAL_BASE + (c as u64 - '0' as u64);
+                                        b_chars.next();
+                                    } else {
+                                        break;
+                                    }
                                 }
+                                if a_num != b_num {
+                                    break a_num.cmp(&b_num);
+                                }
+                            } else {
+                                if ca != cb {
+                                    break ca.cmp(&cb);
+                                }
+                                a_chars.next();
+                                b_chars.next();
                             }
-                            if a_num != b_num {
-                                break a_num.cmp(&b_num);
-                            }
-                        } else {
-                            if ca != cb {
-                                break ca.cmp(&cb);
-                            }
-                            a_chars.next();
-                            b_chars.next();
                         }
+                        (Some(_), None) => break std::cmp::Ordering::Greater,
+                        (None, Some(_)) => break std::cmp::Ordering::Less,
+                        (None, None) => break std::cmp::Ordering::Equal,
                     }
-                    (Some(_), None) => break std::cmp::Ordering::Greater,
-                    (None, Some(_)) => break std::cmp::Ordering::Less,
-                    (None, None) => break std::cmp::Ordering::Equal,
                 }
             }
         }
     }
-}
 
-// WHY: Recursively and in parallel scans a directory, returning a tree containing only visible files.
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn scan_directory(
-    dir: &Path,
-    ignored_directories: &[String],
-    max_depth: usize,
-    current_depth: usize,
-    visible_extensions: &[String],
-    extensionless_excludes: &[String],
-    cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
-    in_memory_dirs: &std::collections::HashSet<PathBuf>,
-) -> std::io::Result<Vec<TreeEntry>> {
-    let ctx = ScanContext {
-        ignored_directories,
-        max_depth,
-        visible_extensions,
-        extensionless_excludes,
-        cancel_token,
-        in_memory_dirs,
-    };
-    scan_directory_internal(dir, ctx, current_depth)
-}
+    // WHY: Recursively and in parallel scans a directory, returning a tree containing only visible files.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn scan_directory(
+        dir: &Path,
+        ignored_directories: &[String],
+        max_depth: usize,
+        current_depth: usize,
+        visible_extensions: &[String],
+        extensionless_excludes: &[String],
+        cancel_token: &std::sync::Arc<std::sync::atomic::AtomicBool>,
+        in_memory_dirs: &std::collections::HashSet<PathBuf>,
+    ) -> std::io::Result<Vec<TreeEntry>> {
+        let ctx = ScanContext {
+            ignored_directories,
+            max_depth,
+            visible_extensions,
+            extensionless_excludes,
+            cancel_token,
+            in_memory_dirs,
+        };
+        Self::scan_directory_internal(dir, ctx, current_depth)
+    }
 
-// WHY: Recursively checks if there is at least one visible file in the tree.
-pub(crate) fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[String]) -> bool {
-    entries.iter().any(|e| match e {
-        TreeEntry::File { path } => match path.extension().and_then(|ext| ext.to_str()) {
-            Some(ext) => visible_extensions
-                .iter()
-                .any(|v| v.eq_ignore_ascii_case(ext)),
-            None => visible_extensions.iter().any(|v| v.is_empty()),
-        },
-        TreeEntry::Directory { children, .. } => has_any_visible(children, visible_extensions),
-    })
+    // WHY: Recursively checks if there is at least one visible file in the tree.
+    pub(crate) fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[String]) -> bool {
+        entries.iter().any(|e| match e {
+            TreeEntry::File { path } => match path.extension().and_then(|ext| ext.to_str()) {
+                Some(ext) => visible_extensions
+                    .iter()
+                    .any(|v| v.eq_ignore_ascii_case(ext)),
+                None => visible_extensions.iter().any(|v| v.is_empty()),
+            },
+            TreeEntry::Directory { children, .. } => {
+                Self::has_any_visible(children, visible_extensions)
+            }
+        })
+    }
 }
 
 #[cfg(test)]
@@ -193,17 +203,17 @@ mod tests {
         };
 
         let visible_exts_without_empty = vec!["md".to_string()];
-        assert!(!has_any_visible(
+        assert!(!ScannerOps::has_any_visible(
             std::slice::from_ref(&file_with_no_ext),
             &visible_exts_without_empty
         ));
-        assert!(has_any_visible(
+        assert!(ScannerOps::has_any_visible(
             std::slice::from_ref(&file_with_ext),
             &visible_exts_without_empty
         ));
 
         let visible_exts_with_empty = vec!["md".to_string(), "".to_string()];
-        assert!(has_any_visible(
+        assert!(ScannerOps::has_any_visible(
             std::slice::from_ref(&file_with_no_ext),
             &visible_exts_with_empty
         ));
@@ -212,11 +222,14 @@ mod tests {
             path: PathBuf::from("dir"),
             children: vec![file_with_no_ext],
         };
-        assert!(!has_any_visible(
+        assert!(!ScannerOps::has_any_visible(
             std::slice::from_ref(&dir),
             &visible_exts_without_empty
         ));
-        assert!(has_any_visible(&[dir], &visible_exts_with_empty));
+        assert!(ScannerOps::has_any_visible(
+            &[dir],
+            &visible_exts_with_empty
+        ));
     }
 
     #[test]
@@ -233,7 +246,7 @@ mod tests {
         let cancel_token = Arc::new(AtomicBool::new(false));
         let in_memory_dirs = std::collections::HashSet::new();
 
-        let tree_with_empty = scan_directory(
+        let tree_with_empty = ScannerOps::scan_directory(
             dir.path(),
             &[],
             10,
@@ -252,7 +265,7 @@ mod tests {
             panic!("Expected file entry");
         }
 
-        let tree_without_empty = scan_directory(
+        let tree_without_empty = ScannerOps::scan_directory(
             dir.path(),
             &[],
             10,
@@ -292,7 +305,7 @@ mod tests {
                 path: PathBuf::from("a2"),
             },
         ];
-        entries.sort_by(super::compare_entries);
+        entries.sort_by(ScannerOps::compare_entries);
 
         let names: Vec<String> = entries
             .iter()
@@ -315,7 +328,10 @@ mod tests {
         let a_duplicate = TreeEntry::File {
             path: PathBuf::from("a"),
         };
-        assert_eq!(super::compare_entries(&a, &a_duplicate), Ordering::Equal);
+        assert_eq!(
+            ScannerOps::compare_entries(&a, &a_duplicate),
+            Ordering::Equal
+        );
 
         let a10 = TreeEntry::File {
             path: PathBuf::from("a10"),
@@ -323,13 +339,13 @@ mod tests {
         let a1 = TreeEntry::File {
             path: PathBuf::from("a1"),
         };
-        assert_eq!(super::compare_entries(&a10, &a1), Ordering::Greater);
-        assert_eq!(super::compare_entries(&a1, &a10), Ordering::Less);
+        assert_eq!(ScannerOps::compare_entries(&a10, &a1), Ordering::Greater);
+        assert_eq!(ScannerOps::compare_entries(&a1, &a10), Ordering::Less);
 
         let ab = TreeEntry::File {
             path: PathBuf::from("ab"),
         };
-        assert_eq!(super::compare_entries(&a, &ab), Ordering::Less);
-        assert_eq!(super::compare_entries(&ab, &a), Ordering::Greater);
+        assert_eq!(ScannerOps::compare_entries(&a, &ab), Ordering::Less);
+        assert_eq!(ScannerOps::compare_entries(&ab, &a), Ordering::Greater);
     }
 }

@@ -68,7 +68,8 @@ impl<'a> SplashOverlay<'a> {
         } else {
             SPLASH_BG_LIGHT
         };
-        let fill = crate::theme_bridge::from_rgb(bg, bg, bg).gamma_multiply(opacity);
+        let fill =
+            crate::theme_bridge::ThemeBridgeOps::from_rgb(bg, bg, bg).gamma_multiply(opacity);
         ui.painter().rect_filled(content_rect, 1.0, fill);
 
         let center = content_rect.center();
@@ -145,7 +146,7 @@ impl<'a> SplashOverlay<'a> {
             SPLASH_PROGRESS_BG_LIGHT
         };
         ui.visuals_mut().selection.bg_fill =
-            crate::theme_bridge::from_rgb(bg, bg, bg).gamma_multiply(opacity);
+            crate::theme_bridge::ThemeBridgeOps::from_rgb(bg, bg, bg).gamma_multiply(opacity);
 
         ui.add(
             egui::ProgressBar::new(progress)

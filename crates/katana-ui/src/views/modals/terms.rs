@@ -35,7 +35,7 @@ impl<'a> TermsModal<'a> {
     pub fn show(self, ui: &mut egui::Ui) {
         let version = self.version;
         let pending_action = self.pending_action;
-        let terms = crate::i18n::get().terms.clone();
+        let terms = crate::i18n::I18nOps::get().terms.clone();
 
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
@@ -64,7 +64,7 @@ impl<'a> TermsModal<'a> {
 
                                 ui.horizontal(|ui| {
                                     ui.label(
-                                        egui::RichText::new(crate::i18n::tf(
+                                        egui::RichText::new(crate::i18n::I18nOps::tf(
                                             &terms.version_label,
                                             &[("version", version)],
                                         ))
@@ -74,18 +74,19 @@ impl<'a> TermsModal<'a> {
                                     ui.with_layout(
                                         egui::Layout::right_to_left(egui::Align::Center),
                                         |ui| {
-                                            let current_lang = crate::i18n::get_language();
-                                            let current_name = crate::i18n::supported_languages()
-                                                .iter()
-                                                .find(|(code, _)| *code == current_lang)
-                                                .map(|(_, name)| name.as_str())
-                                                .unwrap_or("English");
+                                            let current_lang = crate::i18n::I18nOps::get_language();
+                                            let current_name =
+                                                crate::i18n::I18nOps::supported_languages()
+                                                    .iter()
+                                                    .find(|(code, _)| *code == current_lang)
+                                                    .map(|(_, name)| name.as_str())
+                                                    .unwrap_or("English");
 
                                             StyledComboBox::new("terms_lang_select", current_name)
                                                 .width(TERMS_LANG_SELECT_WIDTH)
                                                 .show(ui, |ui| {
                                                     for (code, name) in
-                                                        crate::i18n::supported_languages()
+                                                        crate::i18n::I18nOps::supported_languages()
                                                     {
                                                         if ui
                                                             .selectable_label(

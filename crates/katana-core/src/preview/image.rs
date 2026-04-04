@@ -1,28 +1,56 @@
+use super::types::ImagePreviewOps;
 use regex::Regex;
 use std::path::Path;
 
-pub fn resolve_image_paths(source: &str, md_file_path: &Path) -> (String, Vec<std::path::PathBuf>) {
-    use comrak::{Arena, Options, parse_document};
+impl ImagePreviewOps {
+    pub fn resolve_image_paths(
+        source: &str,
+        md_file_path: &Path,
+    ) -> (String, Vec<std::path::PathBuf>) {
+        use comrak::{Arena, Options, parse_document};
 
-    let arena = Arena::new();
-    let root = parse_document(&arena, source, &Options::default());
-    let mut replacements = find_image_replacements(root, source);
-    replacements.sort_by_key(|&(start, _, _)| std::cmp::Reverse(start));
+        let arena = Arena::new();
+        let root = parse_document(&arena, source, &Options::default());
+        let mut replacements = find_image_replacements(root, source);
+        replacements.sort_by_key(|&(start, _, _)| std::cmp::Reverse(start));
 
-    let base_dir = md_file_path.parent().unwrap_or(Path::new("."));
-    let mut result = source.to_string();
-    let mut extracted_paths = Vec::new();
+        let base_dir = md_file_path.parent().unwrap_or(Path::new("."));
+        let mut result = source.to_string();
+        let mut extracted_paths = Vec::new();
 
-    for (start, end, raw_path) in replacements {
-        if is_absolute_url(&raw_path) {
-            continue;
+        for (start, end, raw_path) in replacements {
+            if is_absolute_url(&raw_path) {
+                continue;
+            }
+            let resolved = base_dir.join(&raw_path);
+            let canonical = resolved.canonicalize().unwrap_or(resolved);
+            extracted_paths.push(canonical.clone());
+            result.replace_range(start..end, &format!("file://{}", canonical.display()));
         }
-        let resolved = base_dir.join(&raw_path);
-        let canonical = resolved.canonicalize().unwrap_or(resolved);
-        extracted_paths.push(canonical.clone());
-        result.replace_range(start..end, &format!("file://{}", canonical.display()));
+        (result, extracted_paths)
     }
-    (result, extracted_paths)
+
+    pub fn resolve_html_image_paths(html: &str, md_file_path: &Path) -> String {
+        const CAP_PREFIX: usize = 1;
+        const CAP_SRC: usize = 2;
+        const CAP_SUFFIX: usize = 3;
+
+        let base_dir = md_file_path.parent().unwrap_or(Path::new("."));
+        let re = Regex::new(r#"(<img\s[^>]*src\s*=\s*")([^"]+)("[^>]*>)"#).unwrap();
+        re.replace_all(html, |caps: &regex::Captures| {
+            let prefix = caps.get(CAP_PREFIX).unwrap().as_str();
+            let src = caps.get(CAP_SRC).unwrap().as_str();
+            let suffix = caps.get(CAP_SUFFIX).unwrap().as_str();
+            if is_absolute_url(src) {
+                format!("{prefix}{src}{suffix}")
+            } else {
+                let resolved = base_dir.join(src);
+                let canonical = resolved.canonicalize().unwrap_or(resolved);
+                format!("{prefix}file://{}{suffix}", canonical.display())
+            }
+        })
+        .to_string()
+    }
 }
 
 fn is_absolute_url(url: &str) -> bool {
@@ -78,28 +106,6 @@ fn process_image_node(
     }
 }
 
-pub fn resolve_html_image_paths(html: &str, md_file_path: &Path) -> String {
-    const CAP_PREFIX: usize = 1;
-    const CAP_SRC: usize = 2;
-    const CAP_SUFFIX: usize = 3;
-
-    let base_dir = md_file_path.parent().unwrap_or(Path::new("."));
-    let re = Regex::new(r#"(<img\s[^>]*src\s*=\s*")([^"]+)("[^>]*>)"#).unwrap();
-    re.replace_all(html, |caps: &regex::Captures| {
-        let prefix = caps.get(CAP_PREFIX).unwrap().as_str();
-        let src = caps.get(CAP_SRC).unwrap().as_str();
-        let suffix = caps.get(CAP_SUFFIX).unwrap().as_str();
-        if is_absolute_url(src) {
-            format!("{prefix}{src}{suffix}")
-        } else {
-            let resolved = base_dir.join(src);
-            let canonical = resolved.canonicalize().unwrap_or(resolved);
-            format!("{prefix}file://{}{suffix}", canonical.display())
-        }
-    })
-    .to_string()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -109,7 +115,7 @@ mod tests {
     fn test_resolve_image_paths() {
         let source = "![local](../img.png) ![abs](file:///img.png)";
         let file_path = PathBuf::from("/docs/doc.md");
-        let (resolved, extracted) = resolve_image_paths(source, &file_path);
+        let (resolved, extracted) = ImagePreviewOps::resolve_image_paths(source, &file_path);
         assert!(
             resolved.contains("file:///docs/../img.png")
                 || resolved.contains("file:///docs/img.png")

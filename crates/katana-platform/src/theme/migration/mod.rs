@@ -13,24 +13,28 @@ impl<'de> Deserialize<'de> for ThemeColors {
     where
         D: Deserializer<'de>,
     {
-        deserialize_theme_colors(deserializer)
+        ThemeMigrationOps::deserialize_theme_colors(deserializer)
     }
 }
 
-pub(crate) fn deserialize_theme_colors<'de, D>(deserializer: D) -> Result<ThemeColors, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum Migrator {
-        New(#[serde(with = "ThemeColorsDef")] ThemeColors),
-        Legacy(ThemeColorsLegacyData),
-    }
+pub(crate) struct ThemeMigrationOps;
 
-    match Migrator::deserialize(deserializer)? {
-        Migrator::New(c) => Ok(c),
-        Migrator::Legacy(l) => Ok(l.into_theme_colors()),
+impl ThemeMigrationOps {
+    pub(crate) fn deserialize_theme_colors<'de, D>(deserializer: D) -> Result<ThemeColors, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Migrator {
+            New(#[serde(with = "ThemeColorsDef")] ThemeColors),
+            Legacy(ThemeColorsLegacyData),
+        }
+
+        match Migrator::deserialize(deserializer)? {
+            Migrator::New(c) => Ok(c),
+            Migrator::Legacy(l) => Ok(l.into_theme_colors()),
+        }
     }
 }
 

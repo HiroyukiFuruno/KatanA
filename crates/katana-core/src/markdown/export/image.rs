@@ -1,10 +1,9 @@
+use super::types::ImageExporter;
 use crate::markdown::MarkdownError;
 
 const DEFAULT_VIEWPORT_WIDTH: f64 = 1280.0;
 const DEFAULT_VIEWPORT_HEIGHT: f64 = 800.0;
 const SCREENSHOT_SCALE: f64 = 2.0;
-
-pub struct ImageExporter;
 
 impl ImageExporter {
     pub fn export(html: &str, output: &std::path::Path) -> Result<(), MarkdownError> {

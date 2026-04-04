@@ -1,7 +1,6 @@
+use super::types::HtmlExporter;
 use crate::markdown::color_preset::DiagramColorPreset;
-use crate::markdown::{DiagramRenderer, MarkdownError, render};
-
-pub struct HtmlExporter;
+use crate::markdown::{DiagramRenderer, MarkdownError, MarkdownRenderOps};
 
 impl HtmlExporter {
     /* WHY: Exports Markdown as a standalone HTML document with embedded CSS.
@@ -14,7 +13,7 @@ impl HtmlExporter {
         preset: &DiagramColorPreset,
         base_dir: Option<&std::path::Path>,
     ) -> Result<String, MarkdownError> {
-        let output = render(source, renderer)?;
+        let output = MarkdownRenderOps::render(source, renderer)?;
         let bg_color = Self::get_bg_color(preset);
         let props = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'";
         let monos = "SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace";

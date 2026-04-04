@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong><a href="https://katana-website-pi.vercel.app/">🌐 公式ウェブサイト</a></strong> | <strong><a href="https://katana-website-pi.vercel.app/docs/getting-started">📚 ドキュメント</a></strong>
+  <strong><a href="https://katana-desktop.katana-projects.org/">🌐 公式ウェブサイト</a></strong> | <strong><a href="https://katana-desktop.katana-projects.org/docs/getting-started">📚 ドキュメント</a></strong>
 </p>
 
 <p align="center">

@@ -27,7 +27,7 @@ impl<'a> MetaInfoModal<'a> {
         let meta_text = crate::shell_logic::ShellLogicOps::format_tree_tooltip(name, path);
 
         const META_INFO_WINDOW_WIDTH: f32 = 400.0;
-        egui::Window::new(crate::i18n::get().action.show_meta_info.clone())
+        egui::Window::new(crate::i18n::I18nOps::get().action.show_meta_info.clone())
             .open(open)
             .collapsible(false)
             .resizable(true)

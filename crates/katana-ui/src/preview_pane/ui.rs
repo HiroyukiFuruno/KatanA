@@ -1,6 +1,5 @@
 use eframe::egui::{self, ScrollArea};
 
-use super::pane::*;
 use super::types::*;
 
 impl PreviewPane {
@@ -68,7 +67,7 @@ impl PreviewPane {
         self.content_top_y = ui.next_widget_position().y;
         self.heading_anchors.clear();
         let mut fullscreen_request: Option<usize> = None;
-        let (request, actions) = crate::preview_pane::render_sections(
+        let (request, actions) = crate::preview_pane::SectionLogicOps::render_sections(
             ui,
             &mut self.commonmark_cache,
             &self.sections,
@@ -96,7 +95,7 @@ impl PreviewPane {
     }
 
     pub(crate) fn render_fullscreen_modal(&mut self, ctx: &egui::Context) {
-        let result = crate::preview_pane::render_fullscreen_if_active(
+        let result = crate::preview_pane::FullscreenLogicOps::render_fullscreen_if_active(
             ctx,
             &self.sections,
             self.fullscreen_image,
@@ -144,5 +143,12 @@ impl PreviewPane {
                 _ => self.fullscreen_image = None,
             }
         }
+    }
+}
+
+impl Drop for PreviewPane {
+    fn drop(&mut self) {
+        self.cancel_token
+            .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 }

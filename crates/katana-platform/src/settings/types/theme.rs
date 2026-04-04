@@ -11,9 +11,9 @@ pub struct CustomTheme {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemeSettings {
-    #[serde(default = "super::super::defaults::default_theme")]
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::default_theme")]
     pub theme: String,
-    #[serde(default = "super::super::defaults::default_ui_contrast_offset")]
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::default_ui_contrast_offset")]
     pub ui_contrast_offset: f32,
     #[serde(default)]
     pub preset: ThemePreset,

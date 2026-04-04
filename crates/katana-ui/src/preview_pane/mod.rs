@@ -1,26 +1,24 @@
 pub mod background;
 pub mod core_render;
-pub mod pane;
 pub mod renderer;
 pub mod types;
 pub mod ui;
-pub mod viewer;
+pub use types::ViewerState;
 
 #[cfg(test)]
 mod tests;
 
-pub(crate) mod utils;
-pub(crate) use utils::*;
-pub(crate) mod section;
-pub(crate) use section::*;
-pub(crate) mod images;
-pub(crate) use images::*;
-pub(crate) mod fullscreen;
-pub(crate) use fullscreen::*;
-pub(crate) mod html;
-pub(crate) mod math;
-pub(crate) use html::*;
-pub use pane::*;
+pub mod section;
+pub mod utils;
+pub use section::*;
+pub mod images;
+pub use images::*;
+pub mod fullscreen;
+pub use fullscreen::*;
+pub mod html;
+pub mod math;
+pub use html::*;
+pub use math::*;
 pub use renderer::*;
 pub use types::*;
-pub use viewer::*;
+// pub use viewer::*;

@@ -1,6 +1,12 @@
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
+pub(crate) struct LanguageEntry {
+    pub(crate) code: String,
+    pub(crate) name: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct I18nMessages {
     pub menu: MenuMessages,
     pub workspace: WorkspaceMessages,
@@ -106,67 +112,67 @@ pub struct SearchMessages {
     pub command_type_action: String,
 }
 
-pub(crate) fn default_command_settings() -> String {
+fn default_command_settings() -> String {
     "Toggle Settings".to_string()
 }
-pub(crate) fn default_command_workspace() -> String {
+fn default_command_workspace() -> String {
     "Toggle Workspace Panel".to_string()
 }
-pub(crate) fn default_command_close_all() -> String {
+fn default_command_close_all() -> String {
     "Close All Documents".to_string()
 }
-pub(crate) fn default_command_refresh() -> String {
+fn default_command_refresh() -> String {
     "Refresh Workspace".to_string()
 }
-pub(crate) fn default_command_updates() -> String {
+fn default_command_updates() -> String {
     "Check for Updates".to_string()
 }
-pub(crate) fn default_command_about() -> String {
+fn default_command_about() -> String {
     "Toggle About".to_string()
 }
-pub(crate) fn default_command_type_action() -> String {
+fn default_command_type_action() -> String {
     "Command".to_string()
 }
 
-pub(crate) fn default_palette_query_hint() -> String {
+fn default_palette_query_hint() -> String {
     "Type a command or search...".to_string()
 }
 
-pub(crate) fn default_tab_file_name() -> String {
+fn default_tab_file_name() -> String {
     "File Name".to_string()
 }
-pub(crate) fn default_tab_markdown_content() -> String {
+fn default_tab_markdown_content() -> String {
     "Markdown Content".to_string()
 }
-pub(crate) fn default_md_query_hint() -> String {
+fn default_md_query_hint() -> String {
     "Search markdown files...".to_string()
 }
-pub(crate) fn default_recent_searches() -> String {
+fn default_recent_searches() -> String {
     "Recent Searches".to_string()
 }
-pub(crate) fn default_clear_history() -> String {
+fn default_clear_history() -> String {
     "Clear".to_string()
 }
-pub(crate) fn default_ln_prefix() -> String {
+fn default_ln_prefix() -> String {
     "Ln ".to_string()
 }
 
 fn default_palette_no_results() -> String {
     "No results found.".to_string()
 }
-pub(crate) fn default_doc_search_title() -> String {
+fn default_doc_search_title() -> String {
     "Search Document".to_string()
 }
-pub(crate) fn default_doc_search_count() -> String {
+fn default_doc_search_count() -> String {
     "{index}/{total}".to_string()
 }
-pub(crate) fn default_doc_search_prev() -> String {
+fn default_doc_search_prev() -> String {
     "Previous".to_string()
 }
-pub(crate) fn default_doc_search_next() -> String {
+fn default_doc_search_next() -> String {
     "Next".to_string()
 }
-pub(crate) fn default_doc_search_close() -> String {
+fn default_doc_search_close() -> String {
     "Close".to_string()
 }
 
@@ -217,29 +223,29 @@ pub struct UpdateMessages {
     pub action_restart: String,
 }
 
-pub(crate) fn default_release_notes_template() -> String {
+fn default_release_notes_template() -> String {
     "### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.".to_string()
 }
 
-pub(crate) fn default_install_update() -> String {
+fn default_install_update() -> String {
     "Install and Relaunch".to_string()
 }
-pub(crate) fn default_downloading() -> String {
+fn default_downloading() -> String {
     "Downloading update...".to_string()
 }
-pub(crate) fn default_installing() -> String {
+fn default_installing() -> String {
     "Installing update...".to_string()
 }
-pub(crate) fn default_restart_confirm() -> String {
+fn default_restart_confirm() -> String {
     "Update is ready. Restart now?".to_string()
 }
-pub(crate) fn default_action_later() -> String {
+fn default_action_later() -> String {
     "Later".to_string()
 }
-pub(crate) fn default_action_skip_version() -> String {
+fn default_action_skip_version() -> String {
     "Skip This Version".to_string()
 }
-pub(crate) fn default_action_restart() -> String {
+fn default_action_restart() -> String {
     "Restart Now".to_string()
 }
 
@@ -276,15 +282,15 @@ pub struct MenuMessages {
     pub view: String,
 }
 
-pub(crate) fn default_menu_command_palette() -> String {
+fn default_menu_command_palette() -> String {
     "Command Palette…".to_string()
 }
 
-pub(crate) fn default_menu_view() -> String {
+fn default_menu_view() -> String {
     "View".to_string()
 }
 
-pub(crate) fn default_menu_release_notes() -> String {
+fn default_menu_release_notes() -> String {
     "Release Notes".to_string()
 }
 
@@ -303,7 +309,7 @@ pub struct WorkspaceMessages {
     pub filter_regex_hint: String,
 }
 
-pub(crate) fn default_flat_view() -> String {
+fn default_flat_view() -> String {
     "Flat View".to_string()
 }
 
@@ -316,7 +322,7 @@ mod default_flat_view_tests {
     }
 }
 
-pub(crate) fn default_metadata_tooltip() -> String {
+fn default_metadata_tooltip() -> String {
     "Size: {size} B\nModified: {mod_time}".to_string()
 }
 
@@ -335,7 +341,7 @@ pub struct DiagramControllerMessages {
     pub trackpad_help: String,
 }
 
-pub(crate) fn default_trackpad_help() -> String {
+fn default_trackpad_help() -> String {
     "Trackpad: 2-finger pinch to zoom, 1-finger drag to pan".to_string()
 }
 
@@ -349,7 +355,7 @@ pub struct PreviewMessages {
     pub diagram_controller: DiagramControllerMessages,
 }
 
-pub(crate) fn default_diagram_controller() -> DiagramControllerMessages {
+fn default_diagram_controller() -> DiagramControllerMessages {
     DiagramControllerMessages {
         pan_up: "Move up".to_string(),
         pan_down: "Move down".to_string(),
@@ -422,31 +428,31 @@ pub struct StatusMessages {
     pub problems_count_format: String,
 }
 
-pub(crate) fn default_refresh_success() -> String {
+fn default_refresh_success() -> String {
     "Document refreshed from disk.".to_string()
 }
-pub(crate) fn default_refresh_skipped_dirty() -> String {
+fn default_refresh_skipped_dirty() -> String {
     "Refresh skipped to preserve unsaved changes.".to_string()
 }
-pub(crate) fn default_refresh_no_changes() -> String {
+fn default_refresh_no_changes() -> String {
     "No external changes detected.".to_string()
 }
-pub(crate) fn default_refresh_failed() -> String {
+fn default_refresh_failed() -> String {
     "Failed to refresh document: {error}".to_string()
 }
-pub(crate) fn default_problems_panel_title() -> String {
+fn default_problems_panel_title() -> String {
     "Problems".to_string()
 }
-pub(crate) fn default_problems_panel_close() -> String {
+fn default_problems_panel_close() -> String {
     "Close".to_string()
 }
-pub(crate) fn default_no_problems_found() -> String {
+fn default_no_problems_found() -> String {
     "No problems found in the workspace.".to_string()
 }
-pub(crate) fn default_toggle_problems_panel() -> String {
+fn default_toggle_problems_panel() -> String {
     "Toggle Problems Panel".to_string()
 }
-pub(crate) fn default_problems_count_format() -> String {
+fn default_problems_count_format() -> String {
     "Problems: {count}".to_string()
 }
 
@@ -495,48 +501,48 @@ pub struct ActionMessages {
     pub confirm: String,
 }
 
-pub(crate) fn default_action_confirm() -> String {
+fn default_action_confirm() -> String {
     "Confirm".to_string()
 }
 
-pub(crate) fn default_action_toggle_slideshow() -> String {
+fn default_action_toggle_slideshow() -> String {
     "Slideshow".to_string()
 }
 
-pub(crate) fn default_action_new_file() -> String {
+fn default_action_new_file() -> String {
     "New File".to_string()
 }
-pub(crate) fn default_action_new_directory() -> String {
+fn default_action_new_directory() -> String {
     "New Folder".to_string()
 }
-pub(crate) fn default_action_open() -> String {
+fn default_action_open() -> String {
     "Open".to_string()
 }
-pub(crate) fn default_action_rename() -> String {
+fn default_action_rename() -> String {
     "Rename".to_string()
 }
-pub(crate) fn default_action_delete() -> String {
+fn default_action_delete() -> String {
     "Delete".to_string()
 }
-pub(crate) fn default_action_copy_path() -> String {
+fn default_action_copy_path() -> String {
     "Copy Path".to_string()
 }
-pub(crate) fn default_action_copy_relative_path() -> String {
+fn default_action_copy_relative_path() -> String {
     "Copy Relative Path".to_string()
 }
-pub(crate) fn default_action_reveal_in_os() -> String {
+fn default_action_reveal_in_os() -> String {
     "Reveal in OS".to_string()
 }
-pub(crate) fn default_action_save() -> String {
+fn default_action_save() -> String {
     "Save".to_string()
 }
-pub(crate) fn default_action_refresh_document() -> String {
+fn default_action_refresh_document() -> String {
     "Refresh Document".to_string()
 }
-pub(crate) fn default_action_cancel() -> String {
+fn default_action_cancel() -> String {
     "Cancel".to_string()
 }
-pub(crate) fn default_action_discard() -> String {
+fn default_action_discard() -> String {
     "Discard".to_string()
 }
 
@@ -557,10 +563,10 @@ pub struct DialogMessages {
     pub new_name_hint: String,
 }
 
-pub(crate) fn default_unsaved_changes_title() -> String {
+fn default_unsaved_changes_title() -> String {
     "Unsaved Changes".to_string()
 }
-pub(crate) fn default_unsaved_changes_msg() -> String {
+fn default_unsaved_changes_msg() -> String {
     "Do you want to save the changes you made to {name}?\n\nYour changes will be lost if you don't save them.".to_string()
 }
 
@@ -630,39 +636,39 @@ pub struct SettingsThemeMessages {
     pub show_less: String,
 }
 
-pub(crate) fn default_show_more() -> String {
+fn default_show_more() -> String {
     "Show more...".to_string()
 }
 
-pub(crate) fn default_show_less() -> String {
+fn default_show_less() -> String {
     "Show less...".to_string()
 }
 
-pub(crate) fn default_ui_contrast_offset() -> String {
+fn default_ui_contrast_offset() -> String {
     "UI Contrast Offset".to_string()
 }
 
-pub(crate) fn default_duplicate() -> String {
+fn default_duplicate() -> String {
     "Duplicate...".to_string()
 }
 
-pub(crate) fn default_custom_section() -> String {
+fn default_custom_section() -> String {
     "Custom".to_string()
 }
 
-pub(crate) fn default_delete_custom() -> String {
+fn default_delete_custom() -> String {
     "Delete Custom Theme".to_string()
 }
 
-pub(crate) fn default_save_custom_theme() -> String {
+fn default_save_custom_theme() -> String {
     "Save as Custom Theme...".to_string()
 }
 
-pub(crate) fn default_save_custom_theme_title() -> String {
+fn default_save_custom_theme_title() -> String {
     "Save Custom Theme".to_string()
 }
 
-pub(crate) fn default_theme_name_label() -> String {
+fn default_theme_name_label() -> String {
     "Theme Name:".to_string()
 }
 
@@ -711,24 +717,24 @@ pub struct SettingsWorkspaceMessages {
     pub extensionless_excludes_hint: String,
 }
 
-pub(crate) fn default_extensionless_excludes() -> String {
+fn default_extensionless_excludes() -> String {
     "Ignored Extensionless Files".to_string()
 }
-pub(crate) fn default_extensionless_excludes_hint() -> String {
+fn default_extensionless_excludes_hint() -> String {
     "Comma-separated list of exact file names to ignore when 'No Extension' is enabled (e.g., .DS_Store, .gitignore).".to_string()
 }
 
-pub(crate) fn default_no_extension_label() -> String {
+fn default_no_extension_label() -> String {
     "No Extension".to_string()
 }
-pub(crate) fn default_no_extension_warning_title() -> String {
+fn default_no_extension_warning_title() -> String {
     "Warning".to_string()
 }
-pub(crate) fn default_no_extension_warning() -> String {
+fn default_no_extension_warning() -> String {
     "There is no guarantee that files without extensions can be displayed correctly as Markdown. Furthermore, the application may crash due to unexpected behavior. Are you sure you want to enable this?".to_string()
 }
 
-pub(crate) fn default_visible_extensions_msg() -> String {
+fn default_visible_extensions_msg() -> String {
     "Visible Extensions".to_string()
 }
 
@@ -770,19 +776,19 @@ pub struct SettingsBehaviorMessages {
     pub days_suffix: String,
 }
 
-pub(crate) fn default_clear_http_cache() -> String {
+fn default_clear_http_cache() -> String {
     "Clear All Caches".to_string()
 }
-pub(crate) fn default_cache_retention_days() -> String {
+fn default_cache_retention_days() -> String {
     "Cache Retention Days".to_string()
 }
-pub(crate) fn default_days_suffix() -> String {
+fn default_days_suffix() -> String {
     " days".to_string()
 }
-pub(crate) fn default_auto_refresh() -> String {
+fn default_auto_refresh() -> String {
     "Auto-refresh".to_string()
 }
-pub(crate) fn default_auto_refresh_interval() -> String {
+fn default_auto_refresh_interval() -> String {
     "Auto-refresh interval".to_string()
 }
 
@@ -874,40 +880,40 @@ pub struct SettingsColorMessages {
     pub search_active: String,
 }
 
-pub(crate) fn d_search_match() -> String {
+fn d_search_match() -> String {
     "Search Match".to_string()
 }
 
-pub(crate) fn d_search_active() -> String {
+fn d_search_active() -> String {
     "Search Active".to_string()
 }
 
-pub(crate) fn default_highlight() -> String {
+fn default_highlight() -> String {
     "Highlight".to_string()
 }
 
-pub(crate) fn default_section_system() -> String {
+fn default_section_system() -> String {
     "System".to_string()
 }
-pub(crate) fn default_section_code() -> String {
+fn default_section_code() -> String {
     "Code".to_string()
 }
-pub(crate) fn default_section_preview() -> String {
+fn default_section_preview() -> String {
     "Preview".to_string()
 }
-pub(crate) fn default_group_basic() -> String {
+fn default_group_basic() -> String {
     "Basic".to_string()
 }
-pub(crate) fn default_group_text() -> String {
+fn default_group_text() -> String {
     "Text & Typography".to_string()
 }
-pub(crate) fn default_group_ui_elements() -> String {
+fn default_group_ui_elements() -> String {
     "UI Elements".to_string()
 }
-pub(crate) fn default_code_text() -> String {
+fn default_code_text() -> String {
     "Code Text".to_string()
 }
-pub(crate) fn default_preview_text() -> String {
+fn default_preview_text() -> String {
     "Preview Text".to_string()
 }
 
@@ -958,82 +964,82 @@ pub struct TabMessages {
     pub ungroup: String,
 }
 
-pub(crate) fn default_tab_group() -> String {
+fn default_tab_group() -> String {
     "Tab Group".to_string()
 }
-pub(crate) fn default_new_group() -> String {
+fn default_new_group() -> String {
     "New Group".to_string()
 }
-pub(crate) fn default_create_new_group() -> String {
+fn default_create_new_group() -> String {
     "Create New Group".to_string()
 }
-pub(crate) fn default_add_to_group() -> String {
+fn default_add_to_group() -> String {
     "Add to '{group_name}'".to_string()
 }
-pub(crate) fn default_added_to_group() -> String {
+fn default_added_to_group() -> String {
     "✓ Add to '{group_name}'".to_string()
 }
-pub(crate) fn default_remove_from_group() -> String {
+fn default_remove_from_group() -> String {
     "Remove from Group".to_string()
 }
-pub(crate) fn default_rename_group() -> String {
+fn default_rename_group() -> String {
     "Rename Group".to_string()
 }
-pub(crate) fn default_group_name_placeholder() -> String {
+fn default_group_name_placeholder() -> String {
     "Group name".to_string()
 }
-pub(crate) fn default_create_group_button() -> String {
+fn default_create_group_button() -> String {
     "Create".to_string()
 }
-pub(crate) fn default_add_tab_to_group() -> String {
+fn default_add_tab_to_group() -> String {
     "Add tab to group".to_string()
 }
-pub(crate) fn default_close_group() -> String {
+fn default_close_group() -> String {
     "Close group".to_string()
 }
-pub(crate) fn default_ungroup() -> String {
+fn default_ungroup() -> String {
     "Ungroup".to_string()
 }
-pub(crate) fn d_title_bar_text() -> String {
+fn d_title_bar_text() -> String {
     "Title Bar Text".to_string()
 }
-pub(crate) fn d_active_file_highlight() -> String {
+fn d_active_file_highlight() -> String {
     "Active File".to_string()
 }
-pub(crate) fn d_success_text() -> String {
+fn d_success_text() -> String {
     "Success Text".to_string()
 }
-pub(crate) fn d_warning_text() -> String {
+fn d_warning_text() -> String {
     "Warning Text".to_string()
 }
-pub(crate) fn d_error_text() -> String {
+fn d_error_text() -> String {
     "Error Text".to_string()
 }
-pub(crate) fn d_button_bg() -> String {
+fn d_button_bg() -> String {
     "Button Background".to_string()
 }
-pub(crate) fn d_button_active() -> String {
+fn d_button_active() -> String {
     "Active Button".to_string()
 }
-pub(crate) fn d_splash_bg() -> String {
+fn d_splash_bg() -> String {
     "Splash Background".to_string()
 }
-pub(crate) fn d_splash_prog() -> String {
+fn d_splash_prog() -> String {
     "Splash Progress".to_string()
 }
-pub(crate) fn d_line_num() -> String {
+fn d_line_num() -> String {
     "Line Number".to_string()
 }
-pub(crate) fn d_line_num_act() -> String {
+fn d_line_num_act() -> String {
     "Active Line Num".to_string()
 }
-pub(crate) fn d_curr_bg() -> String {
+fn d_curr_bg() -> String {
     "Current Line".to_string()
 }
-pub(crate) fn d_hover_bg() -> String {
+fn d_hover_bg() -> String {
     "Hover Line".to_string()
 }
-pub(crate) fn d_file_tree_text() -> String {
+fn d_file_tree_text() -> String {
     "File Tree Text".to_string()
 }
 
@@ -1047,15 +1053,15 @@ pub struct MarkdownMessages {
     pub task_done: String,
 }
 
-pub(crate) fn default_markdown_task_todo() -> String {
+fn default_markdown_task_todo() -> String {
     "Todo [ ]".to_string()
 }
 
-pub(crate) fn default_markdown_task_in_progress() -> String {
+fn default_markdown_task_in_progress() -> String {
     "In Progress [/]".to_string()
 }
 
-pub(crate) fn default_markdown_task_done() -> String {
+fn default_markdown_task_done() -> String {
     "Done [x]".to_string()
 }
 

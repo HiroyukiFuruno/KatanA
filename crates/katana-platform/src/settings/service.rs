@@ -3,7 +3,7 @@
 `SettingsService` handles reading and writing settings via the repository,
 and manages OS integration (theme, language) on first launch. */
 
-use super::defaults::select_initial_preset;
+use super::defaults::SettingsDefaultOps;
 use super::repository::{InMemoryRepository, SettingsRepository};
 use super::types::{AppSettings, SettingsLoadOrigin};
 
@@ -48,7 +48,7 @@ impl SettingsService {
         if !self.is_first_launch {
             return; // WHY: Existing users keep their saved preset unchanged.
         }
-        let preset = select_initial_preset();
+        let preset = SettingsDefaultOps::select_initial_preset();
         self.settings.theme.preset = preset;
         self.settings.theme.theme = preset.colors().mode.to_theme_string();
     }

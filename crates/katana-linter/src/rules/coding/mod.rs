@@ -6,10 +6,10 @@ pub mod performance;
 pub mod prohibited_attrs;
 pub mod prohibited_types;
 
-pub use comment_style::lint_comment_style;
-pub use error_first::lint_error_first;
-pub use lazy_code::lint_lazy_code;
-pub use magic_numbers::lint_magic_numbers;
-pub use performance::lint_performance;
-pub use prohibited_attrs::lint_prohibited_attributes;
-pub use prohibited_types::lint_prohibited_types;
+pub use comment_style::CommentStyleOps;
+pub use error_first::ErrorFirstOps;
+pub use lazy_code::LazyCodeOps;
+pub use magic_numbers::MagicNumberOps;
+pub use performance::PerformanceOps;
+pub use prohibited_attrs::ProhibitedAttributesOps;
+pub use prohibited_types::ProhibitedTypesOps;

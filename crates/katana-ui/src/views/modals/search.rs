@@ -51,7 +51,7 @@ impl<'a> SearchModal<'a> {
         let workspace = self.workspace;
         let action = self.action;
         let mut local_is_open = *self.is_open;
-        egui::Window::new(crate::i18n::get().search.modal_title.clone())
+        egui::Window::new(crate::i18n::I18nOps::get().search.modal_title.clone())
             .open(&mut local_is_open)
             .collapsible(false)
             .resizable(true)
@@ -61,12 +61,12 @@ impl<'a> SearchModal<'a> {
                     ui.selectable_value(
                         &mut search.active_tab,
                         crate::app_state::SearchTab::FileName,
-                        crate::i18n::get().search.tab_file_name.clone(),
+                        crate::i18n::I18nOps::get().search.tab_file_name.clone(),
                     );
                     ui.selectable_value(
                         &mut search.active_tab,
                         crate::app_state::SearchTab::MarkdownContent,
-                        crate::i18n::get().search.tab_markdown_content.clone(),
+                        crate::i18n::I18nOps::get().search.tab_markdown_content.clone(),
                     );
                 });
                 ui.separator();
@@ -75,7 +75,7 @@ impl<'a> SearchModal<'a> {
                     crate::app_state::SearchTab::FileName => {
                         let response = ui.add(
                             egui::TextEdit::singleline(&mut search.query)
-                                .hint_text(crate::i18n::get().search.query_hint.clone())
+                                .hint_text(crate::i18n::I18nOps::get().search.query_hint.clone())
                                 .desired_width(f32::INFINITY),
                         );
                         response.request_focus();
@@ -118,7 +118,9 @@ impl<'a> SearchModal<'a> {
                                     )
                                 })
                                 .map_or(crate::theme_bridge::WHITE, |tc| {
-                                    crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                                        tc.system.error_text,
+                                    )
                                 })
                         };
 
@@ -132,20 +134,22 @@ impl<'a> SearchModal<'a> {
                                     )
                                 })
                                 .map_or(crate::theme_bridge::WHITE, |tc| {
-                                    crate::theme_bridge::rgb_to_color32(tc.system.error_text)
+                                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                                        tc.system.error_text,
+                                    )
                                 })
                         };
 
                         ui.add(
                             egui::TextEdit::singleline(&mut search.include_pattern)
-                                .hint_text(crate::i18n::get().search.include_pattern_hint.clone())
+                                .hint_text(crate::i18n::I18nOps::get().search.include_pattern_hint.clone())
                                 .text_color(include_color)
                                 .desired_width(f32::INFINITY),
                         );
 
                         ui.add(
                             egui::TextEdit::singleline(&mut search.exclude_pattern)
-                                .hint_text(crate::i18n::get().search.exclude_pattern_hint.clone())
+                                .hint_text(crate::i18n::I18nOps::get().search.exclude_pattern_hint.clone())
                                 .text_color(exclude_color)
                                 .desired_width(f32::INFINITY),
                         );
@@ -185,7 +189,7 @@ impl<'a> SearchModal<'a> {
                             .auto_shrink([false; 2])
                             .show(ui, |ui| {
                                 if search.results.is_empty() && !search.query.is_empty() {
-                                    ui.label(crate::i18n::get().search.no_results.clone());
+                                    ui.label(crate::i18n::I18nOps::get().search.no_results.clone());
                                 } else {
                                     let ws_root = workspace.map(|ws| ws.root.clone());
                                     for path in &search.results {
@@ -207,7 +211,7 @@ impl<'a> SearchModal<'a> {
                         ui.horizontal(|ui| {
                             let response = ui.add(
                                 egui::TextEdit::singleline(&mut search.md_query)
-                                    .hint_text(crate::i18n::get().search.md_query_hint.clone())
+                                    .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
                                     .desired_width(f32::INFINITY),
                             );
                             response.request_focus();
@@ -221,7 +225,7 @@ impl<'a> SearchModal<'a> {
                                 if search.md_query.is_empty() {
                                     search.md_results.clear();
                                 } else if let Some(ws) = workspace {
-                                    search.md_results = katana_core::search::search_workspace(
+                                    search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
                                         ws,
                                         &search.md_query,
                                         MD_SEARCH_LIMIT,
@@ -241,12 +245,12 @@ impl<'a> SearchModal<'a> {
                             ui.horizontal(|ui| {
                                 ui.label(
                                     egui::RichText::new(
-                                        crate::i18n::get().search.recent_searches.clone(),
+                                        crate::i18n::I18nOps::get().search.recent_searches.clone(),
                                     )
                                     .strong(),
                                 );
                                 if ui
-                                    .button(crate::i18n::get().search.clear_history.clone())
+                                    .button(crate::i18n::I18nOps::get().search.clear_history.clone())
                                     .clicked()
                                 {
                                     search.md_history.clear();
@@ -257,7 +261,7 @@ impl<'a> SearchModal<'a> {
                                     search.md_query = term.clone();
                                     search.md_last_query = Some(term.clone());
                                     if let Some(ws) = workspace {
-                                        search.md_results = katana_core::search::search_workspace(
+                                        search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
                                             ws,
                                             &term,
                                             MD_SEARCH_LIMIT,
@@ -274,7 +278,7 @@ impl<'a> SearchModal<'a> {
                             .auto_shrink([false; 2])
                             .show(ui, |ui| {
                                 if search.md_results.is_empty() && !search.md_query.is_empty() {
-                                    ui.label(crate::i18n::get().search.no_results.clone());
+                                    ui.label(crate::i18n::I18nOps::get().search.no_results.clone());
                                 } else {
                                     let ws_root = workspace.map(|ws| ws.root.clone());
                                     for result in &search.md_results {
@@ -288,7 +292,7 @@ impl<'a> SearchModal<'a> {
                                                 ui.label(egui::RichText::new(&rel).strong());
                                                 let ln_text = format!(
                                                     "{}{}",
-                                                    crate::i18n::get().search.ln_prefix,
+                                                    crate::i18n::I18nOps::get().search.ln_prefix,
                                                     result.line_number + 1
                                                 );
                                                 ui.label(egui::RichText::new(ln_text).weak());

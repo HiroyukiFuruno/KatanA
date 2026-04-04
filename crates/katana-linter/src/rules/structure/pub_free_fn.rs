@@ -1,7 +1,17 @@
 use crate::Violation;
-use crate::utils::{has_cfg_test_attr, span_location};
+use crate::utils::LinterParserOps;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
+
+pub struct PubFreeFnOps;
+
+impl PubFreeFnOps {
+    pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        let mut visitor = PubFreeFnVisitor::new(path.to_path_buf());
+        visitor.visit_file(syntax);
+        visitor.violations
+    }
+}
 
 struct PubFreeFnVisitor {
     file: PathBuf,
@@ -27,7 +37,7 @@ impl PubFreeFnVisitor {
 
 impl<'ast> Visit<'ast> for PubFreeFnVisitor {
     fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
-        if has_cfg_test_attr(&node.attrs) {
+        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
             let prev = self.in_test_context;
             self.in_test_context = true;
             syn::visit::visit_item_mod(self, node);
@@ -50,7 +60,7 @@ impl<'ast> Visit<'ast> for PubFreeFnVisitor {
             return;
         }
 
-        if has_cfg_test_attr(&node.attrs) || Self::is_main_fn(node) {
+        if LinterParserOps::has_cfg_test_attr(&node.attrs) || Self::is_main_fn(node) {
             return;
         }
 
@@ -58,7 +68,7 @@ impl<'ast> Visit<'ast> for PubFreeFnVisitor {
             || matches!(&node.vis, syn::Visibility::Restricted(r) if r.path.is_ident("crate"));
 
         if is_pub {
-            let (line, column) = span_location(node.sig.ident.span());
+            let (line, column) = LinterParserOps::span_location(node.sig.ident.span());
             self.violations.push(Violation {
                 file: self.file.clone(),
                 line,
@@ -75,12 +85,6 @@ impl<'ast> Visit<'ast> for PubFreeFnVisitor {
     }
 }
 
-pub fn lint_pub_free_fn(path: &Path, syntax: &syn::File) -> Vec<Violation> {
-    let mut visitor = PubFreeFnVisitor::new(path.to_path_buf());
-    visitor.visit_file(syntax);
-    visitor.violations
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,7 +94,7 @@ mod tests {
     fn detects_pub_free_fn() {
         let code = r#"pub fn helper() {}"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_pub_free_fn(&PathBuf::from("fake.rs"), &syntax);
+        let violations = PubFreeFnOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert_eq!(violations.len(), 1);
         assert!(violations[0].message.contains("helper"));
     }
@@ -99,7 +103,7 @@ mod tests {
     fn detects_pub_crate_free_fn() {
         let code = r#"pub(crate) fn internal_helper() {}"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_pub_free_fn(&PathBuf::from("fake.rs"), &syntax);
+        let violations = PubFreeFnOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert_eq!(violations.len(), 1);
     }
 
@@ -107,7 +111,7 @@ mod tests {
     fn allows_private_free_fn() {
         let code = r#"fn private_helper() {}"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_pub_free_fn(&PathBuf::from("fake.rs"), &syntax);
+        let violations = PubFreeFnOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert!(violations.is_empty());
     }
 
@@ -115,7 +119,7 @@ mod tests {
     fn allows_main_fn() {
         let code = r#"pub fn main() {}"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_pub_free_fn(&PathBuf::from("fake.rs"), &syntax);
+        let violations = PubFreeFnOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert!(violations.is_empty());
     }
 
@@ -128,7 +132,7 @@ mod tests {
             }
         "#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_pub_free_fn(&PathBuf::from("fake.rs"), &syntax);
+        let violations = PubFreeFnOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert!(violations.is_empty());
     }
 
@@ -141,7 +145,7 @@ mod tests {
             }
         "#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_pub_free_fn(&PathBuf::from("fake.rs"), &syntax);
+        let violations = PubFreeFnOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert!(violations.is_empty());
     }
 }

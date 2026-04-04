@@ -3,10 +3,9 @@
 #[cfg(test)]
 mod tests {
     use crate::http_cache_loader::disk::{
-        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION, cache_key, read_cached_file, remove_cache_file,
-        write_cached_file_for_uri,
+        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION, HttpCacheDiskOps,
     };
-    use crate::http_cache_loader::fetch::{entry_to_bytes_result, process_fetch_response};
+    use crate::http_cache_loader::fetch::HttpCacheFetchOps;
     use crate::http_cache_loader::loader::PersistentHttpLoader;
     use crate::http_cache_loader::types::{CachedFile, HttpCacheEntry};
     use egui::Context;
@@ -143,7 +142,7 @@ mod tests {
     fn entry_to_bytes_result_ready_ok() {
         let file = sample_file();
         let entry: crate::http_cache_loader::types::Entry = Poll::Ready(Ok(file.clone()));
-        let result = entry_to_bytes_result(entry).expect("should be ok");
+        let result = HttpCacheFetchOps::entry_to_bytes_result(entry).expect("should be ok");
         match result {
             BytesPoll::Ready { bytes, mime, .. } => {
                 assert_eq!(bytes.as_ref(), &*file.bytes);
@@ -157,14 +156,15 @@ mod tests {
     fn entry_to_bytes_result_ready_err() {
         let entry: crate::http_cache_loader::types::Entry =
             Poll::Ready(Err("load failed".to_string()));
-        let result = entry_to_bytes_result(entry);
+        let result = HttpCacheFetchOps::entry_to_bytes_result(entry);
         assert!(result.is_err());
     }
 
     #[test]
     fn entry_to_bytes_result_pending() {
         let entry: crate::http_cache_loader::types::Entry = Poll::Pending;
-        let result = entry_to_bytes_result(entry).expect("Pending is not an error");
+        let result =
+            HttpCacheFetchOps::entry_to_bytes_result(entry).expect("Pending is not an error");
         assert!(matches!(result, BytesPoll::Pending { .. }));
     }
 
@@ -278,15 +278,15 @@ mod tests {
         let file = sample_file();
         let uri = "https://shields.io/badge.svg";
 
-        write_cached_file_for_uri(tmp.path(), uri, &file).expect("write");
+        HttpCacheDiskOps::write_cached_file_for_uri(tmp.path(), uri, &file).expect("write");
 
-        let key = cache_key(uri);
+        let key = HttpCacheDiskOps::cache_key(uri);
         let body_path = tmp.path().join(format!("{key}.{CACHE_BODY_EXTENSION}"));
         let meta_path = tmp.path().join(format!("{key}.{CACHE_META_EXTENSION}"));
         assert!(body_path.exists());
         assert!(meta_path.exists());
 
-        let loaded = read_cached_file(&body_path, &meta_path).expect("read back");
+        let loaded = HttpCacheDiskOps::read_cached_file(&body_path, &meta_path).expect("read back");
         assert_eq!(&*loaded.bytes, &*file.bytes);
         assert_eq!(loaded.mime, file.mime);
     }
@@ -296,7 +296,7 @@ mod tests {
         let tmp = TempDir::new().expect("tempdir");
         let body = tmp.path().join("nonexistent.bin");
         let meta = tmp.path().join("nonexistent.json");
-        remove_cache_file(&body, &meta);
+        HttpCacheDiskOps::remove_cache_file(&body, &meta);
     }
 
     #[test]
@@ -312,12 +312,12 @@ mod tests {
             bytes: b"<svg></svg>".to_vec(),
         });
 
-        let result = process_fetch_response(uri, tmp.path(), response);
+        let result = HttpCacheFetchOps::process_fetch_response(uri, tmp.path(), response);
         assert!(result.is_ok());
         let file = result.unwrap();
         assert_eq!(&*file.bytes, b"<svg></svg>");
 
-        let key = cache_key(uri);
+        let key = HttpCacheDiskOps::cache_key(uri);
         let body_path = tmp.path().join(format!("{key}.{CACHE_BODY_EXTENSION}"));
         assert!(body_path.exists());
     }
@@ -335,9 +335,12 @@ mod tests {
             bytes: b"not found".to_vec(),
         });
 
-        let result = process_fetch_response(uri, tmp.path(), response);
+        let result = HttpCacheFetchOps::process_fetch_response(uri, tmp.path(), response);
         match result {
-            Err(err) => assert!(err.contains("404")),
+            Err(err) => {
+                let err: String = err;
+                assert!(err.contains("404"));
+            }
             Ok(_) => panic!("expected error"),
         }
     }
@@ -348,9 +351,12 @@ mod tests {
         let uri = "https://example.com/unreachable.svg";
         let response: ehttp::Result<ehttp::Response> = Err("connection refused".to_string());
 
-        let result = process_fetch_response(uri, tmp.path(), response);
+        let result = HttpCacheFetchOps::process_fetch_response(uri, tmp.path(), response);
         match result {
-            Err(err) => assert!(err.contains(uri)),
+            Err(err) => {
+                let err: String = err;
+                assert!(err.contains(uri));
+            }
             Ok(_) => panic!("expected error"),
         }
     }
@@ -389,7 +395,7 @@ mod tests {
         let dir_as_file = tmp.path().join("is_a_dir.bin");
         std::fs::create_dir(&dir_as_file).expect("mkdir");
         let meta = tmp.path().join("unused.json");
-        remove_cache_file(&dir_as_file, &meta);
+        HttpCacheDiskOps::remove_cache_file(&dir_as_file, &meta);
     }
 
     #[test]
@@ -420,7 +426,7 @@ mod tests {
             bytes: b"<svg></svg>".to_vec(),
         });
 
-        let result = process_fetch_response(uri, &cache_dir, response);
+        let result = HttpCacheFetchOps::process_fetch_response(uri, &cache_dir, response);
         assert!(
             result.is_ok(),
             "response should parse even if disk write fails"

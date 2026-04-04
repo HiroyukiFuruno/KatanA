@@ -7,11 +7,8 @@ use egui::{
 };
 
 use super::{
-    disk::{
-        CACHE_BODY_EXTENSION, CACHE_META_EXTENSION, cache_key, default_http_cache_dir,
-        read_cached_file, remove_cache_file,
-    },
-    fetch::{entry_to_bytes_result, is_http_uri, process_fetch_response},
+    disk::HttpCacheDiskOps,
+    fetch::HttpCacheFetchOps,
     types::{CachedFile, HttpCacheEntry},
 };
 
@@ -32,33 +29,48 @@ impl PersistentHttpLoader {
 
     #[cfg(test)]
     pub(crate) fn cache_paths(&self, uri: &str) -> (PathBuf, PathBuf) {
-        let key = cache_key(uri);
-        let body = self.cache_dir.join(format!("{key}.{CACHE_BODY_EXTENSION}"));
-        let meta = self.cache_dir.join(format!("{key}.{CACHE_META_EXTENSION}"));
+        let key = HttpCacheDiskOps::cache_key(uri);
+        let body = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_BODY_EXTENSION));
+        let meta = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_META_EXTENSION));
         (body, meta)
     }
 
     pub(crate) fn read_from_disk(&self, uri: &str) -> Option<CachedFile> {
-        let key = cache_key(uri);
-        let body_path = self.cache_dir.join(format!("{key}.{CACHE_BODY_EXTENSION}"));
-        let meta_path = self.cache_dir.join(format!("{key}.{CACHE_META_EXTENSION}"));
-        read_cached_file(&body_path, &meta_path)
+        let key = HttpCacheDiskOps::cache_key(uri);
+        let body_path = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_BODY_EXTENSION));
+        let meta_path = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_META_EXTENSION));
+        HttpCacheDiskOps::read_cached_file(&body_path, &meta_path)
     }
 
     #[cfg(test)]
     pub(crate) fn write_to_disk(&self, uri: &str, file: &CachedFile) -> anyhow::Result<()> {
-        use super::disk::write_cached_file;
-        let key = cache_key(uri);
-        let body_path = self.cache_dir.join(format!("{key}.{CACHE_BODY_EXTENSION}"));
-        let meta_path = self.cache_dir.join(format!("{key}.{CACHE_META_EXTENSION}"));
-        write_cached_file(&body_path, &meta_path, file)
+        let key = HttpCacheDiskOps::cache_key(uri);
+        let body_path = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_BODY_EXTENSION));
+        let meta_path = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_META_EXTENSION));
+        HttpCacheDiskOps::write_cached_file(&body_path, &meta_path, file)
     }
 
     pub(crate) fn remove_from_disk(&self, uri: &str) {
-        let key = cache_key(uri);
-        let body_path = self.cache_dir.join(format!("{key}.{CACHE_BODY_EXTENSION}"));
-        let meta_path = self.cache_dir.join(format!("{key}.{CACHE_META_EXTENSION}"));
-        remove_cache_file(&body_path, &meta_path);
+        let key = HttpCacheDiskOps::cache_key(uri);
+        let body_path = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_BODY_EXTENSION));
+        let meta_path = self
+            .cache_dir
+            .join(format!("{key}.{}", super::disk::CACHE_META_EXTENSION));
+        HttpCacheDiskOps::remove_cache_file(&body_path, &meta_path);
     }
 
     #[cfg(test)]
@@ -69,7 +81,7 @@ impl PersistentHttpLoader {
 
 impl Default for PersistentHttpLoader {
     fn default() -> Self {
-        Self::new(default_http_cache_dir())
+        Self::new(HttpCacheDiskOps::default_http_cache_dir())
     }
 }
 
@@ -79,13 +91,13 @@ impl BytesLoader for PersistentHttpLoader {
     }
 
     fn load(&self, ctx: &Context, uri: &str) -> BytesLoadResult {
-        if !is_http_uri(uri) {
+        if !HttpCacheFetchOps::is_http_uri(uri) {
             return Err(LoadError::NotSupported);
         }
 
         let mut cache = self.cache.lock();
         if let Some(entry) = cache.iter().find(|e| e.uri == uri).map(|e| e.entry.clone()) {
-            return entry_to_bytes_result(entry);
+            return HttpCacheFetchOps::entry_to_bytes_result(entry);
         }
 
         if let Some(file) = self.read_from_disk(uri) {
@@ -94,7 +106,7 @@ impl BytesLoader for PersistentHttpLoader {
                 uri: uri.to_owned(),
                 entry: entry.clone(),
             });
-            return entry_to_bytes_result(entry);
+            return HttpCacheFetchOps::entry_to_bytes_result(entry);
         }
 
         let uri_clone = uri.to_owned();
@@ -109,7 +121,8 @@ impl BytesLoader for PersistentHttpLoader {
         let repaint_ctx = ctx.clone();
 
         ehttp::fetch(ehttp::Request::get(uri_clone.clone()), move |response| {
-            let result = process_fetch_response(&uri_clone, &cache_dir, response);
+            let result =
+                HttpCacheFetchOps::process_fetch_response(&uri_clone, &cache_dir, response);
 
             let repaint = {
                 let mut cache = cache.lock();

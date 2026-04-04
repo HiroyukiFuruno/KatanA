@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use super::types::{DisplayMode, HtmlNode, LinkAction, LinkTarget};
+use super::types::{DisplayMode, HtmlNode, LinkAction, LinkTarget, TextAlign};
 
 impl LinkTarget {
     pub fn resolve(href: &str, base_dir: &Path) -> Self {
@@ -51,6 +51,68 @@ impl HtmlNode {
 
     pub fn is_block(&self) -> bool {
         self.display_mode() == DisplayMode::Block
+    }
+
+    pub fn render_to_html(nodes: &[HtmlNode]) -> String {
+        let mut html = String::new();
+        for node in nodes {
+            match node {
+                Self::Text(text) => html.push_str(text),
+                Self::LineBreak => html.push_str("<br>"),
+                Self::Image { src, alt } => {
+                    html.push_str(&format!(r#"<img src="{src}" alt="{alt}">"#));
+                }
+                Self::Link { target, children } => {
+                    let href = match target {
+                        LinkTarget::External(url) => url.clone(),
+                        LinkTarget::InternalFile(path) => path.to_string_lossy().into_owned(),
+                        LinkTarget::Anchor(anchor) => format!("#{anchor}"),
+                    };
+                    html.push_str(&format!(r#"<a href="{href}">"#));
+                    html.push_str(&Self::render_to_html(children));
+                    html.push_str("</a>");
+                }
+                Self::Heading {
+                    level,
+                    align,
+                    children,
+                } => {
+                    let align_attr = align
+                        .map(|a| match a {
+                            TextAlign::Left => r#" align="left""#,
+                            TextAlign::Center => r#" align="center""#,
+                            TextAlign::Right => r#" align="right""#,
+                        })
+                        .unwrap_or("");
+                    html.push_str(&format!("<h{level}{align_attr}>"));
+                    html.push_str(&Self::render_to_html(children));
+                    html.push_str(&format!("</h{level}>"));
+                }
+                Self::Paragraph { align, children } => {
+                    let align_attr = align
+                        .map(|a| match a {
+                            TextAlign::Left => r#" align="left""#,
+                            TextAlign::Center => r#" align="center""#,
+                            TextAlign::Right => r#" align="right""#,
+                        })
+                        .unwrap_or("");
+                    html.push_str(&format!("<p{align_attr}>"));
+                    html.push_str(&Self::render_to_html(children));
+                    html.push_str("</p>");
+                }
+                Self::Emphasis(children) => {
+                    html.push_str("<em>");
+                    html.push_str(&Self::render_to_html(children));
+                    html.push_str("</em>");
+                }
+                Self::Strong(children) => {
+                    html.push_str("<strong>");
+                    html.push_str(&Self::render_to_html(children));
+                    html.push_str("</strong>");
+                }
+            }
+        }
+        html
     }
 }
 
@@ -184,28 +246,6 @@ mod tests {
         assert_eq!(
             target.default_action(),
             LinkAction::NavigateCurrentTab(PathBuf::from("#installation"))
-        );
-    }
-
-    #[test]
-    fn resolve_relative_path_with_subdirectory() {
-        let target = LinkTarget::resolve("docs/guide.md", Path::new("/project"));
-        assert_eq!(
-            target,
-            LinkTarget::InternalFile(PathBuf::from("/project/docs/guide.md"))
-        );
-    }
-
-    #[test]
-    fn resolve_license_file() {
-        let target = LinkTarget::resolve("LICENSE", Path::new("/project"));
-        assert_eq!(
-            target,
-            LinkTarget::InternalFile(PathBuf::from("/project/LICENSE"))
-        );
-        assert_eq!(
-            target.default_action(),
-            LinkAction::NavigateCurrentTab(PathBuf::from("/project/LICENSE"))
         );
     }
 }

@@ -36,9 +36,12 @@ impl<'a> CreateFsNodeModal<'a> {
         let mut do_create = false;
 
         let title = if *is_dir {
-            crate::i18n::get().dialog.new_directory_title.clone()
+            crate::i18n::I18nOps::get()
+                .dialog
+                .new_directory_title
+                .clone()
         } else {
-            crate::i18n::get().dialog.new_file_title.clone()
+            crate::i18n::I18nOps::get().dialog.new_file_title.clone()
         };
 
         let mut is_open = true;
@@ -52,7 +55,7 @@ impl<'a> CreateFsNodeModal<'a> {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
                         egui::TextEdit::singleline(name)
-                            .hint_text(&crate::i18n::get().dialog.name_hint)
+                            .hint_text(&crate::i18n::I18nOps::get().dialog.name_hint)
                             .desired_width(MODAL_INPUT_WIDTH),
                     );
                     re.request_focus();
@@ -77,13 +80,16 @@ impl<'a> CreateFsNodeModal<'a> {
                 ui.add_space(SPACING_SMALL);
                 ui.horizontal(|ui| {
                     if ui
-                        .button(crate::i18n::get().action.cancel.clone())
+                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
                     {
                         close = true;
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button(crate::i18n::get().action.save.clone()).clicked() {
+                        if ui
+                            .button(crate::i18n::I18nOps::get().action.save.clone())
+                            .clicked()
+                        {
                             do_create = true;
                         }
                     });
@@ -145,7 +151,7 @@ impl<'a> RenameModal<'a> {
         let mut do_rename = false;
 
         let mut is_open = true;
-        egui::Window::new(crate::i18n::get().dialog.rename_title.clone())
+        egui::Window::new(crate::i18n::I18nOps::get().dialog.rename_title.clone())
             .open(&mut is_open)
             .collapsible(false)
             .resizable(false)
@@ -155,7 +161,7 @@ impl<'a> RenameModal<'a> {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
                         egui::TextEdit::singleline(new_name)
-                            .hint_text(&crate::i18n::get().dialog.new_name_hint)
+                            .hint_text(&crate::i18n::I18nOps::get().dialog.new_name_hint)
                             .desired_width(MODAL_INPUT_WIDTH),
                     );
                     re.request_focus();
@@ -168,13 +174,16 @@ impl<'a> RenameModal<'a> {
                 ui.add_space(SPACING_SMALL);
                 ui.horizontal(|ui| {
                     if ui
-                        .button(crate::i18n::get().action.cancel.clone())
+                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
                     {
                         close = true;
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button(crate::i18n::get().action.save.clone()).clicked() {
+                        if ui
+                            .button(crate::i18n::I18nOps::get().action.save.clone())
+                            .clicked()
+                        {
                             do_rename = true;
                         }
                     });
@@ -222,7 +231,7 @@ impl<'a> DeleteModal<'a> {
         let mut close = false;
 
         let mut is_open = true;
-        egui::Window::new(crate::i18n::get().dialog.delete_title.clone())
+        egui::Window::new(crate::i18n::I18nOps::get().dialog.delete_title.clone())
             .open(&mut is_open)
             .collapsible(false)
             .resizable(false)
@@ -232,8 +241,8 @@ impl<'a> DeleteModal<'a> {
                     .file_name()
                     .and_then(|n| n.to_str())
                     .unwrap_or("?");
-                let msg = crate::i18n::tf(
-                    &crate::i18n::get().dialog.delete_confirm_msg,
+                let msg = crate::i18n::I18nOps::tf(
+                    &crate::i18n::I18nOps::get().dialog.delete_confirm_msg,
                     &[("name", name)],
                 );
                 ui.label(msg);
@@ -242,14 +251,14 @@ impl<'a> DeleteModal<'a> {
                 ui.add_space(SPACING_SMALL);
                 ui.horizontal(|ui| {
                     if ui
-                        .button(crate::i18n::get().action.cancel.clone())
+                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
                     {
                         close = true;
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         let del_btn = egui::Button::new(
-                            egui::RichText::new(crate::i18n::get().action.delete.clone())
+                            egui::RichText::new(crate::i18n::I18nOps::get().action.delete.clone())
                                 .color(ui.visuals().error_fg_color),
                         );
                         if ui.add(del_btn).clicked() {

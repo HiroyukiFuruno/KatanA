@@ -98,8 +98,8 @@ impl DocumentOps for KatanaApp {
                 Err(e) => {
                     let error = e.to_string();
                     self.state.layout.status_message = Some((
-                        crate::i18n::tf(
-                            &crate::i18n::get().status.cannot_open_file,
+                        crate::i18n::I18nOps::tf(
+                            &crate::i18n::I18nOps::get().status.cannot_open_file,
                             &[("error", error.as_str())],
                         ),
                         crate::app_state::StatusType::Error,
@@ -184,7 +184,7 @@ impl DocumentOps for KatanaApp {
         match self.fs.save_document(doc) {
             Ok(()) => {
                 self.state.layout.status_message = Some((
-                    crate::i18n::get().status.saved.clone(),
+                    crate::i18n::I18nOps::get().status.saved.clone(),
                     crate::app_state::StatusType::Success,
                 ));
                 self.save_workspace_state();
@@ -193,8 +193,8 @@ impl DocumentOps for KatanaApp {
             Err(e) => {
                 let error = e.to_string();
                 self.state.layout.status_message = Some((
-                    crate::i18n::tf(
-                        &crate::i18n::get().status.save_failed,
+                    crate::i18n::I18nOps::tf(
+                        &crate::i18n::I18nOps::get().status.save_failed,
                         &[("error", error.as_str())],
                     ),
                     crate::app_state::StatusType::Error,

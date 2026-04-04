@@ -8,7 +8,7 @@ use super::*;
 )]
 mod tests {
     use super::*;
-    use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
+    use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 
     use katana_platform::CacheFacade;
 
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn render_diagram_drawio_returns_ok_section() {
         let xml = r#"<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>"#;
-        let section = render_diagram(&DiagramKind::DrawIo, xml, 0);
+        let section = RendererLogicOps::render_diagram(&DiagramKind::DrawIo, xml, 0);
         assert_variant!(
             section,
             RenderedSection::Image { .. } | RenderedSection::Error { .. }
@@ -93,7 +93,7 @@ mod tests {
             kind: DiagramKind::DrawIo,
             source: r#"<mxGraphModel><root><mxCell id="0"/></root></mxGraphModel>"#.to_string(),
         };
-        let result = dispatch_renderer(&block);
+        let result = RendererLogicOps::dispatch_renderer(&block);
         assert_variant!(result, DiagramResult::Ok(_) | DiagramResult::Err { .. });
     }
 
@@ -103,7 +103,7 @@ mod tests {
             kind: DiagramKind::Mermaid,
             source: "graph TD; A-->B".to_string(),
         };
-        let result = dispatch_renderer(&block);
+        let result = RendererLogicOps::dispatch_renderer(&block);
         assert_variant!(
             result,
             DiagramResult::CommandNotFound { .. }
@@ -119,7 +119,7 @@ mod tests {
             kind: DiagramKind::PlantUml,
             source: "@startuml\nA->B\n@enduml".to_string(),
         };
-        let result = dispatch_renderer(&block);
+        let result = RendererLogicOps::dispatch_renderer(&block);
         unsafe { std::env::remove_var("PLANTUML_JAR") };
         assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn try_rasterize_returns_error_when_no_svg_in_html() {
         let kind = DiagramKind::DrawIo;
-        let section = try_rasterize(&kind, "source", "<div>no svg here</div>", 0);
+        let section = RendererLogicOps::try_rasterize(&kind, "source", "<div>no svg here</div>", 0);
         assert_variant!(section, RenderedSection::Error { .. });
     }
 
@@ -135,7 +135,7 @@ mod tests {
     fn try_rasterize_returns_image_for_valid_svg() {
         let kind = DiagramKind::DrawIo;
         let html = r#"<div class="diagram"><svg width="10" height="10"><rect fill="white" width="10" height="10"/></svg></div>"#;
-        let section = try_rasterize(&kind, "source", html, 0);
+        let section = RendererLogicOps::try_rasterize(&kind, "source", html, 0);
         assert_variant!(
             section,
             RenderedSection::Image { .. } | RenderedSection::Error { .. }
@@ -149,19 +149,25 @@ mod tests {
         let img = ImageBuffer::from_pixel(2, 2, Rgba([100u8, 150, 200, 255]));
         img.write_to(&mut std::io::Cursor::new(&mut buf), image::ImageFormat::Png)
             .unwrap();
-        let section = decode_png_to_section(&DiagramKind::DrawIo, "source", buf, 0);
+        let section =
+            RendererLogicOps::decode_png_to_section(&DiagramKind::DrawIo, "source", buf, 0);
         assert_variant!(section, RenderedSection::Image { .. });
     }
 
     #[test]
     fn decode_png_to_section_returns_error_for_invalid_data() {
-        let section = decode_png_to_section(&DiagramKind::DrawIo, "source", b"not png".to_vec(), 0);
+        let section = RendererLogicOps::decode_png_to_section(
+            &DiagramKind::DrawIo,
+            "source",
+            b"not png".to_vec(),
+            0,
+        );
         assert_variant!(section, RenderedSection::Error { .. });
     }
 
     #[test]
     fn map_diagram_result_ok_delegates_to_try_rasterize() {
-        let section = map_diagram_result(
+        let section = RendererLogicOps::map_diagram_result(
             &DiagramKind::DrawIo,
             "src",
             DiagramResult::Ok("<svg width=\"10\" height=\"10\"></svg>".to_string()),
@@ -180,14 +186,18 @@ mod tests {
         let img = ImageBuffer::from_pixel(2, 2, Rgba([0u8, 0, 0, 255]));
         img.write_to(&mut std::io::Cursor::new(&mut buf), image::ImageFormat::Png)
             .unwrap();
-        let section =
-            map_diagram_result(&DiagramKind::Mermaid, "src", DiagramResult::OkPng(buf), 0);
+        let section = RendererLogicOps::map_diagram_result(
+            &DiagramKind::Mermaid,
+            "src",
+            DiagramResult::OkPng(buf),
+            0,
+        );
         assert_variant!(section, RenderedSection::Image { .. });
     }
 
     #[test]
     fn map_diagram_result_err_maps_to_error_section() {
-        let section = map_diagram_result(
+        let section = RendererLogicOps::map_diagram_result(
             &DiagramKind::DrawIo,
             "src",
             DiagramResult::Err {
@@ -201,7 +211,7 @@ mod tests {
 
     #[test]
     fn map_diagram_result_command_not_found_maps_to_section() {
-        let section = map_diagram_result(
+        let section = RendererLogicOps::map_diagram_result(
             &DiagramKind::Mermaid,
             "src",
             DiagramResult::CommandNotFound {
@@ -216,7 +226,7 @@ mod tests {
 
     #[test]
     fn map_diagram_result_not_installed_maps_to_section() {
-        let section = map_diagram_result(
+        let section = RendererLogicOps::map_diagram_result(
             &DiagramKind::PlantUml,
             "src",
             DiagramResult::NotInstalled {
@@ -231,7 +241,7 @@ mod tests {
 
     #[test]
     fn render_diagram_mermaid_produces_valid_section() {
-        let section = render_diagram(&DiagramKind::Mermaid, "graph TD; A-->B", 0);
+        let section = RendererLogicOps::render_diagram(&DiagramKind::Mermaid, "graph TD; A-->B", 0);
         assert!(!matches!(section, RenderedSection::Pending { .. }));
     }
 
@@ -463,7 +473,7 @@ mod tests {
         pane.wait_for_renders();
 
         let diag_src = "http://graph TD; A-->B";
-        let key = get_cache_key(
+        let key = RendererLogicOps::get_cache_key(
             &std::path::PathBuf::from("/tmp/test.md"),
             &DiagramKind::Mermaid,
             diag_src,
@@ -493,9 +503,9 @@ mod tests {
         pane.wait_for_renders();
 
         let diag_src3 = "invalid drawio";
-        let key3 = get_cache_key(
+        let key3 = RendererLogicOps::get_cache_key(
             &std::path::PathBuf::from("/tmp/test.md"),
-            &katana_core::markdown::diagram::DiagramKind::DrawIo,
+            &katana_core::markdown::DiagramKind::DrawIo,
             diag_src3,
         );
         let _ = cache.set_persistent(&key3, "invalid json".to_string());
@@ -519,10 +529,10 @@ mod tests {
         let source = "graph TD; A-->B";
 
         DiagramColorPreset::set_dark_mode(true);
-        let key_dark = get_cache_key(path, &kind, source);
+        let key_dark = RendererLogicOps::get_cache_key(path, &kind, source);
 
         DiagramColorPreset::set_dark_mode(false);
-        let key_light = get_cache_key(path, &kind, source);
+        let key_light = RendererLogicOps::get_cache_key(path, &kind, source);
 
         DiagramColorPreset::set_dark_mode(true);
 
@@ -737,8 +747,8 @@ mod tests {
     #[test]
     fn i18n_diagram_controller_fields_exist() {
         use crate::i18n;
-        i18n::set_language("en");
-        let msgs = i18n::get();
+        i18n::I18nOps::set_language("en");
+        let msgs = i18n::I18nOps::get();
         let dc = &msgs.preview.diagram_controller;
         assert!(!dc.pan_up.is_empty());
         assert!(!dc.pan_down.is_empty());
@@ -754,8 +764,8 @@ mod tests {
     #[test]
     fn i18n_diagram_controller_ja() {
         use crate::i18n;
-        i18n::set_language("ja");
-        let msgs = i18n::get();
+        i18n::I18nOps::set_language("ja");
+        let msgs = i18n::I18nOps::get();
         let dc = &msgs.preview.diagram_controller;
         assert_eq!(dc.pan_up, "\u{4e0a}\u{3078}\u{79fb}\u{52d5}");
         assert_eq!(
@@ -763,7 +773,7 @@ mod tests {
             "\u{521d}\u{671f}\u{4f4d}\u{7f6e}\u{30fb}\u{30b5}\u{30a4}\u{30ba}\u{306b}\u{30ea}\u{30bb}\u{30c3}\u{30c8}"
         );
         assert_eq!(dc.fullscreen, "\u{5168}\u{753b}\u{9762}\u{8868}\u{793a}");
-        i18n::set_language("en");
+        i18n::I18nOps::set_language("en");
     }
 
     #[test]

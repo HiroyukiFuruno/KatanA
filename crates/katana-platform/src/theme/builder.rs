@@ -1,7 +1,7 @@
 use crate::theme::palettes::*;
 use crate::theme::preset::PresetColorData;
 use crate::theme::types::{
-    CodeColors, PreviewColors, Rgb, Rgba, SystemColors, ThemeMode, darken, lighten, to_rgba,
+    CodeColors, PreviewColors, Rgb, Rgba, SystemColors, ThemeMode, ThemeOps,
 };
 
 pub(crate) struct ThemePresetBuilder {
@@ -73,18 +73,18 @@ impl ThemePresetBuilder {
     const fn resolve_bg_and_text(&self, is_dark: bool) -> (Rgb, Rgb, Rgb) {
         let p_bg = match self.panel_background {
             Some(c) => c,
-            None if is_dark => darken(self.background, DEFAULT_PANEL_BG_DARKEN_DARK),
-            None => darken(self.background, DEFAULT_PANEL_BG_DARKEN_LIGHT),
+            None if is_dark => ThemeOps::darken(self.background, DEFAULT_PANEL_BG_DARKEN_DARK),
+            None => ThemeOps::darken(self.background, DEFAULT_PANEL_BG_DARKEN_LIGHT),
         };
         let c_bg = match self.code_background {
             Some(c) => c,
-            None if is_dark => lighten(self.background, DEFAULT_CODE_BG_LIGHTEN_DARK),
-            None => darken(self.background, DEFAULT_CODE_BG_DARKEN_LIGHT),
+            None if is_dark => ThemeOps::lighten(self.background, DEFAULT_CODE_BG_LIGHTEN_DARK),
+            None => ThemeOps::darken(self.background, DEFAULT_CODE_BG_DARKEN_LIGHT),
         };
         let t_sec = match self.text_secondary {
             Some(c) => c,
-            None if is_dark => darken(self.text, DEFAULT_TEXT_SECONDARY_DARKEN),
-            None => lighten(self.text, DEFAULT_TEXT_SECONDARY_LIGHTEN),
+            None if is_dark => ThemeOps::darken(self.text, DEFAULT_TEXT_SECONDARY_DARKEN),
+            None => ThemeOps::lighten(self.text, DEFAULT_TEXT_SECONDARY_LIGHTEN),
         };
         (p_bg, c_bg, t_sec)
     }
@@ -92,13 +92,13 @@ impl ThemePresetBuilder {
     const fn resolve_accents(&self, is_dark: bool) -> (Rgb, Rgb, Rgb, Rgb, Rgb) {
         let border = match self.border {
             Some(c) => c,
-            None if is_dark => lighten(self.background, DEFAULT_BORDER_LIGHTEN),
-            None => darken(self.background, DEFAULT_BORDER_DARKEN),
+            None if is_dark => ThemeOps::lighten(self.background, DEFAULT_BORDER_LIGHTEN),
+            None => ThemeOps::darken(self.background, DEFAULT_BORDER_DARKEN),
         };
         let selection = match self.selection {
             Some(c) => c,
-            None if is_dark => lighten(self.background, DEFAULT_SELECTION_LIGHTEN),
-            None => darken(self.background, DEFAULT_SELECTION_DARKEN),
+            None if is_dark => ThemeOps::lighten(self.background, DEFAULT_SELECTION_LIGHTEN),
+            None => ThemeOps::darken(self.background, DEFAULT_SELECTION_DARKEN),
         };
         let success = match self.success {
             Some(c) => c,
@@ -140,9 +140,12 @@ impl ThemePresetBuilder {
             accent: self.accent,
             title_bar_text: self.text,
             file_tree_text: t_sec,
-            active_file_highlight: to_rgba(self.accent, DEFAULT_ACTIVE_FILE_HIGHLIGHT_ALPHA),
-            button_background: to_rgba(p_bg, DEFAULT_BUTTON_BACKGROUND_ALPHA),
-            button_active_background: to_rgba(self.accent, DEFAULT_BUTTON_ACTIVE_ALPHA),
+            active_file_highlight: ThemeOps::to_rgba(
+                self.accent,
+                DEFAULT_ACTIVE_FILE_HIGHLIGHT_ALPHA,
+            ),
+            button_background: ThemeOps::to_rgba(p_bg, DEFAULT_BUTTON_BACKGROUND_ALPHA),
+            button_active_background: ThemeOps::to_rgba(self.accent, DEFAULT_BUTTON_ACTIVE_ALPHA),
             border,
             selection,
         }
@@ -172,7 +175,10 @@ impl ThemePresetBuilder {
             line_number_text: t_sec,
             line_number_active_text: self.text,
             current_line_background,
-            hover_line_background: to_rgba(self.accent, DEFAULT_HOVER_LINE_HIGHLIGHT_ALPHA),
+            hover_line_background: ThemeOps::to_rgba(
+                self.accent,
+                DEFAULT_HOVER_LINE_HIGHLIGHT_ALPHA,
+            ),
             selection,
             search_match: Rgba {
                 r: Self::DEFAULT_SEARCH_MATCH_R,
@@ -196,7 +202,10 @@ impl ThemePresetBuilder {
             warning_text: warning,
             border,
             selection,
-            hover_line_background: to_rgba(self.accent, DEFAULT_HOVER_LINE_HIGHLIGHT_ALPHA),
+            hover_line_background: ThemeOps::to_rgba(
+                self.accent,
+                DEFAULT_HOVER_LINE_HIGHLIGHT_ALPHA,
+            ),
         }
     }
 
@@ -225,7 +234,7 @@ mod tests {
             g: 100,
             b: 100,
         };
-        let lightened = lighten(color, 50);
+        let lightened = ThemeOps::lighten(color, 50);
         assert_eq!(lightened.r, 150);
         assert_eq!(lightened.g, 150);
         assert_eq!(lightened.b, 150);
@@ -235,7 +244,7 @@ mod tests {
             g: 250,
             b: 250,
         };
-        let lightened2 = lighten(color2, 50);
+        let lightened2 = ThemeOps::lighten(color2, 50);
         assert_eq!(lightened2.r, 255);
         assert_eq!(lightened2.g, 255);
         assert_eq!(lightened2.b, 255);
@@ -248,7 +257,7 @@ mod tests {
             g: 100,
             b: 100,
         };
-        let darkened = darken(color, 50);
+        let darkened = ThemeOps::darken(color, 50);
         assert_eq!(darkened.r, 50);
         assert_eq!(darkened.g, 50);
         assert_eq!(darkened.b, 50);
@@ -258,7 +267,7 @@ mod tests {
             g: 10,
             b: 10,
         };
-        let darkened2 = darken(color2, 50);
+        let darkened2 = ThemeOps::darken(color2, 50);
         assert_eq!(darkened2.r, 0);
         assert_eq!(darkened2.g, 0);
         assert_eq!(darkened2.b, 0);
@@ -271,7 +280,7 @@ mod tests {
             g: 150,
             b: 200,
         };
-        let rgba = to_rgba(color, 128);
+        let rgba = ThemeOps::to_rgba(color, 128);
         assert_eq!(rgba.r, 100);
         assert_eq!(rgba.g, 150);
         assert_eq!(rgba.b, 200);

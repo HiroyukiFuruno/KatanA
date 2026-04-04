@@ -1,7 +1,17 @@
 use crate::Violation;
-use crate::utils::{has_cfg_test_attr, span_location};
+use crate::utils::LinterParserOps;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
+
+pub struct FontNormalizationOps;
+
+impl FontNormalizationOps {
+    pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        let mut visitor = FontNormalizationVisitor::new(path.to_path_buf());
+        visitor.visit_file(syntax);
+        visitor.violations
+    }
+}
 
 struct FontNormalizationVisitor {
     file: PathBuf,
@@ -25,21 +35,21 @@ impl FontNormalizationVisitor {
 
 impl<'ast> Visit<'ast> for FontNormalizationVisitor {
     fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
-        if has_cfg_test_attr(&node.attrs) {
+        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
             return;
         }
         syn::visit::visit_item_mod(self, node);
     }
 
     fn visit_item_fn(&mut self, node: &'ast syn::ItemFn) {
-        if has_cfg_test_attr(&node.attrs) {
+        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
             return;
         }
         syn::visit::visit_item_fn(self, node);
     }
 
     fn visit_impl_item_fn(&mut self, node: &'ast syn::ImplItemFn) {
-        if has_cfg_test_attr(&node.attrs) {
+        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
             return;
         }
         syn::visit::visit_impl_item_fn(self, node);
@@ -73,7 +83,7 @@ impl FontNormalizationVisitor {
             return;
         }
         use syn::spanned::Spanned;
-        let (line, column) = span_location(node.span());
+        let (line, column) = LinterParserOps::span_location(node.span());
         self.violations.push(Violation {
             file: self.file.clone(),
             line,
@@ -86,12 +96,6 @@ impl FontNormalizationVisitor {
     }
 }
 
-pub fn lint_font_normalization(path: &Path, syntax: &syn::File) -> Vec<Violation> {
-    let mut visitor = FontNormalizationVisitor::new(path.to_path_buf());
-    visitor.visit_file(syntax);
-    visitor.violations
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,7 +105,7 @@ mod tests {
     fn detects_raw_font_definitions_default() {
         let code = r#"fn setup() { let f = FontDefinitions::default(); }"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_font_normalization(&PathBuf::from("shell.rs"), &syntax);
+        let violations = FontNormalizationOps::lint(&PathBuf::from("shell.rs"), &syntax);
         assert_eq!(violations.len(), 1);
         assert!(violations[0].message.contains("NormalizeFonts"));
     }
@@ -110,7 +114,7 @@ mod tests {
     fn detects_raw_font_definitions_empty() {
         let code = r#"fn setup() { let f = FontDefinitions::empty(); }"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_font_normalization(&PathBuf::from("shell.rs"), &syntax);
+        let violations = FontNormalizationOps::lint(&PathBuf::from("shell.rs"), &syntax);
         assert_eq!(violations.len(), 1);
         assert!(violations[0].message.contains("NormalizeFonts"));
     }
@@ -119,7 +123,7 @@ mod tests {
     fn allows_in_font_loader() {
         let code = r#"fn build() { let f = FontDefinitions::default(); }"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_font_normalization(&PathBuf::from("font_loader.rs"), &syntax);
+        let violations = FontNormalizationOps::lint(&PathBuf::from("font_loader.rs"), &syntax);
         assert!(violations.is_empty());
     }
 
@@ -130,7 +134,7 @@ mod tests {
             fn test_foo() { let f = FontDefinitions::default(); }
         "#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_font_normalization(&PathBuf::from("shell.rs"), &syntax);
+        let violations = FontNormalizationOps::lint(&PathBuf::from("shell.rs"), &syntax);
         assert!(violations.is_empty());
     }
 }

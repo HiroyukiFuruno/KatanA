@@ -42,9 +42,9 @@ impl<'a> AboutModal<'a> {
         const ICON_BG_ROUNDING: f32 = 8.0;
         const ICON_BG_INNER_MARGIN: f32 = 4.0;
 
-        let info = crate::about_info::about_info();
+        let info = crate::about_info::AboutInfoOps::about_info();
 
-        egui::Window::new(crate::i18n::get().menu.about.clone())
+        egui::Window::new(crate::i18n::I18nOps::get().menu.about.clone())
             .open(open)
             .resizable(false)
             .collapsible(false)
@@ -74,7 +74,7 @@ impl<'a> AboutModal<'a> {
                     ui.add_space(HEADING_SPACING);
                 });
 
-                let i18n_about = &crate::i18n::get().about;
+                let i18n_about = &crate::i18n::I18nOps::get().about;
 
                 about_section_header(
                     ui,
@@ -140,9 +140,9 @@ impl<'a> AboutModal<'a> {
                     SECTION_HEADER_BOTTOM,
                 );
                 if info.sponsor_url.is_empty() {
-                    let release_notes_text = crate::i18n::get().menu.release_notes.clone();
+                    let release_notes_text = crate::i18n::I18nOps::get().menu.release_notes.clone();
                     let hover_text = release_notes_text.clone();
-                    crate::widgets::ListItem::new()
+                    crate::widgets::AlignCenter::new()
                         .interactive(false)
                         .left(|ui| {
                             ui.add(
@@ -188,7 +188,7 @@ fn about_section_header(ui: &mut egui::Ui, title: &str, size: f32, bottom: f32) 
 }
 
 fn about_row(ui: &mut egui::Ui, label: &str, value: &str) {
-    crate::widgets::ListItem::new()
+    crate::widgets::AlignCenter::new()
         .interactive(false)
         .left(|ui| ui.label(egui::RichText::new(label).weak()))
         .right(|ui| ui.add(egui::Label::new(value).truncate()))
@@ -197,7 +197,7 @@ fn about_row(ui: &mut egui::Ui, label: &str, value: &str) {
 
 fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) {
     let url_copy = url.to_string();
-    crate::widgets::ListItem::new()
+    crate::widgets::AlignCenter::new()
         .interactive(false)
         .left(move |ui| ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium)))
         .left(|ui| ui.label(egui::RichText::new(label).weak()))

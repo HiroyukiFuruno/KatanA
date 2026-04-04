@@ -161,7 +161,6 @@ fn ast_linter_file_length() {
 }
 
 #[test]
-#[ignore] // WHY: wait for full platform/ui refactoring before strictly enforcing
 fn ast_linter_type_separation() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(
@@ -229,7 +228,6 @@ fn ast_linter_error_first() {
 }
 
 #[test]
-#[ignore] // WHY: existing codebase has widespread pub free functions; enable after refactoring
 fn ast_linter_no_pub_free_fn() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(

@@ -15,19 +15,23 @@ pub struct Document {
 const FNV1A_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
 const FNV1A_PRIME: u64 = 0x100000001b3;
 
-pub fn compute_content_hash(s: &str) -> u64 {
-    let mut h: u64 = FNV1A_OFFSET_BASIS;
-    for b in s.bytes() {
-        h ^= b as u64;
-        h = h.wrapping_mul(FNV1A_PRIME);
+pub struct DocumentOps;
+
+impl DocumentOps {
+    pub fn compute_hash(s: &str) -> u64 {
+        let mut h: u64 = FNV1A_OFFSET_BASIS;
+        for b in s.bytes() {
+            h ^= b as u64;
+            h = h.wrapping_mul(FNV1A_PRIME);
+        }
+        h
     }
-    h
 }
 
 impl Document {
     pub fn new(path: impl Into<PathBuf>, content: impl Into<String>) -> Self {
         let content = content.into();
-        let hash = compute_content_hash(&content);
+        let hash = DocumentOps::compute_hash(&content);
         Self {
             path: path.into(),
             buffer: content,
@@ -61,7 +65,7 @@ impl Document {
 
     pub fn mark_clean(&mut self) {
         self.is_dirty = false;
-        self.last_imported_disk_hash = Some(compute_content_hash(&self.buffer));
+        self.last_imported_disk_hash = Some(DocumentOps::compute_hash(&self.buffer));
         self.pending_dirty_warning_hash = None;
     }
 
@@ -139,7 +143,7 @@ mod tests {
         assert!(!doc.is_dirty);
         assert_eq!(
             doc.last_imported_disk_hash,
-            Some(compute_content_hash("world"))
+            Some(DocumentOps::compute_hash("world"))
         );
         assert_eq!(doc.pending_dirty_warning_hash, None);
     }

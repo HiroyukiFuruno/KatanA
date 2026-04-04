@@ -1,3 +1,4 @@
+use super::types::EmojiRasterOps;
 #[cfg(target_os = "macos")]
 use resvg::{render, usvg};
 #[cfg(target_os = "macos")]
@@ -32,28 +33,30 @@ struct EmojiCacheEntry {
     png: Option<Vec<u8>>,
 }
 
-#[cfg(not(target_os = "macos"))]
-pub fn render_apple_color_emoji_png(_grapheme: &str, _pixel_size: u32) -> Option<Vec<u8>> {
-    None
-}
-
-#[cfg(target_os = "macos")]
-pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<Vec<u8>> {
-    if grapheme.is_empty() || !std::path::Path::new(APPLE_COLOR_EMOJI_FONT_PATH).exists() {
-        return None;
-    }
-    let key = EmojiCacheKey {
-        grapheme: grapheme.to_owned(),
-        pixel_size: pixel_size.max(MIN_EMOJI_PIXEL_SIZE),
-    };
-
-    if let Some(cached) = check_emoji_cache(&key) {
-        return cached;
+impl EmojiRasterOps {
+    #[cfg(not(target_os = "macos"))]
+    pub fn render_apple_color_emoji_png(_grapheme: &str, _pixel_size: u32) -> Option<Vec<u8>> {
+        None
     }
 
-    let rendered = render_apple_color_emoji_png_uncached(&key.grapheme, key.pixel_size);
-    store_emoji_cache(key, rendered.clone());
-    rendered
+    #[cfg(target_os = "macos")]
+    pub fn render_apple_color_emoji_png(grapheme: &str, pixel_size: u32) -> Option<Vec<u8>> {
+        if grapheme.is_empty() || !std::path::Path::new(APPLE_COLOR_EMOJI_FONT_PATH).exists() {
+            return None;
+        }
+        let key = EmojiCacheKey {
+            grapheme: grapheme.to_owned(),
+            pixel_size: pixel_size.max(MIN_EMOJI_PIXEL_SIZE),
+        };
+
+        if let Some(cached) = check_emoji_cache(&key) {
+            return cached;
+        }
+
+        let rendered = render_apple_color_emoji_png_uncached(&key.grapheme, key.pixel_size);
+        store_emoji_cache(key, rendered.clone());
+        rendered
+    }
 }
 
 #[cfg(target_os = "macos")]

@@ -1,5 +1,5 @@
 use crate::Violation;
-use crate::utils::{is_allowed_string, locale_violation};
+use crate::utils::{LinterParserOps, ViolationReporterOps};
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -126,40 +126,44 @@ const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
     },
 ];
 
-pub fn compare_locale_values(
-    file: &Path,
-    en_values: &BTreeMap<String, String>,
-    actual_values: &BTreeMap<String, String>,
-) -> Vec<Violation> {
-    let mut violations = Vec::new();
+pub struct LocaleValueOps;
 
-    for (path, en_val) in en_values {
-        let Some(actual_val) = actual_values.get(path) else {
-            continue;
-        };
+impl LocaleValueOps {
+    pub fn compare_locale_values(
+        file: &Path,
+        en_values: &BTreeMap<String, String>,
+        actual_values: &BTreeMap<String, String>,
+    ) -> Vec<Violation> {
+        let mut violations = Vec::new();
 
-        if actual_val == en_val && !is_allowed_duplicate(path, actual_val) {
-            violations.push(locale_violation(
-                file,
-                format!(
-                    "Locale value at `{path}` is identical to English baseline (\"{actual_val}\"). Please translate it."
-                ),
-            ));
+        for (path, en_val) in en_values {
+            let Some(actual_val) = actual_values.get(path) else {
+                continue;
+            };
+
+            if actual_val == en_val && !Self::is_allowed_duplicate(path, actual_val) {
+                violations.push(ViolationReporterOps::locale_violation(
+                    file,
+                    format!(
+                        "Locale value at `{path}` is identical to English baseline (\"{actual_val}\"). Please translate it."
+                    ),
+                ));
+            }
         }
+
+        violations
     }
 
-    violations
-}
+    pub fn is_allowed_duplicate(path: &str, value: &str) -> bool {
+        if LinterParserOps::is_allowed_string(value) {
+            return true;
+        }
 
-pub fn is_allowed_duplicate(path: &str, value: &str) -> bool {
-    if is_allowed_string(value) {
-        return true;
+        LOCALE_VALUE_EXCEPTIONS.iter().any(|ex| {
+            let key_matches = ex.key == "*"
+                || ex.key == path
+                || path.split('.').next_back().is_some_and(|k| k == ex.key);
+            key_matches && (ex.value == "*" || ex.value == value)
+        })
     }
-
-    LOCALE_VALUE_EXCEPTIONS.iter().any(|ex| {
-        let key_matches = ex.key == "*"
-            || ex.key == path
-            || path.split('.').next_back().is_some_and(|k| k == ex.key);
-        key_matches && (ex.value == "*" || ex.value == value)
-    })
 }

@@ -2,10 +2,7 @@ use crate::app_state::{AppAction, ScrollSource};
 use crate::shell::{EDITOR_INITIAL_VISIBLE_ROWS, SCROLL_SYNC_DEAD_ZONE};
 use eframe::egui;
 
-use super::logic::{
-    char_index_to_line, current_line_highlight_color, hover_line_highlight_color,
-    line_range_to_char_range, line_to_char_index, resolve_editor_colors, update_scroll_sync,
-};
+use super::types::{EditorColors, EditorLogicOps};
 
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
@@ -42,6 +39,7 @@ impl<'a> EditorContent<'a> {
         if let Some(doc) = self.document {
             let mut buffer = doc.buffer.clone();
 
+            let colors: EditorColors = EditorLogicOps::resolve_editor_colors(ui);
             let (
                 code_bg,
                 code_text,
@@ -50,7 +48,7 @@ impl<'a> EditorContent<'a> {
                 hover_line_bg,
                 ln_text,
                 ln_active_text,
-            ) = resolve_editor_colors(ui);
+            ) = colors;
 
             let mut scroll_area = egui::ScrollArea::vertical().id_salt("editor_scroll");
 
@@ -95,13 +93,14 @@ impl<'a> EditorContent<'a> {
                         if response.clicked()
                             && let Some(c) = text_output.cursor_range
                         {
-                            let line = char_index_to_line(&buffer, c.primary.index);
+                            let line = EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
                             scroll.scroll_to_line = Some(line);
                         }
 
                         let mut current_cursor_y = None;
                         if let Some(c) = text_output.cursor_range {
-                            let paragraph = char_index_to_line(&buffer, c.primary.index);
+                            let paragraph =
+                                EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
                             scroll.active_editor_line = Some(paragraph);
 
                             let cursor_rect = galley.pos_from_cursor(c.primary);
@@ -115,7 +114,7 @@ impl<'a> EditorContent<'a> {
                                 ),
                             );
 
-                            let highlight_color = current_line_highlight_color(
+                            let highlight_color = EditorLogicOps::current_line_highlight_color(
                                 ui.visuals().dark_mode,
                                 current_line_bg,
                             );
@@ -125,12 +124,18 @@ impl<'a> EditorContent<'a> {
                             scroll.active_editor_line = None;
                         }
 
-                        let hover_color =
-                            hover_line_highlight_color(ui.visuals().dark_mode, hover_line_bg);
+                        let hover_color = EditorLogicOps::hover_line_highlight_color(
+                            ui.visuals().dark_mode,
+                            hover_line_bg,
+                        );
 
                         for line_range in &scroll.hovered_preview_lines {
                             if let Some((start_idx, end_idx)) =
-                                line_range_to_char_range(&buffer, line_range.start, line_range.end)
+                                EditorLogicOps::line_range_to_char_range(
+                                    &buffer,
+                                    line_range.start,
+                                    line_range.end,
+                                )
                             {
                                 let cursor_start = egui::text::CCursor {
                                     index: start_idx,
@@ -164,8 +169,12 @@ impl<'a> EditorContent<'a> {
                             );
                             if let Some(theme) = tc {
                                 (
-                                    crate::theme_bridge::rgba_to_color32(theme.code.search_match),
-                                    crate::theme_bridge::rgba_to_color32(theme.code.search_active),
+                                    crate::theme_bridge::ThemeBridgeOps::rgba_to_color32(
+                                        theme.code.search_match,
+                                    ),
+                                    crate::theme_bridge::ThemeBridgeOps::rgba_to_color32(
+                                        theme.code.search_active,
+                                    ),
                                 )
                             } else {
                                 (ui.visuals().selection.bg_fill, ui.visuals().warn_fg_color)
@@ -216,11 +225,13 @@ impl<'a> EditorContent<'a> {
                             if is_visible {
                                 let is_current = current_cursor_y == Some(top_y);
                                 let text = format!("{}", p + 1);
-                                let color = if is_current {
-                                    ln_active_text.unwrap_or_else(|| ui.visuals().text_color())
+                                let color: egui::Color32 = if is_current {
+                                    ln_active_text.unwrap_or_else(|| -> egui::Color32 {
+                                        ui.visuals().text_color()
+                                    })
                                 } else {
                                     const LINE_NUMBER_INACTIVE_ALPHA: f32 = 0.3;
-                                    ln_text.unwrap_or_else(|| {
+                                    ln_text.unwrap_or_else(|| -> egui::Color32 {
                                         ui.visuals()
                                             .text_color()
                                             .linear_multiply(LINE_NUMBER_INACTIVE_ALPHA)
@@ -274,7 +285,8 @@ impl<'a> EditorContent<'a> {
                         }
 
                         if let Some(target_line) = scroll.scroll_to_line
-                            && let Some(idx) = line_to_char_index(&buffer, target_line)
+                            && let Some(idx) =
+                                EditorLogicOps::line_to_char_index(&buffer, target_line)
                         {
                             let cursor = egui::text::CCursor {
                                 index: idx,
@@ -294,7 +306,7 @@ impl<'a> EditorContent<'a> {
             });
 
             if sync_scroll {
-                update_scroll_sync(
+                EditorLogicOps::update_scroll_sync(
                     scroll,
                     output.inner.content_size.y,
                     output.inner.inner_rect.height(),

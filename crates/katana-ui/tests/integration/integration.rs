@@ -2,6 +2,7 @@ use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
 use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 use katana_ui::app_state::{AppAction, AppState, ViewMode};
+use katana_ui::i18n::I18nOps;
 use katana_ui::shell::KatanaApp;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -165,7 +166,7 @@ fn test_integration_toc_panel_display() {
     let toc_visible = harness.state_mut().app_state_mut().layout.show_toc;
     assert!(toc_visible, "show_toc should be true after clicking button");
 
-    let toc_title = katana_ui::i18n::get().toc.title.clone();
+    let toc_title = I18nOps::get().toc.title.clone();
     let _panel = harness.get_by_label(&toc_title);
 
     let headings_count = harness.query_all_by_label("Heading 1").count();
@@ -255,7 +256,7 @@ fn test_integration_toc_panel_hides_when_disabled() {
         harness.step();
     }
 
-    let toc_title = katana_ui::i18n::get().toc.title.clone();
+    let toc_title = I18nOps::get().toc.title.clone();
     assert_eq!(
         harness.query_all_by_label(&toc_title).count(),
         1,
@@ -328,7 +329,7 @@ fn test_integration_changelog_tab_display() {
     harness.step();
     harness.step();
 
-    let i18n = katana_ui::i18n::get();
+    let i18n = I18nOps::get();
     let expected_title = format!("{} v{}", i18n.menu.release_notes, env!("CARGO_PKG_VERSION"));
     harness.get_by_label(&expected_title);
 
@@ -1510,7 +1511,7 @@ fn test_regression_preview_content_visible_in_preview_only_mode() {
     harness.step();
     harness.step();
 
-    let no_preview_label = katana_ui::i18n::get().preview.no_preview.clone();
+    let no_preview_label = I18nOps::get().preview.no_preview.clone();
     let no_preview_nodes: Vec<_> = harness.query_all_by_label(&no_preview_label).collect();
     assert!(
         no_preview_nodes.is_empty(),
@@ -1545,7 +1546,7 @@ fn test_regression_preview_content_visible_in_split_mode() {
     harness.step();
     harness.step();
 
-    let no_preview_label = katana_ui::i18n::get().preview.no_preview.clone();
+    let no_preview_label = I18nOps::get().preview.no_preview.clone();
     let no_preview_nodes: Vec<_> = harness.query_all_by_label(&no_preview_label).collect();
     assert!(
         no_preview_nodes.is_empty(),
@@ -1954,8 +1955,8 @@ fn test_tab_nav_buttons_have_tooltips() {
     harness.step();
     harness.step();
 
-    let prev_tooltip = katana_ui::i18n::get().tab.nav_prev.clone();
-    let next_tooltip = katana_ui::i18n::get().tab.nav_next.clone();
+    let prev_tooltip = I18nOps::get().tab.nav_prev.clone();
+    let next_tooltip = I18nOps::get().tab.nav_next.clone();
     assert_ne!(
         prev_tooltip, "tab_nav_prev",
         "tab_nav_prev i18n key must resolve to translated text"
@@ -1984,17 +1985,13 @@ fn test_font_size_slider_has_hover_tooltip() {
     harness.step();
     harness.step();
 
-    let hint_text = katana_ui::i18n::get()
-        .settings
-        .font
-        .size_slider_hint
-        .clone();
+    let hint_text = I18nOps::get().settings.font.size_slider_hint.clone();
     assert_ne!(
         hint_text, "settings_font_size_slider_hint",
         "i18n key must resolve to a translated value, not the key itself"
     );
 
-    let font_size_label = katana_ui::i18n::get().settings.font.size.clone();
+    let font_size_label = I18nOps::get().settings.font.size.clone();
     let _slider = harness.get_by_label(&font_size_label);
     harness.step();
 }
@@ -3068,11 +3065,12 @@ fn test_regression_update_dialog_up_to_date_renders_correctly() {
     harness.step();
 
     harness.state_mut().app_state_mut().update.checking = false;
+    harness.state_mut().app_state_mut().update.check_error = None;
 
     harness.state_mut().open_update_dialog_for_test();
     harness.run_steps(10);
 
-    harness.get_by_label("Up to Date");
+    harness.get_by_label_contains("Up to Date");
 
     harness.get_by_label("OK");
 }

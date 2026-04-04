@@ -1,18 +1,16 @@
 use egui_commonmark::CommonMarkCache;
-use katana_core::markdown::diagram::{DiagramBlock, DiagramResult};
-use katana_core::preview::{
-    PreviewSection, flatten_list_code_blocks, resolve_image_paths, split_into_sections,
-};
+use katana_core::markdown::DiagramResult;
+use katana_core::preview::{ImagePreviewOps, PreviewFlattenOps, PreviewSection, PreviewSectionOps};
 
-use super::pane::*;
-use super::renderer::*;
 use super::types::*;
 
 impl PreviewPane {
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
         self.md_file_path = md_file_path.to_path_buf();
-        self.outline_items = katana_core::markdown::outline::extract_outline(source);
-        let (resolved, extracted_paths) = resolve_image_paths(source, md_file_path);
+        self.outline_items =
+            katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(source);
+        let (resolved, extracted_paths) =
+            ImagePreviewOps::resolve_image_paths(source, md_file_path);
 
         for path in extracted_paths {
             if !self.image_cache.contains(&path) && !self.image_preload_queue.contains(&path) {
@@ -20,8 +18,8 @@ impl PreviewPane {
             }
         }
 
-        let flattened = flatten_list_code_blocks(&resolved);
-        let raw = split_into_sections(&flattened);
+        let flattened = PreviewFlattenOps::flatten_list_code_blocks(&resolved);
+        let raw = PreviewSectionOps::split_sections(&flattened);
         let mut new_sections = Vec::with_capacity(raw.len());
         let mut diagram_iter = self
             .sections
@@ -82,15 +80,17 @@ impl PreviewPane {
         }
 
         self.md_file_path = md_file_path.to_path_buf();
-        self.outline_items = katana_core::markdown::outline::extract_outline(source);
-        let (resolved, extracted_paths) = resolve_image_paths(source, md_file_path);
+        self.outline_items =
+            katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(source);
+        let (resolved, extracted_paths) =
+            ImagePreviewOps::resolve_image_paths(source, md_file_path);
 
         self.image_preload_queue.clear();
         self.image_cache.clear();
         self.image_preload_queue = extracted_paths;
 
-        let flattened = flatten_list_code_blocks(&resolved);
-        let raw = split_into_sections(&flattened);
+        let flattened = PreviewFlattenOps::flatten_list_code_blocks(&resolved);
+        let raw = PreviewSectionOps::split_sections(&flattened);
         self.render_rx = None;
 
         let mut sections = Vec::with_capacity(raw.len());
@@ -169,7 +169,7 @@ impl PreviewPane {
                         break;
                     }
 
-                    let cache_key = get_cache_key(&job.path, &job.kind, &job.src);
+                    let cache_key = RendererLogicOps::get_cache_key(&job.path, &job.kind, &job.src);
                     let is_http = job.src.contains("http://") || job.src.contains("https://");
 
                     let cached_result: Option<String> = if !job.force {
@@ -186,10 +186,12 @@ impl PreviewPane {
                         match serde_json::from_str::<DiagramResult>(&json) {
                             Ok(res) => res,
                             Err(_) => {
-                                let res = dispatch_renderer(&DiagramBlock {
-                                    kind: job.kind.clone(),
-                                    source: job.src.clone(),
-                                });
+                                let res = RendererLogicOps::dispatch_renderer(
+                                    &katana_core::markdown::DiagramBlock {
+                                        kind: job.kind.clone(),
+                                        source: job.src.clone(),
+                                    },
+                                );
                                 if matches!(res, DiagramResult::Err { .. }) {
                                     let _ = tx.send(RenderMessage::ReduceConcurrency);
                                 }
@@ -197,10 +199,12 @@ impl PreviewPane {
                             }
                         }
                     } else {
-                        let res = dispatch_renderer(&DiagramBlock {
-                            kind: job.kind.clone(),
-                            source: job.src.clone(),
-                        });
+                        let res = RendererLogicOps::dispatch_renderer(
+                            &katana_core::markdown::DiagramBlock {
+                                kind: job.kind.clone(),
+                                source: job.src.clone(),
+                            },
+                        );
 
                         if let Ok(json) = serde_json::to_string(&res) {
                             if is_http {
@@ -215,14 +219,19 @@ impl PreviewPane {
                         res
                     };
 
-                    let section = map_diagram_result(&job.kind, &job.src, result, job.source_lines);
+                    let section = RendererLogicOps::map_diagram_result(
+                        &job.kind,
+                        &job.src,
+                        result,
+                        job.source_lines,
+                    );
                     let msg = RenderMessage::Section {
                         kind: format!("{:?}", job.kind),
                         source: job.src.clone(),
                         section,
                     };
                     if tx.send(msg).is_err() {
-                        break; // WHY: Receiver was dropped.
+                        break;
                     }
                     if let Some(ctx) = &repaint_ctx {
                         ctx.request_repaint();

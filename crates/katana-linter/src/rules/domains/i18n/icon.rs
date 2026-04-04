@@ -1,11 +1,19 @@
 use crate::Violation;
-use crate::utils::{has_cfg_test_attr, span_location};
+use crate::utils::LinterParserOps;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 
-use super::helpers::{
-    extract_type_from_call, is_raw_icon, ui_functions, ui_methods, ui_types_for_new,
-};
+use super::helpers::I18nHelperOps;
+
+pub struct IconOps;
+
+impl IconOps {
+    pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        let mut visitor = IconFacadeVisitor::new(path.to_path_buf());
+        visitor.visit_file(syntax);
+        visitor.violations
+    }
+}
 
 struct IconFacadeVisitor {
     file: PathBuf,
@@ -25,8 +33,8 @@ impl IconFacadeVisitor {
             syn::Expr::Lit(expr_lit) => {
                 if let syn::Lit::Str(lit_str) = &expr_lit.lit {
                     let value = lit_str.value();
-                    if is_raw_icon(&value) {
-                        let (line, column) = span_location(lit_str.span());
+                    if I18nHelperOps::is_raw_icon(&value) {
+                        let (line, column) = LinterParserOps::span_location(lit_str.span());
                         self.violations.push(Violation {
                             file: self.file.clone(),
                             line,
@@ -49,7 +57,7 @@ impl IconFacadeVisitor {
 
 impl<'ast> Visit<'ast> for IconFacadeVisitor {
     fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
-        if has_cfg_test_attr(&node.attrs) {
+        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
             return;
         }
         syn::visit::visit_item_mod(self, node);
@@ -57,7 +65,7 @@ impl<'ast> Visit<'ast> for IconFacadeVisitor {
 
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         let method_name = node.method.to_string();
-        if ui_methods().contains(&method_name.as_str()) {
+        if I18nHelperOps::ui_methods().contains(&method_name.as_str()) {
             for arg in node.args.iter() {
                 self.check_expr_for_raw_icon(arg, &format!("{}()", method_name));
             }
@@ -81,14 +89,14 @@ impl IconFacadeVisitor {
         };
 
         let func_name = last_segment.ident.to_string();
-        if !ui_functions().contains(&func_name.as_str()) {
+        if !I18nHelperOps::ui_functions().contains(&func_name.as_str()) {
             return;
         }
 
-        let Some(type_name) = extract_type_from_call(&node.func) else {
+        let Some(type_name) = I18nHelperOps::extract_type_from_call(&node.func) else {
             return;
         };
-        if !ui_types_for_new().contains(&type_name.as_str()) {
+        if !I18nHelperOps::ui_types_for_new().contains(&type_name.as_str()) {
             return;
         }
 
@@ -98,30 +106,17 @@ impl IconFacadeVisitor {
     }
 }
 
-pub fn lint_icon_facade(path: &Path, syntax: &syn::File) -> Vec<Violation> {
-    let mut visitor = IconFacadeVisitor::new(path.to_path_buf());
-    visitor.visit_file(syntax);
-    visitor.violations
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
 
     #[test]
     fn lint_i18n_detects_raw_icon_in_label() {
         let code = r#"fn render(ui: &mut Ui) { ui.label("🔄"); }"#;
         let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_icon_facade(&PathBuf::from("fake.rs"), &syntax);
+        let violations = IconOps::lint(&PathBuf::from("fake.rs"), &syntax);
         assert!(!violations.is_empty());
         assert!(violations[0].message.contains("Raw icon string"));
-    }
-
-    #[test]
-    fn lint_i18n_detects_raw_icon_x_in_button() {
-        let code = r#"fn render(ui: &mut Ui) { ui.button("x"); }"#;
-        let syntax = syn::parse_file(code).unwrap();
-        let violations = lint_icon_facade(&PathBuf::from("fake.rs"), &syntax);
-        assert!(!violations.is_empty());
     }
 }

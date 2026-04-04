@@ -1,5 +1,5 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
-use katana_core::markdown::drawio_renderer::render_drawio;
+use katana_core::markdown::drawio_renderer::DrawioRenderOps;
 
 const SIMPLE_DRAWIO_XML: &str = r#"<mxfile><diagram name="test"><mxGraphModel><root>
 <mxCell id="0"/>
@@ -18,7 +18,7 @@ fn valid_drawio_xml_is_converted_to_svg() {
         kind: DiagramKind::DrawIo,
         source: SIMPLE_DRAWIO_XML.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
         assert!(html.contains("<svg"));
@@ -33,7 +33,7 @@ fn invalid_xml_returns_error_result() {
         kind: DiagramKind::DrawIo,
         source: "not xml".to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Err { .. }));
 }
 
@@ -49,7 +49,7 @@ fn ellipse_style_is_processed() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     if let DiagramResult::Ok(html) = result {
         assert!(html.contains("<ellipse"));
     }
@@ -67,7 +67,7 @@ fn fillcolor_style_is_reflected_in_svg_output() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     if let DiagramResult::Ok(html) = result {
         assert!(
             html.contains("#ff0000"),
@@ -99,7 +99,7 @@ fn edge_cell_is_drawn_as_arrow() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
         assert!(html.contains("polyline") || html.contains("line"));
@@ -125,7 +125,7 @@ fn edge_label_is_drawn() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     if let DiagramResult::Ok(html) = result {
         assert!(html.contains("connects"));
     }
@@ -155,7 +155,7 @@ fn edge_with_waypoints_is_drawn() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
         assert!(html.contains("polyline"));
@@ -178,7 +178,7 @@ fn edge_without_source_is_skipped() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -201,7 +201,7 @@ fn edge_with_cells_at_same_position_does_not_panic() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -224,7 +224,7 @@ fn vertical_edge_uses_top_bottom_border_points() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -241,7 +241,7 @@ fn special_characters_in_label_are_escaped() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     if let DiagramResult::Ok(html) = result {
         assert!(!html.is_empty());
     }
@@ -254,7 +254,7 @@ fn mxgraphmodel_without_root_returns_empty_svg() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -265,7 +265,7 @@ fn unsupported_root_element_returns_error() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Err { .. }));
 }
 
@@ -279,7 +279,7 @@ fn vertex_without_mxgeometry_is_skipped() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
         assert!(html.contains("<svg"));
@@ -300,7 +300,7 @@ fn edge_without_source_target_is_skipped() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -318,7 +318,7 @@ fn edge_with_non_existent_source_target_id_is_skipped() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -334,7 +334,7 @@ fn vertex_without_label_outputs_no_text_element() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
     if let DiagramResult::Ok(html) = result {
         assert!(!html.contains("<text"));
@@ -362,7 +362,7 @@ fn empty_edge_label_outputs_no_text() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -382,7 +382,7 @@ fn edge_waypoint_without_mxgeometry_is_empty() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }
 
@@ -412,6 +412,6 @@ fn collect_waypoints_skips_text_node_and_non_array_child_elements() {
         kind: DiagramKind::DrawIo,
         source: xml.to_string(),
     };
-    let result = render_drawio(&block);
+    let result = DrawioRenderOps::render_drawio(&block);
     assert!(matches!(result, DiagramResult::Ok(_)));
 }

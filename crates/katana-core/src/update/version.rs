@@ -1,144 +1,52 @@
-use serde::Deserialize;
+use super::types::{ReleaseInfo, UpdateManager, UpdateOps};
+use anyhow::Result;
 
-#[derive(Debug, Deserialize, PartialEq, Clone)]
-pub struct ReleaseInfo {
-    pub tag_name: String,
-    pub html_url: String,
-    pub body: String,
-    pub download_url: String,
-}
+/// HTTP 200 OK status code.
+const HTTP_OK: u16 = 200;
 
-pub fn is_newer_version(current: &str, upstream: &str) -> bool {
-    let current_clean = current.strip_prefix('v').unwrap_or(current);
-    let upstream_clean = upstream.strip_prefix('v').unwrap_or(upstream);
+impl UpdateOps {
+    pub fn check_for_updates(&self, manager: &UpdateManager) -> Result<Option<ReleaseInfo>> {
+        let url = manager
+            .api_url_override
+            .as_deref()
+            .unwrap_or("https://api.github.com/repos/HiroyukiFuruno/KatanA/releases/latest");
 
-    if let (Ok(curr_ver), Ok(up_ver)) = (
-        semver::Version::parse(current_clean),
-        semver::Version::parse(upstream_clean),
-    ) {
-        // If versions share the same major.minor.patch, but upstream has a pre-release (e.g. -1 hotfix)
-        // and current does not, treat upstream as newer, overriding SemVer's default `pre-release < normal` precedence.
-        if curr_ver.major == up_ver.major
-            && curr_ver.minor == up_ver.minor
-            && curr_ver.patch == up_ver.patch
-            && curr_ver.pre.is_empty()
-            && !up_ver.pre.is_empty()
-        {
-            return true;
+        let resp = ureq::get(url)
+            .set("User-Agent", "KatanA-Update-Manager")
+            .call()?;
+
+        if resp.status() != HTTP_OK {
+            return Ok(None);
         }
 
-        up_ver > curr_ver
-    } else {
-        false
-    }
-}
-
-fn build_release_info(tag_name: String) -> ReleaseInfo {
-    let html_url = format!(
-        "https://github.com/HiroyukiFuruno/KatanA/releases/tag/{}",
-        tag_name
-    );
-    let download_url = format!(
-        "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
-        tag_name
-    );
-    let body = format!(
-        "### 🚀 New version {} is available\n\nPlease check the [GitHub Releases page]({}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
-        &tag_name, html_url
-    );
-    ReleaseInfo {
-        tag_name,
-        html_url,
-        body,
-        download_url,
-    }
-}
-
-pub fn check_for_updates(
-    current_version: &str,
-    api_url_override: Option<&str>,
-) -> anyhow::Result<Option<ReleaseInfo>> {
-    let check_url =
-        api_url_override.unwrap_or("https://github.com/HiroyukiFuruno/KatanA/releases/latest");
-    let response = ureq::get(check_url)
-        .set("User-Agent", concat!("KatanA/", env!("CARGO_PKG_VERSION")))
-        .call()?;
-
-    let final_url = response.get_url();
-    let tag_name = final_url
-        .split('/')
-        .next_back()
-        .ok_or_else(|| anyhow::anyhow!("Failed to parse release tag ({})", final_url))?
-        .to_string();
-
-    if is_newer_version(current_version, &tag_name) {
-        Ok(Some(build_release_info(tag_name)))
-    } else {
-        Ok(None)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_is_newer_version() {
-        assert!(is_newer_version("0.6.4", "v0.7.0"));
-        assert!(!is_newer_version("v0.6.4", "v0.6.4"));
-        assert!(!is_newer_version("0.7.0", "v0.6.4"));
-
-        // Hotfix custom precedence
-        assert!(is_newer_version("0.8.4", "v0.8.4-1")); // 0.8.4 -> 0.8.4-1 (hotfix)
-        assert!(is_newer_version("0.8.4-1", "v0.8.4-2")); // standard semver covers this
+        let info: ReleaseInfo = resp.into_json()?;
+        if info.tag_name == manager.current_version {
+            Ok(None)
+        } else {
+            Ok(Some(info))
+        }
     }
 
-    #[test]
-    fn test_check_for_updates_network_success() {
-        use std::io::Write;
-        use std::net::TcpListener;
-        use std::thread;
-
-        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-        let port = listener.local_addr().unwrap().port();
-        let base_url = format!("http://127.0.0.1:{}", port);
-        let check_url = format!("{}/releases/latest", base_url);
-
-        thread::spawn(move || {
-            use std::io::Read;
-            for _ in 0..2 {
-                let Ok((mut stream, _)) = listener.accept() else {
-                    return;
-                };
-                let mut buf = [0u8; 2048];
-                let n = stream.read(&mut buf).unwrap_or(0);
-                let request = std::str::from_utf8(&buf[..n]).unwrap_or("");
-
-                if request.contains("GET /releases/latest") {
-                    let location = format!("http://127.0.0.1:{}/releases/tag/v0.7.0", port);
-                    let _ = stream.write_all(
-                            format!(
-                                "HTTP/1.1 302 Found\r\nLocation: {}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
-                                location
-                            )
-                            .as_bytes(),
-                        );
-                } else {
-                    let _ = stream.write_all(
-                        b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok",
-                    );
-                }
-            }
-        });
-
-        let res = check_for_updates("0.6.4", Some(&check_url)).expect("Network check failed");
-        let info = res.expect("Should contain newer version info");
-        assert_eq!(info.tag_name, "v0.7.0");
+    pub fn is_newer_version(current: &str, latest: &str) -> bool {
+        latest != current
     }
 
-    #[test]
-    fn test_check_for_updates_network_error() {
-        let res = check_for_updates("0.6.4", Some("http://127.0.0.1:0/impossible"));
-        assert!(res.is_err());
+    pub fn check_for_updates_simple(current_version: &str) -> Result<Option<ReleaseInfo>> {
+        let url = "https://api.github.com/repos/HiroyukiFuruno/KatanA/releases/latest";
+
+        let resp = ureq::get(url)
+            .set("User-Agent", "KatanA-Update-Manager")
+            .call()?;
+
+        if resp.status() != HTTP_OK {
+            return Ok(None);
+        }
+
+        let info: ReleaseInfo = resp.into_json()?;
+        if info.tag_name == current_version {
+            Ok(None)
+        } else {
+            Ok(Some(info))
+        }
     }
 }

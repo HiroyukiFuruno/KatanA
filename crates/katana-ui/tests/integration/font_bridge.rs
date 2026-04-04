@@ -1,9 +1,9 @@
-use katana_ui::theme_bridge::apply_font_size;
+use katana_ui::theme_bridge::ThemeBridgeOps;
 
 #[test]
 fn apply_font_size_changes_body_text_style() {
     let ctx = eframe::egui::Context::default();
-    apply_font_size(&ctx, 20.0);
+    ThemeBridgeOps::apply_font_size(&ctx, 20.0);
 
     let style = ctx.style();
     let body_size = style
@@ -20,7 +20,7 @@ fn apply_font_size_changes_body_text_style() {
 #[test]
 fn apply_font_size_changes_monospace_text_style() {
     let ctx = eframe::egui::Context::default();
-    apply_font_size(&ctx, 16.0);
+    ThemeBridgeOps::apply_font_size(&ctx, 16.0);
 
     let style = ctx.style();
     let mono_size = style
@@ -38,7 +38,7 @@ fn apply_font_size_changes_monospace_text_style() {
 fn apply_font_size_preserves_heading_ratio() {
     let ctx = eframe::egui::Context::default();
     let base_size = 18.0;
-    apply_font_size(&ctx, base_size);
+    ThemeBridgeOps::apply_font_size(&ctx, base_size);
 
     let style = ctx.style();
     let heading_size = style
@@ -57,7 +57,7 @@ fn apply_font_size_preserves_heading_ratio() {
 fn apply_font_size_updates_small_text_style() {
     let ctx = eframe::egui::Context::default();
     let base_size = 16.0;
-    apply_font_size(&ctx, base_size);
+    ThemeBridgeOps::apply_font_size(&ctx, base_size);
 
     let style = ctx.style();
     let small_size = style
@@ -75,7 +75,7 @@ fn apply_font_size_updates_small_text_style() {
 #[test]
 fn apply_font_size_updates_button_text_style() {
     let ctx = eframe::egui::Context::default();
-    apply_font_size(&ctx, 14.0);
+    ThemeBridgeOps::apply_font_size(&ctx, 14.0);
 
     let style = ctx.style();
     let button_size = style

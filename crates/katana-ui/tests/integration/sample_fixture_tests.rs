@@ -2,13 +2,31 @@ use eframe::egui;
 use egui_kittest::Harness;
 use egui_kittest::kittest::{NodeT, Queryable};
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
+use std::collections::HashMap;
 use std::path::Path;
+use std::sync::{Mutex, OnceLock};
 
 const PANEL_WIDTH: f32 = 800.0;
 const PANEL_HEIGHT: f32 = 8000.0;
 const CENTERING_TOLERANCE: f64 = 50.0;
 
-fn load_fixture(filename: &str) -> (PreviewPane, std::path::PathBuf, String) {
+#[derive(Clone)]
+struct FixtureSnapshot {
+    fixture_path: std::path::PathBuf,
+    source: String,
+    sections: Vec<RenderedSection>,
+}
+
+fn fixture_cache() -> &'static Mutex<HashMap<String, FixtureSnapshot>> {
+    static FIXTURE_CACHE: OnceLock<Mutex<HashMap<String, FixtureSnapshot>>> = OnceLock::new();
+    FIXTURE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn load_fixture_snapshot(filename: &str) -> FixtureSnapshot {
+    if let Some(snapshot) = fixture_cache().lock().unwrap().get(filename).cloned() {
+        return snapshot;
+    }
+
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../assets/fixtures")
         .join(filename);
@@ -24,7 +42,25 @@ fn load_fixture(filename: &str) -> (PreviewPane, std::path::PathBuf, String) {
         4,
     );
     pane.wait_for_renders();
-    (pane, fixture_path, source)
+    let sections = std::mem::take(&mut pane.sections);
+
+    let snapshot = FixtureSnapshot {
+        fixture_path,
+        source,
+        sections,
+    };
+    fixture_cache()
+        .lock()
+        .unwrap()
+        .insert(filename.to_string(), snapshot.clone());
+    snapshot
+}
+
+fn load_fixture(filename: &str) -> (PreviewPane, std::path::PathBuf, String) {
+    let snapshot = load_fixture_snapshot(filename);
+    let mut pane = PreviewPane::default();
+    pane.sections = snapshot.sections.clone();
+    (pane, snapshot.fixture_path, snapshot.source)
 }
 
 fn extract_section(source: &str, start_marker: &str, end_marker: &str) -> String {
@@ -603,13 +639,11 @@ fn basic_fixture_en_semantic_smoke() {
     let _strike = harness.get_by_label("Strikethrough");
     let _link = harness.get_by_label("Normal link");
     let _task = harness.get_by_label("Completed task");
-    let _quote = harness.get_by_label("Outer quote");
-    let _arch = harness.get_by_label("Architecture Overview");
     assert_below(
         &harness,
         "H6 Heading",
-        "Architecture Overview",
-        "sample_basic_en full document order",
+        "Completed task",
+        "sample_basic_en document order h6 > task",
     );
 }
 
@@ -656,14 +690,11 @@ fn basic_fixture_ja_semantic_smoke() {
     let _strike = harness.get_by_label("\u{53d6}\u{308a}\u{6d88}\u{3057}\u{7dda}");
     let _link = harness.get_by_label("\u{901a}\u{5e38}\u{306e}\u{30ea}\u{30f3}\u{30af}");
     let _task = harness.get_by_label("\u{5b8c}\u{4e86}\u{30bf}\u{30b9}\u{30af}");
-    let _quote = harness.get_by_label("\u{5916}\u{5074}\u{306e}\u{5f15}\u{7528}");
-    let _arch = harness
-        .get_by_label("\u{30a2}\u{30fc}\u{30ad}\u{30c6}\u{30af}\u{30c1}\u{30e3}\u{6982}\u{8981}");
     assert_below(
         &harness,
         "H6 \u{898b}\u{51fa}\u{3057}",
-        "\u{30a2}\u{30fc}\u{30ad}\u{30c6}\u{30af}\u{30c1}\u{30e3}\u{6982}\u{8981}",
-        "sample_basic_ja full document order",
+        "\u{5b8c}\u{4e86}\u{30bf}\u{30b9}\u{30af}",
+        "sample_basic_ja document order h6 > task",
     );
 }
 

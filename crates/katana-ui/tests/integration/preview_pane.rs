@@ -3,7 +3,7 @@ use egui_kittest::Harness;
 use egui_kittest::kittest::{NodeT, Queryable};
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
-use katana_ui::preview_pane::{PreviewPane, RenderedSection, decode_png_rgba, extract_svg};
+use katana_ui::preview_pane::{PreviewPane, RenderedSection, RendererLogicOps};
 use std::path::PathBuf;
 
 fn markdown_texts(sections: &[RenderedSection]) -> Vec<&str> {
@@ -185,21 +185,21 @@ fn verification_that_preview_updates_do_not_depend_on_file_saves() {
 #[test]
 fn valid_svg_is_extracted() {
     let html = r#"<div><svg width="100" height="100"><rect/></svg></div>"#;
-    let svg = extract_svg(html).unwrap();
+    let svg = RendererLogicOps::extract_svg(html).unwrap();
     assert!(svg.starts_with("<svg"));
     assert!(svg.ends_with("</svg>"));
 }
 
 #[test]
 fn returns_none_if_no_svg_is_present() {
-    assert!(extract_svg("<div>hello</div>").is_none());
-    assert!(extract_svg("").is_none());
+    assert!(RendererLogicOps::extract_svg("<div>hello</div>").is_none());
+    assert!(RendererLogicOps::extract_svg("").is_none());
 }
 
 #[test]
 fn covers_from_start_to_end_if_multiple_svgs_are_present() {
     let html = r#"<svg>first</svg><p>mid</p><svg>second</svg>"#;
-    let svg = extract_svg(html).unwrap();
+    let svg = RendererLogicOps::extract_svg(html).unwrap();
     assert!(svg.contains("first"));
     assert!(svg.contains("second"));
 }
@@ -213,7 +213,7 @@ fn valid_png_is_decoded() {
         let mut cursor = std::io::Cursor::new(&mut buf);
         img.write_to(&mut cursor, image::ImageFormat::Png).unwrap();
     }
-    let result = decode_png_rgba(&buf);
+    let result = RendererLogicOps::decode_png_rgba(&buf);
     assert!(result.is_ok());
     let rasterized = result.unwrap();
     assert_eq!(rasterized.width, 1);
@@ -223,7 +223,7 @@ fn valid_png_is_decoded() {
 
 #[test]
 fn invalid_data_returns_error() {
-    let result = decode_png_rgba(b"not a png");
+    let result = RendererLogicOps::decode_png_rgba(b"not a png");
     assert!(result.is_err());
 }
 
@@ -1129,7 +1129,7 @@ fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
         None,
         None,
     );
-    katana_ui::theme_bridge::apply_font_family(&ctx, "Monospace");
+    katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
     let output = ctx.run(
         egui::RawInput {
@@ -1189,7 +1189,7 @@ fn html_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
         None,
         None,
     );
-    katana_ui::theme_bridge::apply_font_family(&ctx, "Monospace");
+    katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
     let output = ctx.run(
         egui::RawInput {
@@ -1249,7 +1249,7 @@ fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_mono
         None,
         None,
     );
-    katana_ui::theme_bridge::apply_font_family(&ctx, "Monospace");
+    katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
     let output = ctx.run(
         egui::RawInput {
@@ -1309,7 +1309,7 @@ fn preview_html_uses_proportional_body_font_even_when_ui_font_family_is_monospac
         None,
         None,
     );
-    katana_ui::theme_bridge::apply_font_family(&ctx, "Monospace");
+    katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
     let output = ctx.run(
         egui::RawInput {
@@ -1369,7 +1369,7 @@ fn preview_code_blocks_keep_monospace_font_when_body_text_is_proportional() {
         None,
         None,
     );
-    katana_ui::theme_bridge::apply_font_family(&ctx, "Monospace");
+    katana_ui::theme_bridge::ThemeBridgeOps::apply_font_family(&ctx, "Monospace");
 
     let output = ctx.run(
         egui::RawInput {

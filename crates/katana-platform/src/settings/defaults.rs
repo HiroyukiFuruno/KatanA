@@ -1,118 +1,113 @@
-/* WHY: Serde default value functions and `Default` implementations for each struct.
-
-Consolidates all settings default value generators to keep types.rs clean. Extracted to handle Serde defaults safely.
-SAFETY: Contains no stateful logic or new type definitions, only purely functional value generation and `Default` trait implementations. */
+use super::types::*;
 use crate::theme::ThemePreset;
 
-use super::types::{
-    AppSettings, BehaviorSettings, DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH, ExportSettings,
-    FontSettings, LayoutSettings, PerformanceSettings, SearchSettings, ThemeSettings,
-    UpdateSettings, WorkspaceSettings,
-};
-
-// WHY: ── Constants ──
+pub struct SettingsDefaultOps;
 
 pub(crate) const DEFAULT_FONT_SIZE: f32 = 14.0;
-pub(crate) const DEFAULT_DIAGRAM_CONCURRENCY: usize = 4;
 pub(crate) const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
 pub(crate) const DEFAULT_AUTO_REFRESH_INTERVAL_SECS: f64 = 2.0;
+pub const DEFAULT_MAX_DEPTH: usize = 10;
+pub const DEFAULT_CACHE_RETENTION_DAYS: u32 = 7;
+pub const DEFAULT_DIAGRAM_CONCURRENCY: usize = 4;
+pub const DEFAULT_IGNORED_DIRECTORIES: &[&str] = &[
+    ".git",
+    ".terraform",
+    "node_modules",
+    "target",
+    ".idea",
+    ".vscode",
+];
 
-// WHY: ── Serde default functions ──
+impl SettingsDefaultOps {
+    pub fn default_version() -> String {
+        "0.2.0".to_string()
+    }
+    pub fn default_language() -> String {
+        "en".to_string()
+    }
+    pub fn default_theme() -> String {
+        if crate::os_theme::OsThemeOps::is_dark_mode().unwrap_or(true) {
+            "dark".to_string()
+        } else {
+            "light".to_string()
+        }
+    }
+    pub fn default_ui_contrast_offset() -> f32 {
+        0.0
+    }
+    pub fn default_font_size() -> f32 {
+        DEFAULT_FONT_SIZE
+    }
+    pub fn default_font_family() -> String {
+        "monospace".to_string()
+    }
+    pub fn default_auto_save_interval_secs() -> f64 {
+        DEFAULT_AUTO_SAVE_INTERVAL_SECS
+    }
+    pub fn default_auto_refresh_interval_secs() -> f64 {
+        DEFAULT_AUTO_REFRESH_INTERVAL_SECS
+    }
+    pub fn default_ignored_directories() -> Vec<String> {
+        DEFAULT_IGNORED_DIRECTORIES
+            .iter()
+            .map(|s| s.to_string())
+            .collect()
+    }
+    pub fn default_max_depth() -> usize {
+        DEFAULT_MAX_DEPTH
+    }
+    pub fn default_visible_extensions() -> Vec<String> {
+        vec!["md".to_string(), "markdown".to_string(), "txt".to_string()]
+    }
+    pub fn default_extensionless_excludes() -> Vec<String> {
+        vec!["LICENSE".to_string(), "Makefile".to_string()]
+    }
+    pub fn default_restore_session() -> bool {
+        true
+    }
+    pub fn default_cache_retention() -> u32 {
+        DEFAULT_CACHE_RETENTION_DAYS
+    }
+    pub fn default_diagram_concurrency() -> usize {
+        DEFAULT_DIAGRAM_CONCURRENCY
+    }
 
-pub(crate) fn default_version() -> String {
-    "0.2.0".to_string()
-}
+    pub fn select_initial_preset() -> ThemePreset {
+        if crate::os_theme::OsThemeOps::is_dark_mode().unwrap_or(true) {
+            ThemePreset::KatanaDark
+        } else {
+            ThemePreset::KatanaLight
+        }
+    }
+    pub fn select_preset_for_mode(is_dark: Option<bool>) -> ThemePreset {
+        match is_dark {
+            Some(true) => ThemePreset::KatanaDark,
+            Some(false) => ThemePreset::KatanaLight,
+            None => ThemePreset::KatanaDark,
+        }
+    }
 
-pub(crate) fn default_theme() -> String {
-    "dark".to_string()
-}
+    pub fn true_default() -> bool {
+        true
+    }
 
-pub(crate) fn default_ui_contrast_offset() -> f32 {
-    0.0
-}
+    pub fn false_default() -> bool {
+        false
+    }
 
-pub(crate) fn default_font_size() -> f32 {
-    DEFAULT_FONT_SIZE
-}
+    pub fn default_pdf_engine() -> String {
+        "builtin".to_string()
+    }
 
-pub(crate) fn default_font_family() -> String {
-    "monospace".to_string()
-}
-
-pub(crate) fn default_language() -> String {
-    "en".to_string()
-}
-
-pub fn default_true() -> bool {
-    true
-}
-
-pub(crate) fn default_auto_save_interval_secs() -> f64 {
-    DEFAULT_AUTO_SAVE_INTERVAL_SECS
-}
-
-pub(crate) fn default_auto_refresh_interval_secs() -> f64 {
-    DEFAULT_AUTO_REFRESH_INTERVAL_SECS
-}
-
-pub(crate) fn default_html_output_dir() -> String {
-    std::env::temp_dir().to_string_lossy().to_string()
-}
-
-pub(crate) fn default_restore_session() -> bool {
-    true
-}
-
-pub(crate) fn default_visible_extensions() -> Vec<String> {
-    ["md", "markdown", "mdx", "txt", "adr"]
-        .iter()
-        .map(|&s| s.into())
-        .collect()
-}
-
-pub(crate) fn default_extensionless_excludes() -> Vec<String> {
-    [".DS_Store", ".gitignore", ".gitattributes", "Makefile"]
-        .iter()
-        .map(|&s| s.into())
-        .collect()
-}
-
-pub(crate) fn default_ignored_directories() -> Vec<String> {
-    DEFAULT_IGNORED_DIRECTORIES
-        .iter()
-        .map(|&s| s.into())
-        .collect()
-}
-
-pub(crate) fn default_max_depth() -> usize {
-    DEFAULT_MAX_DEPTH
-}
-
-// WHY: ── OS theme auto-detection ──
-
-/* WHY: Selects the initial theme preset based on the OS dark/light mode setting.
-
-Called only on first launch. Returns `KatanaDark` when the OS is in dark mode
-(or when detection is unavailable), and `KatanaLight` otherwise. */
-pub(crate) fn select_initial_preset() -> ThemePreset {
-    select_preset_for_mode(crate::os_theme::is_dark_mode())
-}
-
-/* WHY: Pure helper: selects the preset for a given dark-mode query result.
-Factored out to allow unit testing of both branches without OS dependency. */
-pub(crate) fn select_preset_for_mode(is_dark: Option<bool>) -> ThemePreset {
-    match is_dark {
-        Some(false) => ThemePreset::KatanaLight,
-        _ => ThemePreset::KatanaDark, // WHY: dark mode or unknown -> dark by default
+    pub fn default_html_template() -> String {
+        "default".to_string()
     }
 }
-
-// WHY: ── Default impls ──
 
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            version: default_version(),
+            version: SettingsDefaultOps::default_version(),
             theme: ThemeSettings::default(),
             font: FontSettings::default(),
             layout: LayoutSettings::default(),
@@ -123,7 +118,7 @@ impl Default for AppSettings {
             updates: UpdateSettings::default(),
             behavior: BehaviorSettings::default(),
             terms_accepted_version: None,
-            language: default_language(),
+            language: SettingsDefaultOps::default_language(),
             extra: Vec::new(),
         }
     }
@@ -132,8 +127,8 @@ impl Default for AppSettings {
 impl Default for ThemeSettings {
     fn default() -> Self {
         Self {
-            theme: default_theme(),
-            ui_contrast_offset: default_ui_contrast_offset(),
+            theme: SettingsDefaultOps::default_theme(),
+            ui_contrast_offset: SettingsDefaultOps::default_ui_contrast_offset(),
             preset: ThemePreset::default(),
             custom_color_overrides: None,
             custom_themes: Vec::new(),
@@ -145,14 +140,77 @@ impl Default for ThemeSettings {
 impl Default for FontSettings {
     fn default() -> Self {
         Self {
-            size: default_font_size(),
-            family: default_font_family(),
+            size: SettingsDefaultOps::default_font_size(),
+            family: SettingsDefaultOps::default_font_family(),
         }
     }
 }
 
-pub const DEFAULT_CACHE_RETENTION_DAYS: u32 = 7;
+impl Default for WorkspaceSettings {
+    fn default() -> Self {
+        Self {
+            last_workspace: None,
+            paths: vec![],
+            open_tabs: vec![],
+            active_tab_idx: None,
+            ignored_directories: SettingsDefaultOps::default_ignored_directories(),
+            max_depth: SettingsDefaultOps::default_max_depth(),
+            visible_extensions: SettingsDefaultOps::default_visible_extensions(),
+            extensionless_excludes: SettingsDefaultOps::default_extensionless_excludes(),
+            restore_session: SettingsDefaultOps::default_restore_session(),
+        }
+    }
+}
 
-pub const fn default_cache_retention() -> u32 {
-    DEFAULT_CACHE_RETENTION_DAYS
+impl Default for PerformanceSettings {
+    fn default() -> Self {
+        Self {
+            cache_retention_days: SettingsDefaultOps::default_cache_retention(),
+            optimize_for_speed: true,
+            diagram_concurrency: SettingsDefaultOps::default_diagram_concurrency(),
+        }
+    }
+}
+
+impl Default for ExportSettings {
+    fn default() -> Self {
+        Self {
+            pdf_engine: SettingsDefaultOps::default_pdf_engine(),
+            html_template: SettingsDefaultOps::default_html_template(),
+        }
+    }
+}
+
+impl Default for BehaviorSettings {
+    fn default() -> Self {
+        Self {
+            auto_save: true,
+            auto_save_interval_secs: SettingsDefaultOps::default_auto_save_interval_secs(),
+            auto_refresh: true,
+            auto_refresh_interval_secs: SettingsDefaultOps::default_auto_refresh_interval_secs(),
+            scroll_sync_enabled: true,
+            confirm_close_dirty_tab: true,
+        }
+    }
+}
+
+impl Default for LayoutSettings {
+    fn default() -> Self {
+        Self {
+            toc_visible: true,
+            toc_position: TocPosition::default(),
+            split_direction: SplitDirection::default(),
+            pane_order: PaneOrder::default(),
+            sidebar_visible: true,
+            toolbar_visible: true,
+            status_bar_visible: true,
+            active_pane_idx: 0,
+            activity_rail_order: vec![
+                ActivityRailItem::WorkspaceToggle,
+                ActivityRailItem::Search,
+                ActivityRailItem::History,
+                ActivityRailItem::Settings,
+            ],
+        }
+    }
 }

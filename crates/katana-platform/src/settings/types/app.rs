@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
     // WHY: Version string for schema migration.
-    #[serde(default = "super::super::defaults::default_version")]
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::default_version")]
     pub version: String,
     // WHY: Theme settings (nesting).
     #[serde(default)]
@@ -49,7 +49,7 @@ pub struct AppSettings {
     #[serde(default)]
     pub terms_accepted_version: Option<String>,
     // WHY: UI language ("en" or "ja", etc).
-    #[serde(default = "super::super::defaults::default_language")]
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::default_language")]
     pub language: String,
     // WHY: Additional key-value settings for future use.
     #[serde(default)]

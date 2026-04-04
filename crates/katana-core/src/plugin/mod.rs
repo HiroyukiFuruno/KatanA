@@ -1,58 +1,11 @@
-/* WHY: Plugin foundation: typed extension points, registry, and version contracts.
-MVP constraints:
-- Built-in plugins only; no runtime manifest file required.
-- All registrations happen at startup from compile-time definitions.
-- Plugins failing to initialize are disabled, not fatal. */
-
-pub const PLUGIN_API_VERSION: u32 = 1;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ExtensionPoint {
-    RendererEnhancement,
-    AiTool,
-    UiPanel,
-}
-
-#[derive(Debug, Clone)]
-pub struct PluginMeta {
-    pub id: String,
-    pub name: String,
-    pub api_version: u32,
-    pub extension_points: Vec<ExtensionPoint>,
-}
-
-#[derive(Debug)]
-pub enum PluginInitResult {
-    Ok,
-    Failed(String),
-    IncompatibleVersion { declared: u32, required: u32 },
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PluginStatus {
-    Active,
-    Disabled,
-    IncompatibleVersion,
-}
-
-#[derive(Debug)]
-struct PluginEntry {
-    meta: PluginMeta,
-    status: PluginStatus,
-}
-
-#[derive(Default)]
-pub struct PluginRegistry {
-    entries: Vec<PluginEntry>,
-}
+mod types;
+pub use types::*;
 
 impl PluginRegistry {
     pub fn new() -> Self {
         Self::default()
     }
 
-    /* WHY: Register and initialize a plugin described by `meta`, using `init_fn` to perform any startup work.
-    Incompatible API version → marked `IncompatibleVersion`. `init_fn` returns `Err` → marked `Disabled`, application continues. */
     pub fn register<F>(&mut self, meta: PluginMeta, init_fn: F)
     where
         F: FnOnce() -> Result<(), String>,
