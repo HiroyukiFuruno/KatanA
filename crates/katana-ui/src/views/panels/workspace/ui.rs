@@ -514,6 +514,11 @@ impl<'a> WorkspaceHeader<'a> {
                 .unwrap_or_default();
             let is_flat = workspace.is_flat_view(&ws_root);
 
+            let icon_btn_size = crate::icon::IconSize::Small.to_vec2()
+                + ui.spacing().button_padding * 2.0;
+            let square_size = icon_btn_size.max_elem();
+            let icon_min_size = egui::vec2(square_size, square_size);
+
             // allow(horizontal_layout)
             ui.horizontal(|ui| {
                 ui.add_enabled_ui(!is_flat, |ui| {
@@ -522,7 +527,8 @@ impl<'a> WorkspaceHeader<'a> {
                             egui::Button::image(
                                 crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
                             )
-                            .fill(icon_bg),
+                            .fill(icon_bg)
+                            .min_size(icon_min_size),
                         )
                         .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                     btn_resp.widget_info(|| {
@@ -541,7 +547,8 @@ impl<'a> WorkspaceHeader<'a> {
                             egui::Button::image(
                                 crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
                             )
-                            .fill(icon_bg),
+                            .fill(icon_bg)
+                            .min_size(icon_min_size),
                         )
                         .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                     btn_resp.widget_info(|| {
@@ -569,11 +576,11 @@ impl<'a> WorkspaceHeader<'a> {
 
                     if ui
                         .add(
-                            egui::Button::image_and_text(
+                            egui::Button::image(
                                 crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                crate::shell_ui::ShellUiOps::invisible_label("Refresh"),
                             )
-                            .fill(icon_bg),
+                            .fill(icon_bg)
+                            .min_size(icon_min_size),
                         )
                         .on_hover_text(crate::i18n::I18nOps::get().action.refresh_workspace.clone())
                         .clicked()
@@ -595,11 +602,11 @@ impl<'a> WorkspaceHeader<'a> {
 
                     if ui
                         .add(
-                            egui::Button::image_and_text(
+                            egui::Button::image(
                                 crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
-                                crate::shell_ui::ShellUiOps::invisible_label("∇"),
                             )
-                            .fill(filter_btn_color),
+                            .fill(filter_btn_color)
+                            .min_size(icon_min_size),
                         )
                         .on_hover_text(crate::i18n::I18nOps::get().action.toggle_filter.clone())
                         .clicked()
