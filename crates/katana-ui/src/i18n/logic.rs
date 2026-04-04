@@ -1,7 +1,8 @@
 use super::*;
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::ptr;
 use std::sync::atomic::{AtomicPtr, Ordering};
-use std::sync::{OnceLock, PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{LazyLock, OnceLock};
 
 impl I18nOps {
     pub fn supported_languages() -> &'static [(String, String)] {
@@ -63,8 +64,8 @@ impl I18nOps {
     }
 }
 
-// Internal state management
-static CURRENT_LANGUAGE: RwLock<String> = RwLock::new(String::new());
+// WHY: LazyLock is required because parking_lot::RwLock cannot be const-initialized in a static context.
+static CURRENT_LANGUAGE: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new(String::new()));
 static CURRENT_MESSAGES_CACHED: AtomicPtr<I18nMessages> = AtomicPtr::new(ptr::null_mut());
 
 fn init_current_language() {
@@ -118,10 +119,10 @@ fn get_messages_for_lang(lang: &str) -> &'static I18nMessages {
     })
 }
 
-fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
-    lock.read().unwrap_or_else(PoisonError::into_inner)
+fn read_guard(lock: &RwLock<String>) -> RwLockReadGuard<'_, String> {
+    lock.read()
 }
 
-fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
-    lock.write().unwrap_or_else(PoisonError::into_inner)
+fn write_guard(lock: &RwLock<String>) -> RwLockWriteGuard<'_, String> {
+    lock.write()
 }

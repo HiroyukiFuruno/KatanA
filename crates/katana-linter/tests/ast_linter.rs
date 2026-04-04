@@ -1,15 +1,17 @@
-use katana_linter::rules::domains::changelog::lint_changelog_contains_current_version;
-use katana_linter::rules::domains::i18n::lint_i18n;
-use katana_linter::rules::domains::i18n::lint_icon_facade;
-use katana_linter::rules::domains::locales::lint_locale_files;
-use katana_linter::rules::domains::markdown::lint_markdown_heading_pairs;
-use katana_linter::rules::{
-    lint_comment_style, lint_error_first, lint_file_length, lint_font_normalization,
-    lint_function_length, lint_lazy_code, lint_magic_numbers, lint_nesting_depth, lint_performance,
-    lint_prohibited_attributes, lint_prohibited_types, lint_pub_free_fn, lint_type_separation,
+use katana_linter::AstLinterOps;
+use katana_linter::rules::domains::changelog::ChangelogOps;
+use katana_linter::rules::domains::i18n::{I18nOps, IconOps};
+use katana_linter::rules::domains::locales::LocaleOps;
+use katana_linter::rules::domains::markdown::MarkdownOps;
+use katana_linter::rules::domains::theme::{
+    HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps,
 };
-use katana_linter::run_ast_lint;
-use katana_linter::utils::{panic_with_violations, workspace_root};
+use katana_linter::rules::{
+    CommentStyleOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps, FunctionLengthOps,
+    LazyCodeOps, MagicNumberOps, NestingDepthOps, PerformanceOps, ProhibitedAttributesOps,
+    ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
+};
+use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
 fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
     vec![
@@ -22,19 +24,19 @@ fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
 
 #[test]
 fn ast_linter_i18n_no_hardcoded_strings() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "i18n",
         "Fix: Replace string literals with i18n::t(\"key\") or i18n::tf(\"key\", &[...]).",
         &target_crates(root),
-        lint_i18n,
+        I18nOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_no_magic_numbers() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "magic-number",
         "Fix: Extract numeric literals into named constants (const).",
         &[
@@ -42,39 +44,39 @@ fn ast_linter_no_magic_numbers() {
             root.join("crates/katana-platform/src"),
             root.join("crates/katana-ui/src"),
         ],
-        lint_magic_numbers,
+        MagicNumberOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_no_lazy_code() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "lazy-code",
         "Fix: Remove `todo!()`, `unimplemented!()`, and `dbg!()` macros. Implement the actual logic.",
         &target_crates(root),
-        lint_lazy_code,
+        LazyCodeOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_no_prohibited_types() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "prohibited-types",
         "Fix: Use `Vec` instead of `HashMap`, `[T; N]` or `[...]`.",
         &target_crates(root),
-        lint_prohibited_types,
+        ProhibitedTypesOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_locale_files_match_base_structure() {
-    let locale_dir = workspace_root()
+    let locale_dir = LinterFileOps::workspace_root()
         .expect("Test requirement")
         .join("crates/katana-ui/locales");
-    let all_violations = lint_locale_files(&locale_dir);
-    panic_with_violations(
+    let all_violations = LocaleOps::lint(&locale_dir);
+    ViolationReporterOps::panic(
         "locale-structure",
         "Fix: Keep every locale JSON aligned with ja.json/en.json, including placeholder names.",
         &all_violations,
@@ -83,19 +85,20 @@ fn ast_linter_locale_files_match_base_structure() {
 
 #[test]
 fn ast_linter_no_raw_icons() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "icon-facade",
         "Fix: Use `Icon::Name.as_str()` instead of raw icon string literals like \"🔄\".",
         &target_crates(root),
-        lint_icon_facade,
+        IconOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_markdown_heading_pairs_match() {
-    let all_violations = lint_markdown_heading_pairs(workspace_root().expect("Test requirement"));
-    panic_with_violations(
+    let all_violations =
+        MarkdownOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
         "markdown-heading-structure",
         "Fix: Keep each *.md and corresponding .ja/_ja markdown file aligned by heading count and heading levels.",
         &all_violations,
@@ -105,8 +108,8 @@ fn ast_linter_markdown_heading_pairs_match() {
 #[test]
 fn ast_linter_changelog_contains_current_workspace_version() {
     let all_violations =
-        lint_changelog_contains_current_version(workspace_root().expect("Test requirement"));
-    panic_with_violations(
+        ChangelogOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
         "changelog-version-sync",
         "Fix: Add a `## [x.y.z]` release heading to CHANGELOG.md that matches workspace.package.version in Cargo.toml.",
         &all_violations,
@@ -115,134 +118,133 @@ fn ast_linter_changelog_contains_current_workspace_version() {
 
 #[test]
 fn ast_linter_font_normalization() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "font-normalization",
         "Fix: Use `NormalizeFonts` from `font_loader` instead of raw `FontDefinitions::default()`/`::empty()`.",
         &target_crates(root),
-        lint_font_normalization,
+        FontNormalizationOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_no_unoptimized_performance() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "performance",
         "Fix: Avoid unconditional `request_repaint()` or `set_title()` calls in UI loops.",
         &[root.join("crates/katana-ui/src")],
-        lint_performance,
+        PerformanceOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_no_allow_dead_code() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "prohibited-attributes",
         "Fix: Remove `#[allow(dead_code)]`. Dead code should be deleted, not silenced.",
         &target_crates(root),
-        lint_prohibited_attributes,
+        ProhibitedAttributesOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_file_length() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "file-length",
         "Fix: File exceeds 200-line limit (excluding tests). Split into smaller modules.",
         &[root.join("crates/katana-linter/src")],
-        lint_file_length,
+        FileLengthOps::lint,
     );
 }
 
 #[test]
 #[ignore] // WHY: wait for full platform/ui refactoring before strictly enforcing
 fn ast_linter_type_separation() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "type-separation",
         "Fix: Do not mix `pub struct` / `pub enum` in the same file as implementation logic methods if the file exceeds the length limit. Use dedicated files like `types.rs` or `types/` dir.",
         &target_crates(root),
-        lint_type_separation,
+        TypeSeparationOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_function_length() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "function-length",
         "Fix: Function exceeds 30-line limit. Extract helper methods.",
         &[
             root.join("crates/katana-linter/src/rules/coding"),
             root.join("crates/katana-linter/src/rules/structure"),
         ],
-        lint_function_length,
+        FunctionLengthOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_nesting_depth() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "nesting-depth",
         "Fix: Nesting depth exceeds 3 levels. Use early returns or extract helpers.",
         &[
             root.join("crates/katana-linter/src/rules/coding"),
             root.join("crates/katana-linter/src/rules/structure"),
         ],
-        lint_nesting_depth,
+        NestingDepthOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_comment_style() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "comment-style",
         "Fix: Comments must start with `// WHY:` or `// SAFETY:`. Code should be self-documenting.",
         &[
             root.join("crates/katana-linter/src/rules/coding"),
             root.join("crates/katana-linter/src/rules/structure"),
         ],
-        lint_comment_style,
+        CommentStyleOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_error_first() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "error-first",
         "Fix: Do not nest success paths with `if let Ok(...)`. Use `?` or `let-else` to fail early.",
         &[
             root.join("crates/katana-linter/src/rules/coding"),
             root.join("crates/katana-linter/src/rules/structure"),
         ],
-        lint_error_first,
+        ErrorFirstOps::lint,
     );
 }
 
 #[test]
 #[ignore] // WHY: existing codebase has widespread pub free functions; enable after refactoring
 fn ast_linter_no_pub_free_fn() {
-    let root = workspace_root().expect("Test requirement");
-    run_ast_lint(
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
         "pub-free-fn",
         "Fix: Public free functions are prohibited. Use struct + impl blocks (coding-rules §1.1).",
         &target_crates(root),
-        lint_pub_free_fn,
+        PubFreeFnOps::lint,
     );
 }
 
 #[test]
 fn ast_linter_no_unused_theme_colors() {
-    let all_violations = katana_linter::rules::domains::theme::lint_unused_theme_colors(
-        workspace_root().expect("Test requirement"),
-    );
-    panic_with_violations(
+    let all_violations =
+        UnusedThemeColorOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
         "unused-theme-colors",
         "Fix: A theme color property is defined in `ThemeColors` but never accessed in UI code. Please use it or remove it.",
         &all_violations,
@@ -251,10 +253,9 @@ fn ast_linter_no_unused_theme_colors() {
 
 #[test]
 fn ast_linter_no_hardcoded_colors() {
-    let all_violations = katana_linter::rules::domains::theme::lint_no_hardcoded_colors(
-        workspace_root().expect("Test requirement"),
-    );
-    panic_with_violations(
+    let all_violations =
+        HardcodedColorOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
         "hardcoded-colors",
         "Fix: A hardcoded UI color was found. Map it to a property in `ThemeColors` and use `theme_bridge::rgb_to_color32`.",
         &all_violations,
@@ -263,10 +264,9 @@ fn ast_linter_no_hardcoded_colors() {
 
 #[test]
 fn ast_linter_theme_builder_enforcement() {
-    let all_violations = katana_linter::rules::domains::theme::lint_theme_builder_enforcement(
-        workspace_root().expect("Test requirement"),
-    );
-    panic_with_violations(
+    let all_violations =
+        ThemeBuilderOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
         "theme-builder-enforcement",
         "Fix: Theme presets must use `ThemePresetBuilder::new(...)` to enforce DRY design. Do not instantiate `PresetColorData` directly.",
         &all_violations,
@@ -276,7 +276,9 @@ fn ast_linter_theme_builder_enforcement() {
 #[test]
 fn ast_linter_no_japanese_in_crates() {
     use ignore::WalkBuilder;
-    let root = workspace_root().expect("Test requirement").join("crates");
+    let root = LinterFileOps::workspace_root()
+        .expect("Test requirement")
+        .join("crates");
 
     // We walk in parallel for maximum performance without degrading test speed
     let (tx, rx) = std::sync::mpsc::channel();
@@ -324,7 +326,7 @@ fn ast_linter_no_japanese_in_crates() {
     }
 
     if !violations.is_empty() {
-        panic_with_violations(
+        ViolationReporterOps::panic(
             "no-japanese-in-workspace",
             "Fix: No Japanese text (Hiragana/Katakana) is allowed in any files except ja.json. Please translate comments to English or use Unicode escapes for test data.",
             &violations,

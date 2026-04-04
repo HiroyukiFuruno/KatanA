@@ -1,5 +1,5 @@
-use crate::cache::{CacheFacade, read_guard, write_guard};
-use std::sync::RwLock;
+use crate::cache::{CacheFacade, LockOps};
+use parking_lot::RwLock;
 
 // WHY: An in-memory only CacheFacade for tests.
 #[derive(Default)]
@@ -10,12 +10,12 @@ pub struct InMemoryCacheService {
 
 impl CacheFacade for InMemoryCacheService {
     fn get_memory(&self, key: &str) -> Option<String> {
-        let map = read_guard(&self.memory);
+        let map = LockOps::read_guard(&self.memory);
         map.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
     }
 
     fn set_memory(&self, key: &str, value: String) {
-        let mut map = write_guard(&self.memory);
+        let mut map = LockOps::write_guard(&self.memory);
         if let Some(pos) = map.iter().position(|(k, _)| k == key) {
             if let Some(entry) = map.get_mut(pos) {
                 entry.1 = value;
@@ -26,12 +26,12 @@ impl CacheFacade for InMemoryCacheService {
     }
 
     fn get_persistent(&self, key: &str) -> Option<String> {
-        let data = read_guard(&self.persistent);
+        let data = LockOps::read_guard(&self.persistent);
         data.iter().find(|(k, _)| k == key).map(|(_, v)| v.clone())
     }
 
     fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()> {
-        let mut data = write_guard(&self.persistent);
+        let mut data = LockOps::write_guard(&self.persistent);
         if let Some(pos) = data.iter().position(|(k, _)| k == key) {
             if let Some(entry) = data.get_mut(pos) {
                 entry.1 = value;

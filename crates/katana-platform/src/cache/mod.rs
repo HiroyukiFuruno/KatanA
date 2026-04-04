@@ -8,8 +8,8 @@ mod memory;
 pub use default::DefaultCacheService;
 pub use memory::InMemoryCacheService;
 
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use serde::{Deserialize, Serialize};
-use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 // WHY: A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
 pub trait CacheFacade: Send + Sync {
@@ -33,12 +33,16 @@ pub(crate) struct PersistentData {
     pub(crate) entries: Vec<(String, String)>,
 }
 
-pub(crate) fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
-    lock.read().unwrap_or_else(PoisonError::into_inner)
-}
+pub(crate) struct LockOps;
 
-pub(crate) fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
-    lock.write().unwrap_or_else(PoisonError::into_inner)
+impl LockOps {
+    pub(crate) fn read_guard<T>(lock: &RwLock<T>) -> RwLockReadGuard<'_, T> {
+        lock.read()
+    }
+
+    pub(crate) fn write_guard<T>(lock: &RwLock<T>) -> RwLockWriteGuard<'_, T> {
+        lock.write()
+    }
 }
 
 // WHY: Structured canonical key for persistent cache entries.
