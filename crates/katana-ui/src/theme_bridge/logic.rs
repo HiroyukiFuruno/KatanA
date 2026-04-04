@@ -42,6 +42,7 @@ impl ThemeBridgeOps {
         visuals.selection.bg_fill = selection_bg;
         visuals.selection.stroke = egui::Stroke::new(STROKE_NORMAL, accent);
 
+        visuals.override_text_color = Some(text);
         visuals.widgets.noninteractive.bg_fill = panel_bg;
         visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);
         // WHY: All bg_stroke.width values are STROKE_NORMAL (1.0) — identical for every state.
