@@ -662,6 +662,7 @@ impl<'a> TabBar<'a> {
                                             // Submenu "Add to group" should appear if there's any other group OR if it's already in a group (so they can move to a 'New group').
                                             let has_other_groups = self.tab_groups.iter().any(|g| !g.members.contains(&doc_str));
                                             if has_other_groups || is_in_any_group {
+                                                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                                 ui.menu_button(&i18n.tab.add_to_group, |ui| {
                                                     if is_in_any_group {
                                                         if ui.button(&i18n.tab.create_new_group).clicked() {
@@ -685,6 +686,7 @@ impl<'a> TabBar<'a> {
                                                             let (rect, _) = ui.allocate_exact_size(egui::vec2(GROUP_MENU_ICON_SIZE, GROUP_MENU_ICON_SIZE), egui::Sense::hover());
                                                             ui.painter().circle_filled(rect.center(), GROUP_MENU_ICON_RADIUS, color32);
 
+                                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                                             if ui.selectable_label(false, &g.name).clicked() {
                                                                 tab_action = Some(AppAction::AddTabToGroup {
                                                                     group_id: g.id.clone(),
@@ -988,9 +990,9 @@ impl ViewModeBar {
                     ui.separator();
 
                     if ui
-                        .selectable_label(
-                            is_split,
-                            crate::i18n::I18nOps::get().view_mode.split.clone(),
+                        .add(
+                            egui::Button::selectable(is_split, crate::i18n::I18nOps::get().view_mode.split.clone())
+                                .frame_when_inactive(true),
                         )
                         .clicked()
                         && !is_split
@@ -998,16 +1000,24 @@ impl ViewModeBar {
                         mode = ViewMode::Split;
                     }
 
-                    ui.selectable_value(
-                        &mut mode,
-                        ViewMode::CodeOnly,
-                        crate::i18n::I18nOps::get().view_mode.code.clone(),
-                    );
-                    ui.selectable_value(
-                        &mut mode,
-                        ViewMode::PreviewOnly,
-                        crate::i18n::I18nOps::get().view_mode.preview.clone(),
-                    );
+                    if ui
+                        .add(
+                            egui::Button::selectable(mode == ViewMode::CodeOnly, crate::i18n::I18nOps::get().view_mode.code.clone())
+                                .frame_when_inactive(true),
+                        )
+                        .clicked()
+                    {
+                        mode = ViewMode::CodeOnly;
+                    }
+                    if ui
+                        .add(
+                            egui::Button::selectable(mode == ViewMode::PreviewOnly, crate::i18n::I18nOps::get().view_mode.preview.clone())
+                                .frame_when_inactive(true),
+                        )
+                        .clicked()
+                    {
+                        mode = ViewMode::PreviewOnly;
+                    }
                 }
 
                 if !is_changelog && is_split && (is_split == prev_is_split) {
@@ -1100,6 +1110,7 @@ impl ViewModeBar {
 
                     let toggle_resp = crate::widgets::toggle::ToggleOps::switch(ui, &mut is_on);
                     ui.add_space(TOGGLE_LABEL_SPACING);
+                    // allow(conditional_frame) — click target for toggle only, not a selection indicator
                     let text_resp = ui.selectable_label(
                         false,
                         crate::i18n::I18nOps::get()

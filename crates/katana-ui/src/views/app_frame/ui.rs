@@ -301,6 +301,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                                                     data.insert_temp(history_menu_id, false)
                                                                 });
                                                             }
+                                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                                             if ui.selectable_label(false, path).clicked() {
                                                                 app.pending_action =
                                                                     crate::app_state::AppAction::OpenWorkspace(
@@ -577,6 +578,7 @@ impl<'a> Breadcrumbs<'a> {
                             .sense(egui::Sense::hover()),
                     );
                 } else {
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     ui.menu_button(egui::RichText::new(*seg).small(), |ui| {
                         let mut ctx_action = crate::app_state::AppAction::None;
 

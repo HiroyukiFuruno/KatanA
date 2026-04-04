@@ -90,6 +90,7 @@ impl<'a> TermsModal<'a> {
                                                         crate::i18n::I18nOps::supported_languages()
                                                     {
                                                         if ui
+                                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                                             .selectable_label(
                                                                 current_lang == *code,
                                                                 name,

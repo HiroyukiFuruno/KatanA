@@ -1,0 +1,96 @@
+use crate::Violation;
+use crate::utils::LinterParserOps;
+use std::path::{Path, PathBuf};
+use syn::visit::Visit;
+
+/// WHY: Detects egui widgets that conditionally show a frame only on hover.
+///
+/// These widgets cause layout jitter because their size changes between
+/// inactive and hovered states:
+///
+/// - `selectable_label(false, ...)` — permanently non-selected, frame appears only on hover
+/// - `selectable_value(...)` — frame conditional on whether value matches
+/// - `menu_button(...)` — frame appears on hover for non-open menus
+///
+/// Root cause: egui's `Button::selectable` sets `frame_when_inactive(selected)`.
+/// When `selected=false`, the frame (and its inner_margin/outer_margin compensation)
+/// is absent at rest, then appears on hover, causing adjacent elements to shift.
+///
+/// Fix: Replace with `Button::selectable(is_selected, ...)` and ensure
+/// `frame_when_inactive(true)` is set, or use `AlignCenter` with custom hover paint.
+///
+/// Add `// allow(conditional_frame)` above to suppress (e.g., in menus/popups
+/// where layout consistency within a scrollbox is acceptable).
+pub struct ConditionalFrameOps;
+
+impl ConditionalFrameOps {
+    pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        let source = std::fs::read_to_string(path).unwrap_or_default();
+        let lines: Vec<&str> = source.lines().collect();
+        let mut visitor = ConditionalFrameVisitor {
+            file_path: path.to_path_buf(),
+            source_lines: lines,
+            violations: Vec::new(),
+        };
+        visitor.visit_file(syntax);
+        visitor.violations
+    }
+}
+
+struct ConditionalFrameVisitor<'a> {
+    file_path: PathBuf,
+    source_lines: Vec<&'a str>,
+    violations: Vec<Violation>,
+}
+
+impl ConditionalFrameVisitor<'_> {
+    fn is_suppressed(&self, line: usize) -> bool {
+        if line > 1 {
+            if let Some(prev) = self.source_lines.get(line - 2) {
+                return prev.contains("allow(conditional_frame)");
+            }
+        }
+        false
+    }
+}
+
+impl<'ast> Visit<'ast> for ConditionalFrameVisitor<'_> {
+    fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
+        let method_name = node.method.to_string();
+
+        match method_name.as_str() {
+            // ui.selectable_label(is_selected, text)
+            // ui.selectable_value(&mut val, variant, text)
+            // ui.menu_button(text, |ui| { ... })
+            "selectable_label" | "selectable_value" | "menu_button" => {
+                let (line, column) = LinterParserOps::span_location(node.method.span());
+                if !self.is_suppressed(line) {
+                    let msg = match method_name.as_str() {
+                        "selectable_label" => {
+                            "Use `Button::selectable(selected, text).frame_when_inactive(true)` \
+                             to prevent hover-jitter. Add `// allow(conditional_frame)` above to suppress."
+                        }
+                        "selectable_value" => {
+                            "Use `Button::selectable(val == variant, text).frame_when_inactive(true)` \
+                             to prevent hover-jitter. Add `// allow(conditional_frame)` above to suppress."
+                        }
+                        "menu_button" => {
+                            "menu_button shows a frame only on hover, causing layout jitter. \
+                             Wrap in a custom button with stable frame. Add `// allow(conditional_frame)` above to suppress."
+                        }
+                        _ => unreachable!(),
+                    };
+                    self.violations.push(Violation {
+                        file: self.file_path.clone(),
+                        line,
+                        column,
+                        message: msg.to_string(),
+                    });
+                }
+            }
+            _ => {}
+        }
+
+        syn::visit::visit_expr_method_call(self, node);
+    }
+}

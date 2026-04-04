@@ -66,6 +66,7 @@ impl FontTabOps {
                                 || family.to_lowercase().contains(&query_lower)
                             {
                                 let is_current = current == family;
+                                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                 if ui.selectable_label(is_current, family).clicked() {
                                     selected = Some(family.to_string());
                                     close = true;
@@ -78,6 +79,7 @@ impl FontTabOps {
                             if query_lower.is_empty() || name.to_lowercase().contains(&query_lower)
                             {
                                 let is_current = current == *name;
+                                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                 if ui.selectable_label(is_current, name.as_str()).clicked() {
                                     selected = Some(name.clone());
                                     close = true;

@@ -7,9 +7,10 @@ use katana_linter::rules::domains::theme::{
     HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps,
 };
 use katana_linter::rules::{
-    CommentStyleOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps, FrameStrokeOps,
-    FunctionLengthOps, HorizontalLayoutOps, LazyCodeOps, MagicNumberOps, NestingDepthOps,
-    PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
+    CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
+    FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, LazyCodeOps, MagicNumberOps,
+    NestingDepthOps, PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps,
+    TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -351,5 +352,16 @@ fn ast_linter_no_frame_stroke() {
         "Fix: Frame `.stroke()` and `rect_stroke()` cause layout jitter. Use theme visuals or `rect.shrink(stroke_width)`. Add `// allow(frame_stroke)` above to suppress.",
         &[root.join("crates/katana-ui/src")],
         FrameStrokeOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_conditional_frame() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "conditional-frame",
+        "Fix: `selectable_label`, `selectable_value`, `menu_button` show frames only on hover, causing layout jitter. Use `Button::selectable(...).frame_when_inactive(true)` or add `// allow(conditional_frame)` above to suppress.",
+        &[root.join("crates/katana-ui/src")],
+        ConditionalFrameOps::lint,
     );
 }

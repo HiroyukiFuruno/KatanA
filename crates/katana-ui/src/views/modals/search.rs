@@ -59,11 +59,13 @@ impl<'a> SearchModal<'a> {
             .show(ctx, |ui| {
                 // allow(horizontal_layout)
                 ui.horizontal(|ui| {
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     ui.selectable_value(
                         &mut search.active_tab,
                         crate::app_state::SearchTab::FileName,
                         crate::i18n::I18nOps::get().search.tab_file_name.clone(),
                     );
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     ui.selectable_value(
                         &mut search.active_tab,
                         crate::app_state::SearchTab::MarkdownContent,
@@ -199,6 +201,7 @@ impl<'a> SearchModal<'a> {
                                                 path,
                                                 ws_root.as_deref(),
                                             );
+                                        // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                         if ui.selectable_label(false, rel).clicked()
                                             && path.exists()
                                         {
@@ -329,6 +332,7 @@ impl<'a> SearchModal<'a> {
                                             }
 
                                             // Make it selectable and render the layout job!
+                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                             let response = ui.selectable_label(false, job);
 
                                             if response.clicked() {

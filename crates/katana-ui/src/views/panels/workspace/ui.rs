@@ -32,6 +32,7 @@ impl<'a> BreadcrumbMenu<'a> {
             match entry {
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
                     let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     ui.menu_button(name, |ui| {
                         BreadcrumbMenu::new(children, action).show(ui);
                     });
@@ -461,6 +462,7 @@ impl<'a> WorkspaceContent<'a> {
                         {
                             *action = AppAction::RemoveWorkspace(path.clone());
                         }
+                        // allow(conditional_frame) — in popup/list context; future: standardize as atom
                         if ui.selectable_label(false, path).clicked() {
                             *action = AppAction::OpenWorkspace(std::path::PathBuf::from(path));
                         }
@@ -545,6 +547,7 @@ impl<'a> WorkspaceHeader<'a> {
                 });
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     ui.menu_button("...", |ui| {
                         let flat_label = format!(
                             "{} {}",

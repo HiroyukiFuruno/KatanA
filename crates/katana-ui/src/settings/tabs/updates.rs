@@ -34,15 +34,19 @@ impl UpdatesTabOps {
             )
             .show(ui, |ui| {
                 changed |= ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_value(&mut interval, UpdateInterval::Never, &update_msgs.never)
                     .changed();
                 changed |= ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_value(&mut interval, UpdateInterval::Daily, &update_msgs.daily)
                     .changed();
                 changed |= ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_value(&mut interval, UpdateInterval::Weekly, &update_msgs.weekly)
                     .changed();
                 changed |= ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_value(&mut interval, UpdateInterval::Monthly, &update_msgs.monthly)
                     .changed();
             });

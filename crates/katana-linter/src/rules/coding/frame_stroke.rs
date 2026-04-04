@@ -34,11 +34,10 @@ struct FrameStrokeVisitor<'a> {
 
 impl FrameStrokeVisitor<'_> {
     fn is_suppressed(&self, line: usize) -> bool {
-        if line > 1 {
-            if let Some(prev) = self.source_lines.get(line - 2) {
+        if line > 1
+            && let Some(prev) = self.source_lines.get(line - 2) {
                 return prev.contains("allow(frame_stroke)");
             }
-        }
         false
     }
 
@@ -73,8 +72,8 @@ impl<'ast> Visit<'ast> for FrameStrokeVisitor<'_> {
 
         // Detect: .stroke(...) on Frame builder chains
         // Heuristic: `.stroke(Stroke::new(...))` or `.stroke(egui::Stroke::new(...))`
-        if method_name == "stroke" && !node.args.is_empty() {
-            if Self::is_frame_context(node) {
+        if method_name == "stroke" && !node.args.is_empty()
+            && Self::is_frame_context(node) {
                 let (line, column) = LinterParserOps::span_location(node.method.span());
                 if !self.is_suppressed(line) {
                     self.violations.push(Violation {
@@ -85,7 +84,6 @@ impl<'ast> Visit<'ast> for FrameStrokeVisitor<'_> {
                     });
                 }
             }
-        }
 
         syn::visit::visit_expr_method_call(self, node);
     }
@@ -127,11 +125,10 @@ impl FrameStrokeVisitor<'_> {
                 }
                 syn::Expr::Field(field) => {
                     // Frame::NONE, Frame::default() etc
-                    if let syn::Member::Named(ident) = &field.member {
-                        if ident == "NONE" || ident == "frame" {
+                    if let syn::Member::Named(ident) = &field.member
+                        && (ident == "NONE" || ident == "frame") {
                             return true;
                         }
-                    }
                     expr = &field.base;
                     continue;
                 }

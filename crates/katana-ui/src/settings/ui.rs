@@ -214,6 +214,7 @@ impl SettingsOps {
             |ui| {
                 let theme_selected = state.config.active_settings_tab == SettingsTab::Theme;
                 if ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_label(theme_selected, settings_msgs.tab_name("theme"))
                     .clicked()
                 {
@@ -222,6 +223,7 @@ impl SettingsOps {
 
                 let font_selected = state.config.active_settings_tab == SettingsTab::Font;
                 if ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_label(font_selected, settings_msgs.tab_name("font"))
                     .clicked()
                 {
@@ -230,6 +232,7 @@ impl SettingsOps {
 
                 let layout_selected = state.config.active_settings_tab == SettingsTab::Layout;
                 if ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_label(layout_selected, settings_msgs.tab_name("layout"))
                     .clicked()
                 {
@@ -259,6 +262,7 @@ impl SettingsOps {
             |ui| {
                 let workspace_selected = state.config.active_settings_tab == SettingsTab::Workspace;
                 if ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_label(workspace_selected, settings_msgs.tab_name("workspace"))
                     .clicked()
                 {
@@ -267,6 +271,7 @@ impl SettingsOps {
 
                 let updates_selected = state.config.active_settings_tab == SettingsTab::Updates;
                 if ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_label(updates_selected, settings_msgs.tab_name("updates"))
                     .clicked()
                 {
@@ -275,6 +280,7 @@ impl SettingsOps {
 
                 let behavior_selected = state.config.active_settings_tab == SettingsTab::Behavior;
                 if ui
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     .selectable_label(behavior_selected, settings_msgs.tab_name("behavior"))
                     .clicked()
                 {

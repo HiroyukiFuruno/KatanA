@@ -77,7 +77,13 @@ impl<'a> TocPanel<'a> {
                                             .strong()
                                             .color(ui.visuals().widgets.active.text_color());
                                     }
-                                    if ui.selectable_label(is_active, text).clicked() {
+                                    if ui
+                                        .add(
+                                            egui::Button::selectable(is_active, text)
+                                                .frame_when_inactive(true),
+                                        )
+                                        .clicked()
+                                    {
                                         next_scroll = Some(item.index);
                                     }
                                 });

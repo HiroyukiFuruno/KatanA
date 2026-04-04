@@ -68,6 +68,7 @@ impl<'a> CreateFsNodeModal<'a> {
                             .width(EXT_COMBOBOX_WIDTH)
                             .show(ui, |ui| {
                                 for opt in options {
+                                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                                     ui.selectable_value(ext, opt.clone(), opt.clone());
                                 }
                             });

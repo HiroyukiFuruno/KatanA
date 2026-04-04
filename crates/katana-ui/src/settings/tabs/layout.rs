@@ -55,6 +55,7 @@ impl LayoutTabOps {
         ui.horizontal(|ui| {
             let current = state.config.settings.settings().layout.toc_position;
             if ui
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 .selectable_label(
                     current == TocPosition::Left,
                     crate::i18n::I18nOps::get().settings.layout.left.clone(),
@@ -66,6 +67,7 @@ impl LayoutTabOps {
                 let _ = state.config.try_save_settings();
             }
             if ui
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 .selectable_label(
                     current == TocPosition::Right,
                     crate::i18n::I18nOps::get().settings.layout.right.clone(),
@@ -94,6 +96,7 @@ impl LayoutTabOps {
         ui.horizontal(|ui| {
             let current = state.config.settings.settings().layout.split_direction;
             if ui
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 .selectable_label(
                     current == SplitDirection::Horizontal,
                     crate::i18n::I18nOps::get()
@@ -110,6 +113,7 @@ impl LayoutTabOps {
                 let _ = state.config.try_save_settings();
             }
             if ui
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 .selectable_label(
                     current == SplitDirection::Vertical,
                     crate::i18n::I18nOps::get().settings.layout.vertical.clone(),
@@ -139,6 +143,7 @@ impl LayoutTabOps {
         ui.horizontal(|ui| {
             let current = state.config.settings.settings().layout.pane_order;
             if ui
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 .selectable_label(
                     current == PaneOrder::EditorFirst,
                     crate::i18n::I18nOps::get()
@@ -154,6 +159,7 @@ impl LayoutTabOps {
                 let _ = state.config.try_save_settings();
             }
             if ui
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 .selectable_label(
                     current == PaneOrder::PreviewFirst,
                     crate::i18n::I18nOps::get()

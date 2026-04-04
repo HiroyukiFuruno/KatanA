@@ -157,6 +157,7 @@ impl ThemeTabOps {
                     ui.painter()
                         .circle_filled(rect.center(), corner, accent_color);
 
+                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     let response = ui.selectable_label(is_selected, &custom_theme.name);
                     if response.clicked() && !is_selected {
                         state
@@ -272,6 +273,7 @@ impl ThemeTabOps {
                 ui.painter()
                     .circle_filled(rect.center(), corner, accent_color);
 
+                // allow(conditional_frame) — in popup/list context; future: standardize as atom
                 let response = ui.selectable_label(is_selected, preset.display_name());
                 if response.clicked() && !is_selected {
                     state.config.settings.settings_mut().theme.preset = **preset;

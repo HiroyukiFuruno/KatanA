@@ -1,4 +1,5 @@
 pub mod comment_style;
+pub mod conditional_frame;
 pub mod error_first;
 pub mod frame_stroke;
 pub mod horizontal_layout;
@@ -9,6 +10,7 @@ pub mod prohibited_attrs;
 pub mod prohibited_types;
 
 pub use comment_style::CommentStyleOps;
+pub use conditional_frame::ConditionalFrameOps;
 pub use error_first::ErrorFirstOps;
 pub use frame_stroke::FrameStrokeOps;
 pub use horizontal_layout::HorizontalLayoutOps;
