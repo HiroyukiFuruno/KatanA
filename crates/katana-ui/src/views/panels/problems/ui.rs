@@ -79,10 +79,8 @@ impl<'a> ProblemsPanel<'a> {
                                         diag.range.start_column,
                                         diag.message
                                     );
-                                    if ui
-                                        .add(egui::Button::new(msg).frame_when_inactive(true))
-                                        .clicked()
-                                    {
+                                    // allow(conditional_frame) — scroll list item; future: ClickableRowOps atom
+                                    if ui.selectable_label(false, msg).clicked() {
                                         *self.pending_action =
                                             crate::app_state::AppAction::SelectDocumentAndJump {
                                                 path: path.clone(),

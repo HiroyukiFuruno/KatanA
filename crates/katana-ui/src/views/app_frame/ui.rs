@@ -301,15 +301,8 @@ impl<'a> WorkspaceSidebar<'a> {
                                                                     data.insert_temp(history_menu_id, false)
                                                                 });
                                                             }
-                                                            if ui
-                                                                .add(
-                                                                    egui::Button::new(path)
-                                                                        .frame_when_inactive(
-                                                                            true,
-                                                                        ),
-                                                                )
-                                                                .clicked()
-                                                            {
+                                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
+                                                            if ui.selectable_label(false, path).clicked() {
                                                                 app.pending_action =
                                                                     crate::app_state::AppAction::OpenWorkspace(
                                                                         std::path::PathBuf::from(path),
