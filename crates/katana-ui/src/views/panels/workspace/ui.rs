@@ -462,8 +462,10 @@ impl<'a> WorkspaceContent<'a> {
                         {
                             *action = AppAction::RemoveWorkspace(path.clone());
                         }
-                        // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                        if ui.selectable_label(false, path).clicked() {
+                        if ui
+                            .add(egui::Button::new(path.as_str()).frame_when_inactive(true))
+                            .clicked()
+                        {
                             *action = AppAction::OpenWorkspace(std::path::PathBuf::from(path));
                         }
                     });

@@ -3,7 +3,7 @@ use eframe::egui;
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_platform::theme::{Rgb, Rgba, ThemeColors, ThemeMode};
 
-const STROKE_THIN: f32 = 0.5;
+
 const STROKE_NORMAL: f32 = 1.0;
 const STROKE_MEDIUM: f32 = 1.5;
 const STROKE_BOLD: f32 = 2.0;
@@ -45,36 +45,39 @@ impl ThemeBridgeOps {
 
         visuals.widgets.noninteractive.bg_fill = panel_bg;
         visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);
-        visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
-        // WHY: All expansion values must be IDENTICAL across states.
-        // egui draws the visual frame at: outer_margin = -expansion.
-        // If expansion differs between states (e.g. inactive=0.5 vs hovered=1.0),
-        // the visual frame grows by (hovered_exp - inactive_exp) pixels on hover.
-        // Fixing to STROKE_NORMAL for all states keeps outer_margin = -1.0 always,
-        // eliminating the 0.5px visible "border inflation" on hover.
-        // Applies globally to Button::new, Button::image (frame_when_inactive=true default).
-        visuals.widgets.noninteractive.expansion = STROKE_NORMAL;
+        // WHY: All bg_stroke.width values are STROKE_NORMAL (1.0) — identical for every state.
+        // egui's inner_margin formula: button_padding + expansion - stroke.width.
+        // With expansion=0 and uniform stroke.width=1.0, inner_margin = button_padding - 1.0
+        // for ALL states (inactive, hovered, active). Content never shifts on hover.
+        // Color is TRANSPARENT for noninteractive/inactive so the border is invisible
+        // at rest, but the width is pre-reserved in the layout calculation.
+        // WHY expansion=0: outer_margin = -expansion = 0, preventing the drawn frame
+        // from overflowing the allocated rect (which causes visual "border inflation").
+        visuals.widgets.noninteractive.bg_stroke =
+            egui::Stroke::new(STROKE_NORMAL, egui::Color32::TRANSPARENT);
+        visuals.widgets.noninteractive.expansion = 0.0;
 
         visuals.widgets.inactive.bg_fill = panel_bg;
         visuals.widgets.inactive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
-        visuals.widgets.inactive.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
-        visuals.widgets.inactive.expansion = STROKE_NORMAL;
+        visuals.widgets.inactive.bg_stroke =
+            egui::Stroke::new(STROKE_NORMAL, egui::Color32::TRANSPARENT);
+        visuals.widgets.inactive.expansion = 0.0;
 
         visuals.widgets.hovered.bg_fill = highlight_bg;
         visuals.widgets.hovered.fg_stroke = egui::Stroke::new(STROKE_MEDIUM, accent);
         visuals.widgets.hovered.bg_stroke = egui::Stroke::new(STROKE_NORMAL, accent);
-        visuals.widgets.hovered.expansion = STROKE_NORMAL;
+        visuals.widgets.hovered.expansion = 0.0;
 
         let strong = strengthen_color(text, dark);
         visuals.widgets.active.bg_fill = accent;
         visuals.widgets.active.fg_stroke = egui::Stroke::new(STROKE_BOLD, strong);
         visuals.widgets.active.bg_stroke = egui::Stroke::new(STROKE_NORMAL, accent);
-        visuals.widgets.active.expansion = STROKE_NORMAL;
+        visuals.widgets.active.expansion = 0.0;
 
         visuals.widgets.open.bg_fill = panel_bg;
         visuals.widgets.open.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
-        visuals.widgets.open.bg_stroke = egui::Stroke::new(STROKE_THIN, border);
-        visuals.widgets.open.expansion = STROKE_NORMAL;
+        visuals.widgets.open.bg_stroke = egui::Stroke::new(STROKE_NORMAL, border);
+        visuals.widgets.open.expansion = 0.0;
 
         visuals
     }
