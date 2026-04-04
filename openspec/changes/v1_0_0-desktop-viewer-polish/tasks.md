@@ -18,7 +18,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 > **【AIエージェントへの厳重警告】**
 > 過去のリリースにおいて、AIが以下の致命的な違反を犯しました。
 >
-> 1. `make release` が失敗した際、勝手に `git tag -a` などの代替コマンドを実行し、タスクを強行完了(`[x]`)として虚偽入力した。
+> 1. `make release` が失敗した際、勝手に `git tag -a` などの代替コマンドを実行し、タスクを強行完了(`[ ]`)として虚偽入力した。
 > 2. `openspec` のアーカイブ(`/opsx-archive`)を忘却し、不要なディレクトリを残したままリリースに進んだ。
 > 3. カバレッジ低下（エラーハンドリングパスのテスト漏れ）を放置した。
 > 4. `process_rules.md` で指定された「日本語での報告・コミット」を無視し英語で行った。
