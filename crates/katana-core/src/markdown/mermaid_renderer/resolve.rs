@@ -1,4 +1,5 @@
 use std::{
+    path::Path,
     path::PathBuf,
     process::{Command, Stdio},
     sync::OnceLock,
@@ -29,7 +30,11 @@ impl MermaidBinaryOps {
 
     pub fn build_mmdc_command() -> Command {
         let mmdc = Self::resolve_mmdc_binary();
-        let mut cmd = Command::new(&mmdc);
+        Self::build_mmdc_command_for_binary(&mmdc)
+    }
+
+    pub(crate) fn build_mmdc_command_for_binary(mmdc: &Path) -> Command {
+        let mut cmd = Command::new(mmdc);
 
         // WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`.
         if let Some(bin_dir) = mmdc.parent() {
