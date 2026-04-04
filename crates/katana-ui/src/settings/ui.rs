@@ -214,8 +214,10 @@ impl SettingsOps {
             |ui| {
                 let theme_selected = state.config.active_settings_tab == SettingsTab::Theme;
                 if ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_label(theme_selected, settings_msgs.tab_name("theme"))
+                    .add(
+                        egui::Button::selectable(theme_selected, settings_msgs.tab_name("theme"))
+                            .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Theme;
@@ -223,8 +225,10 @@ impl SettingsOps {
 
                 let font_selected = state.config.active_settings_tab == SettingsTab::Font;
                 if ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_label(font_selected, settings_msgs.tab_name("font"))
+                    .add(
+                        egui::Button::selectable(font_selected, settings_msgs.tab_name("font"))
+                            .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Font;
@@ -232,8 +236,13 @@ impl SettingsOps {
 
                 let layout_selected = state.config.active_settings_tab == SettingsTab::Layout;
                 if ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_label(layout_selected, settings_msgs.tab_name("layout"))
+                    .add(
+                        egui::Button::selectable(
+                            layout_selected,
+                            settings_msgs.tab_name("layout"),
+                        )
+                        .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Layout;
@@ -260,10 +269,16 @@ impl SettingsOps {
                 .strong()
                 .size(SETTINGS_HEADER_FONT_SIZE),
             |ui| {
-                let workspace_selected = state.config.active_settings_tab == SettingsTab::Workspace;
+                let workspace_selected =
+                    state.config.active_settings_tab == SettingsTab::Workspace;
                 if ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_label(workspace_selected, settings_msgs.tab_name("workspace"))
+                    .add(
+                        egui::Button::selectable(
+                            workspace_selected,
+                            settings_msgs.tab_name("workspace"),
+                        )
+                        .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Workspace;
@@ -271,17 +286,28 @@ impl SettingsOps {
 
                 let updates_selected = state.config.active_settings_tab == SettingsTab::Updates;
                 if ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_label(updates_selected, settings_msgs.tab_name("updates"))
+                    .add(
+                        egui::Button::selectable(
+                            updates_selected,
+                            settings_msgs.tab_name("updates"),
+                        )
+                        .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Updates;
                 }
 
-                let behavior_selected = state.config.active_settings_tab == SettingsTab::Behavior;
+                let behavior_selected =
+                    state.config.active_settings_tab == SettingsTab::Behavior;
                 if ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_label(behavior_selected, settings_msgs.tab_name("behavior"))
+                    .add(
+                        egui::Button::selectable(
+                            behavior_selected,
+                            settings_msgs.tab_name("behavior"),
+                        )
+                        .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Behavior;

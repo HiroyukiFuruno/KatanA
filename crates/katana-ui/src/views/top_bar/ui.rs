@@ -476,12 +476,16 @@ impl<'a> TabBar<'a> {
                                                         // WHY: .fill(icon_bg) gives pin/close buttons the same
                                                         // background treatment as nav buttons (◀▶), preventing
                                                         // inconsistent hover fills across the tab strip.
+                                                        // WHY: ui_image() is used (not .image()) so DPI-aware sizing
+                                                        // matches the close button, preventing vertical misalignment.
+                                                        // WHY: invisible_label("x") matches the close button's label
+                                                        // so egui allocates the same internal text layout width for both.
                                                         Some(ui.add(
                                                             egui::Button::image_and_text(
                                                                 crate::Icon::Pin
-                                                                    .image(crate::icon::IconSize::Small)
+                                                                    .ui_image(ui, crate::icon::IconSize::Small)
                                                                     .tint(pin_color),
-                                                                crate::shell_ui::ShellUiOps::invisible_label(""),
+                                                                crate::shell_ui::ShellUiOps::invisible_label("x"),
                                                             )
                                                             .fill(icon_bg),
                                                         ))
