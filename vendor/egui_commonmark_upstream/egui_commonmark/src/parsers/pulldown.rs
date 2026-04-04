@@ -377,7 +377,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         st_min_x = Some(st_min_x.map_or(gx, |v: f32| v.min(gx)));
                         st_max_x = Some(st_max_x.map_or(gx_end, |v: f32| v.max(gx_end)));
                     } else if let (Some(min_x), Some(max_x)) = (st_min_x.take(), st_max_x.take()) {
-                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.38;
+                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.49;
                         ui.painter().hline(min_x..=max_x, y, st_stroke);
                     }
 
@@ -387,7 +387,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         ul_min_x = Some(ul_min_x.map_or(gx, |v: f32| v.min(gx)));
                         ul_max_x = Some(ul_max_x.map_or(gx_end, |v: f32| v.max(gx_end)));
                     } else if let (Some(min_x), Some(max_x)) = (ul_min_x.take(), ul_max_x.take()) {
-                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.70; // Tighten precisely to the visual text baseline
+                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.78; // Tighten precisely to the visual text baseline
                         ui.painter().hline(min_x..=max_x, y, ul_stroke);
                     }
 
@@ -396,11 +396,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 
                 // Flush remaining runs at end of row
                 if let (Some(min_x), Some(max_x)) = (st_min_x.take(), st_max_x.take()) {
-                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.38;
+                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.49;
                     ui.painter().hline(min_x..=max_x, y, st_stroke);
                 }
                 if let (Some(min_x), Some(max_x)) = (ul_min_x.take(), ul_max_x.take()) {
-                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.70;
+                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.78;
                     ui.painter().hline(min_x..=max_x, y, ul_stroke);
                 }
             }
