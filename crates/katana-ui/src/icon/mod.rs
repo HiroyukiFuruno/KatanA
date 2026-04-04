@@ -21,7 +21,9 @@ impl Icon {
     }
 
     pub fn image(&self, size: IconSize) -> egui::Image<'static> {
-        egui::Image::new(self.uri()).fit_to_exact_size(size.to_vec2())
+        egui::Image::new(self.uri())
+            .fit_to_exact_size(size.to_vec2())
+            .maintain_aspect_ratio(false)
     }
 
     pub fn ui_image(&self, ui: &egui::Ui, size: IconSize) -> egui::Image<'static> {

@@ -14,7 +14,7 @@ impl PreviewLogicOps {
 
     pub fn invalidate_preview_image_cache(ctx: &egui::Context, action: &AppAction) {
         if matches!(action, AppAction::RefreshDiagrams) {
-            crate::icon::IconRegistry::install(ctx);
+            ctx.forget_all_images();
         }
     }
 }
