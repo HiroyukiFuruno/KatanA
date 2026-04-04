@@ -24,7 +24,7 @@ headless_chrome = "1"
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
 # Markdown
-comrak = { version = "0.29", default-features = false, features = ["shortcodes"] }
+comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
 
 # Serialization / config
 serde = { version = "1", features = ["derive"] }
