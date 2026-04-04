@@ -51,6 +51,7 @@ impl LayoutTabOps {
                 .toc_position
                 .clone(),
         );
+        // allow(horizontal_layout)
         ui.horizontal(|ui| {
             let current = state.config.settings.settings().layout.toc_position;
             if ui
@@ -89,6 +90,7 @@ impl LayoutTabOps {
                 .split_direction
                 .clone(),
         );
+        // allow(horizontal_layout)
         ui.horizontal(|ui| {
             let current = state.config.settings.settings().layout.split_direction;
             if ui
@@ -133,6 +135,7 @@ impl LayoutTabOps {
                 .pane_order
                 .clone(),
         );
+        // allow(horizontal_layout)
         ui.horizontal(|ui| {
             let current = state.config.settings.settings().layout.pane_order;
             if ui
@@ -175,6 +178,7 @@ impl LayoutTabOps {
         ui.vertical(|ui| {
             for (i, item) in list.iter_mut().enumerate() {
                 ui.push_id(i, |ui| {
+                    // allow(horizontal_layout)
                     ui.horizontal(|ui| {
                         let response = ui.text_edit_singleline(item);
                         if response.changed() {

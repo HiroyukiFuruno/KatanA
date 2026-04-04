@@ -338,10 +338,7 @@ fn ast_linter_no_horizontal_layout() {
     AstLinterOps::run(
         "horizontal-layout",
         "Fix: Use `AlignCenter` instead of `ui.horizontal()` for vertical centering. Add `// allow(horizontal_layout)` above the line to suppress.",
-        &[
-            root.join("crates/katana-ui/src/views"),
-            root.join("crates/katana-ui/src/widgets"),
-        ],
+        &[root.join("crates/katana-ui/src")],
         HorizontalLayoutOps::lint,
     );
 }

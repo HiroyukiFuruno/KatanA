@@ -146,6 +146,7 @@ impl ThemeTabOps {
                 let accent_color =
                     theme_bridge::ThemeBridgeOps::rgb_to_color32(custom_theme.colors.system.accent);
 
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     let (rect, _) = ui.allocate_exact_size(
                         egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
@@ -260,6 +261,7 @@ impl ThemeTabOps {
             let bg_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.background);
             let accent_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.accent);
 
+            // allow(horizontal_layout)
             ui.horizontal(|ui| {
                 let (rect, _) = ui.allocate_exact_size(
                     egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
@@ -737,6 +739,7 @@ impl ThemeTabOps {
                 let name_id = egui::Id::new("custom_theme_name_input");
                 let mut name = ui.data(|d| d.get_temp::<String>(name_id).unwrap_or_default());
 
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     ui.label(
                         crate::i18n::I18nOps::get()
@@ -753,6 +756,7 @@ impl ThemeTabOps {
                 });
 
                 ui.add_space(SUBSECTION_SPACING);
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())

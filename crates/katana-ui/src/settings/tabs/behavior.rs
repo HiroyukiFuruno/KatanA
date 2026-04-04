@@ -92,6 +92,7 @@ impl BehaviorTabOps {
             const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
 
+            // allow(horizontal_layout)
             ui.horizontal(|ui| {
                 let mut display_val = interval;
 

@@ -15,6 +15,7 @@ impl UpdatesTabOps {
         let ver_str = format!("Current version: v{}", env!("CARGO_PKG_VERSION"));
         ui.label(egui::RichText::new(ver_str).weak().size(HINT_FONT_SIZE));
 
+        // allow(horizontal_layout)
         ui.horizontal(|ui| {
             ui.label(&update_msgs.interval);
 

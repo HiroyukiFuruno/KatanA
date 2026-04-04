@@ -140,6 +140,7 @@ impl WorkspaceTabOps {
                 .show(ui.ctx(), |ui| {
                     ui.label(&workspace_msgs.no_extension_warning);
                     ui.add_space(SUBSECTION_SPACING);
+                    // allow(horizontal_layout)
                     ui.horizontal(|ui| {
                         if ui
                             .button(crate::i18n::I18nOps::get().action.cancel.clone())

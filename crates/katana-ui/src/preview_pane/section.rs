@@ -291,6 +291,7 @@ impl SectionLogicOps {
                 vec![],
             ),
             RenderedSection::Pending { kind, .. } => {
+                // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     ui.spinner();
                     ui.label(
