@@ -7,9 +7,9 @@ use katana_linter::rules::domains::theme::{
     HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps,
 };
 use katana_linter::rules::{
-    CommentStyleOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps, FunctionLengthOps,
-    HorizontalLayoutOps, LazyCodeOps, MagicNumberOps, NestingDepthOps, PerformanceOps,
-    ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
+    CommentStyleOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps, FrameStrokeOps,
+    FunctionLengthOps, HorizontalLayoutOps, LazyCodeOps, MagicNumberOps, NestingDepthOps,
+    PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -340,5 +340,16 @@ fn ast_linter_no_horizontal_layout() {
         "Fix: Use `AlignCenter` instead of `ui.horizontal()` for vertical centering. Add `// allow(horizontal_layout)` above the line to suppress.",
         &[root.join("crates/katana-ui/src")],
         HorizontalLayoutOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_frame_stroke() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "frame-stroke",
+        "Fix: Frame `.stroke()` and `rect_stroke()` cause layout jitter. Use theme visuals or `rect.shrink(stroke_width)`. Add `// allow(frame_stroke)` above to suppress.",
+        &[root.join("crates/katana-ui/src")],
+        FrameStrokeOps::lint,
     );
 }

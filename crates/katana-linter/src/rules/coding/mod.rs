@@ -1,5 +1,6 @@
 pub mod comment_style;
 pub mod error_first;
+pub mod frame_stroke;
 pub mod horizontal_layout;
 pub mod lazy_code;
 pub mod magic_numbers;
@@ -9,6 +10,7 @@ pub mod prohibited_types;
 
 pub use comment_style::CommentStyleOps;
 pub use error_first::ErrorFirstOps;
+pub use frame_stroke::FrameStrokeOps;
 pub use horizontal_layout::HorizontalLayoutOps;
 pub use lazy_code::LazyCodeOps;
 pub use magic_numbers::MagicNumberOps;

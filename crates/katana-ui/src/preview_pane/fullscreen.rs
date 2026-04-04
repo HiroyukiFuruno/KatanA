@@ -442,6 +442,7 @@ impl FullscreenLogicOps {
                             let frame = egui::Frame::NONE
                                 .fill(bg)
                                 .corner_radius(SLIDESHOW_CONTROL_CORNER_RADIUS)
+                                // allow(frame_stroke)
                                 .stroke(egui::Stroke::new(1.0, stroke_color))
                                 .inner_margin(egui::Margin::symmetric(
                                     SLIDESHOW_CONTROL_PADDING_X,

@@ -273,6 +273,7 @@ impl<'a> TabBar<'a> {
 
                                     let group_resp = egui::Frame::NONE
                                         .fill(frame_fill)
+                                        // allow(frame_stroke)
                                         .stroke(frame_stroke)
                                         .corner_radius(GROUP_HEADER_CORNER_RADIUS)
                                         .inner_margin(egui::Margin::symmetric(

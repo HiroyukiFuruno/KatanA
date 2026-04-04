@@ -126,6 +126,7 @@ impl<'a> WorkspaceSidebar<'a> {
             .frame(
                 egui::Frame::side_top_panel(&ui.ctx().global_style())
                     .inner_margin(egui::Margin::ZERO)
+                    // allow(frame_stroke)
                     .stroke(egui::Stroke::NONE),
             )
             .show_inside(ui, |ui| {
