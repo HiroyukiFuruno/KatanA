@@ -258,7 +258,7 @@ impl<'a> WorkspaceSidebar<'a> {
 
                                     if is_open {
                                         const HISTORY_MENU_X_OFFSET: f32 = 4.0;
-                                        const HISTORY_MENU_MAX_WIDTH: f32 = 320.0;
+                                        const HISTORY_MENU_MAX_WIDTH: f32 = 480.0;
 
                                         let popup_area = egui::Area::new(egui::Id::new("history_menu_area").with(idx))
                                             .order(egui::Order::Foreground)
@@ -280,7 +280,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                                                 ui.set_max_width(label_width);
 
 
-                                                                if ui.add(egui::Button::new(path).frame(false).truncate()).clicked() {
+                                                                if ui.add(egui::Button::new(path).frame(false).truncate()).on_hover_text(path).clicked() {
                                                                     app.pending_action = crate::app_state::AppAction::OpenWorkspace(std::path::PathBuf::from(path));
                                                                     ui.data_mut(|data| data.insert_temp(history_menu_id, false));
                                                                 }
@@ -301,14 +301,13 @@ impl<'a> WorkspaceSidebar<'a> {
 
                                                     ui.separator();
                                                     ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
-                                                        if ui.button(crate::i18n::I18nOps::get().menu.open_workspace.clone()).clicked() {
-                                                            if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
+                                                        if ui.button(crate::i18n::I18nOps::get().menu.open_workspace.clone()).clicked()
+                                                            && let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
                                                                 app.pending_action = crate::app_state::AppAction::OpenWorkspace(path);
                                                                 ui.data_mut(|data| {
                                                                     data.insert_temp(history_menu_id, false)
                                                                 });
                                                             }
-                                                        }
                                                     });
                                                 });
                                             });
