@@ -158,7 +158,11 @@ impl ThemeTabOps {
                         .circle_filled(rect.center(), corner, accent_color);
 
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    let custom_fill = if is_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
+                    let custom_fill = if is_selected {
+                        ui.visuals().selection.bg_fill
+                    } else {
+                        egui::Color32::TRANSPARENT
+                    };
                     let response = ui.add(
                         egui::Button::selectable(is_selected, &custom_theme.name)
                             .frame_when_inactive(true)
@@ -289,7 +293,11 @@ impl ThemeTabOps {
                     .circle_filled(rect.center(), corner, accent_color);
 
                 // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                let preset_fill = if is_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
+                let preset_fill = if is_selected {
+                    ui.visuals().selection.bg_fill
+                } else {
+                    egui::Color32::TRANSPARENT
+                };
                 let response = ui.add(
                     egui::Button::selectable(is_selected, preset.display_name())
                         .frame_when_inactive(true)
