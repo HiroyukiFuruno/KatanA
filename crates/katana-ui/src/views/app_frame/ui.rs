@@ -543,6 +543,14 @@ impl<'a> TabToolbar<'a> {
                     },
                 );
 
+                if app.state.search.doc_search_open {
+                    let search_action =
+                        crate::views::top_bar::DocSearchBar::show(ui, &mut app.state.search);
+                    if let Some(a) = search_action {
+                        out_action = Some(a);
+                    }
+                }
+
                 if let Some(a) = out_action {
                     app.pending_action = a;
                 }
