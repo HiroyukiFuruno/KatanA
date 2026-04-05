@@ -18,6 +18,9 @@ pub(crate) struct WorkspaceSidebar<'a> {
     pub(crate) app: &'a mut KatanaApp,
 }
 
+pub(crate) struct WorkspaceSidebarItems;
+pub(crate) struct WorkspaceSidebarDrag;
+
 pub(crate) struct TabToolbar<'a> {
     pub(crate) app: &'a mut KatanaApp,
 }

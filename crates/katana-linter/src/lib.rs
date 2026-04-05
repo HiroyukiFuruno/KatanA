@@ -82,7 +82,6 @@ impl AstLinterOps {
 
         for target_dir in target_dirs {
             for file in &utils::LinterFileOps::collect_rs_files(target_dir) {
-                println!("Linting file: {}", file.display());
                 match utils::LinterParserOps::parse_file(file) {
                     Ok(syntax) => {
                         let violations = lint_fn(file, &syntax);
