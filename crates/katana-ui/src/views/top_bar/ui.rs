@@ -1258,19 +1258,45 @@ impl ViewModeBar {
                             .unwrap_or(false)
                     });
 
+                    // Add text edit with margin to fit icons on both sides
                     let response = ui.add(
                         egui::TextEdit::singleline(&mut search_state.doc_search_query)
                             .desired_width(DOC_SEARCH_INPUT_WIDTH)
+                            .margin(egui::Margin {
+                                left: 26,
+                                right: 26,
+                                top: 4,
+                                bottom: 4,
+                            })
+                            .vertical_align(egui::Align::Center)
                             .id_source("doc_search_input_stable_id"),
                     );
 
-                    // Add an inline clear button 'x' overlaying the right side of the TextEdit
+                    let rect = response.rect;
+
+                    // Overlay readonly search icon on the left
+                    const SEARCH_ICON_WIDTH: f32 = 26.0;
+                    let left_icon_rect = egui::Rect::from_min_size(
+                        egui::pos2(rect.min.x, rect.min.y),
+                        egui::vec2(SEARCH_ICON_WIDTH, rect.height()),
+                    );
+                    ui.allocate_ui_at_rect(left_icon_rect, |ui| {
+                        ui.centered_and_justified(|ui| {
+                            let icon_color = ui.visuals().text_color().gamma_multiply(0.5);
+                            ui.add(
+                                crate::Icon::Search
+                                    .image(crate::icon::IconSize::Small)
+                                    .tint(icon_color),
+                            );
+                        });
+                    });
+
+                    // Overlay inline clear button 'x' on the right side
                     if !search_state.doc_search_query.is_empty() {
-                        const DOC_SEARCH_CLEAR_BTN_WIDTH: f32 = 20.0;
+                        const DOC_SEARCH_CLEAR_BTN_WIDTH: f32 = 26.0;
                         const DOC_SEARCH_CLEAR_BTN_FONT_SIZE: f32 = 14.0;
                         const DOC_SEARCH_CLEAR_BTN_ALPHA: f32 = 0.5;
 
-                        let rect = response.rect;
                         let btn_rect = egui::Rect::from_min_size(
                             egui::pos2(rect.max.x - DOC_SEARCH_CLEAR_BTN_WIDTH, rect.min.y),
                             egui::vec2(DOC_SEARCH_CLEAR_BTN_WIDTH, rect.height()),
