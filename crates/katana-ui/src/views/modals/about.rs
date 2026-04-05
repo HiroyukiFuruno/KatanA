@@ -52,7 +52,7 @@ impl<'a> AboutModal<'a> {
             .default_width(ABOUT_WINDOW_WIDTH)
             .frame(egui::Frame::window(&ctx.global_style()).inner_margin(INNER_PADDING))
             .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
+                ui.horizontal_centered(|ui| {
                     ui.add_space(HEADING_SPACING);
                     if let Some(tex) = icon {
                         ui.image(egui::load::SizedTexture::new(
@@ -61,16 +61,18 @@ impl<'a> AboutModal<'a> {
                         ));
                         ui.add_space(SECTION_SPACING);
                     }
-                    ui.heading(
-                        egui::RichText::new(info.product_name)
-                            .strong()
-                            .size(HEADING_SIZE),
-                    );
-                    ui.label(
-                        egui::RichText::new(info.description)
-                            .weak()
-                            .size(DESCRIPTION_SIZE),
-                    );
+                    ui.vertical(|ui| {
+                        ui.heading(
+                            egui::RichText::new(info.product_name)
+                                .strong()
+                                .size(HEADING_SIZE),
+                        );
+                        ui.label(
+                            egui::RichText::new(info.description)
+                                .weak()
+                                .size(DESCRIPTION_SIZE),
+                        );
+                    });
                     ui.add_space(HEADING_SPACING);
                 });
 
