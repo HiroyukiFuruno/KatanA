@@ -282,7 +282,7 @@ mod tests {
     #[test]
     fn test_natural_sort_ordering() {
         use std::path::PathBuf;
-        let mut entries = vec![
+        let mut entries = [
             TreeEntry::File {
                 path: PathBuf::from("v0-1-0"),
             },

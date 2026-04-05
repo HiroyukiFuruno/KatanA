@@ -63,11 +63,8 @@ fn list_uncovered_lines_test() {
 
     assert_eq!(PersistentKey::Unknown.to_raw_key(), None);
     assert_eq!(PersistentKey::Unknown.target_filename(), None);
-    assert!(matches!(
-        PersistentKey::from_raw_key("invalid:format:string"),
-        None
-    ));
-    assert!(matches!(PersistentKey::from_raw_key("invalid"), None));
+    assert!(PersistentKey::from_raw_key("invalid:format:string").is_none());
+    assert!(PersistentKey::from_raw_key("invalid").is_none());
 
     // Test trailing slash in from_raw_key directly
     let decoded = PersistentKey::from_raw_key("workspace_tabs:/a/b/c/").unwrap();

@@ -81,7 +81,7 @@ impl UpdateDownloadOps {
 
 #[cfg(unix)]
 fn apply_unix_permissions(
-    file: &zip::read::ZipFile,
+    file: &zip::read::ZipFile<'_, impl std::io::Read + ?Sized>,
     outpath: &std::path::Path,
 ) -> anyhow::Result<()> {
     use std::os::unix::fs::PermissionsExt;

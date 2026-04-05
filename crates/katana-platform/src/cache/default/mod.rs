@@ -422,8 +422,8 @@ mod tests {
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
         assert!(!cache_json_path.exists()); // Removed upon success
         assert_eq!(map.len(), 1);
-        assert_eq!(map[0].0, "workspace_tabs:test_ws");
-        assert_eq!(map[0].1, "some_value");
+        assert_eq!(map.first().unwrap().0, "workspace_tabs:test_ws");
+        assert_eq!(map.first().unwrap().1, "some_value");
 
         // 3. IO write failure (make temp directory read-only / file to simulate)
         let bad_kv_dir = tmp.path().join("file_as_dir");
@@ -482,7 +482,7 @@ mod tests {
 
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
         assert_eq!(map.len(), 1);
-        assert_eq!(map[0].1, "stale_data");
+        assert_eq!(map.first().unwrap().1, "stale_data");
         // It should have renamed the file
         assert!(!legacy_path.exists());
         assert!(kv_dir.join(&canonical_filename).exists());

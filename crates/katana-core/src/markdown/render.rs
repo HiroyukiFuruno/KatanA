@@ -1,4 +1,4 @@
-use comrak::{ComrakOptions, markdown_to_html};
+use comrak::{Options, markdown_to_html};
 
 use super::drawio_renderer;
 use super::fence::MarkdownFenceOps;
@@ -17,14 +17,14 @@ impl DiagramRenderer for KatanaRenderer {
 }
 
 impl MarkdownRenderOps {
-    pub fn gfm_options() -> ComrakOptions<'static> {
-        let mut opts = ComrakOptions::default();
+    pub fn gfm_options() -> Options<'static> {
+        let mut opts = Options::default();
         opts.extension.strikethrough = true;
         opts.extension.table = true;
         opts.extension.autolink = true;
         opts.extension.tasklist = true;
         opts.extension.footnotes = true;
-        opts.render.unsafe_ = true;
+        opts.render.r#unsafe = true;
         opts
     }
 
