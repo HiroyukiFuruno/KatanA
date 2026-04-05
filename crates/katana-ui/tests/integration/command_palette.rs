@@ -8,12 +8,11 @@ use katana_ui::state::command_palette_providers::*;
 fn test_app_command_provider() {
     let provider = AppCommandProvider;
 
-    // Empty query returns generic recent/common actions
+    /* WHY: Empty query returns generic recent/common actions */
     let results = provider.search("", None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::RecentOrCommon);
 
-    // Match query
     let results = provider.search("Settings", None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::Action);
@@ -58,7 +57,7 @@ fn test_integration_command_palette_ui() {
 
     harness.step();
 
-    // 1. Open Palette
+    /* WHY: 1. Open Palette */
     harness
         .state_mut()
         .trigger_action(AppAction::ToggleCommandPalette);
@@ -67,9 +66,9 @@ fn test_integration_command_palette_ui() {
 
     assert!(harness.state().app_state_for_test().command_palette.is_open);
 
-    // 2. Type query (triggers search)
-    // We can't easily "type" into TextEdit in kittest yet without focus/keyboard events,
-    // but we can mutate the state directly for this integration test.
+    /* WHY: 2. Type query (triggers search) */
+    /* WHY: We can't easily "type" into TextEdit in kittest yet without focus/keyboard events, */
+    /* WHY: but we can mutate the state directly for this integration test. */
     harness
         .state_mut()
         .app_state_mut()
@@ -77,31 +76,31 @@ fn test_integration_command_palette_ui() {
         .current_query = "Settings".into();
     harness.step();
 
-    // 3. Verify results are populated in UI
-    // AppCommandProvider should provide "Toggle Settings"
+    /* WHY: 3. Verify results are populated in UI */
+    /* WHY: AppCommandProvider should provide "Toggle Settings" */
     let _ = harness.get_by_label("Toggle Settings");
 
-    // 4. Select and execution (Enter)
-    // We'll simulate the Enter key by checking if the action is dispatched
-    // Actually, let's just trigger the keyboard event if possible, or verify selection logic.
-    // 4. Select and execution
-    // Simulation of clicking the result item in the palette
-    // Note: get_by_label matches the Toggle Settings text
+    /* WHY: 4. Select and execution (Enter) */
+    /* WHY: We'll simulate the Enter key by checking if the action is dispatched */
+    /* WHY: Actually, let's just trigger the keyboard event if possible, or verify selection logic. */
+    /* WHY: 4. Select and execution */
+    /* WHY: Simulation of clicking the result item in the palette */
+    /* WHY: Note: get_by_label matches the Toggle Settings text */
     harness.get_by_label("Toggle Settings").click();
 
-    harness.step(); // UI processes click, sets is_open = false, BUT action is not set in interact.clicked() branch in show()!
-    // Wait, looking at command_palette.rs:
-    // if interact.clicked() { is_open = false; }
-    // It DOES NOT set the action in the clicked() branch! It only sets it in the Enter key branch.
-    // This is a bug in the implementation or I'm misreading.
+    harness.step(); /* WHY: UI processes click, sets is_open = false, BUT action is not set in interact.clicked() branch in show()! */
+    /* WHY: Wait, looking at command_palette.rs: */
+    /* WHY: if interact.clicked() { is_open = false; } */
+    /* WHY: It DOES NOT set the action in the clicked() branch! It only sets it in the Enter key branch. */
+    /* WHY: This is a bug in the implementation or I'm misreading. */
 
     harness.step();
     harness.step();
 
-    // Palette should be closed
+    /* WHY: Palette should be closed */
     assert!(!harness.state().app_state_for_test().command_palette.is_open);
 
-    // Settings should be open (ToggleSettings action processed via click)
+    /* WHY: Settings should be open (ToggleSettings action processed via click) */
     assert!(harness.state().app_state_for_test().layout.show_settings);
 
     let _ = std::fs::remove_file(&settings_path);
@@ -137,13 +136,13 @@ fn test_integration_command_palette_keyboard_navigation() {
 
     harness.step();
 
-    // 1. Open Palette
+    /* WHY: 1. Open Palette */
     harness
         .state_mut()
         .trigger_action(AppAction::ToggleCommandPalette);
     harness.step();
 
-    // 2. Initial selection is 0
+    /* WHY: 2. Initial selection is 0 */
     assert_eq!(
         harness
             .state()
@@ -153,7 +152,7 @@ fn test_integration_command_palette_keyboard_navigation() {
         0
     );
 
-    // 3. Move Down
+    /* WHY: 3. Move Down */
     harness.key_press(egui::Key::ArrowDown);
     harness.step();
     assert_eq!(
@@ -165,7 +164,7 @@ fn test_integration_command_palette_keyboard_navigation() {
         1
     );
 
-    // 4. Move Up
+    /* WHY: 4. Move Up */
     harness.key_press(egui::Key::ArrowUp);
     harness.step();
     assert_eq!(
@@ -177,8 +176,8 @@ fn test_integration_command_palette_keyboard_navigation() {
         0
     );
 
-    // 5. Confirm (Enter)
-    // By default, index 0 is Toggle Settings (from AppCommandProvider when empty)
+    /* WHY: 5. Confirm (Enter) */
+    /* WHY: By default, index 0 is Toggle Settings (from AppCommandProvider when empty) */
     harness.key_press(egui::Key::Enter);
     harness.step();
     harness.step();
@@ -186,7 +185,7 @@ fn test_integration_command_palette_keyboard_navigation() {
     assert!(!harness.state().app_state_for_test().command_palette.is_open);
     assert!(harness.state().app_state_for_test().layout.show_settings);
 
-    // 6. Test Dismissal (Escape)
+    /* WHY: 6. Test Dismissal (Escape) */
     harness
         .state_mut()
         .trigger_action(AppAction::ToggleCommandPalette);
@@ -229,13 +228,13 @@ fn test_integration_command_palette_provider_availability() {
 
     harness.step();
 
-    // No workspace open -> WorkspaceFileProvider and MarkdownContentProvider should return nothing
+    /* WHY: No workspace open -> WorkspaceFileProvider and MarkdownContentProvider should return nothing */
     harness
         .state_mut()
         .trigger_action(AppAction::ToggleCommandPalette);
     harness.step();
 
-    // Population occurs in show()
+    /* WHY: Population occurs in show() */
     harness
         .state_mut()
         .app_state_mut()
@@ -243,11 +242,11 @@ fn test_integration_command_palette_provider_availability() {
         .current_query = "any".into();
     harness.step();
 
-    // Should only have results from AppCommandProvider (if query matches something)
-    // Or at least it should not crash.
+    /* WHY: Should only have results from AppCommandProvider (if query matches something) */
+    /* WHY: Or at least it should not crash. */
     let results = &harness.state().app_state_for_test().command_palette.results;
     for res in results {
-        // Since no workspace, only Actions or RecentOrCommon should exist
+        /* WHY: Since no workspace, only Actions or RecentOrCommon should exist */
         assert!(
             matches!(
                 res.kind,
@@ -293,7 +292,7 @@ fn test_integration_search_modal_remains_functional() {
 
     harness.step();
 
-    // Toggle Search Modal (legacy fallback)
+    /* WHY: Toggle Search Modal (legacy fallback) */
     harness
         .state_mut()
         .trigger_action(AppAction::ToggleSearchModal);
@@ -307,8 +306,8 @@ fn test_integration_search_modal_remains_functional() {
             .show_search_modal
     );
 
-    // Verify legacy modal title is present
-    // Verify legacy modal title is present
+    /* WHY: Verify legacy modal title is present */
+    /* WHY: Verify legacy modal title is present */
     let count = harness
         .query_all_by_label(I18nOps::get().search.modal_title.as_str())
         .count();
@@ -356,7 +355,7 @@ fn test_keyboard_navigation_state() {
     state.move_down();
     assert_eq!(state.selected_index, 1);
 
-    // Wrap around or stop? Implemented as wrap around in command_palette.rs
+    /* WHY: Wrap around or stop? Implemented as wrap around in command_palette.rs */
     state.move_down();
     assert_eq!(
         state.selected_index, 0,

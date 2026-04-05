@@ -188,8 +188,8 @@ impl PreviewPane {
                                 if matches!(job.kind, katana_core::markdown::DiagramKind::Mermaid)
                                     && matches!(res, DiagramResult::Ok(_))
                                 {
-                                    // WHY: Old caches may still store Mermaid output as Ok(html) (SVG format).
-                                    // WHY: or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG.
+                                    /* WHY: Old caches may still store Mermaid output as Ok(html) (SVG format). */
+                                    /* WHY: or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG. */
                                     let new_res = RendererLogicOps::dispatch_renderer(
                                         &katana_core::markdown::DiagramBlock {
                                             kind: job.kind.clone(),

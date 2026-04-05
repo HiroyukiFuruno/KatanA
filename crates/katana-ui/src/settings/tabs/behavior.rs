@@ -92,7 +92,7 @@ impl BehaviorTabOps {
             const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
 
-            // WHY: allow(horizontal_layout)
+            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {
@@ -102,7 +102,7 @@ impl BehaviorTabOps {
                         &mut display_val,
                         AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
                     )
-                    .show_value(false) // WHY: Text is displayed separately
+                    .show_value(false) /* WHY: Text is displayed separately */
                     .step_by(AUTO_SAVE_INTERVAL_STEP)
                     .min_decimals(1)
                     .max_decimals(1)

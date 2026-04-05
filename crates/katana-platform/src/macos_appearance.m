@@ -12,8 +12,8 @@ const char *katana_macos_appearance_name(void) {
         if (appearance == nil) {
             return NULL;
         }
-        // NSAppearanceName is an NSString typedef; -UTF8String returns a transient C string.
-        // The caller must not cache this pointer beyond the autorelease pool lifetime.
+        /* WHY: NSAppearanceName is an NSString typedef; -UTF8String returns a transient C string. */
+        /* WHY: The caller must not cache this pointer beyond the autorelease pool lifetime. */
         return [[appearance name] UTF8String];
     }
 }

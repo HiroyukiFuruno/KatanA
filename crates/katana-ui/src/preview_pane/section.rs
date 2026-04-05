@@ -99,8 +99,8 @@ impl SectionLogicOps {
                         viewer = viewer.heading_anchors(anchors);
                     }
 
-                    // WHY: Compute the active char range once so it can be shared with the
-                    // WHY: list-item highlight callback and the viewer builder.
+                    /* WHY: Compute the active char range once so it can be shared with the */
+                    /* WHY: list-item highlight callback and the viewer builder. */
                     let mut computed_active_range: Option<std::ops::Range<usize>> = None;
                     if let Some(global_line) = active_editor_line {
                         let lines_in_md = md.chars().filter(|c| *c == '\n').count();
@@ -136,8 +136,8 @@ impl SectionLogicOps {
                         viewer = viewer.active_char_range(range.clone());
                     }
 
-                    // WHY: Both colors resolved from ThemeColors; fallback to hover_line_background
-                    // WHY: since PreviewColors has no dedicated active_line_background.
+                    /* WHY: Both colors resolved from ThemeColors; fallback to hover_line_background */
+                    /* WHY: since PreviewColors has no dedicated active_line_background. */
                     let resolved_hover = hover_bg_color.unwrap_or(crate::theme_bridge::TRANSPARENT);
                     let list_highlight_fn =
                         crate::widgets::MarkdownHooksOps::katana_list_item_highlight(
@@ -194,8 +194,8 @@ impl SectionLogicOps {
                                     .chars()
                                     .filter(|c| *c == '\n')
                                     .count();
-                            // WHY: Use saturating_sub(1) to exclude trailing newline
-                            // WHY: that pulldown_cmark includes in source spans.
+                            /* WHY: Use saturating_sub(1) to exclude trailing newline */
+                            /* WHY: that pulldown_cmark includes in source spans. */
                             let end_pos = local_span.end.saturating_sub(1).max(local_span.start);
                             let end_line = global_line_offset
                                 + md[..end_pos].chars().filter(|c| *c == '\n').count();
@@ -290,7 +290,7 @@ impl SectionLogicOps {
                 vec![],
             ),
             RenderedSection::Pending { kind, .. } => {
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {

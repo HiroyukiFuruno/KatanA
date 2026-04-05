@@ -143,7 +143,7 @@ impl MarkdownHooksOps {
             });
         }
 
-        // WHY: Add interactable margin between checkbox and text
+        /* WHY: Add interactable margin between checkbox and text */
         let mut gap_response = ui.allocate_response(
             egui::vec2(GAP_WIDTH, interact_size.y.max(icon_width)),
             if mutable {
@@ -275,7 +275,7 @@ impl MarkdownHooksOps {
             let mut highlighted = false;
             let mut hovered = false;
 
-            // WHY: Active highlight (editor cursor line)
+            /* WHY: Active highlight (editor cursor line) */
             if let Some(ref active) = active_char_range
                 && active.start <= span.end
                 && active.end >= span.start
@@ -285,7 +285,7 @@ impl MarkdownHooksOps {
                     .rect_filled(rect, HIGHLIGHT_ROUNDING, active_bg_color);
             }
 
-            // WHY: Hover highlight (mouse pointer)
+            /* WHY: Hover highlight (mouse pointer) */
             if let Some(pos) = ui.ctx().pointer_hover_pos()
                 && rect.contains(pos)
             {

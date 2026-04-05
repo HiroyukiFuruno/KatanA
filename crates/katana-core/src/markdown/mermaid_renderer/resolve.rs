@@ -11,7 +11,7 @@ pub struct MermaidBinaryOps;
 
 impl MermaidBinaryOps {
     pub fn resolve_mmdc_binary() -> PathBuf {
-        // WHY: Always check env var first (not cached — allows runtime override)
+        /* WHY: Always check env var first (not cached — allows runtime override) */
         #[allow(clippy::single_match)]
         match std::env::var("MERMAID_MMDC") {
             Ok(p) => return PathBuf::from(p),
@@ -36,7 +36,7 @@ impl MermaidBinaryOps {
     pub(crate) fn build_mmdc_command_for_binary(mmdc: &Path) -> Command {
         let mut cmd = Command::new(mmdc);
 
-        // WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`.
+        /* WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`. */
         if let Some(bin_dir) = mmdc.parent() {
             let current_path = std::env::var("PATH").unwrap_or_default();
             let bin_dir_str = bin_dir.to_string_lossy();
@@ -51,7 +51,7 @@ impl MermaidBinaryOps {
 fn probe_well_known_paths() -> Option<PathBuf> {
     let home = std::env::var("HOME").ok()?;
 
-    // WHY: --- Homebrew ---
+    /* WHY: --- Homebrew --- */
     #[allow(clippy::useless_vec)]
     for brew_prefix in vec!["/opt/homebrew/bin/mmdc", "/usr/local/bin/mmdc"] {
         let p = PathBuf::from(brew_prefix);
@@ -60,19 +60,19 @@ fn probe_well_known_paths() -> Option<PathBuf> {
         }
     }
 
-    // WHY: --- nvm ---
+    /* WHY: --- nvm --- */
     let nvm_dir = std::env::var("NVM_DIR").unwrap_or_else(|_| format!("{home}/.nvm"));
     if let Some(path) = probe_nvm_mmdc(&nvm_dir) {
         return Some(path);
     }
 
-    // WHY: --- volta ---
+    /* WHY: --- volta --- */
     let volta_bin = PathBuf::from(format!("{home}/.volta/bin/mmdc"));
     if volta_bin.is_file() {
         return Some(volta_bin);
     }
 
-    // WHY: --- fnm ---
+    /* WHY: --- fnm --- */
     let fnm_bin = PathBuf::from(format!("{home}/.local/share/fnm/aliases/default/bin/mmdc"));
     if fnm_bin.is_file() {
         return Some(fnm_bin);

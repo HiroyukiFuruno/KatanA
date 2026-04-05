@@ -139,7 +139,7 @@ impl PreviewPane {
         }
         if let Some(idx) = self.fullscreen_image {
             match self.sections.get(idx) {
-                Some(RenderedSection::Image { .. }) => {} // WHY: valid, keep open
+                Some(RenderedSection::Image { .. }) => {} /* WHY: valid, keep open */
                 _ => self.fullscreen_image = None,
             }
         }

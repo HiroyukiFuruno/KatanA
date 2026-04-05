@@ -316,8 +316,8 @@ impl<'a> PreviewOnly<'a> {
             )
             .show(ui);
 
-            // WHY: In PreviewOnly mode, there is no editor to consume the scroll_to_line request.
-            // WHY: We consume it here right after PreviewContent has processed it.
+            /* WHY: In PreviewOnly mode, there is no editor to consume the scroll_to_line request. */
+            /* WHY: We consume it here right after PreviewContent has processed it. */
             app.state.scroll.scroll_to_line = None;
         } else {
             ui.centered_and_justified(|ui| {

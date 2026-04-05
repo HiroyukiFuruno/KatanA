@@ -198,7 +198,7 @@ impl<'a> EditorContent<'a> {
                                     response.rect.min.y + pos_start.min.y,
                                 ),
                                 egui::pos2(
-                                    response.rect.min.x + pos_end.min.x.max(0.0), // using min.x for both, since it's cursor position. Wait, pos_end's cursor is BEFORE the text? Actually wait, CCursor index.
+                                    response.rect.min.x + pos_end.min.x.max(0.0), /* WHY: using min.x for both, since it's cursor position. Wait, pos_end's cursor is BEFORE the text? Actually wait, CCursor index. */
                                     response.rect.min.y + pos_end.max.y,
                                 ),
                             );

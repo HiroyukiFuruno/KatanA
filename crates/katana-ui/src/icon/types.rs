@@ -28,7 +28,7 @@ macro_rules! define_icons {
 }
 
 define_icons! {
-    // WHY: ui/
+    /* WHY: ui/ */
     Dot             => "ui/dot",
     Close           => "ui/close",
     Remove          => "ui/remove",
@@ -42,14 +42,14 @@ define_icons! {
     CollapseAll     => "ui/collapse_all",
     Search          => "ui/search",
     Settings        => "ui/settings",
-    // WHY: navigation/
+    /* WHY: navigation/ */
     ChevronLeft     => "navigation/chevron_left",
     ChevronRight    => "navigation/chevron_right",
     TriangleDown    => "navigation/triangle_down",
     TriangleLeft    => "navigation/triangle_left",
     TriangleRight   => "navigation/triangle_right",
     Toc             => "navigation/toc",
-    // WHY: view/
+    /* WHY: view/ */
     PanUp           => "view/pan_up",
     PanDown         => "view/pan_down",
     PanLeft         => "view/pan_left",
@@ -58,23 +58,23 @@ define_icons! {
     ZoomOut         => "view/zoom_out",
     ResetView       => "view/reset_view",
     Fullscreen      => "view/fullscreen",
-    // WHY: layout/
+    /* WHY: layout/ */
     SplitVertical   => "layout/split_vertical",
     SplitHorizontal => "layout/split_horizontal",
     SwapHorizontal  => "layout/swap_horizontal",
     SwapVertical    => "layout/swap_vertical",
     Preview         => "layout/preview",
-    // WHY: status/
+    /* WHY: status/ */
     Info            => "status/info",
     Success         => "status/success",
     Warning         => "status/warning",
     Error           => "status/error",
-    // WHY: files/
+    /* WHY: files/ */
     Document        => "files/document",
     FolderOpen      => "files/folder_open",
     FolderClosed    => "files/folder_closed",
     Markdown        => "files/markdown",
-    // WHY: system/
+    /* WHY: system/ */
     Refresh         => "system/refresh",
     ExternalLink    => "system/external_link",
     Export          => "system/export",
@@ -86,7 +86,7 @@ define_icons! {
     Rocket          => "system/rocket",
     Download        => "system/download",
     Hourglass       => "system/hourglass",
-    // WHY: action/
+    /* WHY: action/ */
     #[allow(dead_code)]
     More            => "action/more",
 }

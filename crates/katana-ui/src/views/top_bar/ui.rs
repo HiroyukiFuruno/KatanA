@@ -182,16 +182,16 @@ impl<'a> TabBar<'a> {
 
         ui.style_mut().interaction.tooltip_delay = TAB_TOOLTIP_SHOW_DELAY_SECS;
 
-        // WHY: icon_bg is computed here (before the scroll area) so that pin/close
-        // WHY: icon buttons inside the tab strip can use it consistently. This matches the
-        // WHY: treatment of the nav buttons (◀▶) which also use icon_bg.
+        /* WHY: icon_bg is computed here (before the scroll area) so that pin/close */
+        /* WHY: icon buttons inside the tab strip can use it consistently. This matches the */
+        /* WHY: treatment of the nav buttons (◀▶) which also use icon_bg. */
         let icon_bg = if ui.visuals().dark_mode {
             crate::theme_bridge::TRANSPARENT
         } else {
             crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
         };
 
-        // WHY: allow(horizontal_layout)
+        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
             let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
             let scroll_width = ui.available_width() - nav_button_width;
@@ -253,7 +253,7 @@ impl<'a> TabBar<'a> {
                         }
                     }
 
-                    // WHY: allow(horizontal_layout)
+                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                         for item in draw_items {
                             match item {
@@ -287,7 +287,7 @@ impl<'a> TabBar<'a> {
                                             GROUP_HEADER_PADDING_Y,
                                         ))
                                         .show(ui, |ui| {
-                                            // WHY: allow(horizontal_layout)
+                                            /* WHY: allow(horizontal_layout) */
                                             crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                 ui.spacing_mut().item_spacing.x =
                                                     GROUP_HEADER_ITEM_SPACING;
@@ -338,7 +338,7 @@ impl<'a> TabBar<'a> {
                                         let i18n = crate::i18n::I18nOps::get();
                                         let mut new_name = g.name.clone();
                                         let mut new_color = g.color_hex.clone();
-                                        // WHY: allow(horizontal_layout)
+                                        /* WHY: allow(horizontal_layout) */
                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui: &mut egui::Ui| {
                                             let resp = ui.add(egui::TextEdit::singleline(&mut new_name).hint_text(&i18n.tab.group_name_placeholder));
                                             if self.inline_rename_group.as_ref() == Some(&g.id) {
@@ -352,7 +352,7 @@ impl<'a> TabBar<'a> {
                                         const PALETTE_STROKE: f32 = 2.0;
 
                                         ui.add_space(SPACING);
-                                        // WHY: allow(horizontal_layout)
+                                        /* WHY: allow(horizontal_layout) */
                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui: &mut egui::Ui| {
                                             let colors = ["#4A90D9", "#D94A4A", "#4AD97A", "#D9A04A", "#9B59B6", "#F1C40F", "#1ABC9C"];
                                             for c in colors {
@@ -396,7 +396,7 @@ impl<'a> TabBar<'a> {
                                         ui.min_rect()
                                     });
 
-                                    // WHY: Manually implement CloseOnClickOutside to avoid 'focusing text field closes popup' bug in older egui
+                                    /* WHY: Manually implement CloseOnClickOutside to avoid 'focusing text field closes popup' bug in older egui */
                                     if ui.memory(|mem| mem.is_popup_open(popup_id))
                                         && ui.input(|i| i.pointer.any_pressed() && i.pointer.primary_pressed())
                                         && let Some(pos) = ui.input(|i| i.pointer.interact_pos()) {
@@ -435,7 +435,7 @@ impl<'a> TabBar<'a> {
                                             ui.set_max_width(MAX_TAB_WIDTH);
                                             ui.style_mut().wrap_mode =
                                                 Some(egui::TextWrapMode::Truncate);
-                                                    // WHY: frame(false) ensures inner_margin = button_padding
+                                                    /* WHY: frame(false) ensures inner_margin = button_padding */
                                                     let t_resp = if is_changelog {
                                                         ui.add(
                                                             egui::Button::image_and_text(
@@ -461,14 +461,14 @@ impl<'a> TabBar<'a> {
                                                         } else {
                                                             ui.visuals().text_color()
                                                         };
-                                                        // WHY: .fill(icon_bg) gives pin/close buttons the same
-                                                        // WHY: background treatment as nav buttons (◀▶), preventing
-                                                        // WHY: inconsistent hover fills across the tab strip.
-                                                        // WHY: ui_image() is used (not .image()) so DPI-aware sizing
-                                                        // WHY: matches the close button, preventing vertical misalignment.
-                                                        // WHY: invisible_label("x") matches the close button's label
+                                                        /* WHY: .fill(icon_bg) gives pin/close buttons the same */
+                                                        /* WHY: background treatment as nav buttons (◀▶), preventing */
+                                                        /* WHY: inconsistent hover fills across the tab strip. */
+                                                        /* WHY: ui_image() is used (not .image()) so DPI-aware sizing */
+                                                        /* WHY: matches the close button, preventing vertical misalignment. */
+                                                        /* WHY: invisible_label("x") matches the close button's label */
                                                         Some(ui.add(
-                                                            // WHY: allow(icon_button_fill)
+                                                            /* WHY: allow(icon_button_fill) */
                                                             egui::Button::image(
                                                                 crate::Icon::Pin
                                                                     .ui_image(ui, crate::icon::IconSize::Small)
@@ -477,7 +477,7 @@ impl<'a> TabBar<'a> {
                                                         ))
                                                     } else {
                                                         Some(ui.add(
-                                                            // WHY: allow(icon_button_fill)
+                                                            /* WHY: allow(icon_button_fill) */
                                                             egui::Button::image(
                                                                 crate::Icon::Close.ui_image(
                                                                     ui,
@@ -549,7 +549,7 @@ impl<'a> TabBar<'a> {
                                                     ui.style_mut().wrap_mode =
                                                         Some(egui::TextWrapMode::Truncate);
 
-                                                    // WHY: allow(horizontal_layout)
+                                                    /* WHY: allow(horizontal_layout) */
                                                     crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                         ui.spacing_mut().item_spacing.x = 0.0;
                                                         if is_changelog {
@@ -577,7 +577,7 @@ impl<'a> TabBar<'a> {
                                                             );
                                                         } else {
                                                             ui.add(
-                                                                // WHY: allow(icon_button_fill)
+                                                                /* WHY: allow(icon_button_fill) */
                                                                 egui::Button::image(
                                                                 crate::Icon::Close.ui_image(
                                                                     ui,
@@ -652,8 +652,8 @@ impl<'a> TabBar<'a> {
                                                 }
                                             }
 
-                                            // WHY: Chrome logic:
-                                            // WHY: If in a group: "Remove from group"
+                                            /* WHY: Chrome logic: */
+                                            /* WHY: If in a group: "Remove from group" */
                                             if !is_in_any_group {
                                                 if ui.button(&i18n.tab.create_new_group).clicked() {
                                                     tab_action = Some(AppAction::CreateTabGroup {
@@ -672,7 +672,7 @@ impl<'a> TabBar<'a> {
 
                                             let has_other_groups = self.tab_groups.iter().any(|g| !g.members.contains(&doc_str));
                                             if has_other_groups || is_in_any_group {
-                                                // WHY: in popup/list context; future: standardize as atom
+                                                /* WHY: in popup/list context; future: standardize as atom */
                                                 egui::menu::menu_button(ui, &i18n.tab.add_to_group, |ui| {
                                                     if is_in_any_group {
                                                         if ui.button(&i18n.tab.create_new_group).clicked() {
@@ -690,7 +690,7 @@ impl<'a> TabBar<'a> {
                                                         if g.members.contains(&doc_str) {
                                                             continue;
                                                         }
-                                                        // WHY: allow(horizontal_layout)
+                                                        /* WHY: allow(horizontal_layout) */
                                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui: &mut egui::Ui| {
                                                             let color32 = egui::Color32::from_hex(&g.color_hex).unwrap_or(ui.visuals().widgets.active.bg_fill);
                                                             let (rect, _) = ui.allocate_exact_size(egui::vec2(GROUP_MENU_ICON_SIZE, GROUP_MENU_ICON_SIZE), egui::Sense::hover());
@@ -825,12 +825,12 @@ impl<'a> TabBar<'a> {
             let drop_points = TopBarOps::compute_drop_points(&tab_rects);
             if let Some(to_visual) = TopBarOps::find_best_drop_index(&drop_points, ghost_center_x) {
                 let to_physical = if to_visual < tab_rects.len() {
-                    tab_rects[to_visual].0 // insert before physical element at to_visual
+                    tab_rects[to_visual].0 /* WHY: insert before physical element at to_visual */
                 } else {
                     self.open_documents.len()
                 };
 
-                let mut new_group_id = Some(None); // Default is ungrouped
+                let mut new_group_id = Some(None); /* WHY: Default is ungrouped */
 
                 if to_visual > 0 && to_visual < tab_rects.len() {
                     let prev_idx = tab_rects[to_visual - 1].0;
@@ -871,7 +871,7 @@ impl<'a> TabBar<'a> {
                     if !is_in_group {
                         tab_action = Some(AppAction::ReorderDocument {
                             from: src_idx,
-                            to: src_idx, // same physical place, just join group
+                            to: src_idx, /* WHY: same physical place, just join group */
                             new_group_id,
                         });
                     }
@@ -957,8 +957,8 @@ impl ViewModeBar {
             egui::vec2(available_width, bar_height),
             egui::Layout::right_to_left(egui::Align::Center),
             |ui| {
-                // WHY: Consistent background for all icon-only buttons in this bar.
-                // WHY: Without explicit .fill(icon_bg), hover shows weak_bg_fill (highlight)
+                /* WHY: Consistent background for all icon-only buttons in this bar. */
+                /* WHY: Without explicit .fill(icon_bg), hover shows weak_bg_fill (highlight) */
                 let icon_bg = if ui.visuals().dark_mode {
                     crate::theme_bridge::TRANSPARENT
                 } else {
@@ -1128,7 +1128,7 @@ impl ViewModeBar {
 
                     if ui
                         .add(
-                            // WHY: allow(icon_button_fill)
+                            /* WHY: allow(icon_button_fill) */
                             egui::Button::image(
                                 order_icon
                                     .image(crate::icon::IconSize::Medium)
@@ -1179,7 +1179,7 @@ impl ViewModeBar {
                     }
                 }
 
-                // WHY: Add the search button to the far left of the right-aligned layout
+                /* WHY: Add the search button to the far left of the right-aligned layout */
                 if self.show_search {
                     ui.separator();
                     let doc_search_tooltip = format!(
@@ -1242,11 +1242,11 @@ impl DocSearchBar {
             |ui| {
                 let button_size =
                     egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
-                // WHY: Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input
-                // WHY: allow(icon_button_fill)
+                /* WHY: Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input */
+                /* WHY: allow(icon_button_fill) */
                 if ui
                     .add(
-                        // WHY: allow(icon_button_fill)
+                        /* WHY: allow(icon_button_fill) */
                         egui::Button::image(
                             crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
                         )
@@ -1263,10 +1263,10 @@ impl DocSearchBar {
                     search_state.doc_search_open = false;
                 }
 
-                // WHY: allow(icon_button_fill)
+                /* WHY: allow(icon_button_fill) */
                 if ui
                     .add(
-                        // WHY: allow(icon_button_fill)
+                        /* WHY: allow(icon_button_fill) */
                         egui::Button::image(
                             crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
                         )
@@ -1283,10 +1283,10 @@ impl DocSearchBar {
                     action = Some(AppAction::DocSearchNext);
                 }
 
-                // WHY: allow(icon_button_fill)
+                /* WHY: allow(icon_button_fill) */
                 if ui
                     .add(
-                        // WHY: allow(icon_button_fill)
+                        /* WHY: allow(icon_button_fill) */
                         egui::Button::image(
                             crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
                         )
@@ -1329,7 +1329,7 @@ impl DocSearchBar {
                         .unwrap_or(false)
                 });
 
-                // WHY: Add text edit with margin to fit icons on both sides
+                /* WHY: Add text edit with margin to fit icons on both sides */
                 const DOC_SEARCH_INPUT_MARGIN_X: i8 = 26;
                 const DOC_SEARCH_INPUT_MARGIN_Y: i8 = 4;
                 let response = ui.add(
@@ -1347,7 +1347,7 @@ impl DocSearchBar {
 
                 let rect = response.rect;
 
-                // WHY: Overlay readonly search icon on the left
+                /* WHY: Overlay readonly search icon on the left */
                 const SEARCH_ICON_WIDTH: f32 = 26.0;
                 let left_icon_rect = egui::Rect::from_min_size(
                     egui::pos2(rect.min.x, rect.min.y),
@@ -1368,7 +1368,7 @@ impl DocSearchBar {
                     });
                 });
 
-                // WHY: Overlay inline clear button 'x' on the right side
+                /* WHY: Overlay inline clear button 'x' on the right side */
                 if !search_state.doc_search_query.is_empty() {
                     const DOC_SEARCH_CLEAR_BTN_WIDTH: f32 = 26.0;
                     const DOC_SEARCH_CLEAR_BTN_FONT_SIZE: f32 = 14.0;

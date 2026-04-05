@@ -51,7 +51,7 @@ impl<'a> CreateFsNodeModal<'a> {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -70,7 +70,7 @@ impl<'a> CreateFsNodeModal<'a> {
                                 .width(EXT_COMBOBOX_WIDTH)
                                 .show(ui, |ui| {
                                     for opt in options {
-                                        // WHY: in popup/list context; future: standardize as atom
+                                        /* WHY: in popup/list context; future: standardize as atom */
                                         if ui
                                             .add(
                                                 egui::Button::selectable(*ext == *opt, opt.clone())
@@ -91,7 +91,7 @@ impl<'a> CreateFsNodeModal<'a> {
                     .show(ui);
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -174,7 +174,7 @@ impl<'a> RenameModal<'a> {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -193,7 +193,7 @@ impl<'a> RenameModal<'a> {
                     .show(ui);
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -274,7 +274,7 @@ impl<'a> DeleteModal<'a> {
 
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {

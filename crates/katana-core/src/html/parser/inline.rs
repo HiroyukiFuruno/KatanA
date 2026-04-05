@@ -8,14 +8,14 @@ impl HtmlInlineParserOps {
 
         while !remaining.is_empty() {
             if let Some(pos) = Self::find_next_syntax_pos(remaining) {
-                // WHY: Text before the syntax
+                /* WHY: Text before the syntax */
                 if pos > 0 {
                     nodes.push(HtmlNode::Text(remaining[..pos].to_string()));
                 }
 
                 remaining = Self::process_syntax(&remaining[pos..], base_dir, nodes);
             } else {
-                // WHY: No more markdown syntax
+                /* WHY: No more markdown syntax */
                 nodes.push(HtmlNode::Text(remaining.to_string()));
                 break;
             }
@@ -25,7 +25,7 @@ impl HtmlInlineParserOps {
     fn find_next_syntax_pos(text: &str) -> Option<usize> {
         let img_pos = text.find("![");
         let link_pos = text.find('[').filter(|&pos| {
-            // WHY: Exclude the '[' that's part of '!['
+            /* WHY: Exclude the '[' that's part of '![' */
             pos == 0 || text.as_bytes()[pos - 1] != b'!'
         });
 
@@ -38,7 +38,7 @@ impl HtmlInlineParserOps {
     }
 
     fn process_syntax<'a>(text: &'a str, base_dir: &Path, nodes: &mut Vec<HtmlNode>) -> &'a str {
-        // WHY: Try markdown image: ![alt](src)
+        /* WHY: Try markdown image: ![alt](src) */
         if text.starts_with("![")
             && let Some((node, consumed)) = Self::try_parse_md_image(text)
         {
@@ -46,7 +46,7 @@ impl HtmlInlineParserOps {
             return &text[consumed..];
         }
 
-        // WHY: Try markdown link: [text](url)
+        /* WHY: Try markdown link: [text](url) */
         if text.starts_with('[')
             && let Some((node, consumed)) = Self::try_parse_md_link(text, base_dir)
         {
@@ -54,7 +54,7 @@ impl HtmlInlineParserOps {
             return &text[consumed..];
         }
 
-        // WHY: Not a valid syntax — emit the character and continue
+        /* WHY: Not a valid syntax — emit the character and continue */
         nodes.push(HtmlNode::Text(text[..1].to_string()));
         &text[1..]
     }

@@ -525,7 +525,7 @@ mod tests {
         let valid_json = serde_json::to_string(&valid_res).unwrap();
         cache.set_memory(&key, valid_json);
 
-        let source2 = format!("```mermaid\n{diag_src}\n```"); // is_http=true
+        let source2 = format!("```mermaid\n{diag_src}\n```");
         pane.full_render(
             &source2,
             std::path::Path::new("/tmp/test.md"),
@@ -829,13 +829,13 @@ mod tests {
 
         pane.apply_fullscreen_result(None, Some(&ctx));
         assert_eq!(pane.fullscreen_image, None);
-        assert_eq!(pane.fullscreen_viewer_state.zoom, 1.0); // Resets.
+        assert_eq!(pane.fullscreen_viewer_state.zoom, 1.0);
 
         pane.fullscreen_image = Some(0);
         pane.fullscreen_viewer_state.zoom_in();
         pane.apply_fullscreen_result(Some(0), Some(&ctx));
         assert_eq!(pane.fullscreen_image, Some(0));
-        assert_ne!(pane.fullscreen_viewer_state.zoom, 1.0); // Does NOT reset.
+        assert_ne!(pane.fullscreen_viewer_state.zoom, 1.0); /* WHY: Does NOT reset. */
     }
 
     #[test]
@@ -855,7 +855,7 @@ mod tests {
 
         pane.handle_fullscreen_request(Some(0), Some(&ctx));
         assert_eq!(pane.fullscreen_image, Some(0));
-        assert!(!pane.was_os_fullscreen_before_modal); // context default is window mode
+        assert!(!pane.was_os_fullscreen_before_modal); /* WHY: context default is window mode */
     }
 
     #[test]
@@ -868,7 +868,7 @@ mod tests {
     fn poll_renders_clears_is_loading_on_disconnect() {
         let mut pane = PreviewPane::default();
         let (tx, rx) = std::sync::mpsc::channel::<RenderMessage>();
-        drop(tx); // EXPLICIT DISCONNECT
+        drop(tx);
         pane.render_rx = Some(rx);
         pane.is_loading = true;
 
@@ -923,7 +923,7 @@ mod tests {
             &std::path::PathBuf::from("test.md"),
             cache,
             true,
-            1, // single-threaded worker to make ordering deterministic
+            1, /* WHY: single-threaded worker to make ordering deterministic */
         );
         let rx = pane.render_rx.take().unwrap();
         assert!(pane.is_loading);

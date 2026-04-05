@@ -13,7 +13,7 @@ fn red_task_list_hover_frame_vertically_aligned() {
 
     harness.run();
 
-    // Query for List items, check horizontal bounding boxes and hover rects
-    // Not possible to query internal `active_rects` easily from outside.
-    // I need to write a test inside `vendor/...` or find a way.
+    /* WHY: Query for List items, check horizontal bounding boxes and hover rects */
+    /* WHY: Not possible to query internal `active_rects` easily from outside. */
+    /* WHY: I need to write a test inside `vendor/...` or find a way. */
 }

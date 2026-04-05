@@ -1,4 +1,4 @@
-// WHY: Shared color palette and alpha constants for theme builders.
+/* WHY: Shared color palette and alpha constants for theme builders. */
 
 use crate::theme::types::Rgb;
 

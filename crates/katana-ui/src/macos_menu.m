@@ -1,7 +1,7 @@
 #import <Cocoa/Cocoa.h>
 
-// Tag constants for identifying menu actions.
-// Should match the MenuAction enum in Rust.
+/* WHY: Tag constants for identifying menu actions. */
+/* WHY: Should match the MenuAction enum in Rust. */
 enum {
     TAG_OPEN_WORKSPACE = 1,
     TAG_SAVE           = 2,
@@ -22,8 +22,8 @@ enum {
     TAG_COMMAND_PALETTE = 17,
 };
 
-// Global: Tag of the last selected menu action.
-// Read by polling from Rust.
+/* WHY: Global: Tag of the last selected menu action. */
+/* WHY: Read by polling from Rust. */
 static volatile int g_last_action = 0;
 
 @interface KatanaMenuTarget : NSObject
@@ -68,7 +68,7 @@ void katana_setup_native_menu(void) {
     g_target = [[KatanaMenuTarget alloc] init];
     SEL action = @selector(menuAction:);
 
-    // --- Application Menu ---
+    /* WHY: --- Application Menu --- */
     NSMenu *appMenu = [[NSMenu alloc] initWithTitle:@"KatanA"];
 
     NSMenuItem *aboutItem = [[NSMenuItem alloc]
@@ -125,7 +125,7 @@ void katana_setup_native_menu(void) {
     NSMenuItem *appMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     [appMenuItem setSubmenu:appMenu];
 
-    // --- File Menu ---
+    /* WHY: --- File Menu --- */
     NSMenu *fileMenu = [[NSMenu alloc] initWithTitle:@"File"];
     g_file_menu = fileMenu;
 
@@ -152,7 +152,7 @@ void katana_setup_native_menu(void) {
     NSMenuItem *fileMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     [fileMenuItem setSubmenu:fileMenu];
 
-    // --- View Menu ---
+    /* WHY: --- View Menu --- */
     NSMenu *viewMenu = [[NSMenu alloc] initWithTitle:@"View"];
     g_view_menu = viewMenu;
 
@@ -164,22 +164,22 @@ void katana_setup_native_menu(void) {
     [paletteItem setTag:TAG_COMMAND_PALETTE];
     [viewMenu addItem:paletteItem];
 
-    // Also alias Cmd+P to command palette for parity with VS Code
-    // We use the same TAG and a different key equivalent.
-    // To avoid duplication in the menu while supporting multiple shortcuts,
-    // we can add it as a hidden item or just rely on the shell_ui.rs handling for Cmd+P.
-    // However, to show it in the menu without a separate visible entry,
-    // we use a hidden menu item or just skip it if we want it clean.
-    // Let's add it as an 'alternate' to the same menu item if possible,
-    // but Cocoa NSMenuItem doesn't easily support two shortcuts for one item.
-    // A common trick is to add another item with the same action/tag but make it hidden.
+    /* WHY: Also alias Cmd+P to command palette for parity with VS Code */
+    /* WHY: We use the same TAG and a different key equivalent. */
+    /* WHY: To avoid duplication in the menu while supporting multiple shortcuts, */
+    /* WHY: we can add it as a hidden item or just rely on the shell_ui.rs handling for Cmd+P. */
+    /* WHY: However, to show it in the menu without a separate visible entry, */
+    /* WHY: we use a hidden menu item or just skip it if we want it clean. */
+    /* WHY: Let's add it as an 'alternate' to the same menu item if possible, */
+    /* WHY: but Cocoa NSMenuItem doesn't easily support two shortcuts for one item. */
+    /* WHY: A common trick is to add another item with the same action/tag but make it hidden. */
     NSMenuItem *paletteItem2 = [[NSMenuItem alloc]
         initWithTitle:@"Command Palette…"
         action:action
         keyEquivalent:@"p"];
     [paletteItem2 setTarget:g_target];
     [paletteItem2 setTag:TAG_COMMAND_PALETTE];
-    [paletteItem2 setHidden:YES]; // Hide from view but keep shortcut active
+    [paletteItem2 setHidden:YES]; /* WHY: Hide from view but keep shortcut active */
     [viewMenu addItem:paletteItem2];
     
     g_command_palette_item = paletteItem;
@@ -187,7 +187,7 @@ void katana_setup_native_menu(void) {
     NSMenuItem *viewMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     [viewMenuItem setSubmenu:viewMenu];
 
-    // --- Settings > Language ---
+    /* WHY: --- Settings > Language --- */
     NSMenu *langMenu = [[NSMenu alloc] initWithTitle:@"Language"];
     g_language_menu = langMenu;
 
@@ -268,7 +268,7 @@ void katana_setup_native_menu(void) {
     NSMenuItem *settingsMenuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     [settingsMenuItem setSubmenu:settingsMenu];
 
-    // --- Help Menu ---
+    /* WHY: --- Help Menu --- */
     NSMenu *helpMenu = [[NSMenu alloc] initWithTitle:@"Help"];
     g_help_menu = helpMenu;
     
@@ -284,7 +284,7 @@ void katana_setup_native_menu(void) {
     NSMenuItem *helpMenuItem = [[NSMenuItem alloc] initWithTitle:@"Help" action:nil keyEquivalent:@""];
     [helpMenuItem setSubmenu:helpMenu];
 
-    // --- Build Main Menu ---
+    /* WHY: --- Build Main Menu --- */
     NSMenu *mainMenu = [[NSMenu alloc] initWithTitle:@""];
     [NSApp setMainMenu:mainMenu];
     [mainMenu addItem:appMenuItem];
@@ -293,8 +293,8 @@ void katana_setup_native_menu(void) {
     [mainMenu addItem:settingsMenuItem];
     [mainMenu addItem:helpMenuItem];
 
-    // Prevent macOS from auto-injecting the Spotlight Search box into our custom "Help" menu
-    // by explicitly giving it a dummy, detached Help Menu.
+    /* WHY: Prevent macOS from auto-injecting the Spotlight Search box into our custom "Help" menu */
+    /* WHY: by explicitly giving it a dummy, detached Help Menu. */
     NSMenu *dummyHelpMenu = [[NSMenu alloc] initWithTitle:@"DummyHelp"];
     [NSApp setHelpMenu:dummyHelpMenu];
 }
@@ -341,7 +341,7 @@ void katana_update_menu_strings(
         }
         if (g_command_palette_item && command_palette) {
             [g_command_palette_item setTitle:[NSString stringWithUTF8String:command_palette]];
-            // Also update the hidden parallel shortcut item if needed
+            /* WHY: Also update the hidden parallel shortcut item if needed */
             for (NSMenuItem *item in [g_view_menu itemArray]) {
                 if ([item tag] == TAG_COMMAND_PALETTE) {
                     [item setTitle:[NSString stringWithUTF8String:command_palette]];

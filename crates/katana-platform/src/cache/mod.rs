@@ -11,20 +11,20 @@ pub use memory::InMemoryCacheService;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use serde::{Deserialize, Serialize};
 
-// WHY: A Facade for managing both ephemeral (in-memory) and durable (persistent) caches.
+/* WHY: A Facade for managing both ephemeral (in-memory) and durable (persistent) caches. */
 pub trait CacheFacade: Send + Sync {
-    // WHY: Retrieves a value from the in-memory cache.
+    /* WHY: Retrieves a value from the in-memory cache. */
     fn get_memory(&self, key: &str) -> Option<String>;
-    // WHY: Stores a value in the in-memory cache. Note: this does not persist across application restarts.
+    /* WHY: Stores a value in the in-memory cache. Note: this does not persist across application restarts. */
     fn set_memory(&self, key: &str, value: String);
 
-    // WHY: Retrieves a value from the persistent cache.
+    /* WHY: Retrieves a value from the persistent cache. */
     fn get_persistent(&self, key: &str) -> Option<String>;
-    // WHY: Stores a value in the persistent cache, syncing to disk.
+    /* WHY: Stores a value in the persistent cache, syncing to disk. */
     #[allow(clippy::missing_errors_doc)]
     fn set_persistent(&self, key: &str, value: String) -> anyhow::Result<()>;
 
-    // WHY: Clears diagram cache entries from persistent storage
+    /* WHY: Clears diagram cache entries from persistent storage */
     fn clear_diagram_cache(&self) {}
 }
 
@@ -45,7 +45,7 @@ impl LockOps {
     }
 }
 
-// WHY: Structured canonical key for persistent cache entries.
+/* WHY: Structured canonical key for persistent cache entries. */
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "namespace")]
 pub enum PersistentKey {
@@ -62,7 +62,7 @@ pub enum PersistentKey {
     Unknown,
 }
 
-// WHY: Envelope to hold metadata and data for per-key persistent files.
+/* WHY: Envelope to hold metadata and data for per-key persistent files. */
 #[derive(Serialize, Deserialize)]
 pub struct PersistentEntryEnvelope {
     pub storage_version: u32,
@@ -71,7 +71,7 @@ pub struct PersistentEntryEnvelope {
 }
 
 impl PersistentKey {
-    // WHY: Encode to a flat string for passing through CacheFacade
+    /* WHY: Encode to a flat string for passing through CacheFacade */
     pub fn to_raw_key(&self) -> Option<String> {
         match self {
             Self::WorkspaceTabs { workspace_path } => {
@@ -97,7 +97,7 @@ impl PersistentKey {
         }
     }
 
-    // WHY: Decode the logical key from a raw string received by CacheFacade.
+    /* WHY: Decode the logical key from a raw string received by CacheFacade. */
     pub fn from_raw_key(raw_key: &str) -> Option<Self> {
         const MAX_TOKEN_COUNT: usize = 5;
         let parts: Vec<&str> = raw_key.splitn(MAX_TOKEN_COUNT, ':').collect();
@@ -121,7 +121,7 @@ impl PersistentKey {
         }
     }
 
-    // WHY: Hash the raw key to avoid special path characters (slashes, colons) in filenames.
+    /* WHY: Hash the raw key to avoid special path characters (slashes, colons) in filenames. */
     pub fn target_filename(&self) -> Option<String> {
         match self {
             Self::WorkspaceTabs { .. } => {
@@ -143,9 +143,9 @@ impl PersistentKey {
 const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
 const FNV_PRIME: u64 = 0x100000001b3;
 
-// WHY: Ensures file names are stable across runs and Rust toolchains (unlike DefaultHasher)
+/* WHY: Ensures file names are stable across runs and Rust toolchains (unlike DefaultHasher) */
 fn deterministic_hash(data: &str) -> u64 {
-    // WHY: FNV-1a 64-bit is zero-dependency and produces stable, well-distributed hashes.
+    /* WHY: FNV-1a 64-bit is zero-dependency and produces stable, well-distributed hashes. */
     let mut hash: u64 = FNV_OFFSET_BASIS;
     for b in data.bytes() {
         hash ^= b as u64;

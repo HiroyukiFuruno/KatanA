@@ -161,8 +161,8 @@ fn test_integration_toc_panel_display() {
     let toggle_btn_label = I18nOps::get().action.toggle_toc.clone();
     let toggle_btn = harness.get_by_label(&toggle_btn_label);
     toggle_btn.click();
-    harness.step(); // UI Registers click, sets pending_action = ToggleToc
-    harness.step(); // KatanaApp reads pending_action, sets show_toc = true, renders TOC panel
+    harness.step(); /* WHY: UI Registers click, sets pending_action = ToggleToc */
+    harness.step(); /* WHY: KatanaApp reads pending_action, sets show_toc = true, renders TOC panel */
 
     let toc_visible = harness.state_mut().app_state_mut().layout.show_toc;
     assert!(toc_visible, "show_toc should be true after clicking button");
@@ -336,7 +336,7 @@ fn test_integration_changelog_tab_display() {
 
     harness.get_by_label("Fixed the close button overlap");
 
-    let header_label = "v0.8.0"; // It's open by default now!
+    let header_label = "v0.8.0"; /* WHY: It's open by default now! */
     harness.get_by_label(header_label).hover();
     harness.step();
     harness.get_by_label(header_label).click();
@@ -543,12 +543,12 @@ fn test_integration_workspace_directory_toggle_non_recursive() {
     );
 
     let parent_label = harness.get_by_label("dir dir1");
-    parent_label.click(); // Collapses dir1
+    parent_label.click();
     harness.step();
     harness.step();
 
     let parent_label = harness.get_by_label("dir dir1");
-    parent_label.click(); // Expands dir1
+    parent_label.click();
     harness.step();
     harness.step();
 
@@ -560,7 +560,7 @@ fn test_integration_workspace_directory_toggle_non_recursive() {
         "test.md should be visible after closing and reopening dir1 (cached expansion)"
     );
 
-    let collapse_all = harness.get_by_label("-"); // The collapse all button has text "-"
+    let collapse_all = harness.get_by_label("-"); /* WHY: The collapse all button has text "-" */
     collapse_all.click();
     harness.step();
     harness.step();
@@ -833,7 +833,7 @@ fn test_integration_open_all_markdown() {
         "Should not duplicate tabs on re-opening"
     );
 
-    assert_eq!(state.document.active_doc_idx, Some(0)); // First file is activated
+    assert_eq!(state.document.active_doc_idx, Some(0)); /* WHY: First file is activated */
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -897,7 +897,7 @@ fn test_integration_directory_collapse_bug() {
         .workspace
         .force_tree_open = Some(false);
     harness.step();
-    harness.step(); // ensure flushed
+    harness.step();
 
     let parent_visible = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         harness.get_by_label("dir parent")
@@ -1672,7 +1672,7 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
         .state_mut()
         .app_state_mut()
         .set_active_view_mode(ViewMode::Split);
-    harness.step(); // UI should render and the '⇕' button should appear
+    harness.step(); /* WHY: UI should render and the '⇕' button should appear */
 
     assert_eq!(
         harness.state_mut().app_state_mut().active_split_direction(),
@@ -1682,7 +1682,7 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
     let node = harness.get_by_label("Toggle Split Direction");
     node.click();
     harness.step();
-    harness.step(); // Action is processed on the next frame
+    harness.step(); /* WHY: Action is processed on the next frame */
 
     assert_eq!(
         harness.state_mut().app_state_mut().active_split_direction(),
@@ -2143,9 +2143,9 @@ fn test_search_modal_include_exclude_options() {
     harness.step();
     assert_eq!(harness.state_mut().app_state_mut().search.results.len(), 2);
 
-    harness.state_mut().app_state_mut().search.query = "a".to_string(); // 'apple.md' and 'banana.md' have 'a'
+    harness.state_mut().app_state_mut().search.query = "a".to_string(); /* WHY: 'apple.md' and 'banana.md' have 'a' */
     harness.state_mut().app_state_mut().search.include_pattern = ".md".to_string();
-    harness.state_mut().app_state_mut().search.exclude_pattern = "banana".to_string(); // excludes 'banana.md'
+    harness.state_mut().app_state_mut().search.exclude_pattern = "banana".to_string();
     harness.step();
     assert_eq!(harness.state_mut().app_state_mut().search.results.len(), 1);
     assert!(harness.state_mut().app_state_mut().search.results[0].ends_with("apple.md"));
@@ -2170,7 +2170,7 @@ fn test_search_sidebar_buttons() {
         "Search button must be present in the workspace sidebar"
     );
 
-    let filter_nodes: Vec<_> = harness.query_all_by_label("\u{2207}").collect(); // ∇
+    let filter_nodes: Vec<_> = harness.query_all_by_label("\u{2207}").collect();
     assert!(
         !filter_nodes.is_empty(),
         "Filter button (\u{2207}) must be present in the workspace sidebar"
@@ -3335,7 +3335,7 @@ fn test_ast_linter_locales() {
     for (filename, target_json) in &locales {
         if filename == "en.json" {
             continue;
-        } // en is the baseline structure
+        } /* WHY: en is the baseline structure */
 
         fn check_structure_and_values(
             en_val: &serde_json::Value,
@@ -3474,7 +3474,7 @@ fn test_integration_session_upgrade_from_legacy_payload() {
     std::fs::write(&test_file, "# Legacy Tab").unwrap();
     let abs_path = test_file.canonicalize().unwrap_or(test_file.clone());
 
-    // Inject legacy session JSON into persistent cache
+    /* WHY: Inject legacy session JSON into persistent cache */
     let legacy_json = serde_json::json!({
         "tabs": [abs_path.display().to_string()],
         "active_idx": 0,
@@ -3500,7 +3500,7 @@ fn test_integration_session_upgrade_from_legacy_payload() {
         .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
     wait_for_workspace_load(&mut harness);
 
-    // Ensure the tab loaded normally (not pinned)
+    /* WHY: Ensure the tab loaded normally (not pinned) */
     let app = harness.state_mut().app_state_mut();
     assert_eq!(app.document.open_documents.len(), 1);
     assert_eq!(app.document.open_documents[0].path, abs_path);
@@ -3601,7 +3601,7 @@ fn test_integration_close_policy_batch_skips_pinned() {
     harness.step();
     harness
         .state_mut()
-        .trigger_action(AppAction::TogglePinDocument(0)); // pin first document
+        .trigger_action(AppAction::TogglePinDocument(0)); /* WHY: pin first document */
     harness.step();
 
     harness
@@ -3609,7 +3609,6 @@ fn test_integration_close_policy_batch_skips_pinned() {
         .trigger_action(AppAction::SelectDocument(abs2));
     harness.step();
 
-    // Verify setup
     assert_eq!(
         harness
             .state_mut()
@@ -3629,7 +3628,7 @@ fn test_integration_close_policy_batch_skips_pinned() {
         .trigger_action(AppAction::CloseAllDocuments);
     harness.step();
 
-    // The pinned tab should still be there, unpinned tab removed
+    /* WHY: The pinned tab should still be there, unpinned tab removed */
     assert_eq!(
         harness
             .state_mut()
@@ -3667,13 +3666,12 @@ fn test_integration_search_stale_matches_on_tab_switch() {
     let abs1 = file1.canonicalize().unwrap_or(file1);
     let abs2 = file2.canonicalize().unwrap_or(file2);
 
-    // Open first file
+    /* WHY: Open first file */
     harness
         .state_mut()
         .trigger_action(AppAction::SelectDocument(abs1));
     harness.step();
 
-    // Perform search
     harness.state_mut().trigger_action(AppAction::OpenDocSearch);
     harness.step();
     harness.state_mut().app_state_mut().search.doc_search_query = "KatanA".to_string();
@@ -3683,7 +3681,7 @@ fn test_integration_search_stale_matches_on_tab_switch() {
     harness.step();
     harness.step();
 
-    // Verify match found in a.md
+    /* WHY: Verify match found in a.md */
     assert_eq!(
         harness
             .state_mut()
@@ -3695,14 +3693,14 @@ fn test_integration_search_stale_matches_on_tab_switch() {
         "Should find 1 match in a.md"
     );
 
-    // Switch to second file
+    /* WHY: Switch to second file */
     harness
         .state_mut()
         .trigger_action(AppAction::SelectDocument(abs2));
     harness.step();
     harness.step();
 
-    // Verify match is updated and cleared for b.md
+    /* WHY: Verify match is updated and cleared for b.md */
     assert_eq!(
         harness
             .state_mut()
@@ -3725,7 +3723,7 @@ fn test_integration_search_multibyte_character_offsets() {
 
     let temp_dir = fresh_temp_dir("katana_test_search_multibyte");
     let file1 = temp_dir.join("multibyte.md");
-    // "\u{3042}\u{3044}\u{3046}" is 3 chars, 9 bytes. length of "\u{3042}\u{3044}\u{3046}" = 3 chars. "Search" starts at char index 3, but byte index 9.
+    /* WHY: "\u{3042}\u{3044}\u{3046}" is 3 chars, 9 bytes. length of "\u{3042}\u{3044}\u{3046}" = 3 chars. "Search" starts at char index 3, but byte index 9. */
     std::fs::write(&file1, "\u{3042}\u{3044}\u{3046}Search").unwrap();
 
     harness
@@ -3755,8 +3753,8 @@ fn test_integration_search_multibyte_character_offsets() {
         .search
         .doc_search_matches;
     assert_eq!(matches.len(), 1, "Should find exactly 1 match");
-    // If the index used byte offsets, it would report range 9..15.
-    // If it correctly uses char offsets, it should report 3..9.
+    /* WHY: If the index used byte offsets, it would report range 9..15. */
+    /* WHY: If it correctly uses char offsets, it should report 3..9. */
     assert_eq!(
         matches[0],
         3..9,
@@ -3770,7 +3768,7 @@ fn test_integration_search_multibyte_character_offsets() {
 /// This is the definitive regression test for tab pinning + group persistence.
 #[test]
 fn test_integration_roundtrip_pinning_and_groups_persistence() {
-    // -- Phase 1: Build state via app actions --
+    /* WHY: -- Phase 1: Build state via app actions -- */
     let mut harness = setup_harness();
     harness.step();
 
@@ -3782,7 +3780,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     std::fs::write(&file2, "# Beta").unwrap();
     std::fs::write(&file3, "# Gamma").unwrap();
 
-    // Enable session restore
+    /* WHY: Enable session restore */
     harness
         .state_mut()
         .app_state_mut()
@@ -3801,7 +3799,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     let abs2 = file2.canonicalize().unwrap_or(file2.clone());
     let abs3 = file3.canonicalize().unwrap_or(file3.clone());
 
-    // Open 3 files
+    /* WHY: Open 3 files */
     harness
         .state_mut()
         .trigger_action(AppAction::SelectDocument(abs1.clone()));
@@ -3815,8 +3813,8 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         .trigger_action(AppAction::SelectDocument(abs3.clone()));
     harness.step();
 
-    // Pin first tab (alpha)
-    // After TogglePinDocument, the pinned tab is sorted to front
+    /* WHY: Pin first tab (alpha) */
+    /* WHY: After TogglePinDocument, the pinned tab is sorted to front */
     let alpha_idx = harness
         .state_mut()
         .app_state_mut()
@@ -3830,7 +3828,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         .trigger_action(AppAction::TogglePinDocument(alpha_idx));
     harness.step();
 
-    // Verify pinning worked
+    /* WHY: Verify pinning worked */
     let pinned_doc = &harness.state_mut().app_state_mut().document.open_documents[0];
     assert!(
         pinned_doc.is_pinned,
@@ -3838,7 +3836,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     );
     assert_eq!(pinned_doc.path, abs1, "Pinned doc should be alpha");
 
-    // Create a tab group with beta
+    /* WHY: Create a tab group with beta */
     harness
         .state_mut()
         .trigger_action(AppAction::CreateTabGroup {
@@ -3848,7 +3846,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         });
     harness.step();
 
-    // Verify group was created
+    /* WHY: Verify group was created */
     let groups = &harness.state_mut().app_state_mut().document.tab_groups;
     assert_eq!(groups.len(), 1, "Should have 1 group");
     assert_eq!(groups[0].name, "TestGroup");
@@ -3856,7 +3854,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     assert_eq!(groups[0].members.len(), 1);
     assert_eq!(groups[0].members[0], abs2.display().to_string());
 
-    // -- Phase 2: Read from cache and verify serialized JSON --
+    /* WHY: -- Phase 2: Read from cache and verify serialized JSON -- */
     let mut ws_str = temp_dir.to_string_lossy().to_string();
     if ws_str.ends_with('/') || ws_str.ends_with('\\') {
         ws_str.pop();
@@ -3883,14 +3881,13 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     let parsed: serde_json::Value =
         serde_json::from_str(&cached_json).expect("Cached JSON must be valid");
 
-    // Verify version
     assert_eq!(parsed["version"], 2, "Session format must be V2");
 
-    // Verify tabs array contains all 3 with correct pinned flags
+    /* WHY: Verify tabs array contains all 3 with correct pinned flags */
     let tabs = parsed["tabs"].as_array().expect("tabs must be array");
     assert_eq!(tabs.len(), 3, "Should have 3 tabs serialized");
 
-    // Find alpha in tabs and verify it's pinned
+    /* WHY: Find alpha in tabs and verify it's pinned */
     let alpha_str = abs1.display().to_string();
     let alpha_tab = tabs
         .iter()
@@ -3901,7 +3898,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         "alpha must be serialized as pinned"
     );
 
-    // Find beta and gamma - should not be pinned
+    /* WHY: Find beta and gamma - should not be pinned */
     let beta_str = abs2.display().to_string();
     let beta_tab = tabs
         .iter()
@@ -3922,7 +3919,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         "gamma must be serialized as not pinned"
     );
 
-    // Verify groups array
+    /* WHY: Verify groups array */
     let groups_json = parsed["groups"].as_array().expect("groups must be array");
     assert_eq!(groups_json.len(), 1, "Should have 1 group serialized");
     assert_eq!(groups_json[0]["name"], "TestGroup");
@@ -3933,7 +3930,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
     assert_eq!(members.len(), 1);
     assert_eq!(members[0].as_str().unwrap(), beta_str);
 
-    // -- Phase 3: Restore from cached state in a new harness --
+    /* WHY: -- Phase 3: Restore from cached state in a new harness -- */
     let mut harness2 = setup_harness();
     harness2.step();
 
@@ -3946,7 +3943,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         .workspace
         .restore_session = true;
 
-    // Inject the cached JSON (simulating app restart)
+    /* WHY: Inject the cached JSON (simulating app restart) */
     harness2
         .state_mut()
         .app_state_mut()
@@ -3962,14 +3959,14 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
 
     let app2 = harness2.state_mut().app_state_mut();
 
-    // Verify restored tabs count
+    /* WHY: Verify restored tabs count */
     assert_eq!(
         app2.document.open_documents.len(),
         3,
         "Should restore all 3 tabs"
     );
 
-    // Verify pinned state survived roundtrip
+    /* WHY: Verify pinned state survived roundtrip */
     let restored_alpha = app2
         .document
         .open_documents
@@ -4003,7 +4000,7 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
         "gamma must not be pinned after restore"
     );
 
-    // Verify groups survived roundtrip
+    /* WHY: Verify groups survived roundtrip */
     assert_eq!(app2.document.tab_groups.len(), 1, "Should restore 1 group");
     assert_eq!(app2.document.tab_groups[0].name, "TestGroup");
     assert_eq!(app2.document.tab_groups[0].color_hex, "#E74C3C");

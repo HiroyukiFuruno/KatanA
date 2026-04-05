@@ -17,7 +17,7 @@ impl OsThemeOps {
     }
 }
 
-// WHY: ── Platform implementations ──────────────────────────────────────────
+/* WHY: ── Platform implementations ────────────────────────────────────────── */
 
 #[cfg(target_os = "macos")]
 fn detect_dark_mode_impl() -> Option<bool> {
@@ -28,7 +28,7 @@ fn detect_dark_mode_impl() -> Option<bool> {
     if name.is_null() {
         return None;
     }
-    // SAFETY: katana_macos_appearance_name returns a valid C string or NULL.
+    /* SAFETY: katana_macos_appearance_name returns a valid C string or NULL. */
     let cstr = unsafe { CStr::from_ptr(name) };
     let appearance = cstr.to_string_lossy();
     Some(appearance.contains("Dark"))
@@ -36,11 +36,11 @@ fn detect_dark_mode_impl() -> Option<bool> {
 
 #[cfg(not(target_os = "macos"))]
 fn detect_dark_mode_impl() -> Option<bool> {
-    // WHY: Dark mode detection is not supported on non-macOS platforms.
+    /* WHY: Dark mode detection is not supported on non-macOS platforms. */
     None
 }
 
-// WHY: ── macOS FFI ─────────────────────────────────────────────────────────
+/* WHY: ── macOS FFI ───────────────────────────────────────────────────────── */
 
 #[cfg(target_os = "macos")]
 unsafe extern "C" {
@@ -65,7 +65,7 @@ mod tests {
         #[cfg(not(target_os = "macos"))]
         assert!(result.is_none(), "non-macOS must return None");
         #[cfg(target_os = "macos")]
-        // WHY: Either None (test env, no NSApp) or Some(bool) (running inside the app).
-        let _ = result; // WHY: any value is acceptable in test environment
+        /* WHY: Either None (test env, no NSApp) or Some(bool) (running inside the app). */
+        let _ = result; /* WHY: any value is acceptable in test environment */
     }
 }

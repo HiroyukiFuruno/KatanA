@@ -8,8 +8,8 @@ mod sourcepos_tests {
     #[test]
     fn test_sourcepos_bytes() {
         let arena = Arena::new();
-        // WHY:                   0         1         2
-        // WHY:                   0123456789012345678901234567
+        /* WHY:                   0         1         2 */
+        /* WHY:                   0123456789012345678901234567 */
         let src = "Hello\nThis is an ![alt](test.png) text\n";
         let doc = parse_document(&arena, src, &Options::default());
         for node in doc.descendants() {
@@ -51,7 +51,7 @@ mod split_tests {
         let sections = PreviewSectionOps::split_into_sections(md);
         assert_eq!(sections.len(), 1);
         if let PreviewSection::Markdown(text) = &sections[0] {
-            // WHY: split_sections does not process math — text is passed as-is to downstream rendering.
+            /* WHY: split_sections does not process math — text is passed as-is to downstream rendering. */
             assert!(text.contains("$ E = mc^2 $"));
             assert!(text.contains("$ 500 $ 10."));
         } else {

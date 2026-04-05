@@ -31,7 +31,7 @@ impl FunctionLengthVisitor {
     fn check_length(&mut self, name: &syn::Ident, block: &syn::Block) {
         let (start, _) = LinterParserOps::span_location(block.brace_token.span.join());
         let (end, _) = LinterParserOps::span_location(block.brace_token.span.join());
-        // WHY: Both span calls return the same token's location; end is approximated from brace span.
+        /* WHY: Both span calls return the same token's location; end is approximated from brace span. */
         let lines = end.saturating_sub(start);
         if lines > MAX_FUNCTION_LINES {
             let (name_line, name_column) = LinterParserOps::span_location(name.span());

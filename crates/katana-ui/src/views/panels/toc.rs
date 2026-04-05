@@ -67,7 +67,7 @@ impl<'a> TocPanel<'a> {
                             let mut next_scroll = None;
                             for (i, item) in preview.outline_items.iter().enumerate() {
                                 let indent = (item.level as f32 - 1.0) * TOC_INDENT_PER_LEVEL;
-                                // WHY: allow(horizontal_layout)
+                                /* WHY: allow(horizontal_layout) */
                                 crate::widgets::AlignCenter::new()
                                     .shrink_to_fit(true)
                                     .content(|ui| {

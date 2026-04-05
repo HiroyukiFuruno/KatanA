@@ -55,7 +55,7 @@ impl MermaidRenderOps {
     /* WHY: PNG output ensures mmdc (Puppeteer) correctly renders all SVG elements. Bypasses text loss caused by <foreignObject> which resvg doesn't support. */
     pub fn run_mmdc_process(source: &str) -> Result<Vec<u8>, String> {
         let input_file = Self::create_input_file(source)?;
-        // WHY: mmdc determines the format by the output file's extension.
+        /* WHY: mmdc determines the format by the output file's extension. */
         let output_path = input_file.path().with_extension("png");
 
         let preset = DiagramColorPreset::current();

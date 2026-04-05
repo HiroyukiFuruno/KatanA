@@ -1,7 +1,7 @@
 use crate::cache::{CacheFacade, LockOps};
 use parking_lot::RwLock;
 
-// WHY: An in-memory only CacheFacade for tests.
+/* WHY: An in-memory only CacheFacade for tests. */
 #[derive(Default)]
 pub struct InMemoryCacheService {
     memory: RwLock<Vec<(String, String)>>,

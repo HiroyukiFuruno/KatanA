@@ -112,7 +112,7 @@ impl<'ast> Visit<'ast> for MagicNumberVisitor {
 
 impl MagicNumberVisitor {
     fn current_depth_or_similar_guard_if_needed(&mut self) {
-        // WHY: This guard exists solely to maintain structural parity with similar visitors; it has no runtime effect.
+        /* WHY: This guard exists solely to maintain structural parity with similar visitors; it has no runtime effect. */
     }
 }
 

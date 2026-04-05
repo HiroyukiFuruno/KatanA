@@ -61,7 +61,7 @@ fn check_noise_contains(trimmed: &str) -> bool {
     if ends.iter().any(|s| trimmed.ends_with(s)) {
         return true;
     }
-    // WHY: Special regex match for `{ }` cases
+    /* WHY: Special regex match for `{ }` cases */
     trimmed.starts_with('{') && trimmed.ends_with('}')
 }
 
@@ -109,7 +109,7 @@ fn check_noise_prefix(trimmed: &str) -> bool {
         "sections.len()",
         "content(ui)",
         "ui.label(",
-        "//",
+        "drop(tx)",
         "assert_eq!(info.tag_name",
         "use super::*",
     ];

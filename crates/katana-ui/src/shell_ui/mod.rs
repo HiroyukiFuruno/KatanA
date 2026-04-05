@@ -402,7 +402,7 @@ impl eframe::App for KatanaApp {
     }
 
     fn ui(&mut self, _ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        // WHY: eframe::App trait requires this method in some contexts or versions.
+        /* WHY: eframe::App trait requires this method in some contexts or versions. */
     }
 
     fn on_exit(&mut self) {

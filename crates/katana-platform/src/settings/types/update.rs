@@ -1,26 +1,26 @@
 use serde::{Deserialize, Serialize};
 
-// WHY: Interval for checking for application updates.
+/* WHY: Interval for checking for application updates. */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum UpdateInterval {
-    // WHY: Skip automatic updates
+    /* WHY: Skip automatic updates */
     Never,
-    // WHY: Check for updates daily
+    /* WHY: Check for updates daily */
     #[default]
     Daily,
-    // WHY: Check for updates weekly
+    /* WHY: Check for updates weekly */
     Weekly,
-    // WHY: Check for updates monthly
+    /* WHY: Check for updates monthly */
     Monthly,
 }
 
-// WHY: Auto-updater configuration.
+/* WHY: Auto-updater configuration. */
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UpdateSettings {
-    // WHY: The interval at which the app should check for updates.
+    /* WHY: The interval at which the app should check for updates. */
     #[serde(default)]
     pub interval: UpdateInterval,
-    // WHY: The last time an update check was performed (UNIX timestamp in seconds).
+    /* WHY: The last time an update check was performed (UNIX timestamp in seconds). */
     #[serde(default)]
     pub last_checked_timestamp_sec: Option<u64>,
     /* WHY: Version tag the user explicitly chose to skip (e.g. "v0.8.0").

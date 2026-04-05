@@ -39,7 +39,7 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn is_emoji_scalar_covers_supplemental_arrows_range() {
-        // WHY: 0x2934 = ⤴ (ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS)
+        /* WHY: 0x2934 = ⤴ (ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS) */
         assert!(EmojiDataOps::is_emoji_scalar('\u{2934}'));
         assert!(EmojiDataOps::is_emoji_scalar('\u{2935}'));
     }
@@ -47,7 +47,7 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn is_emoji_scalar_covers_misc_symbols_range() {
-        // WHY: 0x2B05 = ⬅ (LEFTWARDS BLACK ARROW)
+        /* WHY: 0x2B05 = ⬅ (LEFTWARDS BLACK ARROW) */
         assert!(EmojiDataOps::is_emoji_scalar('\u{2B05}'));
         assert!(EmojiDataOps::is_emoji_scalar('\u{2B55}'));
     }
@@ -55,7 +55,7 @@ mod tests {
     #[test]
     #[cfg(target_os = "macos")]
     fn is_emoji_scalar_covers_emoticons_range() {
-        // WHY: 0x1F000..=0x1FAFF — Mahjong Tiles through Symbols Extended-A
+        /* WHY: 0x1F000..=0x1FAFF — Mahjong Tiles through Symbols Extended-A */
         assert!(EmojiDataOps::is_emoji_scalar('\u{1F600}'));
         assert!(EmojiDataOps::is_emoji_scalar('\u{1F000}'));
     }

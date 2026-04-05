@@ -1145,10 +1145,8 @@ Paragraph with a footnote reference[^1].
     );
 }
 
-// ============================================================================
-// TDD RED: Task List Rendering Regression Tests
-// These tests reproduce reported bugs. They MUST fail with unfixed code.
-// ============================================================================
+/* WHY: TDD RED: Task List Rendering Regression Tests */
+/* WHY: These tests reproduce reported bugs. They MUST fail with unfixed code. */
 
 /// RED test: Task list items must NOT have bullets.
 /// Detects the bug by comparing X positions: if a bullet is rendered before
@@ -1164,7 +1162,7 @@ Paragraph with a footnote reference[^1].
 /// The task text should NOT be significantly further right than bullet text.
 #[test]
 fn red_task_list_no_bullet_before_checkbox() {
-    // Render a regular bullet list and a task list side by side
+    /* WHY: Render a regular bullet list and a task list side by side */
     let md_regular = "- Regular item\n- Second regular\n";
     let md_task = "- [ ] Task item\n- [x] Done task\n";
 
@@ -1174,7 +1172,7 @@ fn red_task_list_no_bullet_before_checkbox() {
     let pane_task = render_snippet(md_task);
     let harness_task = build_harness(pane_task.sections.clone(), 800.0, 200.0);
 
-    // Get X position of text in regular list (has bullet)
+    /* WHY: Get X position of text in regular list (has bullet) */
     let regular_text = harness_regular.get_by_label("Regular item");
     let regular_x = regular_text
         .accesskit_node()
@@ -1182,7 +1180,7 @@ fn red_task_list_no_bullet_before_checkbox() {
         .expect("Regular item should have bounds")
         .x0;
 
-    // Get X position of text in task list (should have checkbox but NO bullet)
+    /* WHY: Get X position of text in task list (should have checkbox but NO bullet) */
     let task_text = harness_task.get_by_label("Task item");
     let task_x = task_text
         .accesskit_node()
@@ -1190,18 +1188,18 @@ fn red_task_list_no_bullet_before_checkbox() {
         .expect("Task item should have bounds")
         .x0;
 
-    // If a bullet is rendered BEFORE the checkbox, the task text would be
-    // shifted right by approximately bullet_width + gaps.
-    // The task text should start at roughly the same X as regular text,
-    // plus the checkbox width and its gap (which replaces the bullet).
-    // But it should NOT be double-offset (bullet + checkbox).
-    //
-    // With bug: task_x ≈ regular_x + checkbox_width + extra_gap (much further right)
-    // Without bug: task_x ≈ regular_x + (checkbox_width - bullet_width)
-    //
-    // A simple assertion: task_x should be less than regular_x + 60px.
-    // The checkbox is ~18px, bullet is ~24px, so offset should be small.
-    // With the double-marker bug, offset would be 40+ px extra.
+    /* WHY: If a bullet is rendered BEFORE the checkbox, the task text would be */
+    /* WHY: shifted right by approximately bullet_width + gaps. */
+    /* WHY: The task text should start at roughly the same X as regular text, */
+    /* WHY: plus the checkbox width and its gap (which replaces the bullet). */
+    /* WHY: But it should NOT be double-offset (bullet + checkbox). */
+
+    /* WHY: With bug: task_x ≈ regular_x + checkbox_width + extra_gap (much further right) */
+    /* WHY: Without bug: task_x ≈ regular_x + (checkbox_width - bullet_width) */
+
+    /* WHY: A simple assertion: task_x should be less than regular_x + 60px. */
+    /* WHY: The checkbox is ~18px, bullet is ~24px, so offset should be small. */
+    /* WHY: With the double-marker bug, offset would be 40+ px extra. */
     let max_allowed_offset = 60.0;
     eprintln!("=== red_task_list_no_bullet_before_checkbox ===");
     eprintln!(
@@ -1276,7 +1274,7 @@ fn red_dor_pattern_consistent_alignment() {
     let pane = render_snippet(md);
     let harness = build_harness(pane.sections.clone(), 800.0, 800.0);
 
-    // Instead of doing it dynamically, let's just get specific item names
+    /* WHY: Instead of doing it dynamically, let's just get specific item names */
     let labels = [
         "Previous task must",
         "Base branch must",
@@ -1310,7 +1308,7 @@ fn red_dor_pattern_consistent_alignment() {
         .unwrap()
         .x0;
 
-    // All task items should have the same X alignment (within tolerance)
+    /* WHY: All task items should have the same X alignment (within tolerance) */
     let tolerance = 5.0;
     assert!(
         (x1 - x2).abs() < tolerance,
@@ -1396,19 +1394,19 @@ fn red_text_click_toggles_task_state() {
             }
         });
 
-    // Step to render the initial frame
+    /* WHY: Step to render the initial frame */
     for _ in 0..5 {
         harness.step();
     }
     harness.run();
 
-    // Find the text label - it should be interactable (have Sense::click)
+    /* WHY: Find the text label - it should be interactable (have Sense::click) */
     let text_node = harness.get_by_label("Click this text to toggle");
 
     text_node.click();
     harness.run();
 
-    // After clicking text, we should find that the pane generated a TaskListAction
+    /* WHY: After clicking text, we should find that the pane generated a TaskListAction */
     let captured_actions = captured_actions.lock().unwrap();
     assert!(
         !captured_actions.is_empty(),
@@ -1469,7 +1467,7 @@ fn test_numbered_task_lists_increment() {
     harness.step();
     harness.run();
 
-    // Verify that the numbered list renders text properly
+    /* WHY: Verify that the numbered list renders text properly */
     let first = harness.get_by_label("First numbered task");
     assert!(first.rect().height() > 0.0, "First text must exist");
 
@@ -1484,7 +1482,7 @@ fn test_numbered_task_lists_increment() {
     assert!(nested_first.rect().height() > 0.0);
     assert!(nested_second.rect().height() > 0.0);
 
-    // Verify Y increasing coordinates strictly
+    /* WHY: Verify Y increasing coordinates strictly */
     assert!(first.rect().top() < second.rect().top());
     assert!(second.rect().top() < nested_first.rect().top());
     assert!(nested_first.rect().top() < nested_second.rect().top());

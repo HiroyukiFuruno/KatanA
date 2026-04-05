@@ -12,23 +12,42 @@ impl CommentStyleOps {
 
         for (line_idx, line) in content.lines().enumerate() {
             let trimmed = line.trim();
+
+            /* WHY: Standard inline comments (//) are completely prohibited
+            to save context window and enforce formal annotations. */
             if trimmed.starts_with("//")
                 && !trimmed.starts_with("///")
                 && !trimmed.starts_with("//!")
             {
-                let text = trimmed.trim_start_matches('/').trim();
+                violations.push(Violation {
+                    file: path.to_path_buf(),
+                    line: line_idx + 1,
+                    column: 1,
+                    message: "Standard `//` comments are prohibited to save AI context. Use `/* WHY:`, `/// SAFETY:`, or `/// TODO:` for logic annotations.".to_string(),
+                });
+            }
 
-                // WHY: Zero-tolerance policy. Every comment must explain itself.
-                let is_valid = text.starts_with("WHY:")
-                    || text.starts_with("SAFETY:")
-                    || text.starts_with("TODO:");
+            /* WHY: If an annotation contains a justification keyword,
+            it MUST strictly start with it to prevent cheating. */
+            if trimmed.starts_with("///") || trimmed.starts_with("/*") {
+                let text = if trimmed.starts_with("///") {
+                    trimmed.trim_start_matches('/').trim()
+                } else {
+                    trimmed.trim_start_matches("/*").trim()
+                };
 
-                if !is_valid {
+                let contains_keyword =
+                    text.contains("WHY:") || text.contains("SAFETY:") || text.contains("TODO:");
+                let invalid_start = !text.starts_with("WHY:")
+                    && !text.starts_with("SAFETY:")
+                    && !text.starts_with("TODO:");
+
+                if contains_keyword && invalid_start {
                     violations.push(Violation {
                         file: path.to_path_buf(),
                         line: line_idx + 1,
                         column: 1,
-                        message: "Comments must start with `// WHY:`, `// SAFETY:`, or `// TODO:`. No exceptions.".to_string(),
+                        message: "Annotations containing WHY/SAFETY/TODO must strictly start with the keyword.".to_string(),
                     });
                 }
             }

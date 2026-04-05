@@ -103,7 +103,7 @@ impl TypeSeparationOps {
         if path_str.ends_with("lib.rs") || path_str.ends_with("main.rs") {
             return true;
         }
-        // WHY: These patterns represent files where type definitions and implementation are tightly coupled by design.
+        /* WHY: These patterns represent files where type definitions and implementation are tightly coupled by design. */
         if path_str.ends_with("defaults.rs")
             || path_str.ends_with("service.rs")
             || path_str.ends_with("repository.rs")

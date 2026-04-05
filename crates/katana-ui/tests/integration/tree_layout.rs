@@ -44,11 +44,11 @@ mod tests {
         let _ = std::fs::remove_dir_all(&temp_dir);
         std::fs::create_dir_all(&temp_dir).unwrap();
 
-        let sub_dir = temp_dir.join("aa_dir"); // Level 0
+        let sub_dir = temp_dir.join("aa_dir");
         std::fs::create_dir_all(&sub_dir).unwrap();
         std::fs::write(sub_dir.join("child.md"), "test").unwrap();
 
-        let root_file = temp_dir.join("zz_file.md"); // Level 0
+        let root_file = temp_dir.join("zz_file.md");
         std::fs::write(&root_file, "# Root").unwrap();
 
         harness

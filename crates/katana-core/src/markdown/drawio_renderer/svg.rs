@@ -15,7 +15,7 @@ impl DrawioSvgOps {
         let model = if xml.name == "mxGraphModel" {
             &xml
         } else if xml.name == "mxfile" {
-            // WHY: mxfile wraps diagram which wraps mxGraphModel
+            /* WHY: mxfile wraps diagram which wraps mxGraphModel */
             xml.get_child("diagram")
                 .and_then(|d| d.get_child("mxGraphModel"))
                 .or_else(|| xml.get_child("mxGraphModel"))
@@ -27,7 +27,7 @@ impl DrawioSvgOps {
         let root = match model.get_child("root") {
             Some(r) => r,
             None => {
-                // WHY: Empty mxGraphModel without <root> is valid — return empty SVG
+                /* WHY: Empty mxGraphModel without <root> is valid — return empty SVG */
                 return Ok(r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#.to_string());
             }
         };

@@ -1,4 +1,4 @@
-// WHY: Method implementations for `AppSettings`.
+/* WHY: Method implementations for `AppSettings`. */
 
 use crate::theme::ThemeColors;
 
@@ -17,7 +17,7 @@ impl AppSettings {
             .with_contrast_offset(self.theme.ui_contrast_offset)
     }
 
-    // WHY: Sets font size, clamping to the allowed range [`MIN_FONT_SIZE`, `MAX_FONT_SIZE`].
+    /* WHY: Sets font size, clamping to the allowed range [`MIN_FONT_SIZE`, `MAX_FONT_SIZE`]. */
     pub fn set_font_size(&mut self, size: f32) {
         self.font.size = size.clamp(MIN_FONT_SIZE, MAX_FONT_SIZE);
     }

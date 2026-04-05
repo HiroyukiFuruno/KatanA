@@ -463,7 +463,7 @@ mod tests {
         )
         .expect("rasterize with Width hint");
         assert_eq!(image.size[0], 200);
-        assert_eq!(image.size[1], 100); // 50 * (200/100)
+        assert_eq!(image.size[1], 100);
     }
 
     #[test]
@@ -474,7 +474,7 @@ mod tests {
             &sample_options(),
         )
         .expect("rasterize with Height hint");
-        assert_eq!(image.size[0], 200); // 100 * (100/50)
+        assert_eq!(image.size[0], 200);
         assert_eq!(image.size[1], 100);
     }
 

@@ -24,7 +24,7 @@ impl UpdateInstallerOps {
             .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.app"));
         let extracted_app_path = extract_dir.join(app_name);
 
-        // WHY: Verify the extracted bundle contains Info.plist to guard against corrupted or incomplete downloads.
+        /* WHY: Verify the extracted bundle contains Info.plist to guard against corrupted or incomplete downloads. */
         if !extracted_app_path.exists() || !extracted_app_path.join("Contents/Info.plist").exists()
         {
             anyhow::bail!("Extracted update does not contain a valid application bundle");

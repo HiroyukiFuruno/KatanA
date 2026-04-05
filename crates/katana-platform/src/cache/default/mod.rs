@@ -10,7 +10,7 @@ mod types;
 pub use types::DefaultCacheService;
 
 impl DefaultCacheService {
-    // WHY: Creates a new `DefaultCacheService` with the specified persistent root path.
+    /* WHY: Creates a new `DefaultCacheService` with the specified persistent root path. */
     pub fn new(persistent_path: PathBuf) -> Self {
         let kv_dir = if let Some(parent) = persistent_path.parent() {
             if parent.as_os_str().is_empty() {
@@ -69,16 +69,16 @@ impl DefaultCacheService {
                 }
 
                 if !failure {
-                    // WHY: Only delete the legacy file after all IO succeeded to avoid data loss on partial migration.
+                    /* WHY: Only delete the legacy file after all IO succeeded to avoid data loss on partial migration. */
                     let _ = std::fs::remove_file(old_json_path);
                 }
             } else {
-                // WHY: Unparseable legacy JSON is treated as corrupted and removed to allow a clean start.
+                /* WHY: Unparseable legacy JSON is treated as corrupted and removed to allow a clean start. */
                 let _ = std::fs::remove_file(old_json_path);
             }
         }
 
-        // WHY: Load all current KV entries into the in-memory map at startup to avoid repeated disk reads.
+        /* WHY: Load all current KV entries into the in-memory map at startup to avoid repeated disk reads. */
         let mut map = Vec::new();
         if let Ok(entries) = std::fs::read_dir(kv_dir) {
             for entry in entries.flatten() {
@@ -96,7 +96,7 @@ impl DefaultCacheService {
                             ref diagram_kind, ..
                         } = env.key
                         {
-                            // WHY: Mermaid SVG format changed in v2; old entries are stale and must be evicted.
+                            /* WHY: Mermaid SVG format changed in v2; old entries are stale and must be evicted. */
                             if diagram_kind == "mermaid" && env.storage_version < 2 {
                                 let _ = std::fs::remove_file(&inner_path);
                                 continue;
@@ -250,7 +250,7 @@ impl CacheFacade for DefaultCacheService {
             }
         }
 
-        // WHY: In-memory map must stay in sync with the on-disk KV to avoid stale reads after clear.
+        /* WHY: In-memory map must stay in sync with the on-disk KV to avoid stale reads after clear. */
         let mut map = LockOps::write_guard(&self.persistent);
         map.retain(|(k, _)| !k.starts_with("diagram:"));
     }
@@ -296,7 +296,7 @@ mod tests {
             Some("val2".to_string())
         );
 
-        // WHY: Simulate an app restart by constructing a fresh instance from the same path.
+        /* WHY: Simulate an app restart by constructing a fresh instance from the same path. */
         let cache2 = DefaultCacheService::new(path);
         assert_eq!(
             cache2.get_persistent("workspace_tabs:test1"),
@@ -407,7 +407,7 @@ mod tests {
         }"#;
         std::fs::write(&cache_json_path, legacy_json).unwrap();
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
-        assert!(!cache_json_path.exists()); // Removed upon success
+        assert!(!cache_json_path.exists()); /* WHY: Removed upon success */
         assert_eq!(map.len(), 1);
         assert_eq!(map.first().unwrap().0, "workspace_tabs:test_ws");
         assert_eq!(map.first().unwrap().1, "some_value");
@@ -417,7 +417,7 @@ mod tests {
         let path3 = tmp.path().join("cache3.json");
         std::fs::write(&path3, legacy_json).unwrap();
         let _ = DefaultCacheService::init_and_migrate(&path3, &bad_kv_dir);
-        assert!(path3.exists()); // Failed to write, so old json is kept!
+        assert!(path3.exists()); /* WHY: Failed to write, so old json is kept! */
 
         let bad_rename_dir = tmp.path().join("bad_rename_dir");
         std::fs::create_dir_all(&bad_rename_dir).unwrap();
@@ -429,7 +429,7 @@ mod tests {
         let path4 = tmp.path().join("cache4.json");
         std::fs::write(&path4, legacy_json).unwrap();
         let _ = DefaultCacheService::init_and_migrate(&path4, &bad_rename_dir);
-        assert!(path4.exists()); // Failed to rename, so old json is kept!
+        assert!(path4.exists()); /* WHY: Failed to rename, so old json is kept! */
 
         let _edge_1 = DefaultCacheService::new(PathBuf::from("file_only.json"));
         let _edge_2 = DefaultCacheService::new(PathBuf::from(""));
@@ -447,7 +447,7 @@ mod tests {
             workspace_path: PathBuf::from("/test/path"),
         };
         let canonical_filename = key.target_filename().unwrap();
-        let legacy_filename = "workspace_tabs_abcedfg12345.json"; // Wrong filename intentionally
+        let legacy_filename = "workspace_tabs_abcedfg12345.json"; /* WHY: Wrong filename intentionally */
 
         let env = PersistentEntryEnvelope {
             storage_version: 1,
@@ -471,7 +471,7 @@ mod tests {
 
         let canonical_path = kv_dir.join(&canonical_filename);
         std::fs::write(&canonical_path, serde_json::to_string(&env).unwrap()).unwrap();
-        std::fs::write(&legacy_path, serde_json::to_string(&bad_env).unwrap()).unwrap(); // Legacy comes back
+        std::fs::write(&legacy_path, serde_json::to_string(&bad_env).unwrap()).unwrap(); /* WHY: Legacy comes back */
 
         let unrenamable_legacy_path = kv_dir.join("workspace_tabs_unrenamable.json");
         std::fs::write(
@@ -488,8 +488,8 @@ mod tests {
         .unwrap();
 
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
-        assert_eq!(map.len(), 1); // Should only load the single key once
-        assert!(!legacy_path.exists()); // The legacy path should be deleted because canonical_path exists!
+        assert_eq!(map.len(), 1); /* WHY: Should only load the single key once */
+        assert!(!legacy_path.exists()); /* WHY: The legacy path should be deleted because canonical_path exists! */
     }
 
     #[test]

@@ -88,7 +88,7 @@ impl ScrollMapper {
         });
         for (span, p_y) in anchors {
             let editor_y = span.start as f32 * row_height;
-            // WHY: Clamp to avoid degenerate points outside the visible range.
+            /* WHY: Clamp to avoid degenerate points outside the visible range. */
             let editor_y = editor_y.min(editor_max.max(1.0));
             let preview_y = p_y.max(0.0).min(preview_max.max(1.0));
             points.push(MapPoint {
@@ -96,7 +96,7 @@ impl ScrollMapper {
                 preview_y,
             });
         }
-        // WHY: EOF anchor — always present regardless of heading count.
+        /* WHY: EOF anchor — always present regardless of heading count. */
         points.push(MapPoint {
             editor_y: editor_max.max(1.0),
             preview_y: preview_max.max(1.0),
@@ -212,19 +212,19 @@ mod tests {
     fn test_editor_to_logical() {
         let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
 
-        // WHY: 1. Before first segment (0..200 -> 0..400)
+        /* WHY: 1. Before first segment (0..200 -> 0..400) */
         let pos = mapper.editor_to_logical(100.0);
         assert_eq!(pos.segment_index, 0);
         assert_eq!(pos.progress, 0.5);
         assert_eq!(mapper.logical_to_preview(pos), 200.0);
 
-        // WHY: 2. Middle segment (200..600 -> 400..800)
+        /* WHY: 2. Middle segment (200..600 -> 400..800) */
         let pos = mapper.editor_to_logical(400.0);
         assert_eq!(pos.segment_index, 1);
         assert_eq!(pos.progress, 0.5);
         assert_eq!(mapper.logical_to_preview(pos), 600.0);
 
-        // WHY: 3. Tail segment (after 600 -> 800..2000)
+        /* WHY: 3. Tail segment (after 600 -> 800..2000) */
         let pos = mapper.editor_to_logical(800.0);
         assert_eq!(pos.segment_index, 2);
         assert_eq!(pos.progress, 0.5);
@@ -235,19 +235,19 @@ mod tests {
     fn test_preview_to_logical() {
         let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
 
-        // WHY: 1. Before first segment
+        /* WHY: 1. Before first segment */
         let pos = mapper.preview_to_logical(200.0);
         assert_eq!(pos.segment_index, 0);
         assert_eq!(pos.progress, 0.5);
         assert_eq!(mapper.logical_to_editor(pos), 100.0);
 
-        // WHY: 2. Middle segment
+        /* WHY: 2. Middle segment */
         let pos = mapper.preview_to_logical(600.0);
         assert_eq!(pos.segment_index, 1);
         assert_eq!(pos.progress, 0.5);
         assert_eq!(mapper.logical_to_editor(pos), 400.0);
 
-        // WHY: 3. Tail segment
+        /* WHY: 3. Tail segment */
         let pos = mapper.preview_to_logical(1400.0);
         assert_eq!(pos.segment_index, 2);
         assert_eq!(pos.progress, 0.5);
@@ -256,9 +256,9 @@ mod tests {
 
     #[test]
     fn mapper_no_headings_full_range() {
-        // WHY: Document with no headings: single [start, EOF] segment.
+        /* WHY: Document with no headings: single [start, EOF] segment. */
         let m = ScrollMapper::build(1000.0, 800.0, 10.0, &[]);
-        // WHY: Mid-point should map proportionally across the single segment.
+        /* WHY: Mid-point should map proportionally across the single segment. */
         let pos = m.editor_to_logical(500.0);
         let preview_y = m.logical_to_preview(pos);
         assert!(
@@ -275,12 +275,12 @@ mod tests {
 
     #[test]
     fn mapper_tail_segment_reaches_eof() {
-        // WHY: Last heading at editor line 40, preview y 300; editor_max=500, preview_max=400.
+        /* WHY: Last heading at editor line 40, preview y 300; editor_max=500, preview_max=400. */
         let anchors = vec![(40..41, 300.0)];
         let _m = ScrollMapper::build(500.0, 400.0, 10.0, &anchors);
-        // WHY: Editor fully scrolled to tail end → preview fully scrolled too.
+        /* WHY: Editor fully scrolled to tail end → preview fully scrolled too. */
         let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(100..100, 2500.0)]);
-        // WHY: Editor line 100 is roughly y=2000, clamped to 1000. Preview clamped to 2000.
+        /* WHY: Editor line 100 is roughly y=2000, clamped to 1000. Preview clamped to 2000. */
         let pos = mapper.editor_to_logical(500.0);
         assert_eq!(mapper.logical_to_preview(pos), 1000.0);
     }
@@ -312,7 +312,7 @@ mod tests {
     fn echo_suppression_new_user_scroll() {
         let mut echo = SyncEcho::default();
         echo.record(250.0);
-        // WHY: A genuine user scroll of 50px should not be suppressed.
+        /* WHY: A genuine user scroll of 50px should not be suppressed. */
         assert!(!echo.is_echo(300.0));
     }
 }

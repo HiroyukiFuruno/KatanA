@@ -582,7 +582,7 @@ mod tests_extra {
     fn poll_download_clears_rx_on_disconnect() {
         let mut app = make_app();
         let (tx, rx) = std::sync::mpsc::channel::<Result<(), String>>();
-        drop(tx); // Disconnected on sender drop
+        drop(tx); /* WHY: Disconnected on sender drop */
         app.download_rx = Some(rx);
         let ctx = egui::Context::default();
         app.poll_download(&ctx);
@@ -784,7 +784,7 @@ mod tests_extra {
         app.handle_select_document(file_path.clone(), true);
 
         let doc = app.state.active_document_mut().unwrap();
-        doc.buffer = "B".to_string(); // bypass update_buffer to bypass hash updates
+        doc.buffer = "B".to_string(); /* WHY: bypass update_buffer to bypass hash updates */
 
         app.handle_select_document(file_path.clone(), true);
         let tab = app
@@ -847,7 +847,7 @@ mod tests_extra {
     fn test_handle_select_document_lazy_does_not_expand_parents() {
         let mut app = make_app();
         let path = std::path::PathBuf::from("/a/b/c.md");
-        app.handle_select_document(path, false); // Lazy load
+        app.handle_select_document(path, false);
 
         assert!(
             app.state.workspace.expanded_directories.is_empty(),
@@ -999,7 +999,7 @@ mod tests_extra {
         app.state.update.checking = true;
         let (tx, rx) =
             std::sync::mpsc::channel::<Result<Option<katana_core::update::ReleaseInfo>, String>>();
-        drop(tx); // cause Err(RecvError) or Disconnected
+        drop(tx); /* WHY: cause Err(RecvError) or Disconnected */
         app.update_rx = Some(rx);
 
         let ctx = eframe::egui::Context::default();
@@ -1012,8 +1012,8 @@ mod tests_extra {
     #[test]
     fn test_background_update_check_shows_dialog_only_once() {
         let mut app = setup_test_app();
-        app.start_update_check(false); // background check
-        assert!(!app.show_update_dialog); // should be hidden during check
+        app.start_update_check(false);
+        assert!(!app.show_update_dialog); /* WHY: should be hidden during check */
         assert!(!app.update_notified);
 
         let (tx, rx) = std::sync::mpsc::channel();

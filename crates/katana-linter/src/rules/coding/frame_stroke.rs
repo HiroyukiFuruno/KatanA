@@ -3,7 +3,7 @@ use crate::utils::LinterParserOps;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 
-// WHY: Detects border/stroke patterns that can cause layout jitter on hover.
+/* WHY: Detects border/stroke patterns that can cause layout jitter on hover. */
 ///
 /// In egui, strokes on `Frame` or `painter().rect_stroke()` add pixels OUTSIDE
 /// the element's rect. Without expansion compensation (box-sizing: border-box),
@@ -38,15 +38,15 @@ impl FrameStrokeVisitor {
 
 impl<'ast> Visit<'ast> for FrameStrokeVisitor {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
-        // WHY: theme_bridge is the centralized expansion config — skip it to avoid false positives.
+        /* WHY: theme_bridge is the centralized expansion config — skip it to avoid false positives. */
         if self.is_theme_bridge() {
             return;
         }
 
         let method_name = node.method.to_string();
 
-        // WHY: painter().rect_stroke() adds pixels outside the rect without expansion
-        // WHY: compensation, causing border inflation on hover. Detect and require shrink().
+        /* WHY: painter().rect_stroke() adds pixels outside the rect without expansion */
+        /* WHY: compensation, causing border inflation on hover. Detect and require shrink(). */
         if method_name == "rect_stroke" {
             let (line, column) = LinterParserOps::span_location(node.method.span());
             self.violations.push(Violation {
@@ -57,8 +57,8 @@ impl<'ast> Visit<'ast> for FrameStrokeVisitor {
             });
         }
 
-        // WHY: .stroke() on a Frame builder adds pixels outside the widget rect. Detect this
-        // WHY: by walking the receiver chain for Frame builder method names (fill/margin etc).
+        /* WHY: .stroke() on a Frame builder adds pixels outside the widget rect. Detect this */
+        /* WHY: by walking the receiver chain for Frame builder method names (fill/margin etc). */
         if method_name == "stroke" && !node.args.is_empty() && Self::is_frame_context(node) {
             let (line, column) = LinterParserOps::span_location(node.method.span());
             self.violations.push(Violation {
@@ -82,7 +82,7 @@ impl FrameStrokeVisitor {
             match expr {
                 syn::Expr::MethodCall(inner) => {
                     let name = inner.method.to_string();
-                    // WHY: These are the chainable Frame builder methods — keep walking up.
+                    /* WHY: These are the chainable Frame builder methods — keep walking up. */
                     if matches!(
                         name.as_str(),
                         "fill"
@@ -108,7 +108,7 @@ impl FrameStrokeVisitor {
                     return path_str.contains("Frame");
                 }
                 syn::Expr::Field(field) => {
-                    // WHY: Frame::NONE and .frame are sentinel field accesses indicating a Frame builder start.
+                    /* WHY: Frame::NONE and .frame are sentinel field accesses indicating a Frame builder start. */
                     if let syn::Member::Named(ident) = &field.member
                         && (ident == "NONE" || ident == "frame")
                     {

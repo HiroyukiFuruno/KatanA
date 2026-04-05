@@ -146,7 +146,7 @@ impl ThemeTabOps {
                 let accent_color =
                     theme_bridge::ThemeBridgeOps::rgb_to_color32(custom_theme.colors.system.accent);
 
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -159,7 +159,7 @@ impl ThemeTabOps {
                         ui.painter()
                             .circle_filled(rect.center(), corner, accent_color);
 
-                        // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
+                        /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                         let custom_fill = if is_selected {
                             ui.visuals().selection.bg_fill
                         } else {
@@ -287,7 +287,7 @@ impl ThemeTabOps {
             let bg_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.background);
             let accent_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.accent);
 
-            // WHY: allow(horizontal_layout)
+            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {
@@ -300,7 +300,7 @@ impl ThemeTabOps {
                     ui.painter()
                         .circle_filled(rect.center(), corner, accent_color);
 
-                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
+                    /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                     let preset_fill = if is_selected {
                         ui.visuals().selection.bg_fill
                     } else {
@@ -778,7 +778,7 @@ impl ThemeTabOps {
                 let name_id = egui::Id::new("custom_theme_name_input");
                 let mut name = ui.data(|d| d.get_temp::<String>(name_id).unwrap_or_default());
 
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -798,7 +798,7 @@ impl ThemeTabOps {
                     .show(ui);
 
                 ui.add_space(SUBSECTION_SPACING);
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {

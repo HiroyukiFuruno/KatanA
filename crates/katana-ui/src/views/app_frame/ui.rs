@@ -100,7 +100,7 @@ impl<'a> TitleBar<'a> {
         let theme_colors = self.theme_colors;
         let title_text = &app.state.layout.last_window_title;
         egui::Panel::top("app_title_bar").show_inside(ui, |ui| {
-            // WHY: allow(horizontal_layout)
+            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {
@@ -194,7 +194,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     } else {
                                         crate::Icon::FolderClosed
                                     };
-                                    // WHY: allow(icon_button_fill)
+                                    /* WHY: allow(icon_button_fill) */
                                     let mut btn = egui::Button::image(ws_icon.ui_image(ui, crate::icon::IconSize::Large)).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
                                         .sense(egui::Sense::hover());
                                     if app.state.layout.show_workspace {
@@ -210,7 +210,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     Some(interact_resp)
                                 }
                                 katana_platform::settings::ActivityRailItem::Search => {
-                                    // WHY: allow(icon_button_fill)
+                                    /* WHY: allow(icon_button_fill) */
                                     let mut btn = egui::Button::image(
                                         crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large)
                                     ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
@@ -229,7 +229,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     Some(interact_resp)
                                 }
                                 katana_platform::settings::ActivityRailItem::Settings => {
-                                    // WHY: allow(icon_button_fill)
+                                    /* WHY: allow(icon_button_fill) */
                                     let mut btn = egui::Button::image(
                                         crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large)
                                     ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
@@ -251,7 +251,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     let is_open = ui
                                         .data(|data| data.get_temp::<bool>(history_menu_id).unwrap_or(false));
 
-                                    // WHY: allow(icon_button_fill)
+                                    /* WHY: allow(icon_button_fill) */
                                     let mut btn = egui::Button::image(
                                         crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large)
                                     ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
@@ -285,10 +285,10 @@ impl<'a> WorkspaceSidebar<'a> {
                                                 egui::Frame::popup(ui.style()).show(ui, |ui| {
                                                     ui.set_max_width(HISTORY_MENU_MAX_WIDTH);
                                                     for path in recent_paths.iter().rev() {
-                                                        // WHY: allow(horizontal_layout)
+                                                        /* WHY: allow(horizontal_layout) */
                                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                             if ui
-                                                                // WHY: allow(icon_button_fill)
+                                                                /* WHY: allow(icon_button_fill) */
                                                                 .add(egui::Button::image(
                                                                     crate::Icon::Remove.ui_image(ui, crate::icon::IconSize::Small),
                                                                 ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }))
@@ -378,26 +378,26 @@ impl<'a> WorkspaceSidebar<'a> {
                                         match item {
                                             katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
                                                 let icon = if app.state.layout.show_workspace { crate::Icon::FolderOpen } else { crate::Icon::FolderClosed };
-                                                // WHY: allow(icon_button_fill)
+                                                /* WHY: allow(icon_button_fill) */
                                                 let mut b = egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Large)).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() });
                                                 if app.state.layout.show_workspace { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::Search => {
-                                                // WHY: allow(icon_button_fill)
+                                                /* WHY: allow(icon_button_fill) */
                                                 let mut b = egui::Button::image(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large)).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() });
                                                 if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 let r = ui.add(b);
                                                 r.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search"));
                                             }
                                             katana_platform::settings::ActivityRailItem::Settings => {
-                                                // WHY: allow(icon_button_fill)
+                                                /* WHY: allow(icon_button_fill) */
                                                 let mut b = egui::Button::image(crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large)).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() });
                                                 if app.state.layout.show_settings { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::History => {
-                                                // WHY: allow(icon_button_fill)
+                                                /* WHY: allow(icon_button_fill) */
                                                 ui.add(egui::Button::image(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large)).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }));
                                             }
                                         }
@@ -536,7 +536,7 @@ impl<'a> TabToolbar<'a> {
                             app.state.scroll.sync_override,
                             app.state.update.available.is_some(),
                             app.state.update.checking,
-                            true, // show_search
+                            true,
                         )
                         .show(ui, &mut app.state.search);
                         if let Some(a) = view_action {
@@ -574,7 +574,7 @@ impl<'a> Breadcrumbs<'a> {
         let rel = self.rel;
         let ws_root = self.ws_root;
         let mut breadcrumb_action = None;
-        // WHY: allow(horizontal_layout)
+        /* WHY: allow(horizontal_layout) */
         ui.horizontal_centered(|ui| {
             let segments: Vec<&str> = rel.split('/').collect();
             let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
@@ -601,7 +601,7 @@ impl<'a> Breadcrumbs<'a> {
                             .sense(egui::Sense::hover()),
                     );
                 } else {
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: allow(conditional_frame) in popup/list context; future: standardize as atom */
                     ui.menu_button(egui::RichText::new(*seg).small(), |ui| {
                         let mut ctx_action = crate::app_state::AppAction::None;
 
@@ -667,7 +667,7 @@ impl<'a> CentralContent<'a> {
                 );
             });
         } else {
-            // WHY: Search logic is now inline in ViewModeBar
+            /* WHY: Search logic is now inline in ViewModeBar */
 
             if is_split {
                 let split_dir = app.state.active_split_direction();

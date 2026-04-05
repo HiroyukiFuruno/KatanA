@@ -109,7 +109,7 @@ impl MarkdownRule for BrokenLinkRule {
 
     fn evaluate(&self, file_path: &Path, content: &str) -> Vec<MarkdownDiagnostic> {
         let mut diagnostics = Vec::new();
-        // WHY: Running in workspace context lets us resolve local paths relative to the file.
+        /* WHY: Running in workspace context lets us resolve local paths relative to the file. */
         let base_dir = file_path.parent().unwrap_or(Path::new(""));
 
         for (line_idx, line) in content.lines().enumerate() {

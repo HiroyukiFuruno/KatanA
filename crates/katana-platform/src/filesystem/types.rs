@@ -1,2 +1,2 @@
-// WHY: Platform-layer filesystem service.
+/* WHY: Platform-layer filesystem service. */
 pub struct FilesystemService;

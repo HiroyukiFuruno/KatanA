@@ -61,6 +61,6 @@ impl UpdateCleanupOps {
 
     #[cfg(coverage)]
     pub fn perform_background_cleanup() {
-        // WHY: Coverage builds exclude the spawned thread to prevent false negatives from unreachable branches.
+        /* WHY: Coverage builds exclude the spawned thread to prevent false negatives from unreachable branches. */
     }
 }

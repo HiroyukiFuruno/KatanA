@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-// WHY: Minimum allowed font size in pixels.
+/* WHY: Minimum allowed font size in pixels. */
 pub const MIN_FONT_SIZE: f32 = 8.0;
-// WHY: Maximum allowed font size in pixels.
+/* WHY: Maximum allowed font size in pixels. */
 pub const MAX_FONT_SIZE: f32 = 32.0;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

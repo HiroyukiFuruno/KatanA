@@ -32,7 +32,7 @@ impl<'ast> Visit<'ast> for ProhibitedTypesVisitor {
             .collect::<Vec<_>>()
             .join("::");
 
-        // WHY: Only the fully-qualified std::sync::RwLock is prohibited; a bare `RwLock` may be parking_lot or egui imported via `use`.
+        /* WHY: Only the fully-qualified std::sync::RwLock is prohibited; a bare `RwLock` may be parking_lot or egui imported via `use`. */
         if path_str == "std::sync::RwLock" {
             let (line, column) = LinterParserOps::span_location(ty_path.path.span());
             self.violations.push(Violation {

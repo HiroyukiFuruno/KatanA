@@ -49,7 +49,7 @@ fn is_dirty_reflects_active_document_state() {
         katana_platform::SettingsService::default(),
         std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
     );
-    assert!(!state.is_dirty()); // no document
+    assert!(!state.is_dirty());
 
     let mut doc = Document::new("test.md", "test");
     doc.is_dirty = true;

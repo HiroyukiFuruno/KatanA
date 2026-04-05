@@ -57,9 +57,9 @@ impl<'a> SearchModal<'a> {
             .resizable(true)
             .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
             .show(ctx, |ui| {
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
+                    /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                     let file_name_selected = search.active_tab == crate::app_state::SearchTab::FileName;
                     if ui
                         .add(
@@ -75,7 +75,7 @@ impl<'a> SearchModal<'a> {
                         search.active_tab = crate::app_state::SearchTab::FileName;
                         search.focus_requested = false;
                     }
-                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
+                    /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                     let md_content_selected = search.active_tab == crate::app_state::SearchTab::MarkdownContent;
                     if ui
                         .add(
@@ -224,7 +224,7 @@ impl<'a> SearchModal<'a> {
                                                 path,
                                                 ws_root.as_deref(),
                                             );
-                                        // WHY: in popup/list context; future: standardize as atom
+                                        /* WHY: in popup/list context; future: standardize as atom */
                                         if ui.add(egui::Button::selectable(false, rel).frame_when_inactive(true)).clicked()
                                             && path.exists()
                                         {
@@ -266,11 +266,11 @@ impl<'a> SearchModal<'a> {
                             }
                         }
 
-                        // WHY: Recent Terms
+                        /* WHY: Recent Terms */
                         if search.md_query.is_empty() && !search.md_history.recent_terms.is_empty()
                         {
                             ui.separator();
-                            // WHY: allow(horizontal_layout)
+                            /* WHY: allow(horizontal_layout) */
                             crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                 ui.label(
                                     egui::RichText::new(
@@ -317,7 +317,7 @@ impl<'a> SearchModal<'a> {
                                                 ws_root.as_deref(),
                                             );
                                         ui.group(|ui| {
-                                            // WHY: allow(horizontal_layout)
+                                            /* WHY: allow(horizontal_layout) */
                                             crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                 ui.label(egui::RichText::new(&rel).strong());
                                                 let ln_text = format!(
@@ -354,8 +354,8 @@ impl<'a> SearchModal<'a> {
                                                 );
                                             }
 
-                                            // WHY: Make it selectable and render the layout job!
-                                            // WHY: in popup/list context; future: standardize as atom
+                                            /* WHY: Make it selectable and render the layout job! */
+                                            /* WHY: in popup/list context; future: standardize as atom */
                                             let response = ui.add(egui::Button::selectable(false, job).frame_when_inactive(true));
 
                                             if response.clicked() {

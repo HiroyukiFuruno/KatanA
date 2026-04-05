@@ -9,7 +9,7 @@ use crate::theme::presets::{
 use crate::theme::types::{ThemeColors, ThemeMode};
 
 impl ThemeMode {
-    // WHY: legacy theme string used for backward-compatible JSON persistence.
+    /* WHY: legacy theme string used for backward-compatible JSON persistence. */
     pub fn to_theme_string(self) -> String {
         match self {
             ThemeMode::Dark => "dark".to_string(),
@@ -19,7 +19,7 @@ impl ThemeMode {
 }
 
 impl ThemePreset {
-    // WHY: Extract the populated colour data.
+    /* WHY: Extract the populated colour data. */
     pub fn colors(self) -> ThemeColors {
         let (name, data) = Self::get_data(&self);
         data.to_theme_colors(name)

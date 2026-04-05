@@ -70,6 +70,7 @@ impl<'a> AlignCenter<'a> {
 
         if self.shrink_to_fit {
             let final_response = ui
+                /* WHY: allow(horizontal_layout) */
                 .horizontal(|child_ui| {
                     child_ui.spacing_mut().item_spacing.x = self.spacing;
                     for node_fn in self.left_nodes {

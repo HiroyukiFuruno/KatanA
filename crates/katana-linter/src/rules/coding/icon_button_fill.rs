@@ -13,10 +13,10 @@ border on hover, with no fill change. This inconsistency makes half the icon but
 
 Pattern that triggers this rule:
 ```ignore
-// WHY: VIOLATION: no .fill()
+/* WHY: VIOLATION: no .fill() */
 ui.add(egui::Button::image(icon));
 
-// WHY: OK: explicit transparent background
+/* WHY: OK: explicit transparent background */
 ui.add(egui::Button::image(icon).fill(icon_bg));
 ```*/
 pub struct IconButtonFillOps;
@@ -36,7 +36,7 @@ impl IconButtonFillOps {
 struct IconButtonFillVisitor {
     file_path: PathBuf,
     violations: Vec<Violation>,
-    // WHY: When visiting the receiver of a `.fill(x)` call we set this flag so that any
+    /* WHY: When visiting the receiver of a `.fill(x)` call we set this flag so that any */
     /// `Button::image(...)` found inside is known to be already under a fill.
     in_fill_receiver: bool,
 }
@@ -52,8 +52,8 @@ impl IconButtonFillVisitor {
             .iter()
             .map(|s| s.ident.to_string())
             .collect();
-        // WHY: Match only `Button::image` (pure SVG, no text) — `Button::image_and_text` is
-        // WHY: ambiguous (may carry visible text) so we enforce fill there via code review only.
+        /* WHY: Match only `Button::image` (pure SVG, no text) — `Button::image_and_text` is */
+        /* WHY: ambiguous (may carry visible text) so we enforce fill there via code review only. */
         segs.last().map(|s| s == "image").unwrap_or(false) && segs.iter().any(|s| s == "Button")
     }
 }
@@ -61,8 +61,8 @@ impl IconButtonFillVisitor {
 impl<'ast> Visit<'ast> for IconButtonFillVisitor {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         if node.method == "fill" {
-            // WHY: Receiver of `.fill(x)` is already chained to a fill — toggle flag so that
-            // WHY: any `Button::image` inside is not double-reported. Args are not in the chain.
+            /* WHY: Receiver of `.fill(x)` is already chained to a fill — toggle flag so that */
+            /* WHY: any `Button::image` inside is not double-reported. Args are not in the chain. */
             let was_in_fill = self.in_fill_receiver;
             self.in_fill_receiver = true;
             self.visit_expr(&node.receiver);
@@ -74,8 +74,8 @@ impl<'ast> Visit<'ast> for IconButtonFillVisitor {
             return;
         }
 
-        // WHY: Non-fill method calls must still descend so the visitor reaches `Button::image`
-        // WHY: deeper in chains like `.on_hover_text(...).fill(x)` wrapping patterns.
+        /* WHY: Non-fill method calls must still descend so the visitor reaches `Button::image` */
+        /* WHY: deeper in chains like `.on_hover_text(...).fill(x)` wrapping patterns. */
         syn::visit::visit_expr_method_call(self, node);
     }
 

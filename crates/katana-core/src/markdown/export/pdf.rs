@@ -3,7 +3,7 @@ use crate::markdown::MarkdownError;
 
 impl PdfExporter {
     pub fn is_available() -> bool {
-        // WHY: We assume it's available as headless_chrome can download a browser.
+        /* WHY: We assume it's available as headless_chrome can download a browser. */
         true
     }
 

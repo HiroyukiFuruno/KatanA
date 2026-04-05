@@ -15,7 +15,7 @@ impl UpdatesTabOps {
         let ver_str = format!("Current version: v{}", env!("CARGO_PKG_VERSION"));
         ui.label(egui::RichText::new(ver_str).weak().size(HINT_FONT_SIZE));
 
-        // WHY: allow(horizontal_layout)
+        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
@@ -35,7 +35,7 @@ impl UpdatesTabOps {
                     },
                 )
                 .show(ui, |ui| {
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     if ui
                         .add(
                             egui::Button::selectable(
@@ -49,7 +49,7 @@ impl UpdatesTabOps {
                         interval = UpdateInterval::Never;
                         changed = true;
                     }
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     if ui
                         .add(
                             egui::Button::selectable(
@@ -63,7 +63,7 @@ impl UpdatesTabOps {
                         interval = UpdateInterval::Daily;
                         changed = true;
                     }
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     if ui
                         .add(
                             egui::Button::selectable(
@@ -77,7 +77,7 @@ impl UpdatesTabOps {
                         interval = UpdateInterval::Weekly;
                         changed = true;
                     }
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     if ui
                         .add(
                             egui::Button::selectable(

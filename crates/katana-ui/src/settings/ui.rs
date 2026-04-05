@@ -49,7 +49,7 @@ impl<'a> SettingsWindow<'a> {
                     .min_size(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
                     .max_size(SETTINGS_SIDE_PANEL_DEFAULT_WIDTH)
                     .show_inside(ui, |ui| {
-                        // WHY: allow(horizontal_layout)
+                        /* WHY: allow(horizontal_layout) */
                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                             const TAB_SPACING: f32 = 4.0;
                             ui.add_space(TAB_SPACING);

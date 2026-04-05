@@ -148,7 +148,7 @@ impl ScannerOps {
         }
     }
 
-    // WHY: Recursively and in parallel scans a directory, returning a tree containing only visible files.
+    /* WHY: Recursively and in parallel scans a directory, returning a tree containing only visible files. */
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn scan_directory(
         dir: &Path,
@@ -171,7 +171,7 @@ impl ScannerOps {
         Self::scan_directory_internal(dir, ctx, current_depth)
     }
 
-    // WHY: Recursively checks if there is at least one visible file in the tree.
+    /* WHY: Recursively checks if there is at least one visible file in the tree. */
     pub(crate) fn has_any_visible(entries: &[TreeEntry], visible_extensions: &[String]) -> bool {
         entries.iter().any(|e| match e {
             TreeEntry::File { path } => match path.extension().and_then(|ext| ext.to_str()) {

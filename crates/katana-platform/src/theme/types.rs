@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-// WHY: Whether a theme is visually dark or light.
+/* WHY: Whether a theme is visually dark or light. */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ThemeMode {
     Dark,
@@ -51,18 +51,18 @@ impl ThemeOps {
     }
 }
 
-// WHY: System-wide / general UI colours.
+/* WHY: System-wide / general UI colours. */
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SystemColors {
     pub background: Rgb,
     pub panel_background: Rgb,
     pub text: Rgb,
     pub text_secondary: Rgb,
-    // WHY: Text color for success messages
+    /* WHY: Text color for success messages */
     pub success_text: Rgb,
-    // WHY: Text color for warning messages
+    /* WHY: Text color for warning messages */
     pub warning_text: Rgb,
-    // WHY: Text color for error messages
+    /* WHY: Text color for error messages */
     pub error_text: Rgb,
     pub accent: Rgb,
     pub title_bar_text: Rgb,
@@ -74,7 +74,7 @@ pub struct SystemColors {
     pub selection: Rgb,
 }
 
-// WHY: Colours specific to code blocks and editors.
+/* WHY: Colours specific to code blocks and editors. */
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CodeColors {
     pub background: Rgb,
@@ -115,7 +115,7 @@ fn default_search_active_color() -> Rgba {
     }
 }
 
-// WHY: Colours specific to the markdown preview.
+/* WHY: Colours specific to the markdown preview. */
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PreviewColors {
     pub background: Rgb,
@@ -139,18 +139,18 @@ fn default_hover_line_background() -> Rgba {
     }
 }
 
-// WHY: Complete set of UI colours for the application.
+/* WHY: Complete set of UI colours for the application. */
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ThemeColors {
-    // WHY: Human-readable name (e.g. "KatanA-Dark").
+    /* WHY: Human-readable name (e.g. "KatanA-Dark"). */
     pub name: String,
-    // WHY: Whether this palette is dark or light.
+    /* WHY: Whether this palette is dark or light. */
     pub mode: ThemeMode,
-    // WHY: System-wide colours (panels, sidebars, borders, etc).
+    /* WHY: System-wide colours (panels, sidebars, borders, etc). */
     pub system: SystemColors,
-    // WHY: Code block and syntax colours.
+    /* WHY: Code block and syntax colours. */
     pub code: CodeColors,
-    // WHY: Preview pane colours.
+    /* WHY: Preview pane colours. */
     pub preview: PreviewColors,
 }
 
@@ -182,7 +182,7 @@ impl ThemeColors {
             return self;
         }
 
-        // WHY: System colours
+        /* WHY: System colours */
         self.system.active_file_highlight = self
             .system
             .active_file_highlight
@@ -193,7 +193,7 @@ impl ThemeColors {
             .button_active_background
             .with_offset(offset_percent);
 
-        // WHY: Code block colours
+        /* WHY: Code block colours */
         self.code.current_line_background = self
             .code
             .current_line_background
@@ -201,7 +201,7 @@ impl ThemeColors {
         self.code.hover_line_background =
             self.code.hover_line_background.with_offset(offset_percent);
 
-        // WHY: Preview colours
+        /* WHY: Preview colours */
         self.preview.hover_line_background = self
             .preview
             .hover_line_background

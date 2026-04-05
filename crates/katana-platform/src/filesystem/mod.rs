@@ -1,4 +1,4 @@
-// WHY: Filesystem service: reading workspace directories and loading/saving documents.
+/* WHY: Filesystem service: reading workspace directories and loading/saving documents. */
 
 mod scanner;
 mod service;

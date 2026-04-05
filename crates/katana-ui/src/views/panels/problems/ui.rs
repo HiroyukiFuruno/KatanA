@@ -25,7 +25,7 @@ impl<'a> ProblemsPanel<'a> {
             .min_size(100.0)
             .show_inside(ui, |ui| {
                 ui.add_space(SPACING);
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -66,7 +66,7 @@ impl<'a> ProblemsPanel<'a> {
                             let filename = path.file_name().unwrap_or_default().to_string_lossy();
                             ui.label(egui::RichText::new(filename).strong());
                             for diag in diagnostics {
-                                // WHY: allow(horizontal_layout)
+                                /* WHY: allow(horizontal_layout) */
                                 crate::widgets::AlignCenter::new()
                                     .shrink_to_fit(true)
                                     .content(|ui| {
@@ -84,7 +84,7 @@ impl<'a> ProblemsPanel<'a> {
                                             diag.range.start_column,
                                             diag.message
                                         );
-                                        // WHY: scroll list item; future: ClickableRowOps atom
+                                        /* WHY: scroll list item; future: ClickableRowOps atom */
                                         if ui
                                             .add(
                                                 egui::Button::selectable(false, msg)

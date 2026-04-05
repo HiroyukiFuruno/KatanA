@@ -29,13 +29,13 @@ impl I18nOps {
     }
 
     pub fn get() -> &'static I18nMessages {
-        // WHY: Fast path: Atomic pointer access
+        /* WHY: Fast path: Atomic pointer access */
         let ptr = CURRENT_MESSAGES_CACHED.load(Ordering::Relaxed);
         if !ptr.is_null() {
             unsafe { return &*ptr }
         }
 
-        // WHY: Slow path: Initialization
+        /* WHY: Slow path: Initialization */
         let lang = Self::get_language();
         Self::update_cached_messages(&lang)
     }
@@ -63,7 +63,7 @@ impl I18nOps {
     }
 }
 
-// WHY: LazyLock is required because parking_lot::RwLock cannot be const-initialized in a static context.
+/* WHY: LazyLock is required because parking_lot::RwLock cannot be const-initialized in a static context. */
 static CURRENT_LANGUAGE: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new(String::new()));
 static CURRENT_MESSAGES_CACHED: AtomicPtr<I18nMessages> = AtomicPtr::new(ptr::null_mut());
 

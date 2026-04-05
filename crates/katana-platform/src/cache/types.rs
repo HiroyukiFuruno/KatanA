@@ -17,7 +17,7 @@ impl LockOps {
     }
 }
 
-// WHY: Structured canonical key for persistent cache entries.
+/* WHY: Structured canonical key for persistent cache entries. */
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "namespace")]
 pub enum PersistentKey {
@@ -34,7 +34,7 @@ pub enum PersistentKey {
     Unknown,
 }
 
-// WHY: Envelope to hold metadata and data for per-key persistent files.
+/* WHY: Envelope to hold metadata and data for per-key persistent files. */
 #[derive(Serialize, Deserialize)]
 pub struct PersistentEntryEnvelope {
     pub storage_version: u32,
@@ -43,7 +43,7 @@ pub struct PersistentEntryEnvelope {
 }
 
 impl PersistentKey {
-    // WHY: Encode to a flat string for passing through CacheFacade
+    /* WHY: Encode to a flat string for passing through CacheFacade */
     pub fn to_raw_key(&self) -> Option<String> {
         match self {
             Self::WorkspaceTabs { workspace_path } => {
@@ -69,7 +69,7 @@ impl PersistentKey {
         }
     }
 
-    // WHY: Decode the logical key from a raw string received by CacheFacade
+    /* WHY: Decode the logical key from a raw string received by CacheFacade */
     pub fn from_raw_key(raw_key: &str) -> Option<Self> {
         const MAX_TOKEN_COUNT: usize = 5;
         let parts: Vec<&str> = raw_key.splitn(MAX_TOKEN_COUNT, ':').collect();
@@ -93,7 +93,7 @@ impl PersistentKey {
         }
     }
 
-    // WHY: Derive a deterministic, safe filename for the entry
+    /* WHY: Derive a deterministic, safe filename for the entry */
     pub fn target_filename(&self) -> Option<String> {
         match self {
             Self::WorkspaceTabs { .. } => {
@@ -118,7 +118,7 @@ impl PersistentKey {
 pub struct CacheUtils;
 
 impl CacheUtils {
-    // WHY: Ensures file names are stable across runs and Rust toolchains (unlike DefaultHasher)
+    /* WHY: Ensures file names are stable across runs and Rust toolchains (unlike DefaultHasher) */
     pub fn deterministic_hash(data: &str) -> u64 {
         const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
         const FNV_PRIME: u64 = 0x100000001b3;

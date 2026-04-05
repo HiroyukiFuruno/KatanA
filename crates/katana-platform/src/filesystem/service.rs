@@ -48,7 +48,7 @@ impl FilesystemService {
         Ok(Workspace::new(root, tree))
     }
 
-    // WHY: Load a document from `path`, returning its in-memory representation.
+    /* WHY: Load a document from `path`, returning its in-memory representation. */
     #[allow(clippy::missing_errors_doc)]
     pub fn load_document(&self, path: impl Into<PathBuf>) -> Result<Document, DocumentError> {
         let path = path.into();

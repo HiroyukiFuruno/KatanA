@@ -17,7 +17,7 @@ impl LinterParserOps {
     }
 
     pub fn is_allowed_number(value: f64) -> bool {
-        // WHY: 0, 1, 2, 100, -1 are commonly used in UI layouts or logic
+        /* WHY: 0, 1, 2, 100, -1 are commonly used in UI layouts or logic */
         (value - 0.0).abs() < f64::EPSILON
             || (value - 1.0).abs() < f64::EPSILON
             || (value - 2.0).abs() < f64::EPSILON
@@ -60,18 +60,18 @@ impl LinterParserOps {
         let chars: Vec<char> = trimmed.chars().collect();
         if chars.len() == 1 {
             let c = chars[0];
-            // WHY: Allow if it's not an ASCII alphabet (a-z, A-Z)
+            /* WHY: Allow if it's not an ASCII alphabet (a-z, A-Z) */
             if !c.is_ascii_alphabetic() {
                 return true;
             }
-            // WHY: Allow single letter "x" (often used as close button in UI, etc.)
+            /* WHY: Allow single letter "x" (often used as close button in UI, etc.) */
             if c == 'x' || c == 'X' {
                 return true;
             }
             return false;
         }
 
-        // WHY: All characters are non-alphabetic (symbol, emoji, number, or whitespace only)
+        /* WHY: All characters are non-alphabetic (symbol, emoji, number, or whitespace only) */
         if trimmed
             .chars()
             .all(|c| !c.is_alphabetic() || Self::is_emoji_or_symbol(c))

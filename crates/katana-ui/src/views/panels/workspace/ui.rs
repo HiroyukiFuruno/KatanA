@@ -11,7 +11,7 @@ use eframe::egui;
 
 use super::types::WorkspaceLogicOps;
 
-// WHY: --- BreadcrumbMenu ---
+/* WHY: --- BreadcrumbMenu --- */
 pub(crate) struct BreadcrumbMenu<'a> {
     pub entries: &'a [katana_core::workspace::TreeEntry],
     pub action: &'a mut crate::app_state::AppAction,
@@ -32,7 +32,7 @@ impl<'a> BreadcrumbMenu<'a> {
             match entry {
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
                     let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: allow(conditional_frame) in popup/list context; future: standardize as atom */
                     ui.menu_button(name, |ui| {
                         BreadcrumbMenu::new(children, action).show(ui);
                     });
@@ -49,7 +49,7 @@ impl<'a> BreadcrumbMenu<'a> {
     }
 }
 
-// WHY: --- FileEntryNode ---
+/* WHY: --- FileEntryNode --- */
 pub(crate) struct FileEntryNode<'a, 'b, 'c> {
     pub entry: &'a katana_core::workspace::TreeEntry,
     pub path: &'a std::path::Path,
@@ -167,7 +167,7 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
     }
 }
 
-// WHY: --- DirectoryEntryNode ---
+/* WHY: --- DirectoryEntryNode --- */
 pub(crate) struct DirectoryEntryNode<'a, 'b, 'c> {
     pub path: &'a std::path::Path,
     pub children: &'a [katana_core::workspace::TreeEntry],
@@ -297,7 +297,7 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
     }
 }
 
-// WHY: --- TreeEntryNode ---
+/* WHY: --- TreeEntryNode --- */
 pub(crate) struct TreeEntryNode<'a, 'b, 'c> {
     pub entry: &'a katana_core::workspace::TreeEntry,
     pub ctx: &'a mut TreeRenderContext<'b, 'c>,
@@ -335,7 +335,7 @@ impl<'a, 'b, 'c> TreeEntryNode<'a, 'b, 'c> {
     }
 }
 
-// WHY: --- WorkspaceContent ---
+/* WHY: --- WorkspaceContent --- */
 pub(crate) struct WorkspaceContent<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
@@ -451,7 +451,7 @@ impl<'a> WorkspaceContent<'a> {
                 );
                 ui.add_space(RECENT_WORKSPACES_ITEM_SPACING);
                 for path in recent_paths.iter().rev() {
-                    // WHY: allow(horizontal_layout)
+                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
                         .content(|ui| {
@@ -464,7 +464,7 @@ impl<'a> WorkspaceContent<'a> {
                             {
                                 *action = AppAction::RemoveWorkspace(path.clone());
                             }
-                            // WHY: in popup/list context; future: standardize as atom
+                            /* WHY: in popup/list context; future: standardize as atom */
                             if ui
                                 .add(
                                     egui::Button::selectable(false, path.as_str())
@@ -482,7 +482,7 @@ impl<'a> WorkspaceContent<'a> {
     }
 }
 
-// WHY: --- WorkspaceHeader ---
+/* WHY: --- WorkspaceHeader --- */
 pub(crate) struct WorkspaceHeader<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
@@ -529,7 +529,7 @@ impl<'a> WorkspaceHeader<'a> {
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
                             .add(
-                                // WHY: allow(icon_button_fill)
+                                /* WHY: allow(icon_button_fill) */
                                 egui::Button::image(
                                     crate::Icon::ExpandAll
                                         .ui_image(ui, crate::icon::IconSize::Small),
@@ -554,7 +554,7 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let btn_resp = ui
                             .add(
-                                // WHY: allow(icon_button_fill)
+                                /* WHY: allow(icon_button_fill) */
                                 egui::Button::image(
                                     crate::Icon::CollapseAll
                                         .ui_image(ui, crate::icon::IconSize::Small),
@@ -595,7 +595,7 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let refresh_resp = ui
                             .add(
-                                // WHY: allow(icon_button_fill)
+                                /* WHY: allow(icon_button_fill) */
                                 egui::Button::image(
                                     crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
                                 )
@@ -617,7 +617,7 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let filter_resp = ui
                             .add(
-                                // WHY: allow(icon_button_fill)
+                                /* WHY: allow(icon_button_fill) */
                                 egui::Button::image(
                                     crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
                                 )
@@ -646,7 +646,7 @@ impl<'a> WorkspaceHeader<'a> {
                 if !search.filter_query.is_empty() {
                     is_valid_regex = regex::Regex::new(&search.filter_query).is_ok();
                 }
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -678,7 +678,7 @@ impl<'a> WorkspaceHeader<'a> {
     }
 }
 
-// WHY: --- WorkspacePanel ---
+/* WHY: --- WorkspacePanel --- */
 pub(crate) struct WorkspacePanel<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
@@ -723,7 +723,7 @@ impl<'a> WorkspacePanel<'a> {
 
         if is_loading {
             ui.add_space(WORKSPACE_SPINNER_OUTER_MARGIN);
-            // WHY: allow(horizontal_layout)
+            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {

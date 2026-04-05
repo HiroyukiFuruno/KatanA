@@ -143,13 +143,13 @@ impl EditorLogicOps {
             scroll.source = ScrollSource::Neither;
             scroll.editor_echo.record(current_offset_y);
         } else if max_scroll > 0.0 {
-            // WHY: Did the editor actually scroll from user interaction?
+            /* WHY: Did the editor actually scroll from user interaction? */
             if !scroll.editor_echo.is_echo(current_offset_y) {
-                // WHY: Recompute our logical position from the current pixel offset,
-                // WHY: using the shared mapper built by Preview pane.
+                /* WHY: Recompute our logical position from the current pixel offset, */
+                /* WHY: using the shared mapper built by Preview pane. */
                 let next_logical = scroll.mapper.editor_to_logical(current_offset_y);
-                // WHY: We don't have a reliable 'dead_zone' based on float difference anymore,
-                // WHY: because progress is not global. But pixels changed beyond ECHO_PIXEL_EPSILON.
+                /* WHY: We don't have a reliable 'dead_zone' based on float difference anymore, */
+                /* WHY: because progress is not global. But pixels changed beyond ECHO_PIXEL_EPSILON. */
                 if next_logical != scroll.logical_position {
                     scroll.logical_position = next_logical;
                     scroll.source = ScrollSource::Editor;
@@ -225,7 +225,7 @@ mod tests {
 
     #[test]
     fn highlight_color_uses_themed_when_available() {
-        // WHY: Use selection color from visuals to avoid hardcoded-color lint
+        /* WHY: Use selection color from visuals to avoid hardcoded-color lint */
         let custom = egui::Color32::PLACEHOLDER;
         assert_eq!(
             EditorLogicOps::current_line_highlight_color(true, Some(custom)),
@@ -266,7 +266,7 @@ mod tests {
             mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
             ..Default::default()
         };
-        // WHY: 400.0 offset on 500.0 max_scroll means progress=0.8
+        /* WHY: 400.0 offset on 500.0 max_scroll means progress=0.8 */
         EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
         assert_eq!(scroll.source, ScrollSource::Editor);
     }

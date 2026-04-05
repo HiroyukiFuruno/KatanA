@@ -133,14 +133,14 @@ impl DrawioEdgeOps {
             return (cx, cy);
         }
         if dx.abs() * rect.h >= dy.abs() * rect.w {
-            // WHY: Hits the left or right border
+            /* WHY: Hits the left or right border */
             if dx >= 0.0 {
                 (rect.x + rect.w, cy + dy * (rect.w / 2.0) / dx.abs())
             } else {
                 (rect.x, cy - dy * (rect.w / 2.0) / dx.abs())
             }
         } else {
-            // WHY: Hits the top or bottom border
+            /* WHY: Hits the top or bottom border */
             if dy >= 0.0 {
                 (cx + dx * (rect.h / 2.0) / dy.abs(), rect.y + rect.h)
             } else {

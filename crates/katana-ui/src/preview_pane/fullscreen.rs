@@ -34,18 +34,18 @@ impl FullscreenLogicOps {
         let idx = fullscreen_image?;
         if let Some(RenderedSection::Image { svg_data, alt, .. }) = sections.get(idx) {
             if Self::show_fullscreen_modal(ctx, svg_data, alt, fullscreen_state, idx) {
-                Some(idx) // WHY: keep open
+                Some(idx) /* WHY: keep open */
             } else {
-                None // WHY: user closed
+                None /* WHY: user closed */
             }
         } else if let Some(RenderedSection::LocalImage { path, alt, .. }) = sections.get(idx) {
             if Self::show_fullscreen_local_image(ctx, path, alt, fullscreen_state, idx) {
-                Some(idx) // WHY: keep open
+                Some(idx) /* WHY: keep open */
             } else {
-                None // WHY: user closed
+                None /* WHY: user closed */
             }
         } else {
-            None // WHY: section gone
+            None /* WHY: section gone */
         }
     }
 
@@ -336,7 +336,7 @@ impl FullscreenLogicOps {
 
                 let content_rect = blocker_rect.shrink(FULLSCREEN_PADDING);
 
-                // WHY: Handle keyboard paging
+                /* WHY: Handle keyboard paging */
                 if ui.input(|i| {
                     i.key_pressed(egui::Key::ArrowRight)
                         || i.key_pressed(egui::Key::PageDown)
@@ -355,10 +355,10 @@ impl FullscreenLogicOps {
                     let target_offset = layout.slideshow_page as f32 * viewport_height;
 
                     let out = egui::ScrollArea::vertical()
-                        // WHY: Explicitly manage the exact offset to enforce rigid page scrolling
+                        /* WHY: Explicitly manage the exact offset to enforce rigid page scrolling */
                         .vertical_scroll_offset(target_offset)
                         .auto_shrink([false; 2])
-                        // WHY: hide the scroll bar to make it feel like a real slideshow viewer
+                        /* WHY: hide the scroll bar to make it feel like a real slideshow viewer */
                         .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                         .show(ui, |ui| {
                             let inner_width = ui.available_width();
@@ -383,7 +383,7 @@ impl FullscreenLogicOps {
                         layout.slideshow_page = max_page;
                     }
 
-                    // WHY: Control block
+                    /* WHY: Control block */
                     let control_rect = egui::Rect::from_center_size(
                         egui::pos2(
                             blocker_rect.center().x,
@@ -449,7 +449,7 @@ impl FullscreenLogicOps {
                                         let mut icon_color = ui.visuals().text_color();
                                         icon_color = icon_color.gamma_multiply(opacity);
 
-                                        // WHY: allow(icon_button_fill)
+                                        /* WHY: allow(icon_button_fill) */
                                         let mut prev_btn = egui::Button::image(
                                             crate::icon::Icon::ChevronLeft
                                                 .image(crate::icon::IconSize::Medium)
@@ -486,7 +486,7 @@ impl FullscreenLogicOps {
 
                                         ui.add_space(SLIDESHOW_CONTROL_SPACING);
 
-                                        // WHY: allow(icon_button_fill)
+                                        /* WHY: allow(icon_button_fill) */
                                         let mut next_btn = egui::Button::image(
                                             crate::icon::Icon::ChevronRight
                                                 .image(crate::icon::IconSize::Medium)
@@ -521,7 +521,7 @@ impl FullscreenLogicOps {
                     }
                 });
 
-                // WHY: Close button
+                /* WHY: Close button */
                 let msgs = crate::i18n::I18nOps::get();
                 let close_btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
                 let close_btn_rect = egui::Rect::from_min_size(

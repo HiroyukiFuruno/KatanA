@@ -120,7 +120,7 @@ impl<'a> PreviewContent<'a> {
                             .max_rect(child_rect)
                             .layout(egui::Layout::top_down(egui::Align::Min)),
                         |ui| {
-                            const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0; // WHY: 0.25rem padding
+                            const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0; /* WHY: 0.25rem padding */
                             ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
                             let mut hovered_lines = Vec::new();
                             let (req, actions) = preview.show_content(
@@ -215,7 +215,7 @@ impl<'a> PreviewHeader<'a> {
         let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
         let margin = f32::from(PREVIEW_CONTENT_PADDING);
         let spacing = ui.spacing().item_spacing.x;
-        let mut button_count = 2.0; // WHY: Export, Slideshow
+        let mut button_count = 2.0; /* WHY: Export, Slideshow */
         if self.toc_visible {
             button_count += 1.0;
         }

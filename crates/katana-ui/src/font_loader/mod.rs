@@ -5,7 +5,7 @@ use std::fs;
 const MONO_FALLBACK_Y_OFFSET_FACTOR: f32 = 0.40;
 const MONO_PRIMARY_Y_OFFSET_FACTOR: f32 = -0.15;
 const MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.0;
-// WHY: Proportional font descender space causes text to appear ~3px above visual center.
+/* WHY: Proportional font descender space causes text to appear ~3px above visual center. */
 const PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.25;
 
 mod types;

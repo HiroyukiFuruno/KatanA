@@ -18,7 +18,7 @@ impl FileLengthOps {
             return violations;
         };
 
-        // WHY: Line count is computed after stripping test modules to avoid penalizing test-heavy files.
+        /* WHY: Line count is computed after stripping test modules to avoid penalizing test-heavy files. */
         let mut lines: usize = 0;
         let mut in_test_mod = false;
 
@@ -29,7 +29,7 @@ impl FileLengthOps {
                 continue;
             }
             if in_test_mod && (trimmed.starts_with("mod ") || trimmed.starts_with("pub mod ")) {
-                // WHY: Approximation - stops counting at first #[cfg(test)] mod boundary to exclude test code from line limit.
+                /* WHY: Approximation - stops counting at first #[cfg(test)] mod boundary to exclude test code from line limit. */
                 break;
             }
             lines += 1;

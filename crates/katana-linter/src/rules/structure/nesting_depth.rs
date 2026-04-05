@@ -110,7 +110,7 @@ mod tests {
                     if true {
                         if true {
                             if true {
-                                // WHY: This is depth 4, which should trigger the violation.
+                                /* WHY: This is depth 4, which should trigger the violation. */
                             }
                         }
                     }
@@ -129,7 +129,7 @@ mod tests {
             fn foo() {
                 if true {
                     if true {
-                        // WHY: Depth 2 is within the allowed limit and should not trigger.
+                        /* WHY: Depth 2 is within the allowed limit and should not trigger. */
                     }
                 }
             }

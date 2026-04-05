@@ -16,7 +16,7 @@ impl PerformanceOps {
 struct PerformanceVisitor {
     file: PathBuf,
     violations: Vec<Violation>,
-    // WHY: Track conditional nesting; request_repaint() inside if/match arms is allowed — only unconditional top-level calls in UI loops are prohibited.
+    /* WHY: Track conditional nesting; request_repaint() inside if/match arms is allowed — only unconditional top-level calls in UI loops are prohibited. */
     condition_depth: usize,
 }
 

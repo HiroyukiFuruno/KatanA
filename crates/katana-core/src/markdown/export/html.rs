@@ -47,7 +47,7 @@ impl HtmlExporter {
     }
 
     fn resolve_relative_paths(html: &str, base_dir: &std::path::Path) -> String {
-        // WHY: Match src="..." that don't start with http://, https://, data:, or file://
+        /* WHY: Match src="..." that don't start with http://, https://, data:, or file:// */
         let re = regex::Regex::new(r#"src="([^"]+)""#).unwrap();
         re.replace_all(html, |caps: &regex::Captures| {
             let src = &caps[1];

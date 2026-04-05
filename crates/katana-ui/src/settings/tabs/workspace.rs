@@ -140,7 +140,7 @@ impl WorkspaceTabOps {
                 .show(ui.ctx(), |ui| {
                     ui.label(&workspace_msgs.no_extension_warning);
                     ui.add_space(SUBSECTION_SPACING);
-                    // WHY: allow(horizontal_layout)
+                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
                         .content(|ui| {

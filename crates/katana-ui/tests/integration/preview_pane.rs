@@ -218,7 +218,7 @@ fn valid_png_is_decoded() {
     let rasterized = result.unwrap();
     assert_eq!(rasterized.width, 1);
     assert_eq!(rasterized.height, 1);
-    assert_eq!(rasterized.rgba.len(), 4); // 1x1 RGBA = 4 bytes
+    assert_eq!(rasterized.rgba.len(), 4); /* WHY: 1x1 RGBA = 4 bytes */
 }
 
 #[test]
@@ -1574,7 +1574,7 @@ fn centered_text_and_link_share_same_row() {
     let group_left = text_bounds.x0.min(link_bounds.x0);
     let group_right = text_bounds.x1.max(link_bounds.x1);
     let group_center_x = (group_left + group_right) / 2.0;
-    let panel_center_x = 800.0 / 2.0; // panel width is 800
+    let panel_center_x = 800.0 / 2.0; /* WHY: panel width is 800 */
     let tolerance = 50.0;
     assert!(
         (group_center_x - panel_center_x).abs() < tolerance,
@@ -1863,7 +1863,7 @@ fn markdown_table_stretches_to_full_width() {
     let _ = render_frame(&ctx, &mut pane);
     let output = render_frame(&ctx, &mut pane);
 
-    let content_width = preview_width - 16.0; // 8px margin each side
+    let content_width = preview_width - 16.0; /* WHY: 8px margin each side */
 
     let flat = flatten_shapes(&output.shapes);
     let mut table_frame_rect = egui::Rect::NOTHING;
@@ -2220,7 +2220,7 @@ fn blockquote_lines_uniform_thickness() {
         );
     }
 
-    let clip_left = 8.0_f32; // CentralPanel inner_margin
+    let clip_left = 8.0_f32;
     let half_stroke = first_width / 2.0;
     let leftmost_x = line_x_positions
         .iter()
@@ -2244,7 +2244,7 @@ fn markdown_table_max_width_is_constrained() {
         "| This is a very very extremely long sentence that should absolutely force the table to wrap its contents. If it does not wrap its contents, then the table width will explode and exceed the available viewing area. | Short |\n",
     );
 
-    let preview_width = 400.0_f32; // Narrow screen
+    let preview_width = 400.0_f32;
     let mut pane = PreviewPane::default();
     pane.update_markdown_sections(
         table_md,
@@ -2274,7 +2274,7 @@ fn markdown_table_max_width_is_constrained() {
     let _ = render_frame(&ctx, &mut pane);
     let output = render_frame(&ctx, &mut pane);
 
-    let content_width = preview_width - 16.0; // 8px margin each side
+    let content_width = preview_width - 16.0; /* WHY: 8px margin each side */
 
     let mut table_frame_rect = egui::Rect::NOTHING;
     for clipped_shape in output.shapes {
@@ -2301,7 +2301,7 @@ fn markdown_table_max_width_is_constrained() {
 
 #[test]
 fn test_preview_accordion_auto_open_on_search_match() {
-    // Create markdown with a details block containing a specific word
+    /* WHY: Create markdown with a details block containing a specific word */
     let text = "<details><summary>Hidden</summary>\n\nMysteryWord\n\n</details>".to_string();
 
     let mut pane = PreviewPane::default();
@@ -2316,7 +2316,7 @@ fn test_preview_accordion_auto_open_on_search_match() {
     harness.step();
     harness.step();
 
-    // If it auto-opened, "MysteryWord" should be found as a label visible in the UI
+    /* WHY: If it auto-opened, "MysteryWord" should be found as a label visible in the UI */
     let found = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         harness.get_by_label("MysteryWord")
     }));

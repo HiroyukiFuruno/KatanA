@@ -66,7 +66,7 @@ impl FontTabOps {
                                 || family.to_lowercase().contains(&query_lower)
                             {
                                 let is_current = current == family;
-                                // WHY: in popup/list context; future: standardize as atom
+                                /* WHY: in popup/list context; future: standardize as atom */
                                 if ui
                                     .add(
                                         egui::Button::selectable(is_current, family)
@@ -85,7 +85,7 @@ impl FontTabOps {
                             if query_lower.is_empty() || name.to_lowercase().contains(&query_lower)
                             {
                                 let is_current = current == *name;
-                                // WHY: in popup/list context; future: standardize as atom
+                                /* WHY: in popup/list context; future: standardize as atom */
                                 if ui
                                     .add(
                                         egui::Button::selectable(is_current, name.as_str())

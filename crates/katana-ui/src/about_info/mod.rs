@@ -147,7 +147,7 @@ mod tests {
         let in_bin_section = cargo_toml
             .lines()
             .skip_while(|line| !line.starts_with("[[bin]]"))
-            .skip(1) // skip the [[bin]] line itself
+            .skip(1) /* WHY: skip the [[bin]] line itself */
             .take_while(|line| !line.starts_with('['))
             .find(|line| line.trim().starts_with("name"))
             .expect("[[bin]] section should have a name field");

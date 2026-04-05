@@ -117,7 +117,7 @@ impl<'a> UpdateModal<'a> {
                 }
                 return;
             }
-            None => {} // WHY: Fall through to the standard update dialog
+            None => {} /* WHY: Fall through to the standard update dialog */
         }
 
         if state.update.checking {

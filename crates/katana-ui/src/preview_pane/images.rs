@@ -198,7 +198,7 @@ impl ImageLogicOps {
                 let size = t.size();
                 (t, size[0], size[1])
             }
-            None => return, // WHY: Could not load image
+            None => return, /* WHY: Could not load image */
         };
 
         let max_w = ui.available_width();

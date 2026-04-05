@@ -62,7 +62,7 @@ impl<'a> TermsModal<'a> {
                                 );
                                 ui.add_space(TERMS_SPACING_SMALL);
 
-                                // WHY: allow(horizontal_layout)
+                                /* WHY: allow(horizontal_layout) */
                                 crate::widgets::AlignCenter::new()
                                     .shrink_to_fit(true)
                                     .content(|ui| {
@@ -96,7 +96,7 @@ impl<'a> TermsModal<'a> {
                                                         crate::i18n::I18nOps::supported_languages()
                                                     {
                                                         if ui
-                                                            // WHY: in popup/list context; future: standardize as atom
+                                                            /* WHY: in popup/list context; future: standardize as atom */
                                                             .add(
                                                                 egui::Button::selectable(
                                                                     current_lang == *code,
@@ -140,7 +140,7 @@ impl<'a> TermsModal<'a> {
 
                                 ui.add_space(TERMS_SPACING_XLARGE);
 
-                                // WHY: allow(horizontal_layout)
+                                /* WHY: allow(horizontal_layout) */
                                 crate::widgets::AlignCenter::new()
                                     .shrink_to_fit(true)
                                     .content(|ui| {

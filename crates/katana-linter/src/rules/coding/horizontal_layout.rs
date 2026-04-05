@@ -7,8 +7,12 @@ pub struct HorizontalLayoutOps;
 
 impl HorizontalLayoutOps {
     pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        let source = std::fs::read_to_string(path).unwrap_or_default();
+        let lines: Vec<&str> = source.lines().collect();
+
         let mut visitor = HorizontalLayoutVisitor {
             file_path: path.to_path_buf(),
+            source_lines: lines,
             violations: Vec::new(),
         };
         visitor.visit_file(syntax);
@@ -16,20 +20,34 @@ impl HorizontalLayoutOps {
     }
 }
 
-struct HorizontalLayoutVisitor {
+struct HorizontalLayoutVisitor<'a> {
     file_path: PathBuf,
+    source_lines: Vec<&'a str>,
     violations: Vec<Violation>,
 }
 
-impl<'ast> Visit<'ast> for HorizontalLayoutVisitor {
+impl HorizontalLayoutVisitor<'_> {
+    fn is_suppressed(&self, line: usize) -> bool {
+        if line > 1
+            && let Some(prev) = self.source_lines.get(line - 2)
+        {
+            let trimmed = prev.trim();
+            return trimmed.starts_with("/// WHY: allow(horizontal_layout)")
+                || trimmed.starts_with("/* WHY: allow(horizontal_layout)");
+        }
+        false
+    }
+}
+
+impl<'ast, 'a> Visit<'ast> for HorizontalLayoutVisitor<'a> {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         if node.method == "horizontal" {
-            // WHY: AlignCenter itself is the allowed implementation of horizontal layouts.
-            if self.file_path.ends_with("widgets/align_center/ui.rs") {
+            let (line, column) = LinterParserOps::span_location(node.method.span());
+
+            if self.is_suppressed(line) {
+                syn::visit::visit_expr_method_call(self, node);
                 return;
             }
-
-            let (line, column) = LinterParserOps::span_location(node.method.span());
 
             self.violations.push(Violation {
                 file: self.file_path.clone(),

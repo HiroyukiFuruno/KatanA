@@ -18,7 +18,7 @@ impl ImageSectionOps {
     /// Split markdown text into paragraphs and extract standalone image paragraphs
     /// as `LocalImage` sections while keeping other paragraphs as `Markdown`.
     fn split_paragraphs_extracting_images(md: &str, out: &mut Vec<PreviewSection>) {
-        // WHY: Split on double-newlines (paragraph boundary) to find standalone image paragraphs.
+        /* WHY: Split on double-newlines (paragraph boundary) to find standalone image paragraphs. */
         let paragraphs: Vec<&str> = md.split("\n\n").collect();
 
         if paragraphs.len() <= 1 {

@@ -6,7 +6,7 @@ use crate::theme::migration::legacy_types::{ThemeColorsDef, ThemeColorsLegacyDat
 use crate::theme::types::{CodeColors, PreviewColors, SystemColors, ThemeColors, ThemeMode};
 use serde::{Deserialize, Deserializer};
 
-// WHY: ── Deserialize implementation ──────────────────────────────────
+/* WHY: ── Deserialize implementation ────────────────────────────────── */
 
 impl<'de> Deserialize<'de> for ThemeColors {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

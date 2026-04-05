@@ -76,7 +76,7 @@ impl<'a> Modal<'a> {
                 });
 
                 ui.add_space(BAR_TO_FOOTER_SPACING);
-                // WHY: allow(horizontal_layout)
+                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {

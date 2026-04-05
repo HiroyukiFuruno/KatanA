@@ -51,13 +51,13 @@ impl LayoutTabOps {
                 .toc_position
                 .clone(),
         );
-        // WHY: allow(horizontal_layout)
+        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
                 let current = state.config.settings.settings().layout.toc_position;
                 if ui
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     .add(
                         egui::Button::selectable(
                             current == TocPosition::Left,
@@ -72,7 +72,7 @@ impl LayoutTabOps {
                     let _ = state.config.try_save_settings();
                 }
                 if ui
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     .add(
                         egui::Button::selectable(
                             current == TocPosition::Right,
@@ -101,13 +101,13 @@ impl LayoutTabOps {
                 .split_direction
                 .clone(),
         );
-        // WHY: allow(horizontal_layout)
+        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
                 let current = state.config.settings.settings().layout.split_direction;
                 if ui
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     .add(
                         egui::Button::selectable(
                             current == SplitDirection::Horizontal,
@@ -127,7 +127,7 @@ impl LayoutTabOps {
                     let _ = state.config.try_save_settings();
                 }
                 if ui
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     .add(
                         egui::Button::selectable(
                             current == SplitDirection::Vertical,
@@ -157,13 +157,13 @@ impl LayoutTabOps {
                 .pane_order
                 .clone(),
         );
-        // WHY: allow(horizontal_layout)
+        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
                 let current = state.config.settings.settings().layout.pane_order;
                 if ui
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     .add(
                         egui::Button::selectable(
                             current == PaneOrder::EditorFirst,
@@ -182,7 +182,7 @@ impl LayoutTabOps {
                     let _ = state.config.try_save_settings();
                 }
                 if ui
-                    // WHY: in popup/list context; future: standardize as atom
+                    /* WHY: in popup/list context; future: standardize as atom */
                     .add(
                         egui::Button::selectable(
                             current == PaneOrder::PreviewFirst,
@@ -212,7 +212,7 @@ impl LayoutTabOps {
         ui.vertical(|ui| {
             for (i, item) in list.iter_mut().enumerate() {
                 ui.push_id(i, |ui| {
-                    // WHY: allow(horizontal_layout)
+                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
                         .content(|ui| {

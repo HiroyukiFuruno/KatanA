@@ -26,9 +26,9 @@ fn test_parse_changelog_no_previous_opens_all_up_to_current() {
     let md = "# Changelog\n\n## [0.8.0] - DATE\n### Added\n- A\n\n## [0.7.0] - DATE\n### Fixed\n- B\n\n## [0.6.0] - DATE\n### Changed\n- C";
     let sections = ChangelogOps::parse_changelog(md, "0.8.0", None);
 
-    assert!(sections[0].default_open); // 0.8.0
-    assert!(sections[1].default_open); // 0.7.0
-    assert!(sections[2].default_open); // 0.6.0
+    assert!(sections[0].default_open);
+    assert!(sections[1].default_open);
+    assert!(sections[2].default_open);
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn test_compare_versions() {
 
 #[test]
 fn test_compare_versions_with_hyphen() {
-    // WHY: Reproduce issue: "0.8.8-1" should be considered > "0.8.8" in KatanA's versioning (patch increment).
+    /* WHY: Reproduce issue: "0.8.8-1" should be considered > "0.8.8" in KatanA's versioning (patch increment). */
     assert_eq!(ChangelogOps::compare_versions("0.8.8-1", "0.8.8"), 1);
     assert_eq!(ChangelogOps::compare_versions("0.8.8", "0.8.8-1"), -1);
     assert_eq!(ChangelogOps::compare_versions("0.8.8-2", "0.8.8-1"), 1);

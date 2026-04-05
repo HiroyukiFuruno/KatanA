@@ -17,7 +17,7 @@ pub struct SvgRasterizeOps;
 impl SvgRasterizeOps {
     pub fn rasterize_svg(svg_text: &str, scale: f32) -> Result<RasterizedSvg, SvgRasterizeError> {
         let opts = usvg::Options {
-            // WHY: Text inside SVG becomes invisible if system fonts are not provided.
+            /* WHY: Text inside SVG becomes invisible if system fonts are not provided. */
             fontdb: font_db(),
             ..usvg::Options::default()
         };
@@ -26,7 +26,7 @@ impl SvgRasterizeOps {
         let size = tree.size();
         let width = ((size.width() * scale) as u32).max(1);
         let height = ((size.height() * scale) as u32).max(1);
-        // WHY: `Pixmap::new` is always `Some` because `max(1)` guarantees width/height >= 1.
+        /* WHY: `Pixmap::new` is always `Some` because `max(1)` guarantees width/height >= 1. */
         let mut pixmap =
             Pixmap::new(width, height).expect("BUG: width/height >= 1 guaranteed by max(1)");
         /* WHY: Start with a transparent canvas. Each diagram renderer is responsible
