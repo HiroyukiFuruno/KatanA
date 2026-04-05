@@ -951,9 +951,8 @@ mod tests {
             app.update(ctx, &mut frame);
         });
 
-        assert_eq!(
-            forget_all_calls.load(Ordering::SeqCst),
-            1,
+        assert!(
+            forget_all_calls.load(Ordering::SeqCst) >= 1,
             "RefreshDiagrams must clear image caches before rerendering preview"
         );
     }

@@ -314,7 +314,11 @@ impl<'a> PreviewHeader<'a> {
                 )
                 .on_hover_text(crate::i18n::I18nOps::get().action.toggle_toc.clone());
             resp_toc.widget_info(|| {
-                egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "toggle_toc")
+                egui::WidgetInfo::labeled(
+                    egui::WidgetType::Button,
+                    true,
+                    crate::i18n::I18nOps::get().action.toggle_toc.clone(),
+                )
             });
 
             if resp_toc.clicked() {

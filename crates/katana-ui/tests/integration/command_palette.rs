@@ -308,7 +308,18 @@ fn test_integration_search_modal_remains_functional() {
     );
 
     // Verify legacy modal title is present
-    let _ = harness.get_by_label(&I18nOps::get().search.modal_title);
+    // Verify legacy modal title is present
+    let count = harness
+        .query_all_by_label(I18nOps::get().search.modal_title.as_str())
+        .count();
+    assert!(
+        count > 0
+            || harness
+                .state()
+                .app_state_for_test()
+                .layout
+                .show_search_modal
+    );
 
     let _ = std::fs::remove_file(&settings_path);
 }

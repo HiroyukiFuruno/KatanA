@@ -158,7 +158,8 @@ fn test_integration_toc_panel_display() {
         .trigger_action(AppAction::SelectDocument(test_file1.clone()));
     harness.step();
 
-    let toggle_btn = harness.get_by_label("toggle_toc");
+    let toggle_btn_label = I18nOps::get().action.toggle_toc.clone();
+    let toggle_btn = harness.get_by_label(&toggle_btn_label);
     toggle_btn.click();
     harness.step(); // UI Registers click, sets pending_action = ToggleToc
     harness.step(); // KatanaApp reads pending_action, sets show_toc = true, renders TOC panel
@@ -198,9 +199,9 @@ fn test_integration_toc_enable_disable_setting() {
     harness.step();
     harness.step();
 
-    let toc_icon = "toggle_toc";
+    let toc_icon = I18nOps::get().action.toggle_toc.clone();
     assert_eq!(
-        harness.query_all_by_label(toc_icon).count(),
+        harness.query_all_by_label(&toc_icon).count(),
         1,
         "TOC button should be visible when toc_visible setting is true (default)"
     );
@@ -1268,12 +1269,14 @@ fn test_integration_tab_navigation_and_close() {
         .trigger_action(AppAction::SelectDocument(b_path.clone()));
     harness.step();
 
-    if let Some(btn) = harness.query_all_by_label("◀").next() {
+    let prev_lbl = I18nOps::get().tab.nav_prev.clone();
+    if let Some(btn) = harness.query_all_by_label(&prev_lbl).next() {
         btn.click();
     }
     harness.step();
 
-    if let Some(btn) = harness.query_all_by_label("▶").next() {
+    let next_lbl = I18nOps::get().tab.nav_next.clone();
+    if let Some(btn) = harness.query_all_by_label(&next_lbl).next() {
         btn.click();
     }
     harness.step();
@@ -1939,13 +1942,16 @@ fn test_tab_nav_buttons_have_tooltips() {
         .trigger_action(AppAction::SelectDocument(temp_dir.path().join("b.md")));
     harness.step();
 
-    let prev_nodes: Vec<_> = harness.query_all_by_label("◀").collect();
+    let prev_tooltip = I18nOps::get().tab.nav_prev.clone();
+    let next_tooltip = I18nOps::get().tab.nav_next.clone();
+
+    let prev_nodes: Vec<_> = harness.query_all_by_label(&prev_tooltip).collect();
     assert!(
         !prev_nodes.is_empty(),
         "◀ (previous tab) button must be present"
     );
 
-    let next_nodes: Vec<_> = harness.query_all_by_label("▶").collect();
+    let next_nodes: Vec<_> = harness.query_all_by_label(&next_tooltip).collect();
     assert!(
         !next_nodes.is_empty(),
         "▶ (next tab) button must be present"
@@ -2157,10 +2163,11 @@ fn test_search_sidebar_buttons() {
     wait_for_workspace_load(&mut harness);
     harness.step();
 
-    let search_nodes: Vec<_> = harness.query_all_by_label("Search").collect();
+    let search_title = I18nOps::get().search.modal_title.clone();
+    let search_nodes: Vec<_> = harness.query_all_by_label(&search_title).collect();
     assert!(
         !search_nodes.is_empty(),
-        "Search button (Search) must be present in the workspace sidebar"
+        "Search button must be present in the workspace sidebar"
     );
 
     let filter_nodes: Vec<_> = harness.query_all_by_label("\u{2207}").collect(); // ∇
