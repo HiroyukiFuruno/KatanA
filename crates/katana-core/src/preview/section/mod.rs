@@ -10,10 +10,21 @@ use crate::preview::{DiagramSectionOps, HtmlPreviewOps, ImageSectionOps, MathPre
 impl PreviewSectionOps {
     pub fn split_sections(content: &str) -> Vec<PreviewSection> {
         let mut sections = Vec::new();
+        let mut acc = String::new();
         let mut rem = content;
 
-        while !rem.is_empty() {
+        while let Some(offset) = if rem.starts_with("```") {
+            Some(0)
+        } else {
+            rem.find("\n```").map(|p| p + 1)
+        } {
+            acc.push_str(&rem[..offset]);
+            rem = &rem[offset..];
+
             if let Some((kind, source, after)) = DiagramSectionOps::try_parse_diagram_fence(rem) {
+                if !acc.is_empty() {
+                    sections.push(PreviewSection::Markdown(std::mem::take(&mut acc)));
+                }
                 let lines = source.chars().filter(|c| *c == '\n').count() + 2;
                 sections.push(PreviewSection::Diagram {
                     kind,
@@ -21,25 +32,15 @@ impl PreviewSectionOps {
                     lines,
                 });
                 rem = after;
-                continue;
-            }
-
-            let next_fence = rem.find("\n```").unwrap_or(rem.len());
-            if next_fence == 0 {
-                // WHY: Consumer the leading newline that would otherwise cause an infinite loop.
-                if let Some(PreviewSection::Markdown(md)) = sections.last_mut() {
-                    md.push('\n');
-                } else {
-                    sections.push(PreviewSection::Markdown("\n".to_string()));
-                }
-                rem = &rem[1..];
             } else {
-                let current = &rem[..next_fence];
-                if !current.is_empty() {
-                    sections.push(PreviewSection::Markdown(current.to_string()));
-                }
-                rem = &rem[next_fence..];
+                acc.push_str("```");
+                rem = &rem["```".len()..];
             }
+        }
+
+        acc.push_str(rem);
+        if !acc.is_empty() {
+            sections.push(PreviewSection::Markdown(acc));
         }
 
         ImageSectionOps::extract_standalone_images(sections)
