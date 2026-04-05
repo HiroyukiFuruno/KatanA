@@ -96,37 +96,47 @@ pub fn code_block<'t>(
 ) -> egui::Response {
     let mut text = text.strip_suffix('\n').unwrap_or(text);
 
-    let frame = egui::Frame::default()
-        .fill(ui.visuals().extreme_bg_color)
-        .stroke(ui.visuals().widgets.noninteractive.bg_stroke)
-        .inner_margin(4.0) // Typical margin for code blocks in egui
-        .corner_radius(ui.style().noninteractive().corner_radius);
+    // To manually add background color to the code block, we imitate what
+    // TextEdit does internally
+    let where_to_put_background = ui.painter().add(egui::Shape::Noop);
 
-    let inner = frame.show(ui, |ui| {
-        egui::TextEdit::multiline(&mut text)
-            .layouter(layouter)
-            .desired_width(max_width)
-            // prevent trailing lines
-            .desired_rows(1)
-            .frame(egui::Frame::NONE)
-            .show(ui)
-    });
+    // We use a `TextEdit` to make the text selectable.
+    // Note that we take a `&mut` to a non-`mut` `&str`, which is
+    // the how to tell `egui` that the text is not editable.
+    let output = egui::TextEdit::multiline(&mut text)
+        .layouter(layouter)
+        .desired_width(max_width)
+        // prevent trailing lines
+        .desired_rows(1)
+        .show(ui);
 
-    let frame_rect = inner.response.rect;
+    // Background color + frame (This is lost when TextEdit it not editable)
+    let frame_rect = output.response.rect;
+    ui.painter().set(
+        where_to_put_background,
+        epaint::RectShape::new(
+            frame_rect,
+            ui.style().noninteractive().corner_radius,
+            ui.visuals().extreme_bg_color,
+            ui.visuals().widgets.noninteractive.bg_stroke,
+            egui::StrokeKind::Outside,
+        ),
+    );
 
     if show_code_copy_button && !text.is_empty() {
         // Copy icon
         let spacing = &ui.style().spacing;
         let icon_size = egui::vec2(20.0, 20.0);
         let position = egui::pos2(
-            frame_rect.right_top().x - icon_size.x - spacing.button_padding.x - 4.0,
-            frame_rect.right_top().y + spacing.button_padding.y + 4.0,
+            frame_rect.right_top().x - icon_size.x - spacing.button_padding.x - 8.0,
+            frame_rect.right_top().y + spacing.button_padding.y + 5.0,
         );
         let icon_rect = egui::Rect::from_min_size(position, icon_size);
         // Check if we should show ✓ instead of copy icon
-        let persistent_id = ui.make_persistent_id(inner.inner.response.id);
+        let persistent_id = ui.make_persistent_id(output.response.id);
         let copied_icon = ui.memory_mut(|m| *m.data.get_temp_mut_or_default::<bool>(persistent_id));
         // Draw copy icon using egui painter API directly
+        // instead of SVG to bypass image loader pipeline issues.
         let copy_btn_response = ui.allocate_rect(icon_rect, egui::Sense::click());
         let icon_color = if copy_btn_response.hovered() {
             ui.visuals().strong_text_color()
@@ -173,7 +183,7 @@ pub fn code_block<'t>(
 
     if copy_button.clicked() {
         use egui::TextBuffer as _;
-        let copy_text = if let Some(cursor) = inner.inner.cursor_range {
+        let copy_text = if let Some(cursor) = output.cursor_range {
             let selected_chars = cursor.as_sorted_char_range();
             let selected_text = text.char_range(selected_chars);
             if selected_text.is_empty() {
@@ -187,7 +197,7 @@ pub fn code_block<'t>(
         ui.copy_text(copy_text);
     }
     }
-    inner.response
+    output.response.response
 }
 // Stripped down version of egui's Checkbox. The only difference is that this
 // creates a noninteractive checkbox. ui.add_enabled could have been used instead,
