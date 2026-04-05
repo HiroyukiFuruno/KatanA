@@ -59,12 +59,12 @@ impl DefaultCacheService {
                         let Ok(json) = serde_json::to_string_pretty(&env) else {
                             continue;
                         };
-                        
+
                         if std::fs::write(&temp_path, json).is_err() {
                             failure = true;
                             continue;
                         }
-                        
+
                         if std::fs::rename(&temp_path, target_path).is_err() {
                             failure = true;
                         }
@@ -95,7 +95,7 @@ impl DefaultCacheService {
                 if inner_path.extension().and_then(|s| s.to_str()) != Some("json") {
                     continue;
                 }
-                
+
                 let Ok(json) = std::fs::read_to_string(&inner_path) else {
                     continue;
                 };

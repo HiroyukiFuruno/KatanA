@@ -196,15 +196,12 @@ impl PreviewPane {
                                             source: job.src.clone(),
                                         },
                                     );
-                                    match serde_json::to_string(&new_res) {
-                                        Ok(json) => {
-                                            if is_http {
-                                                job.cache.set_memory(&cache_key, json);
-                                            } else {
-                                                let _ = job.cache.set_persistent(&cache_key, json);
-                                            }
+                                    if let Ok(json) = serde_json::to_string(&new_res) {
+                                        if is_http {
+                                            job.cache.set_memory(&cache_key, json);
+                                        } else {
+                                            let _ = job.cache.set_persistent(&cache_key, json);
                                         }
-                                        Err(_) => {}
                                     }
                                     if matches!(new_res, DiagramResult::Err { .. }) {
                                         let _ = tx.send(RenderMessage::ReduceConcurrency);
@@ -235,15 +232,12 @@ impl PreviewPane {
                             },
                         );
 
-                        match serde_json::to_string(&res) {
-                            Ok(json) => {
-                                if is_http {
-                                    job.cache.set_memory(&cache_key, json);
-                                } else {
-                                    let _ = job.cache.set_persistent(&cache_key, json);
-                                }
+                        if let Ok(json) = serde_json::to_string(&res) {
+                            if is_http {
+                                job.cache.set_memory(&cache_key, json);
+                            } else {
+                                let _ = job.cache.set_persistent(&cache_key, json);
                             }
-                            Err(_) => {}
                         }
                         if matches!(res, DiagramResult::Err { .. }) {
                             let _ = tx.send(RenderMessage::ReduceConcurrency);
