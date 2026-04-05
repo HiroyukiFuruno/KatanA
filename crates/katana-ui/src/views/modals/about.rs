@@ -160,17 +160,9 @@ impl<'a> AboutModal<'a> {
                         .right(move |ui| {
                             let btn = ui
                                 .add(
-                                    /* WHY: allow(icon_button_fill) */
-                                    egui::Button::image(
-                                        crate::Icon::ExternalLink
-                                            .ui_image(ui, crate::icon::IconSize::Small),
-                                    )
-                                    .fill(if ui.visuals().dark_mode {
-                                        crate::theme_bridge::TRANSPARENT
-                                    } else {
-                                        crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                                    })
-                                    .frame(false),
+                                    crate::Icon::ExternalLink
+                                        .button(ui, crate::icon::IconSize::Small)
+                                        .frame(false),
                                 )
                                 .on_hover_text(hover_text);
                             if btn.clicked() {
@@ -221,16 +213,9 @@ fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) 
         .right(move |ui| {
             let btn = ui
                 .add(
-                    /* WHY: allow(icon_button_fill) */
-                    egui::Button::image(
-                        crate::Icon::ExternalLink.ui_image(ui, crate::icon::IconSize::Small),
-                    )
-                    .fill(if ui.visuals().dark_mode {
-                        crate::theme_bridge::TRANSPARENT
-                    } else {
-                        crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                    })
-                    .frame(false),
+                    crate::Icon::ExternalLink
+                        .button(ui, crate::icon::IconSize::Small)
+                        .frame(false),
                 )
                 .on_hover_text(&url_copy);
             if btn.clicked() {

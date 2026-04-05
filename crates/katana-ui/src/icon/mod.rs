@@ -30,6 +30,33 @@ impl Icon {
         self.image(size).tint(ui.visuals().text_color())
     }
 
+    /// Returns an `egui::Button::image` with the canonical icon-bg fill applied.
+    /// This is the only sanctioned call-site for `Button::image`; callers must use
+    /// this method instead of constructing the button directly.
+    pub fn button(&self, ui: &egui::Ui, size: IconSize) -> egui::Button<'static> {
+        let icon_bg = if ui.visuals().dark_mode {
+            crate::theme_bridge::TRANSPARENT
+        } else {
+            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
+        };
+        egui::Button::image(self.ui_image(ui, size)).fill(icon_bg)
+    }
+
+    /// Like `button`, but applies `selection_bg` fill when `selected` is true.
+    pub fn selected_button(
+        &self,
+        ui: &egui::Ui,
+        size: IconSize,
+        selected: bool,
+    ) -> egui::Button<'static> {
+        let btn = self.button(ui, size);
+        if selected {
+            btn.fill(ui.visuals().selection.bg_fill)
+        } else {
+            btn
+        }
+    }
+
     pub fn try_from_emoji(emoji: char) -> Option<Self> {
         match emoji {
             '📄' => Some(Self::Document),

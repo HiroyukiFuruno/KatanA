@@ -32,8 +32,7 @@ impl<'a> BreadcrumbMenu<'a> {
             match entry {
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
                     let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
-                    /* WHY: allow(conditional_frame) in popup/list context; future: standardize as atom */
-                    ui.menu_button(name, |ui| {
+                    crate::widgets::MenuButtonOps::show(ui, name, |ui| {
                         BreadcrumbMenu::new(children, action).show(ui);
                     });
                 }
@@ -527,18 +526,7 @@ impl<'a> WorkspaceHeader<'a> {
                 |ui| {
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
-                            .add(
-                                /* WHY: allow(icon_button_fill) */
-                                egui::Button::image(
-                                    crate::Icon::ExpandAll
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(if ui.visuals().dark_mode {
-                                    crate::theme_bridge::TRANSPARENT
-                                } else {
-                                    crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                                }),
-                            )
+                            .add(crate::Icon::ExpandAll.button(ui, crate::icon::IconSize::Small))
                             .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
@@ -552,18 +540,7 @@ impl<'a> WorkspaceHeader<'a> {
                         }
 
                         let btn_resp = ui
-                            .add(
-                                /* WHY: allow(icon_button_fill) */
-                                egui::Button::image(
-                                    crate::Icon::CollapseAll
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(if ui.visuals().dark_mode {
-                                    crate::theme_bridge::TRANSPARENT
-                                } else {
-                                    crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                                }),
-                            )
+                            .add(crate::Icon::CollapseAll.button(ui, crate::icon::IconSize::Small))
                             .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
@@ -593,17 +570,7 @@ impl<'a> WorkspaceHeader<'a> {
                         });
 
                         let refresh_resp = ui
-                            .add(
-                                /* WHY: allow(icon_button_fill) */
-                                egui::Button::image(
-                                    crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(if ui.visuals().dark_mode {
-                                    crate::theme_bridge::TRANSPARENT
-                                } else {
-                                    crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                                }),
-                            )
+                            .add(crate::Icon::Refresh.button(ui, crate::icon::IconSize::Small))
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.refresh_workspace.clone(),
                             );
@@ -616,16 +583,9 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let filter_resp = ui
                             .add(
-                                /* WHY: allow(icon_button_fill) */
-                                egui::Button::image(
-                                    crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(if ui.visuals().dark_mode {
-                                    crate::theme_bridge::TRANSPARENT
-                                } else {
-                                    crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                                })
-                                .selected(search.filter_enabled),
+                                crate::Icon::Filter
+                                    .button(ui, crate::icon::IconSize::Small)
+                                    .selected(search.filter_enabled),
                             )
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.toggle_filter.clone(),

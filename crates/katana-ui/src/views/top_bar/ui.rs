@@ -451,34 +451,15 @@ impl<'a> TabBar<'a> {
                                                     };
 
                                                     let c_resp = if doc.is_pinned {
-                                                        let pin_color = if is_active {
-                                                            ui.visuals().selection.stroke.color
-                                                        } else {
-                                                            ui.visuals().text_color()
-                                                        };
-                                                        /* WHY: .fill(icon_bg) gives pin/close buttons the same */
-                                                        /* WHY: background treatment as nav buttons (◀▶), preventing */
-                                                        /* WHY: inconsistent hover fills across the tab strip. */
-                                                        /* WHY: ui_image() is used (not .image()) so DPI-aware sizing */
-                                                        /* WHY: matches the close button, preventing vertical misalignment. */
-                                                        /* WHY: invisible_label("x") matches the close button's label */
+                                                        /* WHY: Pin uses the standard icon-bg fill; the custom tint
+                                                           was removed because button() already applies the canonical fill. */
                                                         Some(ui.add(
-                                                            /* WHY: allow(icon_button_fill) */
-                                                            egui::Button::image(
-                                                                crate::Icon::Pin
-                                                                    .ui_image(ui, crate::icon::IconSize::Small)
-                                                                    .tint(pin_color),
-                                                            ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }),
+                                                            crate::Icon::Pin
+                                                                .button(ui, crate::icon::IconSize::Small),
                                                         ))
                                                     } else {
                                                         Some(ui.add(
-                                                            /* WHY: allow(icon_button_fill) */
-                                                            egui::Button::image(
-                                                                crate::Icon::Close.ui_image(
-                                                                    ui,
-                                                                    crate::icon::IconSize::Small,
-                                                                ),
-                                                            ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }),
+                                                            crate::Icon::Close.button(ui, crate::icon::IconSize::Small),
                                                         ))
                                                     };
                                                     (t_resp, c_resp)
@@ -570,14 +551,7 @@ impl<'a> TabBar<'a> {
                                                                     .tint(ui.visuals().text_color()),
                                                             );
                                                         } else {
-                                                            ui.add(
-                                                                /* WHY: allow(icon_button_fill) */
-                                                                egui::Button::image(
-                                                                crate::Icon::Close.ui_image(
-                                                                    ui,
-                                                                    crate::icon::IconSize::Small,
-                                                                ),
-                                                            ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }));
+                                                            ui.add(crate::Icon::Close.button(ui, crate::icon::IconSize::Small));
                                                         }
                                                     }).show(ui);
                                                 });
@@ -1120,19 +1094,7 @@ impl ViewModeBar {
                         };
 
                     if ui
-                        .add(
-                            /* WHY: allow(icon_button_fill) */
-                            egui::Button::image(
-                                order_icon
-                                    .image(crate::icon::IconSize::Medium)
-                                    .tint(ui.visuals().text_color()),
-                            )
-                            .fill(if ui.visuals().dark_mode {
-                                crate::theme_bridge::TRANSPARENT
-                            } else {
-                                crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                            }),
-                        )
+                        .add(order_icon.button(ui, crate::icon::IconSize::Medium))
                         .on_hover_text(order_tip)
                         .clicked()
                     {
@@ -1236,19 +1198,11 @@ impl DocSearchBar {
                 let button_size =
                     egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
                 /* WHY: Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input */
-                /* WHY: allow(icon_button_fill) */
                 if ui
                     .add(
-                        /* WHY: allow(icon_button_fill) */
-                        egui::Button::image(
-                            crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
-                        )
-                        .fill(if ui.visuals().dark_mode {
-                            crate::theme_bridge::TRANSPARENT
-                        } else {
-                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                        })
-                        .min_size(button_size),
+                        crate::Icon::Close
+                            .button(ui, crate::icon::IconSize::Medium)
+                            .min_size(button_size),
                     )
                     .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_close.clone())
                     .clicked()
@@ -1256,19 +1210,11 @@ impl DocSearchBar {
                     search_state.doc_search_open = false;
                 }
 
-                /* WHY: allow(icon_button_fill) */
                 if ui
                     .add(
-                        /* WHY: allow(icon_button_fill) */
-                        egui::Button::image(
-                            crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
-                        )
-                        .fill(if ui.visuals().dark_mode {
-                            crate::theme_bridge::TRANSPARENT
-                        } else {
-                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                        })
-                        .min_size(button_size),
+                        crate::Icon::PanDown
+                            .button(ui, crate::icon::IconSize::Medium)
+                            .min_size(button_size),
                     )
                     .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
                     .clicked()
@@ -1276,19 +1222,11 @@ impl DocSearchBar {
                     action = Some(AppAction::DocSearchNext);
                 }
 
-                /* WHY: allow(icon_button_fill) */
                 if ui
                     .add(
-                        /* WHY: allow(icon_button_fill) */
-                        egui::Button::image(
-                            crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
-                        )
-                        .fill(if ui.visuals().dark_mode {
-                            crate::theme_bridge::TRANSPARENT
-                        } else {
-                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
-                        })
-                        .min_size(button_size),
+                        crate::Icon::PanUp
+                            .button(ui, crate::icon::IconSize::Medium)
+                            .min_size(button_size),
                     )
                     .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())
                     .clicked()

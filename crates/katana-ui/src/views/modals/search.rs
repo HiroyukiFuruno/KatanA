@@ -58,7 +58,6 @@ impl<'a> SearchModal<'a> {
             .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
             .show(ctx, |ui| {
                 crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                     let file_name_selected = search.active_tab == crate::app_state::SearchTab::FileName;
                     if ui
                         .add(
@@ -74,7 +73,6 @@ impl<'a> SearchModal<'a> {
                         search.active_tab = crate::app_state::SearchTab::FileName;
                         search.focus_requested = false;
                     }
-                    /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                     let md_content_selected = search.active_tab == crate::app_state::SearchTab::MarkdownContent;
                     if ui
                         .add(

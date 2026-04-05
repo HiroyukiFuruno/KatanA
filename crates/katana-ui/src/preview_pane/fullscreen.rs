@@ -449,19 +449,9 @@ impl FullscreenLogicOps {
                                         let mut icon_color = ui.visuals().text_color();
                                         icon_color = icon_color.gamma_multiply(opacity);
 
-                                        /* WHY: allow(icon_button_fill) */
-                                        let mut prev_btn = egui::Button::image(
-                                            crate::icon::Icon::ChevronLeft
-                                                .image(crate::icon::IconSize::Medium)
-                                                .tint(icon_color),
-                                        )
-                                        .fill(if ui.visuals().dark_mode {
-                                            crate::theme_bridge::TRANSPARENT
-                                        } else {
-                                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg(
-                                            )
-                                        })
-                                        .frame(false);
+                                        let mut prev_btn = crate::icon::Icon::ChevronLeft
+                                            .button(ui, crate::icon::IconSize::Medium)
+                                            .frame(false);
                                         if layout.slideshow_page == 0 {
                                             prev_btn = prev_btn.sense(egui::Sense::hover());
                                         }
@@ -486,19 +476,9 @@ impl FullscreenLogicOps {
 
                                         ui.add_space(SLIDESHOW_CONTROL_SPACING);
 
-                                        /* WHY: allow(icon_button_fill) */
-                                        let mut next_btn = egui::Button::image(
-                                            crate::icon::Icon::ChevronRight
-                                                .image(crate::icon::IconSize::Medium)
-                                                .tint(icon_color),
-                                        )
-                                        .fill(if ui.visuals().dark_mode {
-                                            crate::theme_bridge::TRANSPARENT
-                                        } else {
-                                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg(
-                                            )
-                                        })
-                                        .frame(false);
+                                        let mut next_btn = crate::icon::Icon::ChevronRight
+                                            .button(ui, crate::icon::IconSize::Medium)
+                                            .frame(false);
                                         if layout.slideshow_page >= max_page {
                                             next_btn = next_btn.sense(egui::Sense::hover());
                                         }

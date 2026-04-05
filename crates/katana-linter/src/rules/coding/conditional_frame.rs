@@ -18,6 +18,16 @@ pub struct ConditionalFrameOps;
 
 impl ConditionalFrameOps {
     pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        /* WHY: widgets/menu_button/mod.rs is the canonical wrapper around ui.menu_button().
+        All other call-sites must use MenuButtonOps::show() so egui's conditional-frame
+        behavior is confined behind a single abstraction boundary. */
+        if path
+            .to_string_lossy()
+            .contains("widgets/menu_button/mod.rs")
+        {
+            return Vec::new();
+        }
+
         let source = std::fs::read_to_string(path).unwrap_or_default();
         let lines: Vec<&str> = source.lines().collect();
 
