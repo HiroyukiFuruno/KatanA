@@ -218,6 +218,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     let interact_resp = ui
                                         .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
                                         .on_hover_text(crate::i18n::I18nOps::get().search.modal_title.clone());
+                                    interact_resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search"));
                                     if interact_resp.clicked() {
                                         app.pending_action = crate::app_state::AppAction::ToggleSearchModal;
                                     }
@@ -378,7 +379,8 @@ impl<'a> WorkspaceSidebar<'a> {
                                             katana_platform::settings::ActivityRailItem::Search => {
                                                 let mut b = egui::Button::image(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large));
                                                 if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
-                                                ui.add(b);
+                                                let r = ui.add(b);
+                                                r.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search"));
                                             }
                                             katana_platform::settings::ActivityRailItem::Settings => {
                                                 let mut b = egui::Button::image(crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large));

@@ -132,7 +132,7 @@ impl<'a> CommandPaletteModal<'a> {
                             for (idx, result) in self.state.results.iter().enumerate() {
                                 let is_selected = idx == self.state.selected_index;
 
-                                let bg_color = if is_selected {
+                                let _bg_color = if is_selected {
                                     ui.visuals().selection.bg_fill
                                 } else {
                                     ui.ctx().data(|d| {
@@ -154,11 +154,10 @@ impl<'a> CommandPaletteModal<'a> {
                                     ui.visuals().text_color()
                                 };
 
-                                let frame =
-                                    egui::Frame::NONE.fill(bg_color).inner_margin(egui::vec2(
-                                        COMMAND_PALETTE_MARGIN,
-                                        COMMAND_PALETTE_INNER_MARGIN_Y,
-                                    ));
+                                let frame = egui::Frame::NONE.inner_margin(egui::vec2(
+                                    COMMAND_PALETTE_MARGIN,
+                                    COMMAND_PALETTE_INNER_MARGIN_Y,
+                                ));
 
                                 let response = frame
                                     .show(ui, |ui| {

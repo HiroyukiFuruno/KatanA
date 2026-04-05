@@ -783,7 +783,7 @@ impl<'a> TabBar<'a> {
 
             let nav_enabled = doc_count > 1;
 
-            if ui
+            let resp_prev = ui
                 .add_enabled(
                     nav_enabled,
                     egui::Button::image(
@@ -791,8 +791,10 @@ impl<'a> TabBar<'a> {
                     )
                     .fill(icon_bg),
                 )
-                .on_hover_text(crate::i18n::I18nOps::get().tab.nav_prev.clone())
-                .clicked()
+                .on_hover_text(crate::i18n::I18nOps::get().tab.nav_prev.clone());
+            resp_prev.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, "◀"));
+
+            if resp_prev.clicked()
                 && let Some(idx) = self.active_doc_idx {
                     let new_idx = crate::shell_logic::ShellLogicOps::prev_tab_index(idx, doc_count);
                     tab_action = Some(AppAction::SelectDocument(
@@ -800,7 +802,7 @@ impl<'a> TabBar<'a> {
                     ));
                     ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
                 }
-            if ui
+            let resp_next = ui
                 .add_enabled(
                     nav_enabled,
                     egui::Button::image(
@@ -808,8 +810,10 @@ impl<'a> TabBar<'a> {
                     )
                     .fill(icon_bg),
                 )
-                .on_hover_text(crate::i18n::I18nOps::get().tab.nav_next.clone())
-                .clicked()
+                .on_hover_text(crate::i18n::I18nOps::get().tab.nav_next.clone());
+            resp_next.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, "▶"));
+
+            if resp_next.clicked()
                 && let Some(idx) = self.active_doc_idx {
                     let new_idx = crate::shell_logic::ShellLogicOps::next_tab_index(idx, doc_count);
                     tab_action = Some(AppAction::SelectDocument(
@@ -969,7 +973,8 @@ impl ViewModeBar {
                     )
                 };
 
-                let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
+                let button_size =
+                    egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
 
                 if self.update_available && !self.update_checking {
                     const COLOR_SUCCESS_G: u8 = 200;
@@ -1147,6 +1152,7 @@ impl ViewModeBar {
                         .scroll_sync_override
                         .unwrap_or(self.scroll_sync_enabled);
 
+                    const TOGGLE_SPACING: f32 = 8.0;
                     let toggle_resp = ui.add(
                         crate::widgets::LabeledToggle::new(
                             crate::i18n::I18nOps::get()
@@ -1157,7 +1163,7 @@ impl ViewModeBar {
                             &mut is_on,
                         )
                         .position(crate::widgets::TogglePosition::Right)
-                        .alignment(crate::widgets::ToggleAlignment::Attached(8.0)),
+                        .alignment(crate::widgets::ToggleAlignment::Attached(TOGGLE_SPACING)),
                     );
 
                     if toggle_resp.clicked() {
@@ -1202,34 +1208,51 @@ impl ViewModeBar {
         if self.show_search && search_state.doc_search_open {
             ui.separator();
             ui.allocate_ui_with_layout(
-                egui::vec2(available_width, bar_height),
+                {
+                    const SEARCH_BAR_HEIGHT_ADJUSTMENT: f32 = 10.0;
+                    egui::vec2(available_width, bar_height + SEARCH_BAR_HEIGHT_ADJUSTMENT)
+                },
                 egui::Layout::right_to_left(egui::Align::Center),
                 |ui| {
+                    let button_size =
+                        egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
                     // Drawing right-to-left, so we add: Close, Next, Prev, MatchCount, Input
+                    // allow(icon_button_fill)
                     if ui
-                        .add(egui::Button::image(
-                            crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .min_size(button_size),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_close.clone())
                         .clicked()
                     {
                         search_state.doc_search_open = false;
                     }
 
+                    // allow(icon_button_fill)
                     if ui
-                        .add(egui::Button::image(
-                            crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .min_size(button_size),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
                         .clicked()
                     {
                         action = Some(AppAction::DocSearchNext);
                     }
 
+                    // allow(icon_button_fill)
                     if ui
-                        .add(egui::Button::image(
-                            crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
-                        ))
+                        .add(
+                            egui::Button::image(
+                                crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
+                            )
+                            .min_size(button_size),
+                        )
                         .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())
                         .clicked()
                     {
@@ -1263,14 +1286,16 @@ impl ViewModeBar {
                     });
 
                     // Add text edit with margin to fit icons on both sides
+                    const DOC_SEARCH_INPUT_MARGIN_X: i8 = 26;
+                    const DOC_SEARCH_INPUT_MARGIN_Y: i8 = 4;
                     let response = ui.add(
                         egui::TextEdit::singleline(&mut search_state.doc_search_query)
                             .desired_width(DOC_SEARCH_INPUT_WIDTH)
                             .margin(egui::Margin {
-                                left: 26,
-                                right: 26,
-                                top: 4,
-                                bottom: 4,
+                                left: DOC_SEARCH_INPUT_MARGIN_X,
+                                right: DOC_SEARCH_INPUT_MARGIN_X,
+                                top: DOC_SEARCH_INPUT_MARGIN_Y,
+                                bottom: DOC_SEARCH_INPUT_MARGIN_Y,
                             })
                             .vertical_align(egui::Align::Center)
                             .id_source("doc_search_input_stable_id"),
@@ -1286,7 +1311,8 @@ impl ViewModeBar {
                     );
                     ui.allocate_ui_at_rect(left_icon_rect, |ui| {
                         ui.centered_and_justified(|ui| {
-                            let icon_color = ui.visuals().text_color().gamma_multiply(0.5);
+                            const SEARCH_ICON_DIM_ALPHA: f32 = 0.5;
+                            let icon_color = ui.visuals().text_color().gamma_multiply(SEARCH_ICON_DIM_ALPHA);
                             ui.add(
                                 crate::Icon::Search
                                     .image(crate::icon::IconSize::Small)

@@ -60,7 +60,7 @@ impl<'a> HorizontalSplit<'a> {
         let pane_order = self.pane_order;
         let available_width = ui.ctx().content_rect().width();
         let half_width = (available_width * SPLIT_HALF_RATIO).max(SPLIT_PREVIEW_PANEL_MIN_WIDTH);
-        let preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
+        let _preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
             app.state
                 .config
                 .settings
@@ -98,7 +98,7 @@ impl<'a> HorizontalSplit<'a> {
             .resizable(true)
             .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
             .default_size(half_width)
-            .frame(egui::Frame::NONE.fill(preview_bg))
+            .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
                 if let Some(path) = &active_path {
                     let pane = crate::shell::KatanaApp::get_preview_pane(
@@ -157,7 +157,7 @@ impl<'a> VerticalSplit<'a> {
         let pane_order = self.pane_order;
         let available_height = ui.ctx().content_rect().height();
         let half_height = available_height * SPLIT_HALF_RATIO;
-        let preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
+        let _preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
             app.state
                 .config
                 .settings
@@ -192,7 +192,7 @@ impl<'a> VerticalSplit<'a> {
                 .resizable(true)
                 .default_size(half_height)
                 .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
-                .frame(egui::Frame::NONE.fill(preview_bg))
+                .frame(egui::Frame::NONE)
                 .show_inside(ui, |ui| {
                     if let Some(path) = &active_path {
                         let pane = crate::shell::KatanaApp::get_preview_pane(
@@ -233,7 +233,7 @@ impl<'a> VerticalSplit<'a> {
                 .resizable(true)
                 .default_size(half_height)
                 .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
-                .frame(egui::Frame::NONE.fill(preview_bg))
+                .frame(egui::Frame::NONE)
                 .show_inside(ui, |ui| {
                     if let Some(path) = &active_path {
                         let pane = crate::shell::KatanaApp::get_preview_pane(

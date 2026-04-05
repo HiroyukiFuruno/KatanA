@@ -303,7 +303,7 @@ impl<'a> PreviewHeader<'a> {
             } else {
                 icon_bg
             };
-            if overlay_ui
+            let resp_toc = overlay_ui
                 .add_enabled(
                     has_doc,
                     egui::Button::image(
@@ -312,9 +312,12 @@ impl<'a> PreviewHeader<'a> {
                     .min_size(button_size)
                     .fill(toc_bg),
                 )
-                .on_hover_text(crate::i18n::I18nOps::get().action.toggle_toc.clone())
-                .clicked()
-            {
+                .on_hover_text(crate::i18n::I18nOps::get().action.toggle_toc.clone());
+            resp_toc.widget_info(|| {
+                egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "toggle_toc")
+            });
+
+            if resp_toc.clicked() {
                 *action = AppAction::ToggleToc;
             }
         }
