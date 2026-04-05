@@ -1840,9 +1840,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     self.text_style.highlight = true;
                 } else if trimmed.eq_ignore_ascii_case("</mark>") {
                     self.text_style.highlight = false;
-                } else {
-                    self.event_text(text, ui, max_width);
                 }
+                /* WHY: Unknown inline HTML tags (e.g. <a>, <img>, <br>, <p align=...>) are
+                silently ignored. Rendering raw HTML markup as visible text (the previous behavior)
+                was a regression; egui cannot render arbitrary HTML, so dropping unrecognised
+                tags is the correct fallback to avoid noise in the preview pane. */
             }
 
             pulldown_cmark::Event::Html(text) => {
@@ -1874,9 +1876,13 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 if options.html_fn.is_some() {
                     self.flush_pending_inline(ui, max_width);
                     self.html_block.push_str(&text);
-                } else {
-                    self.event_text(text, ui, max_width);
                 }
+                /* WHY: When html_fn is None, egui cannot render arbitrary HTML.
+                Displaying it as raw text (the previous behaviour) was a visible regression.
+                KATANA-specific markers (<!-- KATANA_TASK:... -->) are already handled above
+                with an early return, and FOOTNOTE markers are consumed by the lookahead at
+                the call-site before this point, so silently dropping remaining Html events
+                is the correct fallback here. */
             }
             pulldown_cmark::Event::FootnoteReference(footnote) => {
                 self.after_inline_widget = false;
