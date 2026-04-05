@@ -40,11 +40,7 @@ fn ast_linter_no_magic_numbers() {
     AstLinterOps::run(
         "magic-number",
         "Fix: Extract numeric literals into named constants (const).",
-        &[
-            root.join("crates/katana-core/src"),
-            root.join("crates/katana-platform/src"),
-            root.join("crates/katana-ui/src"),
-        ],
+        &target_crates(root),
         MagicNumberOps::lint,
     );
 }
@@ -134,7 +130,7 @@ fn ast_linter_no_unoptimized_performance() {
     AstLinterOps::run(
         "performance",
         "Fix: Avoid unconditional `request_repaint()` or `set_title()` calls in UI loops.",
-        &[root.join("crates/katana-ui/src")],
+        &target_crates(root),
         PerformanceOps::lint,
     );
 }
@@ -156,7 +152,7 @@ fn ast_linter_file_length() {
     AstLinterOps::run(
         "file-length",
         "Fix: File exceeds 200-line limit (excluding tests). Split into smaller modules.",
-        &[root.join("crates/katana-linter/src")],
+        &target_crates(root),
         FileLengthOps::lint,
     );
 }
@@ -178,10 +174,7 @@ fn ast_linter_function_length() {
     AstLinterOps::run(
         "function-length",
         "Fix: Function exceeds 30-line limit. Extract helper methods.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         FunctionLengthOps::lint,
     );
 }
@@ -192,10 +185,7 @@ fn ast_linter_nesting_depth() {
     AstLinterOps::run(
         "nesting-depth",
         "Fix: Nesting depth exceeds 3 levels. Use early returns or extract helpers.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         NestingDepthOps::lint,
     );
 }
@@ -217,10 +207,7 @@ fn ast_linter_error_first() {
     AstLinterOps::run(
         "error-first",
         "Fix: Do not nest success paths with `if let Ok(...)`. Use `?` or `let-else` to fail early.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         ErrorFirstOps::lint,
     );
 }
@@ -334,7 +321,7 @@ fn ast_linter_no_horizontal_layout() {
     AstLinterOps::run(
         "horizontal-layout",
         "Fix: Use `AlignCenter` instead of `ui.horizontal()` for vertical centering.",
-        &[root.join("crates/katana-ui/src")],
+        &target_crates(root),
         HorizontalLayoutOps::lint,
     );
 }
@@ -345,7 +332,7 @@ fn ast_linter_no_frame_stroke() {
     AstLinterOps::run(
         "frame-stroke",
         "Fix: Frame `.stroke()` and `rect_stroke()` cause layout jitter. Use theme visuals or `rect.shrink(stroke_width)`.",
-        &[root.join("crates/katana-ui/src")],
+        &target_crates(root),
         FrameStrokeOps::lint,
     );
 }
@@ -356,7 +343,7 @@ fn ast_linter_no_conditional_frame() {
     AstLinterOps::run(
         "conditional-frame",
         "Fix: `selectable_label`, `selectable_value`, `menu_button` show frames only on hover, causing layout jitter. Use `Button::selectable(...).frame_when_inactive(true)`.",
-        &[root.join("crates/katana-ui/src")],
+        &target_crates(root),
         ConditionalFrameOps::lint,
     );
 }
@@ -369,7 +356,7 @@ fn ast_linter_icon_button_fill() {
         "Fix: `Button::image()` must have an explicit `.fill(icon_bg)` to ensure consistent \
          backgrounds across all hover states. \
          icon_bg = TRANSPARENT (dark) or from_gray(LIGHT_MODE_ICON_BG) (light).",
-        &[root.join("crates/katana-ui/src")],
+        &target_crates(root),
         IconButtonFillOps::lint,
     );
 }
