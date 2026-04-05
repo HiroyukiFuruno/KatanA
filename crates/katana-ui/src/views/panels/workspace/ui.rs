@@ -4,8 +4,8 @@ use crate::shell::{
     RECENT_WORKSPACES_SPACING, TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT,
 };
 use crate::shell_ui::{
-    LIGHT_MODE_ICON_ACTIVE_BG, LIGHT_MODE_ICON_BG, TreeRenderContext,
-    WORKSPACE_SPINNER_INNER_MARGIN, WORKSPACE_SPINNER_OUTER_MARGIN, WORKSPACE_SPINNER_TEXT_MARGIN,
+    TreeRenderContext, WORKSPACE_SPINNER_INNER_MARGIN, WORKSPACE_SPINNER_OUTER_MARGIN,
+    WORKSPACE_SPINNER_TEXT_MARGIN,
 };
 use eframe::egui;
 
@@ -500,12 +500,6 @@ impl<'a> WorkspaceHeader<'a> {
         let (workspace, search, _recent_paths, action) =
             (self.workspace, self.search, self.recent_paths, self.action);
 
-        let icon_bg = if ui.visuals().dark_mode {
-            crate::theme_bridge::TRANSPARENT
-        } else {
-            crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
-        };
-
         if workspace.data.is_some() {
             let ws_root = workspace
                 .data
@@ -525,14 +519,9 @@ impl<'a> WorkspaceHeader<'a> {
                 |ui| {
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
-                            .add(
-                                egui::Button::image(
-                                    crate::Icon::ExpandAll
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(icon_bg)
-                                .min_size(icon_min_size),
-                            )
+                            .add(egui::Button::image(
+                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
+                            ))
                             .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
@@ -546,14 +535,9 @@ impl<'a> WorkspaceHeader<'a> {
                         }
 
                         let btn_resp = ui
-                            .add(
-                                egui::Button::image(
-                                    crate::Icon::CollapseAll
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(icon_bg)
-                                .min_size(icon_min_size),
-                            )
+                            .add(egui::Button::image(
+                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
+                            ))
                             .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
@@ -565,66 +549,51 @@ impl<'a> WorkspaceHeader<'a> {
 
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         ui.scope(|ui| {
-                            ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
-                            ui.spacing_mut().interact_size = icon_min_size;
-                            ui.spacing_mut().button_padding = egui::vec2(0.0, 0.0);
                             let more_img =
                                 crate::Icon::More.ui_image(ui, crate::icon::IconSize::Small);
                             ui.menu_image_button(more_img, |ui| {
-                                ui.visuals_mut().widgets.inactive.bg_fill =
-                                    egui::Color32::TRANSPARENT;
-                                let flat_label = format!(
-                                    "{} {}",
-                                    if is_flat { "✔" } else { "  " },
-                                    crate::i18n::I18nOps::get().workspace.flat_view
-                                );
-
-                                if ui.button(flat_label).clicked() {
-                                    workspace.set_flat_view(ws_root, !is_flat);
+                                let mut is_flat_mut = is_flat;
+                                if ui
+                                    .checkbox(
+                                        &mut is_flat_mut,
+                                        crate::i18n::I18nOps::get().workspace.flat_view.clone(),
+                                    )
+                                    .clicked()
+                                {
+                                    workspace.set_flat_view(ws_root, is_flat_mut);
                                     ui.close();
                                 }
                             });
                         });
 
-                        if ui
-                            .add(
-                                egui::Button::image(
-                                    crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .fill(icon_bg)
-                                .min_size(icon_min_size),
-                            )
+                        let refresh_resp = ui
+                            .add(egui::Button::image(
+                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
+                            ))
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.refresh_workspace.clone(),
-                            )
-                            .clicked()
-                        {
+                            );
+                        refresh_resp.widget_info(|| {
+                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "⟳")
+                        });
+                        if refresh_resp.clicked() {
                             *action = AppAction::RefreshWorkspace;
                         }
 
-                        let filter_btn_color = if search.filter_enabled {
-                            if ui.visuals().dark_mode {
-                                ui.visuals().selection.bg_fill
-                            } else {
-                                crate::theme_bridge::ThemeBridgeOps::from_gray(
-                                    LIGHT_MODE_ICON_ACTIVE_BG,
-                                )
-                            }
-                        } else {
-                            icon_bg
-                        };
-
-                        if ui
+                        let filter_resp = ui
                             .add(
                                 egui::Button::image(
                                     crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
                                 )
-                                .fill(filter_btn_color)
-                                .min_size(icon_min_size),
+                                .selected(search.filter_enabled),
                             )
-                            .on_hover_text(crate::i18n::I18nOps::get().action.toggle_filter.clone())
-                            .clicked()
-                        {
+                            .on_hover_text(
+                                crate::i18n::I18nOps::get().action.toggle_filter.clone(),
+                            );
+                        filter_resp.widget_info(|| {
+                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "\u{2207}")
+                        });
+                        if filter_resp.clicked() {
                             *action = AppAction::ToggleWorkspaceFilter;
                         }
                     });

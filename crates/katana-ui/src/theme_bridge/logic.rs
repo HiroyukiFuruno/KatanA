@@ -42,14 +42,8 @@ impl ThemeBridgeOps {
         visuals.selection.bg_fill = selection_bg;
         visuals.selection.stroke = egui::Stroke::new(STROKE_NORMAL, accent);
 
-        let code_bg = if visuals.dark_mode {
-            egui::Color32::from_gray(30)
-        } else {
-            egui::Color32::from_gray(245)
-        };
-
-        visuals.override_text_color = Some(text);
-        visuals.widgets.noninteractive.bg_fill = code_bg;
+        visuals.override_text_color = None;
+        visuals.widgets.noninteractive.bg_fill = crate::theme_bridge::TRANSPARENT;
         visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);
         // WHY: All bg_stroke.width values are STROKE_NORMAL (1.0) — identical for every state.
         // egui's inner_margin formula: button_padding + expansion - stroke.width.
@@ -60,13 +54,13 @@ impl ThemeBridgeOps {
         // WHY expansion=0: outer_margin = -expansion = 0, preventing the drawn frame
         // from overflowing the allocated rect (which causes visual "border inflation").
         visuals.widgets.noninteractive.bg_stroke =
-            egui::Stroke::new(STROKE_NORMAL, egui::Color32::from_black_alpha(1));
+            egui::Stroke::new(STROKE_NORMAL, crate::theme_bridge::INVISIBLE);
         visuals.widgets.noninteractive.expansion = 0.0;
 
         visuals.widgets.inactive.bg_fill = panel_bg;
         visuals.widgets.inactive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text_secondary);
         visuals.widgets.inactive.bg_stroke =
-            egui::Stroke::new(STROKE_NORMAL, egui::Color32::from_black_alpha(1));
+            egui::Stroke::new(STROKE_NORMAL, crate::theme_bridge::INVISIBLE);
         visuals.widgets.inactive.expansion = 0.0;
 
         visuals.widgets.hovered.bg_fill = highlight_bg;

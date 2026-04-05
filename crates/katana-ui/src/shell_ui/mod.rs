@@ -2,18 +2,10 @@ use crate::app::*;
 use crate::app_state::AppAction;
 use eframe::egui;
 
-const INVISIBLE_LABEL_SIZE: f32 = 0.1;
-
 mod types;
 pub use types::ShellUiOps;
 
 impl ShellUiOps {
-    pub(crate) fn invisible_label(text: &str) -> egui::RichText {
-        egui::RichText::new(text)
-            .size(INVISIBLE_LABEL_SIZE)
-            .color(crate::theme_bridge::TRANSPARENT)
-    }
-
     pub(crate) fn indent_prefix(depth: usize) -> String {
         "  ".repeat(depth)
     }

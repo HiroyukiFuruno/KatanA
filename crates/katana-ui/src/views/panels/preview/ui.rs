@@ -248,9 +248,8 @@ impl<'a> PreviewHeader<'a> {
             if ui
                 .add_enabled(
                     has_doc,
-                    egui::Button::image_and_text(
+                    egui::Button::image(
                         crate::Icon::Preview.ui_image(ui, crate::icon::IconSize::Medium),
-                        crate::shell_ui::ShellUiOps::invisible_label("toggle_slideshow"),
                     )
                     .min_size(button_size)
                     .fill(icon_bg),
@@ -307,9 +306,8 @@ impl<'a> PreviewHeader<'a> {
             if overlay_ui
                 .add_enabled(
                     has_doc,
-                    egui::Button::image_and_text(
+                    egui::Button::image(
                         crate::Icon::Toc.ui_image(ui, crate::icon::IconSize::Medium),
-                        crate::shell_ui::ShellUiOps::invisible_label("toggle_toc"),
                     )
                     .min_size(button_size)
                     .fill(toc_bg),

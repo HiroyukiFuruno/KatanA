@@ -192,7 +192,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     } else {
                                         crate::Icon::FolderClosed
                                     };
-                                    let mut btn = egui::Button::image_and_text(ws_icon.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("≡"))
+                                    let mut btn = egui::Button::image(ws_icon.ui_image(ui, crate::icon::IconSize::Large))
                                         .sense(egui::Sense::hover());
                                     if app.state.layout.show_workspace {
                                         btn = btn.fill(ui.visuals().selection.bg_fill);
@@ -207,8 +207,8 @@ impl<'a> WorkspaceSidebar<'a> {
                                     Some(interact_resp)
                                 }
                                 katana_platform::settings::ActivityRailItem::Search => {
-                                    let mut btn = egui::Button::image_and_text(
-                                        crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("Search")
+                                    let mut btn = egui::Button::image(
+                                        crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large)
                                     )
                                     .sense(egui::Sense::hover());
                                     if app.state.layout.show_search_modal {
@@ -224,8 +224,8 @@ impl<'a> WorkspaceSidebar<'a> {
                                     Some(interact_resp)
                                 }
                                 katana_platform::settings::ActivityRailItem::Settings => {
-                                    let mut btn = egui::Button::image_and_text(
-                                        crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("Settings")
+                                    let mut btn = egui::Button::image(
+                                        crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large)
                                     )
                                     .sense(egui::Sense::hover());
                                     if app.state.layout.show_settings {
@@ -245,8 +245,8 @@ impl<'a> WorkspaceSidebar<'a> {
                                     let is_open = ui
                                         .data(|data| data.get_temp::<bool>(history_menu_id).unwrap_or(false));
 
-                                    let mut btn = egui::Button::image_and_text(
-                                        crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("History")
+                                    let mut btn = egui::Button::image(
+                                        crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large)
                                     )
                                     .sense(egui::Sense::hover());
                                     if is_open {
@@ -281,12 +281,8 @@ impl<'a> WorkspaceSidebar<'a> {
                                                         // allow(horizontal_layout)
                                                         ui.horizontal(|ui| {
                                                             if ui
-                                                                .add(egui::Button::image_and_text(
-                                                                    crate::Icon::Remove.ui_image(
-                                                                        ui,
-                                                                        crate::icon::IconSize::Small,
-                                                                    ),
-                                                                    crate::shell_ui::ShellUiOps::invisible_label("x"),
+                                                                .add(egui::Button::image(
+                                                                    crate::Icon::Remove.ui_image(ui, crate::icon::IconSize::Small),
                                                                 ))
                                                                 .on_hover_text(
                                                                     crate::i18n::I18nOps::get().action.remove_workspace.clone(),
@@ -380,17 +376,17 @@ impl<'a> WorkspaceSidebar<'a> {
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::Search => {
-                                                let mut b = egui::Button::image_and_text(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("Search"));
+                                                let mut b = egui::Button::image(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large));
                                                 if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::Settings => {
-                                                let mut b = egui::Button::image_and_text(crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("Settings"));
+                                                let mut b = egui::Button::image(crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large));
                                                 if app.state.layout.show_settings { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::History => {
-                                                ui.add(egui::Button::image_and_text(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large), crate::shell_ui::ShellUiOps::invisible_label("History")));
+                                                ui.add(egui::Button::image(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large)));
                                             }
                                         }
                                     });
