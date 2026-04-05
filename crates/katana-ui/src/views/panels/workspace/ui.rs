@@ -457,7 +457,7 @@ impl<'a> WorkspaceContent<'a> {
                     Instead, allocate explicit width for the label within a horizontal layout. */
                     let mut open_clicked = false;
                     let mut remove_clicked = false;
-                    ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                         let btn_width = RECENT_WORKSPACES_CLOSE_BUTTON_WIDTH;
                         let item_spacing = ui.spacing().item_spacing.x;
                         let label_width =

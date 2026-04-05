@@ -136,13 +136,14 @@ impl ShellLogicOps {
 
     pub fn format_tree_tooltip(name: &str, path: &Path) -> String {
         let mut tooltip = format!("{name}\n{}", path.display());
-        if let Ok(metadata) = path.metadata() {
-            if let Ok(modified) = metadata.modified() {
-                tooltip.push_str(&format!("\nModified: {:?}", modified));
-            }
-        } else {
+        let Ok(metadata) = path.metadata() else {
             tooltip.push_str("\nMetadata unavailable");
-        }
+            return tooltip;
+        };
+        let Ok(modified) = metadata.modified() else {
+            return tooltip;
+        };
+        tooltip.push_str(&format!("\nModified: {:?}", modified));
         tooltip
     }
 

@@ -56,14 +56,17 @@ impl DefaultCacheService {
                         let target_path = kv_dir.join(&file_name);
 
                         let temp_path = kv_dir.join(format!("{}.tmp", file_name));
-                        if let Ok(json) = serde_json::to_string_pretty(&env) {
-                            if std::fs::write(&temp_path, json).is_ok() {
-                                if std::fs::rename(&temp_path, target_path).is_err() {
-                                    failure = true;
-                                }
-                            } else {
-                                failure = true;
-                            }
+                        let Ok(json) = serde_json::to_string_pretty(&env) else {
+                            continue;
+                        };
+                        
+                        if std::fs::write(&temp_path, json).is_err() {
+                            failure = true;
+                            continue;
+                        }
+                        
+                        if std::fs::rename(&temp_path, target_path).is_err() {
+                            failure = true;
                         }
                     }
                 }
@@ -80,45 +83,51 @@ impl DefaultCacheService {
 
         /* WHY: Load all current KV entries into the in-memory map at startup to avoid repeated disk reads. */
         let mut map = Vec::new();
-        if let Ok(entries) = std::fs::read_dir(kv_dir) {
-            for entry in entries.flatten() {
-                if let Ok(file_type) = entry.file_type()
-                    && file_type.is_file()
+        let Ok(entries) = std::fs::read_dir(kv_dir) else {
+            return map;
+        };
+
+        for entry in entries.flatten() {
+            if let Ok(file_type) = entry.file_type()
+                && file_type.is_file()
+            {
+                let inner_path = entry.path();
+                if inner_path.extension().and_then(|s| s.to_str()) != Some("json") {
+                    continue;
+                }
+                
+                let Ok(json) = std::fs::read_to_string(&inner_path) else {
+                    continue;
+                };
+                let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json) else {
+                    continue;
+                };
+
+                if let PersistentKey::Diagram {
+                    ref diagram_kind, ..
+                } = env.key
                 {
-                    let inner_path = entry.path();
-                    if inner_path.extension().and_then(|s| s.to_str()) != Some("json") {
+                    /* WHY: Mermaid SVG format changed in v2; old entries are stale and must be evicted. */
+                    if diagram_kind == "mermaid" && env.storage_version < 2 {
+                        let _ = std::fs::remove_file(&inner_path);
                         continue;
                     }
-                    if let Ok(json) = std::fs::read_to_string(&inner_path)
-                        && let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json)
-                    {
-                        if let PersistentKey::Diagram {
-                            ref diagram_kind, ..
-                        } = env.key
-                        {
-                            /* WHY: Mermaid SVG format changed in v2; old entries are stale and must be evicted. */
-                            if diagram_kind == "mermaid" && env.storage_version < 2 {
-                                let _ = std::fs::remove_file(&inner_path);
-                                continue;
-                            }
-                        }
+                }
 
-                        if let Some(target_filename) = env.key.target_filename()
-                            && entry.file_name() != std::ffi::OsStr::new(&target_filename)
-                        {
-                            let canonical_path = kv_dir.join(&target_filename);
-                            if canonical_path.exists() {
-                                let _ = std::fs::remove_file(&inner_path);
-                                continue;
-                            } else if std::fs::rename(&inner_path, &canonical_path).is_err() {
-                                continue;
-                            }
-                        }
-
-                        if let Some(raw_key) = env.key.to_raw_key() {
-                            map.push((raw_key, env.value));
-                        }
+                if let Some(target_filename) = env.key.target_filename()
+                    && entry.file_name() != std::ffi::OsStr::new(&target_filename)
+                {
+                    let canonical_path = kv_dir.join(&target_filename);
+                    if canonical_path.exists() {
+                        let _ = std::fs::remove_file(&inner_path);
+                        continue;
+                    } else if std::fs::rename(&inner_path, &canonical_path).is_err() {
+                        continue;
                     }
+                }
+
+                if let Some(raw_key) = env.key.to_raw_key() {
+                    map.push((raw_key, env.value));
                 }
             }
         }

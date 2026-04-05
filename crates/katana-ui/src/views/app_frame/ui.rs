@@ -269,11 +269,12 @@ impl<'a> WorkspaceSidebar<'a> {
                                                     ui.set_max_width(HISTORY_MENU_MAX_WIDTH);
 
                                                     for path in recent_paths.iter().rev() {
-                                                        ui.horizontal(|ui| {
+                                                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                                             let remove_width = crate::icon::IconSize::Small.to_vec2().x + ui.spacing().button_padding.x * 2.0;
                                                             let btn_spacing = ui.spacing().item_spacing.x;
                                                             let available = ui.available_width();
-                                                            let label_width = (available - remove_width - btn_spacing).max(10.0);
+                                                            const MIN_LABEL_WIDTH: f32 = 10.0;
+                                                            let label_width = (available - remove_width - btn_spacing).max(MIN_LABEL_WIDTH);
 
                                                             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                                                 ui.set_min_width(label_width);

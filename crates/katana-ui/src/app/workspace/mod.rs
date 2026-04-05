@@ -154,38 +154,41 @@ impl WorkspaceOps for KatanaApp {
 
         if restore_session {
             if let Some(cache_json) = state_json_opt {
-                if let Ok(v2) = serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {
-                    to_open = v2.tabs.into_iter().map(|t| (t.path, t.pinned)).collect();
-                    if let Some(active_path) = v2.active_path {
-                        active_idx = to_open.iter().position(|(p, _)| p == &active_path);
-                    }
-                    self.state.workspace.expanded_directories = v2
-                        .expanded_directories
-                        .into_iter()
-                        .map(std::path::PathBuf::from)
-                        .collect();
-
-                    self.state.document.tab_groups = v2.groups;
-                } else {
-                    #[derive(serde::Deserialize)]
-                    struct LegacyTabState {
-                        tabs: Vec<String>,
-                        active_idx: Option<usize>,
-                        #[serde(default)]
-                        expanded_directories: std::collections::HashSet<String>,
-                    }
-                    match serde_json::from_str::<LegacyTabState>(&cache_json) {
-                        Ok(state) => {
-                            to_open = state.tabs.into_iter().map(|t| (t, false)).collect();
-                            active_idx = state.active_idx;
-                            self.state.workspace.expanded_directories = state
-                                .expanded_directories
-                                .into_iter()
-                                .map(std::path::PathBuf::from)
-                                .collect();
+                match serde_json::from_str::<WorkspaceTabSessionV2>(&cache_json) {
+                    Ok(v2) => {
+                        to_open = v2.tabs.into_iter().map(|t| (t.path, t.pinned)).collect();
+                        if let Some(active_path) = v2.active_path {
+                            active_idx = to_open.iter().position(|(p, _)| p == &active_path);
                         }
-                        Err(e) => {
-                            tracing::warn!("Failed to deserialize tab state: {}", e);
+                        self.state.workspace.expanded_directories = v2
+                            .expanded_directories
+                            .into_iter()
+                            .map(std::path::PathBuf::from)
+                            .collect();
+
+                        self.state.document.tab_groups = v2.groups;
+                    }
+                    Err(_) => {
+                        #[derive(serde::Deserialize)]
+                        struct LegacyTabState {
+                            tabs: Vec<String>,
+                            active_idx: Option<usize>,
+                            #[serde(default)]
+                            expanded_directories: std::collections::HashSet<String>,
+                        }
+                        match serde_json::from_str::<LegacyTabState>(&cache_json) {
+                            Ok(state) => {
+                                to_open = state.tabs.into_iter().map(|t| (t, false)).collect();
+                                active_idx = state.active_idx;
+                                self.state.workspace.expanded_directories = state
+                                    .expanded_directories
+                                    .into_iter()
+                                    .map(std::path::PathBuf::from)
+                                    .collect();
+                            }
+                            Err(e) => {
+                                tracing::warn!("Failed to deserialize tab state: {}", e);
+                            }
                         }
                     }
                 }

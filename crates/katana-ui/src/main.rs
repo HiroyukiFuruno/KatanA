@@ -178,17 +178,20 @@ fn main() -> eframe::Result<()> {
             let mut app = KatanaApp::new(state);
 
             let icon_png = include_bytes!("../../../assets/icon.iconset/icon_128x128.png");
-            if let Ok(icon_image) = image::load_from_memory(icon_png) {
-                let rgba = icon_image.to_rgba8();
-                let size = [rgba.width() as usize, rgba.height() as usize];
-                let pixels = rgba.into_raw();
-                let color_image = egui::ColorImage::from_rgba_unmultiplied(size, &pixels);
-                let texture = cc.egui_ctx.load_texture(
-                    "about_icon",
-                    color_image,
-                    egui::TextureOptions::LINEAR,
-                );
-                app.about_icon = Some(texture);
+            match image::load_from_memory(icon_png) {
+                Ok(icon_image) => {
+                    let rgba = icon_image.to_rgba8();
+                    let size = [rgba.width() as usize, rgba.height() as usize];
+                    let pixels = rgba.into_raw();
+                    let color_image = egui::ColorImage::from_rgba_unmultiplied(size, &pixels);
+                    let texture = cc.egui_ctx.load_texture(
+                        "about_icon",
+                        color_image,
+                        egui::TextureOptions::LINEAR,
+                    );
+                    app.about_icon = Some(texture);
+                }
+                Err(e) => tracing::warn!("Failed to load about icon from memory: {}", e),
             }
 
             if let Some(ws_path) = saved_workspace {
