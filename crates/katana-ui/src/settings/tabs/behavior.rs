@@ -93,40 +93,43 @@ impl BehaviorTabOps {
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
 
             // WHY: allow(horizontal_layout)
-            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                let mut display_val = interval;
+            crate::widgets::AlignCenter::new()
+                .shrink_to_fit(true)
+                .content(|ui| {
+                    let mut display_val = interval;
 
-                let slider = egui::Slider::new(
-                    &mut display_val,
-                    AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
-                )
-                .show_value(false) // WHY: Text is displayed separately
-                .step_by(AUTO_SAVE_INTERVAL_STEP)
-                .min_decimals(1)
-                .max_decimals(1)
-                .logarithmic(true)
-                .clamping(egui::SliderClamping::Always);
+                    let slider = egui::Slider::new(
+                        &mut display_val,
+                        AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
+                    )
+                    .show_value(false) // WHY: Text is displayed separately
+                    .step_by(AUTO_SAVE_INTERVAL_STEP)
+                    .min_decimals(1)
+                    .max_decimals(1)
+                    .logarithmic(true)
+                    .clamping(egui::SliderClamping::Always);
 
-                let slider_response = SettingsOps::add_styled_slider(ui, slider);
+                    let slider_response = SettingsOps::add_styled_slider(ui, slider);
 
-                let drag_response = ui.add(
-                    egui::DragValue::new(&mut display_val)
-                        .speed(AUTO_SAVE_INTERVAL_STEP)
-                        .suffix("s")
-                        .max_decimals(1)
-                        .range(AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX),
-                );
+                    let drag_response = ui.add(
+                        egui::DragValue::new(&mut display_val)
+                            .speed(AUTO_SAVE_INTERVAL_STEP)
+                            .suffix("s")
+                            .max_decimals(1)
+                            .range(AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX),
+                    );
 
-                if slider_response.changed() || drag_response.changed() {
-                    state
-                        .config
-                        .settings
-                        .settings_mut()
-                        .behavior
-                        .auto_save_interval_secs = display_val;
-                    let _ = state.config.try_save_settings();
-                }
-            }).show(ui);
+                    if slider_response.changed() || drag_response.changed() {
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .behavior
+                            .auto_save_interval_secs = display_val;
+                        let _ = state.config.try_save_settings();
+                    }
+                })
+                .show(ui);
 
             ui.spacing_mut().slider_width = original_width;
         }

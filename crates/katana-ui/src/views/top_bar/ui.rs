@@ -1133,7 +1133,12 @@ impl ViewModeBar {
                                 order_icon
                                     .image(crate::icon::IconSize::Medium)
                                     .tint(ui.visuals().text_color()),
-                            ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }),
+                            )
+                            .fill(if ui.visuals().dark_mode {
+                                crate::theme_bridge::TRANSPARENT
+                            } else {
+                                crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
+                            }),
                         )
                         .on_hover_text(order_tip)
                         .clicked()
@@ -1244,7 +1249,12 @@ impl DocSearchBar {
                         // WHY: allow(icon_button_fill)
                         egui::Button::image(
                             crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
-                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
+                        )
+                        .fill(if ui.visuals().dark_mode {
+                            crate::theme_bridge::TRANSPARENT
+                        } else {
+                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
+                        })
                         .min_size(button_size),
                     )
                     .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_close.clone())
@@ -1259,7 +1269,12 @@ impl DocSearchBar {
                         // WHY: allow(icon_button_fill)
                         egui::Button::image(
                             crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
-                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
+                        )
+                        .fill(if ui.visuals().dark_mode {
+                            crate::theme_bridge::TRANSPARENT
+                        } else {
+                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
+                        })
                         .min_size(button_size),
                     )
                     .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
@@ -1274,7 +1289,12 @@ impl DocSearchBar {
                         // WHY: allow(icon_button_fill)
                         egui::Button::image(
                             crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
-                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
+                        )
+                        .fill(if ui.visuals().dark_mode {
+                            crate::theme_bridge::TRANSPARENT
+                        } else {
+                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg()
+                        })
                         .min_size(button_size),
                     )
                     .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())

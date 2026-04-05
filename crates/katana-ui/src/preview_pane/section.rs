@@ -291,16 +291,19 @@ impl SectionLogicOps {
             ),
             RenderedSection::Pending { kind, .. } => {
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    ui.spinner();
-                    ui.label(
-                        egui::RichText::new(crate::i18n::I18nOps::tf(
-                            &crate::i18n::I18nOps::get().preview.rendering,
-                            &[("kind", kind.as_str())],
-                        ))
-                        .weak(),
-                    );
-                }).show(ui);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        ui.spinner();
+                        ui.label(
+                            egui::RichText::new(crate::i18n::I18nOps::tf(
+                                &crate::i18n::I18nOps::get().preview.rendering,
+                                &[("kind", kind.as_str())],
+                            ))
+                            .weak(),
+                        );
+                    })
+                    .show(ui);
                 (None, vec![])
             }
         }

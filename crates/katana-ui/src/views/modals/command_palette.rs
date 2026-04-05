@@ -162,38 +162,41 @@ impl<'a> CommandPaletteModal<'a> {
                                 let response = frame
                                     .show(ui, |ui| {
                                         // WHY: allow(horizontal_layout)
-                                        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                                            let icon = match result.kind {
-                                                CommandPaletteResultKind::Action => {
-                                                    crate::Icon::Action
-                                                }
-                                                CommandPaletteResultKind::File => {
-                                                    crate::Icon::Document
-                                                }
-                                                CommandPaletteResultKind::MarkdownContent => {
-                                                    crate::Icon::Markdown
-                                                }
-                                                CommandPaletteResultKind::RecentOrCommon => {
-                                                    crate::Icon::Recent
-                                                }
-                                            };
-                                            ui.add(
-                                                icon.image(crate::icon::IconSize::Medium)
-                                                    .tint(text_color),
-                                            );
-                                            ui.label(
-                                                egui::RichText::new(&result.label)
-                                                    .color(text_color)
-                                                    .strong(),
-                                            );
-                                            if let Some(sec) = &result.secondary_label {
-                                                ui.label(
-                                                    egui::RichText::new(sec)
-                                                        .color(text_color)
-                                                        .weak(),
+                                        crate::widgets::AlignCenter::new()
+                                            .shrink_to_fit(true)
+                                            .content(|ui| {
+                                                let icon = match result.kind {
+                                                    CommandPaletteResultKind::Action => {
+                                                        crate::Icon::Action
+                                                    }
+                                                    CommandPaletteResultKind::File => {
+                                                        crate::Icon::Document
+                                                    }
+                                                    CommandPaletteResultKind::MarkdownContent => {
+                                                        crate::Icon::Markdown
+                                                    }
+                                                    CommandPaletteResultKind::RecentOrCommon => {
+                                                        crate::Icon::Recent
+                                                    }
+                                                };
+                                                ui.add(
+                                                    icon.image(crate::icon::IconSize::Medium)
+                                                        .tint(text_color),
                                                 );
-                                            }
-                                        }).show(ui);
+                                                ui.label(
+                                                    egui::RichText::new(&result.label)
+                                                        .color(text_color)
+                                                        .strong(),
+                                                );
+                                                if let Some(sec) = &result.secondary_label {
+                                                    ui.label(
+                                                        egui::RichText::new(sec)
+                                                            .color(text_color)
+                                                            .weak(),
+                                                    );
+                                                }
+                                            })
+                                            .show(ui);
                                     })
                                     .response;
 

@@ -435,11 +435,9 @@ impl FullscreenLogicOps {
                             let mut bg = ui.visuals().window_fill();
                             bg = bg.gamma_multiply(SLIDESHOW_BG_ALPHA_SCALE * opacity);
 
-
                             let frame = egui::Frame::NONE
                                 .fill(bg)
                                 .corner_radius(SLIDESHOW_CONTROL_CORNER_RADIUS)
-
                                 .inner_margin(egui::Margin::symmetric(
                                     SLIDESHOW_CONTROL_PADDING_X,
                                     SLIDESHOW_CONTROL_PADDING_Y,
@@ -456,7 +454,13 @@ impl FullscreenLogicOps {
                                             crate::icon::Icon::ChevronLeft
                                                 .image(crate::icon::IconSize::Medium)
                                                 .tint(icon_color),
-                                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
+                                        )
+                                        .fill(if ui.visuals().dark_mode {
+                                            crate::theme_bridge::TRANSPARENT
+                                        } else {
+                                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg(
+                                            )
+                                        })
                                         .frame(false);
                                         if layout.slideshow_page == 0 {
                                             prev_btn = prev_btn.sense(egui::Sense::hover());
@@ -487,7 +491,13 @@ impl FullscreenLogicOps {
                                             crate::icon::Icon::ChevronRight
                                                 .image(crate::icon::IconSize::Medium)
                                                 .tint(icon_color),
-                                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
+                                        )
+                                        .fill(if ui.visuals().dark_mode {
+                                            crate::theme_bridge::TRANSPARENT
+                                        } else {
+                                            crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg(
+                                            )
+                                        })
                                         .frame(false);
                                         if layout.slideshow_page >= max_page {
                                             next_btn = next_btn.sense(egui::Sense::hover());

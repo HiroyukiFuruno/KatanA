@@ -147,112 +147,118 @@ impl ThemeTabOps {
                     theme_bridge::ThemeBridgeOps::rgb_to_color32(custom_theme.colors.system.accent);
 
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    let (rect, _) = ui.allocate_exact_size(
-                        egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
-                        egui::Sense::hover(),
-                    );
-                    let corner = PRESET_SWATCH_SIZE / SWATCH_CORNER_DIVISOR;
-                    ui.painter().rect_filled(rect, corner, bg_color);
-                    ui.painter()
-                        .circle_filled(rect.center(), corner, accent_color);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        let (rect, _) = ui.allocate_exact_size(
+                            egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
+                            egui::Sense::hover(),
+                        );
+                        let corner = PRESET_SWATCH_SIZE / SWATCH_CORNER_DIVISOR;
+                        ui.painter().rect_filled(rect, corner, bg_color);
+                        ui.painter()
+                            .circle_filled(rect.center(), corner, accent_color);
 
-                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    let custom_fill = if is_selected {
-                        ui.visuals().selection.bg_fill
-                    } else {
-                        crate::theme_bridge::TRANSPARENT
-                    };
-                    let response = ui.add(
-                        egui::Button::selectable(is_selected, &custom_theme.name)
-                            .frame_when_inactive(true)
-                            .fill(custom_fill),
-                    );
-                    if response.clicked() && !is_selected {
-                        state
-                            .config
-                            .settings
-                            .settings_mut()
-                            .theme
-                            .custom_color_overrides = Some(custom_theme.colors.clone());
-                        state
-                            .config
-                            .settings
-                            .settings_mut()
-                            .theme
-                            .active_custom_theme = Some(custom_theme.name.clone());
-                        let _ = state.config.try_save_settings();
-                    }
-
-                    response.context_menu(|ui| {
-                        if ui
-                            .button(crate::i18n::I18nOps::get().settings.theme.duplicate.clone())
-                            .clicked()
-                        {
-                            ui.data_mut(|d| {
-                                d.insert_temp(egui::Id::new("show_save_theme_modal"), true);
-                                d.insert_temp(
-                                    egui::Id::new("custom_theme_name_input"),
-                                    format!("{} copy", custom_theme.name),
-                                );
-                                d.insert_temp(
-                                    egui::Id::new("duplicate_theme_colors"),
-                                    custom_theme.colors.clone(),
-                                );
-                            });
-                            ui.close();
-                        }
-                    });
-
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let icon_bg = if ui.visuals().dark_mode {
-                            crate::theme_bridge::TRANSPARENT
+                        // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
+                        let custom_fill = if is_selected {
+                            ui.visuals().selection.bg_fill
                         } else {
-                            crate::theme_bridge::ThemeBridgeOps::from_gray(
-                                crate::shell_ui::LIGHT_MODE_ICON_BG,
-                            )
+                            crate::theme_bridge::TRANSPARENT
                         };
-                        if ui
-                            .add(
-                                egui::Button::image(
-                                    crate::Icon::Remove.ui_image(ui, crate::icon::IconSize::Medium),
-                                )
-                                .fill(icon_bg),
-                            )
-                            .on_hover_text(
-                                crate::i18n::I18nOps::get()
-                                    .settings
-                                    .theme
-                                    .delete_custom
-                                    .clone(),
-                            )
-                            .clicked()
-                        {
+                        let response = ui.add(
+                            egui::Button::selectable(is_selected, &custom_theme.name)
+                                .frame_when_inactive(true)
+                                .fill(custom_fill),
+                        );
+                        if response.clicked() && !is_selected {
                             state
                                 .config
                                 .settings
                                 .settings_mut()
                                 .theme
-                                .custom_themes
-                                .remove(idx);
-                            if is_selected {
-                                state
-                                    .config
-                                    .settings
-                                    .settings_mut()
-                                    .theme
-                                    .custom_color_overrides = None;
-                                state
-                                    .config
-                                    .settings
-                                    .settings_mut()
-                                    .theme
-                                    .active_custom_theme = None;
-                            }
+                                .custom_color_overrides = Some(custom_theme.colors.clone());
+                            state
+                                .config
+                                .settings
+                                .settings_mut()
+                                .theme
+                                .active_custom_theme = Some(custom_theme.name.clone());
                             let _ = state.config.try_save_settings();
                         }
-                    });
-                }).show(ui);
+
+                        response.context_menu(|ui| {
+                            if ui
+                                .button(
+                                    crate::i18n::I18nOps::get().settings.theme.duplicate.clone(),
+                                )
+                                .clicked()
+                            {
+                                ui.data_mut(|d| {
+                                    d.insert_temp(egui::Id::new("show_save_theme_modal"), true);
+                                    d.insert_temp(
+                                        egui::Id::new("custom_theme_name_input"),
+                                        format!("{} copy", custom_theme.name),
+                                    );
+                                    d.insert_temp(
+                                        egui::Id::new("duplicate_theme_colors"),
+                                        custom_theme.colors.clone(),
+                                    );
+                                });
+                                ui.close();
+                            }
+                        });
+
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            let icon_bg = if ui.visuals().dark_mode {
+                                crate::theme_bridge::TRANSPARENT
+                            } else {
+                                crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                    crate::shell_ui::LIGHT_MODE_ICON_BG,
+                                )
+                            };
+                            if ui
+                                .add(
+                                    egui::Button::image(
+                                        crate::Icon::Remove
+                                            .ui_image(ui, crate::icon::IconSize::Medium),
+                                    )
+                                    .fill(icon_bg),
+                                )
+                                .on_hover_text(
+                                    crate::i18n::I18nOps::get()
+                                        .settings
+                                        .theme
+                                        .delete_custom
+                                        .clone(),
+                                )
+                                .clicked()
+                            {
+                                state
+                                    .config
+                                    .settings
+                                    .settings_mut()
+                                    .theme
+                                    .custom_themes
+                                    .remove(idx);
+                                if is_selected {
+                                    state
+                                        .config
+                                        .settings
+                                        .settings_mut()
+                                        .theme
+                                        .custom_color_overrides = None;
+                                    state
+                                        .config
+                                        .settings
+                                        .settings_mut()
+                                        .theme
+                                        .active_custom_theme = None;
+                                }
+                                let _ = state.config.try_save_settings();
+                            }
+                        });
+                    })
+                    .show(ui);
             }
         }
 
@@ -282,64 +288,67 @@ impl ThemeTabOps {
             let accent_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.accent);
 
             // WHY: allow(horizontal_layout)
-            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                let (rect, _) = ui.allocate_exact_size(
-                    egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
-                    egui::Sense::hover(),
-                );
-                let corner = PRESET_SWATCH_SIZE / SWATCH_CORNER_DIVISOR;
-                ui.painter().rect_filled(rect, corner, bg_color);
-                ui.painter()
-                    .circle_filled(rect.center(), corner, accent_color);
+            crate::widgets::AlignCenter::new()
+                .shrink_to_fit(true)
+                .content(|ui| {
+                    let (rect, _) = ui.allocate_exact_size(
+                        egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
+                        egui::Sense::hover(),
+                    );
+                    let corner = PRESET_SWATCH_SIZE / SWATCH_CORNER_DIVISOR;
+                    ui.painter().rect_filled(rect, corner, bg_color);
+                    ui.painter()
+                        .circle_filled(rect.center(), corner, accent_color);
 
-                // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
-                let preset_fill = if is_selected {
-                    ui.visuals().selection.bg_fill
-                } else {
-                    crate::theme_bridge::TRANSPARENT
-                };
-                let response = ui.add(
-                    egui::Button::selectable(is_selected, preset.display_name())
-                        .frame_when_inactive(true)
-                        .fill(preset_fill),
-                );
-                if response.clicked() && !is_selected {
-                    state.config.settings.settings_mut().theme.preset = **preset;
-                    state
-                        .config
-                        .settings
-                        .settings_mut()
-                        .theme
-                        .custom_color_overrides = None;
-                    state
-                        .config
-                        .settings
-                        .settings_mut()
-                        .theme
-                        .active_custom_theme = None;
-                    let _ = state.config.try_save_settings();
-                }
-
-                response.context_menu(|ui| {
-                    if ui
-                        .button(crate::i18n::I18nOps::get().settings.theme.duplicate.clone())
-                        .clicked()
-                    {
-                        ui.data_mut(|d| {
-                            d.insert_temp(egui::Id::new("show_save_theme_modal"), true);
-                            d.insert_temp(
-                                egui::Id::new("custom_theme_name_input"),
-                                format!("{} copy", preset.display_name()),
-                            );
-                            d.insert_temp(
-                                egui::Id::new("duplicate_theme_colors"),
-                                preset.colors().clone(),
-                            );
-                        });
-                        ui.close();
+                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
+                    let preset_fill = if is_selected {
+                        ui.visuals().selection.bg_fill
+                    } else {
+                        crate::theme_bridge::TRANSPARENT
+                    };
+                    let response = ui.add(
+                        egui::Button::selectable(is_selected, preset.display_name())
+                            .frame_when_inactive(true)
+                            .fill(preset_fill),
+                    );
+                    if response.clicked() && !is_selected {
+                        state.config.settings.settings_mut().theme.preset = **preset;
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .custom_color_overrides = None;
+                        state
+                            .config
+                            .settings
+                            .settings_mut()
+                            .theme
+                            .active_custom_theme = None;
+                        let _ = state.config.try_save_settings();
                     }
-                });
-            }).show(ui);
+
+                    response.context_menu(|ui| {
+                        if ui
+                            .button(crate::i18n::I18nOps::get().settings.theme.duplicate.clone())
+                            .clicked()
+                        {
+                            ui.data_mut(|d| {
+                                d.insert_temp(egui::Id::new("show_save_theme_modal"), true);
+                                d.insert_temp(
+                                    egui::Id::new("custom_theme_name_input"),
+                                    format!("{} copy", preset.display_name()),
+                                );
+                                d.insert_temp(
+                                    egui::Id::new("duplicate_theme_colors"),
+                                    preset.colors().clone(),
+                                );
+                            });
+                            ui.close();
+                        }
+                    });
+                })
+                .show(ui);
         }
     }
 
@@ -770,73 +779,79 @@ impl ThemeTabOps {
                 let mut name = ui.data(|d| d.get_temp::<String>(name_id).unwrap_or_default());
 
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    ui.label(
-                        crate::i18n::I18nOps::get()
-                            .settings
-                            .theme
-                            .theme_name_label
-                            .clone(),
-                    );
-                    let re = ui.text_edit_singleline(&mut name);
-                    re.request_focus();
-                    if re.changed() {
-                        ui.data_mut(|d| d.insert_temp(name_id, name.clone()));
-                    }
-                }).show(ui);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        ui.label(
+                            crate::i18n::I18nOps::get()
+                                .settings
+                                .theme
+                                .theme_name_label
+                                .clone(),
+                        );
+                        let re = ui.text_edit_singleline(&mut name);
+                        re.request_focus();
+                        if re.changed() {
+                            ui.data_mut(|d| d.insert_temp(name_id, name.clone()));
+                        }
+                    })
+                    .show(ui);
 
                 ui.add_space(SUBSECTION_SPACING);
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    if ui
-                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
-                        .clicked()
-                    {
-                        close = true;
-                    }
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
                         if ui
-                            .button(crate::i18n::I18nOps::get().action.save.clone())
+                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
                             .clicked()
-                            && !name.is_empty()
                         {
-                            let dup_id = egui::Id::new("duplicate_theme_colors");
-                            let mut theme_colors = ui
-                                .data(|d| d.get_temp::<ThemeColors>(dup_id))
-                                .unwrap_or_else(|| {
-                                    state.config.settings.settings().effective_theme_colors()
-                                });
-                            theme_colors.name = name.clone();
-
-                            let mut themes =
-                                state.config.settings.settings().theme.custom_themes.clone();
-                            if let Some(existing) = themes.iter_mut().find(|t| t.name == name) {
-                                existing.colors = theme_colors.clone();
-                            } else {
-                                themes.push(katana_platform::settings::CustomTheme {
-                                    name: name.clone(),
-                                    colors: theme_colors.clone(),
-                                });
-                            }
-                            state.config.settings.settings_mut().theme.custom_themes = themes;
-                            state
-                                .config
-                                .settings
-                                .settings_mut()
-                                .theme
-                                .custom_color_overrides = Some(theme_colors);
-                            state
-                                .config
-                                .settings
-                                .settings_mut()
-                                .theme
-                                .active_custom_theme = Some(name.clone());
-
-                            let _ = state.config.try_save_settings();
                             close = true;
                         }
-                    });
-                }).show(ui);
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui
+                                .button(crate::i18n::I18nOps::get().action.save.clone())
+                                .clicked()
+                                && !name.is_empty()
+                            {
+                                let dup_id = egui::Id::new("duplicate_theme_colors");
+                                let mut theme_colors = ui
+                                    .data(|d| d.get_temp::<ThemeColors>(dup_id))
+                                    .unwrap_or_else(|| {
+                                        state.config.settings.settings().effective_theme_colors()
+                                    });
+                                theme_colors.name = name.clone();
+
+                                let mut themes =
+                                    state.config.settings.settings().theme.custom_themes.clone();
+                                if let Some(existing) = themes.iter_mut().find(|t| t.name == name) {
+                                    existing.colors = theme_colors.clone();
+                                } else {
+                                    themes.push(katana_platform::settings::CustomTheme {
+                                        name: name.clone(),
+                                        colors: theme_colors.clone(),
+                                    });
+                                }
+                                state.config.settings.settings_mut().theme.custom_themes = themes;
+                                state
+                                    .config
+                                    .settings
+                                    .settings_mut()
+                                    .theme
+                                    .custom_color_overrides = Some(theme_colors);
+                                state
+                                    .config
+                                    .settings
+                                    .settings_mut()
+                                    .theme
+                                    .active_custom_theme = Some(name.clone());
+
+                                let _ = state.config.try_save_settings();
+                                close = true;
+                            }
+                        });
+                    })
+                    .show(ui);
 
                 let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
                 if should_close {

@@ -77,10 +77,13 @@ impl<'a> Modal<'a> {
 
                 ui.add_space(BAR_TO_FOOTER_SPACING);
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    ui.set_max_width(dialog_width);
-                    result = footer(ui);
-                }).show(ui);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        ui.set_max_width(dialog_width);
+                        result = footer(ui);
+                    })
+                    .show(ui);
             });
 
         result

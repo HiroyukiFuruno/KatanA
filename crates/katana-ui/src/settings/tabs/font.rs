@@ -67,7 +67,13 @@ impl FontTabOps {
                             {
                                 let is_current = current == family;
                                 // WHY: in popup/list context; future: standardize as atom
-                                if ui.add(egui::Button::selectable(is_current, family).frame_when_inactive(true)).clicked() {
+                                if ui
+                                    .add(
+                                        egui::Button::selectable(is_current, family)
+                                            .frame_when_inactive(true),
+                                    )
+                                    .clicked()
+                                {
                                     selected = Some(family.to_string());
                                     close = true;
                                 }
@@ -80,7 +86,13 @@ impl FontTabOps {
                             {
                                 let is_current = current == *name;
                                 // WHY: in popup/list context; future: standardize as atom
-                                if ui.add(egui::Button::selectable(is_current, name.as_str()).frame_when_inactive(true)).clicked() {
+                                if ui
+                                    .add(
+                                        egui::Button::selectable(is_current, name.as_str())
+                                            .frame_when_inactive(true),
+                                    )
+                                    .clicked()
+                                {
                                     selected = Some(name.clone());
                                     close = true;
                                 }

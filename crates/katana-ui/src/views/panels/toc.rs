@@ -68,25 +68,28 @@ impl<'a> TocPanel<'a> {
                             for (i, item) in preview.outline_items.iter().enumerate() {
                                 let indent = (item.level as f32 - 1.0) * TOC_INDENT_PER_LEVEL;
                                 // WHY: allow(horizontal_layout)
-                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                                    ui.add_space(indent);
-                                    let is_active = i == active_index;
-                                    let mut text = egui::RichText::new(&item.text);
-                                    if is_active {
-                                        text = text
-                                            .strong()
-                                            .color(ui.visuals().widgets.active.text_color());
-                                    }
-                                    if ui
-                                        .add(
-                                            egui::Button::selectable(is_active, text)
-                                                .frame_when_inactive(true),
-                                        )
-                                        .clicked()
-                                    {
-                                        next_scroll = Some(item.index);
-                                    }
-                                }).show(ui);
+                                crate::widgets::AlignCenter::new()
+                                    .shrink_to_fit(true)
+                                    .content(|ui| {
+                                        ui.add_space(indent);
+                                        let is_active = i == active_index;
+                                        let mut text = egui::RichText::new(&item.text);
+                                        if is_active {
+                                            text = text
+                                                .strong()
+                                                .color(ui.visuals().widgets.active.text_color());
+                                        }
+                                        if ui
+                                            .add(
+                                                egui::Button::selectable(is_active, text)
+                                                    .frame_when_inactive(true),
+                                            )
+                                            .clicked()
+                                        {
+                                            next_scroll = Some(item.index);
+                                        }
+                                    })
+                                    .show(ui);
                             }
                             if next_scroll.is_some() {
                                 preview.scroll_request = next_scroll;

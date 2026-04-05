@@ -141,21 +141,24 @@ impl WorkspaceTabOps {
                     ui.label(&workspace_msgs.no_extension_warning);
                     ui.add_space(SUBSECTION_SPACING);
                     // WHY: allow(horizontal_layout)
-                    crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                        if ui
-                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
-                            .clicked()
-                        {
-                            close = true;
-                        }
-                        if ui
-                            .button(crate::i18n::I18nOps::get().action.confirm.clone())
-                            .clicked()
-                        {
-                            confirm = true;
-                            close = true;
-                        }
-                    }).show(ui);
+                    crate::widgets::AlignCenter::new()
+                        .shrink_to_fit(true)
+                        .content(|ui| {
+                            if ui
+                                .button(crate::i18n::I18nOps::get().action.cancel.clone())
+                                .clicked()
+                            {
+                                close = true;
+                            }
+                            if ui
+                                .button(crate::i18n::I18nOps::get().action.confirm.clone())
+                                .clicked()
+                            {
+                                confirm = true;
+                                close = true;
+                            }
+                        })
+                        .show(ui);
                 });
 
             let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));

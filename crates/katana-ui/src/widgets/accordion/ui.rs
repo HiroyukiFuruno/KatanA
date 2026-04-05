@@ -124,12 +124,15 @@ impl<'a> Accordion<'a> {
 
         state.show_body_unindented(ui, |ui| {
             // WHY: allow(horizontal_layout)
-            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                ui.add_space(ui.spacing().indent);
-                ui.vertical(|ui| {
-                    (self.body)(ui);
-                });
-            }).show(ui);
+            crate::widgets::AlignCenter::new()
+                .shrink_to_fit(true)
+                .content(|ui| {
+                    ui.add_space(ui.spacing().indent);
+                    ui.vertical(|ui| {
+                        (self.body)(ui);
+                    });
+                })
+                .show(ui);
         });
     }
 }

@@ -63,27 +63,33 @@ impl<'a> TermsModal<'a> {
                                 ui.add_space(TERMS_SPACING_SMALL);
 
                                 // WHY: allow(horizontal_layout)
-                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                                    ui.label(
-                                        egui::RichText::new(crate::i18n::I18nOps::tf(
-                                            &terms.version_label,
-                                            &[("version", version)],
-                                        ))
-                                        .weak(),
-                                    );
+                                crate::widgets::AlignCenter::new()
+                                    .shrink_to_fit(true)
+                                    .content(|ui| {
+                                        ui.label(
+                                            egui::RichText::new(crate::i18n::I18nOps::tf(
+                                                &terms.version_label,
+                                                &[("version", version)],
+                                            ))
+                                            .weak(),
+                                        );
 
-                                    ui.with_layout(
-                                        egui::Layout::right_to_left(egui::Align::Center),
-                                        |ui| {
-                                            let current_lang = crate::i18n::I18nOps::get_language();
-                                            let current_name =
-                                                crate::i18n::I18nOps::supported_languages()
-                                                    .iter()
-                                                    .find(|(code, _)| *code == current_lang)
-                                                    .map(|(_, name)| name.as_str())
-                                                    .unwrap_or("English");
+                                        ui.with_layout(
+                                            egui::Layout::right_to_left(egui::Align::Center),
+                                            |ui| {
+                                                let current_lang =
+                                                    crate::i18n::I18nOps::get_language();
+                                                let current_name =
+                                                    crate::i18n::I18nOps::supported_languages()
+                                                        .iter()
+                                                        .find(|(code, _)| *code == current_lang)
+                                                        .map(|(_, name)| name.as_str())
+                                                        .unwrap_or("English");
 
-                                            StyledComboBox::new("terms_lang_select", current_name)
+                                                StyledComboBox::new(
+                                                    "terms_lang_select",
+                                                    current_name,
+                                                )
                                                 .width(TERMS_LANG_SELECT_WIDTH)
                                                 .show(ui, |ui| {
                                                     for (code, name) in
@@ -91,10 +97,13 @@ impl<'a> TermsModal<'a> {
                                                     {
                                                         if ui
                                                             // WHY: in popup/list context; future: standardize as atom
-                                                            .add(egui::Button::selectable(
-                                                                current_lang == *code,
-                                                                name,
-                                                            ).frame_when_inactive(true))
+                                                            .add(
+                                                                egui::Button::selectable(
+                                                                    current_lang == *code,
+                                                                    name,
+                                                                )
+                                                                .frame_when_inactive(true),
+                                                            )
                                                             .clicked()
                                                         {
                                                             *pending_action =
@@ -104,9 +113,10 @@ impl<'a> TermsModal<'a> {
                                                         }
                                                     }
                                                 });
-                                        },
-                                    );
-                                }).show(ui);
+                                            },
+                                        );
+                                    })
+                                    .show(ui);
 
                                 ui.add_space(TERMS_SPACING_MEDIUM);
                                 ui.separator();
@@ -131,50 +141,59 @@ impl<'a> TermsModal<'a> {
                                 ui.add_space(TERMS_SPACING_XLARGE);
 
                                 // WHY: allow(horizontal_layout)
-                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                                    let total_buttons_width =
-                                        TERMS_BUTTON_WIDTH * 2.0 + TERMS_BUTTON_SPACING;
-                                    let available = ui.available_width();
-                                    let outer_spacing = (available - total_buttons_width) / 2.0;
+                                crate::widgets::AlignCenter::new()
+                                    .shrink_to_fit(true)
+                                    .content(|ui| {
+                                        let total_buttons_width =
+                                            TERMS_BUTTON_WIDTH * 2.0 + TERMS_BUTTON_SPACING;
+                                        let available = ui.available_width();
+                                        let outer_spacing = (available - total_buttons_width) / 2.0;
 
-                                    if outer_spacing > 0.0 {
-                                        ui.add_space(outer_spacing);
-                                    }
+                                        if outer_spacing > 0.0 {
+                                            ui.add_space(outer_spacing);
+                                        }
 
-                                    let accept_btn = egui::Button::new(
-                                        egui::RichText::new(&terms.accept)
-                                            .strong()
-                                            .size(TERMS_BUTTON_TEXT_SIZE),
-                                    )
-                                    .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
-                                    .corner_radius(TERMS_ROUNDING_SMALL);
+                                        let accept_btn = egui::Button::new(
+                                            egui::RichText::new(&terms.accept)
+                                                .strong()
+                                                .size(TERMS_BUTTON_TEXT_SIZE),
+                                        )
+                                        .min_size(egui::vec2(
+                                            TERMS_BUTTON_WIDTH,
+                                            TERMS_BUTTON_HEIGHT,
+                                        ))
+                                        .corner_radius(TERMS_ROUNDING_SMALL);
 
-                                    if ui
-                                        .add(accept_btn)
-                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                        .clicked()
-                                    {
-                                        *pending_action =
-                                            AppAction::AcceptTerms(version.to_string());
-                                    }
+                                        if ui
+                                            .add(accept_btn)
+                                            .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                            .clicked()
+                                        {
+                                            *pending_action =
+                                                AppAction::AcceptTerms(version.to_string());
+                                        }
 
-                                    ui.add_space(TERMS_BUTTON_SPACING);
+                                        ui.add_space(TERMS_BUTTON_SPACING);
 
-                                    let decline_btn = egui::Button::new(
-                                        egui::RichText::new(&terms.decline)
-                                            .size(TERMS_BUTTON_TEXT_SIZE),
-                                    )
-                                    .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
-                                    .corner_radius(TERMS_ROUNDING_SMALL);
+                                        let decline_btn = egui::Button::new(
+                                            egui::RichText::new(&terms.decline)
+                                                .size(TERMS_BUTTON_TEXT_SIZE),
+                                        )
+                                        .min_size(egui::vec2(
+                                            TERMS_BUTTON_WIDTH,
+                                            TERMS_BUTTON_HEIGHT,
+                                        ))
+                                        .corner_radius(TERMS_ROUNDING_SMALL);
 
-                                    if ui
-                                        .add(decline_btn)
-                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                        .clicked()
-                                    {
-                                        *pending_action = AppAction::DeclineTerms;
-                                    }
-                                }).show(ui);
+                                        if ui
+                                            .add(decline_btn)
+                                            .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                            .clicked()
+                                        {
+                                            *pending_action = AppAction::DeclineTerms;
+                                        }
+                                    })
+                                    .show(ui);
                                 ui.add_space(TERMS_SPACING_MEDIUM);
                             });
                         });

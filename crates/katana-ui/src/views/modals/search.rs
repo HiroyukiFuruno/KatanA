@@ -235,39 +235,36 @@ impl<'a> SearchModal<'a> {
                             });
                     }
                     crate::app_state::SearchTab::MarkdownContent => {
-                        // WHY: allow(horizontal_layout)
-                        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                            let response = ui.add(
-                                egui::TextEdit::singleline(&mut search.md_query)
-                                    .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
-                                    .desired_width(f32::INFINITY),
-                            );
-                            if !search.focus_requested {
-                                response.request_focus();
-                                search.focus_requested = true;
-                            }
+                        let response = ui.add(
+                            egui::TextEdit::singleline(&mut search.md_query)
+                                .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
+                                .desired_width(f32::INFINITY),
+                        );
+                        if !search.focus_requested {
+                            response.request_focus();
+                            search.focus_requested = true;
+                        }
 
-                            if (response.changed()
-                                || response.lost_focus()
-                                    && ui.input(|i| i.key_pressed(egui::Key::Enter)))
-                                && search.md_last_query.as_deref() != Some(search.md_query.as_str())
-                            {
-                                search.md_last_query = Some(search.md_query.clone());
-                                if search.md_query.is_empty() {
-                                    search.md_results.clear();
-                                } else if let Some(ws) = workspace {
-                                    search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
-                                        ws,
-                                        &search.md_query,
-                                        MD_SEARCH_LIMIT,
-                                    );
-                                    search.md_history.push_term(
-                                        search.md_query.clone(),
-                                        MD_SEARCH_HISTORY_LIMIT,
-                                    );
-                                }
+                        if (response.changed()
+                            || response.lost_focus()
+                                && ui.input(|i| i.key_pressed(egui::Key::Enter)))
+                            && search.md_last_query.as_deref() != Some(search.md_query.as_str())
+                        {
+                            search.md_last_query = Some(search.md_query.clone());
+                            if search.md_query.is_empty() {
+                                search.md_results.clear();
+                            } else if let Some(ws) = workspace {
+                                search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
+                                    ws,
+                                    &search.md_query,
+                                    MD_SEARCH_LIMIT,
+                                );
+                                search.md_history.push_term(
+                                    search.md_query.clone(),
+                                    MD_SEARCH_HISTORY_LIMIT,
+                                );
                             }
-                        }).show(ui);
+                        }
 
                         // WHY: Recent Terms
                         if search.md_query.is_empty() && !search.md_history.recent_terms.is_empty()

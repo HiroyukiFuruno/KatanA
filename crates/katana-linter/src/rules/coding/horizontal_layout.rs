@@ -24,6 +24,11 @@ struct HorizontalLayoutVisitor {
 impl<'ast> Visit<'ast> for HorizontalLayoutVisitor {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         if node.method == "horizontal" {
+            // WHY: AlignCenter itself is the allowed implementation of horizontal layouts.
+            if self.file_path.ends_with("widgets/align_center/ui.rs") {
+                return;
+            }
+
             let (line, column) = LinterParserOps::span_location(node.method.span());
 
             self.violations.push(Violation {

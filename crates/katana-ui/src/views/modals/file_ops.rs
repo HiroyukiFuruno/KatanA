@@ -52,53 +52,65 @@ impl<'a> CreateFsNodeModal<'a> {
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    const MODAL_INPUT_WIDTH: f32 = 200.0;
-                    let re = ui.add(
-                        egui::TextEdit::singleline(name)
-                            .hint_text(&crate::i18n::I18nOps::get().dialog.name_hint)
-                            .desired_width(MODAL_INPUT_WIDTH),
-                    );
-                    re.request_focus();
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        const MODAL_INPUT_WIDTH: f32 = 200.0;
+                        let re = ui.add(
+                            egui::TextEdit::singleline(name)
+                                .hint_text(&crate::i18n::I18nOps::get().dialog.name_hint)
+                                .desired_width(MODAL_INPUT_WIDTH),
+                        );
+                        re.request_focus();
 
-                    if !*is_dir && let Some(ext) = selected_ext {
-                        const EXT_COMBOBOX_WIDTH: f32 = 80.0;
-                        let options = self.visible_extensions;
-                        crate::widgets::StyledComboBox::new("new_file_ext", ext.as_str())
-                            .width(EXT_COMBOBOX_WIDTH)
-                            .show(ui, |ui| {
-                                for opt in options {
-                                    // WHY: in popup/list context; future: standardize as atom
-                                    if ui.add(egui::Button::selectable(*ext == *opt, opt.clone()).frame_when_inactive(true)).clicked() {
-                                        *ext = opt.clone();
+                        if !*is_dir && let Some(ext) = selected_ext {
+                            const EXT_COMBOBOX_WIDTH: f32 = 80.0;
+                            let options = self.visible_extensions;
+                            crate::widgets::StyledComboBox::new("new_file_ext", ext.as_str())
+                                .width(EXT_COMBOBOX_WIDTH)
+                                .show(ui, |ui| {
+                                    for opt in options {
+                                        // WHY: in popup/list context; future: standardize as atom
+                                        if ui
+                                            .add(
+                                                egui::Button::selectable(*ext == *opt, opt.clone())
+                                                    .frame_when_inactive(true),
+                                            )
+                                            .clicked()
+                                        {
+                                            *ext = opt.clone();
+                                        }
                                     }
-                                }
-                            });
-                    }
+                                });
+                        }
 
-                    if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                        do_create = true;
-                    }
-                }).show(ui);
+                        if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                            do_create = true;
+                        }
+                    })
+                    .show(ui);
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    if ui
-                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
-                        .clicked()
-                    {
-                        close = true;
-                    }
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
                         if ui
-                            .button(crate::i18n::I18nOps::get().action.save.clone())
+                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
                             .clicked()
                         {
-                            do_create = true;
+                            close = true;
                         }
-                    });
-                }).show(ui);
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui
+                                .button(crate::i18n::I18nOps::get().action.save.clone())
+                                .clicked()
+                            {
+                                do_create = true;
+                            }
+                        });
+                    })
+                    .show(ui);
             });
 
         if !is_open {
@@ -163,38 +175,44 @@ impl<'a> RenameModal<'a> {
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    const MODAL_INPUT_WIDTH: f32 = 200.0;
-                    let re = ui.add(
-                        egui::TextEdit::singleline(new_name)
-                            .hint_text(&crate::i18n::I18nOps::get().dialog.new_name_hint)
-                            .desired_width(MODAL_INPUT_WIDTH),
-                    );
-                    re.request_focus();
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        const MODAL_INPUT_WIDTH: f32 = 200.0;
+                        let re = ui.add(
+                            egui::TextEdit::singleline(new_name)
+                                .hint_text(&crate::i18n::I18nOps::get().dialog.new_name_hint)
+                                .desired_width(MODAL_INPUT_WIDTH),
+                        );
+                        re.request_focus();
 
-                    if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                        do_rename = true;
-                    }
-                }).show(ui);
+                        if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                            do_rename = true;
+                        }
+                    })
+                    .show(ui);
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    if ui
-                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
-                        .clicked()
-                    {
-                        close = true;
-                    }
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
                         if ui
-                            .button(crate::i18n::I18nOps::get().action.save.clone())
+                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
                             .clicked()
                         {
-                            do_rename = true;
+                            close = true;
                         }
-                    });
-                }).show(ui);
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui
+                                .button(crate::i18n::I18nOps::get().action.save.clone())
+                                .clicked()
+                            {
+                                do_rename = true;
+                            }
+                        });
+                    })
+                    .show(ui);
             });
 
         if !is_open {
@@ -257,26 +275,31 @@ impl<'a> DeleteModal<'a> {
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    if ui
-                        .button(crate::i18n::I18nOps::get().action.cancel.clone())
-                        .clicked()
-                    {
-                        close = true;
-                    }
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let del_btn = egui::Button::new(
-                            egui::RichText::new(crate::i18n::I18nOps::get().action.delete.clone())
-                                .color(ui.visuals().error_fg_color),
-                        );
-                        if ui.add(del_btn).clicked() {
-                            *pending_action = crate::app_state::AppAction::DeleteFsNode {
-                                target_path: target_path.clone(),
-                            };
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        if ui
+                            .button(crate::i18n::I18nOps::get().action.cancel.clone())
+                            .clicked()
+                        {
                             close = true;
                         }
-                    });
-                }).show(ui);
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            let del_btn = egui::Button::new(
+                                egui::RichText::new(
+                                    crate::i18n::I18nOps::get().action.delete.clone(),
+                                )
+                                .color(ui.visuals().error_fg_color),
+                            );
+                            if ui.add(del_btn).clicked() {
+                                *pending_action = crate::app_state::AppAction::DeleteFsNode {
+                                    target_path: target_path.clone(),
+                                };
+                                close = true;
+                            }
+                        });
+                    })
+                    .show(ui);
             });
 
         if !is_open {

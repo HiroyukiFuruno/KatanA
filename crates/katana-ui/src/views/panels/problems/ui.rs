@@ -26,27 +26,30 @@ impl<'a> ProblemsPanel<'a> {
             .show_inside(ui, |ui| {
                 ui.add_space(SPACING);
                 // WHY: allow(horizontal_layout)
-                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                    ui.heading(
-                        crate::i18n::I18nOps::get()
-                            .status
-                            .problems_panel_title
-                            .clone(),
-                    );
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui
-                            .button(
-                                crate::i18n::I18nOps::get()
-                                    .status
-                                    .problems_panel_close
-                                    .clone(),
-                            )
-                            .clicked()
-                        {
-                            self.state.diagnostics.is_panel_open = false;
-                        }
-                    });
-                }).show(ui);
+                crate::widgets::AlignCenter::new()
+                    .shrink_to_fit(true)
+                    .content(|ui| {
+                        ui.heading(
+                            crate::i18n::I18nOps::get()
+                                .status
+                                .problems_panel_title
+                                .clone(),
+                        );
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui
+                                .button(
+                                    crate::i18n::I18nOps::get()
+                                        .status
+                                        .problems_panel_close
+                                        .clone(),
+                                )
+                                .clicked()
+                            {
+                                self.state.diagnostics.is_panel_open = false;
+                            }
+                        });
+                    })
+                    .show(ui);
                 ui.separator();
 
                 egui::ScrollArea::vertical().show(ui, |ui| {
@@ -64,31 +67,40 @@ impl<'a> ProblemsPanel<'a> {
                             ui.label(egui::RichText::new(filename).strong());
                             for diag in diagnostics {
                                 // WHY: allow(horizontal_layout)
-                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                                    let icon = match diag.severity {
+                                crate::widgets::AlignCenter::new()
+                                    .shrink_to_fit(true)
+                                    .content(|ui| {
+                                        let icon = match diag.severity {
                                         katana_linter::markdown::DiagnosticSeverity::Error => "🔴",
                                         katana_linter::markdown::DiagnosticSeverity::Warning => {
                                             "🟡"
                                         }
                                         katana_linter::markdown::DiagnosticSeverity::Info => "🔵",
                                     };
-                                    ui.label(icon);
-                                    let msg = format!(
-                                        "[{}:{}] {}",
-                                        diag.range.start_line,
-                                        diag.range.start_column,
-                                        diag.message
-                                    );
-                                    // WHY: scroll list item; future: ClickableRowOps atom
-                                    if ui.add(egui::Button::selectable(false, msg).frame_when_inactive(true)).clicked() {
-                                        *self.pending_action =
+                                        ui.label(icon);
+                                        let msg = format!(
+                                            "[{}:{}] {}",
+                                            diag.range.start_line,
+                                            diag.range.start_column,
+                                            diag.message
+                                        );
+                                        // WHY: scroll list item; future: ClickableRowOps atom
+                                        if ui
+                                            .add(
+                                                egui::Button::selectable(false, msg)
+                                                    .frame_when_inactive(true),
+                                            )
+                                            .clicked()
+                                        {
+                                            *self.pending_action =
                                             crate::app_state::AppAction::SelectDocumentAndJump {
                                                 path: path.clone(),
                                                 line: diag.range.start_line,
                                                 byte_range: 0..0,
                                             };
-                                    }
-                                }).show(ui);
+                                        }
+                                    })
+                                    .show(ui);
                             }
                             ui.add_space(SPACING);
                         }

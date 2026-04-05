@@ -8,44 +8,86 @@ impl UpdateOps {
         let url = manager
             .api_url_override
             .as_deref()
-            .unwrap_or("https://api.github.com/repos/HiroyukiFuruno/KatanA/releases/latest");
+            .unwrap_or("https://github.com/HiroyukiFuruno/KatanA/releases/latest");
 
         let resp = ureq::get(url)
             .set("User-Agent", "KatanA-Update-Manager")
+            .set("Accept", "text/html")
             .call()?;
 
         if resp.status() != HTTP_OK {
             return Ok(None);
         }
 
-        let info: ReleaseInfo = resp.into_json()?;
-        if info.tag_name == manager.current_version {
+        let final_url = resp.get_url();
+        let tag_name = if let Some(idx) = final_url.rfind("releases/tag/") {
+            final_url[idx + "releases/tag/".len()..].to_string()
+        } else {
+            return Ok(None);
+        };
+
+        let tag_version = tag_name.trim_start_matches('v');
+        let curr_version = manager.current_version.trim_start_matches('v');
+
+        if tag_version == curr_version {
             Ok(None)
         } else {
-            Ok(Some(info))
+            let html_url = final_url.to_string();
+            let download_url = format!(
+                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
+                tag_name
+            );
+            Ok(Some(ReleaseInfo {
+                tag_name,
+                html_url,
+                body: String::new(),
+                download_url,
+            }))
         }
     }
 
     pub fn is_newer_version(current: &str, latest: &str) -> bool {
-        latest != current
+        let current_stripped = current.trim_start_matches('v');
+        let latest_stripped = latest.trim_start_matches('v');
+        latest_stripped != current_stripped
     }
 
     pub fn check_for_updates_simple(current_version: &str) -> Result<Option<ReleaseInfo>> {
-        let url = "https://api.github.com/repos/HiroyukiFuruno/KatanA/releases/latest";
+        let url = "https://github.com/HiroyukiFuruno/KatanA/releases/latest";
 
         let resp = ureq::get(url)
             .set("User-Agent", "KatanA-Update-Manager")
+            .set("Accept", "text/html")
             .call()?;
 
         if resp.status() != HTTP_OK {
             return Ok(None);
         }
 
-        let info: ReleaseInfo = resp.into_json()?;
-        if info.tag_name == current_version {
+        let final_url = resp.get_url();
+        let tag_name = if let Some(idx) = final_url.rfind("releases/tag/") {
+            final_url[idx + "releases/tag/".len()..].to_string()
+        } else {
+            return Ok(None);
+        };
+
+        let tag_version = tag_name.trim_start_matches('v');
+        let curr_version = current_version.trim_start_matches('v');
+
+        if tag_version == curr_version {
             Ok(None)
         } else {
-            Ok(Some(info))
+            let html_url = final_url.to_string();
+            let download_url = format!(
+                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
+                tag_name
+            );
+            Ok(Some(ReleaseInfo {
+                tag_name,
+                html_url,
+                body: String::new(),
+                download_url,
+            }))
         }
     }
 }

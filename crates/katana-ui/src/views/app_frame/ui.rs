@@ -101,14 +101,17 @@ impl<'a> TitleBar<'a> {
         let title_text = &app.state.layout.last_window_title;
         egui::Panel::top("app_title_bar").show_inside(ui, |ui| {
             // WHY: allow(horizontal_layout)
-            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
-                ui.centered_and_justified(|ui| {
-                    let title_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                        theme_colors.system.title_bar_text,
-                    );
-                    ui.label(egui::RichText::new(title_text).small().color(title_color));
-                });
-            }).show(ui);
+            crate::widgets::AlignCenter::new()
+                .shrink_to_fit(true)
+                .content(|ui| {
+                    ui.centered_and_justified(|ui| {
+                        let title_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(
+                            theme_colors.system.title_bar_text,
+                        );
+                        ui.label(egui::RichText::new(title_text).small().color(title_color));
+                    });
+                })
+                .show(ui);
         });
     }
 }
@@ -599,7 +602,7 @@ impl<'a> Breadcrumbs<'a> {
                     );
                 } else {
                     // WHY: in popup/list context; future: standardize as atom
-                    egui::menu::menu_button(ui, egui::RichText::new(*seg).small(), |ui| {
+                    ui.menu_button(egui::RichText::new(*seg).small(), |ui| {
                         let mut ctx_action = crate::app_state::AppAction::None;
 
                         if let Some(ws) = &app.state.workspace.data
