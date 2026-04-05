@@ -15,7 +15,6 @@ impl UpdatesTabOps {
         let ver_str = format!("Current version: v{}", env!("CARGO_PKG_VERSION"));
         ui.label(egui::RichText::new(ver_str).weak().size(HINT_FONT_SIZE));
 
-        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {

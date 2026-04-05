@@ -92,7 +92,6 @@ impl BehaviorTabOps {
             const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
 
-            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {

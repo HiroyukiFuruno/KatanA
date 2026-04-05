@@ -161,7 +161,6 @@ impl<'a> CommandPaletteModal<'a> {
 
                                 let response = frame
                                     .show(ui, |ui| {
-                                        /* WHY: allow(horizontal_layout) */
                                         crate::widgets::AlignCenter::new()
                                             .shrink_to_fit(true)
                                             .content(|ui| {

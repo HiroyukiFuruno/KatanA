@@ -7,6 +7,16 @@ pub struct HorizontalLayoutOps;
 
 impl HorizontalLayoutOps {
     pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
+        /* WHY: Allow ui.horizontal() inside AlignCenter — that is the canonical seam that
+           wraps egui. All other callers must go through AlignCenter, so egui internals
+           stay isolated behind one abstraction boundary. */
+        if path
+            .to_string_lossy()
+            .contains("widgets/align_center/ui.rs")
+        {
+            return Vec::new();
+        }
+
         let source = std::fs::read_to_string(path).unwrap_or_default();
         let lines: Vec<&str> = source.lines().collect();
 

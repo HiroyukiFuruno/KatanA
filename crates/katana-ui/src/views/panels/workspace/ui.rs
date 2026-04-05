@@ -451,7 +451,6 @@ impl<'a> WorkspaceContent<'a> {
                 );
                 ui.add_space(RECENT_WORKSPACES_ITEM_SPACING);
                 for path in recent_paths.iter().rev() {
-                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
                         .content(|ui| {
@@ -646,7 +645,6 @@ impl<'a> WorkspaceHeader<'a> {
                 if !search.filter_query.is_empty() {
                     is_valid_regex = regex::Regex::new(&search.filter_query).is_ok();
                 }
-                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
@@ -723,7 +721,6 @@ impl<'a> WorkspacePanel<'a> {
 
         if is_loading {
             ui.add_space(WORKSPACE_SPINNER_OUTER_MARGIN);
-            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {

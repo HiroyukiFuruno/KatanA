@@ -100,7 +100,6 @@ impl<'a> TitleBar<'a> {
         let theme_colors = self.theme_colors;
         let title_text = &app.state.layout.last_window_title;
         egui::Panel::top("app_title_bar").show_inside(ui, |ui| {
-            /* WHY: allow(horizontal_layout) */
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {
@@ -285,7 +284,6 @@ impl<'a> WorkspaceSidebar<'a> {
                                                 egui::Frame::popup(ui.style()).show(ui, |ui| {
                                                     ui.set_max_width(HISTORY_MENU_MAX_WIDTH);
                                                     for path in recent_paths.iter().rev() {
-                                                        /* WHY: allow(horizontal_layout) */
                                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                             if ui
                                                                 /* WHY: allow(icon_button_fill) */
@@ -574,7 +572,6 @@ impl<'a> Breadcrumbs<'a> {
         let rel = self.rel;
         let ws_root = self.ws_root;
         let mut breadcrumb_action = None;
-        /* WHY: allow(horizontal_layout) */
         ui.horizontal_centered(|ui| {
             let segments: Vec<&str> = rel.split('/').collect();
             let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();

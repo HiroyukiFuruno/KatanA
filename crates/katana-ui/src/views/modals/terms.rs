@@ -62,7 +62,6 @@ impl<'a> TermsModal<'a> {
                                 );
                                 ui.add_space(TERMS_SPACING_SMALL);
 
-                                /* WHY: allow(horizontal_layout) */
                                 crate::widgets::AlignCenter::new()
                                     .shrink_to_fit(true)
                                     .content(|ui| {
@@ -140,7 +139,6 @@ impl<'a> TermsModal<'a> {
 
                                 ui.add_space(TERMS_SPACING_XLARGE);
 
-                                /* WHY: allow(horizontal_layout) */
                                 crate::widgets::AlignCenter::new()
                                     .shrink_to_fit(true)
                                     .content(|ui| {

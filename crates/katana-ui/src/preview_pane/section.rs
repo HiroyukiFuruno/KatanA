@@ -290,7 +290,6 @@ impl SectionLogicOps {
                 vec![],
             ),
             RenderedSection::Pending { kind, .. } => {
-                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {

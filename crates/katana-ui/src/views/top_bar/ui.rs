@@ -191,7 +191,6 @@ impl<'a> TabBar<'a> {
             crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
         };
 
-        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
             let nav_button_width = TAB_NAV_BUTTONS_AREA_WIDTH;
             let scroll_width = ui.available_width() - nav_button_width;
@@ -253,7 +252,6 @@ impl<'a> TabBar<'a> {
                         }
                     }
 
-                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                         for item in draw_items {
                             match item {
@@ -287,7 +285,6 @@ impl<'a> TabBar<'a> {
                                             GROUP_HEADER_PADDING_Y,
                                         ))
                                         .show(ui, |ui| {
-                                            /* WHY: allow(horizontal_layout) */
                                             crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                 ui.spacing_mut().item_spacing.x =
                                                     GROUP_HEADER_ITEM_SPACING;
@@ -338,7 +335,6 @@ impl<'a> TabBar<'a> {
                                         let i18n = crate::i18n::I18nOps::get();
                                         let mut new_name = g.name.clone();
                                         let mut new_color = g.color_hex.clone();
-                                        /* WHY: allow(horizontal_layout) */
                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui: &mut egui::Ui| {
                                             let resp = ui.add(egui::TextEdit::singleline(&mut new_name).hint_text(&i18n.tab.group_name_placeholder));
                                             if self.inline_rename_group.as_ref() == Some(&g.id) {
@@ -352,7 +348,6 @@ impl<'a> TabBar<'a> {
                                         const PALETTE_STROKE: f32 = 2.0;
 
                                         ui.add_space(SPACING);
-                                        /* WHY: allow(horizontal_layout) */
                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui: &mut egui::Ui| {
                                             let colors = ["#4A90D9", "#D94A4A", "#4AD97A", "#D9A04A", "#9B59B6", "#F1C40F", "#1ABC9C"];
                                             for c in colors {
@@ -549,7 +544,6 @@ impl<'a> TabBar<'a> {
                                                     ui.style_mut().wrap_mode =
                                                         Some(egui::TextWrapMode::Truncate);
 
-                                                    /* WHY: allow(horizontal_layout) */
                                                     crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                         ui.spacing_mut().item_spacing.x = 0.0;
                                                         if is_changelog {
@@ -690,7 +684,6 @@ impl<'a> TabBar<'a> {
                                                         if g.members.contains(&doc_str) {
                                                             continue;
                                                         }
-                                                        /* WHY: allow(horizontal_layout) */
                                                         crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui: &mut egui::Ui| {
                                                             let color32 = egui::Color32::from_hex(&g.color_hex).unwrap_or(ui.visuals().widgets.active.bg_fill);
                                                             let (rect, _) = ui.allocate_exact_size(egui::vec2(GROUP_MENU_ICON_SIZE, GROUP_MENU_ICON_SIZE), egui::Sense::hover());

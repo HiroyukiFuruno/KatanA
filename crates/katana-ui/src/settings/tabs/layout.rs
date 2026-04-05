@@ -51,7 +51,6 @@ impl LayoutTabOps {
                 .toc_position
                 .clone(),
         );
-        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
@@ -101,7 +100,6 @@ impl LayoutTabOps {
                 .split_direction
                 .clone(),
         );
-        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
@@ -157,7 +155,6 @@ impl LayoutTabOps {
                 .pane_order
                 .clone(),
         );
-        /* WHY: allow(horizontal_layout) */
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
@@ -212,7 +209,6 @@ impl LayoutTabOps {
         ui.vertical(|ui| {
             for (i, item) in list.iter_mut().enumerate() {
                 ui.push_id(i, |ui| {
-                    /* WHY: allow(horizontal_layout) */
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
                         .content(|ui| {

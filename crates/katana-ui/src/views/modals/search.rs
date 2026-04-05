@@ -57,7 +57,6 @@ impl<'a> SearchModal<'a> {
             .resizable(true)
             .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
             .show(ctx, |ui| {
-                /* WHY: allow(horizontal_layout) */
                 crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     /* WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom */
                     let file_name_selected = search.active_tab == crate::app_state::SearchTab::FileName;
@@ -270,7 +269,6 @@ impl<'a> SearchModal<'a> {
                         if search.md_query.is_empty() && !search.md_history.recent_terms.is_empty()
                         {
                             ui.separator();
-                            /* WHY: allow(horizontal_layout) */
                             crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                 ui.label(
                                     egui::RichText::new(
@@ -317,7 +315,6 @@ impl<'a> SearchModal<'a> {
                                                 ws_root.as_deref(),
                                             );
                                         ui.group(|ui| {
-                                            /* WHY: allow(horizontal_layout) */
                                             crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                 ui.label(egui::RichText::new(&rel).strong());
                                                 let ln_text = format!(
