@@ -503,7 +503,7 @@ impl<'a> TabToolbar<'a> {
 
             if let Some((doc_path, is_changelog)) = doc_info {
                 let mut out_action = None;
-                ui.vertical(|ui| {
+                ui.horizontal_centered(|ui| {
                     if !is_changelog {
                         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
                         let rel = ShellLogicOps::relative_full_path(&doc_path, ws_root.as_deref());
