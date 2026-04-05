@@ -2326,3 +2326,104 @@ fn test_preview_accordion_auto_open_on_search_match() {
         "The accordion must be auto-opened, exposing the search match 'MysteryWord'"
     );
 }
+
+/* WHY: Regression guard for README.ja.md line 221 pattern.
+pulldown-cmark 0.13 parses a bare `<a><img></a>` line (no enclosing <p>) as
+Start(Paragraph) + InlineHtml(...) * N + End(Paragraph).
+Before the fix, the InlineHtml handler fell through to event_text(), which
+rendered the raw tag string as visible text. After the fix, InlineHtml for
+unknown tags is silently ignored, so no "<a href" text should appear. */
+#[test]
+fn bare_anchor_img_inline_html_does_not_render_as_raw_text() {
+    use egui::Context;
+
+    let md = concat!(
+        "<a href=\"https://github.com/sponsors/Example\">",
+        "<img src=\"https://img.shields.io/badge/Sponsor-❤️-ea4aaa",
+        "?style=for-the-badge&logo=github-sponsors\" alt=\"Sponsor\">",
+        "</a>\n"
+    );
+
+    let ctx = Context::default();
+    let output = ctx.run(
+        egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                egui::vec2(800.0, 600.0),
+            )),
+            ..Default::default()
+        },
+        |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut pane = PreviewPane::default();
+                pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
+                pane.show_content(ui, None, None, None, false);
+            });
+        },
+    );
+
+    /* WHY: egui nests shapes inside Shape::Vec; must use flatten_shapes to traverse all leaves */
+    let raw_html_visible = flatten_shapes(output.shapes.iter())
+        .into_iter()
+        .any(|shape| {
+            if let egui::epaint::Shape::Text(text_shape) = shape {
+                let txt = &text_shape.galley.job.text;
+                txt.contains("<a href") || txt.contains("<img src") || txt.contains("</a>")
+            } else {
+                false
+            }
+        });
+
+    assert!(
+        !raw_html_visible,
+        "Raw HTML tag text must not appear in the preview for bare <a><img></a> pattern"
+    );
+}
+
+/* WHY: Regression guard for README.ja.md lines 11-13 pattern.
+`<p align="center"><strong><a href="...">text</a></strong></p>` is parsed
+as Start(HtmlBlock) + Html(...) * N + End(HtmlBlock). Before the fix, the
+Html event handler (when html_fn is None) fell through to event_text().
+After the fix, it is silently dropped, so no "<p align" or "<strong>" text
+should appear as a rendered shape. */
+#[test]
+fn p_align_center_strong_link_does_not_render_as_raw_text() {
+    use egui::Context;
+
+    let md = "<p align=\"center\">\n  <strong><a href=\"https://katana-desktop.katana-projects.org/\">Website</a></strong> | <strong><a href=\"https://katana-desktop.katana-projects.org/docs/getting-started\">Docs</a></strong>\n</p>";
+
+    let ctx = Context::default();
+    let output = ctx.run(
+        egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                egui::vec2(800.0, 600.0),
+            )),
+            ..Default::default()
+        },
+        |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut pane = PreviewPane::default();
+                pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
+                pane.show_content(ui, None, None, None, false);
+            });
+        },
+    );
+
+    /* WHY: egui nests shapes inside Shape::Vec; must use flatten_shapes to traverse all leaves */
+    let raw_html_visible = flatten_shapes(output.shapes.iter())
+        .into_iter()
+        .any(|shape| {
+            if let egui::epaint::Shape::Text(text_shape) = shape {
+                let txt = &text_shape.galley.job.text;
+                txt.contains("<p align") || txt.contains("<strong>") || txt.contains("</strong>")
+            } else {
+                false
+            }
+        });
+
+    assert!(
+        !raw_html_visible,
+        "Raw HTML tag text must not appear in preview for <p align=\"center\"><strong><a> pattern"
+    );
+}

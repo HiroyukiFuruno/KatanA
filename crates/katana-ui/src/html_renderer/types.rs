@@ -6,4 +6,6 @@ pub struct HtmlRenderer<'a> {
     pub(crate) _base_dir: &'a Path,
     pub(crate) text_color: Option<egui::Color32>,
     pub(crate) max_image_width: f32,
+    pub(crate) is_strong: bool,
+    pub(crate) is_italics: bool,
 }

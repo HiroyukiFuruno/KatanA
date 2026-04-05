@@ -221,8 +221,9 @@ impl Link {
         let Self { destination, text } = self;
 
         let mut layout_job = LayoutJob::default();
+        let hyperlink_color = ui.visuals().hyperlink_color;
         for t in text {
-            t.append_to(
+            t.color(hyperlink_color).underline().append_to(
                 &mut layout_job,
                 ui.style(),
                 egui::FontSelection::Default,
@@ -262,7 +263,7 @@ impl Image {
         }
     }
 
-    pub fn end(self, ui: &mut Ui, options: &CommonMarkOptions) {
+    pub fn end(self, ui: &mut Ui, options: &CommonMarkOptions) -> egui::Response {
         let response = ui.add(
             egui::Image::from_uri(&self.uri)
                 .fit_to_original_size(1.0)
@@ -270,12 +271,14 @@ impl Image {
         );
 
         if !self.alt_text.is_empty() && options.show_alt_text_on_hover {
-            response.on_hover_ui_at_pointer(|ui| {
+            response.clone().on_hover_ui_at_pointer(|ui| {
                 for alt in self.alt_text {
                     ui.label(alt);
                 }
             });
         }
+        
+        response
     }
 }
 
