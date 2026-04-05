@@ -123,13 +123,13 @@ impl<'a> Accordion<'a> {
         }
 
         state.show_body_unindented(ui, |ui| {
-            // allow(horizontal_layout)
-            ui.horizontal(|ui| {
+            // WHY: allow(horizontal_layout)
+            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                 ui.add_space(ui.spacing().indent);
                 ui.vertical(|ui| {
                     (self.body)(ui);
                 });
-            });
+            }).show(ui);
         });
     }
 }

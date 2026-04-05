@@ -57,9 +57,9 @@ impl<'a> SearchModal<'a> {
             .resizable(true)
             .default_size(egui::vec2(SEARCH_MODAL_WIDTH, SEARCH_MODAL_HEIGHT))
             .show(ctx, |ui| {
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
+                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
                     let file_name_selected = search.active_tab == crate::app_state::SearchTab::FileName;
                     if ui
                         .add(
@@ -75,7 +75,7 @@ impl<'a> SearchModal<'a> {
                         search.active_tab = crate::app_state::SearchTab::FileName;
                         search.focus_requested = false;
                     }
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
+                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
                     let md_content_selected = search.active_tab == crate::app_state::SearchTab::MarkdownContent;
                     if ui
                         .add(
@@ -91,7 +91,7 @@ impl<'a> SearchModal<'a> {
                         search.active_tab = crate::app_state::SearchTab::MarkdownContent;
                         search.focus_requested = false;
                     }
-                });
+                }).show(ui);
                 ui.separator();
 
                 match search.active_tab {
@@ -224,8 +224,8 @@ impl<'a> SearchModal<'a> {
                                                 path,
                                                 ws_root.as_deref(),
                                             );
-                                        // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                                        if ui.selectable_label(false, rel).clicked()
+                                        // WHY: in popup/list context; future: standardize as atom
+                                        if ui.add(egui::Button::selectable(false, rel).frame_when_inactive(true)).clicked()
                                             && path.exists()
                                         {
                                             *action = AppAction::SelectDocument(path.to_path_buf());
@@ -235,8 +235,8 @@ impl<'a> SearchModal<'a> {
                             });
                     }
                     crate::app_state::SearchTab::MarkdownContent => {
-                        // allow(horizontal_layout)
-                        ui.horizontal(|ui| {
+                        // WHY: allow(horizontal_layout)
+                        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                             let response = ui.add(
                                 egui::TextEdit::singleline(&mut search.md_query)
                                     .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
@@ -267,14 +267,14 @@ impl<'a> SearchModal<'a> {
                                     );
                                 }
                             }
-                        });
+                        }).show(ui);
 
-                        // Recent Terms
+                        // WHY: Recent Terms
                         if search.md_query.is_empty() && !search.md_history.recent_terms.is_empty()
                         {
                             ui.separator();
-                            // allow(horizontal_layout)
-                            ui.horizontal(|ui| {
+                            // WHY: allow(horizontal_layout)
+                            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                 ui.label(
                                     egui::RichText::new(
                                         crate::i18n::I18nOps::get().search.recent_searches.clone(),
@@ -287,7 +287,7 @@ impl<'a> SearchModal<'a> {
                                 {
                                     search.md_history.clear();
                                 }
-                            });
+                            }).show(ui);
                             for term in search.md_history.recent_terms.clone() {
                                 if ui.link(&term).clicked() {
                                     search.md_query = term.clone();
@@ -320,8 +320,8 @@ impl<'a> SearchModal<'a> {
                                                 ws_root.as_deref(),
                                             );
                                         ui.group(|ui| {
-                                            // allow(horizontal_layout)
-                                            ui.horizontal(|ui| {
+                                            // WHY: allow(horizontal_layout)
+                                            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                                 ui.label(egui::RichText::new(&rel).strong());
                                                 let ln_text = format!(
                                                     "{}{}",
@@ -329,7 +329,7 @@ impl<'a> SearchModal<'a> {
                                                     result.line_number + 1
                                                 );
                                                 ui.label(egui::RichText::new(ln_text).weak());
-                                            });
+                                            }).show(ui);
                                             let mut job = egui::text::LayoutJob::default();
                                             let start = result.start_col;
                                             let end = result.end_col;
@@ -357,9 +357,9 @@ impl<'a> SearchModal<'a> {
                                                 );
                                             }
 
-                                            // Make it selectable and render the layout job!
-                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                                            let response = ui.selectable_label(false, job);
+                                            // WHY: Make it selectable and render the layout job!
+                                            // WHY: in popup/list context; future: standardize as atom
+                                            let response = ui.add(egui::Button::selectable(false, job).frame_when_inactive(true));
 
                                             if response.clicked() {
                                                 *action = AppAction::SelectDocumentAndJump {

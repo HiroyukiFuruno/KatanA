@@ -51,15 +51,15 @@ impl LayoutTabOps {
                 .toc_position
                 .clone(),
         );
-        // allow(horizontal_layout)
-        ui.horizontal(|ui| {
+        // WHY: allow(horizontal_layout)
+        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
             let current = state.config.settings.settings().layout.toc_position;
             if ui
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                .selectable_label(
+                // WHY: in popup/list context; future: standardize as atom
+                .add(egui::Button::selectable(
                     current == TocPosition::Left,
                     crate::i18n::I18nOps::get().settings.layout.left.clone(),
-                )
+                ).frame_when_inactive(true))
                 .clicked()
                 && current != TocPosition::Left
             {
@@ -67,18 +67,18 @@ impl LayoutTabOps {
                 let _ = state.config.try_save_settings();
             }
             if ui
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                .selectable_label(
+                // WHY: in popup/list context; future: standardize as atom
+                .add(egui::Button::selectable(
                     current == TocPosition::Right,
                     crate::i18n::I18nOps::get().settings.layout.right.clone(),
-                )
+                ).frame_when_inactive(true))
                 .clicked()
                 && current != TocPosition::Right
             {
                 state.config.settings.settings_mut().layout.toc_position = TocPosition::Right;
                 let _ = state.config.try_save_settings();
             }
-        });
+        }).show(ui);
     }
 
     pub(crate) fn render_split_direction_selector(
@@ -92,19 +92,19 @@ impl LayoutTabOps {
                 .split_direction
                 .clone(),
         );
-        // allow(horizontal_layout)
-        ui.horizontal(|ui| {
+        // WHY: allow(horizontal_layout)
+        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
             let current = state.config.settings.settings().layout.split_direction;
             if ui
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                .selectable_label(
+                // WHY: in popup/list context; future: standardize as atom
+                .add(egui::Button::selectable(
                     current == SplitDirection::Horizontal,
                     crate::i18n::I18nOps::get()
                         .settings
                         .layout
                         .horizontal
                         .clone(),
-                )
+                ).frame_when_inactive(true))
                 .clicked()
                 && current != SplitDirection::Horizontal
             {
@@ -113,11 +113,11 @@ impl LayoutTabOps {
                 let _ = state.config.try_save_settings();
             }
             if ui
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                .selectable_label(
+                // WHY: in popup/list context; future: standardize as atom
+                .add(egui::Button::selectable(
                     current == SplitDirection::Vertical,
                     crate::i18n::I18nOps::get().settings.layout.vertical.clone(),
-                )
+                ).frame_when_inactive(true))
                 .clicked()
                 && current != SplitDirection::Vertical
             {
@@ -125,7 +125,7 @@ impl LayoutTabOps {
                     SplitDirection::Vertical;
                 let _ = state.config.try_save_settings();
             }
-        });
+        }).show(ui);
     }
 
     pub(crate) fn render_pane_order_selector(
@@ -139,19 +139,19 @@ impl LayoutTabOps {
                 .pane_order
                 .clone(),
         );
-        // allow(horizontal_layout)
-        ui.horizontal(|ui| {
+        // WHY: allow(horizontal_layout)
+        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
             let current = state.config.settings.settings().layout.pane_order;
             if ui
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                .selectable_label(
+                // WHY: in popup/list context; future: standardize as atom
+                .add(egui::Button::selectable(
                     current == PaneOrder::EditorFirst,
                     crate::i18n::I18nOps::get()
                         .settings
                         .layout
                         .editor_first
                         .clone(),
-                )
+                ).frame_when_inactive(true))
                 .clicked()
                 && current != PaneOrder::EditorFirst
             {
@@ -159,22 +159,22 @@ impl LayoutTabOps {
                 let _ = state.config.try_save_settings();
             }
             if ui
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                .selectable_label(
+                // WHY: in popup/list context; future: standardize as atom
+                .add(egui::Button::selectable(
                     current == PaneOrder::PreviewFirst,
                     crate::i18n::I18nOps::get()
                         .settings
                         .layout
                         .preview_first
                         .clone(),
-                )
+                ).frame_when_inactive(true))
                 .clicked()
                 && current != PaneOrder::PreviewFirst
             {
                 state.config.settings.settings_mut().layout.pane_order = PaneOrder::PreviewFirst;
                 let _ = state.config.try_save_settings();
             }
-        });
+        }).show(ui);
     }
 
     pub(crate) fn render_string_list_editor(ui: &mut egui::Ui, list: &mut Vec<String>) -> bool {
@@ -184,8 +184,8 @@ impl LayoutTabOps {
         ui.vertical(|ui| {
             for (i, item) in list.iter_mut().enumerate() {
                 ui.push_id(i, |ui| {
-                    // allow(horizontal_layout)
-                    ui.horizontal(|ui| {
+                    // WHY: allow(horizontal_layout)
+                    crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                         let response = ui.text_edit_singleline(item);
                         if response.changed() {
                             changed = true;
@@ -193,7 +193,7 @@ impl LayoutTabOps {
                         if ui.button("-").clicked() {
                             to_remove = Some(i);
                         }
-                    });
+                    }).show(ui);
                 });
             }
 

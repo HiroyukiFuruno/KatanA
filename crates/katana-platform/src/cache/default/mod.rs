@@ -12,7 +12,6 @@ pub use types::DefaultCacheService;
 impl DefaultCacheService {
     // WHY: Creates a new `DefaultCacheService` with the specified persistent root path.
     pub fn new(persistent_path: PathBuf) -> Self {
-        // Migration and load
         let kv_dir = if let Some(parent) = persistent_path.parent() {
             if parent.as_os_str().is_empty() {
                 PathBuf::from("kv")
@@ -40,7 +39,6 @@ impl DefaultCacheService {
     fn init_and_migrate(old_json_path: &PathBuf, kv_dir: &PathBuf) -> Vec<(String, String)> {
         let _ = std::fs::create_dir_all(kv_dir);
 
-        // 1. Migrate if old json exists
         if old_json_path.exists() {
             if let Some(old_data) = Self::load_legacy_persistent(old_json_path) {
                 let mut failure = false;
@@ -68,20 +66,19 @@ impl DefaultCacheService {
                             }
                         }
                     }
-                    // Else: legacy keys are skipped
                 }
 
                 if !failure {
-                    // Safe to remove old json if there were no IO errors during workspace migration
+                    // WHY: Only delete the legacy file after all IO succeeded to avoid data loss on partial migration.
                     let _ = std::fs::remove_file(old_json_path);
                 }
             } else {
-                // If it can't be parsed at all, probably corrupted
+                // WHY: Unparseable legacy JSON is treated as corrupted and removed to allow a clean start.
                 let _ = std::fs::remove_file(old_json_path);
             }
         }
 
-        // 2. Load all current entries from KV into memory
+        // WHY: Load all current KV entries into the in-memory map at startup to avoid repeated disk reads.
         let mut map = Vec::new();
         if let Ok(entries) = std::fs::read_dir(kv_dir) {
             for entry in entries.flatten() {
@@ -99,7 +96,7 @@ impl DefaultCacheService {
                             ref diagram_kind, ..
                         } = env.key
                         {
-                            // Drop legacy mermaid SVG caches (version < 2)
+                            // WHY: Mermaid SVG format changed in v2; old entries are stale and must be evicted.
                             if diagram_kind == "mermaid" && env.storage_version < 2 {
                                 let _ = std::fs::remove_file(&inner_path);
                                 continue;
@@ -205,9 +202,8 @@ impl CacheFacade for DefaultCacheService {
             Some(pk) => pk,
             None => PersistentKey::Unknown,
         };
-        // Only skip actual write if it's completely unknown and not meaningful to persist
-        // But for backwards compatibility, if they pass an unknown key, we can try to save it or drop it.
-        // Actually, let's persist everything but with `unknown` format if needed.
+        /* WHY: Unknown keys are persisted with a fallback filename rather than dropped,
+        preserving forward-compatibility when new key types are introduced. */
         let env = PersistentEntryEnvelope {
             storage_version: 2,
             key: p_key.clone(),
@@ -254,7 +250,7 @@ impl CacheFacade for DefaultCacheService {
             }
         }
 
-        // Also remove from in-memory cache
+        // WHY: In-memory map must stay in sync with the on-disk KV to avoid stale reads after clear.
         let mut map = LockOps::write_guard(&self.persistent);
         map.retain(|(k, _)| !k.starts_with("diagram:"));
     }
@@ -300,7 +296,7 @@ mod tests {
             Some("val2".to_string())
         );
 
-        // Create a new instance representing an app restart
+        // WHY: Simulate an app restart by constructing a fresh instance from the same path.
         let cache2 = DefaultCacheService::new(path);
         assert_eq!(
             cache2.get_persistent("workspace_tabs:test1"),
@@ -324,7 +320,6 @@ mod tests {
             Some("svg data".to_string())
         );
 
-        // The file should exist
         let mut found_file = false;
         let kv_dir = tmp.path().join("kv");
         for entry in std::fs::read_dir(&kv_dir).unwrap().flatten() {
@@ -334,12 +329,10 @@ mod tests {
         }
         assert!(found_file);
 
-        // Clear it
         cache.clear_diagram_cache();
 
         assert_eq!(cache.get_persistent(diagram_key), None);
 
-        // Check if file is removed
         let remaining_diagrams = std::fs::read_dir(&kv_dir)
             .unwrap()
             .flatten()
@@ -350,8 +343,8 @@ mod tests {
 
     #[test]
     fn test_cache_resilience_under_concurrent_access() {
-        // WHY: parking_lot::RwLock is not poisonable, so we verify that concurrent reads/writes
-        // complete without panic instead.
+        /* WHY: parking_lot::RwLock is not poisonable, so we verify that concurrent reads/writes
+        complete without panic instead. */
         let cache = DefaultCacheService::new(PathBuf::from("dummy.json"));
         cache.set_memory("test", "value".to_string());
         assert_eq!(cache.get_memory("test"), Some("value".to_string()));
@@ -367,12 +360,10 @@ mod tests {
 
     #[test]
     fn test_uncovered_lines_default() {
-        // test default implementation
         let svc = DefaultCacheService::default();
         let path = svc.persistent_base_path.to_string_lossy();
         assert!(path.contains(".cache") || path.contains("KatanA"));
 
-        // test unknown key persistence
         let tmp = TempDir::new().unwrap();
         let svc = DefaultCacheService::new(tmp.path().join("cache.json"));
         svc.set_persistent("random_unknown_key", "value".into())
@@ -382,13 +373,12 @@ mod tests {
             Some("value".to_string())
         );
 
-        // Unknown keys shouldn't reload correctly through get_persistent since to_raw_key yields None,
-        // but we can verify the fallback json file was indeed created upon setting.
+        /* WHY: Unknown keys have no canonical raw key, so get_persistent returns None after reload;
+        but the fallback file must still exist on disk to confirm persistence occurred. */
         let file_name = format!("unknown_{:x}.json", "random_unknown_key".len());
         let unknown_file_path = svc.persistent_base_path.join(file_name);
         assert!(unknown_file_path.exists());
 
-        // test clear_all_directories_in with sub-directories
         let kv_dir = tmp.path().join("kv");
         std::fs::create_dir_all(&kv_dir).unwrap();
         let sub_dir = kv_dir.join("sub");
@@ -397,7 +387,6 @@ mod tests {
         DefaultCacheService::clear_all_directories_in(&kv_dir);
         assert!(!sub_dir.exists());
 
-        // fallback clearing empty or missing
         DefaultCacheService::clear_all_directories_in(&tmp.path().join("missing"));
     }
 
@@ -407,12 +396,10 @@ mod tests {
         let cache_json_path = tmp.path().join("cache.json");
         let kv_dir = tmp.path().join("kv");
 
-        // 1. Invalid JSON -> corrupted, should be removed
         std::fs::write(&cache_json_path, b"invalid json data").unwrap();
         let _ = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
         assert!(!cache_json_path.exists());
 
-        // 2. Valid Legacy JSON -> successful migration
         let legacy_json = r#"{
             "entries": [
                 ["workspace_tabs:test_ws", "some_value"]
@@ -425,7 +412,6 @@ mod tests {
         assert_eq!(map.first().unwrap().0, "workspace_tabs:test_ws");
         assert_eq!(map.first().unwrap().1, "some_value");
 
-        // 3. IO write failure (make temp directory read-only / file to simulate)
         let bad_kv_dir = tmp.path().join("file_as_dir");
         std::fs::write(&bad_kv_dir, b"not a dir").unwrap();
         let path3 = tmp.path().join("cache3.json");
@@ -433,7 +419,6 @@ mod tests {
         let _ = DefaultCacheService::init_and_migrate(&path3, &bad_kv_dir);
         assert!(path3.exists()); // Failed to write, so old json is kept!
 
-        // 4. IO rename failure (target path exists as a directory)
         let bad_rename_dir = tmp.path().join("bad_rename_dir");
         std::fs::create_dir_all(&bad_rename_dir).unwrap();
         let target_file_name = PersistentKey::from_raw_key("workspace_tabs:test_ws")
@@ -446,7 +431,6 @@ mod tests {
         let _ = DefaultCacheService::init_and_migrate(&path4, &bad_rename_dir);
         assert!(path4.exists()); // Failed to rename, so old json is kept!
 
-        // 5. Edge cases for directory generation mapping over logic
         let _edge_1 = DefaultCacheService::new(PathBuf::from("file_only.json"));
         let _edge_2 = DefaultCacheService::new(PathBuf::from(""));
         let _edge_3 = DefaultCacheService::new(PathBuf::from("/"));
@@ -476,23 +460,19 @@ mod tests {
             value: "stale_data2".to_string(),
         };
 
-        // Scenario 1: Only legacy file exists
         let legacy_path = kv_dir.join(legacy_filename);
         std::fs::write(&legacy_path, serde_json::to_string(&env).unwrap()).unwrap();
 
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
         assert_eq!(map.len(), 1);
         assert_eq!(map.first().unwrap().1, "stale_data");
-        // It should have renamed the file
         assert!(!legacy_path.exists());
         assert!(kv_dir.join(&canonical_filename).exists());
 
-        // Scenario 2: Both canonical and legacy exist
         let canonical_path = kv_dir.join(&canonical_filename);
         std::fs::write(&canonical_path, serde_json::to_string(&env).unwrap()).unwrap();
         std::fs::write(&legacy_path, serde_json::to_string(&bad_env).unwrap()).unwrap(); // Legacy comes back
 
-        // Write another legacy file that fails renaming (target exists)
         let unrenamable_legacy_path = kv_dir.join("workspace_tabs_unrenamable.json");
         std::fs::write(
             &unrenamable_legacy_path,
@@ -500,7 +480,6 @@ mod tests {
         )
         .unwrap();
 
-        // Make rename fail by creating a directory instead of file
         let bad_canonical_path = kv_dir.join("workspace_tabs_bad_canonical.json");
         std::fs::write(
             &bad_canonical_path,
@@ -515,7 +494,6 @@ mod tests {
 
     #[test]
     fn test_clear_all_directories() {
-        // Just verify it doesn't crash since it interacts with user home directories
         DefaultCacheService::clear_all_directories();
     }
 }

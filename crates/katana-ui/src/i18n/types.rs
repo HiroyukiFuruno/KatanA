@@ -955,7 +955,7 @@ pub struct TabMessages {
     pub group_name_placeholder: String,
     #[serde(default = "default_create_group_button")]
     pub create_group_button: String,
-    // Note: add_tab_to_group replaces create_new_group from English, acting as the parent
+    // WHY: Note: add_tab_to_group replaces create_new_group from English, acting as the parent
     #[serde(default = "default_add_tab_to_group")]
     pub add_tab_to_group: String,
     #[serde(default = "default_close_group")]

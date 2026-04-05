@@ -25,8 +25,8 @@ impl<'a> ProblemsPanel<'a> {
             .min_size(100.0)
             .show_inside(ui, |ui| {
                 ui.add_space(SPACING);
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     ui.heading(
                         crate::i18n::I18nOps::get()
                             .status
@@ -46,7 +46,7 @@ impl<'a> ProblemsPanel<'a> {
                             self.state.diagnostics.is_panel_open = false;
                         }
                     });
-                });
+                }).show(ui);
                 ui.separator();
 
                 egui::ScrollArea::vertical().show(ui, |ui| {
@@ -63,8 +63,8 @@ impl<'a> ProblemsPanel<'a> {
                             let filename = path.file_name().unwrap_or_default().to_string_lossy();
                             ui.label(egui::RichText::new(filename).strong());
                             for diag in diagnostics {
-                                // allow(horizontal_layout)
-                                ui.horizontal(|ui| {
+                                // WHY: allow(horizontal_layout)
+                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                     let icon = match diag.severity {
                                         katana_linter::markdown::DiagnosticSeverity::Error => "🔴",
                                         katana_linter::markdown::DiagnosticSeverity::Warning => {
@@ -79,8 +79,8 @@ impl<'a> ProblemsPanel<'a> {
                                         diag.range.start_column,
                                         diag.message
                                     );
-                                    // allow(conditional_frame) — scroll list item; future: ClickableRowOps atom
-                                    if ui.selectable_label(false, msg).clicked() {
+                                    // WHY: scroll list item; future: ClickableRowOps atom
+                                    if ui.add(egui::Button::selectable(false, msg).frame_when_inactive(true)).clicked() {
                                         *self.pending_action =
                                             crate::app_state::AppAction::SelectDocumentAndJump {
                                                 path: path.clone(),
@@ -88,7 +88,7 @@ impl<'a> ProblemsPanel<'a> {
                                                 byte_range: 0..0,
                                             };
                                     }
-                                });
+                                }).show(ui);
                             }
                             ui.add_space(SPACING);
                         }

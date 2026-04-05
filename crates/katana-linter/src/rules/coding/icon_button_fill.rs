@@ -3,42 +3,28 @@ use crate::utils::LinterParserOps;
 use std::path::{Path, PathBuf};
 use syn::visit::Visit;
 
-/// WHY: Detects `egui::Button::image(...)` calls that lack a `.fill(...)` in their method chain.
-///
-/// Without an explicit `.fill()`, icon-only buttons inherit `weak_bg_fill` from the current
-/// widget state: `panel_bg` at rest, `highlight_bg` on hover. Other icon buttons that use
-/// `.fill(icon_bg)` (TRANSPARENT in dark mode, a light gray in light mode) show only the accent
-/// border on hover, with no fill change. This inconsistency makes half the icon buttons look
-/// "highlighted" on hover while others show only a border, breaking visual uniformity.
-///
-/// Pattern that triggers this rule:
-/// ```ignore
-/// // VIOLATION: no .fill()
-/// ui.add(egui::Button::image(icon));
-///
-/// // OK: explicit transparent background
-/// ui.add(egui::Button::image(icon).fill(icon_bg));
-///
-/// // OK: suppressed (with justification)
-/// // allow(icon_button_fill)
-/// ui.add(egui::Button::image(icon));
-/// ```
-///
-/// The rule uses parent-chain tracking: when visiting a `.fill()` method call, the receiver
-/// is temporarily marked as "inside a fill chain". A `Button::image(...)` call found without
-/// this mark is flagged.
-///
-/// Add `// allow(icon_button_fill)` above the call site to suppress (e.g., modals where
-/// the button is decorative and not part of the shared toolbar chrome).
+/* WHY: Detects `egui::Button::image(...)` calls that lack a `.fill(...)` in their method chain.
+
+Without an explicit `.fill()`, icon-only buttons inherit `weak_bg_fill` from the current
+widget state: `panel_bg` at rest, `highlight_bg` on hover. Other icon buttons that use
+`.fill(icon_bg)` (TRANSPARENT in dark mode, a light gray in light mode) show only the accent
+border on hover, with no fill change. This inconsistency makes half the icon buttons look
+"highlighted" on hover while others show only a border, breaking visual uniformity.
+
+Pattern that triggers this rule:
+```ignore
+// WHY: VIOLATION: no .fill()
+ui.add(egui::Button::image(icon));
+
+// WHY: OK: explicit transparent background
+ui.add(egui::Button::image(icon).fill(icon_bg));
+```*/
 pub struct IconButtonFillOps;
 
 impl IconButtonFillOps {
     pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
-        let source = std::fs::read_to_string(path).unwrap_or_default();
-        let lines: Vec<&str> = source.lines().collect();
         let mut visitor = IconButtonFillVisitor {
             file_path: path.to_path_buf(),
-            source_lines: lines,
             violations: Vec::new(),
             in_fill_receiver: false,
         };
@@ -47,25 +33,15 @@ impl IconButtonFillOps {
     }
 }
 
-struct IconButtonFillVisitor<'a> {
+struct IconButtonFillVisitor {
     file_path: PathBuf,
-    source_lines: Vec<&'a str>,
     violations: Vec<Violation>,
-    /// WHY: When visiting the receiver of a `.fill(x)` call we set this flag so that any
+    // WHY: When visiting the receiver of a `.fill(x)` call we set this flag so that any
     /// `Button::image(...)` found inside is known to be already under a fill.
     in_fill_receiver: bool,
 }
 
-impl IconButtonFillVisitor<'_> {
-    fn is_suppressed(&self, line: usize) -> bool {
-        if line > 1
-            && let Some(prev) = self.source_lines.get(line - 2)
-        {
-            return prev.contains("allow(icon_button_fill)");
-        }
-        false
-    }
-
+impl IconButtonFillVisitor {
     fn is_button_image_call(call: &syn::ExprCall) -> bool {
         let syn::Expr::Path(expr_path) = call.func.as_ref() else {
             return false;
@@ -82,7 +58,7 @@ impl IconButtonFillVisitor<'_> {
     }
 }
 
-impl<'ast> Visit<'ast> for IconButtonFillVisitor<'_> {
+impl<'ast> Visit<'ast> for IconButtonFillVisitor {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         if node.method == "fill" {
             // WHY: Receiver of `.fill(x)` is already chained to a fill — toggle flag so that
@@ -111,18 +87,15 @@ impl<'ast> Visit<'ast> for IconButtonFillVisitor<'_> {
             };
             if let Some(span) = span {
                 let (line, column) = LinterParserOps::span_location(span);
-                if !self.is_suppressed(line) {
-                    self.violations.push(Violation {
-                        file: self.file_path.clone(),
-                        line,
-                        column,
-                        message: "Icon-only `Button::image()` needs an explicit `.fill(icon_bg)` \
-                                  to ensure consistent background across all hover states. \
-                                  Use `fill(if ui.visuals().dark_mode { TRANSPARENT } else { from_gray(LIGHT_MODE_ICON_BG) })`. \
-                                  Add `// allow(icon_button_fill)` above to suppress."
-                            .to_string(),
-                    });
-                }
+                self.violations.push(Violation {
+                    file: self.file_path.clone(),
+                    line,
+                    column,
+                    message: "Icon-only `Button::image()` needs an explicit `.fill(icon_bg)` \
+                              to ensure consistent background across all hover states. \
+                              Use `fill(if ui.visuals().dark_mode { TRANSPARENT } else { from_gray(LIGHT_MODE_ICON_BG) })`."
+                        .to_string(),
+                });
             }
         }
 

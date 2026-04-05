@@ -1,7 +1,6 @@
 use super::types::{ReleaseInfo, UpdateManager, UpdateOps};
 use anyhow::Result;
 
-/// HTTP 200 OK status code.
 const HTTP_OK: u16 = 200;
 
 impl UpdateOps {

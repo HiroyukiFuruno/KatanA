@@ -3,17 +3,15 @@ use xmltree::Element;
 use super::types::{DrawioEdgeOps, DrawioSvgOps, DrawioVertexOps};
 use crate::markdown::color_preset::DiagramColorPreset;
 
-/// Default geometry values when mxGeometry attributes are missing.
 const DEFAULT_CELL_WIDTH: f64 = 100.0;
 const DEFAULT_CELL_HEIGHT: f64 = 60.0;
 
 impl DrawioSvgOps {
     pub fn render_drawio_to_svg(source: &str) -> anyhow::Result<String> {
         let xml = Element::parse(source.as_bytes())?;
-        // WHY: Element::parse returns the outermost tag as root.
-        // Possible structures:
-        //   1) <mxGraphModel><root>...</root></mxGraphModel>
-        //   2) <mxfile><diagram><mxGraphModel><root>...</root></mxGraphModel></diagram></mxfile>
+        /* WHY: Element::parse returns the outermost tag as root.
+        Possible XML structures are mxGraphModel>root (direct) or
+        mxfile>diagram>mxGraphModel>root (wrapped). We branch to normalize both. */
         let model = if xml.name == "mxGraphModel" {
             &xml
         } else if xml.name == "mxfile" {

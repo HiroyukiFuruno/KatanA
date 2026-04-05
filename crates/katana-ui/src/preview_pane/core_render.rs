@@ -189,8 +189,7 @@ impl PreviewPane {
                                     && matches!(res, DiagramResult::Ok(_))
                                 {
                                     // WHY: Old caches may still store Mermaid output as Ok(html) (SVG format).
-                                    // Passing this legacy SVG to resvg/usvg can cause an infinite loop in the text parser
-                                    // or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG.
+                                    // WHY: or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG.
                                     let new_res = RendererLogicOps::dispatch_renderer(
                                         &katana_core::markdown::DiagramBlock {
                                             kind: job.kind.clone(),

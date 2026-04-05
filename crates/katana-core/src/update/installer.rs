@@ -24,7 +24,7 @@ impl UpdateInstallerOps {
             .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.app"));
         let extracted_app_path = extract_dir.join(app_name);
 
-        // Bundle verification: Check if it looks like a valid macOS App Bundle
+        // WHY: Verify the extracted bundle contains Info.plist to guard against corrupted or incomplete downloads.
         if !extracted_app_path.exists() || !extracted_app_path.join("Contents/Info.plist").exists()
         {
             anyhow::bail!("Extracted update does not contain a valid application bundle");
@@ -97,11 +97,11 @@ if ! mv "{extracted}" "{target}"; then
     echo "Swap failed! Rolling back..."
     osascript -e 'display alert "Update Failed" message "Could not complete the application update. The original version has been restored." as critical' || true
     rm -rf "{target}"
-    
+
     if [ -d "$TARGET_BAK" ]; then
         mv "$TARGET_BAK" "{target}"
     fi
-    
+
     open "{target}" || true
     rm -rf "{temp_dir}"
     exit 1

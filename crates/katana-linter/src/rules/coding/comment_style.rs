@@ -17,18 +17,19 @@ impl CommentStyleOps {
                 && !trimmed.starts_with("//!")
             {
                 let text = trimmed.trim_start_matches('/').trim();
-                if !text.is_empty()
-                    && !text.starts_with("WHY:")
-                    && !text.starts_with("SAFETY:")
-                    && !text.starts_with("TODO:")
-                {
-                    // WHY: Broad check catches most non-doc comments that lack context.
+
+                // WHY: Zero-tolerance policy. Every comment must explain itself.
+                let is_valid = text.starts_with("WHY:")
+                    || text.starts_with("SAFETY:")
+                    || text.starts_with("TODO:");
+
+                if !is_valid {
                     violations.push(Violation {
-                         file: path.to_path_buf(),
-                         line: line_idx + 1,
-                         column: 1,
-                         message: "Comments must start with `// WHY:` or `// SAFETY:`. Code should be self-documenting.".to_string(),
-                     });
+                        file: path.to_path_buf(),
+                        line: line_idx + 1,
+                        column: 1,
+                        message: "Comments must start with `// WHY:`, `// SAFETY:`, or `// TODO:`. No exceptions.".to_string(),
+                    });
                 }
             }
         }

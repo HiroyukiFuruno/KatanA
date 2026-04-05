@@ -113,7 +113,7 @@ fn okpng_branch_becomes_empty_string_in_core_layer() {
     struct PngRenderer;
     impl DiagramRenderer for PngRenderer {
         fn render(&self, _block: &DiagramBlock) -> DiagramResult {
-            DiagramResult::OkPng(vec![0x89, 0x50, 0x4E, 0x47]) // PNG magic
+            DiagramResult::OkPng(vec![0x89, 0x50, 0x4E, 0x47])
         }
     }
 

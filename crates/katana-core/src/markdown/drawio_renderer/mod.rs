@@ -6,7 +6,6 @@ pub mod vertex;
 
 pub use types::*;
 
-/// Compatibility alias.
 pub type DrawioRenderOps = DrawioRendererOps;
 
 use crate::markdown::{DiagramBlock, DiagramResult};

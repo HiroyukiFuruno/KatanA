@@ -51,7 +51,7 @@ fn test_compare_versions() {
 
 #[test]
 fn test_compare_versions_with_hyphen() {
-    // Reproduce issue: "0.8.8-1" should be considered > "0.8.8" in KatanA's versioning (patch increment).
+    // WHY: Reproduce issue: "0.8.8-1" should be considered > "0.8.8" in KatanA's versioning (patch increment).
     assert_eq!(ChangelogOps::compare_versions("0.8.8-1", "0.8.8"), 1);
     assert_eq!(ChangelogOps::compare_versions("0.8.8", "0.8.8-1"), -1);
     assert_eq!(ChangelogOps::compare_versions("0.8.8-2", "0.8.8-1"), 1);

@@ -62,8 +62,8 @@ impl<'a> TermsModal<'a> {
                                 );
                                 ui.add_space(TERMS_SPACING_SMALL);
 
-                                // allow(horizontal_layout)
-                                ui.horizontal(|ui| {
+                                // WHY: allow(horizontal_layout)
+                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                     ui.label(
                                         egui::RichText::new(crate::i18n::I18nOps::tf(
                                             &terms.version_label,
@@ -90,11 +90,11 @@ impl<'a> TermsModal<'a> {
                                                         crate::i18n::I18nOps::supported_languages()
                                                     {
                                                         if ui
-                                                            // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                                                            .selectable_label(
+                                                            // WHY: in popup/list context; future: standardize as atom
+                                                            .add(egui::Button::selectable(
                                                                 current_lang == *code,
                                                                 name,
-                                                            )
+                                                            ).frame_when_inactive(true))
                                                             .clicked()
                                                         {
                                                             *pending_action =
@@ -106,7 +106,7 @@ impl<'a> TermsModal<'a> {
                                                 });
                                         },
                                     );
-                                });
+                                }).show(ui);
 
                                 ui.add_space(TERMS_SPACING_MEDIUM);
                                 ui.separator();
@@ -130,8 +130,8 @@ impl<'a> TermsModal<'a> {
 
                                 ui.add_space(TERMS_SPACING_XLARGE);
 
-                                // allow(horizontal_layout)
-                                ui.horizontal(|ui| {
+                                // WHY: allow(horizontal_layout)
+                                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                     let total_buttons_width =
                                         TERMS_BUTTON_WIDTH * 2.0 + TERMS_BUTTON_SPACING;
                                     let available = ui.available_width();
@@ -174,7 +174,7 @@ impl<'a> TermsModal<'a> {
                                     {
                                         *pending_action = AppAction::DeclineTerms;
                                     }
-                                });
+                                }).show(ui);
                                 ui.add_space(TERMS_SPACING_MEDIUM);
                             });
                         });

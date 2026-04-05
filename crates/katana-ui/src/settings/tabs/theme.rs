@@ -146,8 +146,8 @@ impl ThemeTabOps {
                 let accent_color =
                     theme_bridge::ThemeBridgeOps::rgb_to_color32(custom_theme.colors.system.accent);
 
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     let (rect, _) = ui.allocate_exact_size(
                         egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
                         egui::Sense::hover(),
@@ -157,7 +157,7 @@ impl ThemeTabOps {
                     ui.painter()
                         .circle_filled(rect.center(), corner, accent_color);
 
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
+                    // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
                     let custom_fill = if is_selected {
                         ui.visuals().selection.bg_fill
                     } else {
@@ -252,7 +252,7 @@ impl ThemeTabOps {
                             let _ = state.config.try_save_settings();
                         }
                     });
-                });
+                }).show(ui);
             }
         }
 
@@ -281,8 +281,8 @@ impl ThemeTabOps {
             let bg_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.background);
             let accent_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.accent);
 
-            // allow(horizontal_layout)
-            ui.horizontal(|ui| {
+            // WHY: allow(horizontal_layout)
+            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                 let (rect, _) = ui.allocate_exact_size(
                     egui::vec2(PRESET_SWATCH_SIZE, PRESET_SWATCH_SIZE),
                     egui::Sense::hover(),
@@ -292,7 +292,7 @@ impl ThemeTabOps {
                 ui.painter()
                     .circle_filled(rect.center(), corner, accent_color);
 
-                // allow(conditional_frame) — in popup/list context; future: standardize as atom
+                // WHY: allow(conditional_frame) — in popup/list context; future: standardize as atom
                 let preset_fill = if is_selected {
                     ui.visuals().selection.bg_fill
                 } else {
@@ -339,7 +339,7 @@ impl ThemeTabOps {
                         ui.close();
                     }
                 });
-            });
+            }).show(ui);
         }
     }
 
@@ -769,8 +769,8 @@ impl ThemeTabOps {
                 let name_id = egui::Id::new("custom_theme_name_input");
                 let mut name = ui.data(|d| d.get_temp::<String>(name_id).unwrap_or_default());
 
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     ui.label(
                         crate::i18n::I18nOps::get()
                             .settings
@@ -783,11 +783,11 @@ impl ThemeTabOps {
                     if re.changed() {
                         ui.data_mut(|d| d.insert_temp(name_id, name.clone()));
                     }
-                });
+                }).show(ui);
 
                 ui.add_space(SUBSECTION_SPACING);
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
@@ -836,7 +836,7 @@ impl ThemeTabOps {
                             close = true;
                         }
                     });
-                });
+                }).show(ui);
 
                 let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));
                 if should_close {

@@ -46,7 +46,6 @@ impl PreviewSectionOps {
         ImageSectionOps::extract_standalone_images(sections)
     }
 
-    /// Compatibility alias for `split_sections`.
     pub fn split_into_sections(content: &str) -> Vec<PreviewSection> {
         Self::split_sections(content)
     }

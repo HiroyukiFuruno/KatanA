@@ -15,8 +15,8 @@ impl UpdatesTabOps {
         let ver_str = format!("Current version: v{}", env!("CARGO_PKG_VERSION"));
         ui.label(egui::RichText::new(ver_str).weak().size(HINT_FONT_SIZE));
 
-        // allow(horizontal_layout)
-        ui.horizontal(|ui| {
+        // WHY: allow(horizontal_layout)
+        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
             ui.label(&update_msgs.interval);
 
             let mut interval = state.config.settings.settings().updates.interval;
@@ -33,29 +33,33 @@ impl UpdatesTabOps {
                 },
             )
             .show(ui, |ui| {
-                changed |= ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_value(&mut interval, UpdateInterval::Never, &update_msgs.never)
-                    .changed();
-                changed |= ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_value(&mut interval, UpdateInterval::Daily, &update_msgs.daily)
-                    .changed();
-                changed |= ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_value(&mut interval, UpdateInterval::Weekly, &update_msgs.weekly)
-                    .changed();
-                changed |= ui
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    .selectable_value(&mut interval, UpdateInterval::Monthly, &update_msgs.monthly)
-                    .changed();
+                // WHY: in popup/list context; future: standardize as atom
+                if ui.add(egui::Button::selectable(interval == UpdateInterval::Never, &update_msgs.never).frame_when_inactive(true)).clicked() {
+                    interval = UpdateInterval::Never;
+                    changed = true;
+                }
+                // WHY: in popup/list context; future: standardize as atom
+                if ui.add(egui::Button::selectable(interval == UpdateInterval::Daily, &update_msgs.daily).frame_when_inactive(true)).clicked() {
+                    interval = UpdateInterval::Daily;
+                    changed = true;
+                }
+                // WHY: in popup/list context; future: standardize as atom
+                if ui.add(egui::Button::selectable(interval == UpdateInterval::Weekly, &update_msgs.weekly).frame_when_inactive(true)).clicked() {
+                    interval = UpdateInterval::Weekly;
+                    changed = true;
+                }
+                // WHY: in popup/list context; future: standardize as atom
+                if ui.add(egui::Button::selectable(interval == UpdateInterval::Monthly, &update_msgs.monthly).frame_when_inactive(true)).clicked() {
+                    interval = UpdateInterval::Monthly;
+                    changed = true;
+                }
             });
 
             if changed {
                 state.config.settings.settings_mut().updates.interval = interval;
                 let _ = state.config.try_save_settings();
             }
-        });
+        }).show(ui);
 
         ui.add_space(SUBSECTION_SPACING);
 

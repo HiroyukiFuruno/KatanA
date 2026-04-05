@@ -35,7 +35,7 @@ impl CommandPaletteProvider for AppCommandProvider {
 
         for (label, action, base_score) in commands {
             if query_lower.is_empty() {
-                // If empty query, we return all as recent/common
+                // WHY: If empty query, we return all as recent/common
                 results.push(CommandPaletteResult {
                     id: format!("cmd_{}", label),
                     label: label.to_string(),
@@ -45,7 +45,7 @@ impl CommandPaletteProvider for AppCommandProvider {
                     execute_payload: CommandPaletteExecutePayload::DispatchAppAction(action),
                 });
             } else if label.to_lowercase().contains(&query_lower) {
-                // Calculate basic score
+                // WHY: Calculate basic score
                 let score = if label.to_lowercase().starts_with(&query_lower) {
                     base_score + 1.0
                 } else {
@@ -99,7 +99,7 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
                     Some(&ws.root),
                 );
 
-                // Keep the file name as the primary label
+                // WHY: Keep the file name as the primary label
                 let file_name = file_path
                     .file_name()
                     .map(|n| n.to_string_lossy().to_string())

@@ -119,7 +119,7 @@ mod tests {
         assert!(
             resolved.contains("file:///docs/../img.png")
                 || resolved.contains("file:///docs/img.png")
-        ); // Depends on canonicalization
+        );
         assert!(resolved.contains("file:///img.png"));
         assert!(!extracted.is_empty());
     }

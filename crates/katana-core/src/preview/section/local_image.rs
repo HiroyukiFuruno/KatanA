@@ -5,9 +5,8 @@ impl ImageSectionOps {
         let mut result = Vec::with_capacity(secs.len());
         for sec in secs {
             if let PreviewSection::Markdown(ref md) = sec {
-                // WHY: Split the markdown section into paragraphs (separated by blank lines)
-                // and check each paragraph for standalone images. This allows images embedded
-                // within larger markdown sections to be extracted as LocalImage sections.
+                /* WHY: Split into paragraphs so standalone images can be extracted
+                even when embedded within larger markdown sections. */
                 Self::split_paragraphs_extracting_images(md, &mut result);
             } else {
                 result.push(sec);
@@ -19,12 +18,10 @@ impl ImageSectionOps {
     /// Split markdown text into paragraphs and extract standalone image paragraphs
     /// as `LocalImage` sections while keeping other paragraphs as `Markdown`.
     fn split_paragraphs_extracting_images(md: &str, out: &mut Vec<PreviewSection>) {
-        // WHY: We need to handle the case where images are standalone paragraphs
-        // within a larger markdown section. Split on double-newlines (paragraph boundary).
+        // WHY: Split on double-newlines (paragraph boundary) to find standalone image paragraphs.
         let paragraphs: Vec<&str> = md.split("\n\n").collect();
 
         if paragraphs.len() <= 1 {
-            // Single paragraph — try original logic, fall back to plain Markdown.
             if let Some((path, alt)) = Self::try_parse_standalone_image(md) {
                 let lines = md.chars().filter(|c| *c == '\n').count();
                 out.push(PreviewSection::LocalImage { path, alt, lines });
@@ -37,7 +34,6 @@ impl ImageSectionOps {
         let mut md_buf = String::new();
         for (i, para) in paragraphs.iter().enumerate() {
             if let Some((path, alt)) = Self::try_parse_standalone_image(para) {
-                // Flush accumulated markdown
                 if !md_buf.is_empty() {
                     out.push(PreviewSection::Markdown(md_buf.clone()));
                     md_buf.clear();
@@ -50,7 +46,6 @@ impl ImageSectionOps {
                 }
                 md_buf.push_str(para);
             }
-            // preserve trailing separator context except for last
             let _ = i;
         }
         if !md_buf.is_empty() {

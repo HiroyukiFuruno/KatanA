@@ -92,8 +92,8 @@ impl BehaviorTabOps {
             const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
 
-            // allow(horizontal_layout)
-            ui.horizontal(|ui| {
+            // WHY: allow(horizontal_layout)
+            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                 let mut display_val = interval;
 
                 let slider = egui::Slider::new(
@@ -126,7 +126,7 @@ impl BehaviorTabOps {
                         .auto_save_interval_secs = display_val;
                     let _ = state.config.try_save_settings();
                 }
-            });
+            }).show(ui);
 
             ui.spacing_mut().slider_width = original_width;
         }

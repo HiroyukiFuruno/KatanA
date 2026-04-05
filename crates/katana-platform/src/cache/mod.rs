@@ -97,7 +97,7 @@ impl PersistentKey {
         }
     }
 
-    // WHY: Decode the logical key from a raw string received by CacheFacade
+    // WHY: Decode the logical key from a raw string received by CacheFacade.
     pub fn from_raw_key(raw_key: &str) -> Option<Self> {
         const MAX_TOKEN_COUNT: usize = 5;
         let parts: Vec<&str> = raw_key.splitn(MAX_TOKEN_COUNT, ':').collect();
@@ -121,11 +121,10 @@ impl PersistentKey {
         }
     }
 
-    // WHY: Derive a deterministic, safe filename for the entry
+    // WHY: Hash the raw key to avoid special path characters (slashes, colons) in filenames.
     pub fn target_filename(&self) -> Option<String> {
         match self {
             Self::WorkspaceTabs { .. } => {
-                // For workspace_tabs, hash the raw key for safety against special path chars
                 let raw = self.to_raw_key()?;
                 Some(format!(
                     "workspace_tabs_{:x}.json",
@@ -146,9 +145,7 @@ const FNV_PRIME: u64 = 0x100000001b3;
 
 // WHY: Ensures file names are stable across runs and Rust toolchains (unlike DefaultHasher)
 fn deterministic_hash(data: &str) -> u64 {
-    // We can use fnv or simple dbj2 if no external crate is guaranteed,
-    // but a basic dbj2 is enough for filename uniqueness here, or we can use crc32 if available.
-    // Let's implement a quick FNV-1a 64-bit for zero dependency deterministic hashing.
+    // WHY: FNV-1a 64-bit is zero-dependency and produces stable, well-distributed hashes.
     let mut hash: u64 = FNV_OFFSET_BASIS;
     for b in data.bytes() {
         hash ^= b as u64;

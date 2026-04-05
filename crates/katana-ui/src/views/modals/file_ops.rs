@@ -51,8 +51,8 @@ impl<'a> CreateFsNodeModal<'a> {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
                         egui::TextEdit::singleline(name)
@@ -68,8 +68,10 @@ impl<'a> CreateFsNodeModal<'a> {
                             .width(EXT_COMBOBOX_WIDTH)
                             .show(ui, |ui| {
                                 for opt in options {
-                                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                                    ui.selectable_value(ext, opt.clone(), opt.clone());
+                                    // WHY: in popup/list context; future: standardize as atom
+                                    if ui.add(egui::Button::selectable(*ext == *opt, opt.clone()).frame_when_inactive(true)).clicked() {
+                                        *ext = opt.clone();
+                                    }
                                 }
                             });
                     }
@@ -77,11 +79,11 @@ impl<'a> CreateFsNodeModal<'a> {
                     if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                         do_create = true;
                     }
-                });
+                }).show(ui);
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
@@ -96,7 +98,7 @@ impl<'a> CreateFsNodeModal<'a> {
                             do_create = true;
                         }
                     });
-                });
+                }).show(ui);
             });
 
         if !is_open {
@@ -160,8 +162,8 @@ impl<'a> RenameModal<'a> {
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     const MODAL_INPUT_WIDTH: f32 = 200.0;
                     let re = ui.add(
                         egui::TextEdit::singleline(new_name)
@@ -173,11 +175,11 @@ impl<'a> RenameModal<'a> {
                     if re.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                         do_rename = true;
                     }
-                });
+                }).show(ui);
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
@@ -192,7 +194,7 @@ impl<'a> RenameModal<'a> {
                             do_rename = true;
                         }
                     });
-                });
+                }).show(ui);
             });
 
         if !is_open {
@@ -254,8 +256,8 @@ impl<'a> DeleteModal<'a> {
 
                 const SPACING_SMALL: f32 = 8.0;
                 ui.add_space(SPACING_SMALL);
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     if ui
                         .button(crate::i18n::I18nOps::get().action.cancel.clone())
                         .clicked()
@@ -274,7 +276,7 @@ impl<'a> DeleteModal<'a> {
                             close = true;
                         }
                     });
-                });
+                }).show(ui);
             });
 
         if !is_open {

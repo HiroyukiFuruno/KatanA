@@ -6,7 +6,6 @@ use syn::spanned::Spanned;
 use syn::visit::{self, Visit};
 
 fn is_using_icon(node: &syn::ExprMethodCall) -> bool {
-    // Check arguments for something containing "Icon"
     node.args.iter().any(|arg| {
         let s = quote!(#arg).to_string();
         s.contains("Icon") || s.contains("icon")
@@ -23,8 +22,8 @@ impl<'a, 'ast> Visit<'ast> for TooltipVisitor<'a> {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         let method_name = node.method.to_string();
 
-        // WHY: eframe/egui pattern is: ui.button(...).on_hover_text(...)
-        // In AST, on_hover_text is the OUTER call, and button is the RECEIVER.
+        /* WHY: eframe/egui pattern is: ui.button(...).on_hover_text(...)
+           In AST, on_hover_text is the OUTER call, and button is the RECEIVER. */
 
         let is_tooltip_method = matches!(
             method_name.as_str(),
@@ -36,17 +35,14 @@ impl<'a, 'ast> Visit<'ast> for TooltipVisitor<'a> {
             self.in_tooltip_chain = true;
         }
 
-        // Visit receiver (e.g., the button() call inside .on_hover_text())
         visit::visit_expr(self, &node.receiver);
 
-        // Visit arguments
         for arg in &node.args {
             visit::visit_expr(self, arg);
         }
 
         self.in_tooltip_chain = old_in_chain;
 
-        // Detection logic
         if matches!(
             method_name.as_str(),
             "button" | "menu_image_button" | "image_button"

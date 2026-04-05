@@ -162,7 +162,6 @@ impl ActionOps for KatanaApp {
                 }
                 self.state.scroll.scroll_to_line = Some(line);
                 self.state.scroll.preview_search_scroll_pending = true;
-                // The byte_range can be used for editor cursor positioning later
             }
             AppAction::OpenMultipleDocuments(paths) => {
                 let mut iter = paths.into_iter();
@@ -242,8 +241,7 @@ impl ActionOps for KatanaApp {
                 };
                 let path = self.state.document.open_documents[idx].path.clone();
 
-                // Skip refresh for virtual documents (e.g. "Katana://ChangeLog v0.11.0")
-                // that don't exist on the filesystem.
+                // WHY: that don't exist on the filesystem.
                 if path.to_string_lossy().starts_with("Katana://") {
                     return;
                 }
@@ -561,7 +559,7 @@ impl ActionOps for KatanaApp {
                     doc.is_pinned = is_now_pinned;
                     let doc_path = doc.path.clone();
 
-                    // 2.2.1: If pinned, remove from groups
+                    // WHY: 2.2.1: If pinned, remove from groups
                     if is_now_pinned {
                         let doc_str = doc_path.to_string_lossy().to_string();
                         for g in &mut self.state.document.tab_groups {
@@ -864,12 +862,11 @@ impl ActionOps for KatanaApp {
                 let id = format!("group_{}", chrono::Utc::now().timestamp_micros());
                 let member_str = initial_member.to_string_lossy().to_string();
 
-                // Remove from any existing group first
+                // WHY: Remove from any existing group first
                 for g in &mut self.state.document.tab_groups {
                     g.members.retain(|m| m != &member_str);
                 }
 
-                // Unpin if it was pinned
                 if let Some(doc) = self
                     .state
                     .document
@@ -892,17 +889,16 @@ impl ActionOps for KatanaApp {
                         members,
                     });
 
-                // Trigger inline edit popup
+                // WHY: Trigger inline edit popup
                 self.state.layout.inline_rename_group = Some(id);
                 self.save_workspace_state();
             }
             AppAction::AddTabToGroup { group_id, member } => {
                 let member_str = member.to_string_lossy().to_string();
-                // Remove from any existing group first
+                // WHY: Remove from any existing group first
                 for g in &mut self.state.document.tab_groups {
                     g.members.retain(|m| m != &member_str);
                 }
-                // Unpin if it was pinned
                 if let Some(doc) = self
                     .state
                     .document
@@ -1032,8 +1028,8 @@ impl ActionOps for KatanaApp {
                     group_members = g.members.clone();
                 }
 
-                // If we just collapsed a group and it contains the currently active tab,
-                // we should switch to another tab outside this group.
+                // WHY: If we just collapsed a group and it contains the currently active tab,
+                // WHY: we should switch to another tab outside this group.
                 if collapsed {
                     let active_idx = self.state.document.active_doc_idx.unwrap_or(0);
                     if let Some(active_doc) = self.state.document.open_documents.get(active_idx) {
@@ -1047,8 +1043,8 @@ impl ActionOps for KatanaApp {
                             {
                                 self.state.document.active_doc_idx = Some(new_idx);
                             } else {
-                                // If no tabs exist outside, we just clear the active document
-                                // which allows the UI to show an empty state, properly collapsing the group
+                                // WHY: If no tabs exist outside, we just clear the active document
+                                // WHY: which allows the UI to show an empty state, properly collapsing the group
                                 self.state.document.active_doc_idx = None;
                             }
                         }

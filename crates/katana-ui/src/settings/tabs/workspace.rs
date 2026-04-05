@@ -140,8 +140,8 @@ impl WorkspaceTabOps {
                 .show(ui.ctx(), |ui| {
                     ui.label(&workspace_msgs.no_extension_warning);
                     ui.add_space(SUBSECTION_SPACING);
-                    // allow(horizontal_layout)
-                    ui.horizontal(|ui| {
+                    // WHY: allow(horizontal_layout)
+                    crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                         if ui
                             .button(crate::i18n::I18nOps::get().action.cancel.clone())
                             .clicked()
@@ -155,7 +155,7 @@ impl WorkspaceTabOps {
                             confirm = true;
                             close = true;
                         }
-                    });
+                    }).show(ui);
                 });
 
             let should_close = close || ui.input(|i| i.key_pressed(egui::Key::Escape));

@@ -74,7 +74,7 @@ impl<'ast> Visit<'ast> for MagicNumberVisitor {
     fn visit_item_static(&mut self, node: &'ast syn::ItemStatic) {
         self.in_const_context += 1;
         syn::visit::visit_item_static(self, node);
-        self.current_depth_or_similar_guard_if_needed(); // Just visit
+        self.current_depth_or_similar_guard_if_needed();
     }
 
     fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {

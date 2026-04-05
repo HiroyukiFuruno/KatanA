@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::theme::types::{CodeColors, PreviewColors, SystemColors, ThemeMode};
 
-/// WHY: Built-in theme presets.
+// WHY: Built-in theme presets.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ThemePreset {
     #[default]

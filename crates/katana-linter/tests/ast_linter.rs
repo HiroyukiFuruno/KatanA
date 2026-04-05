@@ -206,10 +206,7 @@ fn ast_linter_comment_style() {
     AstLinterOps::run(
         "comment-style",
         "Fix: Comments must start with `// WHY:` or `// SAFETY:`. Code should be self-documenting.",
-        &[
-            root.join("crates/katana-linter/src/rules/coding"),
-            root.join("crates/katana-linter/src/rules/structure"),
-        ],
+        &target_crates(root),
         CommentStyleOps::lint,
     );
 }
@@ -279,7 +276,6 @@ fn ast_linter_no_japanese_in_crates() {
         .expect("Test requirement")
         .join("crates");
 
-    // We walk in parallel for maximum performance without degrading test speed
     let (tx, rx) = std::sync::mpsc::channel();
 
     let walker = WalkBuilder::new(root).build_parallel();
@@ -290,16 +286,15 @@ fn ast_linter_no_japanese_in_crates() {
             if let Ok(entry) = result {
                 let path = entry.path();
                 if path.is_file() {
-                    // Exclude ja.json (the only allowed source of Japanese truth)
                     if path.file_name().is_some_and(|name| name == "ja.json") {
                         return ignore::WalkState::Continue;
                     }
 
                     if let Ok(content) = std::fs::read_to_string(path) {
                         for (line_idx, line) in content.lines().enumerate() {
-                            // Detect Japanese specifically combining Hiragana and Katakana.
-                            // We intentionally exclude pure Han ideographs (\p{Han}) because Katana includes Chinese locales (zh-TW, zh-CN)
-                            // which must not trigger the Japanese check.
+                            /* WHY: Detect Japanese specifically combining Hiragana and Katakana.
+                                We intentionally exclude pure Han ideographs (\p{Han}) because Katana includes Chinese locales (zh-TW, zh-CN)
+                                which must not trigger the Japanese check. */
                             if line.chars().any(|c| matches!(c, '\u{3040}'..='\u{309F}' | '\u{30A0}'..='\u{30FF}')) {
                                 let _ = tx.send(format!("{}:{}: Please remove Japanese text or use Unicode escapes for test strings.", path.display(), line_idx + 1));
                                 break;
@@ -312,12 +307,12 @@ fn ast_linter_no_japanese_in_crates() {
         })
     });
 
-    drop(tx); // Close the transmitter
+    drop(tx);
 
     let mut violations = Vec::new();
     for failure in rx {
         violations.push(katana_linter::Violation {
-            file: std::path::PathBuf::from(""), // dummy
+            file: std::path::PathBuf::from(""),
             line: 0,
             column: 0,
             message: failure,
@@ -338,7 +333,7 @@ fn ast_linter_no_horizontal_layout() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(
         "horizontal-layout",
-        "Fix: Use `AlignCenter` instead of `ui.horizontal()` for vertical centering. Add `// allow(horizontal_layout)` above the line to suppress.",
+        "Fix: Use `AlignCenter` instead of `ui.horizontal()` for vertical centering.",
         &[root.join("crates/katana-ui/src")],
         HorizontalLayoutOps::lint,
     );
@@ -349,7 +344,7 @@ fn ast_linter_no_frame_stroke() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(
         "frame-stroke",
-        "Fix: Frame `.stroke()` and `rect_stroke()` cause layout jitter. Use theme visuals or `rect.shrink(stroke_width)`. Add `// allow(frame_stroke)` above to suppress.",
+        "Fix: Frame `.stroke()` and `rect_stroke()` cause layout jitter. Use theme visuals or `rect.shrink(stroke_width)`.",
         &[root.join("crates/katana-ui/src")],
         FrameStrokeOps::lint,
     );
@@ -360,7 +355,7 @@ fn ast_linter_no_conditional_frame() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(
         "conditional-frame",
-        "Fix: `selectable_label`, `selectable_value`, `menu_button` show frames only on hover, causing layout jitter. Use `Button::selectable(...).frame_when_inactive(true)` or add `// allow(conditional_frame)` above to suppress.",
+        "Fix: `selectable_label`, `selectable_value`, `menu_button` show frames only on hover, causing layout jitter. Use `Button::selectable(...).frame_when_inactive(true)`.",
         &[root.join("crates/katana-ui/src")],
         ConditionalFrameOps::lint,
     );
@@ -373,8 +368,7 @@ fn ast_linter_icon_button_fill() {
         "icon-button-fill",
         "Fix: `Button::image()` must have an explicit `.fill(icon_bg)` to ensure consistent \
          backgrounds across all hover states. \
-         icon_bg = TRANSPARENT (dark) or from_gray(LIGHT_MODE_ICON_BG) (light). \
-         Add `// allow(icon_button_fill)` above the call to suppress (decorative icons only).",
+         icon_bg = TRANSPARENT (dark) or from_gray(LIGHT_MODE_ICON_BG) (light).",
         &[root.join("crates/katana-ui/src")],
         IconButtonFillOps::lint,
     );

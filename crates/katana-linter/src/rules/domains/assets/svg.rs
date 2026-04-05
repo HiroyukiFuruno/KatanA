@@ -8,7 +8,6 @@ fn check_line_for_invalid_colors(
     line_num: usize,
     line_content: &str,
 ) -> Option<Violation> {
-    // Look for fill="...", stroke="..."
     let attributes = ["fill=\"", "stroke=\""];
 
     for attr in attributes {
@@ -65,13 +64,9 @@ impl SvgOps {
                 Err(_) => continue,
             };
     
-            // WHY: We want to ensure all icons are pure white (#FFFFFF) to support egui's dynamic tinting.
-            // Any other hex colors or color names indicate an inconsistent design asset.
-    
-            // Simple regex-less scan for color attributes: fill="..." or stroke="..."
-            // We want to detect patterns like fill="#ABCDEF" or fill="red"
-            // But we allow fill="none", fill="white", fill="#FFFFFF", fill="#fff"
-    
+            /* WHY: We want to ensure all icons are pure white (#FFFFFF) to support egui's dynamic tinting.
+               Any other hex colors or color names indicate an inconsistent design asset. */
+        
             let lines: Vec<&str> = content.lines().collect();
             for (i, line) in lines.iter().enumerate() {
                 if let Some(violation) = check_line_for_invalid_colors(&path, i + 1, line) {

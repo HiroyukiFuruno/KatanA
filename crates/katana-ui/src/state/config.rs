@@ -126,7 +126,7 @@ mod tests {
 
     #[test]
     fn test_try_save_settings_failure_is_caught() {
-        // Give it a directory path instead of a file, forcing write failure
+        // WHY: Give it a directory path instead of a file, forcing write failure
         let dir = tempdir().unwrap();
         let repo = Box::new(JsonFileRepository::new(dir.path().to_path_buf()));
         let settings = SettingsService::new(repo);

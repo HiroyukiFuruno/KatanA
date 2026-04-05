@@ -46,6 +46,13 @@ impl<'a> AlignCenter<'a> {
         self
     }
 
+    pub fn content(self, node: impl FnOnce(&mut egui::Ui) + 'a) -> Self {
+        self.left(move |ui| {
+            node(ui);
+            ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+        })
+    }
+
     pub fn shrink_to_fit(mut self, shrink: bool) -> Self {
         self.shrink_to_fit = shrink;
         self

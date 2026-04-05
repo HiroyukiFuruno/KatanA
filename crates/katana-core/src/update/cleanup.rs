@@ -33,15 +33,15 @@ impl UpdateCleanupOps {
     if command -v brew >/dev/null 2>&1; then
         if brew list --cask | grep -q "^katana-desktop$"; then
             echo "Removing KatanA from Homebrew management..."
-            
+
             # We must prevent Homebrew from deleting the running app
             if [ -d "{app_path}" ]; then
                 mv "{app_path}" "{app_bak}"
             fi
-            
+
             brew uninstall --cask katana-desktop --force >/dev/null 2>&1 || true
             brew untap HiroyukiFuruno/katana --force >/dev/null 2>&1 || true
-            
+
             # Restore the app
             if [ -d "{app_bak}" ]; then
                 mv "{app_bak}" "{app_path}"
@@ -61,6 +61,6 @@ impl UpdateCleanupOps {
 
     #[cfg(coverage)]
     pub fn perform_background_cleanup() {
-        // No-op during coverage analysis to avoid false negatives in unreachable thread block
+        // WHY: Coverage builds exclude the spawned thread to prevent false negatives from unreachable branches.
     }
 }

@@ -11,7 +11,7 @@ use eframe::egui;
 
 use super::types::WorkspaceLogicOps;
 
-// --- BreadcrumbMenu ---
+// WHY: --- BreadcrumbMenu ---
 pub(crate) struct BreadcrumbMenu<'a> {
     pub entries: &'a [katana_core::workspace::TreeEntry],
     pub action: &'a mut crate::app_state::AppAction,
@@ -32,8 +32,8 @@ impl<'a> BreadcrumbMenu<'a> {
             match entry {
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
                     let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
-                    // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    ui.menu_button(name, |ui| {
+                    // WHY: in popup/list context; future: standardize as atom
+                    egui::menu::menu_button(ui, name, |ui| {
                         BreadcrumbMenu::new(children, action).show(ui);
                     });
                 }
@@ -49,7 +49,7 @@ impl<'a> BreadcrumbMenu<'a> {
     }
 }
 
-// --- FileEntryNode ---
+// WHY: --- FileEntryNode ---
 pub(crate) struct FileEntryNode<'a, 'b, 'c> {
     pub entry: &'a katana_core::workspace::TreeEntry,
     pub path: &'a std::path::Path,
@@ -167,7 +167,7 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
     }
 }
 
-// --- DirectoryEntryNode ---
+// WHY: --- DirectoryEntryNode ---
 pub(crate) struct DirectoryEntryNode<'a, 'b, 'c> {
     pub path: &'a std::path::Path,
     pub children: &'a [katana_core::workspace::TreeEntry],
@@ -297,7 +297,7 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
     }
 }
 
-// --- TreeEntryNode ---
+// WHY: --- TreeEntryNode ---
 pub(crate) struct TreeEntryNode<'a, 'b, 'c> {
     pub entry: &'a katana_core::workspace::TreeEntry,
     pub ctx: &'a mut TreeRenderContext<'b, 'c>,
@@ -335,7 +335,7 @@ impl<'a, 'b, 'c> TreeEntryNode<'a, 'b, 'c> {
     }
 }
 
-// --- WorkspaceContent ---
+// WHY: --- WorkspaceContent ---
 pub(crate) struct WorkspaceContent<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
@@ -451,8 +451,8 @@ impl<'a> WorkspaceContent<'a> {
                 );
                 ui.add_space(RECENT_WORKSPACES_ITEM_SPACING);
                 for path in recent_paths.iter().rev() {
-                    // allow(horizontal_layout)
-                    ui.horizontal(|ui| {
+                    // WHY: allow(horizontal_layout)
+                    crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                         if ui
                             .button("×")
                             .on_hover_text(
@@ -462,18 +462,18 @@ impl<'a> WorkspaceContent<'a> {
                         {
                             *action = AppAction::RemoveWorkspace(path.clone());
                         }
-                        // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                        if ui.selectable_label(false, path.as_str()).clicked() {
+                        // WHY: in popup/list context; future: standardize as atom
+                        if ui.add(egui::Button::selectable(false, path.as_str()).frame_when_inactive(true)).clicked() {
                             *action = AppAction::OpenWorkspace(std::path::PathBuf::from(path));
                         }
-                    });
+                    }).show(ui);
                 }
             }
         }
     }
 }
 
-// --- WorkspaceHeader ---
+// WHY: --- WorkspaceHeader ---
 pub(crate) struct WorkspaceHeader<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
@@ -520,11 +520,11 @@ impl<'a> WorkspaceHeader<'a> {
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
                             .add(
-                                // allow(icon_button_fill)
+                                // WHY: allow(icon_button_fill)
                                 egui::Button::image(
                                     crate::Icon::ExpandAll
                                         .ui_image(ui, crate::icon::IconSize::Small),
-                                ),
+                                ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }),
                             )
                             .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                         btn_resp.widget_info(|| {
@@ -540,11 +540,11 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let btn_resp = ui
                             .add(
-                                // allow(icon_button_fill)
+                                // WHY: allow(icon_button_fill)
                                 egui::Button::image(
                                     crate::Icon::CollapseAll
                                         .ui_image(ui, crate::icon::IconSize::Small),
-                                ),
+                                ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }),
                             )
                             .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                         btn_resp.widget_info(|| {
@@ -576,10 +576,10 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let refresh_resp = ui
                             .add(
-                                // allow(icon_button_fill)
+                                // WHY: allow(icon_button_fill)
                                 egui::Button::image(
                                     crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                                ),
+                                ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() }),
                             )
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.refresh_workspace.clone(),
@@ -593,10 +593,10 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let filter_resp = ui
                             .add(
-                                // allow(icon_button_fill)
+                                // WHY: allow(icon_button_fill)
                                 egui::Button::image(
                                     crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
-                                )
+                                ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
                                 .selected(search.filter_enabled),
                             )
                             .on_hover_text(
@@ -617,8 +617,8 @@ impl<'a> WorkspaceHeader<'a> {
                 if !search.filter_query.is_empty() {
                     is_valid_regex = regex::Regex::new(&search.filter_query).is_ok();
                 }
-                // allow(horizontal_layout)
-                ui.horizontal(|ui| {
+                // WHY: allow(horizontal_layout)
+                crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                     let text_color = if is_valid_regex {
                         ui.visuals().text_color()
                     } else {
@@ -640,13 +640,13 @@ impl<'a> WorkspaceHeader<'a> {
                             .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
                             .desired_width(f32::INFINITY),
                     );
-                });
+                }).show(ui);
             }
         }
     }
 }
 
-// --- WorkspacePanel ---
+// WHY: --- WorkspacePanel ---
 pub(crate) struct WorkspacePanel<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
@@ -691,13 +691,13 @@ impl<'a> WorkspacePanel<'a> {
 
         if is_loading {
             ui.add_space(WORKSPACE_SPINNER_OUTER_MARGIN);
-            // allow(horizontal_layout)
-            ui.horizontal(|ui| {
+            // WHY: allow(horizontal_layout)
+            crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                 ui.add_space(WORKSPACE_SPINNER_INNER_MARGIN);
                 ui.spinner();
                 ui.add_space(WORKSPACE_SPINNER_TEXT_MARGIN);
                 ui.label(crate::i18n::I18nOps::get().action.refresh_workspace.clone());
-            });
+            }).show(ui);
         } else {
             WorkspaceContent::new(workspace, search, recent_paths, active_path, action).show(ui);
         }

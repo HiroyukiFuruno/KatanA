@@ -49,9 +49,8 @@ pub trait MarkdownRule {
     fn evaluate(&self, file_path: &Path, content: &str) -> Vec<MarkdownDiagnostic>;
 }
 
-// =======================================================
-// Basic Rules
-// =======================================================
+/* WHY: Section: Basic Markdown Rules
+======================================================= */
 
 pub struct HeadingStructureRule;
 
@@ -110,7 +109,7 @@ impl MarkdownRule for BrokenLinkRule {
 
     fn evaluate(&self, file_path: &Path, content: &str) -> Vec<MarkdownDiagnostic> {
         let mut diagnostics = Vec::new();
-        // Since we are running in the context of the workspace, we can check if local paths exist
+        // WHY: Running in workspace context lets us resolve local paths relative to the file.
         let base_dir = file_path.parent().unwrap_or(Path::new(""));
 
         for (line_idx, line) in content.lines().enumerate() {
@@ -126,7 +125,6 @@ impl MarkdownRule for BrokenLinkRule {
                     let absolute_end = offset + end_idx;
 
                     if !link.starts_with("http") && !link.starts_with('#') {
-                        // It's a local link, check if file exists
                         let target_path = base_dir.join(link);
                         if !target_path.exists() && !target_path.with_extension("md").exists() {
                             diagnostics.push(MarkdownDiagnostic {

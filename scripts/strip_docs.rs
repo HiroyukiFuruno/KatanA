@@ -36,7 +36,7 @@ fn process_file(path: &Path) {
 
         // Skip doc comments
         if trimmed.starts_with("///") || trimmed.starts_with("//!") {
-            // Wait, does it start with /// WHY: ?
+            // Wait, does it start with //// WHY: ?
             let body = trimmed.trim_start_matches(|c| c == '/' || c == '!');
             if !body.trim().starts_with("WHY:") && !body.trim().starts_with("SAFETY:") && !is_allowed(body.trim()) {
                 i += 1;
@@ -44,13 +44,13 @@ fn process_file(path: &Path) {
             }
         }
 
-        // Merge consecutive // WHY: lines
-        if trimmed.starts_with("// WHY:") {
+        // Merge consecutive /// WHY: lines
+        if trimmed.starts_with("/// WHY:") {
             let indent = &line[..line.len() - trimmed.len()];
             let mut why_bodies = Vec::new();
             let mut j = i;
-            while j < lines.len() && lines[j].trim_start().starts_with("// WHY:") {
-                let body = lines[j].trim_start().strip_prefix("// WHY:").unwrap();
+            while j < lines.len() && lines[j].trim_start().starts_with("/// WHY:") {
+                let body = lines[j].trim_start().strip_prefix("/// WHY:").unwrap();
                 why_bodies.push(body.trim().to_string());
                 j += 1;
             }

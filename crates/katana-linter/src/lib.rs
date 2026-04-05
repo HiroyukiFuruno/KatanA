@@ -24,10 +24,7 @@ pub mod utils;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 
-// ─────────────────────────────────────────────
-// WHY: Violation Report
-// ─────────────────────────────────────────────
-
+// WHY: Domain entities for linter violation reporting and JSON AST traversal.
 #[derive(Debug, Clone)]
 pub struct Violation {
     pub file: PathBuf,

@@ -46,13 +46,11 @@ impl ThemeBridgeOps {
         visuals.widgets.noninteractive.bg_fill = crate::theme_bridge::TRANSPARENT;
         visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(STROKE_NORMAL, text);
         // WHY: All bg_stroke.width values are STROKE_NORMAL (1.0) — identical for every state.
-        // egui's inner_margin formula: button_padding + expansion - stroke.width.
-        // With expansion=0 and uniform stroke.width=1.0, inner_margin = button_padding - 1.0
-        // for ALL states (inactive, hovered, active). Content never shifts on hover.
-        // Color is TRANSPARENT for noninteractive/inactive so the border is invisible
-        // at rest, but the width is pre-reserved in the layout calculation.
-        // WHY expansion=0: outer_margin = -expansion = 0, preventing the drawn frame
-        // from overflowing the allocated rect (which causes visual "border inflation").
+        // WHY: egui's inner_margin formula: button_padding + expansion - stroke.width.
+        // WHY: With expansion=0 and uniform stroke.width=1.0, inner_margin = button_padding - 1.0
+        // WHY: at rest, but the width is pre-reserved in the layout calculation.
+        // WHY: WHY expansion=0: outer_margin = -expansion = 0, preventing the drawn frame
+        // WHY: from overflowing the allocated rect (which causes visual "border inflation").
         visuals.widgets.noninteractive.bg_stroke =
             egui::Stroke::new(STROKE_NORMAL, crate::theme_bridge::INVISIBLE);
         visuals.widgets.noninteractive.expansion = 0.0;

@@ -56,7 +56,7 @@ mod tests {
     #[cfg(target_os = "macos")]
     fn is_emoji_scalar_covers_emoticons_range() {
         // WHY: 0x1F000..=0x1FAFF — Mahjong Tiles through Symbols Extended-A
-        assert!(EmojiDataOps::is_emoji_scalar('\u{1F600}')); // grinning face
-        assert!(EmojiDataOps::is_emoji_scalar('\u{1F000}')); // mahjong tile
+        assert!(EmojiDataOps::is_emoji_scalar('\u{1F600}'));
+        assert!(EmojiDataOps::is_emoji_scalar('\u{1F000}'));
     }
 }

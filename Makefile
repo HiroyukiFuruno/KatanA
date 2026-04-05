@@ -80,6 +80,10 @@ lint: ## Run Clippy (forces zero warnings)
 lint-fix: ## Run Clippy and apply automatic fixes
 	cargo clippy --workspace --fix --allow-dirty --allow-staged -- -D warnings
 
+.PHONY: ast-lint
+ast-lint: ## Run AST-based custom linters (comment style, etc.)
+	cargo test -p katana-linter ast_linter -- --nocapture
+
 .PHONY: typecheck
 typecheck: ## cargo check (type check only, fast)
 	cargo check --workspace
@@ -113,17 +117,17 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 	scripts/coverage.sh
 
 .PHONY: check-light
-check-light: fmt-check lint ## Quick verification (skip slow fixture tests)
+check-light: fmt-check lint ast-lint ## Quick verification (skip slow fixture tests)
 	cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 
 .PHONY: check
-check: fmt-check lint test-integration coverage ## Full verification (fmt + clippy + IT + 100% coverage enforced)
+check: fmt-check lint ast-lint test-integration coverage ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: fmt lint test-integration coverage ## Full verification (fmt + clippy + IT + 100% coverage enforced)
+check-local: fmt lint ast-lint test-integration coverage ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push

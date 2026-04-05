@@ -2496,6 +2496,7 @@ version = "0.16.3"
 dependencies = [
  "ignore",
  "proc-macro2",
+ "serde",
  "serde_json",
  "syn",
  "tempfile",

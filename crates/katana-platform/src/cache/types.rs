@@ -97,7 +97,6 @@ impl PersistentKey {
     pub fn target_filename(&self) -> Option<String> {
         match self {
             Self::WorkspaceTabs { .. } => {
-                // For workspace_tabs, hash the raw key for safety against special path chars
                 let raw = self.to_raw_key()?;
                 Some(format!(
                     "workspace_tabs_{:x}.json",

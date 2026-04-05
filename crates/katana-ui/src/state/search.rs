@@ -12,24 +12,24 @@ pub struct SearchState {
     pub filter_query: String,
     pub filter_cache: Option<(String, HashSet<PathBuf>)>,
 
-    // UI state
+    // WHY: UI state
     pub active_tab: SearchTab,
     pub focus_requested: bool,
 
-    // File name search state
+    // WHY: File name search state
     pub query: String,
     pub include_pattern: String,
     pub exclude_pattern: String,
     pub last_params: Option<(String, String, String)>,
     pub results: Vec<PathBuf>,
 
-    // Markdown content search state
+    // WHY: Markdown content search state
     pub md_query: String,
     pub md_last_query: Option<String>,
     pub md_results: Vec<katana_core::search::SearchResult>,
     pub md_history: katana_core::search::SearchHistory,
 
-    // Document search state (Cmd+F)
+    // WHY: Document search state (Cmd+F)
     pub doc_search_open: bool,
     pub doc_search_query: String,
     pub doc_search_matches: Vec<std::ops::Range<usize>>,

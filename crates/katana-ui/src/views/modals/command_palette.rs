@@ -62,13 +62,13 @@ impl<'a> CommandPaletteModal<'a> {
                 let response = ui.add(text_edit);
 
                 if response.changed() || self.state.results.is_empty() {
-                    // Gather results from all providers
+                    // WHY: Gather results from all providers
                     let mut gathered = Vec::new();
                     for provider in self.providers {
                         gathered.extend(provider.search(&self.state.current_query, self.workspace));
                     }
 
-                    // Sort results
+                    // WHY: Sort results
                     gathered.sort_by(|a, b| {
                         b.score
                             .partial_cmp(&a.score)
@@ -78,7 +78,7 @@ impl<'a> CommandPaletteModal<'a> {
                     self.state.update_results(gathered);
                 }
 
-                // Keyboard interactions
+                // WHY: Keyboard interactions
                 if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                     is_open = false;
                 } else if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
@@ -110,7 +110,7 @@ impl<'a> CommandPaletteModal<'a> {
                     is_open = false; // dismiss after action
                 }
 
-                // If just opened, request focus
+                // WHY: If just opened, request focus
                 if response.gained_focus() || !response.has_focus() {
                     response.request_focus();
                 }
@@ -161,8 +161,8 @@ impl<'a> CommandPaletteModal<'a> {
 
                                 let response = frame
                                     .show(ui, |ui| {
-                                        // allow(horizontal_layout)
-                                        ui.horizontal(|ui| {
+                                        // WHY: allow(horizontal_layout)
+                                        crate::widgets::AlignCenter::new().shrink_to_fit(true).content(|ui| {
                                             let icon = match result.kind {
                                                 CommandPaletteResultKind::Action => {
                                                     crate::Icon::Action
@@ -193,18 +193,18 @@ impl<'a> CommandPaletteModal<'a> {
                                                         .weak(),
                                                 );
                                             }
-                                        });
+                                        }).show(ui);
                                     })
                                     .response;
 
-                                // Hover or click interaction
+                                // WHY: Hover or click interaction
                                 let interact =
                                     ui.interact(response.rect, response.id, egui::Sense::click());
                                 if interact.hovered() {
                                     self.state.selected_index = idx;
                                 }
                                 if interact.clicked() {
-                                    // Execute action on click as well
+                                    // WHY: Execute action on click as well
                                     match &result.execute_payload {
                                         CommandPaletteExecutePayload::DispatchAppAction(a) => {
                                             *self.action = a.clone();

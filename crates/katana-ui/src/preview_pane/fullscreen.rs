@@ -336,7 +336,7 @@ impl FullscreenLogicOps {
 
                 let content_rect = blocker_rect.shrink(FULLSCREEN_PADDING);
 
-                // Handle keyboard paging
+                // WHY: Handle keyboard paging
                 if ui.input(|i| {
                     i.key_pressed(egui::Key::ArrowRight)
                         || i.key_pressed(egui::Key::PageDown)
@@ -383,7 +383,7 @@ impl FullscreenLogicOps {
                         layout.slideshow_page = max_page;
                     }
 
-                    // Control block
+                    // WHY: Control block
                     let control_rect = egui::Rect::from_center_size(
                         egui::pos2(
                             blocker_rect.center().x,
@@ -435,15 +435,11 @@ impl FullscreenLogicOps {
                             let mut bg = ui.visuals().window_fill();
                             bg = bg.gamma_multiply(SLIDESHOW_BG_ALPHA_SCALE * opacity);
 
-                            let mut stroke_color =
-                                ui.visuals().widgets.noninteractive.bg_stroke.color;
-                            stroke_color = stroke_color.gamma_multiply(opacity);
 
                             let frame = egui::Frame::NONE
                                 .fill(bg)
                                 .corner_radius(SLIDESHOW_CONTROL_CORNER_RADIUS)
-                                // allow(frame_stroke)
-                                .stroke(egui::Stroke::new(1.0, stroke_color))
+
                                 .inner_margin(egui::Margin::symmetric(
                                     SLIDESHOW_CONTROL_PADDING_X,
                                     SLIDESHOW_CONTROL_PADDING_Y,
@@ -455,12 +451,12 @@ impl FullscreenLogicOps {
                                         let mut icon_color = ui.visuals().text_color();
                                         icon_color = icon_color.gamma_multiply(opacity);
 
-                                        // allow(icon_button_fill)
+                                        // WHY: allow(icon_button_fill)
                                         let mut prev_btn = egui::Button::image(
                                             crate::icon::Icon::ChevronLeft
                                                 .image(crate::icon::IconSize::Medium)
                                                 .tint(icon_color),
-                                        )
+                                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
                                         .frame(false);
                                         if layout.slideshow_page == 0 {
                                             prev_btn = prev_btn.sense(egui::Sense::hover());
@@ -486,12 +482,12 @@ impl FullscreenLogicOps {
 
                                         ui.add_space(SLIDESHOW_CONTROL_SPACING);
 
-                                        // allow(icon_button_fill)
+                                        // WHY: allow(icon_button_fill)
                                         let mut next_btn = egui::Button::image(
                                             crate::icon::Icon::ChevronRight
                                                 .image(crate::icon::IconSize::Medium)
                                                 .tint(icon_color),
-                                        )
+                                        ).fill(if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::light_mode_icon_bg() })
                                         .frame(false);
                                         if layout.slideshow_page >= max_page {
                                             next_btn = next_btn.sense(egui::Sense::hover());
@@ -515,7 +511,7 @@ impl FullscreenLogicOps {
                     }
                 });
 
-                // Close button
+                // WHY: Close button
                 let msgs = crate::i18n::I18nOps::get();
                 let close_btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
                 let close_btn_rect = egui::Rect::from_min_size(

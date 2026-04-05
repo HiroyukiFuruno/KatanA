@@ -20,7 +20,6 @@ impl I18nOps {
             let mut current = write_guard(&CURRENT_LANGUAGE);
             *current = lang.to_string();
         }
-        // Update the cached pointer for high-speed access
         Self::update_cached_messages(lang);
     }
 
@@ -30,13 +29,13 @@ impl I18nOps {
     }
 
     pub fn get() -> &'static I18nMessages {
-        // Fast path: Atomic pointer access
+        // WHY: Fast path: Atomic pointer access
         let ptr = CURRENT_MESSAGES_CACHED.load(Ordering::Relaxed);
         if !ptr.is_null() {
             unsafe { return &*ptr }
         }
 
-        // Slow path: Initialization
+        // WHY: Slow path: Initialization
         let lang = Self::get_language();
         Self::update_cached_messages(&lang)
     }
