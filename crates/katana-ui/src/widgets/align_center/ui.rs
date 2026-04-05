@@ -102,34 +102,34 @@ impl<'a> AlignCenter<'a> {
             return response;
         }
 
-        let (rect, response) =
-            ui.allocate_exact_size(egui::vec2(available_width, row_height), sense);
+        let final_response = ui.allocate_ui_with_layout(
+            egui::vec2(available_width, row_height),
+            egui::Layout::left_to_right(egui::Align::Center),
+            |child_ui| {
+                child_ui.spacing_mut().item_spacing.x = self.spacing;
 
-        let mut child_ui = ui.new_child(
-            egui::UiBuilder::new()
-                .max_rect(rect)
-                .layout(egui::Layout::left_to_right(egui::Align::Center)),
-        );
-        child_ui.spacing_mut().item_spacing.x = self.spacing;
+                for node_fn in self.left_nodes {
+                    node_fn(child_ui);
+                }
 
-        for node_fn in self.left_nodes {
-            node_fn(&mut child_ui);
-        }
+                if !self.right_nodes.is_empty() {
+                    child_ui.with_layout(
+                        egui::Layout::right_to_left(egui::Align::Center),
+                        |right_ui| {
+                            for node_fn in self.right_nodes.into_iter().rev() {
+                                node_fn(right_ui);
+                            }
+                        },
+                    );
+                }
+            },
+        ).response;
 
-        if !self.right_nodes.is_empty() {
-            child_ui.with_layout(
-                egui::Layout::right_to_left(egui::Align::Center),
-                |right_ui| {
-                    for node_fn in self.right_nodes.into_iter().rev() {
-                        node_fn(right_ui);
-                    }
-                },
-            );
-        }
+        let response = ui.interact(final_response.rect, ui.next_auto_id(), sense);
 
         if self.interactive && response.hovered() {
             ui.painter().rect_filled(
-                rect,
+                response.rect,
                 ui.style().visuals.widgets.hovered.corner_radius,
                 ui.style().visuals.widgets.hovered.bg_fill,
             );
