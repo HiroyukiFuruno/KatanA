@@ -44,6 +44,7 @@ impl EmojiRasterOps {
         if grapheme.is_empty() || !std::path::Path::new(APPLE_COLOR_EMOJI_FONT_PATH).exists() {
             return None;
         }
+        emojis::get(grapheme)?;
         let key = EmojiCacheKey {
             grapheme: grapheme.to_owned(),
             pixel_size: pixel_size.max(MIN_EMOJI_PIXEL_SIZE),

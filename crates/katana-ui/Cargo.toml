@@ -31,6 +31,7 @@ chrono = "0.4.44"
 tempfile = "3"
 base64 = "0.22.1"
 mathjax_svg = "3.2.0"
+unicode-segmentation = "1.13.2"
 
 [build-dependencies]
 cc = "1"

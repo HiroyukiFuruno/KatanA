@@ -2472,6 +2472,7 @@ dependencies = [
  "base64",
  "comrak",
  "dirs-sys",
+ "emojis",
  "headless_chrome",
  "pulldown-cmark",
  "regex",
@@ -2551,6 +2552,7 @@ dependencies = [
  "time",
  "tracing",
  "tracing-subscriber",
+ "unicode-segmentation",
 ]
 
 [[package]]
