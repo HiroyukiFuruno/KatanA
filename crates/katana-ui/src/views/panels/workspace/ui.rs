@@ -1,6 +1,7 @@
 use crate::app_state::AppAction;
 use crate::shell::{
-    ACTIVE_FILE_HIGHLIGHT_ROUNDING, NO_WORKSPACE_BOTTOM_SPACING, RECENT_WORKSPACES_ITEM_SPACING,
+    ACTIVE_FILE_HIGHLIGHT_ROUNDING, NO_WORKSPACE_BOTTOM_SPACING,
+    RECENT_WORKSPACES_CLOSE_BUTTON_WIDTH, RECENT_WORKSPACES_ITEM_SPACING,
     RECENT_WORKSPACES_SPACING, TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT,
 };
 use crate::shell_ui::{
@@ -450,30 +451,41 @@ impl<'a> WorkspaceContent<'a> {
                 );
                 ui.add_space(RECENT_WORKSPACES_ITEM_SPACING);
                 for path in recent_paths.iter().rev() {
+                    /* WHY: path label left / × button right — see v0.16.4 regression note */
+                    let mut open_clicked = false;
+                    let mut remove_clicked = false;
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
-                        .content(|ui| {
-                            if ui
-                                .button("×")
+                        .left(|ui| {
+                            /* WHY: in popup/list context; future: standardize as atom */
+                            let resp = ui.add(
+                                egui::Button::selectable(false, path.as_str())
+                                    .frame_when_inactive(true),
+                            );
+                            open_clicked = resp.clicked();
+                            resp
+                        })
+                        .right(|ui| {
+                            let resp = ui
+                                .add(
+                                    egui::Button::new("×")
+                                        .min_size(egui::vec2(
+                                            RECENT_WORKSPACES_CLOSE_BUTTON_WIDTH,
+                                            ui.spacing().interact_size.y,
+                                        )),
+                                )
                                 .on_hover_text(
                                     crate::i18n::I18nOps::get().action.remove_workspace.clone(),
-                                )
-                                .clicked()
-                            {
-                                *action = AppAction::RemoveWorkspace(path.clone());
-                            }
-                            /* WHY: in popup/list context; future: standardize as atom */
-                            if ui
-                                .add(
-                                    egui::Button::selectable(false, path.as_str())
-                                        .frame_when_inactive(true),
-                                )
-                                .clicked()
-                            {
-                                *action = AppAction::OpenWorkspace(std::path::PathBuf::from(path));
-                            }
+                                );
+                            remove_clicked = resp.clicked();
+                            resp
                         })
                         .show(ui);
+                    if open_clicked {
+                        *action = AppAction::OpenWorkspace(std::path::PathBuf::from(path));
+                    } else if remove_clicked {
+                        *action = AppAction::RemoveWorkspace(path.clone());
+                    }
                 }
             }
         }

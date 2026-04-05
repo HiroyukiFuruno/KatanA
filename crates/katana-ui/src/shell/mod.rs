@@ -40,6 +40,8 @@ pub(crate) const RECENT_WORKSPACES_SPACING: f32 = 8.0;
 
 pub(crate) const RECENT_WORKSPACES_ITEM_SPACING: f32 = 4.0;
 
+pub(crate) const RECENT_WORKSPACES_CLOSE_BUTTON_WIDTH: f32 = 20.0;
+
 pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
 
 pub(crate) const TREE_LABEL_HOFFSET: f32 = 4.0;
