@@ -192,6 +192,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     } else {
                                         crate::Icon::FolderClosed
                                     };
+                                    // allow(icon_button_fill)
                                     let mut btn = egui::Button::image(ws_icon.ui_image(ui, crate::icon::IconSize::Large))
                                         .sense(egui::Sense::hover());
                                     if app.state.layout.show_workspace {
@@ -207,6 +208,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     Some(interact_resp)
                                 }
                                 katana_platform::settings::ActivityRailItem::Search => {
+                                    // allow(icon_button_fill)
                                     let mut btn = egui::Button::image(
                                         crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large)
                                     )
@@ -218,13 +220,14 @@ impl<'a> WorkspaceSidebar<'a> {
                                     let interact_resp = ui
                                         .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
                                         .on_hover_text(crate::i18n::I18nOps::get().search.modal_title.clone());
-                                    interact_resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search"));
+                                    interact_resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, crate::i18n::I18nOps::get().search.modal_title.clone()));
                                     if interact_resp.clicked() {
                                         app.pending_action = crate::app_state::AppAction::ToggleSearchModal;
                                     }
                                     Some(interact_resp)
                                 }
                                 katana_platform::settings::ActivityRailItem::Settings => {
+                                    // allow(icon_button_fill)
                                     let mut btn = egui::Button::image(
                                         crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large)
                                     )
@@ -246,6 +249,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                     let is_open = ui
                                         .data(|data| data.get_temp::<bool>(history_menu_id).unwrap_or(false));
 
+                                    // allow(icon_button_fill)
                                     let mut btn = egui::Button::image(
                                         crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large)
                                     )
@@ -282,6 +286,7 @@ impl<'a> WorkspaceSidebar<'a> {
                                                         // allow(horizontal_layout)
                                                         ui.horizontal(|ui| {
                                                             if ui
+                                                                // allow(icon_button_fill)
                                                                 .add(egui::Button::image(
                                                                     crate::Icon::Remove.ui_image(ui, crate::icon::IconSize::Small),
                                                                 ))
@@ -377,17 +382,20 @@ impl<'a> WorkspaceSidebar<'a> {
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::Search => {
+                                                // allow(icon_button_fill)
                                                 let mut b = egui::Button::image(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large));
                                                 if app.state.layout.show_search_modal { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 let r = ui.add(b);
                                                 r.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search"));
                                             }
                                             katana_platform::settings::ActivityRailItem::Settings => {
+                                                // allow(icon_button_fill)
                                                 let mut b = egui::Button::image(crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large));
                                                 if app.state.layout.show_settings { b = b.fill(ui.visuals().selection.bg_fill); }
                                                 ui.add(b);
                                             }
                                             katana_platform::settings::ActivityRailItem::History => {
+                                                // allow(icon_button_fill)
                                                 ui.add(egui::Button::image(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large)));
                                             }
                                         }

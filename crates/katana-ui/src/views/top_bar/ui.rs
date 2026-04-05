@@ -474,6 +474,7 @@ impl<'a> TabBar<'a> {
                                                         // WHY: invisible_label("x") matches the close button's label
                                                         // so egui allocates the same internal text layout width for both.
                                                         Some(ui.add(
+                                                            // allow(icon_button_fill)
                                                             egui::Button::image(
                                                                 crate::Icon::Pin
                                                                     .ui_image(ui, crate::icon::IconSize::Small)
@@ -482,6 +483,7 @@ impl<'a> TabBar<'a> {
                                                         ))
                                                     } else {
                                                         Some(ui.add(
+                                                            // allow(icon_button_fill)
                                                             egui::Button::image(
                                                                 crate::Icon::Close.ui_image(
                                                                     ui,
@@ -580,7 +582,9 @@ impl<'a> TabBar<'a> {
                                                                     .tint(ui.visuals().text_color()),
                                                             );
                                                         } else {
-                                                            ui.add(egui::Button::image(
+                                                            ui.add(
+                                                                // allow(icon_button_fill)
+                                                                egui::Button::image(
                                                                 crate::Icon::Close.ui_image(
                                                                     ui,
                                                                     crate::icon::IconSize::Small,
@@ -792,7 +796,7 @@ impl<'a> TabBar<'a> {
                     .fill(icon_bg),
                 )
                 .on_hover_text(crate::i18n::I18nOps::get().tab.nav_prev.clone());
-            resp_prev.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, "◀"));
+            resp_prev.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, crate::i18n::I18nOps::get().tab.nav_prev.clone()));
 
             if resp_prev.clicked()
                 && let Some(idx) = self.active_doc_idx {
@@ -811,7 +815,7 @@ impl<'a> TabBar<'a> {
                     .fill(icon_bg),
                 )
                 .on_hover_text(crate::i18n::I18nOps::get().tab.nav_next.clone());
-            resp_next.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, "▶"));
+            resp_next.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, crate::i18n::I18nOps::get().tab.nav_next.clone()));
 
             if resp_next.clicked()
                 && let Some(idx) = self.active_doc_idx {
@@ -1127,11 +1131,14 @@ impl ViewModeBar {
                         };
 
                     if ui
-                        .add(egui::Button::image(
-                            order_icon
-                                .image(crate::icon::IconSize::Medium)
-                                .tint(ui.visuals().text_color()),
-                        ))
+                        .add(
+                            // allow(icon_button_fill)
+                            egui::Button::image(
+                                order_icon
+                                    .image(crate::icon::IconSize::Medium)
+                                    .tint(ui.visuals().text_color()),
+                            ),
+                        )
                         .on_hover_text(order_tip)
                         .clicked()
                     {
@@ -1220,6 +1227,7 @@ impl ViewModeBar {
                     // allow(icon_button_fill)
                     if ui
                         .add(
+                            // allow(icon_button_fill)
                             egui::Button::image(
                                 crate::Icon::Close.ui_image(ui, crate::icon::IconSize::Medium),
                             )
@@ -1234,6 +1242,7 @@ impl ViewModeBar {
                     // allow(icon_button_fill)
                     if ui
                         .add(
+                            // allow(icon_button_fill)
                             egui::Button::image(
                                 crate::Icon::PanDown.ui_image(ui, crate::icon::IconSize::Medium),
                             )
@@ -1248,6 +1257,7 @@ impl ViewModeBar {
                     // allow(icon_button_fill)
                     if ui
                         .add(
+                            // allow(icon_button_fill)
                             egui::Button::image(
                                 crate::Icon::PanUp.ui_image(ui, crate::icon::IconSize::Medium),
                             )
@@ -1312,7 +1322,10 @@ impl ViewModeBar {
                     ui.allocate_ui_at_rect(left_icon_rect, |ui| {
                         ui.centered_and_justified(|ui| {
                             const SEARCH_ICON_DIM_ALPHA: f32 = 0.5;
-                            let icon_color = ui.visuals().text_color().gamma_multiply(SEARCH_ICON_DIM_ALPHA);
+                            let icon_color = ui
+                                .visuals()
+                                .text_color()
+                                .gamma_multiply(SEARCH_ICON_DIM_ALPHA);
                             ui.add(
                                 crate::Icon::Search
                                     .image(crate::icon::IconSize::Small)

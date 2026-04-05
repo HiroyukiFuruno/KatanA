@@ -216,7 +216,7 @@ impl SettingsOps {
                 let theme_fill = if theme_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 if ui
                     .add(
@@ -233,7 +233,7 @@ impl SettingsOps {
                 let font_fill = if font_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 if ui
                     .add(
@@ -250,7 +250,7 @@ impl SettingsOps {
                 let layout_fill = if layout_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 if ui
                     .add(
@@ -288,7 +288,7 @@ impl SettingsOps {
                 let ws_fill = if workspace_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 if ui
                     .add(
@@ -308,7 +308,7 @@ impl SettingsOps {
                 let upd_fill = if updates_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 if ui
                     .add(
@@ -328,7 +328,7 @@ impl SettingsOps {
                 let beh_fill = if behavior_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 if ui
                     .add(

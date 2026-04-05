@@ -61,7 +61,6 @@ impl<'a> SearchModal<'a> {
                 ui.horizontal(|ui| {
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
                     let file_name_selected = search.active_tab == crate::app_state::SearchTab::FileName;
-                    let _file_name_fill = if file_name_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                     if ui
                         .add(
                             egui::Button::selectable(
@@ -77,9 +76,7 @@ impl<'a> SearchModal<'a> {
                         search.focus_requested = false;
                     }
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    let _file_name_fill = if file_name_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                     let md_content_selected = search.active_tab == crate::app_state::SearchTab::MarkdownContent;
-                    let _md_content_fill = if md_content_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                     if ui
                         .add(
                             egui::Button::selectable(

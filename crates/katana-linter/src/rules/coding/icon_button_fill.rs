@@ -12,7 +12,7 @@ use syn::visit::Visit;
 /// "highlighted" on hover while others show only a border, breaking visual uniformity.
 ///
 /// Pattern that triggers this rule:
-/// ```
+/// ```ignore
 /// // VIOLATION: no .fill()
 /// ui.add(egui::Button::image(icon));
 ///

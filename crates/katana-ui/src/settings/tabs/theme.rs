@@ -161,7 +161,7 @@ impl ThemeTabOps {
                     let custom_fill = if is_selected {
                         ui.visuals().selection.bg_fill
                     } else {
-                        egui::Color32::TRANSPARENT
+                        crate::theme_bridge::TRANSPARENT
                     };
                     let response = ui.add(
                         egui::Button::selectable(is_selected, &custom_theme.name)
@@ -296,7 +296,7 @@ impl ThemeTabOps {
                 let preset_fill = if is_selected {
                     ui.visuals().selection.bg_fill
                 } else {
-                    egui::Color32::TRANSPARENT
+                    crate::theme_bridge::TRANSPARENT
                 };
                 let response = ui.add(
                     egui::Button::selectable(is_selected, preset.display_name())

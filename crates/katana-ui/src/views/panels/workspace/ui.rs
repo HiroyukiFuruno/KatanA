@@ -519,9 +519,13 @@ impl<'a> WorkspaceHeader<'a> {
                 |ui| {
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::ExpandAll.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
+                            .add(
+                                // allow(icon_button_fill)
+                                egui::Button::image(
+                                    crate::Icon::ExpandAll
+                                        .ui_image(ui, crate::icon::IconSize::Small),
+                                ),
+                            )
                             .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
@@ -535,9 +539,13 @@ impl<'a> WorkspaceHeader<'a> {
                         }
 
                         let btn_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::CollapseAll.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
+                            .add(
+                                // allow(icon_button_fill)
+                                egui::Button::image(
+                                    crate::Icon::CollapseAll
+                                        .ui_image(ui, crate::icon::IconSize::Small),
+                                ),
+                            )
                             .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
@@ -567,9 +575,12 @@ impl<'a> WorkspaceHeader<'a> {
                         });
 
                         let refresh_resp = ui
-                            .add(egui::Button::image(
-                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
-                            ))
+                            .add(
+                                // allow(icon_button_fill)
+                                egui::Button::image(
+                                    crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Small),
+                                ),
+                            )
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.refresh_workspace.clone(),
                             );
@@ -582,6 +593,7 @@ impl<'a> WorkspaceHeader<'a> {
 
                         let filter_resp = ui
                             .add(
+                                // allow(icon_button_fill)
                                 egui::Button::image(
                                     crate::Icon::Filter.ui_image(ui, crate::icon::IconSize::Small),
                                 )

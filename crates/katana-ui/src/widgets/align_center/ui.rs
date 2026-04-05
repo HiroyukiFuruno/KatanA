@@ -102,28 +102,30 @@ impl<'a> AlignCenter<'a> {
             return response;
         }
 
-        let final_response = ui.allocate_ui_with_layout(
-            egui::vec2(available_width, row_height),
-            egui::Layout::left_to_right(egui::Align::Center),
-            |child_ui| {
-                child_ui.spacing_mut().item_spacing.x = self.spacing;
+        let final_response = ui
+            .allocate_ui_with_layout(
+                egui::vec2(available_width, row_height),
+                egui::Layout::left_to_right(egui::Align::Center),
+                |child_ui| {
+                    child_ui.spacing_mut().item_spacing.x = self.spacing;
 
-                for node_fn in self.left_nodes {
-                    node_fn(child_ui);
-                }
+                    for node_fn in self.left_nodes {
+                        node_fn(child_ui);
+                    }
 
-                if !self.right_nodes.is_empty() {
-                    child_ui.with_layout(
-                        egui::Layout::right_to_left(egui::Align::Center),
-                        |right_ui| {
-                            for node_fn in self.right_nodes.into_iter().rev() {
-                                node_fn(right_ui);
-                            }
-                        },
-                    );
-                }
-            },
-        ).response;
+                    if !self.right_nodes.is_empty() {
+                        child_ui.with_layout(
+                            egui::Layout::right_to_left(egui::Align::Center),
+                            |right_ui| {
+                                for node_fn in self.right_nodes.into_iter().rev() {
+                                    node_fn(right_ui);
+                                }
+                            },
+                        );
+                    }
+                },
+            )
+            .response;
 
         let response = ui.interact(final_response.rect, ui.next_auto_id(), sense);
 
