@@ -1011,20 +1011,25 @@ impl ViewModeBar {
                 let is_split = mode == ViewMode::Split;
 
                 if !is_changelog {
-                    if ui
-                        .add(
-                            egui::Button::image(
-                                crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
+                    const REFRESH_BTN_SIZE: f32 = 24.0;
+                    ui.allocate_ui(egui::vec2(REFRESH_BTN_SIZE, REFRESH_BTN_SIZE), |ui| {
+                        ui.add_space(2.0);
+                        if ui
+                            .add(
+                                egui::Button::image(
+                                    crate::Icon::Refresh
+                                        .ui_image(ui, crate::icon::IconSize::Medium),
+                                )
+                                .fill(icon_bg),
                             )
-                            .min_size(button_size)
-                            .fill(icon_bg),
-                        )
-                        .on_hover_text(crate::i18n::I18nOps::get().action.refresh_document.clone())
-                        .clicked()
-                    {
-                        action = Some(AppAction::RefreshDocument { is_manual: true });
-                    }
-                    ui.separator();
+                            .on_hover_text(
+                                crate::i18n::I18nOps::get().action.refresh_document.clone(),
+                            )
+                            .clicked()
+                        {
+                            action = Some(AppAction::RefreshDocument { is_manual: true });
+                        }
+                    });
 
                     if ui
                         .add(

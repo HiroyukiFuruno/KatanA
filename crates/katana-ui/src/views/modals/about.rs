@@ -52,7 +52,7 @@ impl<'a> AboutModal<'a> {
             .default_width(ABOUT_WINDOW_WIDTH)
             .frame(egui::Frame::window(&ctx.global_style()).inner_margin(INNER_PADDING))
             .show(ctx, |ui| {
-                ui.horizontal_centered(|ui| {
+                ui.vertical_centered(|ui| {
                     ui.add_space(HEADING_SPACING);
                     if let Some(tex) = icon {
                         ui.image(egui::load::SizedTexture::new(
@@ -61,18 +61,16 @@ impl<'a> AboutModal<'a> {
                         ));
                         ui.add_space(SECTION_SPACING);
                     }
-                    ui.vertical(|ui| {
-                        ui.heading(
-                            egui::RichText::new(info.product_name)
-                                .strong()
-                                .size(HEADING_SIZE),
-                        );
-                        ui.label(
-                            egui::RichText::new(info.description)
-                                .weak()
-                                .size(DESCRIPTION_SIZE),
-                        );
-                    });
+                    ui.heading(
+                        egui::RichText::new(info.product_name)
+                            .strong()
+                            .size(HEADING_SIZE),
+                    );
+                    ui.label(
+                        egui::RichText::new(info.description)
+                            .weak()
+                            .size(DESCRIPTION_SIZE),
+                    );
                     ui.add_space(HEADING_SPACING);
                 });
 
@@ -147,9 +145,14 @@ impl<'a> AboutModal<'a> {
                     crate::widgets::AlignCenter::new()
                         .interactive(false)
                         .left(|ui| {
-                            ui.add(
-                                crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Medium),
-                            )
+                            ui.vertical(|ui| {
+                                ui.add_space(2.0);
+                                ui.add(
+                                    crate::Icon::Document
+                                        .ui_image(ui, crate::icon::IconSize::Medium),
+                                )
+                            })
+                            .inner
                         })
                         .left(move |ui| {
                             ui.label(egui::RichText::new(release_notes_text.clone()).weak())
@@ -202,7 +205,13 @@ fn about_link_row(ui: &mut egui::Ui, label: &str, url: &str, icon: crate::Icon) 
     let url_copy = url.to_string();
     crate::widgets::AlignCenter::new()
         .interactive(false)
-        .left(move |ui| ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium)))
+        .left(move |ui| {
+            ui.vertical(|ui| {
+                ui.add_space(2.0);
+                ui.add(icon.ui_image(ui, crate::icon::IconSize::Medium))
+            })
+            .inner
+        })
         .left(|ui| ui.label(egui::RichText::new(label).weak()))
         .right(move |ui| {
             let btn = ui

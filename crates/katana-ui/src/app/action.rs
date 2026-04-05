@@ -370,6 +370,10 @@ impl ActionOps for KatanaApp {
             }
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;
+                ctx.memory_mut(|m| {
+                    m.data
+                        .insert_temp(egui::Id::new("search_newly_opened"), true)
+                });
             }
             AppAction::DocSearchQueryChanged => {
                 if let Some(doc) = self.state.document.active_document() {

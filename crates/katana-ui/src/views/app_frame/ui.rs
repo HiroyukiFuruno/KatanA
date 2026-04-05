@@ -503,46 +503,45 @@ impl<'a> TabToolbar<'a> {
 
             if let Some((doc_path, is_changelog)) = doc_info {
                 let mut out_action = None;
-                ui.horizontal_centered(|ui| {
-                    if !is_changelog {
-                        let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
-                        let rel = ShellLogicOps::relative_full_path(&doc_path, ws_root.as_deref());
-                        let breadcrumb_action =
-                            Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui);
-                        if let Some(a) = breadcrumb_action {
-                            out_action = Some(a);
+                let bar_height = ui.spacing().interact_size.y;
+                ui.allocate_ui_with_layout(
+                    egui::vec2(ui.available_width(), bar_height),
+                    egui::Layout::left_to_right(egui::Align::Center),
+                    |ui| {
+                        if !is_changelog {
+                            let ws_root =
+                                app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
+                            let rel =
+                                ShellLogicOps::relative_full_path(&doc_path, ws_root.as_deref());
+                            let breadcrumb_action =
+                                Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui);
+                            if let Some(a) = breadcrumb_action {
+                                out_action = Some(a);
+                            }
                         }
-                    }
 
-                    let view_action = crate::views::top_bar::ViewModeBar::new(
-                        app.state.active_view_mode(),
-                        is_changelog,
-                        app.state.active_split_direction(),
-                        app.state.active_pane_order(),
-                        app.state
-                            .config
-                            .settings
-                            .settings()
-                            .behavior
-                            .scroll_sync_enabled,
-                        app.state.scroll.sync_override,
-                        app.state.update.available.is_some(),
-                        app.state.update.checking,
-                        true, // show_search
-                    )
-                    .show(ui, &mut app.state.search);
-                    if let Some(a) = view_action {
-                        if matches!(a, crate::app_state::AppAction::OpenDocSearch) {
-                            app.state.search.doc_search_open = true;
-                            ui.memory_mut(|m| {
-                                m.data
-                                    .insert_temp(egui::Id::new("search_newly_opened"), true)
-                            });
-                        } else {
+                        let view_action = crate::views::top_bar::ViewModeBar::new(
+                            app.state.active_view_mode(),
+                            is_changelog,
+                            app.state.active_split_direction(),
+                            app.state.active_pane_order(),
+                            app.state
+                                .config
+                                .settings
+                                .settings()
+                                .behavior
+                                .scroll_sync_enabled,
+                            app.state.scroll.sync_override,
+                            app.state.update.available.is_some(),
+                            app.state.update.checking,
+                            true, // show_search
+                        )
+                        .show(ui, &mut app.state.search);
+                        if let Some(a) = view_action {
                             out_action = Some(a);
                         }
-                    }
-                });
+                    },
+                );
 
                 if let Some(a) = out_action {
                     app.pending_action = a;
@@ -566,7 +565,7 @@ impl<'a> Breadcrumbs<'a> {
         let ws_root = self.ws_root;
         let mut breadcrumb_action = None;
         // allow(horizontal_layout)
-        ui.horizontal(|ui| {
+        ui.horizontal_centered(|ui| {
             let segments: Vec<&str> = rel.split('/').collect();
             let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
             for (i, seg) in segments.iter().enumerate() {
