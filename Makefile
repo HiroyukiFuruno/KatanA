@@ -193,7 +193,10 @@ update: ## Update dependency crates
 
 .PHONY: outdated
 outdated: ## List outdated dependencies (requires cargo-outdated)
-	cargo outdated --workspace
+	@cp Cargo.toml Cargo.toml.bak
+	@sed -e '/^\[patch\.crates-io\]/,$$d' Cargo.toml.bak > Cargo.toml
+	@cargo outdated --workspace || (mv Cargo.toml.bak Cargo.toml && exit 1)
+	@mv Cargo.toml.bak Cargo.toml
 
 ###################################
 # Help
