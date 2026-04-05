@@ -4,6 +4,20 @@ use katana_core::preview::{ImagePreviewOps, PreviewFlattenOps, PreviewSection, P
 
 use super::types::*;
 
+fn cache_if_serializable(
+    result: &DiagramResult,
+    is_http: bool,
+    key: &str,
+    cache: &std::sync::Arc<dyn katana_platform::CacheFacade>,
+) {
+    let Ok(json) = serde_json::to_string(result) else { return };
+    if is_http {
+        cache.set_memory(key, json);
+    } else {
+        let _ = cache.set_persistent(key, json);
+    }
+}
+
 impl PreviewPane {
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
         self.md_file_path = md_file_path.to_path_buf();
@@ -196,13 +210,7 @@ impl PreviewPane {
                                             source: job.src.clone(),
                                         },
                                     );
-                                    if let Ok(json) = serde_json::to_string(&new_res) {
-                                        if is_http {
-                                            job.cache.set_memory(&cache_key, json);
-                                        } else {
-                                            let _ = job.cache.set_persistent(&cache_key, json);
-                                        }
-                                    }
+                                    cache_if_serializable(&new_res, is_http, &cache_key, &job.cache);
                                     if matches!(new_res, DiagramResult::Err { .. }) {
                                         let _ = tx.send(RenderMessage::ReduceConcurrency);
                                     }
@@ -232,13 +240,7 @@ impl PreviewPane {
                             },
                         );
 
-                        if let Ok(json) = serde_json::to_string(&res) {
-                            if is_http {
-                                job.cache.set_memory(&cache_key, json);
-                            } else {
-                                let _ = job.cache.set_persistent(&cache_key, json);
-                            }
-                        }
+                        cache_if_serializable(&res, is_http, &cache_key, &job.cache);
                         if matches!(res, DiagramResult::Err { .. }) {
                             let _ = tx.send(RenderMessage::ReduceConcurrency);
                         }

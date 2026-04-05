@@ -34,13 +34,11 @@ impl WorkspaceSidebarDrag {
                 best_to = Some(insert_idx);
             }
         }
-        if let Some(to) = best_to {
-            if src_idx != to && src_idx + 1 != to {
-                return Some(crate::app_state::AppAction::ReorderActivityRail {
-                    from: src_idx,
-                    to,
-                });
-            }
+        if let Some(to) = best_to
+            && src_idx != to
+            && src_idx + 1 != to
+        {
+            return Some(crate::app_state::AppAction::ReorderActivityRail { from: src_idx, to });
         }
         None
     }
@@ -64,13 +62,13 @@ impl WorkspaceSidebarDrag {
                 Self::render_drag_ghost(ui, app, idx, item, interact_resp.rect);
             }
 
-            if interact_resp.drag_stopped() {
-                if let Some(ghost_y) = ui.memory(|mem| {
+            if interact_resp.drag_stopped()
+                && let Some(ghost_y) = ui.memory(|mem| {
                     mem.data
                         .get_temp::<f32>(egui::Id::new("drag_ghost_y").with(idx))
-                }) {
-                    *dragged_source = Some((idx, ghost_y));
-                }
+                })
+            {
+                *dragged_source = Some((idx, ghost_y));
             }
 
             if is_being_dragged {

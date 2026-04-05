@@ -152,14 +152,9 @@ impl<'a> TermsModal<'a> {
                                         }
 
                                         let accept_btn = egui::Button::new(
-                                            egui::RichText::new(&terms.accept)
-                                                .strong()
-                                                .size(TERMS_BUTTON_TEXT_SIZE),
+                                            egui::RichText::new(&terms.accept).strong().size(TERMS_BUTTON_TEXT_SIZE),
                                         )
-                                        .min_size(egui::vec2(
-                                            TERMS_BUTTON_WIDTH,
-                                            TERMS_BUTTON_HEIGHT,
-                                        ))
+                                        .min_size(egui::vec2(TERMS_BUTTON_WIDTH, TERMS_BUTTON_HEIGHT))
                                         .corner_radius(TERMS_ROUNDING_SMALL);
 
                                         if ui

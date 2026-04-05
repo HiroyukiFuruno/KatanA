@@ -16,10 +16,10 @@ impl<'a> CentralContent<'a> {
         let is_split = current_mode == ViewMode::Split;
         let mut is_changelog_tab = false;
 
-        if let Some(doc) = app.state.active_document() {
-            if doc.path.to_string_lossy().starts_with("Katana://ChangeLog") {
-                is_changelog_tab = true;
-            }
+        if let Some(doc) = app.state.active_document()
+            && doc.path.to_string_lossy().starts_with("Katana://ChangeLog")
+        {
+            is_changelog_tab = true;
         }
 
         Self::render_toc_if_needed(ui, app);

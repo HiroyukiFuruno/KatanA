@@ -54,11 +54,10 @@ impl WorkspaceSidebarHistory {
         if ui
             .button(crate::i18n::I18nOps::get().menu.open_workspace.clone())
             .clicked()
+            && let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog()
         {
-            if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
-                app.pending_action = crate::app_state::AppAction::OpenWorkspace(path);
-                ui.data_mut(|data| data.insert_temp(history_menu_id, false));
-            }
+            app.pending_action = crate::app_state::AppAction::OpenWorkspace(path);
+            ui.data_mut(|data| data.insert_temp(history_menu_id, false));
         }
     }
 

@@ -142,19 +142,27 @@ impl EditorLogicOps {
         if was_consuming_preview {
             scroll.source = ScrollSource::Neither;
             scroll.editor_echo.record(current_offset_y);
-        } else if max_scroll > 0.0 {
-            /* WHY: Did the editor actually scroll from user interaction? */
-            if !scroll.editor_echo.is_echo(current_offset_y) {
-                /* WHY: Recompute our logical position from the current pixel offset, */
-                /* WHY: using the shared mapper built by Preview pane. */
-                let next_logical = scroll.mapper.editor_to_logical(current_offset_y);
-                /* WHY: We don't have a reliable 'dead_zone' based on float difference anymore, */
-                /* WHY: because progress is not global. But pixels changed beyond ECHO_PIXEL_EPSILON. */
-                if next_logical != scroll.logical_position {
-                    scroll.logical_position = next_logical;
-                    scroll.source = ScrollSource::Editor;
-                }
-            }
+            return;
+        }
+
+        if max_scroll <= 0.0 {
+            return;
+        }
+
+        /* WHY: Did the editor actually scroll from user interaction? */
+        if scroll.editor_echo.is_echo(current_offset_y) {
+            return;
+        }
+
+        /* WHY: Recompute our logical position from the current pixel offset, */
+        /* WHY: using the shared mapper built by Preview pane. */
+        let next_logical = scroll.mapper.editor_to_logical(current_offset_y);
+
+        /* WHY: We don't have a reliable 'dead_zone' based on float difference anymore, */
+        /* WHY: because progress is not global. But pixels changed beyond ECHO_PIXEL_EPSILON. */
+        if next_logical != scroll.logical_position {
+            scroll.logical_position = next_logical;
+            scroll.source = ScrollSource::Editor;
         }
     }
 }

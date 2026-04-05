@@ -60,10 +60,8 @@ impl<'a> TabToolbar<'a> {
             egui::vec2(ui.available_width(), bar_height),
             egui::Layout::left_to_right(egui::Align::Center),
             |ui| {
-                if !is_changelog {
-                    if let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) {
-                        out_action = Some(a);
-                    }
+                if !is_changelog && let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) {
+                    out_action = Some(a);
                 }
 
                 if let Some(a) = Self::render_view_mode_bar(ui, app, is_changelog) {
@@ -72,10 +70,10 @@ impl<'a> TabToolbar<'a> {
             },
         );
 
-        if app.state.search.doc_search_open {
-            if let Some(a) = crate::views::top_bar::DocSearchBar::show(ui, &mut app.state.search) {
-                out_action = Some(a);
-            }
+        if app.state.search.doc_search_open
+            && let Some(a) = crate::views::top_bar::DocSearchBar::show(ui, &mut app.state.search)
+        {
+            out_action = Some(a);
         }
 
         if let Some(a) = out_action {
@@ -162,7 +160,7 @@ impl<'a> Breadcrumbs<'a> {
                 } else {
                     Self::render_breadcrumb_segment(
                         ui,
-                        *seg,
+                        seg,
                         app,
                         &current_path,
                         &mut breadcrumb_action,
@@ -184,16 +182,15 @@ impl<'a> Breadcrumbs<'a> {
         crate::widgets::MenuButtonOps::show(ui, egui::RichText::new(seg).small(), |ui| {
             let mut ctx_action = crate::app_state::AppAction::None;
 
-            if let Some(ws) = &app.state.workspace.data {
-                if let Some(katana_core::workspace::TreeEntry::Directory { children, .. }) =
+            if let Some(ws) = &app.state.workspace.data
+                && let Some(katana_core::workspace::TreeEntry::Directory { children, .. }) =
                     crate::views::panels::tree::TreeLogicOps::find_node_in_tree(
                         &ws.tree,
                         current_path,
                     )
-                {
-                    crate::views::panels::workspace::BreadcrumbMenu::new(children, &mut ctx_action)
-                        .show(ui);
-                }
+            {
+                crate::views::panels::workspace::BreadcrumbMenu::new(children, &mut ctx_action)
+                    .show(ui);
             }
 
             if !matches!(ctx_action, crate::app_state::AppAction::None) {

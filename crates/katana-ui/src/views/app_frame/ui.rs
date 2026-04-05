@@ -98,14 +98,13 @@ impl AppFrameOps {
             }
 
             let mut path = std::path::PathBuf::from(url);
-            if path.is_relative() {
-                if let Some(parent) = app
+            if path.is_relative()
+                && let Some(parent) = app
                     .state
                     .active_document()
                     .and_then(|doc| doc.path.parent())
-                {
-                    path = parent.join(path);
-                }
+            {
+                path = parent.join(path);
             }
             app.process_action(ctx, AppAction::SelectDocument(path));
         }

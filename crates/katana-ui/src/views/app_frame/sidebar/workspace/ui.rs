@@ -108,14 +108,11 @@ impl<'a> WorkspaceSidebar<'a> {
             ui.painter().hline(x_range, animated_y, stroke);
         }
 
-        if let Some((src_idx, ghost_center_y)) = dragged_source {
-            if let Some(action) = WorkspaceSidebarDrag::resolve_drag_drop_y(
-                src_idx,
-                ghost_center_y,
-                &rail_rects,
-            ) {
-                reorder_action = Some(action);
-            }
+        if let Some((src_idx, ghost_center_y)) = dragged_source
+            && let Some(action) =
+                WorkspaceSidebarDrag::resolve_drag_drop_y(src_idx, ghost_center_y, &rail_rects)
+        {
+            reorder_action = Some(action);
         }
 
         if let Some(act) = reorder_action {
@@ -141,12 +138,7 @@ impl<'a> WorkspaceSidebar<'a> {
                 WorkspaceSidebarItems::render_settings_toggle(ui, app, interact_id)
             }
             katana_platform::settings::ActivityRailItem::History => {
-                WorkspaceSidebarItems::render_history_toggle(
-                    ui,
-                    app,
-                    interact_id,
-                    idx,
-                )
+                WorkspaceSidebarItems::render_history_toggle(ui, app, interact_id, idx)
             }
         }
     }
