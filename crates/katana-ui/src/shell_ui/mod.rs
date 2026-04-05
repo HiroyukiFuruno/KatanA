@@ -181,6 +181,10 @@ impl eframe::App for KatanaApp {
         }) {
             if !self.state.search.doc_search_open {
                 self.state.search.doc_search_open = true;
+                ctx.memory_mut(|m| {
+                    m.data
+                        .insert_temp(egui::Id::new("search_newly_opened"), true)
+                });
                 self.trigger_action(AppAction::DocSearchQueryChanged);
             } else {
                 self.state.search.doc_search_open = false;
