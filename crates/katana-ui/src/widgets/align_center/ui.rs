@@ -117,7 +117,18 @@ impl<'a> AlignCenter<'a> {
                     }
 
                     if !self.right_nodes.is_empty() {
-                        child_ui.with_layout(
+                        /* WHY: `child_ui.with_layout(right_to_left, ...)` consumes ALL
+                        remaining space from position 0, so right nodes end up at the far
+                        left when available_width is unknown (e.g. inside a popup).
+                        Instead: measure the remaining width AFTER left nodes are drawn,
+                        then use `allocate_ui_with_layout` to create a fixed-size block
+                        at the cursor position that fills exactly the remaining space in
+                        right-to-left order. This guarantees the × button sits at the
+                        far right edge regardless of popup auto-sizing. */
+                        let remaining = child_ui.available_width().max(0.0);
+                        let height = child_ui.available_height();
+                        child_ui.allocate_ui_with_layout(
+                            egui::vec2(remaining, height),
                             egui::Layout::right_to_left(egui::Align::Center),
                             |right_ui| {
                                 for node_fn in self.right_nodes.into_iter().rev() {

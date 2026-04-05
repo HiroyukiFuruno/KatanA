@@ -49,6 +49,10 @@ impl<'a> CreateFsNodeModal<'a> {
             .open(&mut is_open)
             .collapsible(false)
             .resizable(false)
+            .max_width({
+                const MAX_MODAL_WIDTH: f32 = 300.0;
+                MAX_MODAL_WIDTH
+            })
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
                 crate::widgets::AlignCenter::new()
@@ -170,6 +174,10 @@ impl<'a> RenameModal<'a> {
             .open(&mut is_open)
             .collapsible(false)
             .resizable(false)
+            .max_width({
+                const MAX_MODAL_WIDTH: f32 = 300.0;
+                MAX_MODAL_WIDTH
+            })
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
                 crate::widgets::AlignCenter::new()
@@ -251,11 +259,17 @@ impl<'a> DeleteModal<'a> {
         let pending_action = self.pending_action;
         let mut close = false;
 
+        /* WHY: default_width is only a hint and the window expands when the label text
+        is long. max_width is a hard constraint that prevents the dialog from growing
+        beyond 300 px; the label inside uses wrap=true (egui default) so text folds
+        within the constrained width rather than being clipped. */
+        const DELETE_MODAL_WIDTH: f32 = 300.0;
         let mut is_open = true;
         egui::Window::new(crate::i18n::I18nOps::get().dialog.delete_title.clone())
             .open(&mut is_open)
             .collapsible(false)
             .resizable(false)
+            .max_width(DELETE_MODAL_WIDTH)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
                 let name = target_path
