@@ -60,19 +60,37 @@ impl<'a> SearchModal<'a> {
                 // allow(horizontal_layout)
                 ui.horizontal(|ui| {
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    if ui.selectable_value(
-                        &mut search.active_tab,
-                        crate::app_state::SearchTab::FileName,
-                        crate::i18n::I18nOps::get().search.tab_file_name.clone(),
-                    ).clicked() {
+                    let file_name_selected = search.active_tab == crate::app_state::SearchTab::FileName;
+                    let file_name_fill = if file_name_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
+                    if ui
+                        .add(
+                            egui::Button::selectable(
+                                file_name_selected,
+                                crate::i18n::I18nOps::get().search.tab_file_name.clone(),
+                            )
+                            .frame_when_inactive(true)
+                            .fill(file_name_fill),
+                        )
+                        .clicked()
+                    {
+                        search.active_tab = crate::app_state::SearchTab::FileName;
                         search.focus_requested = false;
                     }
                     // allow(conditional_frame) — in popup/list context; future: standardize as atom
-                    if ui.selectable_value(
-                        &mut search.active_tab,
-                        crate::app_state::SearchTab::MarkdownContent,
-                        crate::i18n::I18nOps::get().search.tab_markdown_content.clone(),
-                    ).clicked() {
+                    let md_content_selected = search.active_tab == crate::app_state::SearchTab::MarkdownContent;
+                    let md_content_fill = if md_content_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
+                    if ui
+                        .add(
+                            egui::Button::selectable(
+                                md_content_selected,
+                                crate::i18n::I18nOps::get().search.tab_markdown_content.clone(),
+                            )
+                            .frame_when_inactive(true)
+                            .fill(md_content_fill),
+                        )
+                        .clicked()
+                    {
+                        search.active_tab = crate::app_state::SearchTab::MarkdownContent;
                         search.focus_requested = false;
                     }
                 });

@@ -213,24 +213,42 @@ impl SettingsOps {
                 .size(SETTINGS_HEADER_FONT_SIZE),
             |ui| {
                 let theme_selected = state.config.active_settings_tab == SettingsTab::Theme;
+                let theme_fill = if theme_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                 if ui
-                    .selectable_label(theme_selected, settings_msgs.tab_name("theme"))
+                    .add(
+                        egui::Button::selectable(theme_selected, settings_msgs.tab_name("theme"))
+                            .frame_when_inactive(true)
+                            .fill(theme_fill),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Theme;
                 }
 
                 let font_selected = state.config.active_settings_tab == SettingsTab::Font;
+                let font_fill = if font_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                 if ui
-                    .selectable_label(font_selected, settings_msgs.tab_name("font"))
+                    .add(
+                        egui::Button::selectable(font_selected, settings_msgs.tab_name("font"))
+                            .frame_when_inactive(true)
+                            .fill(font_fill),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Font;
                 }
 
                 let layout_selected = state.config.active_settings_tab == SettingsTab::Layout;
+                let layout_fill = if layout_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                 if ui
-                    .selectable_label(layout_selected, settings_msgs.tab_name("layout"))
+                    .add(
+                        egui::Button::selectable(
+                            layout_selected,
+                            settings_msgs.tab_name("layout"),
+                        )
+                        .frame_when_inactive(true)
+                        .fill(layout_fill),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Layout;
@@ -257,25 +275,51 @@ impl SettingsOps {
                 .strong()
                 .size(SETTINGS_HEADER_FONT_SIZE),
             |ui| {
-                let workspace_selected = state.config.active_settings_tab == SettingsTab::Workspace;
+                let workspace_selected =
+                    state.config.active_settings_tab == SettingsTab::Workspace;
+                let ws_fill = if workspace_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                 if ui
-                    .selectable_label(workspace_selected, settings_msgs.tab_name("workspace"))
+                    .add(
+                        egui::Button::selectable(
+                            workspace_selected,
+                            settings_msgs.tab_name("workspace"),
+                        )
+                        .frame_when_inactive(true)
+                        .fill(ws_fill),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Workspace;
                 }
 
                 let updates_selected = state.config.active_settings_tab == SettingsTab::Updates;
+                let upd_fill = if updates_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                 if ui
-                    .selectable_label(updates_selected, settings_msgs.tab_name("updates"))
+                    .add(
+                        egui::Button::selectable(
+                            updates_selected,
+                            settings_msgs.tab_name("updates"),
+                        )
+                        .frame_when_inactive(true)
+                        .fill(upd_fill),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Updates;
                 }
 
-                let behavior_selected = state.config.active_settings_tab == SettingsTab::Behavior;
+                let behavior_selected =
+                    state.config.active_settings_tab == SettingsTab::Behavior;
+                let beh_fill = if behavior_selected { ui.visuals().selection.bg_fill } else { egui::Color32::TRANSPARENT };
                 if ui
-                    .selectable_label(behavior_selected, settings_msgs.tab_name("behavior"))
+                    .add(
+                        egui::Button::selectable(
+                            behavior_selected,
+                            settings_msgs.tab_name("behavior"),
+                        )
+                        .frame_when_inactive(true)
+                        .fill(beh_fill),
+                    )
                     .clicked()
                 {
                     state.config.active_settings_tab = SettingsTab::Behavior;
