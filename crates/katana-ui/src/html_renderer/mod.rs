@@ -15,6 +15,10 @@ const HEADING_H2_SIZE: f32 = 20.0;
 const HEADING_H3_SIZE: f32 = 16.0;
 const PARAGRAPH_BLOCK_MARGIN_Y: f32 = 5.0;
 const HEADING_BLOCK_MARGIN_Y: f32 = 6.0;
+const EMOJI_INLINE_PIXEL_SIZE: u32 = 16;
+const EMOJI_INLINE_DISPLAY_SIZE: f32 = 18.0;
+const EMOJI_INLINE_UNDERLINE_OFFSET_Y: f32 = 1.5;
+const EMOJI_INLINE_NEGATIVE_SPACE: f32 = -3.0;
 
 const HEADING_LEVEL_1: u8 = 1;
 const HEADING_LEVEL_2: u8 = 2;
@@ -28,6 +32,8 @@ impl<'a> HtmlRenderer<'a> {
             _base_dir: base_dir,
             text_color: None,
             max_image_width: max_w,
+            is_strong: false,
+            is_italics: false,
         }
     }
 
@@ -126,16 +132,14 @@ impl<'a> HtmlRenderer<'a> {
         }
     }
 
-    fn batch_is_textual(batch: &[&HtmlNode]) -> bool {
-        batch.iter().all(|node| {
-            matches!(
-                node,
-                HtmlNode::Text(_)
-                    | HtmlNode::Emphasis(_)
-                    | HtmlNode::Strong(_)
-                    | HtmlNode::LineBreak
-            )
-        })
+    fn can_use_layout_job(node: &HtmlNode) -> bool {
+        match node {
+            HtmlNode::Text(_) | HtmlNode::LineBreak => true,
+            HtmlNode::Emphasis(children) | HtmlNode::Strong(children) => {
+                children.iter().all(Self::can_use_layout_job)
+            }
+            _ => false,
+        }
     }
 
     fn render_text_batch(&mut self, batch: &[&HtmlNode], centered: bool) {
@@ -148,7 +152,7 @@ impl<'a> HtmlRenderer<'a> {
         };
 
         for node in batch {
-            self.append_text_node(&mut job, node, false, false);
+            self.append_text_node(&mut job, node);
         }
 
         let label = egui::Label::new(job).wrap();
@@ -192,7 +196,7 @@ impl<'a> HtmlRenderer<'a> {
             return None;
         }
 
-        if Self::batch_is_textual(batch) {
+        if batch.iter().copied().all(Self::can_use_layout_job) {
             self.render_text_batch(batch, false);
             return None;
         }
@@ -205,6 +209,8 @@ impl<'a> HtmlRenderer<'a> {
         self.ui.horizontal_wrapped(|ui| {
             for node in batch {
                 let mut inner = HtmlRenderer::new_inner(ui, self.text_color, self.max_image_width);
+                inner.is_strong = self.is_strong;
+                inner.is_italics = self.is_italics;
                 if let Some(a) = inner.render_inline(node) {
                     action = Some(a);
                 }
@@ -222,7 +228,7 @@ impl<'a> HtmlRenderer<'a> {
             return None;
         }
 
-        if Self::batch_is_textual(batch) {
+        if batch.iter().copied().all(Self::can_use_layout_job) {
             self.render_text_batch(batch, true);
             return None;
         }
@@ -303,11 +309,45 @@ impl<'a> HtmlRenderer<'a> {
     fn render_inline(&mut self, node: &HtmlNode) -> Option<LinkAction> {
         match node {
             HtmlNode::Text(text) => {
-                let mut rt = egui::RichText::new(text.as_str());
-                if let Some(c) = self.text_color {
-                    rt = rt.color(c);
-                }
-                self.ui.label(rt);
+                use katana_core::emoji::EmojiRasterOps;
+                use unicode_segmentation::UnicodeSegmentation;
+
+                let mut text_buffer = String::new();
+                let flush_text = |ui: &mut egui::Ui, text_buffer: &mut String| {
+                    if text_buffer.is_empty() {
+                        return;
+                    }
+                    let mut rt = egui::RichText::new(&*text_buffer);
+                    if self.is_strong {
+                        rt = rt.strong();
+                    }
+                    if self.is_italics {
+                        rt = rt.italics();
+                    }
+                    if let Some(c) = self.text_color {
+                        rt = rt.color(c);
+                    }
+                    ui.label(rt);
+                    text_buffer.clear();
+                };
+
+                self.ui.scope(|ui| {
+                    for grapheme in text.graphemes(true) {
+                        if let Some(bytes) = EmojiRasterOps::render_apple_color_emoji_png(
+                            grapheme,
+                            EMOJI_INLINE_PIXEL_SIZE,
+                        ) {
+                            flush_text(ui, &mut text_buffer);
+                            let uri = format!("emoji://{grapheme}");
+                            ui.add(egui::Image::from_bytes(uri, bytes).fit_to_exact_size(
+                                egui::vec2(EMOJI_INLINE_DISPLAY_SIZE, EMOJI_INLINE_DISPLAY_SIZE),
+                            ));
+                        } else {
+                            text_buffer.push_str(grapheme);
+                        }
+                    }
+                    flush_text(ui, &mut text_buffer);
+                });
                 None
             }
             HtmlNode::Image { src, alt: _ } => {
@@ -320,11 +360,12 @@ impl<'a> HtmlRenderer<'a> {
                 None
             }
             HtmlNode::Link { target, children } => {
+                use katana_core::emoji::EmojiRasterOps;
+                use unicode_segmentation::UnicodeSegmentation;
+
                 let text = collect_text(children);
                 let action = target.default_action();
-                let color = self.ui.visuals().hyperlink_color;
                 let tooltip = target.tooltip_text();
-
                 let has_images = children.iter().any(|c| matches!(c, HtmlNode::Image { .. }));
                 if has_images {
                     let mut clicked = false;
@@ -343,19 +384,136 @@ impl<'a> HtmlRenderer<'a> {
                             if response.clicked() {
                                 clicked = true;
                             }
+                        } else if let HtmlNode::Text(t) = child {
+                            let mut text_buffer = String::new();
+                            let flush_text =
+                                |ui: &mut egui::Ui,
+                                 text_buffer: &mut String,
+                                 clicked: &mut bool| {
+                                    if text_buffer.is_empty() {
+                                        return;
+                                    }
+                                    let mut rt = egui::RichText::new(&*text_buffer);
+                                    if self.is_strong {
+                                        rt = rt.strong();
+                                    }
+                                    if self.is_italics {
+                                        rt = rt.italics();
+                                    }
+                                    rt = rt.color(ui.visuals().hyperlink_color).underline();
+                                    let response = ui
+                                        .add(egui::Label::new(rt).sense(egui::Sense::click()))
+                                        .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                        .on_hover_text(&tooltip);
+                                    if response.clicked() {
+                                        *clicked = true;
+                                    }
+                                    text_buffer.clear();
+                                };
+
+                            self.ui.scope(|ui| {
+                                ui.spacing_mut().item_spacing.x = 0.0;
+                                for grapheme in t.graphemes(true) {
+                                    if let Some(bytes) =
+                                        EmojiRasterOps::render_apple_color_emoji_png(
+                                            grapheme,
+                                            EMOJI_INLINE_PIXEL_SIZE,
+                                        )
+                                    {
+                                        flush_text(ui, &mut text_buffer, &mut clicked);
+                                        let uri = format!("emoji://{grapheme}");
+                                        let mut response = ui.add(
+                                            egui::Image::from_bytes(uri, bytes)
+                                                .fit_to_exact_size(egui::vec2(
+                                                    EMOJI_INLINE_DISPLAY_SIZE,
+                                                    EMOJI_INLINE_DISPLAY_SIZE,
+                                                ))
+                                                .sense(egui::Sense::click()),
+                                        );
+                                        response = response
+                                            .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                            .on_hover_text(&tooltip);
+                                        let y =
+                                            response.rect.max.y + EMOJI_INLINE_UNDERLINE_OFFSET_Y;
+                                        let stroke =
+                                            egui::Stroke::new(1.0, ui.visuals().hyperlink_color);
+                                        ui.painter().hline(response.rect.x_range(), y, stroke);
+                                        if response.clicked() {
+                                            clicked = true;
+                                        }
+                                        ui.add_space(EMOJI_INLINE_NEGATIVE_SPACE);
+                                    } else {
+                                        text_buffer.push_str(grapheme);
+                                    }
+                                }
+                                flush_text(ui, &mut text_buffer, &mut clicked);
+                            });
                         }
                     }
                     if clicked {
                         return Some(action);
                     }
                 } else {
-                    let rt = egui::RichText::new(&text).underline().color(color);
-                    let response = self
-                        .ui
-                        .add(egui::Label::new(rt).sense(egui::Sense::click()))
-                        .on_hover_cursor(egui::CursorIcon::PointingHand)
-                        .on_hover_text(&tooltip);
-                    if response.clicked() {
+                    let mut clicked = false;
+                    let mut text_buffer = String::new();
+                    let flush_text =
+                        |ui: &mut egui::Ui, text_buffer: &mut String, clicked: &mut bool| {
+                            if text_buffer.is_empty() {
+                                return;
+                            }
+                            let mut rt = egui::RichText::new(&*text_buffer);
+                            if self.is_strong {
+                                rt = rt.strong();
+                            }
+                            if self.is_italics {
+                                rt = rt.italics();
+                            }
+                            rt = rt.color(ui.visuals().hyperlink_color).underline();
+                            let response = ui
+                                .add(egui::Label::new(rt).sense(egui::Sense::click()))
+                                .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                .on_hover_text(&tooltip);
+                            if response.clicked() {
+                                *clicked = true;
+                            }
+                            text_buffer.clear();
+                        };
+
+                    self.ui.scope(|ui| {
+                        ui.spacing_mut().item_spacing.x = 0.0;
+                        for grapheme in text.graphemes(true) {
+                            if let Some(bytes) = EmojiRasterOps::render_apple_color_emoji_png(
+                                grapheme,
+                                EMOJI_INLINE_PIXEL_SIZE,
+                            ) {
+                                flush_text(ui, &mut text_buffer, &mut clicked);
+                                let uri = format!("emoji://{grapheme}");
+                                let mut response = ui.add(
+                                    egui::Image::from_bytes(uri, bytes)
+                                        .fit_to_exact_size(egui::vec2(
+                                            EMOJI_INLINE_DISPLAY_SIZE,
+                                            EMOJI_INLINE_DISPLAY_SIZE,
+                                        ))
+                                        .sense(egui::Sense::click()),
+                                );
+                                response = response
+                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                    .on_hover_text(&tooltip);
+                                let y = response.rect.max.y + EMOJI_INLINE_UNDERLINE_OFFSET_Y;
+                                let stroke = egui::Stroke::new(1.0, ui.visuals().hyperlink_color);
+                                ui.painter().hline(response.rect.x_range(), y, stroke);
+                                if response.clicked() {
+                                    clicked = true;
+                                }
+                                ui.add_space(EMOJI_INLINE_NEGATIVE_SPACE);
+                            } else {
+                                text_buffer.push_str(grapheme);
+                            }
+                        }
+                        flush_text(ui, &mut text_buffer, &mut clicked);
+                    });
+
+                    if clicked {
                         return Some(action);
                     }
                 }
@@ -366,35 +524,41 @@ impl<'a> HtmlRenderer<'a> {
                 None
             }
             HtmlNode::Emphasis(children) => {
-                let text = collect_text(children);
-                let mut rt = egui::RichText::new(&text).italics();
-                if let Some(c) = self.text_color {
-                    rt = rt.color(c);
+                let prev_italics = self.is_italics;
+                self.is_italics = true;
+                let mut action = None;
+                for child in children {
+                    if let Some(a) = self.render_inline(child) {
+                        action = Some(a);
+                    }
                 }
-                self.ui.label(rt);
-                None
+                self.is_italics = prev_italics;
+                action
             }
             HtmlNode::Strong(children) => {
-                let text = collect_text(children);
-                let mut rt = egui::RichText::new(&text).strong();
-                if let Some(c) = self.text_color {
-                    rt = rt.color(c);
+                let prev_strong = self.is_strong;
+                self.is_strong = true;
+                let mut action = None;
+                for child in children {
+                    if let Some(a) = self.render_inline(child) {
+                        action = Some(a);
+                    }
                 }
-                self.ui.label(rt);
-                None
+                self.is_strong = prev_strong;
+                action
             }
             _ => None,
         }
     }
 
-    fn append_text_node(&self, job: &mut LayoutJob, node: &HtmlNode, strong: bool, italics: bool) {
+    fn append_text_node(&mut self, job: &mut LayoutJob, node: &HtmlNode) {
         match node {
             HtmlNode::Text(text) => {
                 let mut rich = egui::RichText::new(text.as_str());
-                if strong {
+                if self.is_strong {
                     rich = rich.strong();
                 }
-                if italics {
+                if self.is_italics {
                     rich = rich.italics();
                 }
                 if let Some(color) = self.text_color {
@@ -408,13 +572,52 @@ impl<'a> HtmlRenderer<'a> {
                 );
             }
             HtmlNode::Emphasis(children) => {
+                let prev_italics = self.is_italics;
+                self.is_italics = true;
                 for child in children {
-                    self.append_text_node(job, child, strong, true);
+                    self.append_text_node(job, child);
                 }
+                self.is_italics = prev_italics;
             }
             HtmlNode::Strong(children) => {
+                let prev_strong = self.is_strong;
+                self.is_strong = true;
                 for child in children {
-                    self.append_text_node(job, child, true, italics);
+                    self.append_text_node(job, child);
+                }
+                self.is_strong = prev_strong;
+            }
+            HtmlNode::Link { children, .. } => {
+                /* WHY: Link within a pure text flow - unfortunately, it can't be clickable when appended to a LayoutJob natively
+                because LayoutJob creates a single Label widget. In katana, when links occur in text sequences
+                they are parsed but effectively unclickable unless we split nodes.
+                We format it as a link visually. */
+                let mut s = String::new();
+                for node in children {
+                    if let HtmlNode::Text(t) = node {
+                        s.push_str(t);
+                    }
+                }
+                if !s.is_empty() {
+                    let mut rt = egui::RichText::new(s)
+                        .underline()
+                        .color(self.ui.visuals().hyperlink_color);
+                    if self.is_strong {
+                        rt = rt.strong();
+                    }
+                    if self.is_italics {
+                        rt = rt.italics();
+                    }
+                    rt.append_to(
+                        job,
+                        self.ui.style().as_ref(),
+                        egui::FontSelection::Default,
+                        egui::Align::Center,
+                    );
+                } else {
+                    for child in children {
+                        self.append_text_node(job, child);
+                    }
                 }
             }
             HtmlNode::LineBreak => {
@@ -439,6 +642,8 @@ impl<'a> HtmlRenderer<'a> {
             _base_dir: Path::new(""),
             text_color,
             max_image_width: max_w,
+            is_strong: false,
+            is_italics: false,
         }
     }
 }

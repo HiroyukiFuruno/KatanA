@@ -21,7 +21,7 @@ const INLINE_EMOJI_FILENAME_SUFFIX: &str = ".png";
 #[allow(dead_code)]
 const INLINE_EMOJI_MIN_PIXEL_SIZE: u32 = 16;
 #[allow(dead_code)]
-const INLINE_EMOJI_DISPLAY_SCALE: f32 = 1.0;
+const INLINE_EMOJI_DISPLAY_SCALE: f32 = 1.125;
 
 /// Newline logic is constructed by the following:
 /// All elements try to insert a newline before them (if they are allowed)
@@ -95,6 +95,7 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     def_list: DefinitionList,
     code_block: Option<CodeBlock>,
     html_block: String,
+    is_in_html_block: bool,
     table_alignments: Option<Vec<pulldown_cmark::Alignment>>,
     is_blockquote: bool,
     /// True while processing events inside a blockquote. Used to suppress
@@ -197,6 +198,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             def_list: Default::default(),
             code_block: None,
             html_block: String::new(),
+            is_in_html_block: false,
             table_alignments: None,
             is_blockquote: false,
             inside_blockquote: false,
@@ -552,10 +554,28 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
             if let Some(bytes) = emoji_fn(grapheme, pixel_size) {
                 self.flush_pending_inline(ui, max_width);
-                ui.add(
+                let sense = if self.link.is_some() {
+                    egui::Sense::click()
+                } else {
+                    egui::Sense::hover()
+                };
+                let mut response = ui.add(
                     egui::Image::from_bytes(inline_emoji_uri(grapheme, pixel_size), bytes)
-                        .fit_to_exact_size(egui::vec2(display_size, display_size)),
+                        .fit_to_exact_size(egui::vec2(display_size, display_size))
+                        .sense(sense),
                 );
+
+                if self.link.is_some() {
+                    response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                    let y = response.rect.max.y + 1.5;
+                    let stroke = egui::Stroke::new(1.0, ui.visuals().hyperlink_color);
+                    ui.painter().hline(response.rect.x_range(), y, stroke);
+                    // Note: If clicked, it won't reliably navigate because link logic isn't easily accessible here.
+                    // But visually it will match perfectly.
+                }
+
+                ui.add_space(-3.0);
+
                 self.after_inline_widget = true;
                 return true;
             }
@@ -1756,6 +1776,28 @@ impl<'a> CommonMarkViewerInternal<'a> {
         options: &CommonMarkOptions,
         max_width: f32,
     ) {
+        // Intercept non-HTML events to flush accumulated inline HTML blocks.
+        // Consecutive Event::Html / Event::InlineHtml events are buffered into `html_block`.
+        // The moment we hit any other event (like Event::Text or TagEnd), we flush the
+        // accumulated `html_block` buffer to `html_fn`, ensuring that consecutive tags
+        // (like `<a href><img ...></a>`) are evaluated as a single well-formed HTML string.
+        match &event {
+            pulldown_cmark::Event::Html(_) | pulldown_cmark::Event::InlineHtml(_) => {}
+            _ => {
+                if !self.is_in_html_block && !self.html_block.is_empty() {
+                    // Flush pending text natively first, to preserve chronological flow
+                    self.flush_pending_inline(ui, max_width);
+                    if let Some(html_fn) = options.html_fn {
+                        let trimmed = self.html_block.trim();
+                        if !trimmed.is_empty() {
+                            html_fn(ui, trimmed);
+                        }
+                    }
+                    self.html_block.clear();
+                }
+            }
+        }
+
         match event {
             pulldown_cmark::Event::Start(tag) => {
                 if Self::should_flush_before_start_tag(&tag) {
@@ -1840,21 +1882,23 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     self.text_style.highlight = true;
                 } else if trimmed.eq_ignore_ascii_case("</mark>") {
                     self.text_style.highlight = false;
+                } else if options.html_fn.is_some() {
+                    self.html_block.push_str(&text);
                 }
-                /* WHY: Unknown inline HTML tags (e.g. <a>, <img>, <br>, <p align=...>) are
-                silently ignored. Rendering raw HTML markup as visible text (the previous behavior)
-                was a regression; egui cannot render arbitrary HTML, so dropping unrecognised
-                tags is the correct fallback to avoid noise in the preview pane. */
+                // WHY: Unknown inline HTML tags (e.g. <a>, <img>, <br>, <p align=...>) are
+                // silently ignored. Rendering raw HTML markup as visible text (the previous behavior)
+                // was a regression; egui cannot render arbitrary HTML, so dropping unrecognised
+                // tags is the correct fallback to avoid noise in the preview pane.
             }
 
             pulldown_cmark::Event::Html(text) => {
-                if let Some(task_state_str) = text.strip_prefix("<!-- KATANA_TASK:") {
-                    if let Some(task_state_str) = task_state_str.strip_suffix(" -->") {
-                        if !task_state_str.is_empty() {
-                            let state_char = task_state_str.chars().next().unwrap();
-                            self.after_inline_widget = false;
-                            self.flush_pending_inline(ui, max_width);
-
+                // Return early if the event is a KATANA-specific task marker.
+                if text.starts_with("<!-- KATANA_TASK:") {
+                    if let Some(start_idx) = text.find("KATANA_TASK:") {
+                        let inner = &text[start_idx + "KATANA_TASK:".len()..];
+                        if let Some(end_idx) = inner.find("-->") {
+                            let task_content = inner[..end_idx].trim();
+                            let state_char = if task_content.starts_with('x') { 'x' } else { ' ' };
                             // Activate context menu state for subsequent text events in this list item
                             self.active_task_context_menu =
                                 Some((state_char, src_span.clone(), options.mutable));
@@ -1873,16 +1917,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     }
                 }
 
-                if options.html_fn.is_some() {
-                    self.flush_pending_inline(ui, max_width);
+                if options.html_fn.is_some() || self.is_in_html_block {
                     self.html_block.push_str(&text);
                 }
-                /* WHY: When html_fn is None, egui cannot render arbitrary HTML.
-                Displaying it as raw text (the previous behaviour) was a visible regression.
-                KATANA-specific markers (<!-- KATANA_TASK:... -->) are already handled above
-                with an early return, and FOOTNOTE markers are consumed by the lookahead at
-                the call-site before this point, so silently dropping remaining Html events
-                is the correct fallback here. */
             }
             pulldown_cmark::Event::FootnoteReference(footnote) => {
                 self.after_inline_widget = false;
@@ -1985,6 +2022,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
     }
 
     fn event_text(&mut self, text: CowStr, ui: &mut Ui, max_width: f32) {
+        if self.is_in_html_block {
+            self.html_block.push_str(&text);
+            return;
+        }
+
         if let Some(image) = &mut self.image {
             self.after_inline_widget = false;
             image.alt_text.push(self.text_style.to_richtext(ui, &text));
@@ -2166,6 +2208,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 self.image = Some(Image::new(&dest_url, options));
             }
             pulldown_cmark::Tag::HtmlBlock => {
+                self.is_in_html_block = true;
                 self.line.try_insert_start(ui);
             }
             pulldown_cmark::Tag::MetadataBlock(_) => {}
@@ -2308,11 +2351,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
             }
             pulldown_cmark::TagEnd::Image => {
                 if let Some(image) = self.image.take() {
-                    image.end(ui, options);
+                    let response = image.end(ui, options);
+                    if self.link.is_some() {
+                        response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                    }
                     self.after_inline_widget = true;
                 }
             }
             pulldown_cmark::TagEnd::HtmlBlock => {
+                self.is_in_html_block = false;
                 let block = std::mem::take(&mut self.html_block);
                 let trimmed = block.trim();
 
