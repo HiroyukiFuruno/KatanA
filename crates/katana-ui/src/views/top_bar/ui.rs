@@ -969,6 +969,8 @@ impl ViewModeBar {
                     )
                 };
 
+                let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
+
                 if self.update_available && !self.update_checking {
                     const COLOR_SUCCESS_G: u8 = 200;
                     let badge_str = crate::i18n::I18nOps::get().update.update_available.clone();
@@ -1005,6 +1007,7 @@ impl ViewModeBar {
                             egui::Button::image(
                                 crate::Icon::Refresh.ui_image(ui, crate::icon::IconSize::Medium),
                             )
+                            .min_size(button_size)
                             .fill(icon_bg),
                         )
                         .on_hover_text(crate::i18n::I18nOps::get().action.refresh_document.clone())
@@ -1074,6 +1077,7 @@ impl ViewModeBar {
                             egui::Button::image(
                                 dir_icon.image(icon_size).tint(ui.visuals().text_color()),
                             )
+                            .min_size(button_size)
                             .fill(icon_bg),
                         )
                         .on_hover_text(dir_tip);
