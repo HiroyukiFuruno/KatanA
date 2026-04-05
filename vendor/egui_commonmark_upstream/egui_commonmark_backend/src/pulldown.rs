@@ -68,9 +68,7 @@ pub struct Table<'e> {
     pub rows: Vec<Row<'e>>,
 }
 
-fn parse_row<'e>(
-    events: &mut impl Iterator<Item = EventIteratorItem<'e>>,
-) -> Vec<Column<'e>> {
+fn parse_row<'e>(events: &mut impl Iterator<Item = EventIteratorItem<'e>>) -> Vec<Column<'e>> {
     let mut row = Vec::new();
     let mut column = Vec::new();
 

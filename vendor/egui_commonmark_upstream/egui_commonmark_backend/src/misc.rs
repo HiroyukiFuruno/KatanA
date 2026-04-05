@@ -130,7 +130,6 @@ impl Style {
             text = text.color(ui.visuals().text_color());
         }
 
-
         if let Some(level) = self.heading {
             let max_height = ui
                 .style()
@@ -307,7 +306,13 @@ impl CodeBlock {
                 ui.fonts_mut(|f| f.layout_job(job))
             };
 
-            crate::elements::code_block(ui, max_width, &self.content, options.show_code_copy_button, &mut layout);
+            crate::elements::code_block(
+                ui,
+                max_width,
+                &self.content,
+                options.show_code_copy_button,
+                &mut layout,
+            );
         });
     }
 }

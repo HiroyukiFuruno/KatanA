@@ -114,10 +114,27 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     block_states: Vec<(f32, std::ops::Range<usize>)>,
     active_bg_color: Option<egui::Color32>,
     hover_bg_color: Option<egui::Color32>,
-    custom_task_box_fn: Option<&'a dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
+    custom_task_box_fn: Option<
+        &'a dyn Fn(
+            &mut egui::Ui,
+            char,
+            std::ops::Range<usize>,
+            bool,
+            &mut std::vec::Vec<crate::TaskListAction>,
+        ),
+    >,
     custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
-    custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
-    custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
+    custom_task_context_menu_fn: Option<
+        &'a dyn Fn(
+            &egui::Response,
+            char,
+            std::ops::Range<usize>,
+            bool,
+            &mut std::vec::Vec<crate::TaskListAction>,
+        ),
+    >,
+    custom_list_item_highlight_fn:
+        Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
     pub search_query: Option<regex::Regex>,
     /// When true, the first rendered search highlight will trigger scroll_to_me.
     pub search_scroll_pending: bool,
@@ -133,14 +150,35 @@ impl<'a> CommonMarkViewerInternal<'a> {
         hovered_spans: Option<&'a mut Vec<std::ops::Range<usize>>>,
         active_bg_color: Option<egui::Color32>,
         hover_bg_color: Option<egui::Color32>,
-        custom_task_box_fn: Option<&'a dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
+        custom_task_box_fn: Option<
+            &'a dyn Fn(
+                &mut egui::Ui,
+                char,
+                std::ops::Range<usize>,
+                bool,
+                &mut std::vec::Vec<crate::TaskListAction>,
+            ),
+        >,
         custom_emoji_fn: Option<&'a dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
-        custom_task_context_menu_fn: Option<&'a dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<crate::TaskListAction>)>,
-        custom_list_item_highlight_fn: Option<&'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
+        custom_task_context_menu_fn: Option<
+            &'a dyn Fn(
+                &egui::Response,
+                char,
+                std::ops::Range<usize>,
+                bool,
+                &mut std::vec::Vec<crate::TaskListAction>,
+            ),
+        >,
+        custom_list_item_highlight_fn: Option<
+            &'a dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool),
+        >,
         search_query: Option<String>,
     ) -> Self {
         let compiled_regex = search_query.filter(|q| !q.is_empty()).and_then(|q| {
-            regex::RegexBuilder::new(&regex::escape(&q)).case_insensitive(true).build().ok()
+            regex::RegexBuilder::new(&regex::escape(&q))
+                .case_insensitive(true)
+                .build()
+                .ok()
         });
 
         Self {
@@ -325,21 +363,36 @@ impl<'a> CommonMarkViewerInternal<'a> {
             // so that list indentation, wrapping, and positioning are correct.
             let layout_job_for_galley = layout_job.clone();
             let sense = if let Some((_, _, mutable)) = self.active_task_context_menu.clone() {
-                if mutable { egui::Sense::click() } else { egui::Sense::hover() }
+                if mutable {
+                    egui::Sense::click()
+                } else {
+                    egui::Sense::hover()
+                }
             } else {
                 egui::Sense::hover()
             };
 
-            let mut response = ui.add(egui::Label::new(layout_job).wrap().halign(halign).sense(sense));
-            
+            let mut response = ui.add(
+                egui::Label::new(layout_job)
+                    .wrap()
+                    .halign(halign)
+                    .sense(sense),
+            );
+
             // Attach interactions to the text response if we are within an active task
             if let Some((state, span, mutable)) = self.active_task_context_menu.clone() {
                 // If it is mutable, it might be clicked, we also change cursor to a hand
                 if mutable {
                     response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
-                    
+
                     if let Some(menu_fn) = self.custom_task_context_menu_fn {
-                        menu_fn(&response, state, span.clone(), mutable, &mut self.checkbox_events);
+                        menu_fn(
+                            &response,
+                            state,
+                            span.clone(),
+                            mutable,
+                            &mut self.checkbox_events,
+                        );
                     } else if response.clicked() {
                         let new_state = if state == ' ' { 'x' } else { ' ' };
                         self.checkbox_events.push(crate::TaskListAction {
@@ -368,8 +421,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 for glyph in &row.glyphs {
                     let is_st = char_idx < strikethrough_char_flags.len()
                         && strikethrough_char_flags[char_idx];
-                    let is_ul = char_idx < underline_char_flags.len()
-                        && underline_char_flags[char_idx];
+                    let is_ul =
+                        char_idx < underline_char_flags.len() && underline_char_flags[char_idx];
 
                     if is_st {
                         let gx = text_pos.x + glyph.pos.x;
@@ -393,7 +446,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
                     char_idx += 1;
                 }
-                
+
                 // Flush remaining runs at end of row
                 if let (Some(min_x), Some(max_x)) = (st_min_x.take(), st_max_x.take()) {
                     let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.49;
@@ -406,20 +459,35 @@ impl<'a> CommonMarkViewerInternal<'a> {
             }
         } else {
             let sense = if let Some((_, _, mutable)) = self.active_task_context_menu.clone() {
-                if mutable { egui::Sense::click() } else { egui::Sense::hover() }
+                if mutable {
+                    egui::Sense::click()
+                } else {
+                    egui::Sense::hover()
+                }
             } else {
                 egui::Sense::hover()
             };
 
-            let mut response = ui.add(egui::Label::new(layout_job).wrap().halign(halign).sense(sense));
-            
+            let mut response = ui.add(
+                egui::Label::new(layout_job)
+                    .wrap()
+                    .halign(halign)
+                    .sense(sense),
+            );
+
             // Attach interactions to the text response if we are within an active task
             if let Some((state, span, mutable)) = self.active_task_context_menu.clone() {
                 if mutable {
                     response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
-                    
+
                     if let Some(menu_fn) = self.custom_task_context_menu_fn {
-                        menu_fn(&response, state, span.clone(), mutable, &mut self.checkbox_events);
+                        menu_fn(
+                            &response,
+                            state,
+                            span.clone(),
+                            mutable,
+                            &mut self.checkbox_events,
+                        );
                     } else if response.clicked() {
                         let new_state = if state == ' ' { 'x' } else { ' ' };
                         self.checkbox_events.push(crate::TaskListAction {
@@ -481,7 +549,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 .ceil()
                 .max(INLINE_EMOJI_MIN_PIXEL_SIZE as f32) as u32;
             let display_size = pixel_size as f32 * INLINE_EMOJI_DISPLAY_SCALE;
-            
+
             if let Some(bytes) = emoji_fn(grapheme, pixel_size) {
                 self.flush_pending_inline(ui, max_width);
                 ui.add(
@@ -543,13 +611,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 )
                 .into_offset_iter();
 
-                let (extracted_events, task_indices) = extract_custom_task_lists(extract_footnotes(raw_events));
+                let (extracted_events, task_indices) =
+                    extract_custom_task_lists(extract_footnotes(raw_events));
                 self.task_list_indices = task_indices;
 
-                let mut events = extracted_events
-                    .into_iter()
-                    .enumerate()
-                    .peekable();
+                let mut events = extracted_events.into_iter().enumerate().peekable();
 
                 while let Some((index, (e, src_span))) = events.next() {
                     self.current_event_idx = index;
@@ -733,7 +799,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
             if let Some(re) = &self.search_query {
                 for (_, (ev, _)) in &body_events {
                     match ev {
-                        pulldown_cmark::Event::Text(t) | pulldown_cmark::Event::Html(t) | pulldown_cmark::Event::Code(t) => {
+                        pulldown_cmark::Event::Text(t)
+                        | pulldown_cmark::Event::Html(t)
+                        | pulldown_cmark::Event::Code(t) => {
                             if re.is_match(t) {
                                 auto_open = Some(true);
                                 break;
@@ -764,19 +832,21 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     const OPTICAL_ACCORDION_TOP_MARGIN: f32 = -24.0;
                     const OPTICAL_DEFAULT_INTERACT_HEIGHT: f32 = 18.0;
 
-                    // 4.3 (Optical): Markdown block parser generates empty \n\n gaps resulting in a massive 
-                    // unbalanced top gap before <details> compared to the bottom. 
+                    // 4.3 (Optical): Markdown block parser generates empty \n\n gaps resulting in a massive
+                    // unbalanced top gap before <details> compared to the bottom.
                     // Explicitly pull the widget back up to optically balance against 8px bottom spacing.
-                    ui.add_space(OPTICAL_ACCORDION_TOP_MARGIN); 
+                    ui.add_space(OPTICAL_ACCORDION_TOP_MARGIN);
 
-                    // 4.4 (Optical): Egui natively generates geometrically centered icons that map incorrectly 
+                    // 4.4 (Optical): Egui natively generates geometrically centered icons that map incorrectly
                     // to the optical visual weight of Japanese fonts, plunging to the baseline.
                     // Instead of inflating/deflating interact_size, we use standard spacing and apply an optical shift.
                     ui.spacing_mut().interact_size.y = OPTICAL_DEFAULT_INTERACT_HEIGHT;
 
                     let id_salt = egui::Id::new(&summary).with(id);
                     let mut collapsing = egui::CollapsingHeader::new(
-                        egui::RichText::new(&summary).strong().color(ui.visuals().text_color())
+                        egui::RichText::new(&summary)
+                            .strong()
+                            .color(ui.visuals().text_color()),
                     )
                     .id_salt(id_salt)
                     .icon(crate::ui_components::centering::AccordionIcon::paint_optically_centered);
@@ -786,8 +856,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     }
 
                     let header_res = collapsing.show(ui, |ui| {
-                        let layout = egui::Layout::left_to_right(egui::Align::Center)
-                            .with_main_wrap(true);
+                        let layout =
+                            egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true);
                         let body_width = ui.available_width();
                         let child_rect = egui::Rect::from_min_size(
                             ui.next_widget_position(),
@@ -822,11 +892,17 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         header_res.header_response.rect
                     };
 
-                    let accordion_span = src_span.start..body_events.last().map(|e| e.1.1.end).unwrap_or(src_span.end);
+                    let accordion_span = src_span.start
+                        ..body_events
+                            .last()
+                            .map(|e| e.1.1.end)
+                            .unwrap_or(src_span.end);
 
                     if let Some(active) = &self.active_char_range {
-                        if active.start <= accordion_span.end && active.end >= accordion_span.start {
-                            self.active_rects.push((accordion_rect, accordion_span.clone()));
+                        if active.start <= accordion_span.end && active.end >= accordion_span.start
+                        {
+                            self.active_rects
+                                .push((accordion_rect, accordion_span.clone()));
                             let highlight_color = self.active_bg_color.unwrap_or_else(|| {
                                 if ui.visuals().dark_mode {
                                     egui::Color32::from_white_alpha(15)
@@ -834,7 +910,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                     egui::Color32::from_black_alpha(15)
                                 }
                             });
-                            ui.painter().rect_filled(accordion_rect, 1.0, highlight_color);
+                            ui.painter()
+                                .rect_filled(accordion_rect, 1.0, highlight_color);
                         }
                     }
 
@@ -994,7 +1071,13 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         });
                         let frame = if is_highlighted {
                             egui::Frame::NONE
-                                .fill(ctx.global_style().visuals.selection.bg_fill.linear_multiply(0.3))
+                                .fill(
+                                    ctx.global_style()
+                                        .visuals
+                                        .selection
+                                        .bg_fill
+                                        .linear_multiply(0.3),
+                                )
                                 .stroke(egui::Stroke::new(
                                     1.0,
                                     ctx.global_style().visuals.selection.bg_fill,
@@ -1282,23 +1365,24 @@ impl<'a> CommonMarkViewerInternal<'a> {
             let wrapped_resp = ui.with_layout(
                 egui::Layout::left_to_right(egui::Align::Center).with_main_wrap(true),
                 |ui| {
-                // Call start_item_content here instead of in Tag::Item so that the bullet/number
-                // is grouped within the same flex layout as the actual content.
-                self.list.start_item_content(ui, options, is_task_list);
+                    // Call start_item_content here instead of in Tag::Item so that the bullet/number
+                    // is grouped within the same flex layout as the actual content.
+                    self.list.start_item_content(ui, options, is_task_list);
 
-                while let Some((index, (e, src_span))) = events_iter.next() {
-                    self.current_event_idx = index;
-                    self.process_event(
-                        ui,
-                        &mut events_iter,
-                        e,
-                        src_span,
-                        cache,
-                        options,
-                        max_width,
-                    );
-                }
-            });
+                    while let Some((index, (e, src_span))) = events_iter.next() {
+                        self.current_event_idx = index;
+                        self.process_event(
+                            ui,
+                            &mut events_iter,
+                            e,
+                            src_span,
+                            cache,
+                            options,
+                            max_width,
+                        );
+                    }
+                },
+            );
 
             // Per-item hover/active detection using the wrapped layout's rect.
             // This is the ONLY place that pushes to hovered_spans for list items.
@@ -1479,7 +1563,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         let spacing_total =
                             ui.spacing().item_spacing.x * (num_cols.saturating_sub(1) as f32);
                         let min_col = (table_width - spacing_total) / (num_cols as f32);
-                        
+
                         let header_bg_idx = ui.painter().add(egui::Shape::Noop);
 
                         let _grid_res = egui::Grid::new(id)
@@ -1579,7 +1663,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         // Draw vertical and horizontal separators
                         let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
                         let visual_rect = ui.min_rect();
-                        
+
                         if let Some(y) = header_bottom_y {
                             let header_bg_rect = egui::Rect::from_min_max(
                                 egui::pos2(visual_rect.left(), visual_rect.top()),
@@ -1591,7 +1675,10 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 egui::Shape::rect_filled(
                                     header_bg_rect,
                                     0.0,
-                                    ui.visuals().selection.bg_fill.gamma_multiply(TABLE_HEADER_ALPHA),
+                                    ui.visuals()
+                                        .selection
+                                        .bg_fill
+                                        .gamma_multiply(TABLE_HEADER_ALPHA),
                                 ),
                             );
                         }
@@ -1683,7 +1770,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     self.flush_pending_inline(ui, max_width);
                 }
                 self.end_tag(ui, tag.clone(), cache, options, max_width);
-                
+
                 if let Some((start_y, span)) = self.block_states.pop() {
                     let end_y = ui.next_widget_position().y;
                     if end_y > start_y {
@@ -1704,13 +1791,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             if let Some(active) = &self.active_char_range {
                                 if active.start <= span.end && active.end >= span.start {
                                     self.active_rects.push((rect, span.clone()));
-                                    let highlight_color = self.active_bg_color.unwrap_or_else(|| {
-                                        if ui.visuals().dark_mode {
-                                            egui::Color32::from_white_alpha(15)
-                                        } else {
-                                            egui::Color32::from_black_alpha(15)
-                                        }
-                                    });
+                                    let highlight_color =
+                                        self.active_bg_color.unwrap_or_else(|| {
+                                            if ui.visuals().dark_mode {
+                                                egui::Color32::from_white_alpha(15)
+                                            } else {
+                                                egui::Color32::from_black_alpha(15)
+                                            }
+                                        });
                                     ui.painter().rect_filled(rect, 1.0, highlight_color);
                                 }
                             }
@@ -1718,13 +1806,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 if let Some(pos) = ui.ctx().pointer_hover_pos() {
                                     if rect.contains(pos) {
                                         hovered.push(span.clone());
-                                        let hover_color = self.hover_bg_color.unwrap_or_else(|| {
-                                            if ui.visuals().dark_mode {
-                                                egui::Color32::from_white_alpha(8)
-                                            } else {
-                                                egui::Color32::from_black_alpha(8)
-                                            }
-                                        });
+                                        let hover_color =
+                                            self.hover_bg_color.unwrap_or_else(|| {
+                                                if ui.visuals().dark_mode {
+                                                    egui::Color32::from_white_alpha(8)
+                                                } else {
+                                                    egui::Color32::from_black_alpha(8)
+                                                }
+                                            });
                                         ui.painter().rect_filled(rect, 1.0, hover_color);
                                     }
                                 }
@@ -1763,17 +1852,18 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             let state_char = task_state_str.chars().next().unwrap();
                             self.after_inline_widget = false;
                             self.flush_pending_inline(ui, max_width);
-                            
+
                             // Activate context menu state for subsequent text events in this list item
-                            self.active_task_context_menu = Some((state_char, src_span.clone(), options.mutable));
-                            
+                            self.active_task_context_menu =
+                                Some((state_char, src_span.clone(), options.mutable));
+
                             if let Some(task_box_fn) = self.custom_task_box_fn {
                                 task_box_fn(
-                                    ui, 
-                                    state_char, 
-                                    src_span, 
-                                    options.mutable, 
-                                    &mut self.checkbox_events
+                                    ui,
+                                    state_char,
+                                    src_span,
+                                    options.mutable,
+                                    &mut self.checkbox_events,
                                 );
                             }
                             return;
@@ -1849,15 +1939,16 @@ impl<'a> CommonMarkViewerInternal<'a> {
             pulldown_cmark::Event::TaskListMarker(mut checkbox) => {
                 self.after_inline_widget = false;
                 self.flush_pending_inline(ui, max_width);
-                
+
                 // Keep the row text clickable and active for context menu
                 let state_char = if checkbox { 'x' } else { ' ' };
-                self.active_task_context_menu = Some((state_char, src_span.clone(), options.mutable));
-                
+                self.active_task_context_menu =
+                    Some((state_char, src_span.clone(), options.mutable));
+
                 if options.mutable {
                     let mut is_checked = checkbox;
                     let response = ui.add(egui::Checkbox::without_text(&mut is_checked));
-                    
+
                     if response.clicked() {
                         // For generic checkboxes, we just emit x or space
                         let new_state = if !checkbox { 'x' } else { ' ' };
@@ -1906,7 +1997,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             let mut last_end = 0;
                             for mat in regex.find_iter(text) {
                                 if mat.start() > last_end {
-                                    self.push_inline_text(&text[last_end..mat.start()], ui, max_width);
+                                    self.push_inline_text(
+                                        &text[last_end..mat.start()],
+                                        ui,
+                                        max_width,
+                                    );
                                 }
                                 let prev_highlight = self.text_style.highlight;
                                 self.text_style.highlight = true;
@@ -2014,8 +2109,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 // Clear any active task context if a new item starts (safety)
                 self.active_task_context_menu = None;
                 self.is_list_item = true;
-                
-                // Bullet rendering and is_task_list logic is now handled in item_list_wrapping 
+
+                // Bullet rendering and is_task_list logic is now handled in item_list_wrapping
                 // so that the bullet perfectly aligns horizontally with the child text content.
             }
 
@@ -2347,7 +2442,10 @@ fn extract_details_summary(html: &str) -> Option<String> {
 
 pub(crate) fn extract_custom_task_lists<'e>(
     events: Vec<(pulldown_cmark::Event<'e>, std::ops::Range<usize>)>,
-) -> (Vec<(pulldown_cmark::Event<'e>, std::ops::Range<usize>)>, std::collections::HashSet<usize>) {
+) -> (
+    Vec<(pulldown_cmark::Event<'e>, std::ops::Range<usize>)>,
+    std::collections::HashSet<usize>,
+) {
     let mut out = Vec::with_capacity(events.len());
     let mut task_list_indices = std::collections::HashSet::new();
     let mut i = 0;
@@ -2360,7 +2458,9 @@ pub(crate) fn extract_custom_task_lists<'e>(
             let mut offset = 1;
 
             if i + offset < events.len() {
-                if let pulldown_cmark::Event::Start(pulldown_cmark::Tag::Paragraph) = &events[i + offset].0 {
+                if let pulldown_cmark::Event::Start(pulldown_cmark::Tag::Paragraph) =
+                    &events[i + offset].0
+                {
                     offset += 1;
                 }
             }
@@ -2373,12 +2473,12 @@ pub(crate) fn extract_custom_task_lists<'e>(
                     let span = events[i + offset].1.clone();
                     let marker = format!("<!-- KATANA_TASK:{} -->", c);
                     out.push((pulldown_cmark::Event::Html(marker.into()), span));
-                    
+
                     // We need to inject the paragraph start if it was there
                     if offset > 1 {
                         out.insert(out.len() - 1, events[i + 1].clone());
                     }
-                    
+
                     i += offset + 1;
                     continue;
                 }
@@ -2410,7 +2510,10 @@ pub(crate) fn extract_custom_task_lists<'e>(
                                             new_text.remove(0); // slice off leading space
                                             let new_span = (span4.start + 1)..span4.end;
                                             if !new_text.is_empty() {
-                                                out.push((pulldown_cmark::Event::Text(new_text.into()), new_span));
+                                                out.push((
+                                                    pulldown_cmark::Event::Text(new_text.into()),
+                                                    new_span,
+                                                ));
                                             }
                                             i += 1;
                                             continue;

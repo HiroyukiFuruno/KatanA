@@ -166,36 +166,35 @@ pub fn code_block<'t>(
             painter.rect_filled(front, 1.0, ui.visuals().extreme_bg_color);
             painter.rect_stroke(front, 1.0, stroke, egui::StrokeKind::Outside);
         }
-        let copy_button = copy_btn_response
-        .on_hover_cursor(
+        let copy_button = copy_btn_response.on_hover_cursor(
             ui.visuals()
                 .interact_cursor
                 .unwrap_or(egui::CursorIcon::Default),
         );
 
-    // Update icon state in persistent memory
-    if copied_icon && !copy_button.hovered() {
-        ui.memory_mut(|m| *m.data.get_temp_mut_or_default(persistent_id) = false);
-    }
-    if !copied_icon && copy_button.clicked() {
-        ui.memory_mut(|m| *m.data.get_temp_mut_or_default(persistent_id) = true);
-    }
+        // Update icon state in persistent memory
+        if copied_icon && !copy_button.hovered() {
+            ui.memory_mut(|m| *m.data.get_temp_mut_or_default(persistent_id) = false);
+        }
+        if !copied_icon && copy_button.clicked() {
+            ui.memory_mut(|m| *m.data.get_temp_mut_or_default(persistent_id) = true);
+        }
 
-    if copy_button.clicked() {
-        use egui::TextBuffer as _;
-        let copy_text = if let Some(cursor) = output.cursor_range {
-            let selected_chars = cursor.as_sorted_char_range();
-            let selected_text = text.char_range(selected_chars);
-            if selected_text.is_empty() {
-                text.to_owned()
+        if copy_button.clicked() {
+            use egui::TextBuffer as _;
+            let copy_text = if let Some(cursor) = output.cursor_range {
+                let selected_chars = cursor.as_sorted_char_range();
+                let selected_text = text.char_range(selected_chars);
+                if selected_text.is_empty() {
+                    text.to_owned()
+                } else {
+                    selected_text.to_owned()
+                }
             } else {
-                selected_text.to_owned()
-            }
-        } else {
-            text.to_owned()
-        };
-        ui.copy_text(copy_text);
-    }
+                text.to_owned()
+            };
+            ui.copy_text(copy_text);
+        }
     }
     output.response.response
 }

@@ -111,13 +111,18 @@ pub struct CommonMarkViewer<'f> {
     hovered_spans: Option<&'f mut Vec<std::ops::Range<usize>>>,
     active_bg_color: Option<egui::Color32>,
     hover_bg_color: Option<egui::Color32>,
-    custom_task_box_fn: Option<&'f dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>)>,
+    custom_task_box_fn: Option<
+        &'f dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>),
+    >,
     custom_emoji_fn: Option<&'f dyn Fn(&str, u32) -> Option<Vec<u8>>>,
-    custom_task_context_menu_fn: Option<&'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>)>,
+    custom_task_context_menu_fn: Option<
+        &'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut Vec<TaskListAction>),
+    >,
     /// Called after a list item is fully rendered. Receives the correct bounding rect
     /// (from `horizontal_wrapped` response) and the item's source span.
     /// Returns `(active_highlighted, hovered)` so the renderer can update internal bookkeeping.
-    custom_list_item_highlight_fn: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
+    custom_list_item_highlight_fn:
+        Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
     search_query: Option<String>,
     search_scroll_pending: bool,
 }
@@ -148,17 +153,42 @@ impl<'f> CommonMarkViewer<'f> {
         Self::default()
     }
 
-    pub fn custom_task_box_fn(mut self, func: Option<&'f dyn Fn(&mut egui::Ui, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<TaskListAction>)>) -> Self {
+    pub fn custom_task_box_fn(
+        mut self,
+        func: Option<
+            &'f dyn Fn(
+                &mut egui::Ui,
+                char,
+                std::ops::Range<usize>,
+                bool,
+                &mut std::vec::Vec<TaskListAction>,
+            ),
+        >,
+    ) -> Self {
         self.custom_task_box_fn = func;
         self
     }
 
-    pub fn custom_emoji_fn(mut self, func: Option<&'f dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>) -> Self {
+    pub fn custom_emoji_fn(
+        mut self,
+        func: Option<&'f dyn Fn(&str, u32) -> Option<std::vec::Vec<u8>>>,
+    ) -> Self {
         self.custom_emoji_fn = func;
         self
     }
 
-    pub fn custom_task_context_menu_fn(mut self, func: Option<&'f dyn Fn(&egui::Response, char, std::ops::Range<usize>, bool, &mut std::vec::Vec<TaskListAction>)>) -> Self {
+    pub fn custom_task_context_menu_fn(
+        mut self,
+        func: Option<
+            &'f dyn Fn(
+                &egui::Response,
+                char,
+                std::ops::Range<usize>,
+                bool,
+                &mut std::vec::Vec<TaskListAction>,
+            ),
+        >,
+    ) -> Self {
         self.custom_task_context_menu_fn = func;
         self
     }
@@ -166,7 +196,12 @@ impl<'f> CommonMarkViewer<'f> {
     /// Set a callback for list item highlight/hover rendering.
     /// The callback receives the correct bounding rect and the item's source span.
     /// It should paint any highlight/hover visuals and return `(active_highlighted, hovered)`.
-    pub fn custom_list_item_highlight_fn(mut self, func: Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>) -> Self {
+    pub fn custom_list_item_highlight_fn(
+        mut self,
+        func: Option<
+            &'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool),
+        >,
+    ) -> Self {
         self.custom_list_item_highlight_fn = func;
         self
     }
@@ -176,7 +211,10 @@ impl<'f> CommonMarkViewer<'f> {
         self
     }
 
-    pub fn heading_anchors(mut self, anchors: &'f mut Vec<(std::ops::Range<usize>, egui::Rect)>) -> Self {
+    pub fn heading_anchors(
+        mut self,
+        anchors: &'f mut Vec<(std::ops::Range<usize>, egui::Rect)>,
+    ) -> Self {
         self.heading_anchors = Some(anchors);
         self
     }
@@ -367,13 +405,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.search_query.clone(),
         );
         internal.search_scroll_pending = self.search_scroll_pending;
-        let (response, _) = internal.show(
-            ui,
-            cache,
-            &self.options,
-            text,
-            None,
-        );
+        let (response, _) = internal.show(ui, cache, &self.options, text, None);
 
         response
     }
@@ -406,13 +438,7 @@ impl<'f> CommonMarkViewer<'f> {
                 self.search_query.clone(),
             );
             internal.search_scroll_pending = self.search_scroll_pending;
-            internal.show(
-                ui,
-                cache,
-                &self.options,
-                text,
-                None,
-            )
+            internal.show(ui, cache, &self.options, text, None)
         };
 
         // Update source text for checkmarks that were clicked
@@ -433,12 +459,12 @@ pub fn extract_task_list_spans(text: &str) -> Vec<std::ops::Range<usize>> {
     options.insert(pulldown_cmark::Options::ENABLE_TABLES);
     options.insert(pulldown_cmark::Options::ENABLE_TASKLISTS);
     options.insert(pulldown_cmark::Options::ENABLE_HEADING_ATTRIBUTES);
-    
+
     let parser = pulldown_cmark::Parser::new_ext(text, options).into_offset_iter();
     // Use the raw events vector to run our pre-pass
     let events: Vec<_> = parser.collect();
     let (processed, _) = crate::parsers::pulldown::extract_custom_task_lists(events);
-    
+
     let mut spans = Vec::new();
     for (event, span) in processed {
         if let pulldown_cmark::Event::Html(html) = event {
@@ -447,8 +473,8 @@ pub fn extract_task_list_spans(text: &str) -> Vec<std::ops::Range<usize>> {
             }
         }
     }
-    
-    // pulldown-cmark sometimes emits the same HTML block multiple times if it wraps? 
+
+    // pulldown-cmark sometimes emits the same HTML block multiple times if it wraps?
     // No, our pass shouldn't duplicate. We'll sort and deduplicate just in case.
     spans.sort_by_key(|s| s.start);
     spans.dedup();
@@ -482,13 +508,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.search_query.clone(),
         );
         internal.search_scroll_pending = self.search_scroll_pending;
-        internal.show(
-            ui,
-            cache,
-            &self.options,
-            text,
-            None,
-        )
+        internal.show(ui, cache, &self.options, text, None)
     }
 
     /// Shows markdown inside a [`ScrollArea`].
@@ -529,13 +549,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.search_query.clone(),
         );
         internal.search_scroll_pending = self.search_scroll_pending;
-        internal.show_scrollable(
-            Id::new(source_id),
-            ui,
-            cache,
-            &self.options,
-            text,
-        );
+        internal.show_scrollable(Id::new(source_id), ui, cache, &self.options, text);
     }
 }
 
@@ -581,7 +595,12 @@ impl List {
         }
     }
 
-    pub fn start_item_content(&mut self, ui: &mut egui::Ui, options: &CommonMarkOptions, is_task_list: bool) {
+    pub fn start_item_content(
+        &mut self,
+        ui: &mut egui::Ui,
+        options: &CommonMarkOptions,
+        is_task_list: bool,
+    ) {
         let len = self.items.len();
         if let Some(item) = self.items.last_mut() {
             ui.label(" ".repeat((len - 1) * options.indentation_spaces));
