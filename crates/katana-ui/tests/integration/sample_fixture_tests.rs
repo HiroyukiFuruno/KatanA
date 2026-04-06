@@ -23,6 +23,19 @@ fn fixture_cache() -> &'static Mutex<HashMap<String, FixtureSnapshot>> {
 }
 
 fn load_fixture_snapshot(filename: &str) -> FixtureSnapshot {
+    {
+        if let Some(snapshot) = fixture_cache().lock().unwrap().get(filename).cloned() {
+            return snapshot;
+        }
+    }
+
+    // Use a secondary lock to ensure only one thread generates the snapshot for a given file.
+    // To avoid blocking other distinct files unnecessarily, we could use a lock per file,
+    // but tests run fast enough that locking a global generator mutex is robust and prevents overall CPU/RAM exhaustion.
+    static GENERATOR_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let _guard = GENERATOR_LOCK.lock().unwrap();
+
+    // Double check after acquiring the lock
     if let Some(snapshot) = fixture_cache().lock().unwrap().get(filename).cloned() {
         return snapshot;
     }
@@ -39,7 +52,7 @@ fn load_fixture_snapshot(filename: &str) -> FixtureSnapshot {
         &fixture_path,
         std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         false,
-        4,
+        2, // Reduced from 4 to 2 to limit CI memory pressure during initial render
     );
     pane.wait_for_renders();
     let sections = std::mem::take(&mut pane.sections);

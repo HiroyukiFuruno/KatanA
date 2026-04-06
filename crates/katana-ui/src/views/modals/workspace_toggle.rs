@@ -44,7 +44,7 @@ impl<'a> WorkspaceToggleModal<'a> {
         const MAX_MODAL_HEIGHT: f32 = 400.0;
         const DEFAULT_WINDOW_POS_X: f32 = 60.0;
 
-        egui::Window::new(self.title)
+        let response = egui::Window::new(self.title)
             .id(egui::Id::new("workspace_toggle_modal"))
             .open(self.is_open)
             .collapsible(false)
@@ -98,6 +98,18 @@ impl<'a> WorkspaceToggleModal<'a> {
                         );
                     });
             });
+
+        if let Some(res) = response
+            && ctx.input(|i| i.pointer.any_pressed())
+            && let Some(pos) = ctx.pointer_interact_pos()
+            && !res.response.rect.contains(pos)
+        {
+            close_modal = true;
+        }
+
+        if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+            close_modal = true;
+        }
 
         if close_modal {
             *self.is_open = false;

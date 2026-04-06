@@ -2,79 +2,79 @@
 
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
 - [ ] 対象バージョン 0.20.0 の変更 ID とスコープが確認されていること
-- [ ] 現行の native menu、command palette、`AppAction` 一覧を再確認していること
+- [ ] 現在のネイティブメニュー、コマンドパレット、および `AppAction` の一覧を再確認していること
 
 ## Branch Rule
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワークフロー (`.agents/workflows/openspec-branching.md`) で定義されたブランチ運用基準に無条件で従うこと。
 
 ---
 
-## 1. Shared Command Inventory
+## 1. Shared Command Inventory (コマンドリストの共通化管理)
 
-- [ ] 1.1 user-facing commands の棚卸しを行う
-- [ ] 1.2 label、group、availability を持つ shared command inventory を導入する
-- [ ] 1.3 menu、palette、future shortcut editor が inventory を参照できる shape を定義する
+- [ ] 1.1 ユーザーが利用可能な全コマンド (user-facing commands) を一斉に棚卸しする
+- [ ] 1.2 「ラベル (label)」「グループ (group)」「可用性や利用状態 (availability)」を一元管理するための、「共通コマンド一覧機能 (shared command inventory)」を導入する
+- [ ] 1.3 メニュー、コマンドパレット、および将来のショートカットエディタなどが、この inventory を共通して参照・取得できるインターフェース (shape) を定義する
 
 ### Definition of Done (DoD)
 
-- [ ] command inventory が単一の source of truth として成立していること
-- [ ] `AppAction` と inventory の責務分離が明確であること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] 共通のコマンドインベントリ (inventory) が、単一の信頼できる情報源 (source of truth) として機能していること
+- [ ] `AppAction` 本体の処理と、インベントリに登録される情報管理の責務分担が明確に切り離されていること
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
-## 2. File and View Menu Expansion
+## 2. File and View Menu Expansion (ファイル・ビューメニューの拡張)
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 File menu に workspace / document commands を追加する
-- [ ] 2.2 View menu に navigation / visibility commands を追加する
-- [ ] 2.3 disabled state を inventory の availability と揃える
-- [ ] 2.4 non-macOS command surface でも同等 coverage を提供する
-- [ ] 2.5 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 2.6 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [ ] 2.1 File メニューに対して、ワークスペースおよびドキュメント関連の各種メニューコマンドを追加する
+- [ ] 2.2 View メニューに対して、画面ナビゲーションや UI 表示切り替えに関連する操作コマンドを追加する
+- [ ] 2.3 各処理が実行不可となる状態 (disabled state) を、共通管理しているインベントリ側の `availability` 情報と直結させて同期する
+- [ ] 2.4 macOS 以外のメニュー領域 (non-macOS command surface) でも、欠如することなく同じレベルのコマンド利用範囲 (coverage) を提供する
+- [ ] 2.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [ ] 2.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] File / View menu の command coverage が設計通りに増えていること
-- [ ] surface 間で availability judgment が一致していること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] File および View メニューのカバー範囲 (command coverage) が事前の設計どおりに適切に増補されていること
+- [ ] ネイティブメニューやアプリ内等、表示媒体の違いに関わらず可用性（利用可能・不可の判断）が完全に一致していること
+- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
-## 3. Help Menu and Palette Alignment
+## 3. Help Menu and Palette Alignment (ヘルプメニューとコマンドパレットのすり合わせ)
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 3.1 Help menu に docs / GitHub / release notes / update commands を整理して追加する
-- [ ] 3.2 command palette が inventory 由来の labels と groups を使うようにする
-- [ ] 3.3 docs と i18n copy を更新する
-- [ ] 3.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 3.5 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [ ] 3.1 Help メニュー内に、ドキュメント操作、GitHubリンク、リリースノート表示、アップデート確認などのコマンド群をわかりやすく整理して追加する
+- [ ] 3.2 コマンドパレットの表示項目やグループ分けが、共通インベントリ (inventory) で定義された情報 (labels, groups) を参照して反映されるように修正する
+- [ ] 3.3 それらに関連するドキュメント (docs) や、多言語対応のテキスト文言 (i18n copy) を漏れなく最新情報に更新する
+- [ ] 3.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [ ] 3.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] Help menu と palette が inventory contract に揃っていること
-- [ ] i18n copy と docs が新しい command surface を反映していること
-- [ ] `make check` が exit code 0 で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] Help メニューの項目とコマンドパレットの表示が、インベントリの定義基準にズレなく準拠していること
+- [ ] 対応する翻訳テキスト (i18n copy) やドキュメント情報が、新しいメニューコマンド構成の変更内容を正しく反映していること
+- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
-## 4. Final Verification & Release Work
+## 4. Final Verification & Release Work (最終確認とリリース対応)
 
-- [ ] 4.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 4.2 Ensure `make check` passes with exit code 0
-- [ ] 4.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 4.4 Create a PR targeting `master`
-- [ ] 4.5 Merge into master (※ `--admin` is permitted)
-- [ ] 4.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.20.0`
-- [ ] 4.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [ ] 4.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 4.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [ ] 4.4 `master` に向けて PR（プルリクエスト）を作成する
+- [ ] 4.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.20.0` のリリースタグ打ちとリリース作成を実行する
+- [ ] 4.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする

@@ -1,40 +1,41 @@
-## Definition of Ready (DoR)
+## Definition of Ready (DoR: 着手可能の定義)
 
-- The scope is limited to the direct pinned-tab toggle behavior for `0.16.6`
-- Proposal, design, and specs are present under this change directory
-- Responsibility boundaries are agreed for hit testing, action routing, and UI verification
+- 対象範囲はバージョン `0.16.6` 向けの「固定タブの直接切り替え」機能に限定する
+- この変更用ディレクトリ内に、提案（Proposal）、設計（design）、仕様（specs）が存在していること
+- クリック判定（hit testing）、アクションの振り分け、UIの動作検証に関する責任分界点が合意されていること
 
-## Branch Rule
+## Branch Rule (ブランチのルール)
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+「##」で区切られたタスクグループについて：
+実装作業の全期間を通して、`/openspec-branching` ワークフロー (`.agents/workflows/openspec-branching.md`) で定義されたブランチ作成の標準ルールに無条件で従うこと。
 
-## 1. v0.16.6 Pinned Tab Direct Toggle
+## 1. v0.16.6 固定タブの直接切り替え
 
-- [ ] 1.1 Separate the hit targets for the pinned-tab body and pin icon, then connect pin-icon clicks to `TogglePinDocument`
-- [ ] 1.2 Verify there is no regression in context-menu pin/unpin flows, pinned-tab ordering, or group-removal rules
-- [ ] 1.3 Add a UI interaction test that simulates a real pin-icon click and confirms direct unpin behavior
+- [ ] 1.1 固定されたタブの本体と、ピンアイコンのクリック判定領域を分割し、ピンアイコンのクリックが `TogglePinDocument` (ピン留め解除) に繋がるようにする
+- [ ] 1.2 右クリックメニューからのピン留め・解除の流れや、固定タブの並び順、グループから削除する際のルールにデグレ（バグの再発）が起きていないか確認する
+- [ ] 1.3 ピンアイコンのクリックを模倣し、直接ピン留めが解除されることを確認するUI操作（インタラクション）テストを追加する
 - [ ] 1.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 1.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
-### Definition of Done (DoD)
+### Definition of Done (DoD: 完了の定義)
 
-- [ ] A pinned tab can be unpinned with one click on the visible pin icon
-- [ ] Tab activation and unpin actions are not conflated
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] 表示されているピンアイコンを一度クリックするだけで、固定タブのピン留めを解除できること
+- [ ] タブのアクティブ化（タブを開く操作）とピン留め解除の挙動が混同・干渉していないこと
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行して、統合的なデリバシールーチン（自己レビュー、コミット、PR作成、マージ作業）を完了させること。
 
 ---
 
-## 2. Final Verification & Release Work
+## 2. 最終検証およびリリース作業
 
-### Definition of Ready (DoR)
+### Definition of Ready (DoR: 着手可能の定義)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 前のタスクが完全なデリバリーサイクル（自己レビュー、必要なら復旧、PR作成、マージ、ブランチの削除）を終えていることを確認する。
+- [ ] ベースとなるブランチが最新の状態（同期済）であり、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 2.2 Ensure `make check` passes with exit code 0
-- [ ] 2.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 2.4 Create a PR targeting `master`
-- [ ] 2.5 Merge into master (※ `--admin` is permitted)
-- [ ] 2.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.16.6`
-- [ ] 2.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 2.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づいて自己レビューを実行する（各ファイルでバージョンの更新漏れがないかチェックする）
+- [ ] 2.2 `make check` コマンドがエラーゼロ（exit code 0）で通過することを確認する
+- [ ] 2.3 中継用の中間ベースブランチ（元はmasterから派生したもの）を `master` ブランチにマージする
+- [ ] 2.4 `master` へのPull Request（PR）を作成する
+- [ ] 2.5 master にマージする（※ `--admin` の使用を許可する）
+- [ ] 2.6 `.agents/skills/release_workflow/SKILL.md` に従って、`0.16.6` のリリースタグ生成とリリース作成を実行する
+- [ ] 2.7 `/opsx-archive` などのOpenSpec用スキルを活用して、この変更作業全体をアーカイブ（保存・終了）する

@@ -1,62 +1,62 @@
 ## Definition of Ready (DoR)
 
-- The scope is limited to Help demo bundle opening and reference-mode enforcement for `0.16.10`
-- Proposal, design, and specs are present under this change directory
-- Responsibility boundaries are agreed for menu dispatch, localized asset resolution, document access policy, and integration verification
+- 対象スコープは `0.16.10` における Help のデモバンドル展開とリファレンスモード（参照専用モード）の強制に限定されていること
+- このチェンジディレクトリ配下に、提案 (proposal)、設計 (design)、仕様 (specs) の各ドキュメントが存在すること
+- メニューのディスパッチ、ローカライズされたアセットの解決、ドキュメントのアクセス制御、および統合テストに関する責務境界が合意されていること
 
 ## Branch Rule
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワークフロー (`.agents/workflows/openspec-branching.md`) で定義されたブランチ運用基準に無条件で従うこと。
 
 ## 1. v0.16.10 Help Demo Bundle
 
-- [ ] 1.1 Add the initial `assets/feature` bundle structure with base English Markdown docs, Japanese `.ja.md` variants where needed, and textual reference code assets that the demo will open
-- [ ] 1.2 Add localized Help-menu strings and native-menu/app actions for `Help -> Demo`
-- [ ] 1.3 Implement the `assets/feature` resolver so Markdown assets follow the `ja`-only override and base-English fallback contract
-- [ ] 1.4 Open the resolved demo bundle into the existing tab strip, create or reuse a stable `demo` tab group, and avoid duplicate demo tabs on repeated launches
-- [ ] 1.5 Add integration tests for Help-menu dispatch, missing-bundle recovery, locale resolution, and demo-group reuse
+- [ ] 1.1 初期状態の `assets/feature` バンドル構造を追加し、ベースとなる英語の Markdown ドキュメント、必要に応じた日本語の `.ja.md` バリアント、デモが開くテキストベースのリファレンスコードアセットを配置する
+- [ ] 1.2 `Help -> Demo` メニュー向けに、ローカライズされた文字列とネイティブメニュー/アプリのアクションを追加する
+- [ ] 1.3 `assets/feature` リゾルバを実装し、Markdown アセットが "日本語 (ja) があれば上書き、なければベースの英語へフォールバックする" という取り決め通りに動作するようにする
+- [ ] 1.4 解決されたデモバンドルを既存のタブ一覧に開き、安定した `demo` タブグループを作成または再利用する。また、複数回実行してもデモタブが重複しないようにする
+- [ ] 1.5 Help メニューのディスパッチ、バンドル欠落時のリカバリ、ロケールの解決、デモタブグループの再利用に関する統合テスト（Integration tests）を追加する
 - [ ] 1.6 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 1.7 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] `Help -> Demo` opens the localized `assets/feature` bundle inside the existing tab surface and groups it under `demo`
-- [ ] Re-running the Demo action does not replace unrelated tabs or create duplicate demo groups
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] `Help -> Demo` を実行すると、ローカライズ済みの `assets/feature` バンドルが既存のタブ領域内に表示され、`demo` グループにまとめられること
+- [ ] Demo アクションを再実行しても、無関係なタブが置き換わったり、demo グループが重複して作成されたりしないこと
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
-## 2. v0.16.10 Reference Mode
+## 2. v0.16.10 Reference Mode (参照専用モード)
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 Extend the document/open state with a per-document access policy so demo-opened code assets can be marked as reference documents
-- [ ] 2.2 Route non-Markdown textual demo assets into `CodeOnly` presentation while preserving normal editable behavior for Markdown demo docs
-- [ ] 2.3 Make the reference-mode editor non-interactive and block save/update/replace mutation paths so reference documents never become dirty
-- [ ] 2.4 Add tests covering read-only rendering, ignored mutation attempts, and save no-op behavior for reference documents
+- [ ] 2.1 ドキュメントオープン時の状態（open state）を拡張してドキュメントごとのアクセス権制約を追加し、デモが開くコードアセットを「リファレンス（参照専用）ドキュメント」として扱えるようにする
+- [ ] 2.2 Markdown 以外のテキスト系デモアセットを `CodeOnly` 表示へルーティングしつつ、Markdown デモドキュメントについては通常の編集可能状態を維持する
+- [ ] 2.3 リファレンスモードのエディタを非インタラクティブ（編集不可）に設定し、保存(save) / 更新(update) / 置換(replace)の変更操作をブロックすることで、リファレンスドキュメントが「未保存(dirty)」状態にならないようにする
+- [ ] 2.4 リファレンスドキュメントにおける「読み取り専用レンダリング」「変更操作が無視されること」「保存処理が何も実行されない(no-op)こと」を網羅するテストを追加する
 - [ ] 2.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 2.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] Demo-opened code assets are viewable in the existing code pane but cannot be edited
-- [ ] Reference documents never become dirty and are never written back to disk through normal save or mutation flows
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] デモとして開かれたコードアセットは既存のコードペイン内で閲覧できるが、編集できないこと
+- [ ] リファレンスドキュメントが絶対に dirty(変更あり) 状態にならず、通常の保存や変更フローを通じてディスクに書き戻されることが一切ないこと
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
-## 3. Final Verification & Release Work
+## 3. Final Verification & Release Work (最終確認とリリース対応)
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 3.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 3.2 Ensure `make check` passes with exit code 0
-- [ ] 3.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 3.4 Create a PR targeting `master`
-- [ ] 3.5 Merge into master (※ `--admin` is permitted)
-- [ ] 3.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.16.10`
-- [ ] 3.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 3.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [ ] 3.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 3.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [ ] 3.4 `master` に向けて PR（プルリクエスト）を作成する
+- [ ] 3.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [ ] 3.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.16.10` のリリースタグ打ちとリリース作成を実行する
+- [ ] 3.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする

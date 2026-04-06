@@ -1,41 +1,42 @@
-## Definition of Ready (DoR)
+## Definition of Ready (DoR: 着手可能の定義)
 
-- The scope is limited to foreground-surface input isolation for `0.16.5`
-- Proposal, design, and specs are present under this change directory
-- Responsibility boundaries are agreed for shell blocker registration and UI verification
+- 対象範囲はバージョン `0.16.5` 向けの「フォアグラウンドサーフェスの入力分離（前面画面操作時の裏側誤クリックのブロック）」に限定する
+- この変更用ディレクトリ内に、提案（Proposal）、設計（design）、仕様（specs）が存在していること
+- UIをブロックする処理（シェルブロッカーの登録）とUIの動作検証に関する責任分界点（どこまでやるか）が合意されていること
 
-## Branch Rule
+## Branch Rule (ブランチのルール)
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+「##」で区切られたタスクグループについて：
+実装作業の全期間を通して、`/openspec-branching` ワークフロー (`.agents/workflows/openspec-branching.md`) で定義されたブランチ作成の標準ルールに無条件で従うこと。
 
-## 1. v0.16.5 Foreground Surface Input Isolation
+## 1. v0.16.5 フォアグラウンドサーフェスの入力分離 (前面画面と背景画面の分離)
 
-- [ ] 1.1 Define a blocker contract and blocker-source inventory so the shell can determine foreground window / popup / overlay / detached-surface active state in one place
-- [ ] 1.2 Wire blocker control into the settings window, command palette, file search modal, file-operation/about/meta/update/terms windows, tab/workspace context menus, history/breadcrumb/group popups, settings-local popups, splash overlay, and fullscreen / slideshow / detached surfaces
-- [ ] 1.3 Ensure workspace tree, editor, preview, and tab-strip hover/click/context-menu reactions do not update while the blocker is active
-- [ ] 1.4 Add UI integration tests that cover the settings window, command palette, file search modal, representative context/popup menus, settings-local popups, and fullscreen/slideshow surfaces without using visual snapshots
-- [ ] 1.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 1.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 1.1 シェルプロセスの設定で、「現在どの前面画面（ウィンドウ、ポップアップ、オーバーレイ、分離された画面など）がアクティブか」を一箇所で一元管理できるように、ブロッカーの取り決め（契約）とソース一覧を定義する
+- [x] 1.2 設定ウィンドウ、コマンドパレット、ファイル検索画面、ファイル操作 / About / Meta / Update / 利用規約ウィンドウ、タブやワークスペースの右クリック（コンテキスト）メニュー、履歴 / パンくずリスト / グループのポップアップ、設定内のポップアップ画面、起動時のスプラッシュ画面、およびフルスクリーン / スライドショー / 分離画面が開いている時に、裏側のUIをブロックする制御を組み込む
+- [x] 1.3 前面画面のブロックが有効になっている間は、裏側にあるワークスペースツリー、エディタ、プレビュー画面、タブバーの上をマウスでなぞった時（ホバー）や、クリック、右クリック（コンテキストメニュー）をしても、一切反応（更新）しないようにする
+- [x] 1.4 設定ウィンドウ、コマンドパレット、ファイル検索画面、主要なコンテキスト・ポップアップメニュー、設定内のポップアップ画面、フルスクリーン・スライドショー画面を対象に、見た目の画像比較（ビジュアルスナップショット）を使わずに動作をチェックするUI統合テストを追加する
+- [x] 1.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 1.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
-### Definition of Done (DoD)
+### Definition of Done (DoD: 完了の定義)
 
-- [ ] Background-pane hover/click state does not change while a settings window, command palette, file search modal, context/popup menu, settings-local popup, or detached/overlay surface is open
-- [ ] Close, scroll, and click operations on the foreground surface itself remain functional
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] 設定ウィンドウ、コマンドパレット、ファイル検索画面、コンテキスト・ポップアップメニュー、設定内ポップアップ、または分離画面・オーバーレイ画面が開いている間は、背後にある画面・パネルのホバー（マウスカーソルを合わせる動作）やクリックに全く反応しないこと
+- [x] 前面に出ている画面自体の閉じるボタン、スクロール、クリック操作は引き続き正常に動作すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行して、統合的なデリバシールーチン（自己レビュー、コミット、PR作成、マージ作業）を完了させること。
 
 ---
 
-## 2. Final Verification & Release Work
+## 2. 最終検証およびリリース作業
 
-### Definition of Ready (DoR)
+### Definition of Ready (DoR: 着手可能の定義)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 前のタスクが完全なデリバリーサイクル（自己レビュー、必要なら復旧、PR作成、マージ、ブランチの削除）を終えていることを確認する。
+- [ ] ベースとなるブランチが最新の状態（同期済）であり、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 2.2 Ensure `make check` passes with exit code 0
-- [ ] 2.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 2.4 Create a PR targeting `master`
-- [ ] 2.5 Merge into master (※ `--admin` is permitted)
-- [ ] 2.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.16.5`
-- [ ] 2.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 2.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づいて自己レビューを実行する（各ファイルでバージョンの更新漏れがないかチェックする）
+- [ ] 2.2 `make check` コマンドがエラーゼロ（exit code 0）で通過することを確認する
+- [ ] 2.3 中継用の中間ベースブランチ（元はmasterから派生したもの）を `master` ブランチにマージする
+- [ ] 2.4 `master` へのPull Request（PR）を作成する
+- [ ] 2.5 master にマージする（※ `--admin` の使用を許可する）
+- [ ] 2.6 `.agents/skills/release_workflow/SKILL.md` に従って、`0.16.5` のリリースタグ生成とリリース作成を実行する
+- [ ] 2.7 `/opsx-archive` などのOpenSpec用スキルを活用して、この変更作業全体をアーカイブ（保存・終了）する
