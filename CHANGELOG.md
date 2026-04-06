@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.6] - 2026-04-06 16:08:00 (UTC)
+
+### ✨ Improvements
+
+- Pinned tabs can now be directly unpinned by clicking the pin icon, without using the context menu.
+
 ## [0.16.5] - 2026-04-06 15:30:00 (UTC)
 
 ### ✨ Improvements
