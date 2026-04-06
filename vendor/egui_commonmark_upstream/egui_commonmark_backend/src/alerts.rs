@@ -1,28 +1,34 @@
-use crate::elements::{blockquote, newline};
+use crate::elements::blockquote;
 use egui::Ui;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Alert {
-    /// The color that will be used to put emphasis to the alert
     pub accent_color: egui::Color32,
-    /// The icon that will be displayed
     pub icon: char,
-    /// The identifier that will be used to look for the blockquote such as NOTE and TIP
     pub identifier: String,
-    /// The identifier that will be shown when rendering. E.g: Note and Tip
     pub identifier_rendered: String,
 }
 
-// Seperate function to not leak into the public API
 pub fn alert_ui(alert: &Alert, ui: &mut Ui, add_contents: impl FnOnce(&mut Ui)) {
     blockquote(ui, alert.accent_color, |ui| {
-        ui.colored_label(alert.accent_color, alert.icon.to_string());
-        ui.add_space(3.0);
-        ui.colored_label(alert.accent_color, &alert.identifier_rendered);
-        // end line
-        newline(ui);
+        ui.vertical(|ui| {
+            // 見出しの上の余白。左のカラーライン（y+5で開始）より5px上から配置するため、10.0を設定
+            ui.add_space(10.0);
+            ui.horizontal(|ui| {
+                ui.colored_label(alert.accent_color, alert.icon.to_string());
+                ui.add_space(4.0);
+                ui.colored_label(alert.accent_color, &alert.identifier_rendered);
+            });
+            // 見出しから本文の間の余白を極限まで縮める（add_contents内のParagraph由来のnewlineを相殺する場合あり）
+            ui.add_space(-4.0);
+        });
+        
         add_contents(ui);
+        
+        ui.vertical(|ui| {
+            ui.add_space(10.0);
+        });
     })
 }
 
@@ -64,7 +70,7 @@ impl AlertBundle {
         Self::from_alerts(vec![
             Alert {
                 accent_color: egui::Color32::from_rgb(10, 80, 210),
-                icon: '❕',
+                icon: 'ℹ',
                 identifier: "NOTE".to_owned(),
                 identifier_rendered: "Note".to_owned(),
             },
@@ -88,7 +94,7 @@ impl AlertBundle {
             },
             Alert {
                 accent_color: egui::Color32::from_rgb(220, 0, 0),
-                icon: '🔴',
+                icon: '❕', // ◯に！のアイコン
                 identifier: "CAUTION".to_owned(),
                 identifier_rendered: "Caution".to_owned(),
             },

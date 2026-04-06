@@ -791,6 +791,40 @@ fn basic_fixture_en_s13_singleline_math_renders() {
     );
 }
 
+#[test]
+fn basic_fixture_en_s9_alert_spacing() {
+    let (_, _, source) = load_fixture("sample_basic.md");
+    let section_md = extract_section(
+        &source,
+        "### 9.\u{30a2}\u{30e9}\u{30fc}\u{30c8}\u{8a18}\u{6cd5}",
+        "## \u{2705}",
+    );
+    let pane = render_snippet(&section_md);
+    let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 600.0);
+
+    assert_below(
+        &harness,
+        "Note",
+        "Highlights information that users should take into account, even when skimming.",
+        "Alert Note title > content",
+    );
+
+    assert_below(
+        &harness,
+        "Highlights information that users should take into account, even when skimming.",
+        "Tip",
+        "Alert Note content > Tip title",
+    );
+
+    assert_gap_at_least(
+        &harness,
+        "Note",
+        "Highlights information that users should take into account, even when skimming.",
+        2.0,
+        "gap between Note title and Note content",
+    );
+}
+
 fn build_harness_accordion_open(sections: Vec<RenderedSection>) -> Harness<'static> {
     let mut fonts_loaded = false;
     let mut harness = Harness::builder()
