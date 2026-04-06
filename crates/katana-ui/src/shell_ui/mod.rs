@@ -19,6 +19,10 @@ impl ShellUiOps {
     pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
         rfd::FileDialog::new().pick_folder()
     }
+
+    pub(crate) fn pick_open_workspace() -> AppAction {
+        AppAction::PickOpenWorkspace
+    }
 }
 
 pub(crate) const WORKSPACE_SPINNER_OUTER_MARGIN: f32 = 10.0;

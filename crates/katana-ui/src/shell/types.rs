@@ -10,14 +10,14 @@ pub(crate) struct TabPreviewCache {
     pub hash: u64,
 }
 
-pub(crate) enum WorkspaceLoadType {
+pub(crate) enum ExplorerLoadType {
     Open,
     Refresh,
 }
 
-pub(crate) type WorkspaceLoadResult =
+pub(crate) type ExplorerLoadResult =
     Result<katana_core::workspace::Workspace, katana_core::workspace::WorkspaceError>;
-pub(crate) type WorkspaceLoadMessage = (WorkspaceLoadType, std::path::PathBuf, WorkspaceLoadResult);
+pub(crate) type ExplorerLoadMessage = (ExplorerLoadType, std::path::PathBuf, ExplorerLoadResult);
 
 pub(crate) struct ExportTask {
     pub filename: String,
@@ -36,7 +36,7 @@ pub struct KatanaApp {
     pub(crate) pending_action: AppAction,
     pub(crate) tab_previews: Vec<TabPreviewCache>,
     pub(crate) download_rx: Option<std::sync::mpsc::Receiver<Result<(), String>>>,
-    pub(crate) workspace_rx: Option<std::sync::mpsc::Receiver<WorkspaceLoadMessage>>,
+    pub(crate) explorer_rx: Option<std::sync::mpsc::Receiver<ExplorerLoadMessage>>,
     pub(crate) update_rx:
         Option<std::sync::mpsc::Receiver<Result<Option<katana_core::update::ReleaseInfo>, String>>>,
     pub(crate) changelog_rx: Option<std::sync::mpsc::Receiver<crate::changelog::ChangelogEvent>>,

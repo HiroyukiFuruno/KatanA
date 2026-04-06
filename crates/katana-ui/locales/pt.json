@@ -20,7 +20,8 @@
     "check_updates": "Verificar atualizações...",
     "release_notes": "Notas de versão",
     "view": "Exibir",
-    "command_palette": "Painel de comandos…"
+    "command_palette": "Painel de comandos…",
+    "close_workspace": "Close Workspace (pt)"
   },
   "about": {
     "basic_info": "Informações básicas",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "Nenhum espaço de trabalho aberto.",
     "no_document_selected": "Nenhum documento aberto.",
-    "workspace_title": "Espaço de Trabalho",
-    "recent_workspaces": "Espaços de trabalho recentes",
+    "recent_workspaces": "Espaços de trabalho",
     "metadata_tooltip": "Tamanho: {size} B\nModificado: {mod_time}",
     "path_label": "Caminho",
     "flat_view": "Visualização Plana",
-    "filter_regex_hint": "Filtrar (Expressão regular)..."
+    "filter_regex_hint": "Filtrar (Expressão regular)...",
+    "explorer_title": "Explorador de Arquivos",
+    "workspace_history_title": "Histórico do workspace",
+    "open_folder_hint": "Open a folder to start using KatanA. (pt)",
+    "open_workspace_button": "Open Workspace (pt)",
+    "remove_history_tooltip": "Remove from history (pt)"
   },
   "preview": {
     "preview_title": "Visualização",
@@ -122,13 +127,15 @@
     "problems_panel_close": "Fechar painel",
     "no_problems_found": "Nenhum problema detectado no espaço de trabalho.",
     "toggle_problems_panel": "Alternar painel de erros",
-    "problems_count_format": "Problemas encontrados: {count}"
+    "problems_count_format": "Problemas encontrados: {count}",
+    "removed_workspace": "Workspace {path} removed. (pt)",
+    "error_save_settings": "Failed to save settings. (pt)",
+    "closed_workspace": "Workspace closed. (pt)"
   },
   "action": {
     "expand_all": "Expandir Tudo",
     "collapse_all": "Recolher Tudo",
     "collapse_sidebar": "Recolher",
-    "refresh_workspace": "Atualizar",
     "toggle_filter": "Filtro",
     "remove_workspace": "Remover",
     "recursive_expand": "Expansão Recursiva",
@@ -148,7 +155,8 @@
     "confirm": "Confirmar",
     "copy_relative_path": "Caminho Relativo",
     "refresh_document": "Atualizar documento",
-    "toggle_slideshow": "Apresentação de slides"
+    "toggle_slideshow": "Apresentação de slides",
+    "refresh_explorer": "Atualizar vista"
   },
   "ai": {
     "ai_unconfigured": "[AI: não configurado]"
@@ -347,13 +355,13 @@
     "ln_prefix": "Lin ",
     "palette_query_hint": "Digite um comando ou busque...",
     "command_settings": "Alternar configurações",
-    "command_workspace": "Alternar painel do espaço de trabalho",
     "command_close_all": "Fechar todos os documentos",
-    "command_refresh": "Atualizar espaço de trabalho",
     "command_updates": "Verificar atualizações",
     "command_about": "Alternar Sobre",
     "command_type_action": "Ação de comando",
-    "palette_no_results": "Resultados não encontrados."
+    "palette_no_results": "Resultados não encontrados.",
+    "command_explorer": "Alternar painel do explorador",
+    "command_refresh_explorer": "Atualizar explorador"
   },
   "toc": {
     "title": "Sumário",

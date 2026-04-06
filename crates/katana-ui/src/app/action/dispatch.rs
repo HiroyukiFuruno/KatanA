@@ -6,8 +6,13 @@ impl KatanaApp {
     #[allow(clippy::too_many_lines)]
     pub(super) fn dispatch_action(&mut self, ctx: &egui::Context, action: AppAction) {
         match action {
-            AppAction::OpenWorkspace(p) => self.handle_open_workspace(p),
-            AppAction::RefreshWorkspace => self.handle_refresh_workspace(),
+            AppAction::PickOpenWorkspace => {
+                if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
+                    self.handle_open_explorer(path);
+                }
+            }
+            AppAction::OpenWorkspace(p) => self.handle_open_explorer(p),
+            AppAction::RefreshExplorer => self.handle_refresh_explorer(),
             AppAction::CreateFsNode {
                 parent_dir,
                 is_dir,
@@ -27,7 +32,23 @@ impl KatanaApp {
                 byte_range: _,
             } => self.handle_action_select_and_jump(path, line),
             AppAction::OpenMultipleDocuments(paths) => self.handle_action_open_multiple(paths),
-            AppAction::RemoveWorkspace(path) => self.handle_remove_workspace(path),
+            AppAction::RemoveWorkspace(path) => self.handle_remove_explorer(path),
+            AppAction::RemoveWorkspaceHistory(path) => self.handle_remove_workspace_history(path),
+            AppAction::CloseWorkspace => {
+                self.save_workspace_state();
+                self.state.workspace.data = None;
+                self.state.document.open_documents.clear();
+                self.state.document.active_doc_idx = None;
+                self.state.document.tab_groups.clear();
+                self.state.document.tab_view_modes.clear();
+                self.state.document.tab_split_states.clear();
+                self.state.document.recently_closed_tabs.clear();
+                self.state.search.filter_cache = None;
+                self.state.layout.status_message = Some((
+                    crate::i18n::I18nOps::get().status.closed_workspace.clone(),
+                    crate::app_state::StatusType::Success,
+                ));
+            }
             AppAction::CloseDocument(idx) => self.handle_action_close_document(idx),
             AppAction::ForceCloseDocument(idx) => {
                 self.state.layout.pending_close_confirm = None;
@@ -59,12 +80,23 @@ impl KatanaApp {
             }
             AppAction::ToggleAbout => self.show_about = !self.show_about,
             AppAction::ToggleToc => self.state.layout.show_toc = !self.state.layout.show_toc,
-            AppAction::ToggleWorkspace => {
-                self.state.layout.show_workspace = !self.state.layout.show_workspace;
+            AppAction::ToggleWorkspacePanel => {
+                let current = self.state.layout.show_workspace_panel;
+                self.state.layout.show_explorer = false;
+                self.state.layout.show_history_panel = false;
+                self.state.layout.show_workspace_panel = !current;
             }
-            AppAction::ToggleWorkspaceHistoryModal => {
-                self.state.layout.show_workspace_history_modal =
-                    !self.state.layout.show_workspace_history_modal;
+            AppAction::ToggleExplorer => {
+                let current = self.state.layout.show_explorer;
+                self.state.layout.show_workspace_panel = false;
+                self.state.layout.show_history_panel = false;
+                self.state.layout.show_explorer = !current;
+            }
+            AppAction::ToggleHistoryPanel => {
+                let current = self.state.layout.show_history_panel;
+                self.state.layout.show_workspace_panel = false;
+                self.state.layout.show_explorer = false;
+                self.state.layout.show_history_panel = !current;
             }
             AppAction::ToggleSearchModal => {
                 self.state.layout.show_search_modal = !self.state.layout.show_search_modal;
@@ -85,7 +117,7 @@ impl KatanaApp {
                 self.state.diagnostics.is_panel_open = !self.state.diagnostics.is_panel_open;
             }
             AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
-            AppAction::ToggleWorkspaceFilter => {
+            AppAction::ToggleExplorerFilter => {
                 self.state.search.filter_enabled = !self.state.search.filter_enabled;
             }
             AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),

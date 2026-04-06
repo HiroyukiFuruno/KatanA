@@ -98,6 +98,12 @@ pub struct MenuMessages {
     pub command_palette: String,
     #[serde(default = "default_menu_view")]
     pub view: String,
+    #[serde(default = "default_menu_close_workspace")]
+    pub close_workspace: String,
+}
+
+fn default_menu_close_workspace() -> String {
+    "Close Workspace".to_string()
 }
 
 fn default_menu_command_palette() -> String {
@@ -116,8 +122,13 @@ fn default_menu_release_notes() -> String {
 pub struct WorkspaceMessages {
     pub no_workspace_open: String,
     pub no_document_selected: String,
-    pub workspace_title: String,
+    #[serde(alias = "workspace_title")]
+    pub explorer_title: String,
+    pub workspace_history_title: String,
     pub recent_workspaces: String,
+    pub open_folder_hint: String,
+    pub open_workspace_button: String,
+    pub remove_history_tooltip: String,
     #[serde(default = "default_metadata_tooltip")]
     pub metadata_tooltip: String,
     pub path_label: String,
@@ -244,6 +255,16 @@ pub struct StatusMessages {
     pub toggle_problems_panel: String,
     #[serde(default = "default_problems_count_format")]
     pub problems_count_format: String,
+    #[serde(default = "default_removed_workspace")]
+    pub removed_workspace: String,
+    #[serde(default = "default_error_save_settings")]
+    pub error_save_settings: String,
+    #[serde(default = "default_closed_workspace")]
+    pub closed_workspace: String,
+}
+
+fn default_closed_workspace() -> String {
+    "Workspace closed.".to_string()
 }
 
 fn default_refresh_success() -> String {
@@ -273,13 +294,20 @@ fn default_toggle_problems_panel() -> String {
 fn default_problems_count_format() -> String {
     "Problems: {count}".to_string()
 }
+fn default_removed_workspace() -> String {
+    "Workspace '{path}' removed.".to_string()
+}
+fn default_error_save_settings() -> String {
+    "Failed to save settings.".to_string()
+}
 
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct ActionMessages {
     pub expand_all: String,
     pub collapse_all: String,
     pub collapse_sidebar: String,
-    pub refresh_workspace: String,
+    #[serde(alias = "refresh_workspace")]
+    pub refresh_explorer: String,
     pub toggle_filter: String,
     pub remove_workspace: String,
     #[serde(default)]
@@ -945,9 +973,9 @@ mod default_coverage_tests {
         assert_eq!(default_toggle_problems_panel(), "Toggle Problems Panel");
         assert_eq!(default_problems_count_format(), "Problems: {count}");
         assert_eq!(default_command_settings(), "Toggle Settings");
-        assert_eq!(default_command_workspace(), "Toggle Workspace Panel");
+        assert_eq!(default_command_explorer(), "Toggle Workspace Panel");
         assert_eq!(default_command_close_all(), "Close All Documents");
-        assert_eq!(default_command_refresh(), "Refresh Workspace");
+        assert_eq!(default_command_refresh_explorer(), "Refresh Workspace");
         assert_eq!(default_command_updates(), "Check for Updates");
         assert_eq!(default_command_about(), "Toggle About");
     }

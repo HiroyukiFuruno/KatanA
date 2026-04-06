@@ -22,9 +22,13 @@ impl CommandPaletteProvider for AppCommandProvider {
         let msgs = &crate::i18n::I18nOps::get().search;
         let commands = vec![
             (&msgs.command_settings, AppAction::ToggleSettings, 0.9),
-            (&msgs.command_workspace, AppAction::ToggleWorkspace, 0.8),
+            (&msgs.command_explorer, AppAction::ToggleExplorer, 0.8),
             (&msgs.command_close_all, AppAction::CloseAllDocuments, 0.7),
-            (&msgs.command_refresh, AppAction::RefreshWorkspace, 0.7),
+            (
+                &msgs.command_refresh_explorer,
+                AppAction::RefreshExplorer,
+                0.7,
+            ),
             (&msgs.command_updates, AppAction::CheckForUpdates, 0.6),
             (&msgs.command_about, AppAction::ToggleAbout, 0.6),
         ];

@@ -20,7 +20,8 @@
     "check_updates": "업데이트 확인...",
     "release_notes": "버전 정보",
     "view": "보기",
-    "command_palette": "명령어 팔레트…"
+    "command_palette": "명령어 팔레트…",
+    "close_workspace": "Close Workspace (ko)"
   },
   "about": {
     "basic_info": "기본 정보",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "열린 워크스페이스가 없습니다.",
     "no_document_selected": "열린 문서가 없습니다.",
-    "workspace_title": "워크스페이스",
-    "recent_workspaces": "최근 워크스페이스",
+    "recent_workspaces": "워크스페이스",
     "metadata_tooltip": "크기: {size} B\n수정: {mod_time}",
     "path_label": "경로",
     "flat_view": "플랫 뷰",
-    "filter_regex_hint": "필터 (정규식)..."
+    "filter_regex_hint": "필터 (정규식)...",
+    "explorer_title": "파일 탐색기",
+    "workspace_history_title": "워크스페이스 기록",
+    "open_folder_hint": "Open a folder to start using KatanA. (ko)",
+    "open_workspace_button": "Open Workspace (ko)",
+    "remove_history_tooltip": "Remove from history (ko)"
   },
   "preview": {
     "preview_title": "미리보기",
@@ -122,13 +127,15 @@
     "problems_panel_close": "닫기",
     "no_problems_found": "워크스페이스에서 문제를 찾을 수 없습니다.",
     "toggle_problems_panel": "문제 패널 전환",
-    "problems_count_format": "문제: {count}"
+    "problems_count_format": "문제: {count}",
+    "removed_workspace": "Workspace {path} removed. (ko)",
+    "error_save_settings": "Failed to save settings. (ko)",
+    "closed_workspace": "Workspace closed. (ko)"
   },
   "action": {
     "expand_all": "모두 확장",
     "collapse_all": "모두 축소",
     "collapse_sidebar": "사이드바 축소",
-    "refresh_workspace": "작업 공간 새로고침",
     "toggle_filter": "필터 전환",
     "remove_workspace": "작업 공간 제거",
     "recursive_expand": "재귀적 확장",
@@ -148,7 +155,8 @@
     "confirm": "확인",
     "copy_relative_path": "상대 경로 복사",
     "refresh_document": "문서 새로 고침",
-    "toggle_slideshow": "슬라이드쇼"
+    "toggle_slideshow": "슬라이드쇼",
+    "refresh_explorer": "새로 고침"
   },
   "ai": {
     "ai_unconfigured": "[AI: 설정되지 않음]"
@@ -347,13 +355,13 @@
     "ln_prefix": "라인 ",
     "palette_query_hint": "명령어 입력 또는 검색...",
     "command_settings": "설정 토글",
-    "command_workspace": "워크스페이스 패널 토글",
     "command_close_all": "모든 문서 닫기",
-    "command_refresh": "워크스페이스 새로 고침",
     "command_updates": "업데이트 확인",
     "command_about": "KatanA 정보 토글",
     "command_type_action": "명령어",
-    "palette_no_results": "결과가 없습니다."
+    "palette_no_results": "결과가 없습니다.",
+    "command_explorer": "탐색기 패널 전환",
+    "command_refresh_explorer": "탐색기 새로 고침"
   },
   "toc": {
     "title": "목차",

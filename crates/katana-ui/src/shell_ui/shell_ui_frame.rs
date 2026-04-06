@@ -58,6 +58,7 @@ impl KatanaApp {
         if let Some(settings_action) =
             crate::settings::SettingsWindow::new(&mut self.state, &mut self.settings_preview)
                 .show(ctx)
+                .filter(|_| matches!(self.pending_action, AppAction::None))
         {
             self.pending_action = settings_action;
         }
@@ -86,7 +87,7 @@ impl KatanaApp {
                 &mut self.pending_action,
             )
             .show(ctx);
-            if !is_open {
+            if !is_open && matches!(self.pending_action, AppAction::None) {
                 self.pending_action = AppAction::ToggleSearchModal;
             }
 
@@ -109,27 +110,6 @@ impl KatanaApp {
                 if !self.state.config.try_save_settings() {
                     tracing::warn!("Failed to save search history settings");
                 }
-            }
-        }
-
-        if self.state.layout.show_workspace_history_modal {
-            let mut is_open = true;
-            let recent_paths = self
-                .state
-                .config
-                .settings
-                .settings()
-                .workspace
-                .paths
-                .clone();
-            crate::views::app_frame::sidebar::workspace::history::WorkspaceHistoryModal::new(
-                &mut is_open,
-                &recent_paths,
-                &mut self.pending_action,
-            )
-            .show(ctx);
-            if !is_open {
-                self.pending_action = AppAction::ToggleWorkspaceHistoryModal;
             }
         }
 

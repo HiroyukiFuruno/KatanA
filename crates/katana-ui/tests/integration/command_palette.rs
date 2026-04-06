@@ -345,7 +345,7 @@ fn test_keyboard_navigation_state() {
             score: 0.9,
             kind: CommandPaletteResultKind::Action,
             execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
-                AppAction::ToggleWorkspace,
+                AppAction::ToggleExplorer,
             ),
         },
     ];

@@ -20,7 +20,8 @@
     "check_updates": "检查更新...",
     "release_notes": "发行说明",
     "view": "查看",
-    "command_palette": "命令面板…"
+    "command_palette": "命令面板…",
+    "close_workspace": "Close Workspace (zh-CN)"
   },
   "about": {
     "basic_info": "基本信息",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "未打开工作区。",
     "no_document_selected": "未打开文档。",
-    "workspace_title": "工作区",
-    "recent_workspaces": "最近的工作区",
+    "recent_workspaces": "工作区",
     "metadata_tooltip": "大小: {size} B\n修改时间: {mod_time}",
     "path_label": "路径",
     "flat_view": "扁平视图",
-    "filter_regex_hint": "过滤 (正则表达式)..."
+    "filter_regex_hint": "过滤 (正则表达式)...",
+    "explorer_title": "文件资源管理器",
+    "workspace_history_title": "工作区历史",
+    "open_folder_hint": "Open a folder to start using KatanA. (zh-CN)",
+    "open_workspace_button": "Open Workspace (zh-CN)",
+    "remove_history_tooltip": "Remove from history (zh-CN)"
   },
   "preview": {
     "preview_title": "预览",
@@ -122,13 +127,15 @@
     "problems_panel_close": "关闭",
     "no_problems_found": "工作区内未发现问题。",
     "toggle_problems_panel": "切换问题面板",
-    "problems_count_format": "⚠️ 问题: {count}"
+    "problems_count_format": "⚠️ 问题: {count}",
+    "removed_workspace": "Workspace {path} removed. (zh-CN)",
+    "error_save_settings": "Failed to save settings. (zh-CN)",
+    "closed_workspace": "Workspace closed. (zh-CN)"
   },
   "action": {
     "expand_all": "展开全部",
     "collapse_all": "折叠全部",
     "collapse_sidebar": "折叠侧边栏",
-    "refresh_workspace": "刷新工作区",
     "toggle_filter": "切换过滤器",
     "remove_workspace": "移除工作区",
     "recursive_expand": "递归展开",
@@ -148,7 +155,8 @@
     "confirm": "确认",
     "copy_relative_path": "复制相对路径",
     "refresh_document": "刷新文档",
-    "toggle_slideshow": "幻灯片"
+    "toggle_slideshow": "幻灯片",
+    "refresh_explorer": "刷新"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未配置]"
@@ -347,13 +355,13 @@
     "ln_prefix": "📄 第 ",
     "palette_query_hint": "输入命令或进行搜索...",
     "command_settings": "切换设置",
-    "command_workspace": "切换工作区面板",
     "command_close_all": "关闭所有文档",
-    "command_refresh": "刷新工作区",
     "command_updates": "检查更新",
     "command_about": "切换关于",
     "command_type_action": "命令",
-    "palette_no_results": "未找到结果。"
+    "palette_no_results": "未找到结果。",
+    "command_explorer": "显示资源管理器",
+    "command_refresh_explorer": "刷新文件列表"
   },
   "toc": {
     "title": "目录",

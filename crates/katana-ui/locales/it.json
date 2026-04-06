@@ -20,7 +20,8 @@
     "check_updates": "Controlla aggiornamenti...",
     "release_notes": "Note di rilascio",
     "view": "Visualizza",
-    "command_palette": "Tavolozza dei comandi…"
+    "command_palette": "Tavolozza dei comandi…",
+    "close_workspace": "Close Workspace (it)"
   },
   "about": {
     "basic_info": "Informazioni di base",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "Nessuno spazio di lavoro aperto.",
     "no_document_selected": "Nessun documento aperto.",
-    "workspace_title": "Spazio di Lavoro",
-    "recent_workspaces": "Spazi di lavoro recenti",
+    "recent_workspaces": "Spazi di lavoro",
     "metadata_tooltip": "Dimensioni: {size} B\nModificato: {mod_time}",
     "path_label": "Percorso",
     "flat_view": "Vista piatta",
-    "filter_regex_hint": "Filtra (Regex)..."
+    "filter_regex_hint": "Filtra (Regex)...",
+    "explorer_title": "Esplora file",
+    "workspace_history_title": "Cronologia area di lavoro",
+    "open_folder_hint": "Open a folder to start using KatanA. (it)",
+    "open_workspace_button": "Open Workspace (it)",
+    "remove_history_tooltip": "Remove from history (it)"
   },
   "preview": {
     "preview_title": "Anteprima",
@@ -122,13 +127,15 @@
     "problems_panel_close": "Chiudi",
     "no_problems_found": "Nessun problema trovato nello spazio di lavoro.",
     "toggle_problems_panel": "Attiva/disattiva pannello problemi",
-    "problems_count_format": "Problemi: {count}"
+    "problems_count_format": "Problemi: {count}",
+    "removed_workspace": "Workspace {path} removed. (it)",
+    "error_save_settings": "Failed to save settings. (it)",
+    "closed_workspace": "Workspace closed. (it)"
   },
   "action": {
     "expand_all": "Espandi Tutto",
     "collapse_all": "Comprimi Tutto",
     "collapse_sidebar": "Comprimi",
-    "refresh_workspace": "Aggiorna",
     "toggle_filter": "Filtro",
     "remove_workspace": "Rimuovi",
     "recursive_expand": "Espansione ricorsiva",
@@ -148,7 +155,8 @@
     "confirm": "Conferma",
     "copy_relative_path": "Copia Relativo",
     "refresh_document": "Aggiorna documento",
-    "toggle_slideshow": "Presentazione"
+    "toggle_slideshow": "Presentazione",
+    "refresh_explorer": "Aggiorna visualizzazione"
   },
   "ai": {
     "ai_unconfigured": "[AI: non configurato]"
@@ -347,13 +355,13 @@
     "ln_prefix": "Rig ",
     "palette_query_hint": "Digita un comando o cerca...",
     "command_settings": "Attiva/disattiva impostazioni",
-    "command_workspace": "Pannello area di lavoro",
     "command_close_all": "Chiudi tutti i documenti",
-    "command_refresh": "Aggiorna area di lavoro",
     "command_updates": "Controlla aggiornamenti",
     "command_about": "Attiva/disattiva Informazioni",
     "command_type_action": "Azione del comando",
-    "palette_no_results": "Nessun risultato disponibile."
+    "palette_no_results": "Nessun risultato disponibile.",
+    "command_explorer": "Attiva pannello Esplora file",
+    "command_refresh_explorer": "Aggiorna Esplora file"
   },
   "toc": {
     "title": "Indice",

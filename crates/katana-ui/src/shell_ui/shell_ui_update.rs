@@ -43,7 +43,7 @@ impl KatanaApp {
 
         self.handle_shortcuts(ctx);
         self.poll_download(ctx);
-        self.poll_workspace_load(ctx);
+        self.poll_explorer_load(ctx);
 
         if let Some(path) = self.pending_document_loads.pop_front() {
             self.handle_select_document(path, false);

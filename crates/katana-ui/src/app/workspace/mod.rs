@@ -14,42 +14,46 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::Receiver;
 
-mod manage;
+pub(crate) mod manage;
 mod open;
 mod poll;
 
 pub(crate) trait WorkspaceOps {
-    fn handle_open_workspace(&mut self, path: std::path::PathBuf);
-    fn finish_open_workspace(
+    fn handle_open_explorer(&mut self, path: std::path::PathBuf);
+    fn finish_open_explorer(
         &mut self,
         path: std::path::PathBuf,
         ws: katana_core::workspace::Workspace,
     );
-    fn handle_refresh_workspace(&mut self);
-    fn poll_workspace_load(&mut self, ctx: &egui::Context);
-    fn handle_remove_workspace(&mut self, path: String);
+    fn handle_refresh_explorer(&mut self);
+    fn poll_explorer_load(&mut self, ctx: &egui::Context);
+    fn handle_remove_explorer(&mut self, path: String);
+    fn handle_remove_workspace_history(&mut self, path: String);
     fn save_workspace_state(&mut self);
 }
 
 impl WorkspaceOps for KatanaApp {
-    fn handle_open_workspace(&mut self, path: std::path::PathBuf) {
-        open::handle_open_workspace(self, path);
+    fn handle_open_explorer(&mut self, path: std::path::PathBuf) {
+        open::handle_open_explorer(self, path);
     }
-    fn finish_open_workspace(
+    fn finish_open_explorer(
         &mut self,
         path: std::path::PathBuf,
         ws: katana_core::workspace::Workspace,
     ) {
-        open::finish_open_workspace(self, path, ws);
+        open::finish_open_explorer(self, path, ws);
     }
-    fn handle_refresh_workspace(&mut self) {
-        poll::handle_refresh_workspace(self);
+    fn handle_refresh_explorer(&mut self) {
+        poll::handle_refresh_explorer(self);
     }
-    fn poll_workspace_load(&mut self, ctx: &egui::Context) {
-        poll::poll_workspace_load(self, ctx);
+    fn poll_explorer_load(&mut self, ctx: &egui::Context) {
+        poll::poll_explorer_load(self, ctx);
     }
-    fn handle_remove_workspace(&mut self, path: String) {
-        manage::handle_remove_workspace(self, path);
+    fn handle_remove_explorer(&mut self, path: String) {
+        manage::handle_remove_explorer(self, path);
+    }
+    fn handle_remove_workspace_history(&mut self, path: String) {
+        manage::handle_remove_workspace_history(self, path);
     }
     fn save_workspace_state(&mut self) {
         manage::save_workspace_state(self);

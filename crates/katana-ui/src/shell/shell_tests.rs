@@ -23,11 +23,11 @@ mod tests {
         dir
     }
 
-    fn wait_for_workspace(app: &mut KatanaApp) {
+    fn wait_for_explorer(app: &mut KatanaApp) {
         let ctx = egui::Context::default();
         for _ in 0..100 {
-            app.poll_workspace_load(&ctx);
-            if app.workspace_rx.is_none() {
+            app.poll_explorer_load(&ctx);
+            if app.explorer_rx.is_none() {
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(10));
@@ -35,20 +35,20 @@ mod tests {
     }
 
     #[test]
-    fn handle_open_workspace_success_sets_workspace() {
+    fn handle_open_explorer_success_sets_workspace() {
         let mut app = make_app();
         let dir = make_temp_workspace();
-        app.handle_open_workspace(dir.path().to_path_buf());
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
         assert!(app.state.workspace.data.is_some());
         assert!(app.state.layout.status_message.is_some());
     }
 
     #[test]
-    fn handle_open_workspace_error_sets_status_message() {
+    fn handle_open_explorer_error_sets_status_message() {
         let mut app = make_app();
-        app.handle_open_workspace(PathBuf::from("/nonexistent/path/that/cannot/exist"));
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(PathBuf::from("/nonexistent/path/that/cannot/exist"));
+        wait_for_explorer(&mut app);
         assert!(
             app.state.workspace.data.is_some() || app.state.layout.status_message.is_some(),
             "Error or workspace should be set"
@@ -468,7 +468,7 @@ mod tests_extra {
             &egui::Context::default(),
             AppAction::OpenWorkspace(dir.path().to_path_buf()),
         );
-        wait_for_workspace(&mut app);
+        wait_for_explorer(&mut app);
         assert!(app.state.workspace.data.is_some());
     }
 
@@ -652,11 +652,11 @@ mod tests_extra {
         KatanaApp::new(state)
     }
 
-    fn wait_for_workspace(app: &mut KatanaApp) {
+    fn wait_for_explorer(app: &mut KatanaApp) {
         let ctx = egui::Context::default();
         for _ in 0..100 {
-            app.poll_workspace_load(&ctx);
-            if app.workspace_rx.is_none() {
+            app.poll_explorer_load(&ctx);
+            if app.explorer_rx.is_none() {
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(10));
@@ -664,11 +664,11 @@ mod tests_extra {
     }
 
     #[test]
-    fn handle_open_workspace_save_error_does_not_panic() {
+    fn handle_open_explorer_save_error_does_not_panic() {
         let mut app = make_app_with_failing_repo();
         let dir = make_temp_workspace();
-        app.handle_open_workspace(dir.path().to_path_buf());
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
         assert!(app.state.workspace.data.is_some());
     }
 
@@ -720,17 +720,17 @@ mod tests_extra {
     }
 
     #[test]
-    fn handle_refresh_workspace_rescans_tree() {
+    fn handle_refresh_explorer_rescans_tree() {
         let mut app = make_app();
         let dir = make_temp_workspace();
-        app.handle_open_workspace(dir.path().to_path_buf());
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
         assert!(app.state.workspace.data.is_some());
 
         std::fs::write(dir.path().join("new.md"), "# New").unwrap();
 
-        app.handle_refresh_workspace();
-        wait_for_workspace(&mut app);
+        app.handle_refresh_explorer();
+        wait_for_explorer(&mut app);
         let ws = app.state.workspace.data.as_ref().unwrap();
         let paths: Vec<_> = ws
             .tree
@@ -741,25 +741,25 @@ mod tests_extra {
     }
 
     #[test]
-    fn handle_refresh_workspace_no_workspace_does_nothing() {
+    fn handle_refresh_explorer_no_workspace_does_nothing() {
         let mut app = make_app();
-        app.handle_refresh_workspace();
+        app.handle_refresh_explorer();
         assert!(app.state.workspace.data.is_none());
     }
 
     #[test]
-    fn handle_refresh_workspace_error_sets_status_message() {
+    fn handle_refresh_explorer_error_sets_status_message() {
         let mut app = make_app();
         let dir = make_temp_workspace();
-        app.handle_open_workspace(dir.path().to_path_buf());
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
         assert!(app.state.workspace.data.is_some());
 
         app.state.workspace.data.as_mut().unwrap().root =
             std::path::PathBuf::from("/nonexistent/deleted/workspace");
 
-        app.handle_refresh_workspace();
-        wait_for_workspace(&mut app);
+        app.handle_refresh_explorer();
+        wait_for_explorer(&mut app);
         assert!(app.state.layout.status_message.is_some());
     }
 
@@ -767,10 +767,10 @@ mod tests_extra {
     fn process_action_refresh_workspace_calls_handler() {
         let mut app = make_app();
         let dir = make_temp_workspace();
-        app.handle_open_workspace(dir.path().to_path_buf());
-        wait_for_workspace(&mut app);
-        app.process_action(&egui::Context::default(), AppAction::RefreshWorkspace);
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+        app.process_action(&egui::Context::default(), AppAction::RefreshExplorer);
+        wait_for_explorer(&mut app);
         assert!(app.state.workspace.data.is_some());
     }
     #[test]
@@ -779,8 +779,8 @@ mod tests_extra {
         let dir = make_temp_workspace();
         let file_path = dir.path().join("a.md");
         std::fs::write(&file_path, "A").unwrap();
-        app.handle_open_workspace(dir.path().to_path_buf());
-        wait_for_workspace(&mut app);
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
         app.handle_select_document(file_path.clone(), true);
 
         let doc = app.state.active_document_mut().unwrap();
@@ -796,7 +796,7 @@ mod tests_extra {
     }
 
     #[test]
-    fn test_poll_workspace_load_disconnect() {
+    fn test_poll_explorer_load_disconnect() {
         let state = AppState::new(
             katana_core::ai::AiProviderRegistry::default(),
             katana_core::plugin::PluginRegistry::default(),
@@ -806,13 +806,13 @@ mod tests_extra {
         let mut app = KatanaApp::new(state);
 
         let (tx, rx) = std::sync::mpsc::channel();
-        app.workspace_rx = Some(rx);
+        app.explorer_rx = Some(rx);
         app.state.workspace.is_loading = true;
 
         drop(tx);
 
         let ui_ctx = egui::Context::default();
-        app.poll_workspace_load(&ui_ctx);
+        app.poll_explorer_load(&ui_ctx);
 
         assert!(!app.state.workspace.is_loading);
     }
@@ -900,7 +900,7 @@ mod tests_extra {
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
             download_rx: None,
-            workspace_rx: None,
+            explorer_rx: None,
             update_rx: None,
             changelog_rx: None,
             update_install_rx: None,

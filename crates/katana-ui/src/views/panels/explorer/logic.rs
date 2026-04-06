@@ -4,7 +4,7 @@ use katana_core::workspace::TreeEntry;
 use std::collections::HashSet;
 use std::path::Path;
 
-impl WorkspaceLogicOps {
+impl ExplorerLogicOps {
     pub fn update_tree_expansion(workspace: &mut WorkspaceState) {
         if let Some(force) = workspace.force_tree_open {
             if let Some(ws) = &workspace.data {

@@ -35,12 +35,12 @@ pub struct SearchMessages {
     pub ln_prefix: String,
     #[serde(default = "default_command_settings")]
     pub command_settings: String,
-    #[serde(default = "default_command_workspace")]
-    pub command_workspace: String,
+    #[serde(default = "default_command_explorer")]
+    pub command_explorer: String,
     #[serde(default = "default_command_close_all")]
     pub command_close_all: String,
-    #[serde(default = "default_command_refresh")]
-    pub command_refresh: String,
+    #[serde(default = "default_command_refresh_explorer")]
+    pub command_refresh_explorer: String,
     #[serde(default = "default_command_updates")]
     pub command_updates: String,
     #[serde(default = "default_command_about")]
@@ -52,13 +52,13 @@ pub struct SearchMessages {
 pub(super) fn default_command_settings() -> String {
     "Toggle Settings".to_string()
 }
-pub(super) fn default_command_workspace() -> String {
+pub(super) fn default_command_explorer() -> String {
     "Toggle Workspace Panel".to_string()
 }
 pub(super) fn default_command_close_all() -> String {
     "Close All Documents".to_string()
 }
-pub(super) fn default_command_refresh() -> String {
+pub(super) fn default_command_refresh_explorer() -> String {
     "Refresh Workspace".to_string()
 }
 pub(super) fn default_command_updates() -> String {

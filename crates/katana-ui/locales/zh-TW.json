@@ -20,7 +20,8 @@
     "check_updates": "檢查更新...",
     "release_notes": "發行說明",
     "view": "檢視",
-    "command_palette": "指令面板…"
+    "command_palette": "指令面板…",
+    "close_workspace": "Close Workspace (zh-TW)"
   },
   "about": {
     "basic_info": "基本資訊",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "未開啟工作區。",
     "no_document_selected": "未開啟文件。",
-    "workspace_title": "工作區",
-    "recent_workspaces": "最近的工作區",
+    "recent_workspaces": "工作區",
     "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
     "path_label": "路徑",
     "flat_view": "扁平視圖",
-    "filter_regex_hint": "篩選 (正則表達式)..."
+    "filter_regex_hint": "篩選 (正則表達式)...",
+    "explorer_title": "檔案總管",
+    "workspace_history_title": "工作區歷史",
+    "open_folder_hint": "Open a folder to start using KatanA. (zh-TW)",
+    "open_workspace_button": "Open Workspace (zh-TW)",
+    "remove_history_tooltip": "Remove from history (zh-TW)"
   },
   "preview": {
     "preview_title": "預覽",
@@ -122,13 +127,15 @@
     "problems_panel_close": "關閉",
     "no_problems_found": "工作區內未發現問題。",
     "toggle_problems_panel": "切換問題面板",
-    "problems_count_format": "⚠️ 發現問題: {count}"
+    "problems_count_format": "⚠️ 發現問題: {count}",
+    "removed_workspace": "Workspace {path} removed. (zh-TW)",
+    "error_save_settings": "Failed to save settings. (zh-TW)",
+    "closed_workspace": "Workspace closed. (zh-TW)"
   },
   "action": {
     "expand_all": "展開全部",
     "collapse_all": "摺疊全部",
     "collapse_sidebar": "摺疊側邊欄",
-    "refresh_workspace": "重新整理工作區",
     "toggle_filter": "切換篩選器",
     "remove_workspace": "移除工作區",
     "recursive_expand": "遞迴展開",
@@ -148,7 +155,8 @@
     "confirm": "確認",
     "copy_relative_path": "複製相對路徑",
     "refresh_document": "重新整理文件",
-    "toggle_slideshow": "幻燈片"
+    "toggle_slideshow": "幻燈片",
+    "refresh_explorer": "重新整理"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -347,13 +355,13 @@
     "ln_prefix": "第 ",
     "palette_query_hint": "輸入指令或進行搜尋...",
     "command_settings": "切換設定",
-    "command_workspace": "切換工作區面板",
     "command_close_all": "關閉所有文件",
-    "command_refresh": "重新整理工作區",
     "command_updates": "檢查更新",
     "command_about": "切換關於",
     "command_type_action": "指令",
-    "palette_no_results": "找不到結果。"
+    "palette_no_results": "找不到結果。",
+    "command_explorer": "切換檔案總管",
+    "command_refresh_explorer": "重新整理檔案清單"
   },
   "toc": {
     "title": "目錄",

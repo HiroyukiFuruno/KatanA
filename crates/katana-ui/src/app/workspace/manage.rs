@@ -16,14 +16,46 @@ pub(super) fn compute_workspace_hash(path_str: &str) -> String {
     format!("{:x}", hash)
 }
 
-pub(super) fn handle_remove_workspace(app: &mut KatanaApp, path: String) {
+pub(super) fn handle_remove_explorer(app: &mut KatanaApp, path: String) {
     let settings = app.state.config.settings.settings_mut();
-    settings.workspace.paths.retain(|p| p != &path);
+    settings.workspace.persisted.retain(|p| p != &path);
     if settings.workspace.last_workspace.as_deref() == Some(path.as_str()) {
         settings.workspace.last_workspace = None;
     }
+
+    /* WHY: If the removed workspace is the currently open one, close it to return to initial screen */
+    if let Some(ws) = &app.state.workspace.data
+        && ws.root.to_string_lossy() == path
+    {
+        app.state.workspace.data = None;
+        app.state.document.open_documents.clear();
+        app.state.document.active_doc_idx = None;
+    }
     if !app.state.config.try_save_settings() {
         tracing::warn!("Failed to save settings after removing workspace");
+        app.state.layout.status_message = Some((
+            crate::i18n::I18nOps::get()
+                .status
+                .error_save_settings
+                .clone(),
+            crate::app_state::StatusType::Error,
+        ));
+    } else {
+        app.state.layout.status_message = Some((
+            crate::i18n::I18nOps::tf(
+                &crate::i18n::I18nOps::get().status.removed_workspace,
+                &[("path", path.as_str())],
+            ),
+            crate::app_state::StatusType::Success,
+        ));
+    }
+}
+
+pub(super) fn handle_remove_workspace_history(app: &mut KatanaApp, path: String) {
+    let settings = app.state.config.settings.settings_mut();
+    settings.workspace.histories.retain(|p| p != &path);
+    if !app.state.config.try_save_settings() {
+        tracing::warn!("Failed to save settings after removing workspace history");
     }
 }
 

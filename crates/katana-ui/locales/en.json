@@ -4,6 +4,7 @@
     "settings": "Settings",
     "language": "Language",
     "open_workspace": "Open Workspace…",
+    "close_workspace": "Close Workspace",
     "save": "Save",
     "open_all": "Open All",
     "export": "Export",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "No workspace open.",
     "no_document_selected": "No document open.",
-    "workspace_title": "Workspace",
-    "recent_workspaces": "Recent Workspaces",
+    "explorer_title": "Explorer",
+    "workspace_history_title": "Workspace History",
+    "recent_workspaces": "Workspaces",
     "metadata_tooltip": "Size: {size} B\nModified: {mod_time}",
     "path_label": "Path",
     "flat_view": "Flat View",
-    "filter_regex_hint": "Filter (Regex)..."
+    "filter_regex_hint": "Filter (Regex)...",
+    "open_folder_hint": "Open a folder to start using KatanA.",
+    "open_workspace_button": "Open Workspace",
+    "remove_history_tooltip": "Remove from history"
   },
   "preview": {
     "preview_title": "Preview",
@@ -122,13 +127,16 @@
     "problems_panel_close": "Close",
     "no_problems_found": "No problems found in the workspace.",
     "toggle_problems_panel": "Toggle Problems Panel",
-    "problems_count_format": "Problems: {count}"
+    "problems_count_format": "Problems: {count}",
+    "removed_workspace": "Workspace {path} removed.",
+    "error_save_settings": "Failed to save settings.",
+    "closed_workspace": "Workspace closed."
   },
   "action": {
     "expand_all": "Expand all",
     "collapse_all": "Collapse all",
     "collapse_sidebar": "Hide Sidebar",
-    "refresh_workspace": "Refresh workspace",
+    "refresh_explorer": "Refresh Explorer",
     "toggle_filter": "Toggle filter",
     "remove_workspace": "Remove from history",
     "recursive_expand": "Recursive Expand Subdirectories",
@@ -348,9 +356,9 @@
     "ln_prefix": "Ln ",
     "palette_query_hint": "Type a command or search...",
     "command_settings": "Toggle Settings",
-    "command_workspace": "Toggle Workspace Panel",
+    "command_explorer": "Toggle Explorer Panel",
     "command_close_all": "Close All Documents",
-    "command_refresh": "Refresh Workspace",
+    "command_refresh_explorer": "Refresh Explorer",
     "command_updates": "Check for Updates",
     "command_about": "Toggle About",
     "command_type_action": "Command"

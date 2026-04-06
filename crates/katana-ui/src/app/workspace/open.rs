@@ -1,6 +1,6 @@
 use super::*;
 
-pub(super) fn handle_open_workspace(app: &mut KatanaApp, path: std::path::PathBuf) {
+pub(super) fn handle_open_explorer(app: &mut KatanaApp, path: std::path::PathBuf) {
     if app.state.workspace.data.is_some() {
         manage::save_workspace_state(app);
     }
@@ -13,7 +13,7 @@ pub(super) fn handle_open_workspace(app: &mut KatanaApp, path: std::path::PathBu
         crate::app_state::StatusType::Info,
     ));
     let (tx, rx) = std::sync::mpsc::channel();
-    app.workspace_rx = Some(rx);
+    app.explorer_rx = Some(rx);
     let path_clone = path.clone();
     if let Some(token) = &app.state.workspace.cancel_token {
         token.store(true, std::sync::atomic::Ordering::Relaxed);
@@ -33,11 +33,11 @@ pub(super) fn handle_open_workspace(app: &mut KatanaApp, path: std::path::PathBu
             new_token,
             &in_memory_dirs,
         );
-        let _ = tx.send((WorkspaceLoadType::Open, path_clone, result));
+        let _ = tx.send((ExplorerLoadType::Open, path_clone, result));
     });
 }
 
-pub(super) fn finish_open_workspace(
+pub(super) fn finish_open_explorer(
     app: &mut KatanaApp,
     _path: std::path::PathBuf,
     ws: katana_core::workspace::Workspace,
@@ -187,8 +187,11 @@ fn apply_session_tabs(
 ) {
     {
         let settings = app.state.config.settings.settings_mut();
-        settings.workspace.paths.retain(|p| p != &path_str);
-        settings.workspace.paths.push(path_str.clone());
+        settings.workspace.persisted.retain(|p| p != &path_str);
+        settings.workspace.persisted.push(path_str.clone());
+        if !settings.workspace.histories.contains(&path_str) {
+            settings.workspace.histories.push(path_str.clone());
+        }
         settings.workspace.last_workspace = Some(path_str);
     }
     to_open.retain(|(p, _)| std::path::Path::new(p).exists());

@@ -1,13 +1,13 @@
 use super::*;
 
-pub(super) fn handle_refresh_workspace(app: &mut KatanaApp) {
+pub(super) fn handle_refresh_explorer(app: &mut KatanaApp) {
     let Some(workspace) = &app.state.workspace.data else {
         return;
     };
     let root = workspace.root.clone();
     app.state.workspace.is_loading = true;
     let (tx, rx) = std::sync::mpsc::channel();
-    app.workspace_rx = Some(rx);
+    app.explorer_rx = Some(rx);
     if let Some(token) = &app.state.workspace.cancel_token {
         token.store(true, std::sync::atomic::Ordering::Relaxed);
     }
@@ -26,21 +26,21 @@ pub(super) fn handle_refresh_workspace(app: &mut KatanaApp) {
             new_token,
             &in_memory_dirs,
         );
-        let _ = tx.send((WorkspaceLoadType::Refresh, root, result));
+        let _ = tx.send((ExplorerLoadType::Refresh, root, result));
     });
 }
 
-pub(super) fn poll_workspace_load(app: &mut KatanaApp, ctx: &egui::Context) {
+pub(super) fn poll_explorer_load(app: &mut KatanaApp, ctx: &egui::Context) {
     const WORKSPACE_LOAD_POLL_INTERVAL_MS: u64 = 50;
-    let Some(rx) = &app.workspace_rx else { return };
+    let Some(rx) = &app.explorer_rx else { return };
     let recv_result = rx.try_recv();
     let done = match recv_result {
-        Ok((WorkspaceLoadType::Open, path, Ok(ws))) => {
+        Ok((ExplorerLoadType::Open, path, Ok(ws))) => {
             app.state.workspace.is_loading = false;
-            open::finish_open_workspace(app, path, ws);
+            open::finish_open_explorer(app, path, ws);
             true
         }
-        Ok((WorkspaceLoadType::Refresh, _path, Ok(ws))) => {
+        Ok((ExplorerLoadType::Refresh, _path, Ok(ws))) => {
             app.state.workspace.is_loading = false;
             app.state.workspace.data = Some(ws);
             app.state.search.filter_cache = None;
@@ -70,11 +70,11 @@ pub(super) fn poll_workspace_load(app: &mut KatanaApp, ctx: &egui::Context) {
         }
     };
     if done {
-        app.workspace_rx = None;
+        app.explorer_rx = None;
     }
     if app.needs_changelog_display
         && !app.state.workspace.is_loading
-        && app.workspace_rx.is_none()
+        && app.explorer_rx.is_none()
         && matches!(app.pending_action, AppAction::None)
     {
         app.needs_changelog_display = false;

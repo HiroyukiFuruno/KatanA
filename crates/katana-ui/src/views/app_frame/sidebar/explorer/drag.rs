@@ -2,7 +2,7 @@ use crate::shell::KatanaApp;
 use crate::views::app_frame::types::*;
 use eframe::egui;
 
-impl WorkspaceSidebarDrag {
+impl ExplorerSidebarDrag {
     pub(crate) fn compute_drop_points_y(rects: &[(usize, egui::Rect)]) -> Vec<(usize, f32)> {
         let mut points = Vec::new();
         if rects.is_empty() {
@@ -128,16 +128,22 @@ impl WorkspaceSidebarDrag {
                 .fixed_pos(ghost_rect.min)
                 .order(egui::Order::Tooltip)
                 .show(ui.ctx(), |ui| match item {
+                    katana_platform::settings::ActivityRailItem::AddWorkspace => {
+                        ui.add(crate::Icon::Plus.button(ui, crate::icon::IconSize::Large));
+                    }
                     katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
-                        let icon = if app.state.layout.show_workspace {
-                            crate::Icon::FolderOpen
-                        } else {
-                            crate::Icon::FolderClosed
-                        };
+                        ui.add(crate::Icon::FolderClosed.selected_button(
+                            ui,
+                            crate::icon::IconSize::Large,
+                            app.state.layout.show_workspace_panel,
+                        ));
+                    }
+                    katana_platform::settings::ActivityRailItem::ExplorerToggle => {
+                        let icon = crate::Icon::Explorer;
                         ui.add(icon.selected_button(
                             ui,
                             crate::icon::IconSize::Large,
-                            app.state.layout.show_workspace,
+                            app.state.layout.show_explorer,
                         ));
                     }
                     katana_platform::settings::ActivityRailItem::Search => {
@@ -158,7 +164,7 @@ impl WorkspaceSidebarDrag {
                         ));
                     }
                     katana_platform::settings::ActivityRailItem::History => {
-                        ui.add(crate::Icon::Document.button(ui, crate::icon::IconSize::Large));
+                        ui.add(crate::Icon::History.button(ui, crate::icon::IconSize::Large));
                     }
                 });
         }

@@ -70,6 +70,7 @@ define_icons! {
     Warning         => "status/warning",
     Error           => "status/error",
     /* WHY: files/ */
+    Explorer        => "files/explorer",
     Document        => "files/document",
     FolderOpen      => "files/folder_open",
     FolderClosed    => "files/folder_closed",
@@ -83,6 +84,7 @@ define_icons! {
     Bug             => "system/bug",
     Action          => "system/action",
     Recent          => "system/recent",
+    History         => "system/history",
     Rocket          => "system/rocket",
     Download        => "system/download",
     Hourglass       => "system/hourglass",

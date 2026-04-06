@@ -221,8 +221,8 @@ filter は workspace tree 専用機能として別解釈せず、「現在の wo
 左アクティビティレールのアクションアイコン（ワークスペース切替、検索、履歴）は、ユーザーの好みで Drag & Drop による並べ替えを可能とする。
 並び順は `LayoutSettings` に `activity_rail_order` (`Vec<ActivityRailItem>`) として永続化する。
 
-- `ActivityRailItem` は `WorkspaceToggle`, `Search`, `History` の enum とする。
-- 既定の並び順は、フィードバックに基づき `[History, WorkspaceToggle, Search]` とする（履歴からの切り替えを最上部へ）。
+- `ActivityRailItem` は `ExplorerToggle`, `Search`, `History` の enum とする。
+- 既定の並び順は、フィードバックに基づき `[History, ExplorerToggle, Search]` とする（履歴からの切り替えを最上部へ）。
 - `app_frame.rs` のレール描画ロジック内で、この配列順に従ってボタンを描画すると同時に `egui::Sense::click_and_drag()` 等を用いた並べ替え UI を提供する。
 
 ## リスク / トレードオフ

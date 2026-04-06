@@ -9,7 +9,7 @@ use crate::{
     preview_pane::PreviewPane,
 };
 mod types;
-pub(crate) use types::{ExportTask, TabPreviewCache, WorkspaceLoadType};
+pub(crate) use types::{ExplorerLoadType, ExportTask, TabPreviewCache};
 pub use types::{KatanaApp, UpdateInstallEvent};
 
 pub(crate) const SIDEBAR_COLLAPSED_TOGGLE_WIDTH: f32 = 24.0;
@@ -41,6 +41,9 @@ pub(crate) const RECENT_WORKSPACES_SPACING: f32 = 8.0;
 pub(crate) const RECENT_WORKSPACES_ITEM_SPACING: f32 = 4.0;
 
 pub(crate) const RECENT_WORKSPACES_CLOSE_BUTTON_WIDTH: f32 = 20.0;
+pub(crate) const RECENT_WORKSPACES_HEADING_LEFT_PADDING: f32 = 10.0;
+pub(crate) const RECENT_WORKSPACES_LIST_LEFT_PADDING: f32 = 16.0;
+pub(crate) const HISTORY_MODAL_EMPTY_BOTTOM_SPACING: f32 = 10.0;
 
 pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
 
@@ -59,7 +62,7 @@ impl KatanaApp {
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
             download_rx: None,
-            workspace_rx: None,
+            explorer_rx: None,
             update_rx: None,
             changelog_rx: None,
             update_install_rx: None,
@@ -111,6 +114,19 @@ impl KatanaApp {
         tracing::debug!("KatanaApp::new: Background cleanup done");
         app.start_update_check(false);
         tracing::debug!("KatanaApp::new: End");
+
+        let last_ws = app
+            .state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .last_workspace
+            .clone();
+        if let Some(ws_path) = last_ws {
+            app.pending_action = AppAction::OpenWorkspace(std::path::PathBuf::from(ws_path));
+        }
+
         app
     }
 
@@ -135,6 +151,11 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn app_state_mut(&mut self) -> &mut AppState {
+        &mut self.state
+    }
+
+    #[doc(hidden)]
     pub fn set_changelog_sections_for_test(
         &mut self,
         sections: Vec<crate::changelog::ChangelogSection>,
@@ -150,11 +171,6 @@ impl KatanaApp {
 impl KatanaApp {
     pub fn trigger_action(&mut self, action: AppAction) {
         self.pending_action = action;
-    }
-
-    #[doc(hidden)]
-    pub fn app_state_mut(&mut self) -> &mut AppState {
-        &mut self.state
     }
 }
 

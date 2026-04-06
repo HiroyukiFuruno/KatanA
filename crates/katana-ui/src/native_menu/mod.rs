@@ -82,13 +82,11 @@ impl NativeMenuOps {
     #[cfg(target_os = "macos")]
     pub(crate) fn poll(
         show_about: &mut bool,
-        open_folder_dialog: fn() -> Option<std::path::PathBuf>,
+        _open_folder_dialog: fn() -> Option<std::path::PathBuf>,
     ) -> AppAction {
         let action = unsafe { ffi::katana_poll_menu_action() };
         match action {
-            ffi::TAG_OPEN_WORKSPACE => open_folder_dialog()
-                .map(AppAction::OpenWorkspace)
-                .unwrap_or(AppAction::None),
+            ffi::TAG_OPEN_WORKSPACE => AppAction::PickOpenWorkspace,
             ffi::TAG_SAVE => AppAction::SaveDocument,
             ffi::TAG_LANG_EN => AppAction::ChangeLanguage("en".to_string()),
             ffi::TAG_LANG_JA => AppAction::ChangeLanguage("ja".to_string()),

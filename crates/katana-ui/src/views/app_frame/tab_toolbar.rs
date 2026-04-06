@@ -189,7 +189,7 @@ impl<'a> Breadcrumbs<'a> {
                         current_path,
                     )
             {
-                crate::views::panels::workspace::BreadcrumbMenu::new(children, &mut ctx_action)
+                crate::views::panels::explorer::BreadcrumbMenu::new(children, &mut ctx_action)
                     .show(ui);
             }
 

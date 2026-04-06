@@ -3,11 +3,13 @@ use std::path::PathBuf;
 
 pub struct LayoutState {
     pub status_message: Option<(String, StatusType)>,
-    pub show_workspace: bool,
+    pub show_workspace_panel: bool,
+    pub show_explorer: bool,
     pub show_settings: bool,
     pub show_toc: bool,
     pub show_search_modal: bool,
-    pub show_workspace_history_modal: bool,
+
+    pub show_history_panel: bool,
     pub scale_override: f32,
     pub last_window_title: String,
     pub create_fs_node_modal: Option<(PathBuf, String, Option<String>, bool)>,
@@ -32,11 +34,13 @@ impl LayoutState {
     pub fn new() -> Self {
         Self {
             status_message: None,
-            show_workspace: true,
+            show_workspace_panel: false,
+            show_explorer: true,
             show_settings: false,
             show_toc: false,
             show_search_modal: false,
-            show_workspace_history_modal: false,
+
+            show_history_panel: false,
             scale_override: 1.0,
             last_window_title: String::new(),
             create_fs_node_modal: None,

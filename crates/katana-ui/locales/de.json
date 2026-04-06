@@ -20,7 +20,8 @@
     "check_updates": "Nach Updates suchen...",
     "release_notes": "Versionshinweise",
     "view": "Ansicht",
-    "command_palette": "Befehlspalette…"
+    "command_palette": "Befehlspalette…",
+    "close_workspace": "Close Workspace (de)"
   },
   "about": {
     "basic_info": "Basisinfo",
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "Kein Arbeitsbereich geöffnet.",
     "no_document_selected": "Kein Dokument geöffnet.",
-    "workspace_title": "Arbeitsbereich",
-    "recent_workspaces": "Zuletzt verwendete Arbeitsbereiche",
+    "recent_workspaces": "Arbeitsbereiche",
     "metadata_tooltip": "Größe: {size} B\nGeändert: {mod_time}",
     "path_label": "Pfad",
     "flat_view": "Flache Ansicht",
-    "filter_regex_hint": "Filtern (Regex)..."
+    "filter_regex_hint": "Filtern (Regex)...",
+    "explorer_title": "Datei-Explorer",
+    "workspace_history_title": "Arbeitsbereich-Verlauf",
+    "open_folder_hint": "Open a folder to start using KatanA. (de)",
+    "open_workspace_button": "Open Workspace (de)",
+    "remove_history_tooltip": "Remove from history (de)"
   },
   "preview": {
     "preview_title": "Vorschau",
@@ -122,13 +127,15 @@
     "problems_panel_close": "Schließen",
     "no_problems_found": "Keine Probleme im Arbeitsbereich gefunden.",
     "toggle_problems_panel": "Problempanel umschalten",
-    "problems_count_format": "Probleme: {count}"
+    "problems_count_format": "Probleme: {count}",
+    "removed_workspace": "Workspace {path} removed. (de)",
+    "error_save_settings": "Failed to save settings. (de)",
+    "closed_workspace": "Workspace closed. (de)"
   },
   "action": {
     "expand_all": "Alle erweitern",
     "collapse_all": "Alle minimieren",
     "collapse_sidebar": "Seitenleiste",
-    "refresh_workspace": "Aktualisieren",
     "toggle_filter": "Filter",
     "remove_workspace": "Entfernen",
     "recursive_expand": "Rekursiv",
@@ -148,7 +155,8 @@
     "confirm": "Bestätigen",
     "copy_relative_path": "Relativ kopieren",
     "refresh_document": "Dokument aktualisieren",
-    "toggle_slideshow": "Diashow"
+    "toggle_slideshow": "Diashow",
+    "refresh_explorer": "Datei-Baum aktualisieren"
   },
   "ai": {
     "ai_unconfigured": "[AI: nicht konfiguriert]"
@@ -347,13 +355,13 @@
     "ln_prefix": "Zl ",
     "palette_query_hint": "Befehl eingeben oder suchen...",
     "command_settings": "Einstellungen umschalten",
-    "command_workspace": "Arbeitsbereich umschalten",
     "command_close_all": "Alle Dokumente schließen",
-    "command_refresh": "Arbeitsbereich aktualisieren",
     "command_updates": "Auf Updates prüfen",
     "command_about": "Über KatanA umschalten",
     "command_type_action": "Befehl",
-    "palette_no_results": "Keine Ergebnisse gefunden."
+    "palette_no_results": "Keine Ergebnisse gefunden.",
+    "command_explorer": "Umschalten des Datei-Explorers",
+    "command_refresh_explorer": "Explorer-Inhalt aktualisieren"
   },
   "toc": {
     "title": "Inhaltsverzeichnis",

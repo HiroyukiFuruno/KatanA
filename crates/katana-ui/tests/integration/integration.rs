@@ -929,9 +929,9 @@ fn test_integration_workspace_panel_collapsed() {
     let mut harness = setup_harness();
     harness.step();
 
-    harness.state_mut().app_state_mut().layout.show_workspace = false;
+    harness.state_mut().app_state_mut().layout.show_explorer = false;
     harness.step();
-    assert!(!harness.state_mut().app_state_mut().layout.show_workspace);
+    assert!(!harness.state_mut().app_state_mut().layout.show_explorer);
 
     {
         use egui_kittest::kittest::Queryable;
@@ -945,7 +945,7 @@ fn test_integration_workspace_panel_collapsed() {
         }
     }
 
-    harness.state_mut().app_state_mut().layout.show_workspace = true;
+    harness.state_mut().app_state_mut().layout.show_explorer = true;
     harness.step();
 }
 
@@ -1210,11 +1210,11 @@ fn test_integration_sidebar_collapse_expand() {
         .trigger_action(AppAction::OpenWorkspace(temp_dir.path().to_path_buf()));
     wait_for_workspace_load(&mut harness);
 
-    harness.state_mut().app_state_mut().layout.show_workspace = false;
+    harness.state_mut().app_state_mut().layout.show_explorer = false;
     harness.step();
     harness.step();
 
-    harness.state_mut().app_state_mut().layout.show_workspace = true;
+    harness.state_mut().app_state_mut().layout.show_explorer = true;
     harness.step();
 }
 
@@ -2250,7 +2250,7 @@ fn test_integration_remove_workspace() {
         assert!(
             settings
                 .workspace
-                .paths
+                .persisted
                 .contains(&ws_dir.path().display().to_string())
         );
     }
@@ -2272,7 +2272,7 @@ fn test_integration_remove_workspace() {
         assert!(
             !settings
                 .workspace
-                .paths
+                .persisted
                 .contains(&ws_dir.path().display().to_string())
         );
     }

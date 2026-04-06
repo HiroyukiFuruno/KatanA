@@ -22,7 +22,9 @@ pub struct BehaviorSettings {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ActivityRailItem {
+    AddWorkspace,
     WorkspaceToggle,
+    ExplorerToggle,
     Search,
     History,
     Settings,

@@ -43,6 +43,15 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
                 ui.close();
             }
             ui.separator();
+
+            if ui
+                .button(crate::i18n::I18nOps::get().menu.open_workspace.clone())
+                .clicked()
+            {
+                *ctx.action = crate::app_state::AppAction::OpenWorkspace(path.to_path_buf());
+                ui.close();
+            }
+            ui.separator();
         }
 
         if is_dir {

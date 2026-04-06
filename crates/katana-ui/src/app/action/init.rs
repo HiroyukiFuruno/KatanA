@@ -11,7 +11,7 @@ pub(super) fn build_katana_app(state: AppState) -> KatanaApp {
         pending_action: AppAction::None,
         tab_previews: Vec::new(),
         download_rx: None,
-        workspace_rx: None,
+        explorer_rx: None,
         update_rx: None,
         changelog_rx: None,
         update_install_rx: None,

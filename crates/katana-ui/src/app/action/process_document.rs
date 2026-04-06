@@ -20,7 +20,7 @@ impl KatanaApp {
             if is_dir {
                 self.state.workspace.in_memory_dirs.insert(target_path);
             }
-            self.handle_refresh_workspace();
+            self.handle_refresh_explorer();
             self.state.workspace.expanded_directories.insert(parent_dir);
         }
     }
@@ -33,7 +33,7 @@ impl KatanaApp {
         if let Err(e) = std::fs::rename(&target_path, &new_path) {
             tracing::error!("Failed to rename file: {}", e);
         } else {
-            self.handle_refresh_workspace();
+            self.handle_refresh_explorer();
             for doc in &mut self.state.document.open_documents {
                 if doc.path == target_path {
                     doc.path = new_path.clone();
@@ -53,7 +53,7 @@ impl KatanaApp {
             tracing::error!("Failed to delete path: {}", e);
             return;
         }
-        self.handle_refresh_workspace();
+        self.handle_refresh_explorer();
         let Some(idx) = self
             .state
             .document

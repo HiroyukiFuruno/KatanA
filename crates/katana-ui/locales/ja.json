@@ -4,6 +4,7 @@
     "settings": "設定",
     "language": "言語 (Language)",
     "open_workspace": "ワークスペースを開く…",
+    "close_workspace": "ワークスペースを閉じる",
     "save": "保存",
     "open_all": "全て開く",
     "export": "エクスポート",
@@ -18,7 +19,7 @@
     "show_all": "すべて表示",
     "help": "ヘルプ",
     "check_updates": "更新を確認...",
-    "release_notes": "ChangeLog",
+    "release_notes": "リリースノート",
     "view": "表示",
     "command_palette": "コマンドパレット…"
   },
@@ -60,12 +61,16 @@
   "workspace": {
     "no_workspace_open": "ワークスペースが開かれていません。",
     "no_document_selected": "ドキュメントが開かれていません。",
-    "workspace_title": "ワークスペース",
-    "recent_workspaces": "最近のワークスペース",
+    "explorer_title": "エクスプローラー",
+    "workspace_history_title": "ワークスペース履歴",
+    "recent_workspaces": "ワークスペース",
     "metadata_tooltip": "サイズ: {size} B\n更新日時: {mod_time}",
     "path_label": "パス",
     "flat_view": "フラット表示",
-    "filter_regex_hint": "フィルター (正規表現)..."
+    "filter_regex_hint": "フィルター (正規表現)...",
+    "open_folder_hint": "KatanAを使い始めるために、フォルダを開いてください。",
+    "open_workspace_button": "ワークスペースを開く",
+    "remove_history_tooltip": "履歴から削除"
   },
   "preview": {
     "preview_title": "プレビュー",
@@ -122,13 +127,16 @@
     "problems_panel_close": "閉じる",
     "no_problems_found": "問題は見つかりませんでした。",
     "toggle_problems_panel": "問題パネルを表示/非表示",
-    "problems_count_format": "問題: {count}"
+    "problems_count_format": "問題: {count}",
+    "removed_workspace": "ワークスペース {path} を削除しました。",
+    "error_save_settings": "設定の保存に失敗しました。",
+    "closed_workspace": "ワークスペースを閉じました。"
   },
   "action": {
     "expand_all": "すべて展開",
     "collapse_all": "すべて折りたたむ",
     "collapse_sidebar": "サイドバーを隠す",
-    "refresh_workspace": "ワークスペースを更新",
+    "refresh_explorer": "更新",
     "toggle_filter": "フィルター切り替え",
     "remove_workspace": "履歴から削除",
     "recursive_expand": "再帰的にディレクトリを展開",
@@ -348,9 +356,9 @@
     "ln_prefix": "行 ",
     "palette_query_hint": "コマンドを入力または検索...",
     "command_settings": "設定の表示切替",
-    "command_workspace": "ワークスペースパネルの表示切替",
+    "command_explorer": "エクスプローラーを表示",
     "command_close_all": "すべてのドキュメントを閉じる",
-    "command_refresh": "ワークスペースを更新",
+    "command_refresh_explorer": "エクスプローラーを更新",
     "command_updates": "アップデートを確認",
     "command_about": "KatanAについてを表示",
     "command_type_action": "コマンド"

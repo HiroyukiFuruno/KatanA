@@ -14,12 +14,12 @@ pub(crate) struct TitleBar<'a> {
     pub(crate) theme_colors: &'a katana_platform::theme::ThemeColors,
 }
 
-pub(crate) struct WorkspaceSidebar<'a> {
+pub(crate) struct ExplorerSidebar<'a> {
     pub(crate) app: &'a mut KatanaApp,
 }
 
-pub(crate) struct WorkspaceSidebarItems;
-pub(crate) struct WorkspaceSidebarDrag;
+pub(crate) struct ExplorerSidebarItems;
+pub(crate) struct ExplorerSidebarDrag;
 
 pub(crate) struct TabToolbar<'a> {
     pub(crate) app: &'a mut KatanaApp,
