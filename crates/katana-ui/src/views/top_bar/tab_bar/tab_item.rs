@@ -71,8 +71,14 @@ impl<'a> TabItem<'a> {
         );
         let mut clicked_tab = tab_interact.clicked();
         let mut close_ret = None;
-        if !self.doc.is_pinned && close_resp.is_some_and(|c| c.clicked()) {
-            close_ret = Some(self.idx);
+        if let Some(c) = &close_resp
+            && c.clicked()
+        {
+            if self.doc.is_pinned {
+                *tab_action = Some(AppAction::TogglePinDocument(self.idx));
+            } else {
+                close_ret = Some(self.idx);
+            }
             clicked_tab = false;
         }
 
