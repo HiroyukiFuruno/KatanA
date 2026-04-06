@@ -9,6 +9,8 @@ mod command_palette;
 mod font_bridge;
 #[path = "integration/font_realtime.rs"]
 mod font_realtime;
+#[path = "integration/foreground_surface_isolation.rs"]
+mod foreground_surface_isolation;
 #[path = "integration/i18n.rs"]
 mod i18n;
 #[path = "integration/integration.rs"]

@@ -65,6 +65,16 @@ impl eframe::App for KatanaApp {
             return;
         }
 
+        if self.is_foreground_surface_active(ctx) {
+            egui::Area::new("foreground_surface_blocker".into())
+                .order(egui::Order::Middle)
+                .fixed_pos(egui::pos2(0.0, 0.0))
+                .interactable(true)
+                .show(ctx, |ui| {
+                    ui.allocate_rect(ctx.screen_rect(), egui::Sense::click_and_drag());
+                });
+        }
+
         self.show_modals(ctx);
 
         self.state.scroll.scroll_to_line = None;

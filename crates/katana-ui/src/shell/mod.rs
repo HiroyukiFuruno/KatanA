@@ -177,6 +177,20 @@ impl KatanaApp {
     pub fn trigger_action(&mut self, action: AppAction) {
         self.pending_action = action;
     }
+
+    pub fn is_foreground_surface_active(&self, ctx: &egui::Context) -> bool {
+        self.state.layout.show_settings
+            || self.state.layout.show_workspace_panel
+            || self.state.layout.show_history_panel
+            || self.state.command_palette.is_open
+            || self.state.search.doc_search_open
+            || self.show_about
+            || self.show_update_dialog
+            || self.needs_splash
+            || self.show_meta_info_for.is_some()
+            || self.needs_changelog_display
+            || ctx.memory(|mem| mem.any_popup_open())
+    }
 }
 
 #[cfg(test)]

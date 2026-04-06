@@ -1,77 +1,78 @@
-## Definition of Ready (DoR)
+## Definition of Ready (DoR: 着手可能の定義)
 
-- The target scope is limited to preview lifecycle continuity for tab switching in `v0.16.9`
-- Proposal, design, and specs are present under this change directory
-- Responsibility boundaries are agreed for preview session state, diagram continuation, and image hydration
+- 対象範囲はバージョン `0.16.9` 向けの、タブ切り替え時のプレビュー処理の継続（ライフサイクルの橋渡し）に限定する
+- この変更用ディレクトリ内に、提案（Proposal）、設計（design）、仕様（specs）が存在していること
+- プレビューのセッション状態管理、図の描画継続、および画像の再表示（ハイドレーション）に関する責任分界点が合意されていること
 
-## Branch Rule
+## Branch Rule (ブランチのルール)
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+「##」で区切られたタスクグループについて：
+実装作業の全期間を通して、`/openspec-branching` ワークフロー (`.agents/workflows/openspec-branching.md`) で定義されたブランチ作成の標準ルールに無条件で従うこと。
 
-## 1. v0.16.9 Preview Session Lifecycle Foundation
+## 1. v0.16.9 プレビューセッションのライフサイクル基盤
 
-- [ ] 1.1 Replace focus-loss-driven preview cancellation with invalidation-driven cancellation rules tied to source change, explicit refresh, tab close, and workspace teardown
-- [ ] 1.2 Add tab-scoped preview session state that tracks lifecycle readiness per section, including `is_loaded` and `is_drawn` semantics, and derive any tab-level summary from those section states
-- [ ] 1.3 Stamp preview work with tab/source generation identity and stable section ordinal keys so stale completions are rejected safely
-- [ ] 1.4 Add unit tests for lifecycle transitions, generation invalidation, stable section matching, and lazy completion observation after tab reactivation
+- [ ] 1.1 「他のタブに移ってフォーカスが外れたらプレビューをキャンセルする」という古い仕組みを廃止し、「テキスト内容が変更された」「明示的に更新した」「タブを閉じた」「ワークスペースを閉じた」等の理由による無効化ベースのキャンセルルールに置き換える
+- [ ] 1.2 タブごとに、各セクションの準備状態（`is_loaded`(読み込み完了) や `is_drawn`(描画完了) など）を追跡する仕組みを追加し、タブ全体の要約情報を各セクションの状態から算出できるようにする
+- [ ] 1.3 古い描画結果を安全に無視できるように、タブやテキスト内容の変更タイミング（Generation Identity）と順番のキー（Ordinal Keys）を使ってプレビュー処理に印（スタンプ）を押す
+- [ ] 1.4 タブ切り替え時の動き、変更による無効化、正しいセクションの紐づけ、タブに戻ってきた時の描画完了処理についてのユニットテストを追加する
 
-### Definition of Done (DoD)
+### Definition of Done (DoD: 完了の定義)
 
-- [ ] Non-active tab preview work is no longer canceled only because focus moved to another tab
-- [ ] Loaded-but-not-drawn state is representable and usable as a rehydration trigger
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] 見ていない裏側のタブのプレビュー処理が、「別のタブに移ったから」という理由だけでキャンセルされなくなること
+- [ ] 「読み込み完了したけどまだ描画していない」状態が表現できるようになり、タブに戻った際の再表示に使えるようになること
+- [ ] `/openspec-delivery` ワークフロー を実行して、統合的なデリバシールーチン（自己レビュー、コミット、PR作成、マージ作業）を完了させること。
 
-## 2. v0.16.9 Diagram Background Continuation
+## 2. v0.16.9 図版（ダイアグラム）のバックグラウンド描画継続
 
-### Definition of Ready (DoR)
+### Definition of Ready (DoR: 着手可能の定義)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 前のタスクが完全なデリバリーサイクル（自己レビュー、必要なら復旧、PR作成、マージ、ブランチの削除）を終えていることを確認する。
+- [ ] ベースとなるブランチが最新の状態（同期済）であり、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 Move Mermaid, PlantUML, and Draw.io tab render jobs onto the new lifecycle so they continue in the background after tab switches
-- [ ] 2.2 Reattach completed diagram results on the next tab activation without duplicate renders or stale loading placeholders
-- [ ] 2.3 Add tests that switch tabs while diagram work is pending and verify continued progress plus correct hydration on return
+- [ ] 2.1 Mermaid、PlantUML、Draw.io のタブ描画ジョブを新しいライフサイクルの仕組みに移行し、タブを切り替えても裏で描画が継続するようにする
+- [ ] 2.2 次にタブに戻ってきた際、重複した再描画や、古いローディング表示を出さずに、裏で完了した図の描画結果をポンと正しく配置（再アタッチ）する
+- [ ] 2.3 図の描画処理中にタブを切り替えるテストを追加し、裏で処理が進むこと、およびタブに戻った際に正しく表示されることを検証する
 - [ ] 2.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 2.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
-### Definition of Done (DoD)
+### Definition of Done (DoD: 完了の定義)
 
-- [ ] Diagram work for Mermaid, PlantUML, and Draw.io continues across tab switches and reuses completed results on revisit
-- [ ] Stale diagram completions are ignored after source invalidation or tab close
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] Mermaid、PlantUML、Draw.io の処理がタブ切り替えをまたいで継続し、完了した結果を再利用できること
+- [ ] テキスト内容が変わったりタブが閉じられた後に完了した「古い図の結果」は無視されること
+- [ ] `/openspec-delivery` ワークフロー を実行すること
 
-## 3. v0.16.9 Image-Backed Preview Continuation
+## 3. v0.16.9 画像を使用するプレビューの描画継続
 
-### Definition of Ready (DoR)
+### Definition of Ready (DoR: 着手可能の定義)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 前のタスクが完全なデリバリーサイクルを終えていることを確認する。
+- [ ] ベースとなるブランチが最新の状態（同期済）であり、新しいブランチが作成されていること。
 
-- [ ] 3.1 Move extracted local-image readiness out of the current active-draw-only `show_local_image()` path into the tab preview lifecycle, and explicitly validate the CommonMark/HTTP image path under the same reproduction
-- [ ] 3.2 Ensure `is_loaded = true` and `is_drawn = false` local-image state hydrates into the visible preview on next activation, and enroll the CommonMark/HTTP path too if the same regression reproduces there
-- [ ] 3.3 Add tests for tab switching before local-image sections are ready, for lazy hydration on revisit, and for any reproduced CommonMark/HTTP image regression that was enrolled
+- [ ] 3.1 「アクティブな時にしか画像を表示しない（`show_local_image()`）」というローカル画像の取得経路をタブプレビューのライフサイクル上に移行する。さらに、同じバグが起きる場合は CommonMark/HTTP の画像パス読み込みについても同様に見直す
+- [ ] 3.2 「`is_loaded = true` かつ `is_drawn = false`」となっているローカル画像の状態が、タブを有効化した際に正しく実際の画面表示へ繋がる（ハイドレーションされる）ようにする。CommonMark/HTTP画像でも同じ問題があれば対応する
+- [ ] 3.3 ローカル画像部分の準備ができる前にタブを切り替えるテスト、タブへ戻った際の遅延読み込み（Lazy Hydration）のテスト、およびHTTP画像等の同様のバグについて修正確認のテストを追加する
 - [ ] 3.4 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 3.5 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
-### Definition of Done (DoD)
+### Definition of Done (DoD: 完了の定義)
 
-- [ ] Extracted local-image preview sections do not get stuck in an old loading state after tab switches
-- [ ] Loaded local-image results draw on revisit without duplicate loading for the same valid asset
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] 抽出されたローカル画像のプレビュー領域が、タブ切り替え後に昔のローディング表示のまま止まってしまう不具合が発生しないこと
+- [ ] 読み込みが完了したローカル画像は、タブに戻って表示する際に（有効な画像データなら）再度読み直さずに表示されること
+- [ ] `/openspec-delivery` ワークフロー を実行すること
 
 ---
 
-## 4. Final Verification & Release Work
+## 4. 最終検証およびリリース作業
 
-### Definition of Ready (DoR)
+### Definition of Ready (DoR: 着手可能の定義)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 前のタスクが完全なデリバリーサイクルを終えていることを確認する。
+- [ ] ベースとなるブランチが最新の状態（同期済）であり、新しいブランチが作成されていること。
 
-- [ ] 4.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 4.2 Ensure `make check` passes with exit code 0
-- [ ] 4.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 4.4 Create a PR targeting `master`
-- [ ] 4.5 Merge into master (※ `--admin` is permitted)
-- [ ] 4.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.16.9`
-- [ ] 4.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づいて自己レビューを実行する
+- [ ] 4.2 `make check` コマンドがエラーゼロ（exit code 0）で通過することを確認する
+- [ ] 4.3 中継用の中間ベースブランチを `master` ブランチにマージする
+- [ ] 4.4 `master` へのPull Request（PR）を作成する
+- [ ] 4.5 master にマージする（※ `--admin` の使用を許可する）
+- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` に従って、`0.16.9` のリリースタグ生成とリリース作成を実行する
+- [ ] 4.7 `/opsx-archive` などのOpenSpec用スキルを活用してアーカイブする

@@ -1,41 +1,42 @@
-## Definition of Ready (DoR)
+## Definition of Ready (DoR: 着手可能の定義)
 
-- The scope is limited to rich-block highlight and split sync stabilization for `0.16.8`
-- Proposal, design, and specs are present under this change directory
-- Responsibility boundaries are agreed for rich-block source mapping and integration verification
+- 対象範囲はバージョン `0.16.8` 向けのリッチブロックハイライトと画面分割スクロール同期の安定化に限定する
+- この変更用ディレクトリ内に、提案（Proposal）、設計（design）、仕様（specs）が存在していること
+- リッチブロックと元のテキストのマッピング（ひも付け）や統合テストに関する責任分界点が合意されていること
 
-## Branch Rule
+## Branch Rule (ブランチのルール)
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+「##」で区切られたタスクグループについて：
+実装作業の全期間を通して、`/openspec-branching` ワークフロー (`.agents/workflows/openspec-branching.md`) で定義されたブランチ作成の標準ルールに無条件で従うこと。
 
-## 1. v0.16.8 Rich Block Highlight and Split Sync Stabilization
+## 1. v0.16.8 リッチブロックハイライトと分割同期の安定化
 
-- [ ] 1.1 Extend block-level source-anchor mapping so Mermaid, PlantUML, Draw.io, and GitHub Flavored Markdown alert/admonition sections resolve stable source ranges
-- [ ] 1.2 Route preview hover highlighting through that mapping so rich blocks resolve the correct source range
-- [ ] 1.3 Update split-scroll mapping and geometry refresh handling to remove drift around diagram and alert/admonition block boundaries, including async render completion for diagram kinds
-- [ ] 1.4 Add Mermaid, PlantUML, Draw.io, and alert/admonition integration tests for hover highlight and split sync using response-based assertions
+- [ ] 1.1 Mermaid、PlantUML、Draw.io などの図や、GitHub Flavored Markdown のアラート/アドモニション（警告等のブロック）が、対応する元のテキスト（ソース）の位置と正しく紐づくようにブロック単位のマッピング処理を拡張する
+- [ ] 1.2 プレビュー画面でマウスを乗せた際（ホバー時）のハイライト処理を上記のマッピングに通し、リッチブロックが正しい元のテキストの範囲を強調できるようにする
+- [ ] 1.3 画面分割時のスクロール同期と要素の位置計算（ジオメトリリフレッシュ）を更新し、図やアラートブロックの周辺でスクロール位置がズレる・漂う問題を修正する（非同期の図面描画完了時も含む）
+- [ ] 1.4 Mermaid、PlantUML、Draw.io、およびアラートブロックにおいて、ホバー時のハイライトと分割画面のスクロール同期が正しく動くかを確認する統合テストを追加する
 - [ ] 1.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 1.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
-### Definition of Done (DoD)
+### Definition of Done (DoD: 完了の定義)
 
-- [ ] Mermaid, PlantUML, Draw.io, and alert/admonition preview hover interactions all highlight the matching source range
-- [ ] Split sync and source mapping stay aligned before/after diagram and alert/admonition blocks and still converge after async render completion where applicable
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] Mermaid、PlantUML、Draw.io、およびアラートのプレビュー上でホバーした時に、一致する元のテキスト範囲が正しくハイライトされること
+- [ ] 画面分割時のスクロール同期とテキストの紐づきが、図やアラートブロックの前後でズレず、非同期描画が完了した後も正しく位置が揃うこと
+- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行して、統合的なデリバシールーチン（自己レビュー、コミット、PR作成、マージ作業）を完了させること。
 
 ---
 
-## 2. Final Verification & Release Work
+## 2. 最終検証およびリリース作業
 
-### Definition of Ready (DoR)
+### Definition of Ready (DoR: 着手可能の定義)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [ ] 前のタスクが完全なデリバリーサイクル（自己レビュー、必要なら復旧、PR作成、マージ、ブランチの削除）を終えていることを確認する。
+- [ ] ベースとなるブランチが最新の状態（同期済）であり、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 2.2 Ensure `make check` passes with exit code 0
-- [ ] 2.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 2.4 Create a PR targeting `master`
-- [ ] 2.5 Merge into master (※ `--admin` is permitted)
-- [ ] 2.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.16.8`
-- [ ] 2.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 2.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づいて自己レビューを実行する
+- [ ] 2.2 `make check` コマンドがエラーゼロ（exit code 0）で通過することを確認する
+- [ ] 2.3 中継用の中間ベースブランチを `master` ブランチにマージする
+- [ ] 2.4 `master` へのPull Request（PR）を作成する
+- [ ] 2.5 master にマージする（※ `--admin` の使用を許可する）
+- [ ] 2.6 `.agents/skills/release_workflow/SKILL.md` に従って、`0.16.8` のリリースタグ生成とリリース作成を実行する
+- [ ] 2.7 `/opsx-archive` などのOpenSpec用スキルを活用して、この変更作業全体をアーカイブ（保存・終了）する
