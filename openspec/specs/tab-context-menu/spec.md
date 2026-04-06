@@ -46,7 +46,7 @@ This is a legacy capability specification that was automatically migrated to com
 
 ### Requirement: ピン留めタブ
 
-タブをピン留めして固定位置に配置できる。ピン留めタブはアイコンのみのコンパクト表示となり、閉じる系操作の対象外となる。 The system SHALL conform.
+タブをピン留めして固定位置に配置できる。ピン留めタブはアイコンのみのコンパクト表示となり、閉じる系操作の対象外となる。加えて、表示されているピンアイコン自体が直接のトグルアフォーダンスとして機能し、コンテキストメニューを開かずにピン留めを解除できなければならない。 The system SHALL conform.
 
 #### Scenario: タブのピン留め
 
@@ -57,6 +57,12 @@ This is a legacy capability specification that was automatically migrated to com
 
 - **WHEN** ユーザーがピン留めされたタブを右クリックし「ピン留め解除」を選択する
 - **THEN** タブが通常のサイズに戻り、通常の位置に移動する
+
+#### Scenario: アイコンを直接クリックしてピン留め解除
+
+- **WHEN** ユーザーがピン留めされたタブ上のピンアイコンを直接クリックする
+- **THEN** そのタブのピン留めが即座に解除される
+- **THEN** アイコンのヒット領域はタブ本体の選択判定から分離されている
 
 ### Requirement: 最近閉じたタブの復元
 
