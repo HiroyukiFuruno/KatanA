@@ -1,9 +1,36 @@
+use super::command_palette_results::{execute_payload, render_results};
 use crate::app_state::AppAction;
 use crate::state::command_palette::{
-    CommandPaletteExecutePayload, CommandPaletteProvider, CommandPaletteResult,
-    CommandPaletteResultKind, CommandPaletteState,
+    CommandPaletteExecutePayload, CommandPaletteProvider, CommandPaletteState,
 };
 use eframe::egui;
+
+fn handle_key_input(
+    ui: &mut egui::Ui,
+    state: &mut crate::state::command_palette::CommandPaletteState,
+    action: &mut AppAction,
+    is_open: &mut bool,
+) {
+    if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+        *is_open = false;
+        return;
+    }
+    if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
+        state.move_down();
+        return;
+    }
+    if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
+        state.move_up();
+        return;
+    }
+    if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+        let res = state.results.get(state.selected_index).cloned();
+        if let Some(res) = res {
+            execute_payload(action, &res.execute_payload);
+            *is_open = false;
+        }
+    }
+}
 
 const COMMAND_PALETTE_WIDTH: f32 = 600.0;
 const COMMAND_PALETTE_DEFAULT_HEIGHT: f32 = 600.0;
@@ -67,48 +94,16 @@ impl<'a> CommandPaletteModal<'a> {
                     for provider in self.providers {
                         gathered.extend(provider.search(&self.state.current_query, self.workspace));
                     }
-
-                    /* WHY: Sort results */
                     gathered.sort_by(|a, b| {
                         b.score
                             .partial_cmp(&a.score)
                             .unwrap_or(std::cmp::Ordering::Equal)
                     });
-
                     self.state.update_results(gathered);
                 }
 
                 /* WHY: Keyboard interactions */
-                if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-                    is_open = false;
-                } else if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
-                    self.state.move_down();
-                } else if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
-                    self.state.move_up();
-                } else if ui.input(|i| i.key_pressed(egui::Key::Enter))
-                    && let Some(res) = self.state.results.get(self.state.selected_index)
-                {
-                    match &res.execute_payload {
-                        CommandPaletteExecutePayload::DispatchAppAction(a) => {
-                            *self.action = a.clone();
-                        }
-                        CommandPaletteExecutePayload::OpenFile(path) => {
-                            *self.action = AppAction::SelectDocument(path.clone());
-                        }
-                        CommandPaletteExecutePayload::NavigateToContent {
-                            path,
-                            line,
-                            byte_range,
-                        } => {
-                            *self.action = AppAction::SelectDocumentAndJump {
-                                path: path.clone(),
-                                line: *line,
-                                byte_range: byte_range.clone(),
-                            };
-                        }
-                    }
-                    is_open = false; /* WHY: dismiss after action */
-                }
+                handle_key_input(ui, self.state, self.action, &mut is_open);
 
                 /* WHY: If just opened, request focus */
                 if response.gained_focus() || !response.has_focus() {
@@ -116,125 +111,7 @@ impl<'a> CommandPaletteModal<'a> {
                 }
 
                 ui.separator();
-
-                egui::ScrollArea::vertical()
-                    .max_height(COMMAND_PALETTE_MAX_HEIGHT)
-                    .auto_shrink([false; 2])
-                    .show(ui, |ui| {
-                        if self.state.results.is_empty() {
-                            ui.label(
-                                egui::RichText::new(
-                                    &crate::i18n::I18nOps::get().search.palette_no_results,
-                                )
-                                .weak(),
-                            );
-                        } else {
-                            for (idx, result) in self.state.results.iter().enumerate() {
-                                let is_selected = idx == self.state.selected_index;
-
-                                let _bg_color = if is_selected {
-                                    ui.visuals().selection.bg_fill
-                                } else {
-                                    ui.ctx().data(|d| {
-                                        d.get_temp::<katana_platform::theme::ThemeColors>(
-                                            egui::Id::new("katana_theme_colors"),
-                                        )
-                                        .map(|tc| {
-                                            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                                                tc.system.panel_background,
-                                            )
-                                        })
-                                        .unwrap_or_else(|| ui.visuals().window_fill())
-                                    })
-                                };
-
-                                let text_color = if is_selected {
-                                    ui.visuals().selection.stroke.color
-                                } else {
-                                    ui.visuals().text_color()
-                                };
-
-                                let frame = egui::Frame::NONE.inner_margin(egui::vec2(
-                                    COMMAND_PALETTE_MARGIN,
-                                    COMMAND_PALETTE_INNER_MARGIN_Y,
-                                ));
-
-                                let response = frame
-                                    .show(ui, |ui| {
-                                        crate::widgets::AlignCenter::new()
-                                            .shrink_to_fit(true)
-                                            .content(|ui| {
-                                                let icon = match result.kind {
-                                                    CommandPaletteResultKind::Action => {
-                                                        crate::Icon::Action
-                                                    }
-                                                    CommandPaletteResultKind::File => {
-                                                        crate::Icon::Document
-                                                    }
-                                                    CommandPaletteResultKind::MarkdownContent => {
-                                                        crate::Icon::Markdown
-                                                    }
-                                                    CommandPaletteResultKind::RecentOrCommon => {
-                                                        crate::Icon::Recent
-                                                    }
-                                                };
-                                                ui.add(
-                                                    icon.image(crate::icon::IconSize::Medium)
-                                                        .tint(text_color),
-                                                );
-                                                ui.label(
-                                                    egui::RichText::new(&result.label)
-                                                        .color(text_color)
-                                                        .strong(),
-                                                );
-                                                if let Some(sec) = &result.secondary_label {
-                                                    ui.label(
-                                                        egui::RichText::new(sec)
-                                                            .color(text_color)
-                                                            .weak(),
-                                                    );
-                                                }
-                                            })
-                                            .show(ui);
-                                    })
-                                    .response;
-
-                                /* WHY: Hover or click interaction */
-                                let interact =
-                                    ui.interact(response.rect, response.id, egui::Sense::click());
-                                if interact.hovered() {
-                                    self.state.selected_index = idx;
-                                }
-                                if interact.clicked() {
-                                    /* WHY: Execute action on click as well */
-                                    match &result.execute_payload {
-                                        CommandPaletteExecutePayload::DispatchAppAction(a) => {
-                                            *self.action = a.clone();
-                                        }
-                                        CommandPaletteExecutePayload::OpenFile(path) => {
-                                            *self.action = AppAction::SelectDocument(path.clone());
-                                        }
-                                        CommandPaletteExecutePayload::NavigateToContent {
-                                            path,
-                                            line,
-                                            byte_range,
-                                        } => {
-                                            *self.action = AppAction::SelectDocumentAndJump {
-                                                path: path.clone(),
-                                                line: *line,
-                                                byte_range: byte_range.clone(),
-                                            };
-                                        }
-                                    }
-                                    is_open = false;
-                                }
-
-                                if is_selected {
-                                    response.scroll_to_me(None);
-                                }
-                            }
-                        }
-                    });
+                render_results(ui, self.state, self.action, &mut is_open);
             });
 
         self.state.is_open = is_open;

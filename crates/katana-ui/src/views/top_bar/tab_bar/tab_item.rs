@@ -27,11 +27,19 @@ pub(crate) struct TabItem<'a> {
 }
 
 impl<'a> TabItem<'a> {
-    pub fn show(self, ui: &mut egui::Ui, tab_action: &mut Option<AppAction>) -> Option<TabItemResult> {
+    pub fn show(
+        self,
+        ui: &mut egui::Ui,
+        tab_action: &mut Option<AppAction>,
+    ) -> Option<TabItemResult> {
         if self.group.is_some_and(|g| g.collapsed) {
             return None;
         }
-        let is_changelog = self.doc.path.to_string_lossy().starts_with("Katana://ChangeLog");
+        let is_changelog = self
+            .doc
+            .path
+            .to_string_lossy()
+            .starts_with("Katana://ChangeLog");
         let title = TopBarOps::tab_display_title(
             self.doc.file_name().unwrap_or("untitled"),
             is_changelog,
@@ -51,7 +59,9 @@ impl<'a> TabItem<'a> {
             })
             .inner;
 
-        let full_rect = close_resp.as_ref().map_or(title_resp.rect, |c| title_resp.rect.union(c.rect));
+        let full_rect = close_resp
+            .as_ref()
+            .map_or(title_resp.rect, |c| title_resp.rect.union(c.rect));
         self.draw_group_underline(ui, full_rect);
 
         let tab_interact = ui.interact(
@@ -91,7 +101,12 @@ impl<'a> TabItem<'a> {
         if clicked_tab && !self.is_active {
             *tab_action = Some(AppAction::SelectDocument(self.doc.path.clone()));
         }
-        Some(TabItemResult { rect: full_rect, close_idx: close_ret, ghost_info, dragged_source })
+        Some(TabItemResult {
+            rect: full_rect,
+            close_idx: close_ret,
+            ghost_info,
+            dragged_source,
+        })
     }
 
     fn render_title_button(
@@ -115,20 +130,24 @@ impl<'a> TabItem<'a> {
     }
 
     fn render_close_button(&self, ui: &mut egui::Ui) -> Option<egui::Response> {
-        Some(if self.doc.is_pinned {
-            ui.add(crate::Icon::Pin.button(ui, crate::icon::IconSize::Small))
+        let btn = if self.doc.is_pinned {
+            crate::Icon::Pin.button(ui, crate::icon::IconSize::Small)
         } else {
-            ui.add(crate::Icon::Close.button(ui, crate::icon::IconSize::Small))
-        })
+            crate::Icon::Close.button(ui, crate::icon::IconSize::Small)
+        };
+        Some(ui.add(btn))
     }
 
     fn draw_group_underline(&self, ui: &mut egui::Ui, rect: egui::Rect) {
         let Some(g) = self.group else { return };
-        let base_color = egui::Color32::from_hex(&g.color_hex)
-            .unwrap_or(ui.visuals().widgets.active.bg_fill);
+        let base_color =
+            egui::Color32::from_hex(&g.color_hex).unwrap_or(ui.visuals().widgets.active.bg_fill);
         let line_y = rect.bottom() - TAB_UNDERLINE_OFFSET;
-        ui.painter()
-            .hline(rect.x_range(), line_y, egui::Stroke::new(TAB_UNDERLINE_WIDTH, base_color));
+        ui.painter().hline(
+            rect.x_range(),
+            line_y,
+            egui::Stroke::new(TAB_UNDERLINE_WIDTH, base_color),
+        );
     }
 
     fn handle_drag(
@@ -144,51 +163,40 @@ impl<'a> TabItem<'a> {
         if !is_dragged {
             return None;
         }
-        let press_origin = ui.input(|i| i.pointer.press_origin()).unwrap_or(pointer_pos);
+        let press_origin = ui
+            .input(|i| i.pointer.press_origin())
+            .unwrap_or(pointer_pos);
         let ghost_rect = full_rect.translate(pointer_pos - press_origin);
         ui.memory_mut(|mem| {
-            mem.data.insert_temp(egui::Id::new("drag_ghost_x").with(self.idx), ghost_rect.center().x)
+            mem.data.insert_temp(
+                egui::Id::new("drag_ghost_x").with(self.idx),
+                ghost_rect.center().x,
+            )
         });
         ui.scroll_to_rect(ghost_rect, None);
-        self.render_drag_ghost(ui, ghost_rect, title, is_changelog);
+        super::tab_ghost::render_drag_ghost(
+            ui,
+            self.idx,
+            ghost_rect,
+            title,
+            is_changelog,
+            self.is_active,
+            self.doc.is_pinned,
+        );
         Some((ghost_rect, full_rect.y_range()))
     }
 
-    fn render_drag_ghost(&self, ui: &mut egui::Ui, ghost_rect: egui::Rect, title: &str, is_changelog: bool) {
-        egui::Area::new(egui::Id::new("tab_ghost").with(self.idx))
-            .fixed_pos(ghost_rect.min)
-            .order(egui::Order::Tooltip)
-            .show(ui.ctx(), |ui| {
-                ui.set_max_width(TAB_MAX_WIDTH);
-                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-                crate::widgets::AlignCenter::new()
-                    .shrink_to_fit(true)
-                    .content(|ui| {
-                        ui.spacing_mut().item_spacing.x = 0.0;
-                        if is_changelog {
-                            ui.add(egui::Button::image_and_text(
-                                crate::Icon::Info.ui_image(ui, crate::icon::IconSize::Medium),
-                                title,
-                            ).selected(self.is_active).frame(false));
-                        } else {
-                            ui.add(egui::Button::selectable(self.is_active, title).frame(false));
-                        }
-                        if self.doc.is_pinned {
-                            ui.add(crate::Icon::Pin.image(crate::icon::IconSize::Small).tint(ui.visuals().text_color()));
-                        } else {
-                            ui.add(crate::Icon::Close.button(ui, crate::icon::IconSize::Small));
-                        }
-                    })
-                    .show(ui);
-            });
-    }
-
-    fn check_drag_stopped(&self, ui: &mut egui::Ui, tab_interact: &egui::Response) -> Option<(usize, f32)> {
+    fn check_drag_stopped(
+        &self,
+        ui: &mut egui::Ui,
+        tab_interact: &egui::Response,
+    ) -> Option<(usize, f32)> {
         if !tab_interact.drag_stopped() {
             return None;
         }
         let ghost_x = ui.memory(|mem| {
-            mem.data.get_temp::<f32>(egui::Id::new("drag_ghost_x").with(self.idx))
+            mem.data
+                .get_temp::<f32>(egui::Id::new("drag_ghost_x").with(self.idx))
         })?;
         Some((self.idx, ghost_x))
     }

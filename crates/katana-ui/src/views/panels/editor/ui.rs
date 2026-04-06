@@ -100,13 +100,15 @@ impl<'a> EditorContent<'a> {
                         let current_cursor_y =
                             super::decorations::EditorDecorations::render_cursor_line(
                                 ui,
-                                &buffer,
-                                &galley,
-                                text_output.cursor_range,
-                                scroll,
-                                &ln_rect,
-                                &response.rect,
-                                current_line_bg,
+                                super::decorations::CursorLineParams {
+                                    buffer: &buffer,
+                                    galley: &galley,
+                                    cursor_range: text_output.cursor_range,
+                                    scroll,
+                                    ln_rect: &ln_rect,
+                                    response_rect: &response.rect,
+                                    current_line_bg,
+                                },
                             );
 
                         super::decorations::EditorDecorations::render_hovered_lines(
@@ -129,15 +131,17 @@ impl<'a> EditorContent<'a> {
 
                         super::line_numbers::EditorLineNumbers::render(
                             ui,
-                            &galley,
-                            &response.rect,
-                            &ln_rect,
-                            scroll,
-                            current_cursor_y,
-                            ln_text,
-                            ln_active_text,
-                            left_margin,
-                            LINE_NUMBER_PAD_RIGHT,
+                            super::line_numbers::LineNumberParams {
+                                galley: &galley,
+                                response_rect: &response.rect,
+                                ln_rect: &ln_rect,
+                                scroll,
+                                current_cursor_y,
+                                ln_text,
+                                ln_active_text,
+                                left_margin,
+                                line_number_pad_right: LINE_NUMBER_PAD_RIGHT,
+                            },
                         );
 
                         if response.changed() {

@@ -93,10 +93,9 @@ impl WorkspaceSidebarItems {
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
         interact_id: egui::Id,
-        idx: usize,
+        _idx: usize,
     ) -> Option<egui::Response> {
-        let history_menu_id = egui::Id::new("history_menu").with(idx);
-        let is_open = ui.data(|data| data.get_temp::<bool>(history_menu_id).unwrap_or(false));
+        let is_open = app.state.layout.show_workspace_history_modal;
         let recent_paths = app.state.config.settings.settings().workspace.paths.clone();
 
         let hover_text = crate::i18n::I18nOps::get()
@@ -118,20 +117,9 @@ impl WorkspaceSidebarItems {
         };
 
         if interact_resp.clicked() && !recent_paths.is_empty() {
-            ui.data_mut(|data| data.insert_temp(history_menu_id, !is_open));
+            app.pending_action = crate::app_state::AppAction::ToggleWorkspaceHistoryModal;
         }
 
-        if is_open {
-            super::history::WorkspaceSidebarHistory::render_history_popup(
-                ui,
-                app,
-                idx,
-                interact_resp.rect,
-                history_menu_id,
-                interact_resp.clone(),
-                &recent_paths,
-            );
-        }
         Some(interact_resp)
     }
 }

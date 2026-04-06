@@ -17,11 +17,11 @@ pub(crate) struct TabContextMenu<'a> {
 impl<'a> TabContextMenu<'a> {
     pub fn show(self, ui: &mut egui::Ui, tab_action: &mut Option<AppAction>) {
         let i18n = crate::i18n::I18nOps::get();
-        self.render_close_actions(ui, tab_action, &i18n);
+        self.render_close_actions(ui, tab_action, i18n);
         ui.separator();
-        self.render_pin_action(ui, tab_action, &i18n);
+        self.render_pin_action(ui, tab_action, i18n);
         if !self.doc.is_pinned {
-            self.render_group_actions(ui, tab_action, &i18n);
+            self.render_group_actions(ui, tab_action, i18n);
         }
         if !self.recently_closed_tabs_empty {
             ui.separator();
@@ -66,7 +66,11 @@ impl<'a> TabContextMenu<'a> {
         tab_action: &mut Option<AppAction>,
         i18n: &crate::i18n::I18nMessages,
     ) {
-        let pin_label = if self.doc.is_pinned { &i18n.tab.unpin } else { &i18n.tab.pin };
+        let pin_label = if self.doc.is_pinned {
+            &i18n.tab.unpin
+        } else {
+            &i18n.tab.pin
+        };
         if ui.button(pin_label).clicked() {
             *tab_action = Some(AppAction::TogglePinDocument(self.idx));
             ui.close();
@@ -125,7 +129,10 @@ impl<'a> TabContextMenu<'a> {
         doc_str: &str,
         is_in_any: bool,
     ) {
-        let has_other = self.tab_groups.iter().any(|g| !g.members.contains(&doc_str.to_string()));
+        let has_other = self
+            .tab_groups
+            .iter()
+            .any(|g| !g.members.contains(&doc_str.to_string()));
         if !has_other && !is_in_any {
             return;
         }
@@ -159,8 +166,12 @@ impl<'a> TabContextMenu<'a> {
                     egui::vec2(GROUP_DOT_SIZE, GROUP_DOT_SIZE),
                     egui::Sense::hover(),
                 );
-                ui.painter().circle_filled(rect.center(), GROUP_DOT_RADIUS, color32);
-                if ui.add(egui::Button::new(&g.name).frame_when_inactive(true)).clicked() {
+                ui.painter()
+                    .circle_filled(rect.center(), GROUP_DOT_RADIUS, color32);
+                if ui
+                    .add(egui::Button::new(&g.name).frame_when_inactive(true))
+                    .clicked()
+                {
                     *tab_action = Some(AppAction::AddTabToGroup {
                         group_id: g.id.clone(),
                         member: self.doc.path.clone(),

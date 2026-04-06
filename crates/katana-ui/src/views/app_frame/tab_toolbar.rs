@@ -36,11 +36,11 @@ impl<'a> TabToolbar<'a> {
             }
 
             let doc_info = app.state.active_document().map(|doc| {
-                let d_path = doc.path.to_string_lossy();
-                let is_changelog = d_path.starts_with("Katana://ChangeLog");
-                (doc.path.clone(), is_changelog)
+                (
+                    doc.path.clone(),
+                    doc.path.to_string_lossy().starts_with("Katana://ChangeLog"),
+                )
             });
-
             if let Some((doc_path, is_changelog)) = doc_info {
                 Self::render_document_toolbar(ui, app, doc_path, is_changelog);
             }

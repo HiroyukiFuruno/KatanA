@@ -34,10 +34,13 @@ impl<'a> SplitControls<'a> {
                 crate::i18n::I18nOps::get().split_toggle.horizontal.clone(),
             ),
         };
-        let resp = self.ui
+        let resp = self
+            .ui
             .add(
                 egui::Button::image(
-                    dir_icon.image(crate::icon::IconSize::Medium).tint(self.ui.visuals().text_color()),
+                    dir_icon
+                        .image(crate::icon::IconSize::Medium)
+                        .tint(self.ui.visuals().text_color()),
                 )
                 .min_size(self.button_size)
                 .fill(self.icon_bg),
@@ -48,8 +51,12 @@ impl<'a> SplitControls<'a> {
         });
         if resp.clicked() {
             let new_dir = match current_dir {
-                katana_platform::SplitDirection::Horizontal => katana_platform::SplitDirection::Vertical,
-                katana_platform::SplitDirection::Vertical => katana_platform::SplitDirection::Horizontal,
+                katana_platform::SplitDirection::Horizontal => {
+                    katana_platform::SplitDirection::Vertical
+                }
+                katana_platform::SplitDirection::Vertical => {
+                    katana_platform::SplitDirection::Horizontal
+                }
             };
             *action = Some(AppAction::SetSplitDirection(new_dir));
         }
@@ -58,19 +65,22 @@ impl<'a> SplitControls<'a> {
     fn render_order_button(&mut self, action: &mut Option<AppAction>) {
         let current_order = self.pane_order;
         let order_tip = match current_order {
-            katana_platform::PaneOrder::EditorFirst => {
-                crate::i18n::I18nOps::get().split_toggle.preview_first.clone()
-            }
-            katana_platform::PaneOrder::PreviewFirst => {
-                crate::i18n::I18nOps::get().split_toggle.editor_first.clone()
-            }
+            katana_platform::PaneOrder::EditorFirst => crate::i18n::I18nOps::get()
+                .split_toggle
+                .preview_first
+                .clone(),
+            katana_platform::PaneOrder::PreviewFirst => crate::i18n::I18nOps::get()
+                .split_toggle
+                .editor_first
+                .clone(),
         };
         let order_icon = if self.split_direction == katana_platform::SplitDirection::Horizontal {
             crate::icon::Icon::SwapHorizontal
         } else {
             crate::icon::Icon::SwapVertical
         };
-        if self.ui
+        if self
+            .ui
             .add(order_icon.button(self.ui, crate::icon::IconSize::Medium))
             .on_hover_text(order_tip)
             .clicked()
@@ -84,10 +94,16 @@ impl<'a> SplitControls<'a> {
     }
 
     fn render_scroll_sync(&mut self, action: &mut Option<AppAction>) {
-        let mut is_on = self.scroll_sync_override.unwrap_or(self.scroll_sync_enabled);
+        let mut is_on = self
+            .scroll_sync_override
+            .unwrap_or(self.scroll_sync_enabled);
         let toggle_resp = self.ui.add(
             crate::widgets::LabeledToggle::new(
-                crate::i18n::I18nOps::get().settings.behavior.scroll_sync.clone(),
+                crate::i18n::I18nOps::get()
+                    .settings
+                    .behavior
+                    .scroll_sync
+                    .clone(),
                 &mut is_on,
             )
             .position(crate::widgets::TogglePosition::Right)

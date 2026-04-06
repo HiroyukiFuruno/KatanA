@@ -46,12 +46,8 @@ impl CommandPaletteProvider for AppCommandProvider {
                 });
             } else if label.to_lowercase().contains(&query_lower) {
                 /* WHY: Calculate basic score */
-                let score = if label.to_lowercase().starts_with(&query_lower) {
-                    base_score + 1.0
-                } else {
-                    base_score
-                };
-
+                let bonus = label.to_lowercase().starts_with(&query_lower) as u32 as f32;
+                let score = base_score + bonus;
                 results.push(CommandPaletteResult {
                     id: format!("cmd_{}", label),
                     label: label.to_string(),

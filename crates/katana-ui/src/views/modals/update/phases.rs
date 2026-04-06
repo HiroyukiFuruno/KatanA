@@ -142,7 +142,10 @@ pub(super) fn show_available_footer(
         {
             return Some(crate::app_state::AppAction::InstallUpdate);
         }
-        if ui.button(crate::i18n::I18nOps::get().menu.release_notes.clone()).clicked() {
+        if ui
+            .button(crate::i18n::I18nOps::get().menu.release_notes.clone())
+            .clicked()
+        {
             return Some(crate::app_state::AppAction::ShowReleaseNotes);
         }
         if ui.button(msgs.action_skip_version.clone()).clicked() {

@@ -89,40 +89,29 @@ impl IconOps {
             let text_color = color.unwrap_or_else(|| ui.visuals().text_color());
             let mut last_end = 0;
             let mut response: Option<egui::Response> = None;
+            let mut acc = |r: egui::Response| {
+                response = Some(match response.take() {
+                    Some(mut e) => {
+                        e |= r;
+                        e
+                    }
+                    None => r,
+                });
+            };
 
             for (idx, ch) in text.char_indices() {
-                if let Some(icon) = Icon::try_from_emoji(ch) {
-                    if last_end < idx {
-                        let chunk = &text[last_end..idx];
-                        let r = ui.label(egui::RichText::new(chunk).color(text_color));
-                        response = Some(if let Some(mut existing) = response {
-                            existing |= r;
-                            existing
-                        } else {
-                            r
-                        });
-                    }
-
-                    let r = ui.add(icon.image(IconSize::Medium).tint(text_color));
-                    response = Some(if let Some(mut existing) = response {
-                        existing |= r;
-                        existing
-                    } else {
-                        r
-                    });
-
-                    last_end = idx + ch.len_utf8();
+                let Some(icon) = Icon::try_from_emoji(ch) else {
+                    continue;
+                };
+                if last_end < idx {
+                    acc(ui.label(egui::RichText::new(&text[last_end..idx]).color(text_color)));
                 }
+                acc(ui.add(icon.image(IconSize::Medium).tint(text_color)));
+                last_end = idx + ch.len_utf8();
             }
 
             if last_end < text.len() {
-                let r = ui.label(egui::RichText::new(&text[last_end..]).color(text_color));
-                response = Some(if let Some(mut existing) = response {
-                    existing |= r;
-                    existing
-                } else {
-                    r
-                });
+                acc(ui.label(egui::RichText::new(&text[last_end..]).color(text_color)));
             }
 
             response.unwrap_or_else(|| ui.label(""))

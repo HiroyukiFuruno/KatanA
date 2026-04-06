@@ -1,3 +1,4 @@
+pub use super::colors_code::{CodeColors, PreviewColors};
 use serde::{Deserialize, Serialize};
 
 /* WHY: Whether a theme is visually dark or light. */
@@ -72,71 +73,6 @@ pub struct SystemColors {
     pub button_active_background: Rgba,
     pub border: Rgb,
     pub selection: Rgb,
-}
-
-/* WHY: Colours specific to code blocks and editors. */
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct CodeColors {
-    pub background: Rgb,
-    pub text: Rgb,
-    pub line_number_text: Rgb,
-    pub line_number_active_text: Rgb,
-    pub current_line_background: Rgba,
-    pub hover_line_background: Rgba,
-    pub selection: Rgb,
-    #[serde(default = "default_search_match_color")]
-    pub search_match: Rgba,
-    #[serde(default = "default_search_active_color")]
-    pub search_active: Rgba,
-}
-
-const DEFAULT_SEARCH_MATCH_R: u8 = 255;
-const DEFAULT_SEARCH_MATCH_G: u8 = 200;
-const DEFAULT_SEARCH_MATCH_B: u8 = 0;
-const DEFAULT_SEARCH_MATCH_A: u8 = 100;
-const DEFAULT_SEARCH_ACTIVE_G: u8 = 100;
-const DEFAULT_SEARCH_ACTIVE_A: u8 = 150;
-
-fn default_search_match_color() -> Rgba {
-    Rgba {
-        r: DEFAULT_SEARCH_MATCH_R,
-        g: DEFAULT_SEARCH_MATCH_G,
-        b: DEFAULT_SEARCH_MATCH_B,
-        a: DEFAULT_SEARCH_MATCH_A,
-    }
-}
-
-fn default_search_active_color() -> Rgba {
-    Rgba {
-        r: DEFAULT_SEARCH_MATCH_R,
-        g: DEFAULT_SEARCH_ACTIVE_G,
-        b: DEFAULT_SEARCH_MATCH_B,
-        a: DEFAULT_SEARCH_ACTIVE_A,
-    }
-}
-
-/* WHY: Colours specific to the markdown preview. */
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PreviewColors {
-    pub background: Rgb,
-    pub text: Rgb,
-    pub warning_text: Rgb,
-    pub border: Rgb,
-    pub selection: Rgb,
-    #[serde(default = "default_hover_line_background")]
-    pub hover_line_background: Rgba,
-}
-
-const DEFAULT_PREVIEW_LINE_BACKGROUND_RGB: u8 = 128;
-const DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA: u8 = 15;
-
-fn default_hover_line_background() -> Rgba {
-    Rgba {
-        r: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
-        g: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
-        b: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
-        a: DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA,
-    }
 }
 
 /* WHY: Complete set of UI colours for the application. */
@@ -230,13 +166,6 @@ mod tests {
     }
 
     #[test]
-    fn test_preview_hover_line_background_default() {
-        let hover = default_hover_line_background();
-        assert_eq!(hover.r, DEFAULT_PREVIEW_LINE_BACKGROUND_RGB);
-        assert_eq!(hover.a, DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA);
-    }
-
-    #[test]
     fn test_theme_colors_with_contrast_offset() {
         let theme = ThemePreset::KatanaDark.colors();
         let original_hover = theme.preview.hover_line_background.a;
@@ -253,12 +182,30 @@ mod tests {
                 .active_file_highlight
         );
     }
+    #[test]
+    fn test_preview_hover_line_background_default() {
+        use crate::theme::colors_code::{
+            DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA, DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
+        };
+        let hover = super::PreviewColors::default_hover_line_background();
+        assert_eq!(hover.r, DEFAULT_PREVIEW_LINE_BACKGROUND_RGB);
+        assert_eq!(hover.g, DEFAULT_PREVIEW_LINE_BACKGROUND_RGB);
+        assert_eq!(hover.b, DEFAULT_PREVIEW_LINE_BACKGROUND_RGB);
+        assert_eq!(hover.a, DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA);
+    }
 
     #[test]
     fn test_search_match_colors_default() {
-        let match_c = default_search_match_color();
-        assert_eq!(match_c.r, DEFAULT_SEARCH_MATCH_R);
-        let active_c = default_search_active_color();
-        assert_eq!(active_c.a, DEFAULT_SEARCH_ACTIVE_A);
+        use crate::theme::colors_code::{
+            DEFAULT_SEARCH_ACTIVE_A, DEFAULT_SEARCH_ACTIVE_G, DEFAULT_SEARCH_MATCH_A,
+            DEFAULT_SEARCH_MATCH_R,
+        };
+        let c1 = super::CodeColors::default_search_match_color();
+        assert_eq!(c1.r, DEFAULT_SEARCH_MATCH_R);
+        assert_eq!(c1.a, DEFAULT_SEARCH_MATCH_A);
+
+        let c2 = super::CodeColors::default_search_active_color();
+        assert_eq!(c2.g, DEFAULT_SEARCH_ACTIVE_G);
+        assert_eq!(c2.a, DEFAULT_SEARCH_ACTIVE_A);
     }
 }

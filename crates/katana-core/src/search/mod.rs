@@ -35,20 +35,16 @@ impl WorkspaceSearchOps {
                 }
 
                 let line_lower = line.to_lowercase();
-                for (byte_offset, _) in line_lower.match_indices(&query_lower) {
-                    if results.len() >= limit {
-                        break;
-                    }
-
-                    let snippet = line.to_string();
-                    results.push(SearchResult {
+                let remaining = limit.saturating_sub(results.len());
+                results.extend(line_lower.match_indices(&query_lower).take(remaining).map(
+                    |(byte_offset, _)| SearchResult {
                         file_path: file_path.clone(),
                         line_number: line_idx,
                         start_col: byte_offset,
                         end_col: byte_offset + query_lower.len(),
-                        snippet,
-                    });
-                }
+                        snippet: line.to_string(),
+                    },
+                ));
             }
         }
 

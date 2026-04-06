@@ -1,3 +1,4 @@
+pub mod app_state_impl;
 pub mod command_palette;
 pub mod command_palette_providers;
 pub mod config;
@@ -5,6 +6,7 @@ pub mod diagnostics;
 pub mod document;
 pub mod layout;
 pub mod scroll;
+pub mod scroll_mapper;
 pub mod scroll_sync;
 pub mod search;
 pub mod update;

@@ -64,7 +64,8 @@ impl UnusedThemeColorOps {
                 continue;
             };
             general_access.visit_file(&ast);
-            if file.file_name().unwrap_or_default() == "theme.rs" {
+            let fname = file.file_name().unwrap_or_default();
+            if fname == "theme.rs" || fname == "theme_color_data.rs" {
                 settings_access.visit_file(&ast);
             }
         }

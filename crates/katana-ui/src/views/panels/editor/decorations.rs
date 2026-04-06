@@ -3,30 +3,40 @@ use eframe::egui;
 
 pub(crate) struct EditorDecorations;
 
+pub(crate) struct CursorLineParams<'a> {
+    pub buffer: &'a str,
+    pub galley: &'a std::sync::Arc<egui::Galley>,
+    pub cursor_range: Option<egui::text::CCursorRange>,
+    pub scroll: &'a mut crate::app_state::ScrollState,
+    pub ln_rect: &'a egui::Rect,
+    pub response_rect: &'a egui::Rect,
+    pub current_line_bg: Option<egui::Color32>,
+}
+
 impl EditorDecorations {
     pub(crate) fn render_cursor_line(
         ui: &mut egui::Ui,
-        buffer: &str,
-        galley: &std::sync::Arc<egui::Galley>,
-        cursor_range: Option<egui::text::CCursorRange>,
-        scroll: &mut crate::app_state::ScrollState,
-        ln_rect: &egui::Rect,
-        response_rect: &egui::Rect,
-        current_line_bg: Option<egui::Color32>,
+        params: CursorLineParams<'_>,
     ) -> Option<f32> {
+        let CursorLineParams {
+            buffer,
+            galley,
+            cursor_range,
+            scroll,
+            ln_rect,
+            response_rect,
+            current_line_bg,
+        } = params;
         let mut current_cursor_y = None;
         if let Some(c) = cursor_range {
             let paragraph = EditorLogicOps::char_index_to_line(buffer, c.primary.index);
             scroll.active_editor_line = Some(paragraph);
-
             let cursor_rect = galley.pos_from_cursor(c.primary);
             current_cursor_y = Some(cursor_rect.min.y);
-
             let highlight_rect = egui::Rect::from_min_max(
                 egui::pos2(ln_rect.min.x, response_rect.min.y + cursor_rect.min.y),
                 egui::pos2(response_rect.max.x, response_rect.min.y + cursor_rect.max.y),
             );
-
             let highlight_color = EditorLogicOps::current_line_highlight_color(
                 ui.visuals().dark_mode,
                 current_line_bg,
@@ -50,29 +60,27 @@ impl EditorDecorations {
     ) {
         let hover_color =
             EditorLogicOps::hover_line_highlight_color(ui.visuals().dark_mode, hover_line_bg);
-
         for line_range in &scroll.hovered_preview_lines {
-            if let Some((start_idx, end_idx)) =
+            let Some((start_idx, end_idx)) =
                 EditorLogicOps::line_range_to_char_range(buffer, line_range.start, line_range.end)
-            {
-                let cursor_start = egui::text::CCursor {
-                    index: start_idx,
-                    prefer_next_row: false,
-                };
-                let cursor_end = egui::text::CCursor {
-                    index: end_idx.saturating_sub(1),
-                    prefer_next_row: false,
-                };
-
-                let pos_start = galley.pos_from_cursor(cursor_start);
-                let pos_end = galley.pos_from_cursor(cursor_end);
-
-                let highlight_rect = egui::Rect::from_min_max(
-                    egui::pos2(ln_rect.min.x, response_rect.min.y + pos_start.min.y),
-                    egui::pos2(response_rect.max.x, response_rect.min.y + pos_end.max.y),
-                );
-                ui.painter().rect_filled(highlight_rect, 1.0, hover_color);
-            }
+            else {
+                continue;
+            };
+            let cursor_start = egui::text::CCursor {
+                index: start_idx,
+                prefer_next_row: false,
+            };
+            let cursor_end = egui::text::CCursor {
+                index: end_idx.saturating_sub(1),
+                prefer_next_row: false,
+            };
+            let pos_start = galley.pos_from_cursor(cursor_start);
+            let pos_end = galley.pos_from_cursor(cursor_end);
+            let highlight_rect = egui::Rect::from_min_max(
+                egui::pos2(ln_rect.min.x, response_rect.min.y + pos_start.min.y),
+                egui::pos2(response_rect.max.x, response_rect.min.y + pos_end.max.y),
+            );
+            ui.painter().rect_filled(highlight_rect, 1.0, hover_color);
         }
     }
 
@@ -107,7 +115,6 @@ impl EditorDecorations {
             };
             let pos_start = galley.pos_from_cursor(match_start);
             let pos_end = galley.pos_from_cursor(match_end);
-
             let highlight_rect = egui::Rect::from_min_max(
                 egui::pos2(
                     response_rect.min.x + pos_start.min.x.max(0.0),
@@ -118,7 +125,6 @@ impl EditorDecorations {
                     response_rect.min.y + pos_end.max.y,
                 ),
             );
-
             let color = if idx == doc_search_active_index {
                 search_active_color
             } else {

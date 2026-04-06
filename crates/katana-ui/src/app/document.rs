@@ -3,6 +3,8 @@
 use crate::app::*;
 use crate::shell::*;
 
+use crate::app::doc_close::DocCloseOps;
+use crate::app::doc_search::DocSearchRefresh;
 use crate::preview_pane::{DownloadRequest, PreviewPane};
 use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
@@ -19,7 +21,6 @@ pub(crate) trait DocumentOps {
     fn handle_update_buffer(&mut self, content: String);
     fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String);
     fn handle_save_document(&mut self);
-    fn refresh_doc_search_matches(&mut self, content: &str);
 }
 
 impl DocumentOps for KatanaApp {
@@ -116,39 +117,7 @@ impl DocumentOps for KatanaApp {
         }
     }
     fn force_close_document(&mut self, idx: usize) {
-        if idx < self.state.document.open_documents.len() {
-            let closed_doc = self.state.document.open_documents.remove(idx);
-            let path_str = closed_doc.path.to_string_lossy().to_string();
-
-            for g in &mut self.state.document.tab_groups {
-                g.members.retain(|m| m != &path_str);
-            }
-            self.state
-                .document
-                .tab_groups
-                .retain(|g| !g.members.is_empty());
-
-            self.state
-                .push_recently_closed(closed_doc.path.clone(), closed_doc.is_pinned);
-            self.state.document.active_doc_idx = if self.state.document.open_documents.is_empty() {
-                None
-            } else {
-                Some(
-                    self.state
-                        .document
-                        .active_doc_idx
-                        .unwrap_or(0)
-                        .saturating_sub(if self.state.document.active_doc_idx == Some(idx) {
-                            1
-                        } else {
-                            0
-                        })
-                        .min(self.state.document.open_documents.len().saturating_sub(1)),
-                )
-            };
-        }
-        self.save_workspace_state();
-        self.cleanup_closed_tab_previews();
+        DocCloseOps::force_close_document(self, idx);
     }
     fn handle_update_buffer(&mut self, content: String) {
         let path = if let Some(doc) = self.state.active_document_mut() {
@@ -199,47 +168,6 @@ impl DocumentOps for KatanaApp {
                     ),
                     crate::app_state::StatusType::Error,
                 ));
-            }
-        }
-    }
-    fn refresh_doc_search_matches(&mut self, content: &str) {
-        let query = &self.state.search.doc_search_query;
-        self.state.search.doc_search_matches.clear();
-        self.state.search.doc_search_active_index = 0;
-        if !query.is_empty()
-            && let Ok(re) = regex::RegexBuilder::new(&regex::escape(query))
-                .case_insensitive(true)
-                .build()
-        {
-            let mut char_count = 0;
-            let mut last_byte = 0;
-            for mat in re.find_iter(content) {
-                let mut start_b = mat.start();
-                while start_b > 0 && !content.is_char_boundary(start_b) {
-                    start_b -= 1;
-                }
-                let mut end_b = mat.end();
-                while end_b < content.len() && !content.is_char_boundary(end_b) {
-                    end_b += 1;
-                }
-                if start_b < last_byte {
-                    start_b = last_byte;
-                }
-                if end_b < start_b {
-                    end_b = start_b;
-                }
-                char_count += content[last_byte..start_b].chars().count();
-                let char_start = char_count;
-                let match_len = content[start_b..end_b].chars().count();
-                let char_end = char_start + match_len;
-
-                self.state
-                    .search
-                    .doc_search_matches
-                    .push(char_start..char_end);
-
-                char_count += match_len;
-                last_byte = end_b;
             }
         }
     }

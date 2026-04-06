@@ -2,9 +2,6 @@ use crate::app_state::AppAction;
 use crate::shell_ui::{STATUS_BAR_ICON_SPACING, STATUS_SUCCESS_GREEN};
 use eframe::egui;
 
-
-
-
 pub(crate) struct StatusBar<'a> {
     pub status: Option<&'a (String, crate::app_state::StatusType)>,
     pub is_dirty: bool,
@@ -122,4 +119,3 @@ impl<'a> StatusBar<'a> {
         action
     }
 }
-

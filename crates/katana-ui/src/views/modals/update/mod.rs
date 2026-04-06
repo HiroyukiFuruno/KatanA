@@ -26,7 +26,12 @@ impl<'a> UpdateModal<'a> {
         markdown_cache: &'a mut egui_commonmark::CommonMarkCache,
         pending_action: &'a mut AppAction,
     ) -> Self {
-        Self { open, state, markdown_cache, pending_action }
+        Self {
+            open,
+            state,
+            markdown_cache,
+            pending_action,
+        }
     }
 
     pub fn show(self, ctx: &egui::Context) {
@@ -78,16 +83,7 @@ impl<'a> UpdateModal<'a> {
         } else if let Some(latest) = &self.state.update.available {
             self.show_available_dialog(ctx, latest);
         } else {
-            let close = phases::show_up_to_date(
-                ctx,
-                &msgs.title,
-                &msgs.up_to_date,
-                &msgs.up_to_date_desc,
-                &msgs.action_close,
-            );
-            if close == Some(true) {
-                *self.open = false;
-            }
+            show_up_to_date_phase(ctx, msgs, self.open);
         }
     }
 
@@ -100,11 +96,7 @@ impl<'a> UpdateModal<'a> {
         })
     }
 
-    fn show_available_dialog(
-        self,
-        ctx: &egui::Context,
-        latest: &katana_core::update::ReleaseInfo,
-    ) {
+    fn show_available_dialog(self, ctx: &egui::Context, latest: &katana_core::update::ReleaseInfo) {
         let msgs = crate::i18n::I18nOps::get();
         let msgs = &msgs.update;
         let tag = latest.tag_name.clone();
@@ -112,7 +104,9 @@ impl<'a> UpdateModal<'a> {
             .release_notes_template
             .replace("{version}", tag.as_str())
             .replace("{url}", &latest.html_url);
-        let desc = msgs.update_available_desc.replace("{version}", tag.as_str());
+        let desc = msgs
+            .update_available_desc
+            .replace("{version}", tag.as_str());
         let markdown_cache = self.markdown_cache;
         let action = crate::widgets::Modal::new("katana_update_dialog_v6", &msgs.title)
             .width(UPDATE_DIALOG_WIDTH)
@@ -125,9 +119,7 @@ impl<'a> UpdateModal<'a> {
             *self.pending_action = action;
             if matches!(
                 *self.pending_action,
-                AppAction::DismissUpdate
-                    | AppAction::SkipVersion(_)
-                    | AppAction::ShowReleaseNotes
+                AppAction::DismissUpdate | AppAction::SkipVersion(_) | AppAction::ShowReleaseNotes
             ) {
                 *self.open = false;
             }
@@ -176,5 +168,18 @@ impl<'a> UpdateModal<'a> {
         tag: &str,
     ) -> Option<AppAction> {
         phases::show_available_footer(ui, msgs, tag)
+    }
+}
+
+fn show_up_to_date_phase(ctx: &egui::Context, msgs: &crate::i18n::UpdateMessages, open: &mut bool) {
+    let close = phases::show_up_to_date(
+        ctx,
+        &msgs.title,
+        &msgs.up_to_date,
+        &msgs.up_to_date_desc,
+        &msgs.action_close,
+    );
+    if close == Some(true) {
+        *open = false;
     }
 }

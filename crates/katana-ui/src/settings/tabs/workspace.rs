@@ -1,6 +1,29 @@
 use super::types::*;
 use crate::settings::*;
 
+fn apply_extension_toggle(
+    ui: &mut egui::Ui,
+    ext: &str,
+    is_enabled: bool,
+    extensions: &mut Vec<String>,
+) -> bool {
+    if is_enabled {
+        if ext.is_empty() {
+            ui.data_mut(|d| d.insert_temp(egui::Id::new("show_no_extension_warning"), true));
+            false
+        } else if !extensions.contains(&ext.to_string()) {
+            extensions.push(ext.to_string());
+            true
+        } else {
+            false
+        }
+    } else {
+        let before = extensions.len();
+        extensions.retain(|e| e != ext);
+        extensions.len() != before
+    }
+}
+
 impl WorkspaceTabOps {
     pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
         let workspace_msgs = &crate::i18n::I18nOps::get().settings.workspace;
@@ -67,19 +90,7 @@ impl WorkspaceTabOps {
                     )
                     .changed()
                 {
-                    if is_enabled {
-                        if ext.is_empty() {
-                            ui.data_mut(|d| {
-                                d.insert_temp(egui::Id::new("show_no_extension_warning"), true)
-                            });
-                        } else if !extensions.contains(&ext.to_string()) {
-                            extensions.push(ext.to_string());
-                            changed_ext = true;
-                        }
-                    } else {
-                        extensions.retain(|e| e != ext);
-                        changed_ext = true;
-                    }
+                    changed_ext |= apply_extension_toggle(ui, ext, is_enabled, &mut extensions);
                 }
             }
         });

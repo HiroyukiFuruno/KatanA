@@ -16,6 +16,18 @@ export RUSTFLAGS=-D warnings
 
 VERSION := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 
+# Suppress "ar: illegal option -- D" warning on macOS by using llvm-ar if available
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+  LLVM_AR_ARM := /opt/homebrew/opt/llvm/bin/llvm-ar
+  LLVM_AR_INTEL := /usr/local/opt/llvm/bin/llvm-ar
+  ifneq ($(wildcard $(LLVM_AR_ARM)),)
+    export AR=$(LLVM_AR_ARM)
+  else ifneq ($(wildcard $(LLVM_AR_INTEL)),)
+    export AR=$(LLVM_AR_INTEL)
+  endif
+endif
+
 ###################################
 # Setup
 ###################################

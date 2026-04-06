@@ -186,7 +186,7 @@ mod tests {
                         is_flat_view: false,
                         ws_root: None,
                     };
-                    crate::views::panels::workspace::FileEntryNode::new(
+                    crate::views::panels::workspace::file_entry::FileEntryNode::new(
                         &entry,
                         &path,
                         &mut render_ctx,

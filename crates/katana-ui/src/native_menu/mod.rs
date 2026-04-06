@@ -20,7 +20,6 @@ mod ffi {
     pub const TAG_CHECK_UPDATES: i32 = 15;
     pub const TAG_RELEASE_NOTES: i32 = 16;
     pub const TAG_COMMAND_PALETTE: i32 = 17;
-
     #[allow(dead_code)]
     unsafe extern "C" {
         pub fn katana_setup_native_menu();
@@ -49,6 +48,7 @@ mod ffi {
     }
 }
 
+mod strings;
 mod types;
 pub use types::NativeMenuOps;
 
@@ -72,85 +72,8 @@ impl NativeMenuOps {
     }
 
     #[cfg(all(target_os = "macos", not(test)))]
-    #[allow(clippy::too_many_arguments)]
-    unsafe fn update_menu_strings(
-        file: &str,
-        open_workspace: &str,
-        save: &str,
-        settings: &str,
-        preferences: &str,
-        language: &str,
-        about: &str,
-        quit: &str,
-        hide: &str,
-        hide_others: &str,
-        show_all: &str,
-        check_updates: &str,
-        help: &str,
-        release_notes: &str,
-        command_palette: &str,
-        view: &str,
-    ) {
-        let f = std::ffi::CString::new(file).unwrap_or_default();
-        let ow = std::ffi::CString::new(open_workspace).unwrap_or_default();
-        let s = std::ffi::CString::new(save).unwrap_or_default();
-        let st = std::ffi::CString::new(settings).unwrap_or_default();
-        let p = std::ffi::CString::new(preferences).unwrap_or_default();
-        let l = std::ffi::CString::new(language).unwrap_or_default();
-        let a = std::ffi::CString::new(about).unwrap_or_default();
-        let q = std::ffi::CString::new(quit).unwrap_or_default();
-        let h = std::ffi::CString::new(hide).unwrap_or_default();
-        let ho = std::ffi::CString::new(hide_others).unwrap_or_default();
-        let sa = std::ffi::CString::new(show_all).unwrap_or_default();
-        let cu = std::ffi::CString::new(check_updates).unwrap_or_default();
-        let hlp = std::ffi::CString::new(help).unwrap_or_default();
-        let rn = std::ffi::CString::new(release_notes).unwrap_or_default();
-        let cp = std::ffi::CString::new(command_palette).unwrap_or_default();
-        let v = std::ffi::CString::new(view).unwrap_or_default();
-        ffi::katana_update_menu_strings(
-            f.as_ptr(),
-            ow.as_ptr(),
-            s.as_ptr(),
-            st.as_ptr(),
-            p.as_ptr(),
-            l.as_ptr(),
-            a.as_ptr(),
-            q.as_ptr(),
-            h.as_ptr(),
-            ho.as_ptr(),
-            sa.as_ptr(),
-            cu.as_ptr(),
-            hlp.as_ptr(),
-            rn.as_ptr(),
-            cp.as_ptr(),
-            v.as_ptr(),
-        );
-    }
-
-    #[cfg(all(target_os = "macos", not(test)))]
     pub fn update_native_menu_strings_from_i18n() {
-        let msgs = crate::i18n::I18nOps::get();
-        let preferences = format!("{}…", msgs.menu.settings);
-        unsafe {
-            Self::update_menu_strings(
-                &msgs.menu.file,
-                &msgs.menu.open_workspace,
-                &msgs.menu.save,
-                &msgs.menu.settings,
-                &preferences,
-                &msgs.menu.language,
-                &msgs.menu.about,
-                &msgs.menu.quit,
-                &msgs.menu.hide,
-                &msgs.menu.hide_others,
-                &msgs.menu.show_all,
-                &msgs.menu.check_updates,
-                &msgs.menu.help,
-                &msgs.menu.release_notes,
-                &msgs.menu.command_palette,
-                &msgs.menu.view,
-            );
-        }
+        strings::update_from_i18n();
     }
 
     #[cfg(any(not(target_os = "macos"), test))]
@@ -163,13 +86,9 @@ impl NativeMenuOps {
     ) -> AppAction {
         let action = unsafe { ffi::katana_poll_menu_action() };
         match action {
-            ffi::TAG_OPEN_WORKSPACE => {
-                if let Some(path) = open_folder_dialog() {
-                    AppAction::OpenWorkspace(path)
-                } else {
-                    AppAction::None
-                }
-            }
+            ffi::TAG_OPEN_WORKSPACE => open_folder_dialog()
+                .map(AppAction::OpenWorkspace)
+                .unwrap_or(AppAction::None),
             ffi::TAG_SAVE => AppAction::SaveDocument,
             ffi::TAG_LANG_EN => AppAction::ChangeLanguage("en".to_string()),
             ffi::TAG_LANG_JA => AppAction::ChangeLanguage("ja".to_string()),

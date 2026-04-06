@@ -14,6 +14,8 @@
 
 pub mod about_info;
 pub mod app;
+pub mod app_action;
+pub use app_action::AppAction;
 pub mod app_state;
 pub mod font_loader;
 pub mod html_renderer;

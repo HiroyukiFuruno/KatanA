@@ -27,7 +27,7 @@ impl<'a> GroupHeaderPopup<'a> {
         ui.add_space(POPUP_SPACING);
         self.render_palette(ui, &mut new_color);
         ui.add_space(POPUP_SPACING);
-        self.apply_changes(ui, &new_name, &new_color, &i18n);
+        self.apply_changes(ui, &new_name, &new_color, i18n);
         ui.min_rect()
     }
 
@@ -60,7 +60,8 @@ impl<'a> GroupHeaderPopup<'a> {
                         egui::vec2(PALETTE_SIZE, PALETTE_SIZE),
                         egui::Sense::click(),
                     );
-                    ui.painter().circle_filled(rect.center(), PALETTE_RADIUS, color32);
+                    ui.painter()
+                        .circle_filled(rect.center(), PALETTE_RADIUS, color32);
                     if *new_color == c {
                         ui.painter().circle_stroke(
                             rect.center(),

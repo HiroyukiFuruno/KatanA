@@ -52,15 +52,16 @@ impl<'a> TabDragHandler<'a> {
     ) -> Option<AppAction> {
         let src = self.src_idx;
         if src != to_physical && src + 1 != to_physical {
-            return Some(AppAction::ReorderDocument { from: src, to: to_physical, new_group_id });
+            return Some(AppAction::ReorderDocument {
+                from: src,
+                to: to_physical,
+                new_group_id,
+            });
         }
         self.maybe_group_change_action(new_group_id)
     }
 
-    fn maybe_group_change_action(
-        &self,
-        new_group_id: Option<Option<String>>,
-    ) -> Option<AppAction> {
+    fn maybe_group_change_action(&self, new_group_id: Option<Option<String>>) -> Option<AppAction> {
         let src = self.src_idx;
         let path_str = self.open_documents[src].path.display().to_string();
         match &new_group_id {
@@ -71,15 +72,26 @@ impl<'a> TabDragHandler<'a> {
                     .find(|g| g.id == *g_id)
                     .is_some_and(|g| g.members.contains(&path_str));
                 if !in_group {
-                    Some(AppAction::ReorderDocument { from: src, to: src, new_group_id })
+                    Some(AppAction::ReorderDocument {
+                        from: src,
+                        to: src,
+                        new_group_id,
+                    })
                 } else {
                     None
                 }
             }
             Some(None) => {
-                let in_any = self.tab_groups.iter().any(|g| g.members.contains(&path_str));
+                let in_any = self
+                    .tab_groups
+                    .iter()
+                    .any(|g| g.members.contains(&path_str));
                 if in_any {
-                    Some(AppAction::ReorderDocument { from: src, to: src, new_group_id })
+                    Some(AppAction::ReorderDocument {
+                        from: src,
+                        to: src,
+                        new_group_id,
+                    })
                 } else {
                     None
                 }

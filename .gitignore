@@ -95,4 +95,4 @@ cov.json
 /*.rs
 /*.py
 cp
-cpd
+cpD

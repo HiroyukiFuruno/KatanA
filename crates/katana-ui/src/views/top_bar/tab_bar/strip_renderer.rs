@@ -16,7 +16,9 @@ pub(super) struct DropIndicator<'a> {
 
 impl<'a> DropIndicator<'a> {
     pub fn render(self, ui: &mut egui::Ui) {
-        let Some((ghost_rect, y_range)) = self.ghost_info else { return };
+        let Some((ghost_rect, y_range)) = self.ghost_info else {
+            return;
+        };
         let drop_points = TopBarOps::compute_drop_points(self.tab_rects);
         let best_x = drop_points
             .iter()

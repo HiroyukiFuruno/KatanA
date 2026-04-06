@@ -2,6 +2,29 @@ use super::types::*;
 use eframe::egui;
 
 use super::types::PreviewPane;
+
+fn apply_section_msg(
+    sections: &mut Vec<RenderedSection>,
+    kind: &str,
+    source: &str,
+    section: RenderedSection,
+) {
+    for slot in sections {
+        let RenderedSection::Pending {
+            kind: p_kind,
+            source: p_source,
+            ..
+        } = slot
+        else {
+            continue;
+        };
+        if p_kind == kind && p_source == source {
+            *slot = section.clone();
+            return;
+        }
+    }
+}
+
 impl PreviewPane {
     fn finalize_disconnected_renders(&mut self) {
         for slot in &mut self.sections {
@@ -44,18 +67,7 @@ impl PreviewPane {
                             source,
                             section,
                         } => {
-                            for slot in &mut self.sections {
-                                if let RenderedSection::Pending {
-                                    kind: p_kind,
-                                    source: p_source,
-                                    ..
-                                } = slot
-                                    && p_kind == &kind
-                                    && p_source == &source
-                                {
-                                    *slot = section.clone();
-                                }
-                            }
+                            apply_section_msg(&mut self.sections, &kind, &source, section);
                         }
                         RenderMessage::ReduceConcurrency => {
                             self.concurrency_reduction_requested = true;
@@ -91,18 +103,7 @@ impl PreviewPane {
                             source,
                             section,
                         } => {
-                            for slot in &mut self.sections {
-                                if let RenderedSection::Pending {
-                                    kind: p_kind,
-                                    source: p_source,
-                                    ..
-                                } = slot
-                                    && p_kind == &kind
-                                    && p_source == &source
-                                {
-                                    *slot = section.clone();
-                                }
-                            }
+                            apply_section_msg(&mut self.sections, &kind, &source, section);
                         }
                         RenderMessage::ReduceConcurrency => {
                             self.concurrency_reduction_requested = true;

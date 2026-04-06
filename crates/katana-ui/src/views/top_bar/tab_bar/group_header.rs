@@ -42,7 +42,10 @@ impl<'a> GroupHeader<'a> {
             GROUP_HEADER_EXPANDED_ALPHA
         };
         crate::theme_bridge::ThemeBridgeOps::from_rgba_unmultiplied(
-            base.r(), base.g(), base.b(), alpha,
+            base.r(),
+            base.g(),
+            base.b(),
+            alpha,
         )
     }
 
@@ -69,8 +72,11 @@ impl<'a> GroupHeader<'a> {
                             egui::vec2(GROUP_HEADER_DOT_SIZE, GROUP_HEADER_DOT_SIZE),
                             egui::Sense::hover(),
                         );
-                        ui.painter()
-                            .circle_filled(rect.center(), GROUP_HEADER_DOT_RADIUS, base_color);
+                        ui.painter().circle_filled(
+                            rect.center(),
+                            GROUP_HEADER_DOT_RADIUS,
+                            base_color,
+                        );
                         ui.label(
                             egui::RichText::new(&self.g.name)
                                 .color(ui.visuals().text_color())
@@ -127,7 +133,9 @@ impl<'a> GroupHeader<'a> {
         if !is_open || !primary_pressed {
             return;
         }
-        let Some(pos) = ui.input(|i| i.pointer.interact_pos()) else { return };
+        let Some(pos) = ui.input(|i| i.pointer.interact_pos()) else {
+            return;
+        };
         let outside_popup = popup_resp.is_none_or(|r| !r.contains(pos));
         let outside_header = !group_resp.rect.contains(pos);
         if outside_popup && outside_header {

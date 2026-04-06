@@ -4,6 +4,21 @@ use crate::shell_ui::{
 };
 use eframe::egui;
 
+fn find_active_toc_index(
+    heading_anchors: &[(std::ops::Range<usize>, egui::Rect)],
+    threshold: f32,
+) -> usize {
+    let mut active = 0;
+    for (i, (_, rect)) in heading_anchors.iter().enumerate() {
+        if rect.min.y <= threshold {
+            active = i;
+        } else {
+            break;
+        }
+    }
+    active
+}
+
 pub(crate) struct TocPanel<'a> {
     pub preview: &'a mut crate::preview_pane::PreviewPane,
     pub state: &'a crate::app_state::AppState,
@@ -55,13 +70,8 @@ impl<'a> TocPanel<'a> {
                             if let Some(visible_rect) = preview.visible_rect {
                                 let threshold =
                                     visible_rect.min.y + TOC_HEADING_VISIBILITY_THRESHOLD;
-                                for (i, (_, rect)) in preview.heading_anchors.iter().enumerate() {
-                                    if rect.min.y <= threshold {
-                                        active_index = i;
-                                    } else {
-                                        break;
-                                    }
-                                }
+                                active_index =
+                                    find_active_toc_index(&preview.heading_anchors, threshold);
                             }
 
                             let mut next_scroll = None;

@@ -90,6 +90,36 @@ impl MarkdownRule for HeadingStructureRule {
     }
 }
 
+fn push_broken_link_violation(
+    diagnostics: &mut Vec<MarkdownDiagnostic>,
+    file_path: &Path,
+    line_idx: usize,
+    actual_start: usize,
+    absolute_end: usize,
+    base_dir: &Path,
+    link: &str,
+) {
+    if link.starts_with("http") || link.starts_with('#') {
+        return;
+    }
+    let target_path = base_dir.join(link);
+    if target_path.exists() || target_path.with_extension("md").exists() {
+        return;
+    }
+    diagnostics.push(MarkdownDiagnostic {
+        file: file_path.to_path_buf(),
+        severity: DiagnosticSeverity::Error,
+        range: DiagnosticRange {
+            start_line: line_idx + 1,
+            start_column: actual_start + 1,
+            end_line: line_idx + 1,
+            end_column: absolute_end + 2,
+        },
+        message: format!("Broken local link: {}", link),
+        rule_id: "md-broken-link".to_string(),
+    });
+}
+
 fn get_heading_level(line: &str) -> Option<usize> {
     if line.starts_with('#') {
         let count = line.chars().take_while(|c| *c == '#').count();
@@ -123,25 +153,15 @@ impl MarkdownRule for BrokenLinkRule {
                 if let Some(end_idx) = rest.find(')') {
                     let link = &rest[..end_idx];
                     let absolute_end = offset + end_idx;
-
-                    if !link.starts_with("http") && !link.starts_with('#') {
-                        let target_path = base_dir.join(link);
-                        if !target_path.exists() && !target_path.with_extension("md").exists() {
-                            diagnostics.push(MarkdownDiagnostic {
-                                file: file_path.to_path_buf(),
-                                severity: DiagnosticSeverity::Error,
-                                range: DiagnosticRange {
-                                    start_line: line_idx + 1,
-                                    start_column: actual_start + 1,
-                                    end_line: line_idx + 1,
-                                    end_column: absolute_end + 2,
-                                },
-                                message: format!("Broken local link: {}", link),
-                                rule_id: self.id().to_string(),
-                            });
-                        }
-                    }
-
+                    push_broken_link_violation(
+                        &mut diagnostics,
+                        file_path,
+                        line_idx,
+                        actual_start,
+                        absolute_end,
+                        base_dir,
+                        link,
+                    );
                     rest = &rest[end_idx + 1..];
                     offset += end_idx + 1;
                 }

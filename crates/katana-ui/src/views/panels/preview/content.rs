@@ -102,11 +102,9 @@ impl<'a> PreviewContent<'a> {
 
                             if ui.rect_contains_pointer(ui.min_rect())
                                 && ui.input(|i| i.pointer.primary_clicked())
-                            {
-                                if let Some(hovered) = hovered_lines.first() {
+                                && let Some(hovered) = hovered_lines.first() {
                                     scroll.scroll_to_line = Some(hovered.start);
                                 }
-                            }
                             download_req = req;
                             if let Some((global_index, new_state)) = actions.into_iter().next() {
                                 *action = AppAction::ToggleTaskList {

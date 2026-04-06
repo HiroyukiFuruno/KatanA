@@ -35,14 +35,14 @@ impl<'a> TabNavButtons<'a> {
             egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, label.clone())
         });
 
-        if resp.clicked() && let Some(idx) = self.active_doc_idx {
-            let new_idx =
-                crate::shell_logic::ShellLogicOps::prev_tab_index(idx, self.doc_count);
-            *tab_action =
-                Some(AppAction::SelectDocument(self.open_documents[new_idx].path.clone()));
-            ui.memory_mut(|m| {
-                m.data.insert_temp(egui::Id::new("scroll_tab_req"), true)
-            });
+        if resp.clicked()
+            && let Some(idx) = self.active_doc_idx
+        {
+            let new_idx = crate::shell_logic::ShellLogicOps::prev_tab_index(idx, self.doc_count);
+            *tab_action = Some(AppAction::SelectDocument(
+                self.open_documents[new_idx].path.clone(),
+            ));
+            ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
         }
     }
 
@@ -66,14 +66,14 @@ impl<'a> TabNavButtons<'a> {
             egui::WidgetInfo::labeled(egui::WidgetType::Button, nav_enabled, label.clone())
         });
 
-        if resp.clicked() && let Some(idx) = self.active_doc_idx {
-            let new_idx =
-                crate::shell_logic::ShellLogicOps::next_tab_index(idx, self.doc_count);
-            *tab_action =
-                Some(AppAction::SelectDocument(self.open_documents[new_idx].path.clone()));
-            ui.memory_mut(|m| {
-                m.data.insert_temp(egui::Id::new("scroll_tab_req"), true)
-            });
+        if resp.clicked()
+            && let Some(idx) = self.active_doc_idx
+        {
+            let new_idx = crate::shell_logic::ShellLogicOps::next_tab_index(idx, self.doc_count);
+            *tab_action = Some(AppAction::SelectDocument(
+                self.open_documents[new_idx].path.clone(),
+            ));
+            ui.memory_mut(|m| m.data.insert_temp(egui::Id::new("scroll_tab_req"), true));
         }
     }
 }

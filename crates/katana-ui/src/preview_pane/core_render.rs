@@ -1,22 +1,7 @@
 use egui_commonmark::CommonMarkCache;
-use katana_core::markdown::DiagramResult;
 use katana_core::preview::{ImagePreviewOps, PreviewFlattenOps, PreviewSection, PreviewSectionOps};
 
 use super::types::*;
-
-fn cache_if_serializable(
-    result: &DiagramResult,
-    is_http: bool,
-    key: &str,
-    cache: &std::sync::Arc<dyn katana_platform::CacheFacade>,
-) {
-    let Ok(json) = serde_json::to_string(result) else { return };
-    if is_http {
-        cache.set_memory(key, json);
-    } else {
-        let _ = cache.set_persistent(key, json);
-    }
-}
 
 impl PreviewPane {
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
@@ -161,111 +146,12 @@ impl PreviewPane {
         self.render_rx = Some(rx);
 
         let concurrency = diagram_concurrency.max(1);
-        let jobs_len = jobs.len();
-        let jobs_rx = std::sync::Arc::new(std::sync::Mutex::new(jobs.into_iter()));
-
-        for _ in 0..concurrency.min(jobs_len) {
-            let tx = tx.clone();
-            let jobs_rx = jobs_rx.clone();
-            let current_cancel_token = current_cancel_token.clone();
-            let repaint_ctx = self.repaint_ctx.clone();
-            std::thread::spawn(move || {
-                loop {
-                    let job = {
-                        let mut lock = jobs_rx.lock().unwrap();
-                        lock.next()
-                    };
-                    let Some(job) = job else {
-                        break;
-                    };
-
-                    if current_cancel_token.load(std::sync::atomic::Ordering::Relaxed) {
-                        break;
-                    }
-
-                    let cache_key = RendererLogicOps::get_cache_key(&job.path, &job.kind, &job.src);
-                    let is_http = job.src.contains("http://") || job.src.contains("https://");
-
-                    let cached_result: Option<String> = if !job.force {
-                        if is_http {
-                            job.cache.get_memory(&cache_key)
-                        } else {
-                            job.cache.get_persistent(&cache_key)
-                        }
-                    } else {
-                        None
-                    };
-
-                    let result = if let Some(json) = cached_result {
-                        match serde_json::from_str::<DiagramResult>(&json) {
-                            Ok(res) => {
-                                if matches!(job.kind, katana_core::markdown::DiagramKind::Mermaid)
-                                    && matches!(res, DiagramResult::Ok(_))
-                                {
-                                    /* WHY: Old caches may still store Mermaid output as Ok(html) (SVG format). */
-                                    /* WHY: or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG. */
-                                    let new_res = RendererLogicOps::dispatch_renderer(
-                                        &katana_core::markdown::DiagramBlock {
-                                            kind: job.kind.clone(),
-                                            source: job.src.clone(),
-                                        },
-                                    );
-                                    cache_if_serializable(&new_res, is_http, &cache_key, &job.cache);
-                                    if matches!(new_res, DiagramResult::Err { .. }) {
-                                        let _ = tx.send(RenderMessage::ReduceConcurrency);
-                                    }
-                                    new_res
-                                } else {
-                                    res
-                                }
-                            }
-                            Err(_) => {
-                                let res = RendererLogicOps::dispatch_renderer(
-                                    &katana_core::markdown::DiagramBlock {
-                                        kind: job.kind.clone(),
-                                        source: job.src.clone(),
-                                    },
-                                );
-                                if matches!(res, DiagramResult::Err { .. }) {
-                                    let _ = tx.send(RenderMessage::ReduceConcurrency);
-                                }
-                                res
-                            }
-                        }
-                    } else {
-                        let res = RendererLogicOps::dispatch_renderer(
-                            &katana_core::markdown::DiagramBlock {
-                                kind: job.kind.clone(),
-                                source: job.src.clone(),
-                            },
-                        );
-
-                        cache_if_serializable(&res, is_http, &cache_key, &job.cache);
-                        if matches!(res, DiagramResult::Err { .. }) {
-                            let _ = tx.send(RenderMessage::ReduceConcurrency);
-                        }
-                        res
-                    };
-
-                    let section = RendererLogicOps::map_diagram_result(
-                        &job.kind,
-                        &job.src,
-                        result,
-                        job.source_lines,
-                    );
-                    let msg = RenderMessage::Section {
-                        kind: format!("{:?}", job.kind),
-                        source: job.src.clone(),
-                        section,
-                    };
-                    if tx.send(msg).is_err() {
-                        break;
-                    }
-                    if let Some(ctx) = &repaint_ctx {
-                        ctx.request_repaint();
-                    }
-                }
-            });
-        }
+        super::render_workers::spawn_render_workers(
+            jobs,
+            tx,
+            current_cancel_token,
+            self.repaint_ctx.clone(),
+            concurrency,
+        );
     }
 }

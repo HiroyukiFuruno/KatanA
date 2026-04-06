@@ -5,6 +5,7 @@ pub mod items;
 pub mod nav;
 pub mod strip_renderer;
 pub mod tab_context_menu;
+pub mod tab_ghost;
 pub mod tab_item;
 
 use crate::app_state::AppAction;
@@ -56,9 +57,7 @@ impl<'a> TabBar<'a> {
                 let scroll_width = ui.available_width() - TAB_NAV_BUTTONS_AREA_WIDTH;
                 egui::ScrollArea::horizontal()
                     .max_width(scroll_width)
-                    .scroll_bar_visibility(
-                        egui::scroll_area::ScrollBarVisibility::AlwaysHidden,
-                    )
+                    .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                     .id_salt("tab_scroll")
                     .show(ui, |ui| {
                         self.render_tab_strip(
@@ -72,7 +71,8 @@ impl<'a> TabBar<'a> {
                     });
                 if should_scroll {
                     ui.memory_mut(|mem| {
-                        mem.data.remove_temp::<bool>(egui::Id::new("scroll_tab_req"));
+                        mem.data
+                            .remove_temp::<bool>(egui::Id::new("scroll_tab_req"));
                     });
                 }
                 ui.separator();
@@ -159,8 +159,11 @@ impl<'a> TabBar<'a> {
                         &mut ghost_info_acc,
                     );
                 }
-                strip_renderer::DropIndicator { tab_rects, ghost_info: ghost_info_acc }
-                    .render(ui);
+                strip_renderer::DropIndicator {
+                    tab_rects,
+                    ghost_info: ghost_info_acc,
+                }
+                .render(ui);
             })
             .show(ui);
     }

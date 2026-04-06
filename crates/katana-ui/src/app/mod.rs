@@ -1,7 +1,10 @@
 pub mod action;
+pub mod doc_close;
+pub mod doc_search;
 pub mod document;
 pub mod download;
 pub mod export;
+pub mod export_poll;
 pub mod preview;
 pub mod types;
 pub mod update;

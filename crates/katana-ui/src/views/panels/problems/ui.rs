@@ -62,43 +62,8 @@ impl<'a> ProblemsPanel<'a> {
                         );
                     } else {
                         for (path, diagnostics) in &self.state.diagnostics.problems {
-                            let filename = path.file_name().unwrap_or_default().to_string_lossy();
-                            ui.label(egui::RichText::new(filename).strong());
-                            for diag in diagnostics {
-                                crate::widgets::AlignCenter::new()
-                                    .shrink_to_fit(true)
-                                    .content(|ui| {
-                                        let icon = match diag.severity {
-                                        katana_linter::markdown::DiagnosticSeverity::Error => "🔴",
-                                        katana_linter::markdown::DiagnosticSeverity::Warning => {
-                                            "🟡"
-                                        }
-                                        katana_linter::markdown::DiagnosticSeverity::Info => "🔵",
-                                    };
-                                        ui.label(icon);
-                                        let msg = format!(
-                                            "[{}:{}] {}",
-                                            diag.range.start_line,
-                                            diag.range.start_column,
-                                            diag.message
-                                        );
-                                        /* WHY: scroll list item; future: ClickableRowOps atom */
-                                        if ui
-                                            .add(
-                                                egui::Button::selectable(false, msg)
-                                                    .frame_when_inactive(true),
-                                            )
-                                            .clicked()
-                                        {
-                                            *self.pending_action =
-                                            crate::app_state::AppAction::SelectDocumentAndJump {
-                                                path: path.clone(),
-                                                line: diag.range.start_line,
-                                                byte_range: 0..0,
-                                            };
-                                        }
-                                    })
-                                    .show(ui);
+                            if let Some(action) = show_file_diagnostics(ui, path, diagnostics) {
+                                *self.pending_action = action;
                             }
                             ui.add_space(SPACING);
                         }
@@ -106,4 +71,53 @@ impl<'a> ProblemsPanel<'a> {
                 });
             });
     }
+}
+
+fn show_file_diagnostics(
+    ui: &mut egui::Ui,
+    path: &std::path::Path,
+    diagnostics: &[katana_linter::markdown::MarkdownDiagnostic],
+) -> Option<crate::app_state::AppAction> {
+    let filename = path.file_name().unwrap_or_default().to_string_lossy();
+    ui.label(egui::RichText::new(filename).strong());
+    for diag in diagnostics {
+        if show_diagnostic_row(ui, diag) {
+            return Some(crate::app_state::AppAction::SelectDocumentAndJump {
+                path: path.to_path_buf(),
+                line: diag.range.start_line,
+                byte_range: 0..0,
+            });
+        }
+    }
+    None
+}
+
+fn show_diagnostic_row(
+    ui: &mut egui::Ui,
+    diag: &katana_linter::markdown::MarkdownDiagnostic,
+) -> bool {
+    let icon = match diag.severity {
+        katana_linter::markdown::DiagnosticSeverity::Error => "🔴",
+        katana_linter::markdown::DiagnosticSeverity::Warning => "🟡",
+        katana_linter::markdown::DiagnosticSeverity::Info => "🔵",
+    };
+    let mut clicked = false;
+    crate::widgets::AlignCenter::new()
+        .shrink_to_fit(true)
+        .content(|ui| {
+            ui.label(icon);
+            let msg = format!(
+                "[{}:{}] {}",
+                diag.range.start_line, diag.range.start_column, diag.message
+            );
+            /* WHY: scroll list item; future: ClickableRowOps atom */
+            if ui
+                .add(egui::Button::selectable(false, msg).frame_when_inactive(true))
+                .clicked()
+            {
+                clicked = true;
+            }
+        })
+        .show(ui);
+    clicked
 }

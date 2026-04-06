@@ -120,10 +120,9 @@ impl<'a> WorkspaceContent<'a> {
         if ui
             .button(crate::i18n::I18nOps::get().menu.open_workspace.clone())
             .clicked()
+            && let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog()
         {
-            if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
-                *self.action = AppAction::OpenWorkspace(path);
-            }
+            *self.action = AppAction::OpenWorkspace(path);
         }
 
         if !self.recent_paths.is_empty() {

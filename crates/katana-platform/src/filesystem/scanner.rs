@@ -99,51 +99,7 @@ impl ScannerOps {
             (TreeEntry::Directory { .. }, TreeEntry::File { .. }) => std::cmp::Ordering::Less,
             (TreeEntry::File { .. }, TreeEntry::Directory { .. }) => std::cmp::Ordering::Greater,
             (a, b) => {
-                const DECIMAL_BASE: u64 = 10;
-                let a_path = a.path().to_string_lossy();
-                let b_path = b.path().to_string_lossy();
-
-                let mut a_chars = a_path.chars().peekable();
-                let mut b_chars = b_path.chars().peekable();
-
-                loop {
-                    match (a_chars.peek(), b_chars.peek()) {
-                        (Some(&ca), Some(&cb)) => {
-                            if ca.is_ascii_digit() && cb.is_ascii_digit() {
-                                let mut a_num = 0u64;
-                                while let Some(&c) = a_chars.peek() {
-                                    if c.is_ascii_digit() {
-                                        a_num = a_num * DECIMAL_BASE + (c as u64 - '0' as u64);
-                                        a_chars.next();
-                                    } else {
-                                        break;
-                                    }
-                                }
-                                let mut b_num = 0u64;
-                                while let Some(&c) = b_chars.peek() {
-                                    if c.is_ascii_digit() {
-                                        b_num = b_num * DECIMAL_BASE + (c as u64 - '0' as u64);
-                                        b_chars.next();
-                                    } else {
-                                        break;
-                                    }
-                                }
-                                if a_num != b_num {
-                                    break a_num.cmp(&b_num);
-                                }
-                            } else {
-                                if ca != cb {
-                                    break ca.cmp(&cb);
-                                }
-                                a_chars.next();
-                                b_chars.next();
-                            }
-                        }
-                        (Some(_), None) => break std::cmp::Ordering::Greater,
-                        (None, Some(_)) => break std::cmp::Ordering::Less,
-                        (None, None) => break std::cmp::Ordering::Equal,
-                    }
-                }
+                compare_path_natural(&a.path().to_string_lossy(), &b.path().to_string_lossy())
             }
         }
     }
@@ -185,6 +141,46 @@ impl ScannerOps {
             }
         })
     }
+}
+
+fn compare_path_natural(a_path: &str, b_path: &str) -> std::cmp::Ordering {
+    let mut a_chars = a_path.chars().peekable();
+    let mut b_chars = b_path.chars().peekable();
+    loop {
+        match (a_chars.peek(), b_chars.peek()) {
+            (Some(&ca), Some(&cb)) => {
+                if ca.is_ascii_digit() && cb.is_ascii_digit() {
+                    let a_num = parse_leading_num(&mut a_chars);
+                    let b_num = parse_leading_num(&mut b_chars);
+                    if a_num != b_num {
+                        break a_num.cmp(&b_num);
+                    }
+                } else {
+                    if ca != cb {
+                        break ca.cmp(&cb);
+                    }
+                    a_chars.next();
+                    b_chars.next();
+                }
+            }
+            (Some(_), None) => break std::cmp::Ordering::Greater,
+            (None, Some(_)) => break std::cmp::Ordering::Less,
+            (None, None) => break std::cmp::Ordering::Equal,
+        }
+    }
+}
+
+fn parse_leading_num(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> u64 {
+    const DECIMAL_BASE: u64 = 10;
+    let mut num = 0u64;
+    while let Some(&c) = chars.peek() {
+        if !c.is_ascii_digit() {
+            break;
+        }
+        num = num * DECIMAL_BASE + (c as u64 - '0' as u64);
+        chars.next();
+    }
+    num
 }
 
 #[cfg(test)]

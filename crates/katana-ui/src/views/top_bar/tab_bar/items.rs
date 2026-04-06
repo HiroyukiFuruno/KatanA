@@ -50,7 +50,10 @@ impl<'a> DrawItemCollector<'a> {
             items.push(DrawItem::GroupHeader(g));
             for (idx, doc) in self.open_documents.iter().enumerate() {
                 if !doc.is_pinned && g.members.contains(&doc.path.display().to_string()) {
-                    items.push(DrawItem::Tab { idx, group: Some(g) });
+                    items.push(DrawItem::Tab {
+                        idx,
+                        group: Some(g),
+                    });
                 }
             }
         }

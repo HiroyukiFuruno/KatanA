@@ -1,7 +1,6 @@
 use crate::app_state::AppAction;
 use eframe::egui;
 
-
 pub(crate) struct DocSearchBar;
 
 impl DocSearchBar {

@@ -16,98 +16,21 @@
 
 #[cfg(not(test))]
 use katana_core::ai::AiProviderRegistry;
-use katana_core::plugin::{ExtensionPoint, PLUGIN_API_VERSION, PluginMeta, PluginRegistry};
+use katana_core::plugin::PluginRegistry;
 #[cfg(not(test))]
 use katana_platform::{JsonFileRepository, SettingsService};
 #[cfg(not(test))]
 use katana_ui::app_state::AppState;
 #[cfg(not(test))]
 use katana_ui::shell::KatanaApp;
-#[cfg(all(target_os = "macos", not(test)))]
-#[cfg(not(test))]
-const INITIAL_WIDTH: f32 = 1280.0;
-#[cfg(not(test))]
-const INITIAL_HEIGHT: f32 = 800.0;
-#[cfg(not(test))]
-const MIN_WIDTH: f32 = 800.0;
-#[cfg(not(test))]
-const MIN_HEIGHT: f32 = 500.0;
-#[cfg(all(target_os = "macos", not(test)))]
-const LOCALE_BUF_SIZE: usize = 32;
 
+mod locale_detection;
 #[cfg(not(test))]
-fn initial_window_size() -> egui::Vec2 {
-    egui::vec2(INITIAL_WIDTH, INITIAL_HEIGHT)
-}
-
+mod window_setup;
 #[cfg(not(test))]
-fn min_window_size() -> egui::Vec2 {
-    egui::vec2(MIN_WIDTH, MIN_HEIGHT)
-}
-
+use locale_detection::detect_initial_language;
 #[cfg(not(test))]
-fn load_icon() -> std::sync::Arc<egui::IconData> {
-    let icon_bytes = include_bytes!("../../../assets/icon.iconset/icon_512x512.png");
-    let image = image::load_from_memory(icon_bytes)
-        .expect("Failed to load icon byte map")
-        .into_rgba8();
-    let (width, height) = image.dimensions();
-    let rgba = image.into_raw();
-    std::sync::Arc::new(egui::IconData {
-        rgba,
-        width,
-        height,
-    })
-}
-
-#[cfg(all(target_os = "macos", not(test)))]
-fn resolve_locale_to_lang(locale: &str) -> String {
-    let lower = locale.to_lowercase();
-
-    if lower.starts_with("zh-hans") || lower.contains("hans") {
-        return "zh-CN".to_string();
-    }
-    if lower.starts_with("zh-hant")
-        || lower.contains("hant")
-        || lower.starts_with("zh-tw")
-        || lower.starts_with("zh-hk")
-    {
-        return "zh-TW".to_string();
-    }
-
-    const PREFIX_MAP: &[(&str, &str)] = &[
-        ("ja", "ja"),
-        ("ko", "ko"),
-        ("pt", "pt"),
-        ("fr", "fr"),
-        ("de", "de"),
-        ("es", "es"),
-        ("it", "it"),
-    ];
-    for &(prefix, lang) in PREFIX_MAP {
-        if lower.starts_with(prefix) {
-            return lang.to_string();
-        }
-    }
-    "en".to_string()
-}
-
-#[cfg(not(test))]
-fn detect_initial_language() -> Option<String> {
-    #[cfg(target_os = "macos")]
-    {
-        unsafe extern "C" {
-            fn katana_get_mac_locale(buf: *mut std::ffi::c_char, max_len: usize);
-        }
-        let mut buf = [0u8; LOCALE_BUF_SIZE];
-        unsafe { katana_get_mac_locale(buf.as_mut_ptr() as _, buf.len()) };
-        let c_str = unsafe { std::ffi::CStr::from_ptr(buf.as_ptr() as _) };
-        let locale = c_str.to_string_lossy().to_string();
-        return Some(resolve_locale_to_lang(&locale));
-    }
-    #[allow(unreachable_code)]
-    None
-}
+use window_setup::{initial_window_size, load_icon, min_window_size};
 
 #[cfg(not(test))]
 fn main() -> eframe::Result<()> {
@@ -207,95 +130,8 @@ fn main() -> eframe::Result<()> {
     )
 }
 
-pub struct GuiSetupOps;
-
-impl GuiSetupOps {
-    pub fn setup_fonts(ctx: &egui::Context) {
-        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-        Self::setup_fonts_from_preset(ctx, preset);
-    }
-
-    pub fn setup_fonts_from_preset(
-        ctx: &egui::Context,
-        preset: &katana_core::markdown::color_preset::DiagramColorPreset,
-    ) {
-        katana_ui::font_loader::SystemFontLoader::setup_fonts(ctx, preset, None, None);
-    }
-
-    pub fn setup_fonts_with_candidates(ctx: &egui::Context, candidates: &[&str]) {
-        let normalized = Self::build_font_definitions(candidates, &[], &[]);
-        ctx.set_fonts(normalized.into_inner());
-
-        #[cfg(debug_assertions)]
-        ctx.global_style_mut(|style| {
-            style.debug.debug_on_hover = false;
-            style.debug.show_expand_width = false;
-            style.debug.show_expand_height = false;
-            style.debug.show_widget_hits = false;
-        });
-    }
-
-    pub fn build_font_definitions(
-        proportional_candidates: &[&str],
-        monospace_candidates: &[&str],
-        emoji_candidates: &[&str],
-    ) -> katana_ui::font_loader::NormalizeFonts {
-        katana_ui::font_loader::SystemFontLoader::build_font_definitions(
-            proportional_candidates,
-            monospace_candidates,
-            emoji_candidates,
-            None,
-            None,
-        )
-    }
-
-    pub fn load_first_font(candidates: &[&str]) -> Option<(String, Vec<u8>)> {
-        for &path in candidates {
-            let Ok(data) = std::fs::read(path) else {
-                continue;
-            };
-            let name = std::path::Path::new(path)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("cjk_font")
-                .to_string();
-            return Some((name, data));
-        }
-        None
-    }
-
-    pub fn register_builtin_plugins(registry: &mut PluginRegistry) {
-        registry.register(
-            PluginMeta {
-                id: "builtin-mermaid-renderer".to_string(),
-                name: "Built-in Mermaid Renderer".to_string(),
-                api_version: PLUGIN_API_VERSION,
-                extension_points: vec![ExtensionPoint::RendererEnhancement],
-            },
-            || Ok(()), /* WHY: Renderer logic is wired directly in the markdown pipeline. */
-        );
-
-        registry.register(
-            PluginMeta {
-                id: "builtin-plantuml-renderer".to_string(),
-                name: "Built-in PlantUML Renderer".to_string(),
-                api_version: PLUGIN_API_VERSION,
-                extension_points: vec![ExtensionPoint::RendererEnhancement],
-            },
-            || Ok(()),
-        );
-
-        registry.register(
-            PluginMeta {
-                id: "builtin-drawio-renderer".to_string(),
-                name: "Built-in Draw.io Renderer".to_string(),
-                api_version: PLUGIN_API_VERSION,
-                extension_points: vec![ExtensionPoint::RendererEnhancement],
-            },
-            || Ok(()),
-        );
-    }
-}
+pub mod gui_setup;
+use gui_setup::GuiSetupOps;
 
 #[cfg(test)]
 mod tests {

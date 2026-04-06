@@ -46,26 +46,35 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
         }
 
         if is_dir {
-            if let Some(children) = children {
-                if ui.button(msg.recursive_expand.clone()).clicked() {
-                    let mut to_expand = Vec::new();
-                    for child in children {
-                        child.collect_all_directory_paths(&mut to_expand);
-                    }
-                    ctx.expanded_directories.insert(path.to_path_buf());
-                    ctx.expanded_directories.extend(to_expand);
-                    ui.close();
+            let Some(children) = children else {
+                return;
+            };
+            if ui.button(msg.recursive_expand.clone()).clicked() {
+                let to_expand: Vec<_> = children
+                    .iter()
+                    .flat_map(|child| {
+                        let mut v = Vec::new();
+                        child.collect_all_directory_paths(&mut v);
+                        v
+                    })
+                    .collect();
+                ctx.expanded_directories.insert(path.to_path_buf());
+                ctx.expanded_directories.extend(to_expand);
+                ui.close();
+            }
+            if ui.button(msg.recursive_open_all.clone()).clicked() {
+                let to_open: Vec<_> = children
+                    .iter()
+                    .flat_map(|child| {
+                        let mut v = Vec::new();
+                        child.collect_all_markdown_file_paths(&mut v);
+                        v
+                    })
+                    .collect();
+                if !to_open.is_empty() {
+                    *ctx.action = crate::app_state::AppAction::OpenMultipleDocuments(to_open);
                 }
-                if ui.button(msg.recursive_open_all.clone()).clicked() {
-                    let mut to_open = Vec::new();
-                    for child in children {
-                        child.collect_all_markdown_file_paths(&mut to_open);
-                    }
-                    if !to_open.is_empty() {
-                        *ctx.action = crate::app_state::AppAction::OpenMultipleDocuments(to_open);
-                    }
-                    ui.close();
-                }
+                ui.close();
             }
         } else if entry.is_some() {
             #[allow(clippy::collapsible_if)]

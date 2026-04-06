@@ -1,0 +1,152 @@
+use crate::app::doc_search::DocSearchRefresh;
+use crate::app_state::*;
+use crate::shell::*;
+
+impl KatanaApp {
+    pub(super) fn handle_action_toggle_slideshow(&mut self, ctx: &egui::Context) {
+        self.state.layout.show_slideshow = !self.state.layout.show_slideshow;
+        if self.state.layout.show_slideshow {
+            self.state.layout.slideshow_page = 0;
+            let is_fs = ctx
+                .input(|i: &egui::InputState| i.viewport().fullscreen)
+                .unwrap_or(false);
+            self.state.layout.was_os_fullscreen_before_slideshow = is_fs;
+            if !is_fs {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
+            }
+        } else if !self.state.layout.was_os_fullscreen_before_slideshow {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+        }
+    }
+
+    pub(super) fn handle_action_doc_search_changed(&mut self) {
+        let Some(doc) = self.state.document.active_document() else {
+            return;
+        };
+        let text = doc.buffer.clone();
+        self.refresh_doc_search_matches(&text);
+        if let Some(r) = self.state.search.doc_search_matches.first() {
+            let line = crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
+                &text, r.start,
+            );
+            self.state.scroll.scroll_to_line = Some(line);
+            self.state.scroll.preview_search_scroll_pending = true;
+        }
+    }
+
+    pub(super) fn handle_action_doc_search_next(&mut self) {
+        if self.state.search.doc_search_matches.is_empty() {
+            return;
+        }
+        let len = self.state.search.doc_search_matches.len();
+        self.state.search.doc_search_active_index =
+            (self.state.search.doc_search_active_index + 1) % len;
+        let r =
+            self.state.search.doc_search_matches[self.state.search.doc_search_active_index].clone();
+        let line = crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
+            &self.state.document.active_document().unwrap().buffer,
+            r.start,
+        );
+        self.state.scroll.scroll_to_line = Some(line);
+        self.state.scroll.preview_search_scroll_pending = true;
+    }
+
+    pub(super) fn handle_action_doc_search_prev(&mut self) {
+        if self.state.search.doc_search_matches.is_empty() {
+            return;
+        }
+        let len = self.state.search.doc_search_matches.len();
+        self.state.search.doc_search_active_index =
+            (self.state.search.doc_search_active_index + len - 1) % len;
+        let r =
+            self.state.search.doc_search_matches[self.state.search.doc_search_active_index].clone();
+        let line = crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
+            &self.state.document.active_document().unwrap().buffer,
+            r.start,
+        );
+        self.state.scroll.scroll_to_line = Some(line);
+        self.state.scroll.preview_search_scroll_pending = true;
+    }
+
+    pub(super) fn handle_action_refresh_diagnostics(&mut self) {
+        let Some(doc) = self.state.active_document() else {
+            return;
+        };
+        let path = doc.path.clone();
+        let content = doc.buffer.clone();
+        use katana_linter::markdown::MarkdownRule;
+        let heading_rule = katana_linter::markdown::HeadingStructureRule;
+        let link_rule = katana_linter::markdown::BrokenLinkRule;
+        let mut diagnostics = heading_rule.evaluate(&path, &content);
+        diagnostics.extend(link_rule.evaluate(&path, &content));
+        self.state.diagnostics.update_diagnostics(path, diagnostics);
+    }
+
+    pub(super) fn handle_action_clear_all_caches(&mut self, ctx: &egui::Context) {
+        use egui::load::BytesLoader;
+        katana_platform::cache::DefaultCacheService::clear_all_directories();
+        crate::http_cache_loader::PersistentHttpLoader::default().forget_all();
+        ctx.forget_all_images();
+        crate::icon::IconRegistry::install(ctx);
+        self.state.layout.status_message = Some((
+            crate::i18n::I18nOps::get()
+                .settings
+                .behavior
+                .clear_http_cache
+                .clone(),
+            StatusType::Success,
+        ));
+    }
+
+    pub(super) fn handle_action_reorder_activity_rail(&mut self, from: usize, to: usize) {
+        let mut order = self
+            .state
+            .config
+            .settings
+            .settings()
+            .layout
+            .activity_rail_order
+            .clone();
+        let len = order.len();
+        if from < len && to <= len && from != to {
+            let item = order.remove(from);
+            let actual_to = if to > from { to - 1 } else { to };
+            order.insert(actual_to, item);
+            self.state
+                .config
+                .settings
+                .settings_mut()
+                .layout
+                .activity_rail_order = order;
+            if !self.state.config.try_save_settings() {
+                tracing::warn!("Failed to save activity rail reorder");
+            }
+        }
+    }
+
+    pub(super) fn handle_action_reveal_in_os(&self, path: std::path::PathBuf) {
+        #[cfg(target_os = "macos")]
+        {
+            let _ = std::process::Command::new("open")
+                .arg("-R")
+                .arg(&path)
+                .spawn();
+        }
+        #[cfg(target_os = "windows")]
+        {
+            let _ = std::process::Command::new("explorer")
+                .arg("/select,")
+                .arg(&path)
+                .spawn();
+        }
+        #[cfg(target_os = "linux")]
+        {
+            let dir = if path.is_file() {
+                path.parent().unwrap_or(&path)
+            } else {
+                &path
+            };
+            let _ = std::process::Command::new("xdg-open").arg(dir).spawn();
+        }
+    }
+}

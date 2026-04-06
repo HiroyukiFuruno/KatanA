@@ -1,5 +1,6 @@
 use super::*;
-use egui::FontId;
+use egui::{FontData, FontDefinitions, FontId};
+use katana_core::markdown::color_preset::DiagramColorPreset;
 use std::fs;
 use std::sync::Arc;
 use tempfile::TempDir;

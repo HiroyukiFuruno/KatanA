@@ -1,10 +1,11 @@
-use crate::cache::{CacheFacade, LockOps, PersistentData, PersistentEntryEnvelope, PersistentKey};
+use crate::cache::{CacheFacade, LockOps, PersistentEntryEnvelope, PersistentKey};
 use parking_lot::RwLock;
 use std::path::PathBuf;
 
 /* WHY: Extracted from monolithic cache module to provide file-based persistent cache functionality.
 SAFETY: Implements thread-safe locking mechanisms via RwLock and gracefully handles OS cache paths. */
 
+mod migration;
 mod types;
 
 pub use types::DefaultCacheService;
@@ -34,110 +35,6 @@ impl DefaultCacheService {
     pub fn with_default_path() -> Self {
         let base = dirs::cache_dir().unwrap_or(PathBuf::from("."));
         Self::new(base.join("KatanA").join("cache.json"))
-    }
-
-    fn init_and_migrate(old_json_path: &PathBuf, kv_dir: &PathBuf) -> Vec<(String, String)> {
-        let _ = std::fs::create_dir_all(kv_dir);
-
-        if old_json_path.exists() {
-            if let Some(old_data) = Self::load_legacy_persistent(old_json_path) {
-                let mut failure = false;
-
-                for (k, v) in old_data.entries {
-                    if let Some(key) = PersistentKey::from_raw_key(&k) {
-                        let env = PersistentEntryEnvelope {
-                            storage_version: 1,
-                            key: key.clone(),
-                            value: v.clone(),
-                        };
-                        let Some(file_name) = key.target_filename() else {
-                            continue;
-                        };
-                        let target_path = kv_dir.join(&file_name);
-
-                        let temp_path = kv_dir.join(format!("{}.tmp", file_name));
-                        let Ok(json) = serde_json::to_string_pretty(&env) else {
-                            continue;
-                        };
-
-                        if std::fs::write(&temp_path, json).is_err() {
-                            failure = true;
-                            continue;
-                        }
-
-                        if std::fs::rename(&temp_path, target_path).is_err() {
-                            failure = true;
-                        }
-                    }
-                }
-
-                if !failure {
-                    /* WHY: Only delete the legacy file after all IO succeeded to avoid data loss on partial migration. */
-                    let _ = std::fs::remove_file(old_json_path);
-                }
-            } else {
-                /* WHY: Unparseable legacy JSON is treated as corrupted and removed to allow a clean start. */
-                let _ = std::fs::remove_file(old_json_path);
-            }
-        }
-
-        /* WHY: Load all current KV entries into the in-memory map at startup to avoid repeated disk reads. */
-        let mut map = Vec::new();
-        let Ok(entries) = std::fs::read_dir(kv_dir) else {
-            return map;
-        };
-
-        for entry in entries.flatten() {
-            if let Ok(file_type) = entry.file_type()
-                && file_type.is_file()
-            {
-                let inner_path = entry.path();
-                if inner_path.extension().and_then(|s| s.to_str()) != Some("json") {
-                    continue;
-                }
-
-                let Ok(json) = std::fs::read_to_string(&inner_path) else {
-                    continue;
-                };
-                let Ok(env) = serde_json::from_str::<PersistentEntryEnvelope>(&json) else {
-                    continue;
-                };
-
-                if let PersistentKey::Diagram {
-                    ref diagram_kind, ..
-                } = env.key
-                {
-                    /* WHY: Mermaid SVG format changed in v2; old entries are stale and must be evicted. */
-                    if diagram_kind == "mermaid" && env.storage_version < 2 {
-                        let _ = std::fs::remove_file(&inner_path);
-                        continue;
-                    }
-                }
-
-                if let Some(target_filename) = env.key.target_filename()
-                    && entry.file_name() != std::ffi::OsStr::new(&target_filename)
-                {
-                    let canonical_path = kv_dir.join(&target_filename);
-                    if canonical_path.exists() {
-                        let _ = std::fs::remove_file(&inner_path);
-                        continue;
-                    } else if std::fs::rename(&inner_path, &canonical_path).is_err() {
-                        continue;
-                    }
-                }
-
-                if let Some(raw_key) = env.key.to_raw_key() {
-                    map.push((raw_key, env.value));
-                }
-            }
-        }
-
-        map
-    }
-
-    fn load_legacy_persistent(path: &PathBuf) -> Option<PersistentData> {
-        let json_str = std::fs::read_to_string(path).ok()?;
-        serde_json::from_str(&json_str).ok()
     }
 
     /* WHY: Clears all subdirectories in the Katana cache directory (e.g., http-image-cache, plantuml, tmp)

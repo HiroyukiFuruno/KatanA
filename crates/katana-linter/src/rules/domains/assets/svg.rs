@@ -14,24 +14,21 @@ fn check_line_for_invalid_colors(
         let mut search_pos = 0;
         while let Some(start) = line_content[search_pos..].find(attr) {
             let start_idx = search_pos + start + attr.len();
-            if let Some(end) = line_content[start_idx..].find('"') {
-                let color_val = &line_content[start_idx..start_idx + end].to_lowercase();
+            let Some(end) = line_content[start_idx..].find('"') else { break; };
+            let color_val = &line_content[start_idx..start_idx + end].to_lowercase();
 
-                if !is_allowed_svg_color(color_val) {
-                    return Some(Violation {
-                        file: path.to_path_buf(),
-                        line: line_num,
-                        column: start_idx,
-                        message: format!(
-                            "Invalid SVG color detected: `{}`. All icons must use `#FFFFFF` (or `none`) to support dynamic tinting.",
-                            color_val
-                        ),
-                    });
-                }
-                search_pos = start_idx + end;
-            } else {
-                break;
+            if !is_allowed_svg_color(color_val) {
+                return Some(Violation {
+                    file: path.to_path_buf(),
+                    line: line_num,
+                    column: start_idx,
+                    message: format!(
+                        "Invalid SVG color detected: `{}`. All icons must use `#FFFFFF` (or `none`) to support dynamic tinting.",
+                        color_val
+                    ),
+                });
             }
+            search_pos = start_idx + end;
         }
     }
 

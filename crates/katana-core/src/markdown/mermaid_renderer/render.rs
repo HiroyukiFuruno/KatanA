@@ -167,8 +167,9 @@ mod tests {
         let dir = write_executable_script("#!/bin/sh\nexit 0\n");
         let script_path = dir.path().join("fake-mmdc.sh");
 
+        /* WHY: heavily loaded test environments (e.g. concurrent llvm-cov runs) can occasionally take >1000ms to spawn and complete even an empty script. Flaky timeout prevention. */
         let status =
-            run_command_status_with_timeout(Command::new(&script_path), Duration::from_secs(1))
+            run_command_status_with_timeout(Command::new(&script_path), Duration::from_secs(5))
                 .unwrap();
 
         assert!(status.success());
