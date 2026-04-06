@@ -15,7 +15,12 @@ impl ExplorerSidebarItems {
         );
         let interact_resp = ui
             .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
-            .on_hover_text(crate::i18n::I18nOps::get().menu.open_workspace.clone());
+            .on_hover_text(
+                crate::i18n::I18nOps::get()
+                    .workspace
+                    .open_workspace_button
+                    .clone(),
+            );
         if interact_resp.clicked() {
             app.pending_action = crate::shell_ui::ShellUiOps::pick_open_workspace();
         }
@@ -28,7 +33,7 @@ impl ExplorerSidebarItems {
         interact_id: egui::Id,
     ) -> Option<egui::Response> {
         let resp = ui.add(
-            crate::Icon::FolderClosed
+            crate::Icon::FolderOpen
                 .selected_button(
                     ui,
                     crate::icon::IconSize::Large,
@@ -36,12 +41,13 @@ impl ExplorerSidebarItems {
                 )
                 .sense(egui::Sense::hover()),
         );
+        app.state.layout.workspace_toggle_y = resp.rect.top();
         let interact_resp = ui
             .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
             .on_hover_text(
                 crate::i18n::I18nOps::get()
                     .workspace
-                    .recent_workspaces
+                    .sidebar_workspace_tooltip
                     .clone(),
             );
         if interact_resp.clicked() {
@@ -155,18 +161,11 @@ impl ExplorerSidebarItems {
         _idx: usize,
     ) -> Option<egui::Response> {
         let is_open = app.state.layout.show_history_panel;
-        let recent_paths = app
-            .state
-            .config
-            .settings
-            .settings()
-            .workspace
-            .histories
-            .clone();
+        let recent_paths = app.state.global_workspace.state().histories.clone();
 
         let hover_text = crate::i18n::I18nOps::get()
             .workspace
-            .recent_workspaces
+            .sidebar_history_tooltip
             .clone();
         let resp = ui.add_enabled(
             !recent_paths.is_empty(),
@@ -174,6 +173,7 @@ impl ExplorerSidebarItems {
                 .selected_button(ui, crate::icon::IconSize::Large, is_open)
                 .sense(egui::Sense::hover()),
         );
+        app.state.layout.history_toggle_y = resp.rect.top();
 
         let interact_resp = ui.interact(resp.rect, interact_id, egui::Sense::click_and_drag());
         let interact_resp = if recent_paths.is_empty() {

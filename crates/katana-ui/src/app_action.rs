@@ -18,6 +18,7 @@ pub enum AppAction {
     OpenMultipleDocuments(Vec<PathBuf>),
     RemoveWorkspace(String),
     RemoveWorkspaceHistory(String),
+    ShowStatusMessage(String, crate::app_state::StatusType),
     CloseWorkspace,
     CloseDocument(usize),
     ForceCloseDocument(usize),

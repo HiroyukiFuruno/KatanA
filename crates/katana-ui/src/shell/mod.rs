@@ -40,9 +40,7 @@ pub(crate) const RECENT_WORKSPACES_SPACING: f32 = 8.0;
 
 pub(crate) const RECENT_WORKSPACES_ITEM_SPACING: f32 = 4.0;
 
-pub(crate) const RECENT_WORKSPACES_CLOSE_BUTTON_WIDTH: f32 = 20.0;
 pub(crate) const RECENT_WORKSPACES_HEADING_LEFT_PADDING: f32 = 10.0;
-pub(crate) const RECENT_WORKSPACES_LIST_LEFT_PADDING: f32 = 16.0;
 pub(crate) const HISTORY_MODAL_EMPTY_BOTTOM_SPACING: f32 = 10.0;
 
 pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
@@ -124,7 +122,14 @@ impl KatanaApp {
             .last_workspace
             .clone();
         if let Some(ws_path) = last_ws {
-            app.pending_action = AppAction::OpenWorkspace(std::path::PathBuf::from(ws_path));
+            if std::path::Path::new(&ws_path).exists() {
+                app.pending_action = AppAction::OpenWorkspace(std::path::PathBuf::from(ws_path));
+            } else {
+                tracing::warn!(
+                    "Saved workspace path no longer exists, skipping restore: {}",
+                    ws_path
+                );
+            }
         }
 
         app

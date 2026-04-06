@@ -70,7 +70,11 @@
     "workspace_history_title": "워크스페이스 기록",
     "open_folder_hint": "Open a folder to start using KatanA. (ko)",
     "open_workspace_button": "Open Workspace (ko)",
-    "remove_history_tooltip": "Remove from history (ko)"
+    "remove_history_tooltip": "목록에서 제거",
+    "sidebar_workspace_tooltip": "작업 공간",
+    "sidebar_history_tooltip": "최근 작업 공간",
+    "no_recent_workspaces": "최근 작업 공간 없음",
+    "no_saved_workspaces": "No saved workspaces (ko)"
   },
   "preview": {
     "preview_title": "미리보기",
@@ -128,7 +132,7 @@
     "no_problems_found": "워크스페이스에서 문제를 찾을 수 없습니다.",
     "toggle_problems_panel": "문제 패널 전환",
     "problems_count_format": "문제: {count}",
-    "removed_workspace": "Workspace {path} removed. (ko)",
+    "removed_workspace": "작업 공간 '{path}'이(가) 목록에서 제거되었습니다.",
     "error_save_settings": "Failed to save settings. (ko)",
     "closed_workspace": "Workspace closed. (ko)"
   },
@@ -137,7 +141,7 @@
     "collapse_all": "모두 축소",
     "collapse_sidebar": "사이드바 축소",
     "toggle_filter": "필터 전환",
-    "remove_workspace": "작업 공간 제거",
+    "remove_workspace": "목록에서 제거",
     "recursive_expand": "재귀적 확장",
     "recursive_open_all": "재귀적으로 모두 열기",
     "toggle_toc": "목차 전환",

@@ -8,12 +8,15 @@ mod tests {
     use tempfile::TempDir;
 
     fn make_app() -> KatanaApp {
-        let state = AppState::new(
+        let mut state = AppState::new(
             AiProviderRegistry::new(),
             PluginRegistry::new(),
             katana_platform::SettingsService::default(),
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
         KatanaApp::new(state)
     }
 
@@ -374,12 +377,15 @@ mod tests_extra {
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
 
     fn make_app() -> KatanaApp {
-        let state = AppState::new(
+        let mut state = AppState::new(
             AiProviderRegistry::new(),
             PluginRegistry::new(),
             katana_platform::SettingsService::default(),
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
         let mut app = KatanaApp::new(state);
         app.pending_action = AppAction::None;
         app

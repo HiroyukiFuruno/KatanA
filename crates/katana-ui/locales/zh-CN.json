@@ -70,7 +70,11 @@
     "workspace_history_title": "工作区历史",
     "open_folder_hint": "Open a folder to start using KatanA. (zh-CN)",
     "open_workspace_button": "Open Workspace (zh-CN)",
-    "remove_history_tooltip": "Remove from history (zh-CN)"
+    "remove_history_tooltip": "从列表中移除",
+    "sidebar_workspace_tooltip": "工作区",
+    "sidebar_history_tooltip": "最近的工作区",
+    "no_recent_workspaces": "没有最近的工作区",
+    "no_saved_workspaces": "No saved workspaces (zh-CN)"
   },
   "preview": {
     "preview_title": "预览",
@@ -128,7 +132,7 @@
     "no_problems_found": "工作区内未发现问题。",
     "toggle_problems_panel": "切换问题面板",
     "problems_count_format": "⚠️ 问题: {count}",
-    "removed_workspace": "Workspace {path} removed. (zh-CN)",
+    "removed_workspace": "工作区 '{path}' 已从列表中移除。",
     "error_save_settings": "Failed to save settings. (zh-CN)",
     "closed_workspace": "Workspace closed. (zh-CN)"
   },
@@ -137,7 +141,7 @@
     "collapse_all": "折叠全部",
     "collapse_sidebar": "折叠侧边栏",
     "toggle_filter": "切换过滤器",
-    "remove_workspace": "移除工作区",
+    "remove_workspace": "从列表中移除",
     "recursive_expand": "递归展开",
     "recursive_open_all": "递归打开全部",
     "toggle_toc": "切换目录",

@@ -70,7 +70,11 @@
     "workspace_history_title": "Historique de l'espace de travail",
     "open_folder_hint": "Open a folder to start using KatanA. (fr)",
     "open_workspace_button": "Open Workspace (fr)",
-    "remove_history_tooltip": "Remove from history (fr)"
+    "remove_history_tooltip": "Retirer de la liste",
+    "sidebar_workspace_tooltip": "Espace de travail",
+    "sidebar_history_tooltip": "Espaces de travail récents",
+    "no_recent_workspaces": "Aucun espace de travail récent",
+    "no_saved_workspaces": "No saved workspaces (fr)"
   },
   "preview": {
     "preview_title": "Aperçu",
@@ -128,7 +132,7 @@
     "no_problems_found": "Aucun problème trouvé dans l'espace de travail.",
     "toggle_problems_panel": "Basculer le panneau des problèmes",
     "problems_count_format": "Problèmes : {count}",
-    "removed_workspace": "Workspace {path} removed. (fr)",
+    "removed_workspace": "Espace de travail '{path}' retiré de la liste.",
     "error_save_settings": "Failed to save settings. (fr)",
     "closed_workspace": "Workspace closed. (fr)"
   },
@@ -137,7 +141,7 @@
     "collapse_all": "Tout réduire",
     "collapse_sidebar": "Réduire",
     "toggle_filter": "Filtre",
-    "remove_workspace": "Supprimer",
+    "remove_workspace": "Retirer de la liste",
     "recursive_expand": "Développement récursif",
     "recursive_open_all": "Ouvrir tout",
     "toggle_toc": "Table des matières",

@@ -32,7 +32,6 @@ fn test_app_settings_default_values() {
     assert_eq!(s.font.family, "monospace");
     assert_eq!(s.language, "en");
     assert!(s.workspace.last_workspace.is_none());
-    assert!(s.workspace.persisted.is_empty());
     /* WHY: Behavior defaults */
     assert!(s.behavior.confirm_close_dirty_tab);
     assert!(s.behavior.scroll_sync_enabled);

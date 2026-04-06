@@ -53,11 +53,10 @@ impl<'a> SettingsWindow<'a> {
                             const TAB_SPACING: f32 = 4.0;
                             ui.add_space(TAB_SPACING);
                             if ui
-                                .add(egui::Button::image_and_text(
+                                .add(
                                     crate::Icon::ExpandAll
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                    "",
-                                ))
+                                        .button(ui, crate::icon::IconSize::Small)
+                                )
                                 .on_hover_text(
                                     crate::i18n::I18nOps::get().action.expand_all.clone(),
                                 )
@@ -66,11 +65,10 @@ impl<'a> SettingsWindow<'a> {
                                 state.config.settings_tree_force_open = Some(true);
                             }
                             if ui
-                                .add(egui::Button::image_and_text(
+                                .add(
                                     crate::Icon::CollapseAll
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                    "",
-                                ))
+                                        .button(ui, crate::icon::IconSize::Small)
+                                )
                                 .on_hover_text(
                                     crate::i18n::I18nOps::get().action.collapse_all.clone(),
                                 )

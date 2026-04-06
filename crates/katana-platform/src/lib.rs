@@ -22,6 +22,7 @@ pub mod os_fonts;
 pub mod os_theme;
 pub mod settings;
 pub mod theme;
+pub mod workspace;
 
 pub use cache::{CacheFacade, DefaultCacheService, InMemoryCacheService};
 pub use filesystem::FilesystemService;

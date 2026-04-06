@@ -5,8 +5,6 @@ impl Default for WorkspaceSettings {
     fn default() -> Self {
         Self {
             last_workspace: None,
-            persisted: vec![],
-            histories: vec![],
             open_tabs: vec![],
             active_tab_idx: None,
             ignored_directories: SettingsDefaultOps::default_ignored_directories(),
@@ -67,7 +65,6 @@ impl Default for LayoutSettings {
                 ActivityRailItem::ExplorerToggle,
                 ActivityRailItem::Search,
                 ActivityRailItem::History,
-                ActivityRailItem::Settings,
             ],
         }
     }

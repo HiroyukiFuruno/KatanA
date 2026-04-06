@@ -38,7 +38,7 @@ fn check_line_for_invalid_colors(
 fn is_allowed_svg_color(color: &str) -> bool {
     matches!(
         color,
-        "none" | "white" | "#ffffff" | "#fff" | "currentcolor"
+        "none" | "white" | "#ffffff" | "#fff"
     )
 }
 

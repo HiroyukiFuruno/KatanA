@@ -27,5 +27,4 @@ pub enum ActivityRailItem {
     ExplorerToggle,
     Search,
     History,
-    Settings,
 }

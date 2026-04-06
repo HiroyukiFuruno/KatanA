@@ -10,6 +10,8 @@ pub struct LayoutState {
     pub show_search_modal: bool,
 
     pub show_history_panel: bool,
+    pub workspace_toggle_y: f32,
+    pub history_toggle_y: f32,
     pub scale_override: f32,
     pub last_window_title: String,
     pub create_fs_node_modal: Option<(PathBuf, String, Option<String>, bool)>,
@@ -31,6 +33,8 @@ impl Default for LayoutState {
 }
 
 impl LayoutState {
+    const DEFAULT_TOGGLE_Y: f32 = 60.0;
+
     pub fn new() -> Self {
         Self {
             status_message: None,
@@ -41,6 +45,8 @@ impl LayoutState {
             show_search_modal: false,
 
             show_history_panel: false,
+            workspace_toggle_y: Self::DEFAULT_TOGGLE_Y,
+            history_toggle_y: Self::DEFAULT_TOGGLE_Y,
             scale_override: 1.0,
             last_window_title: String::new(),
             create_fs_node_modal: None,

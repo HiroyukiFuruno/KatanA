@@ -64,13 +64,17 @@
     "explorer_title": "Explorer",
     "workspace_history_title": "Workspace History",
     "recent_workspaces": "Workspaces",
+    "sidebar_workspace_tooltip": "Workspace",
+    "sidebar_history_tooltip": "Recent Workspaces",
+    "no_recent_workspaces": "No recent workspaces",
+    "no_saved_workspaces": "No saved workspaces",
     "metadata_tooltip": "Size: {size} B\nModified: {mod_time}",
     "path_label": "Path",
     "flat_view": "Flat View",
     "filter_regex_hint": "Filter (Regex)...",
     "open_folder_hint": "Open a folder to start using KatanA.",
     "open_workspace_button": "Open Workspace",
-    "remove_history_tooltip": "Remove from history"
+    "remove_history_tooltip": "Remove from list"
   },
   "preview": {
     "preview_title": "Preview",
@@ -128,7 +132,7 @@
     "no_problems_found": "No problems found in the workspace.",
     "toggle_problems_panel": "Toggle Problems Panel",
     "problems_count_format": "Problems: {count}",
-    "removed_workspace": "Workspace {path} removed.",
+    "removed_workspace": "Workspace '{path}' removed from list.",
     "error_save_settings": "Failed to save settings.",
     "closed_workspace": "Workspace closed."
   },
@@ -138,7 +142,7 @@
     "collapse_sidebar": "Hide Sidebar",
     "refresh_explorer": "Refresh Explorer",
     "toggle_filter": "Toggle filter",
-    "remove_workspace": "Remove from history",
+    "remove_workspace": "Remove from list",
     "recursive_expand": "Recursive Expand Subdirectories",
     "recursive_open_all": "Recursive Open All Files",
     "toggle_toc": "Toggle Table of Contents",

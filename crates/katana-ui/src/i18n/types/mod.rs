@@ -126,6 +126,14 @@ pub struct WorkspaceMessages {
     pub explorer_title: String,
     pub workspace_history_title: String,
     pub recent_workspaces: String,
+    #[serde(default)]
+    pub sidebar_workspace_tooltip: String,
+    #[serde(default)]
+    pub sidebar_history_tooltip: String,
+    #[serde(default)]
+    pub no_recent_workspaces: String,
+    #[serde(default = "default_no_saved_workspaces")]
+    pub no_saved_workspaces: String,
     pub open_folder_hint: String,
     pub open_workspace_button: String,
     pub remove_history_tooltip: String,
@@ -136,6 +144,10 @@ pub struct WorkspaceMessages {
     pub flat_view: String,
     #[serde(default)]
     pub filter_regex_hint: String,
+}
+
+fn default_no_saved_workspaces() -> String {
+    "No saved workspaces".to_string()
 }
 
 fn default_flat_view() -> String {

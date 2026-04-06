@@ -43,3 +43,48 @@ pub struct LayoutSettings {
     #[serde(default)]
     pub activity_rail_order: Vec<ActivityRailItem>,
 }
+
+impl LayoutSettings {
+    pub(crate) fn normalize(&mut self) {
+        let mut new_order = Vec::new();
+
+        /* WHY: Ensure required new workspace items are always at the top if they were previously missing */
+        let missing_add = !self
+            .activity_rail_order
+            .contains(&ActivityRailItem::AddWorkspace);
+        let missing_toggle = !self
+            .activity_rail_order
+            .contains(&ActivityRailItem::WorkspaceToggle);
+
+        if missing_add {
+            new_order.push(ActivityRailItem::AddWorkspace);
+        }
+        if missing_toggle {
+            new_order.push(ActivityRailItem::WorkspaceToggle);
+        }
+
+        /* WHY: Keep the user's existing order for the rest */
+        for item in &self.activity_rail_order {
+            if !new_order.contains(item) {
+                new_order.push(*item);
+            }
+        }
+
+        /* WHY: Append any other missing defaults at the bottom */
+        let defaults = vec![
+            ActivityRailItem::AddWorkspace,
+            ActivityRailItem::WorkspaceToggle,
+            ActivityRailItem::ExplorerToggle,
+            ActivityRailItem::Search,
+            ActivityRailItem::History,
+        ];
+
+        for item in defaults {
+            if !new_order.contains(&item) {
+                new_order.push(item);
+            }
+        }
+
+        self.activity_rail_order = new_order;
+    }
+}

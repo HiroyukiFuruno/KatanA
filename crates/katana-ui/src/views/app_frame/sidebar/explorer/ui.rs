@@ -22,8 +22,20 @@ impl<'a> ExplorerSidebar<'a> {
             )
             .show_inside(ui, |ui| {
                 ui.vertical_centered(|ui| {
-                    ui.add_space(ACTIVITY_RAIL_PADDING);
-                    Self::render_rail_items(ui, app);
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                        ui.add_space(ACTIVITY_RAIL_PADDING);
+                        let settings_id = egui::Id::new("rail_fixed").with("settings");
+                        ExplorerSidebarItems::render_settings_toggle(ui, app, settings_id);
+
+                        ui.add_space(ACTIVITY_RAIL_PADDING);
+                        let history_id = egui::Id::new("rail_fixed").with("history");
+                        ExplorerSidebarItems::render_history_toggle(ui, app, history_id, 0);
+
+                        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                            ui.add_space(ACTIVITY_RAIL_PADDING);
+                            Self::render_rail_items(ui, app);
+                        });
+                    });
                 });
             });
 
@@ -37,50 +49,8 @@ impl<'a> ExplorerSidebar<'a> {
                     crate::views::panels::explorer::ExplorerPanel::new(
                         &mut app.state.workspace,
                         &mut app.state.search,
-                        &app.state.config.settings.settings().workspace.persisted,
-                        &app.state.config.settings.settings().workspace.histories,
+                        &app.state.global_workspace.state().histories,
                         active_path.as_deref(),
-                        &mut app.pending_action,
-                    )
-                    .show(ui);
-                });
-        } else if app.state.layout.show_workspace_panel {
-            egui::Panel::left("workspace_panel")
-                .resizable(true)
-                .min_size(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
-                .default_size(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
-                .show_inside(ui, |ui| {
-                    let current_root = app
-                        .state
-                        .workspace
-                        .data
-                        .as_ref()
-                        .map(|ws| ws.root.display().to_string());
-                    ui.label(
-                        egui::RichText::new(
-                            crate::i18n::I18nOps::get()
-                                .workspace
-                                .recent_workspaces
-                                .clone(),
-                        )
-                        .strong(),
-                    );
-                    ui.separator();
-                    crate::views::panels::explorer::workspace_list::WorkspaceList::new(
-                        &app.state.config.settings.settings().workspace.persisted,
-                        current_root,
-                        &mut app.pending_action,
-                    )
-                    .show(ui);
-                });
-        } else if app.state.layout.show_history_panel {
-            egui::Panel::left("history_panel")
-                .resizable(true)
-                .min_size(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
-                .default_size(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
-                .show_inside(ui, |ui| {
-                    crate::views::app_frame::sidebar::explorer::history::HistoryPanel::new(
-                        &app.state.config.settings.settings().workspace.histories,
                         &mut app.pending_action,
                     )
                     .show(ui);
@@ -97,6 +67,7 @@ impl<'a> ExplorerSidebar<'a> {
             .layout
             .activity_rail_order
             .clone();
+
         let mut rail_rects = Vec::new();
         let mut responses = Vec::new();
         let mut dragged_source: Option<(usize, f32)> = None;
@@ -123,8 +94,8 @@ impl<'a> ExplorerSidebar<'a> {
             if let Some(interact_resp) = act_resp {
                 rail_rects.push((idx, interact_resp.rect));
                 responses.push((idx, item, interact_id, is_being_dragged, interact_resp));
+                ui.add_space(ACTIVITY_RAIL_PADDING);
             }
-            ui.add_space(ACTIVITY_RAIL_PADDING);
         }
 
         ExplorerSidebarDrag::handle_rail_drag_effects(
@@ -167,7 +138,7 @@ impl<'a> ExplorerSidebar<'a> {
         app: &mut KatanaApp,
         item: &katana_platform::settings::ActivityRailItem,
         interact_id: egui::Id,
-        idx: usize,
+        _idx: usize,
     ) -> Option<egui::Response> {
         match item {
             katana_platform::settings::ActivityRailItem::AddWorkspace => {
@@ -182,11 +153,8 @@ impl<'a> ExplorerSidebar<'a> {
             katana_platform::settings::ActivityRailItem::Search => {
                 ExplorerSidebarItems::render_search_toggle(ui, app, interact_id)
             }
-            katana_platform::settings::ActivityRailItem::Settings => {
-                ExplorerSidebarItems::render_settings_toggle(ui, app, interact_id)
-            }
             katana_platform::settings::ActivityRailItem::History => {
-                ExplorerSidebarItems::render_history_toggle(ui, app, interact_id, idx)
+                None /* WHY: History is now fixed at the bottom above Settings */
             }
         }
     }

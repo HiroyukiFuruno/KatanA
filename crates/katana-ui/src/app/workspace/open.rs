@@ -186,12 +186,19 @@ fn apply_session_tabs(
     path_str: String,
 ) {
     {
-        let settings = app.state.config.settings.settings_mut();
-        settings.workspace.persisted.retain(|p| p != &path_str);
-        settings.workspace.persisted.push(path_str.clone());
-        if !settings.workspace.histories.contains(&path_str) {
-            settings.workspace.histories.push(path_str.clone());
+        let is_temp = path_str.contains("/var/folders/") || path_str.contains("/tmp/");
+        if !is_temp || app.state.global_workspace.is_ephemeral() {
+            let global_state = app.state.global_workspace.state_mut();
+            /* WHY: All open-workspace routes (dialog, list, history) share identical behavior:
+             * both `persisted` and `histories` are updated here. */
+            global_state.persisted.retain(|p| p != &path_str);
+            global_state.persisted.push(path_str.clone());
+            global_state.histories.retain(|p| p != &path_str);
+            global_state.histories.push(path_str.clone());
+            let _ = app.state.global_workspace.save();
         }
+
+        let settings = app.state.config.settings.settings_mut();
         settings.workspace.last_workspace = Some(path_str);
     }
     to_open.retain(|(p, _)| std::path::Path::new(p).exists());

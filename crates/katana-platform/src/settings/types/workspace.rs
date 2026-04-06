@@ -5,10 +5,6 @@ pub struct WorkspaceSettings {
     #[serde(default)]
     pub last_workspace: Option<String>,
     #[serde(default)]
-    pub persisted: Vec<String>,
-    #[serde(default)]
-    pub histories: Vec<String>,
-    #[serde(default)]
     pub open_tabs: Vec<String>,
     #[serde(default)]
     pub active_tab_idx: Option<usize>,

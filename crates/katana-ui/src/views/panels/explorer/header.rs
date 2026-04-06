@@ -4,7 +4,6 @@ use eframe::egui;
 pub(crate) struct ExplorerHeader<'a> {
     pub workspace: &'a mut crate::app_state::WorkspaceState,
     pub search: &'a mut crate::app_state::SearchState,
-    pub recent_paths: &'a [String],
     pub action: &'a mut AppAction,
 }
 
@@ -12,20 +11,17 @@ impl<'a> ExplorerHeader<'a> {
     pub fn new(
         workspace: &'a mut crate::app_state::WorkspaceState,
         search: &'a mut crate::app_state::SearchState,
-        recent_paths: &'a [String],
         action: &'a mut AppAction,
     ) -> Self {
         Self {
             workspace,
             search,
-            recent_paths,
             action,
         }
     }
 
     pub fn show(self, ui: &mut egui::Ui) {
-        let (workspace, search, _recent_paths, action) =
-            (self.workspace, self.search, self.recent_paths, self.action);
+        let (workspace, search, action) = (self.workspace, self.search, self.action);
 
         let ws_root = workspace
             .data

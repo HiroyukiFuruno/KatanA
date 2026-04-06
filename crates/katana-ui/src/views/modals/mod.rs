@@ -21,3 +21,4 @@ pub mod search;
 pub(super) mod search_tabs;
 pub mod terms;
 pub mod update;
+pub mod workspace_toggle;

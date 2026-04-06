@@ -34,6 +34,9 @@ impl KatanaApp {
             AppAction::OpenMultipleDocuments(paths) => self.handle_action_open_multiple(paths),
             AppAction::RemoveWorkspace(path) => self.handle_remove_explorer(path),
             AppAction::RemoveWorkspaceHistory(path) => self.handle_remove_workspace_history(path),
+            AppAction::ShowStatusMessage(msg, status_type) => {
+                self.state.layout.status_message = Some((msg, status_type));
+            }
             AppAction::CloseWorkspace => {
                 self.save_workspace_state();
                 self.state.workspace.data = None;
@@ -85,18 +88,30 @@ impl KatanaApp {
                 self.state.layout.show_explorer = false;
                 self.state.layout.show_history_panel = false;
                 self.state.layout.show_workspace_panel = !current;
+                if !current {
+                    /* WHY: Reload from disk to show the latest persisted workspace list */
+                    self.state.global_workspace.reload();
+                }
             }
             AppAction::ToggleExplorer => {
                 let current = self.state.layout.show_explorer;
                 self.state.layout.show_workspace_panel = false;
                 self.state.layout.show_history_panel = false;
                 self.state.layout.show_explorer = !current;
+                if !current {
+                    /* WHY: Reload from disk to show the latest history in empty workspace view */
+                    self.state.global_workspace.reload();
+                }
             }
             AppAction::ToggleHistoryPanel => {
                 let current = self.state.layout.show_history_panel;
                 self.state.layout.show_workspace_panel = false;
                 self.state.layout.show_explorer = false;
                 self.state.layout.show_history_panel = !current;
+                if !current {
+                    /* WHY: Reload from disk to show the latest history list */
+                    self.state.global_workspace.reload();
+                }
             }
             AppAction::ToggleSearchModal => {
                 self.state.layout.show_search_modal = !self.state.layout.show_search_modal;

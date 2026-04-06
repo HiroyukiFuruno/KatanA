@@ -4,7 +4,6 @@ pub mod v0_1_3_to_0_1_4;
 pub mod v0_1_4_to_0_2_0;
 
 pub mod v0_2_0_to_0_2_1;
-pub mod v0_2_1_to_0_2_2;
 
 use serde_json::Value;
 pub use types::*;

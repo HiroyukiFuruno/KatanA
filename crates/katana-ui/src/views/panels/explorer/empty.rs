@@ -1,29 +1,26 @@
 use crate::app_state::AppAction;
-use crate::shell::{RECENT_WORKSPACES_HEADING_LEFT_PADDING, RECENT_WORKSPACES_LIST_LEFT_PADDING};
 use eframe::egui;
 
 const SPACING_TOP_MARGIN: f32 = 60.0;
 const SPACING_ICON_BOTTOM: f32 = 24.0;
 const SPACING_HEADING_BOTTOM: f32 = 8.0;
-const SPACING_HINT_BOTTOM: f32 = 20.0;
+const SPACING_HINT_BOTTOM: f32 = 12.0;
 const BUTTON_TEXT_SIZE: f32 = 16.0;
-const SPACING_HISTORY_TOP: f32 = 80.0;
-const SPACING_HISTORY_HEADING_BOTTOM: f32 = 10.0;
+const SPACING_RECENT_SEP_TOP: f32 = 20.0;
+const SPACING_RECENT_SEP_BOTTOM: f32 = 10.0;
+const SPACING_RECENT_LIST_TOP: f32 = 4.0;
 
 pub(crate) struct EmptyWorkspaceView<'a> {
-    pub recent_paths: &'a [String],
+    pub histories: &'a [String],
     pub action: &'a mut AppAction,
 }
 
 impl<'a> EmptyWorkspaceView<'a> {
-    pub fn new(recent_paths: &'a [String], action: &'a mut AppAction) -> Self {
-        Self {
-            recent_paths,
-            action,
-        }
+    pub fn new(histories: &'a [String], action: &'a mut AppAction) -> Self {
+        Self { histories, action }
     }
 
-    pub fn show(mut self, ui: &mut egui::Ui) {
+    pub fn show(self, ui: &mut egui::Ui) {
         ui.add_space(SPACING_TOP_MARGIN); // Push content down a bit for aesthetics
 
         ui.vertical_centered(|ui| {
@@ -63,74 +60,37 @@ impl<'a> EmptyWorkspaceView<'a> {
             }
         });
 
-        if !self.recent_paths.is_empty() {
-            ui.add_space(SPACING_HISTORY_TOP); // Large gap before history
+        ui.add_space(SPACING_RECENT_SEP_TOP);
+        ui.separator();
+        ui.add_space(SPACING_RECENT_SEP_BOTTOM);
 
-            crate::widgets::AlignCenter::new()
-                .left(|ui| {
-                    ui.add_space(RECENT_WORKSPACES_HEADING_LEFT_PADDING);
-                    ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-                })
-                .left(|ui| {
-                    ui.label(
-                        egui::RichText::new(
-                            crate::i18n::I18nOps::get()
-                                .workspace
-                                .recent_workspaces
-                                .clone(),
-                        )
-                        .strong()
-                        .color(ui.visuals().weak_text_color()),
+        crate::widgets::AlignCenter::new()
+            .left(|ui| {
+                ui.add_space(crate::shell::RECENT_WORKSPACES_HEADING_LEFT_PADDING);
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+            })
+            .left(|ui| {
+                ui.label(
+                    egui::RichText::new(
+                        crate::i18n::I18nOps::get()
+                            .workspace
+                            .recent_workspaces
+                            .clone(),
                     )
-                })
-                .show(ui);
+                    .strong()
+                    .color(ui.visuals().weak_text_color()),
+                )
+            })
+            .show(ui);
+        ui.add_space(SPACING_RECENT_LIST_TOP);
 
-            ui.add_space(SPACING_HISTORY_HEADING_BOTTOM);
-            self.show_recent_paths(ui);
-        }
-    }
-
-    fn show_recent_paths(&mut self, ui: &mut egui::Ui) {
-        egui::ScrollArea::vertical()
-            .id_salt("recent_workspaces_scroll")
-            .show(ui, |ui| {
-                for path in self.recent_paths.iter().rev() {
-                    let mut open_clicked = false;
-                    let mut remove_clicked = false;
-
-                    let label_path = path.clone();
-                    let remove_text = crate::i18n::I18nOps::get().action.remove_workspace.clone();
-
-                    let resp = crate::widgets::AlignCenter::new()
-                        .interactive(true)
-                        .left(|ui| {
-                            ui.add_space(RECENT_WORKSPACES_LIST_LEFT_PADDING);
-                            ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-                        })
-                        .left(|ui| ui.add(egui::Label::new(label_path.as_str()).truncate()))
-                        .right(|ui| {
-                            let resp = ui.button("×").on_hover_text(&remove_text);
-                            if resp.clicked() {
-                                remove_clicked = true;
-                            }
-                            resp
-                        })
-                        .show(ui);
-
-                    if resp.clicked() {
-                        open_clicked = true;
-                    }
-
-                    if open_clicked {
-                        *self.action = crate::app_state::AppAction::OpenWorkspace(
-                            std::path::PathBuf::from(path.clone()),
-                        );
-                    }
-                    if remove_clicked {
-                        *self.action =
-                            crate::app_state::AppAction::RemoveWorkspaceHistory(path.clone());
-                    }
-                }
-            });
+        let histories: Vec<String> = self.histories.to_vec();
+        crate::views::panels::explorer::shared::SharedPathListRenderer::render_with_scroll(
+            ui,
+            &histories,
+            None,
+            self.action,
+            false,
+        );
     }
 }

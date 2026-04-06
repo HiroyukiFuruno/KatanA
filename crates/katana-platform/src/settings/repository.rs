@@ -1,7 +1,5 @@
 use super::migration::MigrationRunner;
-use super::migration::{
-    v0_1_2, v0_1_3_to_0_1_4, v0_1_4_to_0_2_0, v0_2_0_to_0_2_1, v0_2_1_to_0_2_2,
-};
+use super::migration::{v0_1_2, v0_1_3_to_0_1_4, v0_1_4_to_0_2_0, v0_2_0_to_0_2_1};
 use super::types::{AppSettings, SettingsLoadOrigin};
 use std::path::PathBuf;
 
@@ -45,10 +43,13 @@ impl SettingsRepository for JsonFileRepository {
                         runner.add_strategy(Box::new(v0_1_3_to_0_1_4::Migration013To014));
                         runner.add_strategy(Box::new(v0_1_4_to_0_2_0::Migration014To020));
                         runner.add_strategy(Box::new(v0_2_0_to_0_2_1::Migration020To021));
-                        runner.add_strategy(Box::new(v0_2_1_to_0_2_2::Migration021To022));
                         value = runner.migrate(value);
-                        match serde_json::from_value(value) {
-                            Ok(settings) => settings,
+                        match serde_json::from_value::<AppSettings>(value) {
+                            Ok(mut settings) => {
+                                /* WHY: Add any missing items to the rail order */
+                                settings.layout.normalize();
+                                settings
+                            }
                             Err(e) => {
                                 tracing::error!(
                                     "Failed to deserialize settings: {}. Path: {:?}",

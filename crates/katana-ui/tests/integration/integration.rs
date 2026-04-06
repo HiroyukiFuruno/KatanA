@@ -79,6 +79,11 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
             .updates
             .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
 
+        /* WHY: Use in-memory repository for integration tests to prevent disk pollution and allow temp paths */
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
+
         let mut app = KatanaApp::new(state);
         app.skip_splash();
         app
@@ -1394,6 +1399,11 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
             .updates
             .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
 
+        /* WHY: Use in-memory repository for integration tests to prevent disk pollution and allow temp paths */
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
+
         let mut app = KatanaApp::new(state);
         app.skip_splash();
         app
@@ -2234,47 +2244,38 @@ fn test_integration_remove_workspace() {
     let ws_dir = tempfile::tempdir().unwrap();
 
     let mut harness = setup_harness_with_json_repo(&settings_path);
+    let ws_path = ws_dir.path().canonicalize().unwrap().display().to_string();
     harness.step();
     harness
         .state_mut()
-        .trigger_action(AppAction::OpenWorkspace(ws_dir.path().to_path_buf()));
+        .trigger_action(AppAction::OpenWorkspace(std::path::PathBuf::from(&ws_path)));
     wait_for_workspace_load(&mut harness);
 
     {
-        let settings = harness
+        let histories = harness
             .state_mut()
             .app_state_mut()
-            .config
-            .settings
-            .settings();
-        assert!(
-            settings
-                .workspace
-                .persisted
-                .contains(&ws_dir.path().display().to_string())
-        );
+            .global_workspace
+            .state()
+            .histories
+            .clone();
+        assert!(histories.contains(&ws_path));
     }
 
     harness
         .state_mut()
-        .trigger_action(AppAction::RemoveWorkspace(
-            ws_dir.path().display().to_string(),
-        ));
+        .trigger_action(AppAction::RemoveWorkspaceHistory(ws_path.clone()));
     harness.step();
 
     {
-        let settings = harness
+        let histories = harness
             .state_mut()
             .app_state_mut()
-            .config
-            .settings
-            .settings();
-        assert!(
-            !settings
-                .workspace
-                .persisted
-                .contains(&ws_dir.path().display().to_string())
-        );
+            .global_workspace
+            .state()
+            .histories
+            .clone();
+        assert!(!histories.contains(&ws_path));
     }
 }
 

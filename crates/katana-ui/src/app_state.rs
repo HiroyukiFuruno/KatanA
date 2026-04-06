@@ -24,7 +24,7 @@ pub enum ExportFormat {
 
 pub use crate::app_action::AppAction;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum StatusType {
     Info,
     Success,
@@ -42,6 +42,7 @@ pub struct AppState {
     pub config: ConfigState,
     pub diagnostics: DiagnosticsState,
     pub command_palette: CommandPaletteState,
+    pub global_workspace: katana_platform::workspace::GlobalWorkspaceService,
 }
 
 impl AppState {
@@ -65,6 +66,9 @@ impl AppState {
             config: ConfigState::new(plugin_registry, settings, cache),
             diagnostics: DiagnosticsState::new(),
             command_palette: CommandPaletteState::new(),
+            global_workspace: katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+                katana_platform::workspace::JsonWorkspaceRepository::with_default_path(),
+            )),
         }
     }
 

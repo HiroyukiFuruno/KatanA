@@ -72,7 +72,13 @@ impl ExplorerSidebarDrag {
             }
 
             if is_being_dragged {
-                Self::calculate_hover_drop(ui, idx, rail_rects, current_hovered_drop_y);
+                Self::calculate_hover_drop(
+                    ui,
+                    idx,
+                    rail_rects,
+                    interact_resp.rect.x_range(),
+                    current_hovered_drop_y,
+                );
             }
         }
     }
@@ -81,6 +87,7 @@ impl ExplorerSidebarDrag {
         ui: &mut egui::Ui,
         idx: usize,
         rail_rects: &[(usize, egui::Rect)],
+        x_range: egui::Rangef,
         current_hovered_drop_y: &mut Option<(f32, egui::Rangef)>,
     ) {
         if let Some(ghost_y) = ui.memory(|mem| {
@@ -98,7 +105,7 @@ impl ExplorerSidebarDrag {
                 }
             }
             if let Some(y) = best_y {
-                *current_hovered_drop_y = Some((y, rail_rects[idx].1.x_range()));
+                *current_hovered_drop_y = Some((y, x_range));
             }
         }
     }
@@ -155,13 +162,6 @@ impl ExplorerSidebarDrag {
                         r.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search")
                         });
-                    }
-                    katana_platform::settings::ActivityRailItem::Settings => {
-                        ui.add(crate::Icon::Settings.selected_button(
-                            ui,
-                            crate::icon::IconSize::Large,
-                            app.state.layout.show_settings,
-                        ));
                     }
                     katana_platform::settings::ActivityRailItem::History => {
                         ui.add(crate::Icon::History.button(ui, crate::icon::IconSize::Large));

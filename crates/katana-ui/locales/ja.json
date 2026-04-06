@@ -63,14 +63,18 @@
     "no_document_selected": "ドキュメントが開かれていません。",
     "explorer_title": "エクスプローラー",
     "workspace_history_title": "ワークスペース履歴",
-    "recent_workspaces": "ワークスペース",
+    "recent_workspaces": "最近のワークスペース",
+    "sidebar_workspace_tooltip": "ワークスペース",
+    "sidebar_history_tooltip": "最近のワークスペース",
+    "no_recent_workspaces": "最近のワークスペースはありません",
+    "no_saved_workspaces": "保存されたワークスペースはありません",
     "metadata_tooltip": "サイズ: {size} B\n更新日時: {mod_time}",
     "path_label": "パス",
     "flat_view": "フラット表示",
     "filter_regex_hint": "フィルター (正規表現)...",
     "open_folder_hint": "KatanAを使い始めるために、フォルダを開いてください。",
     "open_workspace_button": "ワークスペースを開く",
-    "remove_history_tooltip": "履歴から削除"
+    "remove_history_tooltip": "履歴から除去"
   },
   "preview": {
     "preview_title": "プレビュー",
@@ -128,7 +132,7 @@
     "no_problems_found": "問題は見つかりませんでした。",
     "toggle_problems_panel": "問題パネルを表示/非表示",
     "problems_count_format": "問題: {count}",
-    "removed_workspace": "ワークスペース {path} を削除しました。",
+    "removed_workspace": "ワークスペース {path} を除去しました。",
     "error_save_settings": "設定の保存に失敗しました。",
     "closed_workspace": "ワークスペースを閉じました。"
   },
@@ -138,7 +142,7 @@
     "collapse_sidebar": "サイドバーを隠す",
     "refresh_explorer": "更新",
     "toggle_filter": "フィルター切り替え",
-    "remove_workspace": "履歴から削除",
+    "remove_workspace": "リストから除去",
     "recursive_expand": "再帰的にディレクトリを展開",
     "recursive_open_all": "再帰的に全ファイルを開く",
     "toggle_toc": "目次の表示切替",
