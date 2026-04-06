@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.5] - 2026-04-06 15:30:00 (UTC)
+
+### ✨ Improvements
+
+- Improved UI focus behavior: background elements (such as the editor and workspace tree) no longer react to hovers or clicks while a modal, popup, or overlay window is active.
+
 ## [0.16.4] - 2026-04-06 14:35:08 (UTC)
 
 ### ✨ Improvements
