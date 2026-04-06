@@ -4013,3 +4013,67 @@ fn test_integration_roundtrip_pinning_and_groups_persistence() {
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
+
+#[test]
+fn test_integration_direct_pin_icon_toggle() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = fresh_temp_dir("katana_test_direct_pin");
+    let test_file = temp_dir.join("direct_pin.md");
+    std::fs::write(&test_file, "# Pin test").unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+    let abs_path = test_file.canonicalize().unwrap_or(test_file);
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs_path));
+    harness.step();
+    harness.step();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::TogglePinDocument(0));
+    harness.step();
+    harness.step();
+
+    assert!(harness.state_mut().app_state_mut().document.open_documents[0].is_pinned);
+
+    /* WHY: The button is rendered via Icon::Pin. We find the button by getting the tab container. */
+    let tab_label = harness.query_all_by_label("direct_pin.md").next().unwrap();
+    // Tab title and close button are typically inside a horizontal layout or push_id scope.
+    // Let's traverse up a bit and find a button.
+    use egui_kittest::kittest::NodeT;
+    let mut current = Some(tab_label.clone());
+    let mut found_btn = None;
+    for _ in 0..5 {
+        // try going up 5 levels
+        if let Some(node) = current {
+            let btns: Vec<_> = node
+                .query_all_by_role(egui::accesskit::Role::Button)
+                .collect();
+            if btns.len() >= 2 {
+                found_btn = Some(btns.last().unwrap().clone());
+                break;
+            }
+            current = node.parent();
+        }
+    }
+
+    if let Some(btn) = found_btn {
+        btn.click();
+        harness.step();
+        harness.step();
+
+        let is_pinned = harness.state_mut().app_state_mut().document.open_documents[0].is_pinned;
+        assert!(
+            !is_pinned,
+            "Clicking the pin button should unpin the document"
+        );
+    } else {
+        panic!("Could not find the pin button near the tab label");
+    }
+}
