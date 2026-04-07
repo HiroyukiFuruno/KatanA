@@ -3,6 +3,15 @@ use eframe::egui::{self, ScrollArea};
 use super::types::*;
 
 impl PreviewPane {
+    pub fn is_all_drawn(&self) -> bool {
+        self.section_lifecycle.iter().all(|s| s.is_drawn)
+    }
+    pub fn is_any_pending(&self) -> bool {
+        self.section_lifecycle.iter().any(|s| !s.is_loaded)
+    }
+}
+
+impl PreviewPane {
     pub fn show(&mut self, ui: &mut egui::Ui) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         self.repaint_ctx = Some(ui.ctx().clone());
         self.poll_renders(ui.ctx());
@@ -80,6 +89,11 @@ impl PreviewPane {
                 None
             } else {
                 Some(&mut self.viewer_states)
+            },
+            if is_slideshow {
+                None
+            } else {
+                Some(&mut self.section_lifecycle)
             },
             Some(&mut fullscreen_request),
             active_editor_line,

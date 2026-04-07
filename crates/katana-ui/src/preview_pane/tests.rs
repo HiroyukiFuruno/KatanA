@@ -256,12 +256,14 @@ mod tests {
             source_lines: 0,
         }];
 
+        pane.section_lifecycle.push(SectionLifecycle::default());
+
         let (tx, rx) = mpsc::channel();
         pane.render_rx = Some(rx);
 
         tx.send(RenderMessage::Section {
-            kind: "DrawIo".to_string(),
-            source: "src".to_string(),
+            generation: pane.session_generation,
+            ordinal: 0,
             section: RenderedSection::Markdown("# Result".to_string()),
         })
         .unwrap();
@@ -271,7 +273,39 @@ mod tests {
         pane.poll_renders(&ctx);
 
         assert_variant!(pane.sections[0], RenderedSection::Markdown(_));
+        assert!(pane.section_lifecycle[0].is_loaded);
         assert!(pane.render_rx.is_none());
+    }
+
+    #[test]
+    fn poll_renders_drops_stale_generation_result() {
+        use std::sync::mpsc;
+        let mut pane = PreviewPane::default();
+
+        pane.session_generation = 2;
+
+        pane.sections = vec![RenderedSection::Pending {
+            kind: "DrawIo".to_string(),
+            source: "src".to_string(),
+            source_lines: 0,
+        }];
+        pane.section_lifecycle.push(SectionLifecycle::default());
+
+        let (tx, rx) = mpsc::channel();
+        pane.render_rx = Some(rx);
+
+        tx.send(RenderMessage::Section {
+            generation: 1, // Stale generation
+            ordinal: 0,
+            section: RenderedSection::Markdown("# Result".to_string()),
+        })
+        .unwrap();
+        let ctx = egui::Context::default();
+        pane.poll_renders(&ctx);
+
+        assert_variant!(pane.sections[0], RenderedSection::Pending { .. });
+        assert!(!pane.section_lifecycle[0].is_loaded);
+        assert!(pane.render_rx.is_some());
     }
 
     #[test]
@@ -307,14 +341,17 @@ mod tests {
             source_lines: 0,
         }];
 
+        pane.section_lifecycle.push(SectionLifecycle::default());
+
         let (tx, rx) = mpsc::channel();
         pane.render_rx = Some(rx);
 
+        let current_generation = pane.session_generation;
         std::thread::spawn(move || {
             std::thread::sleep(std::time::Duration::from_millis(10));
             let _ = tx.send(RenderMessage::Section {
-                kind: "DrawIo".to_string(),
-                source: "src".to_string(),
+                generation: current_generation,
+                ordinal: 0,
                 section: RenderedSection::Markdown("# Done".to_string()),
             });
         });

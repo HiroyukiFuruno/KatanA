@@ -4,23 +4,15 @@ use eframe::egui;
 use super::types::PreviewPane;
 
 fn apply_section_msg(
-    sections: &mut Vec<RenderedSection>,
-    kind: &str,
-    source: &str,
+    sections: &mut [RenderedSection],
+    lifecycle: &mut [SectionLifecycle],
+    ordinal: usize,
     section: RenderedSection,
 ) {
-    for slot in sections {
-        let RenderedSection::Pending {
-            kind: p_kind,
-            source: p_source,
-            ..
-        } = slot
-        else {
-            continue;
-        };
-        if p_kind == kind && p_source == source {
-            *slot = section.clone();
-            return;
+    if ordinal < sections.len() {
+        sections[ordinal] = section;
+        if ordinal < lifecycle.len() {
+            lifecycle[ordinal].is_loaded = true;
         }
     }
 }
@@ -63,12 +55,18 @@ impl PreviewPane {
                 match rx.try_recv() {
                     Ok(msg) => match msg {
                         RenderMessage::Section {
-                            kind,
-                            source,
+                            generation,
+                            ordinal,
                             section,
-                        } => {
-                            apply_section_msg(&mut self.sections, &kind, &source, section);
+                        } if generation == self.session_generation => {
+                            apply_section_msg(
+                                &mut self.sections,
+                                &mut self.section_lifecycle,
+                                ordinal,
+                                section,
+                            );
                         }
+                        RenderMessage::Section { .. } => {}
                         RenderMessage::ReduceConcurrency => {
                             self.concurrency_reduction_requested = true;
                         }
@@ -99,12 +97,18 @@ impl PreviewPane {
                 match rx.try_recv() {
                     Ok(msg) => match msg {
                         RenderMessage::Section {
-                            kind,
-                            source,
+                            generation,
+                            ordinal,
                             section,
-                        } => {
-                            apply_section_msg(&mut self.sections, &kind, &source, section);
+                        } if generation == self.session_generation => {
+                            apply_section_msg(
+                                &mut self.sections,
+                                &mut self.section_lifecycle,
+                                ordinal,
+                                section,
+                            );
                         }
+                        RenderMessage::Section { .. } => {}
                         RenderMessage::ReduceConcurrency => {
                             self.concurrency_reduction_requested = true;
                         }

@@ -1,10 +1,29 @@
-use crate::preview_pane::{DownloadRequest, RenderedSection, ViewerState};
+use crate::preview_pane::{DownloadRequest, RenderedSection, SectionLifecycle, ViewerState};
 use eframe::egui::{self};
 use egui_commonmark::CommonMarkCache;
 
 pub use super::types::SectionLogicOps;
 
 impl SectionLogicOps {
+    fn mark_drawn_and_anchor(
+        rect: egui::Rect,
+        i: usize,
+        lines_in_section: usize,
+        global_line_offset: usize,
+        section_lifecycle: &mut Option<&mut Vec<SectionLifecycle>>,
+        block_anchors: &mut Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+    ) {
+        if let Some(lifecycle) = section_lifecycle.as_mut().filter(|l| i < l.len()) {
+            lifecycle[i].is_drawn = true;
+        }
+        if let Some(anchors) = block_anchors.as_mut() {
+            anchors.push((
+                global_line_offset..global_line_offset + lines_in_section,
+                rect,
+            ));
+        }
+    }
+
     #[allow(unused_mut, clippy::too_many_arguments)]
     pub fn show_section(
         ui: &mut egui::Ui,
@@ -54,6 +73,7 @@ impl SectionLogicOps {
         mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         mut viewer_states: Option<&mut Vec<ViewerState>>,
+        mut section_lifecycle: Option<&mut Vec<SectionLifecycle>>,
         mut fullscreen_request: Option<&mut Option<usize>>,
         active_editor_line: Option<usize>,
         mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
@@ -103,12 +123,14 @@ impl SectionLogicOps {
                             state,
                             fullscreen_request.as_deref_mut(),
                         );
-                        if let Some(anchors) = &mut block_anchors {
-                            anchors.push((
-                                global_line_offset..global_line_offset + lines_in_section,
-                                rect,
-                            ));
-                        }
+                        Self::mark_drawn_and_anchor(
+                            rect,
+                            i,
+                            lines_in_section,
+                            global_line_offset,
+                            &mut section_lifecycle,
+                            &mut block_anchors,
+                        );
                     }
                     RenderedSection::LocalImage { path, alt, .. } => {
                         let state = viewer_states.as_mut().map(|vs| {
@@ -124,12 +146,15 @@ impl SectionLogicOps {
                             i,
                             state,
                             fullscreen_request.as_deref_mut(),
-                        ) && let Some(anchors) = &mut block_anchors
-                        {
-                            anchors.push((
-                                global_line_offset..global_line_offset + lines_in_section,
+                        ) {
+                            Self::mark_drawn_and_anchor(
                                 rect,
-                            ));
+                                i,
+                                lines_in_section,
+                                global_line_offset,
+                                &mut section_lifecycle,
+                                &mut block_anchors,
+                            );
                         }
                     }
                     _ => {
@@ -151,6 +176,11 @@ impl SectionLogicOps {
                             search_scroll_pending,
                             is_slideshow,
                         );
+                        if let Some(lifecycle) = section_lifecycle.as_mut()
+                            && i < lifecycle.len()
+                        {
+                            lifecycle[i].is_drawn = true; // Markdown and non-image error sections render directly
+                        }
                         if let Some(r) = req {
                             request = Some(r);
                         }

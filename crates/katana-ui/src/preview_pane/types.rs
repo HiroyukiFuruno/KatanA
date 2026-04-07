@@ -7,6 +7,12 @@ pub(crate) const DIAGRAM_SVG_DISPLAY_SCALE: f32 = 1.5;
 
 pub(crate) const RENDER_POLL_INTERVAL_MS: u64 = 50;
 
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct SectionLifecycle {
+    pub is_loaded: bool,
+    pub is_drawn: bool,
+}
+
 #[derive(Default)]
 pub struct PreviewPane {
     pub(crate) commonmark_cache: CommonMarkCache,
@@ -29,6 +35,8 @@ pub struct PreviewPane {
     pub fullscreen_viewer_state: ViewerState,
     pub was_os_fullscreen_before_modal: bool,
     pub(crate) repaint_ctx: Option<egui::Context>,
+    pub session_generation: u64,
+    pub section_lifecycle: Vec<SectionLifecycle>,
 }
 
 pub(crate) struct RenderJob {
@@ -38,12 +46,14 @@ pub(crate) struct RenderJob {
     pub(crate) cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
     pub(crate) force: bool,
     pub(crate) source_lines: usize,
+    pub(crate) generation: u64,
+    pub(crate) ordinal: usize,
 }
 
 pub enum RenderMessage {
     Section {
-        kind: String,
-        source: String,
+        generation: u64,
+        ordinal: usize,
         section: RenderedSection,
     },
     ReduceConcurrency,

@@ -57,6 +57,8 @@ impl PreviewPane {
             }
         }
         self.sections = new_sections;
+        self.section_lifecycle
+            .resize(self.sections.len(), SectionLifecycle::default());
     }
 
     pub fn abort_renders(&mut self) {
@@ -93,12 +95,20 @@ impl PreviewPane {
         self.render_rx = None;
 
         let mut sections = Vec::with_capacity(raw.len());
+        let mut lifecycle = Vec::with_capacity(raw.len());
         let mut jobs: Vec<RenderJob> = Vec::new();
 
-        for section in raw.iter() {
+        self.session_generation += 1;
+        let current_generation = self.session_generation;
+
+        for (ordinal, section) in raw.iter().enumerate() {
             match section {
                 PreviewSection::Markdown(md) => {
                     sections.push(RenderedSection::Markdown(md.clone()));
+                    lifecycle.push(SectionLifecycle {
+                        is_loaded: true,
+                        is_drawn: false,
+                    });
                 }
                 PreviewSection::Diagram {
                     kind,
@@ -117,6 +127,12 @@ impl PreviewPane {
                         cache: cache.clone(),
                         force,
                         source_lines: *lines,
+                        generation: current_generation,
+                        ordinal,
+                    });
+                    lifecycle.push(SectionLifecycle {
+                        is_loaded: false,
+                        is_drawn: false,
                     });
                 }
                 PreviewSection::LocalImage { path, alt, lines } => {
@@ -126,10 +142,15 @@ impl PreviewPane {
                         alt: alt.clone(),
                         source_lines: *lines,
                     });
+                    lifecycle.push(SectionLifecycle {
+                        is_loaded: true,
+                        is_drawn: false,
+                    });
                 }
             }
         }
         self.sections = sections;
+        self.section_lifecycle = lifecycle;
 
         if jobs.is_empty() {
             self.is_loading = false;

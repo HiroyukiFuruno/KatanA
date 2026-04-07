@@ -111,8 +111,8 @@ pub(super) fn spawn_render_workers(
                     job.source_lines,
                 );
                 let msg = RenderMessage::Section {
-                    kind: format!("{:?}", job.kind),
-                    source: job.src.clone(),
+                    generation: job.generation,
+                    ordinal: job.ordinal,
                     section,
                 };
                 if tx.send(msg).is_err() {

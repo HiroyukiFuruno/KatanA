@@ -18,7 +18,7 @@ pub(crate) trait ActionOps {
     fn take_action(&mut self) -> AppAction;
     fn handle_toggle_task_list(&mut self, global_index: usize, new_state: char);
     fn cleanup_closed_tab_previews(&mut self);
-    fn cancel_inactive_renders(&mut self);
+
     fn process_action(&mut self, ctx: &egui::Context, action: AppAction);
     fn handle_show_release_notes(&mut self);
     fn poll_changelog(&mut self, _ctx: &egui::Context);
@@ -67,15 +67,6 @@ impl ActionOps for KatanaApp {
         self.tab_previews.retain(|t| open_paths.contains(&t.path));
     }
 
-    fn cancel_inactive_renders(&mut self) {
-        let active_path = self.state.active_document().map(|d| d.path.clone());
-        for pane in &mut self.tab_previews {
-            if Some(&pane.path) != active_path.as_ref() {
-                pane.pane.abort_renders();
-            }
-        }
-    }
-
     fn process_action(&mut self, ctx: &egui::Context, action: AppAction) {
         self.dispatch_action(ctx, action);
         self.cleanup_closed_tab_previews();
@@ -91,7 +82,6 @@ impl ActionOps for KatanaApp {
         if let Some(path) = inactive_but_focused_path {
             self.handle_select_document(path, true);
         }
-        self.cancel_inactive_renders();
     }
 
     fn handle_show_release_notes(&mut self) {

@@ -181,7 +181,7 @@ fn render_slideshow_controls(
                 .response
         });
     }
-    
+
     page_delta
 }
 

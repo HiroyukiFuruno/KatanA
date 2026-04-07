@@ -8,6 +8,7 @@ use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
 };
+mod test_hooks;
 mod types;
 pub(crate) use types::{ExplorerLoadType, ExportTask, TabPreviewCache};
 pub use types::{KatanaApp, UpdateInstallEvent};
@@ -148,33 +149,6 @@ impl KatanaApp {
     #[doc(hidden)]
     pub fn disable_changelog_display_for_test(&mut self) {
         self.needs_changelog_display = false;
-    }
-
-    #[doc(hidden)]
-    pub fn disable_update_check_for_test(&mut self) {
-        self.update_rx = None;
-    }
-
-    #[doc(hidden)]
-    pub fn app_state_for_test(&self) -> &AppState {
-        &self.state
-    }
-
-    #[doc(hidden)]
-    pub fn app_state_mut(&mut self) -> &mut AppState {
-        &mut self.state
-    }
-
-    #[doc(hidden)]
-    pub fn set_changelog_sections_for_test(
-        &mut self,
-        sections: Vec<crate::changelog::ChangelogSection>,
-    ) {
-        self.changelog_sections = sections;
-    }
-
-    pub fn clear_changelog_rx_for_test(&mut self) {
-        self.changelog_rx = None;
     }
 }
 
