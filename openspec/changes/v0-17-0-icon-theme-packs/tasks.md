@@ -1,8 +1,8 @@
 ## Definition of Ready (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.17.0 の変更 ID とスコープが確認されていること
-- [ ] 現行の icon registry、SVG loader、SVG linter、settings schema の仕様や実装を再確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.17.0 の変更 ID とスコープが確認されていること
+- [x] 現行の icon registry、SVG loader、SVG linter、settings schema の仕様や実装を再確認していること
 
 ## Branch Rule
 
@@ -21,12 +21,12 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Done (DoD)
 
-- [ ] `katana-icon` が既存のデフォルトパックとして定義されていること
-- [ ] 組み込みパックが `assets/icons/katana` や `assets/icons/<external-pack>` のように、パック単位の階層へ整理されていること
-- [ ] 同梱 (shipping) されるパックのメタデータの情報源 (source of truth) が 1 箇所に集約・固定されていること
-- [ ] 各パックのカバー率 (pack coverage) を確認できる一覧、または検証手段が存在すること
-- [ ] 計画に不要となった未利用SVGの整理が完了していること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] `katana-icon` が既存のデフォルトパックとして定義されていること
+- [x] 組み込みパックが `assets/icons/katana` や `assets/icons/<external-pack>` のように、パック単位の階層へ整理されていること
+- [x] 同梱 (shipping) されるパックのメタデータの情報源 (source of truth) が 1 箇所に集約・固定されていること
+- [x] 各パックのカバー率 (pack coverage) を確認できる一覧、または検証手段が存在すること
+- [x] 計画に不要となった未利用SVGの整理が完了していること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
@@ -57,8 +57,8 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
 - [x] 3.1 設定画面にアイコンパックを選択できる UI を追加する
 - [x] 3.2 パック一覧に、プレビュー (preview)、表示名 (display name)、および必要に応じてレンダリングポリシー (render policy) の説明を表示する
@@ -81,15 +81,15 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 同梱 (shipping) される各パックが、要求されるアイコン定義 (required icon contract) を満たしていること
-- [ ] サードパーティ製ソースと、KatanA 側で作成した上書きアセットとの境界線が明確に文書化されていること
-- [ ] 同梱パックの出所 (provenance) とライセンス情報がリポジトリ上から容易に追跡可能であること
-- [ ] 未利用SVGの自動検知および互換性を担保する AST linter が稼働していること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] 同梱 (shipping) される各パックが、要求されるアイコン定義 (required icon contract) を満たしていること
+- [x] サードパーティ製ソースと、KatanA 側で作成した上書きアセットとの境界線が明確に文書化されていること
+- [x] 同梱パックの出所 (provenance) とライセンス情報がリポジトリ上から容易に追跡可能であること
+- [x] 未利用SVGの自動検知および互換性を担保する AST linter が稼働していること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
@@ -97,8 +97,8 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
 #### Sub Tasks
 
@@ -120,10 +120,10 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 6. Final Verification & Release Work (最終確認とリリース対応)
 
-- [ ] 6.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 6.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 6.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 6.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 6.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 6.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.17.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 6.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+- [x] 6.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [x] 6.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [x] 6.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [x] 6.4 `master` に向けて PR（プルリクエスト）を作成する
+- [x] 6.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [x] 6.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.17.0` のリリースタグ打ちとリリース作成を実行する
+- [x] 6.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
