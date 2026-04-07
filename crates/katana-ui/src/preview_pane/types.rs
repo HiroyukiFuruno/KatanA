@@ -194,7 +194,6 @@ impl ViewerState {
 }
 
 pub struct ImageLogicOps;
-
 pub struct SectionLogicOps;
-
+pub struct SectionImageOps;
 pub struct FullscreenLogicOps;

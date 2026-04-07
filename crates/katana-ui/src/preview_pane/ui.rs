@@ -85,11 +85,7 @@ impl PreviewPane {
             self.scroll_request,
             Some(&mut self.heading_anchors),
             Some(&mut self.block_anchors),
-            if is_slideshow {
-                None
-            } else {
-                Some(&mut self.viewer_states)
-            },
+            Some(&mut self.viewer_states),
             if is_slideshow {
                 None
             } else {

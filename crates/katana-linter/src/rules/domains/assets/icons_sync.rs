@@ -183,6 +183,7 @@ impl IconsSyncOps {
             "ui/close.svg", "ui/remove.svg", "ui/copy.svg", "system/history.svg", "system/hourglass.svg",
             "system/recent.svg", "system/github.svg", "layout/swap_horizontal.svg",
             "layout/swap_vertical.svg", "files/explorer.svg", "system/bug.svg",
+            "view/reset_view.svg",
         ]
     }
 }

@@ -2481,3 +2481,167 @@ fn block_anchors_extracted_for_rich_blocks() {
         spans
     );
 }
+
+/// WHY: Regression test for the double-pop bug in `block_states`.
+/// When multiple rich blocks (code blocks, alerts/blockquotes) appear consecutively,
+/// `end_tag()` pops `block_states` for BlockQuote and CodeBlock, and then
+/// `event()` also pops — causing a stack imbalance that corrupts subsequent
+/// block anchors. This test verifies that all consecutive blocks produce
+/// correct, non-overlapping, monotonically increasing span ranges.
+#[test]
+fn consecutive_rich_blocks_produce_correct_block_anchors() {
+    // Three consecutive blocks: code, alert, code
+    let md = concat!(
+        "```rust\n",
+        "fn hello() {}\n",
+        "```\n",
+        "\n",
+        "> [!NOTE]\n",
+        "> This is an alert\n",
+        "\n",
+        "```python\n",
+        "print('hello')\n",
+        "```\n",
+    );
+
+    let anchors = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let anchors_clone = anchors.clone();
+
+    let ctx = egui::Context::default();
+    let _ = ctx.run(
+        egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                egui::vec2(800.0, 600.0),
+            )),
+            ..Default::default()
+        },
+        |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut pane = PreviewPane::default();
+                pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
+                pane.show_content(ui, None, None, None, false);
+                *anchors_clone.borrow_mut() = pane.block_anchors.clone();
+            });
+        },
+    );
+
+    let extracted = anchors.borrow();
+
+    // Expect at least 3 block anchors: one for each rich block
+    assert!(
+        extracted.len() >= 3,
+        "Expected at least 3 block anchors for 3 consecutive rich blocks, got {}. \
+         Anchors: {:?}",
+        extracted.len(),
+        extracted.iter().map(|(s, _)| s.clone()).collect::<Vec<_>>()
+    );
+
+    // Verify spans are monotonically increasing (no corruption from double-pop)
+    for window in extracted.windows(2) {
+        let (prev_span, _) = &window[0];
+        let (next_span, _) = &window[1];
+        assert!(
+            next_span.start >= prev_span.end,
+            "Block anchor spans must be monotonically increasing and non-overlapping. \
+             Got prev={:?}, next={:?}",
+            prev_span,
+            next_span
+        );
+    }
+
+    // Verify rects have positive area (not degenerate)
+    for (span, rect) in extracted.iter() {
+        assert!(
+            rect.width() > 0.0 && rect.height() > 0.0,
+            "Block anchor rect for span {:?} must have positive area, got {:?}",
+            span,
+            rect
+        );
+    }
+}
+
+/// WHY: Tests that 5 consecutive alternating blocks (code→alert→code→alert→code)
+/// all produce distinct, correctly ordered block anchors. This stress-tests the
+/// block_states stack balance across many transitions.
+#[test]
+fn five_consecutive_alternating_blocks_all_produce_anchors() {
+    let md = concat!(
+        "```js\n",
+        "console.log(1);\n",
+        "```\n",
+        "\n",
+        "> [!WARNING]\n",
+        "> Warning message\n",
+        "\n",
+        "```rust\n",
+        "fn two() {}\n",
+        "```\n",
+        "\n",
+        "> [!TIP]\n",
+        "> Tip message\n",
+        "\n",
+        "```python\n",
+        "print(3)\n",
+        "```\n",
+    );
+
+    let anchors = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let anchors_clone = anchors.clone();
+
+    let ctx = egui::Context::default();
+    let _ = ctx.run(
+        egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                egui::vec2(800.0, 600.0),
+            )),
+            ..Default::default()
+        },
+        |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut pane = PreviewPane::default();
+                pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
+                pane.show_content(ui, None, None, None, false);
+                *anchors_clone.borrow_mut() = pane.block_anchors.clone();
+            });
+        },
+    );
+
+    let extracted = anchors.borrow();
+
+    assert!(
+        extracted.len() >= 5,
+        "Expected at least 5 block anchors for 5 alternating blocks, got {}. \
+         Anchors: {:?}",
+        extracted.len(),
+        extracted.iter().map(|(s, _)| s.clone()).collect::<Vec<_>>()
+    );
+
+    // Verify monotonicity
+    for window in extracted.windows(2) {
+        let (prev_span, _) = &window[0];
+        let (next_span, _) = &window[1];
+        assert!(
+            next_span.start >= prev_span.end,
+            "Block anchor spans must be monotonically increasing. \
+             Got prev={:?}, next={:?}. All spans: {:?}",
+            prev_span,
+            next_span,
+            extracted.iter().map(|(s, _)| s.clone()).collect::<Vec<_>>()
+        );
+    }
+
+    // Verify Y-monotonicity of rects (each block should be below the previous)
+    for window in extracted.windows(2) {
+        let (_, prev_rect) = &window[0];
+        let (_, next_rect) = &window[1];
+        assert!(
+            next_rect.top() >= prev_rect.top(),
+            "Block anchor rects must be vertically ordered. \
+             Got prev.top={:.1}, next.top={:.1}",
+            prev_rect.top(),
+            next_rect.top()
+        );
+    }
+}

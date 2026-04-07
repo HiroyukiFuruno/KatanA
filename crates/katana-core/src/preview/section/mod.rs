@@ -25,7 +25,11 @@ impl PreviewSectionOps {
                 if !acc.is_empty() {
                     sections.push(PreviewSection::Markdown(std::mem::take(&mut acc)));
                 }
-                let lines = source.chars().filter(|c| *c == '\n').count() + 2;
+                /// WHY: source's '\n' count gives (content_lines - 1). We add
+                /// FENCE_LINE_COUNT = opening fence (1) + closing fence (1) + 1 for
+                /// the newline-count-to-line-count conversion.
+                const FENCE_LINE_COUNT: usize = 3;
+                let lines = source.chars().filter(|c| *c == '\n').count() + FENCE_LINE_COUNT;
                 sections.push(PreviewSection::Diagram {
                     kind,
                     source,

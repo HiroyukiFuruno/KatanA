@@ -5,7 +5,7 @@ use egui_commonmark::CommonMarkCache;
 pub use super::types::SectionLogicOps;
 
 impl SectionLogicOps {
-    fn mark_drawn_and_anchor(
+    pub(crate) fn mark_drawn_and_anchor(
         rect: egui::Rect,
         i: usize,
         lines_in_section: usize,
@@ -109,53 +109,36 @@ impl SectionLogicOps {
                 };
                 match section {
                     RenderedSection::Image { svg_data, alt, .. } => {
-                        let state = viewer_states.as_mut().map(|vs| {
-                            if vs.len() <= i {
-                                vs.resize_with(i + 1, ViewerState::default);
-                            }
-                            &mut vs[i]
-                        });
-                        let rect = crate::preview_pane::ImageLogicOps::show_rasterized(
+                        crate::preview_pane::types::SectionImageOps::handle_image_section(
                             ui,
                             svg_data,
                             alt,
                             i,
-                            state,
-                            fullscreen_request.as_deref_mut(),
-                        );
-                        Self::mark_drawn_and_anchor(
-                            rect,
-                            i,
                             lines_in_section,
                             global_line_offset,
+                            active_editor_line,
+                            viewer_states.as_deref_mut(),
+                            fullscreen_request.as_deref_mut(),
                             &mut section_lifecycle,
                             &mut block_anchors,
+                            hovered_lines.as_deref_mut(),
                         );
                     }
                     RenderedSection::LocalImage { path, alt, .. } => {
-                        let state = viewer_states.as_mut().map(|vs| {
-                            if vs.len() <= i {
-                                vs.resize_with(i + 1, ViewerState::default);
-                            }
-                            &mut vs[i]
-                        });
-                        if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image(
+                        crate::preview_pane::types::SectionImageOps::handle_local_image_section(
                             ui,
                             path,
                             alt,
                             i,
-                            state,
+                            lines_in_section,
+                            global_line_offset,
+                            active_editor_line,
+                            viewer_states.as_deref_mut(),
                             fullscreen_request.as_deref_mut(),
-                        ) {
-                            Self::mark_drawn_and_anchor(
-                                rect,
-                                i,
-                                lines_in_section,
-                                global_line_offset,
-                                &mut section_lifecycle,
-                                &mut block_anchors,
-                            );
-                        }
+                            &mut section_lifecycle,
+                            &mut block_anchors,
+                            hovered_lines.as_deref_mut(),
+                        );
                     }
                     _ => {
                         let (req, mut event_actions) = Self::show_section(

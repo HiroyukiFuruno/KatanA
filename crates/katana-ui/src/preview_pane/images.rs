@@ -66,6 +66,7 @@ impl ImageLogicOps {
         id: usize,
         mut viewer_state: Option<&mut ViewerState>,
         fullscreen_request: Option<&mut Option<usize>>,
+        draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> Option<egui::Rect> {
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
             if state.texture.is_none()
@@ -111,6 +112,8 @@ impl ImageLogicOps {
 
         let (container_rect, response) =
             ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
+
+        draw_background(ui, container_rect, response.hovered());
 
         if let Some(state) = viewer_state.as_mut()
             && response.hovered()
