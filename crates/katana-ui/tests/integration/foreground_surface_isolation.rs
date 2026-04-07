@@ -29,7 +29,7 @@ fn disabled_ui_prevents_background_clicks() {
     let _ = ctx.run(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.set_enabled(!is_blocked);
-            ui.button("Background Button");
+            let _ = ui.button("Background Button");
         });
     });
 

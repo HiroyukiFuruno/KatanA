@@ -2916,7 +2916,7 @@ fn test_integration_tab_restore_closed_limit() {
         harness
             .state_mut()
             .trigger_action(AppAction::SelectDocument(p.clone()));
-        harness.step();
+        harness.run_steps(5);
         paths.push(p);
     }
 
@@ -2934,7 +2934,7 @@ fn test_integration_tab_restore_closed_limit() {
         harness
             .state_mut()
             .trigger_action(AppAction::CloseDocument(0));
-        harness.step();
+        harness.run_steps(5);
     }
 
     assert_eq!(
@@ -2960,7 +2960,7 @@ fn test_integration_tab_restore_closed_limit() {
         harness
             .state_mut()
             .trigger_action(AppAction::RestoreClosedDocument);
-        harness.step();
+        harness.run_steps(5);
     }
 
     assert_eq!(

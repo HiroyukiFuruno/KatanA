@@ -33,14 +33,13 @@ info "Creating macOS DMG for v${VERSION}..."
 
 rm -f "${DMG_OUT}"
 
-# Determine builder (FORCE=1 skips create-dmg to avoid GUI window)
-if [[ "${FORCE:-0}" = "1" ]]; then
-    info "FORCE=1 detected: Skipping create-dmg to avoid GUI. Using hdiutil..."
-    USE_CREATE_DMG=false
-elif command -v create-dmg >/dev/null 2>&1; then
+# Determine builder: always use create-dmg if available for best UX
+if command -v create-dmg >/dev/null 2>&1; then
     USE_CREATE_DMG=true
 else
     USE_CREATE_DMG=false
+    warn "create-dmg is not installed. Using hdiutil fallback, which creates an inferior DMG."
+    warn "Please run: brew install create-dmg"
 fi
 
 if [[ "$USE_CREATE_DMG" = "true" ]]; then
