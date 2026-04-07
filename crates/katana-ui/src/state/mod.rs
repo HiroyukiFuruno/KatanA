@@ -33,7 +33,12 @@ pub mod app_state_tests {
         assert_eq!(SettingsTab::Workspace.section(), SettingsSection::Behavior);
         assert_eq!(
             SettingsSection::Appearance.tabs(),
-            &[SettingsTab::Theme, SettingsTab::Icons, SettingsTab::Font, SettingsTab::Layout]
+            &[
+                SettingsTab::Theme,
+                SettingsTab::Icons,
+                SettingsTab::Font,
+                SettingsTab::Layout
+            ]
         );
     }
 

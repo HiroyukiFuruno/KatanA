@@ -102,19 +102,19 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 #### Sub Tasks
 
-- [ ] 5.1 `assets/icons/katana/` 配下などのSVGファイル一覧を取得する
-- [ ] 5.2 `crates/katana-ui/src/icon/types.rs` の `define_icons!` マクロなどに定義されている登録済みのアイコン一覧を抽出する
-- [ ] 5.3 ディレクトリ内に存在するが、コード（enum/ALL_ICONS等）に未登録のSVGファイルがある場合に追加漏れとしてエラーを報告するカスタムリンタールールを `katana-linter` に実装する
-- [ ] 5.4 登録されているがSVGファイルが存在しない場合も検出する
-- [ ] 5.5 SVGのアイコンがwhite listに登録されていないものは同一であることを許容しないast lintの設定を追加する。エラーメッセージに作成したskill (`.gemini/antigravity/skills/svg-icon-management/SKILL.md`) を参照することを出力する
-- [ ] 5.6 既存のSVGカラーチェック(`svg.rs`)を強化し、すべてのテーマパックの基本配色を `white` (`#FFFFFF`) または `currentColor` に完全に統一する。それ以外の固定色の使用を禁止し、かつ「`fill` も `stroke` も設定されていない（黒潰れする）」不備も検知してエラーにする
+- [x] 5.1 `assets/icons/katana/` 配下などのSVGファイル一覧を取得する
+- [x] 5.2 `crates/katana-ui/src/icon/types.rs` の `define_icons!` マクロなどに定義されている登録済みのアイコン一覧を抽出する
+- [x] 5.3 ディレクトリ内に存在するが、コード（enum/ALL_ICONS等）に未登録のSVGファイルがある場合に追加漏れとしてエラーを報告するカスタムリンタールールを `katana-linter` に実装する
+- [x] 5.4 登録されているがSVGファイルが存在しない場合も検出する
+- [x] 5.5 SVGのアイコンがwhite listに登録されていないものは同一であることを許容しないast lintの設定を追加する。エラーメッセージに作成したskill (`.gemini/antigravity/skills/svg-icon-management/SKILL.md`) を参照することを出力する
+- [x] 5.6 既存のSVGカラーチェック(`svg.rs`)を強化し、すべてのテーマパックの基本配色を `white` (`#FFFFFF`) または `currentColor` に完全に統一する。それ以外の固定色の使用を禁止し、かつ「`fill` も `stroke` も設定されていない（黒潰れする）」不備も検知してエラーにする
 
 ### Definition of Done (DoD)
 
-- [ ] `katana-linter` のカスタムルールにより、SVGの追加と登録の同期が検証可能になっていること
-- [ ] 意図的に未登録SVGを配置した場合にlinterが期待通り失敗することを確認すること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフローを実行し、デリバリールーチンを完了すること。
+- [x] `katana-linter` のカスタムルールにより、SVGの追加と登録の同期が検証可能になっていること
+- [x] 意図的に未登録SVGを配置した場合にlinterが期待通り失敗することを確認すること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフローを実行し、デリバリールーチンを完了すること。
 
 ---
 

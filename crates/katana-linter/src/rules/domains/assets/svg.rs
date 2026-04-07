@@ -25,8 +25,8 @@ fn check_line_for_invalid_colors(
                     line: line_num,
                     column: start_idx,
                     message: format!(
-                        "Invalid SVG color detected: `{}`. All icons must use `#FFFFFF` (or `none`) to support dynamic tinting.",
-                        color_val
+                        "Invalid SVG color detected: `{}` in attribute `{}`. All icons must use `#FFFFFF` (or `none`) to support dynamic tinting.",
+                        color_val, attr
                     ),
                 });
             }
@@ -85,8 +85,20 @@ impl SvgOps {
                 Err(_) => continue,
             };
 
-            /* WHY: For TintedMonochrome packs, we ensure all icons use `#FFFFFFF` or `currentColor`
+            /* WHY: For TintedMonochrome packs, we ensure all icons use `#FFFFFF` or `currentColor`
             This supports egui's dynamic tinting without destroying the icon's intended shapes. */
+
+            let has_fill = content.contains("fill=\"");
+            let has_stroke = content.contains("stroke=\"");
+
+            if !has_fill && !has_stroke {
+                violations.push(Violation {
+                    file: path.clone(),
+                    line: 1,
+                    column: 0,
+                    message: "Blackout Bug Detected: SVG has neither `fill` nor `stroke`. It will render as black and fail dynamic tinting. Add `fill=\"#FFFFFF\"` or `stroke=\"#FFFFFF\"`.".to_string(),
+                });
+            }
 
             let lines: Vec<&str> = content.lines().collect();
             for (i, line) in lines.iter().enumerate() {
