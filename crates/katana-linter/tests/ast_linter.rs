@@ -24,6 +24,30 @@ fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
 }
 
 #[test]
+fn ast_linter_icon_sync() {
+    use katana_linter::rules::domains::assets::IconsSyncOps;
+    let all_violations =
+        IconsSyncOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
+        "icon-sync",
+        "Fix: Synchronize SVG files in assets/icons/ with define_icons! macro by ensuring 1-to-1 matching across all themes.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_svg_colors() {
+    use katana_linter::rules::domains::assets::SvgOps;
+    let all_violations =
+        SvgOps::lint_svg_colors(&LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
+        "svg-colors",
+        "Fix: SVGs must not have invalid colors (only #FFFFFF or currentColor allowed) and must have at least one fill or stroke attribute to prevent blackout.",
+        &all_violations,
+    );
+}
+
+#[test]
 fn ast_linter_i18n_no_hardcoded_strings() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(

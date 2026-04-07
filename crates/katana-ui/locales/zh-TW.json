@@ -178,6 +178,7 @@
       "preset": "主題預設",
       "dark_section": "深色",
       "light_section": "淺色",
+      "icon_pack": "圖示包",
       "custom_colors": "自訂顏色",
       "reset_custom": "重設為預設",
       "custom_section": "自訂",
@@ -264,6 +265,10 @@
       {
         "key": "theme",
         "name": "主題"
+      },
+      {
+        "key": "icon",
+        "name": "圖示"
       },
       {
         "key": "font",

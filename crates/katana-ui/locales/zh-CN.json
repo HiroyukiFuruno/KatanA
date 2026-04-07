@@ -178,6 +178,7 @@
       "preset": "主题预设",
       "dark_section": "深色",
       "light_section": "浅色",
+      "icon_pack": "图标包",
       "custom_colors": "自定义颜色",
       "reset_custom": "重置为预设",
       "custom_section": "自定义",
@@ -264,6 +265,10 @@
       {
         "key": "theme",
         "name": "主题"
+      },
+      {
+        "key": "icon",
+        "name": "图标"
       },
       {
         "key": "font",

@@ -178,6 +178,7 @@
       "preset": "Preset Tema",
       "dark_section": "Scuro",
       "light_section": "Chiaro",
+      "icon_pack": "Pacchetto icone",
       "custom_colors": "Colori Personalizzati",
       "reset_custom": "Ripristina Preset",
       "custom_section": "Personalizzato",
@@ -264,6 +265,10 @@
       {
         "key": "theme",
         "name": "Tema"
+      },
+      {
+        "key": "icon",
+        "name": "Icone"
       },
       {
         "key": "font",

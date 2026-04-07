@@ -478,6 +478,8 @@ pub struct SettingsThemeMessages {
     pub preset: String,
     pub dark_section: String,
     pub light_section: String,
+    #[serde(default = "default_icon_pack_msg")]
+    pub icon_pack: String,
     pub custom_colors: String,
     pub reset_custom: String,
     #[serde(default = "default_custom_section")]
@@ -502,6 +504,10 @@ pub struct SettingsThemeMessages {
 
 fn default_show_more() -> String {
     "Show more...".to_string()
+}
+
+fn default_icon_pack_msg() -> String {
+    "Icon Pack".to_string()
 }
 
 fn default_show_less() -> String {

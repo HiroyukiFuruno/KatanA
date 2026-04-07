@@ -178,6 +178,7 @@
       "preset": "テーマプリセット",
       "dark_section": "ダーク",
       "light_section": "ライト",
+      "icon_pack": "アイコンパック",
       "custom_colors": "カスタムカラー",
       "reset_custom": "プリセットに戻す",
       "custom_section": "カスタム",
@@ -264,6 +265,10 @@
       {
         "key": "theme",
         "name": "テーマ"
+      },
+      {
+        "key": "icon",
+        "name": "アイコン"
       },
       {
         "key": "font",

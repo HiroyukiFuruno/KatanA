@@ -78,14 +78,15 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
 
             if entry.is_markdown() {
                 child_ui.add(
-                    crate::icon::Icon::Document
+                    crate::icon::Icon::Markdown
                         .image(crate::icon::IconSize::Medium)
                         .tint(text_color),
                 );
             } else {
-                child_ui.allocate_response(
-                    egui::vec2(crate::icon::IconSize::Medium.to_vec2().x, 0.0),
-                    egui::Sense::hover(),
+                child_ui.add(
+                    crate::icon::Icon::Document
+                        .image(crate::icon::IconSize::Medium)
+                        .tint(text_color),
                 );
             };
 

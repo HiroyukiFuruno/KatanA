@@ -57,7 +57,6 @@ impl ThemeTabOps {
         ui.add_space(SECTION_SPACING);
         Self::render_theme_preset_selector(ui, state);
         ui.add_space(SECTION_SPACING);
-        ui.add_space(SECTION_SPACING);
 
         let is_open = state
             .config

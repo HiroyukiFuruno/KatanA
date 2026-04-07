@@ -2,6 +2,20 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.17.0] - 2026-04-07 19:40:00 (UTC)
+
+### 🚀 Features
+
+- Introduced an "Icon Theme Pack" feature, allowing users to customize the application's icons from a rich selection of 15 built-in themes (including Lucide, Material Symbols, Feather, and more).
+
+### ✨ Improvements
+
+- Ensured robust UI stability by enforcing strict icon synchronization and fixing display anomalies such as placeholder icons for extensionless files.
+
+### 🔧 System
+
+- Enhanced internal asset validation mechanisms to automatically block broken or visually inconsistent SVGs.
+
 ## [0.16.10] - 2026-04-07 15:57:00 (UTC)
 
 ### 🚀 Features

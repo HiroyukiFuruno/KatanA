@@ -13,6 +13,7 @@ pub enum SettingsSection {
 pub enum SettingsTab {
     #[default]
     Theme,
+    Icons,
     Font,
     Layout,
     Workspace,
@@ -23,7 +24,7 @@ pub enum SettingsTab {
 impl SettingsTab {
     pub const fn section(&self) -> SettingsSection {
         match self {
-            Self::Theme | Self::Font | Self::Layout => SettingsSection::Appearance,
+            Self::Theme | Self::Icons | Self::Font | Self::Layout => SettingsSection::Appearance,
             Self::Workspace | Self::Updates | Self::Behavior => SettingsSection::Behavior,
         }
     }
@@ -32,7 +33,12 @@ impl SettingsTab {
 impl SettingsSection {
     pub const fn tabs(&self) -> &[SettingsTab] {
         match self {
-            Self::Appearance => &[SettingsTab::Theme, SettingsTab::Font, SettingsTab::Layout],
+            Self::Appearance => &[
+                SettingsTab::Theme,
+                SettingsTab::Icons,
+                SettingsTab::Font,
+                SettingsTab::Layout,
+            ],
             Self::Behavior => &[
                 SettingsTab::Workspace,
                 SettingsTab::Updates,
