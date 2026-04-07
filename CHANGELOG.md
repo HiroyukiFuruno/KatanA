@@ -2,6 +2,18 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.17.1] - 2026-04-07 21:47:42 (UTC)
+
+### ✨ Improvements
+
+- Stabilized UI controls during slideshows to ensure magnification elements remain visible and active on diagram blocks.
+- Improved hover highlight visibility across all diagram types to ensure unified preview behavior.
+- Unified the source design of system view icons (reset view) for a more consistent visual experience.
+
+### 🐛 Bug Fixes
+
+- Fixed a visual clipping issue where Markdown heading highlights failed to extend fully to the edges of the preview pane.
+
 ## [0.17.0] - 2026-04-07 19:40:00 (UTC)
 
 ### 🚀 Features
