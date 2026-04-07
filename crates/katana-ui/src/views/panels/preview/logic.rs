@@ -45,6 +45,12 @@ impl PreviewLogicOps {
             }
         }
 
+        for (span, rect) in &preview.block_anchors {
+            if span.contains(&target_line) || span.start >= target_line {
+                return Some((rect.min.y - preview.content_top_y).max(0.0));
+            }
+        }
+
         if let Some((_, rect)) = preview.heading_anchors.last() {
             Some((rect.min.y - preview.content_top_y).max(0.0))
         } else {
@@ -63,8 +69,13 @@ impl PreviewLogicOps {
         let max_scroll = (content_height - inner_height).max(0.0);
         scroll.preview_max = max_scroll;
 
-        let mut computed_anchors = Vec::with_capacity(preview.heading_anchors.len());
+        let mut computed_anchors =
+            Vec::with_capacity(preview.heading_anchors.len() + preview.block_anchors.len());
         for (span, rect) in &preview.heading_anchors {
+            let p_y = (rect.min.y - preview.content_top_y).max(0.0);
+            computed_anchors.push((span.clone(), p_y));
+        }
+        for (span, rect) in &preview.block_anchors {
             let p_y = (rect.min.y - preview.content_top_y).max(0.0);
             computed_anchors.push((span.clone(), p_y));
         }

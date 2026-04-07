@@ -10,9 +10,9 @@ impl ImageLogicOps {
         kind: &str,
         download_url: &str,
         install_path: &std::path::Path,
-    ) -> Option<DownloadRequest> {
+    ) -> (egui::Rect, Option<DownloadRequest>) {
         let mut request = None;
-        ui.group(|ui| {
+        let res = ui.group(|ui| {
             ui.label(
                 egui::RichText::new(crate::i18n::I18nOps::tf(
                     &crate::i18n::I18nOps::get().tool.not_installed,
@@ -56,7 +56,7 @@ impl ImageLogicOps {
                 });
             }
         });
-        request
+        (res.response.rect, request)
     }
 
     pub(crate) fn show_local_image(
@@ -66,7 +66,7 @@ impl ImageLogicOps {
         id: usize,
         mut viewer_state: Option<&mut ViewerState>,
         fullscreen_request: Option<&mut Option<usize>>,
-    ) {
+    ) -> Option<egui::Rect> {
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
             if state.texture.is_none()
                 && let Ok(bytes) = std::fs::read(path)
@@ -97,7 +97,7 @@ impl ImageLogicOps {
                 let size = t.size();
                 (t, size[0], size[1])
             }
-            None => return, /* WHY: Could not load image */
+            None => return None,
         };
 
         let max_w = ui.available_width();
@@ -149,5 +149,7 @@ impl ImageLogicOps {
                 container_rect,
             );
         }
+
+        Some(container_rect)
     }
 }

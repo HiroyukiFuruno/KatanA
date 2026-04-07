@@ -40,6 +40,8 @@
 /// applied sync and must not trigger a new source event.
 pub const ECHO_PIXEL_EPSILON: f32 = 2.0;
 
+const DEGENERATE_EPSILON: f32 = 1e-4;
+
 /// One entry in the piecewise-linear mapping between editor and preview pixel offsets.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MapPoint {
@@ -81,16 +83,30 @@ impl ScrollMapper {
         row_height: f32,
         anchors: &[(std::ops::Range<usize>, f32)],
     ) -> Self {
-        let mut points = Vec::with_capacity(anchors.len() + 2);
+        let mut sorted_anchors: Vec<_> = anchors.to_vec();
+        /* WHY: Sort by editor line start to build a monotonic mapping table. */
+        sorted_anchors.sort_by_key(|(span, _)| span.start);
+
+        let mut points = Vec::with_capacity(sorted_anchors.len() + 2);
         points.push(MapPoint {
             editor_y: 0.0,
             preview_y: 0.0,
         });
-        for (span, p_y) in anchors {
+
+        for (span, p_y) in sorted_anchors {
             let editor_y = span.start as f32 * row_height;
             /* WHY: Clamp to avoid degenerate points outside the visible range. */
             let editor_y = editor_y.min(editor_max.max(1.0));
             let preview_y = p_y.max(0.0).min(preview_max.max(1.0));
+
+            /* WHY: Skip degenerate segments (same editor_y or preview_y as last). */
+            if let Some(last) = points.last()
+                && ((editor_y - last.editor_y).abs() < DEGENERATE_EPSILON
+                    || (preview_y - last.preview_y).abs() < DEGENERATE_EPSILON)
+            {
+                continue;
+            }
+
             points.push(MapPoint {
                 editor_y,
                 preview_y,

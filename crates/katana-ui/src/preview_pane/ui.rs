@@ -58,7 +58,7 @@ impl PreviewPane {
         &mut self,
         ui: &mut egui::Ui,
         active_editor_line: Option<usize>,
-        hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
+        mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
         search_scroll_pending: bool,
         is_slideshow: bool,
@@ -66,6 +66,7 @@ impl PreviewPane {
         self.visible_rect = Some(ui.clip_rect());
         self.content_top_y = ui.next_widget_position().y;
         self.heading_anchors.clear();
+        self.block_anchors.clear();
         let mut fullscreen_request: Option<usize> = None;
         let (request, actions) = crate::preview_pane::SectionLogicOps::render_sections(
             ui,
@@ -74,6 +75,7 @@ impl PreviewPane {
             &self.md_file_path,
             self.scroll_request,
             Some(&mut self.heading_anchors),
+            Some(&mut self.block_anchors),
             if is_slideshow {
                 None
             } else {
@@ -81,11 +83,22 @@ impl PreviewPane {
             },
             Some(&mut fullscreen_request),
             active_editor_line,
-            hovered_lines,
+            hovered_lines.as_deref_mut(),
             search_query,
             search_scroll_pending,
             is_slideshow,
         );
+
+        if let Some(ref mut h) = hovered_lines
+            && let Some(pos) = ui.ctx().pointer_interact_pos()
+        {
+            for (range, rect) in &self.block_anchors {
+                if rect.contains(pos) {
+                    h.push(range.clone());
+                }
+            }
+        }
+
         self.scroll_request = None;
 
         let ctx = ui.ctx().clone();

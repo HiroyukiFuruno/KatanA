@@ -106,6 +106,9 @@ pub struct CommonMarkViewer<'f> {
     options: CommonMarkOptions<'f>,
     scroll_to_heading_index: Option<usize>,
     heading_anchors: Option<&'f mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+    /// Captures the rendered bounding boxes of specific blocks (Diagrams, Alerts, Tables)
+    /// associated with their original source spans. Used for stable split-sync anchors.
+    block_anchors: Option<&'f mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     heading_offset: usize,
     active_char_range: Option<std::ops::Range<usize>>,
     hovered_spans: Option<&'f mut Vec<std::ops::Range<usize>>>,
@@ -133,6 +136,7 @@ impl<'f> Default for CommonMarkViewer<'f> {
             options: Default::default(),
             scroll_to_heading_index: None,
             heading_anchors: None,
+            block_anchors: None,
             heading_offset: 0,
             active_char_range: None,
             hovered_spans: None,
@@ -216,6 +220,14 @@ impl<'f> CommonMarkViewer<'f> {
         anchors: &'f mut Vec<(std::ops::Range<usize>, egui::Rect)>,
     ) -> Self {
         self.heading_anchors = Some(anchors);
+        self
+    }
+
+    pub fn block_anchors(
+        mut self,
+        anchors: &'f mut Vec<(std::ops::Range<usize>, egui::Rect)>,
+    ) -> Self {
+        self.block_anchors = Some(anchors);
         self
     }
 
@@ -393,6 +405,7 @@ impl<'f> CommonMarkViewer<'f> {
         let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
             self.scroll_to_heading_index,
             self.heading_anchors,
+            self.block_anchors,
             self.heading_offset,
             self.active_char_range.clone(),
             self.hovered_spans,
@@ -426,6 +439,7 @@ impl<'f> CommonMarkViewer<'f> {
             let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
                 self.scroll_to_heading_index,
                 self.heading_anchors,
+                self.block_anchors,
                 self.heading_offset,
                 self.active_char_range.clone(),
                 self.hovered_spans,
@@ -496,6 +510,7 @@ impl<'f> CommonMarkViewer<'f> {
         let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
             self.scroll_to_heading_index,
             self.heading_anchors,
+            self.block_anchors,
             self.heading_offset,
             self.active_char_range.clone(),
             self.hovered_spans,
@@ -537,6 +552,7 @@ impl<'f> CommonMarkViewer<'f> {
         let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
             self.scroll_to_heading_index,
             self.heading_anchors,
+            self.block_anchors,
             self.heading_offset,
             self.active_char_range.clone(),
             self.hovered_spans,

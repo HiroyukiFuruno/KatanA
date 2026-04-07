@@ -2427,3 +2427,57 @@ fn p_align_center_strong_link_does_not_render_as_raw_text() {
         "Raw HTML tag text must not appear in preview for <p align=\"center\"><strong><a> pattern"
     );
 }
+
+#[test]
+fn block_anchors_extracted_for_rich_blocks() {
+    let md = concat!(
+        "Some text\n",
+        "```mermaid\n",
+        "graph TD;\n",
+        "```\n",
+        "\n",
+        "> [!NOTE]\n",
+        "> An alert block\n"
+    );
+
+    let anchors = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let anchors_clone = anchors.clone();
+
+    let ctx = egui::Context::default();
+    let _ = ctx.run(
+        egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                egui::vec2(800.0, 600.0),
+            )),
+            ..Default::default()
+        },
+        |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut pane = PreviewPane::default();
+                pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
+                pane.show_content(ui, None, None, None, false);
+                *anchors_clone.borrow_mut() = pane.block_anchors.clone();
+            });
+        },
+    );
+
+    let extracted = anchors.borrow();
+    assert!(
+        !extracted.is_empty(),
+        "block_anchors should be populated for mermaid and alerts"
+    );
+
+    let spans: Vec<_> = extracted.iter().map(|(span, _)| span.clone()).collect();
+
+    assert!(
+        spans.iter().any(|s| s.start == 1),
+        "Mermaid block anchor start line should be 1, found: {:?}",
+        spans
+    );
+    assert!(
+        spans.iter().any(|s| s.start == 4 || s.start == 5),
+        "Alert block anchor start line should be 4 or 5, found: {:?}",
+        spans
+    );
+}

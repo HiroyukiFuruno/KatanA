@@ -13,6 +13,7 @@ pub struct PreviewPane {
     pub sections: Vec<RenderedSection>,
     pub outline_items: Vec<OutlineItem>,
     pub heading_anchors: Vec<(std::ops::Range<usize>, egui::Rect)>,
+    pub block_anchors: Vec<(std::ops::Range<usize>, egui::Rect)>,
     pub content_top_y: f32,
     pub visible_rect: Option<egui::Rect>,
     pub scroll_request: Option<usize>,

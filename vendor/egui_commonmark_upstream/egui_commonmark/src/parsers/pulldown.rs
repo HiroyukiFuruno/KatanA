@@ -84,6 +84,7 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     curr_heading: usize,
     scroll_to_heading_index: Option<usize>,
     heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+    block_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     text_style: Style,
     pending_inline: Vec<RichText>,
     after_inline_widget: bool,
@@ -146,6 +147,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
     pub fn new(
         scroll_to_heading_index: Option<usize>,
         heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+        block_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         heading_offset: usize,
         active_char_range: Option<std::ops::Range<usize>>,
         hovered_spans: Option<&'a mut Vec<std::ops::Range<usize>>>,
@@ -187,6 +189,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             curr_heading: heading_offset,
             scroll_to_heading_index,
             heading_anchors,
+            block_anchors,
             text_style: Style::default(),
             pending_inline: Vec::new(),
             after_inline_widget: false,
@@ -236,7 +239,11 @@ const BLOCKQUOTE_LEFT_INSET: i8 = 10;
 
 const BLOCKQUOTE_LINE_WIDTH: f32 = 3.0;
 
-fn render_blockquote(ui: &mut Ui, accent: egui::Color32, add_contents: impl FnOnce(&mut Ui)) {
+fn render_blockquote(
+    ui: &mut Ui,
+    accent: egui::Color32,
+    add_contents: impl FnOnce(&mut Ui),
+) -> egui::Response {
     let content_width = (ui.available_width() - f32::from(BLOCKQUOTE_LEFT_INSET)).max(0.0);
     let start = ui.painter().add(egui::Shape::Noop);
     let response = egui::Frame::NONE
@@ -274,6 +281,7 @@ fn render_blockquote(ui: &mut Ui, accent: egui::Color32, add_contents: impl FnOn
             egui::Stroke::new(BLOCKQUOTE_LINE_WIDTH, accent),
         ),
     );
+    response
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
@@ -1452,7 +1460,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             let was_inside = self.inside_blockquote;
             self.inside_blockquote = true;
 
-            if let Some(alert) = parse_alerts(&options.alerts, &mut collected_events) {
+            let response = if let Some(alert) = parse_alerts(&options.alerts, &mut collected_events) {
                 egui_commonmark_backend::alert_ui(alert, ui, |ui| {
                     let mut events_iter = collected_events.into_iter().peekable();
                     while let Some((index, (e, src_span))) = events_iter.next() {
@@ -1487,7 +1495,21 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         );
                     }
                     self.text_style.quote = false;
-                });
+                })
+            };
+
+            if let Some((_, span)) = self.block_states.last() {
+                if let Some(hovered) = &mut self.hovered_spans {
+                    if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                        if response.rect.contains(pos) {
+                            hovered.push(span.clone());
+                        }
+                    }
+                }
+
+                if let Some(anchors) = &mut self.block_anchors {
+                    anchors.push((span.clone(), response.rect));
+                }
             }
 
             self.inside_blockquote = was_inside;
@@ -2269,9 +2291,42 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
                 self.curr_heading += 1;
             }
-            pulldown_cmark::TagEnd::BlockQuote(_) => {}
+            pulldown_cmark::TagEnd::BlockQuote(_) => {
+                let last_state = self.block_states.pop();
+                self.is_blockquote = false;
+                self.inside_blockquote = false;
+
+                if let Some((_, span)) = last_state {
+                    if let Some(hovered) = &mut self.hovered_spans {
+                        if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                            if ui.min_rect().contains(pos) {
+                                hovered.push(span.clone());
+                            }
+                        }
+                    }
+
+                    if let Some(anchors) = &mut self.block_anchors {
+                        anchors.push((span, ui.min_rect()));
+                    }
+                }
+            }
             pulldown_cmark::TagEnd::CodeBlock => {
-                self.end_code_block(ui, cache, options, max_width);
+                let last_state = self.block_states.pop();
+                let response = self.end_code_block(ui, cache, options, max_width);
+
+                if let (Some(resp), Some((_, span))) = (response, last_state) {
+                    if let Some(hovered) = &mut self.hovered_spans {
+                        if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                            if resp.rect.contains(pos) {
+                                hovered.push(span.clone());
+                            }
+                        }
+                    }
+
+                    if let Some(anchors) = &mut self.block_anchors {
+                        anchors.push((span, resp.rect));
+                    }
+                }
             }
 
             pulldown_cmark::TagEnd::List(_) => {
@@ -2392,7 +2447,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
         cache: &mut CommonMarkCache,
         options: &CommonMarkOptions,
         max_width: f32,
-    ) {
+    ) -> Option<egui::Response> {
         if let Some(block) = self.code_block.take() {
             // Route ```math blocks through render_math_fn so they are treated as
             // display math instead of being rendered as a fenced code block.
@@ -2409,15 +2464,17 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     if !self.inside_blockquote {
                         self.line.try_insert_end(ui);
                     }
-                    return;
+                    return None;
                 }
             }
 
-            block.end(ui, cache, options, max_width);
+            let response = block.end(ui, cache, options, max_width);
             if !self.inside_blockquote {
                 self.line.try_insert_end(ui);
             }
+            return Some(response);
         }
+        None
     }
 }
 

@@ -294,7 +294,7 @@ impl CodeBlock {
         cache: &mut CommonMarkCache,
         options: &CommonMarkOptions,
         max_width: f32,
-    ) {
+    ) -> egui::Response {
         ui.scope(|ui| {
             Self::pre_syntax_highlighting(cache, options, ui);
 
@@ -315,8 +315,9 @@ impl CodeBlock {
                 &self.content,
                 options.show_code_copy_button,
                 &mut layout,
-            );
-        });
+            )
+        })
+        .inner
     }
 }
 

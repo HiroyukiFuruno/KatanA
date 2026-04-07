@@ -15,7 +15,7 @@ impl ImageLogicOps {
         idx: usize,
         mut state: Option<&mut ViewerState>,
         fullscreen_request: Option<&mut Option<usize>>,
-    ) {
+    ) -> egui::Rect {
         let max_w = ui.available_width();
         let base_scale = (max_w / img.width as f32).min(1.0);
         let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
@@ -101,5 +101,7 @@ impl ImageLogicOps {
                 container_rect,
             );
         }
+
+        container_rect
     }
 }

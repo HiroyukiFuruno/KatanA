@@ -4,7 +4,7 @@ use eframe::egui::{self};
 use egui_commonmark::{CommonMarkCache, CommonMarkViewer};
 use katana_core::markdown::color_preset::DiagramColorPreset;
 
-#[allow(clippy::too_many_arguments)]
+#[allow(unused_mut, clippy::too_many_arguments)]
 pub(super) fn show_section(
     ui: &mut egui::Ui,
     cache: &mut CommonMarkCache,
@@ -13,10 +13,11 @@ pub(super) fn show_section(
     md_file_path: &std::path::Path,
     scroll_to_heading_index: Option<usize>,
     mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+    mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     heading_offset: usize,
     global_task_list_idx: &mut usize,
     active_editor_line: Option<usize>,
-    hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
+    mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     global_line_offset: usize,
     search_query: Option<String>,
     search_scroll_pending: bool,
@@ -91,6 +92,11 @@ pub(super) fn show_section(
                     viewer = viewer.heading_anchors(anchors);
                 }
 
+                let mut local_block_anchors = Vec::new();
+                if block_anchors.is_some() {
+                    viewer = viewer.block_anchors(&mut local_block_anchors);
+                }
+
                 /* WHY: Compute the active char range once so it can be shared with the */
                 /* WHY: list-item highlight callback and the viewer builder. */
                 let mut computed_active_range: Option<std::ops::Range<usize>> = None;
@@ -156,6 +162,18 @@ pub(super) fn show_section(
                         anchor.0 = start_line..end_line;
                     }
                 }
+                if let Some(anchors) = block_anchors {
+                    for (local_span, rect) in local_block_anchors {
+                        let start_line = global_line_offset
+                            + md[..local_span.start]
+                                .chars()
+                                .filter(|c| *c == '\n')
+                                .count();
+                        let end_line = global_line_offset
+                            + md[..local_span.end].chars().filter(|c| *c == '\n').count();
+                        anchors.push((start_line..end_line, rect));
+                    }
+                }
                 if let Some(hovered) = hovered_lines {
                     for local_span in local_hovered_spans {
                         let start_line = global_line_offset
@@ -189,8 +207,13 @@ pub(super) fn show_section(
             crate::preview_pane::ImageLogicOps::show_local_image(ui, path, alt, id, None, None);
             (None, vec![])
         }
-        RenderedSection::Error { kind, message, .. } => {
-            ui.label(
+        RenderedSection::Error {
+            kind,
+            message,
+            source_lines,
+            ..
+        } => {
+            let res = ui.label(
                 egui::RichText::new(crate::i18n::I18nOps::tf(
                     &crate::i18n::I18nOps::get().error.render_error,
                     &[("kind", kind.as_str()), ("message", message.as_str())],
@@ -198,11 +221,18 @@ pub(super) fn show_section(
                 .color(warning_color(ui))
                 .small(),
             );
+            if let Some(anchors) = block_anchors {
+                anchors.push((
+                    global_line_offset..global_line_offset + source_lines,
+                    res.rect,
+                ));
+            }
             (None, vec![])
         }
         RenderedSection::CommandNotFound {
             tool_name,
             install_hint,
+            source_lines,
             ..
         } => {
             let msg = crate::i18n::I18nOps::get()
@@ -211,25 +241,37 @@ pub(super) fn show_section(
                 .clone()
                 .replace("{tool_name}", tool_name)
                 .replace("{install_hint}", install_hint);
-            ui.label(egui::RichText::new(msg).color(warning_color(ui)).small());
+            let res = ui.label(egui::RichText::new(msg).color(warning_color(ui)).small());
+            if let Some(anchors) = block_anchors {
+                anchors.push((
+                    global_line_offset..global_line_offset + source_lines,
+                    res.rect,
+                ));
+            }
             (None, vec![])
         }
         RenderedSection::NotInstalled {
             kind,
             download_url,
             install_path,
+            source_lines,
             ..
-        } => (
-            crate::preview_pane::ImageLogicOps::show_not_installed(
+        } => {
+            let (rect, req) = crate::preview_pane::ImageLogicOps::show_not_installed(
                 ui,
                 kind,
                 download_url,
                 install_path,
-            ),
-            vec![],
-        ),
-        RenderedSection::Pending { kind, .. } => {
-            crate::widgets::AlignCenter::new()
+            );
+            if let Some(anchors) = block_anchors {
+                anchors.push((global_line_offset..global_line_offset + source_lines, rect));
+            }
+            (req, vec![])
+        }
+        RenderedSection::Pending {
+            kind, source_lines, ..
+        } => {
+            let res = crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {
                     ui.spinner();
@@ -242,6 +284,12 @@ pub(super) fn show_section(
                     );
                 })
                 .show(ui);
+            if let Some(anchors) = block_anchors {
+                anchors.push((
+                    global_line_offset..global_line_offset + source_lines,
+                    res.rect,
+                ));
+            }
             (None, vec![])
         }
     }

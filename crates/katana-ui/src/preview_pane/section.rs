@@ -5,7 +5,7 @@ use egui_commonmark::CommonMarkCache;
 pub use super::types::SectionLogicOps;
 
 impl SectionLogicOps {
-    #[allow(clippy::too_many_arguments)]
+    #[allow(unused_mut, clippy::too_many_arguments)]
     pub fn show_section(
         ui: &mut egui::Ui,
         cache: &mut CommonMarkCache,
@@ -14,6 +14,7 @@ impl SectionLogicOps {
         md_file_path: &std::path::Path,
         scroll_to_heading_index: Option<usize>,
         heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+        block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         heading_offset: usize,
         global_task_list_idx: &mut usize,
         active_editor_line: Option<usize>,
@@ -31,6 +32,7 @@ impl SectionLogicOps {
             md_file_path,
             scroll_to_heading_index,
             heading_anchors,
+            block_anchors,
             heading_offset,
             global_task_list_idx,
             active_editor_line,
@@ -42,7 +44,7 @@ impl SectionLogicOps {
         )
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(unused_mut, clippy::too_many_arguments)]
     pub fn render_sections(
         ui: &mut egui::Ui,
         cache: &mut CommonMarkCache,
@@ -50,6 +52,7 @@ impl SectionLogicOps {
         md_file_path: &std::path::Path,
         scroll_to_heading_index: Option<usize>,
         mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
+        mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         mut viewer_states: Option<&mut Vec<ViewerState>>,
         mut fullscreen_request: Option<&mut Option<usize>>,
         active_editor_line: Option<usize>,
@@ -92,7 +95,7 @@ impl SectionLogicOps {
                             }
                             &mut vs[i]
                         });
-                        crate::preview_pane::ImageLogicOps::show_rasterized(
+                        let rect = crate::preview_pane::ImageLogicOps::show_rasterized(
                             ui,
                             svg_data,
                             alt,
@@ -100,6 +103,12 @@ impl SectionLogicOps {
                             state,
                             fullscreen_request.as_deref_mut(),
                         );
+                        if let Some(anchors) = &mut block_anchors {
+                            anchors.push((
+                                global_line_offset..global_line_offset + lines_in_section,
+                                rect,
+                            ));
+                        }
                     }
                     RenderedSection::LocalImage { path, alt, .. } => {
                         let state = viewer_states.as_mut().map(|vs| {
@@ -108,14 +117,20 @@ impl SectionLogicOps {
                             }
                             &mut vs[i]
                         });
-                        crate::preview_pane::ImageLogicOps::show_local_image(
+                        if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image(
                             ui,
                             path,
                             alt,
                             i,
                             state,
                             fullscreen_request.as_deref_mut(),
-                        );
+                        ) && let Some(anchors) = &mut block_anchors
+                        {
+                            anchors.push((
+                                global_line_offset..global_line_offset + lines_in_section,
+                                rect,
+                            ));
+                        }
                     }
                     _ => {
                         let (req, mut event_actions) = Self::show_section(
@@ -126,6 +141,7 @@ impl SectionLogicOps {
                             md_file_path,
                             scroll_to_heading_index,
                             heading_anchors.as_deref_mut(),
+                            block_anchors.as_deref_mut(),
                             offset,
                             &mut global_task_list_idx,
                             active_editor_line,

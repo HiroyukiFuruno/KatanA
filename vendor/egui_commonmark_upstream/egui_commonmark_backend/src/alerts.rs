@@ -10,7 +10,7 @@ pub struct Alert {
     pub identifier_rendered: String,
 }
 
-pub fn alert_ui(alert: &Alert, ui: &mut Ui, add_contents: impl FnOnce(&mut Ui)) {
+pub fn alert_ui(alert: &Alert, ui: &mut Ui, add_contents: impl FnOnce(&mut Ui)) -> egui::Response {
     blockquote(ui, alert.accent_color, |ui| {
         ui.vertical(|ui| {
             // 見出し上マージンの調整 (blockquoteのライン開始位置はy+5)
