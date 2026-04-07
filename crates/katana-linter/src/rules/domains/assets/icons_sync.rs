@@ -174,7 +174,7 @@ impl IconsSyncOps {
     }
 
     #[rustfmt::skip]
-    fn get_duplicate_whitelist() -> &'static [&'static str] {
+    pub fn get_duplicate_whitelist() -> &'static [&'static str] {
         /* WHY: Whitelist by relative path substring or exact path */
         &[
             "navigation/chevron_down.svg", "navigation/chevron_left.svg", "navigation/chevron_right.svg",

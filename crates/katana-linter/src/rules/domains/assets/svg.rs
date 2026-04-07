@@ -110,4 +110,91 @@ impl SvgOps {
 
         violations
     }
+
+    pub fn lint_duplicate_svgs(workspace_root: &Path) -> Vec<Violation> {
+        use super::icons_sync::IconsSyncOps;
+        let mut violations = Vec::new();
+        let icons_dir = workspace_root.join("assets/icons");
+
+        if !icons_dir.exists() {
+            return violations;
+        }
+
+        let whitelist = IconsSyncOps::get_duplicate_whitelist();
+        let files = LinterFileOps::collect_files_by_extension(&icons_dir, "svg");
+        let mut content_map: std::collections::HashMap<(String, String), Vec<std::path::PathBuf>> =
+            std::collections::HashMap::new();
+
+        for path in files {
+            let components: Vec<_> = path
+                .components()
+                .map(|c| c.as_os_str().to_string_lossy())
+                .collect();
+            let pack_dir = components
+                .iter()
+                .skip_while(|c| *c != "icons")
+                .nth(1)
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "katana".to_string());
+
+            let content = match fs::read_to_string(&path) {
+                Ok(content) => content,
+                Err(_) => continue,
+            };
+
+            /* WHY: Extract inner SVG content (ignoring <svg ...> wrapper to avoid class noise) */
+            let inner_content = match extract_inner_svg(&content) {
+                Some(inner) => inner,
+                None => content.trim().to_string(), /* WHY: fallback to full content if extraction fails */
+            };
+
+            content_map
+                .entry((pack_dir, inner_content))
+                .or_default()
+                .push(path);
+        }
+
+        for ((pack_dir, _), paths) in content_map {
+            if paths.len() <= 1 {
+                continue;
+            }
+            /* WHY: If ALL paths match the whitelist, allow it. */
+            let all_whitelisted = paths.iter().all(|p| {
+                let p_str = p.to_string_lossy();
+                whitelist.iter().any(|&w| p_str.contains(w))
+            });
+
+            if all_whitelisted {
+                continue;
+            }
+
+            let duplicate_names: Vec<String> = paths
+                .iter()
+                .map(|p| p.file_name().unwrap_or_default().to_string_lossy().to_string())
+                .collect();
+            
+            for path in paths {
+                violations.push(Violation {
+                    file: path.clone(),
+                    line: 1,
+                    column: 0,
+                    message: format!(
+                        "Duplicate SVG found in theme `{}`: identical visual content to {}. Ensure this icon has a distinct purpose or remove the duplicate.",
+                        pack_dir,
+                        duplicate_names.join(", ")
+                    ),
+                });
+            }
+        }
+
+        violations
+    }
+}
+
+fn extract_inner_svg(c: &str) -> Option<String> {
+    let s = c.find("<svg")?;
+    let e = c.rfind("</svg>")?;
+    let b = c[s..].find('>')? + s;
+    if b >= e { return None; }
+    Some(c[b + 1..e].trim().to_string())
 }
