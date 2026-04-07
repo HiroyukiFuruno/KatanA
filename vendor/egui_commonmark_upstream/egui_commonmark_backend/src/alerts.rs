@@ -1,28 +1,36 @@
-use crate::elements::{blockquote, newline};
+use crate::elements::blockquote;
 use egui::Ui;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Alert {
-    /// The color that will be used to put emphasis to the alert
     pub accent_color: egui::Color32,
-    /// The icon that will be displayed
-    pub icon: char,
-    /// The identifier that will be used to look for the blockquote such as NOTE and TIP
+    pub icon: String,
     pub identifier: String,
-    /// The identifier that will be shown when rendering. E.g: Note and Tip
     pub identifier_rendered: String,
 }
 
-// Seperate function to not leak into the public API
 pub fn alert_ui(alert: &Alert, ui: &mut Ui, add_contents: impl FnOnce(&mut Ui)) {
     blockquote(ui, alert.accent_color, |ui| {
-        ui.colored_label(alert.accent_color, alert.icon.to_string());
-        ui.add_space(3.0);
-        ui.colored_label(alert.accent_color, &alert.identifier_rendered);
-        // end line
-        newline(ui);
-        add_contents(ui);
+        ui.vertical(|ui| {
+            // 見出し上マージンの調整 (blockquoteのライン開始位置はy+5)
+            // ラインの上端から8px下にタイトルが来るように調整
+            ui.add_space(8.0);
+            
+            ui.horizontal(|ui| {
+                ui.colored_label(alert.accent_color, &alert.icon);
+                ui.add_space(4.0);
+                ui.colored_label(alert.accent_color, &alert.identifier_rendered);
+            });
+            
+            // 見出しと本文の間隔を適切に確保 (デフォルトのParagraphマージンを考慮して4px)
+            ui.add_space(4.0);
+            
+            add_contents(ui);
+            
+            // ブロック下部の余白
+            ui.add_space(8.0);
+        });
     })
 }
 
@@ -64,31 +72,31 @@ impl AlertBundle {
         Self::from_alerts(vec![
             Alert {
                 accent_color: egui::Color32::from_rgb(10, 80, 210),
-                icon: '❕',
+                icon: "ⓘ".to_string(),
                 identifier: "NOTE".to_owned(),
                 identifier_rendered: "Note".to_owned(),
             },
             Alert {
                 accent_color: egui::Color32::from_rgb(0, 130, 20),
-                icon: '💡',
+                icon: "💡".to_string(),
                 identifier: "TIP".to_owned(),
                 identifier_rendered: "Tip".to_owned(),
             },
             Alert {
                 accent_color: egui::Color32::from_rgb(150, 30, 140),
-                icon: '💬',
+                icon: "💬".to_string(),
                 identifier: "IMPORTANT".to_owned(),
                 identifier_rendered: "Important".to_owned(),
             },
             Alert {
                 accent_color: egui::Color32::from_rgb(200, 120, 0),
-                icon: '⚠',
+                icon: "⚠".to_string(),
                 identifier: "WARNING".to_owned(),
                 identifier_rendered: "Warning".to_owned(),
             },
             Alert {
                 accent_color: egui::Color32::from_rgb(220, 0, 0),
-                icon: '🔴',
+                icon: "🚫".to_string(), // Prohibited Sign Emoji
                 identifier: "CAUTION".to_owned(),
                 identifier_rendered: "Caution".to_owned(),
             },

@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.7] - 2026-04-07 01:45:00 (UTC)
+
+### ✨ Improvements
+
+- Refined the visual presentation of alert blocks (Note, Tip, etc.) by adjusting vertical margins and spacing for a more professional layout rhythm.
+- Updated the "Caution" alert icon to a dedicated prohibited/caution sign (🚫) for improved visual clarity and consistency.
+
 ## [0.16.6] - 2026-04-06 16:08:00 (UTC)
 
 ### ✨ Improvements
