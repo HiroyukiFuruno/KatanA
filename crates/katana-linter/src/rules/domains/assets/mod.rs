@@ -1,3 +1,5 @@
+pub mod icons_sync;
 pub mod svg;
 
-pub use svg::lint_svg_colors;
+pub use icons_sync::IconsSyncOps;
+pub use svg::SvgOps;

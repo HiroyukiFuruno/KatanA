@@ -84,16 +84,6 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 4.1 選定済み (curated) の外部パック 5 種類の SVG ファイル群をリポジトリへ追加し、パックごとに整理配置する
-- [ ] 4.2 `Icon` enum の全件について、「サードパーティ製ソース」 / 「KatanA側で作成した上書きアセット (override)」 / 「フォールバック」 の対応表 (inventory) を作成する
-- [ ] 4.3 既存 UI と直接の互換性がないアイコンについては、選択中パックのビジュアル言語等に合わせた KatanA 独自の上書きアセット (override) を作成する
-- [ ] 4.4 `docs/licenses/icon-packs.md`、あるいはそれに準ずる文書に、ソース元、ライセンス、上書きの根拠 (override rationale) を記録する
-- [ ] 4.5 商用利用の妨げにならない選定済みパックのみが公開用パッケージ (shipping target) に含まれることを入念に確認する
-- [ ] 4.6 ast linterで未利用のsvgを検知できる仕組みを構築する
-- [ ] 4.7 アイコンのアセットごとのsvgアイコン同士の互換を担保するast linterを構築する
-
-### Definition of Done (DoD)
-
 - [ ] 同梱 (shipping) される各パックが、要求されるアイコン定義 (required icon contract) を満たしていること
 - [ ] サードパーティ製ソースと、KatanA 側で作成した上書きアセットとの境界線が明確に文書化されていること
 - [ ] 同梱パックの出所 (provenance) とライセンス情報がリポジトリ上から容易に追跡可能であること
@@ -103,12 +93,37 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ---
 
-## 5. Final Verification & Release Work (最終確認とリリース対応)
+## 5. AST Linter Custom Rule for Icon Synchronization (アイコン同期用のAST Linterカスタムルール追加)
 
-- [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 5.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 5.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 5.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 5.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 5.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.17.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 5.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+### Definition of Ready (DoR)
+
+- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+
+#### Sub Tasks
+
+- [ ] 5.1 `assets/icons/katana/` 配下などのSVGファイル一覧を取得する
+- [ ] 5.2 `crates/katana-ui/src/icon/types.rs` の `define_icons!` マクロなどに定義されている登録済みのアイコン一覧を抽出する
+- [ ] 5.3 ディレクトリ内に存在するが、コード（enum/ALL_ICONS等）に未登録のSVGファイルがある場合に追加漏れとしてエラーを報告するカスタムリンタールールを `katana-linter` に実装する
+- [ ] 5.4 登録されているがSVGファイルが存在しない場合も検出する
+- [ ] 5.5 SVGのアイコンがwhite listに登録されていないものは同一であることを許容しないast lintの設定を追加する。エラーメッセージに作成したskill (`.gemini/antigravity/skills/svg-icon-management/SKILL.md`) を参照することを出力する
+- [ ] 5.6 既存のSVGカラーチェック(`svg.rs`)を強化し、すべてのテーマパックの基本配色を `white` (`#FFFFFF`) または `currentColor` に完全に統一する。それ以外の固定色の使用を禁止し、かつ「`fill` も `stroke` も設定されていない（黒潰れする）」不備も検知してエラーにする
+
+### Definition of Done (DoD)
+
+- [ ] `katana-linter` のカスタムルールにより、SVGの追加と登録の同期が検証可能になっていること
+- [ ] 意図的に未登録SVGを配置した場合にlinterが期待通り失敗することを確認すること
+- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `/openspec-delivery` ワークフローを実行し、デリバリールーチンを完了すること。
+
+---
+
+## 6. Final Verification & Release Work (最終確認とリリース対応)
+
+- [ ] 6.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [ ] 6.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 6.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [ ] 6.4 `master` に向けて PR（プルリクエスト）を作成する
+- [ ] 6.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [ ] 6.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.17.0` のリリースタグ打ちとリリース作成を実行する
+- [ ] 6.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする

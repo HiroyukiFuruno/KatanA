@@ -267,6 +267,10 @@
         "name": "Design"
       },
       {
+        "key": "icon",
+        "name": "Symbole"
+      },
+      {
         "key": "font",
         "name": "Schriftart"
       },

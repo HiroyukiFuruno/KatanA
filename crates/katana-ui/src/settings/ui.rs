@@ -122,6 +122,9 @@ impl<'a> SettingsWindow<'a> {
                                     SettingsTab::Theme => {
                                         crate::settings::tabs::ThemeTabOps::render_theme_tab(ui, state)
                                     }
+                                    SettingsTab::Icons => {
+                                        crate::settings::tabs::IconsTabOps::render_icons_tab(ui, state)
+                                    }
                                     SettingsTab::Font => {
                                         crate::settings::tabs::FontTabOps::render_font_tab(ui, state)
                                     }
