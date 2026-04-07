@@ -1920,7 +1920,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         let inner = &text[start_idx + "KATANA_TASK:".len()..];
                         if let Some(end_idx) = inner.find("-->") {
                             let task_content = inner[..end_idx].trim();
-                            let state_char = if task_content.starts_with('x') { 'x' } else { ' ' };
+                            let state_char = task_content.chars().next().unwrap_or(' ');
                             // Activate context menu state for subsequent text events in this list item
                             self.active_task_context_menu =
                                 Some((state_char, src_span.clone(), options.mutable));

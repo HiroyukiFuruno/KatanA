@@ -50,6 +50,7 @@ pub mod app_state_tests {
             is_dirty: false,
             is_loaded: true,
             is_pinned: false,
+            is_reference: false,
             last_imported_disk_hash: None,
             pending_dirty_warning_hash: None,
         };
@@ -92,6 +93,7 @@ pub mod app_state_tests {
             is_dirty: false,
             is_loaded: true,
             is_pinned: false,
+            is_reference: false,
             last_imported_disk_hash: None,
             pending_dirty_warning_hash: None,
         };

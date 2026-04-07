@@ -1,0 +1,65 @@
+# KatanA Configuration File — Reference
+#
+# This is an example configuration file (katana.toml).
+# It is opened in reference mode and cannot be edited.
+# Copy relevant sections to your own workspace katana.toml.
+#
+# Location: <workspace-root>/.katana/katana.toml  (future, not yet supported)
+# Currently KatanA settings are stored via the Settings panel (⌘,).
+
+[theme]
+# Preset theme name. Built-in options:
+#   "Dark", "Light", "Dracula", "Monokai", "Solarized Dark",
+#   "Solarized Light", "Nord", "Gruvbox Dark", "One Dark", "Tokyo Night"
+preset = "Dark"
+
+[font]
+# Font family used in the editor and preview panes.
+# Set to "" to use the system default.
+family = "JetBrains Mono"
+
+# Font size in logical pixels (typically 12–18 is comfortable).
+size = 14.0
+
+[layout]
+# Split direction: "Horizontal" or "Vertical"
+split_direction = "Horizontal"
+
+# Which pane appears first: "EditorFirst" or "PreviewFirst"
+pane_order = "EditorFirst"
+
+# Default view mode: "Split", "CodeOnly", or "PreviewOnly"
+view_mode = "Split"
+
+[workspace]
+# Maximum depth for the file explorer tree (1 = only top-level files).
+max_depth = 6
+
+# Directories to hide in the file explorer.
+# KatanA always hides .git by default.
+ignored_directories = [".git", "node_modules", "target", ".venv"]
+
+# File extensions shown in the explorer.
+# Add or remove extensions as needed.
+visible_extensions = ["md", "txt", "toml", "yaml", "yml", "json", "rs"]
+
+[behavior]
+# Auto-save interval in seconds (0 = disabled).
+auto_save_interval = 30
+
+# Auto-refresh interval in seconds (0 = disabled).
+# Reloads documents changed externally without a prompt.
+auto_refresh_interval = 5
+
+# Confirm before closing a tab with unsaved changes.
+confirm_close_dirty_tab = true
+
+[performance]
+# Maximum number of diagrams rendered concurrently.
+# Reduce if diagram rendering causes UI lag.
+diagram_concurrency = 4
+
+[updates]
+# How often to check for updates:
+#   "Never", "Daily", "Weekly", "Monthly"
+check_interval = "Weekly"

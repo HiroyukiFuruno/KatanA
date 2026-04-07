@@ -1,7 +1,7 @@
 # 🧪 KatanA Rendering — Basic Markdown
 
 This fixture exercises core Markdown rendering: headings, text decoration,
-lists, code blocks, tables, blockquotes, and edge cases.
+lists, code blocks, tables, blockquotes, note blocks, accordion, math, and edge cases.
 
 <p align="center">
   English | <a href="sample_basic.ja.md">日本語</a>
@@ -9,9 +9,7 @@ lists, code blocks, tables, blockquotes, and edge cases.
 
 ---
 
-## 2. Basic Markdown Elements
-
-### 2.1 Heading Levels
+## 1. Heading Levels
 
 # H1 Heading
 ## H2 Heading
@@ -20,7 +18,9 @@ lists, code blocks, tables, blockquotes, and edge cases.
 ##### H5 Heading
 ###### H6 Heading
 
-### 2.2 Text Decoration
+---
+
+## 2. Text Decoration
 
 - **Bold text**
 - *Italic text*
@@ -30,13 +30,13 @@ lists, code blocks, tables, blockquotes, and edge cases.
 - <mark>Highlight</mark>
 - **Bold and *italic* mixed**
 
-### 2.3 Links
+### Links
 
 - [Normal link](https://github.com)
 - [Email link](mailto:test@example.com)
 - Autolink: https://github.com
 
-### 2.4 Horizontal Rule
+### Horizontal Rule
 
 Text above
 
@@ -209,79 +209,7 @@ features:
 
 ---
 
-## 12. Mixed Content (Past Bug: Section Boundary Breaking)
-
-Markdown text, code blocks, and tables mixed together.
-Verify no layout overlap between sections.
-
-### Architecture Overview
-
-| Component | Role |
-|---|---|
-| `PreviewPane` | Section management |
-| `show_content` | UI rendering |
-
-Proper spacing between the table above and the code block below.
-
-```rust
-enum RenderedSection {
-    Markdown(String),
-    Image { svg_data: RasterizedSvg, alt: String },
-    Error { kind: String, message: String },
-    CommandNotFound { tool_name: String },
-    NotInstalled { kind: String },
-    Pending { kind: String },
-}
-```
-
-↑ All sections should render correctly without overlapping.
-
----
-
-## 13. Edge Cases
-
-### 13.1 Empty Code Block
-
-```
-```
-
-### 13.2 Very Long Line
-
-`This is a very long line to verify horizontal scrolling or word wrapping. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`
-
-### 13.3 Special Characters
-
-- HTML entities: &amp; &lt; &gt; &quot;
-- Japanese: こんにちは世界 🌍
-- Emoji: 🦀 ⚡ 📝 🔧 ✅ ❌ ⚠️ 💡
-- Math symbols: α β γ δ ∑ ∫ √ ∞
-
-### 13.4 Footnotes
-
-This text has a footnote[^1]. Here's another[^2].
-
-[^1]: First footnote content.
-[^2]: Second footnote content.
-
-### 13.5 Consecutive Different Block Elements
-
-> A blockquote
-
-```rust
-let code = "directly after quote";
-```
-
-- A list item directly after code block
-
-| Header |
-|--------|
-| Table after list |
-
-↑ Proper spacing between each block element.
-
----
-
-## 7. Note Blocks
+## 7. Note Blocks (Legacy `> **Type**` style)
 
 ### 7.1 Note
 
@@ -310,36 +238,7 @@ let code = "directly after quote";
 
 ---
 
-## 8. Accordion
-
-<details><summary>Show details</summary><div>
-
-- Swords
-  - Muramasa
-  - Masamune
-  - Kotetsu
-
-</div></details>
-
-## 9. Math
-
-### 8.1 Block Math
-
-```math
-f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
-```
-
-### 8.2 Inline Math
-
-Mass-energy equivalence: $E = mc^2$
-
-### 8.3 Single-line Math
-
-$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
-
----
-
-### 9.アラート記法
+## 8. Alert Blocks (GFM `[!TYPE]` style)
 
 > [!NOTE]
 > Highlights information that users should take into account, even when skimming.
@@ -355,6 +254,109 @@ $$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 
 > [!CAUTION]
 > Negative potential consequences of an action.
+
+---
+
+## 9. Accordion
+
+<details><summary>Show details</summary><div>
+
+- Swords
+  - Muramasa
+  - Masamune
+  - Kotetsu
+
+</div></details>
+
+---
+
+## 10. Math
+
+### 10.1 Block Math
+
+```math
+f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
+```
+
+### 10.2 Inline Math
+
+Mass-energy equivalence: $E = mc^2$
+
+### 10.3 Single-line Math
+
+$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
+
+---
+
+## 11. Mixed Content (Past Bug: Section Boundary Breaking)
+
+Markdown text, code blocks, and tables mixed together.
+Verify no layout overlap between sections.
+
+### Architecture Overview
+
+| Component | Role |
+|---|---|
+| `PreviewPane` | Section management |
+| `show_content` | UI rendering |
+
+Proper spacing between the table above and the code block below.
+
+```rust
+enum RenderedSection {
+    Markdown(String),
+    Image { svg_data: RasterizedSvg, alt: String },
+    Error { kind: String, message: String },
+    CommandNotFound { tool_name: String },
+    NotInstalled { kind: String },
+    Pending { kind: String },
+}
+```
+
+↑ All sections should render correctly without overlapping.
+
+---
+
+## 12. Edge Cases
+
+### 12.1 Empty Code Block
+
+```
+```
+
+### 12.2 Very Long Line
+
+`This is a very long line to verify horizontal scrolling or word wrapping. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`
+
+### 12.3 Special Characters
+
+- HTML entities: &amp; &lt; &gt; &quot;
+- Japanese: こんにちは世界 🌍
+- Emoji: 🦀 ⚡ 📝 🔧 ✅ ❌ ⚠️ 💡
+- Math symbols: α β γ δ ∑ ∫ √ ∞
+
+### 12.4 Footnotes
+
+This text has a footnote[^1]. Here's another[^2].
+
+[^1]: First footnote content.
+[^2]: Second footnote content.
+
+### 12.5 Consecutive Different Block Elements
+
+> A blockquote
+
+```rust
+let code = "directly after quote";
+```
+
+- A list item directly after code block
+
+| Header |
+|--------|
+| Table after list |
+
+↑ Proper spacing between each block element.
 
 ---
 

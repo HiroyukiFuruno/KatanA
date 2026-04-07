@@ -2,6 +2,7 @@
 mod dispatch;
 mod dispatch_secondary;
 mod init;
+mod process_demo;
 mod process_document;
 mod process_groups;
 mod process_helpers;

@@ -21,7 +21,8 @@
     "release_notes": "버전 정보",
     "view": "보기",
     "command_palette": "명령어 팔레트…",
-    "close_workspace": "Close Workspace (ko)"
+    "close_workspace": "Close Workspace (ko)",
+    "demo": "데모 보기"
   },
   "about": {
     "basic_info": "기본 정보",

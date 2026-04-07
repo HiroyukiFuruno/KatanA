@@ -23,6 +23,7 @@ pub(super) fn update_from_i18n() {
             &msgs.menu.release_notes,
             &msgs.menu.command_palette,
             &msgs.menu.view,
+            &msgs.menu.demo,
         );
     }
 }
@@ -46,6 +47,7 @@ unsafe fn update_menu_strings(
     release_notes: &str,
     command_palette: &str,
     view: &str,
+    demo: &str,
 ) {
     let mk = |s: &str| std::ffi::CString::new(s).unwrap_or_default();
     ffi::katana_update_menu_strings(
@@ -65,5 +67,6 @@ unsafe fn update_menu_strings(
         mk(release_notes).as_ptr(),
         mk(command_palette).as_ptr(),
         mk(view).as_ptr(),
+        mk(demo).as_ptr(),
     );
 }

@@ -21,7 +21,8 @@
     "check_updates": "Check for Updates...",
     "release_notes": "Changelog",
     "view": "View",
-    "command_palette": "Command Palette…"
+    "command_palette": "Command Palette…",
+    "demo": "View Demo Bundle"
   },
   "about": {
     "basic_info": "Basic Info",

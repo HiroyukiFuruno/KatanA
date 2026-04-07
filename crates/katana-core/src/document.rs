@@ -8,6 +8,7 @@ pub struct Document {
     pub is_dirty: bool,
     pub is_loaded: bool,
     pub is_pinned: bool,
+    pub is_reference: bool,
     pub last_imported_disk_hash: Option<u64>,
     pub pending_dirty_warning_hash: Option<u64>,
 }
@@ -38,6 +39,7 @@ impl Document {
             is_dirty: false,
             is_loaded: true,
             is_pinned: false,
+            is_reference: false,
             last_imported_disk_hash: Some(hash),
             pending_dirty_warning_hash: None,
         }
@@ -50,6 +52,7 @@ impl Document {
             is_dirty: false,
             is_loaded: false,
             is_pinned: false,
+            is_reference: false,
             last_imported_disk_hash: None,
             pending_dirty_warning_hash: None,
         }

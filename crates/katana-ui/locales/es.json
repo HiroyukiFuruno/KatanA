@@ -21,7 +21,8 @@
     "release_notes": "Notas de la versión",
     "view": "Ver",
     "command_palette": "Paleta de comandos…",
-    "close_workspace": "Close Workspace (es)"
+    "close_workspace": "Close Workspace (es)",
+    "demo": "Ver Demo"
   },
   "about": {
     "basic_info": "Información básica",

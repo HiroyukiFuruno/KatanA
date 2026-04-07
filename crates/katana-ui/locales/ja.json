@@ -21,7 +21,8 @@
     "check_updates": "更新を確認...",
     "release_notes": "リリースノート",
     "view": "表示",
-    "command_palette": "コマンドパレット…"
+    "command_palette": "コマンドパレット…",
+    "demo": "デモ・機能紹介を見る"
   },
   "about": {
     "basic_info": "基本情報",
