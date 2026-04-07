@@ -64,11 +64,11 @@ impl ThemeTabOps {
 
         let available_packs = [
             ("katana-icon", "Katana Core (Default)"),
-            ("material-symbols", "Material Symbols (Task 4)"),
-            ("lucide", "Lucide (Task 4)"),
-            ("tabler-icons", "Tabler Icons (Task 4)"),
-            ("heroicons", "Heroicons (Task 4)"),
-            ("feather", "Feather (Task 4)"),
+            ("material-symbols", "Material Symbols"),
+            ("lucide", "Lucide"),
+            ("tabler-icons", "Tabler Icons"),
+            ("heroicons", "Heroicons"),
+            ("feather", "Feather"),
         ];
 
         let selected_name = available_packs
