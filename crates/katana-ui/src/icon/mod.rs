@@ -1,3 +1,4 @@
+pub mod pack;
 mod types;
 pub use types::{ALL_ICONS, Icon, IconSize};
 

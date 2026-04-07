@@ -12,12 +12,12 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Icon Pack Contract and Asset Layout (アイコンパックの仕様定義とアセット配置)
 
-- [ ] 1.1 計画に未利用のsvgを整理する
-- [ ] 1.2 既存の `assets/icons` を `assets/icons/katana/...` 配下へ再編し、`katana-icon` パックのアセットルートを固定化する
-- [ ] 1.3 アイコンパックの manifest またはそれと同等のメタデータを追加し、パック ID (pack id)、表示名 (display name)、レンダリングポリシー (render policy)、およびライセンスメタデータ (license metadata) を表現できるようにする
-- [ ] 1.4 `Icon` enum に定義された全アイテムについて、パックのカバー率表（coverage table）で確認できる契約体系（contract）を作る
-- [ ] 1.5 選定済み (curated) の外部パック 5 種類の採用候補と、そのソースおよびライセンス情報を固定する
-- [ ] 1.6 組み込み (built-in) パックのディレクトリ命名規則を `assets/icons/<pack-dir>/...` に統一する
+- [x] 1.1 計画に未利用のsvgを整理する
+- [x] 1.2 既存の `assets/icons` を `assets/icons/katana/...` 配下へ再編し、`katana-icon` パックのアセットルートを固定化する
+- [x] 1.3 アイコンパックの manifest またはそれと同等のメタデータを追加し、パック ID (pack id)、表示名 (display name)、レンダリングポリシー (render policy)、およびライセンスメタデータ (license metadata) を表現できるようにする
+- [x] 1.4 `Icon` enum に定義された全アイテムについて、パックのカバー率表（coverage table）で確認できる契約体系（contract）を作る
+- [x] 1.5 選定済み (curated) の外部パック 5 種類の採用候補と、そのソースおよびライセンス情報を固定する
+- [x] 1.6 組み込み (built-in) パックのディレクトリ命名規則を `assets/icons/<pack-dir>/...` に統一する
 
 ### Definition of Done (DoD)
 
