@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.8-2] - 2026-04-07 09:03:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- Fixed a regression where background elements (such as the editor or workspace tree) could be inadvertently interacted with while a modal was active.
+
 ## [0.16.8-1] - 2026-04-07 04:10:00 (UTC)
 
 ### 🐛 Bug Fixes
