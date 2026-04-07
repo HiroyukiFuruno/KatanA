@@ -298,10 +298,10 @@ fn fixture_en_drawio_always_renders_to_image() {
 fn fixture_en_no_drawio_errors() {
     let (pane, _, _) = load_fixture("sample.md");
     for (i, section) in pane.sections.iter().enumerate() {
-        if let RenderedSection::Error { kind, message, .. } = section {
-            if kind == "DrawIo" {
-                panic!("DrawIo at section {i} got Error: {message}");
-            }
+        if let RenderedSection::Error { kind, message, .. } = section
+            && kind == "DrawIo"
+        {
+            panic!("DrawIo at section {i} got Error: {message}");
         }
     }
 }

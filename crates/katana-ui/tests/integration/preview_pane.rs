@@ -1868,11 +1868,12 @@ fn markdown_table_stretches_to_full_width() {
     let flat = flatten_shapes(&output.shapes);
     let mut table_frame_rect = egui::Rect::NOTHING;
     for s in flat.iter() {
-        if let egui::epaint::Shape::Rect(rect_shape) = s {
-            if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
-                table_frame_rect = rect_shape.rect;
-                break;
-            }
+        if let egui::epaint::Shape::Rect(rect_shape) = s
+            && rect_shape.stroke.width > 0.0
+            && rect_shape.rect.width() > 50.0
+        {
+            table_frame_rect = rect_shape.rect;
+            break;
         }
     }
 
@@ -2122,16 +2123,15 @@ fn markdown_table_no_trailing_whitespace() {
 
     let mut table_bottom: f32 = 0.0;
     for s in &flat {
-        if let egui::epaint::Shape::Rect(rect_shape) = s {
-            if rect_shape.rect.width() > 50.0
-                && rect_shape.stroke.width > 0.0
-                && rect_shape.rect.height() > 20.0
-                && rect_shape.rect.height() < 300.0
-            {
-                let rect_bottom = rect_shape.rect.bottom();
-                if rect_bottom > table_bottom {
-                    table_bottom = rect_bottom;
-                }
+        if let egui::epaint::Shape::Rect(rect_shape) = s
+            && rect_shape.rect.width() > 50.0
+            && rect_shape.stroke.width > 0.0
+            && rect_shape.rect.height() > 20.0
+            && rect_shape.rect.height() < 300.0
+        {
+            let rect_bottom = rect_shape.rect.bottom();
+            if rect_bottom > table_bottom {
+                table_bottom = rect_bottom;
             }
         }
     }
@@ -2190,14 +2190,13 @@ fn blockquote_lines_uniform_thickness() {
     let mut line_widths: Vec<f32> = Vec::new();
     let mut line_x_positions: Vec<f32> = Vec::new();
     for s in &flat {
-        if let egui::epaint::Shape::LineSegment { points, stroke } = s {
-            if (points[0].x - points[1].x).abs() < 0.1
-                && stroke.width > 0.0
-                && (points[1].y - points[0].y).abs() > 5.0
-            {
-                line_widths.push(stroke.width);
-                line_x_positions.push(points[0].x);
-            }
+        if let egui::epaint::Shape::LineSegment { points, stroke } = s
+            && (points[0].x - points[1].x).abs() < 0.1
+            && stroke.width > 0.0
+            && (points[1].y - points[0].y).abs() > 5.0
+        {
+            line_widths.push(stroke.width);
+            line_x_positions.push(points[0].x);
         }
     }
 
@@ -2278,11 +2277,12 @@ fn markdown_table_max_width_is_constrained() {
 
     let mut table_frame_rect = egui::Rect::NOTHING;
     for clipped_shape in output.shapes {
-        if let egui::Shape::Rect(rect_shape) = clipped_shape.shape {
-            if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
-                table_frame_rect = rect_shape.rect;
-                break;
-            }
+        if let egui::Shape::Rect(rect_shape) = clipped_shape.shape
+            && rect_shape.stroke.width > 0.0
+            && rect_shape.rect.width() > 50.0
+        {
+            table_frame_rect = rect_shape.rect;
+            break;
         }
     }
 

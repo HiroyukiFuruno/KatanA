@@ -89,11 +89,9 @@ impl PreviewPane {
             is_slideshow,
         );
 
-        if let Some(ref mut h) = hovered_lines
-            && let Some(pos) = ui.ctx().pointer_interact_pos()
-        {
+        if let Some(ref mut h) = hovered_lines {
             for (range, rect) in &self.block_anchors {
-                if rect.contains(pos) {
+                if ui.rect_contains_pointer(*rect) {
                     h.push(range.clone());
                 }
             }

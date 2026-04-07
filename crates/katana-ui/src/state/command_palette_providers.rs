@@ -154,7 +154,8 @@ impl CommandPaletteProvider for MarkdownContentProvider {
 
                 let mut label = m.snippet.clone();
                 if label.len() > 100 {
-                    label.truncate(100);
+                    let end = label.floor_char_boundary(100);
+                    label.truncate(end);
                     label.push_str("...");
                 }
 

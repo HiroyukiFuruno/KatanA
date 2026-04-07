@@ -72,11 +72,11 @@ fn overlap_checker() {
             let leaves2 = all_leaves.get(f2).unwrap();
 
             for (path, val1) in leaves1 {
-                if let Some(val2) = leaves2.get(path) {
-                    if val1 == val2 {
-                        overlap_values.insert(val1.clone());
-                        println!("Overlap [{} vs {}] at {}: {}", f1, f2, path, val1);
-                    }
+                if let Some(val2) = leaves2.get(path)
+                    && val1 == val2
+                {
+                    overlap_values.insert(val1.clone());
+                    println!("Overlap [{} vs {}] at {}: {}", f1, f2, path, val1);
                 }
             }
         }

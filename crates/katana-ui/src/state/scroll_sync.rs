@@ -99,10 +99,10 @@ impl ScrollMapper {
             let editor_y = editor_y.min(editor_max.max(1.0));
             let preview_y = p_y.max(0.0).min(preview_max.max(1.0));
 
-            /* WHY: Skip degenerate segments (same editor_y or preview_y as last). */
+            /* WHY: Skip degenerate or non-monotonic segments (to maintain strict ascending order). */
             if let Some(last) = points.last()
-                && ((editor_y - last.editor_y).abs() < DEGENERATE_EPSILON
-                    || (preview_y - last.preview_y).abs() < DEGENERATE_EPSILON)
+                && (editor_y <= last.editor_y + DEGENERATE_EPSILON
+                    || preview_y <= last.preview_y + DEGENERATE_EPSILON)
             {
                 continue;
             }
@@ -275,5 +275,20 @@ mod tests {
         echo.record(250.0);
         /* WHY: A genuine user scroll of 50px should not be suppressed. */
         assert!(!echo.is_echo(300.0));
+    }
+
+    #[test]
+    fn mapper_skips_non_monotonic_segments() {
+        /* WHY: Ensure that backward or zero-height anchors in preview_y or editor_y are properly discarded. */
+        let anchors = vec![(10..10, 400.0), (30..30, 300.0), (50..50, 800.0)];
+        let m = ScrollMapper::build(1200.0, 2000.0, 20.0, &anchors);
+
+        /* WHY: editor y=600 is halfway between line 10 (200px) and line 50 (1000px).
+        Since the middle anchor is non-monotonic, it gets skipped.
+        Preview midpoint between 400 and 800 is 600. */
+        let pos = m.editor_to_logical(600.0);
+        assert_eq!(pos.segment_index, 1);
+        let p_y = m.logical_to_preview(pos);
+        assert_eq!(p_y, 600.0);
     }
 }

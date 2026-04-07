@@ -325,30 +325,31 @@ fn test_integration_search_modal_remains_functional() {
 
 #[test]
 fn test_keyboard_navigation_state() {
-    let mut state = CommandPaletteState::default();
-
-    state.results = vec![
-        CommandPaletteResult {
-            id: "1".into(),
-            label: "Item 1".into(),
-            secondary_label: None,
-            score: 1.0,
-            kind: CommandPaletteResultKind::Action,
-            execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
-                AppAction::ToggleSettings,
-            ),
-        },
-        CommandPaletteResult {
-            id: "2".into(),
-            label: "Item 2".into(),
-            secondary_label: None,
-            score: 0.9,
-            kind: CommandPaletteResultKind::Action,
-            execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
-                AppAction::ToggleExplorer,
-            ),
-        },
-    ];
+    let mut state = CommandPaletteState {
+        results: vec![
+            CommandPaletteResult {
+                id: "1".into(),
+                label: "Item 1".into(),
+                secondary_label: None,
+                score: 1.0,
+                kind: CommandPaletteResultKind::Action,
+                execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
+                    AppAction::ToggleSettings,
+                ),
+            },
+            CommandPaletteResult {
+                id: "2".into(),
+                label: "Item 2".into(),
+                secondary_label: None,
+                score: 0.9,
+                kind: CommandPaletteResultKind::Action,
+                execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
+                    AppAction::ToggleExplorer,
+                ),
+            },
+        ],
+        ..Default::default()
+    };
 
     assert_eq!(state.selected_index, 0);
 

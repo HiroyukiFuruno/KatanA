@@ -177,9 +177,10 @@ mod tests {
         let path = dir.path().join("subdir/workspace.json"); /* WHY: Test parent creation */
         let repo = JsonWorkspaceRepository::new(path.clone());
 
-        let mut state = GlobalWorkspaceState::default();
-        state.persisted = vec!["/test/p1".to_string()];
-        state.histories = vec!["/test/h1".to_string()];
+        let state = GlobalWorkspaceState {
+            persisted: vec!["/test/p1".to_string()],
+            histories: vec!["/test/h1".to_string()],
+        };
 
         repo.save(&state).unwrap();
         assert!(path.exists());

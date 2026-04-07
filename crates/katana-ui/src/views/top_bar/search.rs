@@ -97,7 +97,6 @@ impl DocSearchBar {
                             top: DOC_SEARCH_INPUT_MARGIN_Y,
                             bottom: DOC_SEARCH_INPUT_MARGIN_Y,
                         })
-                        .vertical_align(egui::Align::Center)
                         .id_source("doc_search_input_stable_id"),
                 );
 

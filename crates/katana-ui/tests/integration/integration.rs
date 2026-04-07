@@ -3371,24 +3371,24 @@ fn test_ast_linter_locales() {
                         failures.push(format!(
                             "{filename}: Key '{path_str}' is an explicitly empty string"
                         ));
-                    } else if s.starts_with('[') {
-                        if let Some(end) = s.find(']') {
-                            let inside = &s[1..end];
-                            let is_lang_code =
-                                inside.chars().all(|c| c.is_ascii_alphabetic() || c == '-');
-                            if is_lang_code && inside.len() >= 2 && inside.len() <= 5 {
-                                failures.push(format!("{filename}: Key '{path_str}' contains forbidden placeholder badge: '{s}'"));
-                            }
+                    } else if s.starts_with('[')
+                        && let Some(end) = s.find(']')
+                    {
+                        let inside = &s[1..end];
+                        let is_lang_code =
+                            inside.chars().all(|c| c.is_ascii_alphabetic() || c == '-');
+                        if is_lang_code && inside.len() >= 2 && inside.len() <= 5 {
+                            failures.push(format!("{filename}: Key '{path_str}' contains forbidden placeholder badge: '{s}'"));
                         }
                     }
 
                     for (other_filename, other_leaves) in all_leaves {
-                        if other_filename != filename {
-                            if let Some(other_s) = other_leaves.get(path_str) {
-                                if trimmed == other_s && !allowed_overlaps.contains(&trimmed) {
-                                    failures.push(format!("{filename}: [LOOPHOLE CLOSED] Key '{path_str}' exactly matches '{other_filename}' fallback: '{s}'. MUST be translated natively without copying another language."));
-                                }
-                            }
+                        if other_filename != filename
+                            && let Some(other_s) = other_leaves.get(path_str)
+                            && trimmed == other_s
+                            && !allowed_overlaps.contains(&trimmed)
+                        {
+                            failures.push(format!("{filename}: [LOOPHOLE CLOSED] Key '{path_str}' exactly matches '{other_filename}' fallback: '{s}'. MUST be translated natively without copying another language."));
                         }
                     }
                 }
@@ -3505,7 +3505,7 @@ fn test_integration_session_upgrade_from_legacy_payload() {
     let app = harness.state_mut().app_state_mut();
     assert_eq!(app.document.open_documents.len(), 1);
     assert_eq!(app.document.open_documents[0].path, abs_path);
-    assert_eq!(app.document.open_documents[0].is_pinned, false);
+    assert!(!app.document.open_documents[0].is_pinned);
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -3567,9 +3567,9 @@ fn test_integration_session_restore_with_pinned_and_groups() {
     let app = harness.state_mut().app_state_mut();
     assert_eq!(app.document.open_documents.len(), 2);
     assert_eq!(app.document.open_documents[0].path, abs_path1);
-    assert_eq!(app.document.open_documents[0].is_pinned, true);
+    assert!(app.document.open_documents[0].is_pinned);
     assert_eq!(app.document.open_documents[1].path, abs_path2);
-    assert_eq!(app.document.open_documents[1].is_pinned, false);
+    assert!(!app.document.open_documents[1].is_pinned);
     assert_eq!(app.document.active_doc_idx, Some(1));
     assert_eq!(app.document.tab_groups.len(), 1);
     assert_eq!(app.document.tab_groups[0].name, "Docs");
@@ -3619,10 +3619,7 @@ fn test_integration_close_policy_batch_skips_pinned() {
             .len(),
         2
     );
-    assert_eq!(
-        harness.state_mut().app_state_mut().document.open_documents[0].is_pinned,
-        true
-    );
+    assert!(harness.state_mut().app_state_mut().document.open_documents[0].is_pinned);
 
     harness
         .state_mut()
@@ -3639,10 +3636,7 @@ fn test_integration_close_policy_batch_skips_pinned() {
             .len(),
         1
     );
-    assert_eq!(
-        harness.state_mut().app_state_mut().document.open_documents[0].is_pinned,
-        true
-    );
+    assert!(harness.state_mut().app_state_mut().document.open_documents[0].is_pinned);
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -4047,7 +4041,7 @@ fn test_integration_direct_pin_icon_toggle() {
     // Tab title and close button are typically inside a horizontal layout or push_id scope.
     // Let's traverse up a bit and find a button.
     use egui_kittest::kittest::NodeT;
-    let mut current = Some(tab_label.clone());
+    let mut current = Some(tab_label);
     let mut found_btn = None;
     for _ in 0..5 {
         // try going up 5 levels
@@ -4056,7 +4050,7 @@ fn test_integration_direct_pin_icon_toggle() {
                 .query_all_by_role(egui::accesskit::Role::Button)
                 .collect();
             if btns.len() >= 2 {
-                found_btn = Some(btns.last().unwrap().clone());
+                found_btn = Some(*btns.last().unwrap());
                 break;
             }
             current = node.parent();

@@ -100,9 +100,7 @@ impl<'a> WorkspaceToggleModal<'a> {
             });
 
         if let Some(res) = response
-            && ctx.input(|i| i.pointer.any_pressed())
-            && let Some(pos) = ctx.pointer_interact_pos()
-            && !res.response.rect.contains(pos)
+            && res.response.clicked_elsewhere()
         {
             close_modal = true;
         }
