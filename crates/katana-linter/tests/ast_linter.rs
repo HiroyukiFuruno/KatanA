@@ -39,7 +39,7 @@ fn ast_linter_icon_sync() {
 fn ast_linter_svg_colors() {
     use katana_linter::rules::domains::assets::SvgOps;
     let all_violations =
-        SvgOps::lint_svg_colors(&LinterFileOps::workspace_root().expect("Test requirement"));
+        SvgOps::lint_svg_colors(LinterFileOps::workspace_root().expect("Test requirement"));
     ViolationReporterOps::panic(
         "svg-colors",
         "Fix: SVGs must not have invalid colors (only #FFFFFF or currentColor allowed) and must have at least one fill or stroke attribute to prevent blackout.",

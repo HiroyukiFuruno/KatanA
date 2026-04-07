@@ -7,6 +7,10 @@ use super::types::ImageLogicOps;
 pub(super) const MIN_ZOOM: f32 = 0.1;
 pub(super) const MAX_ZOOM: f32 = 10.0;
 
+/// WHY: Minimum container height to prevent the 3×3 control grid and fullscreen
+/// button from overlapping on diagrams with a small rendered height.
+const MIN_CONTAINER_HEIGHT: f32 = 145.0;
+
 impl ImageLogicOps {
     pub(crate) fn show_rasterized(
         ui: &mut egui::Ui,
@@ -15,6 +19,7 @@ impl ImageLogicOps {
         idx: usize,
         mut state: Option<&mut ViewerState>,
         fullscreen_request: Option<&mut Option<usize>>,
+        draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> egui::Rect {
         let max_w = ui.available_width();
         let base_scale = (max_w / img.width as f32).min(1.0);
@@ -25,8 +30,11 @@ impl ImageLogicOps {
             img.height as f32 * base_scale,
         );
         let zoomed_size = base_size * zoom;
+        let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
         let (container_rect, response) =
-            ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
+            ui.allocate_exact_size(Vec2::new(max_w, container_h), egui::Sense::click_and_drag());
+
+        draw_background(ui, container_rect, response.hovered());
 
         if let Some(state) = state.as_mut()
             && response.hovered()
@@ -78,7 +86,8 @@ impl ImageLogicOps {
         };
 
         let x_offset = (max_w - base_size.x).max(0.0) / 2.0;
-        let image_pos = container_rect.min + egui::vec2(x_offset, 0.0) + pan;
+        let y_offset = (container_h - base_size.y).max(0.0) / 2.0;
+        let image_pos = container_rect.min + egui::vec2(x_offset, y_offset) + pan;
         let image_rect = egui::Rect::from_min_size(image_pos, zoomed_size);
         ui.painter().with_clip_rect(container_rect).image(
             texture_handle.id(),

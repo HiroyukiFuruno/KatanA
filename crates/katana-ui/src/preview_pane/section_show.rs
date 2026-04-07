@@ -200,11 +200,27 @@ pub(super) fn show_section(
             (None, actions)
         }
         RenderedSection::Image { svg_data, alt, .. } => {
-            crate::preview_pane::ImageLogicOps::show_rasterized(ui, svg_data, alt, id, None, None);
+            crate::preview_pane::ImageLogicOps::show_rasterized(
+                ui,
+                svg_data,
+                alt,
+                id,
+                None,
+                None,
+                |_, _, _| {},
+            );
             (None, vec![])
         }
         RenderedSection::LocalImage { path, alt, .. } => {
-            crate::preview_pane::ImageLogicOps::show_local_image(ui, path, alt, id, None, None);
+            crate::preview_pane::ImageLogicOps::show_local_image(
+                ui,
+                path,
+                alt,
+                id,
+                None,
+                None,
+                |_, _, _| {},
+            );
             (None, vec![])
         }
         RenderedSection::Error {
