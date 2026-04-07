@@ -1,5 +1,6 @@
 use super::types::{ReleaseInfo, UpdateManager, UpdateOps};
 use anyhow::Result;
+use ureq::ResponseExt;
 
 const HTTP_OK: u16 = 200;
 
@@ -11,15 +12,15 @@ impl UpdateOps {
             .unwrap_or("https://github.com/HiroyukiFuruno/KatanA/releases/latest");
 
         let resp = ureq::get(url)
-            .set("User-Agent", "KatanA-Update-Manager")
-            .set("Accept", "text/html")
+            .header("User-Agent", "KatanA-Update-Manager")
+            .header("Accept", "text/html")
             .call()?;
 
         if resp.status() != HTTP_OK {
             return Ok(None);
         }
 
-        let final_url = resp.get_url();
+        let final_url = resp.get_uri().to_string();
         let tag_name = if let Some(idx) = final_url.rfind("releases/tag/") {
             final_url[idx + "releases/tag/".len()..].to_string()
         } else {
@@ -56,15 +57,15 @@ impl UpdateOps {
         let url = "https://github.com/HiroyukiFuruno/KatanA/releases/latest";
 
         let resp = ureq::get(url)
-            .set("User-Agent", "KatanA-Update-Manager")
-            .set("Accept", "text/html")
+            .header("User-Agent", "KatanA-Update-Manager")
+            .header("Accept", "text/html")
             .call()?;
 
         if resp.status() != HTTP_OK {
             return Ok(None);
         }
 
-        let final_url = resp.get_url();
+        let final_url = resp.get_uri().to_string();
         let tag_name = if let Some(idx) = final_url.rfind("releases/tag/") {
             final_url[idx + "releases/tag/".len()..].to_string()
         } else {

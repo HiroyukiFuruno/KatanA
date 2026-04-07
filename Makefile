@@ -203,8 +203,13 @@ endif
 clean: ## Remove build artifacts
 	cargo clean
 
+.PHONY: update-safe
+update-safe: ## Update dependency crates safely (respects Cargo.toml SemVer)
+	cargo update
+
 .PHONY: update
-update: ## Update dependency crates
+update: ## Upgrade ALL dependencies to absolute latest versions (including breaking changes)
+	cargo upgrade -i
 	cargo update
 
 .PHONY: outdated

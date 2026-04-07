@@ -11,13 +11,15 @@ impl UpdateDownloadOps {
         F: FnMut(UpdateProgress),
     {
         let response = ureq::get(url)
-            .set("User-Agent", concat!("KatanA/", env!("CARGO_PKG_VERSION")))
+            .header("User-Agent", concat!("KatanA/", env!("CARGO_PKG_VERSION")))
             .call()?;
 
         let total_size = response
-            .header("Content-Length")
-            .and_then(|s| s.parse().ok());
-        let mut reader = response.into_reader();
+            .headers()
+            .get("Content-Length")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.parse::<u64>().ok());
+        let mut reader = response.into_body().into_reader();
         let mut out_file = std::fs::File::create(dest_path)?;
 
         const DOWNLOAD_BUFFER_SIZE: usize = 65536;
@@ -25,6 +27,7 @@ impl UpdateDownloadOps {
         let mut downloaded = 0;
 
         loop {
+            use std::io::Read;
             let bytes_read = reader.read(&mut buffer)?;
             if bytes_read == 0 {
                 break;

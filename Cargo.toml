@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.16.8-2"
+version = "0.16.8-3"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -39,7 +39,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Networking / Auto Update
-ureq = { version = "2.10", features = ["json"] }
+ureq = { version = "3.3", features = ["json"] }
 semver = "1.0"
 zip = "8.5"
 
@@ -49,9 +49,9 @@ syn = { version = "2", features = ["full", "visit"] }
 ignore = "0.4"
 
 # Diagram rendering
-resvg = "0.44"
-usvg = "0.44"
-tiny-skia = "0.11"
+resvg = "0.47"
+usvg = "0.47"
+tiny-skia = "0.12"
 xmltree = "0.12"
 
 [patch.crates-io]
