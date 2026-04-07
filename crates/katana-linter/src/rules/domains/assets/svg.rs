@@ -170,9 +170,14 @@ impl SvgOps {
 
             let duplicate_names: Vec<String> = paths
                 .iter()
-                .map(|p| p.file_name().unwrap_or_default().to_string_lossy().to_string())
+                .map(|p| {
+                    p.file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        .to_string()
+                })
                 .collect();
-            
+
             for path in paths {
                 violations.push(Violation {
                     file: path.clone(),
@@ -195,6 +200,8 @@ fn extract_inner_svg(c: &str) -> Option<String> {
     let s = c.find("<svg")?;
     let e = c.rfind("</svg>")?;
     let b = c[s..].find('>')? + s;
-    if b >= e { return None; }
+    if b >= e {
+        return None;
+    }
     Some(c[b + 1..e].trim().to_string())
 }
