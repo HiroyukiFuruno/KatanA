@@ -57,6 +57,71 @@ impl ThemeTabOps {
         ui.add_space(SECTION_SPACING);
         Self::render_theme_preset_selector(ui, state);
         ui.add_space(SECTION_SPACING);
+
+        SettingsOps::section_header(ui, &crate::i18n::I18nOps::get().settings.theme.icon_pack);
+
+        let mut current_pack = state.config.settings.settings().theme.icon_pack.clone();
+
+        let available_packs = [
+            ("katana-icon", "Katana Core (Default)"),
+            ("material-symbols", "Material Symbols (Task 4)"),
+            ("lucide", "Lucide (Task 4)"),
+            ("tabler-icons", "Tabler Icons (Task 4)"),
+            ("heroicons", "Heroicons (Task 4)"),
+            ("feather", "Feather (Task 4)"),
+        ];
+
+        let selected_name = available_packs
+            .iter()
+            .find(|(id, _)| *id == current_pack)
+            .map(|(_, name)| name.to_string())
+            .unwrap_or_else(|| current_pack.clone());
+
+        egui::ComboBox::from_id_source("icon_pack_combobox")
+            .selected_text(selected_name)
+            .show_ui(ui, |ui| {
+                for (id, display_name) in available_packs.iter() {
+                    let is_selected = current_pack == *id;
+                    let response = ui.add(
+                        egui::Button::selectable(is_selected, *display_name)
+                            .frame_when_inactive(true),
+                    );
+                    if response.clicked() {
+                        current_pack = id.to_string();
+                    }
+                }
+            });
+
+        if current_pack != state.config.settings.settings().theme.icon_pack {
+            state.config.settings.settings_mut().theme.icon_pack = current_pack.clone();
+            crate::icon::IconRegistry::install_pack_by_id(ui.ctx(), &current_pack);
+            let _ = state.config.try_save_settings();
+        }
+
+        ui.add_space(SUBSECTION_SPACING);
+        ui.label(
+            egui::RichText::new(crate::i18n::I18nOps::get().settings.preview.heading.clone())
+                .weak(),
+        );
+
+        crate::widgets::AlignCenter::new()
+            .shrink_to_fit(true)
+            .content(|ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    ui.add_space(SECTION_SPACING);
+                    ui.add(crate::Icon::Document.ui_image(ui, crate::icon::IconSize::Large));
+                    ui.add_space(SECTION_SPACING);
+                    ui.add(crate::Icon::FolderOpen.ui_image(ui, crate::icon::IconSize::Large));
+                    ui.add_space(SECTION_SPACING);
+                    ui.add(crate::Icon::Settings.ui_image(ui, crate::icon::IconSize::Large));
+                    ui.add_space(SECTION_SPACING);
+                    ui.add(crate::Icon::Search.ui_image(ui, crate::icon::IconSize::Large));
+                    ui.add_space(SECTION_SPACING);
+                    ui.add(crate::Icon::Success.ui_image(ui, crate::icon::IconSize::Large));
+                });
+            })
+            .show(ui);
+
         ui.add_space(SECTION_SPACING);
 
         let is_open = state

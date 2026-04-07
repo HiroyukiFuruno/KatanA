@@ -178,6 +178,7 @@
       "preset": "Theme Preset",
       "dark_section": "Dark",
       "light_section": "Light",
+      "icon_pack": "Icon Pack",
       "custom_colors": "Custom Colours",
       "reset_custom": "Reset to Preset",
       "custom_section": "Custom",

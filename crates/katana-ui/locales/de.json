@@ -178,6 +178,7 @@
       "preset": "Design-Voreinstellung",
       "dark_section": "Dunkel",
       "light_section": "Hell",
+      "icon_pack": "Icon-Paket",
       "custom_colors": "Benutzerdefinierte Farben",
       "reset_custom": "Auf Voreinstellungen zurücksetzen",
       "custom_section": "Benutzerdefiniert",

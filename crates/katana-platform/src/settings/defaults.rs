@@ -32,6 +32,9 @@ impl SettingsDefaultOps {
             "light".to_string()
         }
     }
+    pub fn default_icon_pack() -> String {
+        "katana-icon".to_string()
+    }
     pub fn default_ui_contrast_offset() -> f32 {
         0.0
     }
@@ -128,6 +131,7 @@ impl Default for ThemeSettings {
     fn default() -> Self {
         Self {
             theme: SettingsDefaultOps::default_theme(),
+            icon_pack: SettingsDefaultOps::default_icon_pack(),
             ui_contrast_offset: SettingsDefaultOps::default_ui_contrast_offset(),
             preset: ThemePreset::default(),
             custom_color_overrides: None,
