@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.8] - 2026-04-07 01:35:00 (UTC)
+
+### ✨ Improvements
+
+- Stabilized hover highlighting and scroll synchronization for rich blocks (such as diagrams, tables, and alerts) in the Markdown preview. Hovering over a rich block smoothly visualizes and maps precisely to its editor source lines. Split-pane scrolling near these blocks now stays perfectly aligned without jittering.
+
 ## [0.16.7] - 2026-04-07 01:45:00 (UTC)
 
 ### ✨ Improvements

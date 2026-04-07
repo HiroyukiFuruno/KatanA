@@ -37,5 +37,5 @@
 - [x] 2.3 中継用の中間ベースブランチを `master` ブランチにマージする (Skipped per direct integration workflow)
 - [x] 2.4 `master` へのPull Request（PR）を作成する (Skipped)
 - [x] 2.5 master にマージする（※ `--admin` の使用を許可する） (Skipped)
-- [ ] 2.6 `.agents/skills/release_workflow/SKILL.md` に従って、`0.16.8` のリリースタグ生成とリリース作成を実行する
-- [ ] 2.7 `/opsx-archive` などのOpenSpec用スキルを活用して、この変更作業全体をアーカイブ（保存・終了）する
+- [x] 2.6 `.agents/skills/release_workflow/SKILL.md` に従って、`0.16.8` のリリースタグ生成とリリース作成を実行する
+- [x] 2.7 `/opsx-archive` などのOpenSpec用スキルを活用して、この変更作業全体をアーカイブ（保存・終了）する
