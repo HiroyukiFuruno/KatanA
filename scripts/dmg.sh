@@ -60,6 +60,7 @@ else
     TMP_DMG=$(mktemp -d)/staging
     mkdir -p "$TMP_DMG"
     cp -R "${APP_BUNDLE}" "$TMP_DMG/"
+    ln -s /Applications "$TMP_DMG/Applications"
     hdiutil create -volname "KatanA Desktop ${VERSION}" \
         -srcfolder "$TMP_DMG" -ov -format UDZO "${DMG_OUT}"
     rm -rf "$TMP_DMG"

@@ -42,4 +42,7 @@ info "Adding Resources (icon.icns)..."
 mkdir -p "${CONTENTS}/Resources"
 cp assets/icon.icns "${CONTENTS}/Resources/icon.icns"
 
+info "Applying Ad-hoc Code Signature (Required after modifying Info.plist to prevent 'damaged' Gatekeeper error)..."
+codesign --force --deep --sign - "${APP_BUNDLE}"
+
 success "Created ${APP_BUNDLE}"
