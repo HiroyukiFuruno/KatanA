@@ -33,7 +33,7 @@ impl SettingsDefaultOps {
         }
     }
     pub fn default_icon_pack() -> String {
-        "katana-icon".to_string()
+        "katana".to_string()
     }
     pub fn default_ui_contrast_offset() -> f32 {
         0.0

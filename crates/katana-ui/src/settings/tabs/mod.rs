@@ -1,5 +1,6 @@
 pub mod behavior;
 pub mod font;
+pub mod icons;
 pub mod layout;
 mod layout_selectors;
 pub mod theme;

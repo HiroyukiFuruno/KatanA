@@ -25,6 +25,23 @@ impl LinterFileOps {
         files
     }
 
+    pub fn collect_files_by_extension(root: &Path, extension: &str) -> Vec<PathBuf> {
+        let mut files = Vec::new();
+        let walker = WalkBuilder::new(root)
+            .standard_filters(true)
+            .require_git(false)
+            .build();
+
+        for entry in walker.flatten() {
+            let path = entry.path();
+            if path.is_file() && path.extension().is_some_and(|ext| ext == extension) {
+                files.push(path.to_path_buf());
+            }
+        }
+        files.sort();
+        files
+    }
+
     pub fn workspace_root() -> Result<&'static Path, String> {
         use std::sync::OnceLock;
         static ROOT: OnceLock<Option<PathBuf>> = OnceLock::new();

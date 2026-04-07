@@ -267,6 +267,10 @@
         "name": "Thème"
       },
       {
+        "key": "icon",
+        "name": "Icônes"
+      },
+      {
         "key": "font",
         "name": "Police"
       },

@@ -1,8 +1,8 @@
 <!--
-tags: [move, top, chevrons, increase, navigation, flow, rise, upward, up, movement]
+tags: [arrow, move, merge, fold, navigation, flow, movement, route, path]
 category: Arrows
-version: "1.0"
-unicode: "ea66"
+version: "1.30"
+unicode: "ed56"
 -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
@@ -15,6 +15,10 @@ unicode: "ea66"
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <path d="M7 11l5 -5l5 5" />
-  <path d="M7 17l5 -5l5 5" />
+  <path d="M12 3v6l3 -3m-6 0l3 3" />
+  <path d="M12 21v-6l3 3m-6 0l3 -3" />
+  <path d="M4 12l1 0" />
+  <path d="M9 12l1 0" />
+  <path d="M14 12l1 0" />
+  <path d="M19 12l1 0" />
 </svg>

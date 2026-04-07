@@ -1,3 +1,4 @@
+pub mod assets;
 pub mod changelog;
 pub mod font_normalization;
 pub mod i18n;

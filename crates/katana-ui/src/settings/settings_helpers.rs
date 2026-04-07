@@ -6,6 +6,7 @@ pub(super) fn active_tab_title(tab: &SettingsTab) -> String {
     let tabs = &crate::i18n::I18nOps::get().settings.tabs;
     let (key, default) = match tab {
         SettingsTab::Theme => ("theme", "Theme"),
+        SettingsTab::Icons => ("icon", "Icons"),
         SettingsTab::Font => ("font", "Font"),
         SettingsTab::Layout => ("layout", "Layout"),
         SettingsTab::Workspace => ("workspace", "Workspace"),

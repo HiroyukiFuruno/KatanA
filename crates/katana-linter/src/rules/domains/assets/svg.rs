@@ -1,5 +1,5 @@
 use crate::Violation;
-use crate::utils::collect_files_by_extension;
+use crate::utils::LinterFileOps;
 use std::fs;
 use std::path::Path;
 
@@ -14,7 +14,9 @@ fn check_line_for_invalid_colors(
         let mut search_pos = 0;
         while let Some(start) = line_content[search_pos..].find(attr) {
             let start_idx = search_pos + start + attr.len();
-            let Some(end) = line_content[start_idx..].find('"') else { break; };
+            let Some(end) = line_content[start_idx..].find('"') else {
+                break;
+            };
             let color_val = &line_content[start_idx..start_idx + end].to_lowercase();
 
             if !is_allowed_svg_color(color_val) {
@@ -42,12 +44,10 @@ fn is_allowed_svg_color(color: &str) -> bool {
     )
 }
 
-fn get_render_policy(pack_dir: &str) -> &'static str {
+fn get_render_policy(_pack_dir: &str) -> &'static str {
     /* WHY: To support new packs that are NativeColor, return "NativeColor" here. */
-    match pack_dir {
-        /* WHY: e.g. "colorful-emojis" => "NativeColor", */
-        _ => "TintedMonochrome",
-    }
+    /* WHY: Future extension for e.g. "colorful-emojis" => "NativeColor" */
+    "TintedMonochrome"
 }
 
 pub struct SvgOps;
@@ -56,17 +56,21 @@ impl SvgOps {
     pub fn lint_svg_colors(workspace_root: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
         let icons_dir = workspace_root.join("assets/icons");
-    
+
         if !icons_dir.exists() {
             return violations;
         }
-    
-        let files = collect_files_by_extension(&icons_dir, "svg");
-    
+
+        let files = LinterFileOps::collect_files_by_extension(&icons_dir, "svg");
+
         for path in files {
             /* WHY: Path is typically <workspace>/assets/icons/<pack_dir>/... */
-            let components: Vec<_> = path.components().map(|c| c.as_os_str().to_string_lossy()).collect();
-            let pack_dir = components.iter()
+            let components: Vec<_> = path
+                .components()
+                .map(|c| c.as_os_str().to_string_lossy())
+                .collect();
+            let pack_dir = components
+                .iter()
                 .skip_while(|c| *c != "icons")
                 .nth(1)
                 .map(|s| s.as_ref())
@@ -80,10 +84,10 @@ impl SvgOps {
                 Ok(content) => content,
                 Err(_) => continue,
             };
-    
+
             /* WHY: For TintedMonochrome packs, we ensure all icons use `#FFFFFFF` or `currentColor`
-               This supports egui's dynamic tinting without destroying the icon's intended shapes. */
-        
+            This supports egui's dynamic tinting without destroying the icon's intended shapes. */
+
             let lines: Vec<&str> = content.lines().collect();
             for (i, line) in lines.iter().enumerate() {
                 if let Some(violation) = check_line_for_invalid_colors(&path, i + 1, line) {
@@ -91,7 +95,7 @@ impl SvgOps {
                 }
             }
         }
-    
+
         violations
     }
 }

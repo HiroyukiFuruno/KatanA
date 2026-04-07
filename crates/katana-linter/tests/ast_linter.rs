@@ -24,6 +24,18 @@ fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
 }
 
 #[test]
+fn ast_linter_icon_sync() {
+    use katana_linter::rules::domains::assets::IconsSyncOps;
+    let all_violations =
+        IconsSyncOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
+        "icon-sync",
+        "Fix: Synchronize SVG files in assets/icons/katana/ with define_icons! macro in crates/katana-ui/src/icon/types.rs by ensuring 1-to-1 matching.",
+        &all_violations,
+    );
+}
+
+#[test]
 fn ast_linter_i18n_no_hardcoded_strings() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(

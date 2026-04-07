@@ -1,8 +1,8 @@
 <!--
-tags: [move, bottom, chevrons, down, decrease, navigation, flow, fall, downward, movement]
+tags: [fullscreen, expand, arrows, maximize, navigation, flow, movement, route, path, pointers]
 category: Arrows
 version: "1.0"
-unicode: "ea63"
+unicode: "ea28"
 -->
 <svg
   xmlns="http://www.w3.org/2000/svg"
@@ -15,6 +15,12 @@ unicode: "ea63"
   stroke-linecap="round"
   stroke-linejoin="round"
 >
-  <path d="M7 7l5 5l5 -5" />
-  <path d="M7 13l5 5l5 -5" />
+  <path d="M16 4l4 0l0 4" />
+  <path d="M14 10l6 -6" />
+  <path d="M8 20l-4 0l0 -4" />
+  <path d="M4 20l6 -6" />
+  <path d="M16 20l4 0l0 -4" />
+  <path d="M14 14l6 6" />
+  <path d="M8 4l-4 0l0 4" />
+  <path d="M4 4l6 6" />
 </svg>

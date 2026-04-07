@@ -267,6 +267,10 @@
         "name": "Tema"
       },
       {
+        "key": "icon",
+        "name": "Ícones"
+      },
+      {
         "key": "font",
         "name": "Fonte"
       },

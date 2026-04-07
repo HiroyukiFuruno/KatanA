@@ -2,6 +2,7 @@ use katana_platform::theme::{Rgb, Rgba, ThemeColors};
 
 pub struct BehaviorTabOps;
 pub struct FontTabOps;
+pub struct IconsTabOps;
 pub struct LayoutTabOps;
 pub struct ThemeTabOps;
 pub struct UpdatesTabOps;

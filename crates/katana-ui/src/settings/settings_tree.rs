@@ -27,6 +27,12 @@ pub(super) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
             show_tab_button(
                 ui,
                 &mut state.config.active_settings_tab,
+                SettingsTab::Icons,
+                settings_msgs.tab_name("icon"),
+            );
+            show_tab_button(
+                ui,
+                &mut state.config.active_settings_tab,
                 SettingsTab::Font,
                 settings_msgs.tab_name("font"),
             );

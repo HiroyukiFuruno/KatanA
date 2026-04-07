@@ -68,9 +68,9 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
             child_ui.add_space(TREE_LABEL_HOFFSET);
             let prefix = crate::shell_ui::ShellUiOps::indent_prefix(ctx.depth);
             let arrow_icon = if is_open {
-                crate::icon::Icon::PanDown
+                crate::icon::Icon::ChevronDown
             } else {
-                crate::icon::Icon::PanRight
+                crate::icon::Icon::ChevronRight
             };
             let folder_icon = if is_open {
                 crate::icon::Icon::FolderOpen
