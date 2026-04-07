@@ -15,7 +15,7 @@ macro_rules! define_icons {
             pub fn svg_bytes(&self) -> &'static [u8] {
                 match self {
                     $( Self::$variant => include_bytes!(
-                        concat!("../../../../assets/icons/", $file, ".svg")
+                        concat!("../../../../assets/icons/katana/", $file, ".svg")
                     ), )+
                 }
             }
