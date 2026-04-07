@@ -6,15 +6,15 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Ready (DoR)
 
-- [ ] Requirements are understood and base structures established.
+- [x] Requirements are understood and base structures established.
 
-- [ ] 1.1 `crates/katana-core/src/config/` のスキーマ定義を拡張し、`IconOverride`、`IconConfig`、および `icon_presets` を追加する。
-- [ ] 1.2 `IconRegistry` やテーマ描画ロジックにおいて対象アイコンのパスプレフィックス(vendor)から色を決定するヘルパー実装を追加する（KatanaはcurrentColor、他はベンダー指定色）。
-- [ ] 1.3 `Settings` ロード・セーブ時に新しいアイコン設定群が適切にSerialize/Deserializeされることをアサートする単体テストを追加する。
+- [x] 1.1 `crates/katana-core/src/config/` のスキーマ定義を拡張し、`IconOverride`、`IconConfig`、および `icon_presets` を追加する。
+- [x] 1.2 `IconRegistry` やテーマ描画ロジックにおいて対象アイコンのパスプレフィックス(vendor)から色を決定するヘルパー実装を追加する（KatanaはcurrentColor、他はベンダー指定色）。
+- [x] 1.3 `Settings` ロード・セーブ時に新しいアイコン設定群が適切にSerialize/Deserializeされることをアサートする単体テストを追加する。
 
 ### Definition of Done (DoD)
 
-- [ ] `katana-core` 側のコンパイルと単体テストが通ること。
+- [x] `katana-core` 側のコンパイルと単体テストが通ること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. Vendor-based Default Icon Coloring & Preview UI

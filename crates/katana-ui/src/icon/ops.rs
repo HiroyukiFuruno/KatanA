@@ -33,7 +33,10 @@ impl IconOps {
                 let image = if IconRegistry::get_render_policy(ui.ctx())
                     == pack::RenderPolicy::TintedMonochrome
                 {
-                    image.tint(text_color)
+                    let color = icon
+                        .vendor_default_color(ui.visuals().dark_mode)
+                        .unwrap_or(text_color);
+                    image.tint(color)
                 } else {
                     image
                 };
