@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.17.1-1] - 2026-04-08
+
+### 🐛 Fixed
+
+- Resolved an issue with the feather theme where `folder_open.svg` was incorrectly using the `folder_closed` icon.
+
 ## [0.17.1] - 2026-04-07 21:47:42 (UTC)
 
 ### ✨ Improvements
