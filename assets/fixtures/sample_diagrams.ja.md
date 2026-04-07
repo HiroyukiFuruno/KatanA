@@ -9,9 +9,9 @@ Mermaid (mmdc)、PlantUML (jar)、DrawIo (純Rust)。
 
 ---
 
-## 9. ダイアグラム — Mermaid
+## 1. ダイアグラム — Mermaid
 
-### 9.1 フローチャート
+### 1.1 フローチャート
 
 ```mermaid
 graph TD
@@ -22,7 +22,7 @@ graph TD
     D --> E
 ```
 
-### 9.2 シーケンス図
+### 1.2 シーケンス図
 
 ```mermaid
 sequenceDiagram
@@ -36,7 +36,7 @@ sequenceDiagram
     KatanA-->>ユーザー: プレビュー表示
 ```
 
-### 9.3 クラス図
+### 1.3 クラス図
 
 ```mermaid
 classDiagram
@@ -58,7 +58,7 @@ classDiagram
     PreviewPane --> RenderedSection
 ```
 
-### 9.4 状態遷移図
+### 1.4 状態遷移図
 
 ```mermaid
 stateDiagram-v2
@@ -73,7 +73,7 @@ stateDiagram-v2
     NotInstalled --> [*]
 ```
 
-### 9.5 ガントチャート
+### 1.5 ガントチャート
 
 ```mermaid
 gantt
@@ -90,11 +90,20 @@ gantt
     インテグレーションテスト  :active, 2026-03-01, 30d
 ```
 
+### 1.6 円グラフ
+
+```mermaid
+pie title 描画エンジン分布
+    "DrawIo (Rust)" : 1
+    "Mermaid (mmdc)" : 1
+    "PlantUML (jar)" : 1
+```
+
 ---
 
-## 10. ダイアグラム — PlantUML
+## 2. ダイアグラム — PlantUML
 
-### 10.1 シーケンス図
+### 2.1 シーケンス図
 
 ```plantuml
 @startuml
@@ -109,7 +118,7 @@ K --> ユーザー: プレビュー描画
 @enduml
 ```
 
-### 10.2 クラス図
+### 2.2 クラス図
 
 ```plantuml
 @startuml
@@ -130,7 +139,7 @@ PreviewPane --> RenderedSection
 @enduml
 ```
 
-### 10.3 アクティビティ図
+### 2.3 アクティビティ図
 
 ```plantuml
 @startuml
@@ -153,9 +162,9 @@ stop
 
 ---
 
-## 11. ダイアグラム — DrawIo
+## 3. ダイアグラム — DrawIo
 
-### 11.1 基本図形
+### 3.1 基本図形
 
 ```drawio
 <mxGraphModel>
@@ -175,7 +184,7 @@ stop
 </mxGraphModel>
 ```
 
-### 11.2 複数の図形と接続
+### 3.2 複数の図形と接続
 
 ```drawio
 <mxGraphModel>
@@ -203,7 +212,7 @@ stop
 
 ---
 
-## 12. ダイアグラム混在コンテンツ
+## 4. ダイアグラム混在コンテンツ（過去不具合: セクション境界の崩れ）
 
 KatanA の描画パイプライン:
 
@@ -216,7 +225,12 @@ graph LR
 
 上のフローチャートとこのテキストの間にスペースがあること。
 
-そして下に DrawIo:
+| コンポーネント | 役割 |
+| --- | --- |
+| `PreviewPane` | セクション管理 |
+| `show_content` | UI描画 |
+
+上のテーブルと下のダイアグラムの間にスペースがあること。
 
 ```drawio
 <mxGraphModel>
@@ -234,7 +248,7 @@ graph LR
 
 ---
 
-## 14. 複数ダイアグラム連続表示
+## 5. 複数ダイアグラム連続表示
 
 3種類のダイアグラムを連続で配置。1つの失敗が他に影響しないこと。
 

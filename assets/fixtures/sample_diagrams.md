@@ -1,7 +1,7 @@
 # 🧪 KatanA Rendering — Diagrams (External Dependencies)
 
 This fixture exercises diagram rendering that depends on external tools:
-Mermaid (mmdc), PlantUML (jar), and DrawIo (Pure Rust).
+Mermaid (mmdc), PlantUML (jar), and DrawIo (pure Rust).
 
 <p align="center">
   English | <a href="sample_diagrams.ja.md">日本語</a>
@@ -9,9 +9,9 @@ Mermaid (mmdc), PlantUML (jar), and DrawIo (Pure Rust).
 
 ---
 
-## 9. Diagrams — Mermaid
+## 1. Diagrams — Mermaid
 
-### 9.1 Flowchart
+### 1.1 Flowchart
 
 ```mermaid
 graph TD
@@ -22,7 +22,7 @@ graph TD
     D --> E
 ```
 
-### 9.2 Sequence Diagram
+### 1.2 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -36,7 +36,7 @@ sequenceDiagram
     KatanA-->>User: Render preview
 ```
 
-### 9.3 Class Diagram
+### 1.3 Class Diagram
 
 ```mermaid
 classDiagram
@@ -58,7 +58,7 @@ classDiagram
     PreviewPane --> RenderedSection
 ```
 
-### 9.4 State Diagram
+### 1.4 State Diagram
 
 ```mermaid
 stateDiagram-v2
@@ -73,7 +73,7 @@ stateDiagram-v2
     NotInstalled --> [*]
 ```
 
-### 9.5 Gantt Chart
+### 1.5 Gantt Chart
 
 ```mermaid
 gantt
@@ -90,11 +90,20 @@ gantt
     Integration Tests     :active, 2026-03-01, 30d
 ```
 
+### 1.6 Pie Chart
+
+```mermaid
+pie title Rendering Engine Distribution
+    "DrawIo (Rust)" : 1
+    "Mermaid (mmdc)" : 1
+    "PlantUML (jar)" : 1
+```
+
 ---
 
-## 10. Diagrams — PlantUML
+## 2. Diagrams — PlantUML
 
-### 10.1 Sequence Diagram
+### 2.1 Sequence Diagram
 
 ```plantuml
 @startuml
@@ -109,7 +118,7 @@ K --> User: Render preview
 @enduml
 ```
 
-### 10.2 Class Diagram
+### 2.2 Class Diagram
 
 ```plantuml
 @startuml
@@ -130,7 +139,7 @@ PreviewPane --> RenderedSection
 @enduml
 ```
 
-### 10.3 Activity Diagram
+### 2.3 Activity Diagram
 
 ```plantuml
 @startuml
@@ -153,9 +162,9 @@ stop
 
 ---
 
-## 11. Diagrams — DrawIo
+## 3. Diagrams — DrawIo
 
-### 11.1 Basic Shapes
+### 3.1 Basic Shapes
 
 ```drawio
 <mxGraphModel>
@@ -175,7 +184,7 @@ stop
 </mxGraphModel>
 ```
 
-### 11.2 Multiple Shapes with Connections
+### 3.2 Multiple Shapes with Connections
 
 ```drawio
 <mxGraphModel>
@@ -203,7 +212,7 @@ stop
 
 ---
 
-## 12. Mixed Content with Diagrams
+## 4. Mixed Diagram Content (Past Bug: Section Boundary Breaking)
 
 KatanA rendering pipeline:
 
@@ -216,7 +225,12 @@ graph LR
 
 Proper spacing between the flowchart above and this text.
 
-And a DrawIo diagram below:
+| Component | Role |
+|---|---|
+| `PreviewPane` | Section management |
+| `show_content` | UI rendering |
+
+Proper spacing between the table above and the diagram below.
 
 ```drawio
 <mxGraphModel>
@@ -234,7 +248,7 @@ And a DrawIo diagram below:
 
 ---
 
-## 14. Consecutive Diagrams
+## 5. Consecutive Diagrams
 
 Three diagram types in a row. One failing should not affect the others.
 
@@ -270,4 +284,4 @@ Bob --> Alice : Done
 
 ## ✅ Verification Complete
 
-If all sections above render correctly, diagram rendering is working.
+If all sections above render correctly, there are no diagram rendering regressions.

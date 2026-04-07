@@ -324,27 +324,29 @@ features:
 
 </div></details>
 
+---
+
 ## 9. Math
 
-### 8.1 Block Math
+### 9.1 Block Math
 
 ```math
 f(x) = \int_{0}^{x} \frac{t^2}{1 + t^4} \, dt
 ```
 
-### 8.2 Inline Math
+### 9.2 Inline Math
 
 Mass-energy equivalence: $E = mc^2$
 
-### 8.3 Single-line Math
+### 9.3 Single-line Math
 
 $$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 
 ---
 
-## 9. Diagrams — Mermaid
+## 10. Diagrams — Mermaid
 
-### 9.1 Flowchart
+### 10.1 Flowchart
 
 ```mermaid
 graph TD
@@ -355,7 +357,7 @@ graph TD
     D --> E
 ```
 
-### 9.2 Sequence Diagram
+### 10.2 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -369,7 +371,7 @@ sequenceDiagram
     KatanA-->>User: Render preview
 ```
 
-### 9.3 Class Diagram
+### 10.3 Class Diagram
 
 ```mermaid
 classDiagram
@@ -391,7 +393,7 @@ classDiagram
     PreviewPane --> RenderedSection
 ```
 
-### 9.4 State Diagram
+### 10.4 State Diagram
 
 ```mermaid
 stateDiagram-v2
@@ -406,7 +408,7 @@ stateDiagram-v2
     NotInstalled --> [*]
 ```
 
-### 9.5 Gantt Chart
+### 10.5 Gantt Chart
 
 ```mermaid
 gantt
@@ -425,9 +427,9 @@ gantt
 
 ---
 
-## 10. Diagrams — PlantUML
+## 11. Diagrams — PlantUML
 
-### 10.1 Sequence Diagram
+### 11.1 Sequence Diagram
 
 ```plantuml
 @startuml
@@ -442,7 +444,7 @@ K --> User: Render preview
 @enduml
 ```
 
-### 10.2 Class Diagram
+### 11.2 Class Diagram
 
 ```plantuml
 @startuml
@@ -463,7 +465,7 @@ PreviewPane --> RenderedSection
 @enduml
 ```
 
-### 10.3 Activity Diagram
+### 11.3 Activity Diagram
 
 ```plantuml
 @startuml
@@ -486,9 +488,9 @@ stop
 
 ---
 
-## 11. Diagrams — DrawIo
+## 12. Diagrams — DrawIo
 
-### 11.1 Basic Shapes
+### 12.1 Basic Shapes
 
 ```drawio
 <mxGraphModel>
@@ -508,7 +510,7 @@ stop
 </mxGraphModel>
 ```
 
-### 11.2 Multiple Shapes with Connections
+### 12.2 Multiple Shapes with Connections
 
 ```drawio
 <mxGraphModel>
@@ -536,7 +538,7 @@ stop
 
 ---
 
-## 12. Mixed Content (Past Bug: Section Boundary Breaking)
+## 13. Mixed Content (Past Bug: Section Boundary Breaking)
 
 Markdown text, diagrams, code blocks, and tables mixed together.
 Verify no layout overlap between sections.
@@ -590,32 +592,32 @@ And a DrawIo diagram below:
 
 ---
 
-## 13. Edge Cases
+## 14. Edge Cases
 
-### 13.1 Empty Code Block
+### 14.1 Empty Code Block
 
 ```
 ```
 
-### 13.2 Very Long Line
+### 14.2 Very Long Line
 
 `This is a very long line to verify horizontal scrolling or word wrapping. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`
 
-### 13.3 Special Characters
+### 14.3 Special Characters
 
 - HTML entities: &amp; &lt; &gt; &quot;
 - Japanese: こんにちは世界 🌍
 - Emoji: 🦀 ⚡ 📝 🔧 ✅ ❌ ⚠️ 💡
 - Math symbols: α β γ δ ∑ ∫ √ ∞
 
-### 13.4 Footnotes
+### 14.4 Footnotes
 
 This text has a footnote[^1]. Here's another[^2].
 
 [^1]: First footnote content.
 [^2]: Second footnote content.
 
-### 13.5 Consecutive Different Block Elements
+### 14.5 Consecutive Different Block Elements
 
 > A blockquote
 
@@ -633,7 +635,7 @@ let code = "directly after quote";
 
 ---
 
-## 14. Consecutive Diagrams
+## 15. Consecutive Diagrams
 
 Three diagram types in a row. One failing should not affect the others.
 
