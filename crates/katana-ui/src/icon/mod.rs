@@ -158,11 +158,20 @@ impl IconRegistry {
         Self::install_pack(ctx, &pack::KatanaIconPack);
     }
 
-    pub fn install_pack_by_id(ctx: &egui::Context, _pack_id: &str) {
-        Self::install_pack(ctx, &pack::KatanaIconPack);
+    pub fn install_pack_by_id(ctx: &egui::Context, pack_id: &str) {
+        let pack = pack::AVAILABLE_PACKS
+            .iter()
+            .find(|p| p.manifest().id == pack_id)
+            .copied()
+            .unwrap_or(&pack::KatanaIconPack);
+
+        Self::install_pack(ctx, pack);
     }
 
     pub fn install_pack(ctx: &egui::Context, pack: &dyn pack::IconPackContract) {
+        // Clear previous textures and byte caches before registering the new pack
+        ctx.forget_all_images();
+
         let fallback_pack = pack::KatanaIconPack;
 
         for icon in ALL_ICONS {
@@ -180,7 +189,6 @@ impl IconRegistry {
                 ActiveRenderPolicy(pack.manifest().render_policy),
             )
         });
-        ctx.forget_all_images();
     }
 
     pub fn get_render_policy(ctx: &egui::Context) -> pack::RenderPolicy {
