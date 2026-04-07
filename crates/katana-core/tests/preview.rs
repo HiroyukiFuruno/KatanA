@@ -515,3 +515,120 @@ fn do_not_wrap_tags_inside_heading_block() {
         "Content inside <h1> must not be modified"
     );
 }
+
+#[test]
+fn diagram_section_line_count_matches_source_lines() {
+    /* WHY: Verify that split_sections accounts for opening fence, content, and closing fence
+     * correctly. A single-line mermaid diagram occupies 3 source lines:
+     *   line 0: ```mermaid
+     *   line 1: graph TD; A-->B
+     *   line 2: ```
+     */
+    let src = "before\n```mermaid\ngraph TD; A-->B\n```\nafter";
+    let sections = PreviewSectionOps::split_into_sections(src);
+
+    let diagram = sections
+        .iter()
+        .find_map(|s| {
+            if let PreviewSection::Diagram { lines, .. } = s {
+                Some(*lines)
+            } else {
+                None
+            }
+        })
+        .expect("Must contain a diagram section");
+
+    assert_eq!(
+        diagram, 3,
+        "Single-content-line diagram: opening fence + 1 content + closing fence = 3 lines"
+    );
+}
+
+#[test]
+fn diagram_section_multi_line_count() {
+    /* WHY: Two content lines occupy 4 source lines (opening + 2 content + closing). */
+    let src = "text\n```mermaid\nline1\nline2\n```\nmore";
+    let sections = PreviewSectionOps::split_into_sections(src);
+
+    let diagram = sections
+        .iter()
+        .find_map(|s| {
+            if let PreviewSection::Diagram { lines, .. } = s {
+                Some(*lines)
+            } else {
+                None
+            }
+        })
+        .expect("Must contain a diagram section");
+
+    assert_eq!(
+        diagram, 4,
+        "Two-content-line diagram: opening fence + 2 content + closing fence = 4 lines"
+    );
+}
+
+#[test]
+fn global_line_offset_accumulates_correctly_across_sections() {
+    /* WHY: Verify that global_line_offset sums across all sections equal the total
+     * file line count. This is critical for scroll sync accuracy.
+     *
+     * Source (8 lines, 0-indexed 0..7):
+     *   0: # Title
+     *   1: (empty)
+     *   2: ```mermaid
+     *   3: graph TD; A-->B
+     *   4: ```
+     *   5: (empty)
+     *   6: ## Next
+     *   7: (empty, trailing newline)
+     */
+    let src = "# Title\n\n```mermaid\ngraph TD; A-->B\n```\n\n## Next\n";
+    let sections = PreviewSectionOps::split_into_sections(src);
+
+    let total_lines: usize = sections
+        .iter()
+        .map(|s| match s {
+            PreviewSection::Markdown(md) => md.chars().filter(|c| *c == '\n').count(),
+            PreviewSection::Diagram { lines, .. } => *lines,
+            PreviewSection::LocalImage { lines, .. } => *lines,
+        })
+        .sum();
+
+    let expected = src.chars().filter(|c| *c == '\n').count();
+    assert_eq!(
+        total_lines, expected,
+        "Sum of section line counts ({total_lines}) must equal total file newline count ({expected})"
+    );
+}
+
+#[test]
+fn global_line_offset_with_multiple_diagrams() {
+    /* WHY: Test with consecutive diagrams to ensure no offset drift. */
+    let src = concat!(
+        "intro\n",
+        "```mermaid\n",
+        "A-->B\n",
+        "```\n",
+        "middle\n",
+        "```drawio\n",
+        "<mxGraphModel/>\n",
+        "```\n",
+        "end\n",
+    );
+    let sections = PreviewSectionOps::split_into_sections(src);
+
+    let total_lines: usize = sections
+        .iter()
+        .map(|s| match s {
+            PreviewSection::Markdown(md) => md.chars().filter(|c| *c == '\n').count(),
+            PreviewSection::Diagram { lines, .. } => *lines,
+            PreviewSection::LocalImage { lines, .. } => *lines,
+        })
+        .sum();
+
+    let expected = src.chars().filter(|c| *c == '\n').count();
+    assert_eq!(
+        total_lines, expected,
+        "Line offset drift detected: sum={total_lines}, expected={expected}"
+    );
+}

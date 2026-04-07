@@ -914,11 +914,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         );
                     });
 
-                    let accordion_rect = if let Some(body_response) = &header_res.body_response {
+                    let mut accordion_rect = if let Some(body_response) = &header_res.body_response {
                         header_res.header_response.rect.union(body_response.rect)
                     } else {
                         header_res.header_response.rect
                     };
+                    
+                    // Fix: expand the rect to 100% width of the container
+                    accordion_rect.min.x = ui.max_rect().min.x;
+                    accordion_rect.max.x = ui.max_rect().max.x;
 
                     let accordion_span = src_span.start
                         ..body_events
@@ -1456,6 +1460,13 @@ impl<'a> CommonMarkViewerInternal<'a> {
             // would re-enter here because is_blockquote is still true.
             self.is_blockquote = false;
 
+            // WHY: Save the blockquote's span from block_states BEFORE the inner loop.
+            // The inner loop will process End(BlockQuote) which pops from block_states
+            // via end_tag(), so after the loop .last() would return the wrong entry
+            // (or None for top-level blockquotes). By saving here we capture the
+            // correct span that was pushed by Start(BlockQuote).
+            let saved_span = self.block_states.last().map(|(_, span)| span.clone());
+
             // Set the flag to suppress paragraph-level newlines inside the blockquote.
             let was_inside = self.inside_blockquote;
             self.inside_blockquote = true;
@@ -1498,7 +1509,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 })
             };
 
-            if let Some((_, span)) = self.block_states.last() {
+            // WHY: Use saved_span (captured before inner loop) instead of .last()
+            // because End(BlockQuote) in end_tag() already popped the blockquote's
+            // entry from block_states. response.rect provides the accurate bounding
+            // box from alert_ui/render_blockquote.
+            if let Some(span) = saved_span {
                 if let Some(hovered) = &mut self.hovered_spans {
                     if let Some(pos) = ui.ctx().pointer_hover_pos() {
                         if response.rect.contains(pos) {
@@ -1508,7 +1523,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
 
                 if let Some(anchors) = &mut self.block_anchors {
-                    anchors.push((span.clone(), response.rect));
+                    anchors.push((span, response.rect));
                 }
             }
 
@@ -1749,7 +1764,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
 
                 if let Some((_start_y, span)) = self.block_states.pop() {
-                    let rect = frame_res.response.rect;
+                    let mut rect = frame_res.response.rect;
+                    // Fix: expand the rect to 100% width of the container
+                    rect.min.x = ui.max_rect().min.x;
+                    rect.max.x = ui.max_rect().max.x;
+                    
                     if let Some(active) = &self.active_char_range {
                         if active.start <= span.end && active.end >= span.start {
                             self.active_rects.push((rect, span.clone()));
@@ -1835,50 +1854,63 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
                 self.end_tag(ui, tag.clone(), cache, options, max_width);
 
-                if let Some((start_y, span)) = self.block_states.pop() {
-                    let end_y = ui.next_widget_position().y;
-                    if end_y > start_y {
-                        let rect = egui::Rect::from_min_max(
-                            egui::pos2(ui.min_rect().left(), start_y),
-                            egui::pos2(ui.min_rect().right(), end_y),
-                        );
-                        let is_container = matches!(
-                            tag,
-                            pulldown_cmark::TagEnd::Item
-                                | pulldown_cmark::TagEnd::List(_)
-                                | pulldown_cmark::TagEnd::BlockQuote(_)
-                        );
-                        // Inside list items, item_list_wrapping handles
-                        // hover/active exclusively at the item level.
-                        let inside_list_item = !self.list.items.is_empty();
-                        if !is_container && !inside_list_item {
-                            if let Some(active) = &self.active_char_range {
-                                if active.start <= span.end && active.end >= span.start {
-                                    self.active_rects.push((rect, span.clone()));
-                                    let highlight_color =
-                                        self.active_bg_color.unwrap_or_else(|| {
-                                            if ui.visuals().dark_mode {
-                                                egui::Color32::from_white_alpha(15)
-                                            } else {
-                                                egui::Color32::from_black_alpha(15)
-                                            }
-                                        });
-                                    ui.painter().rect_filled(rect, 1.0, highlight_color);
-                                }
-                            }
-                            if let Some(hovered) = &mut self.hovered_spans {
-                                if let Some(pos) = ui.ctx().pointer_hover_pos() {
-                                    if rect.contains(pos) {
-                                        hovered.push(span.clone());
-                                        let hover_color =
-                                            self.hover_bg_color.unwrap_or_else(|| {
+                // WHY: BlockQuote and CodeBlock already pop from block_states inside
+                // end_tag() to register their own block anchors and hovered_spans.
+                // Popping again here would remove an unrelated entry from the stack,
+                // corrupting span tracking for subsequent blocks.
+                let already_popped = matches!(
+                    tag,
+                    pulldown_cmark::TagEnd::BlockQuote(_) | pulldown_cmark::TagEnd::CodeBlock
+                );
+
+                if !already_popped {
+                    if let Some((start_y, span)) = self.block_states.pop() {
+                        let end_y = ui.next_widget_position().y;
+                        if end_y > start_y {
+                            let min_x = ui.min_rect().left();
+                            let width = ui.available_width();
+                            let rect = egui::Rect::from_min_max(
+                                egui::pos2(min_x, start_y),
+                                egui::pos2(min_x + width, end_y),
+                            );
+                            let is_container = matches!(
+                                tag,
+                                pulldown_cmark::TagEnd::Item
+                                    | pulldown_cmark::TagEnd::List(_)
+                                    | pulldown_cmark::TagEnd::BlockQuote(_)
+                            );
+                            // Inside list items, item_list_wrapping handles
+                            // hover/active exclusively at the item level.
+                            let inside_list_item = !self.list.items.is_empty();
+                            if !is_container && !inside_list_item {
+                                if let Some(active) = &self.active_char_range {
+                                    if active.start <= span.end && active.end >= span.start {
+                                        self.active_rects.push((rect, span.clone()));
+                                        let highlight_color =
+                                            self.active_bg_color.unwrap_or_else(|| {
                                                 if ui.visuals().dark_mode {
-                                                    egui::Color32::from_white_alpha(8)
+                                                    egui::Color32::from_white_alpha(15)
                                                 } else {
-                                                    egui::Color32::from_black_alpha(8)
+                                                    egui::Color32::from_black_alpha(15)
                                                 }
                                             });
-                                        ui.painter().rect_filled(rect, 1.0, hover_color);
+                                        ui.painter().rect_filled(rect, 1.0, highlight_color);
+                                    }
+                                }
+                                if let Some(hovered) = &mut self.hovered_spans {
+                                    if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                                        if rect.contains(pos) {
+                                            hovered.push(span.clone());
+                                            let hover_color =
+                                                self.hover_bg_color.unwrap_or_else(|| {
+                                                    if ui.visuals().dark_mode {
+                                                        egui::Color32::from_white_alpha(8)
+                                                    } else {
+                                                        egui::Color32::from_black_alpha(8)
+                                                    }
+                                                });
+                                            ui.painter().rect_filled(rect, 1.0, hover_color);
+                                        }
                                     }
                                 }
                             }
@@ -2292,23 +2324,13 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 self.curr_heading += 1;
             }
             pulldown_cmark::TagEnd::BlockQuote(_) => {
-                let last_state = self.block_states.pop();
+                // WHY: Pop block_states to balance the push from Start(BlockQuote).
+                // Anchor and hover registration is handled by blockquote() method
+                // using the accurate response.rect from alert_ui/render_blockquote,
+                // so we intentionally do NOT register them here.
+                self.block_states.pop();
                 self.is_blockquote = false;
                 self.inside_blockquote = false;
-
-                if let Some((_, span)) = last_state {
-                    if let Some(hovered) = &mut self.hovered_spans {
-                        if let Some(pos) = ui.ctx().pointer_hover_pos() {
-                            if ui.min_rect().contains(pos) {
-                                hovered.push(span.clone());
-                            }
-                        }
-                    }
-
-                    if let Some(anchors) = &mut self.block_anchors {
-                        anchors.push((span, ui.min_rect()));
-                    }
-                }
             }
             pulldown_cmark::TagEnd::CodeBlock => {
                 let last_state = self.block_states.pop();
