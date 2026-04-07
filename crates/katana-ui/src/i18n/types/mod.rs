@@ -100,10 +100,16 @@ pub struct MenuMessages {
     pub view: String,
     #[serde(default = "default_menu_close_workspace")]
     pub close_workspace: String,
+    #[serde(default = "default_menu_demo")]
+    pub demo: String,
 }
 
 fn default_menu_close_workspace() -> String {
     "Close Workspace".to_string()
+}
+
+fn default_menu_demo() -> String {
+    "Demo".to_string()
 }
 
 fn default_menu_command_palette() -> String {

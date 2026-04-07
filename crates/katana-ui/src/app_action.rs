@@ -95,6 +95,7 @@ pub enum AppAction {
     DismissUpdate,
     ConfirmRelaunch,
     ShowReleaseNotes,
+    OpenHelpDemo,
     ClearAllCaches,
     CreateTabGroup {
         name: String,

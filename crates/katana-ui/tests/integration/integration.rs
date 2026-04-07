@@ -4073,3 +4073,24 @@ fn test_integration_direct_pin_icon_toggle() {
         panic!("Could not find the pin button near the tab label");
     }
 }
+
+#[test]
+fn test_open_help_demo() {
+    use katana_ui::app_state::AppAction;
+    let mut harness = setup_harness();
+    harness.step();
+    
+    harness.state_mut().trigger_action(AppAction::OpenHelpDemo);
+    for _ in 0..5 { harness.step(); }
+    
+    let state = harness.state_mut().app_state_mut();
+    // It should create the "demo" tab group
+    assert!(state.document.tab_groups.iter().any(|g| g.id == "demo"));
+    
+    // It should open the demobundle files
+    let open_files = state.document.open_documents.len();
+    assert!(open_files > 0, "Should have loaded demo files");
+    
+    // welcome.md should be part of it
+    assert!(state.document.open_documents.iter().any(|d| d.path.file_name().unwrap_or_default().to_string_lossy().starts_with("welcome")));
+}

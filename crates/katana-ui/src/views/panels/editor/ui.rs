@@ -76,6 +76,7 @@ impl<'a> EditorContent<'a> {
                             egui::Sense::hover(),
                         );
                         let text_output = egui::TextEdit::multiline(&mut buffer)
+                            .interactive(!doc.is_reference)
                             .font(egui::TextStyle::Monospace)
                             .desired_width(f32::INFINITY)
                             .desired_rows(EDITOR_INITIAL_VISIBLE_ROWS)

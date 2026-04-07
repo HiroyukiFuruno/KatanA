@@ -9,6 +9,7 @@ mod process_reorder;
 mod process_tabs;
 mod process_update;
 mod refresh_content;
+mod process_demo;
 
 use crate::app::*;
 use crate::app_state::*;

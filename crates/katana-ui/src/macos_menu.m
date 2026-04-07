@@ -20,6 +20,7 @@ enum {
     TAG_CHECK_UPDATES  = 15,
     TAG_RELEASE_NOTES  = 16,
     TAG_COMMAND_PALETTE = 17,
+    TAG_DEMO           = 18,
 };
 
 /* WHY: Global: Tag of the last selected menu action. */
@@ -55,6 +56,7 @@ static NSMenuItem *g_show_all_item = nil;
 static NSMenuItem *g_quit_item = nil;
 static NSMenu *g_help_menu = nil;
 static NSMenuItem *g_release_notes_item = nil;
+static NSMenuItem *g_demo_item = nil;
 
 /// Called from Rust at the very start of main(), before eframe creates the window.
 /// Must be called before the window server registers the process to ensure
@@ -281,6 +283,17 @@ void katana_setup_native_menu(void) {
     [helpMenu addItem:releaseNotesItem];
     g_release_notes_item = releaseNotesItem;
 
+    [helpMenu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *demoItem = [[NSMenuItem alloc]
+        initWithTitle:@"Demo"
+        action:action
+        keyEquivalent:@""];
+    [demoItem setTarget:g_target];
+    [demoItem setTag:TAG_DEMO];
+    [helpMenu addItem:demoItem];
+    g_demo_item = demoItem;
+
     NSMenuItem *helpMenuItem = [[NSMenuItem alloc] initWithTitle:@"Help" action:nil keyEquivalent:@""];
     [helpMenuItem setSubmenu:helpMenu];
 
@@ -324,7 +337,8 @@ void katana_update_menu_strings(
     const char* help,
     const char* release_notes,
     const char* command_palette,
-    const char* view
+    const char* view,
+    const char* demo
 ) {
     @autoreleasepool {
         if (g_file_menu && file) {
@@ -380,6 +394,9 @@ void katana_update_menu_strings(
         }
         if (g_release_notes_item && release_notes) {
             [g_release_notes_item setTitle:[NSString stringWithUTF8String:release_notes]];
+        }
+        if (g_demo_item && demo) {
+            [g_demo_item setTitle:[NSString stringWithUTF8String:demo]];
         }
     }
 }

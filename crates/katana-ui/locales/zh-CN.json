@@ -21,7 +21,8 @@
     "release_notes": "发行说明",
     "view": "查看",
     "command_palette": "命令面板…",
-    "close_workspace": "Close Workspace (zh-CN)"
+    "close_workspace": "Close Workspace (zh-CN)",
+    "demo": "查看演示"
   },
   "about": {
     "basic_info": "基本信息",

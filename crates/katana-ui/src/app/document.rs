@@ -121,6 +121,9 @@ impl DocumentOps for KatanaApp {
     }
     fn handle_update_buffer(&mut self, content: String) {
         let path = if let Some(doc) = self.state.active_document_mut() {
+            if doc.is_reference {
+                return;
+            }
             doc.update_buffer(content.clone());
             doc.path.clone()
         } else {
@@ -133,6 +136,9 @@ impl DocumentOps for KatanaApp {
     }
     fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String) {
         let (path, content) = if let Some(doc) = self.state.active_document_mut() {
+            if doc.is_reference {
+                return;
+            }
             if span.start <= span.end && span.end <= doc.buffer.len() {
                 doc.buffer.replace_range(span, &replacement);
                 doc.is_dirty = true;
@@ -150,6 +156,9 @@ impl DocumentOps for KatanaApp {
         let Some(doc) = self.state.active_document_mut() else {
             return;
         };
+        if doc.is_reference {
+            return;
+        }
         match self.fs.save_document(doc) {
             Ok(()) => {
                 self.state.layout.status_message = Some((

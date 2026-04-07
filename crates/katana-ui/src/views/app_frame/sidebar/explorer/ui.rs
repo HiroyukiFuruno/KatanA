@@ -45,7 +45,13 @@ impl<'a> ExplorerSidebar<'a> {
                 .min_size(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
                 .default_size(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
                 .show_inside(ui, |ui| {
-                    let active_path = app.state.active_path().map(|p| p.to_path_buf());
+                    let active_path = app
+                        .state
+                        .document
+                        .active_doc_idx
+                        .and_then(|idx| app.state.document.open_documents.get(idx))
+                        .filter(|doc| !doc.is_reference)
+                        .map(|doc| doc.path.to_path_buf());
                     crate::views::panels::explorer::ExplorerPanel::new(
                         &mut app.state.workspace,
                         &mut app.state.search,
