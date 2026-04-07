@@ -2,6 +2,7 @@
 mod dispatch;
 mod dispatch_secondary;
 mod init;
+mod process_demo;
 mod process_document;
 mod process_groups;
 mod process_helpers;
@@ -9,7 +10,6 @@ mod process_reorder;
 mod process_tabs;
 mod process_update;
 mod refresh_content;
-mod process_demo;
 
 use crate::app::*;
 use crate::app_state::*;

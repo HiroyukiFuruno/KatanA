@@ -54,7 +54,10 @@ impl KatanaApp {
     fn resolve_demo_bundle(feature_dir: &Path, lang: &str) -> Vec<(PathBuf, bool)> {
         let mut markdown_files: Vec<PathBuf> = Vec::new();
 
-        let entries = std::fs::read_dir(feature_dir).into_iter().flatten().flatten();
+        let entries = std::fs::read_dir(feature_dir)
+            .into_iter()
+            .flatten()
+            .flatten();
 
         for entry in entries {
             let path = entry.path();
@@ -79,7 +82,12 @@ impl KatanaApp {
 
         /* WHY: Put welcome first if it exists */
         let mut sorted_md = Vec::new();
-        if let Some(pos) = markdown_files.iter().position(|p| p.file_name().unwrap_or_default().to_string_lossy().starts_with("welcome")) {
+        if let Some(pos) = markdown_files.iter().position(|p| {
+            p.file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .starts_with("welcome")
+        }) {
             sorted_md.push(markdown_files.remove(pos));
         }
         sorted_md.extend(markdown_files);
@@ -89,7 +97,7 @@ impl KatanaApp {
             /* WHY: All demo files are loaded in reference (read-only) mode */
             results.push((p, true));
         }
-        
+
         results
     }
 
@@ -98,14 +106,23 @@ impl KatanaApp {
         let demo_group_id = "demo".to_string();
 
         /* WHY: Ensure the DEMO group exists */
-        if !self.state.document.tab_groups.iter().any(|g| g.id == demo_group_id) {
-            self.state.document.tab_groups.push(crate::state::document::TabGroup {
-                id: demo_group_id.clone(),
-                name: demo_group_name.to_string(),
-                color_hex: "#808080".to_string(), // System/Demo Grey
-                collapsed: false,
-                members: Vec::new(),
-            });
+        if !self
+            .state
+            .document
+            .tab_groups
+            .iter()
+            .any(|g| g.id == demo_group_id)
+        {
+            self.state
+                .document
+                .tab_groups
+                .push(crate::state::document::TabGroup {
+                    id: demo_group_id.clone(),
+                    name: demo_group_name.to_string(),
+                    color_hex: "#808080".to_string(), // System/Demo Grey
+                    collapsed: false,
+                    members: Vec::new(),
+                });
         }
 
         /* WHY: Open the files and add to the group */
@@ -128,7 +145,7 @@ impl KatanaApp {
                 /* WHY: Not open, so open it */
                 let mut doc = katana_core::document::Document::new_empty(path.clone());
                 doc.is_reference = is_ref;
-                
+
                 /* WHY: For Task 2: To make them reference docs. */
                 self.pending_document_loads.push_back(path.clone());
 
@@ -142,11 +159,15 @@ impl KatanaApp {
 
             /* WHY: Assign to group */
             let path_str = path.to_string_lossy().to_string();
-            if let Some(group) = self.state.document.tab_groups.iter_mut().find(|g| g.id == demo_group_id) {
-                if !group.members.contains(&path_str) {
+            if let Some(group) = self
+                .state
+                .document
+                .tab_groups
+                .iter_mut()
+                .find(|g| g.id == demo_group_id)
+                && !group.members.contains(&path_str) {
                     group.members.push(path_str);
                 }
-            }
         }
 
         /* WHY: Focus the first file (e.g. welcome.md) */

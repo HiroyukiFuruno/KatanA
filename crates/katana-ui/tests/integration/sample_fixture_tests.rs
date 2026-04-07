@@ -794,11 +794,7 @@ fn basic_fixture_en_s13_singleline_math_renders() {
 #[test]
 fn basic_fixture_en_s9_alert_spacing() {
     let (_, _, source) = load_fixture("sample_basic.md");
-    let section_md = extract_section(
-        &source,
-        "## 8",
-        "## 9",
-    );
+    let section_md = extract_section(&source, "## 8", "## 9");
     let pane = render_snippet(&section_md);
     let harness = build_harness(pane.sections.clone(), PANEL_WIDTH, 600.0);
 
