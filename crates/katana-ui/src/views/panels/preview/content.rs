@@ -40,7 +40,12 @@ impl<'a> PreviewContent<'a> {
         let mut download_req = None;
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Wrap);
         let outer_rect = ui.available_rect_before_wrap();
-        ui.allocate_rect(outer_rect, egui::Sense::hover());
+        let hover_sense = if ui.is_enabled() {
+            egui::Sense::hover()
+        } else {
+            egui::Sense::empty()
+        };
+        ui.allocate_rect(outer_rect, hover_sense);
 
         let mut scroll_area = egui::ScrollArea::vertical()
             .id_salt("preview_scroll")
@@ -85,26 +90,37 @@ impl<'a> PreviewContent<'a> {
                         |ui| {
                             const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0; /* WHY: 0.25rem padding */
                             ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+                            let is_interactive = ui.is_enabled();
                             let mut hovered_lines = Vec::new();
+                            let hover_out = if is_interactive {
+                                Some(&mut hovered_lines)
+                            } else {
+                                None
+                            };
                             let (req, actions) = preview.show_content(
                                 ui,
                                 scroll.active_editor_line,
-                                Some(&mut hovered_lines),
+                                hover_out,
                                 search_query.clone(),
                                 scroll.preview_search_scroll_pending,
                             );
                             if scroll.preview_search_scroll_pending {
                                 scroll.preview_search_scroll_pending = false;
                             }
-                            if scroll_sync && scroll.source != ScrollSource::Preview {
+                            if is_interactive
+                                && scroll_sync
+                                && scroll.source != ScrollSource::Preview
+                            {
                                 scroll.hovered_preview_lines = hovered_lines.clone();
                             }
 
-                            if ui.rect_contains_pointer(ui.min_rect())
+                            if is_interactive
+                                && ui.rect_contains_pointer(ui.min_rect())
                                 && ui.input(|i| i.pointer.primary_clicked())
-                                && let Some(hovered) = hovered_lines.first() {
-                                    scroll.scroll_to_line = Some(hovered.start);
-                                }
+                                && let Some(hovered) = hovered_lines.first()
+                            {
+                                scroll.scroll_to_line = Some(hovered.start);
+                            }
                             download_req = req;
                             if let Some((global_index, new_state)) = actions.into_iter().next() {
                                 *action = AppAction::ToggleTaskList {

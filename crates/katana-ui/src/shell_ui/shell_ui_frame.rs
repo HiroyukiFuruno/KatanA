@@ -26,9 +26,11 @@ impl KatanaApp {
             });
             return false;
         }
+        let is_blocked = self.is_foreground_surface_active(ctx);
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
             .show(ctx, |ui| {
+                ui.set_enabled(!is_blocked);
                 let download_req =
                     crate::views::app_frame::MainPanels::new(self, theme_colors).show(ui);
                 if let Some(req) = download_req {
