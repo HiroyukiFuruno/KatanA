@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.8-1] - 2026-04-07 04:10:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- Fixed a critical regression where the UI would freeze when opening modals (Workspace Toggle, Settings, Command Palette, Search) due to Z-order interaction conflicts.
+
 ## [0.16.8] - 2026-04-07 01:35:00 (UTC)
 
 ### ✨ Improvements
