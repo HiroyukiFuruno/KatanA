@@ -30,7 +30,19 @@ fn ast_linter_icon_sync() {
         IconsSyncOps::lint(LinterFileOps::workspace_root().expect("Test requirement"));
     ViolationReporterOps::panic(
         "icon-sync",
-        "Fix: Synchronize SVG files in assets/icons/katana/ with define_icons! macro in crates/katana-ui/src/icon/types.rs by ensuring 1-to-1 matching.",
+        "Fix: Synchronize SVG files in assets/icons/ with define_icons! macro by ensuring 1-to-1 matching across all themes.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_svg_colors() {
+    use katana_linter::rules::domains::assets::SvgOps;
+    let all_violations =
+        SvgOps::lint_svg_colors(&LinterFileOps::workspace_root().expect("Test requirement"));
+    ViolationReporterOps::panic(
+        "svg-colors",
+        "Fix: SVGs must not have invalid colors (only #FFFFFF or currentColor allowed) and must have at least one fill or stroke attribute to prevent blackout.",
         &all_violations,
     );
 }
