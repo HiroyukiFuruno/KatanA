@@ -27,10 +27,13 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 2. Final Verification & Release Work
 
-- [ ] 2.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 2.2 Ensure `make check` passes with exit code 0
-- [ ] 2.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 2.4 Create a PR targeting `master`
-- [ ] 2.5 Merge into master (※ `--admin` is permitted)
-- [ ] 2.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.16.11`
-- [ ] 2.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [x] 2.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
+- [x] Identify root cause of diagram block clipping and horizontal scrolling drift
+  - [x] Fix: Removed `Margin` from `egui::Area` backing the rich blocks
+- [x] Replace `katana/view/reset_view.svg` with `material-symbols/view/reset_view.svg`
+- [x] Ensure pre-commit routines (`cargo test -p katana-ui --test ui_integration_serial`)
+- [x] Investigate heading anchor highlight width clipping (use `available_width`)
+- [x] Stabilize diagram controls (prevent fading hover highlights from hiding diagram controls)
+- [x] Expand integration testing suite in `ui_integration_serial`
+- [x] Run full Quality Gates (`make test`, `cargo clippy`)
+- [x] Create PR or commit the changes with the standard message.ing OpenSpec skills like `/opsx-archive`
