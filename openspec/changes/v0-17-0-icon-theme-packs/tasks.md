@@ -12,11 +12,12 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Icon Pack Contract and Asset Layout (アイコンパックの仕様定義とアセット配置)
 
-- [ ] 1.1 既存の `assets/icons` を `assets/icons/katana/...` 配下へ再編し、`katana-icon` パックのアセットルートを固定化する
-- [ ] 1.2 アイコンパックの manifest またはそれと同等のメタデータを追加し、パック ID (pack id)、表示名 (display name)、レンダリングポリシー (render policy)、およびライセンスメタデータ (license metadata) を表現できるようにする
-- [ ] 1.3 `Icon` enum に定義された全アイテムについて、パックのカバー率表（coverage table）で確認できる契約体系（contract）を作る
-- [ ] 1.4 選定済み (curated) の外部パック 5 種類の採用候補と、そのソースおよびライセンス情報を固定する
-- [ ] 1.5 組み込み (built-in) パックのディレクトリ命名規則を `assets/icons/<pack-dir>/...` に統一する
+- [ ] 1.1 計画に未利用のsvgを整理する
+- [ ] 1.2 既存の `assets/icons` を `assets/icons/katana/...` 配下へ再編し、`katana-icon` パックのアセットルートを固定化する
+- [ ] 1.3 アイコンパックの manifest またはそれと同等のメタデータを追加し、パック ID (pack id)、表示名 (display name)、レンダリングポリシー (render policy)、およびライセンスメタデータ (license metadata) を表現できるようにする
+- [ ] 1.4 `Icon` enum に定義された全アイテムについて、パックのカバー率表（coverage table）で確認できる契約体系（contract）を作る
+- [ ] 1.5 選定済み (curated) の外部パック 5 種類の採用候補と、そのソースおよびライセンス情報を固定する
+- [ ] 1.6 組み込み (built-in) パックのディレクトリ命名規則を `assets/icons/<pack-dir>/...` に統一する
 
 ### Definition of Done (DoD)
 
@@ -24,6 +25,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 組み込みパックが `assets/icons/katana` や `assets/icons/<external-pack>` のように、パック単位の階層へ整理されていること
 - [ ] 同梱 (shipping) されるパックのメタデータの情報源 (source of truth) が 1 箇所に集約・固定されていること
 - [ ] 各パックのカバー率 (pack coverage) を確認できる一覧、または検証手段が存在すること
+- [ ] 計画に不要となった未利用SVGの整理が完了していること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
@@ -86,12 +88,15 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 4.3 既存 UI と直接の互換性がないアイコンについては、選択中パックのビジュアル言語等に合わせた KatanA 独自の上書きアセット (override) を作成する
 - [ ] 4.4 `docs/licenses/icon-packs.md`、あるいはそれに準ずる文書に、ソース元、ライセンス、上書きの根拠 (override rationale) を記録する
 - [ ] 4.5 商用利用の妨げにならない選定済みパックのみが公開用パッケージ (shipping target) に含まれることを入念に確認する
+- [ ] 4.6 ast linterで未利用のsvgを検知できる仕組みを構築する
+- [ ] 4.7 アイコンのアセットごとのsvgアイコン同士の互換を担保するast linterを構築する
 
 ### Definition of Done (DoD)
 
 - [ ] 同梱 (shipping) される各パックが、要求されるアイコン定義 (required icon contract) を満たしていること
 - [ ] サードパーティ製ソースと、KatanA 側で作成した上書きアセットとの境界線が明確に文書化されていること
 - [ ] 同梱パックの出所 (provenance) とライセンス情報がリポジトリ上から容易に追跡可能であること
+- [ ] 未利用SVGの自動検知および互換性を担保する AST linter が稼働していること
 - [ ] `make check` がエラーなし (exit code 0) で通過すること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 

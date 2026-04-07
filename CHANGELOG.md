@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.16.10] - 2026-04-07 15:57:00 (UTC)
+
+### 🚀 Features
+
+- Added a "Help -> Demo" menu to explore read-only demonstration documents (Reference Mode), allowing users to safely view sample features without accidentally saving edits.
+
+### 🐛 Bug Fixes
+
+- Fixed a bug where custom task list markers (e.g., `[/]`, `[-]`) were incorrectly rendered as standard unchecked boxes.
+
 ## [0.16.9] - 2026-04-07 12:49:00 (UTC)
 
 ### 🔧 System

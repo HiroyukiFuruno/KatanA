@@ -165,9 +165,10 @@ impl KatanaApp {
                 .tab_groups
                 .iter_mut()
                 .find(|g| g.id == demo_group_id)
-                && !group.members.contains(&path_str) {
-                    group.members.push(path_str);
-                }
+                && !group.members.contains(&path_str)
+            {
+                group.members.push(path_str);
+            }
         }
 
         /* WHY: Focus the first file (e.g. welcome.md) */
