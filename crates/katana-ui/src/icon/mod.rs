@@ -28,7 +28,12 @@ impl Icon {
     }
 
     pub fn ui_image(&self, ui: &egui::Ui, size: IconSize) -> egui::Image<'static> {
-        self.image(size).tint(ui.visuals().text_color())
+        let image = self.image(size);
+        if IconRegistry::get_render_policy(ui.ctx()) == pack::RenderPolicy::TintedMonochrome {
+            image.tint(ui.visuals().text_color())
+        } else {
+            image
+        }
     }
 
     /// Returns an `egui::Button::image` with the canonical icon-bg fill applied.
@@ -107,7 +112,15 @@ impl IconOps {
                 if last_end < idx {
                     acc(ui.label(egui::RichText::new(&text[last_end..idx]).color(text_color)));
                 }
-                acc(ui.add(icon.image(IconSize::Medium).tint(text_color)));
+                let image = icon.image(IconSize::Medium);
+                let image = if IconRegistry::get_render_policy(ui.ctx())
+                    == pack::RenderPolicy::TintedMonochrome
+                {
+                    image.tint(text_color)
+                } else {
+                    image
+                };
+                acc(ui.add(image));
                 last_end = idx + ch.len_utf8();
             }
 
@@ -137,11 +150,41 @@ impl IconOps {
 
 pub use types::IconRegistry;
 
+#[derive(Clone, Copy)]
+pub struct ActiveRenderPolicy(pub pack::RenderPolicy);
+
 impl IconRegistry {
     pub fn install(ctx: &egui::Context) {
+        Self::install_pack(ctx, &pack::KatanaIconPack);
+    }
+
+    pub fn install_pack(ctx: &egui::Context, pack: &dyn pack::IconPackContract) {
+        let fallback_pack = pack::KatanaIconPack;
+
         for icon in ALL_ICONS {
-            ctx.include_bytes(icon.uri(), icon.svg_bytes());
+            let bytes = pack
+                .get_asset(*icon)
+                .or_else(|| pack::IconPackContract::get_asset(&fallback_pack, *icon))
+                .expect("KatanaIconPack must provide all icons");
+
+            ctx.include_bytes(icon.uri(), bytes);
         }
+
+        ctx.data_mut(|d| {
+            d.insert_temp(
+                egui::Id::new("katana_icon_render_policy"),
+                ActiveRenderPolicy(pack.manifest().render_policy),
+            )
+        });
+        ctx.forget_all_images();
+    }
+
+    pub fn get_render_policy(ctx: &egui::Context) -> pack::RenderPolicy {
+        ctx.data(|d| {
+            d.get_temp::<ActiveRenderPolicy>(egui::Id::new("katana_icon_render_policy"))
+                .map(|p| p.0)
+                .unwrap_or(pack::RenderPolicy::TintedMonochrome)
+        })
     }
 }
 

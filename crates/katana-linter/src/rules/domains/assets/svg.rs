@@ -38,8 +38,16 @@ fn check_line_for_invalid_colors(
 fn is_allowed_svg_color(color: &str) -> bool {
     matches!(
         color,
-        "none" | "white" | "#ffffff" | "#fff"
+        "none" | "white" | "#ffffff" | "#fff" | "currentcolor"
     )
+}
+
+fn get_render_policy(pack_dir: &str) -> &'static str {
+    /* WHY: To support new packs that are NativeColor, return "NativeColor" here. */
+    match pack_dir {
+        /* WHY: e.g. "colorful-emojis" => "NativeColor", */
+        _ => "TintedMonochrome",
+    }
 }
 
 pub struct SvgOps;
@@ -56,13 +64,25 @@ impl SvgOps {
         let files = collect_files_by_extension(&icons_dir, "svg");
     
         for path in files {
+            /* WHY: Path is typically <workspace>/assets/icons/<pack_dir>/... */
+            let components: Vec<_> = path.components().map(|c| c.as_os_str().to_string_lossy()).collect();
+            let pack_dir = components.iter()
+                .skip_while(|c| *c != "icons")
+                .nth(1)
+                .map(|s| s.as_ref())
+                .unwrap_or("katana");
+
+            if get_render_policy(pack_dir) == "NativeColor" {
+                continue; /* WHY: Skip tint validation for packs utilizing native colors */
+            }
+
             let content = match fs::read_to_string(&path) {
                 Ok(content) => content,
                 Err(_) => continue,
             };
     
-            /* WHY: We want to ensure all icons are pure white (#FFFFFF) to support egui's dynamic tinting.
-               Any other hex colors or color names indicate an inconsistent design asset. */
+            /* WHY: For TintedMonochrome packs, we ensure all icons use `#FFFFFFF` or `currentColor`
+               This supports egui's dynamic tinting without destroying the icon's intended shapes. */
         
             let lines: Vec<&str> = content.lines().collect();
             for (i, line) in lines.iter().enumerate() {
