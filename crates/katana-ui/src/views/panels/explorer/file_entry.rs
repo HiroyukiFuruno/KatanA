@@ -78,7 +78,7 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
 
             if entry.is_markdown() {
                 child_ui.add(
-                    crate::icon::Icon::Document
+                    crate::icon::Icon::Markdown
                         .image(crate::icon::IconSize::Medium)
                         .tint(text_color),
                 );
