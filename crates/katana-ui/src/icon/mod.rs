@@ -158,6 +158,10 @@ impl IconRegistry {
         Self::install_pack(ctx, &pack::KatanaIconPack);
     }
 
+    pub fn install_pack_by_id(ctx: &egui::Context, _pack_id: &str) {
+        Self::install_pack(ctx, &pack::KatanaIconPack);
+    }
+
     pub fn install_pack(ctx: &egui::Context, pack: &dyn pack::IconPackContract) {
         let fallback_pack = pack::KatanaIconPack;
 
