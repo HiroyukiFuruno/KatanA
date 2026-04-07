@@ -75,10 +75,10 @@
 - [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [x] ベースブランチが最新化（同期）されており、引き続き統合ブランチ上で作業を行うこと（新しいブランチは作成しない）。
 
-- [ ] 3.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 3.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 3.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 3.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 3.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 3.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.16.10` のリリースタグ打ちとリリース作成を実行する
-- [ ] 3.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+- [x] 3.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [x] 3.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [x] 3.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [x] 3.4 `master` に向けて PR（プルリクエスト）を作成する
+- [x] 3.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [x] 3.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.16.10` のリリースタグ打ちとリリース作成を実行する
+- [x] 3.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
