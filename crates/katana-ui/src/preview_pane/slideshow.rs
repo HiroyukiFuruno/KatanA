@@ -99,7 +99,7 @@ pub(super) fn render_slideshow_modal(
 fn render_slideshow_controls(
     ctx: &egui::Context,
     ui: &mut egui::Ui,
-    layout: &crate::state::layout::LayoutState,
+    layout: &mut crate::state::layout::LayoutState,
     blocker_rect: egui::Rect,
     max_page: usize,
 ) -> i32 {
@@ -120,6 +120,9 @@ fn render_slideshow_controls(
             || !i.events.is_empty()
     });
 
+    if is_active {
+        layout.slideshow_last_active_time = current_time;
+    }
     let idle_time = current_time - layout.slideshow_last_active_time;
     let mut opacity = SLIDESHOW_OPACITY_MAX;
     if idle_time > SLIDESHOW_CONTROL_FADE_DELAY {
@@ -178,7 +181,7 @@ fn render_slideshow_controls(
                 .response
         });
     }
-    let _ = is_active;
+    
     page_delta
 }
 

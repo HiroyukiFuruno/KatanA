@@ -151,6 +151,11 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn disable_update_check_for_test(&mut self) {
+        self.update_rx = None;
+    }
+
+    #[doc(hidden)]
     pub fn app_state_for_test(&self) -> &AppState {
         &self.state
     }

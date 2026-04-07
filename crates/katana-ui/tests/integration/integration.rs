@@ -83,9 +83,9 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
         state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
             katana_platform::workspace::InMemoryWorkspaceRepository::default(),
         ));
-
         let mut app = KatanaApp::new(state);
         app.skip_splash();
+        app.disable_update_check_for_test();
         app
     })
 }
@@ -1403,9 +1403,9 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
         state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
             katana_platform::workspace::InMemoryWorkspaceRepository::default(),
         ));
-
         let mut app = KatanaApp::new(state);
         app.skip_splash();
+        app.disable_update_check_for_test();
         app
     })
 }
@@ -3067,6 +3067,7 @@ fn test_regression_update_dialog_up_to_date_renders_correctly() {
             let mut app = KatanaApp::new(state);
             app.skip_splash();
             app.disable_changelog_display_for_test();
+            app.disable_update_check_for_test();
             app
         });
 
@@ -3112,6 +3113,7 @@ fn test_regression_update_dialog_does_not_stretch_vertically() {
                 Some(katana_ui::about_info::APP_VERSION.to_string());
             let mut app = KatanaApp::new(state);
             app.skip_splash();
+            app.disable_update_check_for_test();
             app
         });
 
