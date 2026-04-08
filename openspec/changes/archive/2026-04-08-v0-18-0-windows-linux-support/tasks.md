@@ -1,8 +1,8 @@
 ## Definition of Ready (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.18.0 の変更 ID とスコープが確認されていること
-- [ ] `crates/katana-platform`, `crates/katana-ui`, `crates/katana-core`, `scripts`, `.github/workflows` 内に存在する現行の macOS 限定仕様 (テーマ / ロケール / メニュー / アップデート / パッケージング / ドキュメント等) を再確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.18.0 の変更 ID とスコープが確認されていること
+- [x] `crates/katana-platform`, `crates/katana-ui`, `crates/katana-core`, `scripts`, `.github/workflows` 内に存在する現行の macOS 限定仕様 (テーマ / ロケール / メニュー / アップデート / パッケージング / ドキュメント等) を再確認していること
 
 ## Branch Rule
 
@@ -12,21 +12,21 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Platform Contract とターゲットビルド環境の整理
 
-- [ ] 1.1 `katana-platform` に、現在の OS、主要修飾キー (primary modifier)、ネイティブメニューのサポート有無、アップデートインストール方法を判定する「Platform Contract (プラットフォーム共通契約)」を追加する
-- [ ] 1.2 `crates/katana-platform/src/os_theme.rs` およびロケール検出経路を Windows / Linux 対応へ拡張し、`crates/katana-ui/src/main.rs` の初回言語適用時において、取得不能時のフォールバック動作を明示する
-- [ ] 1.3 `crates/katana-platform/build.rs` と `crates/katana-ui/build.rs` の macOS 用 FFI ビルド条件を整理し、Windows / Linux をターゲットとした際に不要なリンクエラーが発生しないようにする
-- [ ] 1.4 `crates/katana-ui/src/main.rs` での初期テーマおよび言語適用処理を、導入した Platform Contract 経由に寄せる
-- [ ] 1.5 `cargo check --target x86_64-pc-windows-msvc` および `cargo check --target x86_64-unknown-linux-gnu` が正常に通る環境を構築する
-- [ ] 1.6 `settings/defaults.rs`、`settings/service.rs`、およびロケール/テーマ検出ヘルパーに対する単体テスト (unit test) を追加し、初回起動時のフォールバック動作と既存ユーザーの設定が保持されることを保証する
+- [x] 1.1 `katana-platform` に、現在の OS、主要修飾キー (primary modifier)、ネイティブメニューのサポート有無、アップデートインストール方法を判定する「Platform Contract (プラットフォーム共通契約)」を追加する
+- [x] 1.2 `crates/katana-platform/src/os_theme.rs` およびロケール検出経路を Windows / Linux 対応へ拡張し、`crates/katana-ui/src/main.rs` の初回言語適用時において、取得不能時のフォールバック動作を明示する
+- [x] 1.3 `crates/katana-platform/build.rs` と `crates/katana-ui/build.rs` の macOS 用 FFI ビルド条件を整理し、Windows / Linux をターゲットとした際に不要なリンクエラーが発生しないようにする
+- [x] 1.4 `crates/katana-ui/src/main.rs` での初期テーマおよび言語適用処理を、導入した Platform Contract 経由に寄せる
+- [x] 1.5 `cargo check --target x86_64-pc-windows-msvc` および `cargo check --target x86_64-unknown-linux-gnu` が正常に通る環境を構築する
+- [x] 1.6 `settings/defaults.rs`、`settings/service.rs`、およびロケール/テーマ検出ヘルパーに対する単体テスト (unit test) を追加し、初回起動時のフォールバック動作と既存ユーザーの設定が保持されることを保証する
 
 ### Definition of Done (DoD)
 
-- [ ] macOS / Windows / Linux 向けの Platform Contract の定義が 1 箇所へ整理されていること
-- [ ] Windows / Linux ターゲットに設定した際、macOS FFI のリンクエラーが発生しないこと
-- [ ] 初回起動時のテーマおよび言語のデフォルト設定が Platform Contract に従っていること
-- [ ] ロケールフォールバック動作と既存ユーザーの設定維持が、回帰テストで担保されていること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] macOS / Windows / Linux 向けの Platform Contract の定義が 1 箇所へ整理されていること
+- [x] Windows / Linux ターゲットに設定した際、macOS FFI のリンクエラーが発生しないこと
+- [x] 初回起動時のテーマおよび言語のデフォルト設定が Platform Contract に従っていること
+- [x] ロケールフォールバック動作と既存ユーザーの設定維持が、回帰テストで担保されていること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
@@ -34,23 +34,23 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 macOS では既存のネイティブメニューを維持しつつ、Windows / Linux 向けにはすべての `AppAction` 命令へ到達できるアプリ内コマンド領域 (in-app command surface) を追加する
-- [ ] 2.2 ワークスペースを開く (OpenWorkspace)、ドキュメントの保存 (SaveDocument)、設定パネルの開閉 (ToggleSettings)、更新確認 (CheckForUpdates)、リリースノート表示 (ShowReleaseNotes)、言語切り替え等の主要操作が全 OS で同等に利用可能にする
-- [ ] 2.3 `Cmd` キーに固定されているショートカットを「主要修飾キーの抽象化機能」へ置き換え、Windows / Linux 利用時は自動的に `Ctrl` キーを使用するように動作させる
-- [ ] 2.4 `crates/katana-ui/src/native_menu.rs`, `crates/katana-ui/src/shell_ui.rs`、および必要に応じて上部バー UI を更新し、macOS 以外の操作サーフェスやショートカット変更が、既存のプレビュー機能やワークスペース操作を破壊しないことを保証する
-- [ ] 2.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.1 macOS では既存のネイティブメニューを維持しつつ、Windows / Linux 向けにはすべての `AppAction` 命令へ到達できるアプリ内コマンド領域 (in-app command surface) を追加する
+- [x] 2.2 ワークスペースを開く (OpenWorkspace)、ドキュメントの保存 (SaveDocument)、設定パネルの開閉 (ToggleSettings)、更新確認 (CheckForUpdates)、リリースノート表示 (ShowReleaseNotes)、言語切り替え等の主要操作が全 OS で同等に利用可能にする
+- [x] 2.3 `Cmd` キーに固定されているショートカットを「主要修飾キーの抽象化機能」へ置き換え、Windows / Linux 利用時は自動的に `Ctrl` キーを使用するように動作させる
+- [x] 2.4 `crates/katana-ui/src/native_menu.rs`, `crates/katana-ui/src/shell_ui.rs`、および必要に応じて上部バー UI を更新し、macOS 以外の操作サーフェスやショートカット変更が、既存のプレビュー機能やワークスペース操作を破壊しないことを保証する
+- [x] 2.5 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.6 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] macOS はネイティブメニュー、Windows / Linux はアプリ内のコマンドUI から、同等の主要コマンド機能にアクセスできること
-- [ ] 検索等の主要なショートカットキーが、macOS では `Command`、Windows / Linux では `Ctrl` として動作すること
-- [ ] 既存のワークスペース・プレビュー関連の UI 動線に回帰バグが生じていないこと
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] macOS はネイティブメニュー、Windows / Linux はアプリ内のコマンドUI から、同等の主要コマンド機能にアクセスできること
+- [x] 検索等の主要なショートカットキーが、macOS では `Command`、Windows / Linux では `Ctrl` として動作すること
+- [x] 既存のワークスペース・プレビュー関連の UI 動線に回帰バグが生じていないこと
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
@@ -58,8 +58,8 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
 - [x] 3.1 `crates/katana-platform/src/os_fonts.rs` の処理をクロスプラットフォーム対応のフォントディレクトリ探索へ拡張する
 - [x] 3.2 `crates/katana-ui/src/font_loader/*` および `katana_core::markdown::color_preset` の動作を見直し、Windows や Linux でもエディターおよびプレビュー内の文字が明確に可読領域 (readable) として表示されるようにする
@@ -83,8 +83,8 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
 - [x] 4.1 `crates/katana-core/src/update/version.rs` のアセット解決を、動作プラットフォームおよびアーキテクチャ (OS / CPU) に適応するよう変更する
 - [x] 4.2 `crates/katana-core/src/update/installer.rs` およびアップデート通知時の UI を見直し、macOS は自動インストール、Windows / Linux に関しては手動ダウンロードへ切り替える設計とする
@@ -133,10 +133,10 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 6. Final Verification & Release Work (最終確認とリリース対応)
 
-- [ ] 6.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 6.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 6.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 6.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 6.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 6.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.18.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 6.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+- [x] 6.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [x] 6.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [x] 6.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [x] 6.4 `master` に向けて PR（プルリクエスト）を作成する
+- [x] 6.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [x] 6.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.18.0` のリリースタグ打ちとリリース作成を実行する
+- [x] 6.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする

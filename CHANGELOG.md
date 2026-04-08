@@ -2,6 +2,18 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.18.0] - 2026-04-08 12:15:00 (UTC)
+
+### 🚀 Features
+- **Cross-Platform Support:** KatanA now officially supports Windows and Linux (Ubuntu) distributions. Users on these platforms can now download MSI and DEB installer packages directly from the GitHub Releases page.
+- **Smart Update Detection:** The built-in updater is now fully OS-aware. It will securely ignore update files that do not match your current operating system, preventing unsupported cross-platform installations.
+
+### ✨ Improvements
+- App installation has become much simpler as the external dependency on the `gh` CLI has been completely removed. Communication with GitHub is now performed securely through an internal HTTP adapter.
+
+### 🔧 System
+- Improved CI/CD pipelines to construct and distribute stable releases across multiple operating systems automatically.
+
 ## [0.17.2] - 2026-04-08 08:45:00 (UTC)
 
 ### 🚀 Features
