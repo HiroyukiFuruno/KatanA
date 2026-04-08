@@ -324,6 +324,20 @@
       "days_suffix": " 일",
       "auto_refresh": "자동 새로 고침",
       "auto_refresh_interval": "자동 새로 고침 간격"
+    },
+    "icons": {
+      "preset_label": "프리셋:",
+      "preset_name": "프리셋 이름:",
+      "custom_preset": "사용자 지정",
+      "save_preset": "프리셋으로 저장...",
+      "revert_default": "기본값 복원",
+      "advanced_settings": "고급 설정",
+      "colorful_vendor_icons_label": "Katana가 아닌 아이콘에 기본 색상 적용",
+      "table_header_icon": "아이콘",
+      "table_header_vendor": "공급업체",
+      "table_header_color": "텍스트 색상",
+      "table_header_border": "프레임 색상",
+      "table_header_preview": "미리보기"
     }
   },
   "tab": {

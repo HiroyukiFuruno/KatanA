@@ -76,18 +76,16 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
                 egui::Sense::hover(),
             );
 
+            child_ui.visuals_mut().override_text_color = Some(text_color);
+
             if entry.is_markdown() {
-                child_ui.add(
-                    crate::icon::Icon::Markdown
-                        .image(crate::icon::IconSize::Medium)
-                        .tint(text_color),
-                );
+                let img =
+                    crate::icon::Icon::Markdown.ui_image(&child_ui, crate::icon::IconSize::Medium);
+                child_ui.add(img);
             } else {
-                child_ui.add(
-                    crate::icon::Icon::Document
-                        .image(crate::icon::IconSize::Medium)
-                        .tint(text_color),
-                );
+                let img =
+                    crate::icon::Icon::Document.ui_image(&child_ui, crate::icon::IconSize::Medium);
+                child_ui.add(img);
             };
 
             let mut rich = egui::RichText::new(name).color(text_color);

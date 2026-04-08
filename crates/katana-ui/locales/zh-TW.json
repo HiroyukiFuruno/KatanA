@@ -261,6 +261,20 @@
       "extensionless_excludes": "忽略的無副檔名檔案",
       "extensionless_excludes_hint": "以逗號分隔的精確檔案名稱清單..."
     },
+    "icons": {
+      "preset_label": "預設:",
+      "custom_preset": "自訂",
+      "save_preset": "另存為預設...",
+      "revert_default": "恢復預設",
+      "advanced_settings": "進階設定",
+      "colorful_vendor_icons_label": "將預設顏色應用於非 Katana 圖示",
+      "table_header_icon": "圖示",
+      "table_header_vendor": "供應商",
+      "table_header_color": "文本顏色",
+      "table_header_border": "邊框顏色",
+      "table_header_preview": "預覽",
+      "preset_name": "預設名稱:"
+    },
     "tabs": [
       {
         "key": "theme",

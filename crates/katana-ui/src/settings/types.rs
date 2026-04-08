@@ -1,7 +1,7 @@
 use crate::preview_pane::PreviewPane;
 
 pub(crate) const SETTINGS_WINDOW_DEFAULT_WIDTH: f32 = 1000.0;
-pub(crate) const SETTINGS_WINDOW_DEFAULT_HEIGHT: f32 = 500.0;
+pub(crate) const SETTINGS_WINDOW_DEFAULT_HEIGHT: f32 = 750.0;
 pub(crate) const SETTINGS_SIDE_PANEL_DEFAULT_WIDTH: f32 = 200.0;
 pub(crate) const SETTINGS_PREVIEW_PANEL_DEFAULT_WIDTH: f32 = 350.0;
 pub(crate) const SETTINGS_HEADER_FONT_SIZE: f32 = 14.0;
