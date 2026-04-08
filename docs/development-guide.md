@@ -166,21 +166,20 @@ KatanA is released under the [MIT License](LICENSE).
 ## Cross-Platform Validation & Release Blockers
 
 Because KatanA is primarily developed on macOS, maintaining stability across Windows and Linux requires strict verification gates.
+For detailed validation strategies and AI-agent specific instructions, refer to the [Cross-Platform Validation Guide (JA)](cross-platform-validation.ja.md).
 
-### 1. CI Validation (Automated)
+### Three-Tier Validation Strategy
 
-The GitHub Actions CI (`.github/workflows/ci.yml`) runs a cross-platform matrix (`macos-latest`, `windows-latest`, `ubuntu-latest`).
-**Release Blocker:** A release must NOT be published if any of the CI jobs in the matrix fail. The `make check` equivalent must pass on all platforms.
+1. **Daily Validation (Virtual Environment):** Use Windows/Linux VMs (e.g., Parallels on macOS) to continuously verify UI and basic operations (launch, file operations, Markdown rendering).
+2. **Continuous Validation (CI):** GitHub Actions matrix (`macos-latest`, `windows-latest`, `ubuntu-latest`) must pass to catch OS-dependent errors early.
+3. **Final Validation (Physical/Cloud VM):** Verify IME, DPI scaling, font rendering, and installer behaviour on real hardware or cloud instances prior to release.
 
-### 2. Runtime Smoke Checklist (Manual)
+### Release Blockers
 
-Before a minor or major release, the maintainer must verify the compiled Windows (`KatanA-windows-x86_64.zip`) and Linux (`KatanA-linux-x86_64.tar.gz`) binaries. This can be done via VMs (e.g., Parallels/UTM) or physical machines.
+Windows and Linux releases are blocked unless all of the following are satisfied:
 
-#### Required Evidence for Windows and Linux
-
-1. **Initial Launch:** The executable launches without crashing and displays the default interface.
-2. **Workspace Open:** Successfully open a local folder via the in-app command UI "Open Workspace" button.
-3. **Markdown Edit:** Edit an existing Markdown file and observe the preview updating in real-time.
-4. **Settings / Update:** Invoke the settings/update dialog and confirm the OS-appropriate instructions are shown (and no macOS-specific behavior leaks).
-
-**Release Blocker:** Failure in any of the Runtime Smoke Checklist items on Windows or Linux blocks the release. Automated CI alone is not sufficient to guarantee UI integrity.
+1. **Automated Tests:** The equivalent of `make check` passes completely on all CI platforms.
+2. **Manual Smoke Tests:** The executable launches without crashing.
+3. **Workspace Operations:** Local folders can be opened successfully.
+4. **Rendering:** Real-time Markdown preview function operates correctly.
+5. **Platform Constraints:** OS-specific behaviours (like update instructions) do not leak across platforms.
