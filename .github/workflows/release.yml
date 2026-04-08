@@ -159,6 +159,22 @@ jobs:
         run: |
           cd target/release
           tar -czvf KatanA-linux-x86_64.tar.gz KatanA
+      - name: Update Linuxbrew Formula
+        env:
+          HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_KATANA_GIT_TOKEN }}
+        run: |
+          VERSION="${{ github.ref_name }}"
+          TAR_NAME="KatanA-linux-x86_64.tar.gz"
+          cd target/release
+          SHA256=$(shasum -a 256 "$TAR_NAME" | awk '{print $1}')
+          cd ../..
+          
+          if [[ -n "$HOMEBREW_KATANA_GIT_TOKEN" ]]; then
+            echo "Publishing to Linuxbrew..."
+            ./scripts/release/update-linuxbrew.sh "$VERSION" "$SHA256" "$TAR_NAME" || echo "Warning: Linuxbrew update failed but won't block release."
+          else
+            echo "Skipping Linuxbrew update (HOMEBREW_KATANA_GIT_TOKEN missing in Action secrets)"
+          fi
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
@@ -188,6 +204,21 @@ jobs:
         run: |
           cd target/release
           7z a KatanA-windows-x86_64.zip KatanA.exe
+      - name: Submit to Winget
+        if: env.WINGET_GH_TOKEN != ''
+        uses: vedantmgoyal2009/winget-create-action@v2
+        env:
+          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+        with:
+          identifier: HiroyukiFuruno.katana-desktop
+          version: ${{ github.ref_name }}
+          urls: https://github.com/HiroyukiFuruno/KatanA/releases/download/${{ github.ref_name }}/KatanA-windows-x86_64.zip
+          token: ${{ env.WINGET_GH_TOKEN }}
+      - name: Warning for missing Winget Token
+        if: env.WINGET_GH_TOKEN == ''
+        env:
+          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+        run: echo "Skipping Winget publication (WINGET_GH_TOKEN missing in Action secrets)"
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
