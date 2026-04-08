@@ -36,8 +36,13 @@ fn detect_dark_mode_impl() -> Option<bool> {
 
 #[cfg(not(target_os = "macos"))]
 fn detect_dark_mode_impl() -> Option<bool> {
-    /* WHY: Dark mode detection is not supported on non-macOS platforms. */
-    None
+    /* WHY: Use `dark-light` crate to detect system theme on Windows and Linux.
+    Returns `None` if the platform lacks dark mode detection capabilities or fails. */
+    match dark_light::detect() {
+        dark_light::Mode::Dark => Some(true),
+        dark_light::Mode::Light => Some(false),
+        dark_light::Mode::Default => None,
+    }
 }
 
 /* WHY: ── macOS FFI ───────────────────────────────────────────────────────── */

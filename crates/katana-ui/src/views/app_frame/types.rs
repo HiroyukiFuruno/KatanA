@@ -9,6 +9,10 @@ pub(crate) struct WindowTitle<'a> {
     pub(crate) app: &'a mut KatanaApp,
 }
 
+pub(crate) struct GlobalMenuBar<'a> {
+    pub(crate) app: &'a mut KatanaApp,
+}
+
 pub(crate) struct TitleBar<'a> {
     pub(crate) app: &'a KatanaApp,
     pub(crate) theme_colors: &'a katana_platform::theme::ThemeColors,
