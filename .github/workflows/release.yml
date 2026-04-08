@@ -92,7 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
-      - uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v4.1.2
         with:
           path: |
             ~/.cargo/registry
@@ -138,7 +138,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
-      - uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v4.1.2
         with:
           path: |
             ~/.cargo/registry
@@ -168,7 +168,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
-      - uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v4.1.2
         with:
           path: |
             ~\.cargo\registry
