@@ -126,8 +126,8 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [x] 読者から見て、Windows / Linux 向けのインストール、関連ビルド手順、アップデートや検証方法がわかりやすく明示されていること
 - [x] Windows / Linux 向けのスモークテスト (runtime smoke checklist) と必須の確認結果エビデンスの要件が明確に文書化されていること
 - [x] サポート状況、アセットファイル名、アップデートポリシー、検証手順のドキュメントが、今回の提案・設計・仕様内容と一貫性を保っていること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
