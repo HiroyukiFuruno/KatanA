@@ -3,8 +3,6 @@ use crate::settings::*;
 
 impl IconsTabOps {
     pub(crate) fn render_icons_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
-        SettingsOps::section_header(ui, &crate::i18n::I18nOps::get().settings.theme.icon_pack);
-
         let mut current_pack = state.config.settings.settings().theme.icon_pack.clone();
 
         let available_packs = [
@@ -49,14 +47,38 @@ impl IconsTabOps {
             .id_salt("icon_pack_preview_scroll")
             .auto_shrink(false)
             .show(ui, |ui| {
-                ui.horizontal_wrapped(|ui| {
-                    const ITEM_SPACING: f32 = 16.0;
-                    ui.spacing_mut().item_spacing = egui::vec2(ITEM_SPACING, ITEM_SPACING);
-                    for icon in crate::icon::ALL_ICONS {
-                        let response = ui.add(icon.ui_image(ui, crate::icon::IconSize::Large));
-                        response.on_hover_text(icon.name());
-                    }
-                });
+                let mut grouped_icons: std::collections::BTreeMap<String, Vec<&crate::icon::Icon>> =
+                    std::collections::BTreeMap::new();
+
+                for icon in crate::icon::ALL_ICONS {
+                    let name = icon.name();
+                    let vendor = if let Some(slash_idx) = name.find('/') {
+                        name[..slash_idx].to_string()
+                    } else {
+                        "katana".to_string()
+                    };
+                    grouped_icons.entry(vendor).or_default().push(icon);
+                }
+
+                for (vendor, icons) in grouped_icons {
+                    egui::CollapsingHeader::new(&vendor)
+                        .default_open(true)
+                        .show(ui, |ui| {
+                            ui.horizontal_wrapped(|ui| {
+                                const ITEM_SPACING: f32 = 16.0;
+                                ui.spacing_mut().item_spacing =
+                                    egui::vec2(ITEM_SPACING, ITEM_SPACING);
+                                for icon in icons {
+                                    let image = icon.image(crate::icon::IconSize::Large);
+                                    let color = icon
+                                        .vendor_default_color(ui.visuals().dark_mode)
+                                        .unwrap_or(ui.visuals().text_color());
+                                    let response = ui.add(image.tint(color));
+                                    response.on_hover_text(icon.name());
+                                }
+                            });
+                        });
+                }
             });
     }
 }

@@ -15,19 +15,19 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 ### Definition of Done (DoD)
 
 - [x] `katana-core` 側のコンパイルと単体テストが通ること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. Vendor-based Default Icon Coloring & Preview UI
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 `crates/katana-ui/src/views/settings.rs` のアイコン設定画面にて、`IconRegistry::iter()` から取得したアイコンをベンダー(プレフィックス)ごとにグループ化して `egui::CollapsingHeader` に格納する。
-- [ ] 2.2 グループ化された各ベンダーのアイコンプレビューに対して、`Icon::draw` に渡す色設定をベンダー別のデフォルト色で反映させる。
-- [ ] 2.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.1 `crates/katana-ui/src/views/settings.rs` のアイコン設定画面にて、`IconRegistry::iter()` から取得したアイコンをベンダー(プレフィックス)ごとにグループ化して `egui::CollapsingHeader` に格納する。
+- [x] 2.2 グループ化された各ベンダーのアイコンプレビューに対して、`Icon::draw` に渡す色設定をベンダー別のデフォルト色で反映させる。
+- [x] 2.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
