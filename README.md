@@ -5,7 +5,7 @@
 <h1 align="center">KatanA Desktop</h1>
 
 <p align="center">
-  A fast, lightweight Markdown workspace for macOS — built with Rust and egui.
+  A fast, lightweight Markdown workspace for macOS, Windows, and Linux — built with Rust and egui.
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
   <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
   <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
-  <img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS">
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" alt="Platform: macOS | Windows | Linux">
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ The name **KatanA** comes from the Japanese word **"刀" (katana)** — a razor-
 
 Just as a katana cuts cleanly through its target, this tool is designed to **slice through the complexity of documentation workflows** with speed and clarity. The name reflects the creator's desire to build something that helps developers **cut through challenges decisively**, one problem at a time.
 
-KatanA Desktop is a fast, lightweight Markdown workspace for macOS, purpose-built for developers who work with specification documents and technical writing.
+KatanA Desktop is a fast, lightweight Markdown workspace for macOS, Windows, and Linux, purpose-built for developers who work with specification documents and technical writing.
 
 The trailing uppercase **A** stands for **"AI"** and **"Agent"** — KatanA is designed for the era of AI agent-assisted development, where Markdown specifications serve as the bridge between humans and AI. **Katana × AI Agent = KatanA.**
 
@@ -74,9 +74,11 @@ The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdo
 
 ## Installation
 
-> **macOS only** at this time. Apple Silicon and Intel are both supported.
+> Available on macOS (Apple Silicon & Intel), Windows, and Linux.
 
-### Homebrew (Recommended)
+### macOS
+
+#### Homebrew (Recommended for macOS)
 
 ```sh
 brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
@@ -84,13 +86,7 @@ brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
 
 No additional steps required — the app is ready to use immediately.
 
-### Updating KatanA
-
-KatanA features a built-in auto-updater. Once installed (whether via Homebrew or manually), you can update the app directly from within the UI by clicking the **"Update & Restart"** button when a new release is available.
-
-> **Note on Homebrew**: If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues. Future updates are handled entirely natively by the app.
-
-### Manual Download
+#### Manual Download (macOS)
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
 2. Download the latest `KatanA-Desktop-x.y.z.dmg`
@@ -103,6 +99,19 @@ xattr -cr /Applications/KatanA\ Desktop.app
 
 > **Note:** On macOS Sequoia (15.x), Gatekeeper requires this command for apps not notarized with Apple.
 > Alternatively, go to **System Settings → Privacy & Security → "Open Anyway"** after the first launch attempt.
+
+### Windows & Linux
+
+1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
+2. Download the appropriate ZIP (`KatanA-windows-x86_64.zip`) or Tarball (`KatanA-linux-x86_64.tar.gz`) for your OS
+3. Extract the archive and place the binary wherever you prefer
+4. Run the executable directly
+
+### Updating KatanA
+
+KatanA features a built-in auto-updater. Once installed (whether via Homebrew or manually), KatanA will notify you when a new release is available.
+- **macOS:** You can update the app directly from within the UI by clicking the **"Update & Restart"** button. If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues.
+- **Windows / Linux:** The update dialog will provide a direct link to download the latest asset from the release page.
 
 ---
 
