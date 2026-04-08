@@ -49,7 +49,9 @@ pub(super) fn render_results(
                                     }
                                     CommandPaletteResultKind::RecentOrCommon => crate::Icon::Recent,
                                 };
-                                ui.add(icon.image(crate::icon::IconSize::Medium).tint(text_color));
+                                ui.visuals_mut().override_text_color = Some(text_color);
+                                let img = icon.ui_image(ui, crate::icon::IconSize::Medium);
+                                ui.add(img);
                                 ui.label(
                                     egui::RichText::new(&result.label)
                                         .color(text_color)

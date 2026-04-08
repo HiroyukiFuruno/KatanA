@@ -113,6 +113,7 @@ impl Default for AppSettings {
             version: SettingsDefaultOps::default_version(),
             theme: ThemeSettings::default(),
             font: FontSettings::default(),
+            icon: IconSettings::default(),
             layout: LayoutSettings::default(),
             workspace: WorkspaceSettings::default(),
             search: SearchSettings::default(),

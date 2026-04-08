@@ -62,6 +62,7 @@ fn main() -> eframe::Result<()> {
     let saved_language = settings.settings().language.clone();
     let saved_icon_pack = settings.settings().theme.icon_pack.clone();
     let saved_workspace = settings.settings().workspace.last_workspace.clone();
+    let saved_icon_settings = settings.settings().icon.clone();
 
     let cache = std::sync::Arc::new(katana_platform::DefaultCacheService::default());
     let state = AppState::new(ai_registry, plugin_registry, settings, cache);
@@ -84,7 +85,11 @@ fn main() -> eframe::Result<()> {
             GuiSetupOps::setup_fonts(&cc.egui_ctx);
             katana_ui::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
             egui_extras::install_image_loaders(&cc.egui_ctx);
-            katana_ui::icon::IconRegistry::install_pack_by_id(&cc.egui_ctx, &saved_icon_pack);
+            katana_ui::icon::IconRegistry::install_pack_by_id(
+                &cc.egui_ctx,
+                &saved_icon_pack,
+                &saved_icon_settings,
+            );
 
             #[cfg(target_os = "macos")]
             unsafe {

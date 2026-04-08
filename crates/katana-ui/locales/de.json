@@ -324,6 +324,20 @@
       "days_suffix": " Tage",
       "auto_refresh": "Automatisches Aktualisieren",
       "auto_refresh_interval": "Intervall für autom. Aktualisierung"
+    },
+    "icons": {
+      "preset_label": "Voreinstellung:",
+      "preset_name": "Name der Voreinstellung:",
+      "custom_preset": "Benutzerdefiniert",
+      "save_preset": "Als Voreinstellung speichern...",
+      "revert_default": "Auf Standard zurücksetzen",
+      "advanced_settings": "Erweiterte Einstellungen",
+      "colorful_vendor_icons_label": "Standardfarben auf Nicht-Katana-Symbole anwenden",
+      "table_header_icon": "Symbol",
+      "table_header_vendor": "Anbieter",
+      "table_header_color": "Textfarbe",
+      "table_header_border": "Rahmenfarbe",
+      "table_header_preview": "Vorschau"
     }
   },
   "tab": {

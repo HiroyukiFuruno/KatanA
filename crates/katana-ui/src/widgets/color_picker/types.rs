@@ -5,3 +5,8 @@ pub struct LabeledColorPicker<'a> {
     pub(crate) offset_y: f32,
     pub(crate) is_rgba: bool,
 }
+
+#[derive(Default)]
+pub struct InlineColorPicker {
+    pub(crate) is_rgba: bool,
+}

@@ -261,6 +261,20 @@
       "extensionless_excludes": "表示除外ファイル（拡張子完全一致）",
       "extensionless_excludes_hint": "「拡張子なし」有効時に除外するファイル名リストを追加します（例: .DS_Store, .gitignore）。"
     },
+    "icons": {
+      "preset_label": "プリセット:",
+      "custom_preset": "カスタム",
+      "save_preset": "カスタムプリセットとして保存...",
+      "revert_default": "デフォルトに戻す",
+      "advanced_settings": "高度な設定",
+      "colorful_vendor_icons_label": "非Katanaアイコンにデフォルトカラーを適用する",
+      "table_header_icon": "アイコン",
+      "table_header_vendor": "ベンダー",
+      "table_header_color": "テキスト色",
+      "table_header_border": "枠の色",
+      "table_header_preview": "プレビュー",
+      "preset_name": "プリセット名:"
+    },
     "tabs": [
       {
         "key": "theme",

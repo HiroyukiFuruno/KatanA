@@ -261,6 +261,20 @@
       "extensionless_excludes": "Ignored Extensionless Files",
       "extensionless_excludes_hint": "List of exact file names to ignore when 'No Extension' is enabled (e.g. .DS_Store, .gitignore)."
     },
+    "icons": {
+      "preset_label": "Preset:",
+      "custom_preset": "Custom",
+      "save_preset": "Save Preset As...",
+      "revert_default": "Revert to Default",
+      "advanced_settings": "Advanced Settings",
+      "colorful_vendor_icons_label": "Apply default colours to non-Katana icons",
+      "table_header_icon": "Icon",
+      "table_header_vendor": "Vendor",
+      "table_header_color": "Text Color",
+      "table_header_border": "Frame Color",
+      "table_header_preview": "Preview",
+      "preset_name": "Preset Name:"
+    },
     "tabs": [
       {
         "key": "theme",

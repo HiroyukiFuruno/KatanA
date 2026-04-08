@@ -98,6 +98,27 @@ impl<'a> LabeledColorPicker<'a> {
     }
 }
 
+impl InlineColorPicker {
+    pub fn new() -> Self {
+        Self { is_rgba: false }
+    }
+
+    pub fn rgba(mut self, is_rgba: bool) -> Self {
+        self.is_rgba = is_rgba;
+        self
+    }
+
+    pub fn show(self, ui: &mut egui::Ui, color: &mut egui::Color32) -> egui::Response {
+        let alpha = if self.is_rgba {
+            egui::color_picker::Alpha::BlendOrAdditive
+        } else {
+            egui::color_picker::Alpha::Opaque
+        };
+
+        egui::color_picker::color_edit_button_srgba(ui, color, alpha)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

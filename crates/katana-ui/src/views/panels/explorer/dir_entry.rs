@@ -80,16 +80,13 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
 
             child_ui.add(egui::Label::new(prefix).selectable(false));
 
-            child_ui.add(
-                arrow_icon
-                    .image(crate::icon::IconSize::Small)
-                    .tint(file_tree_color),
-            );
-            child_ui.add(
-                folder_icon
-                    .image(crate::icon::IconSize::Medium)
-                    .tint(file_tree_color),
-            );
+            child_ui.visuals_mut().override_text_color = Some(file_tree_color);
+
+            let img_arrow = arrow_icon.ui_image(&child_ui, crate::icon::IconSize::Small);
+            child_ui.add(img_arrow);
+
+            let img_folder = folder_icon.ui_image(&child_ui, crate::icon::IconSize::Medium);
+            child_ui.add(img_folder);
             child_ui.add(
                 egui::Label::new(egui::RichText::new(name).color(file_tree_color))
                     .selectable(false)
