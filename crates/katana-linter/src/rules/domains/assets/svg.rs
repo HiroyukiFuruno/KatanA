@@ -126,20 +126,16 @@ impl SvgOps {
             std::collections::HashMap::new();
 
         for path in files {
-            let components: Vec<_> = path
-                .components()
-                .map(|c| c.as_os_str().to_string_lossy())
-                .collect();
-            let pack_dir = components
+            let pack_dir = path
                 .iter()
-                .skip_while(|c| *c != "icons")
+                .skip_while(|&c| c != "icons")
                 .nth(1)
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| "katana".to_string());
+                .and_then(|s| s.to_str())
+                .unwrap_or("katana")
+                .to_string();
 
-            let content = match fs::read_to_string(&path) {
-                Ok(content) => content,
-                Err(_) => continue,
+            let Ok(content) = fs::read_to_string(&path) else {
+                continue;
             };
 
             /* WHY: Extract inner SVG content (ignoring <svg ...> wrapper to avoid class noise) */
@@ -159,24 +155,18 @@ impl SvgOps {
                 continue;
             }
             /* WHY: If ALL paths match the whitelist, allow it. */
-            let all_whitelisted = paths.iter().all(|p| {
+            if paths.iter().all(|p| {
                 let p_str = p.to_string_lossy();
                 whitelist.iter().any(|&w| p_str.contains(w))
-            });
-
-            if all_whitelisted {
+            }) {
                 continue;
             }
 
-            let duplicate_names: Vec<String> = paths
+            let names = paths
                 .iter()
-                .map(|p| {
-                    p.file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        .to_string()
-                })
-                .collect();
+                .map(|p| p.file_name().unwrap_or_default().to_string_lossy())
+                .collect::<Vec<_>>()
+                .join(", ");
 
             for path in paths {
                 violations.push(Violation {
@@ -184,9 +174,7 @@ impl SvgOps {
                     line: 1,
                     column: 0,
                     message: format!(
-                        "Duplicate SVG found in theme `{}`: identical visual content to {}. Ensure this icon has a distinct purpose or remove the duplicate.",
-                        pack_dir,
-                        duplicate_names.join(", ")
+                        "Duplicate SVG found in theme `{pack_dir}`: identical visual content to {names}. Ensure this icon has a distinct purpose or remove the duplicate."
                     ),
                 });
             }

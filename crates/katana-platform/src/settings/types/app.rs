@@ -1,7 +1,7 @@
 use super::{
-    behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, layout::LayoutSettings,
-    performance::PerformanceSettings, search::SearchSettings, theme::ThemeSettings,
-    update::UpdateSettings, workspace::WorkspaceSettings,
+    behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, icon::IconSettings,
+    layout::LayoutSettings, performance::PerformanceSettings, search::SearchSettings,
+    theme::ThemeSettings, update::UpdateSettings, workspace::WorkspaceSettings,
 };
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +17,9 @@ pub struct AppSettings {
     /* WHY: Font settings (nesting). */
     #[serde(default)]
     pub font: FontSettings,
+    /* WHY: Icon settings (nesting). */
+    #[serde(default)]
+    pub icon: IconSettings,
     /* WHY: Layout settings (nesting). */
     #[serde(default)]
     pub layout: LayoutSettings,
