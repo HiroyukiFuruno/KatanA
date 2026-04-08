@@ -1,4 +1,3 @@
-version: "3"
 services:
   ubuntu-webtop:
     image: lscr.io/linuxserver/webtop:ubuntu-xfce

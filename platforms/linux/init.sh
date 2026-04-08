@@ -6,7 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "🚀 Katana Linux 検証環境 (Ubuntu WebTop) を起動します..."
 
 cd "$DIR"
-docker-compose up -d
+docker compose up -d
 
 echo "✅ コンテナが起動しました！"
 echo "ブラウザで以下のURLを開いて検証を開始してください:"
