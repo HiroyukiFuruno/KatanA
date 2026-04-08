@@ -55,10 +55,10 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ## 4. Final Verification & Release Work
 
-- [ ] 4.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
-- [ ] 4.2 Ensure `make check` passes with exit code 0
-- [ ] 4.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] 4.4 Create a PR targeting `master`
-- [ ] 4.5 Merge into master (※ `--admin` is permitted)
-- [ ] 4.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.17.2`
-- [ ] 4.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [x] 4.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
+- [x] 4.2 Ensure `make check` passes with exit code 0
+- [x] 4.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
+- [x] 4.4 Create a PR targeting `master`
+- [x] 4.5 Merge into master (※ `--admin` is permitted)
+- [x] 4.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `0.17.2`
+- [x] 4.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
