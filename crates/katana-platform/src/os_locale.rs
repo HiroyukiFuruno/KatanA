@@ -64,4 +64,14 @@ mod tests {
         assert_eq!(OsLocaleOps::resolve_locale_to_lang("fr-CA"), "fr");
         assert_eq!(OsLocaleOps::resolve_locale_to_lang("unknown-locale"), "en"); /* Fallback */
     }
+
+    #[test]
+    fn test_get_default_language() {
+        /* WHY: Because get_locale depends on the OS, we just verify it doesn't panic
+        and returns a valid fallback. */
+        let lang = OsLocaleOps::get_default_language();
+        if let Some(l) = lang {
+            assert!(!l.is_empty());
+        }
+    }
 }

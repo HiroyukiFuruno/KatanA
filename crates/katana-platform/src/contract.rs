@@ -47,3 +47,19 @@ impl PlatformContractOps {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_has_native_global_menu() {
+        let _ = PlatformContractOps::has_native_global_menu();
+    }
+
+    #[test]
+    fn test_update_install_mode() {
+        let mode = PlatformContractOps::update_install_mode();
+        assert!(!mode.is_empty());
+    }
+}
