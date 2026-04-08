@@ -86,23 +86,23 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 4.1 `crates/katana-core/src/update/version.rs` のアセット解決を、動作プラットフォームおよびアーキテクチャ (OS / CPU) に適応するよう変更する
-- [ ] 4.2 `crates/katana-core/src/update/installer.rs` およびアップデート通知時の UI を見直し、macOS は自動インストール、Windows / Linux に関しては手動ダウンロードへ切り替える設計とする
-- [ ] 4.3 `Makefile`、`scripts/package-mac.sh`、`scripts/release/*`、`.github/workflows/release.yml` などのスクリプト類を整理し、`KatanA-windows-x86_64.zip` と `KatanA-linux-x86_64.tar.gz` をビルドおよびパブリッシュできるよう機能拡張する
-- [ ] 4.4 `.github/workflows/ci.yml` と `.github/workflows/release.yml` に対して、Windows と Ubuntu をビルド実行環境 (matrix) に加える
-- [ ] 4.5 Windows / Ubuntu の CI ジョブにおける「ビルド結果」および「スモークテストの検証」のログや生成アセット (artifact) を、macOS 側からレビューできる形で保持、収集する
-- [ ] 4.6 プラットフォームポリシーに従ってアップデートダイアログやリリースへの動線が表示されることを確認し、Windows / Linux には自動インストールを示すような文言が残らないよう徹底する
-- [ ] 4.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 4.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 4.1 `crates/katana-core/src/update/version.rs` のアセット解決を、動作プラットフォームおよびアーキテクチャ (OS / CPU) に適応するよう変更する
+- [x] 4.2 `crates/katana-core/src/update/installer.rs` およびアップデート通知時の UI を見直し、macOS は自動インストール、Windows / Linux に関しては手動ダウンロードへ切り替える設計とする
+- [x] 4.3 `Makefile`、`scripts/package-mac.sh`、`scripts/release/*`、`.github/workflows/release.yml` などのスクリプト類を整理し、`KatanA-windows-x86_64.zip` と `KatanA-linux-x86_64.tar.gz` をビルドおよびパブリッシュできるよう機能拡張する
+- [x] 4.4 `.github/workflows/ci.yml` と `.github/workflows/release.yml` に対して、Windows と Ubuntu をビルド実行環境 (matrix) に加える
+- [x] 4.5 Windows / Ubuntu の CI ジョブにおける「ビルド結果」および「スモークテストの検証」のログや生成アセット (artifact) を、macOS 側からレビューできる形で保持、収集する
+- [x] 4.6 プラットフォームポリシーに従ってアップデートダイアログやリリースへの動線が表示されることを確認し、Windows / Linux には自動インストールを示すような文言が残らないよう徹底する
+- [x] 4.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 4.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] macOS / Windows / Linux 向けに適切なリリースアセット名が自動的に判別・決定できるよう作られていること
-- [ ] Windows / Linux では、アップデート処理時に存在しないインストールパスなどを実行する不具合（broken install path）が起きない想定であること
-- [ ] リリース用のワークフローが、macOS 向け (`.dmg` / `.zip`)、Windows 向け (`.zip`)、Linux 向け (`.tar.gz`) をすべて生成できること
-- [ ] GitHub CI 上に、Windows / Ubuntu のビルドおよびスモークテスト、テスト結果やアセットをレビュー用として保持する仕組みが追加されていること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] macOS / Windows / Linux 向けに適切なリリースアセット名が自動的に判別・決定できるよう作られていること
+- [x] Windows / Linux では、アップデート処理時に存在しないインストールパスなどを実行する不具合（broken install path）が起きない想定であること
+- [x] リリース用のワークフローが、macOS 向け (`.dmg` / `.zip`)、Windows 向け (`.zip`)、Linux 向け (`.tar.gz`) をすべて生成できること
+- [x] GitHub CI 上に、Windows / Ubuntu のビルドおよびスモークテスト、テスト結果やアセットをレビュー用として保持する仕組みが追加されていること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
@@ -110,22 +110,22 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 5.1 `README.md` および `README.ja.md` に記載されているプラットフォームバッジ、サポート状況 (support matrix)、インストール手順、アップデート案内の内容を Windows / Linux も対象とした文面に更新する
-- [ ] 5.2 `docs/development-guide.md` および `docs/development-guide.ja.md` における事前準備 (prerequisites)、ビルド手順、サポートOSに関する記載を更新する
-- [ ] 5.3 macOS をメインとするメンテナ向けに、Windows や Linux のサポートについて検証するための「検証レーン」を文書化する (参照すべき CI ジョブやログ、手動テストの入り口等の道標を明確にする)
-- [ ] 5.4 Windows / Linux それぞれに向け、VM やリモートマシン、あるいは物理実機のどの環境でも実行できる「ランタイム起動時の動作確認リスト（runtime smoke checklist）」を作成し、初回起動、ワークスペースオープン、Markdown の編集・プレビュー表示に関する必須確認事項 (required evidence) を規定・定義する
-- [ ] 5.5 リリースブロッカー（リリース不可）となる条件として、Windows / Ubuntu CI の成功、アセットの生成、手動確認事項のクリアが含まれていることを明文化する
-- [ ] 5.6 OpenSpec の要件定義、設計、タスクの各ドキュメントと実装ファイルの対応関係が崩れていないかを入念に確認する
+- [x] 5.1 `README.md` および `README.ja.md` に記載されているプラットフォームバッジ、サポート状況 (support matrix)、インストール手順、アップデート案内の内容を Windows / Linux も対象とした文面に更新する
+- [x] 5.2 `docs/development-guide.md` および `docs/development-guide.ja.md` における事前準備 (prerequisites)、ビルド手順、サポートOSに関する記載を更新する
+- [x] 5.3 macOS をメインとするメンテナ向けに、Windows や Linux のサポートについて検証するための「検証レーン」を文書化する (参照すべき CI ジョブやログ、手動テストの入り口等の道標を明確にする)
+- [x] 5.4 Windows / Linux それぞれに向け、VM やリモートマシン、あるいは物理実機のどの環境でも実行できる「ランタイム起動時の動作確認リスト（runtime smoke checklist）」を作成し、初回起動、ワークスペースオープン、Markdown の編集・プレビュー表示に関する必須確認事項 (required evidence) を規定・定義する
+- [x] 5.5 リリースブロッカー（リリース不可）となる条件として、Windows / Ubuntu CI の成功、アセットの生成、手動確認事項のクリアが含まれていることを明文化する
+- [x] 5.6 OpenSpec の要件定義、設計、タスクの各ドキュメントと実装ファイルの対応関係が崩れていないかを入念に確認する
 
 ### Definition of Done (DoD)
 
-- [ ] リポジトリ直下の公開用ドキュメント群から、「macOS 専用」といった表現がすべて除去されていること
-- [ ] 読者から見て、Windows / Linux 向けのインストール、関連ビルド手順、アップデートや検証方法がわかりやすく明示されていること
-- [ ] Windows / Linux 向けのスモークテスト (runtime smoke checklist) と必須の確認結果エビデンスの要件が明確に文書化されていること
-- [ ] サポート状況、アセットファイル名、アップデートポリシー、検証手順のドキュメントが、今回の提案・設計・仕様内容と一貫性を保っていること
+- [x] リポジトリ直下の公開用ドキュメント群から、「macOS 専用」といった表現がすべて除去されていること
+- [x] 読者から見て、Windows / Linux 向けのインストール、関連ビルド手順、アップデートや検証方法がわかりやすく明示されていること
+- [x] Windows / Linux 向けのスモークテスト (runtime smoke checklist) と必須の確認結果エビデンスの要件が明確に文書化されていること
+- [x] サポート状況、アセットファイル名、アップデートポリシー、検証手順のドキュメントが、今回の提案・設計・仕様内容と一貫性を保っていること
 - [ ] `make check` がエラーなし (exit code 0) で通過すること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 

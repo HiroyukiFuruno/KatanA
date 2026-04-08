@@ -989,6 +989,7 @@ mod tests {
 
 #[cfg(test)]
 mod default_coverage_tests {
+    use super::menu::*;
     use super::search::*;
     use super::*;
     #[test]

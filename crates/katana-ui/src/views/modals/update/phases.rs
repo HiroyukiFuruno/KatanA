@@ -132,9 +132,21 @@ pub(super) fn show_available_footer(
     tag: &str,
 ) -> Option<crate::app_state::AppAction> {
     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        #[cfg(target_os = "macos")]
         if ui
             .button(
                 egui::RichText::new(msgs.install_update.clone())
+                    .color(ui.visuals().widgets.active.text_color())
+                    .strong(),
+            )
+            .clicked()
+        {
+            return Some(crate::app_state::AppAction::InstallUpdate);
+        }
+        #[cfg(not(target_os = "macos"))]
+        if ui
+            .button(
+                egui::RichText::new(msgs.download_update.clone())
                     .color(ui.visuals().widgets.active.text_color())
                     .strong(),
             )

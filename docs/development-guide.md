@@ -1,6 +1,6 @@
 # KatanA
 
-> A fast, keyboard-driven Markdown editor for macOS — built with Rust and egui.
+> A fast, keyboard-driven Markdown editor for macOS, Windows, and Linux — built with Rust and egui.
 
 KatanA is a native desktop application for writing and previewing Markdown documents.
 It renders your content in real time alongside your editor, supports diagram-as-code
@@ -19,13 +19,13 @@ no Electron, no Node.js, just a single native binary.
 - **i18n** — UI strings fully localised (English / Japanese bundled)
 - **Plugin system** — Extensible renderer extension points for future diagram backends
 - **AI integration hooks** — Provider registry scaffold for future AI-assisted workflows
-- **macOS native** — Native menu bar, CJK font support (AquaKana / Hiragino Sans)
+- **Cross-platform native** — Native menu bar (macOS), in-app command UI (Windows/Linux), CJK font support
 
 ---
 
 ## Getting Started (for Users)
 
-> **macOS only** at this time. Apple Silicon and Intel are both supported.
+> Supported on macOS (Apple Silicon & Intel), Windows, and Linux.
 
 Pre-built binaries are not yet available. Please build from source (see below).
 
@@ -35,8 +35,9 @@ Pre-built binaries are not yet available. Please build from source (see below).
 
 ### Prerequisites
 
-- macOS 13 Ventura or later
-- [Homebrew](https://brew.sh) (the setup script will install it if missing)
+- macOS 13 Ventura or later, Windows 10/11, or Linux (e.g. Ubuntu 22.04+)
+- **macOS:** [Homebrew](https://brew.sh) (the setup script will install it if missing)
+- **Windows / Linux:** Standard build tools (`build-essential` on Ubuntu, Visual Studio Build Tools on Windows)
 
 ### One-command Setup
 
@@ -53,7 +54,7 @@ The script installs:
 
 | Tool | Purpose |
 | --- | --- |
-| **Homebrew** | macOS package manager |
+| **Homebrew** | Package manager (macOS/Linux) |
 | **git** (latest) | Version control |
 | **rustup** | Rust toolchain manager |
 | **Rust stable** + clippy / rustfmt / llvm-tools | Compiler and linters |
@@ -159,3 +160,26 @@ A donation page is currently in preparation. Thank you for your patience.
 ## License
 
 KatanA is released under the [MIT License](LICENSE).
+
+---
+
+## Cross-Platform Validation & Release Blockers
+
+Because KatanA is primarily developed on macOS, maintaining stability across Windows and Linux requires strict verification gates.
+For detailed validation strategies and AI-agent specific instructions, refer to the [Cross-Platform Validation Guide (JA)](cross-platform-validation.ja.md).
+
+### Three-Tier Validation Strategy
+
+1. **Daily Validation (Virtual Environment):** Use Windows/Linux VMs (e.g., Parallels on macOS) to continuously verify UI and basic operations (launch, file operations, Markdown rendering).
+2. **Continuous Validation (CI):** GitHub Actions matrix (`macos-latest`, `windows-latest`, `ubuntu-latest`) must pass to catch OS-dependent errors early.
+3. **Final Validation (Physical/Cloud VM):** Verify IME, DPI scaling, font rendering, and installer behaviour on real hardware or cloud instances prior to release.
+
+### Release Blockers
+
+Windows and Linux releases are blocked unless all of the following are satisfied:
+
+1. **Automated Tests:** The equivalent of `make check` passes completely on all CI platforms.
+2. **Manual Smoke Tests:** The executable launches without crashing.
+3. **Workspace Operations:** Local folders can be opened successfully.
+4. **Rendering:** Real-time Markdown preview function operates correctly.
+5. **Platform Constraints:** OS-specific behaviours (like update instructions) do not leak across platforms.

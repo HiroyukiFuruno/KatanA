@@ -365,8 +365,8 @@ mod tests {
             .expect("Proportional family missing");
         let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
-            !proportional.contains(&emoji_name),
-            "Preview emoji should not replace UI fallback fonts in Proportional family"
+            proportional.contains(&emoji_name),
+            "Preview emoji should be included as UI fallback fonts in Proportional family"
         );
     }
 
@@ -385,8 +385,8 @@ mod tests {
             .expect("Monospace family missing");
         let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
-            !monospace.contains(&emoji_name),
-            "Preview emoji should not replace UI fallback fonts in Monospace family"
+            monospace.contains(&emoji_name),
+            "Preview emoji should be included as UI fallback fonts in Monospace family"
         );
     }
 
