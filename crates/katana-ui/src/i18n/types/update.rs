@@ -45,6 +45,8 @@ pub struct UpdateMessages {
     pub action_skip_version: String,
     #[serde(default = "default_action_restart")]
     pub action_restart: String,
+    #[serde(default = "default_download_update")]
+    pub download_update: String,
 }
 
 fn default_release_notes_template() -> String {
@@ -70,4 +72,7 @@ fn default_action_skip_version() -> String {
 }
 fn default_action_restart() -> String {
     "Restart Now".to_string()
+}
+fn default_download_update() -> String {
+    "Download from GitHub".to_string()
 }

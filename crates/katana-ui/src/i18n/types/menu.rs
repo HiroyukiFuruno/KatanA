@@ -58,53 +58,53 @@ pub struct MenuMessages {
     pub language_it: String,
 }
 
-fn default_menu_lang_en() -> String {
+pub(super) fn default_menu_lang_en() -> String {
     "English".to_string()
 }
-fn default_menu_lang_ja() -> String {
+pub(super) fn default_menu_lang_ja() -> String {
     "日本語".to_string()
 }
-fn default_menu_lang_zh_cn() -> String {
+pub(super) fn default_menu_lang_zh_cn() -> String {
     "中文 (简体)".to_string()
 }
-fn default_menu_lang_zh_tw() -> String {
+pub(super) fn default_menu_lang_zh_tw() -> String {
     "中文 (繁體)".to_string()
 }
-fn default_menu_lang_ko() -> String {
+pub(super) fn default_menu_lang_ko() -> String {
     "한국어".to_string()
 }
-fn default_menu_lang_pt() -> String {
+pub(super) fn default_menu_lang_pt() -> String {
     "Português".to_string()
 }
-fn default_menu_lang_fr() -> String {
+pub(super) fn default_menu_lang_fr() -> String {
     "Français".to_string()
 }
-fn default_menu_lang_de() -> String {
+pub(super) fn default_menu_lang_de() -> String {
     "Deutsch".to_string()
 }
-fn default_menu_lang_es() -> String {
+pub(super) fn default_menu_lang_es() -> String {
     "Español".to_string()
 }
-fn default_menu_lang_it() -> String {
+pub(super) fn default_menu_lang_it() -> String {
     "Italiano".to_string()
 }
 
-fn default_menu_close_workspace() -> String {
+pub(super) fn default_menu_close_workspace() -> String {
     "Close Workspace".to_string()
 }
 
-fn default_menu_demo() -> String {
+pub(super) fn default_menu_demo() -> String {
     "Demo".to_string()
 }
 
-fn default_menu_command_palette() -> String {
+pub(super) fn default_menu_command_palette() -> String {
     "Command Palette…".to_string()
 }
 
-fn default_menu_view() -> String {
+pub(super) fn default_menu_view() -> String {
     "View".to_string()
 }
 
-fn default_menu_release_notes() -> String {
+pub(super) fn default_menu_release_notes() -> String {
     "Release Notes".to_string()
 }

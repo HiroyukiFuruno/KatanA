@@ -86,23 +86,23 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 4.1 `crates/katana-core/src/update/version.rs` のアセット解決を、動作プラットフォームおよびアーキテクチャ (OS / CPU) に適応するよう変更する
-- [ ] 4.2 `crates/katana-core/src/update/installer.rs` およびアップデート通知時の UI を見直し、macOS は自動インストール、Windows / Linux に関しては手動ダウンロードへ切り替える設計とする
-- [ ] 4.3 `Makefile`、`scripts/package-mac.sh`、`scripts/release/*`、`.github/workflows/release.yml` などのスクリプト類を整理し、`KatanA-windows-x86_64.zip` と `KatanA-linux-x86_64.tar.gz` をビルドおよびパブリッシュできるよう機能拡張する
-- [ ] 4.4 `.github/workflows/ci.yml` と `.github/workflows/release.yml` に対して、Windows と Ubuntu をビルド実行環境 (matrix) に加える
-- [ ] 4.5 Windows / Ubuntu の CI ジョブにおける「ビルド結果」および「スモークテストの検証」のログや生成アセット (artifact) を、macOS 側からレビューできる形で保持、収集する
-- [ ] 4.6 プラットフォームポリシーに従ってアップデートダイアログやリリースへの動線が表示されることを確認し、Windows / Linux には自動インストールを示すような文言が残らないよう徹底する
-- [ ] 4.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 4.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 4.1 `crates/katana-core/src/update/version.rs` のアセット解決を、動作プラットフォームおよびアーキテクチャ (OS / CPU) に適応するよう変更する
+- [x] 4.2 `crates/katana-core/src/update/installer.rs` およびアップデート通知時の UI を見直し、macOS は自動インストール、Windows / Linux に関しては手動ダウンロードへ切り替える設計とする
+- [x] 4.3 `Makefile`、`scripts/package-mac.sh`、`scripts/release/*`、`.github/workflows/release.yml` などのスクリプト類を整理し、`KatanA-windows-x86_64.zip` と `KatanA-linux-x86_64.tar.gz` をビルドおよびパブリッシュできるよう機能拡張する
+- [x] 4.4 `.github/workflows/ci.yml` と `.github/workflows/release.yml` に対して、Windows と Ubuntu をビルド実行環境 (matrix) に加える
+- [x] 4.5 Windows / Ubuntu の CI ジョブにおける「ビルド結果」および「スモークテストの検証」のログや生成アセット (artifact) を、macOS 側からレビューできる形で保持、収集する
+- [x] 4.6 プラットフォームポリシーに従ってアップデートダイアログやリリースへの動線が表示されることを確認し、Windows / Linux には自動インストールを示すような文言が残らないよう徹底する
+- [x] 4.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 4.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] macOS / Windows / Linux 向けに適切なリリースアセット名が自動的に判別・決定できるよう作られていること
-- [ ] Windows / Linux では、アップデート処理時に存在しないインストールパスなどを実行する不具合（broken install path）が起きない想定であること
-- [ ] リリース用のワークフローが、macOS 向け (`.dmg` / `.zip`)、Windows 向け (`.zip`)、Linux 向け (`.tar.gz`) をすべて生成できること
-- [ ] GitHub CI 上に、Windows / Ubuntu のビルドおよびスモークテスト、テスト結果やアセットをレビュー用として保持する仕組みが追加されていること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] macOS / Windows / Linux 向けに適切なリリースアセット名が自動的に判別・決定できるよう作られていること
+- [x] Windows / Linux では、アップデート処理時に存在しないインストールパスなどを実行する不具合（broken install path）が起きない想定であること
+- [x] リリース用のワークフローが、macOS 向け (`.dmg` / `.zip`)、Windows 向け (`.zip`)、Linux 向け (`.tar.gz`) をすべて生成できること
+- [x] GitHub CI 上に、Windows / Ubuntu のビルドおよびスモークテスト、テスト結果やアセットをレビュー用として保持する仕組みが追加されていること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 

@@ -31,7 +31,7 @@ fn test_build_font_definitions_no_candidates() {
 }
 
 #[test]
-fn test_build_font_definitions_ignores_emoji_candidates_for_ui_families() {
+fn test_build_font_definitions_includes_emoji_candidates_for_ui_families() {
     let tmp = TempDir::new().unwrap();
     let font_path = tmp.path().join("emoji.ttf");
     fs::write(&font_path, "").unwrap();
@@ -42,13 +42,13 @@ fn test_build_font_definitions_ignores_emoji_candidates_for_ui_families() {
 
     let emoji_name = "emoji";
     assert!(
-        !fonts.font_data.contains_key(emoji_name),
-        "preview emoji are handled outside the global egui font families"
+        fonts.font_data.contains_key(emoji_name),
+        "preview emoji should be included in global egui font families as fallbacks"
     );
     let prop_list = fonts.families.get(&FontFamily::Proportional).unwrap();
-    assert!(!prop_list.contains(&emoji_name.to_string()));
+    assert!(prop_list.contains(&emoji_name.to_string()));
     let mono_list = fonts.families.get(&FontFamily::Monospace).unwrap();
-    assert!(!mono_list.contains(&emoji_name.to_string()));
+    assert!(mono_list.contains(&emoji_name.to_string()));
 }
 
 #[test]
@@ -130,7 +130,7 @@ fn test_apple_color_emoji_family_renders_directly() {
 
 #[test]
 #[cfg(target_os = "macos")]
-fn test_macos_ui_font_setup_does_not_register_apple_color_emoji_globally() {
+fn test_macos_ui_font_setup_does_register_apple_color_emoji_globally() {
     let preset = DiagramColorPreset::current();
     let fonts = SystemFontLoader::build_font_definitions(
         &preset.proportional_font_candidates,
@@ -145,8 +145,8 @@ fn test_macos_ui_font_setup_does_not_register_apple_color_emoji_globally() {
         .get(&FontFamily::Proportional)
         .expect("proportional family");
     assert!(
-        !proportional.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
-        "UI symbol glyphs should keep using egui/built-in fallback fonts"
+        proportional.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
+        "UI symbol glyphs should include emoji fonts"
     );
 
     let monospace = fonts
@@ -155,8 +155,8 @@ fn test_macos_ui_font_setup_does_not_register_apple_color_emoji_globally() {
         .get(&FontFamily::Monospace)
         .expect("monospace family");
     assert!(
-        !monospace.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
-        "UI symbol glyphs should keep using egui/built-in fallback fonts"
+        monospace.contains(&APPLE_COLOR_EMOJI_FONT_NAME.to_string()),
+        "UI symbol glyphs should include emoji fonts"
     );
 }
 
