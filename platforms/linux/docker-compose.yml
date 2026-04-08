@@ -1,0 +1,16 @@
+version: "3"
+services:
+  ubuntu-webtop:
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce
+    container_name: katana-linux-test
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Tokyo
+      - TITLE=Katana Linux Verification
+    ports:
+      - "3000:3000"
+    shm_size: "1gb"
+    restart: unless-stopped
