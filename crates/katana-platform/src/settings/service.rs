@@ -85,3 +85,65 @@ impl Default for SettingsService {
         Self::new(Box::new(InMemoryRepository))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct MockRepository {
+        is_first_launch: bool,
+    }
+    impl SettingsRepository for MockRepository {
+        fn load(&self) -> AppSettings {
+            AppSettings::default()
+        }
+        fn save(&self, _settings: &AppSettings) -> anyhow::Result<()> {
+            Ok(())
+        }
+        fn load_origin(&self) -> SettingsLoadOrigin {
+            if self.is_first_launch {
+                SettingsLoadOrigin::FirstLaunch
+            } else {
+                SettingsLoadOrigin::Persisted
+            }
+        }
+        fn load_workspace_state(&self, _workspace_key: &str) -> Option<String> {
+            None
+        }
+        fn save_workspace_state(
+            &self,
+            _workspace_key: &str,
+            _state_json: &str,
+        ) -> anyhow::Result<()> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn test_apply_os_default_language_first_launch() {
+        let repo = Box::new(MockRepository {
+            is_first_launch: true,
+        });
+        let mut service = SettingsService::new(repo);
+        assert!(service.is_first_launch);
+
+        service.apply_os_default_language(Some("fr".to_string()));
+        assert_eq!(service.settings().language, "fr");
+    }
+
+    #[test]
+    fn test_apply_os_default_language_existing_user() {
+        let repo = Box::new(MockRepository {
+            is_first_launch: false,
+        });
+        /* WHY: Simulate existing user */
+        let mut service = SettingsService::new(repo);
+        service.settings_mut().language = "ja".to_string();
+
+        assert!(!service.is_first_launch);
+
+        service.apply_os_default_language(Some("fr".to_string()));
+        /* WHY: Existing user shouldn't be overridden */
+        assert_eq!(service.settings().language, "ja");
+    }
+}
