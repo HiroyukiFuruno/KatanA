@@ -19,18 +19,40 @@ impl OsFontScanner {
     Returns a list of `(font_name, file_path)`. */
     pub fn scan_fonts() -> Vec<(String, String)> {
         let mut fonts = Vec::new();
+        let home_dir = std::env::var("HOME")
+            .or_else(|_| std::env::var("USERPROFILE"))
+            .unwrap_or_default();
+        let mut all_dirs = Vec::new();
 
-        /* WHY: If HOME is unset, user fonts directory is skipped (fallback to system dirs only). */
-        let home_dir = std::env::var("HOME").unwrap_or_default();
-        let user_fonts = format!("{home_dir}/Library/Fonts");
+        #[cfg(target_os = "macos")]
+        {
+            all_dirs.push("/System/Library/Fonts".to_string());
+            all_dirs.push("/System/Library/Fonts/Supplemental".to_string());
+            all_dirs.push("/Library/Fonts".to_string());
+            if !home_dir.is_empty() {
+                all_dirs.push(format!("{home_dir}/Library/Fonts"));
+            }
+        }
 
-        let mut all_dirs = vec![
-            "/System/Library/Fonts".to_string(),
-            "/System/Library/Fonts/Supplemental".to_string(),
-            "/Library/Fonts".to_string(),
-        ];
-        if !home_dir.is_empty() {
-            all_dirs.push(user_fonts);
+        #[cfg(target_os = "windows")]
+        {
+            let windir = std::env::var("WINDIR").unwrap_or_else(|_| "C:\\Windows".to_string());
+            all_dirs.push(format!("{windir}\\Fonts"));
+            let local_app_data = std::env::var("LOCALAPPDATA")
+                .unwrap_or_else(|_| format!("{home_dir}\\AppData\\Local"));
+            if !home_dir.is_empty() {
+                all_dirs.push(format!("{local_app_data}\\Microsoft\\Windows\\Fonts"));
+            }
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            all_dirs.push("/usr/share/fonts".to_string());
+            all_dirs.push("/usr/local/share/fonts".to_string());
+            if !home_dir.is_empty() {
+                all_dirs.push(format!("{home_dir}/.local/share/fonts"));
+                all_dirs.push(format!("{home_dir}/.fonts"));
+            }
         }
 
         for dir in all_dirs {
