@@ -80,12 +80,33 @@ impl ThemeBridgeOps {
         visuals
     }
 
+    /* WHY: Converts platform Rgb to egui::Color32 for UI rendering. */
     pub fn rgb_to_color32(c: Rgb) -> egui::Color32 {
         egui::Color32::from_rgb(c.r, c.g, c.b)
     }
 
+    /* WHY: Converts platform Rgba to egui::Color32 for UI rendering. */
     pub fn rgba_to_color32(c: Rgba) -> egui::Color32 {
         egui::Color32::from_rgba_unmultiplied(c.r, c.g, c.b, c.a)
+    }
+
+    /* WHY: Converts egui::Color32 to platform Rgba for settings persistence. */
+    pub fn color32_to_rgba(c: egui::Color32) -> Rgba {
+        Rgba {
+            r: c.r(),
+            g: c.g(),
+            b: c.b(),
+            a: c.a(),
+        }
+    }
+
+    /* WHY: Converts egui::Color32 to platform Rgb for theme settings. */
+    pub fn color32_to_rgb(c: egui::Color32) -> Rgb {
+        Rgb {
+            r: c.r(),
+            g: c.g(),
+            b: c.b(),
+        }
     }
 
     pub fn apply_font_size(ctx: &egui::Context, font_size: f32) {
@@ -132,30 +153,6 @@ impl ThemeBridgeOps {
                 }
             }
         });
-    }
-
-    pub fn from_rgb(r: u8, g: u8, b: u8) -> egui::Color32 {
-        egui::Color32::from_rgb(r, g, b)
-    }
-
-    pub fn from_gray(l: u8) -> egui::Color32 {
-        egui::Color32::from_gray(l)
-    }
-
-    pub fn from_black_alpha(a: u8) -> egui::Color32 {
-        egui::Color32::from_black_alpha(a)
-    }
-
-    pub fn from_white_alpha(a: u8) -> egui::Color32 {
-        egui::Color32::from_white_alpha(a)
-    }
-
-    pub fn from_rgba_unmultiplied(r: u8, g: u8, b: u8, a: u8) -> egui::Color32 {
-        egui::Color32::from_rgba_unmultiplied(r, g, b, a)
-    }
-
-    pub fn from_rgba_premultiplied(r: u8, g: u8, b: u8, a: u8) -> egui::Color32 {
-        egui::Color32::from_rgba_premultiplied(r, g, b, a)
     }
 }
 

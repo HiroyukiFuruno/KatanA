@@ -9,7 +9,7 @@ pub mod toggle;
 
 pub use accordion::Accordion;
 pub use align_center::AlignCenter;
-pub use color_picker::LabeledColorPicker;
+pub use color_picker::{InlineColorPicker, LabeledColorPicker};
 pub use combo_box::StyledComboBox;
 pub use markdown_hooks::MarkdownHooksOps;
 pub use menu_button::MenuButtonOps;

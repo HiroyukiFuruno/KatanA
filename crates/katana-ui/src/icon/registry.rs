@@ -66,6 +66,14 @@ impl IconRegistry {
                 egui::Id::new("katana_icon_overrides"),
                 ActiveOverrides(settings.active_overrides.clone()),
             );
+            d.insert_temp(
+                egui::Id::new("katana_icon_settings_colorful"),
+                settings.colorful_vendor_icons,
+            );
+            d.insert_temp(
+                egui::Id::new("katana_icon_settings_default_pack"),
+                default_pack.manifest().id.to_string(),
+            );
         });
     }
 
@@ -79,5 +87,19 @@ impl IconRegistry {
 
     pub fn get_active_overrides(ctx: &egui::Context) -> Option<ActiveOverrides> {
         ctx.data(|d| d.get_temp::<ActiveOverrides>(egui::Id::new("katana_icon_overrides")))
+    }
+
+    pub fn is_colorful_vendor_icons(ctx: &egui::Context) -> bool {
+        ctx.data(|d| {
+            d.get_temp::<bool>(egui::Id::new("katana_icon_settings_colorful"))
+                .unwrap_or(true)
+        })
+    }
+
+    pub fn get_default_pack_id(ctx: &egui::Context) -> String {
+        ctx.data(|d| {
+            d.get_temp::<String>(egui::Id::new("katana_icon_settings_default_pack"))
+                .unwrap_or_else(|| "katana".to_string())
+        })
     }
 }

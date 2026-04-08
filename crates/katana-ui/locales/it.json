@@ -324,6 +324,20 @@
       "days_suffix": " giorni",
       "auto_refresh": "Aggiornamento automatico",
       "auto_refresh_interval": "Intervallo di aggiornamento"
+    },
+    "icons": {
+      "preset_label": "Preimpostazione:",
+      "preset_name": "Nome preimpostazione:",
+      "custom_preset": "Personalizzato",
+      "save_preset": "Salva preimpostazione come...",
+      "revert_default": "Ripristina predefiniti",
+      "advanced_settings": "Impostazioni avanzate",
+      "colorful_vendor_icons_label": "Applica colori predefiniti a icone non Katana",
+      "table_header_icon": "Icona",
+      "table_header_vendor": "Fornitore",
+      "table_header_color": "Colore del testo",
+      "table_header_border": "Colore della cornice",
+      "table_header_preview": "Anteprima"
     }
   },
   "tab": {

@@ -33,9 +33,13 @@ impl IconOps {
                 let image = if IconRegistry::get_render_policy(ui.ctx())
                     == pack::RenderPolicy::TintedMonochrome
                 {
-                    let color = icon
-                        .vendor_default_color(ui.visuals().dark_mode)
-                        .unwrap_or(text_color);
+                    let mut color = text_color;
+                    if IconRegistry::is_colorful_vendor_icons(ui.ctx()) {
+                        let vendor = IconRegistry::get_default_pack_id(ui.ctx());
+                        color = icon
+                            .vendor_default_color(&vendor, ui.visuals().dark_mode)
+                            .unwrap_or(color);
+                    }
                     image.tint(color)
                 } else {
                     image

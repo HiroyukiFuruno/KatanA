@@ -461,6 +461,75 @@ pub struct SettingsMessages {
     pub behavior: SettingsBehaviorMessages,
     pub preview: SettingsPreviewMessages,
     pub color: SettingsColorMessages,
+    #[serde(default)]
+    pub icons: SettingsIconsMessages,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct SettingsIconsMessages {
+    #[serde(default = "default_icons_preset_label")]
+    pub preset_label: String,
+    #[serde(default = "default_icons_custom_preset")]
+    pub custom_preset: String,
+    #[serde(default = "default_icons_save_preset")]
+    pub save_preset: String,
+    #[serde(default = "default_icons_revert_default")]
+    pub revert_default: String,
+    #[serde(default = "default_icons_advanced_settings")]
+    pub advanced_settings: String,
+    #[serde(default = "default_colorful_vendor_icons_label")]
+    pub colorful_vendor_icons_label: String,
+    #[serde(default = "default_table_header_icon")]
+    pub table_header_icon: String,
+    #[serde(default = "default_table_header_vendor")]
+    pub table_header_vendor: String,
+    #[serde(default = "default_table_header_color")]
+    pub table_header_color: String,
+    #[serde(default = "default_table_header_border")]
+    pub table_header_border: String,
+    #[serde(default = "default_table_header_preview")]
+    pub table_header_preview: String,
+    #[serde(default = "default_icons_preset_name")]
+    pub preset_name: String,
+}
+
+fn default_icons_preset_name() -> String {
+    "Preset Name:".to_string()
+}
+
+fn default_colorful_vendor_icons_label() -> String {
+    "Apply default colours to non-Katana icons".to_string()
+}
+fn default_table_header_icon() -> String {
+    "Icon".to_string()
+}
+fn default_table_header_vendor() -> String {
+    "Vendor".to_string()
+}
+fn default_table_header_color() -> String {
+    "Text Color".to_string()
+}
+fn default_table_header_border() -> String {
+    "Frame Color".to_string()
+}
+fn default_table_header_preview() -> String {
+    "Preview".to_string()
+}
+
+fn default_icons_preset_label() -> String {
+    "Preset:".to_string()
+}
+fn default_icons_custom_preset() -> String {
+    "Custom".to_string()
+}
+fn default_icons_save_preset() -> String {
+    "Save Preset As...".to_string()
+}
+fn default_icons_revert_default() -> String {
+    "Revert to Default".to_string()
+}
+fn default_icons_advanced_settings() -> String {
+    "Advanced Settings".to_string()
 }
 
 impl SettingsMessages {
