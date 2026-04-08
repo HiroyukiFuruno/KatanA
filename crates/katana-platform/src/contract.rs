@@ -1,20 +1,18 @@
 /* WHY: Platform Contract definitions and facade.
-
 Provides consistent cross-platform constants and capabilities queries.
 Useful for providing correct UI cues (like modifier keys) and determining
 update/install capabilities without hardcoding `cfg(target_os)` throughout the app. */
-
-/* WHY: Defines the primary modifier key identifier used by `egui` to ensure shortcuts
-render and behave correctly on standard platforms. */
-#[cfg(target_os = "macos")]
-pub const PRIMARY_MODIFIER_NAME: &str = "Cmd";
-#[cfg(not(target_os = "macos"))]
-pub const PRIMARY_MODIFIER_NAME: &str = "Ctrl";
 
 /* WHY: Defines the platform contract operations. */
 pub struct PlatformContractOps;
 
 impl PlatformContractOps {
+    /* WHY: Defines the primary modifier key identifier used by `egui` to ensure shortcuts
+    render and behave correctly on standard platforms. */
+    #[cfg(target_os = "macos")]
+    pub const PRIMARY_MODIFIER_NAME: &'static str = "Cmd";
+    #[cfg(not(target_os = "macos"))]
+    pub const PRIMARY_MODIFIER_NAME: &'static str = "Ctrl";
     /* WHY: Returns whether the current OS provides a native global menu (e.g., macOS). */
     #[must_use]
     pub fn has_native_global_menu() -> bool {

@@ -5,9 +5,11 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ## [0.17.2] - 2026-04-08 08:45:00 (UTC)
 
 ### 🚀 Features
+
 - Expanded Icon Settings to support Advanced Icon Configuration. Users can now assign custom colors or override default icon packs on a per-icon basis, and save them as reusable presets.
 
 ### ✨ Improvements
+
 - Reorganized the icon settings panel to group icons systematically by vendor and category, greatly enhancing discoverability.
 - Added a fixed action bar to the bottom of the settings screen, providing immediate access to 'Apply' and 'Restore' functions even when scrolling through long lists.
 

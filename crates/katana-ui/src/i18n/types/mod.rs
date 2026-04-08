@@ -67,62 +67,8 @@ pub use search::SearchMessages;
 mod update;
 pub use update::{AboutMessages, UpdateMessages};
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct MenuMessages {
-    pub file: String,
-    pub settings: String,
-    pub language: String,
-    pub open_workspace: String,
-    pub save: String,
-    pub open_all: String,
-    pub about: String,
-    pub quit: String,
-    pub hide: String,
-    pub hide_others: String,
-    pub show_all: String,
-    #[serde(default)]
-    pub export: String,
-    #[serde(default)]
-    pub export_html: String,
-    #[serde(default)]
-    pub export_pdf: String,
-    #[serde(default)]
-    pub export_png: String,
-    #[serde(default)]
-    pub export_jpg: String,
-    pub help: String,
-    pub check_updates: String,
-    #[serde(default = "default_menu_release_notes")]
-    pub release_notes: String,
-    #[serde(default = "default_menu_command_palette")]
-    pub command_palette: String,
-    #[serde(default = "default_menu_view")]
-    pub view: String,
-    #[serde(default = "default_menu_close_workspace")]
-    pub close_workspace: String,
-    #[serde(default = "default_menu_demo")]
-    pub demo: String,
-}
-
-fn default_menu_close_workspace() -> String {
-    "Close Workspace".to_string()
-}
-
-fn default_menu_demo() -> String {
-    "Demo".to_string()
-}
-
-fn default_menu_command_palette() -> String {
-    "Command Palette…".to_string()
-}
-
-fn default_menu_view() -> String {
-    "View".to_string()
-}
-
-fn default_menu_release_notes() -> String {
-    "Release Notes".to_string()
-}
+mod menu;
+pub use menu::MenuMessages;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WorkspaceMessages {

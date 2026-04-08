@@ -27,7 +27,7 @@ pub mod theme;
 pub mod workspace;
 
 pub use cache::{CacheFacade, DefaultCacheService, InMemoryCacheService};
-pub use contract::{PlatformContractOps, PRIMARY_MODIFIER_NAME};
+pub use contract::PlatformContractOps;
 pub use filesystem::FilesystemService;
 pub use os_locale::OsLocaleOps;
 pub use settings::{

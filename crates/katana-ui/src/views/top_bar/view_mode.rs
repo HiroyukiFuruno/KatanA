@@ -132,8 +132,9 @@ impl ViewModeBar {
     ) {
         ui.separator();
         let doc_search_tooltip = format!(
-            "{} (Cmd+F)",
-            crate::i18n::I18nOps::get().search.doc_search_title
+            "{} ({}F)",
+            crate::i18n::I18nOps::get().search.doc_search_title,
+            katana_platform::PlatformContractOps::PRIMARY_MODIFIER_NAME
         );
         let btn_color = if search_state.doc_search_open {
             ui.visuals().widgets.active.bg_fill
