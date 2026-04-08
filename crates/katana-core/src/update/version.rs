@@ -30,13 +30,22 @@ impl UpdateOps {
         let tag_version = tag_name.trim_start_matches('v');
         let curr_version = manager.current_version.trim_start_matches('v');
 
+        #[cfg(target_os = "macos")]
+        const ASSET_NAME: &str = "KatanA-macOS.zip";
+
+        #[cfg(target_os = "windows")]
+        const ASSET_NAME: &str = "KatanA-windows-x86_64.zip";
+
+        #[cfg(target_os = "linux")]
+        const ASSET_NAME: &str = "KatanA-linux-x86_64.tar.gz";
+
         if tag_version == curr_version {
             Ok(None)
         } else {
             let html_url = final_url.to_string();
             let download_url = format!(
-                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
-                tag_name
+                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/{}",
+                tag_name, ASSET_NAME
             );
             Ok(Some(ReleaseInfo {
                 tag_name,
@@ -75,13 +84,22 @@ impl UpdateOps {
         let tag_version = tag_name.trim_start_matches('v');
         let curr_version = current_version.trim_start_matches('v');
 
+        #[cfg(target_os = "macos")]
+        const ASSET_NAME: &str = "KatanA-macOS.zip";
+
+        #[cfg(target_os = "windows")]
+        const ASSET_NAME: &str = "KatanA-windows-x86_64.zip";
+
+        #[cfg(target_os = "linux")]
+        const ASSET_NAME: &str = "KatanA-linux-x86_64.tar.gz";
+
         if tag_version == curr_version {
             Ok(None)
         } else {
             let html_url = final_url.to_string();
             let download_url = format!(
-                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/KatanA-macOS.zip",
-                tag_name
+                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/{}",
+                tag_name, ASSET_NAME
             );
             Ok(Some(ReleaseInfo {
                 tag_name,

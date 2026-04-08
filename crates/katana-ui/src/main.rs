@@ -24,11 +24,8 @@ use katana_ui::app_state::AppState;
 #[cfg(not(test))]
 use katana_ui::shell::KatanaApp;
 
-mod locale_detection;
 #[cfg(not(test))]
 mod window_setup;
-#[cfg(not(test))]
-use locale_detection::detect_initial_language;
 #[cfg(not(test))]
 use window_setup::{initial_window_size, load_icon, min_window_size};
 
@@ -57,7 +54,7 @@ fn main() -> eframe::Result<()> {
     let mut settings = SettingsService::new(Box::new(repo));
 
     settings.apply_os_default_theme();
-    settings.apply_os_default_language(detect_initial_language());
+    settings.apply_os_default_language(katana_platform::OsLocaleOps::get_default_language());
 
     let saved_language = settings.settings().language.clone();
     let saved_icon_pack = settings.settings().theme.icon_pack.clone();
@@ -368,8 +365,8 @@ mod tests {
             .expect("Proportional family missing");
         let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
-            !proportional.contains(&emoji_name),
-            "Preview emoji should not replace UI fallback fonts in Proportional family"
+            proportional.contains(&emoji_name),
+            "Preview emoji should be included as UI fallback fonts in Proportional family"
         );
     }
 
@@ -388,8 +385,8 @@ mod tests {
             .expect("Monospace family missing");
         let emoji_name = GuiSetupOps::load_first_font(EMOJI_CANDIDATES).unwrap().0;
         assert!(
-            !monospace.contains(&emoji_name),
-            "Preview emoji should not replace UI fallback fonts in Monospace family"
+            monospace.contains(&emoji_name),
+            "Preview emoji should be included as UI fallback fonts in Monospace family"
         );
     }
 

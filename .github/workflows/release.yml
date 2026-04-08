@@ -31,12 +31,12 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  release:
-    name: Build & Release
+  preflight:
+    name: Preflight Check
     runs-on: macos-latest
-    # Only allow the repository owner to run this workflow
     if: github.actor == 'HiroyukiFuruno'
-
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -66,46 +66,12 @@ jobs:
             ~/.cargo/git/db
             ~/.cargo/bin
             target
-          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-preflight-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-release-
+            ${{ runner.os }}-cargo-preflight-
 
       - name: Run release preflight logic
         run: ./scripts/release/preflight.sh "${{ steps.tag.outputs.version }}"
-
-      - name: Install cargo-bundle
-        run: command -v cargo-bundle || cargo install cargo-bundle
-
-      - name: Install create-dmg
-        run: brew install create-dmg
-
-
-      - name: Clean stale DMG files
-        run: rm -f target/release/KatanA-Desktop-*.dmg
-
-      - name: Build .app bundle
-        run: make package-mac
-
-      - name: Ad-hoc code sign
-        run: |
-          APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
-          echo "Signing: $APP_PATH"
-          codesign --force --deep --sign - "$APP_PATH"
-          codesign --verify --verbose "$APP_PATH"
-
-      - name: Build .dmg installer
-        run: make dmg
-
-      - name: Build .zip archive
-        run: |
-          APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
-          if [[ -n "$APP_PATH" ]]; then
-            (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
-            echo "Successfully built target/release/KatanA-macOS.zip"
-          else
-            echo "Error: .app bundle not found"
-            exit 1
-          fi
 
       - name: Extract release notes from CHANGELOG.md
         run: |
@@ -113,23 +79,141 @@ jobs:
           echo "--- Release notes for ${{ steps.tag.outputs.version }} ---"
           cat RELEASE_NOTES.md
 
-      - name: Generate Checksums
+      - name: Upload Release Notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md
+
+  build_macos:
+    name: Build macOS
+    needs: preflight
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install dependencies
+        run: |
+          command -v cargo-bundle || cargo install cargo-bundle
+          brew install create-dmg
+      - name: Clean stale DMG files
+        run: rm -f target/release/KatanA-Desktop-*.dmg
+      - name: Build .app bundle
+        run: make package-mac
+      - name: Ad-hoc code sign
+        run: |
+          APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
+          codesign --force --deep --sign - "$APP_PATH"
+          codesign --verify --verbose "$APP_PATH"
+      - name: Build .dmg installer
+        run: make dmg
+      - name: Build .zip archive
+        run: |
+          APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
+          if [[ -n "$APP_PATH" ]]; then
+            (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
+            echo "Successfully built target/release/KatanA-macOS.zip"
+          else
+            exit 1
+          fi
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-macos
+          path: |
+            target/release/KatanA-Desktop-*.dmg
+            target/release/KatanA-macOS.zip
+
+  build_linux:
+    name: Build Linux
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config
+      - name: Build release (Linux)
+        run: cargo build --workspace --release
+      - name: Package Linux Artifact
         run: |
           cd target/release
-          shasum -a 256 KatanA-Desktop-*.dmg KatanA-macOS.zip > checksums.txt
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+          tar -czvf KatanA-linux-x86_64.tar.gz KatanA
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ steps.tag.outputs.version }}
-          name: KatanA Desktop ${{ steps.tag.outputs.version }}
-          body_path: RELEASE_NOTES.md
+          name: artifacts-linux
+          path: target/release/KatanA-linux-x86_64.tar.gz
+
+  build_windows:
+    name: Build Windows
+    needs: preflight
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~\.cargo\registry
+            ~\.cargo\git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build release (Windows)
+        run: cargo build --workspace --release
+      - name: Package Windows Artifact
+        shell: bash
+        run: |
+          cd target/release
+          7z a KatanA-windows-x86_64.zip KatanA.exe
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-windows
+          path: target/release/KatanA-windows-x86_64.zip
+
+  publish:
+    name: Publish Release
+    needs: [preflight, build_macos, build_linux, build_windows]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      - name: Organize Artifacts
+        run: |
+          mkdir -p release-files
+          mv artifacts-macos/* release-files/ || true
+          mv artifacts-linux/* release-files/ || true
+          mv artifacts-windows/* release-files/ || true
+          cd release-files
+          shasum -a 256 * > checksums.txt
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.preflight.outputs.version }}
+          name: KatanA Desktop ${{ needs.preflight.outputs.version }}
+          body_path: release-notes/RELEASE_NOTES.md
           draft: false
           prerelease: false
           files: |
-            target/release/KatanA-Desktop-*.dmg
-            target/release/KatanA-macOS.zip
-            target/release/checksums.txt
+            release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -138,7 +222,7 @@ jobs:
         env:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          DMG=$(find target/release -name "KatanA-Desktop-*.dmg" -maxdepth 1 | sort -V | tail -1)
+          DMG=$(find release-files -name "KatanA-Desktop-*.dmg" -maxdepth 1 | sort -V | tail -1)
           SHA256=$(shasum -a 256 "$DMG" | awk '{print $1}')
           DMG_NAME=$(basename "$DMG")
-          scripts/release/update-homebrew.sh "${{ steps.tag.outputs.version }}" "$SHA256" "$DMG_NAME"
+          scripts/release/update-homebrew.sh "${{ needs.preflight.outputs.version }}" "$SHA256" "$DMG_NAME"

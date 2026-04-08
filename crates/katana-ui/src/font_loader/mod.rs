@@ -45,7 +45,7 @@ impl SystemFontLoader {
     pub fn build_font_definitions(
         proportional_candidates: &[&str],
         monospace_candidates: &[&str],
-        _emoji_candidates: &[&str],
+        emoji_candidates: &[&str],
         custom_font_path: Option<&str>,
         custom_font_name: Option<&str>,
     ) -> NormalizeFonts {
@@ -102,6 +102,17 @@ impl SystemFontLoader {
             Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
         }
         if let Some(name) = &mono_name {
+            Self::append_fallback(
+                &mut fonts,
+                FontFamily::Name("MarkdownProportional".into()),
+                name,
+            );
+        }
+
+        let emoji_name = Self::load_first_valid(&mut fonts, emoji_candidates, None, "");
+        if let Some(name) = &emoji_name {
+            Self::append_fallback(&mut fonts, FontFamily::Proportional, name);
+            Self::append_fallback(&mut fonts, FontFamily::Monospace, name);
             Self::append_fallback(
                 &mut fonts,
                 FontFamily::Name("MarkdownProportional".into()),

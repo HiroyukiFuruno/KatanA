@@ -47,6 +47,7 @@ impl<'a> MainPanels<'a> {
             .show(ui);
 
         WindowTitle::new(app).show(ui);
+        GlobalMenuBar::new(app).show(ui);
         TitleBar::new(app, theme_colors).show(ui);
         ExplorerSidebar::new(app).show(ui);
         TabToolbar::new(app).show(ui);

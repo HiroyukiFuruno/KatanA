@@ -181,5 +181,15 @@ impl KatanaApp {
                 self.state.search.doc_search_matches.clear();
             }
         }
+
+        let cmd_s = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::S);
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_s)) {
+            self.pending_action = AppAction::SaveDocument;
+        }
+
+        let cmd_o = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::O);
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_o)) {
+            self.pending_action = AppAction::PickOpenWorkspace;
+        }
     }
 }
