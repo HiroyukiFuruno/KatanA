@@ -31,25 +31,25 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 
 ### Definition of Done (DoD)
 
-- [ ] `katana-ui` の設定画面でベンダー単位でのプレビューと個別カラーが正しく描画されていること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] `katana-ui` の設定画面でベンダー単位でのプレビューと個別カラーが正しく描画されていること。
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 3. Advanced Icon Settings & Preset Management UI
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 各アイコンに「Advanced/Edit」ボタンを配置し、それを押すことで個別のベンダー切り替え・色指定ができるポップアップまたはダイアログUIを実装する。
-- [ ] 3.2 カスタマイズ状態をプリセットとして名前をつけて保存(Save Preset As)、および読み込み(Load Preset)・初期化(Revert to Default)を行えるUIを組み込む。
-- [ ] 3.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 3.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 3.1 各アイコンに「Advanced/Edit」ボタンを配置し、それを押すことで個別のベンダー切り替え・色指定ができるポップアップまたはダイアログUIを実装する。
+- [x] 3.2 カスタマイズ状態をプリセットとして名前をつけて保存(Save Preset As)、および読み込み(Load Preset)・初期化(Revert to Default)を行えるUIを組み込む。
+- [x] 3.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 3.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] プリセットと高度な個別設定がUI上で利用できること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] プリセットと高度な個別設定がUI上で利用できること。
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
