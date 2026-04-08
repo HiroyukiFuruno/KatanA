@@ -5,7 +5,7 @@
 <h1 align="center">KatanA Desktop</h1>
 
 <p align="center">
-  macOS向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。
+  macOS, Windows, Linux 向けの高速・軽量なMarkdownワークスペース — Rustとeguiで構築。
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
   <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
   <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
-  <img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS">
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" alt="Platform: macOS | Windows | Linux">
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@
 
 開発における複雑な課題を、刀のように **鋭く、的確に切り崩していきたい** — そんな思いからこのプロジェクトは命名されました。問題をひとつずつ、切れ味よく解決していくためのツールでありたいという願いが込められています。
 
-KatanA Desktop は、仕様書や技術ドキュメントを扱う開発者のために設計された、macOS向けの高速・軽量なMarkdownワークスペースです。
+KatanA Desktop は、仕様書や技術ドキュメントを扱う開発者のために設計された、macOS, Windows, Linux向けの高速・軽量なMarkdownワークスペースです。
 
 末尾の大文字 **A** は **「AI」** と **「Agent」** を表しています。KatanA は AIエージェントと共に仕様駆動開発を行う時代のために設計されたツールであり、Markdownの仕様書が人間と AI の橋渡しとなる世界を見据えています。**Katana × AI Agent = KatanA.**
 
@@ -74,9 +74,11 @@ KatanAの目標は、**シンプルで高速、ワークスペース指向のMar
 
 ## インストール
 
-> 現在は **macOSのみ** 対応。Apple SiliconとIntelの両方をサポートしています。
+> macOS (Apple Silicon / Intel), Windows, Linux で利用可能です。
 
-### Homebrew（推奨）
+### macOS
+
+#### Homebrew（macOS推奨）
 
 ```sh
 brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
@@ -84,13 +86,7 @@ brew tap HiroyukiFuruno/KatanA && brew install --cask katana-desktop
 
 追加の手順は不要で、すぐに使い始められます。
 
-### アプリのアップデート
-
-KatanA Desktop には自動アップデータが内蔵されています。一度インストールすれば（Homebrew経由でも手動でも）、新しいリリースが利用可能になった際にアプリ内の **"Update & Restart"** ボタンをクリックするだけで自動的に更新されます。
-
-> **Homebrewをご利用の方へ**: Homebrew経由で初回インストールした場合、アプリ内から初めてアップデートを行った際に、二重管理を防ぐため自動的にHomebrewの管理から外れる（`brew untap`される）仕組みになっています。以後のアップデートはすべてアプリ自身によって安全に行われます。
-
-### 手動ダウンロード
+#### 手動ダウンロード (macOS)
 
 1. [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) にアクセス
 2. 最新の `KatanA-Desktop-x.y.z.dmg` をダウンロード
@@ -103,6 +99,19 @@ xattr -cr /Applications/KatanA\ Desktop.app
 
 > **注意:** macOS Sequoia（15.x）では、Appleの公証を受けていないアプリの起動にこのコマンドが必要です。
 > または、初回起動を試みた後に **システム設定 → プライバシーとセキュリティ → 「このまま開く」** からも許可できます。
+
+### Windows / Linux
+
+1. [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) にアクセス
+2. ご利用のOSに合った ZIP (`KatanA-windows-x86_64.zip`) または Tarball (`KatanA-linux-x86_64.tar.gz`) をダウンロード
+3. アーカイブを展開し、任意の場所にバイナリを配置
+4. 実行ファイルを起動
+
+### アプリのアップデート
+
+KatanA Desktop には自動アップデータが内蔵されています。一度インストールすれば（Homebrew経由でも手動でも）、新しいリリースが利用可能になった際に通知されます。
+- **macOS:** アプリ内の **"Update & Restart"** ボタンをクリックするだけで自動的に更新されます。Homebrew経由で初回インストールした場合、アプリ内から初めてアップデートを行った際に、二重管理を防ぐため自動的に `brew untap` されます。
+- **Windows / Linux:** アップデート時のダイアログから、最新のアセットをダウンロードするための Release ページリンクが表示されます。
 
 ---
 
