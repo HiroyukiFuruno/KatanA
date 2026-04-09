@@ -948,10 +948,10 @@ mod tests {
         let mut pane = PreviewPane::default();
         let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
 
-        /* WHY: Generate 50 blocks to ensure the background thread cannot finish all of them
-        before the main thread asserts the cancellation token. */
+        /* WHY: Generate 500 blocks to ensure the background thread cannot finish all of them
+        before the main thread asserts the cancellation token. Fast CI runners (macOS) usually beat 50 easily. */
         let source = std::iter::repeat("```mermaid\ngraph TD\nA-->B\n```\n")
-            .take(50)
+            .take(500)
             .collect::<String>();
 
         pane.full_render(
@@ -973,7 +973,7 @@ mod tests {
                 .collect();
 
         assert!(
-            sections.len() < 50,
+            sections.len() < 500,
             "Cancel token should have prevented most renders, but all {} completed",
             sections.len()
         );
