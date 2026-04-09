@@ -19,6 +19,9 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
+# Strip leading 'v' if present
+VERSION="${VERSION#v}"
+
 header "Preflight checks for v${VERSION}"
 
 # 1. Artifact Naming Validation

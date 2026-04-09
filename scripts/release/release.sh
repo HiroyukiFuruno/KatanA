@@ -45,6 +45,9 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
+# Strip leading 'v' if present
+VERSION="${VERSION#v}"
+
 header "Releasing v${VERSION}"
 info "Mode: Local Release"
 
@@ -129,7 +132,7 @@ info "Updating version in Cargo.toml..."
 sed -i '' 's/^version = ".*"/version = "'"${VERSION}"'"/' Cargo.toml
 
 info "Syncing Cargo.lock..."
-cargo check --workspace >/dev/null 2>&1 || true
+cargo update --workspace >/dev/null 2>&1 || true
 
 info "Updating version in Info.plist..."
 perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$1v'"${VERSION}"'$2/' crates/katana-ui/Info.plist
