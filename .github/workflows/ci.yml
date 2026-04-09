@@ -40,7 +40,7 @@ env:
 
 jobs:
   test:
-    name: Build and Test
+    name: Test and Build
     # Run on both push to master AND pull_request
     strategy:
       matrix:
