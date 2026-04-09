@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;
 mod init;

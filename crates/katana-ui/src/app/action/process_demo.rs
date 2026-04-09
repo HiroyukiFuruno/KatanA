@@ -1,107 +1,29 @@
-use crate::app::*;
+use crate::app::preview::PreviewOps;
 use crate::app_state::StatusType;
 use crate::shell::KatanaApp;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 impl KatanaApp {
     /// Handler for AppAction::OpenHelpDemo
+    ///
+    /// Opens all demo assets from the compile-time embedded bundle.
+    /// Files use `Katana://Demo/` virtual paths so that auto-refresh
+    /// and save operations are safely bypassed.
     pub(super) fn handle_action_open_help_demo(&mut self) {
-        let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-        let mut feature_dir = current_dir.join("assets").join("feature");
-
-        if !feature_dir.is_dir() {
-            /* WHY: Fallback for tests running in `crates/katana-ui` */
-            feature_dir = current_dir.join("../../assets").join("feature");
-        }
-
-        if !feature_dir.is_dir() {
-            let msg = format!("Demo bundle not found at {}", feature_dir.display());
-            tracing::error!("{msg}");
-            self.state.layout.status_message = Some((msg, StatusType::Error));
-            return;
-        }
-
         let lang = self.state.config.settings.settings().language.clone();
-        let demo_files = Self::resolve_demo_bundle(&feature_dir, &lang);
+        let demo_assets = super::demo_bundle::resolve_demo_bundle(&lang);
 
-        if demo_files.is_empty() {
+        if demo_assets.is_empty() {
             let msg = "No demo files found in the bundle.".to_string();
             tracing::warn!("{msg}");
             self.state.layout.status_message = Some((msg, StatusType::Warning));
             return;
         }
 
-        /* WHY: Open files in background and create/refresh "demo" tab group */
-        self.open_demo_group(demo_files);
+        self.open_demo_group(demo_assets);
     }
 
-    fn resolve_markdown_lang(path: &Path, feature_dir: &Path, name: &str, lang: &str) -> PathBuf {
-        if lang == "ja" {
-            let stem = name.strip_suffix(".md").unwrap_or(name);
-            let ja_variant = feature_dir.join(format!("{stem}.ja.md"));
-            if ja_variant.exists() {
-                return ja_variant;
-            }
-        }
-        path.to_path_buf()
-    }
-
-    /// Resolve the demo bundle from `assets/feature`.
-    ///
-    /// Resolution rules:
-    /// - Markdown files: prefer `<name>.ja.md` when `lang == "ja"`, fall back to `<name>.md`.
-    /// - Non-Markdown text files: opened as-is (reference mode).
-    fn resolve_demo_bundle(feature_dir: &Path, lang: &str) -> Vec<(PathBuf, bool)> {
-        let mut markdown_files: Vec<PathBuf> = Vec::new();
-
-        let entries = std::fs::read_dir(feature_dir)
-            .into_iter()
-            .flatten()
-            .flatten();
-
-        for entry in entries {
-            let path = entry.path();
-            if !path.is_file() {
-                continue;
-            }
-
-            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-            let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-
-            if ext == "md" {
-                /* WHY: Skip `.ja.md` files; we handle them via locale resolution. */
-                if name.ends_with(".ja.md") {
-                    continue;
-                }
-                let resolved = Self::resolve_markdown_lang(&path, feature_dir, name, lang);
-                markdown_files.push(resolved);
-            }
-        }
-
-        markdown_files.sort();
-
-        /* WHY: Put welcome first if it exists */
-        let mut sorted_md = Vec::new();
-        if let Some(pos) = markdown_files.iter().position(|p| {
-            p.file_name()
-                .unwrap_or_default()
-                .to_string_lossy()
-                .starts_with("welcome")
-        }) {
-            sorted_md.push(markdown_files.remove(pos));
-        }
-        sorted_md.extend(markdown_files);
-
-        let mut results = Vec::new();
-        for p in sorted_md {
-            /* WHY: All demo files are loaded in reference (read-only) mode */
-            results.push((p, true));
-        }
-
-        results
-    }
-
-    fn open_demo_group(&mut self, demo_files: Vec<(PathBuf, bool)>) {
+    fn open_demo_group(&mut self, demo_assets: Vec<super::demo_bundle::DemoAsset>) {
         let demo_group_name = "Demo";
         let demo_group_id = "demo".to_string();
 
@@ -125,15 +47,17 @@ impl KatanaApp {
                 });
         }
 
-        /* WHY: Open the files and add to the group */
+        /* WHY: Open the embedded assets and add to the group */
         let mut first_opened_idx = None;
-        for (path, is_ref) in demo_files {
+        for asset in demo_assets {
+            let path = PathBuf::from(asset.virtual_path);
+
             /* WHY: Check if already open */
             let mut found_idx = None;
             for (i, doc) in self.state.document.open_documents.iter_mut().enumerate() {
                 if doc.path == path {
                     /* WHY: Update reference state if it was opened outside */
-                    doc.is_reference = is_ref;
+                    doc.is_reference = asset.is_reference;
                     found_idx = Some(i);
                     break;
                 }
@@ -142,14 +66,13 @@ impl KatanaApp {
             let idx = if let Some(i) = found_idx {
                 i
             } else {
-                /* WHY: Not open, so open it */
-                let mut doc = katana_core::document::Document::new_empty(path.clone());
-                doc.is_reference = is_ref;
-
-                /* WHY: For Task 2: To make them reference docs. */
-                self.pending_document_loads.push_back(path.clone());
+                /* WHY: Create document directly from embedded content.
+                No filesystem read needed — content is already in the binary. */
+                let mut doc = katana_core::document::Document::new(path.clone(), asset.content);
+                doc.is_reference = asset.is_reference;
 
                 self.state.document.open_documents.push(doc);
+                self.state.initialize_tab_split_state(path.clone());
                 self.state.document.open_documents.len() - 1
             };
 
@@ -171,11 +94,19 @@ impl KatanaApp {
             }
         }
 
-        /* WHY: Focus the first file (e.g. welcome.md) */
+        /* WHY: Focus the first file (welcome.md) and trigger preview rendering */
         if let Some(idx) = first_opened_idx {
             self.state.document.active_doc_idx = Some(idx);
             let path = self.state.document.open_documents[idx].path.clone();
-            self.handle_select_document(path, true);
+            let src = self.state.document.open_documents[idx].buffer.clone();
+            let concurrency = self
+                .state
+                .config
+                .settings
+                .settings()
+                .performance
+                .diagram_concurrency;
+            self.full_refresh_preview(&path, &src, false, concurrency);
         }
     }
 }
