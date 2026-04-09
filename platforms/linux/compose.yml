@@ -2,6 +2,7 @@ services:
   ubuntu-webtop:
     image: lscr.io/linuxserver/webtop:ubuntu-xfce
     container_name: katana-linux-test
+    platform: linux/amd64
     security_opt:
       - seccomp:unconfined
     environment:
