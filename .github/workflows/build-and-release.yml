@@ -225,14 +225,12 @@ jobs:
       - name: Build release (Windows)
         run: cargo build --workspace --release
         
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@6ed12bbaae779f3fd3ba1477bc9a61a2535a3bb2 # main
+
       - name: Package Windows Artifacts
         shell: bash
         run: ./scripts/package-windows.sh
-      - name: Install cargo-binstall
-        if: env.WINGET_GH_TOKEN != ''
-        uses: cargo-bins/cargo-binstall@6ed12bbaae779f3fd3ba1477bc9a61a2535a3bb2 # main
-        env:
-          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
 
       - name: Install Komac
         if: env.WINGET_GH_TOKEN != ''

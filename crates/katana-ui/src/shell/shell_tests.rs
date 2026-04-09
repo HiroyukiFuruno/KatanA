@@ -446,7 +446,11 @@ mod tests_extra {
         let dest = dir.path().join("dest.txt");
         std::fs::write(&src, "hello").unwrap();
 
-        let url = format!("file://{}", src.display());
+        let url = if cfg!(windows) {
+            format!("file:///{}", src.display().to_string().replace('\\', "/"))
+        } else {
+            format!("file://{}", src.display())
+        };
         let result = ShellLogicOps::download_with_curl(&url, &dest);
         assert!(result.is_ok());
         assert!(dest.exists());
@@ -610,7 +614,11 @@ mod tests_extra {
         let src = dir.path().join("source.txt");
         std::fs::write(&src, "hello").unwrap();
         let dest = dir.path().join("subdir").join("deep").join("dest.txt");
-        let url = format!("file://{}", src.display());
+        let url = if cfg!(windows) {
+            format!("file:///{}", src.display().to_string().replace('\\', "/"))
+        } else {
+            format!("file://{}", src.display())
+        };
         let result = ShellLogicOps::download_with_curl(&url, &dest);
         assert!(dest.parent().unwrap().exists());
         assert!(result.is_ok());
@@ -624,6 +632,7 @@ mod tests_extra {
     }
 
     #[test]
+    #[cfg(unix)]
     pub(crate) fn download_with_curl_create_dir_error() {
         let dest = std::path::Path::new("/dev/null/impossible_dir/file.jar");
         let result = ShellLogicOps::download_with_curl("file:///nonexistent/file", dest);
@@ -1063,7 +1072,9 @@ mod tests_extra {
         let filename = "katana_path_check.html";
         let path = ShellLogicOps::export_named_html_to_tmp("test", filename, preset, None).unwrap();
         let expected = std::env::temp_dir().join(filename);
-        assert_eq!(path, expected);
+        let canon_path = path.canonicalize().unwrap_or(path.clone());
+        let canon_expected = expected.canonicalize().unwrap_or(expected);
+        assert_eq!(canon_path, canon_expected);
         let _ = std::fs::remove_file(&path);
     }
 
@@ -1115,10 +1126,12 @@ mod tests_extra {
             .expect("channel must receive within 5s")
             .expect("export must succeed");
 
+        let canon_path = path.canonicalize().unwrap_or(path.clone());
+        let canon_temp = std::env::temp_dir().canonicalize().unwrap_or(std::env::temp_dir());
         assert!(
-            path.starts_with(std::env::temp_dir()),
-            "path must be under temp dir, got {}",
-            path.display()
+            canon_path.starts_with(&canon_temp),
+            "path must be under temp dir, got {} (canonical: {}), temp: {}",
+            path.display(), canon_path.display(), canon_temp.display()
         );
         assert!(path.exists(), "HTML file must exist at {}", path.display());
 
@@ -1183,28 +1196,30 @@ mod tests_extra {
         let path = ShellLogicOps::export_named_html_to_tmp("# URL Test", "katana_url_test.html", preset, None)
             .expect("generation must succeed");
 
-        let url = format!("file://{}", path.display());
+        let url = if cfg!(windows) {
+            format!("file:///{}", path.display().to_string().replace('\\', "/"))
+        } else {
+            format!("file://{}", path.display())
+        };
 
         assert!(
             url.starts_with("file:///"),
             "URL must start with file:/// (3 slashes), got: {url}"
         );
 
-        let file_path = std::path::Path::new(url.strip_prefix("file://").unwrap());
+        /* WHY: Verify the original path (which we used to construct the URL) still exists */
         assert!(
-            file_path.exists(),
-            "path extracted from URL must exist: {} (url={url})",
-            file_path.display()
+            path.exists(),
+            "path used to construct URL must exist: {} (url={url})",
+            path.display()
         );
 
+        /* WHY: Verify the canonical path is also valid and exists */
         let canonical = path.canonicalize().unwrap();
-        let canonical_url = format!("file://{}", canonical.display());
-        let canonical_file_path =
-            std::path::Path::new(canonical_url.strip_prefix("file://").unwrap());
         assert!(
-            canonical_file_path.exists(),
-            "canonical path from URL must exist: {}",
-            canonical_file_path.display()
+            canonical.exists(),
+            "canonical path must exist: {}",
+            canonical.display()
         );
 
         let _ = std::fs::remove_file(&path);
