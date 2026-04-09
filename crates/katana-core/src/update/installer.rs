@@ -172,17 +172,34 @@ mod tests {
         assert!(script_path.exists());
 
         let content = std::fs::read_to_string(&script_path).unwrap();
-        assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
-        assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
-        assert!(content.contains(&format!(
-            "if ! mv \"{}\" \"{}\"; then",
-            extracted_path.display(),
-            target_path.display()
-        )));
-        assert!(content.contains("display alert \"Update Failed\""));
-        assert!(content.contains("Swap failed! Rolling back..."));
-        assert!(content.contains(&format!("xattr -cr \"{}\"", target_path.display())));
-        assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
+
+        #[cfg(target_os = "macos")]
+        {
+            assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
+            assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
+            assert!(content.contains(&format!(
+                "if ! mv \"{}\" \"{}\"; then",
+                extracted_path.display(),
+                target_path.display()
+            )));
+            assert!(content.contains("display alert \"Update Failed\""));
+            assert!(content.contains("Swap failed! Rolling back..."));
+            assert!(content.contains(&format!("xattr -cr \"{}\"", target_path.display())));
+            assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
+            assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
+            assert!(content.contains(&format!(
+                "if ! mv \"{}\" \"{}\"; then",
+                extracted_path.display(),
+                target_path.display()
+            )));
+            assert!(content.contains(&format!("\"{}\" &", target_path.display())));
+            assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
+        }
 
         let perms = std::fs::metadata(&script_path).unwrap().permissions();
         assert_eq!(perms.mode() & 0o111, 0o111, "Script must be executable");
