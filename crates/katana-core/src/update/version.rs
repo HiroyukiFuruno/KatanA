@@ -37,7 +37,7 @@ impl UpdateOps {
         const ASSET_NAME: &str = "KatanA-windows-x86_64.zip";
 
         #[cfg(target_os = "linux")]
-        const ASSET_NAME: &str = "KatanA-linux-x86_64.tar.gz";
+        const ASSET_NAME: &str = "KatanA-linux-x86_64.zip";
 
         if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)
@@ -98,7 +98,7 @@ impl UpdateOps {
         const ASSET_NAME: &str = "KatanA-windows-x86_64.zip";
 
         #[cfg(target_os = "linux")]
-        const ASSET_NAME: &str = "KatanA-linux-x86_64.tar.gz";
+        const ASSET_NAME: &str = "KatanA-linux-x86_64.zip";
 
         if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)

@@ -179,13 +179,13 @@ jobs:
       - name: Package Linux Artifact
         run: |
           cd target/release
-          tar -czvf KatanA-linux-x86_64.tar.gz KatanA
+          7z a KatanA-linux-x86_64.zip KatanA
       - name: Update Linuxbrew Formula
         env:
           HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_KATANA_GIT_TOKEN }}
         run: |
           VERSION="${{ github.ref_name }}"
-          TAR_NAME="KatanA-linux-x86_64.tar.gz"
+          TAR_NAME="KatanA-linux-x86_64.zip"
           cd target/release
           SHA256=$(shasum -a 256 "$TAR_NAME" | awk '{print $1}')
           cd ../..

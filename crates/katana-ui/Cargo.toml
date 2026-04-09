@@ -35,6 +35,7 @@ unicode-segmentation = "1.13.2"
 
 [build-dependencies]
 cc = "1"
+winres = "0.1"
 
 [[bin]]
 name = "KatanA"

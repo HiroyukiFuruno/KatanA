@@ -19,30 +19,86 @@ impl UpdateInstallerOps {
         std::fs::create_dir_all(&extract_dir)?;
         UpdateDownloadOps::extract_update(&zip_path, &extract_dir, &mut on_progress)?;
 
-        let app_name = target_app_path
-            .file_name()
-            .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.app"));
-        let extracted_app_path = extract_dir.join(app_name);
-
-        /* WHY: Verify the extracted bundle contains Info.plist to guard against corrupted or incomplete downloads. */
-        if !extracted_app_path.exists() || !extracted_app_path.join("Contents/Info.plist").exists()
+        #[cfg(target_os = "macos")]
         {
-            anyhow::bail!("Extracted update does not contain a valid application bundle");
+            let app_name = target_app_path
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.app"));
+            let extracted_app_path = extract_dir.join(app_name);
+
+            /* WHY: Verify the extracted bundle contains Info.plist to guard against corrupted or incomplete downloads. */
+            if !extracted_app_path.exists()
+                || !extracted_app_path.join("Contents/Info.plist").exists()
+            {
+                anyhow::bail!("Extracted update does not contain a valid application bundle");
+            }
+
+            let script_path = temp_dir.path().join("relauncher.sh");
+            Self::generate_relauncher_script(
+                &extracted_app_path,
+                target_app_path,
+                &script_path,
+                temp_dir.path(),
+            )?;
+
+            Ok(UpdatePreparation {
+                temp_dir,
+                app_bundle_path: extracted_app_path,
+                script_path,
+            })
         }
 
-        let script_path = temp_dir.path().join("relauncher.sh");
-        Self::generate_relauncher_script(
-            &extracted_app_path,
-            target_app_path,
-            &script_path,
-            temp_dir.path(),
-        )?;
+        #[cfg(target_os = "windows")]
+        {
+            let app_name = target_app_path
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.exe"));
+            let extracted_app_path = extract_dir.join(app_name);
 
-        Ok(UpdatePreparation {
-            temp_dir,
-            app_bundle_path: extracted_app_path,
-            script_path,
-        })
+            if !extracted_app_path.exists() {
+                anyhow::bail!("Extracted update does not contain a valid executable");
+            }
+
+            let script_path = temp_dir.path().join("relauncher.bat");
+            Self::generate_relauncher_script(
+                &extracted_app_path,
+                target_app_path,
+                &script_path,
+                temp_dir.path(),
+            )?;
+
+            Ok(UpdatePreparation {
+                temp_dir,
+                app_bundle_path: extracted_app_path,
+                script_path,
+            })
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let app_name = target_app_path
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("KatanA"));
+            let extracted_app_path = extract_dir.join(app_name);
+
+            if !extracted_app_path.exists() {
+                anyhow::bail!("Extracted update does not contain a valid executable");
+            }
+
+            let script_path = temp_dir.path().join("relauncher.sh");
+            Self::generate_relauncher_script(
+                &extracted_app_path,
+                target_app_path,
+                &script_path,
+                temp_dir.path(),
+            )?;
+
+            Ok(UpdatePreparation {
+                temp_dir,
+                app_bundle_path: extracted_app_path,
+                script_path,
+            })
+        }
     }
 
     #[cfg(not(test))]
@@ -51,7 +107,17 @@ impl UpdateInstallerOps {
         #[allow(deprecated)]
         let _temp_path = prep.temp_dir.into_path();
 
-        std::process::Command::new(&prep.script_path).spawn()?;
+        #[cfg(target_os = "windows")]
+        {
+            std::process::Command::new("cmd")
+                .arg("/C")
+                .arg(&prep.script_path)
+                .spawn()?;
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            std::process::Command::new(&prep.script_path).spawn()?;
+        }
         std::process::exit(0);
     }
 
@@ -64,7 +130,6 @@ impl UpdateInstallerOps {
         let content = generate_script_content(target_app, extracted_app, temp_dir_path);
         std::fs::write(script_path, content)?;
 
-        #[cfg(unix)]
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -84,8 +149,10 @@ fn generate_script_content(
     extracted_app: &Path,
     temp_dir_path: &Path,
 ) -> String {
-    format!(
-        r#"#!/bin/bash
+    #[cfg(target_os = "macos")]
+    {
+        format!(
+            r#"#!/bin/bash
 set -e
 sleep 1
 TARGET_BAK="{target}.bak"
@@ -115,10 +182,64 @@ open "{target}"
 rm -rf "$TARGET_BAK"
 rm -rf "{temp_dir}"
 "#,
-        target = target_app.display(),
-        extracted = extracted_app.display(),
-        temp_dir = temp_dir_path.display()
-    )
+            target = target_app.display(),
+            extracted = extracted_app.display(),
+            temp_dir = temp_dir_path.display()
+        )
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        format!(
+            r#"@echo off
+timeout /t 2 /nobreak >nul
+set TARGET_BAK={target}.bak
+if exist "%TARGET_BAK%" del /f /q "%TARGET_BAK%"
+if exist "{target}" move /y "{target}" "%TARGET_BAK%"
+move /y "{extracted}" "{target}"
+if errorlevel 1 (
+    if exist "%TARGET_BAK%" move /y "%TARGET_BAK%" "{target}"
+    echo Update failed.
+) else (
+    start "" "{target}"
+)
+rd /s /q "{temp_dir}"
+del "%~f0"
+"#,
+            target = target_app.display(),
+            extracted = extracted_app.display(),
+            temp_dir = temp_dir_path.display()
+        )
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        format!(
+            r#"#!/bin/bash
+set -e
+sleep 1
+TARGET_BAK="{target}.bak"
+rm -f "$TARGET_BAK"
+if [ -f "{target}" ]; then
+    mv "{target}" "$TARGET_BAK"
+fi
+if ! mv "{extracted}" "{target}"; then
+    if [ -f "$TARGET_BAK" ]; then
+        mv "$TARGET_BAK" "{target}"
+    fi
+    "{target}" &
+    rm -rf "{temp_dir}"
+    exit 1
+fi
+"{target}" &
+rm -f "$TARGET_BAK"
+rm -rf "{temp_dir}"
+"#,
+            target = target_app.display(),
+            extracted = extracted_app.display(),
+            temp_dir = temp_dir_path.display()
+        )
+    }
 }
 
 #[cfg(all(test, unix))]

@@ -125,7 +125,7 @@ brew tap HiroyukiFuruno/KatanA && brew install katana
 #### Manual Download (Linux)
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
-2. Download the `KatanA-linux-x86_64.tar.gz`
+2. Download the `KatanA-linux-x86_64.zip`
 3. Extract the archive and run the executable directly
 
 ### Updating KatanA

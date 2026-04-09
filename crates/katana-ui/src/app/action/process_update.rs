@@ -5,22 +5,16 @@ impl KatanaApp {
         let Some(release) = &self.state.update.available else {
             return;
         };
-        #[cfg(not(target_os = "macos"))]
-        {
-            let _ = open::that(&release.html_url);
-            self.state.update.checking = false;
-            self.state.update.phase = None;
-            return;
-        }
+
+        self.state.update.checking = true;
+        self.state.update.phase =
+            Some(crate::app_state::UpdatePhase::Downloading { progress: 0.0 });
+        let exe_path = std::env::current_exe().unwrap();
 
         #[cfg(target_os = "macos")]
-        {
-            self.state.update.checking = true;
-            self.state.update.phase =
-                Some(crate::app_state::UpdatePhase::Downloading { progress: 0.0 });
-            let exe_path = std::env::current_exe().unwrap();
+        let target_app_path = {
             const MACOS_BUNDLE_LEVELS: usize = 3;
-            let target_app_path = if exe_path.to_string_lossy().contains("MacOS") {
+            if exe_path.to_string_lossy().contains("MacOS") {
                 exe_path
                     .ancestors()
                     .nth(MACOS_BUNDLE_LEVELS)
@@ -28,22 +22,26 @@ impl KatanaApp {
                     .to_path_buf()
             } else {
                 exe_path.clone()
-            };
-            let download_url = release.download_url.clone();
-            let (tx, rx) = std::sync::mpsc::channel();
-            self.update_install_rx = Some(rx);
-            std::thread::spawn(move || {
-                let tx_clone = tx.clone();
-                let res = katana_core::update::UpdateInstallerOps::prepare_update(
-                    &download_url,
-                    &target_app_path,
-                    move |progress| {
-                        let _ = tx_clone.send(UpdateInstallEvent::Progress(progress));
-                    },
-                )
-                .map_err(|e| e.to_string());
-                let _ = tx.send(UpdateInstallEvent::Finished(res));
-            });
-        }
+            }
+        };
+
+        #[cfg(not(target_os = "macos"))]
+        let target_app_path = exe_path.clone();
+
+        let download_url = release.download_url.clone();
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.update_install_rx = Some(rx);
+        std::thread::spawn(move || {
+            let tx_clone = tx.clone();
+            let res = katana_core::update::UpdateInstallerOps::prepare_update(
+                &download_url,
+                &target_app_path,
+                move |progress| {
+                    let _ = tx_clone.send(UpdateInstallEvent::Progress(progress));
+                },
+            )
+            .map_err(|e| e.to_string());
+            let _ = tx.send(UpdateInstallEvent::Finished(res));
+        });
     }
 }
