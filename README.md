@@ -131,6 +131,7 @@ brew tap HiroyukiFuruno/KatanA && brew install katana
 ### Updating KatanA
 
 KatanA features a built-in auto-updater. Once installed (whether via Homebrew or manually), KatanA will notify you when a new release is available.
+
 - **macOS:** You can update the app directly from within the UI by clicking the **"Update & Restart"** button. If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues.
 - **Windows / Linux:** The update dialog will provide a direct link to download the latest asset from the release page.
 

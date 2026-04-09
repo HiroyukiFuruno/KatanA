@@ -1,6 +1,7 @@
 pub mod cleanup;
 pub mod download;
 pub mod installer;
+pub mod scripts;
 pub mod types;
 pub mod version;
 

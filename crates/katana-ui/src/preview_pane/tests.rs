@@ -948,8 +948,8 @@ mod tests {
         let mut pane = PreviewPane::default();
         let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
 
-        // Generate 50 blocks to ensure the background thread cannot finish all of them
-        // before the main thread asserts the cancellation token.
+        /* WHY: Generate 50 blocks to ensure the background thread cannot finish all of them
+        before the main thread asserts the cancellation token. */
         let source = std::iter::repeat("```mermaid\ngraph TD\nA-->B\n```\n")
             .take(50)
             .collect::<String>();

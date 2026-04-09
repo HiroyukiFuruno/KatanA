@@ -131,6 +131,7 @@ brew tap HiroyukiFuruno/KatanA && brew install katana
 ### アプリのアップデート
 
 KatanA Desktop には自動アップデータが内蔵されています。一度インストールすれば（Homebrew経由でも手動でも）、新しいリリースが利用可能になった際に通知されます。
+
 - **macOS:** アプリ内の **"Update & Restart"** ボタンをクリックするだけで自動的に更新されます。Homebrew経由で初回インストールした場合、アプリ内から初めてアップデートを行った際に、二重管理を防ぐため自動的に `brew untap` されます。
 - **Windows / Linux:** アップデート時のダイアログから、最新のアセットをダウンロードするための Release ページリンクが表示されます。
 
