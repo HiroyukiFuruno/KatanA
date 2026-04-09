@@ -126,11 +126,11 @@ test-integration: ## Run integration tests (UI tests, semantic assertions only) 
 
 .PHONY: test-linux
 test-linux: ## Verify test execution in isolated Linux environment
-	docker compose -f platforms/linux/ci/compose-linux-test.yml run --rm ubuntu-test cargo test --workspace
+	docker compose -f platforms/linux/ci/compose.yml run --rm ubuntu-test cargo test --workspace
 
 .PHONY: check-windows
 check-windows: ## Verify Windows cross-compilation without running tests
-	docker compose -f platforms/windows/ci/compose-windows-check.yml run --rm windows-test cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
+	docker compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
