@@ -3,7 +3,7 @@ services:
     build: .
     container_name: katana-linux-ci
     volumes:
-      - ../../:/app
+      - ../../../:/app
       # Mount separate target directory to avoid trashing macOS local builds
       - katana-linux-target:/app/target
       - cargo-registry:/usr/local/cargo/registry
