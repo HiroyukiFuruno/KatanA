@@ -1062,7 +1062,7 @@ mod tests_extra {
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
         let filename = "katana_path_check.html";
         let path = ShellLogicOps::export_named_html_to_tmp("test", filename, preset, None).unwrap();
-        let expected = std::path::PathBuf::from("/tmp").join(filename);
+        let expected = std::env::temp_dir().join(filename);
         assert_eq!(path, expected);
         let _ = std::fs::remove_file(&path);
     }
@@ -1116,8 +1116,8 @@ mod tests_extra {
             .expect("export must succeed");
 
         assert!(
-            path.starts_with("/tmp"),
-            "path must be under /tmp, got {}",
+            path.starts_with(std::env::temp_dir()),
+            "path must be under temp dir, got {}",
             path.display()
         );
         assert!(path.exists(), "HTML file must exist at {}", path.display());

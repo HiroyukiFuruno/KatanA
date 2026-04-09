@@ -33,7 +33,7 @@ impl ShellLogicOps {
 
         let hash = Self::hash_str(&path.to_string_lossy());
         let filename = format!("katana_export_{hash}.html");
-        let output_path = std::path::PathBuf::from("/tmp").join(filename);
+        let output_path = std::env::temp_dir().join(filename);
 
         std::fs::write(&output_path, html.as_bytes()).map_err(|e| e.to_string())?;
         Ok(output_path)
@@ -76,7 +76,7 @@ impl ShellLogicOps {
         let renderer = katana_core::markdown::KatanaRenderer;
         let html = katana_core::markdown::HtmlExporter::export(source, &renderer, preset, base_dir)
             .map_err(|e| e.to_string())?;
-        let output_path = std::path::PathBuf::from("/tmp").join(filename);
+        let output_path = std::env::temp_dir().join(filename);
         std::fs::write(&output_path, html.as_bytes()).map_err(|e| e.to_string())?;
         Ok(output_path)
     }
