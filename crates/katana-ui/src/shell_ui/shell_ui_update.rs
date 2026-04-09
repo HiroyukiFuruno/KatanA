@@ -81,7 +81,9 @@ impl KatanaApp {
                     if now.duration_since(last).as_secs_f64()
                         >= behavior.auto_save_interval_secs =>
                 {
-                    if self.state.active_document().is_some_and(|d| d.is_dirty) {
+                    if self.state.active_document().is_some_and(|d| d.is_dirty)
+                        && matches!(self.pending_action, crate::app_state::AppAction::None)
+                    {
                         self.pending_action = crate::app_state::AppAction::SaveDocument;
                     }
                     self.state.document.last_auto_save = Some(now);
@@ -103,7 +105,9 @@ impl KatanaApp {
                     if now.duration_since(last).as_secs_f64()
                         >= behavior.auto_refresh_interval_secs =>
                 {
-                    if self.state.active_document().is_some() {
+                    if self.state.active_document().is_some()
+                        && matches!(self.pending_action, crate::app_state::AppAction::None)
+                    {
                         self.pending_action =
                             crate::app_state::AppAction::RefreshDocument { is_manual: false };
                     }
