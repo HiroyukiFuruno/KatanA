@@ -504,11 +504,16 @@ fn test_font_jitter_8_inline_code_cross_family() {
 
 #[test]
 fn test_proportional_primary_y_offset_matches_constant() {
-    let preset = DiagramColorPreset::current();
+    use tempfile::TempDir;
+    let tmp = TempDir::new().unwrap();
+    let font_path = tmp.path().join("prop.ttf");
+    std::fs::write(&font_path, "").unwrap();
+    let path_str = font_path.to_str().unwrap();
+
     let fonts = SystemFontLoader::build_font_definitions(
-        &preset.proportional_font_candidates,
-        &preset.monospace_font_candidates,
-        &preset.emoji_font_candidates,
+        &[path_str], // Force our candidate to be found
+        &[],
+        &[],
         None,
         None,
     );

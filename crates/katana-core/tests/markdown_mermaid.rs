@@ -1,7 +1,6 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::mermaid_renderer;
 use std::sync::Mutex;
-use std::time::{Duration, Instant};
 
 static ENV_LOCK: Mutex<()> = Mutex::new(());
 
@@ -54,6 +53,7 @@ fn fake_binary_is_false_in_is_mmdc_available() {
 #[test]
 #[cfg(unix)]
 fn hung_mmdc_probe_returns_false_instead_of_blocking() {
+    use std::time::{Duration, Instant};
     use std::{fs, os::unix::fs::PermissionsExt};
 
     let _guard = ENV_LOCK.lock().unwrap();

@@ -137,26 +137,15 @@ fn run_command_status_with_timeout(
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
-    use std::{fs, os::unix::fs::PermissionsExt};
-
-    fn write_executable_script(body: &str) -> tempfile::TempDir {
-        let dir = tempfile::tempdir().unwrap();
-        let script_path = dir.path().join("fake-mmdc.sh");
-        fs::write(&script_path, body).unwrap();
-        let mut permissions = fs::metadata(&script_path).unwrap().permissions();
-        permissions.set_mode(0o755);
-        fs::set_permissions(&script_path, permissions).unwrap();
-        dir
-    }
 
     #[test]
     fn command_timeout_returns_error_for_hung_process() {
-        let dir = write_executable_script("#!/bin/sh\nsleep 5\n");
-        let script_path = dir.path().join("fake-mmdc.sh");
         let start = Instant::now();
+        /* WHY: Use standard sleep to avoid overlayfs ETXTBSY race conditions */
+        let mut cmd = Command::new("sleep");
+        cmd.arg("5");
 
-        let result =
-            run_command_status_with_timeout(Command::new(&script_path), Duration::from_millis(100));
+        let result = run_command_status_with_timeout(cmd, Duration::from_millis(100));
 
         assert!(result.is_err());
         assert!(start.elapsed() < Duration::from_secs(2));
@@ -164,13 +153,11 @@ mod tests {
 
     #[test]
     fn command_timeout_returns_success_for_fast_process() {
-        let dir = write_executable_script("#!/bin/sh\nexit 0\n");
-        let script_path = dir.path().join("fake-mmdc.sh");
+        /* WHY: Use standard true to avoid overlayfs ETXTBSY race conditions */
+        let cmd = Command::new("true");
 
         /* WHY: heavily loaded test environments (e.g. concurrent llvm-cov runs) can occasionally take >1000ms to spawn and complete even an empty script. Flaky timeout prevention. */
-        let status =
-            run_command_status_with_timeout(Command::new(&script_path), Duration::from_secs(5))
-                .unwrap();
+        let status = run_command_status_with_timeout(cmd, Duration::from_secs(5)).unwrap();
 
         assert!(status.success());
     }
