@@ -223,16 +223,27 @@ jobs:
         run: |
           cd target/release
           7z a KatanA-windows-x86_64.zip KatanA.exe
-      - name: Submit to Winget
+      - name: Install cargo-binstall
         if: env.WINGET_GH_TOKEN != ''
-        uses: vedantmgoyal9/winget-releaser@7bd472be23763def6e16bd06cc8b1cdfab0e2fd5 # main
+        uses: cargo-bins/cargo-binstall@6ed12bbaae779f3fd3ba1477bc9a61a2535a3bb2 # main
         env:
           WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
-        with:
-          identifier: HiroyukiFuruno.katana-desktop
-          version: ${{ github.ref_name }}
-          urls: https://github.com/HiroyukiFuruno/KatanA/releases/download/${{ github.ref_name }}/KatanA-windows-x86_64.zip
-          token: ${{ env.WINGET_GH_TOKEN }}
+
+      - name: Install Komac
+        if: env.WINGET_GH_TOKEN != ''
+        env:
+          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+        run: cargo binstall komac -y
+
+      - name: Submit to Winget
+        if: env.WINGET_GH_TOKEN != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+        shell: pwsh
+        run: |
+          $VERSION = "${{ github.ref_name }}" -replace "^v",""
+          komac update HiroyukiFuruno.katana-desktop --version $VERSION --urls "https://github.com/HiroyukiFuruno/KatanA/releases/download/${{ github.ref_name }}/KatanA-windows-x86_64.zip" --submit
       - name: Warning for missing Winget Token
         if: env.WINGET_GH_TOKEN == ''
         env:
