@@ -124,13 +124,16 @@ test-specific: ## Run a specific test (e.g., make test-specific T=test_name)
 test-integration: ## Run integration tests (UI tests, semantic assertions only) (requires: egui_kittest)
 	cargo test -q --workspace --test integration_tests -- --test-threads=1
 
-.PHONY: test-linux
-test-linux: ## Verify test execution in isolated Linux environment
-	docker compose -f platforms/linux/ci/compose.yml run --rm ubuntu-test cargo test --workspace
+.PHONY: check-linux
+check-linux: ## Verify test execution in isolated Linux environment
+	docker compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test cargo test --workspace
 
 .PHONY: check-windows
 check-windows: ## Verify Windows cross-compilation without running tests
 	docker compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
+
+.PHONY: check-platforms
+check-platforms: check-linux check-windows ## Verify test/compilation across all target platforms (Linux, Windows)
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
@@ -143,11 +146,11 @@ check-light: fmt-check lint ast-lint ## Quick verification (skip slow fixture te
 
 
 .PHONY: check
-check: fmt-check lint ast-lint test-integration coverage ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
+check: fmt-check lint ast-lint test-integration coverage check-platforms ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: fmt lint ast-lint test-integration coverage ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
+check-local: fmt lint ast-lint test-integration coverage check-platforms ## Full verification including cross-platform checks (Windows, Linux)
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push

@@ -9,6 +9,7 @@ services:
       - cargo-registry:/usr/local/cargo/registry
     environment:
       - CARGO_HOME=/usr/local/cargo
+      - CARGO_INCREMENTAL=0
 
 volumes:
   katana-linux-target:

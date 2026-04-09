@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libxkbcommon-dev \
     libssl-dev \
     gcc \
+    lld \
     pkg-config \
     libdbus-1-dev \
     curl \

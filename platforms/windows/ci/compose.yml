@@ -7,7 +7,7 @@ services:
       # Mount separate target directory to avoid trashing local builds
       - katana-windows-target:/app/target
       - cargo-registry:/usr/local/cargo/registry
-      - xwin-cache:/root/.xwin
+      - xwin-cache:/root/.cache/cargo-xwin
     environment:
       - CARGO_HOME=/usr/local/cargo
     command: cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
