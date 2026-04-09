@@ -100,12 +100,33 @@ xattr -cr /Applications/KatanA\ Desktop.app
 > **注意:** macOS Sequoia（15.x）では、Appleの公証を受けていないアプリの起動にこのコマンドが必要です。
 > または、初回起動を試みた後に **システム設定 → プライバシーとセキュリティ → 「このまま開く」** からも許可できます。
 
-### Windows / Linux
+### Windows
+
+#### Winget (推奨)
+
+```sh
+winget install HiroyukiFuruno.katana-desktop
+```
+
+#### 手動ダウンロード (Windows)
 
 1. [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) にアクセス
-2. ご利用のOSに合った ZIP (`KatanA-windows-x86_64.zip`) または Tarball (`KatanA-linux-x86_64.tar.gz`) をダウンロード
-3. アーカイブを展開し、任意の場所にバイナリを配置
-4. 実行ファイルを起動
+2. `KatanA-windows-x86_64.zip` をダウンロード
+3. アーカイブを展開し、`KatanA.exe` を起動
+
+### Linux
+
+#### Homebrew (推奨)
+
+```sh
+brew tap HiroyukiFuruno/KatanA && brew install katana
+```
+
+#### 手動ダウンロード (Linux)
+
+1. [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) にアクセス
+2. `KatanA-linux-x86_64.tar.gz` をダウンロード
+3. アーカイブを展開し、実行ファイルを起動
 
 ### アプリのアップデート
 

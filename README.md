@@ -100,12 +100,33 @@ xattr -cr /Applications/KatanA\ Desktop.app
 > **Note:** On macOS Sequoia (15.x), Gatekeeper requires this command for apps not notarized with Apple.
 > Alternatively, go to **System Settings → Privacy & Security → "Open Anyway"** after the first launch attempt.
 
-### Windows & Linux
+### Windows
+
+#### Winget (Recommended)
+
+```sh
+winget install HiroyukiFuruno.katana-desktop
+```
+
+#### Manual Download (Windows)
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
-2. Download the appropriate ZIP (`KatanA-windows-x86_64.zip`) or Tarball (`KatanA-linux-x86_64.tar.gz`) for your OS
-3. Extract the archive and place the binary wherever you prefer
-4. Run the executable directly
+2. Download the `KatanA-windows-x86_64.zip`
+3. Extract the archive and run `KatanA.exe`
+
+### Linux
+
+#### Homebrew (Recommended)
+
+```sh
+brew tap HiroyukiFuruno/KatanA && brew install katana
+```
+
+#### Manual Download (Linux)
+
+1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
+2. Download the `KatanA-linux-x86_64.tar.gz`
+3. Extract the archive and run the executable directly
 
 ### Updating KatanA
 
