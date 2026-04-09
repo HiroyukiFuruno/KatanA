@@ -1,0 +1,15 @@
+services:
+  ubuntu-test:
+    build: .
+    container_name: katana-linux-ci
+    volumes:
+      - ../../:/app
+      # Mount separate target directory to avoid trashing macOS local builds
+      - katana-linux-target:/app/target
+      - cargo-registry:/usr/local/cargo/registry
+    environment:
+      - CARGO_HOME=/usr/local/cargo
+
+volumes:
+  katana-linux-target:
+  cargo-registry:

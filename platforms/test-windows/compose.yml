@@ -1,0 +1,16 @@
+services:
+  windows-test:
+    build: .
+    container_name: katana-windows-ci
+    volumes:
+      - ../../:/app
+      # Mount separate target directory to avoid trashing local builds
+      - katana-windows-target:/app/target
+      - cargo-registry:/usr/local/cargo/registry
+    environment:
+      - CARGO_HOME=/usr/local/cargo
+    command: cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
+
+volumes:
+  katana-windows-target:
+  cargo-registry:
