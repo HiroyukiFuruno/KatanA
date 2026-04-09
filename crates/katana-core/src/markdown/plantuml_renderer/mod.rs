@@ -32,14 +32,14 @@ impl PlantUmlRendererOps {
             }
             Err(_) => {}
         }
-        if let Some(home) = dirs_sys::home_dir() {
+        if let Some(home) = dirs::home_dir() {
             paths.push(home.join(".local").join("katana").join("plantuml.jar"));
         }
         paths
     }
 
     pub fn default_install_path() -> Option<PathBuf> {
-        dirs_sys::home_dir().map(|h| h.join(".local").join("katana").join("plantuml.jar"))
+        dirs::home_dir().map(|h| h.join(".local").join("katana").join("plantuml.jar"))
     }
 
     pub fn find_plantuml_jar() -> Option<PathBuf> {

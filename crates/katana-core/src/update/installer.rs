@@ -61,16 +61,18 @@ impl UpdateInstallerOps {
         script_path: &Path,
         temp_dir_path: &Path,
     ) -> anyhow::Result<()> {
-        use std::os::unix::fs::PermissionsExt;
-
         let content = generate_script_content(target_app, extracted_app, temp_dir_path);
         std::fs::write(script_path, content)?;
 
-        const RELAUNCHER_SCRIPT_PERMISSIONS: u32 = 0o755;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            const RELAUNCHER_SCRIPT_PERMISSIONS: u32 = 0o755;
 
-        let mut perms = std::fs::metadata(script_path)?.permissions();
-        perms.set_mode(RELAUNCHER_SCRIPT_PERMISSIONS);
-        std::fs::set_permissions(script_path, perms)?;
+            let mut perms = std::fs::metadata(script_path)?.permissions();
+            perms.set_mode(RELAUNCHER_SCRIPT_PERMISSIONS);
+            std::fs::set_permissions(script_path, perms)?;
+        }
 
         Ok(())
     }
@@ -118,7 +120,7 @@ rm -rf "{temp_dir}"
     )
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
 

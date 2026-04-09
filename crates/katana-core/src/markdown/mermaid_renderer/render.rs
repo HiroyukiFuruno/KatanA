@@ -133,7 +133,7 @@ fn run_command_status_with_timeout(
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
