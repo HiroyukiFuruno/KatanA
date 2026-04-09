@@ -33,7 +33,8 @@ cd target/release
 7z a KatanA-windows-x86_64.zip KatanA.exe
 cd ../..
 
-info "Copying MSI to release root..."
+info "Copying artifacts to project root..."
+cp target/release/KatanA-windows-x86_64.zip ./
 cp target/wix/*.msi ./KatanA-windows-x86_64.msi
 
 success "Successfully built Windows packages (.zip and .msi)"
