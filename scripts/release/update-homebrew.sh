@@ -41,7 +41,7 @@ function upload_cask() {
     CASK_CONTENT+="cask \"${CASK_TOKEN}\" do\n"
     CASK_CONTENT+="  version \"${VERSION_NUM}\"\n"
     CASK_CONTENT+="  sha256 \"${SHA256}\"\n\n"
-    CASK_CONTENT+="  url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/v#{version}/KatanA-Desktop-#{version}.dmg\"\n"
+    CASK_CONTENT+="  url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/${VERSION}/${DMG_NAME}\"\n"
     CASK_CONTENT+="  name \"KatanA Desktop\"\n"
     CASK_CONTENT+="  desc \"Lightweight Markdown viewer with live preview, Mermaid diagrams, and syntax highlighting\"\n"
     CASK_CONTENT+="  homepage \"https://github.com/HiroyukiFuruno/KatanA\"\n\n"

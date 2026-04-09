@@ -39,7 +39,7 @@ function upload_formula() {
     FORMULA_CONTENT+="  version \"${VERSION_NUM}\"\n\n"
     
     FORMULA_CONTENT+="  if OS.linux?\n"
-    FORMULA_CONTENT+="    url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/v${VERSION_NUM}/${TAR_NAME}\"\n"
+    FORMULA_CONTENT+="    url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/${VERSION}/${TAR_NAME}\"\n"
     FORMULA_CONTENT+="    sha256 \"${SHA256}\"\n"
     FORMULA_CONTENT+="  end\n\n"
 
