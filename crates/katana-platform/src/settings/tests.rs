@@ -25,8 +25,8 @@ fn test_workspace_settings_default_deserialization() {
 #[test]
 fn test_app_settings_default_values() {
     let s = AppSettings::default();
-    assert_eq!(s.theme.theme, "dark");
-    assert_eq!(s.theme.preset, ThemePreset::KatanaDark);
+    assert_eq!(s.theme.theme, SettingsDefaultOps::default_theme());
+    assert_eq!(s.theme.preset, SettingsDefaultOps::select_initial_preset());
     assert!(s.theme.custom_color_overrides.is_none());
     assert!((s.font.size - 14.0).abs() < f32::EPSILON);
     assert_eq!(s.font.family, "monospace");
@@ -88,7 +88,7 @@ fn test_behavior_settings_serde_missing_fields_use_defaults() {
 fn test_effective_theme_colors_uses_preset_by_default() {
     let s = AppSettings::default();
     let colors = s.effective_theme_colors();
-    assert_eq!(colors, ThemePreset::KatanaDark.colors());
+    assert_eq!(colors, SettingsDefaultOps::select_initial_preset().colors());
 }
 
 #[test]
@@ -108,7 +108,7 @@ fn test_effective_theme_colors_uses_custom_when_set() {
 fn test_in_memory_repository_load_returns_defaults() {
     let repo = InMemoryRepository;
     let settings = repo.load();
-    assert_eq!(settings.theme.theme, "dark");
+    assert_eq!(settings.theme.theme, SettingsDefaultOps::default_theme());
 }
 
 #[test]
@@ -145,7 +145,7 @@ fn test_json_file_repository_load_missing_file_returns_defaults() {
     let path = tmp.path().join("nonexistent.json");
     let repo = JsonFileRepository::new(path);
     let settings = repo.load();
-    assert_eq!(settings.theme.theme, "dark");
+    assert_eq!(settings.theme.theme, SettingsDefaultOps::default_theme());
 }
 
 #[test]
@@ -155,7 +155,7 @@ fn test_json_file_repository_load_corrupt_file_returns_defaults() {
     std::fs::write(&path, "NOT VALID JSON").unwrap();
     let repo = JsonFileRepository::new(path.clone());
     let settings = repo.load();
-    assert_eq!(settings.theme.theme, "dark");
+    assert_eq!(settings.theme.theme, SettingsDefaultOps::default_theme());
 }
 
 #[test]
@@ -177,7 +177,7 @@ fn test_json_file_repository_with_default_path() {
 #[test]
 fn test_settings_service_new_loads_from_repository() {
     let svc = SettingsService::new(Box::new(InMemoryRepository));
-    assert_eq!(svc.settings().theme.theme, "dark");
+    assert_eq!(svc.settings().theme.theme, SettingsDefaultOps::default_theme());
 }
 
 #[test]
@@ -195,7 +195,7 @@ fn test_settings_service_save_delegates_to_repository() {
 #[test]
 fn test_settings_service_default_uses_in_memory() {
     let svc = SettingsService::default();
-    assert_eq!(svc.settings().theme.theme, "dark");
+    assert_eq!(svc.settings().theme.theme, SettingsDefaultOps::default_theme());
     assert!(svc.save().is_ok());
 }
 
