@@ -2656,7 +2656,7 @@ dependencies = [
  "anyhow",
  "base64",
  "comrak",
- "dirs-sys",
+ "dirs",
  "emojis",
  "headless_chrome",
  "pulldown-cmark",
