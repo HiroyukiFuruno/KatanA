@@ -55,13 +55,16 @@ jobs:
           toolchain: stable
 
       - name: Cache Cargo registry & target
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v4.1.2
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
             target
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-test-
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
