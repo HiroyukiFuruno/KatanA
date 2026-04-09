@@ -164,6 +164,7 @@ fn test_macos_ui_font_setup_does_register_apple_color_emoji_globally() {
     );
 }
 
+#[cfg(target_os = "macos")]
 fn assert_font_jitter(context_name: &str, font_size: f32) {
     let preset = DiagramColorPreset::current();
     let fonts = SystemFontLoader::build_font_definitions(
@@ -210,31 +211,37 @@ fn assert_font_jitter(context_name: &str, font_size: f32) {
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_1_app_title() {
     assert_font_jitter("App Title", 20.0);
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_2_workspace_dir() {
     assert_font_jitter("Workspace Dir", 14.0);
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_3_workspace_file() {
     assert_font_jitter("Workspace File", 14.0);
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_4_toc_heading() {
     assert_font_jitter("TOC Heading", 14.0);
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_5_tab_name() {
     assert_font_jitter("Tab Name", 14.0);
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_6_monospace() {
     let preset = DiagramColorPreset::current();
     let fonts = SystemFontLoader::build_font_definitions(
@@ -311,6 +318,7 @@ fn test_font_jitter_6_monospace() {
 }
 
 #[test]
+#[cfg(target_os = "macos")]
 fn test_font_jitter_7_codeblock_layoutjob() {
     let preset = DiagramColorPreset::current();
     let fonts = SystemFontLoader::build_font_definitions(
