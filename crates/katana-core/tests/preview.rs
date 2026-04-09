@@ -111,9 +111,10 @@ fn resolve_image_paths_converts_relative_to_absolute() {
 
     let source = "![logo](../assets/logo.png)";
     let (result, paths) = ImagePreviewOps::resolve_image_paths(source, &md_path);
-    assert!(result.starts_with("![logo](file://"));
-    assert!(result.contains("assets/logo.png"));
-    assert!(!result.contains(".."));
+    let normalized = result.replace('\\', "/");
+    assert!(normalized.starts_with("![logo](file://"));
+    assert!(normalized.contains("assets/logo.png"));
+    assert!(!normalized.contains(".."));
     assert_eq!(paths.len(), 1);
 }
 
