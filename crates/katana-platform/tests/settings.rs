@@ -5,7 +5,7 @@ fn new_settings_service_has_defaults() {
     let svc = SettingsService::default();
     let settings = svc.settings();
     assert!(settings.workspace.last_workspace.is_none());
-    assert_eq!(settings.theme.theme, "dark");
+    assert_eq!(settings.theme.theme, katana_platform::settings::SettingsDefaultOps::default_theme());
     assert!(settings.extra.is_empty());
 }
 
