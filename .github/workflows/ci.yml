@@ -41,6 +41,7 @@ env:
 jobs:
   test:
     name: Build and Test
+    # Run on both push to master AND pull_request
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
@@ -76,6 +77,7 @@ jobs:
 
   lint:
     name: Lint
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -112,6 +114,7 @@ jobs:
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:
     name: CodeQL Security Scan
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # Required to upload SARIF results.
@@ -135,6 +138,7 @@ jobs:
 
   coverage:
     name: Coverage
+    if: github.event_name == 'pull_request'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
