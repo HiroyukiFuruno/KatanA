@@ -1126,12 +1126,16 @@ mod tests_extra {
             .expect("channel must receive within 5s")
             .expect("export must succeed");
 
-        let canon_path = path.canonicalize().unwrap_or(path.clone());
-        let canon_temp = std::env::temp_dir().canonicalize().unwrap_or(std::env::temp_dir());
+        /* WHY: On Windows, canonicalize() adds \\?\ UNC prefix and short path names
+           (RUNNER~1) remain unresolved in generated filenames, so starts_with() can
+           fail between canonical forms. Comparing parent() is the correct semantic check. */
+        let path_parent = path.parent().expect("exported file must have parent");
+        let temp = std::env::temp_dir();
         assert!(
-            canon_path.starts_with(&canon_temp),
-            "path must be under temp dir, got {} (canonical: {}), temp: {}",
-            path.display(), canon_path.display(), canon_temp.display()
+            path_parent == temp
+                || path_parent.canonicalize().ok() == temp.canonicalize().ok(),
+            "path must be under temp dir, got {} (parent: {}), temp: {}",
+            path.display(), path_parent.display(), temp.display()
         );
         assert!(path.exists(), "HTML file must exist at {}", path.display());
 
