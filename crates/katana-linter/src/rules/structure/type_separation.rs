@@ -9,7 +9,7 @@ pub struct TypeSeparationOps;
 impl TypeSeparationOps {
     pub fn lint(path: &Path, syntax: &syn::File) -> Vec<Violation> {
         let mut violations = Vec::new();
-        let path_str = path.to_string_lossy();
+        let path_str = path.to_string_lossy().replace('\\', "/");
         if path_str.contains("/tests/") || path_str.ends_with("tests.rs") {
             return violations;
         }

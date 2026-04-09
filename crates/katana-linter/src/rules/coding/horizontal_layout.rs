@@ -12,6 +12,7 @@ impl HorizontalLayoutOps {
         stay isolated behind one abstraction boundary. */
         if path
             .to_string_lossy()
+            .replace('\\', "/")
             .contains("widgets/align_center/ui.rs")
         {
             return Vec::new();

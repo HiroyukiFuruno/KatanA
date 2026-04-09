@@ -135,7 +135,10 @@ impl IconsSyncOps {
             /* WHY: Check if ALL these paths are in the whitelist */
             let all_whitelisted = paths
                 .iter()
-                .all(|p| whitelist.iter().any(|&w| p.contains(w)));
+                .all(|p| {
+                    let normalized_p = p.replace('\\', "/");
+                    whitelist.iter().any(|&w| normalized_p.contains(w))
+                });
 
             if !all_whitelisted {
                 let mut message = "Duplicate SVGs detected (identical contents). ".to_string();

@@ -26,7 +26,7 @@ impl IconButtonFillOps {
         /* WHY: icon/mod.rs is the canonical factory for Button::image — it is the
         only sanctioned call-site. All other callers must use Icon::button() or
         Icon::selected_button() instead of constructing Button::image directly. */
-        if path.to_string_lossy().contains("icon/mod.rs") {
+        if path.to_string_lossy().replace('\\', "/").contains("icon/mod.rs") {
             return Vec::new();
         }
 

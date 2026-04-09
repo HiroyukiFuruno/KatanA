@@ -23,6 +23,7 @@ impl ConditionalFrameOps {
         behavior is confined behind a single abstraction boundary. */
         if path
             .to_string_lossy()
+            .replace('\\', "/")
             .contains("widgets/menu_button/mod.rs")
         {
             return Vec::new();
