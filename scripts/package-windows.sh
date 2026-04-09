@@ -25,7 +25,7 @@ info "Building MSI Installer with WiX..."
 # WHY: cargo wix runs WiX linker (light.exe) from CWD, and main.wxs references
 # resources as 'wix\Product.ico' / 'wix\License.rtf' relative to the crate root.
 cd crates/katana-ui
-cargo wix --nocapture
+cargo wix --package katana-ui --nocapture
 cd ../..
 
 info "Packaging ZIP archive..."
