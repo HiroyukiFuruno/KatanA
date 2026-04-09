@@ -59,7 +59,7 @@ impl UpdateOps {
     pub fn is_newer_version(current: &str, latest: &str) -> bool {
         let current_stripped = current.trim_start_matches('v');
         let latest_stripped = latest.trim_start_matches('v');
-        
+
         match (
             semver::Version::parse(current_stripped),
             semver::Version::parse(latest_stripped),
