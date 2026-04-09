@@ -188,6 +188,14 @@ tree: ## Display dependency tree
 package-mac: ## Build macOS .app bundle (release)
 	scripts/package-mac.sh $(VERSION)
 
+.PHONY: package-linux
+package-linux: ## Build Linux tar.gz artifact
+	scripts/package-linux.sh
+
+.PHONY: package-windows
+package-windows: ## Build Windows MSI and ZIP artifacts
+	scripts/package-windows.sh
+
 .PHONY: dmg
 dmg: package-mac ## Build macOS .dmg installer from .app bundle
 	@FORCE=$(FORCE) scripts/dmg.sh $(VERSION)

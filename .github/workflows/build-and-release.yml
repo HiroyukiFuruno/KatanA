@@ -177,9 +177,7 @@ jobs:
       - name: Build release (Linux)
         run: cargo build --workspace --release
       - name: Package Linux Artifact
-        run: |
-          cd target/release
-          tar -czvf KatanA-linux-x86_64.tar.gz KatanA
+        run: ./scripts/package-linux.sh
       - name: Update Linuxbrew Formula
         env:
           HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_KATANA_GIT_TOKEN }}
@@ -223,19 +221,9 @@ jobs:
       - name: Build release (Windows)
         run: cargo build --workspace --release
         
-      - name: Install cargo-wix
-        run: cargo binstall cargo-wix -y
-        
-      - name: Build MSI Installer
-        run: cargo wix --package katana-ui --nocapture
-        
       - name: Package Windows Artifacts
         shell: bash
-        run: |
-          cd target/release
-          7z a KatanA-windows-x86_64.zip KatanA.exe
-          cd ../..
-          cp target/wix/*.msi ./KatanA-windows-x86_64.msi
+        run: ./scripts/package-windows.sh
       - name: Install cargo-binstall
         if: env.WINGET_GH_TOKEN != ''
         uses: cargo-bins/cargo-binstall@6ed12bbaae779f3fd3ba1477bc9a61a2535a3bb2 # main
