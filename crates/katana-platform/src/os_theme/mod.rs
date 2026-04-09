@@ -39,9 +39,9 @@ fn detect_dark_mode_impl() -> Option<bool> {
     /* WHY: Use `dark-light` crate to detect system theme on Windows and Linux.
     Returns `None` if the platform lacks dark mode detection capabilities or fails. */
     match dark_light::detect() {
-        dark_light::Mode::Dark => Some(true),
-        dark_light::Mode::Light => Some(false),
-        dark_light::Mode::Default => None,
+        Ok(dark_light::Mode::Dark) => Some(true),
+        Ok(dark_light::Mode::Light) => Some(false),
+        Ok(dark_light::Mode::Unspecified) | Err(_) => None,
     }
 }
 
