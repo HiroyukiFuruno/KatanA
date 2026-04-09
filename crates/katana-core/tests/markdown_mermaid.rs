@@ -52,6 +52,7 @@ fn fake_binary_is_false_in_is_mmdc_available() {
 }
 
 #[test]
+#[cfg(unix)]
 fn hung_mmdc_probe_returns_false_instead_of_blocking() {
     use std::{fs, os::unix::fs::PermissionsExt};
 

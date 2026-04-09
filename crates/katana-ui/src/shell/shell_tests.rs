@@ -418,6 +418,7 @@ mod tests_extra {
     }
 
     #[test]
+    #[cfg(unix)]
     fn handle_save_document_error_sets_error_status_message() {
         use std::os::unix::fs::PermissionsExt;
 
