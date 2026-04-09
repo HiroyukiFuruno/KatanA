@@ -116,11 +116,16 @@ mod tests {
         let source = "![local](../img.png) ![abs](file:///img.png)";
         let file_path = PathBuf::from("/docs/doc.md");
         let (resolved, extracted) = ImagePreviewOps::resolve_image_paths(source, &file_path);
+        let normalized = resolved.replace('\\', "/");
+
+        /* WHY: on Windows, canonical.display() could prepend driver letter like C: or D: */
         assert!(
-            resolved.contains("file:///docs/../img.png")
-                || resolved.contains("file:///docs/img.png")
+            normalized.ends_with("/docs/../img.png")
+                || normalized.ends_with("/docs/img.png")
+                || normalized.contains("/docs/../img.png")
+                || normalized.contains("/docs/img.png")
         );
-        assert!(resolved.contains("file:///img.png"));
+        assert!(normalized.contains("file:///img.png") || normalized.contains(":/img.png"));
         assert!(!extracted.is_empty());
     }
 

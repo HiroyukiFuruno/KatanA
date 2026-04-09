@@ -26,7 +26,8 @@ fn test_update_manager_and_state() {
 
     assert!(!manager.should_check_for_updates());
 
-    manager.last_checked = Some(std::time::Instant::now() - std::time::Duration::from_secs(4000));
+    manager.check_interval = std::time::Duration::from_secs(0);
+    manager.last_checked = Some(std::time::Instant::now());
     assert!(manager.should_check_for_updates());
 
     manager.transition_to(UpdateState::Error("dummy error".to_string()));
