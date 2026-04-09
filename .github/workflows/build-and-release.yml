@@ -291,9 +291,19 @@ jobs:
       - name: Update Homebrew Cask
         if: success()
         env:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           DMG=$(find release-files -name "KatanA-Desktop-*.dmg" -maxdepth 1 | sort -V | tail -1)
           SHA256=$(shasum -a 256 "$DMG" | awk '{print $1}')
           DMG_NAME=$(basename "$DMG")
           scripts/release/update-homebrew.sh "${{ needs.preflight.outputs.version }}" "$SHA256" "$DMG_NAME"
+
+      - name: Update Linuxbrew Formula
+        if: success()
+        env:
+          HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          TAR=$(find release-files -name "KatanA-linux-*.tar.gz" -maxdepth 1 | sort -V | tail -1)
+          SHA256=$(shasum -a 256 "$TAR" | awk '{print $1}')
+          TAR_NAME=$(basename "$TAR")
+          scripts/release/update-linuxbrew.sh "${{ needs.preflight.outputs.version }}" "$SHA256" "$TAR_NAME"
