@@ -128,6 +128,7 @@ impl Default for KatanaSvgLoader {
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod tests {
     use super::*;
     use egui::load::{ImageLoader, ImagePoll, SizeHint};

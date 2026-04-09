@@ -1,3 +1,4 @@
+#![allow(unused_imports, dead_code)]
 use super::*;
 use egui::{FontData, FontDefinitions, FontId};
 use katana_core::markdown::color_preset::DiagramColorPreset;
