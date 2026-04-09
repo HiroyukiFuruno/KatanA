@@ -177,7 +177,10 @@ fn test_json_file_repository_with_default_path() {
 #[test]
 fn test_settings_service_new_loads_from_repository() {
     let svc = SettingsService::new(Box::new(InMemoryRepository));
-    assert_eq!(svc.settings().theme.theme, SettingsDefaultOps::default_theme());
+    assert_eq!(
+        svc.settings().theme.theme,
+        SettingsDefaultOps::default_theme()
+    );
 }
 
 #[test]
@@ -195,7 +198,10 @@ fn test_settings_service_save_delegates_to_repository() {
 #[test]
 fn test_settings_service_default_uses_in_memory() {
     let svc = SettingsService::default();
-    assert_eq!(svc.settings().theme.theme, SettingsDefaultOps::default_theme());
+    assert_eq!(
+        svc.settings().theme.theme,
+        SettingsDefaultOps::default_theme()
+    );
     assert!(svc.save().is_ok());
 }
 

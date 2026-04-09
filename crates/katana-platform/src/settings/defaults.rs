@@ -134,7 +134,7 @@ impl Default for ThemeSettings {
             theme: SettingsDefaultOps::default_theme(),
             icon_pack: SettingsDefaultOps::default_icon_pack(),
             ui_contrast_offset: SettingsDefaultOps::default_ui_contrast_offset(),
-            preset: ThemePreset::default(),
+            preset: SettingsDefaultOps::select_initial_preset(),
             custom_color_overrides: None,
             custom_themes: Vec::new(),
             active_custom_theme: None,
