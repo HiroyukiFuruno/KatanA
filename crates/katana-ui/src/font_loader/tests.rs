@@ -1,7 +1,9 @@
 use super::*;
 #[cfg(target_os = "macos")]
 use egui::FontData;
-use egui::{FontDefinitions, FontId};
+use egui::FontDefinitions;
+#[cfg(target_os = "macos")]
+use egui::FontId;
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use std::fs;
 #[cfg(target_os = "macos")]
