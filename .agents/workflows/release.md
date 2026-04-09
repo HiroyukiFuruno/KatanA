@@ -39,21 +39,36 @@ git checkout -b release/vX.Y.Z
    git branch -a | grep -v master | grep -v HEAD | grep -v release/
    ```
 
-### Step 3: PR の作成と CI 確認
+### Step 3: PR の作成と CI 確認・マージ
 
 ```bash
 git push origin release/vX.Y.Z
-# GitHub でPRを作成（base: master）
+
+# PRを作成（base: master）
+gh pr create --base master --head release/vX.Y.Z \
+  --title "release: v[Target Version]" \
+  --body "CHANGELOG 更新を含むリリース準備ブランチ"
 ```
 
 PR がオープンされると以下の CI チェックが自動実行されます。
-**すべてグリーンになるまで次に進まないこと。**
+**すべてグリーンになるまでマージしてはいけません。**
 
 - ✅ Lint（`cargo clippy -D warnings`）
 - ✅ Coverage（テスト＋カバレッジ）
 - ✅ CodeQL Security Scan
 
-CI がパスしたら PR を master へマージします。
+CI の完了をターミナルでリアルタイム監視します：
+
+```bash
+gh run watch
+```
+
+全チェックが緑になったら、マージを実行します：
+
+```bash
+gh pr merge --merge --delete-branch
+```
+
 
 ### Step 4: リリースの実行（`master` 上で）
 
