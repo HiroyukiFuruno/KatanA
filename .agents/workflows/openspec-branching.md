@@ -67,10 +67,18 @@ gh pr create --base master --head <Change-Directory-Name> \
   --body "<summary of all completed tasks>"
 ```
 
-Merge the PR once approved (or self-merge if the project policy allows):
+> [!IMPORTANT]
+> The `master` branch has protection rules enabled. The following CI checks **must pass** before the PR can be merged:
+> - ✅ **Lint** (`cargo clippy -D warnings`)
+> - ✅ **Coverage** (test + coverage gate)
+> - ✅ **CodeQL Security Scan**
+>
+> Do not merge until all three checks are green.
+
+Merge the PR once all checks pass:
 
 ```bash
-gh pr merge --squash  # or --merge, per project convention
+gh pr merge --merge --delete-branch
 ```
 
 ### Step 6: Branch Cleanup (Local and Remote)

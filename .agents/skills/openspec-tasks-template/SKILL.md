@@ -35,13 +35,16 @@ Insert this as the very last task group at the bottom of the `tasks.md` file.
 
 ## x. Final Verification & Release Work
 
-- [ ] x.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md` (Check for missing version updates in each file)
+- [ ] x.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
 - [ ] x.2 Ensure `make check` passes with exit code 0
-- [ ] x.3 Merge the intermediate base branch (derived originally from master) into the `master` branch
-- [ ] x.4 Create a PR targeting `master`
-- [ ] x.5 Merge into master (※ `--admin` is permitted)
-- [ ] x.6 Execute release tagging and creation using `.agents/skills/release_workflow/SKILL.md` for `[Target Version]`
-- [ ] x.7 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] x.3 Create PR from Base Feature Branch targeting `master`
+- [ ] x.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] x.5 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] x.6 Create `release/v[Target Version]` branch from master and update CHANGELOG (`changelog-writing` skill)
+- [ ] x.7 Create PR from `release/v[Target Version]` targeting `master` — CI must pass
+- [ ] x.8 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] x.9 Execute `make release VERSION=[Target Version] FORCE=1` from `master`
+- [ ] x.10 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
 ```
 
 *(Replace `x` with the next sequential task number. Replace `[Target Version]` with the actual target release version like `0.5.0`)*
