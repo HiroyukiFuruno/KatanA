@@ -170,7 +170,8 @@ fn build_harness(sections: Vec<RenderedSection>, width: f32, height: f32) -> Har
     for _ in 0..5 {
         harness.step();
     }
-    harness.run();
+    // Cannot use harness.run() because snippets with unresolved images (like badges)
+    // will show a spinner and cause continuous repaints, exceeding max_steps limit.
     harness
 }
 
