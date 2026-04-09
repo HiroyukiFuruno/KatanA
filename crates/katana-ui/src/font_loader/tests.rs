@@ -1,11 +1,14 @@
-#![allow(unused_imports, dead_code)]
 use super::*;
-use egui::{FontData, FontDefinitions, FontId};
+#[cfg(target_os = "macos")]
+use egui::FontData;
+use egui::{FontDefinitions, FontId};
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use std::fs;
+#[cfg(target_os = "macos")]
 use std::sync::Arc;
 use tempfile::TempDir;
 
+#[cfg(target_os = "macos")]
 const APPLE_COLOR_EMOJI_FONT_NAME: &str = "Apple Color Emoji";
 
 #[test]
