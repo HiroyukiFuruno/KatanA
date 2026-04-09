@@ -222,11 +222,20 @@ jobs:
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
       - name: Build release (Windows)
         run: cargo build --workspace --release
-      - name: Package Windows Artifact
+        
+      - name: Install cargo-wix
+        run: cargo binstall cargo-wix -y
+        
+      - name: Build MSI Installer
+        run: cargo wix --package katana-ui --nocapture
+        
+      - name: Package Windows Artifacts
         shell: bash
         run: |
           cd target/release
           7z a KatanA-windows-x86_64.zip KatanA.exe
+          cd ../..
+          cp target/wix/*.msi ./KatanA-windows-x86_64.msi
       - name: Install cargo-binstall
         if: env.WINGET_GH_TOKEN != ''
         uses: cargo-bins/cargo-binstall@6ed12bbaae779f3fd3ba1477bc9a61a2535a3bb2 # main
@@ -247,7 +256,7 @@ jobs:
         shell: pwsh
         run: |
           $VERSION = "${{ github.ref_name }}" -replace "^v",""
-          komac update HiroyukiFuruno.katana-desktop --version $VERSION --urls "https://github.com/HiroyukiFuruno/KatanA/releases/download/${{ github.ref_name }}/KatanA-windows-x86_64.zip" --submit
+          komac update HiroyukiFuruno.katana-desktop --version $VERSION --urls "https://github.com/HiroyukiFuruno/KatanA/releases/download/${{ github.ref_name }}/KatanA-windows-x86_64.msi" --submit
       - name: Warning for missing Winget Token
         if: env.WINGET_GH_TOKEN == ''
         env:
@@ -257,7 +266,9 @@ jobs:
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: artifacts-windows
-          path: target/release/KatanA-windows-x86_64.zip
+          path: |
+            target/release/KatanA-windows-x86_64.zip
+            KatanA-windows-x86_64.msi
 
   publish:
     name: Publish Release

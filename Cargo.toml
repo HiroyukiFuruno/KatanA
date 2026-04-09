@@ -13,6 +13,8 @@ edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
 rust-version = "1.94.1"
+authors = ["Hiroyuki Furuno"]
+description = "A context-aware AI desktop application."
 
 [workspace.dependencies]
 # UI

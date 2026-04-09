@@ -3,6 +3,7 @@ name = "katana-ui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
 description = "KatanA UI: egui application shell, panes, menu wiring, and presentation state"
 
 [dependencies]

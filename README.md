@@ -111,8 +111,8 @@ winget install HiroyukiFuruno.katana-desktop
 #### Manual Download (Windows)
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
-2. Download the `KatanA-windows-x86_64.zip`
-3. Extract the archive and run `KatanA.exe`
+2. Download the `KatanA-windows-x86_64.msi` installer
+3. Double-click the MSI file to install. It will automatically create a Start Menu and Desktop shortcut.
 
 ### Linux
 
