@@ -21,6 +21,16 @@ on:
       tag:
         description: 'Tag to release (e.g. v0.0.1)'
         required: true
+      target:
+        description: 'Target to release'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - macOS
+          - linux
+          - windows
 
 permissions:
   contents: write
@@ -89,6 +99,7 @@ jobs:
     name: Build macOS
     needs: preflight
     runs-on: macos-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'macOS'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
@@ -140,6 +151,7 @@ jobs:
     name: Build Linux
     needs: preflight
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'linux'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
@@ -191,6 +203,7 @@ jobs:
     name: Build Windows
     needs: preflight
     runs-on: windows-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'windows'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
@@ -234,6 +247,7 @@ jobs:
   publish:
     name: Publish Release
     needs: [preflight, build_macos, build_linux, build_windows]
+    if: always() && needs.preflight.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
