@@ -119,7 +119,7 @@ winget install HiroyukiFuruno.katana-desktop
 #### Homebrew (推奨)
 
 ```sh
-brew tap HiroyukiFuruno/KatanA && brew install katana
+brew tap HiroyukiFuruno/KatanA && brew install katana-desktop
 ```
 
 #### 手動ダウンロード (Linux)

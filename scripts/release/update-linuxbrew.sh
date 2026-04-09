@@ -33,20 +33,16 @@ function upload_formula() {
 
     # macOS formula vs Linux formula (Actually, Formula works for both, but we only have it for Linux since macOS uses Cask)
     local FORMULA_CONTENT=""
-    FORMULA_CONTENT+="class Katana < Formula\n"
+    FORMULA_CONTENT+="class KatanaDesktop < Formula\n"
     FORMULA_CONTENT+="  desc \"Lightweight Markdown viewer with live preview, Mermaid diagrams, and syntax highlighting\"\n"
     FORMULA_CONTENT+="  homepage \"https://github.com/HiroyukiFuruno/KatanA\"\n"
     FORMULA_CONTENT+="  version \"${VERSION_NUM}\"\n\n"
     
-    FORMULA_CONTENT+="  if OS.linux?\n"
-    FORMULA_CONTENT+="    url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/${VERSION}/${TAR_NAME}\"\n"
-    FORMULA_CONTENT+="    sha256 \"${SHA256}\"\n"
-    FORMULA_CONTENT+="  end\n\n"
-
+    FORMULA_CONTENT+="  url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/${VERSION}/${TAR_NAME}\"\n"
+    FORMULA_CONTENT+="  sha256 \"${SHA256}\"\n\n"
+    FORMULA_CONTENT+="  depends_on :linux\n\n"
     FORMULA_CONTENT+="  def install\n"
-    FORMULA_CONTENT+="    if OS.linux?\n"
-    FORMULA_CONTENT+="      bin.install \"KatanA\"\n"
-    FORMULA_CONTENT+="    end\n"
+    FORMULA_CONTENT+="    bin.install \"KatanA\"\n"
     FORMULA_CONTENT+="  end\n"
     FORMULA_CONTENT+="end\n"
 
@@ -87,4 +83,4 @@ function upload_formula() {
     fi
 }
 
-upload_formula "Formula/katana.rb" "katana"
+upload_formula "Formula/katana-desktop.rb" "katana-desktop"
