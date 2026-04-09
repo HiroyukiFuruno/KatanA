@@ -6,10 +6,13 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     gcc \
+    clang \
+    lld \
+    && ln -s /usr/bin/clang /usr/bin/clang-cl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install cargo-xwin using pre-built binary to save compilation time
-RUN curl -L https://github.com/rust-cross/cargo-xwin/releases/download/v0.18.4/cargo-xwin-x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/cargo/bin
+RUN curl -L https://github.com/rust-cross/cargo-xwin/releases/download/v0.21.4/cargo-xwin-v0.21.4.x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/cargo/bin
 
 # Add windows target
 RUN rustup target add x86_64-pc-windows-msvc
