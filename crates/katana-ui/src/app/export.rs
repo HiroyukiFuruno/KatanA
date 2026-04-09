@@ -71,7 +71,7 @@ impl ExportOps for KatanaApp {
         let stem = relative
             .with_extension("")
             .to_string_lossy()
-            .replace([std::path::MAIN_SEPARATOR, '/'], "_");
+            .replace([std::path::MAIN_SEPARATOR, '/', ':'], "_");
 
         if stem.is_empty() {
             format!("export.{}", ext)
