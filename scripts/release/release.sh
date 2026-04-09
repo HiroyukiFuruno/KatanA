@@ -48,6 +48,16 @@ fi
 header "Releasing v${VERSION}"
 info "Mode: Local Release"
 
+# ── 0. Branch Guard ───────────────────────────────────────────────────────────
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" != "master" ]]; then
+    error "Release must be executed from the 'master' branch."
+    error "Current branch: ${CURRENT_BRANCH}"
+    error "Please merge your release/vX.Y.Z branch into master first, then re-run."
+    exit 1
+fi
+success "Branch check passed: on 'master'."
+
 # ── 0. Check for existing tag ─────────────────────────────────────────────────
 TAG_EXISTS=false
 if git rev-parse "v${VERSION}" >/dev/null 2>&1; then

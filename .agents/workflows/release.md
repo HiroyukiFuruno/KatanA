@@ -1,69 +1,100 @@
 ---
-description: katanaプロジェクトの公式リリース手順。make releaseによるバージョン更新からDMGビルド、GitHub Releaseまでのフローを定義。
+description: katanaプロジェクトの公式リリース手順。release/vX.Y.Zブランチでのリリース準備からPR→masterマージ後のmake releaseまでのフローを定義。
 ---
 
 # KatanA リリースワークフロー
 
-本プロジェクト (Katana) におけるバージョンリリースの公式手順です。
-`Cargo.toml` や `Info.plist` のバージョン表記ズレ（DMGとアプリ内バージョンの不一致など）を防ぐため、完全な自動化・一貫性チェックを含んだこのフローに必ず従ってください。
+本プロジェクト (KatanA) におけるバージョンリリースの公式手順です。
 
 ## ⚠️ 最重要ルール
 
-- **権限の前提**: `make release` コマンドは `master` ブランチへの直接プッシュおよびタグのプッシュを伴うため、リポジトリの **Owner (Admin) 権限** が必要です。権限がない場合は利用できません。
-- **手動でのタグ打ちは禁止**: `git tag vX.Y.Z` などを手動で打ってプッシュすることは固く禁止します。
-- **手動でのCargo.tomlバージョン変更は非推奨**: リリース時は必ず `make release` を通じて更新してください。
+- **リリースは `master` ブランチからのみ実行可能**: `release.sh` は現在のブランチが `master` でない場合は即座に中断します。
+- **master への直接 push は禁止**: 必ず `release/vX.Y.Z` ブランチを作成し、PR経由で master にマージしてください。
+- **PR の CI チェック（Lint / Coverage / CodeQL）が全通過していること**: ブランチ保護により、これらがパスしないと master へのマージ自体がブロックされます。
+- **手動でのタグ打ちは禁止**: `git tag vX.Y.Z` を手動で打ってプッシュすることは固く禁止します。
+- **手動での Cargo.toml バージョン変更は非推奨**: 必ず `make release` を通じて更新してください。
+
+---
 
 ## リリースフロー
 
-### Step 1: リリース前準備 (Pre-flight checks)
-
-リリース作業を始める前に、現在のローカル環境やファイルを準備します。
-
-1. **GitHub Auth と GPG署名**: `gh auth status` や GPGキーの設定（GitHub へ公開されていること）が済んでいるかを確認します（`release.sh` 内で GPGキー検証も走ります）。
-2. **CHANGELOG の更新**: リリース作業の前に、必ず `changelog-writing` スキル（`CHANGELOG.md` および `CHANGELOG.ja.md` の更新管理スキル）を実行し、今回のバージョンの変更履歴を追記してください。
-3. **品質ゲートの事前確認**: 実行途中のエラーを防ぐため、`master` ブランチで `make check` が通ることを確認しておくことを推奨します。
-4. **ブランチの統合確認 (⚠️ 必須)**: リリースは `master` が完全な状態でなければなりません。リリース前に、対象の変更に紐づく OpenSpec Base Feature Branch がすべて `master` へマージ済みであることを確認してください。
-
-   ```bash
-   # ローカルおよびリモートに未マージの feature branch が残っていないか確認
-   git branch -a | grep -v master | grep -v HEAD
-   # 想定: リリース対象の feature branch が出力されないこと
-   ```
-
-   未マージのブランチが残っている場合は、`openspec-branching` ワークフローの Step 5・Step 6 を先に実行してください。
-
-### Step 2: リリースの実行
-
-バージョン番号 (例: `0.1.7`) を指定して `make release` を実行します。AIエージェントが途中の確認プロンプト（[Y/n]）で停止しないよう、必ず `FORCE=1` を付与してください。
-ローカル環境で DMG のビルドから GitHub Release の発行、Homebrew Cask の更新までを一貫して行います。
+### Step 1: リリースブランチの作成
 
 ```bash
-make release VERSION=0.1.7 FORCE=1
+git checkout master
+git pull origin master
+git checkout -b release/vX.Y.Z
+```
+
+### Step 2: リリース前準備
+
+リリースブランチ上で以下を確認・実施します。
+
+1. **CHANGELOG の更新**: `changelog-writing` スキルを実行し、今回のバージョンの変更履歴を `CHANGELOG.md` / `CHANGELOG.ja.md` に記載してください。
+2. **品質ゲートの事前確認**: `make check` がローカルで通ることを確認してください。
+3. **OpenSpec の統合確認 (⚠️ 必須)**: 対象バージョンの OpenSpec Base Feature Branch がすべて `master` へマージ済みであることを確認してください。
+
+   ```bash
+   # 未マージのfeatureブランチがないことを確認
+   git branch -a | grep -v master | grep -v HEAD | grep -v release/
+   ```
+
+### Step 3: PR の作成と CI 確認
+
+```bash
+git push origin release/vX.Y.Z
+# GitHub でPRを作成（base: master）
+```
+
+PR がオープンされると以下の CI チェックが自動実行されます。
+**すべてグリーンになるまで次に進まないこと。**
+
+- ✅ Lint（`cargo clippy -D warnings`）
+- ✅ Coverage（テスト＋カバレッジ）
+- ✅ CodeQL Security Scan
+
+CI がパスしたら PR を master へマージします。
+
+### Step 4: リリースの実行（`master` 上で）
+
+PR マージ後、**必ず master に切り替えてから** 実行してください。
+
+```bash
+git checkout master
+git pull origin master
+make release VERSION=X.Y.Z FORCE=1
 ```
 
 > [!IMPORTANT]
 > コマンド実行時に内部で以下のステップが自動実行されます：
 >
-> 1. GPG署名キーの事前検証 (GitHub API)
-> 2. `Cargo.toml`, `Cargo.lock`, `crates/*/Cargo.toml`, `crates/katana-ui/Info.plist` のバージョン自動更新
-> 3. 品質ゲートの実行（`make check` によるカバレッジ・テスト強制）
-> 4. `CHANGELOG.md` など更新対象のステージングとコミット (`chore: vX.Y.Z リリース準備`)
-> 5. Git 注釈付き署名タグ (`vX.Y.Z`) の作成
+> 1. **現在のブランチが `master` であることを検証**（master 以外は即中断）
+> 2. GPG署名キーの事前検証（GitHub API）
+> 3. `Cargo.toml`, `Cargo.lock`, `crates/*/Cargo.toml`, `crates/katana-ui/Info.plist` のバージョン自動更新
+> 4. 品質ゲートの実行（`make check`）
+> 5. `CHANGELOG.md` など更新対象のステージングとコミット（`chore: vX.Y.Z リリース準備`）
+> 6. Git 注釈付き署名タグの作成とリモートへのプッシュ
+> 7. macOS DMG をローカルビルドして GitHub Release に自動アップロード
+> 8. GitHub Actions 発火 → Linux / Windows ビルド → Linuxbrew / Winget 自動公開
 
-### Step 3: リリース処理の完了後確認
-
-スクリプトがローカルで `make dmg` を実行・アップロードし、GitHub Release や Cask の更新を完了させます。最後に `master` と タグ の Origin 発行が行われます。ターミナルの標準出力および作成された Release の内容を確認してください。
-
-**リリース後のブランチ衛生確認 (⚠️ 必須):**
-リリース完了後、ローカルおよびリモートに orphan ブランチが残っていないことを確認してください。
+### Step 5: リリース後確認
 
 ```bash
-git branch -a | grep -v master | grep -v HEAD
-# 想定: feature branch が一切出力されないこと
+# リリースブランチの削除（ローカル・リモート）
+git branch -d release/vX.Y.Z
+git push origin --delete release/vX.Y.Z
+
+# タグとリリースページの確認
+gh release view vX.Y.Z
+
+# GitHub Actions の完了を監視（Linux/Windows ビルド）
+gh run watch --repo HiroyukiFuruno/KatanA
 ```
 
-残存している場合は `git branch -d <branch>` および `git push origin --delete <branch>` で即座に削除してください。
+---
 
-## 💡 トラブルシューティング（DMG・Info.plistのバージョンズレ防止策）
+## 💡 トラブルシューティング
 
-かつて `v0.1.3` 等の古いバージョン番号のまま DMG が作成されていた問題については、現在 `Makefile` の `package-mac` において、「cargo bundle でビルド生成された後に、`Cargo.toml` から抽出した 最新バージョン を `Info.plist` に強制注入する」仕組みを入れています。そのため、必ず `Cargo.toml` のバージョンと Finder 上のアプリ内バージョンは一致するようになり、再発しません。
+**DMG・Info.plist のバージョンズレ**: `package-mac` にてビルド後に `Cargo.toml` からバージョンを抽出して `Info.plist` に強制注入する仕組みを入れているため、再発しません。
+
+**「master ブランチ以外でのリリースをブロック」**: `release.sh` が `git rev-parse --abbrev-ref HEAD` でブランチを確認し、`master` 以外であれば即座にエラー終了します。
