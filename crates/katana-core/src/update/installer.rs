@@ -65,6 +65,7 @@ impl UpdateInstallerOps {
         std::fs::write(script_path, content)?;
 
         #[cfg(unix)]
+        #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
             const RELAUNCHER_SCRIPT_PERMISSIONS: u32 = 0o755;

@@ -39,7 +39,7 @@ impl UpdateOps {
         #[cfg(target_os = "linux")]
         const ASSET_NAME: &str = "KatanA-linux-x86_64.tar.gz";
 
-        if tag_version == curr_version {
+        if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)
         } else {
             let html_url = final_url.to_string();
@@ -59,7 +59,14 @@ impl UpdateOps {
     pub fn is_newer_version(current: &str, latest: &str) -> bool {
         let current_stripped = current.trim_start_matches('v');
         let latest_stripped = latest.trim_start_matches('v');
-        latest_stripped != current_stripped
+        
+        match (
+            semver::Version::parse(current_stripped),
+            semver::Version::parse(latest_stripped),
+        ) {
+            (Ok(curr), Ok(latest)) => latest > curr,
+            _ => latest_stripped != current_stripped,
+        }
     }
 
     pub fn check_for_updates_simple(current_version: &str) -> Result<Option<ReleaseInfo>> {
@@ -93,7 +100,7 @@ impl UpdateOps {
         #[cfg(target_os = "linux")]
         const ASSET_NAME: &str = "KatanA-linux-x86_64.tar.gz";
 
-        if tag_version == curr_version {
+        if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)
         } else {
             let html_url = final_url.to_string();
