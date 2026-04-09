@@ -84,6 +84,7 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
 
 #[test]
 fn test_persistence_language_roundtrip() {
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let settings_dir = tempfile::tempdir().unwrap();
     let settings_path = settings_dir.path().join("settings.json");
 
@@ -117,6 +118,7 @@ fn test_persistence_language_roundtrip() {
 
 #[test]
 fn test_persistence_multiple_changes_accumulate() {
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let settings_dir = tempfile::tempdir().unwrap();
     let settings_path = settings_dir.path().join("settings.json");
 
@@ -154,6 +156,7 @@ fn test_persistence_multiple_changes_accumulate() {
 
 #[test]
 fn test_ui_all_languages_load_successfully() {
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let mut harness = setup_harness();
     harness.step();
 

@@ -2,10 +2,6 @@ use egui_kittest::{Harness, kittest::Queryable};
 use katana_ui::i18n::I18nOps;
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::path::Path;
-use std::sync::Mutex;
-
-static DIAGRAM_ENV_MUTEX: Mutex<()> = Mutex::new(());
-
 const DRAWIO_SOURCE: &str = r#"<mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -64,6 +60,7 @@ fn assert_standard_diagram_markdown_visible(harness: &Harness) {
 
 #[test]
 fn drawio_render_error_ui() {
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let sections = vec![
         RenderedSection::Markdown("# DrawIo Diagram\n".to_string()),
         RenderedSection::Error {
@@ -89,7 +86,7 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
 fn mermaid_both_states_render_semantically() {
-    let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let saved_mmdc = std::env::var("MERMAID_MMDC").ok();
 
     unsafe { std::env::set_var("MERMAID_MMDC", "nonexistent_mmdc_for_idempotent_test") };
@@ -150,7 +147,7 @@ const PLANTUML_SOURCE: &str = "@startuml\nAlice -> Bob : Hello\n@enduml";
 
 #[test]
 fn plantuml_both_states_render_semantically() {
-    let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let saved_jar = std::env::var("PLANTUML_JAR").ok();
 
     unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/path/for/idempotent/test.jar") };
@@ -206,7 +203,7 @@ fn plantuml_both_states_render_semantically() {
 
 #[test]
 fn mixed_diagram_document_renders_all_independently() {
-    let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let source = format!(
         "# Mixed\n\n```mermaid\n{MERMAID_SOURCE}\n```\n\n\
          ## DrawIo\n\n```drawio\n{DRAWIO_SOURCE}\n```\n\n\
@@ -261,7 +258,7 @@ fn mixed_diagram_document_renders_all_independently() {
 
 #[test]
 fn mixed_diagrams_with_fallbacks_render_semantically() {
-    let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let drawio_pane = render_and_wait("drawio", DRAWIO_SOURCE);
     let drawio_image = drawio_pane.sections[1].clone();
     assert!(matches!(drawio_image, RenderedSection::Image { .. }));
@@ -303,6 +300,7 @@ fn mixed_diagrams_with_fallbacks_render_semantically() {
 
 #[test]
 fn snapshot_diagram_pending_spinner() {
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let sections = vec![
         RenderedSection::Markdown("# Rendering in progress\n".to_string()),
         RenderedSection::Pending {
@@ -331,7 +329,7 @@ fn snapshot_diagram_pending_spinner() {
 
 #[test]
 fn update_after_render_preserves_diagram_images() {
-    let _guard = DIAGRAM_ENV_MUTEX.lock().unwrap();
+    let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let source = format!("# Title\n\n```drawio\n{DRAWIO_SOURCE}\n```\n\n## Footer\n");
     let mut pane = PreviewPane::default();
     pane.full_render(
