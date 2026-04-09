@@ -212,7 +212,7 @@ jobs:
           7z a KatanA-windows-x86_64.zip KatanA.exe
       - name: Submit to Winget
         if: env.WINGET_GH_TOKEN != ''
-        uses: vedantmgoyal2009/winget-create-action@v2
+        uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
         env:
           WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
         with:
