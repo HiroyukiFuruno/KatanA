@@ -57,7 +57,6 @@ jobs:
       - name: Cache Cargo registry & target
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
-          save-always: true
           path: |
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
@@ -104,7 +103,6 @@ jobs:
       - name: Cache Cargo registry & target
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
-          save-always: true
           path: |
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
@@ -152,7 +150,6 @@ jobs:
       - name: Cache Cargo registry & target
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
-          save-always: true
           path: |
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
@@ -189,7 +186,6 @@ jobs:
       - name: Cache Cargo registry & target
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
-          save-always: true
           path: |
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
