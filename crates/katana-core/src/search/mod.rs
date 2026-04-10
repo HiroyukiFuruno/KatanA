@@ -41,6 +41,11 @@ impl WorkspaceSearchOps {
                     break;
                 }
 
+                /* WHY: Skip noise lines like #[allow(...)] unless the query itself contains 'allow'. */
+                if line.contains("#[allow(") && !query.to_lowercase().contains("allow") {
+                    continue;
+                }
+
                 let remaining = limit.saturating_sub(results.len());
                 results.extend(re.find_iter(line).take(remaining).map(|m| SearchResult {
                     file_path: file_path.clone(),

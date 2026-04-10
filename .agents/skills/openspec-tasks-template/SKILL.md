@@ -21,10 +21,14 @@ Insert this at the top of the `tasks.md` file, immediately after the DoR (Defini
 ```markdown
 ## Branch Rule
 
-Tasks Grouped by ## = Adhere unconditionally to the branching standard defined in the `/openspec-branching` workflow (`.agents/workflows/openspec-branching.md`) throughout your implementation sessions.
+本タスクでは、以下のブランチ運用を適用します：
+- **標準（Base）ブランチ**: `[Change Directory Name]` またはリリース用統合ブランチ（例: `release/vX.Y.Z`）
+- **作業ブランチ**: `[Base]-task-x` (xはタスク番号)
+
+実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 ```
 
-*(Replace `[Change Directory Name]` with the actual change directory name, e.g., `v0-5-0-desktop-viewer-polish`)*
+*(Replace `[Change Directory Name]` with the actual change directory name, e.g., `v0-18-7-ui-polish`)*
 
 ## 2. Final Verification & Release Work (Final Phase)
 
