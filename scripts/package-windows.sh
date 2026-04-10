@@ -35,6 +35,14 @@ cd ../..
 
 info "Copying artifacts to project root..."
 cp target/release/KatanA-windows-x86_64.zip ./
-cp target/wix/*.msi ./KatanA-windows-x86_64.msi
+
+# WHY: glob *.msi may match multiple files (e.g. from previous builds),
+# causing cp to treat the target as a directory. Use find to select exactly one.
+MSI_FILE=$(find target/wix -maxdepth 1 -name '*.msi' -type f | head -n 1)
+if [ -z "$MSI_FILE" ]; then
+    echo "ERROR: No MSI file found in target/wix/" >&2
+    exit 1
+fi
+cp "$MSI_FILE" ./KatanA-windows-x86_64.msi
 
 success "Successfully built Windows packages (.zip and .msi)"
