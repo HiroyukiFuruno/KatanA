@@ -1,12 +1,16 @@
 # =============================================================================
 # KatanA Desktop — Release CD
 # =============================================================================
-# Builds the macOS .app bundle and .dmg installer, then creates a GitHub Release
-# with the artifacts attached.
+# Fully automated multi-platform release pipeline.
 #
 # Triggers:
 #   - Push of a version tag (v*)
-#   - Manual dispatch (workflow_dispatch)
+#   - Manual dispatch via `gh workflow run` with a version input
+#
+# Flow (workflow_dispatch):
+#   1. preflight: Bump version in-place → validate → extract release notes
+#   2. build_{macos,linux,windows}: Build platform artifacts using bumped version
+#   3. publish: Create GitHub Release (tag + artifacts) via API, update Homebrew/Winget
 #
 # Security:
 #   - Only the repository owner can trigger this workflow
@@ -21,8 +25,8 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Tag to release (e.g. v0.0.1)'
+      version:
+        description: 'Version to release (e.g. 0.18.1 or v0.18.1)'
         required: true
       target:
         description: 'Target to release'
@@ -49,24 +53,27 @@ jobs:
     runs-on: macos-latest
     if: github.actor == 'HiroyukiFuruno'
     outputs:
-      version: ${{ steps.tag.outputs.version }}
+      version: ${{ steps.version.outputs.version }}
+      version_bare: ${{ steps.version.outputs.version_bare }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
-      - name: Determine version tag
-        id: tag
+      - name: Determine version
+        id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            INPUT_TAG="${{ github.event.inputs.tag }}"
-            if [[ $INPUT_TAG != v* ]]; then
-              INPUT_TAG="v${INPUT_TAG}"
-            fi
-            echo "version=${INPUT_TAG}" >> "$GITHUB_OUTPUT"
+            INPUT="${{ github.event.inputs.version }}"
+            INPUT="${INPUT#v}"
+            echo "version=v${INPUT}" >> "$GITHUB_OUTPUT"
+            echo "version_bare=${INPUT}" >> "$GITHUB_OUTPUT"
           else
-            echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+            TAG="${GITHUB_REF#refs/tags/}"
+            BARE="${TAG#v}"
+            echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+            echo "version_bare=${BARE}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Install Rust toolchain
@@ -88,13 +95,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-preflight-
 
+      - name: Bump version in-place (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ steps.version.outputs.version_bare }}"
+
+          echo "Bumping workspace version to $VERSION..."
+          perl -pi -e 's/^version = ".+"/version = "'"${VERSION}"'"/' Cargo.toml
+          cargo update --workspace >/dev/null 2>&1 || true
+          perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$1v'"${VERSION}"'$2/' crates/katana-ui/Info.plist
+
+          echo "Version bump done (in-place, not committed)."
+
       - name: Run release preflight logic
-        run: ./scripts/release/preflight.sh "${{ steps.tag.outputs.version }}"
+        run: ./scripts/release/preflight.sh "${{ steps.version.outputs.version }}"
 
       - name: Extract release notes from CHANGELOG.md
         run: |
-          scripts/release/extract-notes.sh "${{ steps.tag.outputs.version }}" > RELEASE_NOTES.md
-          echo "--- Release notes for ${{ steps.tag.outputs.version }} ---"
+          scripts/release/extract-notes.sh "${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
+          echo "--- Release notes for ${{ steps.version.outputs.version }} ---"
           cat RELEASE_NOTES.md
 
       - name: Upload Release Notes
@@ -124,6 +143,15 @@ jobs:
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-release-
+
+      - name: Bump version in-place
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ needs.preflight.outputs.version_bare }}"
+          perl -pi -e 's/^version = ".+"/version = "'"${VERSION}"'"/' Cargo.toml
+          cargo update --workspace >/dev/null 2>&1 || true
+          perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$1v'"${VERSION}"'$2/' crates/katana-ui/Info.plist
+
       - name: Install dependencies
         run: |
           command -v cargo-bundle || cargo install cargo-bundle
@@ -177,6 +205,14 @@ jobs:
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-release-
+
+      - name: Bump version in-place
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ needs.preflight.outputs.version_bare }}"
+          perl -pi -e 's/^version = ".+"/version = "'"${VERSION}"'"/' Cargo.toml
+          cargo update --workspace >/dev/null 2>&1 || true
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -185,22 +221,6 @@ jobs:
         run: cargo build --workspace --release
       - name: Package Linux Artifact
         run: ./scripts/package-linux.sh
-      - name: Update Linuxbrew Formula
-        env:
-          HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_KATANA_GIT_TOKEN }}
-        run: |
-          VERSION="${{ github.ref_name }}"
-          TAR_NAME="KatanA-linux-x86_64.tar.gz"
-          cd target/release
-          SHA256=$(shasum -a 256 "$TAR_NAME" | awk '{print $1}')
-          cd ../..
-          
-          if [[ -n "$HOMEBREW_KATANA_GIT_TOKEN" ]]; then
-            echo "Publishing to Linuxbrew..."
-            ./scripts/release/update-linuxbrew.sh "$VERSION" "$SHA256" "$TAR_NAME" || echo "Warning: Linuxbrew update failed but won't block release."
-          else
-            echo "Skipping Linuxbrew update (HOMEBREW_KATANA_GIT_TOKEN missing in Action secrets)"
-          fi
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
@@ -228,9 +248,18 @@ jobs:
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-release-
+
+      - name: Bump version in-place
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          VERSION="${{ needs.preflight.outputs.version_bare }}"
+          perl -pi -e 's/^version = ".+"/version = "'"${VERSION}"'"/' Cargo.toml
+          cargo update --workspace >/dev/null 2>&1 || true
+
       - name: Build release (Windows)
         run: cargo build --workspace --release
-        
+
       - name: Install cargo-binstall
         uses: cargo-bins/cargo-binstall@6ed12bbaae779f3fd3ba1477bc9a61a2535a3bb2 # main
 
@@ -238,26 +267,6 @@ jobs:
         shell: bash
         run: ./scripts/package-windows.sh
 
-      - name: Install Komac
-        if: env.WINGET_GH_TOKEN != ''
-        env:
-          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
-        run: cargo binstall komac -y
-
-      - name: Submit to Winget
-        if: env.WINGET_GH_TOKEN != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
-          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
-        shell: pwsh
-        run: |
-          $VERSION = "${{ github.ref_name }}" -replace "^v",""
-          komac update HiroyukiFuruno.katana-desktop --version $VERSION --urls "https://github.com/HiroyukiFuruno/KatanA/releases/download/${{ github.ref_name }}/KatanA-windows-x86_64.msi" --submit
-      - name: Warning for missing Winget Token
-        if: env.WINGET_GH_TOKEN == ''
-        env:
-          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
-        run: echo "Skipping Winget publication (WINGET_GH_TOKEN missing in Action secrets)"
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
@@ -283,18 +292,18 @@ jobs:
           mv artifacts-windows/* release-files/ || true
           cd release-files
           find . -maxdepth 1 -type f ! -name checksums.txt -exec shasum -a 256 {} + > checksums.txt
+
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
-        with:
-          tag_name: ${{ needs.preflight.outputs.version }}
-          name: KatanA Desktop ${{ needs.preflight.outputs.version }}
-          body_path: release-notes/RELEASE_NOTES.md
-          draft: false
-          prerelease: false
-          files: |
-            release-files/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.preflight.outputs.version }}"
+          echo "Creating GitHub Release ${VERSION}..."
+          gh release create "${VERSION}" \
+            --title "KatanA Desktop ${VERSION}" \
+            --notes-file release-notes/RELEASE_NOTES.md \
+            --target "${{ github.sha }}" \
+            release-files/*
 
       - name: Update Homebrew Cask
         if: success()
@@ -315,3 +324,14 @@ jobs:
           SHA256=$(shasum -a 256 "$TAR" | awk '{print $1}')
           TAR_NAME=$(basename "$TAR")
           scripts/release/update-linuxbrew.sh "${{ needs.preflight.outputs.version }}" "$SHA256" "$TAR_NAME"
+
+      - name: Submit to Winget
+        if: success() && env.WINGET_GH_TOKEN != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
+        run: |
+          VERSION="${{ needs.preflight.outputs.version_bare }}"
+          TAG="${{ needs.preflight.outputs.version }}"
+          brew install nicehash/tap/komac 2>/dev/null || true
+          komac update HiroyukiFuruno.katana-desktop --version "$VERSION" --urls "https://github.com/HiroyukiFuruno/KatanA/releases/download/${TAG}/KatanA-windows-x86_64.msi" --submit || echo "Warning: Winget update failed but won't block release."

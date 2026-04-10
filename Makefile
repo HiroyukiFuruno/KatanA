@@ -201,11 +201,15 @@ dmg: package-mac ## Build macOS .dmg installer from .app bundle
 	@FORCE=$(FORCE) scripts/dmg.sh $(VERSION)
 
 .PHONY: release
-release: ## Create a versioned release (usage: make release VERSION=x.y.z USE_GITHUB_WORKFLOW=1 FORCE=1)
+release: ## Trigger the release workflow on GitHub Actions (usage: make release VERSION=x.y.z)
 ifndef VERSION
 	$(error VERSION is required. Usage: make release VERSION=x.y.z)
 endif
-	@USE_GITHUB_WORKFLOW=$(USE_GITHUB_WORKFLOW) FORCE=$(FORCE) scripts/release/release.sh $(VERSION)
+	@echo "Triggering GitHub Actions release workflow for v$(VERSION)..."
+	@gh workflow run Release -f version=$(VERSION) -f target=all
+	@echo ""
+	@echo "✅ Workflow triggered! Monitor progress with:"
+	@echo "   gh run watch --repo HiroyukiFuruno/KatanA"
 
 .PHONY: release-preflight
 release-preflight: ## Run preflight release checks without publishing (usage: make release-preflight VERSION=x.y.z)

@@ -1,5 +1,5 @@
 ---
-description: katanaプロジェクトの公式リリース手順。release/vX.Y.Zブランチでのリリース準備からPR→masterマージ後のmake releaseまでのフローを定義。
+description: katanaプロジェクトの公式リリース手順。release/vX.Y.Zブランチでのリリース準備からPRマージ後の`gh workflow run`による全自動リリースまでのフローを定義。
 ---
 
 # KatanA リリースワークフロー
@@ -8,11 +8,11 @@ description: katanaプロジェクトの公式リリース手順。release/vX.Y.
 
 ## ⚠️ 最重要ルール
 
-- **リリースは `master` ブランチからのみ実行可能**: `release.sh` は現在のブランチが `master` でない場合は即座に中断します。
+- **リリースは GitHub Actions 上で完結**: ローカルでのビルド・タグ作成・GitHub Release 作成は一切行いません。
 - **master への直接 push は禁止**: 必ず `release/vX.Y.Z` ブランチを作成し、PR経由で master にマージしてください。
 - **PR の CI チェック（Lint / Coverage / CodeQL）が全通過していること**: ブランチ保護により、これらがパスしないと master へのマージ自体がブロックされます。
-- **手動でのタグ打ちは禁止**: `git tag vX.Y.Z` を手動で打ってプッシュすることは固く禁止します。
-- **手動での Cargo.toml バージョン変更は非推奨**: 必ず `make release` を通じて更新してください。
+- **手動でのタグ打ちは禁止**: `git tag vX.Y.Z` を手動で打ってプッシュすることは固く禁止します。タグは GitHub Actions の `gh release create` により API 経由で自動作成されます。
+- **手動での Cargo.toml バージョン変更は不要**: GitHub Actions がビルド時にワークスペース内で in-place にバージョンを書き換えます。
 
 ---
 
@@ -70,42 +70,38 @@ gh pr merge --merge --delete-branch
 ```
 
 
-### Step 4: リリースの実行（`master` 上で）
+### Step 4: リリースの実行（ワークフロー発火）
 
-PR マージ後、**必ず master に切り替えてから** 実行してください。
+PR マージ後、ローカルから以下のコマンドでリリースワークフローを発火します。
 
 ```bash
-git checkout master
-git pull origin master
-make release VERSION=X.Y.Z FORCE=1
+gh workflow run Release -f version=X.Y.Z
 ```
 
 > [!IMPORTANT]
-> コマンド実行時に内部で以下のステップが自動実行されます：
+> このコマンドにより、GitHub Actions 上で以下のステップが完全自動で実行されます：
 >
-> 1. **現在のブランチが `master` であることを検証**（master 以外は即中断）
-> 2. GPG署名キーの事前検証（GitHub API）
-> 3. `Cargo.toml`, `Cargo.lock`, `crates/*/Cargo.toml`, `crates/katana-ui/Info.plist` のバージョン自動更新
-> 4. 品質ゲートの実行（`make check`）
-> 5. `CHANGELOG.md` など更新対象のステージングとコミット（`chore: vX.Y.Z リリース準備`）
-> 6. Git 注釈付き署名タグの作成とリモートへのプッシュ
-> 7. **GitHub Actions が自動発火** し、以下のリリースプロセスを全自動で実行します：
->    - macOS / Linux / Windows 向け各バイナリ・インストーラのビルド
->    - GitHub Release の自動作成と全アーティファクトのアップロード
->    - Homebrew / Linuxbrew / Winget へのパッケージ登録・公開
+> 1. **Preflight**: `Cargo.toml`, `Info.plist` のバージョンを in-place で書き換え → CHANGELOG・OpenSpec の検証
+> 2. **Build（並列）**: macOS (.dmg/.zip) / Linux (.tar.gz) / Windows (.msi/.zip) をそれぞれのネイティブ環境でビルド
+> 3. **Publish**: `gh release create` により **タグと GitHub Release を API 経由で同時作成** し、全アーティファクトをアップロード
+> 4. **配布**: Homebrew Cask / Linuxbrew Formula / Winget レジストリへの自動公開
+
+> [!NOTE]
+> ローカルでの `make release` は不要です。`Cargo.toml` のバージョンは master 上では開発版のまま維持されます。
+> リリース用のバージョン書き換えは CI 上の各ビルドジョブ内で in-place に行われ、コミットされません。
 
 ### Step 5: リリース後確認
 
 ```bash
+# ワークフロー実行状況の監視
+gh run watch --repo HiroyukiFuruno/KatanA
+
+# リリースページの確認
+gh release view vX.Y.Z
+
 # リリースブランチの削除（ローカル・リモート）
 git branch -d release/vX.Y.Z
 git push origin --delete release/vX.Y.Z
-
-# タグとリリースページの確認
-gh release view vX.Y.Z
-
-# GitHub Actions の完了を監視（Linux/Windows ビルド）
-gh run watch --repo HiroyukiFuruno/KatanA
 ```
 
 ---
@@ -114,4 +110,6 @@ gh run watch --repo HiroyukiFuruno/KatanA
 
 **DMG・Info.plist のバージョンズレ**: `package-mac` にてビルド後に `Cargo.toml` からバージョンを抽出して `Info.plist` に強制注入する仕組みを入れているため、再発しません。
 
-**「master ブランチ以外でのリリースをブロック」**: `release.sh` が `git rev-parse --abbrev-ref HEAD` でブランチを確認し、`master` 以外であれば即座にエラー終了します。
+**ワークフローが発火しない**: `gh workflow run` には `repo` スコープのトークンが必要です。`gh auth status` でログイン状態を確認してください。
+
+**特定プラットフォームだけ再ビルドしたい場合**: `gh workflow run Release -f version=X.Y.Z -f target=macOS` のように `target` パラメータを指定できます。
