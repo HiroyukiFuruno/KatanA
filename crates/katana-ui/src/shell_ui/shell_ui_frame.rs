@@ -16,7 +16,7 @@ impl KatanaApp {
             .settings()
             .terms_accepted_version
             .as_ref();
-        if accepted_ver != Some(&crate::about_info::APP_VERSION.to_string()) {
+        if accepted_ver.is_none() {
             egui::CentralPanel::default().show(ctx, |ui| {
                 crate::views::modals::terms::TermsModal::new(
                     crate::about_info::APP_VERSION,
