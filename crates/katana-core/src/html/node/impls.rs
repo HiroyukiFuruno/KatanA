@@ -4,7 +4,7 @@ use super::types::{DisplayMode, HtmlNode, LinkAction, LinkTarget, TextAlign};
 
 impl LinkTarget {
     pub fn resolve(href: &str, base_dir: &Path) -> Self {
-        if href.starts_with("http://") || href.starts_with("https://") {
+        if href.starts_with("http://") || href.starts_with("https://") || href.starts_with("Katana://") {
             Self::External(href.to_string())
         } else if let Some(anchor) = href.strip_prefix('#') {
             Self::Anchor(anchor.to_string())

@@ -122,14 +122,20 @@ impl KatanaApp {
                 }
             }
         }
-        
+
         if let Some(idx) = active_idx
             && let Some(doc) = self.state.document.open_documents.get(idx)
             && doc.path.to_string_lossy().starts_with("Katana://Demo/")
         {
             let path = doc.path.clone();
             let src = doc.buffer.clone();
-            let concurrency = self.state.config.settings.settings().performance.diagram_concurrency;
+            let concurrency = self
+                .state
+                .config
+                .settings
+                .settings()
+                .performance
+                .diagram_concurrency;
             self.full_refresh_preview(&path, &src, false, concurrency);
         }
     }

@@ -99,7 +99,9 @@ impl AppFrameOps {
             }
 
             if url.starts_with("Katana://Command/SwitchDemoLanguage?lang=") {
-                let lang = url.strip_prefix("Katana://Command/SwitchDemoLanguage?lang=").unwrap();
+                let lang = url
+                    .strip_prefix("Katana://Command/SwitchDemoLanguage?lang=")
+                    .unwrap();
                 app.process_action(ctx, AppAction::SwitchDemoLanguage(lang.to_string()));
                 continue;
             }
