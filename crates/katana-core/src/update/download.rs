@@ -53,56 +53,81 @@ impl UpdateDownloadOps {
         F: FnMut(UpdateProgress),
     {
         let path = archive_path.as_ref();
-        let is_tar_gz = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .map(|s| s.ends_with(".tar.gz"))
-            .unwrap_or(false);
+        if is_tar_gz(path) {
+            return Self::extract_tar_gz(path, extract_to_dir, on_progress);
+        }
+        Self::extract_zip(path, extract_to_dir, on_progress)
+    }
 
-        if is_tar_gz {
-            let tar_gz = std::fs::File::open(path)?;
-            let tar = flate2::read::GzDecoder::new(tar_gz);
-            let mut archive = tar::Archive::new(tar);
+    fn extract_tar_gz<P: AsRef<std::path::Path>, D: AsRef<std::path::Path>, F>(
+        path: P,
+        extract_to_dir: D,
+        mut on_progress: F,
+    ) -> anyhow::Result<()>
+    where
+        F: FnMut(UpdateProgress),
+    {
+        let tar_gz = std::fs::File::open(path)?;
+        let tar = flate2::read::GzDecoder::new(tar_gz);
+        let mut archive = tar::Archive::new(tar);
 
-            /* WHY: tar crate doesn't provide a direct total count without reading the whole stream.
-               We can estimate progress or just report 'Extracting...'. For now, we'll just extract. */
-            archive.unpack(extract_to_dir)?;
-            
-            // Progress report (100% since we can't easily count indexed entries in tar without double-pass)
-            on_progress(UpdateProgress::Extracting {
-                current: 1,
-                total: 1,
-            });
-        } else {
-            let mut archive = zip::ZipArchive::new(std::fs::File::open(path)?)?;
-            let total = archive.len();
+        /* WHY: tar crate doesn't provide a direct total count without reading the whole stream.
+           We skip counting to maintain performance and avoid double-pass. */
+        archive.unpack(extract_to_dir)?;
 
-            for i in 0..total {
-                let mut file = archive.by_index(i)?;
-                let Some(path) = file.enclosed_name() else {
-                    continue;
-                };
-                let outpath = extract_to_dir.as_ref().join(path);
+        /* WHY: Notify 100% progress after full extraction since we can meassure it incrementally without overhead. */
+        on_progress(UpdateProgress::Extracting {
+            current: 1,
+            total: 1,
+        });
+        Ok(())
+    }
 
-                if (*file.name()).ends_with('/') {
-                    std::fs::create_dir_all(&outpath)?;
-                } else {
-                    if let Some(p) = outpath.parent() {
-                        std::fs::create_dir_all(p)?;
-                    }
-                    std::io::copy(&mut file, &mut std::fs::File::create(&outpath)?)?;
+    fn extract_zip<P: AsRef<std::path::Path>, D: AsRef<std::path::Path>, F>(
+        path: P,
+        extract_to_dir: D,
+        mut on_progress: F,
+    ) -> anyhow::Result<()>
+    where
+        F: FnMut(UpdateProgress),
+    {
+        let mut archive = zip::ZipArchive::new(std::fs::File::open(path)?)?;
+        let total = archive.len();
+
+        for i in 0..total {
+            let mut file = archive.by_index(i)?;
+            let Some(rel_path) = file.enclosed_name() else {
+                continue;
+            };
+            let outpath = extract_to_dir.as_ref().join(rel_path);
+
+            if (*file.name()).ends_with('/') {
+                std::fs::create_dir_all(&outpath)?;
+            } else {
+                /* WHY: Ensure parent directory exists before creating the file to handle nested path archives. */
+                if let Some(p) = outpath.parent() {
+                    std::fs::create_dir_all(p)?;
                 }
-
-                #[cfg(unix)]
-                apply_unix_permissions_zip(&file, &outpath)?;
-                on_progress(UpdateProgress::Extracting {
-                    current: i + 1,
-                    total,
-                });
+                std::io::copy(&mut file, &mut std::fs::File::create(&outpath)?)?;
             }
+
+            #[cfg(unix)]
+            apply_unix_permissions_zip(&file, &outpath)?;
+
+            on_progress(UpdateProgress::Extracting {
+                current: i + 1,
+                total,
+            });
         }
         Ok(())
     }
+}
+
+fn is_tar_gz(path: &std::path::Path) -> bool {
+    path.file_name()
+        .and_then(|n| n.to_str())
+        .map(|s| s.ends_with(".tar.gz"))
+        .unwrap_or(false)
 }
 
 #[cfg(unix)]
