@@ -155,6 +155,7 @@ mod tests {
     }
 
     #[cfg(not(windows))]
+    #[cfg(not(coverage))]
     #[test]
     fn test_download_file_wget_fallback() {
         /* WHY: Verify the wget fallback path is exercised on non-Windows platforms */
