@@ -89,8 +89,10 @@ make release VERSION=X.Y.Z FORCE=1
 > 4. 品質ゲートの実行（`make check`）
 > 5. `CHANGELOG.md` など更新対象のステージングとコミット（`chore: vX.Y.Z リリース準備`）
 > 6. Git 注釈付き署名タグの作成とリモートへのプッシュ
-> 7. macOS DMG をローカルビルドして GitHub Release に自動アップロード
-> 8. GitHub Actions 発火 → Linux / Windows ビルド → Linuxbrew / Winget 自動公開
+> 7. **GitHub Actions が自動発火** し、以下のリリースプロセスを全自動で実行します：
+>    - macOS / Linux / Windows 向け各バイナリ・インストーラのビルド
+>    - GitHub Release の自動作成と全アーティファクトのアップロード
+>    - Homebrew / Linuxbrew / Winget へのパッケージ登録・公開
 
 ### Step 5: リリース後確認
 

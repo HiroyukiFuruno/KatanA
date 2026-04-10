@@ -129,7 +129,7 @@ fi
 
 # ── 3. Update version files ───────────────────────────────────────────────────
 info "Updating version in Cargo.toml..."
-sed -i '' 's/^version = ".*"/version = "'"${VERSION}"'"/' Cargo.toml
+perl -pi -e 's/^version = ".+"/version = "'"${VERSION}"'"/' Cargo.toml
 
 info "Syncing Cargo.lock..."
 cargo update --workspace >/dev/null 2>&1 || true
@@ -191,51 +191,23 @@ else
     info "Reusing existing tag v${VERSION}."
 fi
 
-# ── 5. Push and/or Publish ────────────────────────────────────────────────────
-header "Building and Publishing locally..."
+# ── 5. Push to GitHub ───────────────────────────────────────────────────────────
+header "Triggering Release Automation..."
 
-info "Building DMG locally..."
-make dmg
+info "The release process is fully automated via GitHub Actions."
+info "By pushing the new version commit and tag to GitHub, the CI pipeline will automatically:"
+info " - Build macOS, Linux, and Windows artifacts"
+info " - Create the GitHub Release and upload all artifacts"
+info " - Update Homebrew, Linuxbrew, and Winget registries"
 
-DMG_PATH=$(find target/release -name "KatanA-Desktop-*.dmg" -maxdepth 1 | sort -V | tail -1)
-if [[ -z "$DMG_PATH" ]]; then
-    error "Local DMG build failed or file not found."
-    exit 1
-fi
-success "Local DMG built: $DMG_PATH"
-
-ZIP_PATH="target/release/KatanA-macOS.zip"
-rm -f "$ZIP_PATH"
-info "Building ZIP locally ($ZIP_PATH)..."
-APP_PATH=$(find target/release/bundle/osx -name "*.app" -maxdepth 1 | head -1)
-if [[ -n "$APP_PATH" ]]; then
-    (cd "$(dirname "$APP_PATH")" && zip -r -q "../../KatanA-macOS.zip" "$(basename "$APP_PATH")")
-    success "Local ZIP built: $ZIP_PATH"
-else
-    error "Local APP bundle not found for zipping."
-    exit 1
-fi
-
-RELEASE_NOTES_PATH="/tmp/RELEASE_NOTES_${VERSION}.md"
-info "Extracting release notes..."
-./scripts/release/extract-notes.sh "$VERSION" > "$RELEASE_NOTES_PATH"
-
-if confirm "Publish to GitHub and Update Homebrew now?"; then
-    info "Pushing changes and tag to origin..."
+if confirm "Push the commit and tag to origin to trigger the release workflow?"; then
+    info "Pushing commit to master..."
     git push origin HEAD --no-verify
+    info "Pushing tag v${VERSION}..."
     git push origin "v${VERSION}" --no-verify
-
-    ./scripts/release/publish-github.sh "$VERSION" "$DMG_PATH" "$RELEASE_NOTES_PATH"
-    
-    SHA256=$(shasum -a 256 "$DMG_PATH" | awk '{print $1}')
-    DMG_NAME=$(basename "$DMG_PATH")
-    ./scripts/release/update-homebrew.sh "$VERSION" "$SHA256" "$DMG_NAME"
-    
-    success "Local release and publication complete!"
+    success "Successfully pushed to origin! The GitHub Actions workflow should now be running."
 else
-    warn "Publication skipped. You must publish manually."
+    warn "Push skipped. You must push the commit and tag manually."
 fi
 
-rm -f "$RELEASE_NOTES_PATH"
-
-success "Release v${VERSION} process finished! 🚀"
+success "Local release preparation for v${VERSION} has finished! 🚀"
