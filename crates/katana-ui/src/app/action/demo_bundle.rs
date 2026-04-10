@@ -37,16 +37,8 @@ pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
         (WELCOME_EN, RENDERING_FEATURES_EN)
     };
 
-    let welcome_filename = if lang == "ja" {
-        "welcome.ja.md"
-    } else {
-        "welcome.md"
-    };
-    let rendering_filename = if lang == "ja" {
-        "rendering_features.ja.md"
-    } else {
-        "rendering_features.md"
-    };
+    let welcome_filename = "welcome.md";
+    let rendering_filename = "rendering_features.md";
 
     vec![
         /* WHY: Welcome is always first */
@@ -92,8 +84,8 @@ mod tests {
     fn resolve_demo_bundle_returns_two_assets_ja() {
         let bundle = resolve_demo_bundle("ja");
         assert_eq!(bundle.len(), 2);
-        assert!(bundle[0].virtual_path.contains("welcome.ja.md"));
-        assert!(bundle[1].virtual_path.contains("rendering_features.ja.md"));
+        assert!(bundle[0].virtual_path.contains("welcome.md"));
+        assert!(bundle[1].virtual_path.contains("rendering_features.md"));
     }
 
     #[test]

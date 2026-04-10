@@ -109,4 +109,28 @@ impl KatanaApp {
             self.full_refresh_preview(&path, &src, false, concurrency);
         }
     }
+
+    pub(super) fn handle_action_switch_demo_lang(&mut self, target_lang: &str) {
+        let demo_assets = super::demo_bundle::resolve_demo_bundle(target_lang);
+        let active_idx = self.state.document.active_doc_idx;
+
+        for asset in demo_assets {
+            let virtual_path = PathBuf::from(&asset.virtual_path);
+            for doc in self.state.document.open_documents.iter_mut() {
+                if doc.path == virtual_path {
+                    doc.buffer = asset.content.to_string();
+                }
+            }
+        }
+        
+        if let Some(idx) = active_idx
+            && let Some(doc) = self.state.document.open_documents.get(idx)
+            && doc.path.to_string_lossy().starts_with("Katana://Demo/")
+        {
+            let path = doc.path.clone();
+            let src = doc.buffer.clone();
+            let concurrency = self.state.config.settings.settings().performance.diagram_concurrency;
+            self.full_refresh_preview(&path, &src, false, concurrency);
+        }
+    }
 }

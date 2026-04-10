@@ -96,6 +96,7 @@ pub enum AppAction {
     ConfirmRelaunch,
     ShowReleaseNotes,
     OpenHelpDemo,
+    SwitchDemoLanguage(String),
     ClearAllCaches,
     CreateTabGroup {
         name: String,

@@ -4,7 +4,7 @@ This document demonstrates every rendering feature available in KatanA.
 Open it alongside the editor to see how each element is rendered.
 
 <p align="center">
-  English | <a href="rendering_features.ja.md">日本語</a>
+  English | <a href="Katana://Command/SwitchDemoLanguage?lang=ja">日本語</a>
 </p>
 
 ---

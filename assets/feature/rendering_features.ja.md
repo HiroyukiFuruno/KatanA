@@ -4,7 +4,7 @@
 エディタと並べて開き、各要素がどのように描画されるかを確認してください。
 
 <p align="center">
-  <a href="rendering_features.md">English</a> | 日本語
+  <a href="Katana://Command/SwitchDemoLanguage?lang=en">English</a> | 日本語
 </p>
 
 ---

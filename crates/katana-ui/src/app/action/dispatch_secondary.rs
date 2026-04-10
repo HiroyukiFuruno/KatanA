@@ -118,6 +118,7 @@ impl KatanaApp {
                 self.handle_action_toggle_collapse_tab_group(group_id)
             }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
+            AppAction::SwitchDemoLanguage(lang) => self.handle_action_switch_demo_lang(&lang),
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),
             _ => {}

@@ -3,7 +3,7 @@
 **KatanA** へようこそ。Rust と egui で構築された、macOS 向け高速・軽量 Markdown ワークスペースです。
 
 <p align="center">
-  <a href="welcome.md">English</a> | 日本語
+  <a href="Katana://Command/SwitchDemoLanguage?lang=en">English</a> | 日本語
 </p>
 
 ---

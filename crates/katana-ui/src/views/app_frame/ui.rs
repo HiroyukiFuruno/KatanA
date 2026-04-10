@@ -98,6 +98,12 @@ impl AppFrameOps {
                 continue;
             }
 
+            if url.starts_with("Katana://Command/SwitchDemoLanguage?lang=") {
+                let lang = url.strip_prefix("Katana://Command/SwitchDemoLanguage?lang=").unwrap();
+                app.process_action(ctx, AppAction::SwitchDemoLanguage(lang.to_string()));
+                continue;
+            }
+
             let mut path = std::path::PathBuf::from(url);
             if path.is_relative()
                 && let Some(parent) = app

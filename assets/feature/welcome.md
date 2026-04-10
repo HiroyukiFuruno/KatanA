@@ -4,7 +4,7 @@ Welcome to **KatanA**, a fast, lightweight Markdown workspace for macOS built
 with Rust and egui.
 
 <p align="center">
-  English | <a href="welcome.ja.md">日本語</a>
+  English | <a href="Katana://Command/SwitchDemoLanguage?lang=ja">日本語</a>
 </p>
 
 ---
