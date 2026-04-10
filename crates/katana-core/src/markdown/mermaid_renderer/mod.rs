@@ -1,3 +1,4 @@
+pub mod probe;
 pub mod render;
 pub mod resolve;
 pub mod types;
