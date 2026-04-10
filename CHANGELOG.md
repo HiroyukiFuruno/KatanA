@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.18.3] - 2026-04-10 09:52:37 (UTC)
+
+### ✨ Improvements
+
+- Improved the resolution logic of the Mermaid rendering engine to be more robust across multiple platforms.
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where the terms of service modal was incorrectly displayed every time the app was updated.
+- Fixed an issue where the application would freeze and become unresponsive during the first launch.
+- Fixed an issue where the demo language switching links were incorrectly resolved as relative paths.
+
+### 🔧 System
+
+- Improved internal code structure for greater maintainability and stability.
+
 ## [0.18.2] - 2026-04-10 07:25:00 (UTC)
 
 ### ✨ Improvements
