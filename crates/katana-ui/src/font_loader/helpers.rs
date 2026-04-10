@@ -56,10 +56,11 @@ impl SystemFontLoader {
 
     pub(super) fn inject_custom_font(fonts: &mut FontDefinitions, path: &str, name: &str) {
         let Ok(data) = fs::read(path) else { return };
-        fonts.font_data.insert(
-            name.to_string(),
-            std::sync::Arc::new(FontData::from_owned(data)),
-        );
+        let mut font_data = FontData::from_owned(data);
+        font_data.tweak.y_offset = super::normalize::LINUX_Y_OFFSET;
+        fonts
+            .font_data
+            .insert(name.to_string(), std::sync::Arc::new(font_data));
         Self::prepend_primary(fonts, FontFamily::Proportional, name);
     }
 }

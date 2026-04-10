@@ -126,5 +126,6 @@ pub enum AppAction {
     DocSearchPrev,
     ToggleProblemsPanel,
     RefreshDiagnostics,
+    Quit,
     None,
 }

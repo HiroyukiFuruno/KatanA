@@ -7,7 +7,7 @@ mod types;
 pub use types::{NormalizeFonts, SystemFontLoader};
 
 use normalize::{
-    MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR, MONO_PRIMARY_Y_OFFSET_FACTOR,
+    LINUX_Y_OFFSET, MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR, MONO_PRIMARY_Y_OFFSET_FACTOR,
     PROPORTIONAL_Y_OFFSET_FACTOR,
 };
 
@@ -56,7 +56,7 @@ impl SystemFontLoader {
             hinting_override: None,
             scale: 1.0,
             y_offset_factor: PROPORTIONAL_Y_OFFSET_FACTOR,
-            y_offset: 0.0,
+            y_offset: LINUX_Y_OFFSET,
         };
         let prop_name =
             Self::load_first_valid(&mut fonts, proportional_candidates, Some(prop_tweak), "");
@@ -66,7 +66,7 @@ impl SystemFontLoader {
             hinting_override: None,
             scale: 1.0,
             y_offset_factor: MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR,
-            y_offset: 0.0,
+            y_offset: LINUX_Y_OFFSET,
         };
         let markdown_name = Self::load_first_valid(
             &mut fonts,
@@ -80,7 +80,7 @@ impl SystemFontLoader {
             hinting_override: None,
             scale: 1.0,
             y_offset_factor: MONO_PRIMARY_Y_OFFSET_FACTOR,
-            y_offset: 0.0,
+            y_offset: LINUX_Y_OFFSET,
         };
         let mono_name =
             Self::load_first_valid(&mut fonts, monospace_candidates, Some(mono_tweak), "");

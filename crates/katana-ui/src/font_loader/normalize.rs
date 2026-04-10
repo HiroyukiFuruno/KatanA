@@ -8,6 +8,11 @@ pub(super) const MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.0;
 /* WHY: Proportional font descender space causes text to appear ~3px above visual center. */
 pub(super) const PROPORTIONAL_Y_OFFSET_FACTOR: f32 = 0.25;
 
+#[cfg(target_os = "linux")]
+pub(super) const LINUX_Y_OFFSET: f32 = -2.5;
+#[cfg(not(target_os = "linux"))]
+pub(super) const LINUX_Y_OFFSET: f32 = 0.0;
+
 impl NormalizeFonts {
     pub fn new(fonts: FontDefinitions) -> Self {
         Self {
@@ -31,7 +36,7 @@ impl NormalizeFonts {
             hinting_override: None,
             scale: 1.0,
             y_offset_factor: MONO_FALLBACK_Y_OFFSET_FACTOR + MONO_PRIMARY_Y_OFFSET_FACTOR,
-            y_offset: 0.0,
+            y_offset: LINUX_Y_OFFSET,
         };
         let mono_fallback_name = SystemFontLoader::load_first_valid(
             &mut self.fonts,
