@@ -2,11 +2,19 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
-## [0.18.5] - 2026-04-10 (UTC)
+## [0.18.6] - 2026-04-10 (UTC)
 
-### 🚀 Features
+### ✨ Improvements
 
-- **Windows distribution stability:** Centralized command execution logic for Windows to prevent console windows from popping up during background tasks such as diagram rendering and application updates.
+- **Unified Multi-Platform Menu:** Introduced a dedicated "KatanA" application menu for Windows and Linux, matching macOS standards. This centralizes "About", "Check for Updates", "Settings", "Language", and "Quit" in the leftmost menu for improved cross-platform consistency.
+- **Robust PlantUML/mmdc Probing:** Enhanced Mermaid CLI (mmdc) discovery on Windows to recognize various executable extensions (`.cmd`, `.ps1`, `.exe`). Also improved the Node.js download fallback for PlantUML to follow redirects and handle errors more reliably.
+
+### 🐛 Bug Fixes
+
+- **Linux Auto-Update 404:** Fixed a download failure (404 error) occurring during application updates on some Linux environments by improving redirect handling in the fetch pipeline.
+- **Localization Parity:** Resolved inconsistencies in update-related labels across all 11 supported languages, ensuring a fully localized experience during installation and relaunch.
+
+## [0.18.5] - 2026-04-10 12:58:13 (UTC)
 
 ### ✨ Improvements
 
@@ -14,14 +22,27 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🐛 Bug Fixes
 
-- **Mermaid CLI (mmdc) on Windows:** Suppressed unnecessary console windows during Mermaid diagram rendering on Windows.
-- **Silent Background Updates:** Fixed an issue where a PowerShell window would briefly appear during the application update process on Windows.
 - **Terms of Service re-displayed after update:** Fixed a bug where the Terms of Service screen was incorrectly shown again after every application update. It now appears only on the very first launch.
 
 ### 🔧 System
 
 - **Headless-by-Default enforcement:** All external process invocations across the codebase (diagram rendering, file reveal, update cleanup, download) are now routed exclusively through `ProcessService`, making the `CREATE_NO_WINDOW` policy on Windows both mandatory and auditable.
 - **AST Linter rule `no-direct-process-command`:** Added a compile-time linting rule that prohibits direct use of `std::process::Command::new` outside of `ProcessService`. This prevents future regressions where background processes could inadvertently pop up console windows on Windows.
+
+## [0.18.4] - 2026-04-10 11:18:09 (UTC)
+
+### 🚀 Features
+
+- **Windows distribution stability:** Centralized command execution logic for Windows to prevent console windows from popping up during background tasks such as diagram rendering and application updates.
+
+### ✨ Improvements
+
+- **PlantUML Download Resilience:** Implemented a robust download mechanism for PlantUML with an automatic PowerShell fallback on Windows, ensuring compatibility even when `curl` is unavailable.
+
+### 🐛 Bug Fixes
+
+- **Mermaid CLI (mmdc) on Windows:** Suppressed unnecessary console windows during Mermaid diagram rendering on Windows.
+- **Silent Background Updates:** Fixed an issue where a PowerShell window would briefly appear during the application update process on Windows.
 
 ## [0.18.3] - 2026-04-10 09:52:37 (UTC)
 
