@@ -16,6 +16,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 - **Mermaid CLI (mmdc) on Windows:** Suppressed unnecessary console windows during Mermaid diagram rendering on Windows.
 - **Silent Background Updates:** Fixed an issue where a PowerShell window would briefly appear during the application update process on Windows.
+- **Terms of Service re-displayed after update:** Fixed a bug where the Terms of Service screen was incorrectly shown again after every application update. It now appears only on the very first launch.
 
 ### 🔧 System
 

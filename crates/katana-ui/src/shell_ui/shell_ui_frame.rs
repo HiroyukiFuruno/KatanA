@@ -9,16 +9,15 @@ impl KatanaApp {
         ctx: &egui::Context,
         theme_colors: &katana_platform::theme::ThemeColors,
     ) -> bool {
-        let accepted_ver_matches = self
+        let terms_accepted = self
             .state
             .config
             .settings
             .settings()
             .terms_accepted_version
-            .as_deref()
-            == Some(crate::about_info::APP_VERSION);
+            .is_some();
 
-        if !accepted_ver_matches {
+        if !terms_accepted {
             self.show_update_dialog = false;
             self.needs_changelog_display = false;
 
