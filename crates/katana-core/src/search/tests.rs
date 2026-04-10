@@ -100,3 +100,37 @@ fn test_search_workspace() {
     let results_inline_break = WorkspaceSearchOps::search_workspace(&ws2, "foo", 3);
     assert_eq!(results_inline_break.len(), 3);
 }
+
+#[test]
+fn test_search_noise_reduction() {
+    let dir = tempdir().unwrap();
+    let md_path = dir.path().join("noise.md");
+    let mut md = File::create(&md_path).unwrap();
+    writeln!(md, "#[allow(dead_code)]").unwrap();
+    writeln!(md, "actual content").unwrap();
+    writeln!(md, "   #[allow(unused)]").unwrap();
+    writeln!(md, "some code // #[allow(none)]").unwrap();
+
+    let ws = crate::Workspace::new(
+        dir.path().to_path_buf(),
+        vec![crate::workspace::TreeEntry::File {
+            path: md_path.clone(),
+        }],
+    );
+
+    /* WHY: Default search should skip #[allow(...)] lines */
+    let results = WorkspaceSearchOps::search_workspace(&ws, "dead", 10);
+    assert_eq!(results.len(), 0);
+
+    let results_content = WorkspaceSearchOps::search_workspace(&ws, "content", 10);
+    assert_eq!(results_content.len(), 1);
+    assert_eq!(results_content[0].snippet, "actual content");
+
+    /* WHY: Explicitly searching for 'allow' should show them */
+    let results_allow = WorkspaceSearchOps::search_workspace(&ws, "allow", 10);
+    assert_eq!(results_allow.len(), 3);
+
+    /* WHY: 'unused' should be skipped by default */
+    let results_unused = WorkspaceSearchOps::search_workspace(&ws, "unused", 10);
+    assert_eq!(results_unused.len(), 0);
+}

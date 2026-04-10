@@ -15,10 +15,16 @@ This workflow defines the branching **strategy** (what branches to create and wh
 
 ### Step 1: Base Branch Creation (Initial)
 
-Before starting any tasks, create the Base Feature Branch from `master` named exactly after the change directory.
+Before starting any tasks, create the Base Feature Branch from `master`.
+- **Standard**: Named exactly after the change directory (e.g., `v0-18-7-ui-polish`).
+- **Release Release**: For versioned releases, use `release/vX.Y.Z` (e.g., `release/v0.18.7`).
 
 ```bash
+# Standard
 git switch -c <Change-Directory-Name> master
+
+# Release Case
+git switch -c release/v<Target-Version> master
 ```
 
 ### Step 2: Task Branch Creation (Per MAJOR Task Group)
@@ -34,7 +40,11 @@ Before creating a new task branch (for Task 2, Task 3, etc.), you MUST explicitl
 If the DoR is satisfied, base branch is synced (`git switch <base> && git pull`), then for each **Major Task Group** (e.g., `## 1. Core Logic`) in `tasks.md`, derive a *single* task branch from the Base Feature Branch.
 
 ```bash
+# Standard
 git switch -c <Change-Directory-Name>-task<N> <Change-Directory-Name>
+
+# Release Case
+git switch -c release/v<Target-Version>-task<N> release/v<Target-Version>
 ```
 
 #### ⚠️ MANDATORY RULE: NO SUBTASK BRANCHING
