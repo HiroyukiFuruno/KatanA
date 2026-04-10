@@ -10,7 +10,7 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### ✨ Improvements
 
-- **PlantUML Download Resilience:** Implemented a robust download mechanism for PlantUML with an automatic PowerShell fallback on Windows, ensuring compatibility even when `curl` is unavailable.
+- **PlantUML Download Resilience:** Implemented a robust, cross-platform download mechanism for PlantUML. Now tries `curl` first, then falls back to PowerShell `Invoke-WebRequest` on Windows, and `wget` on Linux/macOS.
 
 ### 🐛 Bug Fixes
 

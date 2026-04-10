@@ -35,7 +35,9 @@ impl ProcessService {
         command.output()
     }
 
-    /// Downloads a file from a URL to a destination path, using curl with a PowerShell fallback on Windows.
+    /// Downloads a file from a URL to a destination path.
+    /// Tries curl first, then falls back to platform-specific alternatives:
+    /// Windows → PowerShell Invoke-WebRequest, Linux/macOS → wget.
     pub fn download_file(url: &str, dest: &Path) -> Result<(), String> {
         if let Some(parent) = dest.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -43,35 +45,44 @@ impl ProcessService {
 
         /* Attempt download with curl */
         let mut curl = Self::create_command("curl");
-        curl.args(["-L", "-o", dest.to_str().unwrap_or(""), url]);
+        curl.args(["-fsSL", "-o", dest.to_str().unwrap_or(""), url]);
 
-        match curl.status() {
-            Ok(status) if status.success() => return Ok(()),
-            _ => {
-                #[cfg(windows)]
-                {
-                    /* Fallback to PowerShell's Invoke-WebRequest if curl fails on Windows */
-                    let mut ps = Self::create_command("powershell");
-                    ps.args([
-                        "-NoProfile",
-                        "-NonInteractive",
-                        "-Command",
-                        &format!(
-                            "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
-                             $ProgressPreference = 'SilentlyContinue'; \
-                             Invoke-WebRequest -Uri '{}' -OutFile '{}'",
-                            url.replace("'", "''"),
-                            dest.display().to_string().replace("'", "''")
-                        ),
-                    ]);
-                    if ps.status().is_ok_and(|s| s.success()) {
-                        return Ok(());
-                    }
-                }
+        if curl.status().is_ok_and(|s| s.success()) {
+            return Ok(());
+        }
+
+        #[cfg(windows)]
+        {
+            /* WHY: Fallback to PowerShell's Invoke-WebRequest if curl fails on Windows */
+            let mut ps = Self::create_command("powershell");
+            ps.args([
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                &format!(
+                    "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
+                     $ProgressPreference = 'SilentlyContinue'; \
+                     Invoke-WebRequest -Uri '{}' -OutFile '{}'",
+                    url.replace("'", "''"),
+                    dest.display().to_string().replace("'", "''")
+                ),
+            ]);
+            if ps.status().is_ok_and(|s| s.success()) {
+                return Ok(());
             }
         }
 
-        Err("Download failed: Both curl and fallback mechanisms failed.".to_string())
+        #[cfg(not(windows))]
+        {
+            /* WHY: Fallback to wget on Linux/macOS when curl is unavailable or fails */
+            let mut wget = Self::create_command("wget");
+            wget.args(["-q", "-O", dest.to_str().unwrap_or(""), url]);
+            if wget.status().is_ok_and(|s| s.success()) {
+                return Ok(());
+            }
+        }
+
+        Err("Download failed: curl and all fallback mechanisms failed.".to_string())
     }
 }
 
