@@ -2,7 +2,7 @@
   "menu": {
     "file": "文件",
     "settings": "设置",
-    "language": "语言 (Language)",
+    "language": "语言",
     "open_workspace": "打开工作区…",
     "save": "保存",
     "open_all": "全部打开",
@@ -21,8 +21,18 @@
     "release_notes": "发行说明",
     "view": "查看",
     "command_palette": "命令面板…",
-    "close_workspace": "Close Workspace (zh-CN)",
-    "demo": "查看演示"
+    "close_workspace": "关闭工作区",
+    "demo": "查看演示",
+    "language_en": "英语",
+    "language_ja": "日语",
+    "language_zh_cn": "中文 (简体)",
+    "language_zh_tw": "中文 (繁体)",
+    "language_ko": "韩语",
+    "language_pt": "葡萄牙语",
+    "language_fr": "法语",
+    "language_de": "德语",
+    "language_es": "西班牙语",
+    "language_it": "意大利语"
   },
   "about": {
     "basic_info": "基本信息",
@@ -45,8 +55,8 @@
     "title": "检查更新",
     "checking_for_updates": "正在检查更新...",
     "update_available": "有新版本可用",
-    "update_available_desc": "KatanA 有新版本 ({version}) 可用。请运行 `brew update && brew upgrade --cask katana-desktop` 进行更新。",
-    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有关详细的更改和发行说明，请查看 [GitHub 发行页面]({url})。\n点击 \"安装并重新启动\" 即可自动应用更新。",
+    "update_available_desc": "KatanA 有新版本 ({version}) 可用。点击 \"安装并重启\" 即可自动应用更新。",
+    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有关详细的更改和发行说明，请查看 [GitHub 发行页面]({url})。\n点击 \"安装并重启\" 即可自动应用更新。",
     "up_to_date": "已是最新版本",
     "up_to_date_desc": "您使用的是最新版本的 KatanA。",
     "failed_to_check": "检查更新失败。",
@@ -57,7 +67,8 @@
     "restart_confirm": "更新已就绪，现在重启吗？",
     "action_later": "稍后",
     "action_skip_version": "跳过此版本",
-    "action_restart": "立即重启"
+    "action_restart": "立即重启",
+    "download_update": "安装并重启"
   },
   "workspace": {
     "no_workspace_open": "未打开工作区。",
@@ -69,13 +80,13 @@
     "filter_regex_hint": "过滤 (正则表达式)...",
     "explorer_title": "文件资源管理器",
     "workspace_history_title": "工作区历史",
-    "open_folder_hint": "Open a folder to start using KatanA. (zh-CN)",
-    "open_workspace_button": "Open Workspace (zh-CN)",
+    "open_folder_hint": "打开一个文件夹即可开始使用 KatanA。",
+    "open_workspace_button": "打开工作区",
     "remove_history_tooltip": "从列表中移除",
     "sidebar_workspace_tooltip": "工作区",
     "sidebar_history_tooltip": "最近的工作区",
     "no_recent_workspaces": "没有最近的工作区",
-    "no_saved_workspaces": "No saved workspaces (zh-CN)"
+    "no_saved_workspaces": "没有已保存的工作区"
   },
   "preview": {
     "preview_title": "预览",
@@ -134,8 +145,8 @@
     "toggle_problems_panel": "切换问题面板",
     "problems_count_format": "⚠️ 问题: {count}",
     "removed_workspace": "工作区 '{path}' 已从列表中移除。",
-    "error_save_settings": "Failed to save settings. (zh-CN)",
-    "closed_workspace": "Workspace closed. (zh-CN)"
+    "error_save_settings": "保存设置失败。",
+    "closed_workspace": "工作区已关闭。"
   },
   "action": {
     "expand_all": "展开全部",
@@ -403,7 +414,7 @@
   "terms": {
     "title": "服务条款",
     "version_label": "版本: {version}",
-    "content": "Terms content.",
+    "content": "感谢您使用 KatanA。\n\n本软件为开源软件，并依据 MIT 许可证提供。\n\n[免责声明]\n1. 对于因本软件、其使用或与本软件有关的其他事项所引起或与之相关的任何索赔、损害或其他责任，无论其基于合同、侵权或其他原因，作者或版权持有人概不负责。\n2. 本软件按“现状”提供，不提供任何形式的明示或默示担保，包括但不限于适销性、特定用途适用性和不侵权保证。\n\n[隐私]\n1. 本软件不会将您的文档内容传输到任何外部服务器。\n2. 可能会发送匿名崩溃报告或使用统计信息，但您可以在设置中禁用这些功能。\n\n点击“接受”即表示您同意上述条款。",
     "accept": "接受",
     "decline": "拒绝"
   },

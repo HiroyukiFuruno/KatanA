@@ -2,7 +2,7 @@
   "menu": {
     "file": "파일",
     "settings": "설정",
-    "language": "언어 (Language)",
+    "language": "언어",
     "open_workspace": "워크스페이스 열기…",
     "save": "저장",
     "open_all": "모두 열기",
@@ -21,8 +21,18 @@
     "release_notes": "버전 정보",
     "view": "보기",
     "command_palette": "명령어 팔레트…",
-    "close_workspace": "Close Workspace (ko)",
-    "demo": "데모 보기"
+    "close_workspace": "워크스페이스 닫기",
+    "demo": "데모 보기",
+    "language_en": "영어",
+    "language_ja": "일본어",
+    "language_zh_cn": "중국어 (간체)",
+    "language_zh_tw": "중국어 (번체)",
+    "language_ko": "한국어",
+    "language_pt": "포르투갈어",
+    "language_fr": "프랑스어",
+    "language_de": "독일어",
+    "language_es": "스페인어",
+    "language_it": "이탈리아어"
   },
   "about": {
     "basic_info": "기본 정보",
@@ -45,19 +55,20 @@
     "title": "업데이트 확인",
     "checking_for_updates": "업데이트 확인 중...",
     "update_available": "업데이트 가능",
-    "update_available_desc": "KatanA의 새 버전({version})을 사용할 수 있습니다. `brew update && brew upgrade --cask katana-desktop`를 실행하여 업데이트하십시오.",
-    "release_notes_template": "### 새 버전 {version} 을 사용할 수 있습니다\n\n자세한 변경 사항 및 릴리스 노트는 [GitHub 릴리스 페이지]({url}) 에서 확인하세요.\n\"설치 및 다시 시작\" 을 클릭하면 업데이트가 자동으로 적용됩니다.",
+    "update_available_desc": "KatanA의 새 버전({version})을 사용할 수 있습니다. \"설치 및 재시작\"을 클릭하면 업데이트가 자동으로 적용됩니다.",
+    "release_notes_template": "### 새 버전 {version} 을 사용할 수 있습니다\n\n자세한 변경 사항 및 릴리스 노트는 [GitHub 릴리스 페이지]({url}) 에서 확인하세요.\n\"설치 및 재시작\" 을 클릭하면 업데이트가 자동으로 적용됩니다.",
     "up_to_date": "최신 버전",
     "up_to_date_desc": "최신 버전의 KatanA를 사용하고 있습니다.",
     "failed_to_check": "업데이트 확인 실패.",
     "action_close": "확인",
-    "install_update": "업데이트 및 재시작",
+    "install_update": "설치 및 재시작",
     "downloading": "업데이트 다운로드 중...",
     "installing": "업데이트 설치 중...",
     "restart_confirm": "업데이트가 준비되었습니다. 지금 재시작하시겠습니까?",
     "action_later": "나중에",
     "action_skip_version": "이 버전 건너뛰기",
-    "action_restart": "지금 재시작"
+    "action_restart": "지금 재시작",
+    "download_update": "설치 및 재시작"
   },
   "workspace": {
     "no_workspace_open": "열린 워크스페이스가 없습니다.",
@@ -69,13 +80,13 @@
     "filter_regex_hint": "필터 (정규식)...",
     "explorer_title": "파일 탐색기",
     "workspace_history_title": "워크스페이스 기록",
-    "open_folder_hint": "Open a folder to start using KatanA. (ko)",
-    "open_workspace_button": "Open Workspace (ko)",
+    "open_folder_hint": "KatanA를 사용하려면 폴더를 여세요.",
+    "open_workspace_button": "워크스페이스 열기",
     "remove_history_tooltip": "목록에서 제거",
     "sidebar_workspace_tooltip": "작업 공간",
     "sidebar_history_tooltip": "최근 작업 공간",
     "no_recent_workspaces": "최근 작업 공간 없음",
-    "no_saved_workspaces": "No saved workspaces (ko)"
+    "no_saved_workspaces": "저장된 워크스페이스가 없습니다"
   },
   "preview": {
     "preview_title": "미리보기",
@@ -134,8 +145,8 @@
     "toggle_problems_panel": "문제 패널 전환",
     "problems_count_format": "문제: {count}",
     "removed_workspace": "작업 공간 '{path}'이(가) 목록에서 제거되었습니다.",
-    "error_save_settings": "Failed to save settings. (ko)",
-    "closed_workspace": "Workspace closed. (ko)"
+    "error_save_settings": "설정을 저장하지 못했습니다.",
+    "closed_workspace": "워크스페이스를 닫았습니다."
   },
   "action": {
     "expand_all": "모두 확장",
@@ -403,7 +414,7 @@
   "terms": {
     "title": "이용 약관",
     "version_label": "버전: {version}",
-    "content": "Terms content.",
+    "content": "KatanA를 이용해 주셔서 감사합니다.\n\n이 소프트웨어는 오픈 소스이며 MIT 라이선스로 제공됩니다.\n\n[면책 조항]\n1. 작성자 또는 저작권자는 소프트웨어나 소프트웨어의 사용 또는 기타 취급과 관련하여 발생하는 모든 청구, 손해 또는 기타 책임에 대해 계약, 불법행위 또는 그 밖의 사유를 불문하고 어떠한 경우에도 책임을 지지 않습니다.\n2. 이 소프트웨어는 \"있는 그대로\" 제공되며, 상품성, 특정 목적에 대한 적합성 및 비침해를 포함하되 이에 국한되지 않는 명시적 또는 묵시적 보증을 제공하지 않습니다.\n\n[개인정보]\n1. 이 소프트웨어는 문서 내용을 외부 서버로 전송하지 않습니다.\n2. 익명 충돌 보고서 또는 사용 통계가 전송될 수 있지만, 이는 설정에서 비활성화할 수 있습니다.\n\n\"동의\"를 클릭하면 위 약관에 동의하는 것으로 간주됩니다.",
     "accept": "동의",
     "decline": "거부"
   },
