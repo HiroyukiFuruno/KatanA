@@ -9,8 +9,8 @@ use katana_linter::rules::domains::theme::{
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
     FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps,
-    MagicNumberOps, NestingDepthOps, PerformanceOps, ProhibitedAttributesOps, ProhibitedTypesOps,
-    PubFreeFnOps, TypeSeparationOps,
+    MagicNumberOps, NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
+    ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -382,5 +382,16 @@ fn ast_linter_icon_button_fill() {
          icon_bg = TRANSPARENT (dark) or from_gray(LIGHT_MODE_ICON_BG) (light).",
         &target_crates(root),
         IconButtonFillOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_direct_process_command() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "no-direct-process-command",
+        "Fix: The direct use of `std::process::Command::new` is banned. Use `crate::system::ProcessService::create_command` to guarantee Window prevention policies on Windows.",
+        &target_crates(root),
+        ProcessCommandOps::lint,
     );
 }

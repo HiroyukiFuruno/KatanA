@@ -7,6 +7,7 @@ pub mod icon_button_fill;
 pub mod lazy_code;
 pub mod magic_numbers;
 pub mod performance;
+pub mod process_command;
 pub mod prohibited_attrs;
 pub mod prohibited_types;
 
@@ -19,5 +20,6 @@ pub use icon_button_fill::IconButtonFillOps;
 pub use lazy_code::LazyCodeOps;
 pub use magic_numbers::MagicNumberOps;
 pub use performance::PerformanceOps;
+pub use process_command::ProcessCommandOps;
 pub use prohibited_attrs::ProhibitedAttributesOps;
 pub use prohibited_types::ProhibitedTypesOps;

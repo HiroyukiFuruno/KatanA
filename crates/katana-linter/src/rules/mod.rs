@@ -4,8 +4,8 @@ pub mod structure;
 
 pub use coding::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FrameStrokeOps, HorizontalLayoutOps,
-    IconButtonFillOps, LazyCodeOps, MagicNumberOps, PerformanceOps, ProhibitedAttributesOps,
-    ProhibitedTypesOps,
+    IconButtonFillOps, LazyCodeOps, MagicNumberOps, PerformanceOps, ProcessCommandOps,
+    ProhibitedAttributesOps, ProhibitedTypesOps,
 };
 
 pub use structure::{
