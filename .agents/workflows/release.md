@@ -70,39 +70,45 @@ gh pr merge --merge --delete-branch
 ```
 
 
-### Step 4: リリースの実行（ワークフロー発火）
+### Step 4: リリースの自動実行（PR マージ時）
 
-PR マージ後、ローカルから以下のコマンドでリリースワークフローを発火します。
+PR (release/vX.Y.Z -> master) がマージされると、GitHub Actions の **Release** ワークフローが自動的に発火します。
+
+> [!TIP]
+> **推奨フロー**: PR マージによりタグ作成・ビルド・配布がすべて連鎖的に実行されます。
+> 手動での `gh workflow run` は、ビルドに失敗して特定のプラットフォームだけ再送したい場合などの例外的なケースでのみ使用してください。
+
+### Step 5: リリース状況の監視と事後確認
+
+```bash
+# ワークロー実行状況の監視
+gh run list --workflow Release --limit 5
+gh run watch [RUN_ID] --repo HiroyukiFuruno/KatanA
+
+# リリースページの確認
+gh release view vX.Y.Z
+```
+
+> [!IMPORTANT]
+> GitHub Actions 上で以下のステップが完全自動で実行されます：
+>
+> 1. **Preflight**: バージョン整合性チェック（Cargo.toml, Info.plist, CHANGELOG）
+> 2. **Build（並列）**: macOS (.dmg/.zip) / Linux (.tar.gz) / Windows (.msi/.zip) をそれぞれのネイティブ環境でビルド
+> 3. **Publish**: `gh release create` により **タグと GitHub Release を API 経由で同時作成** し、全アーティファクトをアップロード
+> 4. **配布**: Homebrew Cask / Linuxbrew Formula / Winget レジストリへの自動公開
+
+---
+
+## 💡 手動リリースの実行（例外用）
+
+自動発火に失敗した場合や、特定のパラメータを指定して再実行したい場合のみ、ローカルから以下のコマンドを実行します。
 
 ```bash
 gh workflow run Release -f version=X.Y.Z
 ```
 
-> [!IMPORTANT]
-> このコマンドにより、GitHub Actions 上で以下のステップが完全自動で実行されます：
->
-> 1. **Preflight**: `Cargo.toml`, `Info.plist` のバージョンを in-place で書き換え → CHANGELOG・OpenSpec の検証
-> 2. **Build（並列）**: macOS (.dmg/.zip) / Linux (.tar.gz) / Windows (.msi/.zip) をそれぞれのネイティブ環境でビルド
-> 3. **Publish**: `gh release create` により **タグと GitHub Release を API 経由で同時作成** し、全アーティファクトをアップロード
-> 4. **配布**: Homebrew Cask / Linuxbrew Formula / Winget レジストリへの自動公開
-
 > [!NOTE]
-> ローカルでの `make release` は不要です。`Cargo.toml` のバージョンは master 上では開発版のまま維持されます。
-> リリース用のバージョン書き換えは CI 上の各ビルドジョブ内で in-place に行われ、コミットされません。
-
-### Step 5: リリース後確認
-
-```bash
-# ワークフロー実行状況の監視
-gh run watch --repo HiroyukiFuruno/KatanA
-
-# リリースページの確認
-gh release view vX.Y.Z
-
-# リリースブランチの削除（ローカル・リモート）
-git branch -d release/vX.Y.Z
-git push origin --delete release/vX.Y.Z
-```
+> 手動実行の場合、ワークフローの `preflight` ジョブが `Cargo.toml` のバージョン書き換えと `git push` を自動で行います。通常のマージフローではこのステップは不要（既に更新済み）なためスキップされます。
 
 ---
 
