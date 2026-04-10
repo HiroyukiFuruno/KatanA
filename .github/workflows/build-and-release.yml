@@ -124,32 +124,8 @@ jobs:
         # WHY: PR merge flow already has Cargo.toml updated; only bump on manual dispatch or tag push
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         run: |
-          TARGET_VERSION="${{ steps.version.outputs.version_bare }}"
-          CURRENT_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-          
-          if [ "${TARGET_VERSION}" = "${CURRENT_VERSION}" ]; then
-            echo "✅ Version already matches. Skipping bump."
-          else
-            perl -pi -e 's/^version = ".+"/version = "'"${TARGET_VERSION}"'"/' Cargo.toml
-            cargo update --workspace >/dev/null 2>&1 || true
-            perl -i -0pe 's/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/$1v'"${TARGET_VERSION}"'$2/' crates/katana-ui/Info.plist
-          fi
-
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          if ! git diff --quiet; then
-            git add Cargo.toml Cargo.lock crates/katana-ui/Info.plist
-            git commit -m "chore: Release v${TARGET_VERSION} [skip ci]"
-            
-            BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-            echo "Pushing to branch: $BRANCH_NAME"
-            git push origin "HEAD:$BRANCH_NAME" || {
-              echo "⚠️ Push failed due to branch protection. This is expected if 'master' is protected and no bypass is set."
-              echo "Continuing with current local state as version is already correct."
-            }
-          fi
-          
+          chmod +x ./scripts/release/bump-version.sh
+          ./scripts/release/bump-version.sh "${{ steps.version.outputs.version_bare }}"
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run release preflight logic
