@@ -104,11 +104,15 @@ gh release view vX.Y.Z
 自動発火に失敗した場合や、特定のパラメータを指定して再実行したい場合のみ、ローカルから以下のコマンドを実行します。
 
 ```bash
-gh workflow run Release -f version=X.Y.Z
+# 基本実行
+make release VERSION=X.Y.Z
+
+# 既存のリリースがある場合の強制上書き（再実行時）
+make release VERSION=X.Y.Z FORCE=1
 ```
 
 > [!NOTE]
-> 手動実行の場合、ワークフローの `preflight` ジョブが `Cargo.toml` のバージョン書き換えと `git push` を自動で行います。通常のマージフローではこのステップは不要（既に更新済み）なためスキップされます。
+> 手動実行の場合、ワークフローの `preflight` ジョブが `Cargo.toml` のバージョン書き換えと `git push` を自動で行います。`FORCE=1` を指定すると、`gh release create --clobber` が実行され、既存のタグやリリースを上書きしてアセットを再アップロードします。
 
 ---
 

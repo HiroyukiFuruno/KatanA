@@ -43,6 +43,11 @@ on:
           - macOS
           - linux
           - windows
+      force:
+        description: 'Force overwrite existing release/tag'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -325,7 +330,13 @@ jobs:
         run: |
           VERSION="${{ needs.preflight.outputs.version }}"
           echo "Creating GitHub Release ${VERSION}..."
+          CLOBBER=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            CLOBBER="--clobber"
+            echo "Force mode enabled: using --clobber"
+          fi
           gh release create "${VERSION}" \
+            ${CLOBBER} \
             --title "KatanA Desktop ${VERSION}" \
             --notes-file release-notes/RELEASE_NOTES.md \
             --target "${{ needs.preflight.outputs.commit_sha }}" \

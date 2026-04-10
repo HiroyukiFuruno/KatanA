@@ -201,12 +201,17 @@ dmg: package-mac ## Build macOS .dmg installer from .app bundle
 	@FORCE=$(FORCE) scripts/dmg.sh $(VERSION)
 
 .PHONY: release
-release: ## Trigger the release workflow on GitHub Actions (usage: make release VERSION=x.y.z)
+release: ## Trigger the release workflow on GitHub Actions (usage: make release VERSION=x.y.z FORCE=1)
 ifndef VERSION
 	$(error VERSION is required. Usage: make release VERSION=x.y.z)
 endif
 	@echo "Triggering GitHub Actions release workflow for v$(VERSION)..."
-	@gh workflow run Release -f version=$(VERSION) -f target=all
+	@BOOL_FORCE="false"; \
+	if [ "$(FORCE)" = "1" ]; then \
+		BOOL_FORCE="true"; \
+		echo "⚠️ Force mode enabled (clobbering existing release)"; \
+	fi; \
+	gh workflow run Release -f version=$(VERSION) -f target=all -f force=$$BOOL_FORCE
 	@echo ""
 	@echo "✅ Workflow triggered! Monitor progress with:"
 	@echo "   gh run watch --repo HiroyukiFuruno/KatanA"
