@@ -12,6 +12,11 @@ on:
       - 'docs/**'
       - 'Makefile'
       - 'scripts'
+      - 'platfomrs'
+      - '.vscode'
+      - '.agent'
+      - '.agents'
+      - '.github'
   pull_request:
     branches: [master]
     paths-ignore:
@@ -23,7 +28,11 @@ on:
       - 'docs/**'
       - 'Makefile'
       - 'scripts'
-
+      - 'platfomrs'
+      - '.vscode'
+      - '.agent'
+      - '.agents'
+      - '.github'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
