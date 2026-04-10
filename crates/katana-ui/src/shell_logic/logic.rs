@@ -51,7 +51,7 @@ impl ShellLogicOps {
         if let Some(p) = dest.parent() {
             std::fs::create_dir_all(p).map_err(|e| e.to_string())?;
         }
-        let status = std::process::Command::new(cmd)
+        let status = katana_core::system::ProcessService::create_command(cmd)
             .args(vec!["-L", "-o", dest.to_str().unwrap_or(""), url])
             .status()
             .map_err(|e| {

@@ -1,7 +1,4 @@
-use std::{
-    path::PathBuf,
-    process::{Command, Stdio},
-};
+use std::{path::PathBuf, process::Stdio};
 
 pub(crate) struct OsProber;
 
@@ -107,7 +104,7 @@ impl OsProber {
         #[cfg(not(windows))]
         let target_name = "mmdc";
 
-        let output = Command::new(cmd_name)
+        let output = crate::system::ProcessService::create_command(cmd_name)
             .arg(target_name)
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
@@ -136,7 +133,7 @@ impl OsProber {
 
         #[cfg(not(windows))]
         {
-            let output = Command::new("/bin/zsh")
+            let output = crate::system::ProcessService::create_command("/bin/zsh")
                 .args(vec!["-l", "-c", "which mmdc"])
                 .stdout(Stdio::piped())
                 .stderr(Stdio::null())

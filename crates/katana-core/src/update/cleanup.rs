@@ -52,7 +52,7 @@ impl UpdateCleanupOps {
                 app_path = app_path_str,
                 app_bak = app_bak_str,
             );
-            let _ = std::process::Command::new("bash")
+            let _ = crate::system::ProcessService::create_command("bash")
                 .arg("-c")
                 .arg(&script)
                 .status();

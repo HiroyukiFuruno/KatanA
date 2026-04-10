@@ -85,7 +85,12 @@ impl UpdateInstallerOps {
                 anyhow::bail!("Extracted update does not contain a valid executable");
             }
 
-            let script_path = temp_dir.path().join("relauncher.sh");
+            #[cfg(target_os = "windows")]
+            let script_name = "relauncher.ps1";
+            #[cfg(not(target_os = "windows"))]
+            let script_name = "relauncher.sh";
+
+            let script_path = temp_dir.path().join(script_name);
             Self::generate_relauncher_script(
                 &extracted_app_path,
                 target_app_path,
@@ -109,18 +114,21 @@ impl UpdateInstallerOps {
 
         #[cfg(target_os = "windows")]
         {
-            crate::system::ProcessService::create_command("cmd", true)
-                .arg("/C")
+            crate::system::ProcessService::create_command("powershell")
+                .args([
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                ])
                 .arg(&prep.script_path)
                 .spawn()?;
         }
         #[cfg(not(target_os = "windows"))]
         {
-            crate::system::ProcessService::create_command(
-                prep.script_path.to_str().unwrap_or(""),
-                false,
-            )
-            .spawn()?;
+            crate::system::ProcessService::create_command(prep.script_path.to_str().unwrap_or(""))
+                .spawn()?;
         }
         std::process::exit(0);
     }

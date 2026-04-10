@@ -72,7 +72,8 @@ impl PlantUmlRendererOps {
         let themed_source = inject_theme(source, preset);
         let args = build_plantuml_args(jar);
 
-        let mut child = crate::system::ProcessService::create_command("java", true)
+        /* WHY: Setting no_window=true can cause Java to crash on some Windows environments */
+        let mut child = crate::system::ProcessService::create_command("java")
             .args(&args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

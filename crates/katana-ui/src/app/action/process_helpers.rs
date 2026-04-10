@@ -127,14 +127,14 @@ impl KatanaApp {
     pub(super) fn handle_action_reveal_in_os(&self, path: std::path::PathBuf) {
         #[cfg(target_os = "macos")]
         {
-            let _ = std::process::Command::new("open")
+            let _ = katana_core::system::ProcessService::create_command("open")
                 .arg("-R")
                 .arg(&path)
                 .spawn();
         }
         #[cfg(target_os = "windows")]
         {
-            let _ = std::process::Command::new("explorer")
+            let _ = katana_core::system::ProcessService::create_command("explorer")
                 .arg("/select,")
                 .arg(&path)
                 .spawn();
@@ -146,7 +146,9 @@ impl KatanaApp {
             } else {
                 &path
             };
-            let _ = std::process::Command::new("xdg-open").arg(dir).spawn();
+            let _ = katana_core::system::ProcessService::create_command("xdg-open")
+                .arg(dir)
+                .spawn();
         }
     }
 }

@@ -5,15 +5,15 @@ use std::process::{Child, Command, ExitStatus, Output};
 pub struct ProcessService;
 
 impl ProcessService {
-    /// Creates a new `Command` for the given program, configured to suppress the console window on Windows if `hidden` is true.
-    pub fn create_command(program: &str, _hidden: bool) -> Command {
+    pub fn create_command(program: &str) -> Command {
         #[allow(unused_mut)]
         let mut command = Command::new(program);
+
         #[cfg(windows)]
-        if _hidden {
+        {
             use std::os::windows::process::CommandExt;
             /* WHY: CREATE_NO_WINDOW flag (0x08000000) prevents a console window from popping up. */
-            /* This is essential for GUI applications calling CLI tools in the background. */
+            /* This is legally enforced across the entire KatanA codebase for background processes. */
             const CREATE_NO_WINDOW: u32 = 0x08000000;
             command.creation_flags(CREATE_NO_WINDOW);
         }
@@ -42,7 +42,7 @@ impl ProcessService {
         }
 
         /* Attempt download with curl */
-        let mut curl = Self::create_command("curl", true);
+        let mut curl = Self::create_command("curl");
         curl.args(["-L", "-o", dest.to_str().unwrap_or(""), url]);
 
         match curl.status() {
@@ -51,13 +51,17 @@ impl ProcessService {
                 #[cfg(windows)]
                 {
                     /* Fallback to PowerShell's Invoke-WebRequest if curl fails on Windows */
-                    let mut ps = Self::create_command("powershell", true);
+                    let mut ps = Self::create_command("powershell");
                     ps.args([
+                        "-NoProfile",
+                        "-NonInteractive",
                         "-Command",
                         &format!(
-                            "Invoke-WebRequest -Uri \"{}\" -OutFile \"{}\"",
-                            url,
-                            dest.display()
+                            "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
+                             $ProgressPreference = 'SilentlyContinue'; \
+                             Invoke-WebRequest -Uri '{}' -OutFile '{}'",
+                            url.replace("'", "''"),
+                            dest.display().to_string().replace("'", "''")
                         ),
                     ]);
                     if ps.status().is_ok_and(|s| s.success()) {
@@ -79,13 +83,13 @@ mod tests {
 
     #[test]
     fn test_create_command() {
-        let cmd = ProcessService::create_command("echo", true);
+        let cmd = ProcessService::create_command("echo");
         assert!(cmd.get_program().to_string_lossy().contains("echo"));
     }
 
     #[test]
     fn test_output() {
-        let mut cmd = ProcessService::create_command("echo", true);
+        let mut cmd = ProcessService::create_command("echo");
         cmd.arg("hello");
         let output = ProcessService::output(cmd).unwrap();
         assert!(output.status.success());
@@ -94,7 +98,7 @@ mod tests {
 
     #[test]
     fn test_status() {
-        let mut cmd = ProcessService::create_command("echo", true);
+        let mut cmd = ProcessService::create_command("echo");
         cmd.arg("hello");
         let status = ProcessService::status(cmd).unwrap();
         assert!(status.success());
@@ -102,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_spawn() {
-        let mut cmd = ProcessService::create_command("sleep", true);
+        let mut cmd = ProcessService::create_command("sleep");
         cmd.arg("0.1");
         let mut child = ProcessService::spawn(cmd).unwrap();
         let status = child.wait().unwrap();

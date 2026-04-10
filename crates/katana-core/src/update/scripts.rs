@@ -50,20 +50,20 @@ rm -rf "{temp_dir}"
         #[cfg(target_os = "windows")]
         {
             format!(
-                r#"@echo off
-timeout /t 2 /nobreak >nul
-set TARGET_BAK={target}.bak
-if exist "%TARGET_BAK%" del /f /q "%TARGET_BAK%"
-if exist "{target}" move /y "{target}" "%TARGET_BAK%"
-move /y "{extracted}" "{target}"
-if errorlevel 1 (
-    if exist "%TARGET_BAK%" move /y "%TARGET_BAK%" "{target}"
-    echo Update failed.
-) else (
-    start "" "{target}"
-)
-rd /s /q "{temp_dir}"
-del "%~f0"
+                r#"$ProgressPreference = 'SilentlyContinue';
+Start-Sleep -s 1;
+$target = '{target}';
+$bak = '{target}.bak';
+$extracted = '{extracted}';
+if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
+if (Test-Path $target) {{ Move-Item -Force $target $bak -ErrorAction SilentlyContinue }};
+Move-Item -Force $extracted $target -ErrorAction SilentlyContinue;
+if ($?) {{
+    Start-Process $target;
+}} else {{
+    if (Test-Path $bak) {{ Move-Item -Force $bak $target -ErrorAction SilentlyContinue }};
+}}
+Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
                 target = target_app.display(),
                 extracted = extracted_app.display(),

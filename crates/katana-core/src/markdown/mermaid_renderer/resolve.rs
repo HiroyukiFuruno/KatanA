@@ -53,7 +53,7 @@ impl MermaidBinaryOps {
     }
 
     pub(crate) fn build_mmdc_command_for_binary(mmdc: &Path) -> Command {
-        let mut cmd = crate::system::ProcessService::create_command(&mmdc.to_string_lossy(), true);
+        let mut cmd = crate::system::ProcessService::create_command(&mmdc.to_string_lossy());
 
         /* WHY: Enrich PATH so that `#!/usr/bin/env node` can find `node`. */
         if let Some(bin_dir) = mmdc.parent() {
