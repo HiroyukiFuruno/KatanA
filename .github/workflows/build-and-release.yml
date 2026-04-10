@@ -67,8 +67,8 @@ jobs:
         github.event_name == 'workflow_dispatch' ||
         github.event_name == 'push' ||
         (github.event_name == 'pull_request' &&
-         github.event.pull_request.merged == true &&
-         startsWith(github.event.pull_request.head.ref, 'release/v'))
+          github.event.pull_request.merged == true &&
+          startsWith(github.event.pull_request.head.ref, 'release/v'))
       )
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -83,23 +83,12 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            INPUT="${{ github.event.inputs.version }}"
-            INPUT="${INPUT#v}"
-            echo "version=v${INPUT}" >> "$GITHUB_OUTPUT"
-            echo "version_bare=${INPUT}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            # WHY: Extract version from branch name e.g. release/v0.18.5 -> 0.18.5
-            BRANCH="${{ github.event.pull_request.head.ref }}"
-            BARE="${BRANCH#release/v}"
-            echo "version=v${BARE}" >> "$GITHUB_OUTPUT"
-            echo "version_bare=${BARE}" >> "$GITHUB_OUTPUT"
-          else
-            TAG="${GITHUB_REF#refs/tags/}"
-            BARE="${TAG#v}"
-            echo "version=${TAG}" >> "$GITHUB_OUTPUT"
-            echo "version_bare=${BARE}" >> "$GITHUB_OUTPUT"
-          fi
+          ./scripts/release/get-version.sh \
+            "${{ github.event_name }}" \
+            "${{ github.event.inputs.version }}" \
+            "${{ github.event.pull_request.head.ref }}" \
+            "${{ github.ref }}" \
+            "$GITHUB_OUTPUT"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
