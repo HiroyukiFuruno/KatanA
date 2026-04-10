@@ -1,3 +1,4 @@
+use katana_platform::settings::SettingsDefaultOps;
 use katana_platform::theme::{Rgb, ThemeMode, ThemePreset};
 use katana_platform::{InMemoryRepository, SettingsService};
 use katana_ui::theme_bridge::ThemeBridgeOps;
@@ -7,7 +8,8 @@ fn switching_preset_changes_effective_colors() {
     let mut svc = SettingsService::new(Box::new(InMemoryRepository));
 
     let default_colors = svc.settings().effective_theme_colors();
-    assert_eq!(default_colors.mode, ThemeMode::Dark);
+    let expected_default_mode = SettingsDefaultOps::select_initial_preset().colors().mode;
+    assert_eq!(default_colors.mode, expected_default_mode);
 
     svc.settings_mut().theme.preset = ThemePreset::Dracula;
     let dracula_colors = svc.settings().effective_theme_colors();
@@ -27,8 +29,10 @@ fn switching_preset_changes_effective_colors() {
 fn switching_preset_changes_visuals() {
     let mut svc = SettingsService::new(Box::new(InMemoryRepository));
 
-    let dark_visuals = ThemeBridgeOps::visuals_from_theme(&svc.settings().effective_theme_colors());
-    assert!(dark_visuals.dark_mode);
+    let default_visuals =
+        ThemeBridgeOps::visuals_from_theme(&svc.settings().effective_theme_colors());
+    let expected_dark = SettingsDefaultOps::select_initial_preset().colors().mode == ThemeMode::Dark;
+    assert_eq!(default_visuals.dark_mode, expected_dark);
 
     svc.settings_mut().theme.preset = ThemePreset::GitHubLight;
     let light_visuals =

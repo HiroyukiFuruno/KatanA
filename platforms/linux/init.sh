@@ -14,11 +14,15 @@ echo "📦 開発に必要なパッケージ (Homebrew) をバックグラウン
 # コンテナが立ち上がるまで少し待つ
 sleep 5
 
-# abcユーザーでHomebrewを非対話形式でインストール
-docker compose exec -u abc ubuntu-webtop bash -c 'NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' || true
-docker compose exec -u abc ubuntu-webtop bash -c 'grep -qxF "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)\"" ~/.bashrc || echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)\"" >> ~/.bashrc' || true
-docker compose exec -u abc ubuntu-webtop bash -c 'sudo apt-get update && sudo apt-get install -y build-essential' || true
-
+# コンテナ内で必要なパッケージをバックグラウンド（-d）でインストールする
+# 先に build-essential を入れ、その後 Homebrew を導入します
+docker compose exec -d -u abc ubuntu-webtop bash -c '
+    sudo apt-get update
+    sudo apt-get install -y build-essential curl git
+    NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || true
+    grep -qxF "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)\"" ~/.bashrc || echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)\"" >> ~/.bashrc
+    echo "setup complete" > /tmp/homebrew_setup_done
+'
 echo "ブラウザで以下のURLを開いて検証を開始してください:"
 echo ""
 echo "    http://localhost:3000/"

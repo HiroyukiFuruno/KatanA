@@ -1430,8 +1430,19 @@ fn test_persistence_workspace_roundtrip() {
         assert!(harness.state_mut().app_state_mut().workspace.data.is_some());
 
         let json = std::fs::read_to_string(&settings_path).unwrap();
+        /* WHY: On macOS /var is a symlink to /private/var so canonicalize()
+           produces a different prefix. On Windows, temp paths may use 8.3 short
+           names (RUNNER~1). We check both the raw and canonical representations
+           plus their JSON-escaped variants (backslashes become \\). */
+        let ws_raw = ws_dir.path().display().to_string();
+        let ws_canonical = ws_dir.path().canonicalize()
+            .map(|p| p.display().to_string())
+            .unwrap_or_default();
+        let contains_path = |p: &str| {
+            json.contains(p) || json.contains(&p.replace('\\', "\\\\"))
+        };
         assert!(
-            json.contains(&ws_dir.path().display().to_string()),
+            contains_path(&ws_raw) || contains_path(&ws_canonical),
             "settings.json should contain the workspace path, got: {json}"
         );
     }
@@ -1445,10 +1456,12 @@ fn test_persistence_workspace_roundtrip() {
             restored_ws.is_some(),
             "last_workspace should be persisted in settings.json"
         );
+        let ws_canonical = ws_dir.path().canonicalize()
+            .unwrap_or_else(|_| ws_dir.path().to_path_buf());
+        let restored = restored_ws.unwrap();
         assert!(
-            restored_ws
-                .unwrap()
-                .contains(&ws_dir.path().display().to_string()),
+            restored.contains(&ws_canonical.display().to_string())
+                || restored.contains(&ws_dir.path().display().to_string()),
             "Restored workspace should match the previously opened directory"
         );
     }
@@ -1465,9 +1478,10 @@ fn test_persistence_corrupt_file_falls_back_to_defaults() {
     harness.step();
 
     let s = harness.state_mut().app_state_mut();
+    let expected_theme = katana_platform::settings::SettingsDefaultOps::default_theme();
     assert_eq!(
         s.config.settings.settings().theme.theme,
-        "dark",
+        expected_theme,
         "Should fall back to default theme"
     );
     assert_eq!(
@@ -1495,7 +1509,8 @@ fn test_persistence_missing_file_uses_defaults() {
     harness.step();
 
     let s = harness.state_mut().app_state_mut();
-    assert_eq!(s.config.settings.settings().theme.theme, "dark");
+    let expected_theme = katana_platform::settings::SettingsDefaultOps::default_theme();
+    assert_eq!(s.config.settings.settings().theme.theme, expected_theme);
     assert_eq!(s.config.settings.settings().language, "en");
 }
 
