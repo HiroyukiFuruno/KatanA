@@ -8,10 +8,6 @@ mod types;
 pub use types::ShellUiOps;
 
 impl ShellUiOps {
-    pub(crate) fn indent_prefix(depth: usize) -> String {
-        "  ".repeat(depth)
-    }
-
     pub fn update_native_menu_strings_from_i18n() {
         crate::native_menu::NativeMenuOps::update_native_menu_strings_from_i18n();
     }
