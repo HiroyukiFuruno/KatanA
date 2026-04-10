@@ -10,15 +10,15 @@
 
 ## 1. Search Noise Reduction & Auto-link Fix
 
-- [ ] 1.1 `katana-core/src/search/mod.rs` を修正し、`#[allow(...)]` 行をフィルタリングするロジックを実装
-- [ ] 1.2 `katana-core/src/markdown/link_resolver.rs` (または該当箇所) を修正し、平文URLの自動リンク検出を改善
-- [ ] 1.3 `katana-core` の関連テストを実行し、意図せぬデグレードがないか確認
+- [x] 1.1 `katana-core/src/search/mod.rs` を修正し、`#[allow(...)]` 行をフィルタリングするロジックを実装
+- [x] 1.2 `katana-core/src/markdown/link_resolver.rs` (または該当箇所) を修正し、平文URLの自動リンク検出を改善
+- [x] 1.3 `katana-core` の関連テストを実行し、意図せぬデグレードがないか確認
 
 ### Definition of Done (DoD)
 
-- [ ] 検索結果から `#[allow]` が適切に除外されることを確認
-- [ ] 平文URLが正しくリンク化されることを確認
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
+- [x] 検索結果から `#[allow]` が適切に除外されることを確認
+- [x] 平文URLが正しくリンク化されることを確認
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
 ## 2. Meta Information UI Renewal
 
@@ -27,8 +27,8 @@
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 `katana-ui/src/views/modals/meta_info.rs` を刷新し、Finder風の整理されたレイアウトを実装
-- [ ] 2.2 メタ情報の各項目（パス、サイズ、作成日時等）をセクション分けして表示
+- [x] 2.1 `katana-ui/src/views/modals/meta_info.rs` を刷新し、Finder風の整理されたレイアウトを実装
+- [x] 2.2 メタ情報の各項目（パス、サイズ、作成日時等）をセクション分けして表示
 - [ ] 2.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 2.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 

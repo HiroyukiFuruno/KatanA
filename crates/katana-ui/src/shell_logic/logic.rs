@@ -1,4 +1,5 @@
 use super::*;
+use chrono::{DateTime, Local};
 use std::path::Path;
 
 const FNV1A_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
@@ -140,11 +141,36 @@ impl ShellLogicOps {
             tooltip.push_str("\nMetadata unavailable");
             return tooltip;
         };
-        let Ok(modified) = metadata.modified() else {
-            return tooltip;
-        };
-        tooltip.push_str(&format!("\nModified: {:?}", modified));
+
+        let size_str = Self::format_file_size(metadata.len());
+        tooltip.push_str(&format!("\nSize: {}", size_str));
+
+        if let Ok(modified) = metadata.modified() {
+            let mod_time = Self::format_modified_time(modified);
+            tooltip.push_str(&format!("\nModified: {}", mod_time));
+        }
         tooltip
+    }
+
+    const KB_UNIT: u64 = 1024;
+    const MB_UNIT: u64 = 1024 * 1024;
+    const GB_UNIT: u64 = 1024 * 1024 * 1024;
+
+    pub fn format_file_size(bytes: u64) -> String {
+        if bytes < Self::KB_UNIT {
+            format!("{} B", bytes)
+        } else if bytes < Self::MB_UNIT {
+            format!("{:.1} KB", bytes as f64 / (Self::KB_UNIT as f64))
+        } else if bytes < Self::GB_UNIT {
+            format!("{:.1} MB", bytes as f64 / (Self::MB_UNIT as f64))
+        } else {
+            format!("{:.1} GB", bytes as f64 / (Self::GB_UNIT as f64))
+        }
+    }
+
+    pub fn format_modified_time(time: std::time::SystemTime) -> String {
+        let dt: DateTime<Local> = time.into();
+        dt.format("%Y-%m-%d %H:%M:%S").to_string()
     }
 
     const SPLASH_FADE_START: f32 = 0.8;

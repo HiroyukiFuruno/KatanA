@@ -63,7 +63,7 @@ impl FullscreenLogicOps {
             .diagram_controller
             .close
             .clone();
-        super::fullscreen_impl::show_fullscreen_svg(ctx, img, &dc_close, viewer_state, idx)
+        super::fullscreen_svg::show_fullscreen_svg(ctx, img, &dc_close, viewer_state, idx)
     }
 
     pub(crate) fn show_fullscreen_local_image(
@@ -81,7 +81,7 @@ impl FullscreenLogicOps {
             .diagram_controller
             .close
             .clone();
-        super::fullscreen_impl::show_fullscreen_local(ctx, path, &dc_close, viewer_state, idx)
+        super::fullscreen_local::show_fullscreen_local(ctx, path, &dc_close, viewer_state, idx)
     }
 
     pub(crate) fn render_slideshow_modal(
