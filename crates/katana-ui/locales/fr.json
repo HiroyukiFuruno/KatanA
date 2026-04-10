@@ -4,6 +4,7 @@
     "settings": "Paramètres",
     "language": "Langue",
     "open_workspace": "Ouvrir un espace de travail…",
+    "close_workspace": "Fermer l'espace de travail",
     "save": "Enregistrer",
     "open_all": "Tout ouvrir",
     "export": "Exporter",
@@ -21,7 +22,6 @@
     "release_notes": "Notes de version",
     "view": "Affichage",
     "command_palette": "Palette de commandes…",
-    "close_workspace": "Fermer l'espace de travail",
     "demo": "Voir la démo",
     "language_en": "Anglais",
     "language_ja": "Japonais",
@@ -36,19 +36,19 @@
   },
   "about": {
     "basic_info": "Informations de base",
-    "version": "Version",
+    "version": "#MISSING-fr: Version",
     "build": "Numéro de build",
     "copyright": "Droits",
     "runtime": "Exécution",
     "platform": "Plateforme",
-    "architecture": "Architecture",
-    "rust": "Rust",
+    "architecture": "#MISSING-fr: Architecture",
+    "rust": "#MISSING-fr: Rust",
     "license": "Licence",
     "links": "Liens",
     "source_code": "Code source",
-    "documentation": "Documentation",
+    "documentation": "#MISSING-fr: Documentation",
     "report_issue": "Signaler un problème",
-    "support": "Support",
+    "support": "#MISSING-fr: Support",
     "sponsor": "Soutenir"
   },
   "update": {
@@ -56,11 +56,11 @@
     "checking_for_updates": "Vérification des mises à jour...",
     "update_available": "Mise à jour disponible",
     "update_available_desc": "Une nouvelle version de KatanA ({version}) est disponible. Cliquez sur \"Installer et relancer\" pour appliquer automatiquement la mise à jour.",
-    "release_notes_template": "### Nouvelle version {version} disponible\n\nVeuillez consulter la [page des versions GitHub]({url}) pour plus de détails.\nCliquez sur \"Installer et relancer\" pour appliquer automatiquement la mise à jour.",
+    "release_notes_template": "#MISSING-fr: ### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Relaunch\" to automatically apply the update.",
     "up_to_date": "À jour",
     "up_to_date_desc": "KatanA est à jour.",
     "failed_to_check": "Échec de la vérification des mises à jour.",
-    "action_close": "OK",
+    "action_close": "#MISSING-fr: OK",
     "install_update": "Installer et relancer",
     "downloading": "Téléchargement de la mise à jour...",
     "installing": "Installation de la mise à jour...",
@@ -73,20 +73,20 @@
   "workspace": {
     "no_workspace_open": "Aucun espace de travail ouvert.",
     "no_document_selected": "Aucun document ouvert.",
+    "explorer_title": "Explorateur de fichiers",
+    "workspace_history_title": "Historique de l'espace de travail",
     "recent_workspaces": "Espaces de travail",
+    "sidebar_workspace_tooltip": "Espace de travail",
+    "sidebar_history_tooltip": "Espaces de travail récents",
+    "no_recent_workspaces": "Aucun espace de travail récent",
+    "no_saved_workspaces": "Aucun espace de travail enregistré",
     "metadata_tooltip": "Taille: {size} B\nModifié: {mod_time}",
     "path_label": "Chemin",
     "flat_view": "Vue plate",
     "filter_regex_hint": "Filtrer (Regex)...",
-    "explorer_title": "Explorateur de fichiers",
-    "workspace_history_title": "Historique de l'espace de travail",
     "open_folder_hint": "Ouvrez un dossier pour commencer à utiliser KatanA.",
     "open_workspace_button": "Ouvrir un espace de travail",
-    "remove_history_tooltip": "Retirer de la liste",
-    "sidebar_workspace_tooltip": "Espace de travail",
-    "sidebar_history_tooltip": "Espaces de travail récents",
-    "no_recent_workspaces": "Aucun espace de travail récent",
-    "no_saved_workspaces": "Aucun espace de travail enregistré"
+    "remove_history_tooltip": "Retirer de la liste"
   },
   "preview": {
     "preview_title": "Aperçu",
@@ -113,7 +113,7 @@
   },
   "view_mode": {
     "preview": "Aperçu",
-    "code": "Code",
+    "code": "#MISSING-fr: Code",
     "split": "Séparer"
   },
   "split_toggle": {
@@ -126,7 +126,7 @@
     "missing_dependency": "{tool_name} introuvable. Veuillez l'installer à l'aide de {install_hint}.",
     "curl_launch_failed": "échec du lancement de curl",
     "download_failed": "Échec du téléchargement",
-    "render_error": "[{kind}] {message}"
+    "render_error": "#MISSING-fr: [{kind}] {message}"
   },
   "status": {
     "ready": "Prêt",
@@ -152,6 +152,7 @@
     "expand_all": "Tout développer",
     "collapse_all": "Tout réduire",
     "collapse_sidebar": "Réduire",
+    "refresh_explorer": "Actualiser l'affichage",
     "toggle_filter": "Filtre",
     "remove_workspace": "Retirer de la liste",
     "recursive_expand": "Développement récursif",
@@ -166,16 +167,15 @@
     "copy_path": "Copier le chemin",
     "reveal_in_os": "Afficher",
     "save": "Enregistrer",
+    "refresh_document": "Actualiser le document",
     "cancel": "Annuler",
     "discard": "Ignorer",
     "confirm": "Confirmer",
     "copy_relative_path": "Copier relatif",
-    "refresh_document": "Actualiser le document",
-    "toggle_slideshow": "Diaporama",
-    "refresh_explorer": "Actualiser l'affichage"
+    "toggle_slideshow": "Diaporama"
   },
   "ai": {
-    "ai_unconfigured": "[AI : non configuré]"
+    "ai_unconfigured": "#MISSING-fr: [AI: unconfigured]"
   },
   "tool": {
     "not_installed": "{tool} n'est pas installé",
@@ -221,7 +221,7 @@
     },
     "preview": {
       "title": "Aperçu",
-      "heading": "# Exemple de titre",
+      "heading": "#MISSING-fr: # Sample Heading",
       "normal_text": "Texte normal et ",
       "accent_link": "lien d'accentuation",
       "secondary_text": "Exemple de texte secondaire",
@@ -272,42 +272,56 @@
       "extensionless_excludes": "Sans extension",
       "extensionless_excludes_hint": "Séparés par des virgules..."
     },
+    "icons": {
+      "preset_label": "Préréglage :",
+      "custom_preset": "Personnalisé",
+      "save_preset": "Enregistrer sous...",
+      "revert_default": "Rétablir par défaut",
+      "advanced_settings": "Paramètres avancés",
+      "colorful_vendor_icons_label": "Appliquer les couleurs par défaut aux icônes non Katana",
+      "table_header_icon": "Icône",
+      "table_header_vendor": "Fournisseur",
+      "table_header_color": "Couleur de texte",
+      "table_header_border": "Couleur de cadre",
+      "table_header_preview": "Aperçu",
+      "preset_name": "Nom du préréglage :"
+    },
     "tabs": [
       {
-        "key": "theme",
-        "name": "Thème"
+        "key": "#MISSING-fr: theme",
+        "name": "#MISSING-fr: Theme"
       },
       {
-        "key": "icon",
-        "name": "Icônes"
+        "key": "#MISSING-fr: icon",
+        "name": "#MISSING-fr: Icons"
       },
       {
-        "key": "font",
-        "name": "Police"
+        "key": "#MISSING-fr: font",
+        "name": "#MISSING-fr: Font"
       },
       {
-        "key": "layout",
-        "name": "Disposition"
+        "key": "#MISSING-fr: layout",
+        "name": "#MISSING-fr: Layout"
       },
       {
-        "key": "workspace",
-        "name": "Espace de travail"
+        "key": "#MISSING-fr: workspace",
+        "name": "#MISSING-fr: Workspace"
       },
       {
-        "key": "group_appearance",
-        "name": "Apparence"
+        "key": "#MISSING-fr: group_appearance",
+        "name": "#MISSING-fr: Appearance"
       },
       {
-        "key": "group_system",
-        "name": "Système"
+        "key": "#MISSING-fr: group_system",
+        "name": "#MISSING-fr: System"
       },
       {
-        "key": "updates",
-        "name": "Mises à jour"
+        "key": "#MISSING-fr: updates",
+        "name": "#MISSING-fr: Updates"
       },
       {
-        "key": "behavior",
-        "name": "Comportement"
+        "key": "#MISSING-fr: behavior",
+        "name": "#MISSING-fr: Behavior"
       }
     ],
     "updates": {
@@ -325,6 +339,8 @@
       "scroll_sync": "Synchroniser le défilement de l'éditeur et de l'aperçu",
       "auto_save": "Sauvegarde automatique",
       "auto_save_interval": "Intervalle de sauvegarde automatique",
+      "auto_refresh": "Actualisation automatique",
+      "auto_refresh_interval": "Intervalle d\"actualisation",
       "seconds": "secondes",
       "close_confirm_title": "Modifications non enregistrées",
       "close_confirm_msg": "'{name}' a des modifications non enregistrées. Les supprimer ?",
@@ -332,23 +348,7 @@
       "close_confirm_cancel": "Annuler",
       "clear_http_cache": "Vider cache",
       "cache_retention_days": "Rétention",
-      "days_suffix": " j",
-      "auto_refresh": "Actualisation automatique",
-      "auto_refresh_interval": "Intervalle d\"actualisation"
-    },
-    "icons": {
-      "preset_label": "Préréglage :",
-      "preset_name": "Nom du préréglage :",
-      "custom_preset": "Personnalisé",
-      "save_preset": "Enregistrer sous...",
-      "revert_default": "Rétablir par défaut",
-      "advanced_settings": "Paramètres avancés",
-      "colorful_vendor_icons_label": "Appliquer les couleurs par défaut aux icônes non Katana",
-      "table_header_icon": "Icône",
-      "table_header_vendor": "Fournisseur",
-      "table_header_color": "Couleur de texte",
-      "table_header_border": "Couleur de cadre",
-      "table_header_preview": "Aperçu"
+      "days_suffix": " j"
     }
   },
   "tab": {
@@ -362,14 +362,14 @@
     "pin": "Épingler",
     "unpin": "Désépingler",
     "restore_closed": "Restaurer l'onglet fermé",
-    "remove_from_group": "Supprimer du groupe",
     "group_name_placeholder": "Nom du groupe",
     "create_group_button": "Créer",
     "close_group": "Fermer le groupe",
     "ungroup": "Dégrouper",
     "add_tab_to_group": "Ajouter l'onglet au groupe",
-    "add_to_group": "Ajouter au groupe",
-    "create_new_group": "Nouveau groupe"
+    "remove_from_group": "Supprimer du groupe",
+    "create_new_group": "Nouveau groupe",
+    "add_to_group": "Ajouter au groupe"
   },
   "search": {
     "modal_title": "Rechercher des fichiers",
@@ -377,6 +377,7 @@
     "include_pattern_hint": "Inclure (regex, séparées par des virgules)",
     "exclude_pattern_hint": "Exclure (regex, séparées par des virgules)",
     "no_results": "Aucun fichier trouvé.",
+    "palette_no_results": "Aucun résultat trouvé.",
     "doc_search_title": "Rechercher un document",
     "doc_search_prev": "Précédent",
     "doc_search_next": "Suivant",
@@ -390,13 +391,12 @@
     "ln_prefix": "Lig ",
     "palette_query_hint": "Tapez une commande ou recherchez...",
     "command_settings": "Basculer les paramètres",
+    "command_explorer": "Afficher l'explorateur de fichiers",
     "command_close_all": "Fermer tous les documents",
+    "command_refresh_explorer": "Actualiser l'explorateur",
     "command_updates": "Vérifier les mises à jour",
     "command_about": "Basculer À propos",
-    "command_type_action": "Commande",
-    "palette_no_results": "Aucun résultat trouvé.",
-    "command_explorer": "Afficher l'explorateur de fichiers",
-    "command_refresh_explorer": "Actualiser l'explorateur"
+    "command_type_action": "Commande"
   },
   "toc": {
     "title": "Table des matières",
@@ -431,5 +431,26 @@
     "task_todo": "Tâche [ ]",
     "task_in_progress": "En cours [/]",
     "task_done": "Terminé [x]"
+  },
+  "common": {
+    "close": "#MISSING-fr: Close"
+  },
+  "meta_info": {
+    "title": "#MISSING-fr: Document Information",
+    "general_section": "#MISSING-fr: General",
+    "dates_section": "#MISSING-fr: Dates",
+    "status_section": "#MISSING-fr: Status",
+    "label_name": "#MISSING-fr: Name",
+    "label_kind": "#MISSING-fr: Kind",
+    "label_version": "#MISSING-fr: Version",
+    "label_created": "#MISSING-fr: Created",
+    "label_updated": "#MISSING-fr: Updated",
+    "label_dirty": "#MISSING-fr: Modified",
+    "label_loaded": "#MISSING-fr: Loaded",
+    "label_pinned": "#MISSING-fr: Pinned",
+    "label_path": "#MISSING-fr: Path",
+    "kind_markdown": "#MISSING-fr: Markdown Doc",
+    "yes": "#MISSING-fr: Yes",
+    "no": "#MISSING-fr: No"
   }
 }

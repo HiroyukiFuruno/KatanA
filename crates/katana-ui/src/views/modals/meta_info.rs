@@ -1,41 +1,61 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
-use crate::Icon;
-use crate::app_state::{AppAction, AppState};
-use crate::shell::KatanaApp;
-use crate::state::update::UpdatePhase;
-use katana_core::update::ReleaseInfo;
+use crate::i18n::I18nOps;
+use crate::views::modals::meta_info_fields::MetaInfoFields;
+use eframe::egui;
+use std::path::Path;
 
-use crate::i18n;
-use egui::{Align, Layout};
-use std::path::{Path, PathBuf};
+const SPACING_SMALL: f32 = 10.0;
+const SPACING_MEDIUM: f32 = 16.0;
+const SPACING_LARGE: f32 = 20.0;
 
 pub(crate) struct MetaInfoModal<'a> {
-    pub open: &'a mut bool,
-    pub path: &'a std::path::Path,
+    pub is_open: &'a mut bool,
+    pub path: &'a Path,
 }
 
 impl<'a> MetaInfoModal<'a> {
-    pub fn new(open: &'a mut bool, path: &'a std::path::Path) -> Self {
-        Self { open, path }
+    pub fn new(is_open: &'a mut bool, path: &'a Path) -> Self {
+        Self { is_open, path }
     }
 
     pub fn show(self, ctx: &egui::Context) {
-        let open = self.open;
-        let path = self.path;
-        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("?");
-        let meta_text = crate::shell_logic::ShellLogicOps::format_tree_tooltip(name, path);
+        let mut open = *self.is_open;
+        let mut should_close = false;
 
-        const META_INFO_WINDOW_WIDTH: f32 = 400.0;
-        egui::Window::new(crate::i18n::I18nOps::get().action.show_meta_info.clone())
-            .open(open)
-            .collapsible(false)
-            .resizable(true)
-            .default_width(META_INFO_WINDOW_WIDTH)
+        egui::Window::new(I18nOps::get().meta_info.title.clone())
+            .open(&mut open)
             .show(ctx, |ui| {
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.label(meta_text);
+                let i18n = I18nOps::get();
+                let meta = &i18n.meta_info;
+
+                let doc = katana_core::Document::new(self.path.to_path_buf(), "");
+
+                ui.vertical(|ui| {
+                    egui::ScrollArea::vertical()
+                        .id_salt("meta_info_scroll")
+                        .show(ui, |ui| {
+                            ui.vertical(|ui| {
+                                MetaInfoFields::render_general_section(ui, &doc, meta);
+                                ui.add_space(SPACING_MEDIUM);
+                                MetaInfoFields::render_status_section(ui, &doc, meta);
+                            });
+                        });
+
+                    ui.add_space(SPACING_LARGE);
+                    ui.separator();
+                    ui.add_space(SPACING_SMALL);
+
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(&i18n.tab.close).clicked() {
+                            should_close = true;
+                        }
+                    });
                 });
             });
+
+        if should_close {
+            *self.is_open = false;
+        } else {
+            *self.is_open = open;
+        }
     }
 }

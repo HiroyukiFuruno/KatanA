@@ -431,5 +431,26 @@
     "task_todo": "Todo [ ]",
     "task_in_progress": "In Progress [/]",
     "task_done": "Done [x]"
+  },
+  "common": {
+    "close": "Close"
+  },
+  "meta_info": {
+    "title": "Document Information",
+    "general_section": "General",
+    "dates_section": "Dates",
+    "status_section": "Status",
+    "label_name": "Name",
+    "label_kind": "Kind",
+    "label_version": "Version",
+    "label_created": "Created",
+    "label_updated": "Updated",
+    "label_dirty": "Modified",
+    "label_loaded": "Loaded",
+    "label_pinned": "Pinned",
+    "label_path": "Path",
+    "kind_markdown": "Markdown Doc",
+    "yes": "Yes",
+    "no": "No"
   }
 }

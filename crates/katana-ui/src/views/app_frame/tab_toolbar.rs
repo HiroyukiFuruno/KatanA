@@ -2,9 +2,11 @@ use super::types::*;
 use crate::app_state::AppAction;
 use crate::shell::KatanaApp;
 use crate::shell_logic::ShellLogicOps;
+use crate::shell_logic::utils::ShellUtils;
 use eframe::egui;
 
-const CHEVRON_ICON_SIZE: f32 = 10.0;
+const META_INFO_SPACING: f32 = 4.0;
+const DOCUMENT_TOOLBAR_SPACING: f32 = 8.0;
 
 impl<'a> TabToolbar<'a> {
     pub(crate) fn new(app: &'a mut KatanaApp) -> Self {
@@ -64,6 +66,11 @@ impl<'a> TabToolbar<'a> {
                     out_action = Some(a);
                 }
 
+                if !is_changelog {
+                    ui.add_space(DOCUMENT_TOOLBAR_SPACING);
+                    Self::render_file_meta_info(ui, &doc_path);
+                }
+
                 if let Some(a) = Self::render_view_mode_bar(ui, app, is_changelog) {
                     out_action = Some(a);
                 }
@@ -91,6 +98,26 @@ impl<'a> TabToolbar<'a> {
         Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui)
     }
 
+    fn render_file_meta_info(ui: &mut egui::Ui, path: &std::path::Path) {
+        let Ok(metadata) = path.metadata() else {
+            return;
+        };
+
+        let modified = metadata.modified().ok();
+        let size_and_date = if let Some(m) = modified {
+            format!(
+                "{} · {}",
+                ShellUtils::format_file_size(metadata.len()),
+                ShellUtils::format_modified_time(m)
+            )
+        } else {
+            ShellUtils::format_file_size(metadata.len())
+        };
+
+        ui.add_space(META_INFO_SPACING);
+        ui.label(egui::RichText::new(size_and_date).small().weak());
+    }
+
     fn render_view_mode_bar(
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
@@ -113,90 +140,5 @@ impl<'a> TabToolbar<'a> {
             true,
         )
         .show(ui, &mut app.state.search)
-    }
-}
-
-impl<'a> Breadcrumbs<'a> {
-    pub(crate) fn new(
-        app: &'a KatanaApp,
-        rel: &'a str,
-        ws_root: Option<&'a std::path::Path>,
-    ) -> Self {
-        Self { app, rel, ws_root }
-    }
-
-    pub(crate) fn show(self, ui: &mut egui::Ui) -> Option<AppAction> {
-        let app = self.app;
-        let rel = self.rel;
-        let ws_root = self.ws_root;
-        let mut breadcrumb_action = None;
-
-        ui.horizontal_centered(|ui| {
-            let segments: Vec<&str> = rel.split('/').collect();
-            let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
-
-            for (i, seg) in segments.iter().enumerate() {
-                if i > 0 {
-                    ui.add(
-                        egui::Image::new(crate::Icon::ChevronRight.uri())
-                            .tint(ui.visuals().text_color())
-                            .fit_to_exact_size(egui::vec2(CHEVRON_ICON_SIZE, CHEVRON_ICON_SIZE)),
-                    );
-                }
-
-                if ws_root.is_none() {
-                    ui.label(egui::RichText::new(*seg).small());
-                    continue;
-                }
-
-                current_path = current_path.join(seg);
-                let is_last = i == segments.len() - 1;
-
-                if is_last {
-                    ui.add(
-                        egui::Label::new(egui::RichText::new(*seg).small())
-                            .sense(egui::Sense::hover()),
-                    );
-                } else {
-                    Self::render_breadcrumb_segment(
-                        ui,
-                        seg,
-                        app,
-                        &current_path,
-                        &mut breadcrumb_action,
-                    );
-                }
-            }
-        });
-
-        breadcrumb_action
-    }
-
-    fn render_breadcrumb_segment(
-        ui: &mut egui::Ui,
-        seg: &str,
-        app: &KatanaApp,
-        current_path: &std::path::Path,
-        breadcrumb_action: &mut Option<AppAction>,
-    ) {
-        crate::widgets::MenuButtonOps::show(ui, egui::RichText::new(seg).small(), |ui| {
-            let mut ctx_action = crate::app_state::AppAction::None;
-
-            if let Some(ws) = &app.state.workspace.data
-                && let Some(katana_core::workspace::TreeEntry::Directory { children, .. }) =
-                    crate::views::panels::tree::TreeLogicOps::find_node_in_tree(
-                        &ws.tree,
-                        current_path,
-                    )
-            {
-                crate::views::panels::explorer::BreadcrumbMenu::new(children, &mut ctx_action)
-                    .show(ui);
-            }
-
-            if !matches!(ctx_action, crate::app_state::AppAction::None) {
-                *breadcrumb_action = Some(ctx_action);
-                ui.close();
-            }
-        });
     }
 }

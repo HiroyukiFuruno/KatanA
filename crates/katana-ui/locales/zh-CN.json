@@ -4,6 +4,7 @@
     "settings": "设置",
     "language": "语言",
     "open_workspace": "打开工作区…",
+    "close_workspace": "关闭工作区",
     "save": "保存",
     "open_all": "全部打开",
     "export": "导出",
@@ -21,7 +22,6 @@
     "release_notes": "发行说明",
     "view": "查看",
     "command_palette": "命令面板…",
-    "close_workspace": "关闭工作区",
     "demo": "查看演示",
     "language_en": "英语",
     "language_ja": "日语",
@@ -42,7 +42,7 @@
     "runtime": "运行时",
     "platform": "平台",
     "architecture": "架构",
-    "rust": "Rust",
+    "rust": "#MISSING-zh-CN: Rust",
     "license": "许可证",
     "links": "链接",
     "source_code": "源代码",
@@ -56,7 +56,7 @@
     "checking_for_updates": "正在检查更新...",
     "update_available": "有新版本可用",
     "update_available_desc": "KatanA 有新版本 ({version}) 可用。点击 \"安装并重启\" 即可自动应用更新。",
-    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有关详细的更改和发行说明，请查看 [GitHub 发行页面]({url})。\n点击 \"安装并重启\" 即可自动应用更新。",
+    "release_notes_template": "#MISSING-zh-CN: ### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Relaunch\" to automatically apply the update.",
     "up_to_date": "已是最新版本",
     "up_to_date_desc": "您使用的是最新版本的 KatanA。",
     "failed_to_check": "检查更新失败。",
@@ -73,20 +73,20 @@
   "workspace": {
     "no_workspace_open": "未打开工作区。",
     "no_document_selected": "未打开文档。",
+    "explorer_title": "文件资源管理器",
+    "workspace_history_title": "工作区历史",
     "recent_workspaces": "工作区",
+    "sidebar_workspace_tooltip": "工作区",
+    "sidebar_history_tooltip": "最近的工作区",
+    "no_recent_workspaces": "没有最近的工作区",
+    "no_saved_workspaces": "没有已保存的工作区",
     "metadata_tooltip": "大小: {size} B\n修改时间: {mod_time}",
     "path_label": "路径",
     "flat_view": "扁平视图",
     "filter_regex_hint": "过滤 (正则表达式)...",
-    "explorer_title": "文件资源管理器",
-    "workspace_history_title": "工作区历史",
     "open_folder_hint": "打开一个文件夹即可开始使用 KatanA。",
     "open_workspace_button": "打开工作区",
-    "remove_history_tooltip": "从列表中移除",
-    "sidebar_workspace_tooltip": "工作区",
-    "sidebar_history_tooltip": "最近的工作区",
-    "no_recent_workspaces": "没有最近的工作区",
-    "no_saved_workspaces": "没有已保存的工作区"
+    "remove_history_tooltip": "从列表中移除"
   },
   "preview": {
     "preview_title": "预览",
@@ -152,6 +152,7 @@
     "expand_all": "展开全部",
     "collapse_all": "折叠全部",
     "collapse_sidebar": "折叠侧边栏",
+    "refresh_explorer": "刷新",
     "toggle_filter": "切换过滤器",
     "remove_workspace": "从列表中移除",
     "recursive_expand": "递归展开",
@@ -166,16 +167,15 @@
     "copy_path": "复制路径",
     "reveal_in_os": "在系统中显示",
     "save": "保存",
+    "refresh_document": "刷新文档",
     "cancel": "取消",
     "discard": "丢弃",
     "confirm": "确认",
     "copy_relative_path": "复制相对路径",
-    "refresh_document": "刷新文档",
-    "toggle_slideshow": "幻灯片",
-    "refresh_explorer": "刷新"
+    "toggle_slideshow": "幻灯片"
   },
   "ai": {
-    "ai_unconfigured": "[AI: 未配置]"
+    "ai_unconfigured": "#MISSING-zh-CN: [AI: unconfigured]"
   },
   "tool": {
     "not_installed": "⚠ {tool} 未安装",
@@ -221,7 +221,7 @@
     },
     "preview": {
       "title": "预览",
-      "heading": "# 示例标题",
+      "heading": "#MISSING-zh-CN: # Sample Heading",
       "normal_text": "正常文本与",
       "accent_link": "强调链接",
       "secondary_text": "次要文本示例",
@@ -288,40 +288,40 @@
     },
     "tabs": [
       {
-        "key": "theme",
-        "name": "主题"
+        "key": "#MISSING-zh-CN: theme",
+        "name": "#MISSING-zh-CN: Theme"
       },
       {
-        "key": "icon",
-        "name": "图标"
+        "key": "#MISSING-zh-CN: icon",
+        "name": "#MISSING-zh-CN: Icons"
       },
       {
-        "key": "font",
-        "name": "字体"
+        "key": "#MISSING-zh-CN: font",
+        "name": "#MISSING-zh-CN: Font"
       },
       {
-        "key": "layout",
-        "name": "布局"
+        "key": "#MISSING-zh-CN: layout",
+        "name": "#MISSING-zh-CN: Layout"
       },
       {
-        "key": "workspace",
-        "name": "工作区"
+        "key": "#MISSING-zh-CN: workspace",
+        "name": "#MISSING-zh-CN: Workspace"
       },
       {
-        "key": "group_appearance",
-        "name": "外观"
+        "key": "#MISSING-zh-CN: group_appearance",
+        "name": "#MISSING-zh-CN: Appearance"
       },
       {
-        "key": "group_system",
-        "name": "系统"
+        "key": "#MISSING-zh-CN: group_system",
+        "name": "#MISSING-zh-CN: System"
       },
       {
-        "key": "updates",
-        "name": "更新"
+        "key": "#MISSING-zh-CN: updates",
+        "name": "#MISSING-zh-CN: Updates"
       },
       {
-        "key": "behavior",
-        "name": "行为"
+        "key": "#MISSING-zh-CN: behavior",
+        "name": "#MISSING-zh-CN: Behavior"
       }
     ],
     "updates": {
@@ -339,6 +339,8 @@
       "scroll_sync": "同步编辑器和预览滚动",
       "auto_save": "自动保存",
       "auto_save_interval": "自动保存间隔",
+      "auto_refresh": "自动刷新",
+      "auto_refresh_interval": "自动刷新间隔",
       "seconds": "秒",
       "close_confirm_title": "未保存的更改",
       "close_confirm_msg": "'{name}' 有未保存的更改。是否丢弃？",
@@ -346,9 +348,7 @@
       "close_confirm_cancel": "取消",
       "clear_http_cache": "清除所有缓存",
       "cache_retention_days": "缓存保留天数",
-      "days_suffix": " 天",
-      "auto_refresh": "自动刷新",
-      "auto_refresh_interval": "自动刷新间隔"
+      "days_suffix": " 天"
     }
   },
   "tab": {
@@ -362,14 +362,14 @@
     "pin": "固定",
     "unpin": "取消固定",
     "restore_closed": "恢复关闭的标签页",
-    "remove_from_group": "从组中删除",
     "group_name_placeholder": "群组名称",
     "create_group_button": "创建",
     "close_group": "关闭组",
     "ungroup": "取消分组",
     "add_tab_to_group": "将标签页添加到组",
-    "add_to_group": "添加到群组",
-    "create_new_group": "新群组"
+    "remove_from_group": "从组中删除",
+    "create_new_group": "新群组",
+    "add_to_group": "添加到群组"
   },
   "search": {
     "modal_title": "搜索文件",
@@ -377,6 +377,7 @@
     "include_pattern_hint": "包含（正则表达式，逗号分隔）",
     "exclude_pattern_hint": "排除（正则表达式，逗号分隔）",
     "no_results": "没有找到文件。",
+    "palette_no_results": "未找到结果。",
     "doc_search_title": "搜索文档",
     "doc_search_prev": "上一个",
     "doc_search_next": "下一个",
@@ -390,13 +391,12 @@
     "ln_prefix": "📄 第 ",
     "palette_query_hint": "输入命令或进行搜索...",
     "command_settings": "切换设置",
+    "command_explorer": "显示资源管理器",
     "command_close_all": "关闭所有文档",
+    "command_refresh_explorer": "刷新文件列表",
     "command_updates": "检查更新",
     "command_about": "切换关于",
-    "command_type_action": "命令",
-    "palette_no_results": "未找到结果。",
-    "command_explorer": "显示资源管理器",
-    "command_refresh_explorer": "刷新文件列表"
+    "command_type_action": "命令"
   },
   "toc": {
     "title": "目录",
@@ -431,5 +431,26 @@
     "task_todo": "待办 [ ]",
     "task_in_progress": "进行中 [/]",
     "task_done": "已完成 [x]"
+  },
+  "common": {
+    "close": "#MISSING-zh-CN: Close"
+  },
+  "meta_info": {
+    "title": "#MISSING-zh-CN: Document Information",
+    "general_section": "#MISSING-zh-CN: General",
+    "dates_section": "#MISSING-zh-CN: Dates",
+    "status_section": "#MISSING-zh-CN: Status",
+    "label_name": "#MISSING-zh-CN: Name",
+    "label_kind": "#MISSING-zh-CN: Kind",
+    "label_version": "#MISSING-zh-CN: Version",
+    "label_created": "#MISSING-zh-CN: Created",
+    "label_updated": "#MISSING-zh-CN: Updated",
+    "label_dirty": "#MISSING-zh-CN: Modified",
+    "label_loaded": "#MISSING-zh-CN: Loaded",
+    "label_pinned": "#MISSING-zh-CN: Pinned",
+    "label_path": "#MISSING-zh-CN: Path",
+    "kind_markdown": "#MISSING-zh-CN: Markdown Doc",
+    "yes": "#MISSING-zh-CN: Yes",
+    "no": "#MISSING-zh-CN: No"
   }
 }

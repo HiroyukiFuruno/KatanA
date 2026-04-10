@@ -4,6 +4,7 @@
     "settings": "設定",
     "language": "語言",
     "open_workspace": "開啟工作區…",
+    "close_workspace": "關閉工作區",
     "save": "儲存",
     "open_all": "全部開啟",
     "export": "匯出",
@@ -21,7 +22,6 @@
     "release_notes": "發行說明",
     "view": "檢視",
     "command_palette": "指令面板…",
-    "close_workspace": "關閉工作區",
     "demo": "觀看示範",
     "language_en": "英語",
     "language_ja": "日語",
@@ -42,7 +42,7 @@
     "runtime": "執行階段",
     "platform": "平台",
     "architecture": "架構",
-    "rust": "Rust",
+    "rust": "#MISSING-zh-TW: Rust",
     "license": "許可證",
     "links": "連結",
     "source_code": "原始碼",
@@ -56,7 +56,7 @@
     "checking_for_updates": "正在檢查更新...",
     "update_available": "有新版本可用",
     "update_available_desc": "KatanA 有新版本 ({version}) 可用。點擊 \"安裝並重啟\" 即可自動套用更新。",
-    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有關詳細的變更和發行說明，請查看 [GitHub 發行頁面]({url})。\n點擊 \"安裝並重啟\" 即可自動套用更新。",
+    "release_notes_template": "#MISSING-zh-TW: ### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Relaunch\" to automatically apply the update.",
     "up_to_date": "已是最新版本",
     "up_to_date_desc": "您使用的是最新版本的 KatanA。",
     "failed_to_check": "檢查更新失敗。",
@@ -73,20 +73,20 @@
   "workspace": {
     "no_workspace_open": "未開啟工作區。",
     "no_document_selected": "未開啟文件。",
+    "explorer_title": "檔案總管",
+    "workspace_history_title": "工作區歷史",
     "recent_workspaces": "工作區",
+    "sidebar_workspace_tooltip": "工作區",
+    "sidebar_history_tooltip": "最近的工作區",
+    "no_recent_workspaces": "沒有最近的工作區",
+    "no_saved_workspaces": "沒有已儲存的工作區",
     "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
     "path_label": "路徑",
     "flat_view": "扁平視圖",
     "filter_regex_hint": "篩選 (正則表達式)...",
-    "explorer_title": "檔案總管",
-    "workspace_history_title": "工作區歷史",
     "open_folder_hint": "開啟一個資料夾即可開始使用 KatanA。",
     "open_workspace_button": "開啟工作區",
-    "remove_history_tooltip": "從清單中移除",
-    "sidebar_workspace_tooltip": "工作區",
-    "sidebar_history_tooltip": "最近的工作區",
-    "no_recent_workspaces": "沒有最近的工作區",
-    "no_saved_workspaces": "沒有已儲存的工作區"
+    "remove_history_tooltip": "從清單中移除"
   },
   "preview": {
     "preview_title": "預覽",
@@ -152,6 +152,7 @@
     "expand_all": "展開全部",
     "collapse_all": "摺疊全部",
     "collapse_sidebar": "摺疊側邊欄",
+    "refresh_explorer": "重新整理",
     "toggle_filter": "切換篩選器",
     "remove_workspace": "從清單中移除",
     "recursive_expand": "遞迴展開",
@@ -166,16 +167,15 @@
     "copy_path": "複製路徑",
     "reveal_in_os": "在系統中顯示",
     "save": "儲存",
+    "refresh_document": "重新整理文件",
     "cancel": "取消",
     "discard": "丟棄",
     "confirm": "確認",
     "copy_relative_path": "複製相對路徑",
-    "refresh_document": "重新整理文件",
-    "toggle_slideshow": "幻燈片",
-    "refresh_explorer": "重新整理"
+    "toggle_slideshow": "幻燈片"
   },
   "ai": {
-    "ai_unconfigured": "[AI: 未設定]"
+    "ai_unconfigured": "#MISSING-zh-TW: [AI: unconfigured]"
   },
   "tool": {
     "not_installed": "⚠ {tool} 未安裝",
@@ -221,7 +221,7 @@
     },
     "preview": {
       "title": "預覽",
-      "heading": "# 範例標題",
+      "heading": "#MISSING-zh-TW: # Sample Heading",
       "normal_text": "正常文字與",
       "accent_link": "強調連結",
       "secondary_text": "次要文字範例",
@@ -288,40 +288,40 @@
     },
     "tabs": [
       {
-        "key": "theme",
-        "name": "主題"
+        "key": "#MISSING-zh-TW: theme",
+        "name": "#MISSING-zh-TW: Theme"
       },
       {
-        "key": "icon",
-        "name": "圖示"
+        "key": "#MISSING-zh-TW: icon",
+        "name": "#MISSING-zh-TW: Icons"
       },
       {
-        "key": "font",
-        "name": "字型"
+        "key": "#MISSING-zh-TW: font",
+        "name": "#MISSING-zh-TW: Font"
       },
       {
-        "key": "layout",
-        "name": "版面配置"
+        "key": "#MISSING-zh-TW: layout",
+        "name": "#MISSING-zh-TW: Layout"
       },
       {
-        "key": "workspace",
-        "name": "工作區"
+        "key": "#MISSING-zh-TW: workspace",
+        "name": "#MISSING-zh-TW: Workspace"
       },
       {
-        "key": "group_appearance",
-        "name": "外觀"
+        "key": "#MISSING-zh-TW: group_appearance",
+        "name": "#MISSING-zh-TW: Appearance"
       },
       {
-        "key": "group_system",
-        "name": "系統"
+        "key": "#MISSING-zh-TW: group_system",
+        "name": "#MISSING-zh-TW: System"
       },
       {
-        "key": "updates",
-        "name": "更新"
+        "key": "#MISSING-zh-TW: updates",
+        "name": "#MISSING-zh-TW: Updates"
       },
       {
-        "key": "behavior",
-        "name": "行為"
+        "key": "#MISSING-zh-TW: behavior",
+        "name": "#MISSING-zh-TW: Behavior"
       }
     ],
     "updates": {
@@ -339,6 +339,8 @@
       "scroll_sync": "同步編輯器和預覽捲動",
       "auto_save": "自動儲存",
       "auto_save_interval": "自動儲存間隔",
+      "auto_refresh": "自動重新整理",
+      "auto_refresh_interval": "自動重新整理間隔",
       "seconds": "秒",
       "close_confirm_title": "未儲存的變更",
       "close_confirm_msg": "'{name}' 有未儲存的變更。是否捨棄？",
@@ -346,9 +348,7 @@
       "close_confirm_cancel": "取消",
       "clear_http_cache": "清除所有快取",
       "cache_retention_days": "快取保留天數",
-      "days_suffix": " 天",
-      "auto_refresh": "自動重新整理",
-      "auto_refresh_interval": "自動重新整理間隔"
+      "days_suffix": " 天"
     }
   },
   "tab": {
@@ -362,14 +362,14 @@
     "pin": "固定",
     "unpin": "取消固定",
     "restore_closed": "恢復關閉的分頁",
-    "remove_from_group": "從群組中移除",
     "group_name_placeholder": "群組名稱",
     "create_group_button": "建立",
     "close_group": "關閉群組",
     "ungroup": "取消群組",
     "add_tab_to_group": "將分頁加入群組",
-    "add_to_group": "新增至群組",
-    "create_new_group": "新群組"
+    "remove_from_group": "從群組中移除",
+    "create_new_group": "新群組",
+    "add_to_group": "新增至群組"
   },
   "search": {
     "modal_title": "搜尋檔案",
@@ -377,6 +377,7 @@
     "include_pattern_hint": "包含（正則表示式，以逗號分隔）",
     "exclude_pattern_hint": "排除（正則表示式，以逗號分隔）",
     "no_results": "沒有找到檔案。",
+    "palette_no_results": "找不到結果。",
     "doc_search_title": "搜尋文件",
     "doc_search_prev": "上一個",
     "doc_search_next": "下一個",
@@ -390,13 +391,12 @@
     "ln_prefix": "第 ",
     "palette_query_hint": "輸入指令或進行搜尋...",
     "command_settings": "切換設定",
+    "command_explorer": "切換檔案總管",
     "command_close_all": "關閉所有文件",
+    "command_refresh_explorer": "重新整理檔案清單",
     "command_updates": "檢查更新",
     "command_about": "切換關於",
-    "command_type_action": "指令",
-    "palette_no_results": "找不到結果。",
-    "command_explorer": "切換檔案總管",
-    "command_refresh_explorer": "重新整理檔案清單"
+    "command_type_action": "指令"
   },
   "toc": {
     "title": "目錄",
@@ -431,5 +431,26 @@
     "task_todo": "待辦 [ ]",
     "task_in_progress": "進行中 [/]",
     "task_done": "完成 [x]"
+  },
+  "common": {
+    "close": "#MISSING-zh-TW: Close"
+  },
+  "meta_info": {
+    "title": "#MISSING-zh-TW: Document Information",
+    "general_section": "#MISSING-zh-TW: General",
+    "dates_section": "#MISSING-zh-TW: Dates",
+    "status_section": "#MISSING-zh-TW: Status",
+    "label_name": "#MISSING-zh-TW: Name",
+    "label_kind": "#MISSING-zh-TW: Kind",
+    "label_version": "#MISSING-zh-TW: Version",
+    "label_created": "#MISSING-zh-TW: Created",
+    "label_updated": "#MISSING-zh-TW: Updated",
+    "label_dirty": "#MISSING-zh-TW: Modified",
+    "label_loaded": "#MISSING-zh-TW: Loaded",
+    "label_pinned": "#MISSING-zh-TW: Pinned",
+    "label_path": "#MISSING-zh-TW: Path",
+    "kind_markdown": "#MISSING-zh-TW: Markdown Doc",
+    "yes": "#MISSING-zh-TW: Yes",
+    "no": "#MISSING-zh-TW: No"
   }
 }
