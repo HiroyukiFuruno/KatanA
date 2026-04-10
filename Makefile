@@ -126,11 +126,11 @@ test-integration: ## Run integration tests (UI tests, semantic assertions only) 
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
-	docker compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test cargo test --workspace
+	docker-compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test cargo test --workspace
 
 .PHONY: check-windows
 check-windows: ## Verify Windows cross-compilation without running tests
-	docker compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
+	docker-compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
 
 .PHONY: check-platforms
 check-platforms: check-linux check-windows ## Verify test/compilation across all target platforms (Linux, Windows)

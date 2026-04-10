@@ -47,7 +47,7 @@ impl UpdateDownloadOps {
     pub fn extract_update<P: AsRef<std::path::Path>, D: AsRef<std::path::Path>, F>(
         archive_path: P,
         extract_to_dir: D,
-        mut on_progress: F,
+        on_progress: F,
     ) -> anyhow::Result<()>
     where
         F: FnMut(UpdateProgress),
@@ -72,7 +72,7 @@ impl UpdateDownloadOps {
         let mut archive = tar::Archive::new(tar);
 
         /* WHY: tar crate doesn't provide a direct total count without reading the whole stream.
-           We skip counting to maintain performance and avoid double-pass. */
+        We skip counting to maintain performance and avoid double-pass. */
         archive.unpack(extract_to_dir)?;
 
         /* WHY: Notify 100% progress after full extraction since we can meassure it incrementally without overhead. */
