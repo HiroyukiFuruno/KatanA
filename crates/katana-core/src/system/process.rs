@@ -43,46 +43,78 @@ impl ProcessService {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
 
-        /* Attempt download with curl */
-        let mut curl = Self::create_command("curl");
-        curl.args(["-fsSL", "-o", dest.to_str().unwrap_or(""), url]);
+        /* WHY: Define the chain of commands to try for downloading. */
+        /* Each command is tried in order until one succeeds. */
+        let mut commands: Vec<(String, Vec<String>)> = Vec::new();
 
-        if curl.status().is_ok_and(|s| s.success()) {
-            return Ok(());
-        }
+        /* 1. curl (Cross-platform) */
+        commands.push((
+            "curl".to_string(),
+            vec![
+                "-fsSL".to_string(),
+                "-o".to_string(),
+                dest.to_str().unwrap_or("").to_string(),
+                url.to_string(),
+            ],
+        ));
 
         #[cfg(windows)]
         {
-            /* WHY: Fallback to PowerShell's Invoke-WebRequest if curl fails on Windows */
-            let mut ps = Self::create_command("powershell");
-            ps.args([
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                &format!(
-                    "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
-                     $ProgressPreference = 'SilentlyContinue'; \
-                     Invoke-WebRequest -Uri '{}' -OutFile '{}'",
-                    url.replace("'", "''"),
-                    dest.display().to_string().replace("'", "''")
-                ),
-            ]);
-            if ps.status().is_ok_and(|s| s.success()) {
-                return Ok(());
-            }
+            /* 2. PowerShell (Windows) */
+            let ps_script = format!(
+                "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
+                 $ProgressPreference = 'SilentlyContinue'; \
+                 Invoke-WebRequest -Uri '{}' -OutFile '{}'",
+                url.replace("'", "''"),
+                dest.display().to_string().replace("'", "''")
+            );
+            commands.push((
+                "powershell".to_string(),
+                vec![
+                    "-NoProfile".to_string(),
+                    "-NonInteractive".to_string(),
+                    "-Command".to_string(),
+                    ps_script,
+                ],
+            ));
+
+            /* 3. Node.js (Windows Fallback) */
+            let node_script = format!(
+                "fetch('{}').then(r => {{ if(!r.ok) throw r.status; return r.arrayBuffer(); }}).then(b => require('fs').writeFileSync('{}', Buffer.from(b)))",
+                url.replace("'", "\\'"),
+                dest.to_str().unwrap_or("").replace("'", "\\'")
+            );
+            commands.push(("node".to_string(), vec!["-e".to_string(), node_script]));
         }
 
         #[cfg(not(windows))]
         {
-            /* WHY: Fallback to wget on Linux/macOS when curl is unavailable or fails */
-            let mut wget = Self::create_command("wget");
-            wget.args(["-q", "-O", dest.to_str().unwrap_or(""), url]);
-            #[cfg(not(coverage))]
-            if wget.status().is_ok_and(|s| s.success()) {
+            /* 2. wget (Unix) */
+            commands.push((
+                "wget".to_string(),
+                vec![
+                    "-q".to_string(),
+                    "-O".to_string(),
+                    dest.to_str().unwrap_or("").to_string(),
+                    url.to_string(),
+                ],
+            ));
+
+            /* 3. Node.js (Unix Fallback) */
+            let node_script = format!(
+                "fetch('{}').then(r => {{ if(!r.ok) throw r.status; return r.arrayBuffer(); }}).then(b => require('fs').writeFileSync('{}', Buffer.from(b)))",
+                url.replace("'", "\\'"),
+                dest.to_str().unwrap_or("").replace("'", "\\'")
+            );
+            commands.push(("node".to_string(), vec!["-e".to_string(), node_script]));
+        }
+
+        for (prog, args) in commands {
+            let mut cmd = Self::create_command(&prog);
+            cmd.args(args);
+            if cmd.status().is_ok_and(|s| s.success()) {
                 return Ok(());
             }
-            #[cfg(coverage)]
-            let _ = wget.status();
         }
 
         Err("Download failed: curl and all fallback mechanisms failed.".to_string())
