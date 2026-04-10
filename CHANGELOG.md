@@ -12,6 +12,9 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🐛 Bug Fixes
 
+- Fixed an issue where the Terms of Service agreement modal would incorrectly appear on every minor app version update.
+- Fixed a bug causing internal Katana:// virtual URLs (opened from tooltips etc.) to be misidentified as local paths, preventing them from opening correctly.
+- Enhanced multi-platform support for the Mermaid CLI (mmdc) resolution, ensuring reliable path discovery on Windows and robust cache validation when reloading diagrams after tool installation.
 - Addressed an installation failure in the Windows MSI installer where directories under AppData were not properly initialized during per-user installations.
 
 ### 🔧 System
