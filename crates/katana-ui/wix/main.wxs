@@ -55,12 +55,13 @@
 <?else ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
 <?endif ?>
+<?define PlatformLocalAppDataFolder = "LocalAppDataFolder" ?>
 
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
     <Product
         Id='*'
-        Name='katana-ui'
+        Name='KatanA'
         UpgradeCode='7476FFDE-7ADF-4C18-9E70-40842FBEB99D'
         Manufacturer='Hiroyuki Furuno'
         Language='1033'
@@ -90,8 +91,9 @@
                 <Directory Id='ApplicationProgramsFolder' Name='KatanA'/>
             </Directory>
             <Directory Id='DesktopFolder' Name='Desktop'/>
-            <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='katana-ui'>
+            <Directory Id='$(var.PlatformLocalAppDataFolder)'>
+                <Directory Id='ProgramsFolder' Name='Programs'>
+                    <Directory Id='APPLICATIONFOLDER' Name='KatanA'>
                     <!--
                       Disabling the license sidecar file in the installer is a two step process:
 
@@ -115,7 +117,7 @@
                                 Permanent='no'
                                 Part='last'
                                 Action='set'
-                                System='yes'/>
+                                System='no'/>
                         </Component>
                         <Component Id='binary0' Guid='*'>
                             <File
@@ -145,6 +147,7 @@
                         <RemoveFolder Id='CleanUpShortCut' Directory='ApplicationProgramsFolder' On='uninstall'/>
                         <RegistryValue Root='HKCU' Key='Software\HiroyukiFuruno\KatanA' Name='installed' Type='integer' Value='1' KeyPath='yes'/>
                     </Component>
+                    </Directory>
                 </Directory>
             </Directory>
         </Directory>
