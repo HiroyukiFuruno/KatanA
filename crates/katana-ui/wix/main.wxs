@@ -95,21 +95,19 @@
                 <Directory Id='ProgramsFolder' Name='Programs'>
                     <Directory Id='APPLICATIONFOLDER' Name='KatanA'>
                     <!--
-                      Disabling the license sidecar file in the installer is a two step process:
-
-                      1. Comment out or remove the `Component` tag along with its contents.
-                      2. Comment out or remove the `ComponentRef` tag with the "License" Id
-                         attribute value further down in this file.
+                      ICE38 requires perUser components to use HKCU registry KeyPath (not file).
+                      ICE64 requires RemoveFolder entries for perUser directories.
                     -->
                     <Component Id='License' Guid='*'>
                         <File Id='LicenseFile'
                             DiskId='1'
-                            Source='wix\License.rtf'
-                            KeyPath='yes'/>
+                            Source='wix\License.rtf'/>
+                        <RemoveFolder Id='CleanUpApplicationFolder' Directory='APPLICATIONFOLDER' On='uninstall'/>
+                        <RegistryValue Root='HKCU' Key='Software\HiroyukiFuruno\KatanA' Name='license' Type='integer' Value='1' KeyPath='yes'/>
                     </Component>
                     
                     <Directory Id='Bin' Name='bin'>
-                        <Component Id='Path' Guid='F843B66E-4B0B-4E27-A6B3-23E0A797BAC1' KeyPath='yes'>
+                        <Component Id='Path' Guid='F843B66E-4B0B-4E27-A6B3-23E0A797BAC1'>
                             <Environment
                                 Id='PATH'
                                 Name='PATH'
@@ -118,14 +116,17 @@
                                 Part='last'
                                 Action='set'
                                 System='no'/>
+                            <RegistryValue Root='HKCU' Key='Software\HiroyukiFuruno\KatanA' Name='path' Type='integer' Value='1' KeyPath='yes'/>
                         </Component>
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
                                 Name='KatanA.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\KatanA.exe'
-                                KeyPath='yes'/>
+                                Source='$(var.CargoTargetBinDir)\KatanA.exe'/>
+                            <RemoveFolder Id='CleanUpBinFolder' Directory='Bin' On='uninstall'/>
+                            <RemoveFolder Id='CleanUpProgramsFolder' Directory='ProgramsFolder' On='uninstall'/>
+                            <RegistryValue Root='HKCU' Key='Software\HiroyukiFuruno\KatanA' Name='binary' Type='integer' Value='1' KeyPath='yes'/>
                         </Component>
                     </Directory>
 
