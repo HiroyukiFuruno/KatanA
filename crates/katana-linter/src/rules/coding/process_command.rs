@@ -28,7 +28,8 @@ impl ProcessCommandVisitor {
     }
 
     fn report_violation_if_needed(&mut self, node: &syn::ExprCall) {
-        let file_str = self.file.to_string_lossy();
+        /* WHY: Normalize to forward slashes for cross-platform path comparison */
+        let file_str = self.file.to_string_lossy().replace('\\', "/");
         /* WHY: Allow the central ProcessService facade to use Command::new */
         if file_str.contains("system/process.rs") {
             return;
