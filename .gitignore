@@ -84,6 +84,7 @@ target/llvm-cov/
 *.old.png
 
 tmp
+output
 
 # local history
 .history

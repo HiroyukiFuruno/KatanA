@@ -2,12 +2,7 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
-## [0.18.1] - 2026-04-10 07:08:45 (UTC)
-
-### 🚀 Features
-
-- **Windows MSI Installer:** KatanA for Windows is now distributed as a native `.msi` package (built via WiX), automatically creating Start Menu and Desktop shortcuts upon installation.
-- The built-in auto-updater seamlessly supports smooth background updates for the new `perUser` installed directory.
+## [0.18.2] - 2026-04-10 07:25:00 (UTC)
 
 ### ✨ Improvements
 
@@ -22,6 +17,13 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ### 🔧 System
 
 - Improved background stability of the testing environment for Windows builds.
+
+## [0.18.1] - 2026-04-09
+
+### 🚀 Features
+
+- **Windows MSI Installer:** KatanA for Windows is now distributed as a native `.msi` package (built via WiX), automatically creating Start Menu and Desktop shortcuts upon installation.
+- The built-in auto-updater seamlessly supports smooth background updates for the new `perUser` installed directory.
 
 ## [0.18.0] - 2026-04-08 12:15:00 (UTC)
 
