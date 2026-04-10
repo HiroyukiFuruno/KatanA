@@ -34,7 +34,7 @@ endif
 
 .PHONY: init
 init: ## Bootstrap the development environment interactively
-	scripts/setup.sh
+	scripts/setup/setup.sh
 
 ###################################
 # Run / Watch
@@ -137,7 +137,7 @@ check-platforms: check-linux check-windows ## Verify test/compilation across all
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
-	scripts/coverage.sh
+	scripts/ci/coverage.sh
 
 .PHONY: check-light
 check-light: fmt-check lint ast-lint ## Quick verification (skip slow fixture tests)
@@ -186,19 +186,19 @@ tree: ## Display dependency tree
 
 .PHONY: package-mac
 package-mac: ## Build macOS .app bundle (release)
-	scripts/package-mac.sh $(VERSION)
+	scripts/build/package-mac.sh $(VERSION)
 
 .PHONY: package-linux
 package-linux: ## Build Linux zip artifact
-	scripts/package-linux.sh
+	scripts/build/package-linux.sh
 
 .PHONY: package-windows
 package-windows: ## Build Windows MSI and ZIP artifacts
-	scripts/package-windows.sh
+	scripts/build/package-windows.sh
 
 .PHONY: dmg
 dmg: package-mac ## Build macOS .dmg installer from .app bundle
-	@FORCE=$(FORCE) scripts/dmg.sh $(VERSION)
+	@FORCE=$(FORCE) scripts/build/dmg.sh $(VERSION)
 
 .PHONY: release
 release: ## Trigger the release workflow on GitHub Actions (usage: make release VERSION=x.y.z FORCE=1)
