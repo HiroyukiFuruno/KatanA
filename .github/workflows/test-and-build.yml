@@ -82,11 +82,15 @@ jobs:
   lint:
     name: Lint
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
@@ -111,6 +115,7 @@ jobs:
             ${{ runner.os }}-cargo-lint-
 
       - name: Check formatting
+        if: runner.os == 'Linux'
         run: make fmt-check
 
       - name: Run linter
