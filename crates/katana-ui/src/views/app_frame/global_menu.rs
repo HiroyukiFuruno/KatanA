@@ -20,25 +20,16 @@ impl<'a> GlobalMenuBar<'a> {
 
         egui::TopBottomPanel::top("app_global_menu_bar").show_inside(ui, |ui| {
             egui::menu::bar(ui, |ui| {
-                crate::widgets::MenuButtonOps::show(ui, &i18n.menu.file, |ui| {
-                    if ui.button(&i18n.menu.open_workspace).clicked() {
-                        app.pending_action = AppAction::PickOpenWorkspace;
+                crate::widgets::MenuButtonOps::show(ui, "KatanA", |ui| {
+                    if ui.button(&i18n.menu.about).clicked() {
+                        app.show_about = !app.show_about;
                         ui.close_menu();
                     }
-                    if ui.button(&i18n.menu.save).clicked() {
-                        app.pending_action = AppAction::SaveDocument;
+                    if ui.button(&i18n.menu.check_updates).clicked() {
+                        app.pending_action = AppAction::CheckForUpdates;
                         ui.close_menu();
                     }
-                });
-
-                crate::widgets::MenuButtonOps::show(ui, &i18n.menu.view, |ui| {
-                    if ui.button(&i18n.menu.command_palette).clicked() {
-                        app.pending_action = AppAction::ToggleCommandPalette;
-                        ui.close_menu();
-                    }
-                });
-
-                crate::widgets::MenuButtonOps::show(ui, &i18n.menu.settings, |ui| {
+                    ui.separator();
                     if ui.button(&i18n.menu.settings).clicked() {
                         app.pending_action = AppAction::ToggleSettings;
                         ui.close_menu();
@@ -69,24 +60,38 @@ impl<'a> GlobalMenuBar<'a> {
                             }
                         }
                     });
+                    ui.separator();
+                    if ui.button(&i18n.menu.quit).clicked() {
+                        app.pending_action = AppAction::Quit;
+                        ui.close_menu();
+                    }
+                });
+
+                crate::widgets::MenuButtonOps::show(ui, &i18n.menu.file, |ui| {
+                    if ui.button(&i18n.menu.open_workspace).clicked() {
+                        app.pending_action = AppAction::PickOpenWorkspace;
+                        ui.close_menu();
+                    }
+                    if ui.button(&i18n.menu.save).clicked() {
+                        app.pending_action = AppAction::SaveDocument;
+                        ui.close_menu();
+                    }
+                });
+
+                crate::widgets::MenuButtonOps::show(ui, &i18n.menu.view, |ui| {
+                    if ui.button(&i18n.menu.command_palette).clicked() {
+                        app.pending_action = AppAction::ToggleCommandPalette;
+                        ui.close_menu();
+                    }
                 });
 
                 crate::widgets::MenuButtonOps::show(ui, &i18n.menu.help, |ui| {
-                    if ui.button(&i18n.menu.check_updates).clicked() {
-                        app.pending_action = AppAction::CheckForUpdates;
-                        ui.close_menu();
-                    }
                     if ui.button(&i18n.menu.release_notes).clicked() {
                         app.pending_action = AppAction::ShowReleaseNotes;
                         ui.close_menu();
                     }
                     if ui.button(&i18n.menu.demo).clicked() {
                         app.pending_action = AppAction::OpenHelpDemo;
-                        ui.close_menu();
-                    }
-                    ui.separator();
-                    if ui.button(&i18n.menu.about).clicked() {
-                        app.show_about = !app.show_about;
                         ui.close_menu();
                     }
                 });

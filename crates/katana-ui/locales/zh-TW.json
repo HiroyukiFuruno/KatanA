@@ -2,7 +2,7 @@
   "menu": {
     "file": "檔案",
     "settings": "設定",
-    "language": "語言 (Language)",
+    "language": "語言",
     "open_workspace": "開啟工作區…",
     "save": "儲存",
     "open_all": "全部開啟",
@@ -21,13 +21,23 @@
     "release_notes": "發行說明",
     "view": "檢視",
     "command_palette": "指令面板…",
-    "close_workspace": "Close Workspace (zh-TW)",
-    "demo": "觀看示範"
+    "close_workspace": "關閉工作區",
+    "demo": "觀看示範",
+    "language_en": "英語",
+    "language_ja": "日語",
+    "language_zh_cn": "中文 (簡體)",
+    "language_zh_tw": "中文 (繁體)",
+    "language_ko": "韓語",
+    "language_pt": "葡萄牙語",
+    "language_fr": "法語",
+    "language_de": "德語",
+    "language_es": "西班牙語",
+    "language_it": "意大利語"
   },
   "about": {
     "basic_info": "基本資訊",
     "version": "版本",
-    "build": "組建",
+    "build": "建置",
     "copyright": "版權",
     "runtime": "執行階段",
     "platform": "平台",
@@ -35,18 +45,18 @@
     "rust": "Rust",
     "license": "許可證",
     "links": "連結",
-    "source_code": "源代碼",
-    "documentation": "文檔",
+    "source_code": "原始碼",
+    "documentation": "文件",
     "report_issue": "報告問題",
-    "support": "支持",
+    "support": "支援",
     "sponsor": "贊助"
   },
   "update": {
     "title": "檢查更新",
     "checking_for_updates": "正在檢查更新...",
     "update_available": "有新版本可用",
-    "update_available_desc": "KatanA 有新版本 ({version}) 可用。請執行 `brew update && brew upgrade --cask katana-desktop` 進行更新。",
-    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有關詳細的變更和發行說明，請查看 [GitHub 發行頁面]({url})。\n點擊 \"安裝並重新啟動\" 即可自動套用更新。",
+    "update_available_desc": "KatanA 有新版本 ({version}) 可用。點擊 \"安裝並重啟\" 即可自動套用更新。",
+    "release_notes_template": "### 🚀 新版本 {version} 可用\n\n有關詳細的變更和發行說明，請查看 [GitHub 發行頁面]({url})。\n點擊 \"安裝並重啟\" 即可自動套用更新。",
     "up_to_date": "已是最新版本",
     "up_to_date_desc": "您使用的是最新版本的 KatanA。",
     "failed_to_check": "檢查更新失敗。",
@@ -57,7 +67,8 @@
     "restart_confirm": "更新已就緒，現在重啟嗎？",
     "action_later": "稍後",
     "action_skip_version": "跳過此版本",
-    "action_restart": "立即重啟"
+    "action_restart": "立即重啟",
+    "download_update": "安裝並重啟"
   },
   "workspace": {
     "no_workspace_open": "未開啟工作區。",
@@ -69,13 +80,13 @@
     "filter_regex_hint": "篩選 (正則表達式)...",
     "explorer_title": "檔案總管",
     "workspace_history_title": "工作區歷史",
-    "open_folder_hint": "Open a folder to start using KatanA. (zh-TW)",
-    "open_workspace_button": "Open Workspace (zh-TW)",
+    "open_folder_hint": "開啟一個資料夾即可開始使用 KatanA。",
+    "open_workspace_button": "開啟工作區",
     "remove_history_tooltip": "從清單中移除",
     "sidebar_workspace_tooltip": "工作區",
     "sidebar_history_tooltip": "最近的工作區",
     "no_recent_workspaces": "沒有最近的工作區",
-    "no_saved_workspaces": "No saved workspaces (zh-TW)"
+    "no_saved_workspaces": "沒有已儲存的工作區"
   },
   "preview": {
     "preview_title": "預覽",
@@ -90,7 +101,7 @@
       "zoom_in": "放大",
       "zoom_out": "縮小",
       "reset": "重置位置和大小",
-      "fullscreen": "全屏",
+      "fullscreen": "全螢幕",
       "close": "關閉",
       "trackpad_help": "觸控板：雙指捏合縮放，單指拖動平移"
     }
@@ -134,8 +145,8 @@
     "toggle_problems_panel": "切換問題面板",
     "problems_count_format": "⚠️ 發現問題: {count}",
     "removed_workspace": "工作區 '{path}' 已從清單中移除。",
-    "error_save_settings": "Failed to save settings. (zh-TW)",
-    "closed_workspace": "Workspace closed. (zh-TW)"
+    "error_save_settings": "儲存設定失敗。",
+    "closed_workspace": "工作區已關閉。"
   },
   "action": {
     "expand_all": "展開全部",
@@ -403,9 +414,9 @@
   "terms": {
     "title": "服務條款",
     "version_label": "版本: {version}",
-    "content": "Terms content.",
+    "content": "感謝您使用 KatanA。\n\n本軟體為開源軟體，並依據 MIT 授權條款提供。\n\n[免責聲明]\n1. 對於因本軟體、其使用或與本軟體有關的其他事項所引起或與之相關的任何索賠、損害或其他責任，無論其基於契約、侵權或其他原因，作者或著作權持有人概不負責。\n2. 本軟體按「現況」提供，不提供任何形式的明示或默示保證，包括但不限於適售性、特定用途適用性及未侵權保證。\n\n[隱私]\n1. 本軟體不會將您的文件內容傳送到任何外部伺服器。\n2. 可能會傳送匿名當機回報或使用統計資料，但您可以在設定中停用這些功能。\n\n點擊「接受」即表示您同意上述條款。",
     "accept": "接受",
-    "decline": "拒絶"
+    "decline": "拒絕"
   },
   "dialog": {
     "new_file_title": "建立新檔案",

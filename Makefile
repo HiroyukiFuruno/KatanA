@@ -189,7 +189,7 @@ package-mac: ## Build macOS .app bundle (release)
 	scripts/package-mac.sh $(VERSION)
 
 .PHONY: package-linux
-package-linux: ## Build Linux tar.gz artifact
+package-linux: ## Build Linux zip artifact
 	scripts/package-linux.sh
 
 .PHONY: package-windows

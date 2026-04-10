@@ -2,7 +2,7 @@
   "menu": {
     "file": "File",
     "settings": "Impostazioni",
-    "language": "Lingua (Language)",
+    "language": "Lingua",
     "open_workspace": "Apri Spazio di Lavoro…",
     "save": "Salva",
     "open_all": "Apri tutto",
@@ -21,13 +21,23 @@
     "release_notes": "Note di rilascio",
     "view": "Visualizza",
     "command_palette": "Tavolozza dei comandi…",
-    "close_workspace": "Close Workspace (it)",
-    "demo": "Vedi Demo"
+    "close_workspace": "Chiudi spazio di lavoro",
+    "demo": "Guarda la demo",
+    "language_en": "Inglese",
+    "language_ja": "Giapponese",
+    "language_zh_cn": "Cinese (Semplificato)",
+    "language_zh_tw": "Cinese (Tradizionale)",
+    "language_ko": "Coreano",
+    "language_pt": "Portoghese",
+    "language_fr": "Francese",
+    "language_de": "Tedesco",
+    "language_es": "Spagnolo",
+    "language_it": "Italiano"
   },
   "about": {
     "basic_info": "Informazioni di base",
     "version": "Versione",
-    "build": "Build",
+    "build": "Numero build",
     "copyright": "Copyright",
     "runtime": "Runtime",
     "platform": "Piattaforma",
@@ -45,19 +55,20 @@
     "title": "Controlla aggiornamenti",
     "checking_for_updates": "Ricerca aggiornamenti...",
     "update_available": "Aggiornamento disponibile",
-    "update_available_desc": "Una nuova versione di KatanA ({version}) è disponibile. Esegui `brew update && brew upgrade --cask katana-desktop` per aggiornare.",
-    "release_notes_template": "### Nuova versione {version} disponibile\n\nControlla la [pagina delle release GitHub]({url}) per le note di rilascio.\nFai clic su \"Installa e riavvia\" per applicare automaticamente l'aggiornamento.",
+    "update_available_desc": "Una nuova versione di KatanA ({version}) è disponibile. Fai clic su \"Installa e riavvia\" per applicare automaticamente l'aggiornamento.",
+    "release_notes_template": "### Nuova versione {version} disponibile\n\nConsulta la [pagina GitHub delle versioni]({url}) per le modifiche dettagliate e le note di rilascio.\nFai clic su \"Installa e riavvia\" per applicare automaticamente l'aggiornamento.",
     "up_to_date": "Aggiornato",
     "up_to_date_desc": "KatanA è aggiornato.",
     "failed_to_check": "Ricerca aggiornamenti fallita.",
     "action_close": "OK",
-    "install_update": "Installa e Riavvia",
+    "install_update": "Installa e riavvia",
     "downloading": "Download aggiornamento...",
     "installing": "Installazione aggiornamento...",
     "restart_confirm": "L'aggiornamento è pronto. Riavviare ora?",
     "action_later": "Più tardi",
     "action_skip_version": "Salta questa versione",
-    "action_restart": "Riavvia ora"
+    "action_restart": "Riavvia ora",
+    "download_update": "Installa e riavvia"
   },
   "workspace": {
     "no_workspace_open": "Nessuno spazio di lavoro aperto.",
@@ -69,13 +80,13 @@
     "filter_regex_hint": "Filtra (Regex)...",
     "explorer_title": "Esplora file",
     "workspace_history_title": "Cronologia area di lavoro",
-    "open_folder_hint": "Open a folder to start using KatanA. (it)",
-    "open_workspace_button": "Open Workspace (it)",
+    "open_folder_hint": "Apri una cartella per iniziare a usare KatanA.",
+    "open_workspace_button": "Apri spazio di lavoro",
     "remove_history_tooltip": "Rimuovi dall'elenco",
     "sidebar_workspace_tooltip": "Spazio di lavoro",
     "sidebar_history_tooltip": "Spazi di lavoro recenti",
     "no_recent_workspaces": "Nessuno spazio di lavoro recente",
-    "no_saved_workspaces": "No saved workspaces (it)"
+    "no_saved_workspaces": "Nessuno spazio di lavoro salvato"
   },
   "preview": {
     "preview_title": "Anteprima",
@@ -134,8 +145,8 @@
     "toggle_problems_panel": "Attiva/disattiva pannello problemi",
     "problems_count_format": "Problemi: {count}",
     "removed_workspace": "Spazio di lavoro '{path}' rimosso dall'elenco.",
-    "error_save_settings": "Failed to save settings. (it)",
-    "closed_workspace": "Workspace closed. (it)"
+    "error_save_settings": "Impossibile salvare le impostazioni.",
+    "closed_workspace": "Spazio di lavoro chiuso."
   },
   "action": {
     "expand_all": "Espandi Tutto",
@@ -288,7 +299,7 @@
       },
       {
         "key": "group_system",
-        "name": "Sistema (it)"
+        "name": "Sistema"
       },
       {
         "key": "updates",
@@ -403,7 +414,7 @@
   "terms": {
     "title": "Termini di servizio",
     "version_label": "Versione: {version}",
-    "content": "Terms content.",
+    "content": "Grazie per aver utilizzato KatanA.\n\nQuesto software è open source ed è distribuito con licenza MIT.\n\n[Esclusione di responsabilità]\n1. In nessun caso gli autori o i titolari dei diritti d'autore saranno responsabili per reclami, danni o altre responsabilità, siano essi derivanti da contratto, illecito o altro, derivanti dal software, dal suo utilizzo o da altri rapporti con il software.\n2. IL SOFTWARE VIENE FORNITO \"COSÌ COM'È\", SENZA GARANZIE DI ALCUN TIPO, ESPRESSE O IMPLICITE, INCLUSE, A TITOLO ESEMPLIFICATIVO, LE GARANZIE DI COMMERCIABILITÀ, IDONEITÀ PER UNO SCOPO PARTICOLARE E NON VIOLAZIONE.\n\n[Privacy]\n1. Questo software non trasmette il contenuto dei tuoi documenti a server esterni.\n2. Potrebbero essere inviati report di arresto anomalo anonimi o statistiche di utilizzo, ma puoi disattivarli nelle impostazioni.\n\nFacendo clic su \"Accetta\", accetti le condizioni sopra indicate.",
     "accept": "Accetta",
     "decline": "Rifiuta"
   },

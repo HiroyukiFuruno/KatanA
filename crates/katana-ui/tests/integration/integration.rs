@@ -3200,6 +3200,88 @@ fn test_ast_linter_locales() {
     let locales_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("locales");
     let mut failures = vec![];
     let mut locales = std::collections::HashMap::new();
+    let languages_path = locales_dir.join("languages.json");
+    let languages_json: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&languages_path).unwrap()).unwrap();
+
+    fn collect_wrapped_segments(input: &str) -> Vec<String> {
+        const PAIRS: &[(char, char)] = &[
+            ('(', ')'),
+            ('[', ']'),
+            ('\'', '\''),
+            ('`', '`'),
+            ('（', '）'),
+            ('［', '］'),
+            ('「', '」'),
+            ('『', '』'),
+        ];
+
+        let mut segments = Vec::new();
+        for (open, close) in PAIRS {
+            let mut cursor = 0;
+            while let Some(rel_open) = input[cursor..].find(*open) {
+                let open_idx = cursor + rel_open;
+                let inner_start = open_idx + open.len_utf8();
+                let Some(rel_close) = input[inner_start..].find(*close) else {
+                    break;
+                };
+                let close_idx = inner_start + rel_close;
+                let inner = input[inner_start..close_idx].trim();
+                if !inner.is_empty() {
+                    segments.push(inner.to_string());
+                }
+                cursor = close_idx + close.len_utf8();
+            }
+        }
+        segments
+    }
+
+    fn normalize_lint_token(input: &str) -> String {
+        input.trim().to_lowercase()
+    }
+
+    fn english_language_aliases(code: &str) -> &'static [&'static str] {
+        match code {
+            "en" => &["english"],
+            "ja" => &["japanese"],
+            "zh-CN" => &["simplified chinese"],
+            "zh-TW" => &["traditional chinese"],
+            "ko" => &["korean"],
+            "pt" => &["portuguese"],
+            "fr" => &["french"],
+            "de" => &["german"],
+            "es" => &["spanish"],
+            "it" => &["italian"],
+            _ => &[],
+        }
+    }
+
+    fn build_forbidden_locale_markers(
+        locales: &std::collections::HashMap<String, serde_json::Value>,
+        languages_json: &serde_json::Value,
+    ) -> std::collections::HashSet<String> {
+        let mut markers = std::collections::HashSet::new();
+        markers.insert("local".to_string());
+
+        for filename in locales.keys() {
+            markers.insert(normalize_lint_token(filename.trim_end_matches(".json")));
+        }
+
+        if let Some(entries) = languages_json.as_array() {
+            for entry in entries {
+                if let Some(code) = entry.get("code").and_then(serde_json::Value::as_str) {
+                    for alias in english_language_aliases(code) {
+                        markers.insert((*alias).to_string());
+                    }
+                }
+                if let Some(name) = entry.get("name").and_then(serde_json::Value::as_str) {
+                    markers.insert(normalize_lint_token(name));
+                }
+            }
+        }
+
+        markers
+    }
 
     for entry in std::fs::read_dir(locales_dir).unwrap() {
         let entry = entry.unwrap();
@@ -3260,6 +3342,35 @@ fn test_ast_linter_locales() {
         all_leaves.insert(filename.clone(), leaves);
     }
 
+    let forbidden_locale_markers = build_forbidden_locale_markers(&locales, &languages_json);
+
+    if let Some(entries) = languages_json.as_array() {
+        for entry in entries {
+            let code = entry
+                .get("code")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or("<missing-code>");
+            let name = entry
+                .get("name")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or_default();
+
+            for wrapped in collect_wrapped_segments(name) {
+                if forbidden_locale_markers.contains(&normalize_lint_token(&wrapped)) {
+                    failures.push(format!(
+                        "languages.json: [LOOPHOLE CLOSED] Entry '{code}' contains forbidden wrapped locale alias/marker '{wrapped}' in '{name}'"
+                    ));
+                    break;
+                }
+            }
+        }
+    } else {
+        failures.push(
+            "languages.json: [LOOPHOLE CLOSED] Expected top-level array for supported languages"
+                .to_string(),
+        );
+    }
+
     let allowed_overlaps = [
         "Abrir",
         "Architecture",
@@ -3281,7 +3392,6 @@ fn test_ast_linter_locales() {
         "Exportar",
         "File",
         "Filtro",
-        "Idioma (Language)",
         "Info",
         "Infos",
         "Intervalo",
@@ -3302,9 +3412,9 @@ fn test_ast_linter_locales() {
         "Sistema",
         "Sponsor",
         "Support",
+        "Sistema",
         "System",
         "Tema",
-        "Terms content.",
         "Text",
         "Texto",
         "Version",
@@ -3350,6 +3460,10 @@ fn test_ast_linter_locales() {
         "\u{9000}\u{51fa} KatanA",
         "\u{91cd}\u{7f6e}\u{4f4d}\u{7f6e}\u{548c}\u{5927}\u{5c0f}",
         "\u{9762}\u{677f}\u{80cc}\u{666f}",
+        "Coreano",
+        "Italiano",
+        "Português",
+        "\u{82f1}\u{8a9e}",
     ];
 
     for (filename, target_json) in &locales {
@@ -3366,6 +3480,7 @@ fn test_ast_linter_locales() {
                 String,
                 std::collections::HashMap<String, String>,
             >,
+            forbidden_locale_markers: &std::collections::HashSet<String>,
             allowed_overlaps: &[&str],
             failures: &mut Vec<String>,
         ) {
@@ -3401,13 +3516,28 @@ fn test_ast_linter_locales() {
                         }
                     }
 
+                    let mut same_path_other_values = std::collections::HashSet::new();
                     for (other_filename, other_leaves) in all_leaves {
                         if other_filename != filename
                             && let Some(other_s) = other_leaves.get(path_str)
-                            && trimmed == other_s
-                            && !allowed_overlaps.contains(&trimmed)
                         {
-                            failures.push(format!("{filename}: [LOOPHOLE CLOSED] Key '{path_str}' exactly matches '{other_filename}' fallback: '{s}'. MUST be translated natively without copying another language."));
+                            same_path_other_values.insert(other_s.trim().to_string());
+
+                            if trimmed == other_s && !allowed_overlaps.contains(&trimmed) {
+                                failures.push(format!("{filename}: [LOOPHOLE CLOSED] Key '{path_str}' exactly matches '{other_filename}' fallback: '{s}'. MUST be translated natively without copying another language."));
+                            }
+                        }
+                    }
+
+                    for wrapped in collect_wrapped_segments(trimmed) {
+                        let normalized = normalize_lint_token(&wrapped);
+                        if forbidden_locale_markers.contains(&normalized)
+                            || same_path_other_values.contains(wrapped.trim())
+                        {
+                            failures.push(format!(
+                                "{filename}: [LOOPHOLE CLOSED] Key '{path_str}' contains forbidden wrapped fallback/locale marker '{wrapped}' in '{s}'"
+                            ));
+                            break;
                         }
                     }
                 }
@@ -3430,6 +3560,7 @@ fn test_ast_linter_locales() {
                             &new_path,
                             filename,
                             all_leaves,
+                            forbidden_locale_markers,
                             allowed_overlaps,
                             failures,
                         );
@@ -3448,6 +3579,7 @@ fn test_ast_linter_locales() {
                             &new_path,
                             filename,
                             all_leaves,
+                            forbidden_locale_markers,
                             allowed_overlaps,
                             failures,
                         );
@@ -3468,6 +3600,7 @@ fn test_ast_linter_locales() {
             "",
             filename,
             &all_leaves,
+            &forbidden_locale_markers,
             &allowed_overlaps,
             &mut failures,
         );

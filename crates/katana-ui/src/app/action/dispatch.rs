@@ -141,6 +141,9 @@ impl KatanaApp {
             AppAction::ToggleScrollSync(is_on) => {
                 self.state.scroll.sync_override = Some(is_on);
             }
+            AppAction::Quit => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
             other => self.dispatch_secondary(ctx, other),
         }
     }

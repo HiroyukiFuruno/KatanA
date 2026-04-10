@@ -22,7 +22,17 @@
     "release_notes": "Changelog",
     "view": "View",
     "command_palette": "Command Palette…",
-    "demo": "View Demo Bundle"
+    "demo": "View Demo Bundle",
+    "language_en": "English",
+    "language_ja": "Japanese",
+    "language_zh_cn": "Chinese (Simplified)",
+    "language_zh_tw": "Chinese (Traditional)",
+    "language_ko": "Korean",
+    "language_pt": "Portuguese",
+    "language_fr": "French",
+    "language_de": "German",
+    "language_es": "Spanish",
+    "language_it": "Italian"
   },
   "about": {
     "basic_info": "Basic Info",
@@ -45,8 +55,8 @@
     "title": "Check for Updates",
     "checking_for_updates": "Checking for updates...",
     "update_available": "Update Available",
-    "update_available_desc": "A new version of KatanA ({version}) is available. Please run `brew update && brew upgrade --cask katana-desktop` to update.",
-    "release_notes_template": "### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Restart\" to automatically apply the update.",
+    "update_available_desc": "A new version of KatanA ({version}) is available. Click \"Install and Relaunch\" to automatically apply the update.",
+    "release_notes_template": "### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Relaunch\" to automatically apply the update.",
     "up_to_date": "Up to Date",
     "up_to_date_desc": "KatanA is up to date.",
     "failed_to_check": "Failed to check for updates.",
@@ -57,7 +67,8 @@
     "restart_confirm": "Update is ready. Restart now?",
     "action_later": "Later",
     "action_skip_version": "Skip This Version",
-    "action_restart": "Restart Now"
+    "action_restart": "Restart Now",
+    "download_update": "Install and Relaunch"
   },
   "workspace": {
     "no_workspace_open": "No workspace open.",

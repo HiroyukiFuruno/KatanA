@@ -16,6 +16,6 @@ success() { echo -e "${GREEN}[OK]${RESET}    $*"; }
 info "Packaging Linux artifact..."
 
 cd target/release
-tar -czvf KatanA-linux-x86_64.tar.gz KatanA
+zip KatanA-linux-x86_64.zip KatanA
 
-success "Successfully built target/release/KatanA-linux-x86_64.tar.gz"
+success "Successfully built target/release/KatanA-linux-x86_64.zip"
