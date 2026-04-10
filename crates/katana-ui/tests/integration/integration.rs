@@ -1431,16 +1431,16 @@ fn test_persistence_workspace_roundtrip() {
 
         let json = std::fs::read_to_string(&settings_path).unwrap();
         /* WHY: On macOS /var is a symlink to /private/var so canonicalize()
-           produces a different prefix. On Windows, temp paths may use 8.3 short
-           names (RUNNER~1). We check both the raw and canonical representations
-           plus their JSON-escaped variants (backslashes become \\). */
+        produces a different prefix. On Windows, temp paths may use 8.3 short
+        names (RUNNER~1). We check both the raw and canonical representations
+        plus their JSON-escaped variants (backslashes become \\). */
         let ws_raw = ws_dir.path().display().to_string();
-        let ws_canonical = ws_dir.path().canonicalize()
+        let ws_canonical = ws_dir
+            .path()
+            .canonicalize()
             .map(|p| p.display().to_string())
             .unwrap_or_default();
-        let contains_path = |p: &str| {
-            json.contains(p) || json.contains(&p.replace('\\', "\\\\"))
-        };
+        let contains_path = |p: &str| json.contains(p) || json.contains(&p.replace('\\', "\\\\"));
         assert!(
             contains_path(&ws_raw) || contains_path(&ws_canonical),
             "settings.json should contain the workspace path, got: {json}"
@@ -1456,7 +1456,9 @@ fn test_persistence_workspace_roundtrip() {
             restored_ws.is_some(),
             "last_workspace should be persisted in settings.json"
         );
-        let ws_canonical = ws_dir.path().canonicalize()
+        let ws_canonical = ws_dir
+            .path()
+            .canonicalize()
             .unwrap_or_else(|_| ws_dir.path().to_path_buf());
         let restored = restored_ws.unwrap();
         assert!(

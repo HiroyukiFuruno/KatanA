@@ -31,7 +31,8 @@ fn switching_preset_changes_visuals() {
 
     let default_visuals =
         ThemeBridgeOps::visuals_from_theme(&svc.settings().effective_theme_colors());
-    let expected_dark = SettingsDefaultOps::select_initial_preset().colors().mode == ThemeMode::Dark;
+    let expected_dark =
+        SettingsDefaultOps::select_initial_preset().colors().mode == ThemeMode::Dark;
     assert_eq!(default_visuals.dark_mode, expected_dark);
 
     svc.settings_mut().theme.preset = ThemePreset::GitHubLight;
