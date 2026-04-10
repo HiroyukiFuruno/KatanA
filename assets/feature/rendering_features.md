@@ -212,6 +212,35 @@ sequenceDiagram
 </mxGraphModel>
 ```
 
+### PlantUML — Class Diagram
+
+```plantuml
+@startuml
+skinparam style strictuml
+
+class KatanaApp {
+  - state: AppState
+  + run()
+  + handle_action()
+}
+
+class PreviewPane {
+  - sections: Vec<RenderedSection>
+  + full_render()
+  + abort_renders()
+}
+
+class Document {
+  - path: PathBuf
+  - buffer: String
+  + is_dirty: bool
+}
+
+KatanaApp *-- PreviewPane
+KatanaApp *-- Document
+@enduml
+```
+
 ---
 
 ## 12. Accordion

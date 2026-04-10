@@ -170,6 +170,12 @@ impl KatanaApp {
         };
         let path = self.state.document.open_documents[idx].path.clone();
         if path.to_string_lossy().starts_with("Katana://") {
+            if is_manual {
+                /* WHY: For virtual documents (like Demo), there is no filesystem file to read.
+                However, if the user explicitly clicked Refresh, they likely installed
+                missing dependencies (like mmdc or Java) and want to retry rendering. */
+                self.handle_action_refresh_diagrams(ctx);
+            }
             return;
         }
         match std::fs::read_to_string(&path) {

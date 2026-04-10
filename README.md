@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
   <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" alt="Platform: macOS | Windows | Linux">
@@ -267,6 +267,49 @@ Support helps cover:
 
 - ⭐ Star this repository — it helps others discover KatanA
 - Share KatanA with people who might find it useful
+
+---
+
+## Appendix: Windows Environment Setup
+
+Installation instructions for external tools required for diagram rendering (Mermaid / PlantUML) on Windows.
+
+<details>
+<summary>Installing Node.js (Required for Mermaid CLI)</summary>
+
+Node.js is required to run the Mermaid CLI (`mmdc`).
+
+```powershell
+winget install -e --id OpenJS.NodeJS.LTS
+```
+
+After installation, open a new terminal and run:
+
+```powershell
+npm i -g @mermaid-js/mermaid-cli
+```
+
+> **If you encounter errors:** If `winget` fails, please download and install Node.js directly from the [Official Node.js Website](https://nodejs.org/).
+
+</details>
+
+<details>
+<summary>Installing JDK (Required for PlantUML)</summary>
+
+A Java runtime is required to render PlantUML diagrams.
+
+```powershell
+winget install -e --id Oracle.JDK.25
+```
+
+> **If you encounter errors:** Errors may occur if your `winget` sources are outdated. Keep your sources updated and retry:
+>
+> ```powershell
+> winget source update
+> winget install -e --id Oracle.JDK.25
+> ```
+
+</details>
 
 ---
 
