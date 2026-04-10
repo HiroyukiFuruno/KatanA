@@ -12,12 +12,19 @@ impl UpdateInstallerOps {
         F: FnMut(UpdateProgress),
     {
         let temp_dir = tempfile::tempdir()?;
-        let zip_path = temp_dir.path().join("update.zip");
-        UpdateDownloadOps::download_update(download_url, &zip_path, &mut on_progress)?;
+        /* WHY: Determine the archive extension from the URL or fallback to platform standard. */
+        let extension = if download_url.ends_with(".tar.gz") {
+            "tar.gz"
+        } else {
+            "zip"
+        };
+        let archive_path = temp_dir.path().join(format!("update.{}", extension));
+
+        UpdateDownloadOps::download_update(download_url, &archive_path, &mut on_progress)?;
 
         let extract_dir = temp_dir.path().join("extracted");
         std::fs::create_dir_all(&extract_dir)?;
-        UpdateDownloadOps::extract_update(&zip_path, &extract_dir, &mut on_progress)?;
+        UpdateDownloadOps::extract_update(&archive_path, &extract_dir, &mut on_progress)?;
 
         #[cfg(target_os = "macos")]
         {
