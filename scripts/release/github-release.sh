@@ -13,22 +13,33 @@ if [[ -z "$TAG" || -z "$COMMIT_SHA" || -z "$NOTES_FILE" || -z "$ARTIFACTS_DIR" ]
     exit 1
 fi
 
-CLOBBER=""
-if [[ "$FORCE_FLAG" == "true" ]]; then
-    CLOBBER="--clobber"
-    echo "⚠️ Force mode enabled: using --clobber"
-fi
-
 echo "🚀 Creating/Updating GitHub Release ${TAG}..."
 
 # We use 'v' prefix for release titles
 RELEASE_TITLE="KatanA Desktop ${TAG}"
 
-gh release create "${TAG}" \
-    ${CLOBBER} \
-    --title "${RELEASE_TITLE}" \
-    --notes-file "${NOTES_FILE}" \
-    --target "${COMMIT_SHA}" \
-    "${ARTIFACTS_DIR}"/*
+if gh release view "${TAG}" >/dev/null 2>&1; then
+    echo "⚠️ Release ${TAG} already exists."
+    if [[ "$FORCE_FLAG" == "true" ]]; then
+        echo "🔄 Force mode: Updating existing release title/notes and overwriting assets..."
+        gh release edit "${TAG}" \
+            --title "${RELEASE_TITLE}" \
+            --notes-file "${NOTES_FILE}" \
+            --target "${COMMIT_SHA}"
+        
+        # Uploading artifacts (using --clobber to overwrite if exists)
+        gh release upload "${TAG}" "${ARTIFACTS_DIR}"/* --clobber
+    else
+        echo "❌ Error: Release ${TAG} already exists. Use FORCE=1 to overwrite."
+        exit 1
+    fi
+else
+    echo "✨ Creating new release ${TAG}..."
+    gh release create "${TAG}" \
+        --title "${RELEASE_TITLE}" \
+        --notes-file "${NOTES_FILE}" \
+        --target "${COMMIT_SHA}" \
+        "${ARTIFACTS_DIR}"/*
+fi
 
-echo "✅ GitHub Release ${TAG} successfully published with artifacts."
+echo "✅ GitHub Release ${TAG} successfully processed."
