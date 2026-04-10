@@ -102,17 +102,21 @@ xattr -cr /Applications/KatanA\ Desktop.app
 
 ### Windows
 
-#### Winget (Recommended)
-
-```sh
-winget install HiroyukiFuruno.katana-desktop
-```
-
-#### Manual Download (Windows)
+#### Portable ZIP (Recommended)
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
-2. Download the `KatanA-windows-x86_64.msi` installer
-3. Double-click the MSI file to install. It will automatically create a Start Menu and Desktop shortcut.
+2. Download `KatanA-windows-x86_64.zip`
+3. Extract the archive to your preferred location (e.g. `C:\Program Files\KatanA\`)
+4. Run `katana-desktop.exe`
+
+> **Tip:** Pin it to the taskbar or create a shortcut for quick access.
+
+#### MSI Installer (Windows)
+
+An MSI installer (`KatanA-windows-x86_64.msi`) is also available on the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest). It automatically creates Start Menu and Desktop shortcuts.
+
+> **Note:** Since the MSI is not code-signed, Windows SmartScreen may display a warning when downloading.
+> In Edge, click **"…" → "Keep"** in the download bar. If a further dialog appears, click **"Show more" → "Keep anyway"** to proceed.
 
 ### Linux
 
