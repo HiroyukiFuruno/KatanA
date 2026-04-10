@@ -960,8 +960,14 @@ mod tests {
             1,
         );
 
-        assert!(pane.render_rx.is_some(), "render_rx should exist after full_render");
-        assert!(pane.is_loading, "is_loading should be true after full_render");
+        assert!(
+            pane.render_rx.is_some(),
+            "render_rx should exist after full_render"
+        );
+        assert!(
+            pane.is_loading,
+            "is_loading should be true after full_render"
+        );
 
         /* WHY: abort_renders sets cancel_token=true and drops render_rx.
         This is the deterministic API for cancellation — no race condition. */
