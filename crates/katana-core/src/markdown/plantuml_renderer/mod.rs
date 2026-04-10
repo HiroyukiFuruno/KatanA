@@ -4,7 +4,7 @@ pub use types::*;
 use std::{
     io::Write,
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::Stdio,
 };
 
 use super::color_preset::DiagramColorPreset;
@@ -72,7 +72,7 @@ impl PlantUmlRendererOps {
         let themed_source = inject_theme(source, preset);
         let args = build_plantuml_args(jar);
 
-        let mut child = Command::new("java")
+        let mut child = crate::system::ProcessService::create_command("java", true)
             .args(&args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

@@ -109,14 +109,18 @@ impl UpdateInstallerOps {
 
         #[cfg(target_os = "windows")]
         {
-            std::process::Command::new("cmd")
+            crate::system::ProcessService::create_command("cmd", true)
                 .arg("/C")
                 .arg(&prep.script_path)
                 .spawn()?;
         }
         #[cfg(not(target_os = "windows"))]
         {
-            std::process::Command::new(&prep.script_path).spawn()?;
+            crate::system::ProcessService::create_command(
+                prep.script_path.to_str().unwrap_or(""),
+                false,
+            )
+            .spawn()?;
         }
         std::process::exit(0);
     }

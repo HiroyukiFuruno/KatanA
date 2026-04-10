@@ -32,7 +32,7 @@ impl DownloadOps for KatanaApp {
         let url = req.url;
         let dest = req.dest;
         std::thread::spawn(move || {
-            let result = ShellLogicOps::download_with_curl(&url, &dest);
+            let result = katana_core::system::ProcessService::download_file(&url, &dest);
             let _ = tx.send(result);
         });
     }

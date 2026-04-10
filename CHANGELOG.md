@@ -2,6 +2,21 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.18.4] - 2026-04-10 (UTC)
+
+### 🚀 Features
+
+- **Windows distribution stability:** Centralized command execution logic for Windows to prevent console windows from popping up during background tasks such as diagram rendering and application updates.
+
+### ✨ Improvements
+
+- **PlantUML Download Resilience:** Implemented a robust download mechanism for PlantUML with an automatic PowerShell fallback on Windows, ensuring compatibility even when `curl` is unavailable.
+
+### 🐛 Bug Fixes
+
+- **Mermaid CLI (mmdc) on Windows:** Suppressed unnecessary console windows during Mermaid diagram rendering on Windows.
+- **Silent Background Updates:** Fixed an issue where a PowerShell window would briefly appear during the application update process on Windows.
+
 ## [0.18.3] - 2026-04-10 09:52:37 (UTC)
 
 ### ✨ Improvements
