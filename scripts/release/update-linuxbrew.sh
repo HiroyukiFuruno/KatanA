@@ -2,7 +2,7 @@
 # =============================================================================
 # KatanA — Linuxbrew Formula Updater
 # =============================================================================
-# Usage: ./scripts/release/update-linuxbrew.sh <VERSION> <SHA256> <TAR_NAME>
+# Usage: ./scripts/release/update-linuxbrew.sh <VERSION> <SHA256> <TAR_NAME> [--version-only]
 # =============================================================================
 
 set -euo pipefail
@@ -10,9 +10,14 @@ set -euo pipefail
 VERSION=$1
 SHA256=$2
 TAR_NAME=$3
+VERSION_ONLY=0
+
+if [[ "${4:-}" == "--version-only" ]]; then
+    VERSION_ONLY=1
+fi
 
 if [[ -z "$VERSION" || -z "$SHA256" || -z "$TAR_NAME" ]]; then
-    echo "Usage: $0 <VERSION> <SHA256> <TAR_NAME>" >&2
+    echo "Usage: $0 <VERSION> <SHA256> <TAR_NAME> [--version-only]" >&2
     exit 1
 fi
 
@@ -27,13 +32,24 @@ fi
 
 REPO="HiroyukiFuruno/homebrew-katana"
 
+# Convert formula name to class name
+# katana-desktop@0.18.1 -> KatanaDesktopAT0181
+# katana-desktop -> KatanaDesktop
+function get_class_name() {
+    local TOKEN=$1
+    # Replace - with space, capitalize words, remove spaces, replace @ with AT, remove .
+    echo "$TOKEN" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i);print}' | sed 's/ //g' | sed 's/@/AT/g' | sed 's/\.//g'
+}
+
 function upload_formula() {
     local PATH_FI=$1
     local FORMULA_NAME=$2
+    local CLASS_NAME=$3
 
-    # macOS formula vs Linux formula (Actually, Formula works for both, but we only have it for Linux since macOS uses Cask)
+    echo "[INFO] Preparing Formula content for $FORMULA_NAME (Class: $CLASS_NAME)..."
+
     local FORMULA_CONTENT=""
-    FORMULA_CONTENT+="class KatanaDesktop < Formula\n"
+    FORMULA_CONTENT+="class ${CLASS_NAME} < Formula\n"
     FORMULA_CONTENT+="  desc \"Lightweight Markdown viewer with live preview, Mermaid diagrams, and syntax highlighting\"\n"
     FORMULA_CONTENT+="  homepage \"https://github.com/HiroyukiFuruno/KatanA\"\n"
     FORMULA_CONTENT+="  version \"${VERSION_NUM}\"\n\n"
@@ -83,4 +99,12 @@ function upload_formula() {
     fi
 }
 
-upload_formula "Formula/katana-desktop.rb" "katana-desktop"
+# Always create the version-specific formula:
+CLASS_VERSIONED=$(get_class_name "katana-desktop@${VERSION_NUM}")
+upload_formula "Formula/katana-desktop@${VERSION_NUM}.rb" "katana-desktop@${VERSION_NUM}" "$CLASS_VERSIONED"
+
+# If not --version-only, also update the main latest formula:
+if [[ "$VERSION_ONLY" == "0" ]]; then
+    upload_formula "Formula/katana-desktop.rb" "katana-desktop" "KatanaDesktop"
+fi
+
