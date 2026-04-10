@@ -165,12 +165,12 @@
     "rename": "名前の変更...",
     "delete": "削除",
     "copy_path": "パスのコピー",
+    "reveal_in_os": "OSの機能で表示する",
     "save": "保存",
     "refresh_document": "ドキュメントを再読込",
     "cancel": "キャンセル",
     "discard": "破棄",
     "confirm": "確認",
-    "reveal_in_os": "OSの機能で表示する",
     "copy_relative_path": "相対パスのコピー",
     "toggle_slideshow": "スライドショー"
   },
@@ -431,5 +431,26 @@
     "task_todo": "未実施 [ ]",
     "task_in_progress": "実施中 [/]",
     "task_done": "完了 [x]"
+  },
+  "common": {
+    "close": "閉じる"
+  },
+  "meta_info": {
+    "title": "ドキュメント情報",
+    "general_section": "一般",
+    "dates_section": "日付",
+    "status_section": "ステータス",
+    "label_name": "名前",
+    "label_kind": "種類",
+    "label_version": "バージョン",
+    "label_created": "作成日時",
+    "label_updated": "更新日時",
+    "label_dirty": "変更あり",
+    "label_loaded": "読み込み済み",
+    "label_pinned": "固定済み",
+    "label_path": "パス",
+    "kind_markdown": "Markdown ドキュメント",
+    "yes": "はい",
+    "no": "いいえ"
   }
 }

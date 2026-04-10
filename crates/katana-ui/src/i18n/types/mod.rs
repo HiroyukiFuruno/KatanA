@@ -8,6 +8,7 @@ pub(crate) struct LanguageEntry {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct I18nMessages {
+    pub common: CommonMessages,
     pub menu: MenuMessages,
     pub workspace: WorkspaceMessages,
     pub preview: PreviewMessages,
@@ -27,6 +28,8 @@ pub struct I18nMessages {
     pub toc: TocMessages,
     #[serde(default)]
     pub export: ExportMessages,
+    #[serde(default)]
+    pub meta_info: MetaInfoMessages,
     #[serde(default)]
     pub terms: TermsMessages,
     #[serde(default)]
@@ -1024,4 +1027,29 @@ mod default_coverage_tests {
     fn test_default_action_toggle_slideshow() {
         assert_eq!(super::default_action_toggle_slideshow(), "Slideshow");
     }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default)]
+pub struct MetaInfoMessages {
+    pub title: String,
+    pub general_section: String,
+    pub dates_section: String,
+    pub label_name: String,
+    pub label_kind: String,
+    pub label_version: String,
+    pub label_created: String,
+    pub label_updated: String,
+    pub label_dirty: String,
+    pub label_loaded: String,
+    pub label_pinned: String,
+    pub label_path: String,
+    pub kind_markdown: String,
+    pub status_section: String,
+    pub yes: String,
+    pub no: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default)]
+pub struct CommonMessages {
+    pub close: String,
 }

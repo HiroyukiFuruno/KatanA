@@ -4,6 +4,7 @@
     "settings": "Einstellungen",
     "language": "Sprache",
     "open_workspace": "Arbeitsbereich öffnen…",
+    "close_workspace": "Arbeitsbereich schließen",
     "save": "Speichern",
     "open_all": "Alle öffnen",
     "export": "Exportieren",
@@ -21,7 +22,6 @@
     "release_notes": "Versionshinweise",
     "view": "Ansicht",
     "command_palette": "Befehlspalette…",
-    "close_workspace": "Arbeitsbereich schließen",
     "demo": "Demo ansehen",
     "language_en": "Englisch",
     "language_ja": "Japanisch",
@@ -36,19 +36,19 @@
   },
   "about": {
     "basic_info": "Basisinfo",
-    "version": "Version",
+    "version": "#MISSING-de: Version",
     "build": "Buildnummer",
     "copyright": "Urheberrecht",
     "runtime": "Laufzeit",
     "platform": "Plattform",
     "architecture": "Architektur",
-    "rust": "Rust",
+    "rust": "#MISSING-de: Rust",
     "license": "Lizenz",
-    "links": "Links",
+    "links": "#MISSING-de: Links",
     "source_code": "Quellcode",
     "documentation": "Dokumentation",
     "report_issue": "Problem melden",
-    "support": "Support",
+    "support": "#MISSING-de: Support",
     "sponsor": "Sponsoren"
   },
   "update": {
@@ -56,11 +56,11 @@
     "checking_for_updates": "Suche nach Updates...",
     "update_available": "Update verfügbar",
     "update_available_desc": "Eine neue Version von KatanA ({version}) ist verfügbar. Klicken Sie auf \"Installieren und neu starten\", um das Update automatisch anzuwenden.",
-    "release_notes_template": "### Neue Version {version} ist verfügbar\n\nBitte sehen Sie auf der [GitHub-Seite mit den Veröffentlichungen]({url}) nach, um detaillierte Änderungen und Versionshinweise zu erhalten.\nKlicken Sie auf \"Installieren und neu starten\", um das Update automatisch anzuwenden.",
+    "release_notes_template": "#MISSING-de: ### New version {version} is available\n\nPlease check the [GitHub Releases page]({url}) for detailed changes and release notes.\nClick \"Install and Relaunch\" to automatically apply the update.",
     "up_to_date": "Aktuell",
     "up_to_date_desc": "KatanA ist auf dem neuesten Stand.",
     "failed_to_check": "Fehler beim Prüfen auf Updates.",
-    "action_close": "OK",
+    "action_close": "#MISSING-de: OK",
     "install_update": "Installieren und neu starten",
     "downloading": "Update wird heruntergeladen...",
     "installing": "Update wird installiert...",
@@ -73,20 +73,20 @@
   "workspace": {
     "no_workspace_open": "Kein Arbeitsbereich geöffnet.",
     "no_document_selected": "Kein Dokument geöffnet.",
+    "explorer_title": "Datei-Explorer",
+    "workspace_history_title": "Arbeitsbereich-Verlauf",
     "recent_workspaces": "Arbeitsbereiche",
+    "sidebar_workspace_tooltip": "Arbeitsbereich",
+    "sidebar_history_tooltip": "Zuletzt verwendete Arbeitsbereiche",
+    "no_recent_workspaces": "Keine kürzlichen Arbeitsbereiche",
+    "no_saved_workspaces": "Keine gespeicherten Arbeitsbereiche",
     "metadata_tooltip": "Größe: {size} B\nGeändert: {mod_time}",
     "path_label": "Pfad",
     "flat_view": "Flache Ansicht",
     "filter_regex_hint": "Filtern (Regex)...",
-    "explorer_title": "Datei-Explorer",
-    "workspace_history_title": "Arbeitsbereich-Verlauf",
     "open_folder_hint": "Öffnen Sie einen Ordner, um KatanA zu verwenden.",
     "open_workspace_button": "Arbeitsbereich öffnen",
-    "remove_history_tooltip": "Aus Liste entfernen",
-    "sidebar_workspace_tooltip": "Arbeitsbereich",
-    "sidebar_history_tooltip": "Zuletzt verwendete Arbeitsbereiche",
-    "no_recent_workspaces": "Keine kürzlichen Arbeitsbereiche",
-    "no_saved_workspaces": "Keine gespeicherten Arbeitsbereiche"
+    "remove_history_tooltip": "Aus Liste entfernen"
   },
   "preview": {
     "preview_title": "Vorschau",
@@ -113,7 +113,7 @@
   },
   "view_mode": {
     "preview": "Vorschau",
-    "code": "Code",
+    "code": "#MISSING-de: Code",
     "split": "Teilen"
   },
   "split_toggle": {
@@ -126,7 +126,7 @@
     "missing_dependency": "{tool_name} nicht gefunden. Bitte mit {install_hint} installieren.",
     "curl_launch_failed": "curl start fehlgeschlagen",
     "download_failed": "Download fehlgeschlagen",
-    "render_error": "[{kind}] {message}"
+    "render_error": "#MISSING-de: [{kind}] {message}"
   },
   "status": {
     "ready": "Bereit",
@@ -152,6 +152,7 @@
     "expand_all": "Alle erweitern",
     "collapse_all": "Alle minimieren",
     "collapse_sidebar": "Seitenleiste",
+    "refresh_explorer": "Datei-Baum aktualisieren",
     "toggle_filter": "Filter",
     "remove_workspace": "Aus Liste entfernen",
     "recursive_expand": "Rekursiv",
@@ -166,16 +167,15 @@
     "copy_path": "Pfad kopieren",
     "reveal_in_os": "Im OS anzeigen",
     "save": "Speichern",
+    "refresh_document": "Dokument aktualisieren",
     "cancel": "Abbrechen",
     "discard": "Verwerfen",
     "confirm": "Bestätigen",
     "copy_relative_path": "Relativ kopieren",
-    "refresh_document": "Dokument aktualisieren",
-    "toggle_slideshow": "Diashow",
-    "refresh_explorer": "Datei-Baum aktualisieren"
+    "toggle_slideshow": "Diashow"
   },
   "ai": {
-    "ai_unconfigured": "[AI: nicht konfiguriert]"
+    "ai_unconfigured": "#MISSING-de: [AI: unconfigured]"
   },
   "tool": {
     "not_installed": "{tool} ist nicht installiert",
@@ -221,7 +221,7 @@
     },
     "preview": {
       "title": "Vorschau",
-      "heading": "# Beispielüberschrift",
+      "heading": "#MISSING-de: # Sample Heading",
       "normal_text": "Normaler Text und ",
       "accent_link": "hervorgehobener Link",
       "secondary_text": "Beispiel für sekundären Text",
@@ -272,42 +272,56 @@
       "extensionless_excludes": "Ohne Erweiterung",
       "extensionless_excludes_hint": "Durch Kommas getrennt..."
     },
+    "icons": {
+      "preset_label": "Voreinstellung:",
+      "custom_preset": "Benutzerdefiniert",
+      "save_preset": "Als Voreinstellung speichern...",
+      "revert_default": "Auf Standard zurücksetzen",
+      "advanced_settings": "Erweiterte Einstellungen",
+      "colorful_vendor_icons_label": "Standardfarben auf Nicht-Katana-Symbole anwenden",
+      "table_header_icon": "Symbol",
+      "table_header_vendor": "Anbieter",
+      "table_header_color": "Textfarbe",
+      "table_header_border": "Rahmenfarbe",
+      "table_header_preview": "Vorschau",
+      "preset_name": "Name der Voreinstellung:"
+    },
     "tabs": [
       {
-        "key": "theme",
-        "name": "Design"
+        "key": "#MISSING-de: theme",
+        "name": "#MISSING-de: Theme"
       },
       {
-        "key": "icon",
-        "name": "Symbole"
+        "key": "#MISSING-de: icon",
+        "name": "#MISSING-de: Icons"
       },
       {
-        "key": "font",
-        "name": "Schriftart"
+        "key": "#MISSING-de: font",
+        "name": "#MISSING-de: Font"
       },
       {
-        "key": "layout",
-        "name": "Layout"
+        "key": "#MISSING-de: layout",
+        "name": "#MISSING-de: Layout"
       },
       {
-        "key": "workspace",
-        "name": "Arbeitsbereich"
+        "key": "#MISSING-de: workspace",
+        "name": "#MISSING-de: Workspace"
       },
       {
-        "key": "group_appearance",
-        "name": "Erscheinungsbild"
+        "key": "#MISSING-de: group_appearance",
+        "name": "#MISSING-de: Appearance"
       },
       {
-        "key": "group_system",
-        "name": "System-Einstell."
+        "key": "#MISSING-de: group_system",
+        "name": "#MISSING-de: System"
       },
       {
-        "key": "updates",
-        "name": "Aktualisierungen"
+        "key": "#MISSING-de: updates",
+        "name": "#MISSING-de: Updates"
       },
       {
-        "key": "behavior",
-        "name": "Verhalten"
+        "key": "#MISSING-de: behavior",
+        "name": "#MISSING-de: Behavior"
       }
     ],
     "updates": {
@@ -325,6 +339,8 @@
       "scroll_sync": "Editor- und Vorschau-Scroll synchronisieren",
       "auto_save": "Automatisch speichern",
       "auto_save_interval": "Automatisches Speicherintervall",
+      "auto_refresh": "Automatisches Aktualisieren",
+      "auto_refresh_interval": "Intervall für autom. Aktualisierung",
       "seconds": "Sekunden",
       "close_confirm_title": "Nicht gespeicherte Änderungen",
       "close_confirm_msg": "'{name}' hat nicht gespeicherte Änderungen. Verwerfen?",
@@ -332,23 +348,7 @@
       "close_confirm_cancel": "Abbrechen",
       "clear_http_cache": "Cache leeren",
       "cache_retention_days": "Aufbewahrung",
-      "days_suffix": " Tage",
-      "auto_refresh": "Automatisches Aktualisieren",
-      "auto_refresh_interval": "Intervall für autom. Aktualisierung"
-    },
-    "icons": {
-      "preset_label": "Voreinstellung:",
-      "preset_name": "Name der Voreinstellung:",
-      "custom_preset": "Benutzerdefiniert",
-      "save_preset": "Als Voreinstellung speichern...",
-      "revert_default": "Auf Standard zurücksetzen",
-      "advanced_settings": "Erweiterte Einstellungen",
-      "colorful_vendor_icons_label": "Standardfarben auf Nicht-Katana-Symbole anwenden",
-      "table_header_icon": "Symbol",
-      "table_header_vendor": "Anbieter",
-      "table_header_color": "Textfarbe",
-      "table_header_border": "Rahmenfarbe",
-      "table_header_preview": "Vorschau"
+      "days_suffix": " Tage"
     }
   },
   "tab": {
@@ -362,14 +362,14 @@
     "pin": "Anpinnen",
     "unpin": "Abpinnen",
     "restore_closed": "Geschlossenen Tab wiederherstellen",
-    "remove_from_group": "Aus Gruppe entfernen",
     "group_name_placeholder": "Gruppenname",
     "create_group_button": "Erstellen",
     "close_group": "Gruppe schließen",
     "ungroup": "Gruppierung aufheben",
     "add_tab_to_group": "Tab zur Gruppe hinzufügen",
-    "add_to_group": "Zu Gruppe hinzufügen",
-    "create_new_group": "Neue Gruppe"
+    "remove_from_group": "Aus Gruppe entfernen",
+    "create_new_group": "Neue Gruppe",
+    "add_to_group": "Zu Gruppe hinzufügen"
   },
   "search": {
     "modal_title": "Dateien suchen",
@@ -377,6 +377,7 @@
     "include_pattern_hint": "Einschließen (Regex, durch Kommas getrennt)",
     "exclude_pattern_hint": "Ausschließen (Regex, durch Kommas getrennt)",
     "no_results": "Keine Dateien gefunden.",
+    "palette_no_results": "Keine Ergebnisse gefunden.",
     "doc_search_title": "Dokument durchsuchen",
     "doc_search_prev": "Zurück",
     "doc_search_next": "Weiter",
@@ -390,13 +391,12 @@
     "ln_prefix": "Zl ",
     "palette_query_hint": "Befehl eingeben oder suchen...",
     "command_settings": "Einstellungen umschalten",
+    "command_explorer": "Umschalten des Datei-Explorers",
     "command_close_all": "Alle Dokumente schließen",
+    "command_refresh_explorer": "Explorer-Inhalt aktualisieren",
     "command_updates": "Auf Updates prüfen",
     "command_about": "Über KatanA umschalten",
-    "command_type_action": "Befehl",
-    "palette_no_results": "Keine Ergebnisse gefunden.",
-    "command_explorer": "Umschalten des Datei-Explorers",
-    "command_refresh_explorer": "Explorer-Inhalt aktualisieren"
+    "command_type_action": "Befehl"
   },
   "toc": {
     "title": "Inhaltsverzeichnis",
@@ -413,7 +413,7 @@
   },
   "terms": {
     "title": "Nutzungsbedingungen",
-    "version_label": "Version: {version}",
+    "version_label": "#MISSING-de: Version: {version}",
     "content": "Danke, dass Sie KatanA verwenden.\n\nDiese Software ist Open Source und wird unter der MIT-Lizenz bereitgestellt.\n\n[Haftungsausschluss]\n1. Die Autoren oder Urheberrechtsinhaber haften in keinem Fall für Ansprüche, Schäden oder sonstige Haftung, gleich aus welchem Rechtsgrund, die aus der Software oder ihrer Nutzung entstehen oder damit in Zusammenhang stehen.\n2. DIE SOFTWARE WIRD \"WIE BESEHEN\" OHNE JEDE AUSDRÜCKLICHE ODER STILLSCHWEIGENDE GEWÄHRLEISTUNG BEREITGESTELLT, EINSCHLIESSLICH, ABER NICHT BESCHRÄNKT AUF DIE GEWÄHRLEISTUNG DER MARKTGÄNGIGKEIT, DER EIGNUNG FÜR EINEN BESTIMMTEN ZWECK UND DER NICHTVERLETZUNG VON RECHTEN.\n\n[Datenschutz]\n1. Diese Software überträgt Ihre Dokumentinhalte nicht an externe Server.\n2. Anonyme Absturzberichte oder Nutzungsstatistiken können gesendet werden, lassen sich jedoch in den Einstellungen deaktivieren.\n\nMit einem Klick auf \"Akzeptieren\" stimmen Sie den oben genannten Bedingungen zu.",
     "accept": "Akzeptieren",
     "decline": "Ablehnen"
@@ -431,5 +431,26 @@
     "task_todo": "Aufgabe [ ]",
     "task_in_progress": "In Bearbeitung [/]",
     "task_done": "Erledigt [x]"
+  },
+  "common": {
+    "close": "#MISSING-de: Close"
+  },
+  "meta_info": {
+    "title": "#MISSING-de: Document Information",
+    "general_section": "#MISSING-de: General",
+    "dates_section": "#MISSING-de: Dates",
+    "status_section": "#MISSING-de: Status",
+    "label_name": "#MISSING-de: Name",
+    "label_kind": "#MISSING-de: Kind",
+    "label_version": "#MISSING-de: Version",
+    "label_created": "#MISSING-de: Created",
+    "label_updated": "#MISSING-de: Updated",
+    "label_dirty": "#MISSING-de: Modified",
+    "label_loaded": "#MISSING-de: Loaded",
+    "label_pinned": "#MISSING-de: Pinned",
+    "label_path": "#MISSING-de: Path",
+    "kind_markdown": "#MISSING-de: Markdown Doc",
+    "yes": "#MISSING-de: Yes",
+    "no": "#MISSING-de: No"
   }
 }

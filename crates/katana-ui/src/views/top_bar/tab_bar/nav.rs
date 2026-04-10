@@ -38,7 +38,8 @@ impl<'a> TabNavButtons<'a> {
         if resp.clicked()
             && let Some(idx) = self.active_doc_idx
         {
-            let new_idx = crate::shell_logic::ShellLogicOps::prev_tab_index(idx, self.doc_count);
+            let new_idx =
+                crate::shell_logic::utils::ShellUtils::prev_tab_index(idx, self.doc_count);
             *tab_action = Some(AppAction::SelectDocument(
                 self.open_documents[new_idx].path.clone(),
             ));
@@ -69,7 +70,8 @@ impl<'a> TabNavButtons<'a> {
         if resp.clicked()
             && let Some(idx) = self.active_doc_idx
         {
-            let new_idx = crate::shell_logic::ShellLogicOps::next_tab_index(idx, self.doc_count);
+            let new_idx =
+                crate::shell_logic::utils::ShellUtils::next_tab_index(idx, self.doc_count);
             *tab_action = Some(AppAction::SelectDocument(
                 self.open_documents[new_idx].path.clone(),
             ));

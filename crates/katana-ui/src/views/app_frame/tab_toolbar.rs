@@ -2,6 +2,7 @@ use super::types::*;
 use crate::app_state::AppAction;
 use crate::shell::KatanaApp;
 use crate::shell_logic::ShellLogicOps;
+use crate::shell_logic::utils::ShellUtils;
 use eframe::egui;
 
 const META_INFO_SPACING: f32 = 4.0;
@@ -102,14 +103,15 @@ impl<'a> TabToolbar<'a> {
             return;
         };
 
-        let size_and_date = if let Ok(modified) = metadata.modified() {
+        let modified = metadata.modified().ok();
+        let size_and_date = if let Some(m) = modified {
             format!(
                 "{} · {}",
-                ShellLogicOps::format_file_size(metadata.len()),
-                ShellLogicOps::format_modified_time(modified)
+                ShellUtils::format_file_size(metadata.len()),
+                ShellUtils::format_modified_time(m)
             )
         } else {
-            ShellLogicOps::format_file_size(metadata.len())
+            ShellUtils::format_file_size(metadata.len())
         };
 
         ui.add_space(META_INFO_SPACING);
