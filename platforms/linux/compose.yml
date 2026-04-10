@@ -1,6 +1,8 @@
 services:
   ubuntu-webtop:
-    image: lscr.io/linuxserver/webtop:ubuntu-xfce
+    # Pin the last known good build: ls269 crashes xfce4-panel on linux/amd64
+    # and leaves the browser session on a black screen on Apple Silicon hosts.
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce-d40fbbf3-ls268
     container_name: katana-linux-test
     platform: linux/amd64
     security_opt:
