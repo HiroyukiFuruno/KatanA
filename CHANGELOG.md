@@ -17,6 +17,11 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - **Mermaid CLI (mmdc) on Windows:** Suppressed unnecessary console windows during Mermaid diagram rendering on Windows.
 - **Silent Background Updates:** Fixed an issue where a PowerShell window would briefly appear during the application update process on Windows.
 
+### 🔧 System
+
+- **Headless-by-Default enforcement:** All external process invocations across the codebase (diagram rendering, file reveal, update cleanup, download) are now routed exclusively through `ProcessService`, making the `CREATE_NO_WINDOW` policy on Windows both mandatory and auditable.
+- **AST Linter rule `no-direct-process-command`:** Added a compile-time linting rule that prohibits direct use of `std::process::Command::new` outside of `ProcessService`. This prevents future regressions where background processes could inadvertently pop up console windows on Windows.
+
 ## [0.18.3] - 2026-04-10 09:52:37 (UTC)
 
 ### ✨ Improvements
