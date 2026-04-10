@@ -25,7 +25,9 @@ docker compose exec -d -u abc ubuntu-webtop bash -c '
 '
 echo "ブラウザで以下のURLを開いて検証を開始してください:"
 echo ""
-echo "    http://localhost:3000/"
+echo "    https://localhost:3001/"
+echo ""
+echo "※ 初回は自己署名証明書の警告が出るため、ブラウザで許可してください。"
 echo ""
 echo "【検証手順】"
 echo "1. ブラウザ内のデスクトップ環境で、ターミナルを開く"
@@ -39,5 +41,5 @@ echo ""
 if command -v open &> /dev/null; then
     echo "⏳ 3秒後にブラウザを自動で開きます..."
     sleep 3
-    open http://localhost:3000/
+    open https://localhost:3001/
 fi
