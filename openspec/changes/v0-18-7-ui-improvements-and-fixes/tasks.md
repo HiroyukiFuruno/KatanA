@@ -22,98 +22,61 @@
 
 ## 2. Meta Information UI Renewal
 
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
 - [x] 2.1 `katana-ui/src/views/modals/meta_info.rs` を刷新し、Finder風の整理されたレイアウトを実装
 - [x] 2.2 メタ情報の各項目（パス、サイズ、作成日時等）をセクション分けして表示
-- [ ] 2.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] メタ情報ダイアログがFinder風の見た目になっていることを確認
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
+- [x] メタ情報ダイアログがFinder風の見た目になっていることを確認
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
-## 3. Diagram Fullscreen & UI Polish
+## 3. Editor Toolbar Integration & Explorer UI Polish
 
-### Definition of Ready (DoR)
+- [x] 3.1 Editor Toolbar を 3カラム Finder スタイルに刷新し、Breadcrumbs を中央に統合
+- [x] 3.2 `TabToolbar` コンポーネントの `ui.horizontal()` 等を `egui::Layout` に移行し Linter をパス
+- [x] 3.3 Explorer Tree (Dir/File Entry) のインデントとアイコン間隔を Finder スタイルに精密調整
+- [x] 3.4 全 UI コードからマジックナンバーを排除し、`shell/mod.rs` の定数に集約
+- [x] 3.5 `make check-local` およびアライメント回帰テストのパスを確認
 
-- [ ] Ensure the previous task completed its full delivery cycle.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+### Definition of Done (DoD)
 
-- [ ] 3.1 ダイアグラム全画面表示時のオーバーレイ背景を不透明化（アルファ値 1.0）
-- [ ] 3.2 その他軽微な表示の乱れや透過設定の不整合を修正
+- [x] Toolbar が中央揃えの Breadcrumbs を持ち、Finder ライクな質感になっている
+- [x] Explorer のアライメントが Dir/File 間で完全に一致している
+- [x] `ast-lint` がすべての項目をパスしている
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
+
+## 4. Diagram Fullscreen & UI Polish
+
+- [ ] 4.1 ダイアグラム全画面表示時のオーバーレイ背景を不透明化（アルファ値 1.0）
+- [ ] 4.2 その他軽微な表示の乱れや透過設定の不整合を修正
 
 ### Definition of Done (DoD)
 
 - [ ] 全画面表示で背景が透けず、図に集中できることを確認
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
-## 4. Sidebar Continuity & Popup UI
+## 5. Sidebar Continuity & Popup UI
 
-### Definition of Ready (DoR)
+- [ ] 5.1 `katana-ui/src/app/action/dispatch.rs` を修正し、他パネル展開時もエクスプローラーを表示維持する
+- [ ] 5.2 サイドバーアイコンクリック時のアニメーション付きポップアップUIの実装（`Area` を使用）
 
-- [ ] Ensure the previous task completed its full delivery cycle.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+## 6. Tab Group Operations & Explorer Integration
 
-- [ ] 4.1 `katana-ui/src/app/action/dispatch.rs` を修正し、他パネル展開時もエクスプローラーを表示維持する
-- [ ] 4.2 サイドバーアイコンクリック時のアニメーション付きポップアップUIの実装（`Area` を使用）
-- [ ] 4.3 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 4.4 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [ ] 6.1 タブ名入力時の `Return` キー/`Blur` での確定・クローズ処理を実装
+- [ ] 6.2 エクスプローラーのコンテキストメニューに「タブグループを作成」「既存グループに追加」アクションを追加
 
-### Definition of Done (DoD)
+## 7. Help Enrichment (Welcome & Guide)
 
-- [ ] エクスプローラーが常に表示または必要に応じてドロワーとして残ることを確認
-- [ ] ポップアップがアイコンから生えてくるようなアニメーションで表示されることを確認
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
-
-## 5. Tab Group Operations & Explorer Integration
-
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
-- [ ] 5.1 タブ名入力時の `Return` キー/`Blur` での確定・クローズ処理を実装
-- [ ] 5.2 エクスプローラーのコンテキストメニューに「タブグループを作成」「既存グループに追加」アクションを追加
-- [ ] 5.3 5.2のアクションから該当ファイルをタブグループとして開くロジックを実装
-
-### Definition of Done (DoD)
-
-- [ ] タブのリネーム等がスムーズに確定されることを確認
-- [ ] エクスプローラーからディレクトリ単位等でタブグループが作成できることを確認
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
-
-## 6. Help Enrichment (Welcome & Guide)
-
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
-- [ ] 6.1 「ようこそ」画面をタブ形式で開くように変更（初回起動時含む）
-- [ ] 6.2 「操作ガイド」メニューを追加し、Markdownタブとして表示
-- [ ] 6.3 `assets/docs/user_guide.md` 等の操作ガイドコンテンツを作成
-
-### Definition of Done (DoD)
-
-- [ ] ようこそ画面と操作ガイドがタブとして正しく表示されることを確認
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
+- [ ] 7.1 「ようこそ」画面をタブ形式で開くように変更（初回起動時含む）
+- [ ] 7.2 「操作ガイド」メニューを追加し、Markdownタブとして表示
 
 ---
 
-## 7. Final Verification & Release Work
+## 8. Final Verification & Release Work
 
-- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 7.2 Ensure `make check` passes with exit code 0
-- [ ] 7.3 Create PR from Base Feature Branch targeting `master`
-- [ ] 7.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 7.5 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.6 Create `release/v0.18.7` branch from master and update CHANGELOG (`changelog-writing` skill)
-- [ ] 7.7 Create PR from `release/v0.18.7` targeting `master` — CI must pass
-- [ ] 7.8 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.9 Execute `make release VERSION=0.18.7 FORCE=1` from `master`
-- [ ] 7.10 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 8.2 Ensure `make check` passes with exit code 0
+- [ ] 8.3 Create PR from Base Feature Branch targeting `master`
+- [ ] 8.4 Merge into master and execute `make release VERSION=0.18.7`

@@ -20,7 +20,7 @@ impl<'a> Breadcrumbs<'a> {
         let ws_root = self.ws_root;
         let mut breadcrumb_action = None;
 
-        ui.horizontal_centered(|ui| {
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
             let segments: Vec<&str> = rel.split('/').collect();
             let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
 

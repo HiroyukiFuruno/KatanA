@@ -2,11 +2,9 @@ use super::types::*;
 use crate::app_state::AppAction;
 use crate::shell::KatanaApp;
 use crate::shell_logic::ShellLogicOps;
-use crate::shell_logic::utils::ShellUtils;
 use eframe::egui;
 
-const META_INFO_SPACING: f32 = 4.0;
-const DOCUMENT_TOOLBAR_SPACING: f32 = 8.0;
+const TAB_TOOLBAR_CENTER_WIDTH_RATIO: f32 = 0.5;
 
 impl<'a> TabToolbar<'a> {
     pub(crate) fn new(app: &'a mut KatanaApp) -> Self {
@@ -56,26 +54,49 @@ impl<'a> TabToolbar<'a> {
         is_changelog: bool,
     ) {
         let mut out_action = None;
-        let bar_height = ui.spacing().interact_size.y;
+        let rect = ui.available_rect_before_wrap();
+        let total_width = rect.width();
 
-        ui.allocate_ui_with_layout(
-            egui::vec2(ui.available_width(), bar_height),
-            egui::Layout::left_to_right(egui::Align::Center),
-            |ui| {
-                if !is_changelog && let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) {
-                    out_action = Some(a);
-                }
+        ui.allocate_ui_at_rect(rect, |ui| {
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                let Some(a) = Self::render_view_mode_bar(ui, app, is_changelog) else {
+                    return;
+                };
+                out_action = Some(a);
+            });
+        });
 
+        ui.allocate_ui_at_rect(rect, |ui| {
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                 if !is_changelog {
-                    ui.add_space(DOCUMENT_TOOLBAR_SPACING);
-                    Self::render_file_meta_info(ui, &doc_path);
-                }
+                    let icon_size = crate::icon::IconSize::Medium.to_vec2();
+                    let info_icon = egui::Image::new(crate::Icon::Info.uri())
+                        .tint(ui.visuals().weak_text_color())
+                        .fit_to_exact_size(icon_size);
 
-                if let Some(a) = Self::render_view_mode_bar(ui, app, is_changelog) {
-                    out_action = Some(a);
+                    if ui.add(egui::ImageButton::new(info_icon)).clicked() {
+                        out_action = Some(AppAction::ShowMetaInfo(doc_path.clone()));
+                    }
                 }
-            },
+            });
+        });
+
+        let center_rect = egui::Rect::from_center_size(
+            rect.center(),
+            egui::vec2(total_width * TAB_TOOLBAR_CENTER_WIDTH_RATIO, rect.height()),
         );
+
+        ui.allocate_ui_at_rect(center_rect, |ui| {
+            ui.centered_and_justified(|ui| {
+                if is_changelog {
+                    return;
+                }
+                let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) else {
+                    return;
+                };
+                out_action = Some(a);
+            });
+        });
 
         if app.state.search.doc_search_open
             && let Some(a) = crate::views::top_bar::DocSearchBar::show(ui, &mut app.state.search)
@@ -96,26 +117,6 @@ impl<'a> TabToolbar<'a> {
         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
         let rel = ShellLogicOps::relative_full_path(doc_path, ws_root.as_deref());
         Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui)
-    }
-
-    fn render_file_meta_info(ui: &mut egui::Ui, path: &std::path::Path) {
-        let Ok(metadata) = path.metadata() else {
-            return;
-        };
-
-        let modified = metadata.modified().ok();
-        let size_and_date = if let Some(m) = modified {
-            format!(
-                "{} · {}",
-                ShellUtils::format_file_size(metadata.len()),
-                ShellUtils::format_modified_time(m)
-            )
-        } else {
-            ShellUtils::format_file_size(metadata.len())
-        };
-
-        ui.add_space(META_INFO_SPACING);
-        ui.label(egui::RichText::new(size_and_date).small().weak());
     }
 
     fn render_view_mode_bar(

@@ -45,11 +45,15 @@ pub(crate) const RECENT_WORKSPACES_HEADING_LEFT_PADDING: f32 = 10.0;
 pub(crate) const HISTORY_MODAL_EMPTY_BOTTOM_SPACING: f32 = 10.0;
 
 pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
-
 pub(crate) const TREE_LABEL_HOFFSET: f32 = 4.0;
+pub(crate) const TREE_FONT_SIZE: f32 = 13.0;
+pub(crate) const TREE_INDENT_STEP: f32 = 12.0;
+pub(crate) const TREE_ICON_ARROW_GAP: f32 = 4.0;
+pub(crate) const TREE_ICON_LABEL_GAP: f32 = 6.0;
+pub(crate) const TREE_HOVER_ROUNDING: f32 = 2.0;
+pub(crate) const TREE_HOVER_GAMMA: f32 = 0.4;
 
 pub(crate) const DOWNLOAD_STATUS_CHECK_INTERVAL_MS: u64 = 200;
-
 pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
 
 impl KatanaApp {
