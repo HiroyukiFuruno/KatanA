@@ -4,22 +4,27 @@
 # Fully automated multi-platform release pipeline.
 #
 # Triggers:
-#   - Push of a version tag (v*)
-#   - Manual dispatch via `gh workflow run` with a version input
+#   1. release/vX.Y.Z branch merged into master  ← primary flow
+#   2. Push of a version tag (v*)                ← legacy/emergency
+#   3. Manual dispatch via `gh workflow run`     ← one-off/hotfix
 #
-# Flow (workflow_dispatch):
-#   1. preflight: Bump version in-place → validate → extract release notes
-#   2. build_{macos,linux,windows}: Build platform artifacts using bumped version
+# Flow (merge trigger):
+#   1. preflight: Extract version from branch name → validate → extract release notes
+#   2. build_{macos,linux,windows}: Build platform artifacts
 #   3. publish: Create GitHub Release (tag + artifacts) via API, update Homebrew/Winget
 #
 # Security:
-#   - Only the repository owner can trigger this workflow
+#   - Only the repository owner can trigger this workflow (filtered in preflight)
 #   - Fork PRs will NOT trigger this workflow
 # =============================================================================
 
 name: Release
 
 on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
   push:
     tags:
       - 'v*'
@@ -51,7 +56,15 @@ jobs:
   preflight:
     name: Preflight Check
     runs-on: macos-latest
-    if: github.actor == 'HiroyukiFuruno'
+    # WHY: For PR merges, only trigger when a release/v* branch is merged into master
+    if: |
+      github.actor == 'HiroyukiFuruno' && (
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' &&
+         github.event.pull_request.merged == true &&
+         startsWith(github.event.pull_request.head.ref, 'release/v'))
+      )
     outputs:
       version: ${{ steps.version.outputs.version }}
       version_bare: ${{ steps.version.outputs.version_bare }}
@@ -70,6 +83,12 @@ jobs:
             INPUT="${INPUT#v}"
             echo "version=v${INPUT}" >> "$GITHUB_OUTPUT"
             echo "version_bare=${INPUT}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            # WHY: Extract version from branch name e.g. release/v0.18.5 -> 0.18.5
+            BRANCH="${{ github.event.pull_request.head.ref }}"
+            BARE="${BRANCH#release/v}"
+            echo "version=v${BARE}" >> "$GITHUB_OUTPUT"
+            echo "version_bare=${BARE}" >> "$GITHUB_OUTPUT"
           else
             TAG="${GITHUB_REF#refs/tags/}"
             BARE="${TAG#v}"
@@ -98,7 +117,8 @@ jobs:
 
       - name: Bump version and push (workflow_dispatch only)
         id: bump
-        if: github.event_name == 'workflow_dispatch'
+        # WHY: PR merge flow already has Cargo.toml updated; only bump on manual dispatch or tag push
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         run: |
           VERSION="${{ steps.version.outputs.version_bare }}"
 
@@ -146,6 +166,7 @@ jobs:
     needs: preflight
     runs-on: macos-latest
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'macOS'
+
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -202,6 +223,7 @@ jobs:
     needs: preflight
     runs-on: ubuntu-latest
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'linux'
+
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -240,6 +262,7 @@ jobs:
     needs: preflight
     runs-on: windows-latest
     if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'all' || github.event.inputs.target == 'windows'
+
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
