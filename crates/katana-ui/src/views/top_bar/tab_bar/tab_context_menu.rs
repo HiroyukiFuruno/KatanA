@@ -16,14 +16,18 @@ pub(crate) struct TabContextMenu<'a> {
 
 impl<'a> TabContextMenu<'a> {
     pub fn show(self, ui: &mut egui::Ui, tab_action: &mut Option<AppAction>) {
+        use crate::state::document::VirtualPathExt as _;
         let i18n = crate::i18n::I18nOps::get();
+        let is_virtual = self.doc.path.is_virtual_path();
         self.render_close_actions(ui, tab_action, i18n);
-        ui.separator();
-        self.render_pin_action(ui, tab_action, i18n);
-        if !self.doc.is_pinned {
-            self.render_group_actions(ui, tab_action, i18n);
+        if !is_virtual {
+            ui.separator();
+            self.render_pin_action(ui, tab_action, i18n);
+            if !self.doc.is_pinned {
+                self.render_group_actions(ui, tab_action, i18n);
+            }
         }
-        if !self.recently_closed_tabs_empty {
+        if !is_virtual && !self.recently_closed_tabs_empty {
             ui.separator();
             if ui.button(&i18n.tab.restore_closed).clicked() {
                 *tab_action = Some(AppAction::RestoreClosedDocument);
@@ -83,14 +87,37 @@ impl<'a> TabContextMenu<'a> {
         tab_action: &mut Option<AppAction>,
         i18n: &crate::i18n::I18nMessages,
     ) {
-        let doc_str = self.doc.path.display().to_string();
+        let doc_str = self.doc.path.to_string_lossy().to_string();
         let is_in_any = self.tab_groups.iter().any(|g| g.members.contains(&doc_str));
-        if !is_in_any {
-            self.render_create_group(ui, tab_action, i18n);
-        } else {
+        if is_in_any {
             self.render_remove_from_group(ui, tab_action, i18n);
         }
-        self.render_add_to_group_submenu(ui, tab_action, i18n, &doc_str, is_in_any);
+        /* WHY: Same pattern as explorer's TabGroupMenu:render — submenu wraps the picker content */
+        let addable_groups: Vec<_> = self
+            .tab_groups
+            .iter()
+            .filter(|g| !g.is_demo() && !g.members.contains(&doc_str))
+            .collect();
+        let has_any_group = !self
+            .tab_groups
+            .iter()
+            .filter(|g| !g.is_demo())
+            .collect::<Vec<_>>()
+            .is_empty();
+        if !has_any_group && !is_in_any {
+            /* WHY: No non-demo groups exist and not in any group — just show create button flat */
+            self.render_create_group(ui, tab_action, i18n);
+            return;
+        }
+        crate::widgets::MenuButtonOps::show(ui, &i18n.tab.add_to_group, |ui| {
+            self.render_create_group(ui, tab_action, i18n);
+            if !addable_groups.is_empty() {
+                ui.separator();
+                for g in &addable_groups {
+                    self.render_group_entry(ui, tab_action, g, &doc_str);
+                }
+            }
+        });
     }
 
     fn render_create_group(
@@ -121,41 +148,12 @@ impl<'a> TabContextMenu<'a> {
         }
     }
 
-    fn render_add_to_group_submenu(
-        &self,
-        ui: &mut egui::Ui,
-        tab_action: &mut Option<AppAction>,
-        i18n: &crate::i18n::I18nMessages,
-        doc_str: &str,
-        is_in_any: bool,
-    ) {
-        let has_other = self
-            .tab_groups
-            .iter()
-            .any(|g| !g.members.contains(&doc_str.to_string()));
-        if !has_other && !is_in_any {
-            return;
-        }
-        egui::menu::menu_button(ui, &i18n.tab.add_to_group, |ui| {
-            if is_in_any {
-                self.render_create_group(ui, tab_action, i18n);
-                ui.separator();
-            }
-            for g in self.tab_groups {
-                if g.members.contains(&doc_str.to_string()) {
-                    continue;
-                }
-                self.render_group_entry(ui, tab_action, g, doc_str);
-            }
-        });
-    }
-
     fn render_group_entry(
         &self,
         ui: &mut egui::Ui,
         tab_action: &mut Option<AppAction>,
         g: &TabGroup,
-        doc_str: &str,
+        _doc_str: &str,
     ) {
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
@@ -180,6 +178,5 @@ impl<'a> TabContextMenu<'a> {
                 }
             })
             .show(ui);
-        let _ = doc_str;
     }
 }

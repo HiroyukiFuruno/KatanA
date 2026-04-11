@@ -5,6 +5,7 @@ mod dispatch_secondary;
 mod init;
 mod process_demo;
 mod process_document;
+mod process_group_lifecycle;
 mod process_groups;
 mod process_helpers;
 mod process_reorder;

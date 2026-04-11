@@ -94,9 +94,17 @@ impl KatanaApp {
                 name,
                 color_hex,
                 initial_member,
-            } => self.handle_action_create_tab_group(name, color_hex, initial_member),
+            } => self.handle_action_create_tab_group(name, color_hex, vec![initial_member]),
+            AppAction::CreateTabGroupMany {
+                name,
+                color_hex,
+                members,
+            } => self.handle_action_create_tab_group(name, color_hex, members),
             AppAction::AddTabToGroup { group_id, member } => {
-                self.handle_action_add_tab_to_group(group_id, member)
+                self.handle_action_add_tabs_to_group(group_id, vec![member])
+            }
+            AppAction::AddTabsToGroup { group_id, members } => {
+                self.handle_action_add_tabs_to_group(group_id, members)
             }
             AppAction::RemoveTabFromGroup(member) => {
                 self.handle_action_remove_tab_from_group(member)
