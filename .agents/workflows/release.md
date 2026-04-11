@@ -38,12 +38,12 @@ git checkout -b release/vX.Y.Z
    git branch -a | grep -v master | grep -v HEAD | grep -v release/
    ```
 
-### Step 3: CHANGELOG記載 & push
+### Step 3: バージョン書き換え & CHANGELOG記載 & push
 
-`changelog-writing` スキル (`@[.agents/skills/changelog-writing]`) を使用して、今回のバージョンの変更履歴を `CHANGELOG.md` と `CHANGELOG.ja.md` に記載し、コミット・プッシュします。
+`Cargo.toml` の `version` を新しいリリースバージョン（例: `0.18.7`）に書き換えます。その後、`changelog-writing` スキル (`@[.agents/skills/changelog-writing]`) を使用して、今回のバージョンの変更履歴を `CHANGELOG.md` と `CHANGELOG.ja.md` に記載し、コミット・プッシュします。
 
 ```bash
-git add CHANGELOG.md CHANGELOG.ja.md
+git add Cargo.toml CHANGELOG.md CHANGELOG.ja.md
 git commit -m "release: vX.Y.Z"
 git push origin release/vX.Y.Z
 ```
