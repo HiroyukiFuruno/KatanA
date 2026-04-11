@@ -146,7 +146,7 @@
     "problems_panel_close": "閉じる",
     "no_problems_found": "問題は見つかりませんでした。",
     "toggle_problems_panel": "問題パネルを表示/非表示",
-    "problems_count_format": "問題: {count}",
+    "problems_count_format": "問題数: {count}",
     "removed_workspace": "ワークスペース {path} を除去しました。",
     "error_save_settings": "設定の保存に失敗しました。",
     "closed_workspace": "ワークスペースを閉じました。",
@@ -368,7 +368,7 @@
       "cache_retention_days": "キャッシュ保持日数",
       "days_suffix": " 日"
     },
-    "general": "一般"
+    "general": "全般"
   },
   "tab": {
     "nav_prev": "前のタブへ移動",
@@ -456,7 +456,7 @@
   },
   "meta_info": {
     "title": "ドキュメント情報",
-    "general_section": "一般",
+    "general_section": "基本情報",
     "dates_section": "日付",
     "status_section": "ステータス",
     "label_name": "名前",

@@ -46,7 +46,7 @@ impl<'a> CentralContent<'a> {
             return None;
         }
 
-        if app.state.active_document().is_none() {
+        if app.state.active_document().is_none() && current_mode != ViewMode::PreviewOnly {
             egui::CentralPanel::default().show_inside(ui, |ui| {
                 crate::views::panels::dashboard::DashboardView::new(app).show(ui, app);
             });
