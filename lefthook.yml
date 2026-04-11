@@ -16,6 +16,8 @@ pre-commit:
 
 pre-push:
   commands:
+    pr-ready-check:
+      run: ./scripts/release/check-pr-ready.sh
     check-strict:
       run: make -j 2 check
       glob: "*.{rs,toml,lock}"
@@ -29,3 +31,8 @@ pre-push:
       skip:
         - ref: master
         - ref: release/*
+
+pre-pr:
+  commands:
+    validation:
+      run: ./scripts/release/check-pr-ready.sh

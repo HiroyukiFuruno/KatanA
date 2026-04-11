@@ -50,8 +50,17 @@ git push origin release/vX.Y.Z
 
 ### Step 4: master PR作成
 
-`create_pull_request` スキル (`@[.agents/skills/create_pull_request]`) を使用し、対象ブランチから `master` に向けたPRを作成します。
+PRを作成する前に、必ず機械的なチェックを実行します。
+
+```bash
+lefthook run pre-pr
+```
+
+不備がないことを確認したら、`create_pull_request` スキル (`@[.agents/skills/create_pull_request]`) を使用し、対象ブランチから `master` に向けたPRを作成します。
 ※PRのタイトルは「release: vX.Y.Z」、本文は自動生成されたものを適宜調整します。
+
+> [!TIP]
+> `gh release-pr --title "release: vX.Y.Z"` エイリアスを使用すると、このチェックと PR 作成を一度に行うことができ、不備がある場合は自動的に中断されます。
 
 ### Step 5: PRをレビュー＆改善
 
