@@ -185,6 +185,7 @@ mod tests {
                         disable_context_menu: false,
                         is_flat_view: false,
                         ws_root: None,
+                        tab_groups: None,
                     };
                     crate::views::panels::explorer::file_entry::FileEntryNode::new(
                         &entry,
