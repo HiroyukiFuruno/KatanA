@@ -38,12 +38,12 @@ git checkout -b release/vX.Y.Z
    git branch -a | grep -v master | grep -v HEAD | grep -v release/
    ```
 
-### Step 3: CHANGELOG記載 & push
+### Step 3: バージョン書き換え & CHANGELOG記載 & push
 
-`changelog-writing` スキル (`@[.agents/skills/changelog-writing]`) を使用して、今回のバージョンの変更履歴を `CHANGELOG.md` と `CHANGELOG.ja.md` に記載し、コミット・プッシュします。
+`Cargo.toml` の `version` を新しいリリースバージョン（例: `0.18.7`）に書き換えます。その後、`changelog-writing` スキル (`@[.agents/skills/changelog-writing]`) を使用して、今回のバージョンの変更履歴を `CHANGELOG.md` と `CHANGELOG.ja.md` に記載し、コミット・プッシュします。
 
 ```bash
-git add CHANGELOG.md CHANGELOG.ja.md
+git add Cargo.toml CHANGELOG.md CHANGELOG.ja.md
 git commit -m "release: vX.Y.Z"
 git push origin release/vX.Y.Z
 ```
@@ -107,6 +107,14 @@ gh release view vX.Y.Z
 > 2. **Build（並列）**: macOS (.dmg/.zip) / Linux (.tar.gz) / Windows (.msi/.zip) をそれぞれのネイティブ環境でビルド
 > 3. **Publish**: `gh release create` により **タグと GitHub Release を API 経由で同時作成** し、全アーティファクトをアップロード
 > 4. **配布**: Homebrew Cask / Linuxbrew Formula / Winget レジストリへの自動公開
+
+### Step 10: OpenSpec のアーカイブ
+
+リリース作業が完了し、`master` に反映された OpenSpec の変更（機能や修正等）がある場合は、`/opsx-archive` ワークフローを用いて対象の `openspec/changes/` ディレクトリをアーカイブへと移動します。
+
+```text
+/opsx-archive <change-name>
+```
 
 ---
 

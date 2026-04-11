@@ -50,7 +50,13 @@ env:
 jobs:
   test:
     name: Test and Build
-    # Run on both push to master AND pull_request
+    # WHY: Avoid redundant CI runs when a PR is merged, since tests already pass on the PR itself.
+    # Direct pushes to master without a PR merge will still trigger tests.
+    if: >-
+      github.event_name != 'push' || (
+        !startsWith(github.event.head_commit.message, 'Merge pull request ') &&
+        !contains(github.event.head_commit.message, '(#')
+      )
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]

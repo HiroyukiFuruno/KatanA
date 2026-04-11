@@ -80,9 +80,9 @@
 
 ## 9. Final Verification & Release Work
 
-- [ ] 9.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 9.2 Ensure `make check` passes with exit code 0
-- [ ] 9.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
-- [ ] 9.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 9.5 Merge into master and execute `make release VERSION=0.18.7`
-- [ ] 9.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop`, that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible, and that winget sync no longer relies on `github.token` fallback
+- [x] 9.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 9.2 Ensure `make check` passes with exit code 0
+- [x] 9.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
+- [x] 9.4 Create PR from Base Feature Branch targeting `master`
+- [x] 9.5 Merge into master and execute `make release VERSION=0.18.7`
+- [x] 9.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop`, that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible, and that winget sync no longer relies on `github.token` fallback

@@ -301,7 +301,7 @@ fn ast_linter_no_japanese_in_crates() {
                         return ignore::WalkState::Continue;
                     }
 
-                    if path.to_string_lossy().contains("/resources/") {
+                    if path.components().any(|c| c.as_os_str() == "resources") {
                         return ignore::WalkState::Continue;
                     }
 
