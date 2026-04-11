@@ -481,11 +481,11 @@
   "help": {
     "section_general": "Général",
     "section_editor": "Éditeur",
-    "shortcut_command_palette": "Cmd+P : Palette",
-    "shortcut_search": "Cmd+F : Chercher",
-    "shortcut_sidebar": "Cmd+B : Barre latérale",
-    "shortcut_save": "Cmd+S : Sauver",
-    "shortcut_refresh": "Cmd+R : Actualiser"
+    "shortcut_command_palette": "{{os_cmd:open_palette}} : Palette",
+    "shortcut_search": "{{os_cmd:search_tab}} : Chercher",
+    "shortcut_sidebar": "{{os_cmd:toggle_sidebar}} : Barre latérale",
+    "shortcut_save": "{{os_cmd:save_document}} : Sauver",
+    "shortcut_refresh": "{{os_cmd:refresh_preview}} : Actualiser"
   },
   "dashboard": {
     "welcome_title": "Bienvenue sur KatanA",

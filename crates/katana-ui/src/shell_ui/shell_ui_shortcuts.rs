@@ -30,11 +30,13 @@ impl KatanaApp {
 
         let cmd_f = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::F);
         if ctx.input_mut(|i| i.consume_shortcut(&cmd_f)) {
-            /* WHY: Katana:// virtual docs (Welcome, Guide, ChangeLog) do not support in-doc search. */
-            let is_katana_virtual = self
-                .state
-                .active_document()
-                .is_some_and(|d| d.path.to_string_lossy().starts_with("Katana://"));
+            /* WHY: Virtual docs (Welcome, Guide, ChangeLog) do not support in-doc search. */
+            let is_katana_virtual = self.state.active_document().is_some_and(|d| {
+                let p = d.path.to_string_lossy();
+                p.starts_with("Katana://Welcome")
+                    || p.starts_with("Katana://Guide")
+                    || p.starts_with("Katana://ChangeLog")
+            });
             if !is_katana_virtual {
                 if !self.state.search.doc_search_open {
                     self.state.search.doc_search_open = true;
@@ -48,6 +50,26 @@ impl KatanaApp {
                     self.state.search.doc_search_matches.clear();
                 }
             }
+        }
+
+        let cmd_w = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::W);
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_w))
+            && let Some(idx) = self.state.document.active_doc_idx
+        {
+            self.pending_action = AppAction::CloseDocument(idx);
+        }
+
+        let cmd_b = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::B);
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_b)) {
+            self.pending_action = AppAction::ToggleWorkspacePanel;
+        }
+
+        let cmd_shift_f = egui::KeyboardShortcut::new(
+            egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
+            egui::Key::F,
+        );
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_shift_f)) {
+            self.pending_action = AppAction::ToggleSearchModal;
         }
 
         let cmd_s = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::S);
@@ -65,8 +87,8 @@ impl KatanaApp {
             self.pending_action = AppAction::RefreshDocument { is_manual: true };
         }
 
-        /* WHY: Cmd+Option+D opens the demo workspace. COMMAND | ALT correctly maps
-         * to macOS Command+Option — using struct literal misses mac_cmd flag. */
+        /* WHY: Command+Option-D opens the demo workspace. COMMAND | ALT correctly maps
+         * to macOS Command-Option — using struct literal misses mac_cmd flag. */
         let cmd_opt_d = egui::KeyboardShortcut::new(
             egui::Modifiers::COMMAND | egui::Modifiers::ALT,
             egui::Key::D,

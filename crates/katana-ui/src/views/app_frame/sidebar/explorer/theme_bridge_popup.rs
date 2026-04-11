@@ -92,28 +92,25 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
                                     ui.strong(
                                         crate::i18n::I18nOps::get().help.section_general.clone(),
                                     );
-                                    ui.label(
-                                        crate::i18n::I18nOps::get()
-                                            .help
-                                            .shortcut_command_palette
-                                            .clone(),
-                                    );
-                                    ui.label(
-                                        crate::i18n::I18nOps::get().help.shortcut_search.clone(),
-                                    );
-                                    ui.label(
-                                        crate::i18n::I18nOps::get().help.shortcut_sidebar.clone(),
-                                    );
+                                    ui.label(crate::os_command::OsCommandOps::replace_in_text(
+                                        &crate::i18n::I18nOps::get().help.shortcut_command_palette,
+                                    ));
+                                    ui.label(crate::os_command::OsCommandOps::replace_in_text(
+                                        &crate::i18n::I18nOps::get().help.shortcut_search,
+                                    ));
+                                    ui.label(crate::os_command::OsCommandOps::replace_in_text(
+                                        &crate::i18n::I18nOps::get().help.shortcut_sidebar,
+                                    ));
                                     ui.add_space(crate::shell::RAIL_POPUP_SPACING_LARGE);
                                     ui.strong(
                                         crate::i18n::I18nOps::get().help.section_editor.clone(),
                                     );
-                                    ui.label(
-                                        crate::i18n::I18nOps::get().help.shortcut_save.clone(),
-                                    );
-                                    ui.label(
-                                        crate::i18n::I18nOps::get().help.shortcut_refresh.clone(),
-                                    );
+                                    ui.label(crate::os_command::OsCommandOps::replace_in_text(
+                                        &crate::i18n::I18nOps::get().help.shortcut_save,
+                                    ));
+                                    ui.label(crate::os_command::OsCommandOps::replace_in_text(
+                                        &crate::i18n::I18nOps::get().help.shortcut_refresh,
+                                    ));
                                     ui.add_space(crate::shell::RAIL_POPUP_SPACING_LARGE);
                                     if ui
                                         .button(

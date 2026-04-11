@@ -481,11 +481,11 @@
   "help": {
     "section_general": "일반",
     "section_editor": "에디터",
-    "shortcut_command_palette": "Cmd+P: 팔레트",
-    "shortcut_search": "Cmd+F: 검색",
-    "shortcut_sidebar": "Cmd+B: 사이드바",
-    "shortcut_save": "Cmd+S: 저장",
-    "shortcut_refresh": "Cmd+R: 새로고침"
+    "shortcut_command_palette": "{{os_cmd:open_palette}}: 팔레트",
+    "shortcut_search": "{{os_cmd:search_tab}}: 검색",
+    "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 사이드바",
+    "shortcut_save": "{{os_cmd:save_document}}: 저장",
+    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 새로고침"
   },
   "dashboard": {
     "welcome_title": "KatanA에 오신 것을 환영합니다",

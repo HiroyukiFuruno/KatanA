@@ -269,4 +269,4 @@ KatanaApp *-- Document
 ## ✅ デモ終了
 
 KatanA の全描画機能を確認しました。
-このタブを閉じる（⌘W）か、自分の Markdown ファイルで探索を続けてください。
+このタブを閉じる（{{os_cmd:close_tab}}）か、自分の Markdown ファイルで探索を続けてください。

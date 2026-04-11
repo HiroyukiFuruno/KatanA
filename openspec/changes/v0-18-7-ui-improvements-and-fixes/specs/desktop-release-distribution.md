@@ -24,3 +24,13 @@
 
 - **WHEN** `HiroyukiFuruno.katana-desktop` が `microsoft/winget-pkgs` に存在する状態で新しい version を配布する
 - **THEN** helper は `komac update` ベースの version update flow を利用できる
+
+### Requirement: winget helper は PR 作成可能な token を明示的に要求する
+
+システムは、winget helper / release workflow で `komac` に渡す token source を曖昧にしてはならない（MUST）。
+
+#### Scenario: PR 作成用 token が未設定または不適切
+
+- **WHEN** helper が `komac` の PR 作成要件を満たす classic GitHub PAT を受け取っていない
+- **THEN** helper は winget sync を skip し、必要な secret / token 条件を明示する
+- **THEN** helper は GitHub Actions の自動 `github.token` へ暗黙 fallback しない

@@ -76,8 +76,8 @@
 
 ## 8. Windows Packaging & Winget Readiness
 
-- [ ] 8.1 `scripts/release/sync-external.sh` を見直し、`HiroyukiFuruno.katana-desktop` が upstream `microsoft/winget-pkgs` に未存在の間は `komac update` を実行せず、bootstrap path が必要だと明示する
-- [ ] 8.2 初回再申請用の winget submit 導線を明確化する。`komac new` は non-TTY CI で使えない前提とし、manifest file を生成して `komac submit` する path、または maintainer local TTY での bootstrap path のどちらかに固定する
+- [ ] 8.1 `scripts/release/sync-external.sh` と `.github/workflows/build-and-release.yml` を見直し、少なくとも `WINGET_GH_TOKEN (classic PAT with public_repo) 有無` → `Windows MSI artifact 有無` → `komac 有無` → `komac list HiroyukiFuruno.katana-desktop 成否` の順で分岐し、upstream 未存在の間は `komac update` を実行せず bootstrap path が必要だと明示する。`github.token` fallback は残さない
+- [ ] 8.2 初回再申請用の winget submit 導線を明確化する。`komac new` は non-TTY CI で使えない前提とし、manifest file を生成して `komac submit --yes --token "${WINGET_GH_TOKEN}"` する path、または maintainer local TTY での bootstrap path のどちらかに固定する
 - [ ] 8.3 Windows binary の VC++ runtime 依存を build policy 側で解消する。`x86_64-pc-windows-msvc` 向けに `crt-static` を有効化し、manifest dependency を消すだけの対症療法にしない
 - [ ] 8.4 Windows runner 上で packaged `KatanA.exe` の import table を確認し、`VCRUNTIME140*.dll` / `api-ms-win-crt-*` 依存が除去されたことを検証する
 - [ ] 8.5 `komac analyze` / generated manifest review により、`KatanA-windows-x86_64.msi` が `Scope: user` / `InstallerType: wix` を維持しつつ、problematic な `Dependencies: Microsoft.VCRedist.2015+.x64` を含まないことを確認する
@@ -86,6 +86,7 @@
 ### Definition of Done (DoD)
 
 - [ ] 初回再申請と将来の version update の flow が混同されていない
+- [ ] winget PR 作成用 token source が `WINGET_GH_TOKEN` に固定され、`github.token` fallback が除去されている
 - [ ] `KatanA-windows-x86_64.msi` / `KatanA.exe` が VC++ runtime 外部依存なしで配布できる
 - [ ] CI と local helper が同じ Windows artifact 名と publish URL 契約を使っている
 
@@ -108,4 +109,4 @@
 - [ ] 10.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
 - [ ] 10.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 10.5 Merge into master and execute `make release VERSION=0.18.7`
-- [ ] 10.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop` and that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible
+- [ ] 10.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop`, that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible, and that winget sync no longer relies on `github.token` fallback

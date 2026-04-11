@@ -63,7 +63,7 @@ under **KatanA → Language**.
 
 ## Getting Started with Your Own Workspace
 
-1. Choose **File → Open Workspace** (⌘O) to open a folder.
+1. Choose **File → Open Workspace** ({{os_cmd:open_workspace}}) to open a folder.
 2. Navigate files using the sidebar on the left.
 3. KatanA auto-saves your tab layout and scroll position between sessions.
 
@@ -80,4 +80,4 @@ the demo bundle from accidental changes.
 
 ---
 
-*Close this tab or press ⌘W to dismiss it.*
+*Close this tab or press {{os_cmd:close_tab}} to dismiss it.*

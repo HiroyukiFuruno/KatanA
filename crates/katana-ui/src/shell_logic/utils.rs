@@ -20,8 +20,13 @@ impl ShellUtils {
         }
     }
 
-    pub fn calculate_splash_progress(elapsed: f32) -> f32 {
-        let p = elapsed / Self::SPLASH_TOTAL_DURATION_SECS;
+    pub fn calculate_splash_progress(elapsed: f32, is_loading: bool) -> f32 {
+        let mut p = elapsed / Self::SPLASH_TOTAL_DURATION_SECS;
+        const PROGRESS_FREEZE_POINT: f32 = 0.79;
+        if is_loading && p > PROGRESS_FREEZE_POINT {
+            /* WHY: Keep the splash screen active and freeze progress until loading finishes */
+            p = PROGRESS_FREEZE_POINT;
+        }
         p.clamp(0.0, 1.0)
     }
 

@@ -8,8 +8,8 @@ the current working directory or installation method. */
 pub(super) struct DemoAsset {
     /// Virtual path displayed in the tab bar (e.g. "Katana://Demo/welcome.md").
     pub virtual_path: &'static str,
-    /// The embedded file content.
-    pub content: &'static str,
+    /// The embedded file content with dynamic variables replaced.
+    pub content: String,
     /// Whether this is a reference (read-only) document.
     pub is_reference: bool,
 }
@@ -43,7 +43,7 @@ pub(super) fn resolve_single_asset(lang: &str, filename: &str) -> Option<DemoAss
             };
             Some(DemoAsset {
                 virtual_path: Box::leak("Katana://Welcome.md".to_string().into_boxed_str()),
-                content,
+                content: crate::os_command::OsCommandOps::replace_in_text(content),
                 is_reference: true,
             })
         }
@@ -55,7 +55,7 @@ pub(super) fn resolve_single_asset(lang: &str, filename: &str) -> Option<DemoAss
             };
             Some(DemoAsset {
                 virtual_path: Box::leak("Katana://Guide.md".to_string().into_boxed_str()),
-                content,
+                content: crate::os_command::OsCommandOps::replace_in_text(content),
                 is_reference: true,
             })
         }
@@ -83,12 +83,12 @@ pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
         /* WHY: Walkthrough is always first */
         DemoAsset {
             virtual_path: demo_virtual_path(walkthrough_filename),
-            content: welcome,
+            content: crate::os_command::OsCommandOps::replace_in_text(welcome),
             is_reference: true,
         },
         DemoAsset {
             virtual_path: demo_virtual_path(rendering_filename),
-            content: rendering,
+            content: crate::os_command::OsCommandOps::replace_in_text(rendering),
             is_reference: true,
         },
     ]

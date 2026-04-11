@@ -481,11 +481,11 @@
   "help": {
     "section_general": "通用",
     "section_editor": "编辑器",
-    "shortcut_command_palette": "Cmd+P: 面板",
-    "shortcut_search": "Cmd+F: 搜索",
-    "shortcut_sidebar": "Cmd+B: 侧边栏",
-    "shortcut_save": "Cmd+S: 保存",
-    "shortcut_refresh": "Cmd+R: 刷新"
+    "shortcut_command_palette": "{{os_cmd:open_palette}}: 面板",
+    "shortcut_search": "{{os_cmd:search_tab}}: 搜索",
+    "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 侧边栏",
+    "shortcut_save": "{{os_cmd:save_document}}: 保存",
+    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 刷新"
   },
   "dashboard": {
     "welcome_title": "欢迎使用 KatanA",

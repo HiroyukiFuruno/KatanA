@@ -24,6 +24,17 @@ impl<'a> Breadcrumbs<'a> {
             let segments: Vec<&str> = rel.split('/').collect();
             let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
 
+            /* WHY: demo files don't need full paths shown in breadcrumbs */
+            if rel.starts_with("Katana://Demo/") {
+                if let Some(name) = segments.last() {
+                    ui.add(
+                        egui::Label::new(egui::RichText::new(*name).small())
+                            .sense(egui::Sense::hover()),
+                    );
+                }
+                return;
+            }
+
             for (i, seg) in segments.iter().enumerate() {
                 if i > 0 {
                     ui.add(
