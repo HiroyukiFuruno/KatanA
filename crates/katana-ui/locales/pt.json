@@ -21,7 +21,7 @@
         "check_updates": "Verificar atualizações…",
         "release_notes": "Notas da versão",
         "view": "Exibir",
-        "command_palette": "Paleta de comandos…",
+        "command_palette": "Paleta de Comandos…",
         "language_en": "Inglês",
         "language_ja": "Japonês",
         "language_zh_cn": "Chinês (Simplificado)",
@@ -85,7 +85,7 @@
         "metadata_tooltip": "Tamanho: {size} B\nModificado: {mod_time}",
         "path_label": "Caminho",
         "flat_view": "Vista plana",
-        "filter_regex_hint": "Filtrar (regex)…",
+        "filter_regex_hint": "Filtrar por regex…",
         "open_folder_hint": "Abra uma pasta para começar com o KatanA.",
         "open_workspace_button": "Abrir pasta",
         "remove_history_tooltip": "Remover do histórico",
@@ -94,7 +94,7 @@
     "preview": {
         "preview_title": "Visualização",
         "refresh_diagrams": "Atualizar diagramas",
-        "rendering": "Renderizando {kind}…",
+        "rendering": "A renderizar {kind}…",
         "no_preview": "(Sem visualização)",
         "diagram_controller": {
             "pan_up": "Para cima",
@@ -212,11 +212,11 @@
             "save_custom_theme": "Salvar como tema…",
             "save_custom_theme_title": "Salvar tema",
             "theme_name_label": "Nome:",
-            "duplicate": "Duplicar…",
+            "duplicate": "Duplicar Tema…",
             "reset_contrast": "Redefinir",
             "ui_contrast_offset": "Contraste UI",
             "show_more": "Mostrar mais…",
-            "show_less": "Mostrar menos…"
+            "show_less": "Exibir menos…"
         },
         "font": {
             "size": "Tamanho da fonte",
@@ -428,7 +428,7 @@
         "temp_file_error": "Erro no arquivo temporário: {error}",
         "write_error": "Erro de gravação: {error}",
         "persist_error": "Falha ao salvar.",
-        "exporting": "⏳ Exportando {filename}…"
+        "exporting": "⏳ A exportar {filename}…"
     },
     "terms": {
         "title": "Termos de uso",

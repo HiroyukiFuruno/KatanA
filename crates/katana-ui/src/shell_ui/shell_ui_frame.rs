@@ -34,6 +34,9 @@ impl KatanaApp {
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
             .show(ctx, |ui| {
+                if is_blocked {
+                    ui.visuals_mut().disabled_alpha = 1.0;
+                }
                 ui.set_enabled(!is_blocked);
                 let download_req =
                     crate::views::app_frame::MainPanels::new(self, theme_colors).show(ui);
