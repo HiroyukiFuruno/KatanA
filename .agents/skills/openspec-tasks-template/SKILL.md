@@ -23,7 +23,7 @@ Insert this at the top of the `tasks.md` file, immediately after the DoR (Defini
 
 本タスクでは、以下のブランチ運用を適用します：
 - **標準（Base）ブランチ**: `[Change Directory Name]` またはリリース用統合ブランチ（例: `release/vX.Y.Z`）
-- **作業ブランチ**: `[Base]-task-x` (xはタスク番号)
+- **作業ブランチ**: 標準は `[Base]-task-x`、リリース用は `feature/vX.Y.Z-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 ```

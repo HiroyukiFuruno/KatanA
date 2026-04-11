@@ -17,7 +17,7 @@ This workflow defines the branching **strategy** (what branches to create and wh
 
 Before starting any tasks, create the Base Feature Branch from `master`.
 - **Standard**: Named exactly after the change directory (e.g., `v0-18-7-ui-polish`).
-- **Release Release**: For versioned releases, use `release/vX.Y.Z` (e.g., `release/v0.18.7`).
+- **Release Case**: For versioned releases, use `release/vX.Y.Z` (e.g., `release/v0.18.7`).
 
 ```bash
 # Standard
@@ -44,7 +44,7 @@ If the DoR is satisfied, base branch is synced (`git switch <base> && git pull`)
 git switch -c <Change-Directory-Name>-task<N> <Change-Directory-Name>
 
 # Release Case
-git switch -c release/v<Target-Version>-task<N> release/v<Target-Version>
+git switch -c feature/v<Target-Version>-task<N> release/v<Target-Version>
 ```
 
 #### ⚠️ MANDATORY RULE: NO SUBTASK BRANCHING
@@ -57,7 +57,11 @@ git switch -c release/v<Target-Version>-task<N> release/v<Target-Version>
 
 Implement the task, then execute the `/openspec-delivery` workflow to deliver.
 
-The delivery workflow calls `create_pull_request` skill, which automatically determines that the `--base` is the Base Feature Branch (by stripping `-task<N>` from the current branch name). This ensures task PRs never target `master`.
+The delivery workflow calls `create_pull_request` skill, which determines the correct `--base`:
+- Standard case: `--base` is the Base Feature Branch (by stripping `-task<N>` from the current branch name).
+- Release case: `--base` is `release/v<Target-Version>` when the task branch is `feature/v<Target-Version>-task<N>`.
+
+This ensures task PRs never target `master`.
 
 ### Step 4: Synchronization
 
