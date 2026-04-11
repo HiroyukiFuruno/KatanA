@@ -269,4 +269,4 @@ This sentence has a footnote[^1] and another one[^2].
 ## ✅ End of Demo
 
 You have seen the full rendering capabilities of KatanA.
-Close this tab (⌘W) or explore more with your own Markdown files.
+Close this tab ({{os_cmd:close_tab}}) or explore more with your own Markdown files.

@@ -21,6 +21,8 @@ enum {
     TAG_RELEASE_NOTES  = 16,
     TAG_COMMAND_PALETTE = 17,
     TAG_DEMO           = 18,
+    TAG_WELCOME_SCREEN = 19,
+    TAG_USER_GUIDE      = 20,
 };
 
 /* WHY: Global: Tag of the last selected menu action. */
@@ -56,6 +58,8 @@ static NSMenuItem *g_show_all_item = nil;
 static NSMenuItem *g_quit_item = nil;
 static NSMenu *g_help_menu = nil;
 static NSMenuItem *g_release_notes_item = nil;
+static NSMenuItem *g_welcome_item = nil;
+static NSMenuItem *g_guide_item = nil;
 static NSMenuItem *g_demo_item = nil;
 
 /// Called from Rust at the very start of main(), before eframe creates the window.
@@ -285,10 +289,29 @@ void katana_setup_native_menu(void) {
 
     [helpMenu addItem:[NSMenuItem separatorItem]];
 
+    NSMenuItem *welcomeItem = [[NSMenuItem alloc]
+        initWithTitle:@"Welcome Screen"
+        action:action
+        keyEquivalent:@""];
+    [welcomeItem setTarget:g_target];
+    [welcomeItem setTag:TAG_WELCOME_SCREEN];
+    [helpMenu addItem:welcomeItem];
+    g_welcome_item = welcomeItem;
+
+    NSMenuItem *guideItem = [[NSMenuItem alloc]
+        initWithTitle:@"User Guide"
+        action:action
+        keyEquivalent:@""];
+    [guideItem setTarget:g_target];
+    [guideItem setTag:TAG_USER_GUIDE];
+    [helpMenu addItem:guideItem];
+    g_guide_item = guideItem;
+
     NSMenuItem *demoItem = [[NSMenuItem alloc]
         initWithTitle:@"Demo"
         action:action
-        keyEquivalent:@""];
+        keyEquivalent:@"d"];
+    [demoItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand | NSEventModifierFlagOption];
     [demoItem setTarget:g_target];
     [demoItem setTag:TAG_DEMO];
     [helpMenu addItem:demoItem];
@@ -338,7 +361,9 @@ void katana_update_menu_strings(
     const char* release_notes,
     const char* command_palette,
     const char* view,
-    const char* demo
+    const char* demo,
+    const char* welcome_screen,
+    const char* user_guide
 ) {
     @autoreleasepool {
         if (g_file_menu && file) {
@@ -394,6 +419,12 @@ void katana_update_menu_strings(
         }
         if (g_release_notes_item && release_notes) {
             [g_release_notes_item setTitle:[NSString stringWithUTF8String:release_notes]];
+        }
+        if (g_welcome_item && welcome_screen) {
+            [g_welcome_item setTitle:[NSString stringWithUTF8String:welcome_screen]];
+        }
+        if (g_guide_item && user_guide) {
+            [g_guide_item setTitle:[NSString stringWithUTF8String:user_guide]];
         }
         if (g_demo_item && demo) {
             [g_demo_item setTitle:[NSString stringWithUTF8String:demo]];

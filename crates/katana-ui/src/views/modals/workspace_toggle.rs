@@ -151,8 +151,13 @@ impl<'a> WorkspaceToggleModal<'a> {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     ui.set_min_width(available_width);
                     ui.set_max_width(available_width);
+                    /* WHY: Show directory name only; full path is shown in tooltip. */
+                    let display_name = std::path::Path::new(path)
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or(path);
                     if ui
-                        .add(egui::Button::new(path).frame(false).truncate())
+                        .add(egui::Button::new(display_name).frame(false).truncate())
                         .on_hover_text(path)
                         .clicked()
                     {

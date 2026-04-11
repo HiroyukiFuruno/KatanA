@@ -130,3 +130,152 @@ impl DocumentState {
         self.tab_groups.retain(|g| !g.members.is_empty());
     }
 }
+
+impl TabGroup {
+    pub const DEMO_ID: &'static str = "demo";
+
+    /// Whether this is the built-in Demo group that users cannot add files to.
+    pub fn is_demo(&self) -> bool {
+        self.id == Self::DEMO_ID
+    }
+}
+
+pub trait VirtualPathExt {
+    /// `Katana://Demo/` prefix — part of the built-in Demo bundle.
+    fn is_demo_path(&self) -> bool;
+    /// `Katana://` prefix (includes Demo, Welcome, Guide, ChangeLog …).
+    fn is_virtual_path(&self) -> bool;
+}
+
+impl VirtualPathExt for std::path::Path {
+    fn is_demo_path(&self) -> bool {
+        self.to_string_lossy().starts_with("Katana://Demo/")
+    }
+
+    fn is_virtual_path(&self) -> bool {
+        self.to_string_lossy().starts_with("Katana://")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    fn demo_group() -> TabGroup {
+        TabGroup {
+            id: TabGroup::DEMO_ID.to_string(),
+            name: "Demo".to_string(),
+            color_hex: "#808080".to_string(),
+            collapsed: false,
+            members: vec!["Katana://Demo/feature_walkthrough.md".to_string()],
+        }
+    }
+
+    fn user_group(name: &str) -> TabGroup {
+        TabGroup {
+            id: format!("group_{name}"),
+            name: name.to_string(),
+            color_hex: "#4A90D9".to_string(),
+            collapsed: false,
+            members: vec!["/some/file.md".to_string()],
+        }
+    }
+
+    /* WHY: TabGroup::is_demo tests */
+
+    #[test]
+    fn is_demo_true_for_demo_id() {
+        assert!(demo_group().is_demo());
+    }
+
+    #[test]
+    fn is_demo_false_for_user_group_named_demo() {
+        /* WHY: A user-created group named 'Demo' must NOT be treated as system Demo */
+        let g = TabGroup {
+            id: "group_123456".to_string(),
+            name: "Demo".to_string(),
+            color_hex: "#4A90D9".to_string(),
+            collapsed: false,
+            members: vec![],
+        };
+        assert!(!g.is_demo());
+    }
+
+    #[test]
+    fn is_demo_false_for_regular_group() {
+        assert!(!user_group("Work").is_demo());
+    }
+
+    /* WHY: VirtualPathExt::is_demo_path tests */
+
+    #[test]
+    fn is_demo_path_true_for_katana_demo_prefix() {
+        assert!(Path::new("Katana://Demo/feature_walkthrough.md").is_demo_path());
+        assert!(Path::new("Katana://Demo/rendering_features.md").is_demo_path());
+    }
+
+    #[test]
+    fn is_demo_path_false_for_welcome() {
+        assert!(!Path::new("Katana://Welcome.md").is_demo_path());
+    }
+
+    #[test]
+    fn is_demo_path_false_for_regular_file() {
+        assert!(!Path::new("/home/user/notes.md").is_demo_path());
+    }
+
+    /* WHY: VirtualPathExt::is_virtual_path tests */
+
+    #[test]
+    fn is_virtual_path_true_for_demo() {
+        assert!(Path::new("Katana://Demo/feature_walkthrough.md").is_virtual_path());
+    }
+
+    #[test]
+    fn is_virtual_path_true_for_welcome() {
+        assert!(Path::new("Katana://Welcome.md").is_virtual_path());
+    }
+
+    #[test]
+    fn is_virtual_path_true_for_guide() {
+        assert!(Path::new("Katana://Guide.md").is_virtual_path());
+    }
+
+    #[test]
+    fn is_virtual_path_true_for_changelog() {
+        assert!(Path::new("Katana://ChangeLog v0.18.6").is_virtual_path());
+    }
+
+    #[test]
+    fn is_virtual_path_false_for_real_file() {
+        assert!(!Path::new("/home/user/notes.md").is_virtual_path());
+    }
+
+    /* WHY: addable_groups filter — system Demo excluded, user-created 'Demo' name group included */
+
+    #[test]
+    fn addable_groups_excludes_demo_group_but_includes_user_demo_named_group() {
+        let system_demo = demo_group();
+        let user_demo_named = TabGroup {
+            id: "group_abc".to_string(),
+            name: "Demo".to_string(),
+            color_hex: "#4A90D9".to_string(),
+            collapsed: false,
+            members: vec![],
+        };
+        let work = user_group("Work");
+        let all_groups = vec![system_demo, user_demo_named, work];
+
+        let addable: Vec<_> = all_groups.iter().filter(|g| !g.is_demo()).collect();
+        assert_eq!(addable.len(), 2, "only system Demo should be excluded");
+        assert!(
+            addable.iter().any(|g| g.name == "Demo"),
+            "user-created 'Demo' group must remain addable"
+        );
+        assert!(
+            addable.iter().any(|g| g.name == "Work"),
+            "Work group must remain addable"
+        );
+    }
+}

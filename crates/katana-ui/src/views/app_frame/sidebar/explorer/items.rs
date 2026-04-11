@@ -2,7 +2,9 @@ use crate::shell::KatanaApp;
 use crate::views::app_frame::types::*;
 use eframe::egui;
 
+/* WHY: Collection of static sidebar item rendering functions. */
 impl ExplorerSidebarItems {
+    /* WHY: Renders the "Add Workspace" button with i18n tooltip and picker action. */
     pub(crate) fn render_add_workspace(
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
@@ -27,6 +29,7 @@ impl ExplorerSidebarItems {
         Some(interact_resp)
     }
 
+    /* WHY: Renders the workspace panel visibility toggle button. */
     pub(crate) fn render_workspace_toggle(
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
@@ -56,6 +59,7 @@ impl ExplorerSidebarItems {
         Some(interact_resp)
     }
 
+    /* WHY: Renders the file explorer panel toggle with context menu support. */
     pub(crate) fn render_explorer_toggle(
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
@@ -101,6 +105,7 @@ impl ExplorerSidebarItems {
         Some(interact_resp)
     }
 
+    /* WHY: Renders the sidebar search toggle button targeting the foreground popup. */
     pub(crate) fn render_search_toggle(
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
@@ -127,65 +132,8 @@ impl ExplorerSidebarItems {
         });
         if interact_resp.clicked() {
             app.pending_action = crate::app_state::AppAction::ToggleSearchModal;
+            app.state.layout.active_rail_popup = None;
         }
-        Some(interact_resp)
-    }
-
-    pub(crate) fn render_settings_toggle(
-        ui: &mut egui::Ui,
-        app: &mut KatanaApp,
-        interact_id: egui::Id,
-    ) -> Option<egui::Response> {
-        let resp = ui.add(
-            crate::Icon::Settings
-                .selected_button(
-                    ui,
-                    crate::icon::IconSize::Large,
-                    app.state.layout.show_settings,
-                )
-                .sense(egui::Sense::hover()),
-        );
-        let interact_resp = ui
-            .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
-            .on_hover_text(crate::i18n::I18nOps::get().settings.title.clone());
-        if interact_resp.clicked() {
-            app.pending_action = crate::app_state::AppAction::ToggleSettings;
-        }
-        Some(interact_resp)
-    }
-
-    pub(crate) fn render_history_toggle(
-        ui: &mut egui::Ui,
-        app: &mut KatanaApp,
-        interact_id: egui::Id,
-        _idx: usize,
-    ) -> Option<egui::Response> {
-        let is_open = app.state.layout.show_history_panel;
-        let recent_paths = app.state.global_workspace.state().histories.clone();
-
-        let hover_text = crate::i18n::I18nOps::get()
-            .workspace
-            .sidebar_history_tooltip
-            .clone();
-        let resp = ui.add_enabled(
-            !recent_paths.is_empty(),
-            crate::Icon::History
-                .selected_button(ui, crate::icon::IconSize::Large, is_open)
-                .sense(egui::Sense::hover()),
-        );
-        app.state.layout.history_toggle_y = resp.rect.top();
-
-        let interact_resp = ui.interact(resp.rect, interact_id, egui::Sense::click_and_drag());
-        let interact_resp = if recent_paths.is_empty() {
-            interact_resp.on_disabled_hover_text(hover_text)
-        } else {
-            interact_resp.on_hover_text(hover_text)
-        };
-
-        if interact_resp.clicked() && !recent_paths.is_empty() {
-            app.pending_action = crate::app_state::AppAction::ToggleHistoryPanel;
-        }
-
         Some(interact_resp)
     }
 }

@@ -71,6 +71,7 @@ impl KatanaApp {
                 self.state.document.open_documents.len(),
             );
         }
+        self.state.document.cleanup_empty_groups();
     }
 
     fn compute_new_active_idx(

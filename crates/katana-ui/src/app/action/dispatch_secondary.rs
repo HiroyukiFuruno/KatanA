@@ -94,9 +94,17 @@ impl KatanaApp {
                 name,
                 color_hex,
                 initial_member,
-            } => self.handle_action_create_tab_group(name, color_hex, initial_member),
+            } => self.handle_action_create_tab_group(name, color_hex, vec![initial_member]),
+            AppAction::CreateTabGroupMany {
+                name,
+                color_hex,
+                members,
+            } => self.handle_action_create_tab_group(name, color_hex, members),
             AppAction::AddTabToGroup { group_id, member } => {
-                self.handle_action_add_tab_to_group(group_id, member)
+                self.handle_action_add_tabs_to_group(group_id, vec![member])
+            }
+            AppAction::AddTabsToGroup { group_id, members } => {
+                self.handle_action_add_tabs_to_group(group_id, members)
             }
             AppAction::RemoveTabFromGroup(member) => {
                 self.handle_action_remove_tab_from_group(member)
@@ -118,6 +126,8 @@ impl KatanaApp {
                 self.handle_action_toggle_collapse_tab_group(group_id)
             }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
+            AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
+            AppAction::OpenUserGuide => self.handle_action_open_user_guide(),
             AppAction::SwitchDemoLanguage(lang) => self.handle_action_switch_demo_lang(&lang),
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),

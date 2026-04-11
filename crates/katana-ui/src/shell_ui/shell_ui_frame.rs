@@ -34,6 +34,9 @@ impl KatanaApp {
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
             .show(ctx, |ui| {
+                if is_blocked {
+                    ui.visuals_mut().disabled_alpha = 1.0;
+                }
                 ui.set_enabled(!is_blocked);
                 let download_req =
                     crate::views::app_frame::MainPanels::new(self, theme_colors).show(ui);
@@ -177,7 +180,14 @@ impl KatanaApp {
 
         if let Some(path) = self.show_meta_info_for.clone() {
             let mut is_open = true;
-            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path).show(ctx);
+            let actual_doc = self
+                .state
+                .document
+                .open_documents
+                .iter()
+                .find(|d| d.path == path);
+            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path, actual_doc)
+                .show(ctx);
             if !is_open {
                 self.show_meta_info_for = None;
             }
@@ -235,10 +245,15 @@ impl KatanaApp {
     pub(super) fn show_splash(&mut self, ctx: &egui::Context) {
         if let Some(start) = self.splash_start {
             let elapsed = start.elapsed().as_secs_f32();
-            let dismissed =
-                crate::views::splash::SplashOverlay::new(elapsed, self.about_icon.as_ref())
-                    .show(ctx);
+            let is_loading = self.state.workspace.is_loading;
+            let dismissed = crate::views::splash::SplashOverlay::new(
+                elapsed,
+                self.about_icon.as_ref(),
+                is_loading,
+            )
+            .show(ctx);
             if dismissed {
+                ctx.request_repaint();
                 self.splash_start = None;
             }
         }

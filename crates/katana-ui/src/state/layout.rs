@@ -1,6 +1,14 @@
 use crate::app_state::StatusType;
 use std::path::PathBuf;
 
+#[derive(Debug, PartialEq, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub enum RailPopup {
+    Search,
+    History,
+    AddWorkspace,
+    Help,
+}
+
 pub struct LayoutState {
     pub status_message: Option<(String, StatusType)>,
     pub show_workspace_panel: bool,
@@ -24,6 +32,10 @@ pub struct LayoutState {
     pub slideshow_page: usize,
     pub was_os_fullscreen_before_slideshow: bool,
     pub slideshow_last_active_time: f64,
+    pub slideshow_settings_open: bool,
+    pub slideshow_hover_highlight: bool,
+    pub slideshow_show_diagram_controls: bool,
+    pub active_rail_popup: Option<RailPopup>,
 }
 
 impl Default for LayoutState {
@@ -59,6 +71,10 @@ impl LayoutState {
             slideshow_page: 0,
             was_os_fullscreen_before_slideshow: false,
             slideshow_last_active_time: 0.0,
+            slideshow_settings_open: false,
+            slideshow_hover_highlight: false,
+            slideshow_show_diagram_controls: false,
+            active_rail_popup: None,
         }
     }
 }

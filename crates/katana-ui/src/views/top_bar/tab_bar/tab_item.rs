@@ -64,10 +64,16 @@ impl<'a> TabItem<'a> {
             .map_or(title_resp.rect, |c| title_resp.rect.union(c.rect));
         self.draw_group_underline(ui, full_rect);
 
+        use crate::state::document::VirtualPathExt;
+        let is_demo = self.doc.path.is_demo_path();
         let tab_interact = ui.interact(
             title_resp.rect,
             egui::Id::new("tab_interact").with(self.idx),
-            egui::Sense::click_and_drag(),
+            if is_demo {
+                egui::Sense::click()
+            } else {
+                egui::Sense::click_and_drag()
+            },
         );
         let mut clicked_tab = tab_interact.clicked();
         let mut close_ret = None;
@@ -119,20 +125,9 @@ impl<'a> TabItem<'a> {
         &self,
         ui: &mut egui::Ui,
         title: &str,
-        is_changelog: bool,
+        _is_changelog: bool,
     ) -> egui::Response {
-        if is_changelog {
-            ui.add(
-                egui::Button::image_and_text(
-                    crate::Icon::Info.ui_image(ui, crate::icon::IconSize::Small),
-                    title,
-                )
-                .selected(self.is_active)
-                .frame(false),
-            )
-        } else {
-            ui.add(egui::Button::selectable(self.is_active, title).frame(false))
-        }
+        ui.add(egui::Button::selectable(self.is_active, title).frame(false))
     }
 
     fn render_close_button(&self, ui: &mut egui::Ui) -> Option<egui::Response> {

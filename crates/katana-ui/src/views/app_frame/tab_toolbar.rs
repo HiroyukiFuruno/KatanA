@@ -4,7 +4,8 @@ use crate::shell::KatanaApp;
 use crate::shell_logic::ShellLogicOps;
 use eframe::egui;
 
-const CHEVRON_ICON_SIZE: f32 = 10.0;
+/* WHY: Fixed height for Row 2 (breadcrumbs + meta) and Row 3 (controls). */
+const TOOLBAR_ROW_HEIGHT: f32 = 28.0;
 
 impl<'a> TabToolbar<'a> {
     pub(crate) fn new(app: &'a mut KatanaApp) -> Self {
@@ -21,6 +22,7 @@ impl<'a> TabToolbar<'a> {
                 .as_ref()
                 .map(|ws| ws.root.as_path());
 
+            /* Row 1: Tab bar */
             let tab_action = crate::views::top_bar::TabBar::new(
                 ws_root,
                 &app.state.document.open_documents,
@@ -30,19 +32,21 @@ impl<'a> TabToolbar<'a> {
                 &app.state.layout.inline_rename_group,
             )
             .show(ui);
-
             if let Some(a) = tab_action {
                 app.pending_action = a;
             }
 
             let doc_info = app.state.active_document().map(|doc| {
-                (
-                    doc.path.clone(),
-                    doc.path.to_string_lossy().starts_with("Katana://ChangeLog"),
-                )
+                let p = doc.path.to_string_lossy();
+                /* WHY: ChangeLog/Welcome/Guide are read-only virtual docs — no editor controls.
+                 * Katana://Demo/ docs are interactive and keep full controls. */
+                let is_virtual = p.starts_with("Katana://ChangeLog")
+                    || p.starts_with("Katana://Welcome")
+                    || p.starts_with("Katana://Guide");
+                (doc.path.clone(), is_virtual)
             });
-            if let Some((doc_path, is_changelog)) = doc_info {
-                Self::render_document_toolbar(ui, app, doc_path, is_changelog);
+            if let Some((doc_path, is_virtual)) = doc_info {
+                Self::render_document_toolbar(ui, app, doc_path, is_virtual);
             }
         });
     }
@@ -51,27 +55,64 @@ impl<'a> TabToolbar<'a> {
         ui: &mut egui::Ui,
         app: &mut KatanaApp,
         doc_path: std::path::PathBuf,
-        is_changelog: bool,
+        is_virtual: bool,
     ) {
         let mut out_action = None;
-        let bar_height = ui.spacing().interact_size.y;
+        let available_width = ui.available_width();
 
+        /* Row 2: Breadcrumbs (left) + Meta info button (right).
+         * Uses fixed height so Panel::top does not consume the full screen height. */
         ui.allocate_ui_with_layout(
-            egui::vec2(ui.available_width(), bar_height),
-            egui::Layout::left_to_right(egui::Align::Center),
+            egui::vec2(available_width, TOOLBAR_ROW_HEIGHT),
+            egui::Layout::right_to_left(egui::Align::Center),
             |ui| {
-                if !is_changelog && let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) {
-                    out_action = Some(a);
+                if !is_virtual {
+                    let icon_size = crate::icon::IconSize::Medium.to_vec2();
+                    let info_icon = egui::Image::new(crate::Icon::Info.uri())
+                        .tint(ui.visuals().weak_text_color())
+                        .fit_to_exact_size(icon_size);
+                    if ui.add(egui::ImageButton::new(info_icon)).clicked() {
+                        out_action = Some(AppAction::ShowMetaInfo(doc_path.clone()));
+                    }
                 }
-
-                if let Some(a) = Self::render_view_mode_bar(ui, app, is_changelog) {
-                    out_action = Some(a);
-                }
+                /* WHY: Inner left_to_right fills remaining width with breadcrumbs. */
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    if is_virtual {
+                        return;
+                    }
+                    if let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) {
+                        out_action = Some(a);
+                    }
+                });
             },
         );
 
+        /* Row 3: View mode controls (right-aligned). Fixed height for layout stability. */
+        let row3 = crate::views::top_bar::view_mode::ViewModeBar::new(
+            app.state.active_view_mode(),
+            is_virtual,
+            app.state.active_split_direction(),
+            app.state.active_pane_order(),
+            app.state
+                .config
+                .settings
+                .settings()
+                .behavior
+                .scroll_sync_enabled,
+            app.state.scroll.sync_override,
+            app.state.update.available.is_some(),
+            app.state.update.checking,
+            true,
+        )
+        .show(ui, &mut app.state.search);
+        if let Some(a) = row3 {
+            out_action = Some(a);
+        }
+
+        /* Row 4 (popup): Document search bar — shown below Row 3 when active. */
         if app.state.search.doc_search_open
-            && let Some(a) = crate::views::top_bar::DocSearchBar::show(ui, &mut app.state.search)
+            && let Some(a) =
+                crate::views::top_bar::search::DocSearchBar::show(ui, &mut app.state.search)
         {
             out_action = Some(a);
         }
@@ -89,114 +130,5 @@ impl<'a> TabToolbar<'a> {
         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
         let rel = ShellLogicOps::relative_full_path(doc_path, ws_root.as_deref());
         Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui)
-    }
-
-    fn render_view_mode_bar(
-        ui: &mut egui::Ui,
-        app: &mut KatanaApp,
-        is_changelog: bool,
-    ) -> Option<AppAction> {
-        crate::views::top_bar::ViewModeBar::new(
-            app.state.active_view_mode(),
-            is_changelog,
-            app.state.active_split_direction(),
-            app.state.active_pane_order(),
-            app.state
-                .config
-                .settings
-                .settings()
-                .behavior
-                .scroll_sync_enabled,
-            app.state.scroll.sync_override,
-            app.state.update.available.is_some(),
-            app.state.update.checking,
-            true,
-        )
-        .show(ui, &mut app.state.search)
-    }
-}
-
-impl<'a> Breadcrumbs<'a> {
-    pub(crate) fn new(
-        app: &'a KatanaApp,
-        rel: &'a str,
-        ws_root: Option<&'a std::path::Path>,
-    ) -> Self {
-        Self { app, rel, ws_root }
-    }
-
-    pub(crate) fn show(self, ui: &mut egui::Ui) -> Option<AppAction> {
-        let app = self.app;
-        let rel = self.rel;
-        let ws_root = self.ws_root;
-        let mut breadcrumb_action = None;
-
-        ui.horizontal_centered(|ui| {
-            let segments: Vec<&str> = rel.split('/').collect();
-            let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
-
-            for (i, seg) in segments.iter().enumerate() {
-                if i > 0 {
-                    ui.add(
-                        egui::Image::new(crate::Icon::ChevronRight.uri())
-                            .tint(ui.visuals().text_color())
-                            .fit_to_exact_size(egui::vec2(CHEVRON_ICON_SIZE, CHEVRON_ICON_SIZE)),
-                    );
-                }
-
-                if ws_root.is_none() {
-                    ui.label(egui::RichText::new(*seg).small());
-                    continue;
-                }
-
-                current_path = current_path.join(seg);
-                let is_last = i == segments.len() - 1;
-
-                if is_last {
-                    ui.add(
-                        egui::Label::new(egui::RichText::new(*seg).small())
-                            .sense(egui::Sense::hover()),
-                    );
-                } else {
-                    Self::render_breadcrumb_segment(
-                        ui,
-                        seg,
-                        app,
-                        &current_path,
-                        &mut breadcrumb_action,
-                    );
-                }
-            }
-        });
-
-        breadcrumb_action
-    }
-
-    fn render_breadcrumb_segment(
-        ui: &mut egui::Ui,
-        seg: &str,
-        app: &KatanaApp,
-        current_path: &std::path::Path,
-        breadcrumb_action: &mut Option<AppAction>,
-    ) {
-        crate::widgets::MenuButtonOps::show(ui, egui::RichText::new(seg).small(), |ui| {
-            let mut ctx_action = crate::app_state::AppAction::None;
-
-            if let Some(ws) = &app.state.workspace.data
-                && let Some(katana_core::workspace::TreeEntry::Directory { children, .. }) =
-                    crate::views::panels::tree::TreeLogicOps::find_node_in_tree(
-                        &ws.tree,
-                        current_path,
-                    )
-            {
-                crate::views::panels::explorer::BreadcrumbMenu::new(children, &mut ctx_action)
-                    .show(ui);
-            }
-
-            if !matches!(ctx_action, crate::app_state::AppAction::None) {
-                *breadcrumb_action = Some(ctx_action);
-                ui.close();
-            }
-        });
     }
 }

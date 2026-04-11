@@ -122,6 +122,7 @@ impl SectionLogicOps {
                             &mut section_lifecycle,
                             &mut block_anchors,
                             hovered_lines.as_deref_mut(),
+                            is_slideshow,
                         );
                     }
                     RenderedSection::LocalImage { path, alt, .. } => {
@@ -138,6 +139,7 @@ impl SectionLogicOps {
                             &mut section_lifecycle,
                             &mut block_anchors,
                             hovered_lines.as_deref_mut(),
+                            is_slideshow,
                         );
                     }
                     _ => {

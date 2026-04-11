@@ -17,6 +17,8 @@ pub(super) mod command_palette_results;
 pub mod file_ops;
 pub(super) mod file_ops_rename_delete;
 pub mod meta_info;
+mod meta_info_fields;
+mod meta_info_logic;
 pub mod search;
 pub(super) mod search_tabs;
 pub mod terms;

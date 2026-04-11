@@ -7,6 +7,7 @@ pub(crate) const FULLSCREEN_CLOSE_SIZE: f32 = 32.0;
 pub(crate) const FULLSCREEN_CLOSE_MARGIN: f32 = 20.0;
 pub(crate) const MIN_ZOOM: f32 = 0.5;
 pub(crate) const MAX_ZOOM: f32 = 5.0;
+pub(crate) const CLOSE_BTN_IDLE_OPACITY: f32 = 0.8;
 
 pub(super) const SLIDESHOW_CONTROL_HEIGHT: f32 = 36.0;
 pub(super) const SLIDESHOW_CONTROL_WIDTH: f32 = 160.0;
@@ -14,12 +15,14 @@ pub(super) const SLIDESHOW_CONTROL_CORNER_RADIUS: f32 = 18.0;
 pub(super) const SLIDESHOW_CONTROL_PADDING_X: i8 = 20;
 pub(super) const SLIDESHOW_CONTROL_PADDING_Y: i8 = 4;
 pub(super) const SLIDESHOW_CONTROL_SPACING: f32 = 8.0;
-pub(super) const SLIDESHOW_BG_ALPHA_SCALE: f32 = 0.8;
+pub(super) const SLIDESHOW_BG_ALPHA_SCALE: f32 = 1.0;
 
 pub(super) const SLIDESHOW_CONTROL_FADE_DELAY: f64 = 1.5;
 pub(super) const SLIDESHOW_CONTROL_FADE_DURATION: f32 = 0.5;
 pub(super) const SLIDESHOW_OPACITY_MAX: f32 = 1.0;
 pub(super) const SLIDESHOW_OPACITY_MIN: f32 = 0.0;
+
+pub(crate) const FULLSCREEN_FADE_OUT_DURATION: f32 = 0.2;
 
 pub use super::types::FullscreenLogicOps;
 
@@ -63,7 +66,7 @@ impl FullscreenLogicOps {
             .diagram_controller
             .close
             .clone();
-        super::fullscreen_impl::show_fullscreen_svg(ctx, img, &dc_close, viewer_state, idx)
+        super::fullscreen_svg::show_fullscreen_svg(ctx, img, &dc_close, viewer_state, idx)
     }
 
     pub(crate) fn show_fullscreen_local_image(
@@ -81,7 +84,7 @@ impl FullscreenLogicOps {
             .diagram_controller
             .close
             .clone();
-        super::fullscreen_impl::show_fullscreen_local(ctx, path, &dc_close, viewer_state, idx)
+        super::fullscreen_local::show_fullscreen_local(ctx, path, &dc_close, viewer_state, idx)
     }
 
     pub(crate) fn render_slideshow_modal(

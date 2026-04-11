@@ -3,19 +3,21 @@ use crate::views::app_frame::types::*;
 use crate::shell::KatanaApp;
 use eframe::egui;
 
-const ACTIVITY_RAIL_PADDING: f32 = 8.0;
-
+/* WHY: UI implementation for ExplorerSidebar. */
 impl<'a> ExplorerSidebar<'a> {
+    /* WHY: Factory method to bind the layout state to the UI structure. */
     pub(crate) fn new(app: &'a mut KatanaApp) -> Self {
         Self { app }
     }
 
     pub(crate) fn show(self, ui: &mut egui::Ui) {
-        let app = self.app;
+        let app = &mut *self.app;
 
         egui::Panel::left("activity_rail")
             .resizable(false)
-            .exact_size(crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + ACTIVITY_RAIL_PADDING)
+            .exact_size(
+                crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + crate::shell::ACTIVITY_RAIL_PADDING,
+            )
             .frame(
                 egui::Frame::side_top_panel(&ui.ctx().global_style())
                     .inner_margin(egui::Margin::ZERO),
@@ -23,16 +25,20 @@ impl<'a> ExplorerSidebar<'a> {
             .show_inside(ui, |ui| {
                 ui.vertical_centered(|ui| {
                     ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        ui.add_space(ACTIVITY_RAIL_PADDING);
+                        ui.add_space(crate::shell::ACTIVITY_RAIL_PADDING);
                         let settings_id = egui::Id::new("rail_fixed").with("settings");
                         ExplorerSidebarItems::render_settings_toggle(ui, app, settings_id);
 
-                        ui.add_space(ACTIVITY_RAIL_PADDING);
+                        ui.add_space(crate::shell::ACTIVITY_RAIL_PADDING);
                         let history_id = egui::Id::new("rail_fixed").with("history");
                         ExplorerSidebarItems::render_history_toggle(ui, app, history_id, 0);
 
+                        ui.add_space(crate::shell::ACTIVITY_RAIL_PADDING);
+                        let help_id = egui::Id::new("rail_fixed").with("help");
+                        ExplorerSidebarItems::render_help_toggle(ui, app, help_id);
+
                         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                            ui.add_space(ACTIVITY_RAIL_PADDING);
+                            ui.add_space(crate::shell::ACTIVITY_RAIL_PADDING);
                             Self::render_rail_items(ui, app);
                         });
                     });
@@ -57,13 +63,16 @@ impl<'a> ExplorerSidebar<'a> {
                         &mut app.state.search,
                         &app.state.global_workspace.state().histories,
                         active_path.as_deref(),
+                        &app.state.document.tab_groups,
                         &mut app.pending_action,
                     )
                     .show(ui);
                 });
         }
+        Self::render_rail_popup(ui, app);
     }
 
+    /* WHY: Renders the core activity rail items with drag-reorder capabilities. */
     fn render_rail_items(ui: &mut egui::Ui, app: &mut KatanaApp) {
         let order = app
             .state
@@ -77,7 +86,6 @@ impl<'a> ExplorerSidebar<'a> {
         let mut rail_rects = Vec::new();
         let mut responses = Vec::new();
         let mut dragged_source: Option<(usize, f32)> = None;
-        let mut reorder_action = None;
         let mut current_hovered_drop_y = None;
 
         for (idx, item) in order.iter().enumerate() {
@@ -88,7 +96,8 @@ impl<'a> ExplorerSidebar<'a> {
                 let (rect, _) = ui.allocate_exact_size(
                     egui::vec2(
                         ui.available_width(),
-                        crate::icon::IconSize::Large.to_vec2().y + ACTIVITY_RAIL_PADDING,
+                        crate::icon::IconSize::Large.to_vec2().y
+                            + crate::shell::ACTIVITY_RAIL_PADDING,
                     ),
                     egui::Sense::hover(),
                 );
@@ -100,7 +109,7 @@ impl<'a> ExplorerSidebar<'a> {
             if let Some(interact_resp) = act_resp {
                 rail_rects.push((idx, interact_resp.rect));
                 responses.push((idx, item, interact_id, is_being_dragged, interact_resp));
-                ui.add_space(ACTIVITY_RAIL_PADDING);
+                ui.add_space(crate::shell::ACTIVITY_RAIL_PADDING);
             }
         }
 
@@ -131,14 +140,11 @@ impl<'a> ExplorerSidebar<'a> {
             && let Some(action) =
                 ExplorerSidebarDrag::resolve_drag_drop_y(src_idx, ghost_center_y, &rail_rects)
         {
-            reorder_action = Some(action);
-        }
-
-        if let Some(act) = reorder_action {
-            app.pending_action = act;
+            app.pending_action = action;
         }
     }
 
+    /* WHY: Dispatches single item rendering based on activity rail configuration. */
     fn render_single_act_rail_item(
         ui: &mut egui::Ui,
         app: &mut KatanaApp,

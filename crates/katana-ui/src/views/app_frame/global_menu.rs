@@ -30,7 +30,14 @@ impl<'a> GlobalMenuBar<'a> {
                         ui.close_menu();
                     }
                     ui.separator();
-                    if ui.button(&i18n.menu.settings).clicked() {
+                    if ui
+                        .add(
+                            egui::Button::new(&i18n.menu.settings).shortcut_text(
+                                crate::os_command::OsCommandOps::get("open_settings"),
+                            ),
+                        )
+                        .clicked()
+                    {
                         app.pending_action = AppAction::ToggleSettings;
                         ui.close_menu();
                     }
@@ -68,18 +75,39 @@ impl<'a> GlobalMenuBar<'a> {
                 });
 
                 crate::widgets::MenuButtonOps::show(ui, &i18n.menu.file, |ui| {
-                    if ui.button(&i18n.menu.open_workspace).clicked() {
+                    if ui
+                        .add(
+                            egui::Button::new(&i18n.menu.open_workspace).shortcut_text(
+                                crate::os_command::OsCommandOps::get("open_workspace"),
+                            ),
+                        )
+                        .clicked()
+                    {
                         app.pending_action = AppAction::PickOpenWorkspace;
                         ui.close_menu();
                     }
-                    if ui.button(&i18n.menu.save).clicked() {
+                    if ui
+                        .add(
+                            egui::Button::new(&i18n.menu.save).shortcut_text(
+                                crate::os_command::OsCommandOps::get("save_document"),
+                            ),
+                        )
+                        .clicked()
+                    {
                         app.pending_action = AppAction::SaveDocument;
                         ui.close_menu();
                     }
                 });
 
                 crate::widgets::MenuButtonOps::show(ui, &i18n.menu.view, |ui| {
-                    if ui.button(&i18n.menu.command_palette).clicked() {
+                    if ui
+                        .add(
+                            egui::Button::new(&i18n.menu.command_palette).shortcut_text(
+                                crate::os_command::OsCommandOps::get("open_palette"),
+                            ),
+                        )
+                        .clicked()
+                    {
                         app.pending_action = AppAction::ToggleCommandPalette;
                         ui.close_menu();
                     }
@@ -90,7 +118,22 @@ impl<'a> GlobalMenuBar<'a> {
                         app.pending_action = AppAction::ShowReleaseNotes;
                         ui.close_menu();
                     }
-                    if ui.button(&i18n.menu.demo).clicked() {
+                    ui.separator();
+                    if ui.button(&i18n.menu.welcome_screen).clicked() {
+                        app.pending_action = AppAction::OpenWelcomeScreen;
+                        ui.close_menu();
+                    }
+                    if ui.button(&i18n.menu.user_guide).clicked() {
+                        app.pending_action = AppAction::OpenUserGuide;
+                        ui.close_menu();
+                    }
+                    if ui
+                        .add(
+                            egui::Button::new(&i18n.menu.demo)
+                                .shortcut_text(crate::os_command::OsCommandOps::get("open_demo")),
+                        )
+                        .clicked()
+                    {
                         app.pending_action = AppAction::OpenHelpDemo;
                         ui.close_menu();
                     }

@@ -3,15 +3,12 @@ use crate::app_state::AppAction;
 use eframe::egui;
 
 mod shell_ui_frame;
+mod shell_ui_shortcuts;
 mod shell_ui_update;
 mod types;
 pub use types::ShellUiOps;
 
 impl ShellUiOps {
-    pub(crate) fn indent_prefix(depth: usize) -> String {
-        "  ".repeat(depth)
-    }
-
     pub fn update_native_menu_strings_from_i18n() {
         crate::native_menu::NativeMenuOps::update_native_menu_strings_from_i18n();
     }
@@ -49,6 +46,7 @@ pub(crate) struct TreeRenderContext<'a, 'b> {
     pub disable_context_menu: bool,
     pub is_flat_view: bool,
     pub ws_root: Option<&'b std::path::Path>,
+    pub tab_groups: Option<&'b [crate::state::document::TabGroup]>,
 }
 
 use crate::shell::KatanaApp;

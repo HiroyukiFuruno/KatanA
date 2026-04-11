@@ -28,7 +28,7 @@ impl<'a> GroupHeader<'a> {
         if group_resp.clicked() {
             *tab_action = Some(AppAction::ToggleCollapseTabGroup(self.g.id.clone()));
         }
-        if group_resp.secondary_clicked() {
+        if group_resp.secondary_clicked() && self.g.name != "demo" {
             ui.memory_mut(|mem| mem.toggle_popup(egui::Id::new("group_popup").with(&self.g.id)));
         }
 
@@ -98,7 +98,7 @@ impl<'a> GroupHeader<'a> {
         group_resp: &egui::Response,
     ) {
         let popup_id = egui::Id::new("group_popup").with(&self.g.id);
-        if self.inline_rename_group == Some(&self.g.id) {
+        if self.inline_rename_group == Some(&self.g.id) && self.g.name != "demo" {
             ui.memory_mut(|mem| mem.open_popup(popup_id));
             *tab_action = Some(AppAction::ClearInlineRename);
         }

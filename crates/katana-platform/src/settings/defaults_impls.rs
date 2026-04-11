@@ -44,6 +44,8 @@ impl Default for BehaviorSettings {
             auto_refresh_interval_secs: SettingsDefaultOps::default_auto_refresh_interval_secs(),
             scroll_sync_enabled: true,
             confirm_close_dirty_tab: true,
+            slideshow_hover_highlight: true,
+            slideshow_show_diagram_controls: true,
         }
     }
 }

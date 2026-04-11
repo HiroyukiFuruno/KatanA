@@ -73,10 +73,12 @@ impl KatanaApp {
             AppAction::ChangeLanguage(lang) => {
                 crate::i18n::I18nOps::set_language(&lang);
                 crate::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
-                self.state.config.settings.settings_mut().language = lang;
+                self.state.config.settings.settings_mut().language = lang.clone();
                 if !self.state.config.try_save_settings() {
                     tracing::warn!("Failed to save language setting");
                 }
+                /* WHY: Synchronize demo content localization if the demo is open */
+                self.handle_action_switch_demo_lang(&lang);
             }
             AppAction::ToggleSettings => {
                 self.state.layout.show_settings = !self.state.layout.show_settings;
@@ -85,8 +87,6 @@ impl KatanaApp {
             AppAction::ToggleToc => self.state.layout.show_toc = !self.state.layout.show_toc,
             AppAction::ToggleWorkspacePanel => {
                 let current = self.state.layout.show_workspace_panel;
-                self.state.layout.show_explorer = false;
-                self.state.layout.show_history_panel = false;
                 self.state.layout.show_workspace_panel = !current;
                 if !current {
                     /* WHY: Reload from disk to show the latest persisted workspace list */
@@ -95,8 +95,6 @@ impl KatanaApp {
             }
             AppAction::ToggleExplorer => {
                 let current = self.state.layout.show_explorer;
-                self.state.layout.show_workspace_panel = false;
-                self.state.layout.show_history_panel = false;
                 self.state.layout.show_explorer = !current;
                 if !current {
                     /* WHY: Reload from disk to show the latest history in empty workspace view */
@@ -105,8 +103,6 @@ impl KatanaApp {
             }
             AppAction::ToggleHistoryPanel => {
                 let current = self.state.layout.show_history_panel;
-                self.state.layout.show_workspace_panel = false;
-                self.state.layout.show_explorer = false;
                 self.state.layout.show_history_panel = !current;
                 if !current {
                     /* WHY: Reload from disk to show the latest history list */
@@ -117,6 +113,15 @@ impl KatanaApp {
                 self.state.layout.show_search_modal = !self.state.layout.show_search_modal;
             }
             AppAction::ToggleCommandPalette => self.state.command_palette.toggle(),
+            AppAction::ToggleRailPopup(popup) => {
+                if self.state.layout.active_rail_popup == Some(popup) {
+                    self.state.layout.active_rail_popup = None;
+                } else {
+                    self.state.layout.active_rail_popup = Some(popup);
+                    /* WHY: Ensure the sidebar explorer remains visible whenever an activity rail panel is opened. */
+                    self.state.layout.show_explorer = true;
+                }
+            }
             AppAction::ToggleSlideshow => self.handle_action_toggle_slideshow(ctx),
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;

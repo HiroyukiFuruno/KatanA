@@ -85,12 +85,33 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
                 }
                 ui.close();
             }
+            crate::widgets::MenuButtonOps::show(
+                ui,
+                &crate::i18n::I18nOps::get().tab.add_to_group,
+                |ui| {
+                    super::tab_group_menu::TabGroupMenu::render(
+                        ui,
+                        path,
+                        ctx,
+                        true,
+                        Some(children),
+                    );
+                },
+            );
         } else if entry.is_some() {
             #[allow(clippy::collapsible_if)]
             if ui.button(msg.open.clone()).clicked() {
                 *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
                 ui.close();
             }
+
+            crate::widgets::MenuButtonOps::show(
+                ui,
+                &crate::i18n::I18nOps::get().tab.add_to_group,
+                |ui| {
+                    super::tab_group_menu::TabGroupMenu::render(ui, path, ctx, false, None);
+                },
+            );
         }
 
         ui.separator();

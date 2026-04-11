@@ -2,6 +2,24 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.18.7] - 2026-04-11 22:34:24 (UTC)
+
+### ✨ Improvements
+
+- Refined the slideshow mode with an animated outrigger tab and comprehensive hover highlighting for all document nodes.
+- Enhanced Workspace UI with a modernized Finder-style tab toolbar, improved Workspace Toggle Modal, and stabilized layout components.
+- Improved Markdown rendering to correctly detect and activate plain-text URLs within list items.
+- Unified shortcut management and refined general UI/UX behaviors (e.g., context menu labels and overlay transparency).
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where the layout would regress when combining tab toolbars and side panels.
+
+### 🔧 System
+
+- Optimized CI/CD pipeline and local Make/Lefthook execution by eliminating redundant test targets and managing concurrent job parallelism.
+- Centralized resource directories and resolved Windows packaging dependency issues for a cleaner architecture and distribution.
+
 ## [0.18.6] - 2026-04-10 19:06:06 (UTC)
 
 ### ✨ Improvements

@@ -45,6 +45,7 @@ pub enum AppAction {
     ToggleHistoryPanel,
     ToggleSearchModal,
     ToggleCommandPalette,
+    ToggleRailPopup(crate::state::layout::RailPopup),
     ToggleSlideshow,
     ToggleExplorerFilter,
     CheckForUpdates,
@@ -96,6 +97,8 @@ pub enum AppAction {
     ConfirmRelaunch,
     ShowReleaseNotes,
     OpenHelpDemo,
+    OpenWelcomeScreen,
+    OpenUserGuide,
     SwitchDemoLanguage(String),
     ClearAllCaches,
     CreateTabGroup {
@@ -103,9 +106,18 @@ pub enum AppAction {
         color_hex: String,
         initial_member: PathBuf,
     },
+    CreateTabGroupMany {
+        name: String,
+        color_hex: String,
+        members: Vec<PathBuf>,
+    },
     AddTabToGroup {
         group_id: String,
         member: PathBuf,
+    },
+    AddTabsToGroup {
+        group_id: String,
+        members: Vec<PathBuf>,
     },
     RemoveTabFromGroup(PathBuf),
     RenameTabGroup {

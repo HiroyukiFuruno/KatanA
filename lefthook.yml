@@ -1,16 +1,31 @@
 # lefthook.yml
+output: false
+
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
     formatting:
       glob: "*.rs"
       run: make fmt
     clippy:
       glob: "*.rs"
-      run: make lint-fix
+      run: make lint
+    ast-lint:
+      glob: "*.rs"
+      run: make ast-lint
 
 pre-push:
   commands:
-    ci:
+    check-strict:
+      run: make -j 2 check
       glob: "*.{rs,toml,lock}"
-      run: make check
+      only:
+        - ref: master
+        - ref: release/*
+
+    check-light:
+      run: make check-light
+      glob: "*.{rs,toml,lock}"
+      skip:
+        - ref: master
+        - ref: release/*

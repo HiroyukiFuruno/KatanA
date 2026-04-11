@@ -71,6 +71,7 @@ mod tests {
     };
 
     use super::HtmlLogicOps;
+    const HTML_BADGE_HEIGHT_MIN: f32 = 28.0;
 
     #[test]
     fn html_block_badge_advances_cursor_before_following_text() {
@@ -102,12 +103,12 @@ mod tests {
         let gap_from_top = bounds.y0 as f32;
 
         assert!(
-            after_html_y.get() >= 28.0,
+            after_html_y.get() >= HTML_BADGE_HEIGHT_MIN,
             "HTML badge block must advance cursor by a meaningful height, got {:.1}",
             after_html_y.get()
         );
         assert!(
-            gap_from_top >= 28.0,
+            gap_from_top >= HTML_BADGE_HEIGHT_MIN,
             "Following text must render below the badge row, got Y={gap_from_top:.1}"
         );
     }

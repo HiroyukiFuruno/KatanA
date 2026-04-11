@@ -69,14 +69,18 @@ header()  { echo "${BOLD}${CYAN}==> $*${RESET}"; }
 # ── Execution ─────────────────────────────────────────────────────────────────
 header "Testing Code Coverage Gate"
 
+# Detect job limit
+JOBS=${JOBS:-2}
+info "Using $JOBS parallel jobs/threads"
+
 info "Cleaning up old coverage data..."
 cargo llvm-cov clean --workspace
 
 # ── Test Execution + Table Report ──
-info "Running tests with llvm-cov..."
-cargo llvm-cov --workspace --lib --tests -q \
+info "Running tests with llvm-cov (-j $JOBS)..."
+cargo llvm-cov --jobs "$JOBS" --workspace --lib --tests -q \
     --ignore-filename-regex "${COVERAGE_IGNORE}" \
-    -- --test-threads=1 --skip fixture
+    -- --test-threads="$JOBS" --skip fixture
 
 # ── Gate Check: Verify that all source code lines are executed at least once ──
 #

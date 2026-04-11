@@ -10,10 +10,6 @@ use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 
 use crate::app_state::*;
-use std::ffi::OsStr;
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
-use std::sync::mpsc::Receiver;
 
 pub(crate) trait DocumentOps {
     fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool);
@@ -39,6 +35,7 @@ impl DocumentOps for KatanaApp {
             }
         }
 
+        /* WHY: Check if already open. If so, just activate if requested. */
         if let Some(idx) = self
             .state
             .document
@@ -48,15 +45,18 @@ impl DocumentOps for KatanaApp {
         {
             if activate {
                 self.state.document.active_doc_idx = Some(idx);
-                let doc = &mut self.state.document.open_documents[idx];
-                if !doc.is_loaded {
-                    let Ok(loaded_doc) = self.fs.load_document(&path) else {
-                        return;
-                    };
-                    let pinned = doc.is_pinned;
-                    *doc = loaded_doc;
-                    doc.is_pinned = pinned;
+
+                /* WHY: Load if needed. */
+                let doc_is_loaded = self.state.document.open_documents[idx].is_loaded;
+                if !doc_is_loaded
+                    && !path.to_string_lossy().starts_with("Katana://")
+                    && let Ok(mut loaded_doc) = self.fs.load_document(&path)
+                {
+                    let pinned = self.state.document.open_documents[idx].is_pinned;
+                    loaded_doc.is_pinned = pinned;
+                    self.state.document.open_documents[idx] = loaded_doc;
                 }
+
                 let src = self.state.document.open_documents[idx].buffer.clone();
                 let concurrency = self
                     .state
@@ -74,110 +74,124 @@ impl DocumentOps for KatanaApp {
             return;
         }
 
-        if activate {
+        /* WHY: Not open yet. Load and add to open documents. */
+        let doc = if activate {
             match self.fs.load_document(&path) {
-                Ok(doc) => {
-                    let src = doc.buffer.clone();
-                    let concurrency = self
-                        .state
-                        .config
-                        .settings
-                        .settings()
-                        .performance
-                        .diagram_concurrency;
-                    self.full_refresh_preview(&path, &src, false, concurrency);
-                    if self.state.search.doc_search_open {
-                        self.refresh_doc_search_matches(&src);
-                    }
-                    self.state.document.open_documents.push(doc);
-                    self.state.document.active_doc_idx =
-                        Some(self.state.document.open_documents.len() - 1);
-                    self.state.initialize_tab_split_state(path.clone());
-                    self.save_workspace_state();
-                    self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
-                }
+                Ok(d) => d,
                 Err(e) => {
-                    let error = e.to_string();
                     self.state.layout.status_message = Some((
                         crate::i18n::I18nOps::tf(
                             &crate::i18n::I18nOps::get().status.cannot_open_file,
-                            &[("error", error.as_str())],
+                            &[("error", e.to_string().as_str())],
                         ),
                         crate::app_state::StatusType::Error,
                     ));
+                    return;
                 }
             }
         } else {
-            self.state
-                .document
-                .open_documents
-                .push(katana_core::document::Document::new_empty(path.clone()));
-            self.state.initialize_tab_split_state(path);
-            self.save_workspace_state();
+            katana_core::document::Document::new_empty(&path)
+        };
+
+        let src = doc.buffer.clone();
+        let (concurrency, search_open) = {
+            let settings = self.state.config.settings.settings();
+            (
+                settings.performance.diagram_concurrency,
+                self.state.search.doc_search_open,
+            )
+        };
+        self.full_refresh_preview(&path, &src, false, concurrency);
+        self.state.document.open_documents.push(doc);
+        if activate {
+            self.state.document.active_doc_idx = Some(self.state.document.open_documents.len() - 1);
+            if search_open {
+                /* WHY: Refresh search matches only when activating a document.
+                Background loading must not disrupt the current UI state. */
+                self.refresh_doc_search_matches(&src);
+            }
         }
+        self.state.initialize_tab_split_state(path.clone());
+        self.save_workspace_state();
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
     }
+
     fn force_close_document(&mut self, idx: usize) {
         DocCloseOps::force_close_document(self, idx);
     }
+
     fn handle_update_buffer(&mut self, content: String) {
-        let path = if let Some(doc) = self.state.active_document_mut() {
-            if doc.is_reference {
-                return;
-            }
-            doc.update_buffer(content.clone());
-            doc.path.clone()
-        } else {
+        let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
-        self.refresh_preview(&path, &content);
+        let doc = &mut self.state.document.open_documents[idx];
+        doc.buffer = content.clone();
+        doc.is_dirty = true;
+
+        let path = doc.path.clone();
+        let concurrency = self
+            .state
+            .config
+            .settings
+            .settings()
+            .performance
+            .diagram_concurrency;
+        self.full_refresh_preview(&path, &content, true, concurrency);
+
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
     }
+
     fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String) {
-        let (path, content) = if let Some(doc) = self.state.active_document_mut() {
-            if doc.is_reference {
-                return;
-            }
-            if span.start <= span.end && span.end <= doc.buffer.len() {
-                doc.buffer.replace_range(span, &replacement);
-                doc.is_dirty = true;
-            }
-            (doc.path.clone(), doc.buffer.clone())
-        } else {
+        let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
-        self.refresh_preview(&path, &content);
+        let doc = &mut self.state.document.open_documents[idx];
+        doc.buffer.replace_range(span, &replacement);
+        doc.is_dirty = true;
+
+        let path = doc.path.clone();
+        let content = doc.buffer.clone();
+        let concurrency = self
+            .state
+            .config
+            .settings
+            .settings()
+            .performance
+            .diagram_concurrency;
+        self.full_refresh_preview(&path, &content, true, concurrency);
+
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
     }
+
     fn handle_save_document(&mut self) {
-        let Some(doc) = self.state.active_document_mut() else {
+        let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
-        if doc.is_reference {
+        let doc = &mut self.state.document.open_documents[idx];
+        if !doc.is_dirty {
             return;
         }
-        match self.fs.save_document(doc) {
-            Ok(()) => {
-                self.state.layout.status_message = Some((
-                    crate::i18n::I18nOps::get().status.saved.clone(),
-                    crate::app_state::StatusType::Success,
-                ));
-                self.save_workspace_state();
-                self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
-            }
-            Err(e) => {
-                let error = e.to_string();
-                self.state.layout.status_message = Some((
-                    crate::i18n::I18nOps::tf(
-                        &crate::i18n::I18nOps::get().status.save_failed,
-                        &[("error", error.as_str())],
-                    ),
-                    crate::app_state::StatusType::Error,
-                ));
-            }
+
+        if let Err(e) = self.fs.save_document(doc) {
+            self.state.layout.status_message = Some((
+                crate::i18n::I18nOps::tf(
+                    &crate::i18n::I18nOps::get().status.save_failed,
+                    &[("error", &e.to_string())],
+                ),
+                crate::app_state::StatusType::Error,
+            ));
+            return;
         }
+
+        self.state.layout.status_message = Some((
+            crate::i18n::I18nOps::get().status.saved.clone(),
+            crate::app_state::StatusType::Success,
+        ));
     }
 }

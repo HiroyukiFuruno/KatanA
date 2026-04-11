@@ -2,6 +2,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::iter::Peekable;
 use std::ops::Range;
+use std::sync::OnceLock;
 
 use crate::{CommonMarkCache, CommonMarkOptions};
 
@@ -78,6 +79,8 @@ struct DefinitionList {
     is_first_item: bool,
     is_def_list_def: bool,
 }
+
+static URL_RE: OnceLock<regex::Regex> = OnceLock::new();
 
 pub(crate) struct CommonMarkViewerInternal<'a> {
     curr_table: usize,
@@ -1919,11 +1922,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
             }
             pulldown_cmark::Event::Text(text) => {
-                self.event_text(text, ui, max_width);
+                self.event_text(text, ui, cache, options, max_width);
             }
             pulldown_cmark::Event::Code(text) => {
                 self.text_style.code = true;
-                self.event_text(text, ui, max_width);
+                self.event_text(text, ui, cache, options, max_width);
                 self.text_style.code = false;
             }
             pulldown_cmark::Event::InlineHtml(text) => {
@@ -2020,7 +2023,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
             }
             pulldown_cmark::Event::SoftBreak => {
                 self.after_inline_widget = false;
-                self.event_text(CowStr::Borrowed(" "), ui, max_width);
+                self.event_text(CowStr::Borrowed(" "), ui, cache, options, max_width);
             }
             pulldown_cmark::Event::HardBreak => {
                 self.after_inline_widget = false;
@@ -2075,7 +2078,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
         }
     }
 
-    fn event_text(&mut self, text: CowStr, ui: &mut Ui, max_width: f32) {
+    fn event_text(
+        &mut self,
+        text: CowStr,
+        ui: &mut Ui,
+        cache: &mut CommonMarkCache,
+        _options: &CommonMarkOptions,
+        max_width: f32,
+    ) {
         if self.is_in_html_block {
             self.html_block.push_str(&text);
             return;
@@ -2094,46 +2104,86 @@ impl<'a> CommonMarkViewerInternal<'a> {
             for segment in split_inline_text_and_emoji(&text) {
                 match segment {
                     InlineSegment::Text(text) => {
-                        let regex_opt = self.search_query.clone();
-                        if let Some(regex) = regex_opt {
-                            let mut last_end = 0;
-                            for mat in regex.find_iter(text) {
-                                if mat.start() > last_end {
-                                    self.push_inline_text(
-                                        &text[last_end..mat.start()],
-                                        ui,
-                                        max_width,
-                                    );
-                                }
-                                let prev_highlight = self.text_style.highlight;
-                                self.text_style.highlight = true;
-                                self.push_inline_text(&text[mat.start()..mat.end()], ui, max_width);
-                                self.text_style.highlight = prev_highlight;
-                                // When search scroll is pending, flush immediately so the
-                                // highlighted text is laid out and we can scroll to it.
-                                if self.search_scroll_pending {
-                                    self.flush_pending_inline(ui, max_width);
-                                    // Scroll the enclosing ScrollArea to show the cursor
-                                    // (which is now right after the highlighted text).
-                                    ui.scroll_to_cursor(Some(egui::Align::Center));
-                                    self.search_scroll_pending = false;
-                                }
-                                last_end = mat.end();
+                        let url_re = URL_RE.get_or_init(|| {
+                            regex::Regex::new(r#"(?i)https?://[^\s<]*[^\s<.,:;!?"')]"#).unwrap()
+                        });
+
+                        let mut current_text = text;
+                        while let Some(mat) = url_re.find(current_text) {
+                            if mat.start() > 0 {
+                                self.push_inline_text_with_search_highlight(
+                                    &current_text[..mat.start()],
+                                    ui,
+                                    max_width,
+                                );
                             }
-                            if last_end < text.len() {
-                                self.push_inline_text(&text[last_end..], ui, max_width);
+
+                            // Flush any text before the link widget to ensure correct layout order.
+                            // This ensures the link widget is placed after the preceding text.
+                            self.flush_pending_inline(ui, max_width);
+
+                            let url = mat.as_str();
+                            let prev_link = self.link.take();
+                            
+                            // Create and populate the link
+                            let mut link = Link {
+                                destination: url.to_string(),
+                                text: vec![self.text_style.to_richtext(ui, url)],
+                            };
+                            
+                            // Apply search highlighting to the link text if needed
+                            if let Some(regex) = &self.search_query {
+                                if regex.is_match(url) {
+                                    link.text[0] = link.text[0].clone().background_color(egui::Color32::from_rgba_unmultiplied(255, 255, 0, 60));
+                                }
                             }
-                        } else {
-                            self.push_inline_text(text, ui, max_width);
+
+                            // Render the link widget immediately
+                            link.end(ui, cache);
+                            
+                            self.link = prev_link;
+                            self.after_inline_widget = true;
+
+                            current_text = &current_text[mat.end()..];
+                        }
+                        if !current_text.is_empty() {
+                            self.push_inline_text_with_search_highlight(current_text, ui, max_width);
                         }
                     }
                     InlineSegment::Emoji(grapheme) => {
                         if !self.try_render_inline_emoji(ui, max_width, grapheme) {
-                            self.push_inline_text(grapheme, ui, max_width);
+                            self.push_inline_text_with_search_highlight(grapheme, ui, max_width);
                         }
                     }
                 }
             }
+        }
+    }
+
+    fn push_inline_text_with_search_highlight(&mut self, text: &str, ui: &mut Ui, max_width: f32) {
+        let regex_opt = self.search_query.clone();
+        if let Some(regex) = regex_opt {
+            let mut last_end = 0;
+            for mat in regex.find_iter(text) {
+                if mat.start() > last_end {
+                    self.push_inline_text(&text[last_end..mat.start()], ui, max_width);
+                }
+                let prev_highlight = self.text_style.highlight;
+                self.text_style.highlight = true;
+                self.push_inline_text(&text[mat.start()..mat.end()], ui, max_width);
+                self.text_style.highlight = prev_highlight;
+                if self.search_scroll_pending {
+                    self.flush_pending_inline(ui, max_width);
+                    ui.scroll_to_cursor(Some(egui::Align::Center));
+                    self.search_scroll_pending = false;
+                }
+                last_end = mat.end();
+            }
+            if last_end < text.len() {
+                self.push_inline_text(&text[last_end..], ui, max_width);
+            }
+        } else {
+            self.push_inline_text(text, ui, max_width);
         }
     }
 

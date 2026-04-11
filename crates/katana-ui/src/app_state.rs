@@ -56,10 +56,15 @@ impl AppState {
         let mut search = SearchState::new();
         search.md_history.recent_terms = settings.settings().search.recent_md_queries.clone();
 
+        let mut layout = LayoutState::new();
+        layout.slideshow_hover_highlight = settings.settings().behavior.slideshow_hover_highlight;
+        layout.slideshow_show_diagram_controls =
+            settings.settings().behavior.slideshow_show_diagram_controls;
+
         Self {
             document: DocumentState::new(),
             workspace: WorkspaceState::new(),
-            layout: LayoutState::new(),
+            layout,
             search,
             scroll: ScrollState::new(),
             update: UpdateState::new(),

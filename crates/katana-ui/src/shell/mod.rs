@@ -44,12 +44,32 @@ pub(crate) const RECENT_WORKSPACES_ITEM_SPACING: f32 = 4.0;
 pub(crate) const RECENT_WORKSPACES_HEADING_LEFT_PADDING: f32 = 10.0;
 pub(crate) const HISTORY_MODAL_EMPTY_BOTTOM_SPACING: f32 = 10.0;
 
-pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
+pub(crate) const RAIL_POPUP_WIDTH: f32 = 320.0;
+pub(crate) const RAIL_POPUP_HEIGHT: f32 = 400.0;
+pub(crate) const RAIL_POPUP_ROUNDING: f32 = 12.0;
+pub(crate) const RAIL_POPUP_PADDING: i8 = 12;
+pub(crate) const RAIL_POPUP_MARGIN: f32 = 4.0;
+pub(crate) const RAIL_POPUP_ANIMATION_TIME: f32 = 0.15;
+pub(crate) const RAIL_POPUP_SHADOW_ALPHA: u8 = 64;
+pub(crate) const RAIL_POPUP_Y_OFFSET_SEARCH: f32 = 40.0;
+pub(crate) const RAIL_POPUP_Y_OFFSET_HISTORY: f32 = 100.0;
+pub(crate) const RAIL_POPUP_Y_OFFSET_WORKSPACE: f32 = 40.0;
+pub(crate) const RAIL_POPUP_Y_OFFSET_HELP: f32 = 60.0;
+pub(crate) const RAIL_POPUP_SPACING_LARGE: f32 = 8.0;
+pub(crate) const SEARCH_FALLBACK_RECT_WIDTH: f32 = 10.0;
 
+pub(crate) const ACTIVITY_RAIL_PADDING: f32 = 8.0;
+
+pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
 pub(crate) const TREE_LABEL_HOFFSET: f32 = 4.0;
+pub(crate) const TREE_FONT_SIZE: f32 = 13.0;
+pub(crate) const TREE_INDENT_STEP: f32 = 12.0;
+pub(crate) const TREE_ICON_ARROW_GAP: f32 = 4.0;
+pub(crate) const TREE_ICON_LABEL_GAP: f32 = 6.0;
+pub(crate) const TREE_HOVER_ROUNDING: f32 = 2.0;
+pub(crate) const TREE_HOVER_GAMMA: f32 = 0.4;
 
 pub(crate) const DOWNLOAD_STATUS_CHECK_INTERVAL_MS: u64 = 200;
-
 pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
 
 impl KatanaApp {

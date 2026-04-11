@@ -29,7 +29,7 @@ pub struct SearchState {
     pub md_results: Vec<katana_core::search::SearchResult>,
     pub md_history: katana_core::search::SearchHistory,
 
-    /* WHY: Document search state (Cmd+F) */
+    /* WHY: Document search state (Command+F) */
     pub doc_search_open: bool,
     pub doc_search_query: String,
     pub doc_search_matches: Vec<std::ops::Range<usize>>,

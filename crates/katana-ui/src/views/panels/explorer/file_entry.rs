@@ -1,4 +1,7 @@
-use crate::shell::{ACTIVE_FILE_HIGHLIGHT_ROUNDING, TREE_LABEL_HOFFSET, TREE_ROW_HEIGHT};
+use crate::shell::{
+    ACTIVE_FILE_HIGHLIGHT_ROUNDING, TREE_FONT_SIZE, TREE_HOVER_GAMMA, TREE_HOVER_ROUNDING,
+    TREE_ICON_ARROW_GAP, TREE_ICON_LABEL_GAP, TREE_INDENT_STEP, TREE_ROW_HEIGHT,
+};
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
 
@@ -54,8 +57,14 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
                     highlight_color,
                 );
             } else if ui.rect_contains_pointer(full_rect) && ui.is_enabled() {
+                let hover_color = ui
+                    .visuals()
+                    .widgets
+                    .hovered
+                    .bg_fill
+                    .gamma_multiply(TREE_HOVER_GAMMA);
                 ui.painter()
-                    .rect_filled(full_rect, 2.0, ui.visuals().widgets.hovered.bg_fill);
+                    .rect_filled(full_rect, TREE_HOVER_ROUNDING, hover_color);
             }
 
             let mut child_ui = ui.new_child(
@@ -63,32 +72,29 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
                     .max_rect(full_rect)
                     .layout(egui::Layout::left_to_right(egui::Align::Center)),
             );
-            child_ui.add_space(TREE_LABEL_HOFFSET);
+            child_ui.spacing_mut().item_spacing.x = 0.0;
 
-            let prefix_string = crate::shell_ui::ShellUiOps::indent_prefix(ctx.depth);
-            child_ui.add(
-                egui::Label::new(egui::RichText::new(prefix_string).color(text_color))
-                    .selectable(false),
-            );
+            let indent = ctx.depth as f32 * TREE_INDENT_STEP;
+            child_ui.add_space(indent);
 
-            child_ui.allocate_response(
-                egui::vec2(crate::icon::IconSize::Small.to_vec2().x, 0.0),
-                egui::Sense::hover(),
-            );
+            let arrow_width = crate::icon::IconSize::Small.to_vec2().x;
+            child_ui.add_space(arrow_width + TREE_ICON_ARROW_GAP);
 
             child_ui.visuals_mut().override_text_color = Some(text_color);
 
-            if entry.is_markdown() {
-                let img =
-                    crate::icon::Icon::Markdown.ui_image(&child_ui, crate::icon::IconSize::Medium);
-                child_ui.add(img);
+            let icon = if entry.is_markdown() {
+                crate::icon::Icon::Markdown
             } else {
-                let img =
-                    crate::icon::Icon::Document.ui_image(&child_ui, crate::icon::IconSize::Medium);
-                child_ui.add(img);
+                crate::icon::Icon::Document
             };
 
-            let mut rich = egui::RichText::new(name).color(text_color);
+            let img = icon.ui_image(&child_ui, crate::icon::IconSize::Medium);
+            child_ui.add(img);
+            child_ui.add_space(TREE_ICON_LABEL_GAP);
+
+            let mut rich = egui::RichText::new(name)
+                .color(text_color)
+                .size(TREE_FONT_SIZE);
             if is_active {
                 rich = rich.strong();
             }

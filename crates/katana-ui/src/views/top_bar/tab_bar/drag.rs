@@ -48,8 +48,14 @@ impl<'a> TabDragHandler<'a> {
     fn build_action(
         &self,
         to_physical: usize,
-        new_group_id: Option<Option<String>>,
+        mut new_group_id: Option<Option<String>>,
     ) -> Option<AppAction> {
+        use crate::state::document::VirtualPathExt;
+        let src_path = &self.open_documents[self.src_idx].path;
+        if src_path.is_virtual_path() {
+            new_group_id = Some(None);
+        }
+
         let src = self.src_idx;
         if src != to_physical && src + 1 != to_physical {
             return Some(AppAction::ReorderDocument {

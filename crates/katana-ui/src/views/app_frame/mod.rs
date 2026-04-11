@@ -1,3 +1,4 @@
+mod breadcrumbs;
 mod central_content;
 pub(crate) mod global_menu;
 pub mod sidebar;

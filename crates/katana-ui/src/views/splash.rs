@@ -33,18 +33,28 @@ const SPLASH_CONTENT_HEIGHT: f32 = SPLASH_ICON_SIZE
 pub(crate) struct SplashOverlay<'a> {
     pub elapsed: f32,
     pub about_icon: Option<&'a egui::TextureHandle>,
+    pub is_loading: bool,
 }
 
 impl<'a> SplashOverlay<'a> {
-    pub fn new(elapsed: f32, about_icon: Option<&'a egui::TextureHandle>) -> Self {
+    pub fn new(
+        elapsed: f32,
+        about_icon: Option<&'a egui::TextureHandle>,
+        is_loading: bool,
+    ) -> Self {
         Self {
             elapsed,
             about_icon,
+            is_loading,
         }
     }
 
     pub fn show(self, ctx: &egui::Context) -> bool {
-        let opacity = crate::shell_logic::ShellLogicOps::calculate_splash_opacity(self.elapsed);
+        let progress = crate::shell_logic::utils::ShellUtils::calculate_splash_progress(
+            self.elapsed,
+            self.is_loading,
+        );
+        let opacity = crate::shell_logic::utils::ShellUtils::calculate_splash_opacity(progress);
         if opacity <= 0.0 || ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
             return true;
         }
@@ -122,7 +132,10 @@ impl<'a> SplashOverlay<'a> {
         is_dark: bool,
         opacity: f32,
     ) {
-        let progress = crate::shell_logic::ShellLogicOps::calculate_splash_progress(self.elapsed);
+        let progress = crate::shell_logic::utils::ShellUtils::calculate_splash_progress(
+            self.elapsed,
+            self.is_loading,
+        );
         let text = if progress < SPLASH_PROGRESS_PHASE1 {
             "Initializing Katana engine..."
         } else if progress < SPLASH_PROGRESS_PHASE2 {

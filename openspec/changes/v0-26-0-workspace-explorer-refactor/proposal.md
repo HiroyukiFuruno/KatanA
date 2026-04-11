@@ -11,10 +11,12 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `explorer-sidebar`: ファイルツリー閲覧と操作に特化したサイドバー機能の再定義。
 - `workspace-management`: 複数ディレクトリの管理、履歴管理としての「ワークスペース」機能。
 
 ### Modified Capabilities
+
 - `layout-state`: `show_workspace` から `show_explorer` への表示状態管理の変更。
 
 ## Impact
