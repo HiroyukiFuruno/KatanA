@@ -4,6 +4,7 @@ mod render_workers;
 pub mod renderer;
 pub mod types;
 pub mod ui;
+pub mod viewer_state;
 pub use types::ViewerState;
 
 #[cfg(test)]
