@@ -88,6 +88,19 @@ impl ExplorerSidebarItems {
         let interact_resp = ui
             .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
             .on_hover_text(crate::i18n::I18nOps::get().menu.help.clone());
+
+        interact_resp.context_menu(|ui| {
+            let i18n = crate::i18n::I18nOps::get();
+            if ui.button(&i18n.dashboard.welcome_screen).clicked() {
+                app.pending_action = crate::app_state::AppAction::OpenWelcomeScreen;
+                ui.close();
+            }
+            if ui.button(&i18n.dashboard.user_guide).clicked() {
+                app.pending_action = crate::app_state::AppAction::OpenUserGuide;
+                ui.close();
+            }
+        });
+
         if interact_resp.clicked() {
             app.pending_action =
                 crate::app_state::AppAction::ToggleRailPopup(crate::state::layout::RailPopup::Help);

@@ -74,7 +74,7 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
                                 ui.heading(crate::i18n::I18nOps::get().search.modal_title.clone());
                             }
                             crate::state::layout::RailPopup::History => {
-                                super::history_popup::render(ui, app);
+                                super::history_popup::HistoryPopup::render(ui, app);
                             }
                             crate::state::layout::RailPopup::AddWorkspace => {
                                 ui.heading(

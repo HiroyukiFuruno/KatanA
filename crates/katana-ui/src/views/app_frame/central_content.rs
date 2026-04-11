@@ -11,15 +11,19 @@ impl<'a> CentralContent<'a> {
 
     pub(crate) fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
-        let mut download_req: Option<DownloadRequest> = None;
         let current_mode = app.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
         let mut is_changelog_tab = false;
+        let mut is_virtual_read_only = false;
 
-        if let Some(doc) = app.state.active_document()
-            && doc.path.to_string_lossy().starts_with("Katana://ChangeLog")
-        {
-            is_changelog_tab = true;
+        if let Some(doc) = app.state.active_document() {
+            let p = doc.path.to_string_lossy();
+            if p.starts_with("Katana://ChangeLog") {
+                is_changelog_tab = true;
+            } else if p.starts_with("Katana://Welcome") || p.starts_with("Katana://Guide") {
+                /* WHY: Welcome / Guide are virtual read-only preview docs — no editor controls */
+                is_virtual_read_only = true;
+            }
         }
 
         Self::render_toc_if_needed(ui, app);
@@ -32,17 +36,29 @@ impl<'a> CentralContent<'a> {
                     app.changelog_rx.is_some(),
                 );
             });
-        } else {
-            if is_split {
-                download_req = Self::render_split_mode(ui, app);
-            }
-
-            if !is_split {
-                Self::render_single_mode(ui, app, current_mode);
-            }
+            return None;
         }
 
-        download_req
+        if is_virtual_read_only {
+            egui::CentralPanel::default().show_inside(ui, |ui| {
+                crate::views::layout::split::PreviewOnly::new(ui, app).show();
+            });
+            return None;
+        }
+
+        if app.state.active_document().is_none() {
+            egui::CentralPanel::default().show_inside(ui, |ui| {
+                crate::views::panels::dashboard::DashboardView::new(app).show(ui, app);
+            });
+            return None;
+        }
+
+        if is_split {
+            return Self::render_split_mode(ui, app);
+        }
+
+        Self::render_single_mode(ui, app, current_mode);
+        None
     }
 
     fn render_toc_if_needed(ui: &mut egui::Ui, app: &mut KatanaApp) {

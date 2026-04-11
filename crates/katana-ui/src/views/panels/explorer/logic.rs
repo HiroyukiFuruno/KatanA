@@ -33,7 +33,10 @@ impl ExplorerLogicOps {
                 &search.filter_query
             };
 
-            match regex::Regex::new(query_str) {
+            match regex::RegexBuilder::new(query_str)
+                .case_insensitive(true)
+                .build()
+            {
                 Ok(regex) => {
                     if search.filter_cache.as_ref().map(|(q, _)| q) != Some(&search.filter_query) {
                         let mut visible = HashSet::new();

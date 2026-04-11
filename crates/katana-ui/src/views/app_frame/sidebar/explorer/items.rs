@@ -116,8 +116,7 @@ impl ExplorerSidebarItems {
                 .selected_button(
                     ui,
                     crate::icon::IconSize::Large,
-                    app.state.layout.active_rail_popup
-                        == Some(crate::state::layout::RailPopup::Search),
+                    app.state.layout.show_search_modal,
                 )
                 .sense(egui::Sense::hover()),
         );
@@ -132,9 +131,8 @@ impl ExplorerSidebarItems {
             )
         });
         if interact_resp.clicked() {
-            app.pending_action = crate::app_state::AppAction::ToggleRailPopup(
-                crate::state::layout::RailPopup::Search,
-            );
+            app.pending_action = crate::app_state::AppAction::ToggleSearchModal;
+            app.state.layout.active_rail_popup = None;
         }
         Some(interact_resp)
     }
