@@ -3,7 +3,8 @@ use crate::preview_pane::ViewerState;
 use eframe::egui::{self, Vec2};
 
 use super::fullscreen::{
-    FULLSCREEN_CLOSE_MARGIN, FULLSCREEN_CLOSE_SIZE, FULLSCREEN_PADDING, MAX_ZOOM, MIN_ZOOM,
+    CLOSE_BTN_IDLE_OPACITY, FULLSCREEN_CLOSE_MARGIN, FULLSCREEN_CLOSE_SIZE, FULLSCREEN_PADDING,
+    MAX_ZOOM, MIN_ZOOM,
 };
 
 pub(super) fn show_fullscreen_local(
@@ -32,6 +33,9 @@ pub(super) fn show_fullscreen_local(
                 } else {
                     ui.input(|i| i.smooth_scroll_delta)
                 };
+                if response.clicked() {
+                    keep_open = false;
+                }
             }
             ui.painter().rect_filled(
                 blocker_rect,
@@ -100,8 +104,6 @@ pub(super) fn show_fullscreen_local(
 
     keep_open
 }
-
-const CLOSE_BTN_IDLE_OPACITY: f32 = 0.8;
 
 fn render_fs_close_btn(
     ui: &mut egui::Ui,
