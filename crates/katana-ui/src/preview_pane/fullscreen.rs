@@ -7,6 +7,7 @@ pub(crate) const FULLSCREEN_CLOSE_SIZE: f32 = 32.0;
 pub(crate) const FULLSCREEN_CLOSE_MARGIN: f32 = 20.0;
 pub(crate) const MIN_ZOOM: f32 = 0.5;
 pub(crate) const MAX_ZOOM: f32 = 5.0;
+pub(crate) const CLOSE_BTN_IDLE_OPACITY: f32 = 0.8;
 
 pub(super) const SLIDESHOW_CONTROL_HEIGHT: f32 = 36.0;
 pub(super) const SLIDESHOW_CONTROL_WIDTH: f32 = 160.0;
