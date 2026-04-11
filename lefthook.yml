@@ -14,6 +14,16 @@ pre-commit:
 
 pre-push:
   commands:
-    ci:
-      glob: "*.{rs,toml,lock}"
+    ci-strict:
       run: make check
+      glob: "*.{rs,toml,lock}"
+      only:
+        - ref: master
+        - ref: release/*
+
+    ci-light:
+      run: make check-light
+      glob: "*.{rs,toml,lock}"
+      skip:
+        - ref: master
+        - ref: release/*
