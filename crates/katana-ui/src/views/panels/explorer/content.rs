@@ -10,6 +10,7 @@ pub(crate) struct ExplorerContent<'a> {
     pub search: &'a mut crate::app_state::SearchState,
     pub histories: &'a [String],
     pub active_path: Option<&'a std::path::Path>,
+    pub tab_groups: &'a [crate::state::document::TabGroup],
     pub action: &'a mut AppAction,
 }
 
@@ -19,6 +20,7 @@ impl<'a> ExplorerContent<'a> {
         search: &'a mut crate::app_state::SearchState,
         histories: &'a [String],
         active_path: Option<&'a std::path::Path>,
+        tab_groups: &'a [crate::state::document::TabGroup],
         action: &'a mut AppAction,
     ) -> Self {
         Self {
@@ -26,6 +28,7 @@ impl<'a> ExplorerContent<'a> {
             search,
             histories,
             active_path,
+            tab_groups,
             action,
         }
     }
@@ -68,6 +71,7 @@ impl<'a> ExplorerContent<'a> {
                     disable_context_menu: false,
                     is_flat_view,
                     ws_root: Some(&ws_root),
+                    tab_groups: Some(self.tab_groups),
                 };
 
                 if is_flat_view {

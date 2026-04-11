@@ -63,6 +63,7 @@ impl<'a> ExplorerSidebar<'a> {
                         &mut app.state.search,
                         &app.state.global_workspace.state().histories,
                         active_path.as_deref(),
+                        &app.state.document.tab_groups,
                         &mut app.pending_action,
                     )
                     .show(ui);
