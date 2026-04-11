@@ -44,11 +44,11 @@ Insert this as the very last task group at the bottom of the `tasks.md` file.
 - [ ] x.3 Create PR from Base Feature Branch targeting `master`
 - [ ] x.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] x.5 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] x.6 Create `release/v[Target Version]` branch from master and update CHANGELOG (`changelog-writing` skill)
-- [ ] x.7 Create PR from `release/v[Target Version]` targeting `master` — CI must pass
-- [ ] x.8 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] x.9 Execute `make release VERSION=[Target Version] FORCE=1` from `master`
-- [ ] x.10 Archive this change by leveraging OpenSpec skills like `/opsx-archive`
+- [ ] x.6 Create `release/v[Target Version]` branch from master
+- [ ] x.7 Run `make release VERSION=[Target Version]` and update CHANGELOG (`changelog-writing` skill)
+- [ ] x.8 Create PR from `release/v[Target Version]` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] x.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] x.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
 ```
 
 *(Replace `x` with the next sequential task number. Replace `[Target Version]` with the actual target release version like `0.5.0`)*

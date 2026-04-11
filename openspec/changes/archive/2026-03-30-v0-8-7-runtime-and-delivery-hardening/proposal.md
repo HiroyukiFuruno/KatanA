@@ -12,10 +12,12 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `update-install-safety`: 更新アーカイブの検証、段階的な置換、失敗時のロールバックを扱う
 - `release-pipeline-consistency`: ローカル release と GitHub Actions release の事前検証と成果物契約を統一する
 
 ### Modified Capabilities
+
 - `settings-persistence`: 設定保存を atomic write 化し、破損時の退避と保存失敗の通知を追加する
 
 ## Impact

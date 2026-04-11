@@ -58,6 +58,7 @@ Verify compliance with the rules defined in `docs/coding-rules.md` (and `docs/co
 - [ ] Appropriate derives on new structs (`Debug`, `Clone`, `PartialEq`, `Serialize`, etc.)
 - [ ] Unit tests follow Rust conventions: inline `#[cfg(test)]` in `src/`; integration tests live in `tests/`
 - [ ] No private function testing hacks (redesign instead)
+- [ ] **Release Consistency**: If on a `release/v*` branch, is `Cargo.toml` and `crates/katana-ui/Info.plist` version consistent with the branch name?
 
 ### AI Quality is Speed Check (No Sloppy Shortcuts)
 - [ ] Are there ANY lazy shortcuts? (e.g., `todo!()`, `unimplemented!()`, `dbg!()`, `unwrap()` used as a temporary bypass). **Fix them now.**

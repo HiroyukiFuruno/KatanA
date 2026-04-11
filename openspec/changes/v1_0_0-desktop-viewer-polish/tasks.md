@@ -35,7 +35,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 1.3 `cargo llvm-cov` などのカバレッジ計測において、**すべての追加機能・エラーパスが網羅されているか**再監査し、100%（または既存基準）をクリアしていることを確認する
 - [ ] 1.4 macOS 環境固有の挙動（メニュー、アイコン表示）に問題がないかを最終確認する
 - [ ] 1.5 **（重要）リリース・ビルドの前にアーカイブを実行:** `.agents/skills/openspec-archive-change/SKILL.md` またはそれに準ずる手法で、この `v1.0.0` ディレクトリを解放（退避・コミット）する。
-- [ ] 1.6 `.agents/skills/release_workflow/SKILL.md` に従い、`make dmg` 等による本番ビルドやリリース操作を完了する（**※コマンドエラー時は絶対に代替手段で進めず、即座に中断して報告すること。全報告・コミットは日本語厳守**）
+- [ ] 1.6 Run `make release VERSION=1.0.0` to prepare versions, commit with GPG signature, and create a PR to master (Release will be automated on merge)
 
 ### Definition of Done (DoD)
 

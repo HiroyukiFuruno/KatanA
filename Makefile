@@ -204,9 +204,22 @@ dmg: package-mac ## Build macOS .dmg installer from .app bundle
 	@FORCE=$(FORCE) scripts/build/dmg.sh $(VERSION)
 
 .PHONY: release
-release: ## Trigger the release workflow on GitHub Actions (usage: make release VERSION=x.y.z FORCE=1)
+release: ## Prepare for release by bumping version in all files (usage: make release VERSION=x.y.z)
 ifndef VERSION
 	$(error VERSION is required. Usage: make release VERSION=x.y.z)
+endif
+	@scripts/release/bump-version.sh $(VERSION)
+	@echo ""
+	@echo "✅ Version bump completed!"
+	@echo "   Next steps:"
+	@echo "   1. Review changes (git diff)"
+	@echo "   2. Commit with -S (Verified Commit): git commit -S -m \"release: v$(VERSION)\""
+	@echo "   3. Create a PR to master"
+
+.PHONY: release-trigger
+release-trigger: ## Manually trigger the release workflow on GitHub Actions (emergency use only)
+ifndef VERSION
+	$(error VERSION is required. Usage: make release-trigger VERSION=x.y.z)
 endif
 	@echo "Triggering GitHub Actions release workflow for v$(VERSION)..."
 	@BOOL_FORCE="false"; \

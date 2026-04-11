@@ -20,6 +20,17 @@
 
 name: Release
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+  actions: read
+  discussions: write
+
 on:
   pull_request:
     types: [closed]
@@ -131,7 +142,7 @@ jobs:
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run release preflight logic
-        run: ./scripts/release/preflight.sh "${{ steps.version.outputs.version }}"
+        run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}"
 
       - name: Extract release notes from CHANGELOG.md
         run: |
@@ -298,16 +309,29 @@ jobs:
       - name: Organize Artifacts
         run: ./scripts/release/collect-artifacts.sh release-files
 
-      - name: Create GitHub Release
+      - name: Create or Update GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          ./scripts/release/github-release.sh \
-            "${{ needs.preflight.outputs.version }}" \
-            "${{ needs.preflight.outputs.commit_sha }}" \
-            "release-notes/RELEASE_NOTES.md" \
-            "release-files" \
-            "${{ github.event.inputs.force }}"
+          TAG="${{ needs.preflight.outputs.version }}"
+          TITLE="KatanA Desktop ${TAG}"
+          NOTES="release-notes/RELEASE_NOTES.md"
+          FILES="release-files/*"
+          SHA="${{ needs.preflight.outputs.commit_sha }}"
+          
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "⚠️ Release $TAG already exists. Updating..."
+            gh release edit "$TAG" --title "$TITLE" --notes-file "$NOTES" --target "$SHA"
+            gh release upload "$TAG" $FILES --clobber
+          else
+            echo "✨ Creating new release $TAG..."
+            gh release create "$TAG" --title "$TITLE" --notes-file "$NOTES" --target "$SHA" $FILES
+          fi
+
+      - name: Attest Artifacts
+        uses: actions/attest-build-provenance@1c608f13344fc57ae4446b79f6764426002f5a6b # v2.2.0
+        with:
+          subject-path: 'release-files/*'
 
       - name: Sync External Registries
         if: success()
