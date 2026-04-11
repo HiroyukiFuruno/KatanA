@@ -3,8 +3,6 @@ use crate::state::document::TabGroup;
 use eframe::egui;
 use katana_core::document::Document;
 
-const GROUP_DOT_SIZE: f32 = 12.0;
-const GROUP_DOT_RADIUS: f32 = 4.0;
 const DEFAULT_GROUP_COLOR: &str = "#4A90D9";
 
 pub(crate) struct TabContextMenu<'a> {
@@ -155,28 +153,12 @@ impl<'a> TabContextMenu<'a> {
         g: &TabGroup,
         _doc_str: &str,
     ) {
-        crate::widgets::AlignCenter::new()
-            .shrink_to_fit(true)
-            .content(|ui: &mut egui::Ui| {
-                let color32 = egui::Color32::from_hex(&g.color_hex)
-                    .unwrap_or(ui.visuals().widgets.active.bg_fill);
-                let (rect, _) = ui.allocate_exact_size(
-                    egui::vec2(GROUP_DOT_SIZE, GROUP_DOT_SIZE),
-                    egui::Sense::hover(),
-                );
-                ui.painter()
-                    .circle_filled(rect.center(), GROUP_DOT_RADIUS, color32);
-                if ui
-                    .add(egui::Button::new(&g.name).frame_when_inactive(true))
-                    .clicked()
-                {
-                    *tab_action = Some(AppAction::AddTabToGroup {
-                        group_id: g.id.clone(),
-                        member: self.doc.path.clone(),
-                    });
-                    ui.close();
-                }
-            })
-            .show(ui);
+        if ui.button(&g.name).clicked() {
+            *tab_action = Some(AppAction::AddTabToGroup {
+                group_id: g.id.clone(),
+                member: self.doc.path.clone(),
+            });
+            ui.close();
+        }
     }
 }

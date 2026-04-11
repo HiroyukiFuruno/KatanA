@@ -91,12 +91,27 @@ impl ExplorerSidebarItems {
 
         interact_resp.context_menu(|ui| {
             let i18n = crate::i18n::I18nOps::get();
-            if ui.button(&i18n.dashboard.welcome_screen).clicked() {
+            if ui.button(&i18n.menu.release_notes).clicked() {
+                app.pending_action = crate::app_state::AppAction::ShowReleaseNotes;
+                ui.close();
+            }
+            ui.separator();
+            if ui.button(&i18n.menu.welcome_screen).clicked() {
                 app.pending_action = crate::app_state::AppAction::OpenWelcomeScreen;
                 ui.close();
             }
-            if ui.button(&i18n.dashboard.user_guide).clicked() {
+            if ui.button(&i18n.menu.user_guide).clicked() {
                 app.pending_action = crate::app_state::AppAction::OpenUserGuide;
+                ui.close();
+            }
+            if ui
+                .add(
+                    egui::Button::new(&i18n.menu.demo)
+                        .shortcut_text(crate::os_command::OsCommandOps::get("open_demo")),
+                )
+                .clicked()
+            {
+                app.pending_action = crate::app_state::AppAction::OpenHelpDemo;
                 ui.close();
             }
         });

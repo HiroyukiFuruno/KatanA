@@ -61,6 +61,8 @@ fn test_behavior_settings_serde_roundtrip() {
         auto_save_interval_secs: 10.0,
         auto_refresh: false,
         auto_refresh_interval_secs: 10.0,
+        slideshow_hover_highlight: true,
+        slideshow_show_diagram_controls: true,
     };
     let json = serde_json::to_string(&b).unwrap();
     let loaded: BehaviorSettings = serde_json::from_str(&json).unwrap();

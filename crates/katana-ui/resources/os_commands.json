@@ -40,17 +40,17 @@
     "linux": "Ctrl+Z"
   },
   "search_workspace": {
-    "mac": "⌘ ⇧ F",
+    "mac": "⌘ Shift F",
     "windows": "Ctrl+Shift+F",
     "linux": "Ctrl+Shift+F"
   },
   "open_demo": {
-    "mac": "⌘ ⌥ D",
+    "mac": "⌘ Option D",
     "windows": "Ctrl+Alt+D",
     "linux": "Ctrl+Alt+D"
   },
   "redo": {
-    "mac": "⌘ ⇧ Z",
+    "mac": "⌘ Shift Z",
     "windows": "Ctrl+Shift+Z",
     "linux": "Ctrl+Shift+Z"
   },

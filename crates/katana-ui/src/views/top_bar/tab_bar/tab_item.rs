@@ -64,10 +64,16 @@ impl<'a> TabItem<'a> {
             .map_or(title_resp.rect, |c| title_resp.rect.union(c.rect));
         self.draw_group_underline(ui, full_rect);
 
+        use crate::state::document::VirtualPathExt;
+        let is_demo = self.doc.path.is_demo_path();
         let tab_interact = ui.interact(
             title_resp.rect,
             egui::Id::new("tab_interact").with(self.idx),
-            egui::Sense::click_and_drag(),
+            if is_demo {
+                egui::Sense::click()
+            } else {
+                egui::Sense::click_and_drag()
+            },
         );
         let mut clicked_tab = tab_interact.clicked();
         let mut close_ret = None;

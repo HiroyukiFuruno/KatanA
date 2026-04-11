@@ -14,6 +14,14 @@ impl KatanaApp {
             self.pending_action = AppAction::RestoreClosedDocument;
         }
 
+        let cmd_shift_f = egui::KeyboardShortcut::new(
+            egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
+            egui::Key::F,
+        );
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_shift_f)) {
+            self.pending_action = AppAction::ToggleSearchModal;
+        }
+
         let cmd_p = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::P);
         let cmd_shift_p = egui::KeyboardShortcut::new(
             egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
@@ -63,14 +71,6 @@ impl KatanaApp {
         let cmd_b = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::B);
         if ctx.input_mut(|i| i.consume_shortcut(&cmd_b)) {
             self.pending_action = AppAction::ToggleExplorer;
-        }
-
-        let cmd_shift_f = egui::KeyboardShortcut::new(
-            egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
-            egui::Key::F,
-        );
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_shift_f)) {
-            self.pending_action = AppAction::ToggleExplorerFilter;
         }
 
         let cmd_alt_d = egui::KeyboardShortcut::new(

@@ -310,7 +310,8 @@ void katana_setup_native_menu(void) {
     NSMenuItem *demoItem = [[NSMenuItem alloc]
         initWithTitle:@"Demo"
         action:action
-        keyEquivalent:@""];
+        keyEquivalent:@"d"];
+    [demoItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand | NSEventModifierFlagOption];
     [demoItem setTarget:g_target];
     [demoItem setTag:TAG_DEMO];
     [helpMenu addItem:demoItem];

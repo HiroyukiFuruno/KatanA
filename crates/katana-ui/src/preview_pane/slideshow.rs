@@ -9,6 +9,14 @@ use super::fullscreen::{
     SLIDESHOW_OPACITY_MIN,
 };
 
+const SETTINGS_PANEL_WIDTH: f32 = 250.0;
+const SETTINGS_PADDING_TOP: f32 = 20.0;
+const SETTINGS_ITEM_SPACING: f32 = 12.0;
+const SETTINGS_TAB_WIDTH: f32 = 24.0;
+const SETTINGS_TAB_HEIGHT: f32 = 48.0;
+const SETTINGS_TAB_RADIUS: u8 = 8;
+const SETTINGS_BORDER_WIDTH: f32 = 1.5;
+
 pub(super) fn render_slideshow_modal(
     ctx: &egui::Context,
     layout: &mut crate::state::layout::LayoutState,
@@ -55,6 +63,27 @@ pub(super) fn render_slideshow_modal(
                 layout.slideshow_page = layout.slideshow_page.saturating_sub(1);
             }
 
+            let current_time = ctx.input(|i| i.time);
+            let is_active = ctx.input(|i| {
+                i.pointer.velocity() != egui::Vec2::ZERO
+                    || i.pointer.any_pressed()
+                    || !i.events.is_empty()
+            });
+            if is_active {
+                layout.slideshow_last_active_time = current_time;
+            }
+            let idle_time = current_time - layout.slideshow_last_active_time;
+            let mut opacity = SLIDESHOW_OPACITY_MAX;
+            if idle_time > SLIDESHOW_CONTROL_FADE_DELAY {
+                let progress = ((idle_time - SLIDESHOW_CONTROL_FADE_DELAY) as f32)
+                    / SLIDESHOW_CONTROL_FADE_DURATION;
+                opacity = (SLIDESHOW_OPACITY_MAX - progress)
+                    .clamp(SLIDESHOW_OPACITY_MIN, SLIDESHOW_OPACITY_MAX);
+                if opacity > SLIDESHOW_OPACITY_MIN && opacity < SLIDESHOW_OPACITY_MAX {
+                    ctx.request_repaint();
+                }
+            }
+
             ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
                 let viewport_height = content_rect.height();
                 let target_offset = layout.slideshow_page as f32 * viewport_height;
@@ -94,7 +123,8 @@ pub(super) fn render_slideshow_modal(
                     layout.slideshow_page = max_page;
                 }
 
-                let page_delta = render_slideshow_controls(ctx, ui, layout, blocker_rect, max_page);
+                let page_delta =
+                    render_slideshow_controls(ctx, ui, layout, blocker_rect, max_page, opacity);
                 if page_delta < 0 {
                     layout.slideshow_page = layout.slideshow_page.saturating_sub(1);
                 } else if page_delta > 0 {
@@ -102,8 +132,10 @@ pub(super) fn render_slideshow_modal(
                 }
             });
 
-            render_slideshow_close_button(ctx, ui, layout, blocker_rect);
-            render_slideshow_settings_sidebar(ctx, ui, layout, blocker_rect);
+            if opacity > SLIDESHOW_OPACITY_MIN {
+                render_slideshow_close_button(ctx, ui, layout, blocker_rect, opacity);
+                render_slideshow_settings_sidebar(ctx, ui, layout, blocker_rect, opacity);
+            }
         });
 }
 
@@ -113,6 +145,7 @@ fn render_slideshow_controls(
     layout: &mut crate::state::layout::LayoutState,
     blocker_rect: egui::Rect,
     max_page: usize,
+    opacity: f32,
 ) -> i32 {
     let control_rect = egui::Rect::from_center_size(
         egui::pos2(
@@ -123,7 +156,42 @@ fn render_slideshow_controls(
     );
     let current_time = ctx.input(|i| i.time);
     let pointer_pos = ctx.input(|i| i.pointer.latest_pos());
-    let hover_controls = pointer_pos.is_some_and(|p| control_rect.contains(p));
+
+    let close_btn_size = egui::Vec2::splat(FULLSCREEN_CLOSE_SIZE);
+    let close_btn_rect = egui::Rect::from_min_size(
+        egui::pos2(
+            blocker_rect.right() - close_btn_size.x - FULLSCREEN_CLOSE_MARGIN,
+            blocker_rect.top() + FULLSCREEN_CLOSE_MARGIN,
+        ),
+        close_btn_size,
+    );
+    let open_factor = ctx.animate_bool(
+        egui::Id::new("slideshow_settings_anim"),
+        layout.slideshow_settings_open,
+    );
+
+    let panel_width = SETTINGS_PANEL_WIDTH;
+    let panel_x = blocker_rect.right() - (panel_width * open_factor);
+    let settings_panel_rect = egui::Rect::from_min_size(
+        egui::pos2(panel_x, blocker_rect.top()),
+        egui::vec2(panel_width, blocker_rect.height()),
+    );
+
+    let outrigger_size = egui::vec2(SETTINGS_TAB_WIDTH, SETTINGS_TAB_HEIGHT);
+    let toggle_btn_rect = egui::Rect::from_min_size(
+        egui::pos2(
+            panel_x - outrigger_size.x,
+            blocker_rect.center().y - outrigger_size.y / 2.0,
+        ),
+        outrigger_size,
+    );
+
+    let hover_controls = pointer_pos.is_some_and(|p| {
+        control_rect.contains(p)
+            || close_btn_rect.contains(p)
+            || toggle_btn_rect.contains(p)
+            || (layout.slideshow_settings_open && settings_panel_rect.contains(p))
+    });
     let is_active = ctx.input(|i| {
         hover_controls
             || i.pointer.velocity() != egui::Vec2::ZERO
@@ -133,17 +201,6 @@ fn render_slideshow_controls(
 
     if is_active {
         layout.slideshow_last_active_time = current_time;
-    }
-    let idle_time = current_time - layout.slideshow_last_active_time;
-    let mut opacity = SLIDESHOW_OPACITY_MAX;
-    if idle_time > SLIDESHOW_CONTROL_FADE_DELAY {
-        let progress =
-            ((idle_time - SLIDESHOW_CONTROL_FADE_DELAY) as f32) / SLIDESHOW_CONTROL_FADE_DURATION;
-        opacity =
-            (SLIDESHOW_OPACITY_MAX - progress).clamp(SLIDESHOW_OPACITY_MIN, SLIDESHOW_OPACITY_MAX);
-        if opacity > SLIDESHOW_OPACITY_MIN && opacity < SLIDESHOW_OPACITY_MAX {
-            ctx.request_repaint();
-        }
     }
 
     let mut page_delta: i32 = 0;
@@ -161,9 +218,13 @@ fn render_slideshow_controls(
                 .show(ui, |ui| {
                     ui.horizontal_centered(|ui| {
                         let icon_color = ui.visuals().text_color().gamma_multiply(opacity);
-                        let mut prev_btn = crate::icon::Icon::ChevronLeft
-                            .button(ui, crate::icon::IconSize::Medium)
-                            .frame(false);
+                        let mut prev_btn = egui::Button::image(
+                            crate::icon::Icon::ChevronLeft
+                                .image(crate::icon::IconSize::Medium)
+                                .tint(icon_color),
+                        )
+                        .frame(false)
+                        .fill(crate::theme_bridge::TRANSPARENT);
                         if layout.slideshow_page == 0 {
                             prev_btn = prev_btn.sense(egui::Sense::hover());
                         }
@@ -178,9 +239,13 @@ fn render_slideshow_controls(
                         .join(" / ");
                         ui.label(egui::RichText::new(page_text).strong().color(icon_color));
                         ui.add_space(SLIDESHOW_CONTROL_SPACING);
-                        let mut next_btn = crate::icon::Icon::ChevronRight
-                            .button(ui, crate::icon::IconSize::Medium)
-                            .frame(false);
+                        let mut next_btn = egui::Button::image(
+                            crate::icon::Icon::ChevronRight
+                                .image(crate::icon::IconSize::Medium)
+                                .tint(icon_color),
+                        )
+                        .frame(false)
+                        .fill(crate::theme_bridge::TRANSPARENT);
                         if layout.slideshow_page >= max_page {
                             next_btn = next_btn.sense(egui::Sense::hover());
                         }
@@ -201,6 +266,7 @@ fn render_slideshow_close_button(
     ui: &mut egui::Ui,
     layout: &mut crate::state::layout::LayoutState,
     blocker_rect: egui::Rect,
+    opacity: f32,
 ) {
     let msgs = crate::i18n::I18nOps::get();
     let close_btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
@@ -217,7 +283,8 @@ fn render_slideshow_close_button(
         })
         .map_or(crate::theme_bridge::BLACK, |tc| {
             crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.preview.text)
-        });
+        })
+        .gamma_multiply(opacity);
     let close_resp = ui.put(
         close_btn_rect,
         egui::Button::image(
@@ -244,41 +311,78 @@ fn render_slideshow_settings_sidebar(
     ui: &mut egui::Ui,
     layout: &mut crate::state::layout::LayoutState,
     blocker_rect: egui::Rect,
+    opacity: f32,
 ) {
-    const FULLSCREEN_INDICATOR_SPACING: f32 = 8.0;
-
-    const SETTINGS_PANEL_WIDTH: f32 = 250.0;
-    const SETTINGS_PADDING_TOP: f32 = 20.0;
-    const SETTINGS_ITEM_SPACING: f32 = 12.0;
-
-    let msgs = crate::i18n::I18nOps::get();
-    let btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
-
-    let toggle_btn_rect = egui::Rect::from_min_size(
-        egui::pos2(
-            blocker_rect.right() - btn_size.x * 2.0 - FULLSCREEN_INDICATOR_SPACING,
-            blocker_rect.top() + FULLSCREEN_CLOSE_MARGIN,
-        ),
-        btn_size,
+    let open_factor = ctx.animate_bool(
+        egui::Id::new("slideshow_settings_anim"),
+        layout.slideshow_settings_open,
     );
 
+    let panel_width = SETTINGS_PANEL_WIDTH;
+    let panel_x = blocker_rect.right() - (panel_width * open_factor);
+    let panel_rect = egui::Rect::from_min_size(
+        egui::pos2(panel_x, blocker_rect.top()),
+        egui::vec2(panel_width, blocker_rect.height()),
+    );
+
+    let outrigger_size = egui::vec2(SETTINGS_TAB_WIDTH, SETTINGS_TAB_HEIGHT);
+    let toggle_btn_rect = egui::Rect::from_min_size(
+        egui::pos2(
+            panel_x - outrigger_size.x,
+            blocker_rect.center().y - outrigger_size.y / 2.0,
+        ),
+        outrigger_size,
+    );
+
+    let msgs = crate::i18n::I18nOps::get();
     let text_color = ctx
         .data(|d| {
             d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new("katana_theme_colors"))
         })
         .map_or(crate::theme_bridge::BLACK, |tc| {
             crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.preview.text)
-        });
+        })
+        .gamma_multiply(opacity);
+
+    let bg_color = ctx
+        .data(|d| {
+            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new("katana_theme_colors"))
+        })
+        .map_or(crate::theme_bridge::WHITE, |tc| {
+            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.panel_background)
+        })
+        .gamma_multiply(opacity);
+
+    let tab_rounding = egui::CornerRadius {
+        nw: SETTINGS_TAB_RADIUS,
+        sw: SETTINGS_TAB_RADIUS,
+        ne: 0,
+        se: 0,
+    };
+    ui.painter()
+        .rect_filled(toggle_btn_rect, tab_rounding, bg_color);
+    if open_factor > 0.0 {
+        ui.painter().line_segment(
+            [toggle_btn_rect.right_top(), toggle_btn_rect.right_bottom()],
+            egui::Stroke::new(SETTINGS_BORDER_WIDTH, bg_color),
+        );
+    }
+
+    let toggle_icon = if layout.slideshow_settings_open {
+        crate::icon::Icon::ChevronRight
+    } else {
+        crate::icon::Icon::Settings
+    };
 
     let toggle_resp = ui.put(
         toggle_btn_rect,
         egui::Button::image(
-            Icon::Settings
-                .image(crate::icon::IconSize::Large)
+            toggle_icon
+                .image(crate::icon::IconSize::Medium)
                 .tint(text_color),
         )
         .fill(crate::theme_bridge::TRANSPARENT)
-        .stroke(egui::Stroke::new(1.0, crate::theme_bridge::TRANSPARENT)),
+        .frame(false),
     );
 
     if toggle_resp
@@ -288,86 +392,52 @@ fn render_slideshow_settings_sidebar(
         layout.slideshow_settings_open = !layout.slideshow_settings_open;
     }
 
-    if layout.slideshow_settings_open {
-        let panel_width = SETTINGS_PANEL_WIDTH;
-        let panel_rect = egui::Rect::from_min_size(
-            egui::pos2(blocker_rect.right() - panel_width, blocker_rect.top()),
-            egui::vec2(panel_width, blocker_rect.height()),
-        );
-
-        let bg_color = ctx
-            .data(|d| {
-                d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                    "katana_theme_colors",
-                ))
-            })
-            .map_or(crate::theme_bridge::WHITE, |tc| {
-                crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.panel_background)
-            });
-
+    if open_factor > 0.0 {
         ui.painter().rect_filled(panel_rect, 0.0, bg_color);
         ui.painter().line_segment(
             [panel_rect.left_top(), panel_rect.left_bottom()],
             ui.visuals().window_stroke(),
         );
 
-        ui.put(panel_rect, |ui: &mut egui::Ui| {
-            egui::Frame::NONE
-                .inner_margin(FULLSCREEN_PADDING)
-                .show(ui, |ui| {
-                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                        ui.heading(&msgs.preview.slideshow_settings);
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            if ui
-                                .add(
-                                    egui::Button::image(
-                                        Icon::CloseModal
-                                            .image(crate::icon::IconSize::Medium)
-                                            .tint(text_color),
-                                    )
-                                    .fill(crate::theme_bridge::TRANSPARENT)
-                                    .stroke(egui::Stroke::NONE),
-                                )
-                                .clicked()
-                            {
-                                layout.slideshow_settings_open = false;
-                            }
-                        });
-                    });
+        let mut child_ui = ui.child_ui(panel_rect, egui::Layout::top_down(egui::Align::Min), None);
+        egui::Frame::NONE
+            .inner_margin(FULLSCREEN_PADDING)
+            .show(&mut child_ui, |ui| {
+                ui.add_space(SETTINGS_PADDING_TOP);
 
-                    ui.add_space(SETTINGS_PADDING_TOP);
-
-                    if ui
-                        .add(
-                            crate::widgets::LabeledToggle::new(
-                                &msgs.preview.highlight_hover,
-                                &mut layout.slideshow_hover_highlight,
-                            )
-                            .position(crate::widgets::TogglePosition::Right)
-                            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                if ui
+                    .add(
+                        crate::widgets::LabeledToggle::new(
+                            &msgs.preview.highlight_hover,
+                            &mut layout.slideshow_hover_highlight,
                         )
-                        .changed()
-                    {
-                        ctx.request_repaint();
-                    }
+                        .position(crate::widgets::TogglePosition::Right)
+                        .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                    )
+                    .changed()
+                {
+                    ctx.request_repaint();
+                }
 
-                    ui.add_space(SETTINGS_ITEM_SPACING);
+                ui.add_space(SETTINGS_ITEM_SPACING);
 
-                    if ui
-                        .add(
-                            crate::widgets::LabeledToggle::new(
-                                &msgs.preview.show_diagram_controls,
-                                &mut layout.slideshow_show_diagram_controls,
-                            )
-                            .position(crate::widgets::TogglePosition::Right)
-                            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                if ui
+                    .add(
+                        crate::widgets::LabeledToggle::new(
+                            &msgs.preview.show_diagram_controls,
+                            &mut layout.slideshow_show_diagram_controls,
                         )
-                        .changed()
-                    {
-                        ctx.request_repaint();
-                    }
-                })
-                .response
-        });
+                        .position(crate::widgets::TogglePosition::Right)
+                        .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                    )
+                    .changed()
+                {
+                    ctx.request_repaint();
+                }
+            });
     }
 }
+
+#[cfg(test)]
+#[path = "slideshow_tests.rs"]
+mod slideshow_tests;

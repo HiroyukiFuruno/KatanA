@@ -34,7 +34,6 @@ impl BehaviorTabOps {
                 .confirm_close_dirty_tab = confirm;
             let _ = state.config.try_save_settings();
         }
-
         ui.add_space(SUBSECTION_SPACING);
 
         let mut scroll_sync = state
@@ -60,10 +59,6 @@ impl BehaviorTabOps {
             let _ = state.config.try_save_settings();
         }
 
-        ui.add_space(SUBSECTION_SPACING);
-
-        ui.add_space(SUBSECTION_SPACING);
-
         let mut enabled = state.config.settings.settings().behavior.auto_save;
         if ui
             .add(
@@ -79,7 +74,6 @@ impl BehaviorTabOps {
 
         if enabled {
             ui.add_space(SETTINGS_TOGGLE_SPACING);
-
             let interval = state
                 .config
                 .settings
@@ -87,7 +81,6 @@ impl BehaviorTabOps {
                 .behavior
                 .auto_save_interval_secs;
             ui.label(&behavior_msgs.auto_save_interval);
-
             let original_width = ui.spacing().slider_width;
             const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
@@ -131,6 +124,67 @@ impl BehaviorTabOps {
                 .show(ui);
 
             ui.spacing_mut().slider_width = original_width;
+        }
+
+        ui.add_space(SUBSECTION_SPACING);
+
+        let preview_msgs = &crate::i18n::I18nOps::get().preview;
+        ui.label(egui::RichText::new(&preview_msgs.slideshow_settings).strong());
+        ui.add_space(SETTINGS_TOGGLE_SPACING);
+
+        let mut slideshow_hover = state
+            .config
+            .settings
+            .settings()
+            .behavior
+            .slideshow_hover_highlight;
+        if ui
+            .add(
+                crate::widgets::LabeledToggle::new(
+                    &preview_msgs.highlight_hover,
+                    &mut slideshow_hover,
+                )
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+            )
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .behavior
+                .slideshow_hover_highlight = slideshow_hover;
+            state.layout.slideshow_hover_highlight = slideshow_hover;
+            let _ = state.config.try_save_settings();
+        }
+        ui.add_space(SETTINGS_TOGGLE_SPACING);
+
+        let mut auto_hide = state
+            .config
+            .settings
+            .settings()
+            .behavior
+            .slideshow_show_diagram_controls;
+        if ui
+            .add(
+                crate::widgets::LabeledToggle::new(
+                    &preview_msgs.show_diagram_controls,
+                    &mut auto_hide,
+                )
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+            )
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .behavior
+                .slideshow_show_diagram_controls = auto_hide;
+            state.layout.slideshow_show_diagram_controls = auto_hide;
+            let _ = state.config.try_save_settings();
         }
 
         ui.add_space(SUBSECTION_SPACING);

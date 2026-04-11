@@ -485,7 +485,7 @@
         "section_general": "General",
         "section_editor": "Editor",
         "shortcut_command_palette": "{{os_cmd:open_palette}}: Command Palette",
-        "shortcut_search": "{{os_cmd:search_tab}}: Workspace Search",
+        "shortcut_search": "{{os_cmd:search_workspace}}: Workspace Search",
         "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Toggle Sidebar",
         "shortcut_save": "{{os_cmd:save_document}}: Save",
         "shortcut_refresh": "{{os_cmd:refresh_preview}}: Refresh Diagrams"

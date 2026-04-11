@@ -125,8 +125,12 @@ pub(super) fn show_section(
                     );
                 viewer = viewer.custom_list_item_highlight_fn(Some(&list_highlight_fn));
 
+                let slideshow_hover = ui.ctx().data(|d| {
+                    d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
+                        .unwrap_or(false)
+                });
                 let mut local_hovered_spans = Vec::new();
-                if hovered_lines.is_some() {
+                if hovered_lines.is_some() || (is_slideshow && slideshow_hover) {
                     viewer = viewer.hovered_spans(&mut local_hovered_spans);
                 }
                 viewer = viewer.search_query(search_query.clone());

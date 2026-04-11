@@ -72,11 +72,17 @@
 - [x] 7.1 「ようこそ」画面をタブ形式で開くように変更（初回起動時含む）
 - [x] 7.2 「操作ガイド」メニューを追加し、Markdownタブとして表示
 
-## 8. Final Verification & Release Work
+## 8. Slideshow UI Modernization & Fixes
 
-- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 8.2 Ensure `make check` passes with exit code 0
-- [ ] 8.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
-- [ ] 8.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 8.5 Merge into master and execute `make release VERSION=0.18.7`
-- [ ] 8.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop`, that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible, and that winget sync no longer relies on `github.token` fallback
+- [x] 8.1 削除: ストーリービューの既存の固定ギアアイコンおよび余分な「設定」タイトルを削除
+- [x] 8.2 新機能: ストーリービュー用スライドアウト式（ドロワー）サイドバータブの実装およびアニメーション連携
+- [x] 8.3 修正: スライドショーホバー時ハイライトの消失バグを修正し、トグルスイッチでダイアグラムおよび全ノードへのハイライト設定を制御可能にする
+
+## 9. Final Verification & Release Work
+
+- [ ] 9.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 9.2 Ensure `make check` passes with exit code 0
+- [ ] 9.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
+- [ ] 9.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 9.5 Merge into master and execute `make release VERSION=0.18.7`
+- [ ] 9.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop`, that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible, and that winget sync no longer relies on `github.token` fallback
