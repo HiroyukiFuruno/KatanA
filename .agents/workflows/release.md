@@ -75,7 +75,10 @@ gh pr checks --watch
 
 ### Step 7: merge
 
-全チェックが緑で成功していることを確認したら、マージを実行します：
+全チェックが緑で成功していることを確認したら、マージを実行します。
+
+> [!WARNING]
+> **Rule Bypass の絶対禁止**: `gh pr merge` に `--admin` 等のフラグを付けて CI チェックを回避してマージすることは**厳格に禁止**されています。必ず全 CI の成功を待ってください。
 
 ```bash
 gh pr merge --merge --delete-branch
@@ -114,6 +117,15 @@ gh release view vX.Y.Z
 
 ```text
 /opsx-archive <change-name>
+```
+
+### Step 11: ローカルブランチの掃除
+
+マージとアーカイブが完了したら、役割を終えたローカルブランチを削除して作業を完了します。
+
+```bash
+git switch master
+git branch -D release/vX.Y.Z
 ```
 
 ---
