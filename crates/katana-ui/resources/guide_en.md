@@ -23,38 +23,192 @@ Click a filename in the Explorer, or use the Command Palette (`⌘ P`) to search
 | Shortcut | Action |
 | --- | --- |
 | `⌘ P` | Open Command Palette |
-| `⌘ F` | Search Files |
+| `⌘ F` | Text Search |
 | `⌘ B` | Toggle Sidebar |
 | `⌘ S` | Save File |
-| `⌘ R` | Refresh Diagrams |
+| `⌘ R` | Refresh Preview |
 | `⌘ W` | Close Tab |
+| `⌘ Z` | Undo |
+| `⌘ ⇧ Z` | Redo |
+| `⌘ /` | Toggle Comment |
 
 ---
 
-## Tab Management
+## Tabs and Document Management
 
-Tabs are displayed at the top. You can pin tabs, group them, and reorder them by dragging.
+### Tab Bar
+
+Open files are displayed as tabs at the top of the window.
+
+- **Click a tab** → Switch between files.
+- **Right-click a tab** → Context menu (Close, Pin, Add to Group, etc.).
+- **Drag a tab** → Reorder tabs.
+- **Pin** (📌): Fix a tab to prevent accidental closing.
+- **Restore recently closed tabs**: Use the `◀` button at the right end of the tab bar.
+
+### Tab Groups
+
+You can manage multiple files as a group. Right-click a file in the explorer and select "Create Tab Group" or "Add to Existing Group".
 
 ---
 
-## Meta Info
+## View Modes
 
-To see detailed file information (size, permissions, etc.), right-click a file in the explorer and select **"Show Meta Info"**.
+You can switch between view modes using the buttons at the top right of the editor.
+
+| Mode | Description |
+| --- | --- |
+| **Preview** | Shows only the rendered Markdown. |
+| **Code** | Shows only the raw Markdown source (Editor). |
+| **Split** | Shows both the Editor on the left and Preview on the right. |
+
+In Split mode, you can toggle scroll synchronization on or off.
 
 ---
 
-## Diagrams (Mermaid/PlantUML/DrawIo)
+## Command Palette
 
-Just use fenced code blocks, and KatanA will render them in the preview pane.
+Press `⌘ P` to open the Command Palette. You can search for both filenames and commands.
 
-```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+- Type a filename → Open the file.
+- Start with `>` → Execute a command (e.g., `> Export`).
+
+---
+
+## Sidebar
+
+Switch panels using the icons on the left edge.
+
+| Icon | Panel |
+| --- | --- |
+| 📁 | **Explorer** — File tree within the workspace. |
+| 🔍 | **Search** — Full-text search across all files. |
+| 🕐 | **History** — List of recently opened files. |
+| ❓ | **Help** — This guide and release notes. |
+
+### Explorer Operations
+
+- **Right-click a file** → Open / Rename / Delete / Reveal in Finder / Copy Path / Add to Tab Group.
+- **Right-click a folder** → New File / New Folder / Expand All / Open All Files.
+
+---
+
+## Document Information
+
+To view detailed information for each file, right-click the file in the explorer and select **"Show Meta Info"**.
+
+Information displayed:
+
+- **General**: Filename, path, type.
+- **File System**: File size, modified date, created date, owner, permissions.
+- **Status**: Unsaved changes, loaded status, pinned status.
+
+---
+
+## Markdown Syntax
+
+KatanA supports [CommonMark](https://commonmark.org) compliant Markdown.
+
+### Basic Syntax
+
+```markdown
+# Heading 1
+## Heading 2
+
+**Bold** / *Italic* / ~~Strikethrough~~
+
+[Link Text](https://example.com)
+
+![Image Description](./image.png)
 ```
 
+### Code Blocks
+
+````markdown
+```rust
+fn main() {
+    println!("Hello, KatanA!");
+}
+```
+````
+
+Specifying the language name enables syntax highlighting.
+
+### Tables
+
+```markdown
+| Col 1 | Col 2 | Col 3 |
+|---|---|---|
+| A | B | C |
+```
+
+### Task Lists
+
+```markdown
+- [x] Completed task
+- [ ] Incomplete task
+```
+
+Checklists can be toggled in the preview by clicking them.
+
+### Math Notation (MathJax)
+
+```markdown
+Inline: $E = mc^2$
+
+Block:
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+```
+
+### Diagrams (Mermaid)
+
+```mermaid
+graph TD
+    A[Start] --> B{Condition}
+    B -->|Yes| C[Process A]
+    B -->|No| D[Process B]
+```
+
+Diagrams can be viewed in full screen by clicking them.
+
 ---
 
-*For more details, see the Release Notes in the Help menu.*
+## Table of Contents (TOC)
+
+Click the "TOC" button at the top of the preview to display a list of headings in the side panel. Click a heading to jump to it.
+
+---
+
+## Export
+
+Export files via **Menu → File → Export**.
+
+| Format | Description |
+| --- | --- |
+| HTML | Styled HTML document. |
+| PDF | PDF for printing. |
+| PNG | Export as a PNG image. |
+| JPEG | Export as a JPEG image. |
+
+---
+
+## Settings
+
+Change various settings via **Menu → File → Settings**.
+
+- **Display Language**: Japanese, English, Chinese (Simplified/Traditional), Korean, Portuguese, French, German, Spanish, Italian.
+- **Scroll Sync**: Default scroll synchronization setting for Split mode.
+- **Auto Save**: Timing for automatic file saving.
+
+---
+
+## Update
+
+Check for and install the latest version via **Menu → Help → Check for Updates...**.
+A badge will appear at the top right of the window when a new version is available.
+
+---
+
+*For more details about KatanA, see the [Release Notes] (Menu → Help → Release Notes).*

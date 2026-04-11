@@ -15,12 +15,12 @@ pub(super) struct DemoAsset {
 }
 
 /* WHY: English Markdown assets */
-const WELCOME_EN: &str = include_str!("../../../../../assets/feature/welcome.md");
+const WELCOME_EN: &str = include_str!("../../../../../assets/feature/feature_walkthrough.md");
 const RENDERING_FEATURES_EN: &str =
     include_str!("../../../../../assets/feature/rendering_features.md");
 
 /* WHY: Japanese Markdown assets */
-const WELCOME_JA: &str = include_str!("../../../../../assets/feature/welcome.ja.md");
+const WELCOME_JA: &str = include_str!("../../../../../assets/feature/feature_walkthrough.ja.md");
 const RENDERING_FEATURES_JA: &str =
     include_str!("../../../../../assets/feature/rendering_features.ja.md");
 
@@ -76,13 +76,13 @@ pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
         (WELCOME_EN, RENDERING_FEATURES_EN)
     };
 
-    let welcome_filename = "welcome.md";
+    let walkthrough_filename = "feature_walkthrough.md";
     let rendering_filename = "rendering_features.md";
 
     vec![
-        /* WHY: Welcome is always first */
+        /* WHY: Walkthrough is always first */
         DemoAsset {
-            virtual_path: demo_virtual_path(welcome_filename),
+            virtual_path: demo_virtual_path(walkthrough_filename),
             content: welcome,
             is_reference: true,
         },
@@ -114,7 +114,7 @@ mod tests {
     fn resolve_demo_bundle_returns_two_assets_en() {
         let bundle = resolve_demo_bundle("en");
         assert_eq!(bundle.len(), 2);
-        assert!(bundle[0].virtual_path.contains("welcome.md"));
+        assert!(bundle[0].virtual_path.contains("feature_walkthrough.md"));
         assert!(bundle[1].virtual_path.contains("rendering_features.md"));
     }
 
@@ -122,7 +122,7 @@ mod tests {
     fn resolve_demo_bundle_returns_two_assets_ja() {
         let bundle = resolve_demo_bundle("ja");
         assert_eq!(bundle.len(), 2);
-        assert!(bundle[0].virtual_path.contains("welcome.md"));
+        assert!(bundle[0].virtual_path.contains("feature_walkthrough.md"));
         assert!(bundle[1].virtual_path.contains("rendering_features.md"));
     }
 
@@ -142,8 +142,8 @@ mod tests {
         for lang in &["en", "ja", "zh-CN", "ko", "fr"] {
             let bundle = resolve_demo_bundle(lang);
             assert!(
-                bundle[0].virtual_path.contains("welcome"),
-                "First asset for lang={lang} should be welcome, got: {}",
+                bundle[0].virtual_path.contains("feature_walkthrough"),
+                "First asset for lang={lang} should be walkthrough, got: {}",
                 bundle[0].virtual_path
             );
         }

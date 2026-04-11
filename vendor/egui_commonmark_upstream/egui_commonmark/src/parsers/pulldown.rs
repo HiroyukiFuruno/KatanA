@@ -2105,7 +2105,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 match segment {
                     InlineSegment::Text(text) => {
                         let url_re = URL_RE.get_or_init(|| {
-                            regex::Regex::new(r"(?i)https?://[^\s<]+").unwrap()
+                            regex::Regex::new(r#"(?i)https?://[^\s<]*[^\s<.,:;!?"')]"#).unwrap()
                         });
 
                         let mut current_text = text;
@@ -2118,17 +2118,31 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 );
                             }
 
+                            // Flush any text before the link widget to ensure correct layout order.
+                            // This ensures the link widget is placed after the preceding text.
+                            self.flush_pending_inline(ui, max_width);
+
                             let url = mat.as_str();
                             let prev_link = self.link.take();
-                            self.link = Some(Link {
+                            
+                            // Create and populate the link
+                            let mut link = Link {
                                 destination: url.to_string(),
-                                text: Vec::new(),
-                            });
-                            self.push_inline_text_with_search_highlight(url, ui, max_width);
-                            if let Some(link) = self.link.take() {
-                                link.end(ui, cache);
+                                text: vec![self.text_style.to_richtext(ui, url)],
+                            };
+                            
+                            // Apply search highlighting to the link text if needed
+                            if let Some(regex) = &self.search_query {
+                                if regex.is_match(url) {
+                                    link.text[0] = link.text[0].clone().background_color(egui::Color32::from_rgba_unmultiplied(255, 255, 0, 60));
+                                }
                             }
+
+                            // Render the link widget immediately
+                            link.end(ui, cache);
+                            
                             self.link = prev_link;
+                            self.after_inline_widget = true;
 
                             current_text = &current_text[mat.end()..];
                         }

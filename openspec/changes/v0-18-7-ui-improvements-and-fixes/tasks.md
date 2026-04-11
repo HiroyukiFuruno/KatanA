@@ -11,13 +11,13 @@
 ## 1. Search Noise Reduction & Auto-link Fix
 
 - [x] 1.1 `katana-core/src/search/mod.rs` を修正し、`#[allow(...)]` 行をフィルタリングするロジックを実装
-- [ ] 1.2 `katana-core/src/markdown/link_resolver.rs` (または該当箇所) を修正し、平文URLの自動リンク検出を改善
+- [x] 1.2 `egui_commonmark` / `egui_commonmark_backend` を修正し、平文URLの自動リンク検出を改善（フラッシュ処理の追加により描画崩れを修正）
 - [x] 1.3 `katana-core` の関連テストを実行し、意図せぬデグレードがないか確認
 
 ### Definition of Done (DoD)
 
-- [x] 検索結果から `#[allow]` が適切に除外されることを確認
-- [x] 平文URLが正しくリンク化されることを確認
+- [x] **R2: guide_en.md の同期**: `guide_ja.md` (正) の最新の内容を `guide_en.md` に反映する。
+- [x] **R3 / Task 1.2: URL 自動リンク（Autolink）の修正**: リスト項目内などで平文URLが正しく検出されず、描画がオーバーラップする問題を修正する。
 - [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
 ## 2. Meta Information UI Renewal
