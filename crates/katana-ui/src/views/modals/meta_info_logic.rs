@@ -30,7 +30,7 @@ impl MetaInfoLogic {
         /* WHY: Buffer size for getpwuid_r. */
         const PWD_BUF_SIZE: usize = 512;
 
-        let mut buf = vec![0i8; PWD_BUF_SIZE];
+        let mut buf = vec![0 as libc::c_char; PWD_BUF_SIZE];
         let mut pwd = std::mem::MaybeUninit::<libc::passwd>::uninit();
         let mut result: *mut libc::passwd = std::ptr::null_mut();
         let ret = unsafe {
