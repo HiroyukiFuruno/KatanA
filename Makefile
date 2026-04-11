@@ -124,8 +124,8 @@ test-specific: ## Run a specific test (e.g., make test-specific T=test_name)
 	cargo test --workspace -- $(T)
 
 .PHONY: test-integration
-test-integration: ## Run integration tests (UI tests, semantic assertions only) (requires: egui_kittest)
-	cargo test -j $(JOBS) -q --workspace --test integration_tests -- --test-threads=$(JOBS)
+test-integration: ## Run integration tests — fixture tests only (slow; non-fixture tests are covered by `coverage`) (requires: egui_kittest)
+	cargo test -j $(JOBS) -q --workspace --test integration_tests -- --test-threads=$(JOBS) fixture
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
@@ -143,17 +143,17 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 	JOBS=$(JOBS) scripts/ci/coverage.sh
 
 .PHONY: check-light
-check-light: fmt-check lint ast-lint ## Quick verification (skip slow fixture tests)
+check-light: fmt-check lint ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
 	cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 
 .PHONY: check
-check: fmt-check lint ast-lint test-integration coverage check-platforms ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
+check: fmt-check lint test-integration coverage check-platforms ## Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: fmt lint ast-lint test-integration coverage check-platforms ## Full verification including cross-platform checks (Windows, Linux)
+check-local: fmt lint test-integration coverage check-platforms ## Full local verification incl. cross-platform checks (ast-lint runs inside coverage)
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push
