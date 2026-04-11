@@ -30,25 +30,34 @@ git checkout -b release/vX.Y.Z
 
 リリースブランチ上で以下を確認・実施します。
 
-1. **CHANGELOG の更新**: `changelog-writing` スキルを実行し、今回のバージョンの変更履歴を `CHANGELOG.md` / `CHANGELOG.ja.md` に記載してください。
-2. **品質ゲートの事前確認**: `make check` がローカルで通ることを確認してください。
-3. **OpenSpec の統合確認 (⚠️ 必須)**: 対象バージョンの OpenSpec Base Feature Branch がすべて `master` へマージ済みであることを確認してください。
+1. **品質ゲートの事前確認**: `make check` がローカルで通ることを確認してください。
+2. **OpenSpec の統合確認 (⚠️ 必須)**: 対象バージョンの OpenSpec Base Feature Branch がすべて `master` へマージ済みであることを確認してください。
 
    ```bash
    # 未マージのfeatureブランチがないことを確認
    git branch -a | grep -v master | grep -v HEAD | grep -v release/
    ```
 
-### Step 3: PR の作成と CI 確認・マージ
+### Step 3: CHANGELOG記載 & push
+
+`changelog-writing` スキル (`@[.agents/skills/changelog-writing]`) を使用して、今回のバージョンの変更履歴を `CHANGELOG.md` と `CHANGELOG.ja.md` に記載し、コミット・プッシュします。
 
 ```bash
+git add CHANGELOG.md CHANGELOG.ja.md
+git commit -m "release: vX.Y.Z"
 git push origin release/vX.Y.Z
-
-# PRを作成（base: master）
-gh pr create --base master --head release/vX.Y.Z \
-  --title "release: v[Target Version]" \
-  --body "CHANGELOG 更新を含むリリース準備ブランチ"
 ```
+
+### Step 4: master PR作成
+
+`create_pull_request` スキル (`@[.agents/skills/create_pull_request]`) を使用し、対象ブランチから `master` に向けたPRを作成します。
+※PRのタイトルは「release: vX.Y.Z」、本文は自動生成されたものを適宜調整します。
+
+### Step 5: PRをレビュー＆改善
+
+`self-review` スキル (`@[.agents/skills/self-review]`) とコーディングルール (`@[docs/coding-rules.ja.md]`) を使用し、PRの内容を自動レビューおよび必要に応じて改善コミットを行います。
+
+### Step 6: CIの all pass を確認
 
 PR がオープンされると以下の CI チェックが自動実行されます。
 **すべてグリーンになるまでマージしてはいけません。**
@@ -62,6 +71,8 @@ CI の完了をターミナルでリアルタイム監視します：
 ```bash
 gh run watch
 ```
+
+### Step 7: merge
 
 全チェックが緑になったら、マージを実行します：
 
