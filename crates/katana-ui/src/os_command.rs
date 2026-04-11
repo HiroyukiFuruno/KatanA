@@ -54,3 +54,19 @@ impl OsCommandOps {
         result
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_os_command_ops_get() {
+        /* WHY: verify it doesn't return the raw key for a known command */
+        let result = OsCommandOps::get("save_document");
+        assert_ne!(result, "save_document");
+
+        /* WHY: Unkown key returns the key itself */
+        let missing = OsCommandOps::get("missing_key_123");
+        assert_eq!(missing, "missing_key_123");
+    }
+}
