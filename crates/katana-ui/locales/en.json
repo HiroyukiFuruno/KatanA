@@ -452,5 +452,14 @@
     "kind_markdown": "Markdown Doc",
     "yes": "Yes",
     "no": "No"
+  },
+  "help": {
+    "section_general": "General",
+    "section_editor": "Editor",
+    "shortcut_command_palette": "Cmd+P: Command Palette",
+    "shortcut_search": "Cmd+F: Search Workspace",
+    "shortcut_sidebar": "Cmd+B: Toggle Sidebar",
+    "shortcut_save": "Cmd+S: Save",
+    "shortcut_refresh": "Cmd+R: Refresh Diagram"
   }
 }

@@ -45,6 +45,7 @@ pub enum AppAction {
     ToggleHistoryPanel,
     ToggleSearchModal,
     ToggleCommandPalette,
+    ToggleRailPopup(crate::state::layout::RailPopup),
     ToggleSlideshow,
     ToggleExplorerFilter,
     CheckForUpdates,
