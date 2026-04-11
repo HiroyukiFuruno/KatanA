@@ -107,7 +107,10 @@
             "fullscreen": "Pantalla completa",
             "close": "Cerrar",
             "trackpad_help": "Trackpad: pellizca con dos dedos para zoom, arrastra para mover"
-        }
+        },
+        "slideshow_settings": "[TODO] Slideshow Settings",
+        "highlight_hover": "[TODO] Hover Highlight",
+        "show_diagram_controls": "[TODO] Diagram Controls"
     },
     "plantuml": {
         "downloading_plantuml": "⬇ Descargando PlantUML JAR…",

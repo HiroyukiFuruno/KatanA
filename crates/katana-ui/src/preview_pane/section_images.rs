@@ -16,17 +16,35 @@ impl SectionImageOps {
         section_lifecycle: &mut Option<&mut Vec<crate::preview_pane::SectionLifecycle>>,
         block_anchors: &mut Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
+        is_slideshow: bool,
     ) {
-        let state = viewer_states.map(|vs| {
-            if vs.len() <= i {
-                vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
-            }
-            &mut vs[i]
-        });
+        let allow_controls = !is_slideshow
+            || ui.ctx().data(|d| {
+                d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
+                    .unwrap_or(false)
+            });
+        let allow_hover = !is_slideshow
+            || ui.ctx().data(|d| {
+                d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
+                    .unwrap_or(false)
+            });
 
-        let is_active = active_editor_line.is_some_and(|line| {
-            line >= global_line_offset && line < global_line_offset + lines_in_section
-        });
+        /* WHY: In slideshow mode diagrams are read-only; controls and hover highlight are hidden by default */
+        let state = if !allow_controls {
+            None
+        } else {
+            viewer_states.map(|vs| {
+                if vs.len() <= i {
+                    vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
+                }
+                &mut vs[i]
+            })
+        };
+
+        let is_active = !is_slideshow
+            && active_editor_line.is_some_and(|line| {
+                line >= global_line_offset && line < global_line_offset + lines_in_section
+            });
 
         let rect = crate::preview_pane::ImageLogicOps::show_rasterized(
             ui,
@@ -34,9 +52,13 @@ impl SectionImageOps {
             alt,
             i,
             state,
-            fullscreen_request,
+            if !allow_controls {
+                None
+            } else {
+                fullscreen_request
+            },
             |ui, rect, is_hovered| {
-                if is_hovered || is_active {
+                if allow_hover && (is_hovered || is_active) {
                     let tc = ui.ctx().data(|d| {
                         d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
                             "katana_theme_colors",
@@ -83,17 +105,35 @@ impl SectionImageOps {
         section_lifecycle: &mut Option<&mut Vec<crate::preview_pane::SectionLifecycle>>,
         block_anchors: &mut Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
+        is_slideshow: bool,
     ) {
-        let state = viewer_states.map(|vs| {
-            if vs.len() <= i {
-                vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
-            }
-            &mut vs[i]
-        });
+        let allow_controls = !is_slideshow
+            || ui.ctx().data(|d| {
+                d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
+                    .unwrap_or(false)
+            });
+        let allow_hover = !is_slideshow
+            || ui.ctx().data(|d| {
+                d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
+                    .unwrap_or(false)
+            });
 
-        let is_active = active_editor_line.is_some_and(|line| {
-            line >= global_line_offset && line < global_line_offset + lines_in_section
-        });
+        /* WHY: Controls and hover hidden in slideshow by default */
+        let state = if !allow_controls {
+            None
+        } else {
+            viewer_states.map(|vs| {
+                if vs.len() <= i {
+                    vs.resize_with(i + 1, crate::preview_pane::ViewerState::default);
+                }
+                &mut vs[i]
+            })
+        };
+
+        let is_active = !is_slideshow
+            && active_editor_line.is_some_and(|line| {
+                line >= global_line_offset && line < global_line_offset + lines_in_section
+            });
 
         let mut inner_req = None;
         if let Some(rect) = crate::preview_pane::ImageLogicOps::show_local_image(
@@ -102,9 +142,14 @@ impl SectionImageOps {
             alt,
             i,
             state,
-            Some(&mut inner_req),
+            if !allow_controls {
+                None
+            } else {
+                Some(&mut inner_req)
+            },
             |ui, rect, is_hovered| {
-                if (is_hovered || is_active)
+                if allow_hover
+                    && (is_hovered || is_active)
                     && let Some(tc) = ui.ctx().data(|d| {
                         d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
                             "katana_theme_colors",

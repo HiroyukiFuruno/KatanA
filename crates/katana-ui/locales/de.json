@@ -107,7 +107,10 @@
             "fullscreen": "Vollbild",
             "close": "Schließen",
             "trackpad_help": "Trackpad: Zoomen mit zwei Fingern, Schieben mit einem"
-        }
+        },
+        "slideshow_settings": "[TODO] Slideshow Settings",
+        "highlight_hover": "[TODO] Hover Highlight",
+        "show_diagram_controls": "[TODO] Diagram Controls"
     },
     "plantuml": {
         "downloading_plantuml": "⬇ Lade PlantUML JAR herunter…",

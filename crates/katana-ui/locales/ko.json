@@ -107,7 +107,10 @@
             "fullscreen": "전체 화면",
             "close": "닫기",
             "trackpad_help": "트랙패드: 두 손가락으로 핀치하여 확대/축소, 드래그하여 이동"
-        }
+        },
+        "slideshow_settings": "[TODO] Slideshow Settings",
+        "highlight_hover": "[TODO] Hover Highlight",
+        "show_diagram_controls": "[TODO] Diagram Controls"
     },
     "plantuml": {
         "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중…",

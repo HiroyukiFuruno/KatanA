@@ -73,6 +73,16 @@ pub(super) fn render_slideshow_modal(
                                 .max_rect(child_rect)
                                 .layout(egui::Layout::top_down(egui::Align::Min)),
                             |ui| {
+                                ui.ctx().data_mut(|d| {
+                                    d.insert_temp(
+                                        egui::Id::new("katana_slideshow_hover_highlight"),
+                                        layout.slideshow_hover_highlight,
+                                    );
+                                    d.insert_temp(
+                                        egui::Id::new("katana_slideshow_diagram_controls"),
+                                        layout.slideshow_show_diagram_controls,
+                                    );
+                                });
                                 pane.render_sections(ui, None, None, None, false, true);
                             },
                         );
@@ -93,6 +103,7 @@ pub(super) fn render_slideshow_modal(
             });
 
             render_slideshow_close_button(ctx, ui, layout, blocker_rect);
+            render_slideshow_settings_sidebar(ctx, ui, layout, blocker_rect);
         });
 }
 
@@ -225,5 +236,138 @@ fn render_slideshow_close_button(
         if !layout.was_os_fullscreen_before_slideshow {
             ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
         }
+    }
+}
+
+fn render_slideshow_settings_sidebar(
+    ctx: &egui::Context,
+    ui: &mut egui::Ui,
+    layout: &mut crate::state::layout::LayoutState,
+    blocker_rect: egui::Rect,
+) {
+    const FULLSCREEN_INDICATOR_SPACING: f32 = 8.0;
+
+    const SETTINGS_PANEL_WIDTH: f32 = 250.0;
+    const SETTINGS_PADDING_TOP: f32 = 20.0;
+    const SETTINGS_ITEM_SPACING: f32 = 12.0;
+
+    let msgs = crate::i18n::I18nOps::get();
+    let btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
+
+    let toggle_btn_rect = egui::Rect::from_min_size(
+        egui::pos2(
+            blocker_rect.right() - btn_size.x * 2.0 - FULLSCREEN_INDICATOR_SPACING,
+            blocker_rect.top() + FULLSCREEN_CLOSE_MARGIN,
+        ),
+        btn_size,
+    );
+
+    let text_color = ctx
+        .data(|d| {
+            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new("katana_theme_colors"))
+        })
+        .map_or(crate::theme_bridge::BLACK, |tc| {
+            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.preview.text)
+        });
+
+    let toggle_resp = ui.put(
+        toggle_btn_rect,
+        egui::Button::image(
+            Icon::Settings
+                .image(crate::icon::IconSize::Large)
+                .tint(text_color),
+        )
+        .fill(crate::theme_bridge::TRANSPARENT)
+        .stroke(egui::Stroke::new(1.0, crate::theme_bridge::TRANSPARENT)),
+    );
+
+    if toggle_resp
+        .on_hover_text(&msgs.preview.slideshow_settings)
+        .clicked()
+    {
+        layout.slideshow_settings_open = !layout.slideshow_settings_open;
+    }
+
+    if layout.slideshow_settings_open {
+        let panel_width = SETTINGS_PANEL_WIDTH;
+        let panel_rect = egui::Rect::from_min_size(
+            egui::pos2(blocker_rect.right() - panel_width, blocker_rect.top()),
+            egui::vec2(panel_width, blocker_rect.height()),
+        );
+
+        let bg_color = ctx
+            .data(|d| {
+                d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                    "katana_theme_colors",
+                ))
+            })
+            .map_or(crate::theme_bridge::WHITE, |tc| {
+                crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.panel_background)
+            });
+
+        ui.painter().rect_filled(panel_rect, 0.0, bg_color);
+        ui.painter().line_segment(
+            [panel_rect.left_top(), panel_rect.left_bottom()],
+            ui.visuals().window_stroke(),
+        );
+
+        ui.put(panel_rect, |ui: &mut egui::Ui| {
+            egui::Frame::NONE
+                .inner_margin(FULLSCREEN_PADDING)
+                .show(ui, |ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.heading(&msgs.preview.slideshow_settings);
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui
+                                .add(
+                                    egui::Button::image(
+                                        Icon::CloseModal
+                                            .image(crate::icon::IconSize::Medium)
+                                            .tint(text_color),
+                                    )
+                                    .fill(crate::theme_bridge::TRANSPARENT)
+                                    .stroke(egui::Stroke::NONE),
+                                )
+                                .clicked()
+                            {
+                                layout.slideshow_settings_open = false;
+                            }
+                        });
+                    });
+
+                    ui.add_space(SETTINGS_PADDING_TOP);
+
+                    if ui
+                        .add(
+                            crate::widgets::LabeledToggle::new(
+                                &msgs.preview.highlight_hover,
+                                &mut layout.slideshow_hover_highlight,
+                            )
+                            .position(crate::widgets::TogglePosition::Right)
+                            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                        )
+                        .changed()
+                    {
+                        ctx.request_repaint();
+                    }
+
+                    ui.add_space(SETTINGS_ITEM_SPACING);
+
+                    if ui
+                        .add(
+                            crate::widgets::LabeledToggle::new(
+                                &msgs.preview.show_diagram_controls,
+                                &mut layout.slideshow_show_diagram_controls,
+                            )
+                            .position(crate::widgets::TogglePosition::Right)
+                            .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+                        )
+                        .changed()
+                    {
+                        ctx.request_repaint();
+                    }
+                })
+                .response
+        });
     }
 }

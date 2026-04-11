@@ -107,7 +107,10 @@
             "fullscreen": "Tela cheia",
             "close": "Fechar",
             "trackpad_help": "Trackpad: belisque com dois dedos para zoom, arraste para mover"
-        }
+        },
+        "slideshow_settings": "[TODO] Slideshow Settings",
+        "highlight_hover": "[TODO] Hover Highlight",
+        "show_diagram_controls": "[TODO] Diagram Controls"
     },
     "plantuml": {
         "downloading_plantuml": "⬇ Baixando PlantUML JAR…",

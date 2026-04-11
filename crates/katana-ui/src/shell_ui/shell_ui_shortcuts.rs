@@ -59,9 +59,10 @@ impl KatanaApp {
             self.pending_action = AppAction::CloseDocument(idx);
         }
 
+        /* WHY: Command-B toggles the explorer sidebar, matching VS Code / standard IDE convention */
         let cmd_b = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::B);
         if ctx.input_mut(|i| i.consume_shortcut(&cmd_b)) {
-            self.pending_action = AppAction::ToggleWorkspacePanel;
+            self.pending_action = AppAction::ToggleExplorer;
         }
 
         let cmd_shift_f = egui::KeyboardShortcut::new(

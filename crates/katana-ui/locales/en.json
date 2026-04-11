@@ -96,6 +96,9 @@
         "refresh_diagrams": "Refresh Diagrams",
         "rendering": "Rendering {kind}…",
         "no_preview": "(No Preview)",
+        "slideshow_settings": "Slideshow Settings",
+        "highlight_hover": "Hover Highlight",
+        "show_diagram_controls": "Diagram Controls",
         "diagram_controller": {
             "pan_up": "Pan Up",
             "pan_down": "Pan Down",

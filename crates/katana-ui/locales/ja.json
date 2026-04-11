@@ -95,7 +95,10 @@
         "preview_title": "プレビュー",
         "refresh_diagrams": "ダイアグラムを更新",
         "rendering": "{kind} レンダリング中…",
-        "no_preview": "（プレビューなし）",
+        "no_preview": "(プレビューなし)",
+        "slideshow_settings": "ストーリー設定",
+        "highlight_hover": "ホバーハイライト",
+        "show_diagram_controls": "ダイアグラム操作",
         "diagram_controller": {
             "pan_up": "上へ移動",
             "pan_down": "下へ移動",

@@ -107,7 +107,10 @@
             "fullscreen": "全屏",
             "close": "关闭",
             "trackpad_help": "触控板: 双指捏合缩放，单指拖拽移动"
-        }
+        },
+        "slideshow_settings": "[TODO] Slideshow Settings",
+        "highlight_hover": "[TODO] Hover Highlight",
+        "show_diagram_controls": "[TODO] Diagram Controls"
     },
     "plantuml": {
         "downloading_plantuml": "⬇ 正在下载 PlantUML JAR…",

@@ -6,6 +6,9 @@ pub struct PreviewMessages {
     pub refresh_diagrams: String,
     pub rendering: String,
     pub no_preview: String,
+    pub slideshow_settings: String,
+    pub highlight_hover: String,
+    pub show_diagram_controls: String,
     pub diagram_controller: DiagramControllerMessages,
 }
 
