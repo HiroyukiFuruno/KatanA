@@ -74,16 +74,7 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
                                 ui.heading(crate::i18n::I18nOps::get().search.modal_title.clone());
                             }
                             crate::state::layout::RailPopup::History => {
-                                ui.heading(
-                                    crate::i18n::I18nOps::get()
-                                        .workspace
-                                        .workspace_history_title
-                                        .clone(),
-                                );
-                                ui.separator();
-                                for history in &app.state.global_workspace.state().histories {
-                                    if ui.button(history).clicked() { /* TODO: handle open */ }
-                                }
+                                super::history_popup::render(ui, app);
                             }
                             crate::state::layout::RailPopup::AddWorkspace => {
                                 ui.heading(
