@@ -116,6 +116,8 @@ impl KatanaApp {
                     self.state.layout.active_rail_popup = None;
                 } else {
                     self.state.layout.active_rail_popup = Some(popup);
+                    /* WHY: Ensure the sidebar explorer remains visible whenever an activity rail panel is opened. */
+                    self.state.layout.show_explorer = true;
                 }
             }
             AppAction::ToggleSlideshow => self.handle_action_toggle_slideshow(ctx),
