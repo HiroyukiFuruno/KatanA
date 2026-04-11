@@ -49,18 +49,18 @@
 
 ## 4. Diagram Fullscreen & UI Polish
 
-- [ ] 4.1 ダイアグラム全画面表示時のオーバーレイ背景を不透明化（アルファ値 1.0）
-- [ ] 4.2 その他軽微な表示の乱れや透過設定の不整合を修正
+- [x] 4.1 ダイアグラム全画面表示時のオーバーレイ背景を不透明化（アルファ値 1.0）
+- [x] 4.2 ダイアグラム全画面表示を閉じる際のアニメーション実装（および軽微な修正）
 
 ### Definition of Done (DoD)
 
-- [ ] 全画面表示で背景が透けず、図に集中できることを確認
+- [x] 全画面表示で背景が透けず、図に集中できることを確認
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
 ## 5. Sidebar Continuity & Popup UI
 
-- [ ] 5.1 `katana-ui/src/app/action/dispatch.rs` を修正し、他パネル展開時もエクスプローラーを表示維持する
-- [ ] 5.2 サイドバーアイコンクリック時のアニメーション付きポップアップUIの実装（`Area` を使用）
+- [x] 5.1 `katana-ui/src/app/action/dispatch.rs` を修正し、他パネル展開時もエクスプローラーを表示維持する
+- [x] 5.2 サイドバーアイコンクリック時のアニメーション付きポップアップUIの実装（`Area` を使用）
 
 ## 6. Tab Group Operations & Explorer Integration
 
