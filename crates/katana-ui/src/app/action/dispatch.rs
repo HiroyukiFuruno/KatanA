@@ -73,10 +73,12 @@ impl KatanaApp {
             AppAction::ChangeLanguage(lang) => {
                 crate::i18n::I18nOps::set_language(&lang);
                 crate::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
-                self.state.config.settings.settings_mut().language = lang;
+                self.state.config.settings.settings_mut().language = lang.clone();
                 if !self.state.config.try_save_settings() {
                     tracing::warn!("Failed to save language setting");
                 }
+                /* WHY: Synchronize demo content localization if the demo is open */
+                self.handle_action_switch_demo_lang(&lang);
             }
             AppAction::ToggleSettings => {
                 self.state.layout.show_settings = !self.state.layout.show_settings;

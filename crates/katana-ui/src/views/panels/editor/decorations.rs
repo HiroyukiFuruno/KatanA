@@ -121,7 +121,7 @@ impl EditorDecorations {
                     response_rect.min.y + pos_start.min.y,
                 ),
                 egui::pos2(
-                    response_rect.min.x + pos_end.min.x.max(0.0),
+                    response_rect.min.x + pos_end.max.x.max(0.0),
                     response_rect.min.y + pos_end.max.y,
                 ),
             );
@@ -130,7 +130,20 @@ impl EditorDecorations {
             } else {
                 search_match_color
             };
-            ui.painter().rect_filled(highlight_rect, 2.0, color);
+            /* WHY: Use rect_filled if the rect has sensible dimensions (could wrap, so handle carefully) */
+            if highlight_rect.is_positive() {
+                ui.painter().rect_filled(highlight_rect, 2.0, color);
+            } else {
+                /* WHY: If the match wraps lines or is inverted, we at least draw a fallback rect */
+                let fallback_rect = egui::Rect::from_min_size(
+                    egui::pos2(
+                        response_rect.min.x + pos_start.min.x.max(0.0),
+                        response_rect.min.y + pos_start.min.y,
+                    ),
+                    egui::vec2(crate::shell::SEARCH_FALLBACK_RECT_WIDTH, pos_start.height()),
+                );
+                ui.painter().rect_filled(fallback_rect, 2.0, color);
+            }
         }
     }
 }

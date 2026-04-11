@@ -143,4 +143,23 @@ impl Icon {
             _ => None,
         }
     }
+
+    /* WHY: Returns the canonical emoji representation for the icon. */
+    pub fn as_char(&self) -> char {
+        match self {
+            Self::Plus => '➕',
+            Self::Document => '📄',
+            Self::Markdown => '📝',
+            Self::Recent | Self::History => '🕒',
+            Self::Action => '⚡',
+            Self::Refresh => '🔄',
+            Self::Pin => '📌',
+            Self::Warning => '⚠',
+            Self::Rocket => '🚀',
+            Self::Download => '⬇',
+            Self::Hourglass => '⏳',
+            Self::Info => 'ℹ',
+            _ => ' ',
+        }
+    }
 }

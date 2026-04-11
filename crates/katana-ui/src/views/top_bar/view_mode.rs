@@ -1,8 +1,12 @@
 use crate::app_state::{AppAction, ViewMode};
 use eframe::egui;
 
-const UPDATE_BTN_MARGIN_LEFT: f32 = 10.0;
+/* WHY: Success color component for update badge. */
 const COLOR_SUCCESS_G: u8 = 200;
+/* WHY: Success color component blue for update badge. */
+const COLOR_SUCCESS_B: u8 = 100;
+/* WHY: Left margin for the update button. */
+const UPDATE_BTN_MARGIN_LEFT: f32 = 10.0;
 
 pub(crate) struct ViewModeBar {
     pub view_mode: ViewMode,
@@ -60,7 +64,7 @@ impl ViewModeBar {
                 let icon_bg = Self::resolve_icon_bg(ui);
                 let button_size = egui::vec2(bar_height, bar_height);
                 if self.update_available && !self.update_checking {
-                    self.render_update_badge(ui, &mut action);
+                    self.render_update_badge(ui, icon_bg, &mut action);
                 }
                 let prev_is_split = prev == ViewMode::Split;
                 let is_split = mode == ViewMode::Split;
@@ -85,7 +89,7 @@ impl ViewModeBar {
                     .show(&mut action);
                 }
                 if self.show_search {
-                    self.render_search_button(ui, search_state, &mut action);
+                    self.render_search_button(ui, icon_bg, search_state, &mut action);
                 }
             },
         );
@@ -103,8 +107,14 @@ impl ViewModeBar {
         }
     }
 
-    fn render_update_badge(&self, ui: &mut egui::Ui, action: &mut Option<AppAction>) {
-        let badge_color = crate::theme_bridge::ThemeBridgeOps::from_rgb(0, COLOR_SUCCESS_G, 100);
+    fn render_update_badge(
+        &self,
+        ui: &mut egui::Ui,
+        icon_bg: egui::Color32,
+        action: &mut Option<AppAction>,
+    ) {
+        let badge_color =
+            crate::theme_bridge::ThemeBridgeOps::from_rgb(0, COLOR_SUCCESS_G, COLOR_SUCCESS_B);
         let badge_str = crate::i18n::I18nOps::get().update.update_available.clone();
         let badge_text = egui::RichText::new(badge_str).color(badge_color).strong();
         let btn = egui::Button::image_and_text(
@@ -113,6 +123,7 @@ impl ViewModeBar {
                 .tint(badge_color),
             badge_text,
         )
+        .fill(icon_bg)
         .sense(egui::Sense::click());
         if ui
             .add(btn)
@@ -127,6 +138,7 @@ impl ViewModeBar {
     fn render_search_button(
         &self,
         ui: &mut egui::Ui,
+        icon_bg: egui::Color32,
         search_state: &mut crate::state::search::SearchState,
         action: &mut Option<AppAction>,
     ) {
@@ -139,7 +151,7 @@ impl ViewModeBar {
         let btn_color = if search_state.doc_search_open {
             ui.visuals().widgets.active.bg_fill
         } else {
-            egui::Color32::default()
+            icon_bg
         };
         let toggle_resp = ui
             .add(

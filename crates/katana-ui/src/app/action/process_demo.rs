@@ -23,6 +23,61 @@ impl KatanaApp {
         self.open_demo_group(demo_assets);
     }
 
+    pub(super) fn handle_action_open_welcome_screen(&mut self) {
+        let lang = self.state.config.settings.settings().language.clone();
+        if let Some(asset) = super::demo_bundle::resolve_single_asset(&lang, "welcome.md") {
+            self.open_special_virtual_asset(asset);
+        }
+    }
+
+    /// Handler for AppAction::OpenUserGuide
+    pub(super) fn handle_action_open_user_guide(&mut self) {
+        let lang = self.state.config.settings.settings().language.clone();
+        if let Some(asset) = super::demo_bundle::resolve_single_asset(&lang, "guide.md") {
+            self.open_special_virtual_asset(asset);
+        }
+    }
+
+    fn open_special_virtual_asset(&mut self, asset: super::demo_bundle::DemoAsset) {
+        let path = PathBuf::from(asset.virtual_path);
+
+        /* WHY: Check if already open */
+        let mut found_idx = None;
+        for (i, doc) in self.state.document.open_documents.iter_mut().enumerate() {
+            if doc.path == path {
+                /* WHY: Update reference state */
+                doc.is_reference = asset.is_reference;
+                found_idx = Some(i);
+                break;
+            }
+        }
+
+        let idx = if let Some(i) = found_idx {
+            i
+        } else {
+            /* WHY: Create document directly from embedded content.
+            No filesystem read needed — content is already in the binary. */
+            let mut doc = katana_core::document::Document::new(path.clone(), asset.content);
+            doc.is_reference = asset.is_reference;
+
+            self.state.document.open_documents.push(doc);
+            self.state.initialize_tab_split_state(path.clone());
+            self.state.document.open_documents.len() - 1
+        };
+
+        self.state.document.active_doc_idx = Some(idx);
+        let active_path = self.state.document.open_documents[idx].path.clone();
+        let src = self.state.document.open_documents[idx].buffer.clone();
+        let concurrency = self
+            .state
+            .config
+            .settings
+            .settings()
+            .performance
+            .diagram_concurrency;
+        self.full_refresh_preview(&active_path, &src, false, concurrency);
+    }
+
     fn open_demo_group(&mut self, demo_assets: Vec<super::demo_bundle::DemoAsset>) {
         let demo_group_name = "Demo";
         let demo_group_id = "demo".to_string();

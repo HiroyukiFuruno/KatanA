@@ -7,7 +7,10 @@ pre-commit:
       run: make fmt
     clippy:
       glob: "*.rs"
-      run: make lint-fix
+      run: make lint
+    ast-lint:
+      glob: "*.rs"
+      run: make ast-lint
 
 pre-push:
   commands:

@@ -301,6 +301,10 @@ fn ast_linter_no_japanese_in_crates() {
                         return ignore::WalkState::Continue;
                     }
 
+                    if path.to_string_lossy().contains("/resources/") {
+                        return ignore::WalkState::Continue;
+                    }
+
                     if let Ok(content) = std::fs::read_to_string(path) {
                         for (line_idx, line) in content.lines().enumerate() {
                             /* WHY: Detect Japanese specifically combining Hiragana and Katakana.

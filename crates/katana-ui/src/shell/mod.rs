@@ -56,6 +56,7 @@ pub(crate) const RAIL_POPUP_Y_OFFSET_HISTORY: f32 = 100.0;
 pub(crate) const RAIL_POPUP_Y_OFFSET_WORKSPACE: f32 = 40.0;
 pub(crate) const RAIL_POPUP_Y_OFFSET_HELP: f32 = 60.0;
 pub(crate) const RAIL_POPUP_SPACING_LARGE: f32 = 8.0;
+pub(crate) const SEARCH_FALLBACK_RECT_WIDTH: f32 = 10.0;
 
 pub(crate) const ACTIVITY_RAIL_PADDING: f32 = 8.0;
 
