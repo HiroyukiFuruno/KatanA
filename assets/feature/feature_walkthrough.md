@@ -19,10 +19,8 @@ The files in this demo group are:
 
 | File | Purpose |
 |------|---------|
-| `welcome.md` | This introduction (Markdown, editable) |
+| `feature_walkthrough.md` | This introduction (Markdown, editable) |
 | `rendering_features.md` | Full rendering showcase |
-| `katana_config.toml` | Example configuration (reference, read-only) |
-| `sample_code.rs` | Example Rust code (reference, read-only) |
 
 > [!TIP]
 > Code and configuration files in this demo open in **reference mode** — they
