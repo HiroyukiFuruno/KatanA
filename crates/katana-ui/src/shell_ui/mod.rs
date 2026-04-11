@@ -45,6 +45,7 @@ pub(crate) struct TreeRenderContext<'a, 'b> {
     pub disable_context_menu: bool,
     pub is_flat_view: bool,
     pub ws_root: Option<&'b std::path::Path>,
+    pub tab_groups: Option<&'b [crate::state::document::TabGroup]>,
 }
 
 use crate::shell::KatanaApp;

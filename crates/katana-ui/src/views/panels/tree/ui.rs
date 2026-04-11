@@ -91,6 +91,14 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
                 *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
                 ui.close();
             }
+
+            crate::widgets::MenuButtonOps::show(
+                ui,
+                &crate::i18n::I18nOps::get().tab.add_to_group,
+                |ui| {
+                    Self::render_tab_group_menu(ui, path, ctx);
+                },
+            );
         }
 
         ui.separator();
@@ -122,6 +130,39 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
         if ui.button(msg.delete.clone()).clicked() {
             *ctx.action = crate::app_state::AppAction::RequestDelete(path.to_path_buf());
             ui.close();
+        }
+    }
+
+    fn render_tab_group_menu(
+        ui: &mut egui::Ui,
+        path: &std::path::Path,
+        ctx: &mut TreeRenderContext,
+    ) {
+        if ui
+            .button(&crate::i18n::I18nOps::get().tab.create_new_group)
+            .clicked()
+        {
+            *ctx.action = crate::app_state::AppAction::CreateTabGroup {
+                name: "".to_string(),
+                color_hex: "#4A90D9".to_string(),
+                initial_member: path.to_path_buf(),
+            };
+            ui.close();
+        }
+
+        if let Some(groups) = ctx.tab_groups
+            && !groups.is_empty()
+        {
+            ui.separator();
+            for g in groups {
+                if ui.button(&g.name).clicked() {
+                    *ctx.action = crate::app_state::AppAction::AddTabToGroup {
+                        group_id: g.id.clone(),
+                        member: path.to_path_buf(),
+                    };
+                    ui.close();
+                }
+            }
         }
     }
 }

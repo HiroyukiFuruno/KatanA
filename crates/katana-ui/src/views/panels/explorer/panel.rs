@@ -11,6 +11,7 @@ pub(crate) struct ExplorerPanel<'a> {
     pub search: &'a mut crate::app_state::SearchState,
     pub histories: &'a [String],
     pub active_path: Option<&'a std::path::Path>,
+    pub tab_groups: &'a [crate::state::document::TabGroup],
     pub action: &'a mut AppAction,
 }
 
@@ -20,6 +21,7 @@ impl<'a> ExplorerPanel<'a> {
         search: &'a mut crate::app_state::SearchState,
         histories: &'a [String],
         active_path: Option<&'a std::path::Path>,
+        tab_groups: &'a [crate::state::document::TabGroup],
         action: &'a mut AppAction,
     ) -> Self {
         Self {
@@ -27,6 +29,7 @@ impl<'a> ExplorerPanel<'a> {
             search,
             histories,
             active_path,
+            tab_groups,
             action,
         }
     }
@@ -36,6 +39,7 @@ impl<'a> ExplorerPanel<'a> {
         let search = self.search;
         let histories = self.histories;
         let active_path = self.active_path;
+        let tab_groups = self.tab_groups;
         let action = self.action;
         let panel_width = ui.available_width();
         ui.set_max_width(panel_width);
@@ -60,7 +64,15 @@ impl<'a> ExplorerPanel<'a> {
                 })
                 .show(ui);
         } else {
-            ExplorerContent::new(workspace, search, histories, active_path, action).show(ui);
+            ExplorerContent::new(
+                workspace,
+                search,
+                histories,
+                active_path,
+                tab_groups,
+                action,
+            )
+            .show(ui);
         }
     }
 }

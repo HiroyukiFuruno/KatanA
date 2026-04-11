@@ -43,6 +43,10 @@ impl<'a> GroupHeaderPopup<'a> {
                 if self.inline_rename_group == Some(&self.g.id) {
                     resp.request_focus();
                 }
+                /* WHY: Pressing Return (Enter) should commit the new name and close the popup for better UX. */
+                if resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                    ui.memory_mut(|mem| mem.close_popup(self.popup_id));
+                }
             })
             .show(ui);
     }
