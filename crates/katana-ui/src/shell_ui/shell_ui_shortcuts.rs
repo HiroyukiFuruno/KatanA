@@ -70,7 +70,15 @@ impl KatanaApp {
             egui::Key::F,
         );
         if ctx.input_mut(|i| i.consume_shortcut(&cmd_shift_f)) {
-            self.pending_action = AppAction::ToggleSearchModal;
+            self.pending_action = AppAction::ToggleExplorerFilter;
+        }
+
+        let cmd_alt_d = egui::KeyboardShortcut::new(
+            egui::Modifiers::COMMAND | egui::Modifiers::ALT,
+            egui::Key::D,
+        );
+        if ctx.input_mut(|i| i.consume_shortcut(&cmd_alt_d)) {
+            self.pending_action = AppAction::OpenHelpDemo;
         }
 
         let cmd_s = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::S);
