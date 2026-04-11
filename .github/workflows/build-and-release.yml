@@ -25,6 +25,20 @@ on:
     types: [closed]
     branches:
       - master
+    paths-ignore:
+      - '**.md'
+      - '**.txt'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'openspec/**'
+      - 'docs/**'
+      - 'Makefile'
+      - 'scripts/**'
+      - 'platforms/**'
+      - '.vscode/**'
+      - '.agent/**'
+      - '.agents/**'
+      - '.github/**'
   push:
     tags:
       - 'v*'
