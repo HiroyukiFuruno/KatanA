@@ -36,6 +36,8 @@ pub struct I18nMessages {
     pub dialog: DialogMessages,
     #[serde(default)]
     pub markdown: MarkdownMessages,
+    #[serde(default)]
+    pub help: HelpMessages,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -56,6 +58,17 @@ pub struct TermsMessages {
     pub content: String,
     pub accept: String,
     pub decline: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct HelpMessages {
+    pub section_general: String,
+    pub section_editor: String,
+    pub shortcut_command_palette: String,
+    pub shortcut_search: String,
+    pub shortcut_sidebar: String,
+    pub shortcut_save: String,
+    pub shortcut_refresh: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

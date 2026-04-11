@@ -452,5 +452,14 @@
     "kind_markdown": "#MISSING-it: Markdown Doc",
     "yes": "#MISSING-it: Yes",
     "no": "#MISSING-it: No"
+  },
+  "help": {
+    "section_general": "#MISSING-it: General",
+    "section_editor": "#MISSING-it: Editor",
+    "shortcut_command_palette": "#MISSING-it: Cmd+P: Command Palette",
+    "shortcut_search": "#MISSING-it: Cmd+F: Search Workspace",
+    "shortcut_sidebar": "#MISSING-it: Cmd+B: Toggle Sidebar",
+    "shortcut_save": "#MISSING-it: Cmd+S: Save",
+    "shortcut_refresh": "#MISSING-it: Cmd+R: Refresh Diagram"
   }
 }

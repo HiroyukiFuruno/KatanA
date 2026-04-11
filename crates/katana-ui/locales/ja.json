@@ -452,5 +452,14 @@
     "kind_markdown": "Markdown ドキュメント",
     "yes": "はい",
     "no": "いいえ"
+  },
+  "help": {
+    "section_general": "全般",
+    "section_editor": "エディタ",
+    "shortcut_command_palette": "Cmd+P: コマンドパレット",
+    "shortcut_search": "Cmd+F: ワークスペース検索",
+    "shortcut_sidebar": "Cmd+B: サイドバー切替",
+    "shortcut_save": "Cmd+S: 保存",
+    "shortcut_refresh": "Cmd+R: 図表を更新"
   }
 }

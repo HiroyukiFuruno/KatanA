@@ -452,5 +452,14 @@
     "kind_markdown": "#MISSING-zh-CN: Markdown Doc",
     "yes": "#MISSING-zh-CN: Yes",
     "no": "#MISSING-zh-CN: No"
+  },
+  "help": {
+    "section_general": "#MISSING-zh-CN: General",
+    "section_editor": "#MISSING-zh-CN: Editor",
+    "shortcut_command_palette": "#MISSING-zh-CN: Cmd+P: Command Palette",
+    "shortcut_search": "#MISSING-zh-CN: Cmd+F: Search Workspace",
+    "shortcut_sidebar": "#MISSING-zh-CN: Cmd+B: Toggle Sidebar",
+    "shortcut_save": "#MISSING-zh-CN: Cmd+S: Save",
+    "shortcut_refresh": "#MISSING-zh-CN: Cmd+R: Refresh Diagram"
   }
 }

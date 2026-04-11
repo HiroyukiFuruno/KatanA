@@ -42,6 +42,7 @@ define_icons! {
     CollapseAll     => "ui/collapse_all",
     Search          => "ui/search",
     Settings        => "ui/settings",
+    Help            => "status/info",
     /* WHY: navigation/ */
     ChevronLeft     => "navigation/chevron_left",
     ChevronRight    => "navigation/chevron_right",

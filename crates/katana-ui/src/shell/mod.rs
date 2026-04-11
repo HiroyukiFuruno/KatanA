@@ -44,6 +44,21 @@ pub(crate) const RECENT_WORKSPACES_ITEM_SPACING: f32 = 4.0;
 pub(crate) const RECENT_WORKSPACES_HEADING_LEFT_PADDING: f32 = 10.0;
 pub(crate) const HISTORY_MODAL_EMPTY_BOTTOM_SPACING: f32 = 10.0;
 
+pub(crate) const RAIL_POPUP_WIDTH: f32 = 320.0;
+pub(crate) const RAIL_POPUP_HEIGHT: f32 = 400.0;
+pub(crate) const RAIL_POPUP_ROUNDING: f32 = 12.0;
+pub(crate) const RAIL_POPUP_PADDING: i8 = 12;
+pub(crate) const RAIL_POPUP_MARGIN: f32 = 4.0;
+pub(crate) const RAIL_POPUP_ANIMATION_TIME: f32 = 0.15;
+pub(crate) const RAIL_POPUP_SHADOW_ALPHA: u8 = 64;
+pub(crate) const RAIL_POPUP_Y_OFFSET_SEARCH: f32 = 40.0;
+pub(crate) const RAIL_POPUP_Y_OFFSET_HISTORY: f32 = 100.0;
+pub(crate) const RAIL_POPUP_Y_OFFSET_WORKSPACE: f32 = 40.0;
+pub(crate) const RAIL_POPUP_Y_OFFSET_HELP: f32 = 60.0;
+pub(crate) const RAIL_POPUP_SPACING_LARGE: f32 = 8.0;
+
+pub(crate) const ACTIVITY_RAIL_PADDING: f32 = 8.0;
+
 pub(crate) const TREE_ROW_HEIGHT: f32 = 22.0;
 pub(crate) const TREE_LABEL_HOFFSET: f32 = 4.0;
 pub(crate) const TREE_FONT_SIZE: f32 = 13.0;

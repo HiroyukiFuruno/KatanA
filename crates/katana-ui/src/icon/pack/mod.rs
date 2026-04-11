@@ -59,6 +59,7 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::Download => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "system/download", ".svg"))),
             crate::icon::Icon::Hourglass => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "system/hourglass", ".svg"))),
             crate::icon::Icon::More => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/more", ".svg"))),
+            crate::icon::Icon::Help => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "status/info", ".svg"))),
         }
     };
 }

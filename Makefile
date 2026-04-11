@@ -262,8 +262,8 @@ help: ## Show this help
 
 .PHONY: linux-up
 linux-up: ## Start the Linux verification environment
-	./platforms/linux/init.sh
+	bash platforms/linux/init.sh
 
 .PHONY: linux-down
 linux-down: ## Stop the Linux verification environment
-	./platforms/linux/down.sh
+	bash platforms/linux/down.sh
