@@ -58,6 +58,7 @@ jobs:
     steps:
       - name: Validate Branch Name
         if: github.base_ref == 'master'
+        shell: bash
         run: |
           BRANCH="${{ github.head_ref }}"
           if [[ ! "$BRANCH" =~ ^release/ && ! "$BRANCH" =~ ^hotfix/ && ! "$BRANCH" =~ ^dependabot/ ]]; then
