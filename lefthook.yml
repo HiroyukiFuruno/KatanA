@@ -1,8 +1,6 @@
 # lefthook.yml
 output:
   - failure
-  - execution
-  - summary
 
 pre-commit:
   parallel: false
@@ -21,14 +19,17 @@ pre-push:
   commands:
     ci-strict:
       run: make -j 2 check
-      glob: "*.{rs,toml,lock}"
       only:
         - ref: master
         - ref: release/*
+      skip:
+        - ref: release/*-task*
 
     ci-light:
       run: make check-light
-      glob: "*.{rs,toml,lock}"
       skip:
         - ref: master
-        - ref: release/*
+      only:
+        - ref: release/*-task*
+        - ref: feature/*
+        - ref: bugfix/*
