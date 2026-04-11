@@ -22,9 +22,22 @@ pub(super) fn show_fullscreen_svg(
         .order(egui::Order::Foreground)
         .fixed_pos(screen.min)
         .show(ctx, |ui| {
+            let current_time = ui.input(|i| i.time);
+            let mut alpha = 1.0;
+            if let Some(start_time) = viewer_state.closing_since {
+                let progress = ((current_time - start_time) as f32)
+                    / super::fullscreen::FULLSCREEN_FADE_OUT_DURATION;
+                if progress >= 1.0 {
+                    keep_open = false;
+                } else {
+                    alpha = 1.0 - progress;
+                    ctx.request_repaint();
+                }
+            }
+
             let (blocker_rect, response) =
                 ui.allocate_exact_size(screen.size(), egui::Sense::click_and_drag());
-            if response.hovered() {
+            if response.hovered() && viewer_state.closing_since.is_none() {
                 let zoom_delta = ui.input(|i| i.zoom_delta());
                 if zoom_delta != 1.0 {
                     viewer_state.zoom = (viewer_state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
@@ -35,15 +48,15 @@ pub(super) fn show_fullscreen_svg(
                     ui.input(|i| i.smooth_scroll_delta)
                 };
                 if response.clicked() {
-                    keep_open = false;
+                    viewer_state.closing_since = Some(current_time);
                 }
             }
 
-            ui.painter().rect_filled(
-                blocker_rect,
-                0.0,
-                crate::theme_bridge::IMAGE_VIEWER_OVERLAY_COLOR,
-            );
+            let mut bg_color = crate::theme_bridge::IMAGE_VIEWER_OVERLAY_COLOR;
+            /* WHY: Support fade out animation by multiplying alpha. */
+            bg_color = bg_color.gamma_multiply(alpha);
+
+            ui.painter().rect_filled(blocker_rect, 0.0, bg_color);
 
             let avail = Vec2::new(
                 screen.width() - FULLSCREEN_PADDING * 2.0,
@@ -83,15 +96,20 @@ pub(super) fn show_fullscreen_svg(
                 texture_handle.id(),
                 egui::Rect::from_min_size(img_pos, size),
                 egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
-                crate::theme_bridge::WHITE,
+                crate::theme_bridge::WHITE.gamma_multiply(alpha),
             );
             crate::diagram_controller::DiagramControllerOps::draw_controls(
                 ui,
                 viewer_state,
                 blocker_rect,
             );
-            if render_fs_close_btn(ui, blocker_rect, crate::theme_bridge::WHITE, dc_close) {
-                keep_open = false;
+            if render_fs_close_btn(
+                ui,
+                blocker_rect,
+                crate::theme_bridge::WHITE.gamma_multiply(alpha),
+                dc_close,
+            ) {
+                viewer_state.closing_since = Some(current_time);
             }
         });
 

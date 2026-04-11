@@ -15,12 +15,14 @@ pub(super) const SLIDESHOW_CONTROL_CORNER_RADIUS: f32 = 18.0;
 pub(super) const SLIDESHOW_CONTROL_PADDING_X: i8 = 20;
 pub(super) const SLIDESHOW_CONTROL_PADDING_Y: i8 = 4;
 pub(super) const SLIDESHOW_CONTROL_SPACING: f32 = 8.0;
-pub(super) const SLIDESHOW_BG_ALPHA_SCALE: f32 = 0.8;
+pub(super) const SLIDESHOW_BG_ALPHA_SCALE: f32 = 1.0;
 
 pub(super) const SLIDESHOW_CONTROL_FADE_DELAY: f64 = 1.5;
 pub(super) const SLIDESHOW_CONTROL_FADE_DURATION: f32 = 0.5;
 pub(super) const SLIDESHOW_OPACITY_MAX: f32 = 1.0;
 pub(super) const SLIDESHOW_OPACITY_MIN: f32 = 0.0;
+
+pub(crate) const FULLSCREEN_FADE_OUT_DURATION: f32 = 0.2;
 
 pub use super::types::FullscreenLogicOps;
 

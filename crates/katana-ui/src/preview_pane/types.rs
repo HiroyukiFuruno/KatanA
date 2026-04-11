@@ -129,6 +129,7 @@ pub struct ViewerState {
     pub zoom: f32,
     pub pan: egui::Vec2,
     pub texture: Option<egui::TextureHandle>,
+    pub closing_since: Option<f64>,
 }
 
 impl std::fmt::Debug for ViewerState {
@@ -147,6 +148,7 @@ impl Default for ViewerState {
             zoom: 1.0,
             pan: egui::Vec2::ZERO,
             texture: None,
+            closing_since: None,
         }
     }
 }
