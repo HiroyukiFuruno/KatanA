@@ -126,7 +126,7 @@ jobs:
           cat RELEASE_NOTES.md
 
       - name: Upload Release Notes
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-notes
           path: RELEASE_NOTES.md
@@ -180,7 +180,7 @@ jobs:
             exit 1
           fi
       - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: artifacts-macos
           path: |
@@ -220,7 +220,7 @@ jobs:
       - name: Package Linux Artifact
         run: scripts/build/package-linux.sh
       - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: artifacts-linux
           path: target/release/KatanA-linux-x86_64.tar.gz
@@ -260,7 +260,7 @@ jobs:
         run: scripts/build/package-windows.sh
 
       - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: artifacts-windows
           path: |
