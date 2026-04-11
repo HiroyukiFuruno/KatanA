@@ -4341,6 +4341,6 @@ fn test_open_help_demo() {
             .file_name()
             .unwrap_or_default()
             .to_string_lossy()
-            .starts_with("welcome")
+            .starts_with("feature_walkthrough")
     }));
 }
