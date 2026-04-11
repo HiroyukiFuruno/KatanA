@@ -23,6 +23,8 @@
     "view": "表示",
     "command_palette": "コマンドパレット…",
     "demo": "デモ・機能紹介を見る",
+    "welcome_screen": "ようこそ画面",
+    "user_guide": "ユーザーガイド",
     "language_en": "英語",
     "language_ja": "日本語",
     "language_zh_cn": "中国語 (簡体字)",
@@ -86,7 +88,8 @@
     "filter_regex_hint": "フィルター (正規表現)...",
     "open_folder_hint": "KatanAを使い始めるために、フォルダを開いてください。",
     "open_workspace_button": "ワークスペースを開く",
-    "remove_history_tooltip": "履歴から除去"
+    "remove_history_tooltip": "履歴から除去",
+    "max_depth_exceeded": "最大深度を超過しました"
   },
   "preview": {
     "preview_title": "プレビュー",
@@ -143,10 +146,17 @@
     "problems_panel_close": "閉じる",
     "no_problems_found": "問題は見つかりませんでした。",
     "toggle_problems_panel": "問題パネルを表示/非表示",
-    "problems_count_format": "問題: {count}",
+    "problems_count_format": "問題数: {count}",
     "removed_workspace": "ワークスペース {path} を除去しました。",
     "error_save_settings": "設定の保存に失敗しました。",
-    "closed_workspace": "ワークスペースを閉じました。"
+    "closed_workspace": "ワークスペースを閉じました。",
+    "label_dirty": "変更あり",
+    "label_loaded": "読み込み済み",
+    "label_pinned": "固定済み",
+    "label_path": "パス",
+    "kind_markdown": "Markdown ドキュメント",
+    "yes": "はい",
+    "no": "いいえ"
   },
   "action": {
     "expand_all": "すべて展開",
@@ -172,7 +182,12 @@
     "discard": "破棄",
     "confirm": "確認",
     "copy_relative_path": "相対パスのコピー",
-    "toggle_slideshow": "スライドショー"
+    "toggle_slideshow": "スライドショー",
+    "open_file": "ファイルを開く",
+    "save_file": "ファイルを保存",
+    "new_workspace": "新しいワークスペース",
+    "open_workspace": "ワークスペースを開く",
+    "copy": "コピー"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -259,7 +274,9 @@
       "line_number_active_text": "アクティブ行番号",
       "current_line_background": "カレント行背景",
       "hover_line_background": "ホバー行背景",
-      "file_tree_text": "ファイルツリー・テキスト"
+      "file_tree_text": "ファイルツリー・テキスト",
+      "search_match": "検索一致",
+      "search_active": "検索アクティブ"
     },
     "workspace": {
       "max_depth": "最大ディレクトリスキャン深度",
@@ -339,6 +356,7 @@
       "scroll_sync": "スクロール同期",
       "auto_save": "自動保存",
       "auto_save_interval": "自動保存間隔",
+      "auto_save_interval_hint": "秒単位",
       "auto_refresh": "自動再読込",
       "auto_refresh_interval": "自動再読込ポーリング間隔",
       "seconds": "秒",
@@ -349,7 +367,8 @@
       "clear_http_cache": "すべてのキャッシュをクリア",
       "cache_retention_days": "キャッシュ保持日数",
       "days_suffix": " 日"
-    }
+    },
+    "general": "全般"
   },
   "tab": {
     "nav_prev": "前のタブへ移動",
@@ -437,7 +456,7 @@
   },
   "meta_info": {
     "title": "ドキュメント情報",
-    "general_section": "一般",
+    "general_section": "基本情報",
     "dates_section": "日付",
     "status_section": "ステータス",
     "label_name": "名前",
@@ -451,7 +470,13 @@
     "label_path": "パス",
     "kind_markdown": "Markdown ドキュメント",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "label_size": "サイズ",
+    "label_owner": "所有者",
+    "label_permissions": "パーミッション",
+    "kind_virtual": "仮想ドキュメント",
+    "virtual_embedded": "内蔵",
+    "unknown": "不明"
   },
   "help": {
     "section_general": "全般",
@@ -461,5 +486,14 @@
     "shortcut_sidebar": "Cmd+B: サイドバー切替",
     "shortcut_save": "Cmd+S: 保存",
     "shortcut_refresh": "Cmd+R: 図表を更新"
+  },
+  "dashboard": {
+    "welcome_title": "KatanA へようこそ",
+    "welcome_subtitle": "高度な次世代コーディング環境",
+    "start_section": "開始",
+    "recent_section": "最近のファイル",
+    "no_recent_files": "最近のファイルはありません",
+    "welcome_screen": "🏠 ようこそ画面",
+    "user_guide": "📚 ユーザーガイド"
   }
 }

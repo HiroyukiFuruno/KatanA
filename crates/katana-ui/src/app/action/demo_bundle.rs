@@ -15,14 +15,53 @@ pub(super) struct DemoAsset {
 }
 
 /* WHY: English Markdown assets */
-const WELCOME_EN: &str = include_str!("../../../../../assets/feature/welcome.md");
+const WELCOME_EN: &str = include_str!("../../../../../assets/feature/feature_walkthrough.md");
 const RENDERING_FEATURES_EN: &str =
     include_str!("../../../../../assets/feature/rendering_features.md");
 
 /* WHY: Japanese Markdown assets */
-const WELCOME_JA: &str = include_str!("../../../../../assets/feature/welcome.ja.md");
+const WELCOME_JA: &str = include_str!("../../../../../assets/feature/feature_walkthrough.ja.md");
 const RENDERING_FEATURES_JA: &str =
     include_str!("../../../../../assets/feature/rendering_features.ja.md");
+
+/* WHY: Guide assets */
+const GUIDE_JA: &str = include_str!("../../../resources/guide_ja.md");
+const GUIDE_EN: &str = include_str!("../../../resources/guide_en.md");
+
+/* WHY: App Welcome assets. */
+const APP_WELCOME_JA: &str = include_str!("../../../resources/welcome_ja.md");
+const APP_WELCOME_EN: &str = include_str!("../../../resources/welcome_en.md");
+
+/// Resolve single embedded demo asset or help asset by name.
+pub(super) fn resolve_single_asset(lang: &str, filename: &str) -> Option<DemoAsset> {
+    match filename {
+        "welcome.md" => {
+            let content = if lang.starts_with("ja") {
+                APP_WELCOME_JA
+            } else {
+                APP_WELCOME_EN
+            };
+            Some(DemoAsset {
+                virtual_path: Box::leak("Katana://Welcome.md".to_string().into_boxed_str()),
+                content,
+                is_reference: true,
+            })
+        }
+        "guide.md" => {
+            let content = if lang.starts_with("ja") {
+                GUIDE_JA
+            } else {
+                GUIDE_EN
+            };
+            Some(DemoAsset {
+                virtual_path: Box::leak("Katana://Guide.md".to_string().into_boxed_str()),
+                content,
+                is_reference: true,
+            })
+        }
+        _ => None,
+    }
+}
 
 /// Resolve the embedded demo bundle based on the current language.
 ///
@@ -31,19 +70,19 @@ const RENDERING_FEATURES_JA: &str =
 /// - Prefer Japanese variant when `lang == "ja"`, fall back to English.
 /// - Welcome document is always returned first.
 pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
-    let (welcome, rendering) = if lang == "ja" {
+    let (welcome, rendering) = if lang.starts_with("ja") {
         (WELCOME_JA, RENDERING_FEATURES_JA)
     } else {
         (WELCOME_EN, RENDERING_FEATURES_EN)
     };
 
-    let welcome_filename = "welcome.md";
+    let walkthrough_filename = "feature_walkthrough.md";
     let rendering_filename = "rendering_features.md";
 
     vec![
-        /* WHY: Welcome is always first */
+        /* WHY: Walkthrough is always first */
         DemoAsset {
-            virtual_path: demo_virtual_path(welcome_filename),
+            virtual_path: demo_virtual_path(walkthrough_filename),
             content: welcome,
             is_reference: true,
         },
@@ -75,8 +114,7 @@ mod tests {
     fn resolve_demo_bundle_returns_two_assets_en() {
         let bundle = resolve_demo_bundle("en");
         assert_eq!(bundle.len(), 2);
-        assert!(bundle[0].virtual_path.contains("welcome.md"));
-        assert!(!bundle[0].virtual_path.contains(".ja.md"));
+        assert!(bundle[0].virtual_path.contains("feature_walkthrough.md"));
         assert!(bundle[1].virtual_path.contains("rendering_features.md"));
     }
 
@@ -84,7 +122,7 @@ mod tests {
     fn resolve_demo_bundle_returns_two_assets_ja() {
         let bundle = resolve_demo_bundle("ja");
         assert_eq!(bundle.len(), 2);
-        assert!(bundle[0].virtual_path.contains("welcome.md"));
+        assert!(bundle[0].virtual_path.contains("feature_walkthrough.md"));
         assert!(bundle[1].virtual_path.contains("rendering_features.md"));
     }
 
@@ -104,8 +142,8 @@ mod tests {
         for lang in &["en", "ja", "zh-CN", "ko", "fr"] {
             let bundle = resolve_demo_bundle(lang);
             assert!(
-                bundle[0].virtual_path.contains("welcome"),
-                "First asset for lang={lang} should be welcome, got: {}",
+                bundle[0].virtual_path.contains("feature_walkthrough"),
+                "First asset for lang={lang} should be walkthrough, got: {}",
                 bundle[0].virtual_path
             );
         }

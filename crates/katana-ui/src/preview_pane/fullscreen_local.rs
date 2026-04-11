@@ -37,11 +37,9 @@ pub(super) fn show_fullscreen_local(
                     keep_open = false;
                 }
             }
-            ui.painter().rect_filled(
-                blocker_rect,
-                0.0,
-                crate::theme_bridge::IMAGE_VIEWER_OVERLAY_COLOR,
-            );
+            let c = ui.visuals().panel_fill;
+            let bg_color = crate::theme_bridge::ThemeBridgeOps::from_rgb(c.r(), c.g(), c.b());
+            ui.painter().rect_filled(blocker_rect, 0.0, bg_color);
 
             let texture_handle = if viewer_state.texture.is_none() {
                 if let Ok(bytes) = std::fs::read(path)

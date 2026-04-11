@@ -11,6 +11,9 @@
 # Shared Settings
 ###################################
 
+# Job limit for parallel execution (defaults to 2 as requested to reduce load during checks)
+JOBS ?= 2
+
 # Force all warnings to be treated as errors for every cargo command run via make
 export RUSTFLAGS=-D warnings
 
@@ -86,7 +89,7 @@ fmt-check: ## Check format differences (for CI)
 
 .PHONY: lint
 lint: ## Run Clippy (forces zero warnings)
-	cargo clippy --workspace -- -D warnings
+	cargo clippy -j $(JOBS) --workspace -- -D warnings
 
 .PHONY: lint-fix
 lint-fix: ## Run Clippy and apply automatic fixes
@@ -94,10 +97,10 @@ lint-fix: ## Run Clippy and apply automatic fixes
 
 .PHONY: ast-lint
 ast-lint: ## Run AST-based custom linters (comment style, etc.)
-	cargo test -p katana-linter ast_linter -- --nocapture
+	cargo test -j $(JOBS) -p katana-linter ast_linter -- --nocapture
 
-.PHONY: typecheck
-typecheck: ## cargo check (type check only, fast)
+.PHONY: type-check
+type-check: ## cargo check (type check only, fast)
 	cargo check --workspace
 
 .PHONY: test
@@ -121,8 +124,8 @@ test-specific: ## Run a specific test (e.g., make test-specific T=test_name)
 	cargo test --workspace -- $(T)
 
 .PHONY: test-integration
-test-integration: ## Run integration tests (UI tests, semantic assertions only) (requires: egui_kittest)
-	cargo test -q --workspace --test integration_tests -- --test-threads=1
+test-integration: ## Run integration tests — fixture tests only (slow; non-fixture tests are covered by `coverage`) (requires: egui_kittest)
+	cargo test -j $(JOBS) -q --workspace --test integration_tests -- --test-threads=$(JOBS) fixture
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
@@ -137,20 +140,20 @@ check-platforms: check-linux check-windows ## Verify test/compilation across all
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
-	scripts/ci/coverage.sh
+	JOBS=$(JOBS) scripts/ci/coverage.sh
 
 .PHONY: check-light
-check-light: fmt-check lint ast-lint ## Quick verification (skip slow fixture tests)
+check-light: fmt-check lint ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
 	cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 
 .PHONY: check
-check: fmt-check lint ast-lint test-integration coverage check-platforms ## Full verification (fmt + clippy + AST lint + IT + 100% coverage enforced)
+check: fmt-check lint test-integration coverage check-platforms ## Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: fmt lint ast-lint test-integration coverage check-platforms ## Full verification including cross-platform checks (Windows, Linux)
+check-local: fmt lint test-integration coverage check-platforms ## Full local verification incl. cross-platform checks (ast-lint runs inside coverage)
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push

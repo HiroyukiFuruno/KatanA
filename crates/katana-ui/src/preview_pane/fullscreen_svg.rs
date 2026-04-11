@@ -52,7 +52,8 @@ pub(super) fn show_fullscreen_svg(
                 }
             }
 
-            let mut bg_color = crate::theme_bridge::IMAGE_VIEWER_OVERLAY_COLOR;
+            let c = ui.visuals().panel_fill;
+            let mut bg_color = crate::theme_bridge::ThemeBridgeOps::from_rgb(c.r(), c.g(), c.b());
             /* WHY: Support fade out animation by multiplying alpha. */
             bg_color = bg_color.gamma_multiply(alpha);
 

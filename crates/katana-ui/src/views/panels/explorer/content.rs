@@ -93,6 +93,11 @@ impl<'a> ExplorerContent<'a> {
         Self::collect_files(entries, &mut flat_entries);
         for entry in flat_entries {
             if let katana_core::workspace::TreeEntry::File { path } = entry {
+                if let Some(fs) = ctx.filter_set
+                    && !fs.contains(path)
+                {
+                    continue;
+                }
                 FileEntryNode::new(entry, path, ctx).show(ui);
             }
         }

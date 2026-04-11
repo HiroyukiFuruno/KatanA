@@ -3,7 +3,7 @@
 ## 推奨：画像リンク構文で `.drawio` ファイルを直接マウント
 
 Markdown の標準的な画像構文を使って、外部の `.drawio` ファイルを直接参照します。
-コードブロック内に巨大なXMLを直書きするよりも可読性が高く、Obsidian や VS Code などのモダンな Markdown エディタでも広く採用されている方式です。
+コードブロック内に巨大なXMLを直書きするよりも可読性が高く、モダンな Markdown エディタでも広く採用されている方式です。
 
 ```markdown
 ![AWS 構成図](path/to/diagram.drawio)

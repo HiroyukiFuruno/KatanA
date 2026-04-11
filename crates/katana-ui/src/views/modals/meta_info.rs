@@ -10,11 +10,20 @@ const SPACING_LARGE: f32 = 20.0;
 pub(crate) struct MetaInfoModal<'a> {
     pub is_open: &'a mut bool,
     pub path: &'a Path,
+    pub actual_doc: Option<&'a katana_core::Document>,
 }
 
 impl<'a> MetaInfoModal<'a> {
-    pub fn new(is_open: &'a mut bool, path: &'a Path) -> Self {
-        Self { is_open, path }
+    pub fn new(
+        is_open: &'a mut bool,
+        path: &'a Path,
+        actual_doc: Option<&'a katana_core::Document>,
+    ) -> Self {
+        Self {
+            is_open,
+            path,
+            actual_doc,
+        }
     }
 
     pub fn show(self, ctx: &egui::Context) {
@@ -27,16 +36,19 @@ impl<'a> MetaInfoModal<'a> {
                 let i18n = I18nOps::get();
                 let meta = &i18n.meta_info;
 
-                let doc = katana_core::Document::new(self.path.to_path_buf(), "");
+                let mock_doc = katana_core::Document::new(self.path.to_path_buf(), "");
+                let doc = self.actual_doc.unwrap_or(&mock_doc);
 
                 ui.vertical(|ui| {
                     egui::ScrollArea::vertical()
                         .id_salt("meta_info_scroll")
                         .show(ui, |ui| {
                             ui.vertical(|ui| {
-                                MetaInfoFields::render_general_section(ui, &doc, meta);
+                                MetaInfoFields::render_general_section(ui, doc, meta);
                                 ui.add_space(SPACING_MEDIUM);
-                                MetaInfoFields::render_status_section(ui, &doc, meta);
+                                MetaInfoFields::render_filesystem_section(ui, self.path, meta);
+                                ui.add_space(SPACING_MEDIUM);
+                                MetaInfoFields::render_status_section(ui, doc, meta);
                             });
                         });
 

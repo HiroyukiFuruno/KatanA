@@ -240,6 +240,7 @@ mod tests {
                     zoom: 1.0,
                     pan: egui::Vec2::ZERO,
                     texture: Some(texture.clone()),
+                    closing_since: None,
                 });
             tab.pane.fullscreen_viewer_state.texture = Some(texture.clone());
         } else {

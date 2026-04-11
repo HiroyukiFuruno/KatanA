@@ -143,7 +143,10 @@ impl<'a> ExplorerHeader<'a> {
         if workspace.data.is_some() && search.filter_enabled {
             let mut is_valid_regex = true;
             if !search.filter_query.is_empty() {
-                is_valid_regex = regex::Regex::new(&search.filter_query).is_ok();
+                is_valid_regex = regex::RegexBuilder::new(&search.filter_query)
+                    .case_insensitive(true)
+                    .build()
+                    .is_ok();
             }
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)

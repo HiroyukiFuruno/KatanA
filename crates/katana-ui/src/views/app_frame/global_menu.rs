@@ -90,6 +90,15 @@ impl<'a> GlobalMenuBar<'a> {
                         app.pending_action = AppAction::ShowReleaseNotes;
                         ui.close_menu();
                     }
+                    ui.separator();
+                    if ui.button(&i18n.menu.welcome_screen).clicked() {
+                        app.pending_action = AppAction::OpenWelcomeScreen;
+                        ui.close_menu();
+                    }
+                    if ui.button(&i18n.menu.user_guide).clicked() {
+                        app.pending_action = AppAction::OpenUserGuide;
+                        ui.close_menu();
+                    }
                     if ui.button(&i18n.menu.demo).clicked() {
                         app.pending_action = AppAction::OpenHelpDemo;
                         ui.close_menu();

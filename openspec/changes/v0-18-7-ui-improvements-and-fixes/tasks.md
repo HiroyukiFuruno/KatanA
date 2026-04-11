@@ -11,13 +11,13 @@
 ## 1. Search Noise Reduction & Auto-link Fix
 
 - [x] 1.1 `katana-core/src/search/mod.rs` を修正し、`#[allow(...)]` 行をフィルタリングするロジックを実装
-- [x] 1.2 `katana-core/src/markdown/link_resolver.rs` (または該当箇所) を修正し、平文URLの自動リンク検出を改善
+- [x] 1.2 `egui_commonmark` / `egui_commonmark_backend` を修正し、平文URLの自動リンク検出を改善（フラッシュ処理の追加により描画崩れを修正）
 - [x] 1.3 `katana-core` の関連テストを実行し、意図せぬデグレードがないか確認
 
 ### Definition of Done (DoD)
 
-- [x] 検索結果から `#[allow]` が適切に除外されることを確認
-- [x] 平文URLが正しくリンク化されることを確認
+- [x] **R2: guide_en.md の同期**: `guide_ja.md` (正) の最新の内容を `guide_en.md` に反映する。
+- [x] **R3 / Task 1.2: URL 自動リンク（Autolink）の修正**: リスト項目内などで平文URLが正しく検出されず、描画がオーバーラップする問題を修正する。
 - [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
 ## 2. Meta Information UI Renewal
@@ -55,7 +55,7 @@
 ### Definition of Done (DoD)
 
 - [x] 全画面表示で背景が透けず、図に集中できることを確認
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine.
 
 ## 5. Sidebar Continuity & Popup UI
 
@@ -69,14 +69,43 @@
 
 ## 7. Help Enrichment (Welcome & Guide)
 
-- [ ] 7.1 「ようこそ」画面をタブ形式で開くように変更（初回起動時含む）
-- [ ] 7.2 「操作ガイド」メニューを追加し、Markdownタブとして表示
+- [x] 7.1 「ようこそ」画面をタブ形式で開くように変更（初回起動時含む）
+- [x] 7.2 「操作ガイド」メニューを追加し、Markdownタブとして表示
 
 ---
 
-## 8. Final Verification & Release Work
+## 8. Windows Packaging & Winget Readiness
 
-- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 8.2 Ensure `make check` passes with exit code 0
-- [ ] 8.3 Create PR from Base Feature Branch targeting `master`
-- [ ] 8.4 Merge into master and execute `make release VERSION=0.18.7`
+- [ ] 8.1 `scripts/release/sync-external.sh` を見直し、`HiroyukiFuruno.katana-desktop` が upstream `microsoft/winget-pkgs` に未存在の間は `komac update` を実行せず、bootstrap path が必要だと明示する
+- [ ] 8.2 初回再申請用の winget submit 導線を明確化する。`komac new` は non-TTY CI で使えない前提とし、manifest file を生成して `komac submit` する path、または maintainer local TTY での bootstrap path のどちらかに固定する
+- [ ] 8.3 Windows binary の VC++ runtime 依存を build policy 側で解消する。`x86_64-pc-windows-msvc` 向けに `crt-static` を有効化し、manifest dependency を消すだけの対症療法にしない
+- [ ] 8.4 Windows runner 上で packaged `KatanA.exe` の import table を確認し、`VCRUNTIME140*.dll` / `api-ms-win-crt-*` 依存が除去されたことを検証する
+- [ ] 8.5 `komac analyze` / generated manifest review により、`KatanA-windows-x86_64.msi` が `Scope: user` / `InstallerType: wix` を維持しつつ、problematic な `Dependencies: Microsoft.VCRedist.2015+.x64` を含まないことを確認する
+- [ ] 8.6 `README.md` / `CHANGELOG.md` / release note に、Windows 配布形式と install prerequisites の実態が一致していることを確認
+
+### Definition of Done (DoD)
+
+- [ ] 初回再申請と将来の version update の flow が混同されていない
+- [ ] `KatanA-windows-x86_64.msi` / `KatanA.exe` が VC++ runtime 外部依存なしで配布できる
+- [ ] CI と local helper が同じ Windows artifact 名と publish URL 契約を使っている
+
+## 9. Windows Installer UX Refresh
+
+- [ ] 9.1 `crates/katana-ui/wix/main.wxs` の current flow (`WixUI_FeatureTree`) は維持したまま、初回導入時の見た目と文言を KatanA 向けに整理する
+- [ ] 9.2 installer metadata（Product 名、説明、ARP 表示、Feature 名）を更新し、古い印象を与える既定表現を除去する
+- [ ] 9.3 `WixUIBannerBmp` / `WixUIDialogBmp` を追加し、`Product.ico` と整合する branding asset を適用する
+- [ ] 9.4 Windows installer 画面の確認証跡を取得し、`v0.18.7` の申請時に参照できる状態にする
+
+### Definition of Done (DoD)
+
+- [ ] installer 画面が KatanA branding と整合し、既定の古い WiX 画面に見えにくい状態になっている
+- [ ] Windows 向け install 導線のスクリーンショットまたは同等の証跡が残っている
+
+## 10. Final Verification & Release Work
+
+- [ ] 10.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 10.2 Ensure `make check` passes with exit code 0
+- [ ] 10.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
+- [ ] 10.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 10.5 Merge into master and execute `make release VERSION=0.18.7`
+- [ ] 10.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop` and that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible

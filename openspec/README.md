@@ -11,5 +11,3 @@
 ## 現在の変更
 
 - [bootstrap-katana-macos-mvp](./changes/bootstrap-katana-macos-mvp/proposal.md)
-
-Obsidian のノートはここを補助するために使い、合意済みの内容はこの配下または `docs/` に残す。

@@ -41,7 +41,11 @@ impl PreviewPane {
                             .unwrap_or_else(|| RenderedSection::Error {
                                 kind: format!("{kind:?}"),
                                 _source: source.clone(),
-                                message: "🔄 Please refresh the preview".to_string(),
+                                message: format!(
+                                    "{} {}",
+                                    crate::icon::Icon::Refresh.as_char(),
+                                    "Please refresh the preview"
+                                ),
                                 source_lines: *lines,
                             });
                     new_sections.push(reused);

@@ -177,7 +177,14 @@ impl KatanaApp {
 
         if let Some(path) = self.show_meta_info_for.clone() {
             let mut is_open = true;
-            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path).show(ctx);
+            let actual_doc = self
+                .state
+                .document
+                .open_documents
+                .iter()
+                .find(|d| d.path == path);
+            crate::views::modals::meta_info::MetaInfoModal::new(&mut is_open, &path, actual_doc)
+                .show(ctx);
             if !is_open {
                 self.show_meta_info_for = None;
             }

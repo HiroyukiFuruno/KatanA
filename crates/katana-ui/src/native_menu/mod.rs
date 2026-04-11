@@ -21,6 +21,8 @@ mod ffi {
     pub const TAG_RELEASE_NOTES: i32 = 16;
     pub const TAG_COMMAND_PALETTE: i32 = 17;
     pub const TAG_DEMO: i32 = 18;
+    pub const TAG_WELCOME_SCREEN: i32 = 19;
+    pub const TAG_USER_GUIDE: i32 = 20;
     #[allow(dead_code)]
     unsafe extern "C" {
         pub fn katana_setup_native_menu();
@@ -46,6 +48,8 @@ mod ffi {
             command_palette: *const std::ffi::c_char,
             view: *const std::ffi::c_char,
             demo: *const std::ffi::c_char,
+            welcome_screen: *const std::ffi::c_char,
+            user_guide: *const std::ffi::c_char,
         );
     }
 }
@@ -109,6 +113,8 @@ impl NativeMenuOps {
             ffi::TAG_SETTINGS => AppAction::ToggleSettings,
             ffi::TAG_COMMAND_PALETTE => AppAction::ToggleCommandPalette,
             ffi::TAG_DEMO => AppAction::OpenHelpDemo,
+            ffi::TAG_WELCOME_SCREEN => AppAction::OpenWelcomeScreen,
+            ffi::TAG_USER_GUIDE => AppAction::OpenUserGuide,
             _ => AppAction::None,
         }
     }

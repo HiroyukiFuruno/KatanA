@@ -1175,7 +1175,8 @@ fn test_integration_preview_only_no_document() {
         .app_state_mut()
         .set_active_view_mode(katana_ui::app_state::ViewMode::PreviewOnly);
     harness.step();
-    let _ = harness.get_by_label("No document open.");
+    let label = I18nOps::get().workspace.no_document_selected.clone();
+    let _ = harness.get_by_label(&label);
 }
 
 #[test]
@@ -3044,10 +3045,16 @@ fn test_integration_ui_terms_modal_visibility() {
 
     harness.step();
 
-    harness.get_by_label("Terms of Service");
+    let i18n = I18nOps::get();
+    harness.get_by_label(&i18n.terms.title);
 
-    harness.get_by_label_contains(&format!("Version: {}", env!("CARGO_PKG_VERSION")));
-    harness.get_by_label("Accept").click();
+    harness.get_by_label_contains(
+        &i18n
+            .terms
+            .version_label
+            .replace("{version}", env!("CARGO_PKG_VERSION")),
+    );
+    harness.get_by_label(&i18n.terms.accept).click();
     harness.step();
     harness.run_steps(5);
 
@@ -3096,9 +3103,10 @@ fn test_regression_update_dialog_up_to_date_renders_correctly() {
     harness.state_mut().open_update_dialog_for_test();
     harness.run_steps(10);
 
-    harness.get_by_label_contains("Up to Date");
+    let i18n = I18nOps::get();
+    harness.get_by_label_contains(&i18n.update.up_to_date);
 
-    harness.get_by_label("OK");
+    harness.get_by_label(&i18n.update.action_close);
 }
 
 #[test]
@@ -3397,7 +3405,9 @@ fn test_ast_linter_locales() {
         "Intervalo",
         "Layout",
         "Links",
+        "Markdown",
         "Nunca",
+        "{index} / {total}",
         "OK",
         "Ocultar KatanA",
         "Patrocinar",
@@ -3406,6 +3416,88 @@ fn test_ast_linter_locales() {
         "Pronto",
         "Quotidiano",
         "Renderizando {kind}...",
+        "{format} export failed: {error}",
+        "{format} exported successfully: {path}",
+        "Temp error: {error}",
+        "Install Chrome for {format} export.",
+        "Write error: {error}",
+        "水平",
+        "垂直",
+        "是",
+        "否",
+        "成功",
+        "問題",
+        "開始",
+        "日期",
+        "完成 [x]",
+        "進行中 [/]",
+        "fn main() { println!(\"你好，世界！\"); }",
+        "例如: node_modules, target, .git",
+        "拆分方向",
+        "拆分順序",
+        "複製...",
+        "重置",
+        "每周",
+        "左側",
+        "右側",
+        "已修改",
+        "水平拆分 (左右)",
+        "垂直拆分 (上下)",
+        "水平並排 (左右)",
+        "垂直並排 (上下)",
+        "初期環境",
+        "Horizontal",
+        "Vertical",
+        "Splash",
+        "Preset",
+        "Acento",
+        "Básico",
+        "Componentes UI",
+        "Progresso splash",
+        "Barra de título",
+        "Aviso",
+        "Nome:",
+        "Mostrar menos...",
+        "Contraste UI",
+        "Mostrar índice",
+        "Semanal",
+        "ex: node_modules, target, .git",
+        "Documento Markdown",
+        "Modificado",
+        "Problemas: {count}",
+        "Problemas",
+        "Desagrupar",
+        "Índice",
+        "Dividido",
+        "Filtrar (regex)...",
+        "Vista plana",
+        "Cmd+S: 保存",
+        "行 ",
+        "内容",
+        "名称:",
+        "Explorador",
+        "Comando",
+        "{index} de {total}",
+        "Anterior",
+        "Excluir (regex)",
+        "Incluir (regex)",
+        "Intervalo (seg)",
+        "Sincronizar scroll",
+        "行 ",
+        "To-Do [ ]",
+        "Paleta de comandos...",
+        "Idioma",
+        "Tipo",
+        "Nome",
+        "Estado",
+        "fn main() { println!(\"Hello World!\"); }",
+        "Copiar",
+        "Expandir recursivamente",
+        "Alternar índice",
+        "Cmd+P: Paleta",
+        "Cmd+F: Buscar",
+        "Cmd+B: Barra lateral",
+        "s",
         "Runtime",
         "Rust",
         "Semanalmente",
@@ -4249,6 +4341,6 @@ fn test_open_help_demo() {
             .file_name()
             .unwrap_or_default()
             .to_string_lossy()
-            .starts_with("welcome")
+            .starts_with("feature_walkthrough")
     }));
 }
