@@ -108,6 +108,14 @@ gh release view vX.Y.Z
 > 3. **Publish**: `gh release create` により **タグと GitHub Release を API 経由で同時作成** し、全アーティファクトをアップロード
 > 4. **配布**: Homebrew Cask / Linuxbrew Formula / Winget レジストリへの自動公開
 
+### Step 10: OpenSpec のアーカイブ
+
+リリース作業が完了し、`master` に反映された OpenSpec の変更（機能や修正等）がある場合は、`/opsx-archive` ワークフローを用いて対象の `openspec/changes/` ディレクトリをアーカイブへと移動します。
+
+```text
+/opsx-archive <change-name>
+```
+
 ---
 
 ## 💡 手動リリースの実行（例外用）

@@ -40,6 +40,10 @@ make release VERSION=0.18.6 FORCE=1
 1. YAML ファイルに `--clobber` が含まれているか確認。
 2. `FORCE=1` 引数（`force: true` パラメータ）を付けて再トリガーする。
 
+### 4. 事後処理
+
+リリース作業（マージおよび Action の完了確認）が終了したら、今回のリリースに関連する OpenSpec 変更がある場合は `/opsx-archive` を使用して対象のディレクトリ（例: `openspec/changes/vX-Y-Z-feature`）をアーカイブします。
+
 ## 監視項目
 
 - **Preflight**: バージョン文字列が `vX.Y.Z` 形式か、CHANGELOG に日付が入っているか。
