@@ -3,7 +3,7 @@
         "file": "File",
         "settings": "Impostazioni",
         "language": "Lingua",
-        "open_workspace": "Apri come area di lavoro...",
+        "open_workspace": "Apri come area di lavoro…",
         "close_workspace": "Chiudi area di lavoro",
         "save": "Salva",
         "open_all": "Apri tutto",
@@ -18,10 +18,10 @@
         "hide_others": "Nascondi altri",
         "show_all": "Mostra tutto",
         "help": "Aiuto",
-        "check_updates": "Controlla aggiornamenti...",
+        "check_updates": "Controlla aggiornamenti…",
         "release_notes": "Note di rilascio",
         "view": "Visualizza",
-        "command_palette": "Tavolozza comandi...",
+        "command_palette": "Tavolozza comandi…",
         "language_en": "Inglese",
         "language_ja": "Giapponese",
         "language_zh_cn": "Cinese (Semplificato)",
@@ -55,7 +55,7 @@
     },
     "update": {
         "title": "Controlla aggiornamenti",
-        "checking_for_updates": "Controllo aggiornamenti...",
+        "checking_for_updates": "Controllo aggiornamenti…",
         "update_available": "Aggiornamento disponibile",
         "update_available_desc": "È disponibile una nuova versione di KatanA ({version}). Fai clic su \"Installa e riavvia\" per applicare l'aggiornamento.",
         "release_notes_template": "### Nuova versione {version} disponibile\n\nControlla la [pagina delle versioni su GitHub]({url}) per i dettagli.\nFai clic su \"Installa e riavvia\" per applicare l'aggiornamento.",
@@ -64,8 +64,8 @@
         "failed_to_check": "Impossibile controllare gli aggiornamenti.",
         "action_close": "Chiudi",
         "install_update": "Installa e riavvia",
-        "downloading": "Download aggiornamento...",
-        "installing": "Installazione aggiornamento...",
+        "downloading": "Download aggiornamento…",
+        "installing": "Installazione aggiornamento…",
         "restart_confirm": "Aggiornamento pronto. Riavviare ora?",
         "action_later": "Più tardi",
         "action_skip_version": "Salta questa versione",
@@ -85,7 +85,7 @@
         "metadata_tooltip": "Dimensioni: {size} B\nModificato: {mod_time}",
         "path_label": "Percorso",
         "flat_view": "Vista piatta",
-        "filter_regex_hint": "Filtra (regex)...",
+        "filter_regex_hint": "Filtra (regex)…",
         "open_folder_hint": "Apri una cartella per iniziare con KatanA.",
         "open_workspace_button": "Apri cartella",
         "remove_history_tooltip": "Rimuovi dalla cronologia",
@@ -94,7 +94,7 @@
     "preview": {
         "preview_title": "Anteprima",
         "refresh_diagrams": "Aggiorna diagrammi",
-        "rendering": "Rendering di {kind}...",
+        "rendering": "Rendering di {kind}…",
         "no_preview": "(Nessuna anteprima)",
         "diagram_controller": {
             "pan_up": "Su",
@@ -110,8 +110,8 @@
         }
     },
     "plantuml": {
-        "downloading_plantuml": "⬇ Download PlantUML JAR...",
-        "plantuml_installed": "PlantUML installato. Aggiornamento anteprima...",
+        "downloading_plantuml": "⬇ Download PlantUML JAR…",
+        "plantuml_installed": "PlantUML installato. Aggiornamento anteprima…",
         "download_error": "Errore download: "
     },
     "view_mode": {
@@ -209,14 +209,14 @@
             "reset_custom": "Ripristina",
             "custom_section": "Personalizzato",
             "delete_custom": "Elimina tema",
-            "save_custom_theme": "Salva come tema...",
+            "save_custom_theme": "Salva come tema…",
             "save_custom_theme_title": "Salva tema",
             "theme_name_label": "Nome:",
-            "duplicate": "Duplica...",
+            "duplicate": "Duplica…",
             "reset_contrast": "Ripristina.",
             "ui_contrast_offset": "Contrasto UI",
-            "show_more": "Mostra altro...",
-            "show_less": "Mostra meno..."
+            "show_more": "Mostra altro…",
+            "show_less": "Mostra meno…"
         },
         "font": {
             "size": "Dimensione carattere",
@@ -292,7 +292,7 @@
         "icons": {
             "preset_label": "Preselezione:",
             "custom_preset": "Personalizzato",
-            "save_preset": "Salva come preset...",
+            "save_preset": "Salva come preset…",
             "revert_default": "Predefinito",
             "advanced_settings": "Avanzate",
             "colorful_vendor_icons_label": "Icone con colori",
@@ -392,7 +392,7 @@
     },
     "search": {
         "modal_title": "Trova file",
-        "query_hint": "Nome file...",
+        "query_hint": "Nome file…",
         "include_pattern_hint": "Includi (regex)",
         "exclude_pattern_hint": "Escludi (regex)",
         "no_results": "Nessun file trovato.",
@@ -404,11 +404,11 @@
         "doc_search_count": "{index} di {total}",
         "tab_file_name": "Nome file",
         "tab_markdown_content": "Contenuto",
-        "md_query_hint": "Cerca in MD...",
+        "md_query_hint": "Cerca in MD…",
         "recent_searches": "Ricerche recenti",
         "clear_history": "Svuota cronologia",
         "ln_prefix": "Riga ",
-        "palette_query_hint": "Comando o ricerca...",
+        "palette_query_hint": "Comando o ricerca…",
         "command_settings": "Impostazioni",
         "command_explorer": "Esplora file",
         "command_close_all": "Chiudi tutto",
@@ -428,7 +428,7 @@
         "temp_file_error": "Errore file temporaneo: {error}",
         "write_error": "Errore di scrittura: {error}",
         "persist_error": "Salvataggio fallito.",
-        "exporting": "⏳ Esportazione di {filename}..."
+        "exporting": "⏳ Esportazione di {filename}…"
     },
     "terms": {
         "title": "Termini d'uso",

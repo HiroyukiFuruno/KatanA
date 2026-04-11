@@ -3,7 +3,7 @@
         "file": "檔案",
         "settings": "設定",
         "language": "語言",
-        "open_workspace": "作為工作區開啟...",
+        "open_workspace": "作為工作區開啟…",
         "close_workspace": "關閉工作區",
         "save": "儲存",
         "open_all": "全部開啟",
@@ -18,10 +18,10 @@
         "hide_others": "隱藏其他",
         "show_all": "顯示全部",
         "help": "說明",
-        "check_updates": "檢查更新...",
+        "check_updates": "檢查更新…",
         "release_notes": "版本說明",
         "view": "視圖",
-        "command_palette": "指令面板...",
+        "command_palette": "指令面板…",
         "language_en": "英語",
         "language_ja": "日語",
         "language_zh_cn": "中文 (簡體)",
@@ -55,7 +55,7 @@
     },
     "update": {
         "title": "檢查更新",
-        "checking_for_updates": "正在檢查更新...",
+        "checking_for_updates": "正在檢查更新…",
         "update_available": "發現更新",
         "update_available_desc": "KatanA 的新版本 ({version}) 已發布。點擊「安裝並重新啟動」以套用更新。",
         "release_notes_template": "### 新版本 {version} 已發布\n\n詳情請參閱 [GitHub 發行頁面]({url})。\n點擊「安裝並重新啟動」以套用更新。",
@@ -64,8 +64,8 @@
         "failed_to_check": "檢查更新失敗。",
         "action_close": "關閉",
         "install_update": "安裝並重新啟動",
-        "downloading": "正在下載更新...",
-        "installing": "正在安裝更新...",
+        "downloading": "正在下載更新…",
+        "installing": "正在安裝更新…",
         "restart_confirm": "更新已就緒。現在要重新啟動嗎？",
         "action_later": "稍後",
         "action_skip_version": "略過此版本",
@@ -85,7 +85,7 @@
         "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
         "path_label": "路徑",
         "flat_view": "平面檢視",
-        "filter_regex_hint": "篩選 (正則)...",
+        "filter_regex_hint": "篩選 (正則)…",
         "open_folder_hint": "開啟資料夾以開始使用 KatanA。",
         "open_workspace_button": "開啟資料夾",
         "remove_history_tooltip": "從歷史記錄中移除",
@@ -94,7 +94,7 @@
     "preview": {
         "preview_title": "預覽",
         "refresh_diagrams": "重新整理圖表",
-        "rendering": "正在繪製 {kind}...",
+        "rendering": "正在繪製 {kind}…",
         "no_preview": "(無預覽)",
         "diagram_controller": {
             "pan_up": "上移",
@@ -110,8 +110,8 @@
         }
     },
     "plantuml": {
-        "downloading_plantuml": "⬇ 正在下載 PlantUML JAR...",
-        "plantuml_installed": "PlantUML 已安裝。正在重新整理預覽...",
+        "downloading_plantuml": "⬇ 正在下載 PlantUML JAR…",
+        "plantuml_installed": "PlantUML 已安裝。正在重新整理預覽…",
         "download_error": "下載錯誤: "
     },
     "view_mode": {
@@ -209,14 +209,14 @@
             "reset_custom": "重置為預設值",
             "custom_section": "自訂",
             "delete_custom": "刪除主題",
-            "save_custom_theme": "另存為主題...",
+            "save_custom_theme": "另存為主題…",
             "save_custom_theme_title": "儲存主題",
             "theme_name_label": "名稱:",
-            "duplicate": "複製...",
+            "duplicate": "複製…",
             "reset_contrast": "重置",
             "ui_contrast_offset": "UI 對比度",
-            "show_more": "顯示更多...",
-            "show_less": "顯示更少..."
+            "show_more": "顯示更多…",
+            "show_less": "顯示更少…"
         },
         "font": {
             "size": "字型大小",
@@ -292,7 +292,7 @@
         "icons": {
             "preset_label": "預設:",
             "custom_preset": "自訂",
-            "save_preset": "另存為預設...",
+            "save_preset": "另存為預設…",
             "revert_default": "還原預設值",
             "advanced_settings": "進階設定",
             "colorful_vendor_icons_label": "彩色供應商圖示",
@@ -392,7 +392,7 @@
     },
     "search": {
         "modal_title": "尋找檔案",
-        "query_hint": "檔案名稱...",
+        "query_hint": "檔案名稱…",
         "include_pattern_hint": "包含 (正則)",
         "exclude_pattern_hint": "排除 (正則)",
         "no_results": "找不到檔案。",
@@ -404,11 +404,11 @@
         "doc_search_count": "{index} / {total}",
         "tab_file_name": "檔案名稱",
         "tab_markdown_content": "內容",
-        "md_query_hint": "搜尋 MD 內容...",
+        "md_query_hint": "搜尋 MD 內容…",
         "recent_searches": "最近搜尋",
         "clear_history": "清除歷史",
         "ln_prefix": "行號 ",
-        "palette_query_hint": "輸入指令或搜尋...",
+        "palette_query_hint": "輸入指令或搜尋…",
         "command_settings": "設定",
         "command_explorer": "資源管理器",
         "command_close_all": "全部關閉",
@@ -428,7 +428,7 @@
         "temp_file_error": "暫存檔案錯誤: {error}",
         "write_error": "寫入錯誤: {error}",
         "persist_error": "持久化失敗。",
-        "exporting": "⏳ 正在匯出 {filename}..."
+        "exporting": "⏳ 正在匯出 {filename}…"
     },
     "terms": {
         "title": "使用條款",

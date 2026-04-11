@@ -18,10 +18,10 @@
         "hide_others": "Hide Others",
         "show_all": "Show All",
         "help": "Help",
-        "check_updates": "Check for Updates...",
+        "check_updates": "Check for Updates…",
         "release_notes": "Changelog",
         "view": "View",
-        "command_palette": "Command Palette...",
+        "command_palette": "Command Palette…",
         "demo": "Demo",
         "welcome_screen": "Welcome Screen",
         "user_guide": "User Guide",
@@ -55,7 +55,7 @@
     },
     "update": {
         "title": "Check for Updates",
-        "checking_for_updates": "Checking for updates...",
+        "checking_for_updates": "Checking for updates…",
         "update_available": "Update Available",
         "update_available_desc": "A new version of KatanA ({version}) is available. Click \"Install and Restart\" to apply the update automatically.",
         "release_notes_template": "### New version {version} is available\n\nCheck the [GitHub Releases page]({url}) for detailed changes.\nClick \"Install and Restart\" to apply the update automatically.",
@@ -64,8 +64,8 @@
         "failed_to_check": "Failed to check for updates.",
         "action_close": "Close",
         "install_update": "Install and Restart",
-        "downloading": "Downloading update...",
-        "installing": "Installing update...",
+        "downloading": "Downloading update…",
+        "installing": "Installing update…",
         "restart_confirm": "The update is ready. Restart now?",
         "action_later": "Later",
         "action_skip_version": "Skip this version",
@@ -85,7 +85,7 @@
         "metadata_tooltip": "Size: {size} B\nModified: {mod_time}",
         "path_label": "Path",
         "flat_view": "Flat View",
-        "filter_regex_hint": "Filter (regex)...",
+        "filter_regex_hint": "Filter (regex)…",
         "open_folder_hint": "Open a folder to start using KatanA.",
         "open_workspace_button": "Open Workspace",
         "remove_history_tooltip": "Remove from history",
@@ -94,7 +94,7 @@
     "preview": {
         "preview_title": "Preview",
         "refresh_diagrams": "Refresh Diagrams",
-        "rendering": "Rendering {kind}...",
+        "rendering": "Rendering {kind}…",
         "no_preview": "(No Preview)",
         "diagram_controller": {
             "pan_up": "Pan Up",
@@ -110,8 +110,8 @@
         }
     },
     "plantuml": {
-        "downloading_plantuml": "⬇ Downloading PlantUML JAR...",
-        "plantuml_installed": "PlantUML installed. Refreshing preview...",
+        "downloading_plantuml": "⬇ Downloading PlantUML JAR…",
+        "plantuml_installed": "PlantUML installed. Refreshing preview…",
         "download_error": "Download error: "
     },
     "view_mode": {
@@ -209,14 +209,14 @@
             "reset_custom": "Reset to Preset",
             "custom_section": "Custom",
             "delete_custom": "Delete Theme",
-            "save_custom_theme": "Save as Custom Theme...",
+            "save_custom_theme": "Save as Custom Theme…",
             "save_custom_theme_title": "Save Custom Theme",
             "theme_name_label": "Theme Name:",
-            "duplicate": "Duplicate...",
+            "duplicate": "Duplicate…",
             "reset_contrast": "Reset",
             "ui_contrast_offset": "UI Contrast Offset",
-            "show_more": "Show More...",
-            "show_less": "Show Less..."
+            "show_more": "Show More…",
+            "show_less": "Show Less…"
         },
         "font": {
             "size": "Font Size",
@@ -292,7 +292,7 @@
         "icons": {
             "preset_label": "Preset:",
             "custom_preset": "Custom",
-            "save_preset": "Save as Preset...",
+            "save_preset": "Save as Preset…",
             "revert_default": "Revert to Default",
             "advanced_settings": "Advanced Settings",
             "colorful_vendor_icons_label": "Apply default colors to non-Katana icons",
@@ -392,7 +392,7 @@
     },
     "search": {
         "modal_title": "Find Files",
-        "query_hint": "Search by filename...",
+        "query_hint": "Search by filename…",
         "include_pattern_hint": "Include (regex, comma-separated)",
         "exclude_pattern_hint": "Exclude (regex, comma-separated)",
         "no_results": "No files found.",
@@ -404,11 +404,11 @@
         "doc_search_count": "{index} of {total}",
         "tab_file_name": "File Name",
         "tab_markdown_content": "Markdown Content",
-        "md_query_hint": "Search Markdown content...",
+        "md_query_hint": "Search Markdown content…",
         "recent_searches": "Recent Searches",
         "clear_history": "Clear History",
         "ln_prefix": "Line ",
-        "palette_query_hint": "Type a command or search...",
+        "palette_query_hint": "Type a command or search…",
         "command_settings": "Toggle Settings",
         "command_explorer": "Toggle Explorer Panel",
         "command_close_all": "Close All Documents",
@@ -428,7 +428,7 @@
         "temp_file_error": "Failed to create temporary file: {error}",
         "write_error": "Failed to write content: {error}",
         "persist_error": "Failed to save temporary file",
-        "exporting": "⏳ Exporting {filename}..."
+        "exporting": "⏳ Exporting {filename}…"
     },
     "terms": {
         "title": "Terms of Use",

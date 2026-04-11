@@ -3,7 +3,7 @@
         "file": "파일",
         "settings": "설정",
         "language": "언어",
-        "open_workspace": "워크스페이스로 열기...",
+        "open_workspace": "워크스페이스로 열기…",
         "close_workspace": "워크스페이스 닫기",
         "save": "저장",
         "open_all": "모두 열기",
@@ -18,10 +18,10 @@
         "hide_others": "기타 숨기기",
         "show_all": "모두 표시",
         "help": "도움말",
-        "check_updates": "업데이트 확인...",
+        "check_updates": "업데이트 확인…",
         "release_notes": "릴리스 노트",
         "view": "보기",
-        "command_palette": "커맨드 팔레트...",
+        "command_palette": "커맨드 팔레트…",
         "language_en": "영어",
         "language_ja": "일본어",
         "language_zh_cn": "중국어 (간체)",
@@ -55,7 +55,7 @@
     },
     "update": {
         "title": "업데이트 확인",
-        "checking_for_updates": "업데이트 확인 중...",
+        "checking_for_updates": "업데이트 확인 중…",
         "update_available": "업데이트를 사용할 수 있습니다",
         "update_available_desc": "KatanA의 새 버전({version})을 사용할 수 있습니다. '설치 및 재시작'을 클릭하여 업데이트를 적용하십시오.",
         "release_notes_template": "### 새 버전 {version}을 사용할 수 있습니다\n\n자세한 내용은 [GitHub 릴리스 페이지]({url})를 확인하십시오.\n'설치 및 재시작'을 클릭하여 업데이트를 적용하십시오.",
@@ -64,8 +64,8 @@
         "failed_to_check": "업데이트를 확인하지 못했습니다.",
         "action_close": "닫기",
         "install_update": "설치 및 재시작",
-        "downloading": "업데이트 다운로드 중...",
-        "installing": "업데이트 설치 중...",
+        "downloading": "업데이트 다운로드 중…",
+        "installing": "업데이트 설치 중…",
         "restart_confirm": "업데이트 준비가 되었습니다. 지금 재시작하시겠습니까?",
         "action_later": "나중에",
         "action_skip_version": "이 버전 건너뛰기",
@@ -85,7 +85,7 @@
         "metadata_tooltip": "크기: {size} B\n수정된 시간: {mod_time}",
         "path_label": "경로",
         "flat_view": "평면 보기",
-        "filter_regex_hint": "필터 (정규식)...",
+        "filter_regex_hint": "필터 (정규식)…",
         "open_folder_hint": "폴더를 열어 KatanA를 시작하십시오.",
         "open_workspace_button": "폴더 열기",
         "remove_history_tooltip": "기록에서 제거",
@@ -94,7 +94,7 @@
     "preview": {
         "preview_title": "미리보기",
         "refresh_diagrams": "다이어그램 새로고침",
-        "rendering": "{kind} 렌더링 중...",
+        "rendering": "{kind} 렌더링 중…",
         "no_preview": "(미리보기 없음)",
         "diagram_controller": {
             "pan_up": "위",
@@ -110,8 +110,8 @@
         }
     },
     "plantuml": {
-        "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중...",
-        "plantuml_installed": "PlantUML이 설치되었습니다. 미리보기를 새로 고칩니다...",
+        "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중…",
+        "plantuml_installed": "PlantUML이 설치되었습니다. 미리보기를 새로 고칩니다…",
         "download_error": "다운로드 오류: "
     },
     "view_mode": {
@@ -209,14 +209,14 @@
             "reset_custom": "프리셋으로 초기화",
             "custom_section": "사용자 지정",
             "delete_custom": "테마 삭제",
-            "save_custom_theme": "테마 저장 중...",
+            "save_custom_theme": "테마 저장 중…",
             "save_custom_theme_title": "테마 저장",
             "theme_name_label": "이름:",
-            "duplicate": "복제...",
+            "duplicate": "복제…",
             "reset_contrast": "초기화",
             "ui_contrast_offset": "UI 대비",
-            "show_more": "더 보기...",
-            "show_less": "간략히 보기..."
+            "show_more": "더 보기…",
+            "show_less": "간략히 보기…"
         },
         "font": {
             "size": "글꼴 크기",
@@ -292,7 +292,7 @@
         "icons": {
             "preset_label": "프리셋:",
             "custom_preset": "사용자 지정",
-            "save_preset": "프리셋으로 저장...",
+            "save_preset": "프리셋으로 저장…",
             "revert_default": "기본값으로 복원",
             "advanced_settings": "고급 설정",
             "colorful_vendor_icons_label": "컬러 아이콘 사용",
@@ -392,7 +392,7 @@
     },
     "search": {
         "modal_title": "파일 검색",
-        "query_hint": "파일명 입력...",
+        "query_hint": "파일명 입력…",
         "include_pattern_hint": "대상 폴더 (정규식)",
         "exclude_pattern_hint": "제외 폴더 (정규식)",
         "no_results": "파일을 찾을 수 없습니다.",
@@ -404,11 +404,11 @@
         "doc_search_count": "{index} / {total}",
         "tab_file_name": "파일명",
         "tab_markdown_content": "내용",
-        "md_query_hint": "내용 검색...",
+        "md_query_hint": "내용 검색…",
         "recent_searches": "최근 검색",
         "clear_history": "기록 삭제",
         "ln_prefix": "줄 ",
-        "palette_query_hint": "명령어 입력 또는 검색...",
+        "palette_query_hint": "명령어 입력 또는 검색…",
         "command_settings": "설정",
         "command_explorer": "탐색기",
         "command_close_all": "모두 닫기",
@@ -428,7 +428,7 @@
         "temp_file_error": "임시 파일 생성 실패: {error}",
         "write_error": "내용 쓰기 실패: {error}",
         "persist_error": "임시 파일 저장 실패",
-        "exporting": "⏳ {filename} 내보내는 중..."
+        "exporting": "⏳ {filename} 내보내는 중…"
     },
     "terms": {
         "title": "이용 약관",

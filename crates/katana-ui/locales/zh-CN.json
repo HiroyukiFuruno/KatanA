@@ -3,7 +3,7 @@
         "file": "文件",
         "settings": "设置",
         "language": "语言",
-        "open_workspace": "作为工作区打开...",
+        "open_workspace": "作为工作区打开…",
         "close_workspace": "关闭工作区",
         "save": "保存",
         "open_all": "全部打开",
@@ -18,10 +18,10 @@
         "hide_others": "隐藏其他",
         "show_all": "显示全部",
         "help": "帮助",
-        "check_updates": "检查更新...",
+        "check_updates": "检查更新…",
         "release_notes": "发行说明",
         "view": "视图",
-        "command_palette": "命令面板...",
+        "command_palette": "命令面板…",
         "language_en": "英语",
         "language_ja": "日语",
         "language_zh_cn": "中文 (简体)",
@@ -55,7 +55,7 @@
     },
     "update": {
         "title": "检查更新",
-        "checking_for_updates": "正在检查更新...",
+        "checking_for_updates": "正在检查更新…",
         "update_available": "发现更新",
         "update_available_desc": "KatanA 的新版本 ({version}) 已发布。点击“安装并重启”以应用更新。",
         "release_notes_template": "### 新版本 {version} 已发布\n\n详情请查看 [GitHub 发行页面]({url})。\n点击“安装并重启”以应用更新。",
@@ -64,8 +64,8 @@
         "failed_to_check": "检查更新失败。",
         "action_close": "关闭",
         "install_update": "安装并重启",
-        "downloading": "正在下载更新...",
-        "installing": "正在安装更新...",
+        "downloading": "正在下载更新…",
+        "installing": "正在安装更新…",
         "restart_confirm": "更新已就绪。现在重启吗？",
         "action_later": "稍后",
         "action_skip_version": "跳过此版本",
@@ -85,7 +85,7 @@
         "metadata_tooltip": "大小: {size} B\n修改时间: {mod_time}",
         "path_label": "路径",
         "flat_view": "平铺视图",
-        "filter_regex_hint": "过滤 (正则)...",
+        "filter_regex_hint": "过滤 (正则)…",
         "open_folder_hint": "打开一个文件夹开始使用 KatanA。",
         "open_workspace_button": "打开文件夹",
         "remove_history_tooltip": "从历史记录中移除",
@@ -94,7 +94,7 @@
     "preview": {
         "preview_title": "预览",
         "refresh_diagrams": "刷新图表",
-        "rendering": "正在渲染 {kind}...",
+        "rendering": "正在渲染 {kind}…",
         "no_preview": "(无预览)",
         "diagram_controller": {
             "pan_up": "上移",
@@ -110,8 +110,8 @@
         }
     },
     "plantuml": {
-        "downloading_plantuml": "⬇ 正在下载 PlantUML JAR...",
-        "plantuml_installed": "PlantUML 已安装。正在刷新预览...",
+        "downloading_plantuml": "⬇ 正在下载 PlantUML JAR…",
+        "plantuml_installed": "PlantUML 已安装。正在刷新预览…",
         "download_error": "下载错误: "
     },
     "view_mode": {
@@ -209,14 +209,14 @@
             "reset_custom": "重置为预设",
             "custom_section": "自定义",
             "delete_custom": "删除主题",
-            "save_custom_theme": "另存为主题...",
+            "save_custom_theme": "另存为主题…",
             "save_custom_theme_title": "保存主题",
             "theme_name_label": "名称:",
-            "duplicate": "复制...",
+            "duplicate": "复制…",
             "reset_contrast": "重置",
             "ui_contrast_offset": "UI 对比度",
-            "show_more": "显示更多...",
-            "show_less": "显示更少..."
+            "show_more": "显示更多…",
+            "show_less": "显示更少…"
         },
         "font": {
             "size": "字体大小",
@@ -292,7 +292,7 @@
         "icons": {
             "preset_label": "预设:",
             "custom_preset": "自定义",
-            "save_preset": "另存为预设...",
+            "save_preset": "另存为预设…",
             "revert_default": "恢复默认",
             "advanced_settings": "高级设置",
             "colorful_vendor_icons_label": "彩色供应商图标",
@@ -392,7 +392,7 @@
     },
     "search": {
         "modal_title": "查找文件",
-        "query_hint": "文件名...",
+        "query_hint": "文件名…",
         "include_pattern_hint": "包含 (正则)",
         "exclude_pattern_hint": "排除 (正则)",
         "no_results": "未找到文件。",
@@ -404,11 +404,11 @@
         "doc_search_count": "{index} / {total}",
         "tab_file_name": "文件名",
         "tab_markdown_content": "内容",
-        "md_query_hint": "搜索 MD 内容...",
+        "md_query_hint": "搜索 MD 内容…",
         "recent_searches": "最近搜索",
         "clear_history": "清除历史",
         "ln_prefix": "第 ",
-        "palette_query_hint": "输入命令或搜索...",
+        "palette_query_hint": "输入命令或搜索…",
         "command_settings": "设置",
         "command_explorer": "资源管理器",
         "command_close_all": "全部关闭",
@@ -428,7 +428,7 @@
         "temp_file_error": "临时文件错误: {error}",
         "write_error": "写入错误: {error}",
         "persist_error": "持久化失败。",
-        "exporting": "⏳ 正在导出 {filename}..."
+        "exporting": "⏳ 正在导出 {filename}…"
     },
     "terms": {
         "title": "使用条款",
