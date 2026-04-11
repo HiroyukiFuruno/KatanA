@@ -76,21 +76,25 @@
 
 ## 8. Windows Packaging & Winget Readiness
 
-- [ ] 8.1 `build-and-release.yml` と `scripts/release/sync-external.sh` の Windows release 導線を見直し、`v0.18.7` の `.msi` 成果物が winget submit 対象として一貫して参照されることを確認
-- [ ] 8.2 Windows installer の依存関係を点検し、`Microsoft.VCRedist.2015+.x64` 欠落で winget validation が失敗しない構成へ修正
-- [ ] 8.3 必要に応じて WiX / build 設定を更新し、Windows runner 上で生成される `.msi` の install/uninstall を smoke test で確認
-- [ ] 8.4 `README.md` / `CHANGELOG.md` / release note に、Windows 配布形式と install prerequisites の実態が一致していることを確認
+- [ ] 8.1 `scripts/release/sync-external.sh` を見直し、`HiroyukiFuruno.katana-desktop` が upstream `microsoft/winget-pkgs` に未存在の間は `komac update` を実行せず、bootstrap path が必要だと明示する
+- [ ] 8.2 初回再申請用の winget submit 導線を明確化する。`komac new` は non-TTY CI で使えない前提とし、manifest file を生成して `komac submit` する path、または maintainer local TTY での bootstrap path のどちらかに固定する
+- [ ] 8.3 Windows binary の VC++ runtime 依存を build policy 側で解消する。`x86_64-pc-windows-msvc` 向けに `crt-static` を有効化し、manifest dependency を消すだけの対症療法にしない
+- [ ] 8.4 Windows runner 上で packaged `KatanA.exe` の import table を確認し、`VCRUNTIME140*.dll` / `api-ms-win-crt-*` 依存が除去されたことを検証する
+- [ ] 8.5 `komac analyze` / generated manifest review により、`KatanA-windows-x86_64.msi` が `Scope: user` / `InstallerType: wix` を維持しつつ、problematic な `Dependencies: Microsoft.VCRedist.2015+.x64` を含まないことを確認する
+- [ ] 8.6 `README.md` / `CHANGELOG.md` / release note に、Windows 配布形式と install prerequisites の実態が一致していることを確認
 
 ### Definition of Done (DoD)
 
-- [ ] `KatanA-windows-x86_64.msi` が winget validation failure の原因だった dependency 問題を解消している
-- [ ] CI と local release helper が同じ Windows artifact 名と publish URL 契約を使っている
+- [ ] 初回再申請と将来の version update の flow が混同されていない
+- [ ] `KatanA-windows-x86_64.msi` / `KatanA.exe` が VC++ runtime 外部依存なしで配布できる
+- [ ] CI と local helper が同じ Windows artifact 名と publish URL 契約を使っている
 
 ## 9. Windows Installer UX Refresh
 
-- [ ] 9.1 `crates/katana-ui/wix/main.wxs` の標準 UI (`WixUI_FeatureTree`) を見直し、初回導入時の見た目と文言を KatanA 向けに整理
-- [ ] 9.2 installer metadata（Product 名、説明、ARP 表示、必要であれば banner/dialog asset）を更新し、古い印象を与える既定表現を除去
-- [ ] 9.3 Windows installer 画面の確認証跡を取得し、`v0.18.7` の申請時に参照できる状態にする
+- [ ] 9.1 `crates/katana-ui/wix/main.wxs` の current flow (`WixUI_FeatureTree`) は維持したまま、初回導入時の見た目と文言を KatanA 向けに整理する
+- [ ] 9.2 installer metadata（Product 名、説明、ARP 表示、Feature 名）を更新し、古い印象を与える既定表現を除去する
+- [ ] 9.3 `WixUIBannerBmp` / `WixUIDialogBmp` を追加し、`Product.ico` と整合する branding asset を適用する
+- [ ] 9.4 Windows installer 画面の確認証跡を取得し、`v0.18.7` の申請時に参照できる状態にする
 
 ### Definition of Done (DoD)
 
@@ -104,4 +108,4 @@
 - [ ] 10.3 Confirm Windows release artifacts and GitHub Release asset URLs for `v0.18.7`
 - [ ] 10.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 10.5 Merge into master and execute `make release VERSION=0.18.7`
-- [ ] 10.6 Verify `scripts/release/sync-external.sh` submits `HiroyukiFuruno.katana-desktop` `v0.18.7` to winget with the published `.msi`
+- [ ] 10.6 Verify `scripts/release/sync-external.sh` does not silently fail for `HiroyukiFuruno.katana-desktop` and that the chosen bootstrap / update path for `v0.18.7` is documented and reproducible
