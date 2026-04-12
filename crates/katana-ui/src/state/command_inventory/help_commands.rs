@@ -76,6 +76,7 @@ impl HelpCommands {
                 id: "help.website",
                 action: AppAction::OpenOfficialWebsite,
                 group: CommandGroup::Help,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().menu.website.clone(),
                 is_available: |_| true,
                 default_shortcuts: &[],
