@@ -23,6 +23,15 @@ impl TreeLogicOps {
                     }
                 }
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
+                    let is_hidden_dir = path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .is_some_and(|s| s.starts_with('.'));
+
+                    if is_hidden_dir {
+                        continue;
+                    }
+
                     if Self::gather_visible_paths(children, regex, is_negated, ws_root, visible) {
                         visible.insert(path.clone());
                         any_visible = true;

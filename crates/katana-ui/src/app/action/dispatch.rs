@@ -157,7 +157,14 @@ impl KatanaApp {
             }
             AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
             AppAction::ToggleExplorerFilter => {
-                self.state.search.filter_enabled = !self.state.search.filter_enabled;
+                let current = self.state.search.filter_enabled;
+                self.state.search.filter_enabled = !current;
+                if !current {
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("filter_newly_enabled"), true)
+                    });
+                }
             }
             AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
             AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),

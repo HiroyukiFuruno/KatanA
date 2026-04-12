@@ -161,12 +161,21 @@ impl<'a> ExplorerHeader<'a> {
                         crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.error_text)
                     })
             };
-            ui.add(
+            let resp = ui.add(
                 egui::TextEdit::singleline(&mut search.filter_query)
                     .text_color(text_color)
                     .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
                     .desired_width(ui.available_width()),
             );
+            if ui
+                .ctx()
+                .memory_mut(|m| m.data.get_temp(egui::Id::new("filter_newly_enabled")))
+                .unwrap_or(false)
+            {
+                resp.request_focus();
+                ui.ctx()
+                    .memory_mut(|m| m.data.remove::<bool>(egui::Id::new("filter_newly_enabled")));
+            }
         }
     }
 }
