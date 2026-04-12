@@ -38,7 +38,16 @@ impl MarkdownRule for HeadingIncrementRule {
             .expect("official_meta is always Some for MD001");
         let mut diagnostics = Vec::new();
         let mut last_level = 0;
+        let mut in_code_block = false;
         for (line_idx, line) in content.lines().enumerate() {
+            let trimmed = line.trim_start();
+            if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+                in_code_block = !in_code_block;
+                continue;
+            }
+            if in_code_block {
+                continue;
+            }
             if let Some(level) = get_heading_level(line) {
                 let current_level = level;
                 if last_level > 0 && current_level > last_level + 1 {
