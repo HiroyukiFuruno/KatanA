@@ -6,14 +6,6 @@ use eframe::egui;
 const SEARCH_BAR_HEIGHT_ADJUSTMENT: f32 = 10.0;
 /* WHY: Preferred width for the document search input field. */
 const DOC_SEARCH_INPUT_WIDTH: f32 = 200.0;
-/* WHY: Horizontal margin for the search input content (icons). */
-const DOC_SEARCH_INPUT_MARGIN_X: f32 = 26.0;
-/* WHY: Vertical margin for the search input content. */
-const DOC_SEARCH_INPUT_MARGIN_Y: f32 = 4.0;
-/* WHY: Fixed width for the overlay icons inside the search input. */
-const SEARCH_ICON_WIDTH: f32 = 26.0;
-/* WHY: Alpha transparency for the search icon when dimmed. */
-const SEARCH_ICON_DIM_ALPHA: f32 = 0.5;
 
 pub(crate) struct DocSearchBar;
 
@@ -62,22 +54,10 @@ impl DocSearchBar {
         Self::render_nav_buttons(ui, action, button_size);
         Self::render_match_count(ui, search_state);
 
-        let response = ui.add(
-            egui::TextEdit::singleline(&mut search_state.doc_search_query)
-                .desired_width(DOC_SEARCH_INPUT_WIDTH)
-                .margin(egui::Margin::symmetric(
-                    DOC_SEARCH_INPUT_MARGIN_X as i8,
-                    DOC_SEARCH_INPUT_MARGIN_Y as i8,
-                ))
-                .id_source("doc_search_input_stable_id"),
-        );
-
-        let rect = response.rect;
-        Self::render_input_overlay(ui, rect);
-
-        if !search_state.doc_search_query.is_empty() {
-            SearchLogic::render_clear_button(ui, rect, search_state, action, &response);
-        }
+        let response = crate::widgets::SearchBar::new(&mut search_state.doc_search)
+            .desired_width(DOC_SEARCH_INPUT_WIDTH)
+            .hint_text(crate::i18n::I18nOps::get().search.doc_query_hint.clone())
+            .show(ui);
 
         SearchLogic::handle_input_events(ui, &response, action, search_state);
     }
@@ -125,29 +105,11 @@ impl DocSearchBar {
                     ("total", &format!("{}", match_count)),
                 ],
             ));
-        } else if !search_state.doc_search_query.is_empty() {
+        } else if !search_state.doc_search.query.is_empty() {
             ui.label(crate::i18n::I18nOps::tf(
                 &crate::i18n::I18nOps::get().search.doc_search_count,
                 &[("index", "0"), ("total", "0")],
             ));
         }
-    }
-
-    fn render_input_overlay(ui: &mut egui::Ui, rect: egui::Rect) {
-        let left_icon_rect =
-            egui::Rect::from_min_size(rect.min, egui::vec2(SEARCH_ICON_WIDTH, rect.height()));
-        ui.allocate_ui_at_rect(left_icon_rect, |ui| {
-            ui.centered_and_justified(|ui| {
-                let icon_color = ui
-                    .visuals()
-                    .text_color()
-                    .gamma_multiply(SEARCH_ICON_DIM_ALPHA);
-                ui.add(
-                    crate::Icon::Search
-                        .image(crate::icon::IconSize::Small)
-                        .tint(icon_color),
-                );
-            });
-        });
     }
 }

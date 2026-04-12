@@ -127,6 +127,12 @@ impl<'a> AboutModal<'a> {
                 );
                 about_link_row(
                     ui,
+                    &i18n_about.official_website,
+                    info.website_url,
+                    crate::Icon::ExternalLink,
+                );
+                about_link_row(
+                    ui,
                     &i18n_about.report_issue,
                     info.issues_url,
                     crate::Icon::Bug,

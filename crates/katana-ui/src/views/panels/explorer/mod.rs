@@ -13,3 +13,4 @@ pub mod types;
 pub(crate) use breadcrumb::*;
 pub(crate) use panel::*;
 pub use types::*;
+mod header_tests;

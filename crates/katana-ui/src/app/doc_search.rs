@@ -6,7 +6,7 @@ pub(crate) trait DocSearchRefresh {
 
 impl DocSearchRefresh for KatanaApp {
     fn refresh_doc_search_matches(&mut self, content: &str) {
-        let query = &self.state.search.doc_search_query;
+        let query = &self.state.search.doc_search.query;
         self.state.search.doc_search_matches.clear();
         self.state.search.doc_search_active_index = 0;
         if !query.is_empty()

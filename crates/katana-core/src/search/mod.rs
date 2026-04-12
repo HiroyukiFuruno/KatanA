@@ -7,6 +7,9 @@ impl WorkspaceSearchOps {
     pub fn search_workspace(
         workspace: &crate::Workspace,
         query: &str,
+        match_case: bool,
+        match_word: bool,
+        use_regex: bool,
         limit: usize,
     ) -> Vec<SearchResult> {
         if query.is_empty() {
@@ -28,9 +31,21 @@ impl WorkspaceSearchOps {
                 continue;
             };
 
-            let pattern = regex::escape(query);
+            let (pattern, case_insensitive) = if use_regex {
+                let p = if match_word {
+                    format!(r"\b{}\b", query)
+                } else {
+                    query.to_string()
+                };
+                (p, !match_case)
+            } else {
+                let p = regex::escape(query);
+                let p = if match_word { format!(r"\b{}\b", p) } else { p };
+                (p, !match_case)
+            };
+
             let Ok(re) = regex::RegexBuilder::new(&pattern)
-                .case_insensitive(true)
+                .case_insensitive(case_insensitive)
                 .build()
             else {
                 continue;

@@ -65,7 +65,8 @@ impl GuiSetupOps {
                 api_version: PLUGIN_API_VERSION,
                 extension_points: vec![ExtensionPoint::RendererEnhancement],
             },
-            || Ok(()), /* WHY: Renderer logic is wired directly in the markdown pipeline. */
+            /* WHY: Renderer logic is wired directly in the markdown pipeline. */
+            || Ok(()),
         );
 
         registry.register(

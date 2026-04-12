@@ -10,11 +10,9 @@ pub(super) fn show_filename_tab(
     workspace: Option<&katana_core::workspace::Workspace>,
     action: &mut AppAction,
 ) {
-    let response = ui.add(
-        egui::TextEdit::singleline(&mut search.query)
-            .hint_text(crate::i18n::I18nOps::get().search.query_hint.clone())
-            .desired_width(f32::INFINITY),
-    );
+    let response = crate::widgets::SearchBar::new(&mut search.file_search)
+        .hint_text(crate::i18n::I18nOps::get().search.query_hint.clone())
+        .show(ui);
     if !search.focus_requested {
         response.request_focus();
         search.focus_requested = true;
@@ -35,37 +33,36 @@ pub(super) fn show_filename_tab(
         err_color
     };
 
-    ui.add(
-        egui::TextEdit::singleline(&mut search.include_pattern)
-            .hint_text(
-                crate::i18n::I18nOps::get()
-                    .search
-                    .include_pattern_hint
-                    .clone(),
-            )
-            .text_color(include_color)
-            .desired_width(f32::INFINITY),
-    );
-    ui.add(
-        egui::TextEdit::singleline(&mut search.exclude_pattern)
-            .hint_text(
-                crate::i18n::I18nOps::get()
-                    .search
-                    .exclude_pattern_hint
-                    .clone(),
-            )
-            .text_color(exclude_color)
-            .desired_width(f32::INFINITY),
-    );
+    crate::widgets::SearchBar::simple(&mut search.include_pattern)
+        .hint_text(
+            crate::i18n::I18nOps::get()
+                .search
+                .include_pattern_hint
+                .clone(),
+        )
+        .text_color(include_color)
+        .show_search_icon(true)
+        .show(ui);
+
+    crate::widgets::SearchBar::simple(&mut search.exclude_pattern)
+        .hint_text(
+            crate::i18n::I18nOps::get()
+                .search
+                .exclude_pattern_hint
+                .clone(),
+        )
+        .text_color(exclude_color)
+        .show_search_icon(true)
+        .show(ui);
 
     let current_params = (
-        search.query.clone(),
+        search.file_search.clone(),
         search.include_pattern.clone(),
         search.exclude_pattern.clone(),
     );
     if search.last_params.as_ref() != Some(&current_params) {
         search.last_params = Some(current_params);
-        let query = search.query.to_lowercase();
+        let query = search.file_search.query.clone();
         if query.is_empty() && include_regexes.is_empty() && exclude_regexes.is_empty() {
             search.results.clear();
         } else if let Some(ws) = workspace {
@@ -76,6 +73,9 @@ pub(super) fn show_filename_tab(
                 &include_regexes,
                 &exclude_regexes,
                 &ws.root,
+                search.file_search.match_case,
+                search.file_search.match_word,
+                search.file_search.use_regex,
                 &mut results,
             );
             search.results = results;
@@ -86,7 +86,7 @@ pub(super) fn show_filename_tab(
     egui::ScrollArea::vertical()
         .auto_shrink([false; 2])
         .show(ui, |ui| {
-            if search.results.is_empty() && !search.query.is_empty() {
+            if search.results.is_empty() && !search.file_search.query.is_empty() {
                 ui.label(crate::i18n::I18nOps::get().search.no_results.clone());
             } else {
                 let ws_root = workspace.map(|ws| ws.root.clone());
@@ -113,11 +113,9 @@ pub(super) fn show_md_tab(
     workspace: Option<&katana_core::workspace::Workspace>,
     action: &mut AppAction,
 ) {
-    let response = ui.add(
-        egui::TextEdit::singleline(&mut search.md_query)
-            .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
-            .desired_width(f32::INFINITY),
-    );
+    let response = crate::widgets::SearchBar::new(&mut search.md_search)
+        .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
+        .show(ui);
     if !search.focus_requested {
         response.request_focus();
         search.focus_requested = true;
@@ -125,24 +123,28 @@ pub(super) fn show_md_tab(
 
     if (response.changed()
         || response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)))
-        && search.md_last_query.as_deref() != Some(search.md_query.as_str())
+        && search.md_last_params.as_ref() != Some(&search.md_search)
     {
-        search.md_last_query = Some(search.md_query.clone());
-        if search.md_query.is_empty() {
+        search.md_last_params = Some(search.md_search.clone());
+        if search.md_search.query.is_empty() {
             search.md_results.clear();
         } else if let Some(ws) = workspace {
+            /* WHY: WorkspaceSearchOps::search_workspace needs to accept params now, but for now we pass query and other fields */
             search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
                 ws,
-                &search.md_query,
+                &search.md_search.query,
+                search.md_search.match_case,
+                search.md_search.match_word,
+                search.md_search.use_regex,
                 MD_SEARCH_LIMIT,
             );
             search
                 .md_history
-                .push_term(search.md_query.clone(), MD_SEARCH_HISTORY_LIMIT);
+                .push_term(search.md_search.query.clone(), MD_SEARCH_HISTORY_LIMIT);
         }
     }
 
-    if search.md_query.is_empty() && !search.md_history.recent_terms.is_empty() {
+    if search.md_search.query.is_empty() && !search.md_history.recent_terms.is_empty() {
         ui.separator();
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
@@ -163,12 +165,16 @@ pub(super) fn show_md_tab(
             if !ui.link(&term).clicked() {
                 continue;
             }
-            search.md_query = term.clone();
-            search.md_last_query = Some(term.clone());
+            search.md_search.query = term.clone();
+            let params = search.md_search.clone();
+            search.md_last_params = Some(params);
             if let Some(ws) = workspace {
                 search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
                     ws,
                     &term,
+                    search.md_search.match_case,
+                    search.md_search.match_word,
+                    search.md_search.use_regex,
                     MD_SEARCH_LIMIT,
                 );
                 search.md_history.push_term(term, MD_SEARCH_HISTORY_LIMIT);
@@ -180,7 +186,7 @@ pub(super) fn show_md_tab(
     egui::ScrollArea::vertical()
         .auto_shrink([false; 2])
         .show(ui, |ui| {
-            if search.md_results.is_empty() && !search.md_query.is_empty() {
+            if search.md_results.is_empty() && !search.md_search.query.is_empty() {
                 ui.label(crate::i18n::I18nOps::get().search.no_results.clone());
             } else {
                 let ws_root = workspace.map(|ws| ws.root.clone());
@@ -222,6 +228,7 @@ fn build_regexes(pattern: &str) -> (Vec<regex::Regex>, bool) {
     if pattern.is_empty() {
         return (regexes, valid);
     }
+    /* WHY: Precompile query regex for efficiency so we don't compile inside the loop */
     for pat in pattern.split(',') {
         let pat = pat.trim();
         if pat.is_empty() {

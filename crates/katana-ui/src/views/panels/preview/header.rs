@@ -24,7 +24,8 @@ impl<'a> PreviewHeader<'a> {
         let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
         let margin = f32::from(PREVIEW_CONTENT_PADDING);
         let spacing = ui.spacing().item_spacing.x;
-        let mut button_count = 2.0; /* WHY: Export, Slideshow */
+        /* WHY: Export, Slideshow */
+        let mut button_count = 2.0;
         if self.toc_visible {
             button_count += 1.0;
         }

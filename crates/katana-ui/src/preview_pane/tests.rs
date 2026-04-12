@@ -872,7 +872,8 @@ mod tests {
         pane.fullscreen_viewer_state.zoom_in();
         pane.apply_fullscreen_result(Some(0), Some(&ctx));
         assert_eq!(pane.fullscreen_image, Some(0));
-        assert_ne!(pane.fullscreen_viewer_state.zoom, 1.0); /* WHY: Does NOT reset. */
+        /* WHY: Does NOT reset. */
+        assert_ne!(pane.fullscreen_viewer_state.zoom, 1.0);
     }
 
     #[test]
@@ -892,7 +893,8 @@ mod tests {
 
         pane.handle_fullscreen_request(Some(0), Some(&ctx));
         assert_eq!(pane.fullscreen_image, Some(0));
-        assert!(!pane.was_os_fullscreen_before_modal); /* WHY: context default is window mode */
+        /* WHY: context default is window mode */
+        assert!(!pane.was_os_fullscreen_before_modal);
     }
 
     #[test]

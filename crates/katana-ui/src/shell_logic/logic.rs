@@ -81,15 +81,40 @@ impl ShellLogicOps {
         Ok(output_path)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn collect_matches(
         tree: &[katana_core::workspace::TreeEntry],
         query: &str,
         include: &[regex::Regex],
         exclude: &[regex::Regex],
         root: &Path,
+        match_case: bool,
+        match_word: bool,
+        use_regex: bool,
         results: &mut Vec<std::path::PathBuf>,
     ) {
-        let query_lower = query.to_lowercase();
+        let (pattern, case_insensitive) = if use_regex {
+            let p = if match_word {
+                format!(r"\b{}\b", query)
+            } else {
+                query.to_string()
+            };
+            (p, !match_case)
+        } else {
+            let p = regex::escape(query);
+            let p = if match_word { format!(r"\b{}\b", p) } else { p };
+            (p, !match_case)
+        };
+
+        /* WHY: Precompile query regex for efficiency so we don't compile inside the loop */
+        let query_re = if query.is_empty() {
+            None
+        } else {
+            regex::RegexBuilder::new(&pattern)
+                .case_insensitive(case_insensitive)
+                .build()
+                .ok()
+        };
         for entry in tree {
             match entry {
                 katana_core::workspace::TreeEntry::File { path } => {
@@ -102,9 +127,9 @@ impl ShellLogicOps {
                         .to_string();
 
                     let mut is_match = true;
-                    if !query_lower.is_empty()
-                        && !name.to_lowercase().contains(&query_lower)
-                        && !rel_str.to_lowercase().contains(&query_lower)
+                    if let Some(ref re) = query_re
+                        && !re.is_match(&name)
+                        && !re.is_match(&rel_str)
                     {
                         is_match = false;
                     }
@@ -121,7 +146,10 @@ impl ShellLogicOps {
                     }
                 }
                 katana_core::workspace::TreeEntry::Directory { children, .. } => {
-                    Self::collect_matches(children, query, include, exclude, root, results);
+                    Self::collect_matches(
+                        children, query, include, exclude, root, match_case, match_word, use_regex,
+                        results,
+                    );
                 }
             }
         }
@@ -145,34 +173,5 @@ impl ShellLogicOps {
         };
         tooltip.push_str(&format!("\nModified: {:?}", modified));
         tooltip
-    }
-
-    const SPLASH_FADE_START: f32 = 0.8;
-    const SPLASH_FADE_DURATION: f32 = 0.2;
-    const SPLASH_TOTAL_DURATION_SECS: f32 = 1.5;
-
-    pub fn calculate_splash_opacity(progress: f32) -> f32 {
-        if progress < Self::SPLASH_FADE_START {
-            1.0
-        } else {
-            (1.0 - progress) / Self::SPLASH_FADE_DURATION
-        }
-    }
-
-    pub fn calculate_splash_progress(elapsed: f32) -> f32 {
-        let p = elapsed / Self::SPLASH_TOTAL_DURATION_SECS;
-        p.clamp(0.0, 1.0)
-    }
-
-    pub fn prev_tab_index(idx: usize, count: usize) -> usize {
-        if count == 0 {
-            0
-        } else {
-            (idx + count - 1) % count
-        }
-    }
-
-    pub fn next_tab_index(idx: usize, count: usize) -> usize {
-        if count == 0 { 0 } else { (idx + 1) % count }
     }
 }

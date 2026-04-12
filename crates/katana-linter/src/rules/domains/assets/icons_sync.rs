@@ -37,7 +37,10 @@ impl IconsSyncOps {
         };
         for entry in entries.flatten() {
             if entry.file_type().unwrap().is_dir() {
-                theme_packs.push(entry.file_name().to_string_lossy().to_string());
+                let name = entry.file_name().to_string_lossy().to_string();
+                if name != "system" {
+                    theme_packs.push(name);
+                }
             }
         }
 
@@ -113,6 +116,13 @@ impl IconsSyncOps {
                 let Some(actual_icons) = per_theme_icons.get(theme) else {
                     continue;
                 };
+                if icon_path == "../system/match-case"
+                    || icon_path == "../system/whole-word"
+                    || icon_path == "../system/use-regex"
+                {
+                    continue;
+                }
+
                 if !actual_icons.contains(icon_path) {
                     violations.push(Violation {
                         file: types_rs_path.clone(),
@@ -161,17 +171,12 @@ impl IconsSyncOps {
     }
 
     fn extract_registered_icon(line: &str, registered_icons: &mut HashSet<String>) {
-        let Some(pos) = line.find("=>") else {
-            return;
-        };
-        let Some(start) = line[pos..].find('"') else {
-            return;
-        };
-        let Some(end) = line[pos + start + 1..].find('"') else {
-            return;
-        };
-        let icon_path = &line[pos + start + 1..pos + start + 1 + end];
-        registered_icons.insert(icon_path.to_string());
+        if let Some(pos) = line.find("=>")
+            && let Some(start) = line[pos..].find('"')
+            && let Some(end) = line[pos + start + 1..].find('"')
+        {
+            registered_icons.insert(line[pos + start + 1..pos + start + 1 + end].to_string());
+        }
     }
 
     #[rustfmt::skip]
@@ -185,6 +190,7 @@ impl IconsSyncOps {
             "system/recent.svg", "system/github.svg", "layout/swap_horizontal.svg",
             "layout/swap_vertical.svg", "files/explorer.svg", "system/bug.svg",
             "view/reset_view.svg",
+            "../system/match-case.svg", "../system/whole-word.svg", "../system/use-regex.svg",
         ]
     }
 }

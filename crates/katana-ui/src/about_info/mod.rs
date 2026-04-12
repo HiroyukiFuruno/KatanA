@@ -15,6 +15,8 @@ pub const APP_LICENSE: &str = "MIT License";
 
 pub const APP_REPOSITORY: &str = "https://github.com/HiroyukiFuruno/KatanA";
 
+pub const APP_WEBSITE_URL: &str = "https://katana-desktop.katana-projects.org/";
+
 pub const APP_DOCS_URL: &str = "https://github.com/HiroyukiFuruno/KatanA/tree/master/docs";
 
 pub const APP_ISSUES_URL: &str = "https://github.com/HiroyukiFuruno/KatanA/issues";
@@ -44,6 +46,7 @@ impl AboutInfoOps {
             license: APP_LICENSE,
             description: APP_DESCRIPTION,
             repository: APP_REPOSITORY,
+            website_url: APP_WEBSITE_URL,
             docs_url: APP_DOCS_URL,
             issues_url: APP_ISSUES_URL,
             sponsor_url: APP_SPONSOR_URL,
@@ -147,7 +150,8 @@ mod tests {
         let in_bin_section = cargo_toml
             .lines()
             .skip_while(|line| !line.starts_with("[[bin]]"))
-            .skip(1) /* WHY: skip the [[bin]] line itself */
+            /* WHY: skip the [[bin]] line itself */
+            .skip(1)
             .take_while(|line| !line.starts_with('['))
             .find(|line| line.trim().starts_with("name"))
             .expect("[[bin]] section should have a name field");
@@ -251,6 +255,7 @@ mod tests {
         assert_eq!(info.license, APP_LICENSE);
         assert_eq!(info.description, APP_DESCRIPTION);
         assert_eq!(info.repository, APP_REPOSITORY);
+        assert_eq!(info.website_url, APP_WEBSITE_URL);
         assert_eq!(info.docs_url, APP_DOCS_URL);
         assert_eq!(info.issues_url, APP_ISSUES_URL);
         assert_eq!(info.sponsor_url, APP_SPONSOR_URL);

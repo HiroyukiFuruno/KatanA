@@ -14,9 +14,6 @@
         "export_jpg": "JPEG 圖片 (.jpg)",
         "about": "關於 KatanA",
         "quit": "結束 KatanA",
-        "hide": "隱藏 KatanA",
-        "hide_others": "隱藏其他",
-        "show_all": "顯示全部",
         "help": "說明",
         "check_updates": "檢查更新…",
         "release_notes": "版本說明",
@@ -35,7 +32,8 @@
         "demo": "示範",
         "welcome_screen": "歡迎畫面",
         "user_guide": "使用指南",
-        "github": "GitHub 倉庫"
+        "github": "GitHub 倉庫",
+        "website": "官方網站"
     },
     "about": {
         "basic_info": "基本資訊",
@@ -50,6 +48,7 @@
         "links": "連結",
         "source_code": "原始碼",
         "documentation": "開發文件",
+        "official_website": "官方網站",
         "report_issue": "回報問題",
         "support": "支援",
         "sponsor": "贊助"
@@ -86,11 +85,11 @@
         "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
         "path_label": "路徑",
         "flat_view": "平面檢視",
-        "filter_regex_hint": "篩選 (正則)…",
         "open_folder_hint": "開啟資料夾以開始使用 KatanA。",
         "open_workspace_button": "開啟資料夾",
         "remove_history_tooltip": "從歷史記錄中移除",
-        "max_depth_exceeded": "超過最大掃描深度"
+        "max_depth_exceeded": "超過最大掃描深度",
+        "filter_hint": "篩選…"
     },
     "preview": {
         "preview_title": "預覽",
@@ -429,8 +428,28 @@
         "command_close_all": "全部關閉",
         "command_refresh_explorer": "重新整理資源管理器",
         "command_updates": "檢查更新",
-        "command_about": "關於 KatanA",
-        "command_type_action": "指令"
+        "command_about": "切換關於 KatanA",
+        "command_type_action": "指令",
+        "command_author_bold": "粗體",
+        "command_author_italic": "傾斜",
+        "command_author_strikethrough": "刪除線",
+        "command_author_inline_code": "行內程式碼",
+        "command_author_heading1": "標題 1",
+        "command_author_heading2": "標題 2",
+        "command_author_heading3": "標題 3",
+        "command_author_bullet_list": "項目符號清單",
+        "command_author_numbered_list": "編號清單",
+        "command_author_blockquote": "區塊引用",
+        "command_author_code_block": "程式碼區塊",
+        "command_author_horizontal_rule": "分隔線",
+        "command_author_insert_link": "插入連結",
+        "command_author_insert_table": "繪製表格",
+        "command_ingest_image_file": "附加圖像檔案…",
+        "command_ingest_clipboard_image": "從剪貼簿貼上圖像",
+        "match_case": "區分大小寫",
+        "match_word": "全字比對",
+        "use_regex": "使用正規表示式",
+        "doc_query_hint": "在文件内搜尋…"
     },
     "toc": {
         "title": "大綱",

@@ -94,7 +94,8 @@ impl BehaviorTabOps {
                         &mut display_val,
                         AUTO_SAVE_INTERVAL_MIN..=AUTO_SAVE_INTERVAL_MAX,
                     )
-                    .show_value(false) /* WHY: Text is displayed separately */
+                    /* WHY: Text is displayed separately */
+                    .show_value(false)
                     .step_by(AUTO_SAVE_INTERVAL_STEP)
                     .min_decimals(1)
                     .max_decimals(1)

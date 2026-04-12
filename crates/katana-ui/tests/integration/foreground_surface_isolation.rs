@@ -25,7 +25,7 @@ fn disabled_ui_prevents_background_clicks() {
 
     let is_blocked = app.is_foreground_surface_active(&ctx);
 
-    // Frame 1: seed the layout
+    /* WHY: Frame 1: seed the layout */
     let _ = ctx.run(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.set_enabled(!is_blocked);
@@ -33,7 +33,7 @@ fn disabled_ui_prevents_background_clicks() {
         });
     });
 
-    // Frame 2: send a click
+    /* WHY: Frame 2: send a click */
     let mut raw_input = egui::RawInput::default();
     raw_input
         .events
@@ -78,7 +78,7 @@ fn disabled_ui_prevents_background_hover() {
 
     let is_blocked = app.is_foreground_surface_active(&ctx);
 
-    // Frame 1: seed the layout
+    /* WHY: Frame 1: seed the layout */
     let _ = ctx.run(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.set_enabled(!is_blocked);
@@ -87,7 +87,7 @@ fn disabled_ui_prevents_background_hover() {
         });
     });
 
-    // Frame 2: move pointer over the background button
+    /* WHY: Frame 2: move pointer over the background button */
     let mut raw_input = egui::RawInput::default();
     raw_input
         .events

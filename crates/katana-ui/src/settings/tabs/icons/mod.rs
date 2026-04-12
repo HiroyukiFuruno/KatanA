@@ -1,5 +1,6 @@
 use super::types::*;
 use crate::settings::*;
+use crate::widgets::AlignCenter;
 
 pub mod colors;
 mod general;
@@ -38,46 +39,48 @@ impl IconsTabOps {
                 .unwrap_or_else(|| current_pack.clone())
         };
 
-        /* WHY: allow(horizontal_layout) */
-        ui.horizontal(|ui| {
-            egui::ComboBox::from_id_source("icon_pack_combobox")
-                .selected_text(selected_name.clone())
-                .show_ui(ui, |ui| {
-                    /* WHY: Base built-in packs. */
-                    for (id, display_name) in available_packs.iter() {
-                        let is_selected =
-                            icon_settings.active_preset.is_none() && current_pack == *id;
-                        let response = ui.add(
-                            egui::Button::selectable(is_selected, *display_name)
-                                .frame_when_inactive(true),
-                        );
-                        if response.clicked() {
-                            current_pack = id.to_string();
-                            icon_settings.active_preset = None;
-                            icon_settings.active_overrides.clear();
-                            settings_changed = true;
-                        }
-                    }
-
-                    if !icon_settings.custom_presets.is_empty() {
-                        ui.separator();
-                        /* WHY: Custom saved presets. */
-                        for preset in &icon_settings.custom_presets {
-                            let is_selected = icon_settings.active_preset.as_deref()
-                                == Some(preset.name.as_str());
+        /* WHY: Horizontal alignment using AlignCenter to satisfy vertical centering rules. */
+        AlignCenter::new()
+            .content(|ui| {
+                egui::ComboBox::from_id_source("icon_pack_combobox")
+                    .selected_text(selected_name.clone())
+                    .show_ui(ui, |ui| {
+                        /* WHY: Base built-in packs. */
+                        for (id, display_name) in available_packs.iter() {
+                            let is_selected =
+                                icon_settings.active_preset.is_none() && current_pack == *id;
                             let response = ui.add(
-                                egui::Button::selectable(is_selected, &preset.name)
+                                egui::Button::selectable(is_selected, *display_name)
                                     .frame_when_inactive(true),
                             );
                             if response.clicked() {
-                                icon_settings.active_preset = Some(preset.name.clone());
-                                icon_settings.active_overrides = preset.overrides.clone();
+                                current_pack = id.to_string();
+                                icon_settings.active_preset = None;
+                                icon_settings.active_overrides.clear();
                                 settings_changed = true;
                             }
                         }
-                    }
-                });
-        });
+
+                        if !icon_settings.custom_presets.is_empty() {
+                            ui.separator();
+                            /* WHY: Custom saved presets. */
+                            for preset in &icon_settings.custom_presets {
+                                let is_selected = icon_settings.active_preset.as_deref()
+                                    == Some(preset.name.as_str());
+                                let response = ui.add(
+                                    egui::Button::selectable(is_selected, &preset.name)
+                                        .frame_when_inactive(true),
+                                );
+                                if response.clicked() {
+                                    icon_settings.active_preset = Some(preset.name.clone());
+                                    icon_settings.active_overrides = preset.overrides.clone();
+                                    settings_changed = true;
+                                }
+                            }
+                        }
+                    });
+            })
+            .show(ui);
 
         if current_pack != state.config.settings.settings().theme.icon_pack {
             state.config.settings.settings_mut().theme.icon_pack = current_pack.clone();
@@ -100,55 +103,57 @@ impl IconsTabOps {
             egui::TopBottomPanel::bottom("icon_settings_actions_panel")
                 .frame(egui::Frame::none().inner_margin(egui::vec2(0.0, BOTTOM_PANEL_MARGIN)))
                 .show_inside(ui, |ui| {
-                    /* WHY: allow(horizontal_layout) */
-                    ui.horizontal(|ui| {
-                        /* WHY: Action buttons for preset management fixed at the bottom. */
-                        if ui.button(&i18n.settings.icons.save_preset).clicked() {
-                            ui.data_mut(|d| {
-                                d.insert_temp::<bool>(
-                                    egui::Id::new("katana_icon_saving_preset"),
-                                    true,
-                                )
-                            });
-                        }
-
-                        if !icon_settings.active_overrides.is_empty()
-                            && ui.button(&i18n.settings.icons.revert_default).clicked()
-                        {
-                            icon_settings.active_overrides.clear();
-                            icon_settings.active_preset = None;
-                            settings_changed = true;
-                        }
-
-                        if let Some(active_preset) = &icon_settings.active_preset {
-                            let icon_bg = if ui.visuals().dark_mode {
-                                crate::theme_bridge::TRANSPARENT
-                            } else {
-                                crate::theme_bridge::ThemeBridgeOps::from_gray(
-                                    crate::shell_ui::LIGHT_MODE_ICON_BG,
-                                )
-                            };
-                            let clicked = ui
-                                .add(
-                                    egui::Button::image(
-                                        crate::Icon::Remove
-                                            .ui_image(ui, crate::icon::IconSize::Medium),
+                    /* WHY: Use AlignCenter instead of ui.horizontal() for bottom actions. */
+                    AlignCenter::new()
+                        .content(|ui| {
+                            /* WHY: Action buttons for preset management fixed at the bottom. */
+                            if ui.button(&i18n.settings.icons.save_preset).clicked() {
+                                ui.data_mut(|d| {
+                                    d.insert_temp::<bool>(
+                                        egui::Id::new("katana_icon_saving_preset"),
+                                        true,
                                     )
-                                    .fill(icon_bg),
-                                )
-                                .on_hover_text(
-                                    &crate::i18n::I18nOps::get().settings.theme.delete_custom,
-                                )
-                                .clicked();
-                            if clicked {
-                                let old_name = active_preset.clone();
-                                icon_settings.custom_presets.retain(|p| p.name != old_name);
-                                icon_settings.active_preset = None;
+                                });
+                            }
+
+                            if !icon_settings.active_overrides.is_empty()
+                                && ui.button(&i18n.settings.icons.revert_default).clicked()
+                            {
                                 icon_settings.active_overrides.clear();
+                                icon_settings.active_preset = None;
                                 settings_changed = true;
                             }
-                        }
-                    });
+
+                            if let Some(active_preset) = &icon_settings.active_preset {
+                                let icon_bg = if ui.visuals().dark_mode {
+                                    crate::theme_bridge::TRANSPARENT
+                                } else {
+                                    crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                        crate::shell_ui::LIGHT_MODE_ICON_BG,
+                                    )
+                                };
+                                let clicked = ui
+                                    .add(
+                                        egui::Button::image(
+                                            crate::Icon::Remove
+                                                .ui_image(ui, crate::icon::IconSize::Medium),
+                                        )
+                                        .fill(icon_bg),
+                                    )
+                                    .on_hover_text(
+                                        &crate::i18n::I18nOps::get().settings.theme.delete_custom,
+                                    )
+                                    .clicked();
+                                if clicked {
+                                    let old_name = active_preset.clone();
+                                    icon_settings.custom_presets.retain(|p| p.name != old_name);
+                                    icon_settings.active_preset = None;
+                                    icon_settings.active_overrides.clear();
+                                    settings_changed = true;
+                                }
+                            }
+                        })
+                        .show(ui);
                 });
         }
 

@@ -17,6 +17,9 @@ JOBS ?= 2
 # Force all warnings to be treated as errors for every cargo command run via make
 export RUSTFLAGS=-D warnings
 
+# AI context-aware CLI proxy (mandatory for agents)
+RTK := $(shell command -v rtk 2> /dev/null || echo "")
+
 VERSION := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 
 # Suppress "ar: illegal option -- D" warning on macOS by using llvm-ar if available
@@ -45,23 +48,23 @@ init: ## Bootstrap the development environment interactively
 
 .PHONY: run-release
 run-release: ## Run the application in release mode
-	cargo run --bin KatanA --release
+	$(RTK) cargo run --bin KatanA --release
 
 .PHONY: run-performance
 run-performance: ## Run in release mode with FPS monitor logging
-	RUST_LOG=warn cargo run --bin KatanA --release
+	RUST_LOG=warn $(RTK) cargo run --bin KatanA --release
 
 .PHONY: run
 run: build ## Run the application (KatanA)
-	cargo run --bin KatanA
+	$(RTK) cargo run --bin KatanA
 
 .PHONY: watch
 watch: ## Watch file changes & auto check (requires cargo-watch)
-	cargo watch -x 'check --workspace' -x 'test --workspace'
+	$(RTK) cargo watch -x 'check --workspace' -x 'test --workspace'
 
 .PHONY: watch-run
 watch-run: ## Watch file changes & auto restart (requires cargo-watch)
-	cargo watch -x 'run --bin KatanA'
+	$(RTK) cargo watch -x 'run --bin KatanA'
 
 ###################################
 # Build
@@ -69,11 +72,11 @@ watch-run: ## Watch file changes & auto restart (requires cargo-watch)
 
 .PHONY: build
 build: ## Build the entire workspace (debug)
-	cargo build --workspace
+	$(RTK) cargo build --workspace
 
 .PHONY: build-release
 build-release: ## Release build (optimized)
-	cargo build --workspace --release
+	$(RTK) cargo build --workspace --release
 
 ###################################
 # Quality
@@ -81,70 +84,70 @@ build-release: ## Release build (optimized)
 
 .PHONY: fmt
 fmt: ## Apply code formatting (rustfmt)
-	cargo fmt --all
+	$(RTK) cargo fmt --all
 
 .PHONY: fmt-check
 fmt-check: ## Check format differences (for CI)
-	cargo fmt --all -- --check
+	$(RTK) cargo fmt --all -- --check
 
 .PHONY: lint
 lint: ## Run Clippy (forces zero warnings)
-	cargo clippy -j $(JOBS) --workspace -- -D warnings
+	$(RTK) cargo clippy -j $(JOBS) --workspace -- -D warnings
 
 .PHONY: lint-fix
 lint-fix: ## Run Clippy and apply automatic fixes
-	cargo clippy --workspace --fix --allow-dirty --allow-staged -- -D warnings
+	$(RTK) cargo clippy --workspace --fix --allow-dirty --allow-staged -- -D warnings
 
 .PHONY: ast-lint
 ast-lint: ## Run AST-based custom linters (comment style, etc.)
-	cargo test -j $(JOBS) -p katana-linter ast_linter -- --nocapture
+	$(RTK) cargo test -j $(JOBS) -p katana-linter ast_linter -- --nocapture
 
 .PHONY: type-check
 type-check: ## cargo check (type check only, fast)
-	cargo check --workspace
+	$(RTK) cargo check --workspace
 
 .PHONY: test
 test: ## Run all unit tests
-	cargo test --workspace
+	$(RTK) cargo test --workspace
 
 .PHONY: test-core
 test-core: ## Run tests for katana-core only
-	cargo test -p katana-core
+	$(RTK) cargo test -p katana-core
 
 .PHONY: test-ui
 test-ui: ## Run tests for katana-ui only
-	cargo test -p katana-ui
+	$(RTK) cargo test -p katana-ui
 
 .PHONY: test-verbose
 test-verbose: ## Run tests with verbose output
-	cargo test --workspace -- --nocapture
+	$(RTK) cargo test --workspace -- --nocapture
 
 .PHONY: test-specific
 test-specific: ## Run a specific test (e.g., make test-specific T=test_name)
-	cargo test --workspace -- $(T)
+	$(RTK) cargo test --workspace -- $(T)
 
 .PHONY: test-integration
 test-integration: ## Run integration tests — fixture tests only (slow; non-fixture tests are covered by `coverage`) (requires: egui_kittest)
-	cargo test -j $(JOBS) -q --workspace --test integration_tests -- --test-threads=$(JOBS) fixture
+	$(RTK) cargo test -j $(JOBS) -q --workspace --test integration_tests -- --test-threads=$(JOBS) fixture
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
-	docker-compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test cargo test --workspace
+	$(RTK) docker-compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test cargo test -q --workspace
 
 .PHONY: check-windows
 check-windows: ## Verify Windows cross-compilation without running tests
-	docker-compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests
+	$(RTK) docker-compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests
 
 .PHONY: check-platforms
 check-platforms: check-linux check-windows ## Verify test/compilation across all target platforms (Linux, Windows)
 
 .PHONY: coverage
 coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
-	JOBS=$(JOBS) scripts/ci/coverage.sh
+	JOBS=$(JOBS) $(RTK) scripts/ci/coverage.sh
 
 .PHONY: check-light
 check-light: fmt-check lint ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
-	cargo test --workspace -- --skip fixture
+	$(RTK) cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 
@@ -165,23 +168,23 @@ pre-push: check ## Pre-push hook equivalent checks
 
 .PHONY: doc
 doc: ## Generate API documentation
-	cargo doc --workspace --no-deps
+	$(RTK) cargo doc --workspace --no-deps
 
 .PHONY: doc-open
 doc-open: ## Generate & open API documentation in browser
-	cargo doc --workspace --no-deps --open
+	$(RTK) cargo doc --workspace --no-deps --open
 
 .PHONY: bloat
 bloat: ## Binary size analysis (requires cargo-bloat)
-	cargo bloat --release --bin KatanA
+	$(RTK) cargo bloat --release --bin KatanA
 
 .PHONY: loc
 loc: ## Count lines of code (requires tokei)
-	tokei crates/
+	$(RTK) tokei crates/
 
 .PHONY: tree
 tree: ## Display dependency tree
-	cargo tree --workspace
+	$(RTK) cargo tree --workspace
 
 ###################################
 # Release / Packaging
@@ -249,18 +252,18 @@ clean: ## Remove build artifacts
 
 .PHONY: update-safe
 update-safe: ## Update dependency crates safely (respects Cargo.toml SemVer)
-	cargo update
+	$(RTK) cargo update
 
 .PHONY: update
 update: ## Upgrade ALL dependencies to absolute latest versions (including breaking changes)
-	cargo upgrade -i
-	cargo update
+	$(RTK) cargo upgrade -i
+	$(RTK) cargo update
 
 .PHONY: outdated
 outdated: ## List outdated dependencies (requires cargo-outdated)
 	@cp Cargo.toml Cargo.toml.bak
 	@sed -e '/^\[patch\.crates-io\]/,$$d' Cargo.toml.bak > Cargo.toml
-	@cargo outdated --workspace || (mv Cargo.toml.bak Cargo.toml && exit 1)
+	@$(RTK) cargo outdated --workspace || (mv Cargo.toml.bak Cargo.toml && exit 1)
 	@mv Cargo.toml.bak Cargo.toml
 
 ###################################

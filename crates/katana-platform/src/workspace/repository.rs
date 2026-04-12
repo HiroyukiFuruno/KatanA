@@ -174,7 +174,8 @@ mod tests {
     #[test]
     fn test_json_repository_save_and_load() {
         let dir = tempdir().unwrap();
-        let path = dir.path().join("subdir/workspace.json"); /* WHY: Test parent creation */
+        /* WHY: Test parent creation */
+        let path = dir.path().join("subdir/workspace.json");
         let repo = JsonWorkspaceRepository::new(path.clone());
 
         let state = GlobalWorkspaceState {

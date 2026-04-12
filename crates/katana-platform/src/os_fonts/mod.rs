@@ -67,7 +67,8 @@ impl OsFontScanner {
     /* WHY: Recursively unnested scan to adhere to maximum nest rules (2 levels focus). */
     pub fn scan_directory(dir: &Path, fonts: &mut Vec<(String, String)>) {
         let Ok(entries) = fs::read_dir(dir) else {
-            return; /* WHY: Skip directories that do not exist or are not accessible. */
+            /* WHY: Skip directories that do not exist or are not accessible. */
+            return;
         };
 
         for entry in entries.flatten() {
@@ -87,7 +88,8 @@ impl OsFontScanner {
             .to_string_lossy()
             .to_lowercase();
         if ext != "ttf" && ext != "ttc" && ext != "otf" {
-            return; /* WHY: Skip files with unsupported extensions. */
+            /* WHY: Skip files with unsupported extensions. */
+            return;
         }
 
         let name = path

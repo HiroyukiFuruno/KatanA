@@ -1,4 +1,4 @@
-use katana_ui::shell_logic::ShellLogicOps;
+use katana_ui::shell_logic::{ShellLogicOps, ShellUtils};
 use std::path::Path;
 
 #[test]
@@ -81,42 +81,42 @@ fn returns_empty_string_if_path_and_root_are_identical() {
 
 #[test]
 fn prev_tab_index_moves_backward_from_middle() {
-    assert_eq!(ShellLogicOps::prev_tab_index(2, 5), 1);
+    assert_eq!(ShellUtils::prev_tab_index(2, 5), 1);
 }
 
 #[test]
 fn prev_tab_index_wraps_around_from_start() {
-    assert_eq!(ShellLogicOps::prev_tab_index(0, 5), 4);
+    assert_eq!(ShellUtils::prev_tab_index(0, 5), 4);
 }
 
 #[test]
 fn prev_tab_index_with_single_tab() {
-    assert_eq!(ShellLogicOps::prev_tab_index(0, 1), 0);
+    assert_eq!(ShellUtils::prev_tab_index(0, 1), 0);
 }
 
 #[test]
 fn prev_tab_index_with_empty_list() {
-    assert_eq!(ShellLogicOps::prev_tab_index(0, 0), 0);
+    assert_eq!(ShellUtils::prev_tab_index(0, 0), 0);
 }
 
 #[test]
 fn next_tab_index_moves_forward_from_middle() {
-    assert_eq!(ShellLogicOps::next_tab_index(2, 5), 3);
+    assert_eq!(ShellUtils::next_tab_index(2, 5), 3);
 }
 
 #[test]
 fn next_tab_index_wraps_around_from_end() {
-    assert_eq!(ShellLogicOps::next_tab_index(4, 5), 0);
+    assert_eq!(ShellUtils::next_tab_index(4, 5), 0);
 }
 
 #[test]
 fn next_tab_index_with_single_tab() {
-    assert_eq!(ShellLogicOps::next_tab_index(0, 1), 0);
+    assert_eq!(ShellUtils::next_tab_index(0, 1), 0);
 }
 
 #[test]
 fn next_tab_index_with_empty_list() {
-    assert_eq!(ShellLogicOps::next_tab_index(0, 0), 0);
+    assert_eq!(ShellUtils::next_tab_index(0, 0), 0);
 }
 
 #[test]

@@ -313,7 +313,8 @@ mod tests {
         }"#;
         std::fs::write(&cache_json_path, legacy_json).unwrap();
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
-        assert!(!cache_json_path.exists()); /* WHY: Removed upon success */
+        /* WHY: Removed upon success */
+        assert!(!cache_json_path.exists());
         assert_eq!(map.len(), 1);
         assert_eq!(map.first().unwrap().0, "workspace_tabs:test_ws");
         assert_eq!(map.first().unwrap().1, "some_value");
@@ -323,7 +324,8 @@ mod tests {
         let path3 = tmp.path().join("cache3.json");
         std::fs::write(&path3, legacy_json).unwrap();
         let _ = DefaultCacheService::init_and_migrate(&path3, &bad_kv_dir);
-        assert!(path3.exists()); /* WHY: Failed to write, so old json is kept! */
+        /* WHY: Failed to write, so old json is kept! */
+        assert!(path3.exists());
 
         let bad_rename_dir = tmp.path().join("bad_rename_dir");
         std::fs::create_dir_all(&bad_rename_dir).unwrap();
@@ -335,7 +337,8 @@ mod tests {
         let path4 = tmp.path().join("cache4.json");
         std::fs::write(&path4, legacy_json).unwrap();
         let _ = DefaultCacheService::init_and_migrate(&path4, &bad_rename_dir);
-        assert!(path4.exists()); /* WHY: Failed to rename, so old json is kept! */
+        /* WHY: Failed to rename, so old json is kept! */
+        assert!(path4.exists());
 
         let _edge_1 = DefaultCacheService::new(PathBuf::from("file_only.json"));
         let _edge_2 = DefaultCacheService::new(PathBuf::from(""));
@@ -353,7 +356,8 @@ mod tests {
             workspace_path: PathBuf::from("/test/path"),
         };
         let canonical_filename = key.target_filename().unwrap();
-        let legacy_filename = "workspace_tabs_abcedfg12345.json"; /* WHY: Wrong filename intentionally */
+        /* WHY: Wrong filename intentionally */
+        let legacy_filename = "workspace_tabs_abcedfg12345.json";
 
         let env = PersistentEntryEnvelope {
             storage_version: 1,
@@ -377,7 +381,8 @@ mod tests {
 
         let canonical_path = kv_dir.join(&canonical_filename);
         std::fs::write(&canonical_path, serde_json::to_string(&env).unwrap()).unwrap();
-        std::fs::write(&legacy_path, serde_json::to_string(&bad_env).unwrap()).unwrap(); /* WHY: Legacy comes back */
+        /* WHY: Legacy comes back */
+        std::fs::write(&legacy_path, serde_json::to_string(&bad_env).unwrap()).unwrap();
 
         let unrenamable_legacy_path = kv_dir.join("workspace_tabs_unrenamable.json");
         std::fs::write(
@@ -394,8 +399,10 @@ mod tests {
         .unwrap();
 
         let map = DefaultCacheService::init_and_migrate(&cache_json_path, &kv_dir);
-        assert_eq!(map.len(), 1); /* WHY: Should only load the single key once */
-        assert!(!legacy_path.exists()); /* WHY: The legacy path should be deleted because canonical_path exists! */
+        /* WHY: Should only load the single key once */
+        assert_eq!(map.len(), 1);
+        /* WHY: The legacy path should be deleted because canonical_path exists! */
+        assert!(!legacy_path.exists());
     }
 
     #[test]

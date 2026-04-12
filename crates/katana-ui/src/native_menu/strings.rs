@@ -15,9 +15,6 @@ pub(super) fn update_from_i18n() {
             &msgs.menu.language,
             &msgs.menu.about,
             &msgs.menu.quit,
-            &msgs.menu.hide,
-            &msgs.menu.hide_others,
-            &msgs.menu.show_all,
             &msgs.menu.check_updates,
             &msgs.menu.help,
             &msgs.menu.release_notes,
@@ -46,9 +43,6 @@ unsafe fn update_menu_strings(
     language: &str,
     about: &str,
     quit: &str,
-    hide: &str,
-    hide_others: &str,
-    show_all: &str,
     check_updates: &str,
     help: &str,
     release_notes: &str,
@@ -72,9 +66,6 @@ unsafe fn update_menu_strings(
     let c_language = mk(language);
     let c_about = mk(about);
     let c_quit = mk(quit);
-    let c_hide = mk(hide);
-    let c_hide_others = mk(hide_others);
-    let c_show_all = mk(show_all);
     let c_check_updates = mk(check_updates);
     let c_help = mk(help);
     let c_release_notes = mk(release_notes);
@@ -98,9 +89,6 @@ unsafe fn update_menu_strings(
         c_language.as_ptr(),
         c_about.as_ptr(),
         c_quit.as_ptr(),
-        c_hide.as_ptr(),
-        c_hide_others.as_ptr(),
-        c_show_all.as_ptr(),
         c_check_updates.as_ptr(),
         c_help.as_ptr(),
         c_release_notes.as_ptr(),

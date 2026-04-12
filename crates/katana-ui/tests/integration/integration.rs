@@ -166,8 +166,10 @@ fn test_integration_toc_panel_display() {
     let toggle_btn_label = I18nOps::get().action.toggle_toc.clone();
     let toggle_btn = harness.get_by_label(&toggle_btn_label);
     toggle_btn.click();
-    harness.step(); /* WHY: UI Registers click, sets pending_action = ToggleToc */
-    harness.step(); /* WHY: KatanaApp reads pending_action, sets show_toc = true, renders TOC panel */
+    /* WHY: UI Registers click, sets pending_action = ToggleToc */
+    harness.step();
+    /* WHY: KatanaApp reads pending_action, sets show_toc = true, renders TOC panel */
+    harness.step();
 
     let toc_visible = harness.state_mut().app_state_mut().layout.show_toc;
     assert!(toc_visible, "show_toc should be true after clicking button");
@@ -341,7 +343,8 @@ fn test_integration_changelog_tab_display() {
 
     harness.get_by_label("Fixed the close button overlap");
 
-    let header_label = "v0.8.0"; /* WHY: It's open by default now! */
+    /* WHY: It's open by default now! */
+    let header_label = "v0.8.0";
     harness.get_by_label(header_label).hover();
     harness.step();
     harness.get_by_label(header_label).click();
@@ -565,7 +568,8 @@ fn test_integration_workspace_directory_toggle_non_recursive() {
         "test.md should be visible after closing and reopening dir1 (cached expansion)"
     );
 
-    let collapse_all = harness.get_by_label("-"); /* WHY: The collapse all button has text "-" */
+    /* WHY: The collapse all button has text "-" */
+    let collapse_all = harness.get_by_label("-");
     collapse_all.click();
     harness.step();
     harness.step();
@@ -838,7 +842,8 @@ fn test_integration_open_all_markdown() {
         "Should not duplicate tabs on re-opening"
     );
 
-    assert_eq!(state.document.active_doc_idx, Some(0)); /* WHY: First file is activated */
+    /* WHY: First file is activated */
+    assert_eq!(state.document.active_doc_idx, Some(0));
 
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
@@ -1700,7 +1705,8 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
         .state_mut()
         .app_state_mut()
         .set_active_view_mode(ViewMode::Split);
-    harness.step(); /* WHY: UI should render and the '⇕' button should appear */
+    /* WHY: UI should render and the '⇕' button should appear */
+    harness.step();
 
     assert_eq!(
         harness.state_mut().app_state_mut().active_split_direction(),
@@ -1710,7 +1716,8 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
     let node = harness.get_by_label("Toggle Split Direction");
     node.click();
     harness.step();
-    harness.step(); /* WHY: Action is processed on the next frame */
+    /* WHY: Action is processed on the next frame */
+    harness.step();
 
     assert_eq!(
         harness.state_mut().app_state_mut().active_split_direction(),
@@ -2151,16 +2158,16 @@ fn test_search_modal_include_exclude_options() {
     harness.step();
     harness.step();
 
-    harness.state_mut().app_state_mut().search.query = "".to_string();
+    harness.state_mut().app_state_mut().search.file_search.query = "".to_string();
     harness.step();
     assert_eq!(harness.state_mut().app_state_mut().search.results.len(), 0);
 
-    harness.state_mut().app_state_mut().search.query = "apple".to_string();
+    harness.state_mut().app_state_mut().search.file_search.query = "apple".to_string();
     harness.step();
     assert_eq!(harness.state_mut().app_state_mut().search.results.len(), 1);
     assert!(harness.state_mut().app_state_mut().search.results[0].ends_with("apple.md"));
 
-    harness.state_mut().app_state_mut().search.query = "".to_string();
+    harness.state_mut().app_state_mut().search.file_search.query = "".to_string();
     harness.state_mut().app_state_mut().search.include_pattern = "banana".to_string();
     harness.step();
     assert_eq!(harness.state_mut().app_state_mut().search.results.len(), 1);
@@ -2171,7 +2178,8 @@ fn test_search_modal_include_exclude_options() {
     harness.step();
     assert_eq!(harness.state_mut().app_state_mut().search.results.len(), 2);
 
-    harness.state_mut().app_state_mut().search.query = "a".to_string(); /* WHY: 'apple.md' and 'banana.md' have 'a' */
+    /* WHY: 'apple.md' and 'banana.md' have 'a' */
+    harness.state_mut().app_state_mut().search.file_search.query = "a".to_string();
     harness.state_mut().app_state_mut().search.include_pattern = ".md".to_string();
     harness.state_mut().app_state_mut().search.exclude_pattern = "banana".to_string();
     harness.step();
@@ -3561,7 +3569,8 @@ fn test_ast_linter_locales() {
     for (filename, target_json) in &locales {
         if filename == "en.json" {
             continue;
-        } /* WHY: en is the baseline structure */
+            /* WHY: en is the baseline structure */
+        }
 
         #[allow(clippy::too_many_arguments)]
         fn check_structure_and_values(
@@ -3847,7 +3856,8 @@ fn test_integration_close_policy_batch_skips_pinned() {
     harness.step();
     harness
         .state_mut()
-        .trigger_action(AppAction::TogglePinDocument(0)); /* WHY: pin first document */
+        /* WHY: pin first document */
+        .trigger_action(AppAction::TogglePinDocument(0));
     harness.step();
 
     harness
@@ -3914,7 +3924,7 @@ fn test_integration_search_stale_matches_on_tab_switch() {
 
     harness.state_mut().trigger_action(AppAction::OpenDocSearch);
     harness.step();
-    harness.state_mut().app_state_mut().search.doc_search_query = "KatanA".to_string();
+    harness.state_mut().app_state_mut().search.doc_search.query = "KatanA".to_string();
     harness
         .state_mut()
         .trigger_action(AppAction::DocSearchQueryChanged);
@@ -3980,7 +3990,7 @@ fn test_integration_search_multibyte_character_offsets() {
 
     harness.state_mut().trigger_action(AppAction::OpenDocSearch);
     harness.step();
-    harness.state_mut().app_state_mut().search.doc_search_query = "Search".to_string();
+    harness.state_mut().app_state_mut().search.doc_search.query = "Search".to_string();
     harness
         .state_mut()
         .trigger_action(AppAction::DocSearchQueryChanged);
@@ -4283,13 +4293,13 @@ fn test_integration_direct_pin_icon_toggle() {
 
     /* WHY: The button is rendered via Icon::Pin. We find the button by getting the tab container. */
     let tab_label = harness.query_all_by_label("direct_pin.md").next().unwrap();
-    // Tab title and close button are typically inside a horizontal layout or push_id scope.
-    // Let's traverse up a bit and find a button.
+    /* WHY: Tab title and close button are typically inside a horizontal layout or push_id scope. */
+    /* WHY: Let's traverse up a bit and find a button. */
     use egui_kittest::kittest::NodeT;
     let mut current = Some(tab_label);
     let mut found_btn = None;
     for _ in 0..5 {
-        // try going up 5 levels
+        /* WHY: try going up 5 levels */
         if let Some(node) = current {
             let btns: Vec<_> = node
                 .query_all_by_role(egui::accesskit::Role::Button)
@@ -4329,14 +4339,14 @@ fn test_open_help_demo() {
     }
 
     let state = harness.state_mut().app_state_mut();
-    // It should create the "demo" tab group
+    /* WHY: It should create the "demo" tab group */
     assert!(state.document.tab_groups.iter().any(|g| g.id == "demo"));
 
-    // It should open the demobundle files
+    /* WHY: It should open the demobundle files */
     let open_files = state.document.open_documents.len();
     assert!(open_files > 0, "Should have loaded demo files");
 
-    // welcome.md should be part of it
+    /* WHY: welcome.md should be part of it */
     assert!(state.document.open_documents.iter().any(|d| {
         d.path
             .file_name()

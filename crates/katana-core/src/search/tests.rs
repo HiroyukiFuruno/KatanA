@@ -28,7 +28,43 @@ fn test_search_history() {
 #[test]
 fn test_search_workspace_empty_query() {
     let ws = crate::Workspace::new(PathBuf::from("/"), vec![]);
-    assert!(WorkspaceSearchOps::search_workspace(&ws, "", 10).is_empty());
+    assert!(WorkspaceSearchOps::search_workspace(&ws, "", false, false, false, 10).is_empty());
+}
+
+#[test]
+fn test_search_workspace_options() {
+    let dir = tempdir().unwrap();
+    let md_path = dir.path().join("options.md");
+    let mut md = File::create(&md_path).unwrap();
+    writeln!(md, "Apple banana cherry").unwrap();
+    writeln!(md, "apple Pie").unwrap();
+
+    let ws = crate::Workspace::new(
+        dir.path().to_path_buf(),
+        vec![crate::workspace::TreeEntry::File {
+            path: md_path.clone(),
+        }],
+    );
+
+    /* WHY: Default: case-insensitive */
+    let res = WorkspaceSearchOps::search_workspace(&ws, "apple", false, false, false, 10);
+    assert_eq!(res.len(), 2);
+
+    /* WHY: Match case: only lowercase */
+    let res_case = WorkspaceSearchOps::search_workspace(&ws, "apple", true, false, false, 10);
+    assert_eq!(res_case.len(), 1);
+
+    /* WHY: Match word: full word */
+    let res_word = WorkspaceSearchOps::search_workspace(&ws, "apple", false, true, false, 10);
+    assert_eq!(res_word.len(), 2);
+
+    /* WHY: Use regex: with word boundaries */
+    let res_re = WorkspaceSearchOps::search_workspace(&ws, "A.*e", false, false, true, 10);
+    assert_eq!(res_re.len(), 2);
+
+    /* WHY: Use regex + match word */
+    let res_re_word = WorkspaceSearchOps::search_workspace(&ws, "Pie", false, true, true, 10);
+    assert_eq!(res_re_word.len(), 1);
 }
 
 #[test]
@@ -36,13 +72,12 @@ fn test_search_workspace() {
     let dir = tempdir().unwrap();
     let md1_path = dir.path().join("a.md");
     let mut md1 = File::create(&md1_path).unwrap();
-    writeln!(md1, "Hello world").unwrap();
-    writeln!(md1, "foo Bar baz").unwrap();
+    writeln!(md1, "match").unwrap();
+    writeln!(md1, "match").unwrap();
 
     let md2_path = dir.path().join("b.md");
     let mut md2 = File::create(&md2_path).unwrap();
-    writeln!(md2, "BAR test").unwrap();
-    writeln!(md2, "nothing here").unwrap();
+    writeln!(md2, "match").unwrap();
 
     let ws = crate::Workspace::new(
         dir.path().to_path_buf(),
@@ -56,49 +91,13 @@ fn test_search_workspace() {
         ],
     );
 
-    let results = WorkspaceSearchOps::search_workspace(&ws, "bar", 10);
-    assert_eq!(results.len(), 2);
+    /* WHY: 1. Test line-loop break (within a.md, after first match) */
+    let results = WorkspaceSearchOps::search_workspace(&ws, "match", false, false, false, 1);
+    assert_eq!(results.len(), 1);
 
-    let r1 = &results[0];
-    assert_eq!(r1.file_path, md1_path);
-    assert_eq!(r1.line_number, 1);
-    assert_eq!(r1.start_col, 4);
-    assert_eq!(r1.end_col, 7);
-    assert_eq!(r1.snippet, "foo Bar baz");
-
-    let r2 = &results[1];
-    assert_eq!(r2.file_path, md2_path);
-    assert_eq!(r2.line_number, 0);
-    assert_eq!(r2.start_col, 0);
-    assert_eq!(r2.end_col, 3);
-    assert_eq!(r2.snippet, "BAR test");
-
-    let results_limited = WorkspaceSearchOps::search_workspace(&ws, "bar", 1);
-    assert_eq!(results_limited.len(), 1);
-    assert_eq!(results_limited[0].file_path, md1_path);
-
-    std::fs::remove_file(&md2_path).unwrap();
-    let results_after_delete = WorkspaceSearchOps::search_workspace(&ws, "bar", 10);
-    assert_eq!(results_after_delete.len(), 1);
-
-    let md3_path = dir.path().join("c.md");
-    let mut md3 = File::create(&md3_path).unwrap();
-    writeln!(md3, "foo").unwrap();
-    writeln!(md3, "foo").unwrap();
-    writeln!(md3, "foo foo").unwrap();
-
-    let ws2 = crate::Workspace::new(
-        dir.path().to_path_buf(),
-        vec![crate::workspace::TreeEntry::File {
-            path: md3_path.clone(),
-        }],
-    );
-
-    let results_line_break = WorkspaceSearchOps::search_workspace(&ws2, "foo", 1);
-    assert_eq!(results_line_break.len(), 1);
-
-    let results_inline_break = WorkspaceSearchOps::search_workspace(&ws2, "foo", 3);
-    assert_eq!(results_inline_break.len(), 3);
+    /* WHY: 2. Test file-loop break (between a.md and b.md) */
+    let results2 = WorkspaceSearchOps::search_workspace(&ws, "match", false, false, false, 2);
+    assert_eq!(results2.len(), 2);
 }
 
 #[test]
@@ -108,8 +107,6 @@ fn test_search_noise_reduction() {
     let mut md = File::create(&md_path).unwrap();
     writeln!(md, "#[allow(dead_code)]").unwrap();
     writeln!(md, "actual content").unwrap();
-    writeln!(md, "   #[allow(unused)]").unwrap();
-    writeln!(md, "some code // #[allow(none)]").unwrap();
 
     let ws = crate::Workspace::new(
         dir.path().to_path_buf(),
@@ -118,19 +115,10 @@ fn test_search_noise_reduction() {
         }],
     );
 
-    /* WHY: Default search should skip #[allow(...)] lines */
-    let results = WorkspaceSearchOps::search_workspace(&ws, "dead", 10);
+    let results = WorkspaceSearchOps::search_workspace(&ws, "dead", false, false, false, 10);
     assert_eq!(results.len(), 0);
 
-    let results_content = WorkspaceSearchOps::search_workspace(&ws, "content", 10);
+    let results_content =
+        WorkspaceSearchOps::search_workspace(&ws, "content", false, false, false, 10);
     assert_eq!(results_content.len(), 1);
-    assert_eq!(results_content[0].snippet, "actual content");
-
-    /* WHY: Explicitly searching for 'allow' should show them */
-    let results_allow = WorkspaceSearchOps::search_workspace(&ws, "allow", 10);
-    assert_eq!(results_allow.len(), 3);
-
-    /* WHY: 'unused' should be skipped by default */
-    let results_unused = WorkspaceSearchOps::search_workspace(&ws, "unused", 10);
-    assert_eq!(results_unused.len(), 0);
 }

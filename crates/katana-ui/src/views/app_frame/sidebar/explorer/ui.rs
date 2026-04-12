@@ -166,7 +166,8 @@ impl<'a> ExplorerSidebar<'a> {
                 ExplorerSidebarItems::render_search_toggle(ui, app, interact_id)
             }
             katana_platform::settings::ActivityRailItem::History => {
-                None /* WHY: History is now fixed at the bottom above Settings */
+                /* WHY: History is now fixed at the bottom above Settings */
+                None
             }
         }
     }

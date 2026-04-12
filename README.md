@@ -49,6 +49,12 @@ Repository-local skills are maintained canonically under `.agents/skills/`.
 If another AI agent expects a different skill directory layout, copy the same skill content from `.agents/skills/` into that agent's expected path instead of maintaining a separate variant.
 Operational familiarity and maintenance priority are Antigravity-first.
 
+### Mandatory Tools for AI-Agent Workflow
+
+To minimize token consumption and manage context window bloat, the use of **[rtk](https://github.com/fission-ai/rtk)** is **mandatory** for all AI agents working in this repository. 
+
+AI agents MUST wrap noisy commands (tests, linters, builds) with `rtk` to ensure outputs are filtered and summarized before being ingested into the context.
+
 However, existing Markdown tools are often either:
 
 - general-purpose editors not optimized for technical documentation workflows, or

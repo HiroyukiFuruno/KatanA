@@ -14,9 +14,6 @@
         "export_jpg": "Imagen JPEG (.jpg)",
         "about": "Acerca de KatanA",
         "quit": "Salir de KatanA",
-        "hide": "Ocultar KatanA",
-        "hide_others": "Ocultar otros",
-        "show_all": "Mostrar todo",
         "help": "Ayuda",
         "check_updates": "Buscar actualizaciones…",
         "release_notes": "Notas de la versión",
@@ -35,7 +32,8 @@
         "demo": "Demostración",
         "welcome_screen": "Pantalla de bienvenida",
         "user_guide": "Guía del usuario",
-        "github": "Repositorio GitHub"
+        "github": "Repositorio GitHub",
+        "website": "Sitio web oficial"
     },
     "about": {
         "basic_info": "Información básica",
@@ -50,6 +48,7 @@
         "links": "Enlaces",
         "source_code": "Código fuente",
         "documentation": "Documentación",
+        "official_website": "Sitio web oficial",
         "report_issue": "Informar un problema",
         "support": "Soporte",
         "sponsor": "Patrocinar"
@@ -86,11 +85,11 @@
         "metadata_tooltip": "Tamaño: {size} B\nModificado: {mod_time}",
         "path_label": "Ruta",
         "flat_view": "Vista plana",
-        "filter_regex_hint": "Filtrar (regex)…",
         "open_folder_hint": "Abre una carpeta para empezar con KatanA.",
         "open_workspace_button": "Abrir carpeta",
         "remove_history_tooltip": "Quitar del historial",
-        "max_depth_exceeded": "Profundidad máxima excedida"
+        "max_depth_exceeded": "Profundidad máxima excedida",
+        "filter_hint": "Filtrar…"
     },
     "preview": {
         "preview_title": "Vista previa",
@@ -429,8 +428,28 @@
         "command_close_all": "Cerrar todo",
         "command_refresh_explorer": "Actualizar explorador",
         "command_updates": "Buscar actualizaciones",
-        "command_about": "Acerca de KatanA",
-        "command_type_action": "Comando"
+        "command_about": "Alternar sobre KatanA",
+        "command_type_action": "Comando",
+        "command_author_bold": "Negrita",
+        "command_author_italic": "Cursiva",
+        "command_author_strikethrough": "Texto tachado",
+        "command_author_inline_code": "Código en línea",
+        "command_author_heading1": "Encabezado 1",
+        "command_author_heading2": "Encabezado 2",
+        "command_author_heading3": "Encabezado 3",
+        "command_author_bullet_list": "Lista con viñetas",
+        "command_author_numbered_list": "Lista con números",
+        "command_author_blockquote": "Cita en bloque",
+        "command_author_code_block": "Bloque de código",
+        "command_author_horizontal_rule": "Regla horizontal",
+        "command_author_insert_link": "Insertar enlace",
+        "command_author_insert_table": "Insertar tabla",
+        "command_ingest_image_file": "Adjuntar archivo de imagen…",
+        "command_ingest_clipboard_image": "Pegar imagen del portapapeles",
+        "match_case": "Coincidir mayúsculas",
+        "match_word": "Palabra completa",
+        "use_regex": "Usar Regex",
+        "doc_query_hint": "Buscar en el documento…"
     },
     "toc": {
         "title": "Índice",

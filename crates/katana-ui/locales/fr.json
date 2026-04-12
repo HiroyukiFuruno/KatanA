@@ -14,9 +14,6 @@
         "export_jpg": "Image JPEG (.jpg)",
         "about": "À propos de KatanA",
         "quit": "Quitter KatanA",
-        "hide": "Masquer KatanA",
-        "hide_others": "Masquer les autres",
-        "show_all": "Tout afficher",
         "help": "Aide",
         "check_updates": "Vérifier les mises à jour…",
         "release_notes": "Notes de version",
@@ -35,7 +32,8 @@
         "demo": "Démo",
         "welcome_screen": "Écran d'accueil",
         "user_guide": "Guide de l'utilisateur",
-        "github": "Dépôt GitHub"
+        "github": "Dépôt GitHub",
+        "website": "Site officiel"
     },
     "about": {
         "basic_info": "Informations de base",
@@ -50,6 +48,7 @@
         "links": "Liens",
         "source_code": "Code source",
         "documentation": "Documentation",
+        "official_website": "Site officiel",
         "report_issue": "Signaler un problème",
         "support": "Support",
         "sponsor": "Sponsoriser"
@@ -86,11 +85,11 @@
         "metadata_tooltip": "Taille : {size} B\nModifié : {mod_time}",
         "path_label": "Chemin",
         "flat_view": "Vue plate",
-        "filter_regex_hint": "Filtrer (regex)…",
         "open_folder_hint": "Ouvrez un dossier pour commencer avec KatanA.",
         "open_workspace_button": "Ouvrir un dossier",
         "remove_history_tooltip": "Supprimer de l'historique",
-        "max_depth_exceeded": "Profondeur maximale dépassée"
+        "max_depth_exceeded": "Profondeur maximale dépassée",
+        "filter_hint": "Filtrer…"
     },
     "preview": {
         "preview_title": "Aperçu",
@@ -429,8 +428,28 @@
         "command_close_all": "Tout fermer",
         "command_refresh_explorer": "Actualiser l'explorateur",
         "command_updates": "Vérifier les mises à jour",
-        "command_about": "À propos de KatanA",
-        "command_type_action": "Commande"
+        "command_about": "Basculer vers À propos de KatanA",
+        "command_type_action": "Commande",
+        "command_author_bold": "Gras",
+        "command_author_italic": "Italique",
+        "command_author_strikethrough": "Barré",
+        "command_author_inline_code": "Code en ligne",
+        "command_author_heading1": "Titre 1",
+        "command_author_heading2": "Titre 2",
+        "command_author_heading3": "Titre 3",
+        "command_author_bullet_list": "Liste à puces",
+        "command_author_numbered_list": "Liste numérotée",
+        "command_author_blockquote": "Bloc de citation",
+        "command_author_code_block": "Bloc de code",
+        "command_author_horizontal_rule": "Ligne horizontale",
+        "command_author_insert_link": "Insérer un lien",
+        "command_author_insert_table": "Insérer un tableau",
+        "command_ingest_image_file": "Joindre un fichier image…",
+        "command_ingest_clipboard_image": "Coller l'image du presse-papiers",
+        "match_case": "Respecter la casse",
+        "match_word": "Mot entier",
+        "use_regex": "Utiliser Regex",
+        "doc_query_hint": "Rechercher dans le document…"
     },
     "toc": {
         "title": "Sommaire",

@@ -1,5 +1,7 @@
 # lefthook.yml
-output: false
+no_tty: true
+output:
+  - failure
 
 pre-commit:
   parallel: false
@@ -18,6 +20,9 @@ pre-push:
   commands:
     pr-ready-check:
       run: ./scripts/release/check-pr-ready.sh
+      only:
+        - ref: master
+        - ref: release/*
     check-strict:
       run: make -j 2 check
       glob: "*.{rs,toml,lock}"

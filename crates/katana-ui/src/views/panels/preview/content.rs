@@ -88,7 +88,8 @@ impl<'a> PreviewContent<'a> {
                             .max_rect(child_rect)
                             .layout(egui::Layout::top_down(egui::Align::Min)),
                         |ui| {
-                            const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0; /* WHY: 0.25rem padding */
+                            /* WHY: 0.25rem padding */
+                            const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0;
                             ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
                             let is_interactive = ui.is_enabled();
                             let mut hovered_lines = Vec::new();

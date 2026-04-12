@@ -25,20 +25,37 @@ impl ExplorerLogicOps {
         ws_root: &Path,
         entries: &[TreeEntry],
     ) {
-        if search.filter_enabled && !search.filter_query.is_empty() {
-            let is_negated = search.filter_query.starts_with('!');
+        if search.filter_enabled && !search.filter.query.is_empty() {
+            let is_negated = search.filter.query.starts_with('!');
             let query_str = if is_negated {
-                &search.filter_query[1..]
+                &search.filter.query[1..]
             } else {
-                &search.filter_query
+                &search.filter.query
             };
 
-            match regex::RegexBuilder::new(query_str)
-                .case_insensitive(true)
+            let (pattern, case_insensitive) = if search.filter.use_regex {
+                let p = if search.filter.match_word {
+                    format!(r"\b{}\b", query_str)
+                } else {
+                    query_str.to_string()
+                };
+                (p, !search.filter.match_case)
+            } else {
+                let p = regex::escape(query_str);
+                let p = if search.filter.match_word {
+                    format!(r"\b{}\b", p)
+                } else {
+                    p
+                };
+                (p, !search.filter.match_case)
+            };
+
+            match regex::RegexBuilder::new(&pattern)
+                .case_insensitive(case_insensitive)
                 .build()
             {
                 Ok(regex) => {
-                    if search.filter_cache.as_ref().map(|(q, _)| q) != Some(&search.filter_query) {
+                    if search.filter_cache.as_ref().map(|(q, _)| q) != Some(&search.filter) {
                         let mut visible = HashSet::new();
                         crate::views::panels::tree::TreeLogicOps::gather_visible_paths(
                             entries,
@@ -47,7 +64,7 @@ impl ExplorerLogicOps {
                             ws_root,
                             &mut visible,
                         );
-                        search.filter_cache = Some((search.filter_query.clone(), visible));
+                        search.filter_cache = Some((search.filter.clone(), visible));
                     }
                 }
                 Err(_) => {

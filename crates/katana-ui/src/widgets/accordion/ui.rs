@@ -78,7 +78,8 @@ impl<'a> Accordion<'a> {
             egui::pos2(rect.min.x + icon_size, icon_min_y + icon_size),
         );
 
-        let icon_response = ui.interact(icon_rect, ui.next_auto_id(), egui::Sense::click());
+        let icon_response =
+            ui.interact(icon_rect, self.id_source.with("icon"), egui::Sense::click());
 
         let stroke_color = if response.hovered() || response.has_focus() {
             ui.style().visuals.widgets.hovered.fg_stroke.color

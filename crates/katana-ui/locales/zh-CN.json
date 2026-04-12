@@ -14,9 +14,6 @@
         "export_jpg": "JPEG 图片 (.jpg)",
         "about": "关于 KatanA",
         "quit": "退出 KatanA",
-        "hide": "隐藏 KatanA",
-        "hide_others": "隐藏其他",
-        "show_all": "显示全部",
         "help": "帮助",
         "check_updates": "检查更新…",
         "release_notes": "发行说明",
@@ -35,7 +32,8 @@
         "demo": "演示",
         "welcome_screen": "欢迎屏幕",
         "user_guide": "用户指南",
-        "github": "GitHub 仓库"
+        "github": "GitHub 仓库",
+        "website": "官方网站"
     },
     "about": {
         "basic_info": "基本信息",
@@ -50,6 +48,7 @@
         "links": "链接",
         "source_code": "源代码",
         "documentation": "文档",
+        "official_website": "官方网站",
         "report_issue": "报告问题",
         "support": "支持",
         "sponsor": "赞助"
@@ -86,11 +85,11 @@
         "metadata_tooltip": "大小: {size} B\n修改时间: {mod_time}",
         "path_label": "路径",
         "flat_view": "平铺视图",
-        "filter_regex_hint": "过滤 (正则)…",
         "open_folder_hint": "打开一个文件夹开始使用 KatanA。",
         "open_workspace_button": "打开文件夹",
         "remove_history_tooltip": "从历史记录中移除",
-        "max_depth_exceeded": "超过最大扫描深度"
+        "max_depth_exceeded": "超过最大扫描深度",
+        "filter_hint": "过滤…"
     },
     "preview": {
         "preview_title": "预览",
@@ -429,8 +428,28 @@
         "command_close_all": "全部关闭",
         "command_refresh_explorer": "刷新资源管理器",
         "command_updates": "检查更新",
-        "command_about": "关于 KatanA",
-        "command_type_action": "命令"
+        "command_about": "切换关于 KatanA",
+        "command_type_action": "命令",
+        "command_author_bold": "加粗字体",
+        "command_author_italic": "倾斜",
+        "command_author_strikethrough": "删除线",
+        "command_author_inline_code": "行内代码",
+        "command_author_heading1": "标题 1",
+        "command_author_heading2": "标题 2",
+        "command_author_heading3": "标题 3",
+        "command_author_bullet_list": "无序列表",
+        "command_author_numbered_list": "数字有序列表",
+        "command_author_blockquote": "块引用",
+        "command_author_code_block": "代码块",
+        "command_author_horizontal_rule": "水平分隔线",
+        "command_author_insert_link": "插入链接",
+        "command_author_insert_table": "新建表格",
+        "command_ingest_image_file": "附加图像文件…",
+        "command_ingest_clipboard_image": "从剪贴板粘贴图像",
+        "match_case": "区分大小写",
+        "match_word": "全字匹配",
+        "use_regex": "使用正则",
+        "doc_query_hint": "在文档内搜索…"
     },
     "toc": {
         "title": "大纲",

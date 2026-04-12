@@ -14,9 +14,6 @@
         "export_jpg": "Immagine JPEG (.jpg)",
         "about": "Informazioni su KatanA",
         "quit": "Esci da KatanA",
-        "hide": "Nascondi KatanA",
-        "hide_others": "Nascondi altri",
-        "show_all": "Mostra tutto",
         "help": "Aiuto",
         "check_updates": "Controlla aggiornamenti…",
         "release_notes": "Note di rilascio",
@@ -35,7 +32,8 @@
         "demo": "Dimostrazione",
         "welcome_screen": "Schermata di benvenuto",
         "user_guide": "Guida utente",
-        "github": "Repository GitHub"
+        "github": "Repository GitHub",
+        "website": "Sito ufficiale"
     },
     "about": {
         "basic_info": "Info di base",
@@ -50,6 +48,7 @@
         "links": "Link",
         "source_code": "Codice sorgente",
         "documentation": "Documentazione",
+        "official_website": "Sito ufficiale",
         "report_issue": "Segnala un problema",
         "support": "Supporto",
         "sponsor": "Sponsor"
@@ -86,11 +85,11 @@
         "metadata_tooltip": "Dimensioni: {size} B\nModificato: {mod_time}",
         "path_label": "Percorso",
         "flat_view": "Vista piatta",
-        "filter_regex_hint": "Filtra (regex)…",
         "open_folder_hint": "Apri una cartella per iniziare con KatanA.",
         "open_workspace_button": "Apri cartella",
         "remove_history_tooltip": "Rimuovi dalla cronologia",
-        "max_depth_exceeded": "Profondità massima superata"
+        "max_depth_exceeded": "Profondità massima superata",
+        "filter_hint": "Filtra…"
     },
     "preview": {
         "preview_title": "Anteprima",
@@ -429,8 +428,28 @@
         "command_close_all": "Chiudi tutto",
         "command_refresh_explorer": "Aggiorna esplora file",
         "command_updates": "Controlla aggiornamenti",
-        "command_about": "Informazioni su KatanA",
-        "command_type_action": "Comando"
+        "command_about": "Attiva Informazioni su KatanA",
+        "command_type_action": "Comando",
+        "command_author_bold": "Grassetto",
+        "command_author_italic": "Corsivo",
+        "command_author_strikethrough": "Barrato",
+        "command_author_inline_code": "Codice in linea",
+        "command_author_heading1": "Intestazione 1",
+        "command_author_heading2": "Intestazione 2",
+        "command_author_heading3": "Intestazione 3",
+        "command_author_bullet_list": "Elenco puntato",
+        "command_author_numbered_list": "Elenco numerato",
+        "command_author_blockquote": "Citazione",
+        "command_author_code_block": "Blocco di codice",
+        "command_author_horizontal_rule": "Linea orizzontale",
+        "command_author_insert_link": "Inserisci link",
+        "command_author_insert_table": "Inserisci tabella",
+        "command_ingest_image_file": "Allega file immagine…",
+        "command_ingest_clipboard_image": "Incolla immagine dagli appunti",
+        "match_case": "Case sensitive",
+        "match_word": "Parola intera",
+        "use_regex": "Usa Regex",
+        "doc_query_hint": "Cerca nel documento…"
     },
     "toc": {
         "title": "Indice",

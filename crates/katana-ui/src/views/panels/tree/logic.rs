@@ -23,7 +23,22 @@ impl TreeLogicOps {
                     }
                 }
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
-                    if Self::gather_visible_paths(children, regex, is_negated, ws_root, visible) {
+                    let rel =
+                        crate::shell_logic::ShellLogicOps::relative_full_path(path, Some(ws_root));
+
+                    /* WHY: Hidden directories (e.g., .git) are included in the search if they match
+                    the regex or contain any matching children. Regular filtering for hidden
+                    folders when SEARCH IS OFF is handled in the non-filtered tree rendering. */
+                    let is_match = regex.is_match(&rel);
+                    /* WHY: Match the directory itself based on the regex and negation state. */
+                    let should_show_self = if is_negated { !is_match } else { is_match };
+
+                    /* WHY: Recursively check if any children are visible. */
+                    let any_child_visible =
+                        Self::gather_visible_paths(children, regex, is_negated, ws_root, visible);
+
+                    /* WHY: Show the directory if it matches explicitly or if any of its children match. */
+                    if any_child_visible || should_show_self {
                         visible.insert(path.clone());
                         any_visible = true;
                     }

@@ -46,7 +46,8 @@ impl SettingsService {
     to respect the user's saved theme preference. */
     pub fn apply_os_default_theme(&mut self) {
         if !self.is_first_launch {
-            return; /* WHY: Existing users keep their saved preset unchanged. */
+            /* WHY: Existing users keep their saved preset unchanged. */
+            return;
         }
         let preset = SettingsDefaultOps::select_initial_preset();
         self.settings.theme.preset = preset;

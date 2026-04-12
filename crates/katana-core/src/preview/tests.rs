@@ -8,8 +8,8 @@ mod sourcepos_tests {
     #[test]
     fn test_sourcepos_bytes() {
         let arena = Arena::new();
-        /* WHY:                   0         1         2 */
-        /* WHY:                   0123456789012345678901234567 */
+        /* WHY: 0         1         2 */
+        /* WHY: 0123456789012345678901234567 */
         let src = "Hello\nThis is an ![alt](test.png) text\n";
         let doc = parse_document(&arena, src, &Options::default());
         for node in doc.descendants() {

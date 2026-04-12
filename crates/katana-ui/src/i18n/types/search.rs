@@ -16,6 +16,7 @@ pub struct SearchMessages {
     pub tab_file_name: String,
     pub tab_markdown_content: String,
     pub md_query_hint: String,
+    pub doc_query_hint: String,
     pub recent_searches: String,
     pub clear_history: String,
     pub ln_prefix: String,

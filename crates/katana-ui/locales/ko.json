@@ -14,9 +14,6 @@
         "export_jpg": "JPEG 이미지 (.jpg)",
         "about": "KatanA 정보",
         "quit": "KatanA 종료",
-        "hide": "KatanA 숨기기",
-        "hide_others": "기타 숨기기",
-        "show_all": "모두 표시",
         "help": "도움말",
         "check_updates": "업데이트 확인…",
         "release_notes": "릴리스 노트",
@@ -35,7 +32,8 @@
         "demo": "데모",
         "welcome_screen": "환영 화면",
         "user_guide": "사용자 가이드",
-        "github": "GitHub 저장소"
+        "github": "GitHub 저장소",
+        "website": "공식 웹사이트"
     },
     "about": {
         "basic_info": "기본 정보",
@@ -50,6 +48,7 @@
         "links": "링크",
         "source_code": "소스 코드",
         "documentation": "문서",
+        "official_website": "공식 웹사이트",
         "report_issue": "문제 보고",
         "support": "지원",
         "sponsor": "스폰서"
@@ -86,11 +85,11 @@
         "metadata_tooltip": "크기: {size} B\n수정된 시간: {mod_time}",
         "path_label": "경로",
         "flat_view": "평면 보기",
-        "filter_regex_hint": "필터 (정규식)…",
         "open_folder_hint": "폴더를 열어 KatanA를 시작하십시오.",
         "open_workspace_button": "폴더 열기",
         "remove_history_tooltip": "기록에서 제거",
-        "max_depth_exceeded": "최대 스캔 깊이를 초과했습니다"
+        "max_depth_exceeded": "최대 스캔 깊이를 초과했습니다",
+        "filter_hint": "필터…"
     },
     "preview": {
         "preview_title": "미리보기",
@@ -429,8 +428,28 @@
         "command_close_all": "모두 닫기",
         "command_refresh_explorer": "탐색기 새로고침",
         "command_updates": "업데이트 확인",
-        "command_about": "KatanA 정보",
-        "command_type_action": "명령"
+        "command_about": "KatanA 정보 토글",
+        "command_type_action": "명령",
+        "command_author_bold": "굵게",
+        "command_author_italic": "기울임꼴",
+        "command_author_strikethrough": "취소선",
+        "command_author_inline_code": "인라인 코드",
+        "command_author_heading1": "제목 1",
+        "command_author_heading2": "제목 2",
+        "command_author_heading3": "제목 3",
+        "command_author_bullet_list": "글머리 기호 목록",
+        "command_author_numbered_list": "번호 매기기 목록",
+        "command_author_blockquote": "인용구",
+        "command_author_code_block": "코드 블록",
+        "command_author_horizontal_rule": "가로선",
+        "command_author_insert_link": "링크 삽입",
+        "command_author_insert_table": "표 삽입",
+        "command_ingest_image_file": "이미지 파일 첨부…",
+        "command_ingest_clipboard_image": "클립보드에서 이미지 붙여넣기",
+        "match_case": "대소문자 구분",
+        "match_word": "단어 단위",
+        "use_regex": "정규식 사용",
+        "doc_query_hint": "문서 내 검색…"
     },
     "toc": {
         "title": "목차",

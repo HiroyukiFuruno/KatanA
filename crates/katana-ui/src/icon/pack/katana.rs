@@ -11,7 +11,7 @@ impl IconPackContract for KatanaIconPack {
             render_policy: RenderPolicy::TintedMonochrome,
             license: LicenseMetadata {
                 name: "MIT",
-                source_url: "https://github.com/hiroyuki-furuno/katana",
+                source_url: "https://github.com/HiroyukiFuruno/KatanA",
                 license_text: None,
             },
         }
