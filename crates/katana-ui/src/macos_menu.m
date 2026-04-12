@@ -63,9 +63,6 @@ static NSMenuItem *g_preferences_item = nil;
 static NSMenu *g_language_menu = nil;
 static NSMenuItem *g_about_item = nil;
 static NSMenuItem *g_check_updates_item = nil;
-static NSMenuItem *g_hide_item = nil;
-static NSMenuItem *g_hide_others_item = nil;
-static NSMenuItem *g_show_all_item = nil;
 static NSMenuItem *g_quit_item = nil;
 static NSMenu *g_help_menu = nil;
 static NSMenuItem *g_release_notes_item = nil;
@@ -106,30 +103,6 @@ void katana_setup_native_menu(void) {
     [checkUpdatesItem setTag:TAG_CHECK_UPDATES];
     [appMenu addItem:checkUpdatesItem];
     g_check_updates_item = checkUpdatesItem;
-
-    [appMenu addItem:[NSMenuItem separatorItem]];
-
-    NSMenuItem *hideItem = [[NSMenuItem alloc]
-        initWithTitle:@"Hide KatanA"
-        action:@selector(hide:)
-        keyEquivalent:@"h"];
-    [appMenu addItem:hideItem];
-    g_hide_item = hideItem;
-
-    NSMenuItem *hideOthersItem = [[NSMenuItem alloc]
-        initWithTitle:@"Hide Others"
-        action:@selector(hideOtherApplications:)
-        keyEquivalent:@"h"];
-    [hideOthersItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand | NSEventModifierFlagOption];
-    [appMenu addItem:hideOthersItem];
-    g_hide_others_item = hideOthersItem;
-
-    NSMenuItem *showAllItem = [[NSMenuItem alloc]
-        initWithTitle:@"Show All"
-        action:@selector(unhideAllApplications:)
-        keyEquivalent:@""];
-    [appMenu addItem:showAllItem];
-    g_show_all_item = showAllItem;
 
     [appMenu addItem:[NSMenuItem separatorItem]];
 
@@ -417,9 +390,6 @@ void katana_update_menu_strings(
     const char* language,
     const char* about,
     const char* quit,
-    const char* hide,
-    const char* hide_others,
-    const char* show_all,
     const char* check_updates,
     const char* help,
     const char* release_notes,
@@ -485,15 +455,6 @@ void katana_update_menu_strings(
         }
         if (g_quit_item && quit) {
             [g_quit_item setTitle:[NSString stringWithUTF8String:quit]];
-        }
-        if (g_hide_item && hide) {
-            [g_hide_item setTitle:[NSString stringWithUTF8String:hide]];
-        }
-        if (g_hide_others_item && hide_others) {
-            [g_hide_others_item setTitle:[NSString stringWithUTF8String:hide_others]];
-        }
-        if (g_show_all_item && show_all) {
-            [g_show_all_item setTitle:[NSString stringWithUTF8String:show_all]];
         }
         if (g_help_menu && help) {
             [g_help_menu setTitle:[NSString stringWithUTF8String:help]];
