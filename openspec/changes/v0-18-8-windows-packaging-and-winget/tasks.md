@@ -10,15 +10,15 @@
 
 ## 1. Winget Bootstrap / Update Flow Separation
 
-- [ ] 1.1 `scripts/release/sync-external.sh` と `.github/workflows/build-and-release.yml` を見直し、少なくとも `WINGET_GH_TOKEN (classic PAT with public_repo) 有無` → `Windows MSI artifact 有無` → `komac 有無` → `komac list HiroyukiFuruno.katana-desktop 成否` の順で分岐し、upstream 未存在の間は `komac update` を実行せず bootstrap path が必要だと明示する。`github.token` fallback は残さない
-- [ ] 1.2 初回再申請用の winget submit 導線を明確化する。`komac new` は non-TTY CI で使えない前提とし、manifest file を生成して `komac submit --yes --token "${WINGET_GH_TOKEN}"` する path、または maintainer local TTY での bootstrap path のどちらかに固定する
-- [ ] 1.3 package 未存在時の skip message と、package 既存在時の `komac update` path が release log 上で識別できることを確認する
+- [x] 1.1 `scripts/release/sync-external.sh` と `.github/workflows/build-and-release.yml` を見直し、少なくとも `WINGET_GH_TOKEN (classic PAT with public_repo) 有無` → `Windows MSI artifact 有無` → `komac 有無` → `komac list HiroyukiFuruno.katana-desktop 成否` の順で分岐し、upstream 未存在の間は `komac update` を実行せず bootstrap path が必要だと明示する。`github.token` fallback は残さない
+- [x] 1.2 初回再申請用の winget submit 導線を明確化する。`komac new` は non-TTY CI で使えない前提とし、manifest file を生成して `komac submit --yes --token "${WINGET_GH_TOKEN}"` する path、または maintainer local TTY での bootstrap path のどちらかに固定する
+- [x] 1.3 package 未存在時の skip message と、package 既存在時の `komac update` path が release log 上で識別できることを確認する
 
 ### Definition of Done (DoD)
 
-- [ ] 初回再申請と将来の version update の flow が混同されていない
-- [ ] winget PR 作成用 token source が `WINGET_GH_TOKEN` に固定され、`github.token` fallback が除去されている
-- [ ] CI と local helper が同じ Windows artifact 名と publish URL 契約を使っている
+- [x] 初回再申請と将来の version update の flow が混同されていない
+- [x] winget PR 作成用 token source が `WINGET_GH_TOKEN` に固定され、`github.token` fallback が除去されている
+- [x] CI と local helper が同じ Windows artifact 名と publish URL 契約を使っている
 
 ## 2. Windows Packaging Self-Containment
 
