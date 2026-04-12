@@ -33,21 +33,36 @@ if [ -f "scripts/release/update-linuxbrew.sh" ] && [ -n "${HOMEBREW_KATANA_GIT_T
 fi
 
 # 2. Winget
-if [ -n "${GITHUB_TOKEN:-}" ]; then
+PACKAGE_ID="HiroyukiFuruno.katana-desktop"
+MSI_URL="https://github.com/HiroyukiFuruno/KatanA/releases/download/${TAG}/KatanA-windows-x86_64.msi"
+
+if [ -z "${WINGET_GH_TOKEN:-}" ]; then
+    echo "⚠️ WINGET_GH_TOKEN (classic PAT with public_repo) is not set, skipping winget sync."
+elif [ ! -f "${ARTIFACTS_DIR}/KatanA-windows-x86_64.msi" ]; then
+    echo "⚠️ Windows MSI artifact not found, skipping winget sync."
+else
     # We check if komac is available, otherwise try to install it
     if ! command -v komac &> /dev/null; then
         echo "📦 Installing komac..."
         brew install nicehash/tap/komac 2>/dev/null || true
     fi
-    
-    if command -v komac &> /dev/null; then
-        echo "🪟 Updating Winget package..."
-        komac update HiroyukiFuruno.katana-desktop \
-            --version "${VERSION}" \
-            --urls "https://github.com/HiroyukiFuruno/KatanA/releases/download/${TAG}/KatanA-windows-x86_64.msi" \
-            --submit || echo "Warning: Winget update failed but won't block release."
+
+    if ! command -v komac &> /dev/null; then
+        echo "⚠️ komac not found, skipping winget sync."
     else
-        echo "⚠️ komac not found, skipping Winget update."
+        echo "🪟 Checking Winget package..."
+        if komac list "${PACKAGE_ID}" --token "${WINGET_GH_TOKEN}" >/dev/null 2>&1; then
+            echo "🪟 Updating Winget package..."
+            komac update "${PACKAGE_ID}" \
+                --version "${VERSION}" \
+                --urls "${MSI_URL}" \
+                --release-notes-url "https://github.com/HiroyukiFuruno/KatanA/releases/tag/${TAG}" \
+                --submit \
+                --token "${WINGET_GH_TOKEN}" || echo "Warning: Winget update failed but won't block release."
+        else
+            echo "⚠️ ${PACKAGE_ID} does not exist in microsoft/winget-pkgs yet."
+            echo "⚠️ Initial winget bootstrap is required; skipping automated update flow."
+        fi
     fi
 fi
 
