@@ -53,6 +53,11 @@ impl KatanaApp {
                 ));
             }
             AppAction::CloseDocument(idx) => self.handle_action_close_document(idx),
+            AppAction::CloseActiveDocument => {
+                if let Some(idx) = self.state.document.active_doc_idx {
+                    self.handle_action_close_document(idx);
+                }
+            }
             AppAction::ForceCloseDocument(idx) => {
                 self.state.layout.pending_close_confirm = None;
                 self.force_close_document(idx);
@@ -129,6 +134,20 @@ impl KatanaApp {
                     m.data
                         .insert_temp(egui::Id::new("search_newly_opened"), true)
                 });
+            }
+            AppAction::ToggleDocSearch => {
+                let current = self.state.search.doc_search_open;
+                if !current {
+                    self.state.search.doc_search_open = true;
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("search_newly_opened"), true)
+                    });
+                    self.trigger_action(AppAction::DocSearchQueryChanged);
+                } else {
+                    self.state.search.doc_search_open = false;
+                    self.state.search.doc_search_matches.clear();
+                }
             }
             AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
             AppAction::DocSearchNext => self.handle_action_doc_search_next(),

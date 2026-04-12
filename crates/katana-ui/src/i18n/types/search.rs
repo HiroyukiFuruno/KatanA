@@ -27,4 +27,20 @@ pub struct SearchMessages {
     pub command_updates: String,
     pub command_about: String,
     pub command_type_action: String,
+    #[serde(default = "default_command_global_search")]
+    pub command_global_search: String,
+    #[serde(default = "default_command_doc_search")]
+    pub command_doc_search: String,
+    #[serde(default = "default_command_refresh_document")]
+    pub command_refresh_document: String,
+}
+
+fn default_command_global_search() -> String {
+    "Global Search".to_string()
+}
+fn default_command_doc_search() -> String {
+    "Document Search".to_string()
+}
+fn default_command_refresh_document() -> String {
+    "Refresh Document".to_string()
 }

@@ -20,7 +20,7 @@ pub const DEFAULT_IGNORED_DIRECTORIES: &[&str] = &[
 
 impl SettingsDefaultOps {
     pub fn default_version() -> String {
-        "0.2.1".to_string()
+        "0.2.2".to_string()
     }
     pub fn default_language() -> String {
         "en".to_string()
@@ -121,6 +121,7 @@ impl Default for AppSettings {
             export: ExportSettings::default(),
             updates: UpdateSettings::default(),
             behavior: BehaviorSettings::default(),
+            shortcuts: ShortcutSettings::default(),
             terms_accepted_version: None,
             language: SettingsDefaultOps::default_language(),
             extra: Vec::new(),
