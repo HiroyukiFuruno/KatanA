@@ -1,34 +1,8 @@
-use crate::app_state::{AppAction, AppState};
+use crate::app_state::AppAction;
 use crate::i18n::I18nOps;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum CommandGroup {
-    App,
-    File,
-    View,
-    Help,
-}
-
-impl CommandGroup {
-    pub fn localized_name(self) -> String {
-        let i18n = I18nOps::get();
-        match self {
-            Self::App => "KatanA".to_string(), // WHY: Main app menu equivalent
-            Self::File => i18n.menu.file.clone(),
-            Self::View => i18n.menu.view.clone(),
-            Self::Help => i18n.menu.help.clone(),
-        }
-    }
-}
-
-pub struct CommandInventoryItem {
-    pub id: &'static str,
-    pub action: AppAction,
-    pub group: CommandGroup,
-    pub label: fn() -> String,
-    pub is_available: fn(&AppState) -> bool,
-}
-
+pub mod types;
+pub use types::*;
 pub struct CommandInventory;
 
 impl CommandInventory {
@@ -41,6 +15,7 @@ impl CommandInventory {
                 group: CommandGroup::App,
                 label: || I18nOps::get().menu.settings.clone(),
                 is_available: |_| true,
+                default_shortcuts: &["primary+,"],
             },
             /* WHY: File Group */
             CommandInventoryItem {
@@ -49,6 +24,7 @@ impl CommandInventory {
                 group: CommandGroup::File,
                 label: || I18nOps::get().menu.open_workspace.clone(),
                 is_available: |_| true,
+                default_shortcuts: &["primary+O"],
             },
             CommandInventoryItem {
                 id: "file.close_workspace",
@@ -56,6 +32,7 @@ impl CommandInventory {
                 group: CommandGroup::File,
                 label: || I18nOps::get().menu.close_workspace.clone(),
                 is_available: |state| state.workspace.data.is_some(),
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "file.save",
@@ -63,6 +40,23 @@ impl CommandInventory {
                 group: CommandGroup::File,
                 label: || I18nOps::get().menu.save.clone(),
                 is_available: |state| state.document.active_doc_idx.is_some(),
+                default_shortcuts: &["primary+S"],
+            },
+            CommandInventoryItem {
+                id: "file.close_document",
+                action: AppAction::CloseActiveDocument,
+                group: CommandGroup::File,
+                label: || I18nOps::get().menu.close_document.clone(),
+                is_available: |state| state.document.active_doc_idx.is_some(),
+                default_shortcuts: &["primary+W"],
+            },
+            CommandInventoryItem {
+                id: "file.restore_closed",
+                action: AppAction::RestoreClosedDocument,
+                group: CommandGroup::File,
+                label: || I18nOps::get().menu.restore_closed.clone(),
+                is_available: |state| !state.document.recently_closed_tabs.is_empty(),
+                default_shortcuts: &["primary+Shift+T"],
             },
             /* WHY: View Group */
             CommandInventoryItem {
@@ -71,6 +65,7 @@ impl CommandInventory {
                 group: CommandGroup::View,
                 label: || I18nOps::get().menu.command_palette.clone(),
                 is_available: |_| true,
+                default_shortcuts: &["primary+P", "primary+Shift+P", "primary+K"],
             },
             CommandInventoryItem {
                 id: "view.explorer",
@@ -78,6 +73,7 @@ impl CommandInventory {
                 group: CommandGroup::View,
                 label: || I18nOps::get().search.command_explorer.clone(),
                 is_available: |_| true,
+                default_shortcuts: &["primary+B"],
             },
             CommandInventoryItem {
                 id: "view.refresh_explorer",
@@ -85,6 +81,7 @@ impl CommandInventory {
                 group: CommandGroup::View,
                 label: || I18nOps::get().search.command_refresh_explorer.clone(),
                 is_available: |state| state.workspace.data.is_some(),
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "view.close_all",
@@ -92,6 +89,42 @@ impl CommandInventory {
                 group: CommandGroup::View,
                 label: || I18nOps::get().search.command_close_all.clone(),
                 is_available: |state| !state.document.open_documents.is_empty(),
+                default_shortcuts: &[],
+            },
+            CommandInventoryItem {
+                id: "view.search_modal",
+                action: AppAction::ToggleSearchModal,
+                group: CommandGroup::View,
+                label: || I18nOps::get().search.command_global_search.clone(),
+                is_available: |_| true,
+                default_shortcuts: &["primary+Shift+F"],
+            },
+            CommandInventoryItem {
+                id: "view.doc_search",
+                action: AppAction::ToggleDocSearch,
+                group: CommandGroup::View,
+                label: || I18nOps::get().search.command_doc_search.clone(),
+                is_available: |state| {
+                    if state.document.active_doc_idx.is_none() {
+                        return false;
+                    }
+                    /* WHY: Virtual docs (Welcome, Guide, ChangeLog) do not support in-doc search. */
+                    !state.active_document().is_some_and(|d| {
+                        let p = d.path.to_string_lossy();
+                        p.starts_with("Katana://Welcome")
+                            || p.starts_with("Katana://Guide")
+                            || p.starts_with("Katana://ChangeLog")
+                    })
+                },
+                default_shortcuts: &["primary+F"],
+            },
+            CommandInventoryItem {
+                id: "view.refresh_document",
+                action: AppAction::RefreshDocument { is_manual: true },
+                group: CommandGroup::View,
+                label: || I18nOps::get().search.command_refresh_document.clone(),
+                is_available: |state| state.document.active_doc_idx.is_some(),
+                default_shortcuts: &["primary+R"],
             },
             /* WHY: Help Group */
             CommandInventoryItem {
@@ -100,6 +133,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.about.clone(),
                 is_available: |_| true,
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "help.check_updates",
@@ -107,6 +141,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.check_updates.clone(),
                 is_available: |_| true,
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "help.release_notes",
@@ -114,6 +149,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.release_notes.clone(),
                 is_available: |_| true,
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "help.welcome_screen",
@@ -121,6 +157,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.welcome_screen.clone(),
                 is_available: |_| true,
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "help.user_guide",
@@ -128,6 +165,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.user_guide.clone(),
                 is_available: |_| true,
+                default_shortcuts: &[],
             },
             CommandInventoryItem {
                 id: "help.demo",
@@ -135,6 +173,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.demo.clone(),
                 is_available: |_| true,
+                default_shortcuts: &["primary+alt+D"],
             },
             CommandInventoryItem {
                 id: "help.github",
@@ -142,6 +181,7 @@ impl CommandInventory {
                 group: CommandGroup::Help,
                 label: || I18nOps::get().menu.github.clone(),
                 is_available: |_| true,
+                default_shortcuts: &[],
             },
         ]
     }

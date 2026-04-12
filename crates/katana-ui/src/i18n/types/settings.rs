@@ -14,6 +14,7 @@ pub struct SettingsMessages {
     pub tabs: Vec<SettingsTabItem>,
     pub updates: SettingsUpdateMessages,
     pub behavior: SettingsBehaviorMessages,
+    pub shortcuts: SettingsShortcutsMessages,
     pub general: String,
 }
 
@@ -179,4 +180,13 @@ pub struct SettingsBehaviorMessages {
     pub clear_http_cache: String,
     pub cache_retention_days: String,
     pub days_suffix: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingsShortcutsMessages {
+    pub edit: String,
+    pub press_keys: String,
+    pub restore_defaults: String,
+    pub none: String,
+    pub conflict_warning: String,
 }

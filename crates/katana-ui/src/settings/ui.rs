@@ -148,6 +148,11 @@ impl<'a> SettingsWindow<'a> {
                                                 ui, state,
                                             );
                                     }
+                                    SettingsTab::Shortcuts => {
+                                        crate::settings::tabs::ShortcutsTabOps::render_shortcuts_tab(
+                                            ui, state,
+                                        );
+                                    }
                                 });
                         });
                 });

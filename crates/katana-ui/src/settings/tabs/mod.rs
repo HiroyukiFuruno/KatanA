@@ -3,6 +3,8 @@ pub mod font;
 pub mod icons;
 pub mod layout;
 mod layout_selectors;
+pub mod shortcuts;
+pub mod shortcuts_helpers;
 pub mod theme;
 pub mod theme_color_data;
 pub mod theme_editor;

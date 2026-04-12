@@ -42,6 +42,10 @@ pub struct MenuMessages {
     pub user_guide: String,
     #[serde(default = "default_menu_github")]
     pub github: String,
+    #[serde(default = "default_menu_close_document")]
+    pub close_document: String,
+    #[serde(default = "default_menu_restore_closed")]
+    pub restore_closed: String,
 }
 
 fn default_menu_demo() -> String {
@@ -55,4 +59,10 @@ fn default_menu_guide() -> String {
 }
 fn default_menu_github() -> String {
     "GitHub Repository".to_string()
+}
+fn default_menu_close_document() -> String {
+    "Close Document".to_string()
+}
+fn default_menu_restore_closed() -> String {
+    "Restore Closed Document".to_string()
 }

@@ -1,7 +1,8 @@
 use super::{
     behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, icon::IconSettings,
     layout::LayoutSettings, performance::PerformanceSettings, search::SearchSettings,
-    theme::ThemeSettings, update::UpdateSettings, workspace::WorkspaceSettings,
+    shortcut::ShortcutSettings, theme::ThemeSettings, update::UpdateSettings,
+    workspace::WorkspaceSettings,
 };
 use serde::{Deserialize, Serialize};
 
@@ -47,6 +48,10 @@ pub struct AppSettings {
     /* WHY: Behavior / system-default settings (nesting). */
     #[serde(default)]
     pub behavior: BehaviorSettings,
+
+    /* WHY: Keyboard shortcut profiles per-OS (nesting). */
+    #[serde(default)]
+    pub shortcuts: ShortcutSettings,
 
     /* WHY: Terms of service accepted version (None = not accepted). */
     #[serde(default)]

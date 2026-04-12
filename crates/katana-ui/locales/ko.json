@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "동작"
+            },
+            {
+                "key": "shortcuts",
+                "name": "단축키"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "캐시 보존 기간",
             "days_suffix": " 일"
         },
-        "general": "일반"
+        "general": "일반",
+        "shortcuts": {
+            "edit": "편집",
+            "press_keys": "키 입력... (Esc 취소)",
+            "restore_defaults": "기본값 복원",
+            "none": "없음",
+            "conflict_warning": "경고: 단축키를 덮어썼습니다. \"{command}\"에서 이미 사용 중이었습니다."
+        }
     },
     "tab": {
         "nav_prev": "이전 탭",

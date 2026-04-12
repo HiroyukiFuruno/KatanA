@@ -343,8 +343,19 @@
             {
                 "key": "behavior",
                 "name": "Behavior"
+            },
+            {
+                "key": "shortcuts",
+                "name": "Shortcuts"
             }
         ],
+        "shortcuts": {
+            "edit": "Edit",
+            "press_keys": "Press keys… (Esc to cancel)",
+            "restore_defaults": "Restore Defaults",
+            "none": "None",
+            "conflict_warning": "Warning: Shortcut has been overwritten. It was already in use by '{command}'."
+        },
         "updates": {
             "section_title": "Updates",
             "interval": "Check Interval",
