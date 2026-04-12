@@ -28,19 +28,19 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
+- [x] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
+- [x] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
-- [ ] 2.1 実行時のショートカットディスパッチャ (runtime shortcut dispatcher) を、コマンドインベントリ駆動型 (inventory-driven) へ置き換える
-- [ ] 2.2 OS ごとの修飾キーの違い (platform-aware modifier handling) を吸収できるように整理する
-- [ ] 2.3 アプリケーション内でのショートカット重複 (duplicate binding) を検出する機能を実装する
+- [x] 2.1 実行時のショートカットディスパッチャ (runtime shortcut dispatcher) を、コマンドインベントリ駆動型 (inventory-driven) へ置き換える
+- [x] 2.2 OS ごとの修飾キーの違い (platform-aware modifier handling) を吸収できるように整理する
+- [x] 2.3 アプリケーション内でのショートカット重複 (duplicate binding) を検出する機能を実装する
 
 ### Definition of Done (DoD)
 
-- [ ] ユーザーが独自に設定したショートカット設定 (custom binding) が、実行時に正しく該当の処理へディスパッチされること
-- [ ] 重複したショートカット割り当てがあっても、実行時に競合・誤作動 (runtime ambiguity) を起こさないこと
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] ユーザーが独自に設定したショートカット設定 (custom binding) が、実行時に正しく該当の処理へディスパッチされること
+- [x] 重複したショートカット割り当てがあっても、実行時に競合・誤作動 (runtime ambiguity) を起こさないこと
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 

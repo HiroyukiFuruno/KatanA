@@ -104,7 +104,18 @@ impl CommandInventory {
                 action: AppAction::ToggleDocSearch,
                 group: CommandGroup::View,
                 label: || I18nOps::get().search.command_doc_search.clone(),
-                is_available: |state| state.document.active_doc_idx.is_some(),
+                is_available: |state| {
+                    if state.document.active_doc_idx.is_none() {
+                        return false;
+                    }
+                    /* WHY: Virtual docs (Welcome, Guide, ChangeLog) do not support in-doc search. */
+                    !state.active_document().is_some_and(|d| {
+                        let p = d.path.to_string_lossy();
+                        p.starts_with("Katana://Welcome")
+                            || p.starts_with("Katana://Guide")
+                            || p.starts_with("Katana://ChangeLog")
+                    })
+                },
                 default_shortcuts: &["primary+F"],
             },
             CommandInventoryItem {

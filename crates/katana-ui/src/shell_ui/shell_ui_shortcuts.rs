@@ -1,109 +1,119 @@
-use crate::app_state::AppAction;
 use crate::shell::KatanaApp;
+use crate::state::command_inventory::CommandInventory;
 use eframe::egui;
+
+fn parse_shortcut(s: &str) -> Option<egui::KeyboardShortcut> {
+    let mut modifiers = egui::Modifiers::NONE;
+    let mut key = None;
+
+    for part in s.split('+') {
+        let p = part.trim().to_lowercase();
+        match p.as_str() {
+            "primary" | "cmd" | "command" | "ctrl" => modifiers.command = true,
+            "shift" => modifiers.shift = true,
+            "alt" | "option" => modifiers.alt = true,
+            "mac_cmd" => modifiers.mac_cmd = true,
+            _ => {
+                key = parse_key(&p);
+            }
+        }
+    }
+
+    key.map(|k| egui::KeyboardShortcut::new(modifiers, k))
+}
+
+fn parse_key(s: &str) -> Option<egui::Key> {
+    match s {
+        "a" => Some(egui::Key::A),
+        "b" => Some(egui::Key::B),
+        "c" => Some(egui::Key::C),
+        "d" => Some(egui::Key::D),
+        "e" => Some(egui::Key::E),
+        "f" => Some(egui::Key::F),
+        "g" => Some(egui::Key::G),
+        "h" => Some(egui::Key::H),
+        "i" => Some(egui::Key::I),
+        "j" => Some(egui::Key::J),
+        "k" => Some(egui::Key::K),
+        "l" => Some(egui::Key::L),
+        "m" => Some(egui::Key::M),
+        "n" => Some(egui::Key::N),
+        "o" => Some(egui::Key::O),
+        "p" => Some(egui::Key::P),
+        "q" => Some(egui::Key::Q),
+        "r" => Some(egui::Key::R),
+        "s" => Some(egui::Key::S),
+        "t" => Some(egui::Key::T),
+        "u" => Some(egui::Key::U),
+        "v" => Some(egui::Key::V),
+        "w" => Some(egui::Key::W),
+        "x" => Some(egui::Key::X),
+        "y" => Some(egui::Key::Y),
+        "z" => Some(egui::Key::Z),
+        "0" => Some(egui::Key::Num0),
+        "1" => Some(egui::Key::Num1),
+        "2" => Some(egui::Key::Num2),
+        "3" => Some(egui::Key::Num3),
+        "4" => Some(egui::Key::Num4),
+        "5" => Some(egui::Key::Num5),
+        "6" => Some(egui::Key::Num6),
+        "7" => Some(egui::Key::Num7),
+        "8" => Some(egui::Key::Num8),
+        "9" => Some(egui::Key::Num9),
+        "," => Some(egui::Key::Comma),
+        "." => Some(egui::Key::Period),
+        "space" => Some(egui::Key::Space),
+        "enter" => Some(egui::Key::Enter),
+        "esc" | "escape" => Some(egui::Key::Escape),
+        "tab" => Some(egui::Key::Tab),
+        "backspace" => Some(egui::Key::Backspace),
+        "delete" => Some(egui::Key::Delete),
+        "up" => Some(egui::Key::ArrowUp),
+        "down" => Some(egui::Key::ArrowDown),
+        "left" => Some(egui::Key::ArrowLeft),
+        "right" => Some(egui::Key::ArrowRight),
+        _ => None,
+    }
+}
 
 impl KatanaApp {
     pub(super) fn handle_shortcuts(&mut self, ctx: &egui::Context) {
-        let cmd_shift_t = egui::KeyboardShortcut::new(
-            egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
-            egui::Key::T,
-        );
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_shift_t))
-            && !self.state.document.recently_closed_tabs.is_empty()
-        {
-            self.pending_action = AppAction::RestoreClosedDocument;
-        }
+        let os_bindings = self
+            .state
+            .config
+            .settings
+            .settings()
+            .shortcuts
+            .current_os_bindings();
 
-        let cmd_shift_f = egui::KeyboardShortcut::new(
-            egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
-            egui::Key::F,
-        );
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_shift_f)) {
-            self.pending_action = AppAction::ToggleSearchModal;
-        }
+        for cmd in CommandInventory::all() {
+            if !(cmd.is_available)(&self.state) {
+                continue;
+            }
 
-        let cmd_p = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::P);
-        let cmd_shift_p = egui::KeyboardShortcut::new(
-            egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
-            egui::Key::P,
-        );
-        let cmd_k = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::K);
-        if ctx.input_mut(|i| {
-            i.consume_shortcut(&cmd_p)
-                || i.consume_shortcut(&cmd_shift_p)
-                || i.consume_shortcut(&cmd_k)
-        }) {
-            self.pending_action = AppAction::ToggleCommandPalette;
-        }
+            let shortcuts_to_try: Vec<String> = if let Some(custom) = os_bindings.get(cmd.id) {
+                vec![custom.clone()]
+            } else {
+                cmd.default_shortcuts
+                    .iter()
+                    .map(|&s| s.to_string())
+                    .collect()
+            };
 
-        let cmd_f = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::F);
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_f)) {
-            /* WHY: Virtual docs (Welcome, Guide, ChangeLog) do not support in-doc search. */
-            let is_katana_virtual = self.state.active_document().is_some_and(|d| {
-                let p = d.path.to_string_lossy();
-                p.starts_with("Katana://Welcome")
-                    || p.starts_with("Katana://Guide")
-                    || p.starts_with("Katana://ChangeLog")
-            });
-            if !is_katana_virtual {
-                if !self.state.search.doc_search_open {
-                    self.state.search.doc_search_open = true;
-                    ctx.memory_mut(|m| {
-                        m.data
-                            .insert_temp(egui::Id::new("search_newly_opened"), true)
-                    });
-                    self.trigger_action(AppAction::DocSearchQueryChanged);
-                } else {
-                    self.state.search.doc_search_open = false;
-                    self.state.search.doc_search_matches.clear();
+            let mut matched = false;
+            for raw_shortcut in shortcuts_to_try {
+                if let Some(parsed) = parse_shortcut(&raw_shortcut)
+                    && ctx.input_mut(|i| i.consume_shortcut(&parsed))
+                {
+                    self.pending_action = cmd.action.clone();
+                    matched = true;
+                    break;
                 }
             }
-        }
-
-        let cmd_w = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::W);
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_w))
-            && let Some(idx) = self.state.document.active_doc_idx
-        {
-            self.pending_action = AppAction::CloseDocument(idx);
-        }
-
-        /* WHY: Command-B toggles the explorer sidebar, matching VS Code / standard IDE convention */
-        let cmd_b = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::B);
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_b)) {
-            self.pending_action = AppAction::ToggleExplorer;
-        }
-
-        let cmd_alt_d = egui::KeyboardShortcut::new(
-            egui::Modifiers::COMMAND | egui::Modifiers::ALT,
-            egui::Key::D,
-        );
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_alt_d)) {
-            self.pending_action = AppAction::OpenHelpDemo;
-        }
-
-        let cmd_s = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::S);
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_s)) {
-            self.pending_action = AppAction::SaveDocument;
-        }
-
-        let cmd_o = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::O);
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_o)) {
-            self.pending_action = AppAction::PickOpenWorkspace;
-        }
-
-        let cmd_r = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::R);
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_r)) && self.state.active_document().is_some() {
-            self.pending_action = AppAction::RefreshDocument { is_manual: true };
-        }
-
-        /* WHY: Command+Option-D opens the demo workspace. COMMAND | ALT correctly maps
-         * to macOS Command-Option — using struct literal misses mac_cmd flag. */
-        let cmd_opt_d = egui::KeyboardShortcut::new(
-            egui::Modifiers::COMMAND | egui::Modifiers::ALT,
-            egui::Key::D,
-        );
-        if ctx.input_mut(|i| i.consume_shortcut(&cmd_opt_d)) {
-            self.pending_action = AppAction::OpenHelpDemo;
+            if matched {
+                /* WHY: If a shortcut for this command matched, stop processing others to prevent ambiguous multi-fire */
+                break;
+            }
         }
     }
 }
