@@ -148,32 +148,25 @@ impl<'a> ExplorerHeader<'a> {
                     .build()
                     .is_ok();
             }
-            crate::widgets::AlignCenter::new()
-                .shrink_to_fit(true)
-                .content(|ui| {
-                    let text_color = if is_valid_regex {
-                        ui.visuals().text_color()
-                    } else {
-                        ui.ctx()
-                            .data(|d| {
-                                d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                                    "katana_theme_colors",
-                                ))
-                            })
-                            .map_or(crate::theme_bridge::WHITE, |tc| {
-                                crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                                    tc.system.error_text,
-                                )
-                            })
-                    };
-                    ui.add(
-                        egui::TextEdit::singleline(&mut search.filter_query)
-                            .text_color(text_color)
-                            .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
-                            .desired_width(ui.available_width()),
-                    );
-                })
-                .show(ui);
+            let text_color = if is_valid_regex {
+                ui.visuals().text_color()
+            } else {
+                ui.ctx()
+                    .data(|d| {
+                        d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
+                            "katana_theme_colors",
+                        ))
+                    })
+                    .map_or(crate::theme_bridge::WHITE, |tc| {
+                        crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.error_text)
+                    })
+            };
+            ui.add(
+                egui::TextEdit::singleline(&mut search.filter_query)
+                    .text_color(text_color)
+                    .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
+                    .desired_width(ui.available_width()),
+            );
         }
     }
 }
