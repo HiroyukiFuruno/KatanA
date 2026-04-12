@@ -2,6 +2,18 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.0] - 2026-04-12 13:10:00 (UTC)
+
+### Added
+- Implemented Markdown Authoring Commands (Bold, Italic, Strikethrough, etc.) and integrated them into the command inventory.
+- Added comprehensive Image Ingest Pipeline UI and fallback integrations.
+- Replaced missing images with an aesthetic UI fallback component (`ImageFallbackOps`) for better user experience.
+- Persisted image ingestion settings to allow custom paths for image asset management.
+
+### Fixed
+- Fixed an AST linter violation related to horizontal layouts in `preview_pane` by migrating to `AlignCenter` widget.
+- Resolved unused imports in the images functionality of the preview pane.
+
 ## [0.21.0] - 2026-04-12 08:21:00 (UTC)
 
 ### Added
