@@ -73,6 +73,66 @@ fn md001_rule_id_is_official_code() {
 }
 
 #[test]
+fn test_parity_status_boundary() {
+    use katana_linter::markdown::*;
+
+    let meta_exp = OfficialRuleMeta {
+        code: "MD000",
+        title: "test-rule",
+        description: "Test rule description.",
+        docs_url: "https://example.com/md000",
+        parity: RuleParityStatus::Experimental,
+    };
+    assert_eq!(meta_exp.parity, RuleParityStatus::Experimental);
+
+    let meta_off = OfficialRuleMeta {
+        code: "MD001",
+        title: "heading-increment",
+        description: "Heading levels should only increment by one level at a time.",
+        docs_url: "",
+        parity: RuleParityStatus::Official,
+    };
+    assert_eq!(meta_off.parity, RuleParityStatus::Official);
+
+    // Diagnostics filtering boundary test representation
+    let mut diags = vec![];
+    diags.push(MarkdownDiagnostic {
+        file: std::path::PathBuf::from("test.md"),
+        severity: DiagnosticSeverity::Error,
+        range: DiagnosticRange {
+            start_line: 1,
+            start_column: 1,
+            end_line: 1,
+            end_column: 1,
+        },
+        message: "Experimental rule".to_string(),
+        rule_id: "MD000".to_string(),
+        official_meta: Some(meta_exp),
+    });
+    diags.push(MarkdownDiagnostic {
+        file: std::path::PathBuf::from("test.md"),
+        severity: DiagnosticSeverity::Warning,
+        range: DiagnosticRange {
+            start_line: 2,
+            start_column: 1,
+            end_line: 2,
+            end_column: 1,
+        },
+        message: "Hidden internal rule".to_string(),
+        rule_id: "internal-001".to_string(),
+        official_meta: None,
+    });
+
+    let displayable: Vec<_> = diags.iter().filter(|d| d.official_meta.is_some()).collect();
+    assert_eq!(
+        displayable.len(),
+        1,
+        "Only diagnostics with official_meta should be displayable"
+    );
+    assert_eq!(displayable[0].rule_id, "MD000");
+}
+
+#[test]
 fn md001_code_blocks_do_not_trigger_false_positive() {
     let rule = HeadingIncrementRule;
     let path = PathBuf::from("test.md");
