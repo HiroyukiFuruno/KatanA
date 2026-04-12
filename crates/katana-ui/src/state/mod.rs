@@ -10,6 +10,7 @@ pub mod scroll;
 pub mod scroll_mapper;
 pub mod scroll_sync;
 pub mod search;
+pub mod shortcut_context;
 pub mod update;
 pub mod workspace;
 

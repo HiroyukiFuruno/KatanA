@@ -1,6 +1,7 @@
 use super::{CommandGroup, CommandInventoryItem};
 use crate::app_state::AppAction;
 use crate::i18n::I18nOps;
+use crate::state::shortcut_context::ShortcutContext;
 
 pub struct ViewCommands;
 
@@ -12,6 +13,7 @@ impl ViewCommands {
                 id: "view.command_palette",
                 action: AppAction::ToggleCommandPalette,
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().menu.command_palette.clone(),
                 is_available: |_| true,
                 default_shortcuts: &["primary+P", "primary+Shift+P", "primary+K"],
@@ -20,6 +22,7 @@ impl ViewCommands {
                 id: "view.explorer",
                 action: AppAction::ToggleExplorer,
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_explorer.clone(),
                 is_available: |_| true,
                 default_shortcuts: &["primary+B"],
@@ -28,6 +31,7 @@ impl ViewCommands {
                 id: "view.refresh_explorer",
                 action: AppAction::RefreshExplorer,
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_refresh_explorer.clone(),
                 is_available: |state| state.workspace.data.is_some(),
                 default_shortcuts: &[],
@@ -36,6 +40,7 @@ impl ViewCommands {
                 id: "view.close_all",
                 action: AppAction::CloseAllDocuments,
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_close_all.clone(),
                 is_available: |state| !state.document.open_documents.is_empty(),
                 default_shortcuts: &[],
@@ -44,6 +49,7 @@ impl ViewCommands {
                 id: "view.search_modal",
                 action: AppAction::ToggleSearchModal,
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_global_search.clone(),
                 is_available: |_| true,
                 default_shortcuts: &["primary+Shift+F"],
@@ -52,6 +58,7 @@ impl ViewCommands {
                 id: "view.doc_search",
                 action: AppAction::ToggleDocSearch,
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_doc_search.clone(),
                 is_available: |state| {
                     if state.document.active_doc_idx.is_none() {
@@ -71,6 +78,7 @@ impl ViewCommands {
                 id: "view.refresh_document",
                 action: AppAction::RefreshDocument { is_manual: true },
                 group: CommandGroup::View,
+                context: ShortcutContext::Global,
                 label: || I18nOps::get().search.command_refresh_document.clone(),
                 is_available: |state| state.document.active_doc_idx.is_some(),
                 default_shortcuts: &["primary+R"],
