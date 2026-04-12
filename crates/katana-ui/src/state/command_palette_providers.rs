@@ -41,7 +41,7 @@ impl CommandPaletteProvider for AppCommandProvider {
                 results.push(CommandPaletteResult {
                     id: cmd.id.to_string(),
                     label: label.clone(),
-                    secondary_label: Some(cmd_type.clone()),
+                    secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
                     score: base_score - EMPTY_QUERY_PENALTY, /* WHY: lower base score for empty query so history can be higher */
                     kind: CommandPaletteResultKind::RecentOrCommon,
                     execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
@@ -55,7 +55,7 @@ impl CommandPaletteProvider for AppCommandProvider {
                 results.push(CommandPaletteResult {
                     id: cmd.id.to_string(),
                     label: label.clone(),
-                    secondary_label: Some(cmd_type.clone()),
+                    secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
                     score,
                     kind: CommandPaletteResultKind::Action,
                     execute_payload: CommandPaletteExecutePayload::DispatchAppAction(

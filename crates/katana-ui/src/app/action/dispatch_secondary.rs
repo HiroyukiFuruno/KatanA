@@ -128,6 +128,9 @@ impl KatanaApp {
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
             AppAction::OpenUserGuide => self.handle_action_open_user_guide(),
+            AppAction::OpenGitHub => {
+                let _ = open::that("https://github.com/hiroyuki-furuno/katana");
+            }
             AppAction::SwitchDemoLanguage(lang) => self.handle_action_switch_demo_lang(&lang),
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),

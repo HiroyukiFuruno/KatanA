@@ -95,33 +95,34 @@ fn test_parity_status_boundary() {
     assert_eq!(meta_off.parity, RuleParityStatus::Official);
 
     // Diagnostics filtering boundary test representation
-    let mut diags = vec![];
-    diags.push(MarkdownDiagnostic {
-        file: std::path::PathBuf::from("test.md"),
-        severity: DiagnosticSeverity::Error,
-        range: DiagnosticRange {
-            start_line: 1,
-            start_column: 1,
-            end_line: 1,
-            end_column: 1,
+    let diags = [
+        MarkdownDiagnostic {
+            file: std::path::PathBuf::from("test.md"),
+            severity: DiagnosticSeverity::Error,
+            range: DiagnosticRange {
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 1,
+            },
+            message: "Experimental rule".to_string(),
+            rule_id: "MD000".to_string(),
+            official_meta: Some(meta_exp),
         },
-        message: "Experimental rule".to_string(),
-        rule_id: "MD000".to_string(),
-        official_meta: Some(meta_exp),
-    });
-    diags.push(MarkdownDiagnostic {
-        file: std::path::PathBuf::from("test.md"),
-        severity: DiagnosticSeverity::Warning,
-        range: DiagnosticRange {
-            start_line: 2,
-            start_column: 1,
-            end_line: 2,
-            end_column: 1,
+        MarkdownDiagnostic {
+            file: std::path::PathBuf::from("test.md"),
+            severity: DiagnosticSeverity::Warning,
+            range: DiagnosticRange {
+                start_line: 2,
+                start_column: 1,
+                end_line: 2,
+                end_column: 1,
+            },
+            message: "Hidden internal rule".to_string(),
+            rule_id: "internal-001".to_string(),
+            official_meta: None,
         },
-        message: "Hidden internal rule".to_string(),
-        rule_id: "internal-001".to_string(),
-        official_meta: None,
-    });
+    ];
 
     let displayable: Vec<_> = diags.iter().filter(|d| d.official_meta.is_some()).collect();
     assert_eq!(

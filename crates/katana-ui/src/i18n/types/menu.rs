@@ -40,6 +40,8 @@ pub struct MenuMessages {
     pub welcome_screen: String,
     #[serde(default = "default_menu_guide")]
     pub user_guide: String,
+    #[serde(default = "default_menu_github")]
+    pub github: String,
 }
 
 fn default_menu_demo() -> String {
@@ -50,4 +52,7 @@ fn default_menu_welcome() -> String {
 }
 fn default_menu_guide() -> String {
     "User Guide".to_string()
+}
+fn default_menu_github() -> String {
+    "GitHub Repository".to_string()
 }
