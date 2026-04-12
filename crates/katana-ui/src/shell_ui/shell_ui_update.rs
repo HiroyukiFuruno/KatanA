@@ -55,6 +55,7 @@ impl KatanaApp {
         self.poll_changelog(ctx);
         self.poll_export(ctx);
 
+        crate::native_menu::NativeMenuOps::update_availability(&self.state);
         let native_action = crate::native_menu::NativeMenuOps::poll(
             &mut self.show_about,
             ShellUiOps::open_folder_dialog,

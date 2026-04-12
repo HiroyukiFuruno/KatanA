@@ -26,6 +26,10 @@ pub(super) fn update_from_i18n() {
             &msgs.menu.demo,
             &msgs.menu.welcome_screen,
             &msgs.menu.user_guide,
+            &msgs.menu.close_workspace,
+            &msgs.search.command_explorer,
+            &msgs.search.command_refresh_explorer,
+            &msgs.search.command_close_all,
         );
     }
 }
@@ -52,6 +56,10 @@ unsafe fn update_menu_strings(
     demo: &str,
     welcome_screen: &str,
     user_guide: &str,
+    close_workspace: &str,
+    explorer: &str,
+    refresh_explorer: &str,
+    close_all: &str,
 ) {
     let mk = |s: &str| std::ffi::CString::new(s).unwrap_or_default();
     let c_file = mk(file);
@@ -73,6 +81,10 @@ unsafe fn update_menu_strings(
     let c_demo = mk(demo);
     let c_welcome = mk(welcome_screen);
     let c_guide = mk(user_guide);
+    let c_close_workspace = mk(close_workspace);
+    let c_explorer = mk(explorer);
+    let c_refresh_explorer = mk(refresh_explorer);
+    let c_close_all = mk(close_all);
 
     ffi::katana_update_menu_strings(
         c_file.as_ptr(),
@@ -94,5 +106,9 @@ unsafe fn update_menu_strings(
         c_demo.as_ptr(),
         c_welcome.as_ptr(),
         c_guide.as_ptr(),
+        c_close_workspace.as_ptr(),
+        c_explorer.as_ptr(),
+        c_refresh_explorer.as_ptr(),
+        c_close_all.as_ptr(),
     );
 }
