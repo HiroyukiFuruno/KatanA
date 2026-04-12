@@ -12,17 +12,17 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Supported Rule Catalog and Parity Contract (サポートルール一覧と公式同等性方針)
 
-- [ ] 1.1 既存の内部用 diagnostics（問題診断）ルールを一覧にまとめ棚卸しを行い、公式の markdownlint 指定ルールに対応付ける
-- [ ] 1.2 ユーザーに表示される diagnostics 情報から、内部独自のルール名を排除する（隠蔽する）方針を定義する
-- [ ] 1.3 対象となるルールが公式の「Rule Code、Title、English description (英語説明)、ドキュメントURL」を持つ「カタログ」データとして管理できるようにする
-- [ ] 1.4 公式と同等の水準を満たしていない (parity 未達の) 独自ルールの扱いについて、「hidden (隠し扱い) または experimental (実験的扱い)」とするという定義を明確にする
+- [x] 1.1 既存の内部用 diagnostics（問題診断）ルールを一覧にまとめ棚卸しを行い、公式の markdownlint 指定ルールに対応付ける
+- [x] 1.2 ユーザーに表示される diagnostics 情報から、内部独自のルール名を排除する（隠蔽する）方針を定義する
+- [x] 1.3 対象となるルールが公式の「Rule Code、Title、English description (英語説明)、ドキュメントURL」を持つ「カタログ」データとして管理できるようにする
+- [x] 1.4 公式と同等の水準を満たしていない (parity 未達の) 独自ルールの扱いについて、「hidden (隠し扱い) または experimental (実験的扱い)」とするという定義を明確にする
 
 ### Definition of Done (DoD)
 
-- [ ] ユーザー向けの diagnostics 情報に、内部の独自ルール名が一切表示されないようになっていること
-- [ ] 同等水準 (parity) に達していないルールの扱いが、プログラム上でもドキュメント上でも明確に分離されていること
-- [ ] 公式のメタデータ情報の源 (source of truth) が 1 箇所に集約されてブレがないこと
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] ユーザー向けの diagnostics 情報に、内部の独自ルール名が一切表示されないようになっていること
+- [x] 同等水準 (parity) に達していないルールの扱いが、プログラム上でもドキュメント上でも明確に分離されていること
+- [x] 公式のメタデータ情報の源 (source of truth) が 1 箇所に集約されてブレがないこと
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
