@@ -22,15 +22,15 @@
 
 ## 2. Windows Packaging Self-Containment
 
-- [ ] 2.1 Windows binary の VC++ runtime 依存を build policy 側で解消する。`x86_64-pc-windows-msvc` 向けに `crt-static` を有効化し、manifest dependency を消すだけの対症療法にしない
-- [ ] 2.2 Windows runner 上で packaged `KatanA.exe` の import table を確認し、`VCRUNTIME140*.dll` / `api-ms-win-crt-*` 依存が除去されたことを検証する
-- [ ] 2.3 `komac analyze` / generated manifest review により、`KatanA-windows-x86_64.msi` が `Scope: user` / `InstallerType: wix` を維持しつつ、problematic な `Dependencies: Microsoft.VCRedist.2015+.x64` を含まないことを確認する
-- [ ] 2.4 `README.md` / `CHANGELOG.md` / release note に、Windows 配布形式と install prerequisites の実態が一致していることを確認する
+- [x] 2.1 Windows binary の VC++ runtime 依存を build policy 側で解消する。`x86_64-pc-windows-msvc` 向けに `crt-static` を有効化し、manifest dependency を消すだけの対症療法にしない
+- [x] 2.2 Windows runner 上で packaged `KatanA.exe` の import table を確認し、`VCRUNTIME140*.dll` / `api-ms-win-crt-*` 依存が除去されたことを検証する
+- [x] 2.3 `komac analyze` / generated manifest review により、`KatanA-windows-x86_64.msi` が `Scope: user` / `InstallerType: wix` を維持しつつ、problematic な `Dependencies: Microsoft.VCRedist.2015+.x64` を含まないことを確認する
+- [x] 2.4 `README.md` / `CHANGELOG.md` / release note に、Windows 配布形式と install prerequisites の実態が一致していることを確認する
 
 ### Definition of Done (DoD)
 
-- [ ] `KatanA-windows-x86_64.msi` / `KatanA.exe` が VC++ runtime 外部依存なしで配布できる
-- [ ] import table, MSI metadata, generated manifest の確認証跡が揃っている
+- [x] `KatanA-windows-x86_64.msi` / `KatanA.exe` が VC++ runtime 外部依存なしで配布できる
+- [x] import table, MSI metadata, generated manifest の確認証跡が揃っている
 
 ## 3. Windows Installer UX Refresh
 
