@@ -5,24 +5,28 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ## [0.22.1] - 2026-04-12 14:10:00 (UTC)
 
 ### ✨ Improvements
+
 - **Extended Localization**: Completed native localization for "Official Website" links and About dialog entries across all 11 supported languages.
 - **macOS Menu Optimization**: Simplified the macOS-specific application menu by removing redundant "Hide" and "Show All" items for a cleaner user experience.
 
 ## [0.22.0] - 2026-04-12 13:10:00 (UTC)
 
 ### Added
+
 - Implemented Markdown Authoring Commands (Bold, Italic, Strikethrough, etc.) and integrated them into the command inventory.
 - Added comprehensive Image Ingest Pipeline UI and fallback integrations.
 - Replaced missing images with an aesthetic UI fallback component (`ImageFallbackOps`) for better user experience.
 - Persisted image ingestion settings to allow custom paths for image asset management.
 
 ### Fixed
+
 - Fixed an AST linter violation related to horizontal layouts in `preview_pane` by migrating to `AlignCenter` widget.
 - Resolved unused imports in the images functionality of the preview pane.
 
 ## [0.21.0] - 2026-04-12 08:21:00 (UTC)
 
 ### Added
+
 - Implemented Shortcut Customization UI in Settings.
 - Added comprehensive localization for the shortcut settings panel (de, es, fr, it, ko, pt, zh-CN, zh-TW).
 - Introduced conflict detection to warn users if a newly bound shortcut is already in use by another feature.
