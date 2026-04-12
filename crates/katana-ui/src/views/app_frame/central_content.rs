@@ -95,6 +95,8 @@ impl<'a> CentralContent<'a> {
                         false,
                         &app.state.search.doc_search_matches,
                         app.state.search.doc_search_active_index,
+                        &mut app.editor_cursor_range,
+                        app.pending_editor_cursor.take(),
                     )
                     .show(ui);
                 }

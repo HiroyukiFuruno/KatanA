@@ -13,50 +13,8 @@ mod types;
 pub(crate) use types::{ExplorerLoadType, ExportTask, TabPreviewCache};
 pub use types::{KatanaApp, UpdateInstallEvent};
 
-pub(crate) const SIDEBAR_COLLAPSED_TOGGLE_WIDTH: f32 = 24.0;
-
-pub(crate) const FILE_TREE_PANEL_MIN_WIDTH: f32 = 120.0;
-
-pub(crate) const FILE_TREE_PANEL_DEFAULT_WIDTH: f32 = 220.0;
-
-pub(crate) const SPLIT_PREVIEW_PANEL_MIN_WIDTH: f32 = 200.0;
-
-pub(crate) const TAB_NAV_BUTTONS_AREA_WIDTH: f32 = 80.0;
-
-pub(crate) const TAB_INTER_ITEM_SPACING: f32 = 4.0;
-
-pub(crate) const TAB_DROP_ANIMATION_TIME: f32 = 0.1;
-
-pub(crate) const TAB_DROP_INDICATOR_WIDTH: f32 = 2.5;
-
-pub(crate) const EDITOR_INITIAL_VISIBLE_ROWS: usize = 40;
-
-pub(crate) const SCROLL_SYNC_DEAD_ZONE: f32 = 0.002;
-
-pub(crate) const TAB_TOOLTIP_SHOW_DELAY_SECS: f32 = 0.25;
-
-pub(crate) const NO_WORKSPACE_BOTTOM_SPACING: f32 = 8.0;
-
-pub(crate) const RECENT_WORKSPACES_SPACING: f32 = 8.0;
-
-pub(crate) const RECENT_WORKSPACES_ITEM_SPACING: f32 = 4.0;
-
-pub(crate) const RECENT_WORKSPACES_HEADING_LEFT_PADDING: f32 = 10.0;
-pub(crate) const HISTORY_MODAL_EMPTY_BOTTOM_SPACING: f32 = 10.0;
-
-pub(crate) const RAIL_POPUP_WIDTH: f32 = 320.0;
-pub(crate) const RAIL_POPUP_HEIGHT: f32 = 400.0;
-pub(crate) const RAIL_POPUP_ROUNDING: f32 = 12.0;
-pub(crate) const RAIL_POPUP_PADDING: i8 = 12;
-pub(crate) const RAIL_POPUP_MARGIN: f32 = 4.0;
-pub(crate) const RAIL_POPUP_ANIMATION_TIME: f32 = 0.15;
-pub(crate) const RAIL_POPUP_SHADOW_ALPHA: u8 = 64;
-pub(crate) const RAIL_POPUP_Y_OFFSET_SEARCH: f32 = 40.0;
-pub(crate) const RAIL_POPUP_Y_OFFSET_HISTORY: f32 = 100.0;
-pub(crate) const RAIL_POPUP_Y_OFFSET_WORKSPACE: f32 = 40.0;
-pub(crate) const RAIL_POPUP_Y_OFFSET_HELP: f32 = 60.0;
-pub(crate) const RAIL_POPUP_SPACING_LARGE: f32 = 8.0;
-pub(crate) const SEARCH_FALLBACK_RECT_WIDTH: f32 = 10.0;
+pub mod constants;
+pub(crate) use constants::*;
 
 pub(crate) const ACTIVITY_RAIL_PADDING: f32 = 8.0;
 
@@ -103,6 +61,8 @@ impl KatanaApp {
             changelog_sections: Vec::new(),
             needs_changelog_display: false,
             old_app_version: None,
+            editor_cursor_range: None,
+            pending_editor_cursor: None,
         };
         let current_version = env!("CARGO_PKG_VERSION");
         let mut show_changelog = false;

@@ -71,3 +71,14 @@ impl Default for LayoutSettings {
         }
     }
 }
+
+impl Default for IngestSettings {
+    fn default() -> Self {
+        Self {
+            image_save_directory: SettingsDefaultOps::default_image_save_directory(),
+            create_directory_if_not_exists: true,
+            image_name_format: SettingsDefaultOps::default_image_name_format(),
+            show_confirmation_dialog: true,
+        }
+    }
+}

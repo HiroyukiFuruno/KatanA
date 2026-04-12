@@ -33,6 +33,40 @@ pub struct SearchMessages {
     pub command_doc_search: String,
     #[serde(default = "default_command_refresh_document")]
     pub command_refresh_document: String,
+    /* WHY: Markdown authoring command labels shown in the command palette. */
+    #[serde(default = "default_command_author_bold")]
+    pub command_author_bold: String,
+    #[serde(default = "default_command_author_italic")]
+    pub command_author_italic: String,
+    #[serde(default = "default_command_author_strikethrough")]
+    pub command_author_strikethrough: String,
+    #[serde(default = "default_command_author_inline_code")]
+    pub command_author_inline_code: String,
+    #[serde(default = "default_command_author_heading1")]
+    pub command_author_heading1: String,
+    #[serde(default = "default_command_author_heading2")]
+    pub command_author_heading2: String,
+    #[serde(default = "default_command_author_heading3")]
+    pub command_author_heading3: String,
+    #[serde(default = "default_command_author_bullet_list")]
+    pub command_author_bullet_list: String,
+    #[serde(default = "default_command_author_numbered_list")]
+    pub command_author_numbered_list: String,
+    #[serde(default = "default_command_author_blockquote")]
+    pub command_author_blockquote: String,
+    #[serde(default = "default_command_author_code_block")]
+    pub command_author_code_block: String,
+    #[serde(default = "default_command_author_horizontal_rule")]
+    pub command_author_horizontal_rule: String,
+    #[serde(default = "default_command_author_insert_link")]
+    pub command_author_insert_link: String,
+    #[serde(default = "default_command_author_insert_table")]
+    pub command_author_insert_table: String,
+    /* WHY: Image ingest command labels. */
+    #[serde(default = "default_command_ingest_image_file")]
+    pub command_ingest_image_file: String,
+    #[serde(default = "default_command_ingest_clipboard_image")]
+    pub command_ingest_clipboard_image: String,
 }
 
 fn default_command_global_search() -> String {
@@ -43,4 +77,53 @@ fn default_command_doc_search() -> String {
 }
 fn default_command_refresh_document() -> String {
     "Refresh Document".to_string()
+}
+/* WHY: Authoring command defaults (English fallback for locales not yet updated). */
+fn default_command_author_bold() -> String {
+    "Bold".to_string()
+}
+fn default_command_author_italic() -> String {
+    "Italic".to_string()
+}
+fn default_command_author_strikethrough() -> String {
+    "Strikethrough".to_string()
+}
+fn default_command_author_inline_code() -> String {
+    "Inline Code".to_string()
+}
+fn default_command_author_heading1() -> String {
+    "Heading 1".to_string()
+}
+fn default_command_author_heading2() -> String {
+    "Heading 2".to_string()
+}
+fn default_command_author_heading3() -> String {
+    "Heading 3".to_string()
+}
+fn default_command_author_bullet_list() -> String {
+    "Bullet List".to_string()
+}
+fn default_command_author_numbered_list() -> String {
+    "Numbered List".to_string()
+}
+fn default_command_author_blockquote() -> String {
+    "Blockquote".to_string()
+}
+fn default_command_author_code_block() -> String {
+    "Code Block".to_string()
+}
+fn default_command_author_horizontal_rule() -> String {
+    "Horizontal Rule".to_string()
+}
+fn default_command_author_insert_link() -> String {
+    "Insert Link".to_string()
+}
+fn default_command_author_insert_table() -> String {
+    "Insert Table".to_string()
+}
+fn default_command_ingest_image_file() -> String {
+    "Attach Image File…".to_string()
+}
+fn default_command_ingest_clipboard_image() -> String {
+    "Paste Image from Clipboard".to_string()
 }

@@ -939,6 +939,8 @@ mod tests_extra {
             changelog_sections: Vec::new(),
             needs_changelog_display: false,
             old_app_version: None,
+            editor_cursor_range: None,
+            pending_editor_cursor: None,
         }
     }
 

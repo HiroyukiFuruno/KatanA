@@ -1,19 +1,19 @@
 use crate::app::preview::PreviewOps;
 use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
-use crate::shell_ui::{SPLIT_HALF_RATIO, SPLIT_PANEL_MAX_RATIO};
+use crate::shell::SPLIT_PREVIEW_PANEL_MIN_WIDTH;
+use crate::shell_ui::SPLIT_HALF_RATIO;
 use crate::theme_bridge;
 use crate::views::panels::editor::EditorContent;
 use crate::views::panels::preview::{PreviewContent, PreviewLogicOps};
 use katana_platform::PaneOrder;
 
-pub(crate) struct VerticalSplit<'a> {
+pub(crate) struct HorizontalSplit<'a> {
     pub _ctx: &'a egui::Context,
     pub app: &'a mut KatanaApp,
     pub pane_order: PaneOrder,
 }
-
-impl<'a> VerticalSplit<'a> {
+impl<'a> HorizontalSplit<'a> {
     pub fn new(_ctx: &'a egui::Context, app: &'a mut KatanaApp, pane_order: PaneOrder) -> Self {
         Self {
             _ctx,
@@ -21,12 +21,11 @@ impl<'a> VerticalSplit<'a> {
             pane_order,
         }
     }
-
     pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let pane_order = self.pane_order;
-        let available_height = ui.ctx().content_rect().height();
-        let half_height = available_height * SPLIT_HALF_RATIO;
+        let available_width = ui.ctx().content_rect().width();
+        let half_width = (available_width * SPLIT_HALF_RATIO).max(SPLIT_PREVIEW_PANEL_MIN_WIDTH);
         let _preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
             app.state
                 .config
@@ -40,14 +39,18 @@ impl<'a> VerticalSplit<'a> {
         let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
-                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_v_bottom")
+                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_h_right")
             }
             PaneOrder::PreviewFirst => {
-                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_v_top")
+                PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_h_left")
             }
         };
 
-        let show_preview_top = pane_order == PaneOrder::PreviewFirst;
+        let panel_side = match pane_order {
+            PaneOrder::EditorFirst => egui::Panel::right(panel_id),
+            PaneOrder::PreviewFirst => egui::Panel::left(panel_id),
+        };
+
         let scroll_sync = app.state.scroll.sync_override.unwrap_or(
             app.state
                 .config
@@ -57,20 +60,17 @@ impl<'a> VerticalSplit<'a> {
                 .scroll_sync_enabled,
         );
 
-        let panel = if show_preview_top {
-            egui::Panel::top(panel_id)
-        } else {
-            egui::Panel::bottom(panel_id)
-        };
-
-        panel
+        panel_side
             .resizable(true)
-            .default_size(half_height)
-            .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
+            .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+            .default_size(half_width)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
                 if let Some(path) = &active_path {
-                    let pane = KatanaApp::get_preview_pane(&mut app.tab_previews, path.clone());
+                    let pane = crate::shell::KatanaApp::get_preview_pane(
+                        &mut app.tab_previews,
+                        path.clone(),
+                    );
                     let toc_visible = app.state.config.settings.settings().layout.toc_visible;
                     let show_toc = app.state.layout.show_toc;
                     download_req = PreviewContent::new(

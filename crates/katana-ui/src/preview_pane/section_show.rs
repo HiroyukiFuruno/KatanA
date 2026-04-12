@@ -277,12 +277,13 @@ pub(super) fn show_section(
             source_lines,
             ..
         } => {
-            let (rect, req) = crate::preview_pane::ImageLogicOps::show_not_installed(
-                ui,
-                kind,
-                download_url,
-                install_path,
-            );
+            let (rect, req) =
+                crate::preview_pane::image_fallback::ImageFallbackOps::show_not_installed(
+                    ui,
+                    kind,
+                    download_url,
+                    install_path,
+                );
             if let Some(anchors) = block_anchors {
                 anchors.push((global_line_offset..global_line_offset + source_lines, rect));
             }

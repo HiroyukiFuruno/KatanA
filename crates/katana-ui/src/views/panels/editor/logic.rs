@@ -3,45 +3,6 @@ use crate::app_state::ScrollSource;
 use eframe::egui;
 
 impl EditorLogicOps {
-    /// Resolve editor theme colors from the egui context's temporary data.
-    pub fn resolve_editor_colors(ui: &egui::Ui) -> EditorColors {
-        ui.ctx().data(|d| -> EditorColors {
-            if let Some(tc) = d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                "katana_theme_colors",
-            )) {
-                (
-                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.code.background),
-                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.code.text),
-                    Some(crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                        tc.code.selection,
-                    )),
-                    Some(crate::theme_bridge::ThemeBridgeOps::rgba_to_color32(
-                        tc.code.current_line_background,
-                    )),
-                    Some(crate::theme_bridge::ThemeBridgeOps::rgba_to_color32(
-                        tc.code.hover_line_background,
-                    )),
-                    Some(crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                        tc.code.line_number_text,
-                    )),
-                    Some(crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                        tc.code.line_number_active_text,
-                    )),
-                )
-            } else {
-                (
-                    ui.visuals().extreme_bg_color,
-                    ui.visuals().text_color(),
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                )
-            }
-        })
-    }
-
     /// Count the line (paragraph) number for a given character index in the buffer.
     pub fn char_index_to_line(buffer: &str, char_idx: usize) -> usize {
         buffer
@@ -63,6 +24,54 @@ impl EditorLogicOps {
             }
         }
         None
+    }
+
+    /// Apply a pending cursor to a TextEdit widget after an authoring transform.
+    /// Pattern: TextEdit::load_state → set_char_range → TextEdit::store_state
+    pub fn apply_pending_cursor(
+        ui: &mut egui::Ui,
+        editor_id: egui::Id,
+        (char_start, char_end): (usize, usize),
+    ) {
+        if let Some(mut ts) = egui::TextEdit::load_state(ui.ctx(), editor_id) {
+            let new_range = egui::text::CCursorRange {
+                primary: egui::text::CCursor {
+                    index: char_end,
+                    prefer_next_row: false,
+                },
+                secondary: egui::text::CCursor {
+                    index: char_start,
+                    prefer_next_row: false,
+                },
+                h_pos: None,
+            };
+            ts.cursor.set_char_range(Some(new_range));
+            egui::TextEdit::store_state(ui.ctx(), editor_id, ts);
+        }
+    }
+
+    /// Check and handle scroll requests targeting a specific line programmatically
+    pub fn handle_scroll_to_line(
+        ui: &mut egui::Ui,
+        scroll: &mut crate::app_state::ScrollState,
+        buffer: &str,
+        response: &egui::Response,
+        galley: &egui::text::Galley,
+    ) {
+        if let Some(target_line) = scroll.scroll_to_line
+            && let Some(idx) = Self::line_to_char_index(buffer, target_line)
+        {
+            let cursor = egui::text::CCursor {
+                index: idx,
+                prefer_next_row: false,
+            };
+            let pos = galley.pos_from_cursor(cursor);
+            let rect = egui::Rect::from_min_max(
+                egui::pos2(response.rect.min.x, response.rect.min.y + pos.min.y),
+                egui::pos2(response.rect.max.x, response.rect.min.y + pos.max.y),
+            );
+            ui.scroll_to_rect(rect, Some(egui::Align::Center));
+        }
     }
 
     /// Convert a line range to (start_char_index, end_char_index) in the buffer.
@@ -95,36 +104,6 @@ impl EditorLogicOps {
             (Some(s), Some(e)) => Some((s, e)),
             _ => None,
         }
-    }
-
-    /// Compute the current line highlight color, falling back to a semi-transparent overlay.
-    pub fn current_line_highlight_color(
-        dark_mode: bool,
-        themed_color: Option<egui::Color32>,
-    ) -> egui::Color32 {
-        const HIGHLIGHT_ALPHA: u8 = 15;
-        themed_color.unwrap_or_else(|| {
-            if dark_mode {
-                crate::theme_bridge::ThemeBridgeOps::from_white_alpha(HIGHLIGHT_ALPHA)
-            } else {
-                crate::theme_bridge::ThemeBridgeOps::from_black_alpha(HIGHLIGHT_ALPHA)
-            }
-        })
-    }
-
-    /// Compute the hover highlight color for preview-linked lines.
-    pub fn hover_line_highlight_color(
-        dark_mode: bool,
-        themed_color: Option<egui::Color32>,
-    ) -> egui::Color32 {
-        const HOVER_HIGHLIGHT_ALPHA: u8 = 10;
-        themed_color.unwrap_or_else(|| {
-            if dark_mode {
-                crate::theme_bridge::ThemeBridgeOps::from_white_alpha(HOVER_HIGHLIGHT_ALPHA)
-            } else {
-                crate::theme_bridge::ThemeBridgeOps::from_black_alpha(HOVER_HIGHLIGHT_ALPHA)
-            }
-        })
     }
 
     /// Update scroll synchronization state after editor rendering.
@@ -165,128 +144,28 @@ impl EditorLogicOps {
             scroll.source = ScrollSource::Editor;
         }
     }
+
+    /// Renders the context menu for the given response.
+    pub fn render_context_menu(
+        response: &egui::Response,
+        action: &mut crate::app_state::AppAction,
+    ) {
+        response.context_menu(|ui| {
+            let i18n = crate::i18n::I18nOps::get();
+            if ui
+                .button(&i18n.search.command_ingest_clipboard_image)
+                .clicked()
+            {
+                *action = crate::app_state::AppAction::IngestClipboardImage;
+                ui.close_menu();
+            }
+            if ui.button(&i18n.search.command_ingest_image_file).clicked() {
+                *action = crate::app_state::AppAction::IngestImageFile;
+                ui.close_menu();
+            }
+        });
+    }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn char_index_to_line_at_start() {
-        assert_eq!(EditorLogicOps::char_index_to_line("hello\nworld\n", 0), 0);
-    }
-
-    #[test]
-    fn char_index_to_line_middle() {
-        assert_eq!(
-            EditorLogicOps::char_index_to_line("line0\nline1\nline2\n", 6),
-            1
-        );
-    }
-
-    #[test]
-    fn char_index_to_line_end() {
-        assert_eq!(EditorLogicOps::char_index_to_line("a\nb\nc\n", 5), 2);
-    }
-
-    #[test]
-    fn line_to_char_index_first_line() {
-        assert_eq!(
-            EditorLogicOps::line_to_char_index("hello\nworld\n", 0),
-            Some(0)
-        );
-    }
-
-    #[test]
-    fn line_to_char_index_second_line() {
-        assert_eq!(
-            EditorLogicOps::line_to_char_index("hello\nworld\n", 1),
-            Some(6)
-        );
-    }
-
-    #[test]
-    fn line_to_char_index_out_of_range() {
-        assert_eq!(EditorLogicOps::line_to_char_index("hello\n", 5), None);
-    }
-
-    #[test]
-    fn line_range_to_char_range_single_line() {
-        let buf = "line0\nline1\nline2\n";
-        let result = EditorLogicOps::line_range_to_char_range(buf, 1, 1);
-        assert_eq!(result, Some((6, 11)));
-    }
-
-    #[test]
-    fn line_range_to_char_range_multiple_lines() {
-        let buf = "line0\nline1\nline2\n";
-        let result = EditorLogicOps::line_range_to_char_range(buf, 0, 1);
-        assert_eq!(result, Some((0, 11)));
-    }
-
-    #[test]
-    fn line_range_to_char_range_to_end() {
-        let buf = "line0\nline1\nline2";
-        let result = EditorLogicOps::line_range_to_char_range(buf, 2, 2);
-        assert_eq!(result, Some((12, 16)));
-    }
-
-    #[test]
-    fn highlight_color_uses_themed_when_available() {
-        /* WHY: Use selection color from visuals to avoid hardcoded-color lint */
-        let custom = egui::Color32::PLACEHOLDER;
-        assert_eq!(
-            EditorLogicOps::current_line_highlight_color(true, Some(custom)),
-            custom
-        );
-        assert_eq!(
-            EditorLogicOps::hover_line_highlight_color(false, Some(custom)),
-            custom
-        );
-    }
-
-    #[test]
-    fn highlight_color_falls_back_for_dark_mode() {
-        let color = EditorLogicOps::current_line_highlight_color(true, None);
-        assert_ne!(color, egui::Color32::TRANSPARENT);
-    }
-
-    #[test]
-    fn highlight_color_falls_back_for_light_mode() {
-        let color = EditorLogicOps::current_line_highlight_color(false, None);
-        assert_ne!(color, egui::Color32::TRANSPARENT);
-    }
-
-    #[test]
-    fn update_scroll_sync_consuming_preview_resets_source() {
-        let mut scroll = crate::app_state::ScrollState {
-            source: ScrollSource::Preview,
-            ..Default::default()
-        };
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 250.0, true, 0.01);
-        assert_eq!(scroll.source, ScrollSource::Neither);
-        assert!(scroll.editor_echo.is_echo(250.0));
-    }
-
-    #[test]
-    fn update_scroll_sync_editor_scrolled_beyond_epsilon() {
-        let mut scroll = crate::app_state::ScrollState {
-            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
-            ..Default::default()
-        };
-        /* WHY: 400.0 offset on 500.0 max_scroll means progress=0.8 */
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
-        assert_eq!(scroll.source, ScrollSource::Editor);
-    }
-
-    #[test]
-    fn update_scroll_sync_within_echo_no_change() {
-        let mut scroll = crate::app_state::ScrollState {
-            source: ScrollSource::Neither,
-            ..Default::default()
-        };
-        scroll.editor_echo.record(250.0);
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 251.0, false, 0.01);
-        assert_eq!(scroll.source, ScrollSource::Neither);
-    }
-}
+include!("logic_tests.rs");

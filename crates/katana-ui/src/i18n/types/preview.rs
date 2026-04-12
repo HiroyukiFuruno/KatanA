@@ -9,7 +9,18 @@ pub struct PreviewMessages {
     pub slideshow_settings: String,
     pub highlight_hover: String,
     pub show_diagram_controls: String,
+    #[serde(default = "default_missing_image_text")]
+    pub missing_image: String,
+    #[serde(default = "default_remote_image_text")]
+    pub remote_image: String,
     pub diagram_controller: DiagramControllerMessages,
+}
+
+fn default_missing_image_text() -> String {
+    "Missing Local Image".to_string()
+}
+fn default_remote_image_text() -> String {
+    "Remote Image URL".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
