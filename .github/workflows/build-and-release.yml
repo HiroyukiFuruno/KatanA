@@ -326,7 +326,7 @@ jobs:
           fi
 
       - name: Attest Artifacts
-        uses: actions/attest-build-provenance@1c608f13344fc57ae4446b79f6764426002f5a6b # v2.2.0
+        uses: actions/attest-build-provenance@520d128f165991a6c774bcb264f323e3d70747f4 # v2.2.0
         with:
           subject-path: 'release-files/*'
 
