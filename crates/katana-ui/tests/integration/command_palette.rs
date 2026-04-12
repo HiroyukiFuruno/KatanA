@@ -16,7 +16,7 @@ fn test_app_command_provider() {
     let results = provider.search("Settings", None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::Action);
-    assert_eq!(results[0].label, "Toggle Settings");
+    assert_eq!(results[0].label, "Settings");
 
     match &results[0].execute_payload {
         CommandPaletteExecutePayload::DispatchAppAction(action) => {
@@ -77,16 +77,16 @@ fn test_integration_command_palette_ui() {
     harness.step();
 
     /* WHY: 3. Verify results are populated in UI */
-    /* WHY: AppCommandProvider should provide "Toggle Settings" */
-    let _ = harness.get_by_label("Toggle Settings");
+    /* WHY: AppCommandProvider should provide "Settings" */
+    let _ = harness.get_by_label("Settings");
 
     /* WHY: 4. Select and execution (Enter) */
     /* WHY: We'll simulate the Enter key by checking if the action is dispatched */
     /* WHY: Actually, let's just trigger the keyboard event if possible, or verify selection logic. */
     /* WHY: 4. Select and execution */
     /* WHY: Simulation of clicking the result item in the palette */
-    /* WHY: Note: get_by_label matches the Toggle Settings text */
-    harness.get_by_label("Toggle Settings").click();
+    /* WHY: Note: get_by_label matches the Settings text */
+    harness.get_by_label("Settings").click();
 
     harness.step(); /* WHY: UI processes click, sets is_open = false, BUT action is not set in interact.clicked() branch in show()! */
     /* WHY: Wait, looking at command_palette.rs: */
