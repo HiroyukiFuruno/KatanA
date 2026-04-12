@@ -72,6 +72,37 @@ fn md001_rule_id_is_official_code() {
     );
 }
 
+#[test]
+fn md001_code_blocks_do_not_trigger_false_positive() {
+    let rule = HeadingIncrementRule;
+    let path = PathBuf::from("test.md");
+    let content = "\
+# Title
+
+```rust
+// A comment looking like an H3 inside code block should not trigger MD001
+### This is not a heading
+```
+";
+    let diagnostics = rule.evaluate(&path, content);
+    assert!(
+        diagnostics.is_empty(),
+        "Headings inside code blocks must be ignored (no false positive)"
+    );
+}
+
+#[test]
+fn md001_starts_with_h2_is_valid() {
+    let rule = HeadingIncrementRule;
+    let path = PathBuf::from("test.md");
+    let content = "## Subtitle";
+    let diagnostics = rule.evaluate(&path, content);
+    assert!(
+        diagnostics.is_empty(),
+        "Starting with H2 is valid, MD001 only checks increment"
+    );
+}
+
 /* WHY: HeadingStructureRule alias backward-compat test
 ======================================================= */
 
