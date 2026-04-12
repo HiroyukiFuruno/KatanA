@@ -17,6 +17,8 @@ pub const DEFAULT_IGNORED_DIRECTORIES: &[&str] = &[
     ".idea",
     ".vscode",
 ];
+pub(crate) const DEFAULT_IMAGE_SAVE_DIRECTORY: &str = "./asset/img";
+pub(crate) const DEFAULT_IMAGE_NAME_FORMAT: &str = "{uuid}";
 
 impl SettingsDefaultOps {
     pub fn default_version() -> String {
@@ -105,6 +107,14 @@ impl SettingsDefaultOps {
     pub fn default_html_template() -> String {
         "default".to_string()
     }
+
+    pub fn default_image_save_directory() -> String {
+        DEFAULT_IMAGE_SAVE_DIRECTORY.to_string()
+    }
+
+    pub fn default_image_name_format() -> String {
+        DEFAULT_IMAGE_NAME_FORMAT.to_string()
+    }
 }
 
 impl Default for AppSettings {
@@ -122,6 +132,7 @@ impl Default for AppSettings {
             updates: UpdateSettings::default(),
             behavior: BehaviorSettings::default(),
             shortcuts: ShortcutSettings::default(),
+            ingest: IngestSettings::default(),
             terms_accepted_version: None,
             language: SettingsDefaultOps::default_language(),
             extra: Vec::new(),

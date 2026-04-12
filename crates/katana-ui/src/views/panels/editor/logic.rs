@@ -144,6 +144,27 @@ impl EditorLogicOps {
             scroll.source = ScrollSource::Editor;
         }
     }
+
+    /// Renders the context menu for the given response.
+    pub fn render_context_menu(
+        response: &egui::Response,
+        action: &mut crate::app_state::AppAction,
+    ) {
+        response.context_menu(|ui| {
+            let i18n = crate::i18n::I18nOps::get();
+            if ui
+                .button(&i18n.search.command_ingest_clipboard_image)
+                .clicked()
+            {
+                *action = crate::app_state::AppAction::IngestClipboardImage;
+                ui.close_menu();
+            }
+            if ui.button(&i18n.search.command_ingest_image_file).clicked() {
+                *action = crate::app_state::AppAction::IngestImageFile;
+                ui.close_menu();
+            }
+        });
+    }
 }
 
 #[cfg(test)]

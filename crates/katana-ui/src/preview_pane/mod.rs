@@ -14,6 +14,7 @@ pub mod section;
 mod section_show;
 pub mod utils;
 pub use section::*;
+pub mod image_fallback;
 pub mod images;
 pub use images::*;
 pub mod fullscreen;
