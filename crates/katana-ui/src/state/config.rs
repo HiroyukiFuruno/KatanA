@@ -19,13 +19,16 @@ pub enum SettingsTab {
     Workspace,
     Updates,
     Behavior,
+    Shortcuts,
 }
 
 impl SettingsTab {
     pub const fn section(&self) -> SettingsSection {
         match self {
             Self::Theme | Self::Icons | Self::Font | Self::Layout => SettingsSection::Appearance,
-            Self::Workspace | Self::Updates | Self::Behavior => SettingsSection::Behavior,
+            Self::Workspace | Self::Updates | Self::Behavior | Self::Shortcuts => {
+                SettingsSection::Behavior
+            }
         }
     }
 }
@@ -43,6 +46,7 @@ impl SettingsSection {
                 SettingsTab::Workspace,
                 SettingsTab::Updates,
                 SettingsTab::Behavior,
+                SettingsTab::Shortcuts,
             ],
         }
     }

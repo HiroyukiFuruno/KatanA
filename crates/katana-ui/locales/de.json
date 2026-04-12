@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "Verhalten"
+            },
+            {
+                "key": "shortcuts",
+                "name": "Tastenkombinationen"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "Aufbewahrung (Tage)",
             "days_suffix": " Tage"
         },
-        "general": "Allgemein"
+        "general": "Allgemein",
+        "shortcuts": {
+            "edit": "Bearbeiten",
+            "press_keys": "Tasten drücken... (Esc zum Abbrechen)",
+            "restore_defaults": "Standardwerte wiederherstellen",
+            "none": "Keine",
+            "conflict_warning": "Warnung: Tastenkombination wurde überschrieben. Sie wurde bereits von \"{command}\" verwendet."
+        }
     },
     "tab": {
         "nav_prev": "Vorheriger Tab",

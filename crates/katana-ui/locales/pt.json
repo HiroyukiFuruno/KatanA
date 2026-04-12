@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "Comportamento"
+            },
+            {
+                "key": "shortcuts",
+                "name": "Atalhos"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "Dias de retenção",
             "days_suffix": " dias"
         },
-        "general": "Geral"
+        "general": "Geral",
+        "shortcuts": {
+            "edit": "Editar",
+            "press_keys": "Pressione as teclas... (Esc para cancelar)",
+            "restore_defaults": "Restaurar padrões",
+            "none": "Nenhum",
+            "conflict_warning": "Aviso: O atalho foi sobrescrito. Já estava em uso por \"{command}\"."
+        }
     },
     "tab": {
         "nav_prev": "Aba anterior",

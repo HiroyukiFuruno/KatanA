@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "行為"
+            },
+            {
+                "key": "shortcuts",
+                "name": "快捷鍵"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "快取保留天數",
             "days_suffix": " 天"
         },
-        "general": "一般"
+        "general": "一般",
+        "shortcuts": {
+            "edit": "編輯",
+            "press_keys": "請按鍵... (Esc 取消)",
+            "restore_defaults": "恢復默認",
+            "none": "無",
+            "conflict_warning": "警告: 快捷鍵已被覆蓋。它已被\"{command}\"使用。"
+        }
     },
     "tab": {
         "nav_prev": "上一個標籤",

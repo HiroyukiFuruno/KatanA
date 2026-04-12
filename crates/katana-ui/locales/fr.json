@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "Comportement"
+            },
+            {
+                "key": "shortcuts",
+                "name": "Raccourcis"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "Rétention (jours)",
             "days_suffix": " jours"
         },
-        "general": "Général"
+        "general": "Général",
+        "shortcuts": {
+            "edit": "Éditer",
+            "press_keys": "Appuyez sur les touches... (Esc pour annuler)",
+            "restore_defaults": "Restaurer par défaut",
+            "none": "Aucun",
+            "conflict_warning": "Avertissement : Le raccourci a été écrasé. Il était déjà utilisé par \"{command}\"."
+        }
     },
     "tab": {
         "nav_prev": "Onglet précédent",

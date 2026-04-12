@@ -12,6 +12,7 @@ pub(super) fn active_tab_title(tab: &SettingsTab) -> String {
         SettingsTab::Workspace => ("workspace", "Workspace"),
         SettingsTab::Updates => ("updates", "Updates"),
         SettingsTab::Behavior => ("behavior", "Behavior"),
+        SettingsTab::Shortcuts => ("shortcuts", "Shortcuts"),
     };
     tabs.iter()
         .find(|t| t.key == key)
