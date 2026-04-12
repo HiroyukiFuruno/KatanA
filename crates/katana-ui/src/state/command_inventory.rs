@@ -136,6 +136,13 @@ impl CommandInventory {
                 label: || I18nOps::get().menu.demo.clone(),
                 is_available: |_| true,
             },
+            CommandInventoryItem {
+                id: "help.github",
+                action: AppAction::OpenGitHub,
+                group: CommandGroup::Help,
+                label: || I18nOps::get().menu.github.clone(),
+                is_available: |_| true,
+            },
         ]
     }
 }

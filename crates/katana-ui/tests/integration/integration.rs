@@ -3563,6 +3563,7 @@ fn test_ast_linter_locales() {
             continue;
         } /* WHY: en is the baseline structure */
 
+        #[allow(clippy::too_many_arguments)]
         fn check_structure_and_values(
             en_val: &serde_json::Value,
             target_val: Option<&serde_json::Value>,

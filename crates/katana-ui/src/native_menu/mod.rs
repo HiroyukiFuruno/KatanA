@@ -29,6 +29,7 @@ mod ffi {
     pub const TAG_EXPLORER: i32 = 24;
     pub const TAG_REFRESH_EXPLORER: i32 = 25;
     pub const TAG_CLOSE_ALL: i32 = 26;
+    pub const TAG_GITHUB: i32 = 27;
     #[allow(dead_code)]
     unsafe extern "C" {
         pub fn katana_setup_native_menu();
@@ -60,6 +61,7 @@ mod ffi {
             explorer: *const std::ffi::c_char,
             refresh_explorer: *const std::ffi::c_char,
             close_all: *const std::ffi::c_char,
+            github: *const std::ffi::c_char,
         );
         pub fn katana_update_menu_state(
             save_enabled: bool,
@@ -158,6 +160,7 @@ impl NativeMenuOps {
             ffi::TAG_EXPLORER => AppAction::ToggleExplorer,
             ffi::TAG_REFRESH_EXPLORER => AppAction::RefreshExplorer,
             ffi::TAG_CLOSE_ALL => AppAction::CloseAllDocuments,
+            ffi::TAG_GITHUB => AppAction::OpenGitHub,
             _ => AppAction::None,
         }
     }

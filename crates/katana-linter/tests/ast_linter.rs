@@ -403,7 +403,7 @@ fn ast_linter_no_direct_process_command() {
 #[test]
 fn ast_linter_no_hardcoded_os_commands() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
-    let all_violations = katana_linter::rules::domains::os_command::OsCommandOps::lint(&root);
+    let all_violations = katana_linter::rules::domains::os_command::OsCommandOps::lint(root);
     ViolationReporterOps::panic(
         "no-hardcoded-os-commands",
         "Fix: Do not hardcode OS shortcuts like `\\u{2318}` or use invalid placeholder keys. Use {{os_cmd:key}} in Markdown and resolve dynamically.",

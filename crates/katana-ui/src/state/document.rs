@@ -265,7 +265,7 @@ mod tests {
             members: vec![],
         };
         let work = user_group("Work");
-        let all_groups = vec![system_demo, user_demo_named, work];
+        let all_groups = [system_demo, user_demo_named, work];
 
         let addable: Vec<_> = all_groups.iter().filter(|g| !g.is_demo()).collect();
         assert_eq!(addable.len(), 2, "only system Demo should be excluded");

@@ -99,6 +99,7 @@ pub enum AppAction {
     OpenHelpDemo,
     OpenWelcomeScreen,
     OpenUserGuide,
+    OpenGitHub,
     SwitchDemoLanguage(String),
     ClearAllCaches,
     CreateTabGroup {

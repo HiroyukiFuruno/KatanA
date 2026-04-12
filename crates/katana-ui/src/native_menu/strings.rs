@@ -30,6 +30,7 @@ pub(super) fn update_from_i18n() {
             &msgs.search.command_explorer,
             &msgs.search.command_refresh_explorer,
             &msgs.search.command_close_all,
+            &msgs.menu.github,
         );
     }
 }
@@ -60,6 +61,7 @@ unsafe fn update_menu_strings(
     explorer: &str,
     refresh_explorer: &str,
     close_all: &str,
+    github: &str,
 ) {
     let mk = |s: &str| std::ffi::CString::new(s).unwrap_or_default();
     let c_file = mk(file);
@@ -85,6 +87,7 @@ unsafe fn update_menu_strings(
     let c_explorer = mk(explorer);
     let c_refresh_explorer = mk(refresh_explorer);
     let c_close_all = mk(close_all);
+    let c_github = mk(github);
 
     ffi::katana_update_menu_strings(
         c_file.as_ptr(),
@@ -110,5 +113,6 @@ unsafe fn update_menu_strings(
         c_explorer.as_ptr(),
         c_refresh_explorer.as_ptr(),
         c_close_all.as_ptr(),
+        c_github.as_ptr(),
     );
 }

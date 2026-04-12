@@ -29,6 +29,7 @@ enum {
     TAG_EXPLORER       = 24,
     TAG_REFRESH_EXPLORER = 25,
     TAG_CLOSE_ALL      = 26,
+    TAG_GITHUB         = 27,
 };
 
 /* WHY: Global: Tag of the last selected menu action. */
@@ -71,6 +72,7 @@ static NSMenuItem *g_release_notes_item = nil;
 static NSMenuItem *g_welcome_item = nil;
 static NSMenuItem *g_guide_item = nil;
 static NSMenuItem *g_demo_item = nil;
+static NSMenuItem *g_github_item = nil;
 
 /// Called from Rust at the very start of main(), before eframe creates the window.
 /// Must be called before the window server registers the process to ensure
@@ -368,6 +370,17 @@ void katana_setup_native_menu(void) {
     [helpMenu addItem:demoItem];
     g_demo_item = demoItem;
 
+    [helpMenu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *githubItem = [[NSMenuItem alloc] 
+        initWithTitle:@"GitHub Repository" 
+        action:action 
+        keyEquivalent:@""];
+    [githubItem setTarget:g_target];
+    [githubItem setTag:TAG_GITHUB];
+    [helpMenu addItem:githubItem];
+    g_github_item = githubItem;
+
     NSMenuItem *helpMenuItem = [[NSMenuItem alloc] initWithTitle:@"Help" action:nil keyEquivalent:@""];
     [helpMenuItem setSubmenu:helpMenu];
 
@@ -418,7 +431,8 @@ void katana_update_menu_strings(
     const char* close_workspace,
     const char* explorer,
     const char* refresh_explorer,
-    const char* close_all
+    const char* close_all,
+    const char* github
 ) {
     @autoreleasepool {
         if (g_file_menu && file) {
@@ -492,6 +506,9 @@ void katana_update_menu_strings(
         }
         if (g_guide_item && user_guide) {
             [g_guide_item setTitle:[NSString stringWithUTF8String:user_guide]];
+        }
+        if (g_github_item && github) {
+            [g_github_item setTitle:[NSString stringWithUTF8String:github]];
         }
         if (g_demo_item && demo) {
             [g_demo_item setTitle:[NSString stringWithUTF8String:demo]];
