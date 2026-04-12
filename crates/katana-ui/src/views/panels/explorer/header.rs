@@ -167,9 +167,14 @@ impl<'a> ExplorerHeader<'a> {
                     .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
                     .desired_width(ui.available_width()),
             );
-            if ui.ctx().memory_mut(|m| m.data.get_temp(egui::Id::new("filter_newly_enabled"))).unwrap_or(false) {
+            if ui
+                .ctx()
+                .memory_mut(|m| m.data.get_temp(egui::Id::new("filter_newly_enabled")))
+                .unwrap_or(false)
+            {
                 resp.request_focus();
-                ui.ctx().memory_mut(|m| m.data.remove::<bool>(egui::Id::new("filter_newly_enabled")));
+                ui.ctx()
+                    .memory_mut(|m| m.data.remove::<bool>(egui::Id::new("filter_newly_enabled")));
             }
         }
     }
