@@ -9,6 +9,11 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 - **Extended Localization**: Completed native localization for "Official Website" links and About dialog entries across all 11 supported languages.
 - **macOS Menu Optimization**: Simplified the macOS-specific application menu by removing redundant "Hide" and "Show All" items for a cleaner user experience.
 
+### 🐞 Fixed
+
+- **Explorer Filter Behavior**: Fixed an issue where hidden directories starting with "." (e.g., .git) were not excluded during filtering.
+- **UI Usability**: Improved the Explorer filter to automatically focus the input field when enabled.
+
 ## [0.22.0] - 2026-04-12 13:10:00 (UTC)
 
 ### Added
