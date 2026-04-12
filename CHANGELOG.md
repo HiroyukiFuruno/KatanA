@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.20.0] - 2026-04-12 05:51:33 (UTC)
+
+### 🚀 Features
+
+- **Centralized Command Inventory**: Introduced a unified command tracking system to handle all user-facing actions consistently.
+- **Enhanced Application Menus**: Significantly expanded the File and View menus with new commands, maintaining complete parity across macOS native menus and other operating systems.
+- **Command Palette Grouping**: Results inside the Command Palette now display their respective group or category for better navigation and context.
+
+### ✨ Improvements
+
+- **Reorganized Help Menu**: Consolidated external links and application resources systematically, including a direct link to the GitHub repository.
+
+### 🔧 System
+
+- Improved application stability and cross-platform UI synchronization by establishing a strict single source of truth for command availability.
+
 ## [0.19.0] - 2026-04-12 02:30:00 (UTC)
 
 ### 🚀 Features
