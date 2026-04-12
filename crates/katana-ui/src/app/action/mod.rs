@@ -2,6 +2,7 @@
 mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;
+mod image_ingest;
 mod init;
 mod process_authoring;
 mod process_demo;

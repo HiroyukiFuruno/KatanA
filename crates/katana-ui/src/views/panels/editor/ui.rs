@@ -102,6 +102,8 @@ impl<'a> EditorContent<'a> {
 
                         let text_output = text_edit.show(ui);
                         let response = text_output.response;
+
+                        EditorLogicOps::render_context_menu(&response, action);
                         let galley = text_output.galley;
 
                         /* WHY: Capture the current cursor range so action handlers can read it. */

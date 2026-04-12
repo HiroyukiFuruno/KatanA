@@ -53,19 +53,47 @@ impl KatanaApp {
         self.pending_editor_cursor = Some((new_char_start, new_char_end));
     }
 
-    /// Stub for image file ingest — implemented in Task 2.
-    pub(crate) fn handle_action_ingest_image_file(&mut self) {
-        tracing::debug!("IngestImageFile: not yet implemented (Task 2)");
-    }
+    /// Helper to insert raw text into the document at cursor/selection
+    pub(crate) fn handle_action_insert_raw_markdown(&mut self, text: &str) {
+        let Some(doc) = self.state.active_document_mut() else {
+            return;
+        };
+        if doc.is_reference {
+            return;
+        }
 
-    /// Stub for clipboard image ingest — implemented in Task 2.
-    pub(crate) fn handle_action_ingest_clipboard_image(&mut self) {
-        tracing::debug!("IngestClipboardImage: not yet implemented (Task 2)");
-    }
+        let buffer = doc.buffer.clone();
+        let (sel_start, sel_end) = self
+            .editor_cursor_range
+            .map(|r| {
+                let lo = r.primary.index.min(r.secondary.index);
+                let hi = r.primary.index.max(r.secondary.index);
+                let lo_byte = buffer
+                    .char_indices()
+                    .nth(lo)
+                    .map(|(i, _)| i)
+                    .unwrap_or(buffer.len());
+                let hi_byte = buffer
+                    .char_indices()
+                    .nth(hi)
+                    .map(|(i, _)| i)
+                    .unwrap_or(buffer.len());
+                (lo_byte, hi_byte)
+            })
+            .unwrap_or((buffer.len(), buffer.len()));
 
-    /// Reveal an image asset path in the OS file manager.
-    /// Implemented here because it reuses the existing RevealInOs infrastructure.
-    pub(crate) fn handle_action_reveal_image_asset(&mut self, path: std::path::PathBuf) {
-        self.handle_action_reveal_in_os(path);
+        let lo = sel_start.min(sel_end);
+        let hi = sel_start.max(sel_end);
+
+        /* WHY: Replace selection by combining prefix, snippet, suffix */
+        let before = &buffer[..lo];
+        let after = &buffer[hi..];
+        let new_buffer = format!("{}{}{}", before, text, after);
+        let new_cursor = before.len() + text.len();
+
+        let new_char_cursor = new_buffer[..new_cursor].chars().count();
+
+        self.handle_update_buffer(new_buffer);
+        self.pending_editor_cursor = Some((new_char_cursor, new_char_cursor));
     }
 }

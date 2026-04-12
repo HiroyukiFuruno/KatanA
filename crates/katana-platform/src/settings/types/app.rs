@@ -1,8 +1,8 @@
 use super::{
     behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, icon::IconSettings,
-    layout::LayoutSettings, performance::PerformanceSettings, search::SearchSettings,
-    shortcut::ShortcutSettings, theme::ThemeSettings, update::UpdateSettings,
-    workspace::WorkspaceSettings,
+    ingest::IngestSettings, layout::LayoutSettings, performance::PerformanceSettings,
+    search::SearchSettings, shortcut::ShortcutSettings, theme::ThemeSettings,
+    update::UpdateSettings, workspace::WorkspaceSettings,
 };
 use serde::{Deserialize, Serialize};
 
@@ -52,6 +52,10 @@ pub struct AppSettings {
     /* WHY: Keyboard shortcut profiles per-OS (nesting). */
     #[serde(default)]
     pub shortcuts: ShortcutSettings,
+
+    /* WHY: Image ingest/authoring policies. */
+    #[serde(default)]
+    pub ingest: IngestSettings,
 
     /* WHY: Terms of service accepted version (None = not accepted). */
     #[serde(default)]

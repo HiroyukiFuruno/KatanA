@@ -1,64 +1,10 @@
 use super::image_raster::{MAX_ZOOM, MIN_ZOOM};
-use crate::preview_pane::{DownloadRequest, ViewerState};
+use crate::preview_pane::ViewerState;
 use eframe::egui::{self, Vec2};
 
 pub use super::types::ImageLogicOps;
 
 impl ImageLogicOps {
-    pub(crate) fn show_not_installed(
-        ui: &mut egui::Ui,
-        kind: &str,
-        download_url: &str,
-        install_path: &std::path::Path,
-    ) -> (egui::Rect, Option<DownloadRequest>) {
-        let mut request = None;
-        let res = ui.group(|ui| {
-            ui.label(
-                egui::RichText::new(crate::i18n::I18nOps::tf(
-                    &crate::i18n::I18nOps::get().tool.not_installed,
-                    &[("tool", kind)],
-                ))
-                .color(
-                    ui.ctx()
-                        .data(|d| {
-                            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                                "katana_theme_colors",
-                            ))
-                        })
-                        .map_or(crate::theme_bridge::WHITE, |tc| {
-                            crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(
-                                tc.preview.warning_text,
-                            )
-                        }),
-                ),
-            );
-            let path_str = install_path.display().to_string();
-            ui.label(
-                egui::RichText::new(crate::i18n::I18nOps::tf(
-                    &crate::i18n::I18nOps::get().tool.install_path,
-                    &[("path", path_str.as_str())],
-                ))
-                .small()
-                .weak(),
-            );
-            if crate::icon::IconOps::button_with_icon_str(
-                ui,
-                &crate::i18n::I18nOps::tf(
-                    &crate::i18n::I18nOps::get().tool.download,
-                    &[("tool", kind)],
-                ),
-            )
-            .clicked()
-            {
-                request = Some(DownloadRequest {
-                    url: download_url.to_string(),
-                    dest: install_path.to_path_buf(),
-                });
-            }
-        });
-        (res.response.rect, request)
-    }
-
     pub(crate) fn show_local_image(
         ui: &mut egui::Ui,
         path: &std::path::Path,
@@ -98,7 +44,9 @@ impl ImageLogicOps {
                 let size = t.size();
                 (t, size[0], size[1])
             }
-            None => return None,
+            None => {
+                return super::image_fallback::ImageFallbackOps::show_image_fallback(ui, path);
+            }
         };
 
         let max_w = ui.available_width();
@@ -112,6 +60,16 @@ impl ImageLogicOps {
 
         let (container_rect, response) =
             ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
+
+        response.context_menu(|ui| {
+            if ui
+                .button(&crate::i18n::I18nOps::get().action.reveal_in_os)
+                .clicked()
+            {
+                let _ = open::that(path);
+                ui.close_menu();
+            }
+        });
 
         draw_background(ui, container_rect, response.hovered());
 
