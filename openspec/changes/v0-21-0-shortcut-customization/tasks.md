@@ -12,9 +12,9 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Shortcut Schema and Defaults (ショートカットのスキーマ定義とデフォルト設定)
 
-- [ ] 1.1 コマンドインベントリと紐づくキー情報の定義と、デフォルトのショートカット設定パターン (default shortcut set) を定義する
-- [ ] 1.2 設定情報スキーマ (settings schema) および永続化データ (persistence) の中に、ショートカット割り当て情報 (shortcut bindings) を追加する
-- [ ] 1.3 既存のコードに直書き (hard-coded) されていたショートカットから、新たな仕組みへの移行 (migration) を実施する
+- [x] 1.1 コマンドインベントリと紐づくキー情報の定義と、デフォルトのショートカット設定パターン (default shortcut set) を定義する
+- [x] 1.2 設定情報スキーマ (settings schema) および永続化データ (persistence) の中に、ショートカット割り当て情報 (shortcut bindings) を追加する
+- [x] 1.3 既存のコードに直書き (hard-coded) されていたショートカットから、新たな仕組みへの移行 (migration) を実施する
 
 ### Definition of Done (DoD)
 

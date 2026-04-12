@@ -21,6 +21,7 @@ pub enum AppAction {
     ShowStatusMessage(String, crate::app_state::StatusType),
     CloseWorkspace,
     CloseDocument(usize),
+    CloseActiveDocument,
     ForceCloseDocument(usize),
     UpdateBuffer(String),
     ReplaceText {
@@ -134,6 +135,7 @@ pub enum AppAction {
     UngroupTabGroup(String),
     ToggleCollapseTabGroup(String),
     OpenDocSearch,
+    ToggleDocSearch,
     DocSearchQueryChanged,
     DocSearchNext,
     DocSearchPrev,
