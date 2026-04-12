@@ -102,6 +102,13 @@ jobs:
       - name: Run tests
         run: cargo test --workspace
 
+      - name: Run coverage
+        if: runner.os == 'macOS' && github.event_name == 'pull_request'
+        run: |
+          rustup component add llvm-tools-preview
+          curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
+          make coverage
+
   lint:
     name: Lint
     if: github.event_name == 'pull_request'
@@ -189,44 +196,6 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
 
-  coverage:
-    name: Coverage
-    if: github.event_name == 'pull_request'
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
-        with:
-          toolchain: stable
-          components: llvm-tools-preview
-
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@0abfcd587b70a713fdaa7fb502c885e2112acb15 # v2.75.7
-        with:
-          tool: cargo-llvm-cov
-
-      - name: Cache Cargo registry & target
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-            target
-          key: ${{ runner.os }}-cargo-cov-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-cov-
-
-      - name: Run coverage
-        # Mirror the local `make coverage` gate (Makefile > coverage target).
-        # Excludes: egui frame-context files (main.rs, shell_ui.rs, preview_pane_ui.rs,
-        # html_renderer.rs) and OnceLock-cached resolvers (mermaid_renderer.rs,
-        # plantuml_renderer.rs). See Makefile for detailed rationale.
-        # Gate uses text-output physical-line counting to avoid LLVM sub-region false positives.
-        run: make coverage
-
   release-check:
     name: Release Readiness
     if: github.event_name == 'pull_request' && github.base_ref == 'master'
@@ -238,3 +207,4 @@ jobs:
           toolchain: stable
       - name: Run PR readiness check
         run: ./scripts/release/check-pr-ready.sh
+
