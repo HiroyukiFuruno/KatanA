@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.1] - 2026-04-12 14:10:00 (UTC)
+
+### ✨ Improvements
+- **Extended Localization**: Completed native localization for "Official Website" links and About dialog entries across all 11 supported languages.
+- **macOS Menu Optimization**: Simplified the macOS-specific application menu by removing redundant "Hide" and "Show All" items for a cleaner user experience.
+
 ## [0.22.0] - 2026-04-12 13:10:00 (UTC)
 
 ### Added
