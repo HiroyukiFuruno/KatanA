@@ -78,9 +78,18 @@ fn show_file_diagnostics(
     path: &std::path::Path,
     diagnostics: &[katana_linter::markdown::MarkdownDiagnostic],
 ) -> Option<crate::app_state::AppAction> {
+    let active_diags: Vec<_> = diagnostics
+        .iter()
+        .filter(|d| d.official_meta.is_some())
+        .collect();
+
+    if active_diags.is_empty() {
+        return None;
+    }
+
     let filename = path.file_name().unwrap_or_default().to_string_lossy();
     ui.label(egui::RichText::new(filename).strong());
-    for diag in diagnostics {
+    for diag in active_diags {
         if show_diagnostic_row(ui, diag) {
             return Some(crate::app_state::AppAction::SelectDocumentAndJump {
                 path: path.to_path_buf(),
@@ -101,21 +110,43 @@ fn show_diagnostic_row(
         katana_linter::markdown::DiagnosticSeverity::Warning => "🟡",
         katana_linter::markdown::DiagnosticSeverity::Info => "🔵",
     };
+
+    let meta = diag.official_meta.as_ref().expect("hidden rules filtered");
+    let is_experimental = meta.parity == katana_linter::markdown::RuleParityStatus::Experimental;
+
     let mut clicked = false;
     crate::widgets::AlignCenter::new()
         .shrink_to_fit(true)
         .content(|ui| {
             ui.label(icon);
-            let msg = format!(
-                "[{}:{}] {}",
-                diag.range.start_line, diag.range.start_column, diag.message
-            );
-            /* WHY: scroll list item; future: ClickableRowOps atom */
+
+            let rule_label = if is_experimental {
+                format!("{} (Exp)", meta.code)
+            } else {
+                meta.code.to_string()
+            };
+
+            let location = format!("[{}:{}]", diag.range.start_line, diag.range.start_column);
+            let msg = format!("{} {} {}", location, rule_label, diag.message);
+
+            let mut button_text = egui::RichText::new(msg);
+            if is_experimental {
+                button_text = button_text.weak();
+            }
+
+            /* WHY: scroll list item; jump triggered on click */
             if ui
-                .add(egui::Button::selectable(false, msg).frame_when_inactive(true))
+                .add(egui::Button::selectable(false, button_text).frame_when_inactive(true))
                 .clicked()
             {
                 clicked = true;
+            }
+
+            if !meta.docs_url.is_empty() {
+                ui.hyperlink_to(
+                    crate::i18n::I18nOps::get().about.documentation.as_str(),
+                    meta.docs_url,
+                );
             }
         })
         .show(ui);

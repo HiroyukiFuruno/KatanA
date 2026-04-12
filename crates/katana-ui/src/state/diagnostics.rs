@@ -25,6 +25,9 @@ impl DiagnosticsState {
     }
 
     pub fn total_problems(&self) -> usize {
-        self.problems.values().map(|v| v.len()).sum()
+        self.problems
+            .values()
+            .map(|v| v.iter().filter(|d| d.official_meta.is_some()).count())
+            .sum()
     }
 }
