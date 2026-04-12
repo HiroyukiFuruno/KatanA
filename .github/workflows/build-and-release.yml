@@ -335,7 +335,7 @@ jobs:
         if: success()
         env:
           HOMEBREW_KATANA_GIT_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.WINGET_GH_TOKEN || github.token }}
+          WINGET_GH_TOKEN: ${{ secrets.WINGET_GH_TOKEN }}
         run: |
           ./scripts/release/sync-external.sh \
             "${{ needs.preflight.outputs.version_bare }}" \
