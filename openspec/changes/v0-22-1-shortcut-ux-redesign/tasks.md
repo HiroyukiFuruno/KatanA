@@ -1,4 +1,5 @@
 ## Definition of Ready (DoR)
+
 - [ ] `proposal.md` と `design.md` がレビュー済みであること
 - [ ] 現在の `master` ブランチの `make check` がパスすること
 - [ ] `ShortcutContext` の定義に関して設計方針がユーザー合意済みであること
@@ -6,8 +7,9 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
-- **標準（Base）ブランチ**: `vx-x-x-shortcut-ux-redesign`
-- **作業ブランチ**: 標準は `vx-x-x-shortcut-ux-redesign-task-x` (xはタスク番号)
+
+- **標準（Base）ブランチ**: `v0-22-1-shortcut-ux-redesign`
+- **作業ブランチ**: 標準は `v0-22-1-shortcut-ux-redesign-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 
@@ -27,6 +29,7 @@
 - [ ] 1.8 ユーザーからのフィードバックに基づく調整
 
 ### Definition of Done (DoD)
+
 - [ ] `make check` がエラーなし (exit code 0) で通過すること
 - [ ] `ShortcutContextResolver` の全分岐に UT（カバレッジ100%）が付いていること
 - [ ] 既存のショートカット動作が壊れていないこと（特に `edit.bold` と `view.explorer` の `primary+B` 競合が解消されていること）
@@ -37,6 +40,7 @@
 ## 2. ショートカット設定UI再設計
 
 ### Definition of Ready (DoR)
+
 - [ ] タスク1のデリバリーサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）が完全に終了していること
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること
 
@@ -50,6 +54,7 @@
 - [ ] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
+
 - [ ] 編集ボタンが完全に削除され、行クリックとペンアイコンで録音が起動すること
 - [ ] 録音中に Esc 以外のキー（例: Cmd+Q）を押してもアプリが終了しないこと
 - [ ] Enterで確定後にショートカットが保存されること
@@ -62,6 +67,7 @@
 ## 3. デフォルトショートカット割り当て
 
 ### Definition of Ready (DoR)
+
 - [ ] タスク1・2のデリバリーサイクルが完全に終了していること
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること
 
@@ -81,6 +87,7 @@
 - [ ] 3.14 重複がないことをランタイム起動時（デバッグビルド）にアサートする `debug_assert!` を追加する
 
 ### Definition of Done (DoD)
+
 - [ ] すべての割り当てがShortcutContextと整合していること
 - [ ] 割り当て後にショートカット競合が発生していないこと（`make check` 含む）
 - [ ] `make check` がエラーなし (exit code 0) で通過すること
@@ -91,6 +98,7 @@
 ## 4. ShortcutAST Linter（静的重複検知）
 
 ### Definition of Ready (DoR)
+
 - [ ] タスク1〜3のデリバリーサイクルが完全に終了していること
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること
 
@@ -102,6 +110,7 @@
 - [ ] 4.6 Makefile の `ast-lint` ターゲットに shortcut linter が実行されることを確認する
 
 ### Definition of Done (DoD)
+
 - [ ] `make ast-lint` で intentional な shortcut 重複が検知されること
 - [ ] 正常なショートカット定義に対してfalse positiveが出ないこと
 - [ ] `make check` がエラーなし (exit code 0) で通過すること
