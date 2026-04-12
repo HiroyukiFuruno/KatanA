@@ -16,7 +16,7 @@ impl CommandGroup {
         match self {
             Self::App => "KatanA".to_string(), // WHY: Main app menu equivalent
             /* WHY: "Edit" group is used for Markdown authoring commands. */
-            Self::Edit => "Edit".to_string(),
+            Self::Edit => i18n.settings.shortcuts.edit.clone(),
             Self::File => i18n.menu.file.clone(),
             Self::View => i18n.menu.view.clone(),
             Self::Help => i18n.menu.help.clone(),

@@ -8,8 +8,6 @@ use eframe::egui;
 use std::collections::HashMap;
 
 const COLUMNS: usize = 3;
-const SPACING_SMALL: f32 = 4.0;
-const SPACING_LARGE: f32 = 8.0;
 const GRID_SPACING_X: f32 = 16.0;
 const GRID_SPACING_Y: f32 = 8.0;
 
@@ -26,6 +24,7 @@ impl ShortcutsTabOps {
         let groups = [
             CommandGroup::App,
             CommandGroup::File,
+            CommandGroup::Edit,
             CommandGroup::View,
             CommandGroup::Help,
         ];
@@ -40,26 +39,33 @@ impl ShortcutsTabOps {
         Self::render_conflict_warning(ui);
 
         for group in groups {
-            ui.heading(group.localized_name());
-            ui.add_space(SPACING_SMALL);
+            crate::widgets::Accordion::new(
+                format!("shortcuts_accordion_{:?}", group),
+                egui::RichText::new(group.localized_name())
+                    .strong()
+                    .size(crate::settings::SECTION_HEADER_SIZE),
+                |ui| {
+                    egui::Grid::new(format!("shortcuts_grid_{:?}", group))
+                        .num_columns(COLUMNS)
+                        .spacing([GRID_SPACING_X, GRID_SPACING_Y])
+                        .show(ui, |ui| {
+                            for cmd in CommandInventory::all().iter().filter(|c| c.group == group) {
+                                Self::render_command_row(
+                                    ui,
+                                    state,
+                                    cmd,
+                                    &recording_id,
+                                    recording_id_salt,
+                                    &os_bindings,
+                                );
+                            }
+                        });
+                },
+            )
+            .default_open(true)
+            .show(ui);
 
-            egui::Grid::new(format!("shortcuts_grid_{:?}", group))
-                .num_columns(COLUMNS)
-                .spacing([GRID_SPACING_X, GRID_SPACING_Y])
-                .show(ui, |ui| {
-                    for cmd in CommandInventory::all().iter().filter(|c| c.group == group) {
-                        Self::render_command_row(
-                            ui,
-                            state,
-                            cmd,
-                            &recording_id,
-                            recording_id_salt,
-                            &os_bindings,
-                        );
-                    }
-                });
-
-            ui.add_space(GRID_SPACING_X);
+            ui.add_space(crate::settings::SECTION_SPACING);
         }
 
         let i18n = I18nOps::get();
@@ -91,7 +97,7 @@ impl ShortcutsTabOps {
                         .remove::<String>(egui::Id::new("shortcut_conflict"))
                 });
             }
-            ui.add_space(SPACING_LARGE);
+            ui.add_space(crate::settings::SECTION_SPACING);
         }
     }
 
