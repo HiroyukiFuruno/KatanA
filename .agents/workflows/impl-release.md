@@ -100,10 +100,14 @@ git push origin release/vX.Y.Z
     これにより CD ワークフローが発火し、配布物が公開される。
 
 16. ローカルブランチをクリーンアップする。
+    タスクブランチが残っている場合はそれらも明示的に削除する。
 
 ```bash
-git switch master && git pull
+git switch master && git fetch --prune
+git pull
 git branch -D release/vX.Y.Z
+# 関連するローカルトピックブランチ（task-*等）の削除忘れがあればここで消す
+git branch | grep "release/vX.Y.Z-task" | xargs git branch -D || true
 ```
 
 ---
