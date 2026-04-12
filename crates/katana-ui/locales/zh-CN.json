@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "行为"
+            },
+            {
+                "key": "shortcuts",
+                "name": "快捷键"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "缓存保留天数",
             "days_suffix": " 天"
         },
-        "general": "通用"
+        "general": "通用",
+        "shortcuts": {
+            "edit": "编辑",
+            "press_keys": "请按键... (Esc 取消)",
+            "restore_defaults": "恢复默认",
+            "none": "无",
+            "conflict_warning": "警告: 快捷键已被覆盖。它已被\"{command}\"使用。"
+        }
     },
     "tab": {
         "nav_prev": "上一个标签",

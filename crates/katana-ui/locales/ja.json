@@ -343,8 +343,19 @@
             {
                 "key": "behavior",
                 "name": "動作"
+            },
+            {
+                "key": "shortcuts",
+                "name": "ショートカット"
             }
         ],
+        "shortcuts": {
+            "edit": "編集",
+            "press_keys": "キーを入力… (Escでキャンセル)",
+            "restore_defaults": "デフォルトに戻す",
+            "none": "なし",
+            "conflict_warning": "警告: ショートカットが上書きされました。すでに '{command}' で使用されていました。"
+        },
         "updates": {
             "section_title": "アプリアップデート",
             "interval": "自動更新チェック間隔",

@@ -343,6 +343,10 @@
             {
                 "key": "behavior",
                 "name": "Comportamiento"
+            },
+            {
+                "key": "shortcuts",
+                "name": "Atajos"
             }
         ],
         "updates": {
@@ -372,7 +376,14 @@
             "cache_retention_days": "Días de retención",
             "days_suffix": " días"
         },
-        "general": "Generalidad"
+        "general": "Generalidad",
+        "shortcuts": {
+            "edit": "Modificar",
+            "press_keys": "Presione las teclas... (Esc para cancelar)",
+            "restore_defaults": "Restaurar predeterminados",
+            "none": "Ninguno",
+            "conflict_warning": "Advertencia: El atajo ha sido sobrescrito. Ya estaba en uso por \"{command}\"."
+        }
     },
     "tab": {
         "nav_prev": "Pestaña anterior",

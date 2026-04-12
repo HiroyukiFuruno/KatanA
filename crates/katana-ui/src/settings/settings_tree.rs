@@ -81,6 +81,12 @@ pub(super) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
                 SettingsTab::Behavior,
                 settings_msgs.tab_name("behavior"),
             );
+            show_tab_button(
+                ui,
+                &mut state.config.active_settings_tab,
+                SettingsTab::Shortcuts,
+                settings_msgs.tab_name("shortcuts"),
+            );
         },
     )
     .default_open(true)
