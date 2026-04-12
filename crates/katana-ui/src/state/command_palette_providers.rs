@@ -1,4 +1,3 @@
-use crate::app_state::AppAction;
 use crate::state::command_palette::{
     CommandPaletteExecutePayload, CommandPaletteProvider, CommandPaletteResult,
     CommandPaletteResultKind,
@@ -10,7 +9,9 @@ const BASE_CONTENT_SCORE: f32 = 0.6;
 const FILE_PRIMARY_MATCH_SCORE: f32 = 0.9;
 const FILE_SECONDARY_MATCH_SCORE: f32 = 0.5;
 
-/// Provides common application actions.
+use crate::state::command_inventory::CommandInventory;
+
+/// Provides common application actions from the shared CommandInventory.
 pub struct AppCommandProvider;
 
 impl CommandPaletteProvider for AppCommandProvider {
@@ -19,46 +20,47 @@ impl CommandPaletteProvider for AppCommandProvider {
     }
 
     fn search(&self, query: &str, _workspace: Option<&Workspace>) -> Vec<CommandPaletteResult> {
+        let commands = CommandInventory::all();
         let msgs = &crate::i18n::I18nOps::get().search;
-        let commands = vec![
-            (&msgs.command_settings, AppAction::ToggleSettings, 0.9),
-            (&msgs.command_explorer, AppAction::ToggleExplorer, 0.8),
-            (&msgs.command_close_all, AppAction::CloseAllDocuments, 0.7),
-            (
-                &msgs.command_refresh_explorer,
-                AppAction::RefreshExplorer,
-                0.7,
-            ),
-            (&msgs.command_updates, AppAction::CheckForUpdates, 0.6),
-            (&msgs.command_about, AppAction::ToggleAbout, 0.6),
-        ];
 
         let mut results = Vec::new();
         let query_lower = query.to_lowercase();
         let cmd_type = &msgs.command_type_action;
 
-        for (label, action, base_score) in commands {
+        /* WHY: For now we ignore the `is_available` to show all in palette, or we could filter. */
+        /* WHY: Often palette shows commands but disables them, but here we just show all. */
+        const COMMAND_BASE_SCORE: f32 = 0.8;
+        const EMPTY_QUERY_PENALTY: f32 = 0.2;
+
+        for cmd in commands {
+            let label = (cmd.label)();
+            let base_score = COMMAND_BASE_SCORE;
+
             if query_lower.is_empty() {
                 /* WHY: If empty query, we return all as recent/common */
                 results.push(CommandPaletteResult {
-                    id: format!("cmd_{}", label),
-                    label: label.to_string(),
-                    secondary_label: Some(cmd_type.clone()),
-                    score: base_score, /* WHY: lower base score for empty query so history can be higher */
+                    id: cmd.id.to_string(),
+                    label: label.clone(),
+                    secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
+                    score: base_score - EMPTY_QUERY_PENALTY, /* WHY: lower base score for empty query so history can be higher */
                     kind: CommandPaletteResultKind::RecentOrCommon,
-                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(action),
+                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
+                        cmd.action.clone(),
+                    ),
                 });
             } else if label.to_lowercase().contains(&query_lower) {
                 /* WHY: Calculate basic score */
                 let bonus = label.to_lowercase().starts_with(&query_lower) as u32 as f32;
                 let score = base_score + bonus;
                 results.push(CommandPaletteResult {
-                    id: format!("cmd_{}", label),
-                    label: label.to_string(),
-                    secondary_label: Some(cmd_type.clone()),
+                    id: cmd.id.to_string(),
+                    label: label.clone(),
+                    secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
                     score,
                     kind: CommandPaletteResultKind::Action,
-                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(action),
+                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
+                        cmd.action.clone(),
+                    ),
                 });
             }
         }

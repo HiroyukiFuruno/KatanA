@@ -948,9 +948,7 @@ mod tests {
         let mut pane = PreviewPane::default();
         let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
 
-        let source = std::iter::repeat("```mermaid\ngraph TD\nA-->B\n```\n")
-            .take(10)
-            .collect::<String>();
+        let source = "```mermaid\ngraph TD\nA-->B\n```\n".repeat(10);
 
         pane.full_render(
             &source,

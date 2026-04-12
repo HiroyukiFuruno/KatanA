@@ -34,7 +34,8 @@
         "language_fr": "フランス語",
         "language_de": "ドイツ語",
         "language_es": "スペイン語",
-        "language_it": "イタリア語"
+        "language_it": "イタリア語",
+        "github": "GitHub リポジトリ"
     },
     "about": {
         "basic_info": "基本情報",

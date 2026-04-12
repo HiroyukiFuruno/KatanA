@@ -23,6 +23,13 @@ enum {
     TAG_DEMO           = 18,
     TAG_WELCOME_SCREEN = 19,
     TAG_USER_GUIDE      = 20,
+    TAG_SEARCH_DOCUMENT = 21,
+    TAG_SEARCH_WORKSPACE = 22,
+    TAG_CLOSE_WORKSPACE = 23,
+    TAG_EXPLORER       = 24,
+    TAG_REFRESH_EXPLORER = 25,
+    TAG_CLOSE_ALL      = 26,
+    TAG_GITHUB         = 27,
 };
 
 /* WHY: Global: Tag of the last selected menu action. */
@@ -44,9 +51,13 @@ static KatanaMenuTarget *g_target = nil;
 
 static NSMenu *g_file_menu = nil;
 static NSMenuItem *g_open_workspace_item = nil;
+static NSMenuItem *g_close_workspace_item = nil;
 static NSMenuItem *g_save_item = nil;
 static NSMenu *g_view_menu = nil;
 static NSMenuItem *g_command_palette_item = nil;
+static NSMenuItem *g_explorer_item = nil;
+static NSMenuItem *g_refresh_explorer_item = nil;
+static NSMenuItem *g_close_all_item = nil;
 static NSMenu *g_settings_menu = nil;
 static NSMenuItem *g_preferences_item = nil;
 static NSMenu *g_language_menu = nil;
@@ -61,6 +72,7 @@ static NSMenuItem *g_release_notes_item = nil;
 static NSMenuItem *g_welcome_item = nil;
 static NSMenuItem *g_guide_item = nil;
 static NSMenuItem *g_demo_item = nil;
+static NSMenuItem *g_github_item = nil;
 
 /// Called from Rust at the very start of main(), before eframe creates the window.
 /// Must be called before the window server registers the process to ensure
@@ -144,6 +156,15 @@ void katana_setup_native_menu(void) {
     [fileMenu addItem:openItem];
     g_open_workspace_item = openItem;
 
+    NSMenuItem *closeWsItem = [[NSMenuItem alloc]
+        initWithTitle:@"Close Workspace"
+        action:action
+        keyEquivalent:@""];
+    [closeWsItem setTarget:g_target];
+    [closeWsItem setTag:TAG_CLOSE_WORKSPACE];
+    [fileMenu addItem:closeWsItem];
+    g_close_workspace_item = closeWsItem;
+
     [fileMenu addItem:[NSMenuItem separatorItem]];
 
     NSMenuItem *saveItem = [[NSMenuItem alloc]
@@ -169,6 +190,38 @@ void katana_setup_native_menu(void) {
     [paletteItem setTarget:g_target];
     [paletteItem setTag:TAG_COMMAND_PALETTE];
     [viewMenu addItem:paletteItem];
+
+    [viewMenu addItem:[NSMenuItem separatorItem]];
+    
+    NSMenuItem *explorerItem = [[NSMenuItem alloc]
+        initWithTitle:@"Explorer"
+        action:action
+        keyEquivalent:@"e"];
+    [explorerItem setTarget:g_target];
+    [explorerItem setTag:TAG_EXPLORER];
+    [viewMenu addItem:explorerItem];
+    g_explorer_item = explorerItem;
+
+    NSMenuItem *refreshItem = [[NSMenuItem alloc]
+        initWithTitle:@"Refresh Explorer"
+        action:action
+        keyEquivalent:@"r"];
+    [refreshItem setTarget:g_target];
+    [refreshItem setTag:TAG_REFRESH_EXPLORER];
+    [viewMenu addItem:refreshItem];
+    g_refresh_explorer_item = refreshItem;
+
+    [viewMenu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *closeAllItem = [[NSMenuItem alloc]
+        initWithTitle:@"Close All Documents"
+        action:action
+        keyEquivalent:@"w"];
+    [closeAllItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand | NSEventModifierFlagOption];
+    [closeAllItem setTarget:g_target];
+    [closeAllItem setTag:TAG_CLOSE_ALL];
+    [viewMenu addItem:closeAllItem];
+    g_close_all_item = closeAllItem;
 
     /* WHY: Also alias Cmd+P to command palette for parity with VS Code */
     /* WHY: We use the same TAG and a different key equivalent. */
@@ -317,6 +370,17 @@ void katana_setup_native_menu(void) {
     [helpMenu addItem:demoItem];
     g_demo_item = demoItem;
 
+    [helpMenu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *githubItem = [[NSMenuItem alloc] 
+        initWithTitle:@"GitHub Repository" 
+        action:action 
+        keyEquivalent:@""];
+    [githubItem setTarget:g_target];
+    [githubItem setTag:TAG_GITHUB];
+    [helpMenu addItem:githubItem];
+    g_github_item = githubItem;
+
     NSMenuItem *helpMenuItem = [[NSMenuItem alloc] initWithTitle:@"Help" action:nil keyEquivalent:@""];
     [helpMenuItem setSubmenu:helpMenu];
 
@@ -363,7 +427,12 @@ void katana_update_menu_strings(
     const char* view,
     const char* demo,
     const char* welcome_screen,
-    const char* user_guide
+    const char* user_guide,
+    const char* close_workspace,
+    const char* explorer,
+    const char* refresh_explorer,
+    const char* close_all,
+    const char* github
 ) {
     @autoreleasepool {
         if (g_file_menu && file) {
@@ -372,11 +441,23 @@ void katana_update_menu_strings(
         if (g_open_workspace_item && open_workspace) {
             [g_open_workspace_item setTitle:[NSString stringWithUTF8String:open_workspace]];
         }
+        if (g_close_workspace_item && close_workspace) {
+            [g_close_workspace_item setTitle:[NSString stringWithUTF8String:close_workspace]];
+        }
         if (g_save_item && save) {
             [g_save_item setTitle:[NSString stringWithUTF8String:save]];
         }
         if (g_view_menu && view) {
             [g_view_menu setTitle:[NSString stringWithUTF8String:view]];
+        }
+        if (g_explorer_item && explorer) {
+            [g_explorer_item setTitle:[NSString stringWithUTF8String:explorer]];
+        }
+        if (g_refresh_explorer_item && refresh_explorer) {
+            [g_refresh_explorer_item setTitle:[NSString stringWithUTF8String:refresh_explorer]];
+        }
+        if (g_close_all_item && close_all) {
+            [g_close_all_item setTitle:[NSString stringWithUTF8String:close_all]];
         }
         if (g_command_palette_item && command_palette) {
             [g_command_palette_item setTitle:[NSString stringWithUTF8String:command_palette]];
@@ -426,8 +507,28 @@ void katana_update_menu_strings(
         if (g_guide_item && user_guide) {
             [g_guide_item setTitle:[NSString stringWithUTF8String:user_guide]];
         }
+        if (g_github_item && github) {
+            [g_github_item setTitle:[NSString stringWithUTF8String:github]];
+        }
         if (g_demo_item && demo) {
             [g_demo_item setTitle:[NSString stringWithUTF8String:demo]];
+        }
+    }
+}
+
+void katana_update_menu_state(bool save_enabled, bool close_workspace_enabled, bool refresh_explorer_enabled, bool close_all_enabled) {
+    @autoreleasepool {
+        if (g_save_item) {
+            [g_save_item setEnabled:(save_enabled ? YES : NO)];
+        }
+        if (g_close_workspace_item) {
+            [g_close_workspace_item setEnabled:(close_workspace_enabled ? YES : NO)];
+        }
+        if (g_refresh_explorer_item) {
+            [g_refresh_explorer_item setEnabled:(refresh_explorer_enabled ? YES : NO)];
+        }
+        if (g_close_all_item) {
+            [g_close_all_item setEnabled:(close_all_enabled ? YES : NO)];
         }
     }
 }
