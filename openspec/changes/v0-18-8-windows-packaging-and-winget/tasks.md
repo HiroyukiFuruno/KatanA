@@ -34,15 +34,15 @@
 
 ## 3. Windows Installer UX Refresh
 
-- [ ] 3.1 `crates/katana-ui/wix/main.wxs` の current flow (`WixUI_FeatureTree`) は維持したまま、初回導入時の見た目と文言を KatanA 向けに整理する
-- [ ] 3.2 installer metadata（Product 名、説明、ARP 表示、Feature 名）を更新し、古い印象を与える既定表現を除去する
-- [ ] 3.3 `WixUIBannerBmp` / `WixUIDialogBmp` を追加し、`Product.ico` と整合する branding asset を適用する
-- [ ] 3.4 Windows installer 画面の確認証跡を取得し、`v0.18.8` の申請時に参照できる状態にする
+- [x] 3.1 `crates/katana-ui/wix/main.wxs` の current flow (`WixUI_FeatureTree`) は維持したまま、初回導入時の見た目と文言を KatanA 向けに整理する
+- [x] 3.2 installer metadata（Product 名、説明、ARP 表示、Feature 名）を更新し、古い印象を与える既定表現を除去する
+- [x] 3.3 `WixUIBannerBmp` / `WixUIDialogBmp` を追加し、`Product.ico` と整合する branding asset を適用する
+- [x] 3.4 Windows installer 画面の確認証跡を取得し、`v0.18.8` の申請時に参照できる状態にする
 
 ### Definition of Done (DoD)
 
-- [ ] installer 画面が KatanA branding と整合し、既定の古い WiX 画面に見えにくい状態になっている
-- [ ] Windows 向け install 導線のスクリーンショットまたは同等の証跡が残っている
+- [x] installer 画面が KatanA branding と整合し、既定の古い WiX 画面に見えにくい状態になっている
+- [x] Windows 向け install 導線のスクリーンショットまたは同等の証跡が残っている
 
 ## 4. Final Verification & Release Work
 
