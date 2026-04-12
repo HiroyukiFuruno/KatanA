@@ -18,9 +18,9 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ### Definition of Done (DoD)
 
-- [ ] ショートカット定義のスキーマが永続化可能な形で実装されており、デフォルトの設定群が固定されていること
-- [ ] 既存設定からの移行方針 (migration policy) が明確に文書化されていること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] ショートカット定義のスキーマが永続化可能な形で実装されており、デフォルトの設定群が固定されていること
+- [x] 既存設定からの移行方針 (migration policy) が明確に文書化されていること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
