@@ -25,6 +25,10 @@ mod ffi {
     pub const TAG_USER_GUIDE: i32 = 20;
     pub const TAG_SEARCH_DOCUMENT: i32 = 21;
     pub const TAG_SEARCH_WORKSPACE: i32 = 22;
+    pub const TAG_CLOSE_WORKSPACE: i32 = 23;
+    pub const TAG_EXPLORER: i32 = 24;
+    pub const TAG_REFRESH_EXPLORER: i32 = 25;
+    pub const TAG_CLOSE_ALL: i32 = 26;
     #[allow(dead_code)]
     unsafe extern "C" {
         pub fn katana_setup_native_menu();
@@ -52,6 +56,16 @@ mod ffi {
             demo: *const std::ffi::c_char,
             welcome_screen: *const std::ffi::c_char,
             user_guide: *const std::ffi::c_char,
+            close_workspace: *const std::ffi::c_char,
+            explorer: *const std::ffi::c_char,
+            refresh_explorer: *const std::ffi::c_char,
+            close_all: *const std::ffi::c_char,
+        );
+        pub fn katana_update_menu_state(
+            save_enabled: bool,
+            close_workspace_enabled: bool,
+            refresh_explorer_enabled: bool,
+            close_all_enabled: bool,
         );
     }
 }
@@ -87,6 +101,27 @@ impl NativeMenuOps {
     #[cfg(any(not(target_os = "macos"), test))]
     pub fn update_native_menu_strings_from_i18n() {}
 
+    #[cfg(all(target_os = "macos", not(test)))]
+    pub fn update_availability(state: &crate::app_state::AppState) {
+        let is_available = |id: &str| {
+            crate::state::command_inventory::CommandInventory::all()
+                .into_iter()
+                .find(|cmd| cmd.id == id)
+                .is_some_and(|cmd| (cmd.is_available)(state))
+        };
+        unsafe {
+            ffi::katana_update_menu_state(
+                is_available("file.save"),
+                is_available("file.close_workspace"),
+                is_available("view.refresh_explorer"),
+                is_available("view.close_all"),
+            );
+        }
+    }
+
+    #[cfg(any(not(target_os = "macos"), test))]
+    pub fn update_availability(_state: &crate::app_state::AppState) {}
+
     #[cfg(target_os = "macos")]
     pub(crate) fn poll(
         show_about: &mut bool,
@@ -119,6 +154,10 @@ impl NativeMenuOps {
             ffi::TAG_USER_GUIDE => AppAction::OpenUserGuide,
             ffi::TAG_SEARCH_DOCUMENT => AppAction::OpenDocSearch,
             ffi::TAG_SEARCH_WORKSPACE => AppAction::ToggleSearchModal,
+            ffi::TAG_CLOSE_WORKSPACE => AppAction::CloseWorkspace,
+            ffi::TAG_EXPLORER => AppAction::ToggleExplorer,
+            ffi::TAG_REFRESH_EXPLORER => AppAction::RefreshExplorer,
+            ffi::TAG_CLOSE_ALL => AppAction::CloseAllDocuments,
             _ => AppAction::None,
         }
     }

@@ -18,6 +18,13 @@ impl<'a> GlobalMenuBar<'a> {
         let app = self.app;
         let i18n = crate::i18n::I18nOps::get();
 
+        let is_avail = |id: &str, state: &crate::app_state::AppState| {
+            crate::state::command_inventory::CommandInventory::all()
+                .iter()
+                .find(|c| c.id == id)
+                .is_some_and(|c| (c.is_available)(state))
+        };
+
         egui::TopBottomPanel::top("app_global_menu_bar").show_inside(ui, |ui| {
             egui::menu::bar(ui, |ui| {
                 crate::widgets::MenuButtonOps::show(ui, "KatanA", |ui| {
@@ -76,7 +83,8 @@ impl<'a> GlobalMenuBar<'a> {
 
                 crate::widgets::MenuButtonOps::show(ui, &i18n.menu.file, |ui| {
                     if ui
-                        .add(
+                        .add_enabled(
+                            is_avail("file.open_workspace", &app.state),
                             egui::Button::new(&i18n.menu.open_workspace).shortcut_text(
                                 crate::os_command::OsCommandOps::get("open_workspace"),
                             ),
@@ -87,7 +95,19 @@ impl<'a> GlobalMenuBar<'a> {
                         ui.close_menu();
                     }
                     if ui
-                        .add(
+                        .add_enabled(
+                            is_avail("file.close_workspace", &app.state),
+                            egui::Button::new(&i18n.menu.close_workspace),
+                        )
+                        .clicked()
+                    {
+                        app.pending_action = AppAction::CloseWorkspace;
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui
+                        .add_enabled(
+                            is_avail("file.save", &app.state),
                             egui::Button::new(&i18n.menu.save).shortcut_text(
                                 crate::os_command::OsCommandOps::get("save_document"),
                             ),
@@ -101,7 +121,8 @@ impl<'a> GlobalMenuBar<'a> {
 
                 crate::widgets::MenuButtonOps::show(ui, &i18n.menu.view, |ui| {
                     if ui
-                        .add(
+                        .add_enabled(
+                            is_avail("view.command_palette", &app.state),
                             egui::Button::new(&i18n.menu.command_palette).shortcut_text(
                                 crate::os_command::OsCommandOps::get("open_palette"),
                             ),
@@ -109,6 +130,40 @@ impl<'a> GlobalMenuBar<'a> {
                         .clicked()
                     {
                         app.pending_action = AppAction::ToggleCommandPalette;
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui
+                        .add_enabled(
+                            is_avail("view.explorer", &app.state),
+                            egui::Button::new(&i18n.search.command_explorer).shortcut_text(
+                                crate::os_command::OsCommandOps::get("toggle_sidebar"),
+                            ),
+                        )
+                        .clicked()
+                    {
+                        app.pending_action = AppAction::ToggleExplorer;
+                        ui.close_menu();
+                    }
+                    if ui
+                        .add_enabled(
+                            is_avail("view.refresh_explorer", &app.state),
+                            egui::Button::new(&i18n.search.command_refresh_explorer),
+                        )
+                        .clicked()
+                    {
+                        app.pending_action = AppAction::RefreshExplorer;
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui
+                        .add_enabled(
+                            is_avail("view.close_all", &app.state),
+                            egui::Button::new(&i18n.search.command_close_all),
+                        )
+                        .clicked()
+                    {
+                        app.pending_action = AppAction::CloseAllDocuments;
                         ui.close_menu();
                     }
                 });
