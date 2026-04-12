@@ -1,4 +1,5 @@
 pub mod app_state_impl;
+pub mod command_inventory;
 pub mod command_palette;
 pub mod command_palette_providers;
 pub mod config;

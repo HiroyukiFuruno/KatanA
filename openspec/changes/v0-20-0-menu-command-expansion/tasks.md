@@ -12,15 +12,15 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Shared Command Inventory (コマンドリストの共通化管理)
 
-- [ ] 1.1 ユーザーが利用可能な全コマンド (user-facing commands) を一斉に棚卸しする
-- [ ] 1.2 「ラベル (label)」「グループ (group)」「可用性や利用状態 (availability)」を一元管理するための、「共通コマンド一覧機能 (shared command inventory)」を導入する
-- [ ] 1.3 メニュー、コマンドパレット、および将来のショートカットエディタなどが、この inventory を共通して参照・取得できるインターフェース (shape) を定義する
+- [x] 1.1 ユーザーが利用可能な全コマンド (user-facing commands) を一斉に棚卸しする
+- [x] 1.2 「ラベル (label)」「グループ (group)」「可用性や利用状態 (availability)」を一元管理するための、「共通コマンド一覧機能 (shared command inventory)」を導入する
+- [x] 1.3 メニュー、コマンドパレット、および将来のショートカットエディタなどが、この inventory を共通して参照・取得できるインターフェース (shape) を定義する
 
 ### Definition of Done (DoD)
 
-- [ ] 共通のコマンドインベントリ (inventory) が、単一の信頼できる情報源 (source of truth) として機能していること
-- [ ] `AppAction` 本体の処理と、インベントリに登録される情報管理の責務分担が明確に切り離されていること
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] 共通のコマンドインベントリ (inventory) が、単一の信頼できる情報源 (source of truth) として機能していること
+- [x] `AppAction` 本体の処理と、インベントリに登録される情報管理の責務分担が明確に切り離されていること
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 
