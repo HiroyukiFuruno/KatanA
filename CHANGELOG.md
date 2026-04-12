@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.19.0] - 2026-04-12 02:30:00 (UTC)
+
+### 🚀 Features
+
+- **Markdownlint Parity**: Built-in Markdown diagnostics are now fully compliant with the official `markdownlint` specifications.
+- **Enhanced Problems Panel**: The Problems Panel now prominently displays official rule codes (e.g., MD001) and provides one-click links to the official documentation.
+
+### ✨ Improvements
+
+- **Diagnostic Stability**: Stabilized real-time diagnostic refresh policies and modernized rule filtering to distinguish between Official, Experimental, and Hidden internal rules.
+
 ## [0.18.7] - 2026-04-11 22:34:24 (UTC)
 
 ### ✨ Improvements
