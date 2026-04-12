@@ -42,7 +42,8 @@ impl CommandPaletteProvider for AppCommandProvider {
                     id: cmd.id.to_string(),
                     label: label.clone(),
                     secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
-                    score: base_score - EMPTY_QUERY_PENALTY, /* WHY: lower base score for empty query so history can be higher */
+                    /* WHY: lower base score for empty query so history can be higher */
+                    score: base_score - EMPTY_QUERY_PENALTY,
                     kind: CommandPaletteResultKind::RecentOrCommon,
                     execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
                         cmd.action.clone(),
@@ -85,13 +86,16 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
         let query_lower = query.to_lowercase();
 
         if let Some(ws) = workspace {
-            let mut file_matches = Vec::new();
+            let mut file_matches: Vec<std::path::PathBuf> = Vec::new();
             crate::shell_logic::ShellLogicOps::collect_matches(
                 &ws.tree,
                 &query_lower,
                 &[],
                 &[],
                 &ws.root,
+                false, // match_case
+                false, // match_word
+                false, // use_regex
                 &mut file_matches,
             );
 
@@ -146,6 +150,9 @@ impl CommandPaletteProvider for MarkdownContentProvider {
             let matches = katana_core::search::WorkspaceSearchOps::search_workspace(
                 ws,
                 query,
+                false, // match_case
+                false, // match_word
+                false, // use_regex
                 MAX_FILE_RESULTS,
             );
             for m in matches {
@@ -165,7 +172,8 @@ impl CommandPaletteProvider for MarkdownContentProvider {
                     id: format!("content_{}_{}", rel_path, m.line_number),
                     label: label.trim().to_string(),
                     secondary_label: Some(format!("{}:{}", rel_path, m.line_number + 1)),
-                    score: BASE_CONTENT_SCORE, /* WHY: slightly lower score than exact file matches */
+                    /* WHY: slightly lower score than exact file matches */
+                    score: BASE_CONTENT_SCORE,
                     kind: CommandPaletteResultKind::MarkdownContent,
                     execute_payload: CommandPaletteExecutePayload::NavigateToContent {
                         path: m.file_path.clone(),

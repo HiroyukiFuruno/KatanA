@@ -79,7 +79,7 @@ impl<'a> PreviewOnly<'a> {
                 show_toc,
                 &mut app.pending_action,
                 false,
-                Some(app.state.search.doc_search_query.clone()),
+                Some(app.state.search.doc_search.query.clone()),
             )
             .show(ui);
 

@@ -1,0 +1,10 @@
+pub const SEARCH_PADDING_X: f32 = 4.0;
+pub const SEARCH_PADDING_Y: f32 = 2.0;
+pub const SEARCH_ITEM_SPACING: f32 = 2.0;
+pub const ICON_OPACITY: f32 = 0.5;
+pub const TOGGLE_BTN_WIDTH: f32 = 16.0;
+pub const CLEAR_BTN_WIDTH: f32 = 20.0;
+pub const ICON_LEFT_PADDING: f32 = 32.0;
+pub const ICON_NONE_PADDING: f32 = 8.0;
+pub const ROUNDING_RADIUS: f32 = 2.0;
+pub const TOGGLE_COUNT: f32 = 3.0;

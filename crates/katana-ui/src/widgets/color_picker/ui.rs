@@ -12,7 +12,8 @@ impl<'a> LabeledColorPicker<'a> {
             label,
             label_width: COLOR_LABEL_WIDTH,
             spacing: COLOR_SPACING,
-            offset_y: COLOR_OFFSET_Y, /* WHY: Nudge 2px up to visually align with text baseline */
+            /* WHY: Nudge 2px up to visually align with text baseline */
+            offset_y: COLOR_OFFSET_Y,
             is_rgba: false,
         }
     }
@@ -39,7 +40,8 @@ impl<'a> LabeledColorPicker<'a> {
 
     pub fn show_rgb(self, ui: &mut egui::Ui, color: &mut egui::Color32) -> egui::Response {
         let available_w = ui.available_width();
-        let row_height = COLOR_ROW_HEIGHT; /* WHY: Standardize row height for strict table alignment */
+        /* WHY: Standardize row height for strict table alignment */
+        let row_height = COLOR_ROW_HEIGHT;
         let (rect, _response) =
             ui.allocate_exact_size(egui::vec2(available_w, row_height), egui::Sense::hover());
 

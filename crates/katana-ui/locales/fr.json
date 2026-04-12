@@ -85,11 +85,11 @@
         "metadata_tooltip": "Taille : {size} B\nModifié : {mod_time}",
         "path_label": "Chemin",
         "flat_view": "Vue plate",
-        "filter_regex_hint": "Filtrer (regex)…",
         "open_folder_hint": "Ouvrez un dossier pour commencer avec KatanA.",
         "open_workspace_button": "Ouvrir un dossier",
         "remove_history_tooltip": "Supprimer de l'historique",
-        "max_depth_exceeded": "Profondeur maximale dépassée"
+        "max_depth_exceeded": "Profondeur maximale dépassée",
+        "filter_hint": "Filtrer…"
     },
     "preview": {
         "preview_title": "Aperçu",
@@ -445,7 +445,11 @@
         "command_author_insert_link": "Insérer un lien",
         "command_author_insert_table": "Insérer un tableau",
         "command_ingest_image_file": "Joindre un fichier image…",
-        "command_ingest_clipboard_image": "Coller l'image du presse-papiers"
+        "command_ingest_clipboard_image": "Coller l'image du presse-papiers",
+        "match_case": "Respecter la casse",
+        "match_word": "Mot entier",
+        "use_regex": "Utiliser Regex",
+        "doc_query_hint": "Rechercher dans le document…"
     },
     "toc": {
         "title": "Sommaire",

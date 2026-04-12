@@ -142,8 +142,8 @@ impl<'a> ExplorerHeader<'a> {
 
         if workspace.data.is_some() && search.filter_enabled {
             let mut is_valid_regex = true;
-            if !search.filter_query.is_empty() {
-                is_valid_regex = regex::RegexBuilder::new(&search.filter_query)
+            if !search.filter.query.is_empty() {
+                is_valid_regex = regex::RegexBuilder::new(&search.filter.query)
                     .case_insensitive(true)
                     .build()
                     .is_ok();
@@ -161,20 +161,16 @@ impl<'a> ExplorerHeader<'a> {
                         crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.error_text)
                     })
             };
-            let resp = ui.add(
-                egui::TextEdit::singleline(&mut search.filter_query)
-                    .text_color(text_color)
-                    .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
-                    .desired_width(ui.available_width()),
-            );
-            if ui
-                .ctx()
-                .memory_mut(|m| m.data.get_temp(egui::Id::new("filter_newly_enabled")))
-                .unwrap_or(false)
-            {
+            let resp = crate::widgets::SearchBar::new(&mut search.filter)
+                .text_color(text_color)
+                .hint_text(crate::i18n::I18nOps::get().workspace.filter_hint.clone())
+                .show(ui);
+            let focus_requested = ui.ctx().data_mut(|d| {
+                d.remove_temp::<bool>(egui::Id::new("filter_newly_enabled"))
+                    .unwrap_or(false)
+            });
+            if focus_requested {
                 resp.request_focus();
-                ui.ctx()
-                    .memory_mut(|m| m.data.remove::<bool>(egui::Id::new("filter_newly_enabled")));
             }
         }
     }

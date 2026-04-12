@@ -44,7 +44,7 @@ fn md001_skipped_heading_level_produces_warning() {
     assert_eq!(diagnostics[0].severity, DiagnosticSeverity::Warning);
     assert_eq!(diagnostics[0].range.start_line, 2);
     assert_eq!(diagnostics[0].rule_id, "MD001");
-    // official_meta must be present for user-facing display
+    /* WHY: official_meta must be present for user-facing display */
     let meta = diagnostics[0]
         .official_meta
         .as_ref()
@@ -94,7 +94,7 @@ fn test_parity_status_boundary() {
     };
     assert_eq!(meta_off.parity, RuleParityStatus::Official);
 
-    // Diagnostics filtering boundary test representation
+    /* WHY: Diagnostics filtering boundary test representation */
     let diags = [
         MarkdownDiagnostic {
             file: std::path::PathBuf::from("test.md"),
@@ -141,7 +141,7 @@ fn md001_code_blocks_do_not_trigger_false_positive() {
 # Title
 
 ```rust
-// A comment looking like an H3 inside code block should not trigger MD001
+/* WHY: A comment looking like an H3 inside code block should not trigger MD001 */
 ### This is not a heading
 ```
 ";

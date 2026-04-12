@@ -29,13 +29,13 @@ fn load_fixture_snapshot(filename: &str) -> FixtureSnapshot {
         }
     }
 
-    // Use a secondary lock to ensure only one thread generates the snapshot for a given file.
-    // To avoid blocking other distinct files unnecessarily, we could use a lock per file,
-    // but tests run fast enough that locking a global generator mutex is robust and prevents overall CPU/RAM exhaustion.
+    /* WHY: Use a secondary lock to ensure only one thread generates the snapshot for a given file. */
+    /* WHY: To avoid blocking other distinct files unnecessarily, we could use a lock per file, */
+    /* WHY: but tests run fast enough that locking a global generator mutex is robust and prevents overall CPU/RAM exhaustion. */
     static GENERATOR_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
     let _guard = GENERATOR_LOCK.lock().unwrap();
 
-    // Double check after acquiring the lock
+    /* WHY: Double check after acquiring the lock */
     if let Some(snapshot) = fixture_cache().lock().unwrap().get(filename).cloned() {
         return snapshot;
     }
@@ -170,8 +170,8 @@ fn build_harness(sections: Vec<RenderedSection>, width: f32, height: f32) -> Har
     for _ in 0..5 {
         harness.step();
     }
-    // Cannot use harness.run() because snippets with unresolved images (like badges)
-    // will show a spinner and cause continuous repaints, exceeding max_steps limit.
+    /* WHY: Cannot use harness.run() because snippets with unresolved images (like badges) */
+    /* WHY: will show a spinner and cause continuous repaints, exceeding max_steps limit. */
     harness
 }
 

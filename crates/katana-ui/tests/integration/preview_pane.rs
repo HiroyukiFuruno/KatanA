@@ -218,7 +218,8 @@ fn valid_png_is_decoded() {
     let rasterized = result.unwrap();
     assert_eq!(rasterized.width, 1);
     assert_eq!(rasterized.height, 1);
-    assert_eq!(rasterized.rgba.len(), 4); /* WHY: 1x1 RGBA = 4 bytes */
+    /* WHY: 1x1 RGBA = 4 bytes */
+    assert_eq!(rasterized.rgba.len(), 4);
 }
 
 #[test]
@@ -1574,7 +1575,8 @@ fn centered_text_and_link_share_same_row() {
     let group_left = text_bounds.x0.min(link_bounds.x0);
     let group_right = text_bounds.x1.max(link_bounds.x1);
     let group_center_x = (group_left + group_right) / 2.0;
-    let panel_center_x = 800.0 / 2.0; /* WHY: panel width is 800 */
+    /* WHY: panel width is 800 */
+    let panel_center_x = 800.0 / 2.0;
     let tolerance = 50.0;
     assert!(
         (group_center_x - panel_center_x).abs() < tolerance,
@@ -1863,7 +1865,8 @@ fn markdown_table_stretches_to_full_width() {
     let _ = render_frame(&ctx, &mut pane);
     let output = render_frame(&ctx, &mut pane);
 
-    let content_width = preview_width - 16.0; /* WHY: 8px margin each side */
+    /* WHY: 8px margin each side */
+    let content_width = preview_width - 16.0;
 
     let flat = flatten_shapes(&output.shapes);
     let mut table_frame_rect = egui::Rect::NOTHING;
@@ -2273,7 +2276,8 @@ fn markdown_table_max_width_is_constrained() {
     let _ = render_frame(&ctx, &mut pane);
     let output = render_frame(&ctx, &mut pane);
 
-    let content_width = preview_width - 16.0; /* WHY: 8px margin each side */
+    /* WHY: 8px margin each side */
+    let content_width = preview_width - 16.0;
 
     let mut table_frame_rect = egui::Rect::NOTHING;
     for clipped_shape in output.shapes {
@@ -2490,7 +2494,7 @@ fn block_anchors_extracted_for_rich_blocks() {
 /// correct, non-overlapping, monotonically increasing span ranges.
 #[test]
 fn consecutive_rich_blocks_produce_correct_block_anchors() {
-    // Three consecutive blocks: code, alert, code
+    /* WHY: Three consecutive blocks: code, alert, code */
     let md = concat!(
         "```rust\n",
         "fn hello() {}\n",
@@ -2528,7 +2532,7 @@ fn consecutive_rich_blocks_produce_correct_block_anchors() {
 
     let extracted = anchors.borrow();
 
-    // Expect at least 3 block anchors: one for each rich block
+    /* WHY: Expect at least 3 block anchors: one for each rich block */
     assert!(
         extracted.len() >= 3,
         "Expected at least 3 block anchors for 3 consecutive rich blocks, got {}. \
@@ -2537,7 +2541,7 @@ fn consecutive_rich_blocks_produce_correct_block_anchors() {
         extracted.iter().map(|(s, _)| s.clone()).collect::<Vec<_>>()
     );
 
-    // Verify spans are monotonically increasing (no corruption from double-pop)
+    /* WHY: Verify spans are monotonically increasing (no corruption from double-pop) */
     for window in extracted.windows(2) {
         let (prev_span, _) = &window[0];
         let (next_span, _) = &window[1];
@@ -2550,7 +2554,7 @@ fn consecutive_rich_blocks_produce_correct_block_anchors() {
         );
     }
 
-    // Verify rects have positive area (not degenerate)
+    /* WHY: Verify rects have positive area (not degenerate) */
     for (span, rect) in extracted.iter() {
         assert!(
             rect.width() > 0.0 && rect.height() > 0.0,
@@ -2618,7 +2622,7 @@ fn five_consecutive_alternating_blocks_all_produce_anchors() {
         extracted.iter().map(|(s, _)| s.clone()).collect::<Vec<_>>()
     );
 
-    // Verify monotonicity
+    /* WHY: Verify monotonicity */
     for window in extracted.windows(2) {
         let (prev_span, _) = &window[0];
         let (next_span, _) = &window[1];
@@ -2632,7 +2636,7 @@ fn five_consecutive_alternating_blocks_all_produce_anchors() {
         );
     }
 
-    // Verify Y-monotonicity of rects (each block should be below the previous)
+    /* WHY: Verify Y-monotonicity of rects (each block should be below the previous) */
     for window in extracted.windows(2) {
         let (_, prev_rect) = &window[0];
         let (_, next_rect) = &window[1];

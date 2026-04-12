@@ -85,11 +85,11 @@
         "metadata_tooltip": "大小: {size} B\n修改時間: {mod_time}",
         "path_label": "路徑",
         "flat_view": "平面檢視",
-        "filter_regex_hint": "篩選 (正則)…",
         "open_folder_hint": "開啟資料夾以開始使用 KatanA。",
         "open_workspace_button": "開啟資料夾",
         "remove_history_tooltip": "從歷史記錄中移除",
-        "max_depth_exceeded": "超過最大掃描深度"
+        "max_depth_exceeded": "超過最大掃描深度",
+        "filter_hint": "篩選…"
     },
     "preview": {
         "preview_title": "預覽",
@@ -445,7 +445,11 @@
         "command_author_insert_link": "插入連結",
         "command_author_insert_table": "繪製表格",
         "command_ingest_image_file": "附加圖像檔案…",
-        "command_ingest_clipboard_image": "從剪貼簿貼上圖像"
+        "command_ingest_clipboard_image": "從剪貼簿貼上圖像",
+        "match_case": "區分大小寫",
+        "match_word": "全字比對",
+        "use_regex": "使用正規表示式",
+        "doc_query_hint": "在文件内搜尋…"
     },
     "toc": {
         "title": "大綱",

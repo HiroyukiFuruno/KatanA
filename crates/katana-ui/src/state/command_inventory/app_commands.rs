@@ -7,7 +7,8 @@ pub struct AppCommands;
 
 impl AppCommands {
     pub fn get() -> Vec<CommandInventoryItem> {
-        vec![/* WHY: App Group */ CommandInventoryItem {
+        /* WHY: App Group */
+        vec![CommandInventoryItem {
             id: "app.settings",
             action: AppAction::ToggleSettings,
             group: CommandGroup::App,

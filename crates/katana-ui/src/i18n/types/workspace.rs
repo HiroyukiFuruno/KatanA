@@ -14,7 +14,7 @@ pub struct WorkspaceMessages {
     pub metadata_tooltip: String,
     pub path_label: String,
     pub flat_view: String,
-    pub filter_regex_hint: String,
+    pub filter_hint: String,
     pub open_folder_hint: String,
     pub open_workspace_button: String,
     pub remove_history_tooltip: String,

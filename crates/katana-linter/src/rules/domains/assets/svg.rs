@@ -77,7 +77,8 @@ impl SvgOps {
                 .unwrap_or("katana");
 
             if get_render_policy(pack_dir) == "NativeColor" {
-                continue; /* WHY: Skip tint validation for packs utilizing native colors */
+                /* WHY: Skip tint validation for packs utilizing native colors */
+                continue;
             }
 
             let content = match fs::read_to_string(&path) {
@@ -141,7 +142,8 @@ impl SvgOps {
             /* WHY: Extract inner SVG content (ignoring <svg ...> wrapper to avoid class noise) */
             let inner_content = match extract_inner_svg(&content) {
                 Some(inner) => inner,
-                None => content.trim().to_string(), /* WHY: fallback to full content if extraction fails */
+                /* WHY: fallback to full content if extraction fails */
+                None => content.trim().to_string(),
             };
 
             content_map

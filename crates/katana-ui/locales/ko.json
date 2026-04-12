@@ -85,11 +85,11 @@
         "metadata_tooltip": "크기: {size} B\n수정된 시간: {mod_time}",
         "path_label": "경로",
         "flat_view": "평면 보기",
-        "filter_regex_hint": "필터 (정규식)…",
         "open_folder_hint": "폴더를 열어 KatanA를 시작하십시오.",
         "open_workspace_button": "폴더 열기",
         "remove_history_tooltip": "기록에서 제거",
-        "max_depth_exceeded": "최대 스캔 깊이를 초과했습니다"
+        "max_depth_exceeded": "최대 스캔 깊이를 초과했습니다",
+        "filter_hint": "필터…"
     },
     "preview": {
         "preview_title": "미리보기",
@@ -445,7 +445,11 @@
         "command_author_insert_link": "링크 삽입",
         "command_author_insert_table": "표 삽입",
         "command_ingest_image_file": "이미지 파일 첨부…",
-        "command_ingest_clipboard_image": "클립보드에서 이미지 붙여넣기"
+        "command_ingest_clipboard_image": "클립보드에서 이미지 붙여넣기",
+        "match_case": "대소문자 구분",
+        "match_word": "단어 단위",
+        "use_regex": "정규식 사용",
+        "doc_query_hint": "문서 내 검색…"
     },
     "toc": {
         "title": "목차",

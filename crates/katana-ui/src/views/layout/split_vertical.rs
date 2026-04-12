@@ -81,7 +81,7 @@ impl<'a> VerticalSplit<'a> {
                         show_toc,
                         &mut app.pending_action,
                         scroll_sync,
-                        Some(app.state.search.doc_search_query.clone()),
+                        Some(app.state.search.doc_search.query.clone()),
                     )
                     .show(ui);
                 }

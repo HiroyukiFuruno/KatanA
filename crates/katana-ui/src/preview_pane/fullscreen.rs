@@ -36,18 +36,23 @@ impl FullscreenLogicOps {
         let idx = fullscreen_image?;
         if let Some(RenderedSection::Image { svg_data, alt, .. }) = sections.get(idx) {
             if Self::show_fullscreen_modal(ctx, svg_data, alt, fullscreen_state, idx) {
-                Some(idx) /* WHY: keep open */
+                /* WHY: keep open */
+                Some(idx)
             } else {
-                None /* WHY: user closed */
+                /* WHY: user closed */
+                None
             }
         } else if let Some(RenderedSection::LocalImage { path, alt, .. }) = sections.get(idx) {
             if Self::show_fullscreen_local_image(ctx, path, alt, fullscreen_state, idx) {
-                Some(idx) /* WHY: keep open */
+                /* WHY: keep open */
+                Some(idx)
             } else {
-                None /* WHY: user closed */
+                /* WHY: user closed */
+                None
             }
         } else {
-            None /* WHY: section gone */
+            /* WHY: section gone */
+            None
         }
     }
 

@@ -88,7 +88,8 @@ fn test_integration_command_palette_ui() {
     /* WHY: Note: get_by_label matches the Settings text */
     harness.get_by_label("Settings").click();
 
-    harness.step(); /* WHY: UI processes click, sets is_open = false, BUT action is not set in interact.clicked() branch in show()! */
+    /* WHY: UI processes click, sets is_open = false, BUT action is not set in interact.clicked() branch in show()! */
+    harness.step();
     /* WHY: Wait, looking at command_palette.rs: */
     /* WHY: if interact.clicked() { is_open = false; } */
     /* WHY: It DOES NOT set the action in the clicked() branch! It only sets it in the Enter key branch. */

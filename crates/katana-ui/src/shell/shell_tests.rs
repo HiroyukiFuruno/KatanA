@@ -594,7 +594,8 @@ mod tests_extra {
     fn poll_download_clears_rx_on_disconnect() {
         let mut app = make_app();
         let (tx, rx) = std::sync::mpsc::channel::<Result<(), String>>();
-        drop(tx); /* WHY: Disconnected on sender drop */
+        /* WHY: Disconnected on sender drop */
+        drop(tx);
         app.download_rx = Some(rx);
         let ctx = egui::Context::default();
         app.poll_download(&ctx);
@@ -801,7 +802,8 @@ mod tests_extra {
         app.handle_select_document(file_path.clone(), true);
 
         let doc = app.state.active_document_mut().unwrap();
-        doc.buffer = "B".to_string(); /* WHY: bypass update_buffer to bypass hash updates */
+        /* WHY: bypass update_buffer to bypass hash updates */
+        doc.buffer = "B".to_string();
 
         app.handle_select_document(file_path.clone(), true);
         let tab = app
@@ -1018,7 +1020,8 @@ mod tests_extra {
         app.state.update.checking = true;
         let (tx, rx) =
             std::sync::mpsc::channel::<Result<Option<katana_core::update::ReleaseInfo>, String>>();
-        drop(tx); /* WHY: cause Err(RecvError) or Disconnected */
+        /* WHY: cause Err(RecvError) or Disconnected */
+        drop(tx);
         app.update_rx = Some(rx);
 
         let ctx = eframe::egui::Context::default();
@@ -1032,7 +1035,8 @@ mod tests_extra {
     fn test_background_update_check_shows_dialog_only_once() {
         let mut app = setup_test_app();
         app.start_update_check(false);
-        assert!(!app.show_update_dialog); /* WHY: should be hidden during check */
+        /* WHY: should be hidden during check */
+        assert!(!app.show_update_dialog);
         assert!(!app.update_notified);
 
         let (tx, rx) = std::sync::mpsc::channel();

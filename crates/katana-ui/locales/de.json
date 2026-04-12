@@ -85,11 +85,11 @@
         "metadata_tooltip": "Größe: {size} B\nGeändert: {mod_time}",
         "path_label": "Pfad",
         "flat_view": "Listenansicht",
-        "filter_regex_hint": "Filter (Regex)…",
         "open_folder_hint": "Ordner öffnen, um KatanA zu starten.",
         "open_workspace_button": "Ordner öffnen",
         "remove_history_tooltip": "Aus Verlauf entfernen",
-        "max_depth_exceeded": "Maximale Tiefe überschritten"
+        "max_depth_exceeded": "Maximale Tiefe überschritten",
+        "filter_hint": "Filtern…"
     },
     "preview": {
         "preview_title": "Vorschau",
@@ -445,7 +445,11 @@
         "command_author_insert_link": "Link einfügen",
         "command_author_insert_table": "Tabelle einfügen",
         "command_ingest_image_file": "Bilddatei anhängen…",
-        "command_ingest_clipboard_image": "Bild aus der Zwischenablage einfügen"
+        "command_ingest_clipboard_image": "Bild aus der Zwischenablage einfügen",
+        "match_case": "Groß-/Kleinschreibung",
+        "match_word": "Ganzes Wort",
+        "use_regex": "Regulärer Ausdruck",
+        "doc_query_hint": "Im Dokument suchen…"
     },
     "toc": {
         "title": "Inhaltsverzeichnis",
