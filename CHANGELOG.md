@@ -2,7 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
-## [0.21.0]
+## [0.21.0] - 2026-04-12 08:21:00 (UTC)
+
+### Added
+- Implemented Shortcut Customization UI in Settings.
+- Added comprehensive localization for the shortcut settings panel (de, es, fr, it, ko, pt, zh-CN, zh-TW).
+- Introduced conflict detection to warn users if a newly bound shortcut is already in use by another feature.
+- Enabled OS-specific default shortcut definitions alongside custom user overrides.
 
 ## [0.20.0] - 2026-04-12 05:51:33 (UTC)
 
