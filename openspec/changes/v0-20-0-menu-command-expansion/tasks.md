@@ -1,8 +1,8 @@
 ## Definition of Ready (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.20.0 の変更 ID とスコープが確認されていること
-- [ ] 現在のネイティブメニュー、コマンドパレット、および `AppAction` の一覧を再確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.20.0 の変更 ID とスコープが確認されていること
+- [x] 現在のネイティブメニュー、コマンドパレット、および `AppAction` の一覧を再確認していること
 
 ## Branch Rule
 
