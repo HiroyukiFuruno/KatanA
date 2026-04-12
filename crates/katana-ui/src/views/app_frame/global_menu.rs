@@ -168,6 +168,12 @@ impl<'a> GlobalMenuBar<'a> {
                     );
                     ui.separator();
                     btn!(ui, "help.github", &i18n.menu.github, AppAction::OpenGitHub);
+                    btn!(
+                        ui,
+                        "help.website",
+                        &i18n.menu.website,
+                        AppAction::OpenOfficialWebsite
+                    );
                     ui.separator();
                     btn!(
                         ui,

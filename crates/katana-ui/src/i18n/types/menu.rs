@@ -46,6 +46,8 @@ pub struct MenuMessages {
     pub close_document: String,
     #[serde(default = "default_menu_restore_closed")]
     pub restore_closed: String,
+    #[serde(default = "default_menu_website")]
+    pub website: String,
 }
 
 fn default_menu_demo() -> String {
@@ -65,4 +67,7 @@ fn default_menu_close_document() -> String {
 }
 fn default_menu_restore_closed() -> String {
     "Restore Closed Document".to_string()
+}
+fn default_menu_website() -> String {
+    "Official Website".to_string()
 }

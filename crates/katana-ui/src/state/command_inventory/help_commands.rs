@@ -64,6 +64,14 @@ impl HelpCommands {
                 is_available: |_| true,
                 default_shortcuts: &[],
             },
+            CommandInventoryItem {
+                id: "help.website",
+                action: AppAction::OpenOfficialWebsite,
+                group: CommandGroup::Help,
+                label: || I18nOps::get().menu.website.clone(),
+                is_available: |_| true,
+                default_shortcuts: &[],
+            },
         ]
     }
 }

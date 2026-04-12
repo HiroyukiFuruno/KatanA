@@ -35,7 +35,8 @@
         "language_de": "German",
         "language_es": "Spanish",
         "language_it": "Italian",
-        "github": "GitHub Repository"
+        "github": "GitHub Repository",
+        "website": "Official Website"
     },
     "about": {
         "basic_info": "Basic Info",
@@ -49,6 +50,7 @@
         "license": "License",
         "links": "Links",
         "source_code": "Source Code",
+        "official_website": "Official Website",
         "documentation": "Documentation",
         "report_issue": "Report Issue",
         "support": "Support",

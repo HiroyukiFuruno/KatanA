@@ -35,7 +35,8 @@
         "demo": "데모",
         "welcome_screen": "환영 화면",
         "user_guide": "사용자 가이드",
-        "github": "GitHub 저장소"
+        "github": "GitHub 저장소",
+        "website": "공식 웹사이트"
     },
     "about": {
         "basic_info": "기본 정보",
@@ -50,6 +51,7 @@
         "links": "링크",
         "source_code": "소스 코드",
         "documentation": "문서",
+        "official_website": "공식 웹사이트",
         "report_issue": "문제 보고",
         "support": "지원",
         "sponsor": "스폰서"

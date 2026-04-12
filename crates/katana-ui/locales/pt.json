@@ -35,7 +35,8 @@
         "demo": "Demonstração",
         "welcome_screen": "Tela de boas-vindas",
         "user_guide": "Guia do usuário",
-        "github": "Repositório GitHub"
+        "github": "Repositório GitHub",
+        "website": "Site oficial"
     },
     "about": {
         "basic_info": "Informações básicas",
@@ -50,6 +51,7 @@
         "links": "Links",
         "source_code": "Código fonte",
         "documentation": "Documentação",
+        "official_website": "Site oficial",
         "report_issue": "Relatar um problema",
         "support": "Suporte",
         "sponsor": "Patrocinar"

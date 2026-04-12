@@ -35,7 +35,8 @@
         "language_de": "ドイツ語",
         "language_es": "スペイン語",
         "language_it": "イタリア語",
-        "github": "GitHub リポジトリ"
+        "github": "GitHub リポジトリ",
+        "website": "公式ウェブサイト"
     },
     "about": {
         "basic_info": "基本情報",
@@ -49,6 +50,7 @@
         "license": "ライセンス",
         "links": "リンク",
         "source_code": "ソースコード",
+        "official_website": "公式ウェブサイト",
         "documentation": "ドキュメント",
         "report_issue": "不具合を報告",
         "support": "サポート",

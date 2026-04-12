@@ -35,7 +35,8 @@
         "demo": "演示",
         "welcome_screen": "欢迎屏幕",
         "user_guide": "用户指南",
-        "github": "GitHub 仓库"
+        "github": "GitHub 仓库",
+        "website": "官方网站"
     },
     "about": {
         "basic_info": "基本信息",
@@ -50,6 +51,7 @@
         "links": "链接",
         "source_code": "源代码",
         "documentation": "文档",
+        "official_website": "官方网站",
         "report_issue": "报告问题",
         "support": "支持",
         "sponsor": "赞助"

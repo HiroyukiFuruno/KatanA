@@ -129,7 +129,10 @@ impl KatanaApp {
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
             AppAction::OpenUserGuide => self.handle_action_open_user_guide(),
             AppAction::OpenGitHub => {
-                let _ = open::that("https://github.com/hiroyuki-furuno/katana");
+                let _ = open::that(crate::about_info::APP_REPOSITORY);
+            }
+            AppAction::OpenOfficialWebsite => {
+                let _ = open::that(crate::about_info::APP_WEBSITE_URL);
             }
             AppAction::SwitchDemoLanguage(lang) => self.handle_action_switch_demo_lang(&lang),
             /* WHY: Markdown authoring — transform buffer around cursor / selection. */

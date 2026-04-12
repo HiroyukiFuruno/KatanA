@@ -35,7 +35,8 @@
         "demo": "示範",
         "welcome_screen": "歡迎畫面",
         "user_guide": "使用指南",
-        "github": "GitHub 倉庫"
+        "github": "GitHub 倉庫",
+        "website": "官方網站"
     },
     "about": {
         "basic_info": "基本資訊",
@@ -50,6 +51,7 @@
         "links": "連結",
         "source_code": "原始碼",
         "documentation": "開發文件",
+        "official_website": "官方網站",
         "report_issue": "回報問題",
         "support": "支援",
         "sponsor": "贊助"

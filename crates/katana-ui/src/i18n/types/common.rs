@@ -17,6 +17,8 @@ pub struct AboutMessages {
     pub report_issue: String,
     pub support: String,
     pub sponsor: String,
+    #[serde(default = "default_about_website")]
+    pub official_website: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -131,4 +133,8 @@ pub struct SplitToggleMessages {
     pub vertical: String,
     pub editor_first: String,
     pub preview_first: String,
+}
+
+fn default_about_website() -> String {
+    "Official Website".to_string()
 }

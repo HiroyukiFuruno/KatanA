@@ -14,6 +14,7 @@ pub struct AboutInfo {
     pub license: &'static str,
     pub description: &'static str,
     pub repository: &'static str,
+    pub website_url: &'static str,
     pub docs_url: &'static str,
     pub issues_url: &'static str,
     pub sponsor_url: &'static str,

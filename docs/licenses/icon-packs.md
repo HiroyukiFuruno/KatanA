@@ -5,7 +5,7 @@ KatanA bundles several high-quality, open-source icon packs to allow users to cu
 ## 1. KatanA (Default)
 
 - **Author**: Hiroyuki Furuno
-- **Source**: <https://github.com/hiroyuki-furuno/katana>
+- **Source**: <https://github.com/HiroyukiFuruno/KatanA>
 - **License**: MIT License
 - **Usage**: Core application icons bundled internally.
 
