@@ -11,3 +11,14 @@ pub struct ShortcutSettings {
     #[serde(default)]
     pub linux: HashMap<String, String>,
 }
+
+impl ShortcutSettings {
+    pub fn current_os_bindings(&self) -> &HashMap<String, String> {
+        let os = std::env::consts::OS;
+        match os {
+            "macos" => &self.macos,
+            "windows" => &self.windows,
+            _ => &self.linux,
+        }
+    }
+}
