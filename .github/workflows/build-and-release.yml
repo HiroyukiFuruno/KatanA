@@ -74,9 +74,6 @@ on:
         default: false
         type: boolean
 
-permissions:
-  contents: write
-
 env:
   CARGO_INCREMENTAL: 0
   CARGO_TERM_COLOR: always
