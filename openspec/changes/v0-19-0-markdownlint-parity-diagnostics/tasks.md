@@ -92,10 +92,21 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 5. Final Verification & Release Work (最終確認とリリース対応)
 
-- [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 5.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 5.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 5.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 5.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 5.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.19.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 5.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+### Definition of Ready (DoR)
+
+- [x] 1つ前のタスク（Task 4）が完了しており、その成果物（コード・テストを含む）がマージされていること。
+- [x] 今回のリリースに関する仕様定義と実装がすべて完了状態にあり、残されたタスクが存在しないこと。
+
+- [x] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [x] 5.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [x] 5.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [x] 5.4 `master` に向けて PR（プルリクエスト）を作成する
+- [x] 5.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [x] 5.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.19.0` のリリースタグ打ちとリリース作成を実行する
+- [x] 5.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+
+### Definition of Done (DoD)
+
+- [x] すべてのリリースタスクが正常に完了し、`master` ブランチへのリリース反映コミットがプッシュされていること
+- [x] Katana Desktop の稼働環境（GitHub Releases 等）にて `v0.19.0` のリリースオブジェクトが正しく公開されていること
+- [x] この OpenSpec change ディレクトリ群（`openspec/changes/v0-19-0-...`）が `/archive` に移動され、ワークスペースからクリーンアップされていること。
