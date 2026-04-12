@@ -1,8 +1,8 @@
 ## Definition of Ready (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.19.0 の変更 ID とスコープが確認されていること
-- [ ] 既存の Diagnostics 実装、問題検知パネル (Problems Panel)、アーカイブ済みの `markdown-diagnostics` ブランチ/チェンジを再確認していること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.19.0 の変更 ID とスコープが確認されていること
+- [x] 既存の Diagnostics 実装、問題検知パネル (Problems Panel)、アーカイブ済みの `markdown-diagnostics` ブランチ/チェンジを再確認していること
 
 ## Branch Rule
 
