@@ -129,4 +129,61 @@ impl ShortcutsHelpersOps {
             _ => "",
         }
     }
+
+    /* WHY: Handles key input recording when the edit button is active */
+    pub(crate) fn handle_shortcut_recording(
+        ui: &mut egui::Ui,
+        state: &mut AppState,
+        cmd: &CommandInventoryItem,
+        recording_id_salt: egui::Id,
+        os_bindings: &HashMap<String, String>,
+    ) {
+        let (should_cancel, keys, modifiers) = ui.input(|i| {
+            if i.key_pressed(egui::Key::Escape) {
+                (true, Vec::new(), i.modifiers)
+            } else {
+                let pressed_keys: Vec<egui::Key> = i
+                    .events
+                    .iter()
+                    .filter_map(|e| {
+                        if let egui::Event::Key {
+                            key, pressed: true, ..
+                        } = e
+                        {
+                            Some(*key)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                (false, pressed_keys, i.modifiers)
+            }
+        });
+
+        if should_cancel {
+            ui.memory_mut(|mem| mem.data.remove::<String>(recording_id_salt));
+        } else if let Some(&key) = keys.first() {
+            let key_str = Self::key_to_string(key);
+
+            if !key_str.is_empty() {
+                let mut parts = Vec::new();
+                Self::add_modifier_if(modifiers.command, "primary", &mut parts);
+                Self::add_modifier_if(modifiers.shift, "shift", &mut parts);
+                Self::add_modifier_if(modifiers.alt, "alt", &mut parts);
+                Self::add_modifier_if(modifiers.mac_cmd, "mac_cmd", &mut parts);
+                parts.push(key_str);
+
+                let new_shortcut = parts.join("+");
+
+                Self::check_and_save_shortcut(
+                    ui,
+                    state,
+                    cmd,
+                    &new_shortcut,
+                    recording_id_salt,
+                    os_bindings,
+                );
+            }
+        }
+    }
 }

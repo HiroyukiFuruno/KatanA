@@ -39,31 +39,35 @@ impl ShortcutsTabOps {
         Self::render_conflict_warning(ui);
 
         for group in groups {
-            crate::widgets::Accordion::new(
-                format!("shortcuts_accordion_{:?}", group),
-                egui::RichText::new(group.localized_name())
-                    .strong()
-                    .size(crate::settings::SECTION_HEADER_SIZE),
-                |ui| {
-                    egui::Grid::new(format!("shortcuts_grid_{:?}", group))
-                        .num_columns(COLUMNS)
-                        .spacing([GRID_SPACING_X, GRID_SPACING_Y])
-                        .show(ui, |ui| {
-                            for cmd in CommandInventory::all().iter().filter(|c| c.group == group) {
-                                Self::render_command_row(
-                                    ui,
-                                    state,
-                                    cmd,
-                                    &recording_id,
-                                    recording_id_salt,
-                                    &os_bindings,
-                                );
-                            }
-                        });
-                },
-            )
-            .default_open(true)
-            .show(ui);
+            ui.push_id(group, |ui| {
+                crate::widgets::Accordion::new(
+                    format!("shortcuts_accordion_{:?}", group),
+                    egui::RichText::new(group.localized_name())
+                        .strong()
+                        .size(crate::settings::SECTION_HEADER_SIZE),
+                    |ui| {
+                        egui::Grid::new(format!("shortcuts_grid_{:?}", group))
+                            .num_columns(COLUMNS)
+                            .spacing([GRID_SPACING_X, GRID_SPACING_Y])
+                            .show(ui, |ui| {
+                                for cmd in
+                                    CommandInventory::all().iter().filter(|c| c.group == group)
+                                {
+                                    Self::render_command_row(
+                                        ui,
+                                        state,
+                                        cmd,
+                                        &recording_id,
+                                        recording_id_salt,
+                                        &os_bindings,
+                                    );
+                                }
+                            });
+                    },
+                )
+                .default_open(true)
+                .show(ui);
+            });
 
             ui.add_space(crate::settings::SECTION_SPACING);
         }
@@ -129,7 +133,13 @@ impl ShortcutsTabOps {
         let mut edit_label = i18n.settings.shortcuts.edit.as_str();
         if recording_id == cmd.id {
             edit_label = i18n.settings.shortcuts.press_keys.as_str();
-            Self::handle_shortcut_recording(ui, state, cmd, recording_id_salt, os_bindings);
+            ShortcutsHelpersOps::handle_shortcut_recording(
+                ui,
+                state,
+                cmd,
+                recording_id_salt,
+                os_bindings,
+            );
         }
 
         if ui.button(edit_label).clicked() {
@@ -137,62 +147,5 @@ impl ShortcutsTabOps {
         }
 
         ui.end_row();
-    }
-
-    /* WHY: Handles key input recording when the edit button is active */
-    fn handle_shortcut_recording(
-        ui: &mut egui::Ui,
-        state: &mut AppState,
-        cmd: &CommandInventoryItem,
-        recording_id_salt: egui::Id,
-        os_bindings: &HashMap<String, String>,
-    ) {
-        let (should_cancel, keys, modifiers) = ui.input(|i| {
-            if i.key_pressed(egui::Key::Escape) {
-                (true, Vec::new(), i.modifiers)
-            } else {
-                let pressed_keys: Vec<egui::Key> = i
-                    .events
-                    .iter()
-                    .filter_map(|e| {
-                        if let egui::Event::Key {
-                            key, pressed: true, ..
-                        } = e
-                        {
-                            Some(*key)
-                        } else {
-                            None
-                        }
-                    })
-                    .collect();
-                (false, pressed_keys, i.modifiers)
-            }
-        });
-
-        if should_cancel {
-            ui.memory_mut(|mem| mem.data.remove::<String>(recording_id_salt));
-        } else if let Some(&key) = keys.first() {
-            let key_str = ShortcutsHelpersOps::key_to_string(key);
-
-            if !key_str.is_empty() {
-                let mut parts = Vec::new();
-                ShortcutsHelpersOps::add_modifier_if(modifiers.command, "primary", &mut parts);
-                ShortcutsHelpersOps::add_modifier_if(modifiers.shift, "shift", &mut parts);
-                ShortcutsHelpersOps::add_modifier_if(modifiers.alt, "alt", &mut parts);
-                ShortcutsHelpersOps::add_modifier_if(modifiers.mac_cmd, "mac_cmd", &mut parts);
-                parts.push(key_str);
-
-                let new_shortcut = parts.join("+");
-
-                ShortcutsHelpersOps::check_and_save_shortcut(
-                    ui,
-                    state,
-                    cmd,
-                    &new_shortcut,
-                    recording_id_salt,
-                    os_bindings,
-                );
-            }
-        }
     }
 }
