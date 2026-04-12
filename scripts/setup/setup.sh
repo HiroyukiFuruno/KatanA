@@ -16,6 +16,7 @@
 #   - tokei           : Count lines of source code (make loc)
 #   - lefthook        : Git hooks runner (pre-commit / pre-push)
 #   - create-dmg      : macOS .dmg installer builder
+#   - rtk             : AI context-aware CLI proxy (mandatory for agents)
 #   - Optional AI skill copies from `.agents/skills` to other agent layouts
 #
 # =============================================================================
@@ -216,6 +217,9 @@ echo "  ${BOLD}Development utilities${RESET}"
 echo "    • tokei           (make loc)"
 echo "    • lefthook        (Git hooks: pre-commit + pre-push)"
 echo "    • create-dmg      (make dmg)"
+echo ""
+echo "  ${BOLD}AI & Agent utilities${RESET}"
+echo "    • rtk             (AI context-aware CLI proxy — mandatory)"
 echo ""
 echo "  ${BOLD}Optional AI agent setup${RESET}"
 echo "    • Copy repository-local skills from .agents/skills to other agent layouts"
@@ -480,6 +484,19 @@ else
 fi
 
 # =============================================================================
+# 13. rtk
+# =============================================================================
+header "rtk"
+
+if command -v rtk &>/dev/null; then
+  success "rtk is already installed ($(rtk --version))"
+else
+  info "Installing rtk CLI globally..."
+  npm install -g @fission-ai/rtk
+  success "rtk CLI installed"
+fi
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
@@ -498,6 +515,8 @@ echo "  llvm-cov     $(cargo llvm-cov --version)"
 echo "  cargo-watch  $(cargo watch --version)"
 echo "  tokei        $(tokei --version)"
 echo "  lefthook     $(lefthook version)"
+echo "  openspec     $(openspec --version)"
+echo "  rtk          $(rtk --version)"
 echo ""
 echo "Next steps:"
 echo "  make build        # Build the workspace"

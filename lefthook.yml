@@ -1,5 +1,7 @@
 # lefthook.yml
-output: false
+no_tty: true
+output:
+  - failure
 
 pre-commit:
   parallel: false
