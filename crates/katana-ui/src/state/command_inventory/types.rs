@@ -1,5 +1,6 @@
 use crate::app_state::{AppAction, AppState};
 use crate::i18n::I18nOps;
+use crate::state::shortcut_context::ShortcutContext;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CommandGroup {
@@ -28,6 +29,10 @@ pub struct CommandInventoryItem {
     pub id: &'static str,
     pub action: AppAction,
     pub group: CommandGroup,
+    /// WHY: Defines the UI context in which this command's shortcut is active.
+    /// Commands with Global context fire in any non-Recording, non-Modal context.
+    /// Commands with Editor context fire only when the text editor has focus.
+    pub context: ShortcutContext,
     pub label: fn() -> String,
     pub is_available: fn(&AppState) -> bool,
     pub default_shortcuts: &'static [&'static str],

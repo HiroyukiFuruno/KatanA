@@ -1,12 +1,24 @@
 use crate::shell::KatanaApp;
 use crate::state::command_inventory::CommandInventory;
+use crate::state::shortcut_context::{ShortcutContext, ShortcutContextResolver};
 use eframe::egui;
 
+/// WHY: Strips the legacy `[editor]` context suffix from shortcut strings.
+/// This suffix was used before ShortcutContext was introduced to hint that
+/// a shortcut belongs to the editor. The suffix is now deprecated — context
+/// is encoded in CommandInventoryItem::context — but we still strip it to
+/// avoid parse failures for any user-customized shortcuts that may still
+/// carry the old format in their persisted settings.
+fn strip_context_suffix(s: &str) -> &str {
+    s.strip_suffix("[editor]").unwrap_or(s)
+}
+
 fn parse_shortcut(s: &str) -> Option<egui::KeyboardShortcut> {
+    let clean = strip_context_suffix(s);
     let mut modifiers = egui::Modifiers::NONE;
     let mut key = None;
 
-    for part in s.split('+') {
+    for part in clean.split('+') {
         let p = part.trim().to_lowercase();
         match p.as_str() {
             "primary" | "cmd" | "command" | "ctrl" => modifiers.command = true,
@@ -62,6 +74,7 @@ fn parse_key(s: &str) -> Option<egui::Key> {
         "9" => Some(egui::Key::Num9),
         "," => Some(egui::Key::Comma),
         "." => Some(egui::Key::Period),
+        "`" => Some(egui::Key::Backtick),
         "space" => Some(egui::Key::Space),
         "enter" => Some(egui::Key::Enter),
         "esc" | "escape" => Some(egui::Key::Escape),
@@ -78,6 +91,14 @@ fn parse_key(s: &str) -> Option<egui::Key> {
 
 impl KatanaApp {
     pub(super) fn handle_shortcuts(&mut self, ctx: &egui::Context) {
+        let active_context = ShortcutContextResolver::resolve(&self.state, ctx);
+
+        /* WHY: During shortcut recording the user is intentionally pressing
+        keys to assign them. We must not intercept those inputs as commands. */
+        if active_context == ShortcutContext::Recording {
+            return;
+        }
+
         let os_bindings = self
             .state
             .config
@@ -87,6 +108,13 @@ impl KatanaApp {
             .current_os_bindings();
 
         for cmd in CommandInventory::all() {
+            /* WHY: Skip commands whose context does not match the active context.
+            Global commands fire anywhere except Recording/Modal.
+            Editor commands fire only when the text editor has focus. */
+            if !ShortcutContextResolver::context_allows(cmd.context, active_context) {
+                continue;
+            }
+
             if !(cmd.is_available)(&self.state) {
                 continue;
             }
@@ -111,9 +139,40 @@ impl KatanaApp {
                 }
             }
             if matched {
-                /* WHY: If a shortcut for this command matched, stop processing others to prevent ambiguous multi-fire */
+                /* WHY: Stop processing after the first match to prevent
+                ambiguous multi-fire within the same frame. */
                 break;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn strip_context_suffix_removes_editor_tag() {
+        assert_eq!(strip_context_suffix("primary+B[editor]"), "primary+B");
+    }
+
+    #[test]
+    fn strip_context_suffix_leaves_plain_shortcut_unchanged() {
+        assert_eq!(strip_context_suffix("primary+S"), "primary+S");
+    }
+
+    #[test]
+    fn parse_shortcut_handles_backtick() {
+        let result = parse_shortcut("primary+`");
+        assert!(
+            result.is_some(),
+            "backtick shortcut must parse successfully"
+        );
+    }
+
+    #[test]
+    fn parse_shortcut_ignores_unknown_key() {
+        let result = parse_shortcut("primary+@@@");
+        assert!(result.is_none());
     }
 }
