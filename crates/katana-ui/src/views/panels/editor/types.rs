@@ -12,3 +12,13 @@ pub type EditorColors = (
 );
 
 pub struct EditorLogicOps;
+
+/// Result of a Markdown authoring transform applied to a buffer.
+pub struct AuthoringTransform {
+    /// The updated buffer after applying the transform.
+    pub buffer: String,
+    /// Byte offset of the cursor / selection start in the updated buffer.
+    pub cursor_start: usize,
+    /// Byte offset of the cursor / selection end in the updated buffer.
+    pub cursor_end: usize,
+}

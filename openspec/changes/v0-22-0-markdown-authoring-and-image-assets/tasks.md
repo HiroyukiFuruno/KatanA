@@ -13,16 +13,16 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 1. Source-First Authoring Commands (マークダウン編集補助コマンドの実装)
 
-- [ ] 1.1 見出し、装飾、リスト、表などのドキュメント作成補助コマンド (authoring command) の一覧を確定する
-- [ ] 1.2 カーソル位置やテキスト選択範囲 (selection) に対して、Markdown 記法への挿入・変換を行うロジックを実装する
-- [ ] 1.3 搭載した編集補助コマンドが、コマンド一覧 (inventory) やショートカットから容易に呼び出せるようにする
-- [ ] 1.4 これにより、ファイルの「保存 (save)」や「未保存状態検知 (dirty buffer)」、および「プレビューの同期 (preview sync)」に関する内部管理システム (契約/contract) が破壊されていないことを確認する
+- [x] 1.1 見出し、装飾、リスト、表などのドキュメント作成補助コマンド (authoring command) の一覧を確定する
+- [x] 1.2 カーソル位置やテキスト選択範囲 (selection) に対して、Markdown 記法への挿入・変換を行うロジックを実装する
+- [x] 1.3 搭載した編集補助コマンドが、コマンド一覧 (inventory) やショートカットから容易に呼び出せるようにする
+- [x] 1.4 これにより、ファイルの「保存 (save)」や「未保存状態検知 (dirty buffer)」、および「プレビューの同期 (preview sync)」に関する内部管理システム (契約/contract) が破壊されていないことを確認する
 
 ### Definition of Done (DoD)
 
-- [ ] エディター上で Markdown のソースコード操作を直接的に行う環境 (source-first) を維持しつつ、編集補助用のコマンドを利用できること
-- [ ] 選択状態の有無にかかわらず、意図しない Markdown 原稿の破壊が生じないこと
-- [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
+- [x] エディター上で Markdown のソースコード操作を直接的に行う環境 (source-first) を維持しつつ、編集補助用のコマンドを利用できること
+- [x] 選択状態の有無にかかわらず、意図しない Markdown 原稿の破壊が生じないこと
+- [x] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
 

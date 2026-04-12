@@ -60,4 +60,10 @@ pub struct KatanaApp {
     pub(crate) changelog_sections: Vec<crate::changelog::ChangelogSection>,
     pub(crate) needs_changelog_display: bool,
     pub(crate) old_app_version: Option<String>,
+    /* WHY: Authoring — last known TextEdit cursor range (char-index based).
+    Updated each frame by EditorContent before an action is dispatched. */
+    pub(crate) editor_cursor_range: Option<egui::text::CCursorRange>,
+    /* WHY: Authoring — pending cursor to restore after a buffer transform.
+    Set by handle_action_author_markdown; consumed by EditorContent on the next frame. */
+    pub(crate) pending_editor_cursor: Option<(usize, usize)>,
 }

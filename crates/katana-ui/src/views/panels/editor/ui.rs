@@ -11,9 +11,15 @@ pub(crate) struct EditorContent<'a> {
     pub sync_scroll: bool,
     pub doc_search_matches: &'a [std::ops::Range<usize>],
     pub doc_search_active_index: usize,
+    /// Output: receives the cursor range reported by `TextEdit` this frame.
+    pub cursor_range_out: &'a mut Option<egui::text::CCursorRange>,
+    /// Input: if set, the `TextEdit` cursor is programmatically moved to this
+    /// char-index range on this frame (used after an authoring transform).
+    pub pending_cursor: Option<(usize, usize)>,
 }
 
 impl<'a> EditorContent<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         document: Option<&'a katana_core::document::Document>,
         scroll: &'a mut crate::app_state::ScrollState,
@@ -21,6 +27,8 @@ impl<'a> EditorContent<'a> {
         sync_scroll: bool,
         doc_search_matches: &'a [std::ops::Range<usize>],
         doc_search_active_index: usize,
+        cursor_range_out: &'a mut Option<egui::text::CCursorRange>,
+        pending_cursor: Option<(usize, usize)>,
     ) -> Self {
         Self {
             document,
@@ -29,6 +37,8 @@ impl<'a> EditorContent<'a> {
             sync_scroll,
             doc_search_matches,
             doc_search_active_index,
+            cursor_range_out,
+            pending_cursor,
         }
     }
 
@@ -36,6 +46,7 @@ impl<'a> EditorContent<'a> {
         let action = self.action;
         let sync_scroll = self.sync_scroll;
         let scroll = self.scroll;
+        let cursor_range_out = self.cursor_range_out;
         if let Some(doc) = self.document {
             let mut buffer = doc.buffer.clone();
 
@@ -75,7 +86,8 @@ impl<'a> EditorContent<'a> {
                             egui::vec2(left_margin, 0.0),
                             egui::Sense::hover(),
                         );
-                        let text_output = egui::TextEdit::multiline(&mut buffer)
+
+                        let text_edit = egui::TextEdit::multiline(&mut buffer)
                             .interactive(!doc.is_reference)
                             .font(egui::TextStyle::Monospace)
                             .desired_width(f32::INFINITY)
@@ -86,10 +98,20 @@ impl<'a> EditorContent<'a> {
                                 top: 0,
                                 bottom: 0,
                             })
-                            .frame(egui::Frame::NONE)
-                            .show(ui);
+                            .frame(egui::Frame::NONE);
+
+                        let text_output = text_edit.show(ui);
                         let response = text_output.response;
                         let galley = text_output.galley;
+
+                        /* WHY: Capture the current cursor range so action handlers can read it. */
+                        if let Some(range) = text_output.cursor_range {
+                            *cursor_range_out = Some(range);
+                        }
+
+                        if let Some(cursor_range) = self.pending_cursor {
+                            EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
+                        }
 
                         if response.clicked()
                             && let Some(c) = text_output.cursor_range
@@ -149,21 +171,9 @@ impl<'a> EditorContent<'a> {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
 
-                        if let Some(target_line) = scroll.scroll_to_line
-                            && let Some(idx) =
-                                EditorLogicOps::line_to_char_index(&buffer, target_line)
-                        {
-                            let cursor = egui::text::CCursor {
-                                index: idx,
-                                prefer_next_row: false,
-                            };
-                            let pos = galley.pos_from_cursor(cursor);
-                            let rect = egui::Rect::from_min_max(
-                                egui::pos2(response.rect.min.x, response.rect.min.y + pos.min.y),
-                                egui::pos2(response.rect.max.x, response.rect.min.y + pos.max.y),
-                            );
-                            ui.scroll_to_rect(rect, Some(egui::Align::Center));
-                        }
+                        EditorLogicOps::handle_scroll_to_line(
+                            ui, scroll, &buffer, &response, &galley,
+                        );
                         response
                     })
                     .inner
