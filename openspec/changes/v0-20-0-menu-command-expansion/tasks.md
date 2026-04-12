@@ -71,10 +71,10 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ## 4. Final Verification & Release Work (最終確認とリリース対応)
 
-- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 4.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 4.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 4.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 4.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.20.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 4.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+- [x] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [x] 4.2 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [x] 4.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [x] 4.4 `master` に向けて PR（プルリクエスト）を作成する
+- [x] 4.5 `master` へマージする (※ `--admin` の利用は許容される)
+- [x] 4.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.20.0` のリリースタグ打ちとリリース作成を実行する
+- [x] 4.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
