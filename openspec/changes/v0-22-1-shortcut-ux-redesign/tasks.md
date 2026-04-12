@@ -8,8 +8,8 @@
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-22-1-shortcut-ux-redesign`
-- **作業ブランチ**: 標準は `v0-22-1-shortcut-ux-redesign-task-x` (xはタスク番号)
+- **標準（Base）ブランチ**: `v0.22.1-shortcut-ux-redesign`
+- **作業ブランチ**: 標準は `v0.22.1-shortcut-ux-redesign-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 
