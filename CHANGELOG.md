@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.18.8] - 2026-04-12 00:53:47 (UTC)
+
+### 🚀 Features
+
+- **Self-Contained Windows Distribution:** KatanA for Windows is now distributed as a fully standalone application. By statically linking runtime libraries, the requirement to install the "Visual C++ Redistributable" has been completely eliminated for new users.
+
+### ✨ Improvements
+
+- **Windows Installer Design Refresh:** Refined the visual design of the Windows MSI installer to include a custom banner and dialog branding for a more professional and integrated installation experience.
+- **Automated Winget Updates:** Hardened the internal release pipelines to improve the reliability of KatanA's submissions to the Windows Package Manager (Winget).
+
 ## [0.18.7] - 2026-04-11 22:34:24 (UTC)
 
 ### ✨ Improvements
