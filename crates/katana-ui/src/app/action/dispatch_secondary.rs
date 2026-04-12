@@ -132,6 +132,12 @@ impl KatanaApp {
                 let _ = open::that("https://github.com/hiroyuki-furuno/katana");
             }
             AppAction::SwitchDemoLanguage(lang) => self.handle_action_switch_demo_lang(&lang),
+            /* WHY: Markdown authoring — transform buffer around cursor / selection. */
+            AppAction::AuthorMarkdown(op) => self.handle_action_author_markdown(op),
+            /* WHY: Image ingest — implemented in Task 2 (stubs for now). */
+            AppAction::IngestImageFile => self.handle_action_ingest_image_file(),
+            AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
+            AppAction::RevealImageAsset(path) => self.handle_action_reveal_image_asset(path),
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),
             _ => {}

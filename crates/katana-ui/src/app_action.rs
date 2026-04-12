@@ -141,6 +141,35 @@ pub enum AppAction {
     DocSearchPrev,
     ToggleProblemsPanel,
     RefreshDiagnostics,
+    /* WHY: Markdown authoring — insert/transform Markdown syntax around cursor or selection. */
+    AuthorMarkdown(MarkdownAuthoringOp),
+    /* WHY: Image ingest — attach a local file image or paste clipboard image into the document. */
+    IngestImageFile,
+    IngestClipboardImage,
+    /* WHY: Reveal local image asset in OS file manager. */
+    RevealImageAsset(std::path::PathBuf),
     Quit,
     None,
+}
+
+/// Operations available via the Markdown authoring command set.
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum MarkdownAuthoringOp {
+    /* WHY: Inline decorations */
+    Bold,
+    Italic,
+    Strikethrough,
+    InlineCode,
+    /* WHY: Block / structural */
+    Heading1,
+    Heading2,
+    Heading3,
+    BulletList,
+    NumberedList,
+    Blockquote,
+    CodeBlock,
+    HorizontalRule,
+    /* WHY: Reference structures */
+    InsertLink,
+    InsertTable,
 }
