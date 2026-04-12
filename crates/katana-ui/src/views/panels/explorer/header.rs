@@ -170,7 +170,7 @@ impl<'a> ExplorerHeader<'a> {
                         egui::TextEdit::singleline(&mut search.filter_query)
                             .text_color(text_color)
                             .hint_text(&crate::i18n::I18nOps::get().workspace.filter_regex_hint)
-                            .desired_width(f32::INFINITY),
+                            .desired_width(ui.available_width()),
                     );
                 })
                 .show(ui);
