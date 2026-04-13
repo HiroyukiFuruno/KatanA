@@ -93,11 +93,14 @@ impl ScrollMapper {
             preview_y: 0.0,
         });
 
+        let editor_clamp = if editor_max > 0.0 { editor_max } else { f32::MAX };
+        let preview_clamp = if preview_max > 0.0 { preview_max } else { f32::MAX };
+
         for (span, p_y) in sorted_anchors {
             let editor_y = span.start as f32 * row_height;
             /* WHY: Clamp to avoid degenerate points outside the visible range. */
-            let editor_y = editor_y.min(editor_max.max(1.0));
-            let preview_y = p_y.max(0.0).min(preview_max.max(1.0));
+            let editor_y = editor_y.min(editor_clamp);
+            let preview_y = p_y.max(0.0).min(preview_clamp);
 
             /* WHY: Skip degenerate or non-monotonic segments (to maintain strict ascending order). */
             if let Some(last) = points.last()
@@ -113,9 +116,15 @@ impl ScrollMapper {
             });
         }
         /* WHY: EOF anchor — always present regardless of heading count. */
+        let mut eof_editor = editor_max.max(1.0);
+        let mut eof_preview = preview_max.max(1.0);
+        if let Some(last) = points.last() {
+            eof_editor = eof_editor.max(last.editor_y + 1.0);
+            eof_preview = eof_preview.max(last.preview_y + 1.0);
+        }
         points.push(MapPoint {
-            editor_y: editor_max.max(1.0),
-            preview_y: preview_max.max(1.0),
+            editor_y: eof_editor,
+            preview_y: eof_preview,
         });
         Self { points }
     }

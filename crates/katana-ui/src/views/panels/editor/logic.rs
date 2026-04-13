@@ -74,10 +74,12 @@ impl EditorLogicOps {
                     prefer_next_row: false,
                 };
                 let pos = galley.pos_from_cursor(cursor);
-                let rect = egui::Rect::from_min_max(
+                let mut rect = egui::Rect::from_min_max(
                     egui::pos2(response.rect.min.x, response.rect.min.y + pos.min.y),
                     egui::pos2(response.rect.max.x, response.rect.min.y + pos.max.y),
                 );
+                const TOC_NAV_VERTICAL_OFFSET: f32 = 5.0;
+                rect.min.y -= TOC_NAV_VERTICAL_OFFSET;
                 ui.scroll_to_rect(rect, Some(egui::Align::TOP));
             }
         }
