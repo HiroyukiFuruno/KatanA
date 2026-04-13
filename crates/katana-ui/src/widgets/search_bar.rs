@@ -41,6 +41,7 @@ pub struct SearchBar<'a> {
     text_color: Option<egui::Color32>,
     show_search_icon: bool,
     show_toggles: bool,
+    id_source: Option<egui::Id>,
 }
 
 impl<'a> SearchBar<'a> {
@@ -52,6 +53,7 @@ impl<'a> SearchBar<'a> {
             text_color: None,
             show_search_icon: true,
             show_toggles: true,
+            id_source: None,
         }
     }
 
@@ -63,7 +65,13 @@ impl<'a> SearchBar<'a> {
             text_color: None,
             show_search_icon: false,
             show_toggles: false,
+            id_source: None,
         }
+    }
+
+    pub fn id_source(mut self, id: impl std::hash::Hash) -> Self {
+        self.id_source = Some(egui::Id::new(id));
+        self
     }
 
     pub fn show_search_icon(mut self, enabled: bool) -> Self {
@@ -143,9 +151,17 @@ impl<'a> SearchBar<'a> {
                                 .image(IconSize::Small)
                                 .tint(ui.visuals().text_color().gamma_multiply(ICON_OPACITY)),
                         );
+                    } else {
+                        /* WHY: Maintain identical text starting position (indentation) even when icon is hidden */
+                        let icon_space = ui.spacing().icon_width + ui.spacing().item_spacing.x;
+                        ui.add_space(icon_space);
                     }
+
+                    /* WHY: Use explicit id_source to prevent collision across multiple SearchBars */
+                    let id_source = self.id_source.unwrap_or_else(|| ui.next_auto_id());
+
                     let mut text_edit = egui::TextEdit::singleline(self.params.query_mut())
-                        .id_source("search_bar_text_edit")
+                        .id_source(id_source)
                         .desired_width(f32::INFINITY)
                         .frame(egui::Frame::none());
                     if let Some(color) = self.text_color {

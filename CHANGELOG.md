@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.1-1] - 2026-04-13 02:40:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Search Bar UI Fixes**: Resolved layout collapse bugs in the global search tab, fixed input focus dropping caused by IME text input events, prevented frame expansion upon focusing the search bar, and removed redundant search icons from context-aware search inputs.
+
 ## [0.22.1] - 2026-04-12 18:59:00 (UTC)
 
 ### ✨ Improvements

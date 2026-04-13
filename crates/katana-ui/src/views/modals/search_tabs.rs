@@ -12,6 +12,7 @@ pub(super) fn show_filename_tab(
 ) {
     let response = crate::widgets::SearchBar::new(&mut search.file_search)
         .hint_text(crate::i18n::I18nOps::get().search.query_hint.clone())
+        .id_source("search_tabs_file_name_bar")
         .show(ui);
     if !search.focus_requested {
         response.request_focus();
@@ -42,6 +43,7 @@ pub(super) fn show_filename_tab(
                 .include_pattern_hint
                 .clone(),
         )
+        .id_source("search_tabs_include_bar")
         .text_color(include_color)
         .show(ui);
 
@@ -52,6 +54,7 @@ pub(super) fn show_filename_tab(
                 .exclude_pattern_hint
                 .clone(),
         )
+        .id_source("search_tabs_exclude_bar")
         .text_color(exclude_color)
         .show(ui);
 
@@ -113,10 +116,9 @@ pub(super) fn show_md_tab(
     workspace: Option<&katana_core::workspace::Workspace>,
     action: &mut AppAction,
 ) {
-    /* WHY: md tab does not show the search icon – icon is only used in the file-name tab. */
     let response = crate::widgets::SearchBar::new(&mut search.md_search)
         .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
-        .show_search_icon(false)
+        .id_source("search_tabs_md_search_bar")
         .show(ui);
     if !search.focus_requested {
         response.request_focus();
