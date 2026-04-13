@@ -93,8 +93,16 @@ impl ScrollMapper {
             preview_y: 0.0,
         });
 
-        let editor_clamp = if editor_max > 0.0 { editor_max } else { f32::MAX };
-        let preview_clamp = if preview_max > 0.0 { preview_max } else { f32::MAX };
+        let editor_clamp = if editor_max > 0.0 {
+            editor_max
+        } else {
+            f32::MAX
+        };
+        let preview_clamp = if preview_max > 0.0 {
+            preview_max
+        } else {
+            f32::MAX
+        };
 
         for (span, p_y) in sorted_anchors {
             let editor_y = span.start as f32 * row_height;

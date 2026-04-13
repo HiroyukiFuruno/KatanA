@@ -26,8 +26,11 @@ fn find_active_toc_index_editor(
     let mut active = 0;
     let logical_threshold = current_line + 1.0;
     for item in anchor_map {
-        if matches!(item.kind, katana_core::markdown::outline::AnchorKind::Heading) 
-            && let Some(idx) = item.index {
+        if matches!(
+            item.kind,
+            katana_core::markdown::outline::AnchorKind::Heading
+        ) && let Some(idx) = item.index
+        {
             if (item.line_span.start as f32) > logical_threshold {
                 break;
             }
@@ -85,8 +88,10 @@ impl<'a> TocPanel<'a> {
                                     .italics(),
                             );
                         } else {
-                            let active_index = if let Some(visible_rect) = preview.visible_rect {
-                                let threshold = visible_rect.min.y + TOC_HEADING_VISIBILITY_THRESHOLD;
+                            let is_code_only = state.active_view_mode() == crate::app_state::ViewMode::CodeOnly;
+                            let active_index = if !is_code_only && let Some(visible_rect) = preview.visible_rect {
+                                let threshold =
+                                    visible_rect.min.y + TOC_HEADING_VISIBILITY_THRESHOLD;
                                 find_active_toc_index_preview(&preview.heading_anchors, threshold)
                             } else {
                                 let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
