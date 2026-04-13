@@ -1,6 +1,26 @@
 use super::*;
 
 #[test]
+fn test_is_newer_version() {
+    use crate::update::types::UpdateOps;
+
+    assert!(!UpdateOps::is_newer_version("0.22.1", "0.22.1"));
+
+    /* WHY: Verify that Katana's custom '-X' hotfix suffix is treated properly (Base is checked first, then hotfix value) */
+    assert!(!UpdateOps::is_newer_version("v0.22.1-1", "v0.22.1"));
+    assert!(UpdateOps::is_newer_version("0.22.1", "0.22.1-1"));
+    assert!(UpdateOps::is_newer_version("v0.22.1-1", "v0.22.1-2"));
+    assert!(!UpdateOps::is_newer_version("0.22.1-2", "v0.22.1-1"));
+
+    /* WHY: Verify standard SemVer bumps are preferred over matching base verions */
+    assert!(UpdateOps::is_newer_version("0.22.1", "0.22.2"));
+    assert!(!UpdateOps::is_newer_version("0.22.2", "0.22.1"));
+
+    /* WHY: Verify edge cases where hotfix suffix does not override a base patch update */
+    assert!(UpdateOps::is_newer_version("0.22.1-5", "0.22.2"));
+}
+
+#[test]
 fn test_update_manager_and_state() {
     let target = std::path::PathBuf::from("/Applications/KatanA.app");
     let mut manager = UpdateManager::new("0.6.4".to_string(), target.clone());
