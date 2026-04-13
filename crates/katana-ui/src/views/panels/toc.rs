@@ -1,21 +1,19 @@
 use crate::shell_ui::{TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH, TOC_PANEL_MARGIN};
 use eframe::egui;
 
-const TOC_ACTIVE_THRESHOLD_OFFSET: f32 = 40.0;
-
 fn find_active_toc_index(
     anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
-    threshold: f32,
+    current_line: f32,
 ) -> usize {
     let mut active = 0;
+    let logical_threshold = current_line + 1.0;
     for item in anchor_map {
         if matches!(
             item.kind,
             katana_core::markdown::outline::AnchorKind::Heading
-        ) && let Some(rect) = item.rect
-            && let Some(idx) = item.index
+        ) && let Some(idx) = item.index
         {
-            if rect.min.y > threshold {
+            if (item.line_span.start as f32) > logical_threshold {
                 break;
             }
             active = idx;
@@ -72,12 +70,14 @@ impl<'a> TocPanel<'a> {
                                     .italics(),
                             );
                         } else {
-                            let mut active_index = 0;
-                            if let Some(visible_rect) = preview.visible_rect {
-                                let threshold = visible_rect.min.y + TOC_ACTIVE_THRESHOLD_OFFSET;
-                                active_index =
-                                    find_active_toc_index(&preview.anchor_map, threshold);
-                            }
+                            let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+                            let editor_y = state
+                                .scroll
+                                .mapper
+                                .logical_to_editor(state.scroll.logical_position);
+                            let current_line = editor_y / row_height;
+                            let active_index =
+                                find_active_toc_index(&preview.anchor_map, current_line);
 
                             let mut next_scroll = None;
                             for (i, item) in preview.outline_items.iter().enumerate() {
