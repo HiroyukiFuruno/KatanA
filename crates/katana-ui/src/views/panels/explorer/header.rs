@@ -161,9 +161,11 @@ impl<'a> ExplorerHeader<'a> {
                         crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.error_text)
                     })
             };
+            /* WHY: filter bar does not show the search icon – icon is only for the file-name tab. */
             let resp = crate::widgets::SearchBar::new(&mut search.filter)
                 .text_color(text_color)
                 .hint_text(crate::i18n::I18nOps::get().workspace.filter_hint.clone())
+                .show_search_icon(false)
                 .show(ui);
             let focus_requested = ui.ctx().data_mut(|d| {
                 d.remove_temp::<bool>(egui::Id::new("filter_newly_enabled"))

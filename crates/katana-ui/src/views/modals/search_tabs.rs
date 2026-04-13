@@ -33,6 +33,8 @@ pub(super) fn show_filename_tab(
         err_color
     };
 
+    /* WHY: include/exclude bars have no search icon so their text area aligns with
+    the main query bar by sharing the same left_padding (ICON_NONE_PADDING). */
     crate::widgets::SearchBar::simple(&mut search.include_pattern)
         .hint_text(
             crate::i18n::I18nOps::get()
@@ -41,7 +43,6 @@ pub(super) fn show_filename_tab(
                 .clone(),
         )
         .text_color(include_color)
-        .show_search_icon(true)
         .show(ui);
 
     crate::widgets::SearchBar::simple(&mut search.exclude_pattern)
@@ -52,7 +53,6 @@ pub(super) fn show_filename_tab(
                 .clone(),
         )
         .text_color(exclude_color)
-        .show_search_icon(true)
         .show(ui);
 
     let current_params = (
@@ -113,8 +113,10 @@ pub(super) fn show_md_tab(
     workspace: Option<&katana_core::workspace::Workspace>,
     action: &mut AppAction,
 ) {
+    /* WHY: md tab does not show the search icon – icon is only used in the file-name tab. */
     let response = crate::widgets::SearchBar::new(&mut search.md_search)
         .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
+        .show_search_icon(false)
         .show(ui);
     if !search.focus_requested {
         response.request_focus();

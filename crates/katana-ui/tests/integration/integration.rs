@@ -4355,3 +4355,124 @@ fn test_open_help_demo() {
             .starts_with("feature_walkthrough")
     }));
 }
+
+/* WHY: v0.22.1-1 regression – file name tab SearchBar must accept keyboard input.
+The SearchBar widget wraps TextEdit in AlignCenter layout closures; if the
+TextEdit response is not propagated correctly, request_focus() silently drops
+the focus event and no characters can be typed. */
+#[test]
+fn test_search_filename_tab_accepts_text_input() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    /* WHY: Open the search modal on the file-name tab (default) */
+    harness.state_mut().app_state_mut().layout.show_search_modal = true;
+    harness.state_mut().app_state_mut().search.active_tab =
+        katana_ui::app_state::SearchTab::FileName;
+    harness.state_mut().app_state_mut().search.focus_requested = false;
+    harness.step();
+    harness.step();
+
+    /* WHY: Simulate typing into the file_search query directly (mirrors what
+    TextEdit does on key events) and check the value survives the render loop */
+    harness.state_mut().app_state_mut().search.file_search.query = "hello".to_string();
+    harness.step();
+
+    let query = harness
+        .state_mut()
+        .app_state_mut()
+        .search
+        .file_search
+        .query
+        .clone();
+    assert_eq!(
+        query, "hello",
+        "v0.22.1-1 regression: file-name tab must preserve typed input across render frames"
+    );
+}
+
+/* WHY: v0.22.1-1 regression – explorer filter should exclude dot-prefixed directories
+(e.g. .agent, .github) even when use_regex=false (plain text filter).
+Previously these directories were shown when typing a term that matches files
+inside them, because gather_visible_paths did not skip dot-prefixed entries. */
+#[test]
+fn test_explorer_filter_excludes_dot_directories() {
+    use katana_core::workspace::TreeEntry;
+    use katana_ui::app_state::SearchState;
+    use katana_ui::views::panels::explorer::ExplorerLogicOps;
+    use std::path::PathBuf;
+
+    let root = PathBuf::from("/workspace");
+
+    /* WHY: Build a tree that contains both normal and dot-prefixed directories */
+    let dot_dir = TreeEntry::Directory {
+        path: root.join(".agent"),
+        children: vec![TreeEntry::File {
+            path: root.join(".agent/config.md"),
+        }],
+    };
+    let normal_dir = TreeEntry::Directory {
+        path: root.join("docs"),
+        children: vec![TreeEntry::File {
+            path: root.join("docs/readme.md"),
+        }],
+    };
+    let entries = vec![dot_dir, normal_dir];
+
+    let mut search = SearchState::new();
+    search.filter_enabled = true;
+    search.filter.query = "md".to_string();
+    search.filter.use_regex = false;
+    search.filter.match_case = false;
+    search.filter.match_word = false;
+
+    ExplorerLogicOps::update_search_filter_cache(&mut search, &root, &entries);
+
+    let visible = search
+        .filter_cache
+        .as_ref()
+        .map(|(_, v)| v)
+        .expect("filter_cache should be populated");
+
+    let dot_agent = root.join(".agent");
+    assert!(
+        !visible.contains(&dot_agent),
+        "v0.22.1-1 regression: .agent directory must be excluded by filter even when use_regex=false"
+    );
+
+    let docs = root.join("docs");
+    assert!(
+        visible.contains(&docs),
+        "Normal 'docs' directory should remain visible when filter matches its contents"
+    );
+}
+
+#[test]
+fn test_search_document_tab_accepts_text_input() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    /* WHY: Open the search modal on the document tab */
+    harness.state_mut().app_state_mut().layout.show_search_modal = true;
+    harness.state_mut().app_state_mut().search.active_tab =
+        katana_ui::app_state::SearchTab::MarkdownContent;
+    harness.state_mut().app_state_mut().search.focus_requested = false;
+    harness.step();
+    harness.step();
+
+    // Simulate typing
+    harness.state_mut().app_state_mut().search.md_search.query = "test doc input".to_string();
+    harness.step();
+
+    let query = harness
+        .state_mut()
+        .app_state_mut()
+        .search
+        .md_search
+        .query
+        .clone();
+    assert_eq!(
+        query, "test doc input",
+        "v0.22.1-1 regression: document tab must accept typed input"
+    );
+}

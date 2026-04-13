@@ -54,9 +54,11 @@ impl DocSearchBar {
         Self::render_nav_buttons(ui, action, button_size);
         Self::render_match_count(ui, search_state);
 
+        /* WHY: doc_search does not show the search icon – icon is only for the file-name tab. */
         let response = crate::widgets::SearchBar::new(&mut search_state.doc_search)
             .desired_width(DOC_SEARCH_INPUT_WIDTH)
             .hint_text(crate::i18n::I18nOps::get().search.doc_query_hint.clone())
+            .show_search_icon(false)
             .show(ui);
 
         SearchLogic::handle_input_events(ui, &response, action, search_state);
