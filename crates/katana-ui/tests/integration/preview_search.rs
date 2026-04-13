@@ -15,7 +15,8 @@ fn test_preview_search_scroll_sync_does_not_use_naive_row_height() {
             true, // scroll_sync = true
             &mut scroll,
             &preview,
-            20.0, // row_height
+            20.0,   // row_height
+            1000.0, // inner_height
         );
 
     /* WHY: If it uses the naive row_height calculation, it returns Some(200.0)

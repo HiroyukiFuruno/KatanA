@@ -32,7 +32,6 @@ pub(crate) const SEARCH_MODAL_WIDTH: f32 = 500.0;
 pub(crate) const SEARCH_MODAL_HEIGHT: f32 = 400.0;
 pub(crate) const TOC_PANEL_DEFAULT_WIDTH: f32 = 200.0;
 pub(crate) const TOC_PANEL_MARGIN: f32 = 8.0;
-pub(crate) const TOC_HEADING_VISIBILITY_THRESHOLD: f32 = 40.0;
 pub(crate) const TOC_INDENT_PER_LEVEL: f32 = 12.0;
 pub(crate) const LIGHT_MODE_ICON_BG: u8 = 235;
 pub(crate) const LIGHT_MODE_ICON_ACTIVE_BG: u8 = 200;

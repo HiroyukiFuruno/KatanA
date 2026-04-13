@@ -20,6 +20,7 @@ pub(super) fn show_section(
     mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     global_line_offset: usize,
     search_query: Option<String>,
+    search_active_index: Option<usize>,
     is_slideshow: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut actions = Vec::new();
@@ -131,6 +132,23 @@ pub(super) fn show_section(
                 if hovered_lines.is_some() || (is_slideshow && slideshow_hover) {
                     viewer = viewer.hovered_spans(&mut local_hovered_spans);
                 }
+
+                if let Some(idx) = search_active_index {
+                    viewer = viewer.search_active_match_index(idx);
+                }
+
+                let search_scroll_pending = ui.ctx().data(|d| {
+                    d.get_temp(egui::Id::new("katana_preview_search_scroll_pending"))
+                        .unwrap_or(false)
+                });
+                viewer = viewer.search_scroll_pending(search_scroll_pending);
+
+                let mut global_search_counter = ui.ctx().data(|d| {
+                    d.get_temp::<usize>(egui::Id::new("katana_preview_search_counter"))
+                        .unwrap_or(0)
+                });
+                viewer = viewer.search_match_offset(&mut global_search_counter);
+
                 viewer = viewer.search_query(search_query.clone());
 
                 let (_, newly_captured) = ui
@@ -150,6 +168,13 @@ pub(super) fn show_section(
                         viewer.show_with_events(ui, cache, md)
                     })
                     .inner;
+
+                ui.ctx().data_mut(|d| {
+                    d.insert_temp(
+                        egui::Id::new("katana_preview_search_counter"),
+                        global_search_counter,
+                    )
+                });
 
                 if let Some(anchors) = heading_anchors {
                     for anchor in &mut anchors[previous_anchor_count..] {

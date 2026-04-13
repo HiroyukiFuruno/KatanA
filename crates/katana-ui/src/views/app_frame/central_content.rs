@@ -71,8 +71,11 @@ impl<'a> CentralContent<'a> {
             None => return,
         };
 
-        if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-            crate::views::panels::toc::TocPanel::new(&mut preview.pane, &app.state).show(ui);
+        if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path)
+            && let Some(clicked_line) =
+                crate::views::panels::toc::TocPanel::new(&mut preview.pane, &app.state).show(ui)
+        {
+            app.state.scroll.scroll_to_line = Some(clicked_line);
         }
     }
 

@@ -19,42 +19,21 @@ impl PreviewLogicOps {
     pub fn compute_forced_offset(
         scroll_sync: bool,
         scroll: &mut crate::app_state::ScrollState,
-        preview: &crate::preview_pane::PreviewPane,
+        _preview: &crate::preview_pane::PreviewPane,
         _row_height: f32,
+        _inner_height: f32,
     ) -> Option<f32> {
-        let consuming_editor =
-            scroll_sync && scroll.source == crate::app_state::ScrollSource::Editor;
+        if !scroll_sync {
+            return None;
+        }
+        let consuming_editor = scroll_sync
+            && scroll.source == crate::app_state::ScrollSource::Editor
+            && scroll.scroll_to_line.is_none();
         if consuming_editor {
             return Some(scroll.mapper.logical_to_preview(scroll.logical_position));
         }
 
-        let target_line = scroll.scroll_to_line?;
-
-        if scroll_sync {
-            /* WHY: DO NOTHING! Wait for the editor to scroll and update source-of-truth logical_position.
-             * If we try to guess `editor_y` using `row_height` here, it causes violent jumps backwards
-             * and forwards because `row_height * target_line` does not account for line wrapping!
-             */
-            return None;
-        }
-
-        for (span, rect) in &preview.heading_anchors {
-            if span.contains(&target_line) || span.start >= target_line {
-                return Some((rect.min.y - preview.content_top_y).max(0.0));
-            }
-        }
-
-        for (span, rect) in &preview.block_anchors {
-            if span.contains(&target_line) || span.start >= target_line {
-                return Some((rect.min.y - preview.content_top_y).max(0.0));
-            }
-        }
-
-        if let Some((_, rect)) = preview.heading_anchors.last() {
-            Some((rect.min.y - preview.content_top_y).max(0.0))
-        } else {
-            Some(0.0)
-        }
+        None
     }
 
     pub fn update_scroll_sync(
@@ -68,15 +47,12 @@ impl PreviewLogicOps {
         let max_scroll = (content_height - inner_height).max(0.0);
         scroll.preview_max = max_scroll;
 
-        let mut computed_anchors =
-            Vec::with_capacity(preview.heading_anchors.len() + preview.block_anchors.len());
-        for (span, rect) in &preview.heading_anchors {
-            let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-            computed_anchors.push((span.clone(), p_y));
-        }
-        for (span, rect) in &preview.block_anchors {
-            let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-            computed_anchors.push((span.clone(), p_y));
+        let mut computed_anchors = Vec::with_capacity(preview.anchor_map.len());
+        for item in &preview.anchor_map {
+            if let Some(rect) = item.rect {
+                let p_y = (rect.min.y - preview.content_top_y).max(0.0);
+                computed_anchors.push((item.line_span.clone(), p_y));
+            }
         }
 
         scroll.mapper = crate::state::scroll_sync::ScrollMapper::build(

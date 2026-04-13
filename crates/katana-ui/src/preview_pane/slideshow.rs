@@ -112,7 +112,7 @@ pub(super) fn render_slideshow_modal(
                                         layout.slideshow_show_diagram_controls,
                                     );
                                 });
-                                pane.render_sections(ui, None, None, None, true);
+                                pane.render_sections(ui, None, None, None, None, true);
                             },
                         );
                     });

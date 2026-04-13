@@ -15,6 +15,7 @@ impl<'a> PreviewContent<'a> {
         action: &'a mut AppAction,
         scroll_sync: bool,
         search_query: Option<String>,
+        doc_search_active_index: Option<usize>,
     ) -> Self {
         Self {
             preview,
@@ -25,6 +26,7 @@ impl<'a> PreviewContent<'a> {
             action,
             scroll_sync,
             search_query,
+            doc_search_active_index,
         }
     }
 
@@ -51,12 +53,17 @@ impl<'a> PreviewContent<'a> {
             .id_salt("preview_scroll")
             .auto_shrink(std::array::from_fn(|_| false));
 
+        if scroll.scroll_to_line.is_some() {
+            scroll_area = scroll_area.animated(false);
+        }
+
         let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
         let forced_offset = super::types::PreviewLogicOps::compute_forced_offset(
             scroll_sync,
             scroll,
             preview,
             row_height,
+            ui.available_height(),
         );
 
         if let Some(target_scroll_offset) = forced_offset {
@@ -98,11 +105,21 @@ impl<'a> PreviewContent<'a> {
                             } else {
                                 None
                             };
+                            let search_scroll_pending = scroll.scroll_to_line.is_some();
+
+                            ui.ctx().data_mut(|d| {
+                                d.insert_temp(
+                                    egui::Id::new("katana_preview_search_scroll_pending"),
+                                    search_scroll_pending,
+                                )
+                            });
+
                             let (req, actions) = preview.show_content(
                                 ui,
                                 scroll.active_editor_line,
                                 hover_out,
                                 search_query.clone(),
+                                self.doc_search_active_index,
                             );
                             if is_interactive
                                 && scroll_sync
@@ -126,6 +143,14 @@ impl<'a> PreviewContent<'a> {
                                 };
                             }
                             ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+                            /* WHY: When search is active, add extra bottom padding so that */
+                            /* WHY: matches near the end of the file can be scrolled to the */
+                            /* WHY: center of the viewport, matching VS Code's behavior. */
+                            if search_query.as_ref().is_some_and(|q| !q.is_empty()) {
+                                const SCROLL_PAST_END_RATIO: f32 = 0.5;
+                                let viewport_half = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
+                                ui.add_space(viewport_half);
+                            }
                         },
                     );
                 });

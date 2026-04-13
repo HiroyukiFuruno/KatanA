@@ -120,6 +120,9 @@ impl<'a> SearchBar<'a> {
             ui.set_max_width(content_width);
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                /* WHY: Determine ID FIRST, before drawing any conditional widgets that could offset next_auto_id */
+                let id_source = self.id_source.unwrap_or_else(|| ui.next_auto_id());
+
                 ui.spacing_mut().item_spacing.x = SEARCH_ITEM_SPACING;
                 let has_toggles =
                     self.show_toggles && matches!(self.params, SearchParamsRef::Full(_));
@@ -156,9 +159,6 @@ impl<'a> SearchBar<'a> {
                         let icon_space = ui.spacing().icon_width + ui.spacing().item_spacing.x;
                         ui.add_space(icon_space);
                     }
-
-                    /* WHY: Use explicit id_source to prevent collision across multiple SearchBars */
-                    let id_source = self.id_source.unwrap_or_else(|| ui.next_auto_id());
 
                     let mut text_edit = egui::TextEdit::singleline(self.params.query_mut())
                         .id_source(id_source)

@@ -1,19 +1,24 @@
-use crate::shell_ui::{
-    TOC_HEADING_VISIBILITY_THRESHOLD, TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH,
-    TOC_PANEL_MARGIN,
-};
+use crate::shell_ui::{TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH, TOC_PANEL_MARGIN};
 use eframe::egui;
 
+const TOC_ACTIVE_THRESHOLD_OFFSET: f32 = 40.0;
+
 fn find_active_toc_index(
-    heading_anchors: &[(std::ops::Range<usize>, egui::Rect)],
+    anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
     threshold: f32,
 ) -> usize {
     let mut active = 0;
-    for (i, (_, rect)) in heading_anchors.iter().enumerate() {
-        if rect.min.y <= threshold {
-            active = i;
-        } else {
-            break;
+    for item in anchor_map {
+        if matches!(
+            item.kind,
+            katana_core::markdown::outline::AnchorKind::Heading
+        ) && let Some(rect) = item.rect
+            && let Some(idx) = item.index
+        {
+            if rect.min.y > threshold {
+                break;
+            }
+            active = idx;
         }
     }
     active
@@ -32,11 +37,12 @@ impl<'a> TocPanel<'a> {
         Self { preview, state }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) {
+    pub fn show(self, ui: &mut egui::Ui) -> Option<usize> {
         let preview = self.preview;
         let state = self.state;
         use katana_platform::settings::TocPosition;
         let position = state.config.settings.settings().layout.toc_position;
+        let mut clicked_line = None;
 
         let panel = match position {
             TocPosition::Left => egui::Panel::left("toc_panel"),
@@ -68,10 +74,9 @@ impl<'a> TocPanel<'a> {
                         } else {
                             let mut active_index = 0;
                             if let Some(visible_rect) = preview.visible_rect {
-                                let threshold =
-                                    visible_rect.min.y + TOC_HEADING_VISIBILITY_THRESHOLD;
+                                let threshold = visible_rect.min.y + TOC_ACTIVE_THRESHOLD_OFFSET;
                                 active_index =
-                                    find_active_toc_index(&preview.heading_anchors, threshold);
+                                    find_active_toc_index(&preview.anchor_map, threshold);
                             }
 
                             let mut next_scroll = None;
@@ -100,11 +105,18 @@ impl<'a> TocPanel<'a> {
                                     })
                                     .show(ui);
                             }
-                            if next_scroll.is_some() {
-                                preview.scroll_request = next_scroll;
+                            if let Some(index) = next_scroll {
+                                preview.scroll_request = Some(index);
+                                if let Some(item) =
+                                    preview.outline_items.iter().find(|i| i.index == index)
+                                {
+                                    clicked_line = Some(item.line_start);
+                                }
                             }
                         }
                     });
             });
+
+        clicked_line
     }
 }

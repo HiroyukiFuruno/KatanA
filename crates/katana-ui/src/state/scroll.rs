@@ -18,6 +18,10 @@ pub struct ScrollState {
     pub preview_echo: SyncEcho,
     pub active_editor_line: Option<usize>,
     pub scroll_to_line: Option<usize>,
+    /* WHY: Tracks the last line that was actually scrolled to, so that
+     * repeated Next/Prev on the same single match does not re-trigger
+     * the forced scroll and cause jitter. */
+    pub last_scroll_to_line: Option<usize>,
     pub hovered_preview_lines: Vec<std::ops::Range<usize>>,
     pub sync_override: Option<bool>,
 }
@@ -40,6 +44,7 @@ impl ScrollState {
             preview_echo: SyncEcho::default(),
             active_editor_line: None,
             scroll_to_line: None,
+            last_scroll_to_line: None,
             hovered_preview_lines: Vec::new(),
             sync_override: None,
         }

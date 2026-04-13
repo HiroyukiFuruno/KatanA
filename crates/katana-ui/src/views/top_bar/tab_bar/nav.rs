@@ -26,7 +26,7 @@ impl<'a> TabNavButtons<'a> {
             .add_enabled(
                 nav_enabled,
                 egui::Button::image(
-                    crate::Icon::TriangleLeft.ui_image(ui, crate::icon::IconSize::Small),
+                    crate::Icon::ArrowLeft.ui_image(ui, crate::icon::IconSize::Small),
                 )
                 .fill(self.icon_bg),
             )
@@ -58,7 +58,7 @@ impl<'a> TabNavButtons<'a> {
             .add_enabled(
                 nav_enabled,
                 egui::Button::image(
-                    crate::Icon::TriangleRight.ui_image(ui, crate::icon::IconSize::Small),
+                    crate::Icon::ArrowRight.ui_image(ui, crate::icon::IconSize::Small),
                 )
                 .fill(self.icon_bg),
             )

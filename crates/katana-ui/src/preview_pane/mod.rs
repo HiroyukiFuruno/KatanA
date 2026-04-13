@@ -1,3 +1,4 @@
+pub mod anchor_map;
 pub mod background;
 pub mod core_render;
 mod render_workers;

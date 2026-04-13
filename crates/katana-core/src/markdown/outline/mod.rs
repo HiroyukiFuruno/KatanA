@@ -27,7 +27,7 @@ fn extract_text_from_node<'a>(node: &'a AstNode<'a>, out: &mut String) {
 pub struct MarkdownOutlineOps;
 
 impl MarkdownOutlineOps {
-    pub fn extract_outline(source: &str) -> Vec<OutlineItem> {
+    pub fn extract_outline(source: &str) -> (Vec<OutlineItem>, Vec<DocumentAnchor>) {
         let arena = Arena::new();
         let mut options = Options::default();
         options.extension.strikethrough = true;
@@ -38,21 +38,43 @@ impl MarkdownOutlineOps {
 
         let root = parse_document(&arena, source, &options);
         let mut outline = Vec::new();
+        let mut anchors = Vec::new();
         let mut index = 0;
 
         for node in root.descendants() {
+            let line_start = node.data.borrow().sourcepos.start.line.saturating_sub(1);
+            let line_end = node.data.borrow().sourcepos.end.line.saturating_sub(1);
             if let NodeValue::Heading(ref heading) = node.data.borrow().value {
                 let text = extract_text(node);
                 outline.push(OutlineItem {
                     level: heading.level,
                     text,
                     index,
+                    line_start,
+                    line_end,
+                });
+                anchors.push(DocumentAnchor {
+                    kind: AnchorKind::Heading,
+                    line_start,
+                    line_end,
                 });
                 index += 1;
+            } else if matches!(
+                node.data.borrow().value,
+                NodeValue::CodeBlock(_)
+                    | NodeValue::Paragraph
+                    | NodeValue::Table(_)
+                    | NodeValue::BlockQuote
+            ) {
+                anchors.push(DocumentAnchor {
+                    kind: AnchorKind::Block,
+                    line_start,
+                    line_end,
+                });
             }
         }
 
-        outline
+        (outline, anchors)
     }
 }
 

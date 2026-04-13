@@ -34,35 +34,33 @@ impl KatanaApp {
     }
 
     pub(super) fn handle_action_doc_search_next(&mut self) {
-        if self.state.search.doc_search_matches.is_empty() {
+        let Some(doc) = self.state.document.active_document() else {
             return;
+        };
+        if let Some(result) = crate::app::doc_search::DocSearchOps::navigate_next(
+            &self.state.search.doc_search_matches,
+            self.state.search.doc_search_active_index,
+            &doc.buffer,
+        ) {
+            self.state.search.doc_search_active_index = result.new_active_index;
+            self.state.scroll.last_scroll_to_line = None;
+            self.state.scroll.scroll_to_line = result.scroll_to_line;
         }
-        let len = self.state.search.doc_search_matches.len();
-        self.state.search.doc_search_active_index =
-            (self.state.search.doc_search_active_index + 1) % len;
-        let r =
-            self.state.search.doc_search_matches[self.state.search.doc_search_active_index].clone();
-        let line = crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
-            &self.state.document.active_document().unwrap().buffer,
-            r.start,
-        );
-        self.state.scroll.scroll_to_line = Some(line);
     }
 
     pub(super) fn handle_action_doc_search_prev(&mut self) {
-        if self.state.search.doc_search_matches.is_empty() {
+        let Some(doc) = self.state.document.active_document() else {
             return;
+        };
+        if let Some(result) = crate::app::doc_search::DocSearchOps::navigate_prev(
+            &self.state.search.doc_search_matches,
+            self.state.search.doc_search_active_index,
+            &doc.buffer,
+        ) {
+            self.state.search.doc_search_active_index = result.new_active_index;
+            self.state.scroll.last_scroll_to_line = None;
+            self.state.scroll.scroll_to_line = result.scroll_to_line;
         }
-        let len = self.state.search.doc_search_matches.len();
-        self.state.search.doc_search_active_index =
-            (self.state.search.doc_search_active_index + len - 1) % len;
-        let r =
-            self.state.search.doc_search_matches[self.state.search.doc_search_active_index].clone();
-        let line = crate::views::panels::editor::types::EditorLogicOps::char_index_to_line(
-            &self.state.document.active_document().unwrap().buffer,
-            r.start,
-        );
-        self.state.scroll.scroll_to_line = Some(line);
     }
 
     pub(super) fn handle_action_refresh_diagnostics(&mut self) {

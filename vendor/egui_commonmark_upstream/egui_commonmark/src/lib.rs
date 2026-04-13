@@ -128,6 +128,8 @@ pub struct CommonMarkViewer<'f> {
         Option<&'f dyn Fn(&mut egui::Ui, egui::Rect, &std::ops::Range<usize>) -> (bool, bool)>,
     search_query: Option<String>,
     search_scroll_pending: bool,
+    search_active_match_index: Option<usize>,
+    search_match_offset: Option<&'f mut usize>,
 }
 
 impl<'f> Default for CommonMarkViewer<'f> {
@@ -148,6 +150,8 @@ impl<'f> Default for CommonMarkViewer<'f> {
             custom_list_item_highlight_fn: None,
             search_query: None,
             search_scroll_pending: false,
+            search_active_match_index: None,
+            search_match_offset: None,
         }
     }
 }
@@ -258,6 +262,16 @@ impl<'f> CommonMarkViewer<'f> {
 
     pub fn search_query(mut self, query: Option<String>) -> Self {
         self.search_query = query;
+        self
+    }
+
+    pub fn search_active_match_index(mut self, index: usize) -> Self {
+        self.search_active_match_index = Some(index);
+        self
+    }
+
+    pub fn search_match_offset(mut self, offset: &'f mut usize) -> Self {
+        self.search_match_offset = Some(offset);
         self
     }
 
@@ -418,7 +432,16 @@ impl<'f> CommonMarkViewer<'f> {
             self.search_query.clone(),
         );
         internal.search_scroll_pending = self.search_scroll_pending;
+        internal.search_active_match_index = self.search_active_match_index;
+        if let Some(ref offset) = self.search_match_offset {
+            internal.search_match_counter = **offset;
+        }
+
         let (response, _) = internal.show(ui, cache, &self.options, text, None);
+
+        if let Some(offset) = self.search_match_offset {
+            *offset = internal.search_match_counter;
+        }
 
         response
     }
@@ -452,7 +475,17 @@ impl<'f> CommonMarkViewer<'f> {
                 self.search_query.clone(),
             );
             internal.search_scroll_pending = self.search_scroll_pending;
-            internal.show(ui, cache, &self.options, text, None)
+            internal.search_active_match_index = self.search_active_match_index;
+            if let Some(ref offset) = self.search_match_offset {
+                internal.search_match_counter = **offset;
+            }
+            
+            let result = internal.show(ui, cache, &self.options, text, None);
+            
+            if let Some(offset) = self.search_match_offset {
+                *offset = internal.search_match_counter;
+            }
+            result
         };
 
         // Update source text for checkmarks that were clicked
@@ -523,7 +556,18 @@ impl<'f> CommonMarkViewer<'f> {
             self.search_query.clone(),
         );
         internal.search_scroll_pending = self.search_scroll_pending;
-        internal.show(ui, cache, &self.options, text, None)
+        internal.search_active_match_index = self.search_active_match_index;
+        if let Some(ref offset) = self.search_match_offset {
+            internal.search_match_counter = **offset;
+        }
+
+        let result = internal.show(ui, cache, &self.options, text, None);
+
+        if let Some(offset) = self.search_match_offset {
+            *offset = internal.search_match_counter;
+        }
+
+        result
     }
 
     /// Shows markdown inside a [`ScrollArea`].
@@ -565,6 +609,7 @@ impl<'f> CommonMarkViewer<'f> {
             self.search_query.clone(),
         );
         internal.search_scroll_pending = self.search_scroll_pending;
+        internal.search_active_match_index = self.search_active_match_index;
         internal.show_scrollable(Id::new(source_id), ui, cache, &self.options, text);
     }
 }

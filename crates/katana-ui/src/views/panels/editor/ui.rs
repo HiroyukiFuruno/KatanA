@@ -3,7 +3,6 @@ use crate::shell::{EDITOR_INITIAL_VISIBLE_ROWS, SCROLL_SYNC_DEAD_ZONE};
 use eframe::egui;
 
 use super::types::{EditorColors, EditorLogicOps};
-
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
     pub scroll: &'a mut crate::app_state::ScrollState,
@@ -17,7 +16,6 @@ pub(crate) struct EditorContent<'a> {
     /// char-index range on this frame (used after an authoring transform).
     pub pending_cursor: Option<(usize, usize)>,
 }
-
 impl<'a> EditorContent<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -41,7 +39,6 @@ impl<'a> EditorContent<'a> {
             pending_cursor,
         }
     }
-
     pub fn show(self, ui: &mut egui::Ui) {
         let action = self.action;
         let sync_scroll = self.sync_scroll;
@@ -62,8 +59,13 @@ impl<'a> EditorContent<'a> {
             ) = colors;
 
             let mut scroll_area = egui::ScrollArea::vertical().id_salt("editor_scroll");
+            if scroll.scroll_to_line.is_some() {
+                scroll_area = scroll_area.animated(false);
+            }
 
-            let consuming_preview = sync_scroll && scroll.source == ScrollSource::Preview;
+            let consuming_preview = sync_scroll
+                && scroll.source == ScrollSource::Preview
+                && scroll.scroll_to_line.is_none();
             if consuming_preview {
                 scroll_area = scroll_area.vertical_scroll_offset(
                     scroll.mapper.logical_to_editor(scroll.logical_position),

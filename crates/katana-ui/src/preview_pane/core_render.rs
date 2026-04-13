@@ -6,8 +6,14 @@ use super::types::*;
 impl PreviewPane {
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
         self.md_file_path = md_file_path.to_path_buf();
-        self.outline_items =
+        let (outline_items, document_anchors) =
             katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(source);
+        self.outline_items = outline_items;
+
+        self.anchor_map = crate::preview_pane::types::DocumentAnchorMapItem::from_document_anchors(
+            &document_anchors,
+        );
+        self.document_anchors = document_anchors;
         let (resolved, extracted_paths) =
             ImagePreviewOps::resolve_image_paths(source, md_file_path);
 
@@ -85,8 +91,10 @@ impl PreviewPane {
         }
 
         self.md_file_path = md_file_path.to_path_buf();
-        self.outline_items =
+        let (outline_items, document_anchors) =
             katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(source);
+        self.outline_items = outline_items;
+        self.document_anchors = document_anchors;
         let (resolved, extracted_paths) =
             ImagePreviewOps::resolve_image_paths(source, md_file_path);
 
