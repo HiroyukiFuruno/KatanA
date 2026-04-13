@@ -66,21 +66,7 @@ impl<'a> PreviewContent<'a> {
             ui.available_height(),
         );
 
-        let mut offset_applied = false;
-
-        if let Some(target_line) = scroll.scroll_to_line {
-            const TOC_NAV_VERTICAL_OFFSET: f32 = 5.0;
-            let editor_y = target_line as f32 * row_height;
-            let logical_pos = scroll.mapper.editor_to_logical(editor_y);
-            let mut target_scroll_offset = scroll.mapper.logical_to_preview(logical_pos);
-            target_scroll_offset = (target_scroll_offset - TOC_NAV_VERTICAL_OFFSET).max(0.0);
-            scroll.preview_echo.record(target_scroll_offset);
-            scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
-            offset_applied = true;
-            preview.scroll_request = None;
-        }
-
-        if !offset_applied && let Some(target_scroll_offset) = forced_offset {
+        if let Some(target_scroll_offset) = forced_offset {
             scroll.preview_echo.record(target_scroll_offset);
             scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
         }

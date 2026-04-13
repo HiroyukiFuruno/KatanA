@@ -1,18 +1,33 @@
-use crate::shell_ui::{TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH, TOC_PANEL_MARGIN};
+use crate::shell_ui::{
+    TOC_HEADING_VISIBILITY_THRESHOLD, TOC_INDENT_PER_LEVEL, TOC_PANEL_DEFAULT_WIDTH,
+    TOC_PANEL_MARGIN,
+};
 use eframe::egui;
 
-fn find_active_toc_index(
+fn find_active_toc_index_preview(
+    heading_anchors: &[(std::ops::Range<usize>, egui::Rect)],
+    threshold: f32,
+) -> usize {
+    let mut active = 0;
+    for (i, (_, rect)) in heading_anchors.iter().enumerate() {
+        if rect.min.y <= threshold {
+            active = i;
+        } else {
+            break;
+        }
+    }
+    active
+}
+
+fn find_active_toc_index_editor(
     anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
     current_line: f32,
 ) -> usize {
     let mut active = 0;
     let logical_threshold = current_line + 1.0;
     for item in anchor_map {
-        if matches!(
-            item.kind,
-            katana_core::markdown::outline::AnchorKind::Heading
-        ) && let Some(idx) = item.index
-        {
+        if matches!(item.kind, katana_core::markdown::outline::AnchorKind::Heading) 
+            && let Some(idx) = item.index {
             if (item.line_span.start as f32) > logical_threshold {
                 break;
             }
@@ -70,14 +85,18 @@ impl<'a> TocPanel<'a> {
                                     .italics(),
                             );
                         } else {
-                            let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-                            let editor_y = state
-                                .scroll
-                                .mapper
-                                .logical_to_editor(state.scroll.logical_position);
-                            let current_line = editor_y / row_height;
-                            let active_index =
-                                find_active_toc_index(&preview.anchor_map, current_line);
+                            let active_index = if let Some(visible_rect) = preview.visible_rect {
+                                let threshold = visible_rect.min.y + TOC_HEADING_VISIBILITY_THRESHOLD;
+                                find_active_toc_index_preview(&preview.heading_anchors, threshold)
+                            } else {
+                                let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+                                let editor_y = state
+                                    .scroll
+                                    .mapper
+                                    .logical_to_editor(state.scroll.logical_position);
+                                let current_line = editor_y / row_height;
+                                find_active_toc_index_editor(&preview.anchor_map, current_line)
+                            };
 
                             let mut next_scroll = None;
                             for (i, item) in preview.outline_items.iter().enumerate() {
