@@ -103,11 +103,7 @@ impl<'a> PreviewContent<'a> {
                                 scroll.active_editor_line,
                                 hover_out,
                                 search_query.clone(),
-                                scroll.preview_search_scroll_pending,
                             );
-                            if scroll.preview_search_scroll_pending {
-                                scroll.preview_search_scroll_pending = false;
-                            }
                             if is_interactive
                                 && scroll_sync
                                 && scroll.source != ScrollSource::Preview

@@ -40,7 +40,6 @@ impl SectionLogicOps {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         global_line_offset: usize,
         search_query: Option<String>,
-        search_scroll_pending: bool,
         is_slideshow: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         super::section_show::show_section(
@@ -58,7 +57,6 @@ impl SectionLogicOps {
             hovered_lines,
             global_line_offset,
             search_query,
-            search_scroll_pending,
             is_slideshow,
         )
     }
@@ -78,7 +76,6 @@ impl SectionLogicOps {
         active_editor_line: Option<usize>,
         mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
-        search_scroll_pending: bool,
         is_slideshow: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         let mut request: Option<DownloadRequest> = None;
@@ -158,7 +155,6 @@ impl SectionLogicOps {
                             hovered_lines.as_deref_mut(),
                             global_line_offset,
                             search_query.clone(),
-                            search_scroll_pending,
                             is_slideshow,
                         );
                         if let Some(lifecycle) = section_lifecycle.as_mut()

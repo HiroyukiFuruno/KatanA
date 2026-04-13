@@ -13,6 +13,8 @@ pub struct SearchMessages {
     pub doc_search_next: String,
     pub doc_search_close: String,
     pub doc_search_count: String,
+    #[serde(default = "default_doc_search_no_results")]
+    pub doc_search_no_results: String,
     pub tab_file_name: String,
     pub tab_markdown_content: String,
     pub md_query_hint: String,
@@ -78,6 +80,9 @@ fn default_command_doc_search() -> String {
 }
 fn default_command_refresh_document() -> String {
     "Refresh Document".to_string()
+}
+fn default_doc_search_no_results() -> String {
+    "No results found.".to_string()
 }
 /* WHY: Authoring command defaults (English fallback for locales not yet updated). */
 fn default_command_author_bold() -> String {

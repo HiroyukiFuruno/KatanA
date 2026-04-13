@@ -124,10 +124,6 @@ impl<'a> SearchBar<'a> {
                 let has_toggles =
                     self.show_toggles && matches!(self.params, SearchParamsRef::Full(_));
                 let query_empty = self.params.query().is_empty();
-                if !query_empty && ui.add(Icon::Close.button(ui, IconSize::Small)).clicked() {
-                    self.params.query_mut().clear();
-                    changed = true;
-                }
                 if has_toggles
                     && let Some((match_case, match_word, use_regex)) = self.params.toggles()
                 {
@@ -143,6 +139,10 @@ impl<'a> SearchBar<'a> {
                     toggle_btn(ui, Icon::UseRegex, use_regex);
                     toggle_btn(ui, Icon::WholeWord, match_word);
                     toggle_btn(ui, Icon::MatchCase, match_case);
+                }
+                if !query_empty && ui.add(Icon::Close.button(ui, IconSize::Small)).clicked() {
+                    self.params.query_mut().clear();
+                    changed = true;
                 }
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     if self.show_search_icon {

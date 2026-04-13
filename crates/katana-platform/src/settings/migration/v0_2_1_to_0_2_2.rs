@@ -35,6 +35,9 @@ mod tests {
             "layout": {}
         });
         let migrated = strategy.migrate(old);
-        assert_eq!(migrated["version"], "0.2.2");
+        assert_eq!(
+            migrated.get("version").and_then(|v| v.as_str()),
+            Some("0.2.2")
+        );
     }
 }

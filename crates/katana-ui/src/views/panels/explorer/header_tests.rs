@@ -18,12 +18,16 @@ mod tests {
     #[test]
     fn explorer_filter_input_width_is_stable_and_does_not_expand_infinitely() {
         let ctx = test_context();
-        let mut ws = WorkspaceState::default();
         /* WHY: Just providing empty workspace representation is enough to trigger `ws.data.is_some()` */
-        ws.data = Some(katana_core::workspace::Workspace::new("/", vec![]));
+        let mut ws = WorkspaceState {
+            data: Some(katana_core::workspace::Workspace::new("/", vec![])),
+            ..Default::default()
+        };
 
-        let mut search = SearchState::default();
-        search.filter_enabled = true; /* WHY: Show filter input! */
+        let mut search = SearchState {
+            filter_enabled: true, /* WHY: Show filter input! */
+            ..Default::default()
+        };
 
         let mut action = AppAction::None;
 

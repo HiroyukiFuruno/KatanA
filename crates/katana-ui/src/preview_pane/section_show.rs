@@ -20,7 +20,6 @@ pub(super) fn show_section(
     mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     global_line_offset: usize,
     search_query: Option<String>,
-    search_scroll_pending: bool,
     is_slideshow: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut actions = Vec::new();
@@ -69,7 +68,6 @@ pub(super) fn show_section(
                     .syntax_theme_dark(preset.syntax_theme_dark)
                     .syntax_theme_light(preset.syntax_theme_light)
                     .search_query(search_query.clone())
-                    .search_scroll_pending(search_scroll_pending)
                     .heading_offset(heading_offset)
                     .render_html_fn(Some(&binding))
                     .render_math_fn(Some(&math_binding))

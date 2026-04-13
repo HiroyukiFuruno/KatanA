@@ -30,7 +30,6 @@ impl KatanaApp {
                 &text, r.start,
             );
             self.state.scroll.scroll_to_line = Some(line);
-            self.state.scroll.preview_search_scroll_pending = true;
         }
     }
 
@@ -48,7 +47,6 @@ impl KatanaApp {
             r.start,
         );
         self.state.scroll.scroll_to_line = Some(line);
-        self.state.scroll.preview_search_scroll_pending = true;
     }
 
     pub(super) fn handle_action_doc_search_prev(&mut self) {
@@ -65,7 +63,6 @@ impl KatanaApp {
             r.start,
         );
         self.state.scroll.scroll_to_line = Some(line);
-        self.state.scroll.preview_search_scroll_pending = true;
     }
 
     pub(super) fn handle_action_refresh_diagnostics(&mut self) {

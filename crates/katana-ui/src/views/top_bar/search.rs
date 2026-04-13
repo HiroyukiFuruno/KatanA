@@ -58,7 +58,6 @@ impl DocSearchBar {
         let response = crate::widgets::SearchBar::new(&mut search_state.doc_search)
             .desired_width(DOC_SEARCH_INPUT_WIDTH)
             .hint_text(crate::i18n::I18nOps::get().search.doc_query_hint.clone())
-            .show_search_icon(false)
             .id_source("doc_search_bar")
             .show(ui);
 
@@ -108,11 +107,13 @@ impl DocSearchBar {
                     ("total", &format!("{}", match_count)),
                 ],
             ));
-        } else if !search_state.doc_search.query.is_empty() {
-            ui.label(crate::i18n::I18nOps::tf(
-                &crate::i18n::I18nOps::get().search.doc_search_count,
-                &[("index", "0"), ("total", "0")],
-            ));
+        } else {
+            ui.label(
+                crate::i18n::I18nOps::get()
+                    .search
+                    .doc_search_no_results
+                    .clone(),
+            );
         }
     }
 }

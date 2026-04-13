@@ -20,7 +20,7 @@ impl PreviewLogicOps {
         scroll_sync: bool,
         scroll: &mut crate::app_state::ScrollState,
         preview: &crate::preview_pane::PreviewPane,
-        row_height: f32,
+        _row_height: f32,
     ) -> Option<f32> {
         let consuming_editor =
             scroll_sync && scroll.source == crate::app_state::ScrollSource::Editor;
@@ -29,14 +29,13 @@ impl PreviewLogicOps {
         }
 
         let target_line = scroll.scroll_to_line?;
-        if scroll.preview_search_scroll_pending {
-            return None;
-        }
 
         if scroll_sync {
-            let editor_y = target_line as f32 * row_height;
-            scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
-            return Some(scroll.mapper.logical_to_preview(scroll.logical_position));
+            /* WHY: DO NOTHING! Wait for the editor to scroll and update source-of-truth logical_position.
+             * If we try to guess `editor_y` using `row_height` here, it causes violent jumps backwards
+             * and forwards because `row_height * target_line` does not account for line wrapping!
+             */
+            return None;
         }
 
         for (span, rect) in &preview.heading_anchors {
