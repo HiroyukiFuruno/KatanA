@@ -117,13 +117,14 @@ impl<'a> EditorContent<'a> {
                             EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
                         }
 
-                        if sync_scroll
-                            && response.clicked()
-                            && let Some(c) = text_output.cursor_range
-                        {
-                            let line =
-                                EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
-                            scroll.scroll_to_line = Some(line);
+                        if sync_scroll {
+                            if response.clicked()
+                                && let Some(c) = text_output.cursor_range
+                            {
+                                let line =
+                                    EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
+                                scroll.scroll_to_line = Some(line);
+                            }
                         }
 
                         let current_cursor_y =
