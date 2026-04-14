@@ -75,7 +75,13 @@ impl<'a> Accordion<'a> {
         };
         ui.painter().galley(text_pos, galley, final_text_color);
 
-        if response.clicked() || icon_response.clicked() {
+        let clicked = if self.icon_only_toggle {
+            icon_response.clicked()
+        } else {
+            response.clicked() || icon_response.clicked()
+        };
+
+        if clicked {
             state.toggle(ui);
         }
 

@@ -1873,10 +1873,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         if end_y > start_y {
                             let min_x = ui.min_rect().left();
                             let width = ui.available_width();
-                            let rect = egui::Rect::from_min_max(
+                            let mut rect = egui::Rect::from_min_max(
                                 egui::pos2(min_x, start_y),
                                 egui::pos2(min_x + width, end_y),
                             );
+
+                            if let pulldown_cmark::TagEnd::Heading(_) = tag {
+                                rect = rect.translate(egui::vec2(0.0, 10.0));
+                            }
+
                             let is_container = matches!(
                                 tag,
                                 pulldown_cmark::TagEnd::Item

@@ -88,8 +88,31 @@ impl KatanaApp {
             AppAction::ToggleSettings => {
                 self.state.layout.show_settings = !self.state.layout.show_settings;
             }
+            AppAction::ToggleExportPanel => {
+                let current = self.state.layout.show_export_panel;
+                self.state.layout.show_export_panel = !current;
+                if !current {
+                    self.state.layout.show_story_panel = false;
+                    self.state.layout.show_toc = false;
+                }
+            }
+            AppAction::ToggleStoryPanel => {
+                let current = self.state.layout.show_story_panel;
+                self.state.layout.show_story_panel = !current;
+                if !current {
+                    self.state.layout.show_export_panel = false;
+                    self.state.layout.show_toc = false;
+                }
+            }
             AppAction::ToggleAbout => self.show_about = !self.show_about,
-            AppAction::ToggleToc => self.state.layout.show_toc = !self.state.layout.show_toc,
+            AppAction::ToggleToc => {
+                let current = self.state.layout.show_toc;
+                self.state.layout.show_toc = !current;
+                if !current {
+                    self.state.layout.show_export_panel = false;
+                    self.state.layout.show_story_panel = false;
+                }
+            }
             AppAction::ToggleWorkspacePanel => {
                 let current = self.state.layout.show_workspace_panel;
                 self.state.layout.show_workspace_panel = !current;

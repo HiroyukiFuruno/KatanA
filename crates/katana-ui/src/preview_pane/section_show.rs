@@ -201,7 +201,12 @@ pub(super) fn show_section(
                                 .count();
                         let end_line = global_line_offset
                             + md[..local_span.end].chars().filter(|c| *c == '\n').count();
-                        anchors.push((start_line..end_line, rect));
+                        let range_end = if end_line > start_line {
+                            end_line
+                        } else {
+                            start_line + 1
+                        };
+                        anchors.push((start_line..range_end, rect));
                     }
                 }
                 if let Some(hovered) = hovered_lines {
@@ -216,7 +221,12 @@ pub(super) fn show_section(
                         let end_pos = local_span.end.saturating_sub(1).max(local_span.start);
                         let end_line = global_line_offset
                             + md[..end_pos].chars().filter(|c| *c == '\n').count();
-                        hovered.push(start_line..end_line);
+                        let range_end = if end_line > start_line {
+                            end_line
+                        } else {
+                            start_line + 1
+                        };
+                        hovered.push(start_line..range_end);
                     }
                 }
                 let spans = egui_commonmark::extract_task_list_spans(md);

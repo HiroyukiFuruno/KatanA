@@ -39,6 +39,8 @@ pub enum AppAction {
     },
     ChangeLanguage(String),
     ToggleSettings,
+    ToggleExportPanel,
+    ToggleStoryPanel,
     ToggleAbout,
     ToggleToc,
     ToggleWorkspacePanel,

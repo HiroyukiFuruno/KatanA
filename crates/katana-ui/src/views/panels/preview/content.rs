@@ -1,5 +1,5 @@
 use super::types::*;
-use crate::app_state::{AppAction, ScrollSource};
+use crate::app_state::AppAction;
 use crate::preview_pane::{DownloadRequest, PreviewPane};
 use eframe::egui;
 
@@ -11,6 +11,8 @@ impl<'a> PreviewContent<'a> {
         scroll: &'a mut crate::app_state::ScrollState,
         toc_visible: bool,
         show_toc: bool,
+        show_export: bool,
+        show_story: bool,
         action: &'a mut AppAction,
         scroll_sync: bool,
         search_query: Option<String>,
@@ -22,6 +24,8 @@ impl<'a> PreviewContent<'a> {
             scroll,
             toc_visible,
             show_toc,
+            show_export,
+            show_story,
             action,
             scroll_sync,
             search_query,
@@ -36,6 +40,8 @@ impl<'a> PreviewContent<'a> {
             scroll,
             toc_visible,
             show_toc,
+            show_export,
+            show_story,
             action,
             scroll_sync,
             search_query,
@@ -90,8 +96,8 @@ impl<'a> PreviewContent<'a> {
                         doc_search_active_index,
                     );
 
-                    /* WHY: Synchronize hover state if we are not the source of scrolling. */
-                    if is_interactive && scroll_sync && scroll.source != ScrollSource::Preview {
+                    /* WHY: Hover synchronization is decoupled from scroll_sync.        */
+                    if is_interactive {
                         scroll.hovered_preview_lines = hovered_lines;
                     }
 
@@ -129,7 +135,54 @@ impl<'a> PreviewContent<'a> {
         }
 
         /* WHY: Overlay the PreviewHeader (TOC toggle, etc.) on top of the content. */
-        PreviewHeader::new(document.is_some(), toc_visible, show_toc, action).show(ui);
+        PreviewHeader::new(
+            document.is_some(),
+            toc_visible,
+            show_toc,
+            show_export,
+            show_story,
+            action,
+        )
+        .show(ui);
+
+        /* WHY: Render 'Back to Top' button if scrolled down significantly. */
+        let scroll_offset = output.state.offset.y;
+        const BACK_TO_TOP_THRESHOLD: f32 = 400.0;
+        if scroll_offset > BACK_TO_TOP_THRESHOLD {
+            let margin = 20.0;
+            let btn_size = egui::vec2(32.0, 32.0);
+            let btn_rect = egui::Rect::from_min_size(
+                egui::pos2(
+                    ui.max_rect().right() - margin - btn_size.x,
+                    ui.max_rect().bottom() - margin - btn_size.y,
+                ),
+                btn_size,
+            );
+
+            let mut overlay_ui = ui.new_child(egui::UiBuilder::new().max_rect(btn_rect).layout(
+                egui::Layout::centered_and_justified(egui::Direction::LeftToRight),
+            ));
+
+            let icon_bg = if ui.visuals().dark_mode {
+                ui.visuals().widgets.active.bg_fill
+            } else {
+                crate::theme_bridge::ThemeBridgeOps::from_gray(crate::shell_ui::LIGHT_MODE_ICON_BG)
+            };
+
+            if overlay_ui
+                .add(
+                    egui::Button::image(
+                        crate::Icon::ArrowUp.ui_image(&overlay_ui, crate::icon::IconSize::Medium),
+                    )
+                    .rounding(egui::Rounding::same(16))
+                    .fill(icon_bg),
+                )
+                .on_hover_text(crate::i18n::I18nOps::get().action.back_to_top.clone())
+                .clicked()
+            {
+                preview.scroll_request = Some(0);
+            }
+        }
 
         download_req
     }

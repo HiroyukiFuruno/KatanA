@@ -9,5 +9,6 @@ pub struct Accordion<'a> {
     pub(crate) active: bool,
     pub(crate) primary: bool,
     pub(crate) indent: Option<f32>,
+    pub(crate) icon_only_toggle: bool,
     pub(crate) body: Box<dyn FnOnce(&mut egui::Ui) + 'a>,
 }

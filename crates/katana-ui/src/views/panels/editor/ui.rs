@@ -18,8 +18,26 @@ pub(crate) struct EditorContent<'a> {
 }
 impl<'a> EditorContent<'a> {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(document: Option<&'a katana_core::document::Document>, scroll: &'a mut crate::app_state::ScrollState, action: &'a mut AppAction, sync_scroll: bool, doc_search_matches: &'a [std::ops::Range<usize>], doc_search_active_index: usize, cursor_range_out: &'a mut Option<egui::text::CCursorRange>, pending_cursor: Option<(usize, usize)>) -> Self {
-        Self { document, scroll, action, sync_scroll, doc_search_matches, doc_search_active_index, cursor_range_out, pending_cursor }
+    pub fn new(
+        document: Option<&'a katana_core::document::Document>,
+        scroll: &'a mut crate::app_state::ScrollState,
+        action: &'a mut AppAction,
+        sync_scroll: bool,
+        doc_search_matches: &'a [std::ops::Range<usize>],
+        doc_search_active_index: usize,
+        cursor_range_out: &'a mut Option<egui::text::CCursorRange>,
+        pending_cursor: Option<(usize, usize)>,
+    ) -> Self {
+        Self {
+            document,
+            scroll,
+            action,
+            sync_scroll,
+            doc_search_matches,
+            doc_search_active_index,
+            cursor_range_out,
+            pending_cursor,
+        }
     }
     pub fn show(self, ui: &mut egui::Ui) {
         let action = self.action;
@@ -99,10 +117,12 @@ impl<'a> EditorContent<'a> {
                             EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
                         }
 
-                        if response.clicked()
+                        if sync_scroll
+                            && response.clicked()
                             && let Some(c) = text_output.cursor_range
                         {
-                            let line = EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
+                            let line =
+                                EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
                             scroll.scroll_to_line = Some(line);
                         }
 

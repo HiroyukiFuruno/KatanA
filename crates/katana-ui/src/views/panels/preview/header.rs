@@ -8,12 +8,16 @@ impl<'a> PreviewHeader<'a> {
         has_doc: bool,
         toc_visible: bool,
         show_toc: bool,
+        show_export: bool,
+        show_story: bool,
         action: &'a mut AppAction,
     ) -> Self {
         Self {
             has_doc,
             toc_visible,
             show_toc,
+            show_export,
+            show_story,
             action,
         }
     }
@@ -24,7 +28,7 @@ impl<'a> PreviewHeader<'a> {
         let button_size = egui::vec2(ui.spacing().interact_size.y, ui.spacing().interact_size.y);
         let margin = f32::from(PREVIEW_CONTENT_PADDING);
         let spacing = ui.spacing().item_spacing.x;
-        /* WHY: Export, Slideshow */
+        /* WHY: Story, Export, TOC (if visible) */
         let mut button_count = 2.0;
         if self.toc_visible {
             button_count += 1.0;
@@ -50,11 +54,17 @@ impl<'a> PreviewHeader<'a> {
             crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG)
         };
 
-        let export_img = egui::Image::new(crate::icon::Icon::Export.uri())
-            .tint(overlay_ui.visuals().text_color());
+        let active_bg = if ui.visuals().dark_mode {
+            ui.visuals().selection.bg_fill
+        } else {
+            crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_ACTIVE_BG)
+        };
+
         overlay_ui.scope(|ui| {
             ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
 
+            /* WHY: Story Panel Toggle */
+            let story_bg = if self.show_story { active_bg } else { icon_bg };
             if ui
                 .add_enabled(
                     has_doc,
@@ -62,45 +72,35 @@ impl<'a> PreviewHeader<'a> {
                         crate::Icon::Preview.ui_image(ui, crate::icon::IconSize::Medium),
                     )
                     .min_size(button_size)
-                    .fill(icon_bg),
+                    .fill(story_bg),
                 )
-                .on_hover_text(crate::i18n::I18nOps::get().action.toggle_slideshow.clone())
+                .on_hover_text(
+                    crate::i18n::I18nOps::get()
+                        .preview
+                        .slideshow_settings
+                        .clone(),
+                )
                 .clicked()
             {
-                *action = AppAction::ToggleSlideshow;
+                *action = AppAction::ToggleStoryPanel;
             }
 
-            ui.menu_image_button(export_img, |ui| {
-                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-                if ui
-                    .button(crate::i18n::I18nOps::get().menu.export_html.clone())
-                    .clicked()
-                {
-                    *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Html);
-                    ui.close();
-                }
-                if ui
-                    .button(crate::i18n::I18nOps::get().menu.export_pdf.clone())
-                    .clicked()
-                {
-                    *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Pdf);
-                    ui.close();
-                }
-                if ui
-                    .button(crate::i18n::I18nOps::get().menu.export_png.clone())
-                    .clicked()
-                {
-                    *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Png);
-                    ui.close();
-                }
-                if ui
-                    .button(crate::i18n::I18nOps::get().menu.export_jpg.clone())
-                    .clicked()
-                {
-                    *action = AppAction::ExportDocument(crate::app_state::ExportFormat::Jpg);
-                    ui.close();
-                }
-            });
+            /* WHY: Export Panel Toggle */
+            let export_bg = if self.show_export { active_bg } else { icon_bg };
+            if ui
+                .add_enabled(
+                    has_doc,
+                    egui::Button::image(
+                        crate::Icon::Export.ui_image(ui, crate::icon::IconSize::Medium),
+                    )
+                    .min_size(button_size)
+                    .fill(export_bg),
+                )
+                .on_hover_text(crate::i18n::I18nOps::get().menu.export.clone())
+                .clicked()
+            {
+                *action = AppAction::ToggleExportPanel;
+            }
         });
 
         if self.toc_visible {

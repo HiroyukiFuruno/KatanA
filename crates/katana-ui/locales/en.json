@@ -99,6 +99,7 @@
     "slideshow_settings": "Slideshow Settings",
     "highlight_hover": "Hover Highlight",
     "show_diagram_controls": "Diagram Controls",
+    "toggle_slideshow": "Toggle Slideshow",
     "diagram_controller": {
       "pan_up": "Pan Up",
       "pan_down": "Pan Down",
@@ -190,7 +191,8 @@
     "save_file": "Save File",
     "new_workspace": "New Workspace",
     "open_workspace": "Open Workspace",
-    "copy": "Copy"
+    "copy": "Copy",
+    "back_to_top": "Back to Top"
   },
   "ai": {
     "ai_unconfigured": "[AI: Unconfigured]"

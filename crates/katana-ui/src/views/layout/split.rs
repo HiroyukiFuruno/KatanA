@@ -71,12 +71,16 @@ impl<'a> PreviewOnly<'a> {
             let pane = crate::shell::KatanaApp::get_preview_pane(&mut app.tab_previews, path);
             let toc_visible = app.state.config.settings.settings().layout.toc_visible;
             let show_toc = app.state.layout.show_toc;
+            let show_export = app.state.layout.show_export_panel;
+            let show_story = app.state.layout.show_story_panel;
             PreviewContent::new(
                 pane,
                 app.state.document.active_document(),
                 &mut app.state.scroll,
                 toc_visible,
                 show_toc,
+                show_export,
+                show_story,
                 &mut app.pending_action,
                 false,
                 Some(app.state.search.doc_search.query.clone()),

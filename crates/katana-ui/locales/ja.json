@@ -99,6 +99,7 @@
     "slideshow_settings": "ストーリー設定",
     "highlight_hover": "ホバーハイライト",
     "show_diagram_controls": "ダイアグラム操作",
+    "toggle_slideshow": "スライドショーを開始",
     "diagram_controller": {
       "pan_up": "上へ移動",
       "pan_down": "下へ移動",
@@ -190,7 +191,8 @@
     "save_file": "ファイルを保存",
     "new_workspace": "新しいワークスペース",
     "open_workspace": "ワークスペースを開く",
-    "copy": "コピー"
+    "copy": "コピー",
+    "back_to_top": "トップへ戻る"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
