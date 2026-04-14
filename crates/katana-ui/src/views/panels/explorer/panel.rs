@@ -13,6 +13,7 @@ pub(crate) struct ExplorerPanel<'a> {
     pub active_path: Option<&'a std::path::Path>,
     pub tab_groups: &'a [crate::state::document::TabGroup],
     pub action: &'a mut AppAction,
+    pub show_vertical_line: bool,
 }
 
 impl<'a> ExplorerPanel<'a> {
@@ -23,6 +24,7 @@ impl<'a> ExplorerPanel<'a> {
         active_path: Option<&'a std::path::Path>,
         tab_groups: &'a [crate::state::document::TabGroup],
         action: &'a mut AppAction,
+        show_vertical_line: bool,
     ) -> Self {
         Self {
             workspace,
@@ -31,6 +33,7 @@ impl<'a> ExplorerPanel<'a> {
             active_path,
             tab_groups,
             action,
+            show_vertical_line,
         }
     }
 
@@ -71,6 +74,7 @@ impl<'a> ExplorerPanel<'a> {
                 active_path,
                 tab_groups,
                 action,
+                self.show_vertical_line,
             )
             .show(ui);
         }

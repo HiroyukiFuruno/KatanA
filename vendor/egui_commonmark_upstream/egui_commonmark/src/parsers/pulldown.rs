@@ -85,7 +85,6 @@ static URL_RE: OnceLock<regex::Regex> = OnceLock::new();
 pub(crate) struct CommonMarkViewerInternal<'a> {
     curr_table: usize,
     curr_heading: usize,
-    scroll_to_heading_index: Option<usize>,
     heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     block_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     text_style: Style,
@@ -150,7 +149,6 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
 impl<'a> CommonMarkViewerInternal<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        scroll_to_heading_index: Option<usize>,
         heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         block_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         heading_offset: usize,
@@ -192,7 +190,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
         Self {
             curr_table: 0,
             curr_heading: heading_offset,
-            scroll_to_heading_index,
             heading_anchors,
             block_anchors,
             text_style: Style::default(),
@@ -2248,11 +2245,10 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     state.0 = ui.next_widget_position().y;
                 }
 
-                if let Some(target_idx) = self.scroll_to_heading_index {
-                    if target_idx == self.curr_heading {
-                        ui.scroll_to_cursor(Some(egui::Align::TOP));
-                    }
-                }
+                /* WHY: TOC jump is now driven externally by content.rs computing a   */
+                /* WHY: precise scroll offset from heading_anchors. scroll_to_cursor  */
+                /* WHY: and scroll_to_rect here were removed because they race with    */
+                /* WHY: the externally applied vertical_scroll_offset.                */
 
                 self.text_style.heading = Some(match level {
                     HeadingLevel::H1 => 0,

@@ -104,7 +104,6 @@ use egui_commonmark_backend::*;
 
 pub struct CommonMarkViewer<'f> {
     options: CommonMarkOptions<'f>,
-    scroll_to_heading_index: Option<usize>,
     heading_anchors: Option<&'f mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     /// Captures the rendered bounding boxes of specific blocks (Diagrams, Alerts, Tables)
     /// associated with their original source spans. Used for stable split-sync anchors.
@@ -136,7 +135,6 @@ impl<'f> Default for CommonMarkViewer<'f> {
     fn default() -> Self {
         Self {
             options: Default::default(),
-            scroll_to_heading_index: None,
             heading_anchors: None,
             block_anchors: None,
             heading_offset: 0,
@@ -211,11 +209,6 @@ impl<'f> CommonMarkViewer<'f> {
         >,
     ) -> Self {
         self.custom_list_item_highlight_fn = func;
-        self
-    }
-
-    pub fn scroll_to_heading_index(mut self, index: usize) -> Self {
-        self.scroll_to_heading_index = Some(index);
         self
     }
 
@@ -417,7 +410,6 @@ impl<'f> CommonMarkViewer<'f> {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
 
         let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
-            self.scroll_to_heading_index,
             self.heading_anchors,
             self.block_anchors,
             self.heading_offset,
@@ -460,7 +452,6 @@ impl<'f> CommonMarkViewer<'f> {
 
         let (mut inner_response, checkmark_events) = {
             let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
-                self.scroll_to_heading_index,
                 self.heading_anchors,
                 self.block_anchors,
                 self.heading_offset,
@@ -541,7 +532,6 @@ impl<'f> CommonMarkViewer<'f> {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
 
         let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
-            self.scroll_to_heading_index,
             self.heading_anchors,
             self.block_anchors,
             self.heading_offset,
@@ -594,7 +584,6 @@ impl<'f> CommonMarkViewer<'f> {
     ) {
         egui_commonmark_backend::prepare_show(cache, ui.ctx());
         let mut internal = parsers::pulldown::CommonMarkViewerInternal::new(
-            self.scroll_to_heading_index,
             self.heading_anchors,
             self.block_anchors,
             self.heading_offset,

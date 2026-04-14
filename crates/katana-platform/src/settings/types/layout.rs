@@ -42,6 +42,8 @@ pub struct LayoutSettings {
     pub active_pane_idx: usize,
     #[serde(default)]
     pub activity_rail_order: Vec<ActivityRailItem>,
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
+    pub accordion_vertical_line: bool,
 }
 
 impl LayoutSettings {

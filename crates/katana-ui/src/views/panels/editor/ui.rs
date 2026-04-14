@@ -80,7 +80,7 @@ impl<'a> EditorContent<'a> {
                 }
 
                 scroll_area.show(ui, |ui| {
-                    ui.horizontal_top(|ui| {
+                    let horiz_response = ui.horizontal_top(|ui| {
                         const LINE_NUMBER_MARGIN: f32 = 40.0;
                         const LINE_NUMBER_PAD_RIGHT: f32 = 8.0;
                         let left_margin = LINE_NUMBER_MARGIN;
@@ -174,26 +174,27 @@ impl<'a> EditorContent<'a> {
                         if response.changed() {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
-
-                        EditorLogicOps::handle_scroll_to_line(
-                            ui, scroll, &buffer, &response, &galley,
-                        );
+                        EditorLogicOps::handle_scroll_to_line(ui, scroll, &buffer, &response, &galley);
                         response
                     })
-                    .inner
+                    .inner;
+
+                    /* WHY: Provide scroll-past-end padding matching VS Code's behavior */
+                    const PADDING_RATIO: f32 = 0.9;
+                    ui.allocate_space(egui::vec2(0.0, ui.clip_rect().height() * PADDING_RATIO));
+
+                    horiz_response
                 })
             });
 
-            if sync_scroll {
-                EditorLogicOps::update_scroll_sync(
-                    scroll,
-                    output.inner.content_size.y,
-                    output.inner.inner_rect.height(),
-                    output.inner.state.offset.y,
-                    consuming_preview,
-                    SCROLL_SYNC_DEAD_ZONE,
-                );
-            }
+            EditorLogicOps::update_scroll_sync(
+                scroll,
+                output.inner.content_size.y,
+                output.inner.inner_rect.height(),
+                output.inner.state.offset.y,
+                consuming_preview,
+                SCROLL_SYNC_DEAD_ZONE,
+            );
         }
     }
 }

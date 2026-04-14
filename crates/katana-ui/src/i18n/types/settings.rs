@@ -66,6 +66,7 @@ pub struct SettingsLayoutMessages {
     pub toc_position: String,
     pub left: String,
     pub right: String,
+    pub accordion_vertical_line: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

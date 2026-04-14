@@ -12,6 +12,7 @@ pub(crate) struct ExplorerContent<'a> {
     pub active_path: Option<&'a std::path::Path>,
     pub tab_groups: &'a [crate::state::document::TabGroup],
     pub action: &'a mut AppAction,
+    pub show_vertical_line: bool,
 }
 
 impl<'a> ExplorerContent<'a> {
@@ -22,6 +23,7 @@ impl<'a> ExplorerContent<'a> {
         active_path: Option<&'a std::path::Path>,
         tab_groups: &'a [crate::state::document::TabGroup],
         action: &'a mut AppAction,
+        show_vertical_line: bool,
     ) -> Self {
         Self {
             workspace,
@@ -30,6 +32,7 @@ impl<'a> ExplorerContent<'a> {
             active_path,
             tab_groups,
             action,
+            show_vertical_line,
         }
     }
 
@@ -72,6 +75,7 @@ impl<'a> ExplorerContent<'a> {
                     is_flat_view,
                     ws_root: Some(&ws_root),
                     tab_groups: Some(self.tab_groups),
+                    show_vertical_line: self.show_vertical_line,
                 };
 
                 if is_flat_view {

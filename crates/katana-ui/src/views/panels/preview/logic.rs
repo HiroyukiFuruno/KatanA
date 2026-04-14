@@ -30,10 +30,30 @@ impl PreviewLogicOps {
             && scroll.source == crate::app_state::ScrollSource::Editor
             && scroll.scroll_to_line.is_none();
         if consuming_editor {
-            return Some(scroll.mapper.logical_to_preview(scroll.logical_position));
+            let raw_offset = scroll.mapper.logical_to_preview(scroll.logical_position);
+            return Some(scroll.mapper.snap_to_heading_preview(raw_offset));
         }
 
         None
+    }
+
+    /// Compute the precise preview ScrollArea vertical offset to jump to a heading.
+    ///
+    /// Uses the previous frame's `heading_anchors` (screen-space rects) and
+    /// `content_top_y` to derive the correct scroll offset. Returns `None` when
+    /// anchors are not yet available (first render or document just changed).
+    pub fn heading_scroll_offset(
+        heading_index: usize,
+        anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
+        content_top_y: f32,
+    ) -> Option<f32> {
+        let item = anchor_map.iter().find(|a| a.index == Some(heading_index))?;
+        let rect = item.rect?;
+        /* WHY: rect.min.y is screen-space. Subtracting content_top_y converts it   */
+        /* WHY: to the ScrollArea's virtual-space offset (scroll_offset = 0 when at  */
+        /* WHY: the very top of the content, before any Frame/padding offsets).      */
+        /* WHY: We clamp to 0.0 to avoid negative offsets on the first heading.     */
+        Some((rect.min.y - content_top_y).max(0.0))
     }
 
     pub fn update_scroll_sync(
@@ -46,6 +66,7 @@ impl PreviewLogicOps {
     ) {
         let max_scroll = (content_height - inner_height).max(0.0);
         scroll.preview_max = max_scroll;
+        scroll.preview_y = offset_y;
 
         let mut computed_anchors = Vec::with_capacity(preview.anchor_map.len());
         for item in &preview.anchor_map {

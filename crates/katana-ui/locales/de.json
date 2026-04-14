@@ -233,9 +233,10 @@
       "pane_order": "Reihenfolge",
       "editor_first": "Editor zuerst",
       "preview_first": "Vorschau zuerst",
-      "toc_position": "目次位置",
+      "toc_position": "TOC-Position",
       "left": "Links",
-      "right": "Rechts"
+      "right": "Rechts",
+      "accordion_vertical_line": "Vertikale Linie im Akkordeon"
     },
     "preview": {
       "title": "Vorschau",

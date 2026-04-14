@@ -68,6 +68,7 @@ impl Default for LayoutSettings {
                 ActivityRailItem::Search,
                 ActivityRailItem::History,
             ],
+            accordion_vertical_line: true,
         }
     }
 }

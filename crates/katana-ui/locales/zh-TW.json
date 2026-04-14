@@ -235,7 +235,8 @@
       "preview_first": "預覽優先",
       "toc_position": "大綱位置",
       "left": "左側",
-      "right": "右側"
+      "right": "右側",
+      "accordion_vertical_line": "手風琴垂直線"
     },
     "preview": {
       "title": "預覽",

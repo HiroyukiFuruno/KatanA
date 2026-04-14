@@ -11,6 +11,13 @@ pub(super) fn render_custom_color_editor(
 
     let sections = super::theme_color_data::build_color_sections(&color_i18n);
 
+    let show_vertical_line = state
+        .config
+        .settings
+        .settings()
+        .layout
+        .accordion_vertical_line;
+
     for (section_name, grouped_settings) in sections {
         crate::widgets::Accordion::new(
             section_name.clone(),
@@ -21,11 +28,19 @@ pub(super) fn render_custom_color_editor(
                 ui.add_space(SUBSECTION_SPACING);
                 for (group_opt, settings_list) in grouped_settings {
                     ui.add_space(SUBSECTION_SPACING);
-                    render_color_group(ui, group_opt, settings_list, &mut new_colors, &mut changed);
+                    render_color_group(
+                        ui,
+                        group_opt,
+                        settings_list,
+                        &mut new_colors,
+                        &mut changed,
+                        show_vertical_line,
+                    );
                 }
             },
         )
         .default_open(true)
+        .show_vertical_line(show_vertical_line)
         .show(ui);
         ui.add_space(SECTION_SPACING);
     }
@@ -50,6 +65,7 @@ fn render_color_group(
     settings_list: Vec<(String, super::types::ColorPropType)>,
     new_colors: &mut katana_platform::theme::ThemeColors,
     changed: &mut bool,
+    show_vertical_line: bool,
 ) {
     if let Some(group_name) = group_opt {
         crate::widgets::Accordion::new(group_name.clone(), group_name.clone(), |ui| {
@@ -60,6 +76,7 @@ fn render_color_group(
             }
         })
         .default_open(true)
+        .show_vertical_line(show_vertical_line)
         .show(ui);
     } else {
         for (lbl, prop) in settings_list {

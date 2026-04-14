@@ -11,7 +11,7 @@ pub(super) fn show_section(
     section: &RenderedSection,
     id: usize,
     md_file_path: &std::path::Path,
-    scroll_to_heading_index: Option<usize>,
+    _scroll_to_heading_index: Option<usize>,
     mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     heading_offset: usize,
@@ -82,9 +82,12 @@ pub(super) fn show_section(
                         &katana_core::emoji::EmojiRasterOps::render_apple_color_emoji_png,
                     ));
 
-                if let Some(idx) = scroll_to_heading_index {
-                    viewer = viewer.scroll_to_heading_index(idx);
-                }
+                /* WHY: scroll_to_heading_index is intentionally NOT passed to the vendor   */
+                /* WHY: viewer. TOC navigation is now driven externally by computing a      */
+                /* WHY: precise scroll offset from heading_anchors in content.rs. Using     */
+                /* WHY: the vendor approach caused misalignment because scroll_to_cursor/   */
+                /* WHY: scroll_to_rect races with forced_offset and depends on same-frame   */
+                /* WHY: widget positions that may not yet reflect the requested scroll.     */
 
                 let previous_anchor_count = heading_anchors.as_ref().map(|a| a.len()).unwrap_or(0);
                 if let Some(anchors) = heading_anchors.as_mut() {

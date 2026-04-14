@@ -235,7 +235,8 @@
       "preview_first": "Vista previa primero",
       "toc_position": "Posición índice",
       "left": "Izquierda",
-      "right": "Derecha"
+      "right": "Derecha",
+      "accordion_vertical_line": "Línea vertical de acordeón"
     },
     "preview": {
       "title": "Vista previa",

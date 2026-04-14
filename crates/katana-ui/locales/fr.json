@@ -235,7 +235,8 @@
       "preview_first": "Aperçu en premier",
       "toc_position": "Position sommaire",
       "left": "Gauche",
-      "right": "Droite"
+      "right": "Droite",
+      "accordion_vertical_line": "Ligne verticale de l'accordéon"
     },
     "preview": {
       "title": "Aperçu",

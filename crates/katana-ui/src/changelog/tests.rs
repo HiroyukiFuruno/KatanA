@@ -90,11 +90,11 @@ fn test_render_release_notes_tab_ui() {
                 default_open: true,
             }];
 
-            ChangelogOps::render_release_notes_tab(ui, &[], true);
+            ChangelogOps::render_release_notes_tab(ui, &[], true, false);
 
-            ChangelogOps::render_release_notes_tab(ui, &sections, false);
+            ChangelogOps::render_release_notes_tab(ui, &sections, false, false);
 
-            ChangelogOps::render_release_notes_tab(ui, &[], false);
+            ChangelogOps::render_release_notes_tab(ui, &[], false, false);
         });
     });
 }

@@ -235,7 +235,8 @@
       "preview_first": "Preview First",
       "toc_position": "TOC Position",
       "left": "Left",
-      "right": "Right"
+      "right": "Right",
+      "accordion_vertical_line": "Accordion Vertical Line"
     },
     "preview": {
       "title": "Preview",

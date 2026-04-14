@@ -235,7 +235,8 @@
       "preview_first": "Anteprima per prima",
       "toc_position": "Posizione indice",
       "left": "Sinistra",
-      "right": "Destra"
+      "right": "Destra",
+      "accordion_vertical_line": "Linea verticale a fisarmonica"
     },
     "preview": {
       "title": "Anteprima",

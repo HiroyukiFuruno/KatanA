@@ -128,6 +128,7 @@ impl EditorLogicOps {
     ) {
         let max_scroll = (content_height - inner_rect_height).max(0.0);
         scroll.editor_max = max_scroll;
+        scroll.editor_y = current_offset_y;
 
         if was_consuming_preview {
             scroll.source = ScrollSource::Neither;
@@ -141,6 +142,17 @@ impl EditorLogicOps {
 
         /* WHY: Did the editor actually scroll from user interaction? */
         if scroll.editor_echo.is_echo(current_offset_y) {
+            return;
+        }
+
+        /* WHY: When scroll_to_line is active (e.g. TOC navigation), the editor */
+        /* WHY: was scrolled programmatically, not by user interaction. The preview */
+        /* WHY: pane has its own scroll_request for direct heading navigation.     */
+        /* WHY: Emitting ScrollSource::Editor here would cause compute_forced_offset */
+        /* WHY: to overwrite the preview's position via mapper approximation,       */
+        /* WHY: creating a click-highlight misalignment in the TOC.                */
+        if scroll.scroll_to_line.is_some() {
+            scroll.editor_echo.record(current_offset_y);
             return;
         }
 

@@ -43,6 +43,7 @@ pub struct AppState {
     pub diagnostics: DiagnosticsState,
     pub command_palette: CommandPaletteState,
     pub global_workspace: katana_platform::workspace::GlobalWorkspaceService,
+    pub active_toc_index: Option<usize>,
 }
 
 impl AppState {
@@ -74,6 +75,7 @@ impl AppState {
             global_workspace: katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
                 katana_platform::workspace::JsonWorkspaceRepository::with_default_path(),
             )),
+            active_toc_index: None,
         }
     }
 

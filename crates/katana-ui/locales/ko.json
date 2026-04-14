@@ -235,7 +235,8 @@
       "preview_first": "미리보기 우선",
       "toc_position": "목차 위치",
       "left": "왼쪽",
-      "right": "오른쪽"
+      "right": "오른쪽",
+      "accordion_vertical_line": "아코디언 수직선 표시"
     },
     "preview": {
       "title": "미리보기",

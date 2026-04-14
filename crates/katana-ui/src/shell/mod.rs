@@ -26,6 +26,11 @@ pub(crate) const TREE_ICON_ARROW_GAP: f32 = 4.0;
 pub(crate) const TREE_ICON_LABEL_GAP: f32 = 6.0;
 pub(crate) const TREE_HOVER_ROUNDING: f32 = 2.0;
 pub(crate) const TREE_HOVER_GAMMA: f32 = 0.4;
+pub(crate) const TREE_ACCORDION_LINE_OFFSET: f32 = 6.0;
+pub(crate) const TREE_ACCORDION_LINE_WIDTH: f32 = 1.0;
+pub(crate) const TREE_ACCORDION_LINE_GAMMA: f32 = 0.2;
+pub(crate) const TREE_ACCORDION_LINE_DASH_LENGTH: f32 = 1.0;
+pub(crate) const TREE_ACCORDION_LINE_GAP_LENGTH: f32 = 3.0;
 
 pub(crate) const DOWNLOAD_STATUS_CHECK_INTERVAL_MS: u64 = 200;
 pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;

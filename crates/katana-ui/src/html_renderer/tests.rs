@@ -9,7 +9,7 @@ fn ensure_svg_extension_inserts_suffix_before_query_string() {
 
     assert_eq!(
         normalized,
-        "https://img.shields.io/badge/Sponsor-❤️-ea4aaa.svg?style=for-the-badge&logo=github-sponsors"
+        "https://img.shields.io/badge/Sponsor-%E2%9D%A4%EF%B8%8F-ea4aaa.svg?style=for-the-badge&logo=github-sponsors"
     );
 }
 

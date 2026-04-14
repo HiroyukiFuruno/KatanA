@@ -78,6 +78,7 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
             .settings_mut()
             .updates
             .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
+        let _ = state.config.try_save_settings();
 
         /* WHY: Use in-memory repository for integration tests to prevent disk pollution and allow temp paths */
         state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
@@ -86,6 +87,7 @@ fn setup_harness() -> Harness<'static, KatanaApp> {
         let mut app = KatanaApp::new(state);
         app.skip_splash();
         app.disable_update_check_for_test();
+        app.disable_changelog_popup_for_test();
         app
     })
 }
@@ -291,6 +293,187 @@ fn test_integration_toc_panel_hides_when_disabled() {
     assert!(
         !is_panel_visible,
         "TOC panel MUST NOT be visible when toc_visible setting is false"
+    );
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_toc_codeonly_mode_scroll_sync() {
+    let harness_dir = fresh_temp_dir("katana_test_settings_harness_toc");
+    let settings_path = harness_dir.join("settings.json");
+    let mut harness = egui_kittest::Harness::builder()
+        .with_size(egui::vec2(800.0, 300.0))
+        .build_eframe(move |_cc| {
+            let ai_registry = katana_core::ai::AiProviderRegistry::new();
+            let plugin_registry = katana_core::plugin::PluginRegistry::new();
+            let mut state = katana_ui::app_state::AppState::new(
+                ai_registry,
+                plugin_registry,
+                katana_platform::SettingsService::new(Box::new(
+                    katana_platform::JsonFileRepository::new(settings_path.clone()),
+                )),
+                std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+            );
+            state.config.settings.settings_mut().terms_accepted_version =
+                Some(katana_ui::about_info::APP_VERSION.to_string());
+            let _ = state.config.try_save_settings();
+
+            state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(
+                Box::new(katana_platform::workspace::InMemoryWorkspaceRepository::default()),
+            );
+            let mut app = KatanaApp::new(state);
+            app.skip_splash();
+            app.disable_update_check_for_test();
+            app.disable_changelog_popup_for_test();
+            app.app_state_mut().layout.show_explorer = false;
+            app
+        });
+    harness.step();
+
+    let temp_dir = fresh_temp_dir("katana_test_toc_codeonly");
+    let test_file = temp_dir.join("toc_scroll.md");
+    let content =
+        "# Heading 1\n\n".to_string() + &"\n".repeat(50) + "# Heading 2\n" + &"\n".repeat(300);
+    std::fs::write(&test_file, content).unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+    let abs_path = test_file.canonicalize().unwrap_or(test_file.clone());
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs_path));
+
+    // We MUST step in order to process the SelectDocument AppAction!
+    harness.step();
+
+    // Show TOC
+    harness.state_mut().trigger_action(AppAction::ToggleToc);
+
+    // Wait for TOC "Heading 2" to appear on screen (meaning tab_previews is ready)
+    for _ in 0..200 {
+        harness.step();
+        if harness.query_all_by_label("Heading 2").count() > 0 {
+            break; // It has parsed the AST and populated TOC!
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+
+    // Enter CodeOnly Mode
+    harness
+        .state_mut()
+        .app_state_mut()
+        .set_active_view_mode(ViewMode::CodeOnly);
+    harness.step();
+    harness.step();
+
+    let toc_visible = harness.state_mut().app_state_mut().layout.show_toc;
+    assert!(toc_visible, "TOC should be visible");
+
+    // Push scroll down to Heading 2 via scroll_to_line (Heading 2 is at line 54, so scrolling to 60 ensures it's active)
+    harness.state_mut().app_state_mut().scroll.scroll_to_line = Some(60);
+
+    let terms_accepted = harness
+        .state_mut()
+        .app_state_mut()
+        .config
+        .settings
+        .settings()
+        .terms_accepted_version
+        .is_some();
+    println!(
+        "TEST OUT: About to step 5 times. Terms accepted: {}",
+        terms_accepted
+    );
+    harness.step();
+    println!("TEST OUT: Step 1 done.");
+    harness.step();
+    println!("TEST OUT: Step 2 done.");
+    harness.step();
+    println!("TEST OUT: Step 3 done.");
+    harness.step();
+    println!("TEST OUT: Step 4 done.");
+    harness.step();
+    println!("TEST OUT: Step 5 done.");
+
+    // Verify active TOC index
+    let active_idx = harness.state_mut().app_state_mut().active_toc_index;
+
+    let editor_max = harness.state_mut().app_state_mut().scroll.editor_max;
+    let scroll_to_line = harness.state_mut().app_state_mut().scroll.scroll_to_line;
+    let editor_y = harness.state_mut().app_state_mut().scroll.editor_y;
+
+    let buffer_len = harness
+        .state_mut()
+        .app_state_mut()
+        .document
+        .active_document()
+        .map(|d| d.buffer.len());
+    let view_mode = harness.state_mut().app_state_mut().active_view_mode();
+    println!(
+        "TEST OUT: editor_max: {}, scroll_to_line: {:?}, buffer_len: {:?}, view_mode: {:?}",
+        editor_max, scroll_to_line, buffer_len, view_mode
+    );
+
+    assert_eq!(
+        active_idx,
+        Some(1), // Should be Heading 2
+        "In CodeOnly mode, TOC should track editor_y and highlight Heading 2 when scrolled down. Got active_idx: {:?}, editor_y: {}",
+        active_idx,
+        editor_y
+    );
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_integration_toc_panel_truncates_long_headings() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = fresh_temp_dir("katana_test_toc_truncate");
+    let test_file = temp_dir.join("toc_truncate.md");
+    let very_long_text = "This is a very very very very very very very very very very very very very very very very very extremely long heading that should definitely be truncated".to_string();
+    let content = format!("# {}\n\nSome text.", very_long_text);
+    std::fs::write(&test_file, content).unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+    let abs_path = test_file.canonicalize().unwrap_or(test_file.clone());
+    harness
+        .state_mut()
+        .trigger_action(AppAction::SelectDocument(abs_path));
+
+    // Wait for the document preview to settle and render some elements
+    // In truncation test we don't know exact labels, but we can just sleep a bit to assure AST load
+    for _ in 0..20 {
+        harness.step();
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    }
+
+    harness.state_mut().trigger_action(AppAction::ToggleToc);
+
+    // Step forward heavily to ensure layout settles
+    for _ in 0..10 {
+        harness.step();
+    }
+
+    let toc_visible = harness.state_mut().app_state_mut().layout.show_toc;
+    assert!(toc_visible, "TOC should be visible");
+
+    let toc_title = I18nOps::get().toc.title.clone();
+    let panel_node = harness.get_by_label(&toc_title);
+
+    let panel_width = panel_node.rect().width();
+    assert!(
+        panel_width <= 550.0,
+        "TOC Panel width ({}) should be constrained to TOC_MAX_WIDTH (~500) and not expanded to {} by the long text",
+        panel_width,
+        panel_width
     );
 
     let _ = std::fs::remove_dir_all(&temp_dir);

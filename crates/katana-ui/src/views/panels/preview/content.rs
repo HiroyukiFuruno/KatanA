@@ -58,6 +58,25 @@ impl<'a> PreviewContent<'a> {
         }
 
         let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+
+        /* WHY: TOC jump is controlled here via external scroll offset, not via      */
+        /* WHY: vendor's scroll_to_heading_index. The vendor approach uses           */
+        /* WHY: scroll_to_cursor/rect internally, which races with forced_offset     */
+        /* WHY: and depends on same-frame widget position — causing misalignment.    */
+        /* WHY: Using the previous frame's heading_anchors rect and content_top_y,   */
+        /* WHY: we compute the precise ScrollArea offset and apply it directly.      */
+        if let Some(req_index) = preview.scroll_request {
+            let heading_offset = super::types::PreviewLogicOps::heading_scroll_offset(
+                req_index,
+                &preview.anchor_map,
+                preview.content_top_y,
+            );
+            if let Some(offset) = heading_offset {
+                scroll.preview_echo.record(offset);
+                scroll_area = scroll_area.vertical_scroll_offset(offset).animated(false);
+            }
+        }
+
         let forced_offset = super::types::PreviewLogicOps::compute_forced_offset(
             scroll_sync,
             scroll,
@@ -66,7 +85,12 @@ impl<'a> PreviewContent<'a> {
             ui.available_height(),
         );
 
-        if let Some(target_scroll_offset) = forced_offset {
+        /* WHY: Only apply forced_offset when no TOC jump is pending.               */
+        /* WHY: scroll_request is cleared in render_sections, so here it is still   */
+        /* WHY: Some if we are in the same frame as the TOC click.                  */
+        if preview.scroll_request.is_none()
+            && let Some(target_scroll_offset) = forced_offset
+        {
             scroll.preview_echo.record(target_scroll_offset);
             scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
         }
@@ -143,14 +167,11 @@ impl<'a> PreviewContent<'a> {
                                 };
                             }
                             ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
-                            /* WHY: When search is active, add extra bottom padding so that */
-                            /* WHY: matches near the end of the file can be scrolled to the */
-                            /* WHY: center of the viewport, matching VS Code's behavior. */
-                            if search_query.as_ref().is_some_and(|q| !q.is_empty()) {
-                                const SCROLL_PAST_END_RATIO: f32 = 0.5;
-                                let viewport_half = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
-                                ui.add_space(viewport_half);
-                            }
+                            /* WHY: Provide scroll-past-end padding so the last line or heading */
+                            /* WHY: can be scrolled to the top of the viewport, matching VS Code. */
+                            const SCROLL_PAST_END_RATIO: f32 = 0.9;
+                            let viewport_pad = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
+                            ui.add_space(viewport_pad);
                         },
                     );
                 });

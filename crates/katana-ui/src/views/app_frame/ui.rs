@@ -15,6 +15,7 @@ impl<'a> MainPanels<'a> {
 
     pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
+
         let theme_colors = self.theme_colors;
         let export_filenames: Vec<String> = app
             .export_tasks

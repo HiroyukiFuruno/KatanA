@@ -36,6 +36,7 @@ pub struct LayoutState {
     pub slideshow_hover_highlight: bool,
     pub slideshow_show_diagram_controls: bool,
     pub active_rail_popup: Option<RailPopup>,
+    pub toc_force_open: Option<bool>,
 }
 
 impl Default for LayoutState {
@@ -75,6 +76,7 @@ impl LayoutState {
             slideshow_hover_highlight: false,
             slideshow_show_diagram_controls: false,
             active_rail_popup: None,
+            toc_force_open: None,
         }
     }
 }
