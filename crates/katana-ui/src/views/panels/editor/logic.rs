@@ -125,15 +125,24 @@ impl EditorLogicOps {
         current_offset_y: f32,
         was_consuming_preview: bool,
         _dead_zone: f32,
+        anchors: Vec<f32>,
     ) {
         let max_scroll = (content_height - inner_rect_height).max(0.0);
         scroll.editor_max = max_scroll;
         scroll.editor_y = current_offset_y;
 
+        if !anchors.is_empty() {
+            scroll.editor_line_anchors = anchors;
+        }
+
         if was_consuming_preview {
             scroll.source = ScrollSource::Neither;
             scroll.editor_echo.record(current_offset_y);
             return;
+        }
+
+        if scroll.source == ScrollSource::Editor {
+            scroll.editor_echo.record(current_offset_y);
         }
 
         if max_scroll <= 0.0 {

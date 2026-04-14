@@ -71,15 +71,23 @@ impl PreviewLogicOps {
         let mut computed_anchors = Vec::with_capacity(preview.anchor_map.len());
         for item in &preview.anchor_map {
             if let Some(rect) = item.rect {
+                // WHY: Use physical editor line Y positions for ultra-high precision.
+                // This eliminates drift caused by soft-wrapping in the editor.
+                // If physical data is not yet available, we fallback to row-height estimation.
+                let editor_y = scroll
+                    .editor_line_anchors
+                    .get(item.line_span.start)
+                    .cloned()
+                    .unwrap_or_else(|| item.line_span.start as f32 * row_height);
+
                 let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-                computed_anchors.push((item.line_span.clone(), p_y));
+                computed_anchors.push((editor_y, p_y));
             }
         }
 
         scroll.mapper = crate::state::scroll_sync::ScrollMapper::build(
             scroll.editor_max,
             scroll.preview_max,
-            row_height,
             &computed_anchors,
         );
 
@@ -102,5 +110,11 @@ impl PreviewLogicOps {
             scroll.logical_position = next_logical;
             scroll.source = crate::app_state::ScrollSource::Preview;
         }
+
+        /* WHY: Store the calculated ghost space for the UI to apply in the next frame. */
+        /* We need a Ui context to access temp storage. Since we don't have it here, */
+        /* we'll assume the caller (usually a view that has access to AppState/Ui) */
+        /* will fetch it from scroll.mapper. We'll add it to ScrollState for easier access if needed, */
+        /* but for now we'll just let the UI call the mapper's method directly if it has access. */
     }
 }

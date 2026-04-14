@@ -69,28 +69,26 @@ pub struct LogicalPosition {
 ///
 /// The table is rebuilt each frame from the current heading anchors and geometry snapshot.
 /// It always starts with `(0, 0)` and ends with `(editor_max, preview_max)` — the EOF
-/// point — so every pixel in both panes is covered.
+/// point.
 #[derive(Debug, Default, Clone)]
 pub struct ScrollMapper {
     /// Mapping points in ascending `editor_y` order.
     pub points: Vec<MapPoint>,
+    /// The maximum vertical offset available in the editor during this build.
+    pub editor_content_max: f32,
+    /// The maximum vertical offset available in the preview during this build.
+    pub preview_content_max: f32,
 }
 
 impl ScrollMapper {
     /// Build a mapper from the current geometry.
     ///
-    /// `anchors` is a slice of `(editor_line_start, preview_rect_min_y)` pairs as produced
-    /// by `PreviewPane::heading_anchors`, with `content_top_y` already subtracted from the
-    /// preview coordinate.  `row_height` is the monospace row height used by the editor.
-    pub fn build(
-        editor_max: f32,
-        preview_max: f32,
-        row_height: f32,
-        anchors: &[(std::ops::Range<usize>, f32)],
-    ) -> Self {
+    /// `anchors` is a slice of `(editor_phys_y, preview_phys_y)` pairs.
+    /// These are physical pixel offsets from the top of the respective scrollable content.
+    pub fn build(editor_max: f32, preview_max: f32, anchors: &[(f32, f32)]) -> Self {
         let mut sorted_anchors: Vec<_> = anchors.to_vec();
-        /* WHY: Sort by editor line start to build a monotonic mapping table. */
-        sorted_anchors.sort_by_key(|(span, _)| span.start);
+        /* WHY: Sort by editor anchor y to build a monotonic mapping table. */
+        sorted_anchors.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
         let mut points = Vec::with_capacity(sorted_anchors.len() + 2);
         points.push(MapPoint {
@@ -98,48 +96,47 @@ impl ScrollMapper {
             preview_y: 0.0,
         });
 
-        let editor_clamp = if editor_max > 0.0 {
-            editor_max
-        } else {
-            f32::MAX
-        };
-        let preview_clamp = if preview_max > 0.0 {
-            preview_max
-        } else {
-            f32::MAX
-        };
-
-        for (span, p_y) in sorted_anchors {
-            let editor_y = span.start as f32 * row_height;
-            /* WHY: Clamp to avoid degenerate points outside the visible range. */
-            let editor_y = editor_y.min(editor_clamp);
-            let preview_y = p_y.max(0.0).min(preview_clamp);
-
-            /* WHY: Skip degenerate or non-monotonic segments (to maintain strict ascending order). */
-            if let Some(last) = points.last()
-                && (editor_y <= last.editor_y + DEGENERATE_EPSILON
-                    || preview_y <= last.preview_y + DEGENERATE_EPSILON)
-            {
-                continue;
+        for (editor_y, preview_y) in sorted_anchors {
+            // WHY: Only push if strictly monotonic to avoid degenerate linear segments
+            if let Some(last) = points.last() {
+                if editor_y > last.editor_y + DEGENERATE_EPSILON
+                    && preview_y > last.preview_y + DEGENERATE_EPSILON
+                {
+                    points.push(MapPoint { editor_y, preview_y });
+                }
             }
+        }
 
-            points.push(MapPoint {
-                editor_y,
-                preview_y,
-            });
-        }
-        /* WHY: EOF anchor — always present regardless of heading count. */
-        let mut eof_editor = editor_max.max(1.0);
-        let mut eof_preview = preview_max.max(1.0);
+        /* WHY: Always record a point at exactly EOF to ensure final coverage. */
+        /* WHY: If both content are significantly longer than a single window height, */
+        /* WHY: we map their respective bottom-most scroll limits together.            */
+        let eof_editor = editor_max;
+        let eof_preview = preview_max;
+
         if let Some(last) = points.last() {
-            eof_editor = eof_editor.max(last.editor_y + 1.0);
-            eof_preview = eof_preview.max(last.preview_y + 1.0);
+            if (last.editor_y - eof_editor).abs() > DEGENERATE_EPSILON
+                || (last.preview_y - eof_preview).abs() > DEGENERATE_EPSILON
+            {
+                // If EOF is strictly after the last anchor, add a segment to it
+                if eof_editor > last.editor_y && eof_preview > last.preview_y {
+                    points.push(MapPoint {
+                        editor_y: eof_editor,
+                        preview_y: eof_preview,
+                    });
+                } else {
+                    // If the last anchor was already at or near EOF, force the last point to exactly EOF
+                    let last_mut = points.last_mut().unwrap();
+                    last_mut.editor_y = eof_editor;
+                    last_mut.preview_y = eof_preview;
+                }
+            }
         }
-        points.push(MapPoint {
-            editor_y: eof_editor,
-            preview_y: eof_preview,
-        });
-        Self { points }
+
+        Self {
+            points,
+            editor_content_max: editor_max,
+            preview_content_max: preview_max,
+        }
     }
 
     #[rustfmt::skip]
@@ -154,6 +151,22 @@ impl ScrollMapper {
     pub fn snap_to_heading_editor(&self, y: f32) -> f32 { self.snap_to_nearest(y, |p| p.editor_y) }
     #[rustfmt::skip]
     pub fn snap_to_heading_preview(&self, y: f32) -> f32 { self.snap_to_nearest(y, |p| p.preview_y) }
+
+    pub fn editor_ghost_space(&self) -> f32 {
+        if self.points.is_empty() {
+            return 0.0;
+        }
+        let last = self.points.last().unwrap();
+        (last.editor_y - self.editor_content_max).max(0.0)
+    }
+
+    pub fn preview_ghost_space(&self) -> f32 {
+        if self.points.is_empty() {
+            return 0.0;
+        }
+        let last = self.points.last().unwrap();
+        (last.preview_y - self.preview_content_max).max(0.0)
+    }
 
     fn snap_to_nearest(&self, offset: f32, get: impl Fn(&MapPoint) -> f32) -> f32 {
         /* WHY: Skip origin (index 0) and EOF (last) — they are synthetic anchors, */
@@ -199,54 +212,54 @@ mod tests {
 
     #[test]
     fn test_editor_to_logical() {
-        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, &[(400.0, 800.0), (800.0, 1600.0)]);
 
-        /* WHY: 1. Before first segment (0..200 -> 0..400) */
-        let pos = mapper.editor_to_logical(100.0);
+        /* WHY: 1. Before first anchor (0,0 -> 400,800) */
+        let pos = mapper.editor_to_logical(200.0);
         assert_eq!(pos.segment_index, 0);
         assert_eq!(pos.progress, 0.5);
-        assert_eq!(mapper.logical_to_preview(pos), 200.0);
+        assert_eq!(mapper.logical_to_preview(pos), 400.0);
 
-        /* WHY: 2. Middle segment (200..600 -> 400..800) */
-        let pos = mapper.editor_to_logical(400.0);
+        /* WHY: 2. Middle segment (400,800 -> 800,1600) */
+        let pos = mapper.editor_to_logical(600.0);
         assert_eq!(pos.segment_index, 1);
         assert_eq!(pos.progress, 0.5);
-        assert_eq!(mapper.logical_to_preview(pos), 600.0);
+        assert_eq!(mapper.logical_to_preview(pos), 1200.0);
 
-        /* WHY: 3. Tail segment (after 600 -> 800..2000) */
-        let pos = mapper.editor_to_logical(800.0);
+        /* WHY: 3. Tail segment (after 800 -> 1000,2000) */
+        let pos = mapper.editor_to_logical(900.0);
         assert_eq!(pos.segment_index, 2);
         assert_eq!(pos.progress, 0.5);
-        assert_eq!(mapper.logical_to_preview(pos), 1400.0);
+        assert_eq!(mapper.logical_to_preview(pos), 1800.0);
     }
 
     #[test]
     fn test_preview_to_logical() {
-        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, &[(400.0, 800.0), (800.0, 1600.0)]);
 
         /* WHY: 1. Before first segment */
-        let pos = mapper.preview_to_logical(200.0);
+        let pos = mapper.preview_to_logical(400.0);
         assert_eq!(pos.segment_index, 0);
         assert_eq!(pos.progress, 0.5);
-        assert_eq!(mapper.logical_to_editor(pos), 100.0);
+        assert_eq!(mapper.logical_to_editor(pos), 200.0);
 
         /* WHY: 2. Middle segment */
-        let pos = mapper.preview_to_logical(600.0);
+        let pos = mapper.preview_to_logical(1200.0);
         assert_eq!(pos.segment_index, 1);
         assert_eq!(pos.progress, 0.5);
-        assert_eq!(mapper.logical_to_editor(pos), 400.0);
+        assert_eq!(mapper.logical_to_editor(pos), 600.0);
 
         /* WHY: 3. Tail segment */
-        let pos = mapper.preview_to_logical(1400.0);
+        let pos = mapper.preview_to_logical(1800.0);
         assert_eq!(pos.segment_index, 2);
         assert_eq!(pos.progress, 0.5);
-        assert_eq!(mapper.logical_to_editor(pos), 800.0);
+        assert_eq!(mapper.logical_to_editor(pos), 900.0);
     }
 
     #[test]
     fn mapper_no_headings_full_range() {
         /* WHY: Document with no headings: single [start, EOF] segment. */
-        let m = ScrollMapper::build(1000.0, 800.0, 10.0, &[]);
+        let m = ScrollMapper::build(1000.0, 800.0, &[]);
         /* WHY: Mid-point should map proportionally across the single segment. */
         let pos = m.editor_to_logical(500.0);
         let preview_y = m.logical_to_preview(pos);
@@ -264,19 +277,19 @@ mod tests {
 
     #[test]
     fn mapper_tail_segment_reaches_eof() {
-        /* WHY: Last heading at editor line 40, preview y 300; editor_max=500, preview_max=400. */
-        let anchors = vec![(40..41, 300.0)];
-        let _m = ScrollMapper::build(500.0, 400.0, 10.0, &anchors);
+        /* WHY: Last heading at editor pixel 400, preview y 300; editor_max=500, preview_max=400. */
+        let anchors = vec![(400.0, 300.0)];
+        let _m = ScrollMapper::build(500.0, 400.0, &anchors);
         /* WHY: Editor fully scrolled to tail end → preview fully scrolled too. */
-        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(100..100, 2500.0)]);
-        /* WHY: Editor line 100 is roughly y=2000, clamped to 1000. Preview clamped to 2000. */
-        let pos = mapper.editor_to_logical(500.0);
-        assert_eq!(mapper.logical_to_preview(pos), 1000.0);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, &[(800.0, 1500.0)]);
+        /* WHY: Editor pixel 1000 is EOF. Preview pixel 2000 is EOF. */
+        let pos = mapper.editor_to_logical(1000.0);
+        assert_eq!(mapper.logical_to_preview(pos), 2000.0);
     }
 
     #[test]
     fn test_roundtrip_stability() {
-        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0), (30..30, 800.0)]);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, &[(200.0, 400.0), (600.0, 800.0)]);
 
         for e_y in [0.0, 100.0, 200.0, 500.0, 600.0, 900.0, 1000.0] {
             let pos = mapper.editor_to_logical(e_y);
@@ -308,8 +321,8 @@ mod tests {
     #[test]
     fn mapper_skips_non_monotonic_segments() {
         /* WHY: Ensure that backward or zero-height anchors in preview_y or editor_y are properly discarded. */
-        let anchors = vec![(10..10, 400.0), (30..30, 300.0), (50..50, 800.0)];
-        let m = ScrollMapper::build(1200.0, 2000.0, 20.0, &anchors);
+        let anchors = vec![(200.0, 400.0), (400.0, 200.0), (1000.0, 800.0)];
+        let m = ScrollMapper::build(1200.0, 2000.0, &anchors);
 
         /* WHY: editor y=600 is halfway between line 10 (200px) and line 50 (1000px).
         Since the middle anchor is non-monotonic, it gets skipped.
@@ -323,7 +336,7 @@ mod tests {
     #[test]
     fn snap_to_heading_within_threshold() {
         /* WHY: Heading at editor_y=200, preview_y=400. */
-        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0)]);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, &[(200.0, 400.0)]);
         /* WHY: Offset 195 is 5px from anchor 200 → should snap. */
         assert_eq!(mapper.snap_to_heading_editor(195.0), 200.0);
         /* WHY: Offset 215 is 15px from anchor 200 → should snap. */
@@ -334,14 +347,14 @@ mod tests {
 
     #[test]
     fn snap_to_heading_beyond_threshold() {
-        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0)]);
+        let mapper = ScrollMapper::build(1000.0, 2000.0, &[(200.0, 400.0)]);
         /* WHY: Offset 170 is 30px from anchor 200 → should NOT snap. */
         assert_eq!(mapper.snap_to_heading_editor(170.0), 170.0);
     }
 
     #[test]
     fn snap_no_headings_passthrough() {
-        let mapper = ScrollMapper::build(1000.0, 800.0, 10.0, &[]);
+        let mapper = ScrollMapper::build(1000.0, 800.0, &[]);
         /* WHY: No heading anchors → offset returned as-is. */
         assert_eq!(mapper.snap_to_heading_editor(500.0), 500.0);
     }

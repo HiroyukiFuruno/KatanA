@@ -175,18 +175,34 @@ impl<'a> EditorContent<'a> {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
                         EditorLogicOps::handle_scroll_to_line(ui, scroll, &buffer, &response, &galley);
-                        response
-                    })
-                    .inner;
 
-                    /* WHY: Provide scroll-past-end padding matching VS Code's behavior */
-                    const PADDING_RATIO: f32 = 0.9;
-                    ui.allocate_space(egui::vec2(0.0, ui.clip_rect().height() * PADDING_RATIO));
+                        let mut anchors = Vec::new();
+                        let mut is_first_row_of_line = true;
+                        for row in &galley.rows {
+                            if is_first_row_of_line {
+                                anchors.push(row.rect().min.y);
+                            }
+                            is_first_row_of_line = row.ends_with_newline;
+                        }
+
+                        (response, anchors)
+                    });
+
+                    /* WHY: Provide virtual space (Ghost Space) so the editor can reach the same logical EOF as the preview. */
+                    let ghost_space = scroll.mapper.editor_ghost_space();
+                    if ghost_space > 0.0 {
+                        ui.add_space(ghost_space);
+                    }
+
+                    /* WHY: Provide extra scroll-past-end padding according to settings if desired,
+                     * but at minimum we ensure we can reach the sync EOF. */
+                    const MIN_EXTRA_PADDING: f32 = 0.5;
+                    ui.allocate_space(egui::vec2(0.0, ui.clip_rect().height() * MIN_EXTRA_PADDING));
 
                     horiz_response
                 })
             });
-
+            let (_response, anchors) = output.inner.inner.inner;
             EditorLogicOps::update_scroll_sync(
                 scroll,
                 output.inner.content_size.y,
@@ -194,6 +210,7 @@ impl<'a> EditorContent<'a> {
                 output.inner.state.offset.y,
                 consuming_preview,
                 SCROLL_SYNC_DEAD_ZONE,
+                anchors,
             );
         }
     }

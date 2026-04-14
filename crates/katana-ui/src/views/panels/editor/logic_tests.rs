@@ -94,7 +94,7 @@ mod tests {
             source: ScrollSource::Preview,
             ..Default::default()
         };
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 250.0, true, 0.01);
+        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 250.0, true, 0.01, vec![]);
         assert_eq!(scroll.source, ScrollSource::Neither);
         assert!(scroll.editor_echo.is_echo(250.0));
     }
@@ -102,11 +102,11 @@ mod tests {
     #[test]
     fn update_scroll_sync_editor_scrolled_beyond_epsilon() {
         let mut scroll = crate::app_state::ScrollState {
-            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
+            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, &[]),
             ..Default::default()
         };
         /* WHY: 400.0 offset on 500.0 max_scroll means progress=0.8 */
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
+        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01, vec![]);
         assert_eq!(scroll.source, ScrollSource::Editor);
     }
 
@@ -117,7 +117,7 @@ mod tests {
             ..Default::default()
         };
         scroll.editor_echo.record(250.0);
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 251.0, false, 0.01);
+        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 251.0, false, 0.01, vec![]);
         assert_eq!(scroll.source, ScrollSource::Neither);
     }
 
@@ -134,12 +134,12 @@ mod tests {
     #[test]
     fn update_scroll_sync_with_scroll_to_line_does_not_set_editor_source() {
         let mut scroll = crate::app_state::ScrollState {
-            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
+            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, &[]),
             scroll_to_line: Some(52), /* WHY: TOC click sets this */
             ..Default::default()
         };
         /* WHY: Editor scrolls to line 52 → offset changes to 400.0 */
-        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
+        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01, vec![]);
         assert_ne!(
             scroll.source,
             ScrollSource::Editor,

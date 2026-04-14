@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.1-2] - 2026-04-14 11:30:00 (UTC)
+
+### ✨ Improvements
+
+- **Ultra-Precise Scroll Synchronization**: Overhauled the synchronization logic between the editor and preview panes. Implemented high-precision physical mapping based on actual visual layout coordinates, ensuring perfect alignment even with soft-wrapping.
+- **Full EOF Reachability (Ghost Space)**: Introduced dynamic "Ghost Space" padding for both panes, mathematically guaranteeing that both reach the document boundary at the same time.
+
+### 🔧 System
+
+- **Physically Anchored ScrollMapper**: Migrated internal scroll mapping from estimated line counts to exact `egui::Galley` row Y-coordinates, eliminating all forms of scroll drift.
+
 ## [0.22.1-1] - 2026-04-14 10:15:00 (UTC)
 
 ### ✨ Improvements

@@ -81,12 +81,12 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
         echo "No changes detected."
     fi
 else
-    # Local development: stay safe and do not touch global configs
-    if ! git diff --quiet; then
+    # Local development: commit only if version-related files changed
+    if ! git diff --quiet Cargo.toml Cargo.lock "$INFO_PLIST"; then
         git add Cargo.toml Cargo.lock "$INFO_PLIST"
         # Use localized authorship for the release commit
         git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -n -m "chore: Release v${TARGET_VERSION} [skip ci]"
+            commit -n -m "chore: Release v${TARGET_VERSION} [skip ci]" -- Cargo.toml Cargo.lock "$INFO_PLIST"
         
         echo "✅ Version bump committed locally."
         echo "   (Note: Use 'git push' manually if the branch is not protected)"

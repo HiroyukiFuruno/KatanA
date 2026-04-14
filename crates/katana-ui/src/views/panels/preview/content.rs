@@ -145,6 +145,13 @@ impl<'a> PreviewContent<'a> {
                                 search_query.clone(),
                                 self.doc_search_active_index,
                             );
+
+                            /* WHY: Provide virtual space (Ghost Space) so the preview can reach the same logical EOF as the editor. */
+                            let ghost_space = scroll.mapper.preview_ghost_space();
+                            if ghost_space > 0.0 {
+                                ui.add_space(ghost_space);
+                            }
+
                             if is_interactive
                                 && scroll_sync
                                 && scroll.source != ScrollSource::Preview
