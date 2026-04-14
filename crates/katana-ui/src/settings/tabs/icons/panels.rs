@@ -15,37 +15,51 @@ impl IconsPanelsOps {
         settings_changed: &mut bool,
     ) {
         use crate::settings::tabs::icons::{
-            ADVANCED_PANEL_HEIGHT, ADVANCED_PANEL_ID, HEADING_SPACING, PANEL_PADDING,
+            ADVANCED_PANEL_HEIGHT, ADVANCED_PANEL_ID, PANEL_PADDING,
         };
 
         egui::TopBottomPanel::bottom(ADVANCED_PANEL_ID)
             .default_height(ADVANCED_PANEL_HEIGHT)
             .show_animated_inside(ui, *is_open, |ui| {
                 ui.add_space(PANEL_PADDING);
+
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    ui.add_space(PANEL_PADDING);
                     ui.heading(&i18n.settings.icons.advanced_settings);
-                    ui.add_space(ui.available_width() - HEADING_SPACING);
-                    if ui
-                        .add(
-                            egui::ImageButton::new(
-                                crate::icon::Icon::Close.ui_image(ui, crate::icon::IconSize::Small),
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui
+                            .add(
+                                egui::ImageButton::new(
+                                    crate::icon::Icon::Close
+                                        .ui_image(ui, crate::icon::IconSize::Small),
+                                )
+                                .frame(false),
                             )
-                            .frame(false),
-                        )
-                        .on_hover_text(&i18n.common.close)
-                        .clicked()
-                    {
-                        *is_open = false;
-                    }
+                            .clicked()
+                        {
+                            *is_open = false;
+                        }
+                    });
                 });
+
                 ui.add_space(PANEL_PADDING);
                 ui.separator();
-                ui.add_space(PANEL_PADDING);
 
-                general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
-                ui.add_space(PANEL_PADDING);
-
-                table::IconsTableOps::render(ui, state, i18n, icon_settings, settings_changed);
+                egui::ScrollArea::vertical()
+                    .id_source("icons_advanced_panel_scroll")
+                    .show(ui, |ui| {
+                        ui.add_space(PANEL_PADDING);
+                        general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
+                        ui.add_space(PANEL_PADDING);
+                        table::IconsTableOps::render(
+                            ui,
+                            state,
+                            i18n,
+                            icon_settings,
+                            settings_changed,
+                        );
+                        ui.add_space(PANEL_PADDING);
+                    });
             });
     }
 

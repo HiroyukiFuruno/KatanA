@@ -17,7 +17,6 @@ pub(crate) const ADVANCED_PANEL_HEIGHT: f32 = 480.0;
 pub(crate) const PANEL_PADDING: f32 = 8.0;
 pub(crate) const SYMMETRIC_PADDING_X: i8 = 0;
 pub(crate) const SYMMETRIC_PADDING_Y: i8 = 8;
-pub(crate) const HEADING_SPACING: f32 = 32.0;
 
 impl IconsTabOps {
     /* WHY: Renders the primary entry point for the Icon settings tab. */
@@ -117,16 +116,18 @@ impl IconsTabOps {
             &mut settings_changed,
         );
 
-        panels::IconsPanelsOps::render_trigger_panel(ui, i18n, &mut is_advanced_open);
+        if !is_advanced_open {
+            panels::IconsPanelsOps::render_trigger_panel(ui, i18n, &mut is_advanced_open);
+        }
 
         ui.data_mut(|d| d.insert_temp(egui::Id::new("icons_advanced_is_open"), is_advanced_open));
 
         egui::ScrollArea::vertical()
-            .id_salt(PREVIEW_SCROLL_ID)
+            .id_source(PREVIEW_SCROLL_ID)
             .auto_shrink(false)
             .show(ui, |ui| {
                 egui::Frame::NONE
-                    .inner_margin(crate::settings::INNER_MARGIN)
+                    .inner_margin(egui::Margin::same(INNER_MARGIN as i8))
                     .show(ui, |ui| {
                         list::IconsListOps::render(
                             ui,
