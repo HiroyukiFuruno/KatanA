@@ -9,8 +9,8 @@
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-22-3-markdown-linter-improvements`
-- **作業ブランチ**: 標準は `v0-22-3-markdown-linter-improvements-task-x` (x はタスク番号)
+- **標準（Base）ブランチ**: `v0-22-4-markdown-linter-improvements`
+- **作業ブランチ**: 標準は `v0-22-4-markdown-linter-improvements-task-x` (x はタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへ PR を作成・マージしてください。
 

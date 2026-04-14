@@ -1,7 +1,6 @@
 use super::types::*;
 use crate::app_state::{AppAction, ScrollSource};
 use crate::preview_pane::{DownloadRequest, PreviewPane};
-use crate::shell_ui::PREVIEW_CONTENT_PADDING;
 use eframe::egui;
 
 impl<'a> PreviewContent<'a> {
@@ -31,172 +30,106 @@ impl<'a> PreviewContent<'a> {
     }
 
     pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
-        let preview = self.preview;
-        let document = self.document;
-        let scroll = self.scroll;
-        let toc_visible = self.toc_visible;
-        let show_toc = self.show_toc;
-        let action = self.action;
-        let scroll_sync = self.scroll_sync;
-        let search_query = self.search_query.clone();
+        let PreviewContent {
+            preview,
+            document,
+            scroll,
+            toc_visible,
+            show_toc,
+            action,
+            scroll_sync,
+            search_query,
+            doc_search_active_index,
+        } = self;
+
         let mut download_req = None;
-        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Wrap);
-        let outer_rect = ui.available_rect_before_wrap();
-        let hover_sense = if ui.is_enabled() {
-            egui::Sense::hover()
-        } else {
-            egui::Sense::empty()
-        };
-        ui.allocate_rect(outer_rect, hover_sense);
 
-        let mut scroll_area = egui::ScrollArea::vertical()
-            .id_salt("preview_scroll")
-            .auto_shrink(std::array::from_fn(|_| false));
-
-        if scroll.scroll_to_line.is_some() {
-            scroll_area = scroll_area.animated(false);
-        }
-
-        let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
-
-        /* WHY: TOC jump is controlled here via external scroll offset, not via      */
-        /* WHY: vendor's scroll_to_heading_index. The vendor approach uses           */
-        /* WHY: scroll_to_cursor/rect internally, which races with forced_offset     */
-        /* WHY: and depends on same-frame widget position — causing misalignment.    */
-        /* WHY: Using the previous frame's heading_anchors rect and content_top_y,   */
-        /* WHY: we compute the precise ScrollArea offset and apply it directly.      */
-        if let Some(req_index) = preview.scroll_request {
-            let heading_offset = super::types::PreviewLogicOps::heading_scroll_offset(
-                req_index,
-                &preview.anchor_map,
-                preview.content_top_y,
-            );
-            if let Some(offset) = heading_offset {
-                scroll.preview_echo.record(offset);
-                scroll_area = scroll_area.vertical_scroll_offset(offset).animated(false);
-            }
-        }
-
-        let forced_offset = super::types::PreviewLogicOps::compute_forced_offset(
+        /* WHY: Check for forced scroll target from Sync System or Navigation. */
+        let forced_offset = PreviewLogicOps::compute_forced_offset(
             scroll_sync,
             scroll,
             preview,
-            row_height,
+            crate::shell::TREE_ROW_HEIGHT,
             ui.available_height(),
         );
 
-        /* WHY: Only apply forced_offset when no TOC jump is pending.               */
-        /* WHY: scroll_request is cleared in render_sections, so here it is still   */
-        /* WHY: Some if we are in the same frame as the TOC click.                  */
-        if preview.scroll_request.is_none()
-            && let Some(target_scroll_offset) = forced_offset
-        {
-            scroll.preview_echo.record(target_scroll_offset);
-            scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
+        let mut scroll_area = egui::ScrollArea::vertical()
+            .auto_shrink([false; 2])
+            .id_source("preview_scroll_area");
+
+        if let Some(offset) = forced_offset {
+            scroll_area = scroll_area.vertical_scroll_offset(offset);
         }
 
-        let mut content_ui = ui.new_child(
-            egui::UiBuilder::new()
-                .max_rect(outer_rect)
-                .layout(egui::Layout::top_down(egui::Align::Min)),
-        );
-        content_ui.set_clip_rect(outer_rect);
-
-        let output = scroll_area.show(&mut content_ui, |ui| {
-            egui::Frame::NONE
+        let output = scroll_area.show(ui, |ui| {
+            /* WHY: Use a Frame with explicit horizontal margin for consistent padding (12px). */
+            egui::Frame::none()
                 .inner_margin(egui::Margin::symmetric(
-                    PREVIEW_CONTENT_PADDING,
-                    PREVIEW_CONTENT_PADDING,
+                    crate::shell_ui::PREVIEW_CONTENT_PADDING,
+                    0,
                 ))
                 .show(ui, |ui| {
-                    let content_width = ui.available_width();
-                    let child_rect = egui::Rect::from_min_size(
-                        ui.next_widget_position(),
-                        egui::vec2(content_width, 0.0),
+                    /* WHY: Expand to available width to ensure the Resizable SidePanel doesn't collapse. */
+                    ui.set_min_width(ui.available_width());
+
+                    PreviewLogicOps::render_preview_top_padding(ui);
+
+                    let is_interactive = ui.is_enabled();
+                    let mut hovered_lines = Vec::new();
+                    let hover_out = if is_interactive {
+                        Some(&mut hovered_lines)
+                    } else {
+                        None
+                    };
+
+                    let (req, actions) = preview.show_content(
+                        ui,
+                        scroll.active_editor_line,
+                        hover_out,
+                        search_query.clone(),
+                        doc_search_active_index,
                     );
-                    ui.scope_builder(
-                        egui::UiBuilder::new()
-                            .max_rect(child_rect)
-                            .layout(egui::Layout::top_down(egui::Align::Min)),
-                        |ui| {
-                            /* WHY: 0.25rem padding */
-                            const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0;
-                            ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
-                            let is_interactive = ui.is_enabled();
-                            let mut hovered_lines = Vec::new();
-                            let hover_out = if is_interactive {
-                                Some(&mut hovered_lines)
-                            } else {
-                                None
-                            };
-                            let search_scroll_pending = scroll.scroll_to_line.is_some();
 
-                            ui.ctx().data_mut(|d| {
-                                d.insert_temp(
-                                    egui::Id::new("katana_preview_search_scroll_pending"),
-                                    search_scroll_pending,
-                                )
-                            });
+                    /* WHY: Synchronize hover state if we are not the source of scrolling. */
+                    if is_interactive && scroll_sync && scroll.source != ScrollSource::Preview {
+                        scroll.hovered_preview_lines = hovered_lines;
+                    }
 
-                            let (req, actions) = preview.show_content(
-                                ui,
-                                scroll.active_editor_line,
-                                hover_out,
-                                search_query.clone(),
-                                self.doc_search_active_index,
-                            );
+                    /* WHY: Handle clicks for Editor-to-Preview navigation. */
+                    if is_interactive
+                        && ui.rect_contains_pointer(ui.min_rect())
+                        && ui.input(|i| i.pointer.primary_clicked())
+                        && let Some(hovered) = scroll.hovered_preview_lines.first()
+                    {
+                        scroll.scroll_to_line = Some(hovered.start);
+                    }
 
-                            /* WHY: Provide virtual space (Ghost Space) so the preview can reach the same logical EOF as the editor. */
-                            let ghost_space = scroll.mapper.preview_ghost_space();
-                            if ghost_space > 0.0 {
-                                ui.add_space(ghost_space);
-                            }
+                    download_req = req;
+                    /* WHY: Handle embedded actions like Task List toggling. */
+                    if let Some((global_index, new_state)) = actions.into_iter().next() {
+                        *action = AppAction::ToggleTaskList {
+                            global_index,
+                            new_state,
+                        };
+                    }
 
-                            if is_interactive
-                                && scroll_sync
-                                && scroll.source != ScrollSource::Preview
-                            {
-                                scroll.hovered_preview_lines = hovered_lines.clone();
-                            }
-
-                            if is_interactive
-                                && ui.rect_contains_pointer(ui.min_rect())
-                                && ui.input(|i| i.pointer.primary_clicked())
-                                && let Some(hovered) = hovered_lines.first()
-                            {
-                                scroll.scroll_to_line = Some(hovered.start);
-                            }
-                            download_req = req;
-                            if let Some((global_index, new_state)) = actions.into_iter().next() {
-                                *action = AppAction::ToggleTaskList {
-                                    global_index,
-                                    new_state,
-                                };
-                            }
-                            ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
-                            /* WHY: Provide scroll-past-end padding so the last line or heading */
-                            /* WHY: can be scrolled to the top of the viewport, matching VS Code. */
-                            const SCROLL_PAST_END_RATIO: f32 = 0.9;
-                            let viewport_pad = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
-                            ui.add_space(viewport_pad);
-                        },
-                    );
+                    PreviewLogicOps::render_preview_bottom_padding(ui, scroll);
                 });
         });
 
         if scroll_sync {
-            super::types::PreviewLogicOps::update_scroll_sync(
+            PreviewLogicOps::update_scroll_sync(
                 scroll,
                 preview,
-                ui.text_style_height(&egui::TextStyle::Monospace),
+                crate::shell::TREE_ROW_HEIGHT,
                 output.content_size.y,
                 output.inner_rect.height(),
                 output.state.offset.y,
             );
         }
 
-        super::types::PreviewHeader::new(document.is_some(), toc_visible, show_toc, action)
-            .show(ui);
+        /* WHY: Overlay the PreviewHeader (TOC toggle, etc.) on top of the content. */
+        PreviewHeader::new(document.is_some(), toc_visible, show_toc, action).show(ui);
 
         download_req
     }

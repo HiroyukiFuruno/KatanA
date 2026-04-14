@@ -7,7 +7,6 @@ pub mod diagnostics;
 pub mod document;
 pub mod layout;
 pub mod scroll;
-pub mod scroll_mapper;
 pub mod scroll_sync;
 pub mod search;
 pub mod shortcut_context;

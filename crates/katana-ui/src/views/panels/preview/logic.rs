@@ -71,14 +71,14 @@ impl PreviewLogicOps {
         let mut computed_anchors = Vec::with_capacity(preview.anchor_map.len());
         for item in &preview.anchor_map {
             if let Some(rect) = item.rect {
-                // WHY: Use physical editor line Y positions for ultra-high precision.
-                // This eliminates drift caused by soft-wrapping in the editor.
-                // If physical data is not yet available, we fallback to row-height estimation.
+                /* WHY: Use physical editor line Y positions for ultra-high precision. */
+                /* This eliminates drift caused by soft-wrapping in the editor. */
+                /* If physical data is not yet available, we fallback to row-height estimation. */
                 let editor_y = scroll
                     .editor_line_anchors
                     .get(item.line_span.start)
                     .cloned()
-                    .unwrap_or_else(|| item.line_span.start as f32 * row_height);
+                    .unwrap_or(item.line_span.start as f32 * row_height);
 
                 let p_y = (rect.min.y - preview.content_top_y).max(0.0);
                 computed_anchors.push((editor_y, p_y));
@@ -110,11 +110,26 @@ impl PreviewLogicOps {
             scroll.logical_position = next_logical;
             scroll.source = crate::app_state::ScrollSource::Preview;
         }
+    }
 
-        /* WHY: Store the calculated ghost space for the UI to apply in the next frame. */
-        /* We need a Ui context to access temp storage. Since we don't have it here, */
-        /* we'll assume the caller (usually a view that has access to AppState/Ui) */
-        /* will fetch it from scroll.mapper. We'll add it to ScrollState for easier access if needed, */
-        /* but for now we'll just let the UI call the mapper's method directly if it has access. */
+    pub fn render_preview_top_padding(ui: &mut eframe::egui::Ui) {
+        const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0;
+        ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+    }
+
+    pub fn render_preview_bottom_padding(
+        ui: &mut eframe::egui::Ui,
+        scroll: &crate::app_state::ScrollState,
+    ) {
+        /* WHY: Apply Ghost Space and viewport padding for synchronized EOF. */
+        let ghost_space = scroll.mapper.preview_ghost_space();
+        if ghost_space > 0.0 {
+            ui.add_space(ghost_space);
+        }
+        const PREVIEW_PANE_TOP_BOTTOM_PADDING: f32 = 4.0;
+        ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+        const SCROLL_PAST_END_RATIO: f32 = 0.9;
+        let viewport_pad = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
+        ui.add_space(viewport_pad);
     }
 }

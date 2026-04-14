@@ -125,9 +125,20 @@ impl<'a> TabItem<'a> {
         &self,
         ui: &mut egui::Ui,
         title: &str,
-        _is_changelog: bool,
+        is_changelog: bool,
     ) -> egui::Response {
-        ui.add(egui::Button::selectable(self.is_active, title).frame(false))
+        if is_changelog {
+            ui.add(
+                egui::Button::image_and_text(
+                    crate::Icon::Info.ui_image(ui, crate::icon::IconSize::Small),
+                    title,
+                )
+                .selected(self.is_active)
+                .frame(false),
+            )
+        } else {
+            ui.add(egui::Button::selectable(self.is_active, title).frame(false))
+        }
     }
 
     fn render_close_button(&self, ui: &mut egui::Ui) -> Option<egui::Response> {

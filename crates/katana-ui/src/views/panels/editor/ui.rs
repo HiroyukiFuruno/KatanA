@@ -18,26 +18,8 @@ pub(crate) struct EditorContent<'a> {
 }
 impl<'a> EditorContent<'a> {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        document: Option<&'a katana_core::document::Document>,
-        scroll: &'a mut crate::app_state::ScrollState,
-        action: &'a mut AppAction,
-        sync_scroll: bool,
-        doc_search_matches: &'a [std::ops::Range<usize>],
-        doc_search_active_index: usize,
-        cursor_range_out: &'a mut Option<egui::text::CCursorRange>,
-        pending_cursor: Option<(usize, usize)>,
-    ) -> Self {
-        Self {
-            document,
-            scroll,
-            action,
-            sync_scroll,
-            doc_search_matches,
-            doc_search_active_index,
-            cursor_range_out,
-            pending_cursor,
-        }
+    pub fn new(document: Option<&'a katana_core::document::Document>, scroll: &'a mut crate::app_state::ScrollState, action: &'a mut AppAction, sync_scroll: bool, doc_search_matches: &'a [std::ops::Range<usize>], doc_search_active_index: usize, cursor_range_out: &'a mut Option<egui::text::CCursorRange>, pending_cursor: Option<(usize, usize)>) -> Self {
+        Self { document, scroll, action, sync_scroll, doc_search_matches, doc_search_active_index, cursor_range_out, pending_cursor }
     }
     pub fn show(self, ui: &mut egui::Ui) {
         let action = self.action;
@@ -105,7 +87,7 @@ impl<'a> EditorContent<'a> {
                         let text_output = text_edit.show(ui);
                         let response = text_output.response;
 
-                        EditorLogicOps::render_context_menu(&response, action);
+                        EditorLogicOps::render_context_menu(ui, &response, action);
                         let galley = text_output.galley;
 
                         /* WHY: Capture the current cursor range so action handlers can read it. */
@@ -174,31 +156,15 @@ impl<'a> EditorContent<'a> {
                         if response.changed() {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
-                        EditorLogicOps::handle_scroll_to_line(ui, scroll, &buffer, &response, &galley);
-
-                        let mut anchors = Vec::new();
-                        let mut is_first_row_of_line = true;
-                        for row in &galley.rows {
-                            if is_first_row_of_line {
-                                anchors.push(row.rect().min.y);
-                            }
-                            is_first_row_of_line = row.ends_with_newline;
-                        }
-
+                        EditorLogicOps::handle_scroll_to_line(
+                            ui, scroll, &buffer, &response, &galley,
+                        );
+                        let anchors = EditorLogicOps::extract_line_anchors(&galley);
                         (response, anchors)
                     });
 
-                    /* WHY: Provide virtual space (Ghost Space) so the editor can reach the same logical EOF as the preview. */
-                    let ghost_space = scroll.mapper.editor_ghost_space();
-                    if ghost_space > 0.0 {
-                        ui.add_space(ghost_space);
-                    }
-
-                    /* WHY: Provide extra scroll-past-end padding according to settings if desired,
-                     * but at minimum we ensure we can reach the sync EOF. */
-                    const MIN_EXTRA_PADDING: f32 = 0.5;
-                    ui.allocate_space(egui::vec2(0.0, ui.clip_rect().height() * MIN_EXTRA_PADDING));
-
+                    /* WHY: Provide virtual space (Ghost Space) and extra padding. */
+                    EditorLogicOps::render_editor_padding(ui, scroll);
                     horiz_response
                 })
             });

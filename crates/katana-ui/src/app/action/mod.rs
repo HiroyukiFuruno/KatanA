@@ -3,7 +3,6 @@ mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;
 mod image_ingest;
-mod init;
 mod process_authoring;
 mod process_demo;
 mod process_document;
@@ -29,8 +28,6 @@ pub(crate) trait ActionOps {
     fn poll_changelog(&mut self, _ctx: &egui::Context);
     fn trigger_action(&mut self, action: AppAction);
     fn app_state_mut(&mut self) -> &mut AppState;
-    fn new(state: AppState) -> Self;
-    fn skip_splash(&mut self);
 }
 
 impl ActionOps for KatanaApp {
@@ -168,14 +165,5 @@ impl ActionOps for KatanaApp {
 
     fn app_state_mut(&mut self) -> &mut AppState {
         &mut self.state
-    }
-
-    fn new(state: AppState) -> Self {
-        init::build_katana_app(state)
-    }
-
-    fn skip_splash(&mut self) {
-        self.needs_splash = false;
-        self.splash_start = None;
     }
 }
