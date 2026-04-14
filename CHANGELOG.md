@@ -2,8 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
-## [0.22.1-1] - 2026-04-13 02:40:00 (UTC)
-
+## [0.22.1-1] - 2026-04-14 10:15:00 (UTC)
+ 
+### ✨ Improvements
+ 
+- **Modernized Icon Settings UI**: Replaced the cramped accordion-based icon settings with a sleek "Bottom Sheet" (slide-up panel) overlay. This new layout decouples advanced configuration from the preview grid, providing a much larger, dedicated workspace for icon overrides and system settings while maintaining an elegant, animated user experience.
+ 
 ### 🐛 Bug Fixes
 
 - **Search Bar UI Fixes**: Resolved layout collapse bugs in the global search tab, fixed input focus dropping caused by IME text input events, prevented frame expansion upon focusing the search bar, and removed redundant search icons from context-aware search inputs.
