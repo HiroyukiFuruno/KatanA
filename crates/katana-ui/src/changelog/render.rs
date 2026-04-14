@@ -7,6 +7,7 @@ impl ChangelogOps {
         ui: &mut egui::Ui,
         sections: &[ChangelogSection],
         is_loading: bool,
+        show_vertical_line: bool,
     ) {
         if sections.is_empty() && !is_loading {
             return;
@@ -61,6 +62,7 @@ impl ChangelogOps {
                                 },
                             )
                             .default_open(section.default_open)
+                            .show_vertical_line(show_vertical_line)
                             .show(ui);
 
                             ui.add_space(2.0);

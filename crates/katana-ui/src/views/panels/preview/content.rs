@@ -15,6 +15,7 @@ impl<'a> PreviewContent<'a> {
         action: &'a mut AppAction,
         scroll_sync: bool,
         search_query: Option<String>,
+        doc_search_active_index: Option<usize>,
     ) -> Self {
         Self {
             preview,
@@ -25,6 +26,7 @@ impl<'a> PreviewContent<'a> {
             action,
             scroll_sync,
             search_query,
+            doc_search_active_index,
         }
     }
 
@@ -51,15 +53,44 @@ impl<'a> PreviewContent<'a> {
             .id_salt("preview_scroll")
             .auto_shrink(std::array::from_fn(|_| false));
 
+        if scroll.scroll_to_line.is_some() {
+            scroll_area = scroll_area.animated(false);
+        }
+
         let row_height = ui.text_style_height(&egui::TextStyle::Monospace);
+
+        /* WHY: TOC jump is controlled here via external scroll offset, not via      */
+        /* WHY: vendor's scroll_to_heading_index. The vendor approach uses           */
+        /* WHY: scroll_to_cursor/rect internally, which races with forced_offset     */
+        /* WHY: and depends on same-frame widget position — causing misalignment.    */
+        /* WHY: Using the previous frame's heading_anchors rect and content_top_y,   */
+        /* WHY: we compute the precise ScrollArea offset and apply it directly.      */
+        if let Some(req_index) = preview.scroll_request {
+            let heading_offset = super::types::PreviewLogicOps::heading_scroll_offset(
+                req_index,
+                &preview.anchor_map,
+                preview.content_top_y,
+            );
+            if let Some(offset) = heading_offset {
+                scroll.preview_echo.record(offset);
+                scroll_area = scroll_area.vertical_scroll_offset(offset).animated(false);
+            }
+        }
+
         let forced_offset = super::types::PreviewLogicOps::compute_forced_offset(
             scroll_sync,
             scroll,
             preview,
             row_height,
+            ui.available_height(),
         );
 
-        if let Some(target_scroll_offset) = forced_offset {
+        /* WHY: Only apply forced_offset when no TOC jump is pending.               */
+        /* WHY: scroll_request is cleared in render_sections, so here it is still   */
+        /* WHY: Some if we are in the same frame as the TOC click.                  */
+        if preview.scroll_request.is_none()
+            && let Some(target_scroll_offset) = forced_offset
+        {
             scroll.preview_echo.record(target_scroll_offset);
             scroll_area = scroll_area.vertical_scroll_offset(target_scroll_offset);
         }
@@ -98,16 +129,22 @@ impl<'a> PreviewContent<'a> {
                             } else {
                                 None
                             };
+                            let search_scroll_pending = scroll.scroll_to_line.is_some();
+
+                            ui.ctx().data_mut(|d| {
+                                d.insert_temp(
+                                    egui::Id::new("katana_preview_search_scroll_pending"),
+                                    search_scroll_pending,
+                                )
+                            });
+
                             let (req, actions) = preview.show_content(
                                 ui,
                                 scroll.active_editor_line,
                                 hover_out,
                                 search_query.clone(),
-                                scroll.preview_search_scroll_pending,
+                                self.doc_search_active_index,
                             );
-                            if scroll.preview_search_scroll_pending {
-                                scroll.preview_search_scroll_pending = false;
-                            }
                             if is_interactive
                                 && scroll_sync
                                 && scroll.source != ScrollSource::Preview
@@ -130,6 +167,11 @@ impl<'a> PreviewContent<'a> {
                                 };
                             }
                             ui.add_space(PREVIEW_PANE_TOP_BOTTOM_PADDING);
+                            /* WHY: Provide scroll-past-end padding so the last line or heading */
+                            /* WHY: can be scrolled to the top of the viewport, matching VS Code. */
+                            const SCROLL_PAST_END_RATIO: f32 = 0.9;
+                            let viewport_pad = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
+                            ui.add_space(viewport_pad);
                         },
                     );
                 });

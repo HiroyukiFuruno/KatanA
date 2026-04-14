@@ -60,11 +60,22 @@ impl UpdateOps {
         let current_stripped = current.trim_start_matches('v');
         let latest_stripped = latest.trim_start_matches('v');
 
-        match (
-            semver::Version::parse(current_stripped),
-            semver::Version::parse(latest_stripped),
-        ) {
-            (Ok(curr), Ok(latest)) => latest > curr,
+        let parse_ver = |v: &str| {
+            let parts: Vec<&str> = v.splitn(2, '-').collect();
+            let base = parts[0];
+            let hotfix: u32 = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
+            (semver::Version::parse(base).ok(), hotfix)
+        };
+
+        let curr = parse_ver(current_stripped);
+        let lat = parse_ver(latest_stripped);
+
+        match (curr.0, lat.0) {
+            (Some(c), Some(l)) => {
+                let curr_tuple = (c, curr.1);
+                let lat_tuple = (l, lat.1);
+                lat_tuple > curr_tuple
+            }
             _ => latest_stripped != current_stripped,
         }
     }

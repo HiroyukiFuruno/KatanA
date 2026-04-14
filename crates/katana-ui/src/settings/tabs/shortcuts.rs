@@ -38,6 +38,12 @@ impl ShortcutsTabOps {
 
         Self::render_conflict_warning(ui);
 
+        let show_line = state
+            .config
+            .settings
+            .settings()
+            .layout
+            .accordion_vertical_line;
         for group in groups {
             ui.push_id(group, |ui| {
                 crate::widgets::Accordion::new(
@@ -66,6 +72,7 @@ impl ShortcutsTabOps {
                     },
                 )
                 .default_open(true)
+                .show_vertical_line(show_line)
                 .show(ui);
             });
 

@@ -1,5 +1,6 @@
 use super::tree_entry::TreeEntryNode;
 use crate::shell::{
+    TREE_ACCORDION_LINE_GAMMA, TREE_ACCORDION_LINE_OFFSET, TREE_ACCORDION_LINE_WIDTH,
     TREE_FONT_SIZE, TREE_HOVER_GAMMA, TREE_HOVER_ROUNDING, TREE_ICON_ARROW_GAP,
     TREE_ICON_LABEL_GAP, TREE_INDENT_STEP, TREE_ROW_HEIGHT,
 };
@@ -135,13 +136,33 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
         }
         state.store(ui.ctx());
 
+        let line_start_y = rect.bottom();
         if state.is_open() {
             let prev_depth = ctx.depth;
             ctx.depth += 1;
             for child in children {
                 TreeEntryNode::new(child, ctx).show(ui);
             }
+            let line_end_y = ui.cursor().top();
             ctx.depth = prev_depth;
+
+            if ctx.show_vertical_line {
+                let indent_x = rect.left() + (ctx.depth as f32) * TREE_INDENT_STEP;
+                let line_x = indent_x + TREE_ACCORDION_LINE_OFFSET;
+                let stroke = egui::Stroke::new(
+                    TREE_ACCORDION_LINE_WIDTH,
+                    ui.visuals()
+                        .text_color()
+                        .gamma_multiply(TREE_ACCORDION_LINE_GAMMA),
+                );
+                ui.painter().line_segment(
+                    [
+                        egui::pos2(line_x, line_start_y),
+                        egui::pos2(line_x, line_end_y),
+                    ],
+                    stroke,
+                );
+            }
         }
     }
 }

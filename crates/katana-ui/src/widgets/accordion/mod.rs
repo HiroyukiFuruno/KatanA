@@ -1,4 +1,6 @@
+pub mod ops;
+pub mod render;
 pub mod types;
-mod ui;
+pub mod ui;
 
 pub use types::*;

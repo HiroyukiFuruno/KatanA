@@ -8,6 +8,12 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn disable_changelog_popup_for_test(&mut self) {
+        self.needs_changelog_display = false;
+        self.show_update_dialog = false;
+    }
+
+    #[doc(hidden)]
     pub fn app_state_for_test(&self) -> &AppState {
         &self.state
     }

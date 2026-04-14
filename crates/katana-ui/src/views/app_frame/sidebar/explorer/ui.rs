@@ -58,6 +58,13 @@ impl<'a> ExplorerSidebar<'a> {
                         .and_then(|idx| app.state.document.open_documents.get(idx))
                         .filter(|doc| !doc.is_reference)
                         .map(|doc| doc.path.to_path_buf());
+                    let show_vertical_line = app
+                        .state
+                        .config
+                        .settings
+                        .settings()
+                        .layout
+                        .accordion_vertical_line;
                     crate::views::panels::explorer::ExplorerPanel::new(
                         &mut app.state.workspace,
                         &mut app.state.search,
@@ -65,6 +72,7 @@ impl<'a> ExplorerSidebar<'a> {
                         active_path.as_deref(),
                         &app.state.document.tab_groups,
                         &mut app.pending_action,
+                        show_vertical_line,
                     )
                     .show(ui);
                 });

@@ -53,6 +53,10 @@ define_icons! {
     TriangleDown    => "navigation/triangle_down",
     TriangleLeft    => "navigation/triangle_left",
     TriangleRight   => "navigation/triangle_right",
+    ArrowUp         => "navigation/arrow_up",
+    ArrowDown       => "navigation/arrow_down",
+    ArrowLeft       => "navigation/arrow_left",
+    ArrowRight      => "navigation/arrow_right",
     Toc             => "navigation/toc",
     /* WHY: view/ */
     PanUp           => "view/pan_up",

@@ -93,7 +93,8 @@ pub fn code_block<'t>(
     text: &str,
     show_code_copy_button: bool,
     layouter: &'t mut dyn FnMut(&Ui, &dyn TextBuffer, f32) -> std::sync::Arc<egui::Galley>,
-) -> egui::Response {
+    id_source: impl std::hash::Hash,
+) -> (egui::Response, std::sync::Arc<egui::Galley>) {
     let mut text = text.strip_suffix('\n').unwrap_or(text);
 
     // To manually add background color to the code block, we imitate what
@@ -108,6 +109,7 @@ pub fn code_block<'t>(
         .desired_width(max_width)
         // prevent trailing lines
         .desired_rows(1)
+        .id_source(id_source)
         .show(ui);
 
     // Background color + frame (This is lost when TextEdit it not editable)
@@ -196,7 +198,7 @@ pub fn code_block<'t>(
             ui.copy_text(copy_text);
         }
     }
-    output.response.response
+    (output.response.response, output.galley)
 }
 // Stripped down version of egui's Checkbox. The only difference is that this
 // creates a noninteractive checkbox. ui.add_enabled could have been used instead,

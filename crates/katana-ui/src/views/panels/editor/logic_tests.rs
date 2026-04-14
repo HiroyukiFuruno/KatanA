@@ -120,4 +120,31 @@ mod tests {
         EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 251.0, false, 0.01);
         assert_eq!(scroll.source, ScrollSource::Neither);
     }
-}
+
+    /// RED test: When `scroll_to_line` is active (e.g. TOC navigation in split mode),
+    /// `update_scroll_sync` must NOT set `ScrollSource::Editor`, because the preview
+    /// pane has its own independent `scroll_request` that would be overwritten by
+    /// `compute_forced_offset` in the next frame through the mapper approximation.
+    ///
+    /// Root cause: TOC click sets both `scroll_request` (preview) and `scroll_to_line`
+    /// (editor). The editor's `scroll_to_rect` changes `editor_y`, which triggers
+    /// `ScrollSource::Editor` in `update_scroll_sync`. Next frame, preview's
+    /// `compute_forced_offset` overwrites the scroll position via mapper, causing
+    /// the heading to be positioned differently from the direct `scroll_request`.
+    #[test]
+    fn update_scroll_sync_with_scroll_to_line_does_not_set_editor_source() {
+        let mut scroll = crate::app_state::ScrollState {
+            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, 20.0, &[]),
+            scroll_to_line: Some(52), /* WHY: TOC click sets this */
+            ..Default::default()
+        };
+        /* WHY: Editor scrolls to line 52 → offset changes to 400.0 */
+        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01);
+        assert_ne!(
+            scroll.source,
+            ScrollSource::Editor,
+            "When scroll_to_line is active, source must NOT be set to Editor; \
+             otherwise the preview's scroll_request position will be overwritten by mapper"
+        );
+    }
+    }

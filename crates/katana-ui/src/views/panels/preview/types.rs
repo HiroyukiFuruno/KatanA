@@ -12,6 +12,7 @@ pub(crate) struct PreviewContent<'a> {
     pub action: &'a mut AppAction,
     pub scroll_sync: bool,
     pub search_query: Option<String>,
+    pub doc_search_active_index: Option<usize>,
 }
 
 pub(crate) struct PreviewHeader<'a> {

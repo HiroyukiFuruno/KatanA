@@ -12,6 +12,7 @@ pub(super) fn show_filename_tab(
 ) {
     let response = crate::widgets::SearchBar::new(&mut search.file_search)
         .hint_text(crate::i18n::I18nOps::get().search.query_hint.clone())
+        .id_source("search_tabs_file_name_bar")
         .show(ui);
     if !search.focus_requested {
         response.request_focus();
@@ -33,6 +34,8 @@ pub(super) fn show_filename_tab(
         err_color
     };
 
+    /* WHY: include/exclude bars have no search icon so their text area aligns with
+    the main query bar by sharing the same left_padding (ICON_NONE_PADDING). */
     crate::widgets::SearchBar::simple(&mut search.include_pattern)
         .hint_text(
             crate::i18n::I18nOps::get()
@@ -40,8 +43,8 @@ pub(super) fn show_filename_tab(
                 .include_pattern_hint
                 .clone(),
         )
+        .id_source("search_tabs_include_bar")
         .text_color(include_color)
-        .show_search_icon(true)
         .show(ui);
 
     crate::widgets::SearchBar::simple(&mut search.exclude_pattern)
@@ -51,8 +54,8 @@ pub(super) fn show_filename_tab(
                 .exclude_pattern_hint
                 .clone(),
         )
+        .id_source("search_tabs_exclude_bar")
         .text_color(exclude_color)
-        .show_search_icon(true)
         .show(ui);
 
     let current_params = (
@@ -115,6 +118,7 @@ pub(super) fn show_md_tab(
 ) {
     let response = crate::widgets::SearchBar::new(&mut search.md_search)
         .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
+        .id_source("search_tabs_md_search_bar")
         .show(ui);
     if !search.focus_requested {
         response.request_focus();

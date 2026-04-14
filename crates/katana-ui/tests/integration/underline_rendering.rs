@@ -12,7 +12,7 @@ fn underline_tags_render_without_crash() {
     );
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
     harness.run();
@@ -30,7 +30,7 @@ fn multiple_underlines_and_strikethroughs_in_same_block_render_safely() {
     );
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
     harness.run();

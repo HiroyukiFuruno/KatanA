@@ -34,6 +34,12 @@ impl<'a> CentralContent<'a> {
                     ui,
                     &app.changelog_sections,
                     app.changelog_rx.is_some(),
+                    app.state
+                        .config
+                        .settings
+                        .settings()
+                        .layout
+                        .accordion_vertical_line,
                 );
             });
             return None;
@@ -72,7 +78,15 @@ impl<'a> CentralContent<'a> {
         };
 
         if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-            crate::views::panels::toc::TocPanel::new(&mut preview.pane, &app.state).show(ui);
+            let (clicked_line, active_index) =
+                crate::views::panels::toc::TocPanel::new(&mut preview.pane, &mut app.state)
+                    .show(ui);
+
+            if let Some(clicked) = clicked_line {
+                app.state.scroll.scroll_to_line = Some(clicked);
+                app.state.scroll.last_scroll_to_line = None;
+            }
+            app.state.active_toc_index = active_index;
         }
     }
 

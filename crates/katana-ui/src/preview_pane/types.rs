@@ -13,11 +13,21 @@ pub struct SectionLifecycle {
     pub is_drawn: bool,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct DocumentAnchorMapItem {
+    pub kind: katana_core::markdown::outline::AnchorKind,
+    pub index: Option<usize>,
+    pub line_span: std::ops::Range<usize>,
+    pub rect: Option<egui::Rect>,
+}
+
 #[derive(Default)]
 pub struct PreviewPane {
     pub(crate) commonmark_cache: CommonMarkCache,
     pub sections: Vec<RenderedSection>,
     pub outline_items: Vec<OutlineItem>,
+    pub document_anchors: Vec<katana_core::markdown::outline::DocumentAnchor>,
+    pub anchor_map: Vec<DocumentAnchorMapItem>,
     pub heading_anchors: Vec<(std::ops::Range<usize>, egui::Rect)>,
     pub block_anchors: Vec<(std::ops::Range<usize>, egui::Rect)>,
     pub content_top_y: f32,

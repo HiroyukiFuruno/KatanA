@@ -113,37 +113,84 @@ impl EditorDecorations {
                 index: range.end,
                 prefer_next_row: false,
             };
-            let pos_start = galley.pos_from_cursor(match_start);
-            let pos_end = galley.pos_from_cursor(match_end);
-            let highlight_rect = egui::Rect::from_min_max(
-                egui::pos2(
-                    response_rect.min.x + pos_start.min.x.max(0.0),
-                    response_rect.min.y + pos_start.min.y,
-                ),
-                egui::pos2(
-                    response_rect.min.x + pos_end.max.x.max(0.0),
-                    response_rect.min.y + pos_end.max.y,
-                ),
-            );
             let color = if idx == doc_search_active_index {
                 search_active_color
             } else {
                 search_match_color
             };
-            /* WHY: Use rect_filled if the rect has sensible dimensions (could wrap, so handle carefully) */
-            if highlight_rect.is_positive() {
-                ui.painter().rect_filled(highlight_rect, 2.0, color);
+
+            let start_row = galley.layout_from_cursor(match_start).row;
+            let end_row = galley.layout_from_cursor(match_end).row;
+
+            Self::paint_match(
+                ui,
+                &SearchMatchCtx {
+                    galley,
+                    response_rect,
+                    match_start,
+                    match_end,
+                    start_row,
+                    end_row,
+                    color,
+                },
+            );
+        }
+    }
+
+    fn paint_match(ui: &mut egui::Ui, ctx: &SearchMatchCtx) {
+        for row_idx in ctx.start_row..=ctx.end_row {
+            let Some(placed_row) = ctx.galley.rows.get(row_idx) else {
+                continue;
+            };
+            let row_rect = placed_row.rect();
+            let (left_x, right_x) = if row_idx == ctx.start_row {
+                let pos_start = ctx.galley.pos_from_cursor(ctx.match_start);
+                (
+                    pos_start.min.x.max(0.0),
+                    if ctx.start_row == ctx.end_row {
+                        pos_start.min.x
+                    } else {
+                        row_rect.right()
+                    },
+                )
+            } else if row_idx == ctx.end_row {
+                let pos_end = ctx.galley.pos_from_cursor(ctx.match_end);
+                (row_rect.left().max(0.0), pos_end.max.x.max(0.0))
             } else {
-                /* WHY: If the match wraps lines or is inverted, we at least draw a fallback rect */
-                let fallback_rect = egui::Rect::from_min_size(
-                    egui::pos2(
-                        response_rect.min.x + pos_start.min.x.max(0.0),
-                        response_rect.min.y + pos_start.min.y,
-                    ),
-                    egui::vec2(crate::shell::SEARCH_FALLBACK_RECT_WIDTH, pos_start.height()),
-                );
-                ui.painter().rect_filled(fallback_rect, 2.0, color);
+                (row_rect.left().max(0.0), row_rect.right())
+            };
+
+            /* WHY: For single-row matches, use start/end cursor positions directly. */
+            let right_x = if ctx.start_row == ctx.end_row {
+                let pos_end = ctx.galley.pos_from_cursor(ctx.match_end);
+                pos_end.max.x.max(0.0)
+            } else {
+                right_x
+            };
+
+            let rect = egui::Rect::from_min_max(
+                egui::pos2(
+                    ctx.response_rect.min.x + left_x,
+                    ctx.response_rect.min.y + row_rect.top(),
+                ),
+                egui::pos2(
+                    ctx.response_rect.min.x + right_x,
+                    ctx.response_rect.min.y + row_rect.bottom(),
+                ),
+            );
+            if rect.is_positive() {
+                ui.painter().rect_filled(rect, 2.0, ctx.color);
             }
         }
     }
+}
+
+struct SearchMatchCtx<'a> {
+    galley: &'a std::sync::Arc<egui::Galley>,
+    response_rect: &'a egui::Rect,
+    match_start: egui::text::CCursor,
+    match_end: egui::text::CCursor,
+    start_row: usize,
+    end_row: usize,
+    color: egui::Color32,
 }

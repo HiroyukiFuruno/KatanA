@@ -185,7 +185,8 @@ impl IconsSyncOps {
         &[
             "navigation/chevron_down.svg", "navigation/chevron_left.svg", "navigation/chevron_right.svg",
             "navigation/triangle_down.svg", "navigation/triangle_left.svg", "navigation/triangle_right.svg",
-            "view/pan_down.svg", "view/pan_right.svg", "ui/expand_all.svg", "ui/collapse_all.svg",
+            "navigation/arrow_down.svg", "navigation/arrow_left.svg", "navigation/arrow_right.svg", "navigation/arrow_up.svg",
+            "view/pan_down.svg", "view/pan_right.svg", "view/pan_left.svg", "view/pan_up.svg", "ui/expand_all.svg", "ui/collapse_all.svg",
             "ui/close.svg", "ui/remove.svg", "ui/copy.svg", "system/history.svg", "system/hourglass.svg",
             "system/recent.svg", "system/github.svg", "layout/swap_horizontal.svg",
             "layout/swap_vertical.svg", "files/explorer.svg", "system/bug.svg",
