@@ -23,14 +23,20 @@ impl TreeLogicOps {
                     }
                 }
                 katana_core::workspace::TreeEntry::Directory { path, children } => {
+                    /* WHY: Dot-prefixed directories (e.g. .git, .agent, .github) are always
+                    excluded from the explorer filter, regardless of whether use_regex is on or
+                    not. The filter is a user-facing search aid – hidden infrastructure
+                    directories should never surface via a plain text match. */
+                    let dir_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                    if dir_name.starts_with('.') {
+                        continue;
+                    }
+
                     let rel =
                         crate::shell_logic::ShellLogicOps::relative_full_path(path, Some(ws_root));
 
-                    /* WHY: Hidden directories (e.g., .git) are included in the search if they match
-                    the regex or contain any matching children. Regular filtering for hidden
-                    folders when SEARCH IS OFF is handled in the non-filtered tree rendering. */
-                    let is_match = regex.is_match(&rel);
                     /* WHY: Match the directory itself based on the regex and negation state. */
+                    let is_match = regex.is_match(&rel);
                     let should_show_self = if is_negated { !is_match } else { is_match };
 
                     /* WHY: Recursively check if any children are visible. */

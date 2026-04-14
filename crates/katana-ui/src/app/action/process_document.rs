@@ -105,7 +105,6 @@ impl KatanaApp {
             self.state.layout.show_search_modal = false;
         }
         self.state.scroll.scroll_to_line = Some(line);
-        self.state.scroll.preview_search_scroll_pending = true;
     }
 
     pub(super) fn handle_action_open_multiple(&mut self, paths: Vec<std::path::PathBuf>) {

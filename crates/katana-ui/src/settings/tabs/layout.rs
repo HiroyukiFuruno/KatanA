@@ -12,6 +12,42 @@ impl LayoutTabOps {
         Self::render_split_direction_selector(ui, state);
         ui.add_space(LAYOUT_SELECTOR_SPACING);
         Self::render_pane_order_selector(ui, state);
+        ui.add_space(SECTION_SPACING);
+        Self::render_accordion_vertical_line_toggle(ui, state);
+    }
+
+    pub(crate) fn render_accordion_vertical_line_toggle(
+        ui: &mut egui::Ui,
+        state: &mut crate::app_state::AppState,
+    ) {
+        let mut enabled = state
+            .config
+            .settings
+            .settings()
+            .layout
+            .accordion_vertical_line;
+        if ui
+            .add(
+                crate::widgets::LabeledToggle::new(
+                    &crate::i18n::I18nOps::get()
+                        .settings
+                        .layout
+                        .accordion_vertical_line,
+                    &mut enabled,
+                )
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+            )
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .layout
+                .accordion_vertical_line = enabled;
+            let _ = state.config.try_save_settings();
+        }
     }
 
     pub(crate) fn render_toc_toggle(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {

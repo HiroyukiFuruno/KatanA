@@ -40,7 +40,7 @@ impl SectionLogicOps {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         global_line_offset: usize,
         search_query: Option<String>,
-        search_scroll_pending: bool,
+        search_active_index: Option<usize>,
         is_slideshow: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         super::section_show::show_section(
@@ -58,7 +58,7 @@ impl SectionLogicOps {
             hovered_lines,
             global_line_offset,
             search_query,
-            search_scroll_pending,
+            search_active_index,
             is_slideshow,
         )
     }
@@ -78,7 +78,7 @@ impl SectionLogicOps {
         active_editor_line: Option<usize>,
         mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
-        search_scroll_pending: bool,
+        search_active_index: Option<usize>,
         is_slideshow: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         let mut request: Option<DownloadRequest> = None;
@@ -87,6 +87,10 @@ impl SectionLogicOps {
         let mut global_task_list_idx = 0;
         let mut global_line_offset = 0;
 
+        ui.ctx().data_mut(|d| {
+            d.insert_temp(egui::Id::new("katana_preview_search_counter"), 0usize);
+        });
+
         for (i, section) in sections.iter().enumerate() {
             ui.push_id(format!("section_{i}"), |ui| {
                 let mut offset = 0;
@@ -94,6 +98,7 @@ impl SectionLogicOps {
                     offset = current_heading_offset;
                     current_heading_offset +=
                         katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(md)
+                            .0
                             .len();
                     md.chars().filter(|c| *c == '\n').count()
                 } else {
@@ -158,7 +163,7 @@ impl SectionLogicOps {
                             hovered_lines.as_deref_mut(),
                             global_line_offset,
                             search_query.clone(),
-                            search_scroll_pending,
+                            search_active_index,
                             is_slideshow,
                         );
                         if let Some(lifecycle) = section_lifecycle.as_mut()

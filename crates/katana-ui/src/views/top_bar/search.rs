@@ -51,12 +51,15 @@ impl DocSearchBar {
             search_state.doc_search_open = false;
         }
 
-        Self::render_nav_buttons(ui, action, button_size);
+        let has_matches = !search_state.doc_search_matches.is_empty();
+        Self::render_nav_buttons(ui, action, button_size, has_matches);
         Self::render_match_count(ui, search_state);
 
+        /* WHY: Use explicit id_source to prevent collision with other active search bars */
         let response = crate::widgets::SearchBar::new(&mut search_state.doc_search)
             .desired_width(DOC_SEARCH_INPUT_WIDTH)
             .hint_text(crate::i18n::I18nOps::get().search.doc_query_hint.clone())
+            .id_source("doc_search_bar")
             .show(ui);
 
         SearchLogic::handle_input_events(ui, &response, action, search_state);
@@ -66,50 +69,69 @@ impl DocSearchBar {
         ui: &mut egui::Ui,
         action: &mut Option<AppAction>,
         button_size: egui::Vec2,
+        has_matches: bool,
     ) {
-        if ui
-            .add(
-                crate::Icon::PanDown
-                    .button(ui, crate::icon::IconSize::Medium)
-                    .min_size(button_size),
-            )
-            .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
-            .clicked()
-        {
-            *action = Some(AppAction::DocSearchNext);
-        }
+        ui.add_enabled_ui(has_matches, |ui| {
+            if ui
+                .add(
+                    crate::Icon::ArrowDown
+                        .button(ui, crate::icon::IconSize::Medium)
+                        .min_size(button_size),
+                )
+                .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_next.clone())
+                .clicked()
+            {
+                *action = Some(AppAction::DocSearchNext);
+            }
 
-        if ui
-            .add(
-                crate::Icon::PanUp
-                    .button(ui, crate::icon::IconSize::Medium)
-                    .min_size(button_size),
-            )
-            .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())
-            .clicked()
-        {
-            *action = Some(AppAction::DocSearchPrev);
-        }
+            if ui
+                .add(
+                    crate::Icon::ArrowUp
+                        .button(ui, crate::icon::IconSize::Medium)
+                        .min_size(button_size),
+                )
+                .on_hover_text(crate::i18n::I18nOps::get().search.doc_search_prev.clone())
+                .clicked()
+            {
+                *action = Some(AppAction::DocSearchPrev);
+            }
+        });
     }
 
     fn render_match_count(ui: &mut egui::Ui, search_state: &crate::state::search::SearchState) {
         let match_count = search_state.doc_search_matches.len();
-        if match_count > 0 {
-            ui.label(crate::i18n::I18nOps::tf(
-                &crate::i18n::I18nOps::get().search.doc_search_count,
-                &[
-                    (
-                        "index",
-                        &format!("{}", search_state.doc_search_active_index + 1),
-                    ),
-                    ("total", &format!("{}", match_count)),
-                ],
-            ));
-        } else if !search_state.doc_search.query.is_empty() {
-            ui.label(crate::i18n::I18nOps::tf(
-                &crate::i18n::I18nOps::get().search.doc_search_count,
-                &[("index", "0"), ("total", "0")],
-            ));
-        }
+
+        const DOC_SEARCH_COUNT_WIDTH: f32 = 150.0;
+
+        ui.allocate_ui_with_layout(
+            egui::vec2(DOC_SEARCH_COUNT_WIDTH, ui.spacing().interact_size.y),
+            egui::Layout::left_to_right(egui::Align::Center),
+            |ui| {
+                ui.set_min_width(DOC_SEARCH_COUNT_WIDTH);
+                if match_count > 0 {
+                    ui.label(crate::i18n::I18nOps::tf(
+                        &crate::i18n::I18nOps::get().search.doc_search_count,
+                        &[
+                            (
+                                "index",
+                                &format!("{}", search_state.doc_search_active_index + 1),
+                            ),
+                            ("total", &format!("{}", match_count)),
+                        ],
+                    ));
+                } else {
+                    let mut text = egui::RichText::new(
+                        crate::i18n::I18nOps::get()
+                            .search
+                            .doc_search_no_results
+                            .clone(),
+                    );
+                    if !search_state.doc_search.query.is_empty() {
+                        text = text.color(ui.visuals().error_fg_color);
+                    }
+                    ui.label(text);
+                }
+            },
+        );
     }
 }

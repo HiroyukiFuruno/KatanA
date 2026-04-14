@@ -65,6 +65,12 @@ impl ThemeTabOps {
             .theme
             .custom_color_overrides
             .is_some();
+        let show_line = state
+            .config
+            .settings
+            .settings()
+            .layout
+            .accordion_vertical_line;
         crate::widgets::Accordion::new(
             "custom_color_overrides_accordion",
             egui::RichText::new(
@@ -79,6 +85,7 @@ impl ThemeTabOps {
             |ui| super::theme_editor::render_custom_color_editor(ui, state),
         )
         .default_open(is_open)
+        .show_vertical_line(show_line)
         .show(ui);
     }
 

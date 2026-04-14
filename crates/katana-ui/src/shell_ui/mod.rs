@@ -33,7 +33,7 @@ pub(crate) const SEARCH_MODAL_HEIGHT: f32 = 400.0;
 pub(crate) const TOC_PANEL_DEFAULT_WIDTH: f32 = 200.0;
 pub(crate) const TOC_PANEL_MARGIN: f32 = 8.0;
 pub(crate) const TOC_HEADING_VISIBILITY_THRESHOLD: f32 = 40.0;
-pub(crate) const TOC_INDENT_PER_LEVEL: f32 = 12.0;
+pub(crate) const TOC_INDENT_PER_LEVEL: f32 = 18.0;
 pub(crate) const LIGHT_MODE_ICON_BG: u8 = 235;
 pub(crate) const LIGHT_MODE_ICON_ACTIVE_BG: u8 = 200;
 
@@ -47,6 +47,7 @@ pub(crate) struct TreeRenderContext<'a, 'b> {
     pub is_flat_view: bool,
     pub ws_root: Option<&'b std::path::Path>,
     pub tab_groups: Option<&'b [crate::state::document::TabGroup]>,
+    pub show_vertical_line: bool,
 }
 
 use crate::shell::KatanaApp;

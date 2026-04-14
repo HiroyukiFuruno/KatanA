@@ -112,49 +112,56 @@ impl<'a> SettingsWindow<'a> {
                     let title = super::settings_helpers::active_tab_title(&state.config.active_settings_tab);
                     SettingsOps::section_header(ui, &title);
 
-                    egui::ScrollArea::vertical()
-                        .id_salt("settings_form_scroll")
-                        .auto_shrink(false)
-                        .show(ui, |ui| {
-                            egui::Frame::NONE
-                                .inner_margin(INNER_MARGIN)
-                                .show(ui, |ui| match state.config.active_settings_tab {
-                                    SettingsTab::Theme => {
-                                        crate::settings::tabs::ThemeTabOps::render_theme_tab(ui, state)
-                                    }
-                                    SettingsTab::Icons => {
-                                        crate::settings::tabs::IconsTabOps::render_icons_tab(ui, state)
-                                    }
-                                    SettingsTab::Font => {
-                                        crate::settings::tabs::FontTabOps::render_font_tab(ui, state)
-                                    }
-                                    SettingsTab::Layout => {
-                                        crate::settings::tabs::LayoutTabOps::render_layout_tab(ui, state);
-                                    }
-                                    SettingsTab::Workspace => {
-                                        crate::settings::tabs::WorkspaceTabOps::render_workspace_tab(
-                                            ui, state,
-                                        );
-                                    }
-                                    SettingsTab::Updates => {
-                                        triggered_action =
-                                            crate::settings::tabs::UpdatesTabOps::render_updates_tab(
-                                                ui, state,
-                                            );
-                                    }
-                                    SettingsTab::Behavior => {
-                                        triggered_action =
-                                            crate::settings::tabs::BehaviorTabOps::render_behavior_tab(
-                                                ui, state,
-                                            );
-                                    }
-                                    SettingsTab::Shortcuts => {
-                                        crate::settings::tabs::ShortcutsTabOps::render_shortcuts_tab(
-                                            ui, state,
-                                        );
-                                    }
+                    match state.config.active_settings_tab {
+                        SettingsTab::Icons => {
+                            crate::settings::tabs::IconsTabOps::render_icons_tab(ui, state)
+                        }
+                        _ => {
+                            egui::ScrollArea::vertical()
+                                .id_salt("settings_form_scroll")
+                                .auto_shrink(false)
+                                .show(ui, |ui| {
+                                    egui::Frame::NONE
+                                        .inner_margin(INNER_MARGIN)
+                                        .show(ui, |ui| match state.config.active_settings_tab {
+                                            SettingsTab::Theme => {
+                                                crate::settings::tabs::ThemeTabOps::render_theme_tab(ui, state)
+                                            }
+                                            SettingsTab::Font => {
+                                                crate::settings::tabs::FontTabOps::render_font_tab(ui, state)
+                                            }
+                                            SettingsTab::Layout => {
+                                                crate::settings::tabs::LayoutTabOps::render_layout_tab(
+                                                    ui, state,
+                                                );
+                                            }
+                                            SettingsTab::Workspace => {
+                                                crate::settings::tabs::WorkspaceTabOps::render_workspace_tab(
+                                                    ui, state,
+                                                );
+                                            }
+                                            SettingsTab::Updates => {
+                                                triggered_action =
+                                                    crate::settings::tabs::UpdatesTabOps::render_updates_tab(
+                                                        ui, state,
+                                                    );
+                                            }
+                                            SettingsTab::Behavior => {
+                                                triggered_action =
+                                                    crate::settings::tabs::BehaviorTabOps::render_behavior_tab(
+                                                        ui, state,
+                                                    );
+                                            }
+                                            SettingsTab::Shortcuts => {
+                                                crate::settings::tabs::ShortcutsTabOps::render_shortcuts_tab(
+                                                    ui, state,
+                                                );
+                                            }
+                                            _ => {}
+                                        })
                                 });
-                        });
+                        }
+                    }
                 });
 
                 if state.config.settings_tree_force_open.is_some() {

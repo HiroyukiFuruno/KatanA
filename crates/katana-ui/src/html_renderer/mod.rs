@@ -116,17 +116,39 @@ pub(super) fn collect_text(nodes: &[HtmlNode]) -> String {
     s
 }
 
+const UTF8_MAX_LEN: usize = 4;
+fn encode_unicode_uri(url: &str) -> String {
+    let mut out = String::with_capacity(url.len());
+    for c in url.chars() {
+        if c.is_ascii() {
+            if c == ' ' {
+                out.push_str("%20");
+            } else {
+                out.push(c);
+            }
+        } else {
+            let mut buf = [0; UTF8_MAX_LEN];
+            for &b in c.encode_utf8(&mut buf).as_bytes() {
+                use std::fmt::Write;
+                let _ = write!(&mut out, "%{:02X}", b);
+            }
+        }
+    }
+    out
+}
+
 fn ensure_svg_extension(url: &str) -> String {
-    let (path, suffix) = split_url_suffix(url);
+    let encoded = encode_unicode_uri(url);
+    let (path, suffix) = split_url_suffix(&encoded);
     if path.ends_with(".svg") {
-        return url.to_string();
+        return encoded;
     }
     for host in svg_badge_hosts() {
-        if url.contains(host) {
+        if encoded.contains(host) {
             return format!("{path}.svg{suffix}");
         }
     }
-    url.to_string()
+    encoded
 }
 
 fn split_url_suffix(url: &str) -> (&str, &str) {

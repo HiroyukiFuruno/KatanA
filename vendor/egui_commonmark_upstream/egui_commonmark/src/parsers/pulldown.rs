@@ -85,7 +85,6 @@ static URL_RE: OnceLock<regex::Regex> = OnceLock::new();
 pub(crate) struct CommonMarkViewerInternal<'a> {
     curr_table: usize,
     curr_heading: usize,
-    scroll_to_heading_index: Option<usize>,
     heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     block_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     text_style: Style,
@@ -143,12 +142,13 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     pub search_query: Option<regex::Regex>,
     /// When true, the first rendered search highlight will trigger scroll_to_me.
     pub search_scroll_pending: bool,
+    pub search_active_match_index: Option<usize>,
+    pub search_match_counter: usize,
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        scroll_to_heading_index: Option<usize>,
         heading_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         block_anchors: Option<&'a mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
         heading_offset: usize,
@@ -190,7 +190,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
         Self {
             curr_table: 0,
             curr_heading: heading_offset,
-            scroll_to_heading_index,
             heading_anchors,
             block_anchors,
             text_style: Style::default(),
@@ -226,6 +225,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
             custom_list_item_highlight_fn,
             search_query: compiled_regex,
             search_scroll_pending: false,
+            search_active_match_index: None,
+            search_match_counter: 0,
         }
     }
 }
@@ -2087,18 +2088,40 @@ impl<'a> CommonMarkViewerInternal<'a> {
         max_width: f32,
     ) {
         if self.is_in_html_block {
+            /* WHY: Count search matches inside HTML blocks so the global counter */
+            /* WHY: stays in sync with the editor's char-index-based match list. */
+            if let Some(regex) = &self.search_query {
+                self.search_match_counter += regex.find_iter(&text).count();
+            }
             self.html_block.push_str(&text);
             return;
         }
 
         if let Some(image) = &mut self.image {
             self.after_inline_widget = false;
+            /* WHY: Count search matches inside image alt text for counter sync. */
+            if let Some(regex) = &self.search_query {
+                self.search_match_counter += regex.find_iter(&text).count();
+            }
             image.alt_text.push(self.text_style.to_richtext(ui, &text));
         } else if let Some(block) = &mut self.code_block {
             self.after_inline_widget = false;
+            /* WHY: Count search matches inside code blocks so the global counter */
+            /* WHY: stays in sync with the editor's char-index-based match list. */
+            /* WHY: Code blocks don't get visual highlighting but the counter must */
+            /* WHY: increment to keep subsequent matches correctly numbered. */
+            if let Some(regex) = &self.search_query {
+                self.search_match_counter += regex.find_iter(&text).count();
+            }
             block.content.push_str(&text);
         } else if let Some(link) = &mut self.link {
             self.after_inline_widget = false;
+            /* WHY: Count search matches inside link text for counter sync. */
+            /* WHY: Note: link destinations (URLs) are NOT counted since pulldown_cmark */
+            /* WHY: doesn't emit them as text events, creating a known small discrepancy. */
+            if let Some(regex) = &self.search_query {
+                self.search_match_counter += regex.find_iter(&text).count();
+            }
             link.text.push(self.text_style.to_richtext(ui, &text));
         } else {
             for segment in split_inline_text_and_emoji(&text) {
@@ -2168,11 +2191,27 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 if mat.start() > last_end {
                     self.push_inline_text(&text[last_end..mat.start()], ui, max_width);
                 }
-                let prev_highlight = self.text_style.highlight;
-                self.text_style.highlight = true;
-                self.push_inline_text(&text[mat.start()..mat.end()], ui, max_width);
-                self.text_style.highlight = prev_highlight;
-                if self.search_scroll_pending {
+                let is_active = self
+                    .search_active_match_index
+                    .map(|active| active == self.search_match_counter)
+                    .unwrap_or(false);
+                self.search_match_counter += 1;
+
+                if is_active {
+                    /* WHY: Active match uses orange to visually stand out from other yellow matches. */
+                    let active_highlight = self
+                        .text_style
+                        .to_richtext(ui, &text[mat.start()..mat.end()])
+                        .background_color(egui::Color32::from_rgba_unmultiplied(255, 160, 0, 100));
+                    self.pending_inline.push(active_highlight);
+                } else {
+                    let prev_highlight = self.text_style.highlight;
+                    self.text_style.highlight = true;
+                    self.push_inline_text(&text[mat.start()..mat.end()], ui, max_width);
+                    self.text_style.highlight = prev_highlight;
+                }
+
+                if is_active && self.search_scroll_pending {
                     self.flush_pending_inline(ui, max_width);
                     ui.scroll_to_cursor(Some(egui::Align::Center));
                     self.search_scroll_pending = false;
@@ -2199,11 +2238,17 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 // Whether this is okay in all scenarios is a different question.
                 newline(ui);
 
-                if let Some(target_idx) = self.scroll_to_heading_index {
-                    if target_idx == self.curr_heading {
-                        ui.scroll_to_cursor(Some(egui::Align::TOP));
-                    }
+                // Update the starting Y coordinate of the block to reflect the position AFTER the newline.
+                // This ensures heading anchors correctly align with the actual text, preventing TOC
+                // scroll sync from capturing the preceding whitespace margin.
+                if let Some(state) = self.block_states.last_mut() {
+                    state.0 = ui.next_widget_position().y;
                 }
+
+                /* WHY: TOC jump is now driven externally by content.rs computing a   */
+                /* WHY: precise scroll offset from heading_anchors. scroll_to_cursor  */
+                /* WHY: and scroll_to_rect here were removed because they race with    */
+                /* WHY: the externally applied vertical_scroll_offset.                */
 
                 self.text_style.heading = Some(match level {
                     HeadingLevel::H1 => 0,
@@ -2540,7 +2585,29 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
             }
 
-            let response = block.end(ui, cache, options, max_width);
+            let mut search_highlights = Vec::new();
+            let mut active_highlight = None;
+
+            if let Some(re) = self.search_query.as_ref() {
+                for mat in re.find_iter(&block.content) {
+                    if Some(self.search_match_counter) == self.search_active_match_index {
+                        active_highlight = Some(mat.range());
+                    }
+                    search_highlights.push(mat.range());
+                    self.search_match_counter += 1;
+                }
+            }
+
+            let response = block.end(
+                ui,
+                cache,
+                options,
+                max_width,
+                self.search_query.as_ref().map(|re| re.as_str()),
+                &search_highlights,
+                active_highlight,
+                &mut self.search_scroll_pending,
+            );
             if !self.inside_blockquote {
                 self.line.try_insert_end(ui);
             }

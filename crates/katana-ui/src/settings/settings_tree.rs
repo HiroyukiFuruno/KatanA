@@ -46,6 +46,14 @@ pub(super) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
     )
     .default_open(true)
     .open(state.config.settings_tree_force_open)
+    .show_vertical_line(
+        state
+            .config
+            .settings
+            .settings()
+            .layout
+            .accordion_vertical_line,
+    )
     .show(ui);
 
     ui.add_space(SETTINGS_GROUP_SPACING);
@@ -91,6 +99,14 @@ pub(super) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
     )
     .default_open(true)
     .open(state.config.settings_tree_force_open)
+    .show_vertical_line(
+        state
+            .config
+            .settings
+            .settings()
+            .layout
+            .accordion_vertical_line,
+    )
     .show(ui);
 }
 

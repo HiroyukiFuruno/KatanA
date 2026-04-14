@@ -31,7 +31,7 @@ impl PreviewPane {
                         .max_rect(child_rect)
                         .layout(egui::Layout::top_down(egui::Align::Min)),
                     |ui| {
-                        let (req, act) = self.render_sections(ui, None, None, None, false, false);
+                        let (req, act) = self.render_sections(ui, None, None, None, None, false);
                         request = req;
                         actions = act;
                     },
@@ -47,7 +47,7 @@ impl PreviewPane {
         active_editor_line: Option<usize>,
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
-        search_scroll_pending: bool,
+        search_active_index: Option<usize>,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         self.repaint_ctx = Some(ui.ctx().clone());
         self.poll_renders(ui.ctx());
@@ -56,7 +56,7 @@ impl PreviewPane {
             active_editor_line,
             hovered_lines,
             search_query,
-            search_scroll_pending,
+            search_active_index,
             false,
         );
         self.render_fullscreen_modal(ui.ctx());
@@ -69,7 +69,7 @@ impl PreviewPane {
         active_editor_line: Option<usize>,
         mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
-        search_scroll_pending: bool,
+        search_active_index: Option<usize>,
         is_slideshow: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         self.visible_rect = Some(ui.clip_rect());
@@ -95,14 +95,16 @@ impl PreviewPane {
             active_editor_line,
             hovered_lines.as_deref_mut(),
             search_query,
-            search_scroll_pending,
+            search_active_index,
             is_slideshow,
         );
 
         if let Some(ref mut h) = hovered_lines {
-            for (range, rect) in &self.block_anchors {
-                if ui.rect_contains_pointer(*rect) {
-                    h.push(range.clone());
+            for item in &self.anchor_map {
+                if let Some(rect) = item.rect
+                    && ui.rect_contains_pointer(rect)
+                {
+                    h.push(item.line_span.clone());
                 }
             }
         }
@@ -111,6 +113,12 @@ impl PreviewPane {
 
         let ctx = ui.ctx().clone();
         self.handle_fullscreen_request(fullscreen_request, Some(&ctx));
+
+        crate::preview_pane::types::DocumentAnchorMapItem::sync_rects(
+            &mut self.anchor_map,
+            &self.heading_anchors,
+            &self.block_anchors,
+        );
 
         (request, actions)
     }

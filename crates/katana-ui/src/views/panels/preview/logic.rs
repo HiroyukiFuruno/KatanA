@@ -19,43 +19,41 @@ impl PreviewLogicOps {
     pub fn compute_forced_offset(
         scroll_sync: bool,
         scroll: &mut crate::app_state::ScrollState,
-        preview: &crate::preview_pane::PreviewPane,
-        row_height: f32,
+        _preview: &crate::preview_pane::PreviewPane,
+        _row_height: f32,
+        _inner_height: f32,
     ) -> Option<f32> {
-        let consuming_editor =
-            scroll_sync && scroll.source == crate::app_state::ScrollSource::Editor;
-        if consuming_editor {
-            return Some(scroll.mapper.logical_to_preview(scroll.logical_position));
-        }
-
-        let target_line = scroll.scroll_to_line?;
-        if scroll.preview_search_scroll_pending {
+        if !scroll_sync {
             return None;
         }
-
-        if scroll_sync {
-            let editor_y = target_line as f32 * row_height;
-            scroll.logical_position = scroll.mapper.editor_to_logical(editor_y);
-            return Some(scroll.mapper.logical_to_preview(scroll.logical_position));
+        let consuming_editor = scroll_sync
+            && scroll.source == crate::app_state::ScrollSource::Editor
+            && scroll.scroll_to_line.is_none();
+        if consuming_editor {
+            let raw_offset = scroll.mapper.logical_to_preview(scroll.logical_position);
+            return Some(scroll.mapper.snap_to_heading_preview(raw_offset));
         }
 
-        for (span, rect) in &preview.heading_anchors {
-            if span.contains(&target_line) || span.start >= target_line {
-                return Some((rect.min.y - preview.content_top_y).max(0.0));
-            }
-        }
+        None
+    }
 
-        for (span, rect) in &preview.block_anchors {
-            if span.contains(&target_line) || span.start >= target_line {
-                return Some((rect.min.y - preview.content_top_y).max(0.0));
-            }
-        }
-
-        if let Some((_, rect)) = preview.heading_anchors.last() {
-            Some((rect.min.y - preview.content_top_y).max(0.0))
-        } else {
-            Some(0.0)
-        }
+    /// Compute the precise preview ScrollArea vertical offset to jump to a heading.
+    ///
+    /// Uses the previous frame's `heading_anchors` (screen-space rects) and
+    /// `content_top_y` to derive the correct scroll offset. Returns `None` when
+    /// anchors are not yet available (first render or document just changed).
+    pub fn heading_scroll_offset(
+        heading_index: usize,
+        anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
+        content_top_y: f32,
+    ) -> Option<f32> {
+        let item = anchor_map.iter().find(|a| a.index == Some(heading_index))?;
+        let rect = item.rect?;
+        /* WHY: rect.min.y is screen-space. Subtracting content_top_y converts it   */
+        /* WHY: to the ScrollArea's virtual-space offset (scroll_offset = 0 when at  */
+        /* WHY: the very top of the content, before any Frame/padding offsets).      */
+        /* WHY: We clamp to 0.0 to avoid negative offsets on the first heading.     */
+        Some((rect.min.y - content_top_y).max(0.0))
     }
 
     pub fn update_scroll_sync(
@@ -68,16 +66,14 @@ impl PreviewLogicOps {
     ) {
         let max_scroll = (content_height - inner_height).max(0.0);
         scroll.preview_max = max_scroll;
+        scroll.preview_y = offset_y;
 
-        let mut computed_anchors =
-            Vec::with_capacity(preview.heading_anchors.len() + preview.block_anchors.len());
-        for (span, rect) in &preview.heading_anchors {
-            let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-            computed_anchors.push((span.clone(), p_y));
-        }
-        for (span, rect) in &preview.block_anchors {
-            let p_y = (rect.min.y - preview.content_top_y).max(0.0);
-            computed_anchors.push((span.clone(), p_y));
+        let mut computed_anchors = Vec::with_capacity(preview.anchor_map.len());
+        for item in &preview.anchor_map {
+            if let Some(rect) = item.rect {
+                let p_y = (rect.min.y - preview.content_top_y).max(0.0);
+                computed_anchors.push((item.line_span.clone(), p_y));
+            }
         }
 
         scroll.mapper = crate::state::scroll_sync::ScrollMapper::build(

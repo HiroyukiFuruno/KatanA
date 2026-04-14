@@ -294,8 +294,15 @@ impl CodeBlock {
         cache: &mut CommonMarkCache,
         options: &CommonMarkOptions,
         max_width: f32,
+        search_query_str: Option<&str>,
+        search_highlights: &[std::ops::Range<usize>],
+        active_highlight: Option<std::ops::Range<usize>>,
+        search_scroll_pending: &mut bool,
     ) -> egui::Response {
-        ui.scope(|ui| {
+        // We push an id to force the TextEdit layouter to re-evaluate if the active index inside this block changes.
+        // It guarantees that selection state jumps correctly when navigating inside the block.
+        let active_match_id = active_highlight.as_ref().map(|r| r.start);
+        ui.push_id(active_match_id, |ui| {
             Self::pre_syntax_highlighting(cache, options, ui);
 
             let mut layout = |ui: &Ui, string: &dyn TextBuffer, wrap_width: f32| {
@@ -305,17 +312,114 @@ impl CodeBlock {
                     plain_highlighting(ui, string.as_str())
                 };
 
+                // Add regular highlights
+                for range in search_highlights {
+                    // Strong yellow for regular highlights
+                    let color = egui::Color32::from_rgba_unmultiplied(255, 255, 0, 100);
+
+                    let mut i = 0;
+                    while i < job.sections.len() {
+                        let section = &job.sections[i];
+                        if section.byte_range.end <= range.start || section.byte_range.start >= range.end {
+                            i += 1;
+                            continue;
+                        }
+
+                        let mut replace_with = Vec::new();
+
+                        if section.byte_range.start < range.start {
+                            let mut p1 = section.clone();
+                            p1.byte_range.end = range.start;
+                            replace_with.push(p1);
+                        }
+
+                        let mut p2 = section.clone();
+                        p2.byte_range.start = p2.byte_range.start.max(range.start);
+                        p2.byte_range.end = p2.byte_range.end.min(range.end);
+                        p2.format.background = color;
+                        replace_with.push(p2);
+
+                        if section.byte_range.end > range.end {
+                            let mut p3 = section.clone();
+                            p3.byte_range.start = range.end;
+                            replace_with.push(p3);
+                        }
+
+                        job.sections.splice(i..i+1, replace_with);
+                        i += 1; 
+                    }
+                }
+
+                // Overlay active highlight
+                if let Some(range) = &active_highlight {
+                    // Strong orange for active highlight
+                    let color = egui::Color32::from_rgba_unmultiplied(255, 160, 0, 150);
+
+                    let mut i = 0;
+                    while i < job.sections.len() {
+                        let section = &job.sections[i];
+                        if section.byte_range.end <= range.start || section.byte_range.start >= range.end {
+                            i += 1;
+                            continue;
+                        }
+
+                        let mut replace_with = Vec::new();
+
+                        if section.byte_range.start < range.start {
+                            let mut p1 = section.clone();
+                            p1.byte_range.end = range.start;
+                            replace_with.push(p1);
+                        }
+
+                        let mut p2 = section.clone();
+                        p2.byte_range.start = p2.byte_range.start.max(range.start);
+                        p2.byte_range.end = p2.byte_range.end.min(range.end);
+                        p2.format.background = color;
+                        replace_with.push(p2);
+
+                        if section.byte_range.end > range.end {
+                            let mut p3 = section.clone();
+                            p3.byte_range.start = range.end;
+                            replace_with.push(p3);
+                        }
+
+                        job.sections.splice(i..i+1, replace_with);
+                        i += 1; 
+                    }
+                }
+
                 job.wrap.max_width = wrap_width;
                 ui.fonts_mut(|f| f.layout_job(job))
             };
 
-            crate::elements::code_block(
+            let id_source = (search_query_str, active_match_id);
+
+            let (response, galley) = crate::elements::code_block(
                 ui,
                 max_width,
                 &self.content,
                 options.show_code_copy_button,
                 &mut layout,
-            )
+                id_source,
+            );
+
+            if let Some(range) = &active_highlight {
+                if *search_scroll_pending {
+                    // Calculate exact rect from galley
+                    let cursor_start = egui::text::CCursor::new(range.start);
+                    let cursor_end = egui::text::CCursor::new(range.end);
+                    let pos_start = galley.pos_from_cursor(cursor_start).min;
+                    let pos_end = galley.pos_from_cursor(cursor_end).max;
+                    let jump_rect = egui::Rect::from_min_max(
+                        response.rect.min + pos_start.to_vec2(),
+                        response.rect.min + pos_end.to_vec2(),
+                    );
+                    ui.scroll_to_rect(jump_rect, Some(egui::Align::Center));
+                    *search_scroll_pending = false;
+                }
+            }
+
+            response
         })
         .inner
     }

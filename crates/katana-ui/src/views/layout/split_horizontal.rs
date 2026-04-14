@@ -82,6 +82,7 @@ impl<'a> HorizontalSplit<'a> {
                         &mut app.pending_action,
                         scroll_sync,
                         Some(app.state.search.doc_search.query.clone()),
+                        Some(app.state.search.doc_search_active_index),
                     )
                     .show(ui);
                 }

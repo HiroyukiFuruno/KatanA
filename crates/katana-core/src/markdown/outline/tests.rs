@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn test_extract_outline_with_line_breaks() {
     let md = "Heading\nwith softbreak\n=======\n\nHeading  \nwith linebreak\n-------";
-    let outline = MarkdownOutlineOps::extract_outline(md);
+    let outline = MarkdownOutlineOps::extract_outline(md).0;
     assert_eq!(outline.len(), 2);
     assert_eq!(outline[0].text, "Heading with softbreak");
     assert_eq!(outline[1].text, "Heading with linebreak");
@@ -18,7 +18,7 @@ Some text
 More text
 ### **Bold** and *italic*
 "#;
-    let outline = MarkdownOutlineOps::extract_outline(md);
+    let outline = MarkdownOutlineOps::extract_outline(md).0;
     assert_eq!(outline.len(), 3);
     assert_eq!(outline[0].text, "Heading with code");
     assert_eq!(outline[1].text, "Heading with link");
@@ -34,7 +34,7 @@ Some text.
 More text.
 ### Heading 3
 "#;
-    let outline = MarkdownOutlineOps::extract_outline(md);
+    let outline = MarkdownOutlineOps::extract_outline(md).0;
     assert_eq!(outline.len(), 3);
     assert_eq!(
         outline[0],
@@ -42,6 +42,8 @@ More text.
             level: 1,
             text: "Heading 1".to_string(),
             index: 0,
+            line_start: 1,
+            line_end: 1,
         }
     );
     assert_eq!(
@@ -50,6 +52,8 @@ More text.
             level: 2,
             text: "Heading 2".to_string(),
             index: 1,
+            line_start: 3,
+            line_end: 3,
         }
     );
     assert_eq!(
@@ -58,6 +62,8 @@ More text.
             level: 3,
             text: "Heading 3".to_string(),
             index: 2,
+            line_start: 5,
+            line_end: 5,
         }
     );
 }

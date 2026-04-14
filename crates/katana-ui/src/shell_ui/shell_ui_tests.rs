@@ -186,6 +186,7 @@ mod tests {
                         is_flat_view: false,
                         ws_root: None,
                         tab_groups: None,
+                        show_vertical_line: false,
                     };
                     crate::views::panels::explorer::file_entry::FileEntryNode::new(
                         &entry,

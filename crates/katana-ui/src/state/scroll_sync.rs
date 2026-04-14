@@ -42,6 +42,11 @@ pub const ECHO_PIXEL_EPSILON: f32 = 2.0;
 
 const DEGENERATE_EPSILON: f32 = 1e-4;
 
+/// Pixel distance within which a sync offset is snapped to the nearest heading anchor.
+/// Roughly one line of monospace text — if the interpolated position is within this
+/// distance of a heading, both panes should align their heading lines exactly.
+pub const HEADING_SNAP_THRESHOLD: f32 = 20.0;
+
 /// One entry in the piecewise-linear mapping between editor and preview pixel offsets.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MapPoint {
@@ -93,11 +98,22 @@ impl ScrollMapper {
             preview_y: 0.0,
         });
 
+        let editor_clamp = if editor_max > 0.0 {
+            editor_max
+        } else {
+            f32::MAX
+        };
+        let preview_clamp = if preview_max > 0.0 {
+            preview_max
+        } else {
+            f32::MAX
+        };
+
         for (span, p_y) in sorted_anchors {
             let editor_y = span.start as f32 * row_height;
             /* WHY: Clamp to avoid degenerate points outside the visible range. */
-            let editor_y = editor_y.min(editor_max.max(1.0));
-            let preview_y = p_y.max(0.0).min(preview_max.max(1.0));
+            let editor_y = editor_y.min(editor_clamp);
+            let preview_y = p_y.max(0.0).min(preview_clamp);
 
             /* WHY: Skip degenerate or non-monotonic segments (to maintain strict ascending order). */
             if let Some(last) = points.last()
@@ -113,42 +129,54 @@ impl ScrollMapper {
             });
         }
         /* WHY: EOF anchor — always present regardless of heading count. */
+        let mut eof_editor = editor_max.max(1.0);
+        let mut eof_preview = preview_max.max(1.0);
+        if let Some(last) = points.last() {
+            eof_editor = eof_editor.max(last.editor_y + 1.0);
+            eof_preview = eof_preview.max(last.preview_y + 1.0);
+        }
         points.push(MapPoint {
-            editor_y: editor_max.max(1.0),
-            preview_y: preview_max.max(1.0),
+            editor_y: eof_editor,
+            preview_y: eof_preview,
         });
         Self { points }
     }
 
-    /// Map an editor pixel offset to a logical position.
-    pub fn editor_to_logical(&self, editor_y: f32) -> LogicalPosition {
-        self.to_logical(editor_y, |p| p.editor_y)
-    }
+    #[rustfmt::skip]
+    pub fn editor_to_logical(&self, y: f32) -> LogicalPosition { self.to_logical(y, |p| p.editor_y) }
+    #[rustfmt::skip]
+    pub fn preview_to_logical(&self, y: f32) -> LogicalPosition { self.to_logical(y, |p| p.preview_y) }
+    #[rustfmt::skip]
+    pub fn logical_to_editor(&self, p: LogicalPosition) -> f32 { self.eval_logical_to_offset(p, |p| p.editor_y) }
+    #[rustfmt::skip]
+    pub fn logical_to_preview(&self, p: LogicalPosition) -> f32 { self.eval_logical_to_offset(p, |p| p.preview_y) }
+    #[rustfmt::skip]
+    pub fn snap_to_heading_editor(&self, y: f32) -> f32 { self.snap_to_nearest(y, |p| p.editor_y) }
+    #[rustfmt::skip]
+    pub fn snap_to_heading_preview(&self, y: f32) -> f32 { self.snap_to_nearest(y, |p| p.preview_y) }
 
-    /// Map a preview pixel offset to a logical position.
-    pub fn preview_to_logical(&self, preview_y: f32) -> LogicalPosition {
-        self.to_logical(preview_y, |p| p.preview_y)
-    }
-
-    /// Convert a logical position back to an editor pixel offset.
-    pub fn logical_to_editor(&self, pos: LogicalPosition) -> f32 {
-        self.eval_logical_to_offset(pos, |p| p.editor_y)
-    }
-
-    /// Convert a logical position back to a preview pixel offset.
-    pub fn logical_to_preview(&self, pos: LogicalPosition) -> f32 {
-        self.eval_logical_to_offset(pos, |p| p.preview_y)
+    fn snap_to_nearest(&self, offset: f32, get: impl Fn(&MapPoint) -> f32) -> f32 {
+        /* WHY: Skip origin (index 0) and EOF (last) — they are synthetic anchors, */
+        /* WHY: not real heading positions. Only snap to actual heading anchors.    */
+        let len = self.points.len();
+        if len <= 2 {
+            return offset;
+        }
+        for pt in &self.points[1..len - 1] {
+            let anchor = get(pt);
+            if (offset - anchor).abs() <= HEADING_SNAP_THRESHOLD {
+                return anchor;
+            }
+        }
+        offset
     }
 }
 
-/// Records the most recently applied sync position on the consumer pane so that the
-/// resulting scroll movement is not mistaken for a new user input.
+/// Records the most recently applied sync position on the consumer pane.
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct SyncEcho {
-    /// The pixel offset the consumer was last set to by a sync operation.
-    pub applied_offset: f32,
-    /// Generation counter — incremented each time a new sync target is applied.
-    pub generation: u32,
+    pub applied_offset: f32, /* WHY: The pixel offset the consumer was last set to by a sync operation. */
+    pub generation: u32, /* WHY: Generation counter — incremented each time a new sync target is applied. */
 }
 
 impl SyncEcho {
@@ -290,5 +318,31 @@ mod tests {
         assert_eq!(pos.segment_index, 1);
         let p_y = m.logical_to_preview(pos);
         assert_eq!(p_y, 600.0);
+    }
+
+    #[test]
+    fn snap_to_heading_within_threshold() {
+        /* WHY: Heading at editor_y=200, preview_y=400. */
+        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0)]);
+        /* WHY: Offset 195 is 5px from anchor 200 → should snap. */
+        assert_eq!(mapper.snap_to_heading_editor(195.0), 200.0);
+        /* WHY: Offset 215 is 15px from anchor 200 → should snap. */
+        assert_eq!(mapper.snap_to_heading_editor(215.0), 200.0);
+        /* WHY: Preview: offset 385 is 15px from anchor 400 → should snap. */
+        assert_eq!(mapper.snap_to_heading_preview(385.0), 400.0);
+    }
+
+    #[test]
+    fn snap_to_heading_beyond_threshold() {
+        let mapper = ScrollMapper::build(1000.0, 2000.0, 20.0, &[(10..10, 400.0)]);
+        /* WHY: Offset 170 is 30px from anchor 200 → should NOT snap. */
+        assert_eq!(mapper.snap_to_heading_editor(170.0), 170.0);
+    }
+
+    #[test]
+    fn snap_no_headings_passthrough() {
+        let mapper = ScrollMapper::build(1000.0, 800.0, 10.0, &[]);
+        /* WHY: No heading anchors → offset returned as-is. */
+        assert_eq!(mapper.snap_to_heading_editor(500.0), 500.0);
     }
 }

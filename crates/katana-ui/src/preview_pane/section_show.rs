@@ -11,7 +11,7 @@ pub(super) fn show_section(
     section: &RenderedSection,
     id: usize,
     md_file_path: &std::path::Path,
-    scroll_to_heading_index: Option<usize>,
+    _scroll_to_heading_index: Option<usize>,
     mut heading_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     mut block_anchors: Option<&mut Vec<(std::ops::Range<usize>, egui::Rect)>>,
     heading_offset: usize,
@@ -20,7 +20,7 @@ pub(super) fn show_section(
     mut hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
     global_line_offset: usize,
     search_query: Option<String>,
-    search_scroll_pending: bool,
+    search_active_index: Option<usize>,
     is_slideshow: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut actions = Vec::new();
@@ -69,7 +69,6 @@ pub(super) fn show_section(
                     .syntax_theme_dark(preset.syntax_theme_dark)
                     .syntax_theme_light(preset.syntax_theme_light)
                     .search_query(search_query.clone())
-                    .search_scroll_pending(search_scroll_pending)
                     .heading_offset(heading_offset)
                     .render_html_fn(Some(&binding))
                     .render_math_fn(Some(&math_binding))
@@ -83,9 +82,12 @@ pub(super) fn show_section(
                         &katana_core::emoji::EmojiRasterOps::render_apple_color_emoji_png,
                     ));
 
-                if let Some(idx) = scroll_to_heading_index {
-                    viewer = viewer.scroll_to_heading_index(idx);
-                }
+                /* WHY: scroll_to_heading_index is intentionally NOT passed to the vendor   */
+                /* WHY: viewer. TOC navigation is now driven externally by computing a      */
+                /* WHY: precise scroll offset from heading_anchors in content.rs. Using     */
+                /* WHY: the vendor approach caused misalignment because scroll_to_cursor/   */
+                /* WHY: scroll_to_rect races with forced_offset and depends on same-frame   */
+                /* WHY: widget positions that may not yet reflect the requested scroll.     */
 
                 let previous_anchor_count = heading_anchors.as_ref().map(|a| a.len()).unwrap_or(0);
                 if let Some(anchors) = heading_anchors.as_mut() {
@@ -133,6 +135,23 @@ pub(super) fn show_section(
                 if hovered_lines.is_some() || (is_slideshow && slideshow_hover) {
                     viewer = viewer.hovered_spans(&mut local_hovered_spans);
                 }
+
+                if let Some(idx) = search_active_index {
+                    viewer = viewer.search_active_match_index(idx);
+                }
+
+                let search_scroll_pending = ui.ctx().data(|d| {
+                    d.get_temp(egui::Id::new("katana_preview_search_scroll_pending"))
+                        .unwrap_or(false)
+                });
+                viewer = viewer.search_scroll_pending(search_scroll_pending);
+
+                let mut global_search_counter = ui.ctx().data(|d| {
+                    d.get_temp::<usize>(egui::Id::new("katana_preview_search_counter"))
+                        .unwrap_or(0)
+                });
+                viewer = viewer.search_match_offset(&mut global_search_counter);
+
                 viewer = viewer.search_query(search_query.clone());
 
                 let (_, newly_captured) = ui
@@ -152,6 +171,13 @@ pub(super) fn show_section(
                         viewer.show_with_events(ui, cache, md)
                     })
                     .inner;
+
+                ui.ctx().data_mut(|d| {
+                    d.insert_temp(
+                        egui::Id::new("katana_preview_search_counter"),
+                        global_search_counter,
+                    )
+                });
 
                 if let Some(anchors) = heading_anchors {
                     for anchor in &mut anchors[previous_anchor_count..] {

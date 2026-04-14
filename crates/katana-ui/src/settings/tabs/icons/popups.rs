@@ -80,12 +80,18 @@ impl IconsPopupsOps {
 
         for icon in crate::icon::ALL_ICONS {
             let name = icon.name();
+            if name.starts_with("../system/") {
+                continue;
+            }
             let vendor = if let Some(slash_idx) = name.find('/') {
                 name[..slash_idx].to_string()
             } else {
                 "katana".to_string()
             };
-            grouped_icons.entry(vendor).or_default().push(icon);
+            let list = grouped_icons.entry(vendor).or_default();
+            if !list.iter().any(|i| i.name() == name) {
+                list.push(icon);
+            }
         }
 
         for (vendor, icons) in grouped_icons {

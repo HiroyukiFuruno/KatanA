@@ -80,6 +80,7 @@ impl<'a> PreviewOnly<'a> {
                 &mut app.pending_action,
                 false,
                 Some(app.state.search.doc_search.query.clone()),
+                Some(app.state.search.doc_search_active_index),
             )
             .show(ui);
 

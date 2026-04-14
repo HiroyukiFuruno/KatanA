@@ -19,6 +19,8 @@ mod integration;
 mod overlap_checker;
 #[path = "integration/preview_pane.rs"]
 mod preview_pane;
+#[path = "integration/search_bar_test.rs"]
+mod search_bar_test;
 #[path = "integration/settings_window.rs"]
 mod settings_window;
 #[path = "integration/shell_logic.rs"]

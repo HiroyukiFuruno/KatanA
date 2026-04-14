@@ -3,7 +3,6 @@ use crate::shell::{EDITOR_INITIAL_VISIBLE_ROWS, SCROLL_SYNC_DEAD_ZONE};
 use eframe::egui;
 
 use super::types::{EditorColors, EditorLogicOps};
-
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
     pub scroll: &'a mut crate::app_state::ScrollState,
@@ -17,7 +16,6 @@ pub(crate) struct EditorContent<'a> {
     /// char-index range on this frame (used after an authoring transform).
     pub pending_cursor: Option<(usize, usize)>,
 }
-
 impl<'a> EditorContent<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -41,7 +39,6 @@ impl<'a> EditorContent<'a> {
             pending_cursor,
         }
     }
-
     pub fn show(self, ui: &mut egui::Ui) {
         let action = self.action;
         let sync_scroll = self.sync_scroll;
@@ -62,8 +59,13 @@ impl<'a> EditorContent<'a> {
             ) = colors;
 
             let mut scroll_area = egui::ScrollArea::vertical().id_salt("editor_scroll");
+            if scroll.scroll_to_line.is_some() {
+                scroll_area = scroll_area.animated(false);
+            }
 
-            let consuming_preview = sync_scroll && scroll.source == ScrollSource::Preview;
+            let consuming_preview = sync_scroll
+                && scroll.source == ScrollSource::Preview
+                && scroll.scroll_to_line.is_none();
             if consuming_preview {
                 scroll_area = scroll_area.vertical_scroll_offset(
                     scroll.mapper.logical_to_editor(scroll.logical_position),
@@ -78,7 +80,7 @@ impl<'a> EditorContent<'a> {
                 }
 
                 scroll_area.show(ui, |ui| {
-                    ui.horizontal_top(|ui| {
+                    let horiz_response = ui.horizontal_top(|ui| {
                         const LINE_NUMBER_MARGIN: f32 = 40.0;
                         const LINE_NUMBER_PAD_RIGHT: f32 = 8.0;
                         let left_margin = LINE_NUMBER_MARGIN;
@@ -172,26 +174,27 @@ impl<'a> EditorContent<'a> {
                         if response.changed() {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
-
-                        EditorLogicOps::handle_scroll_to_line(
-                            ui, scroll, &buffer, &response, &galley,
-                        );
+                        EditorLogicOps::handle_scroll_to_line(ui, scroll, &buffer, &response, &galley);
                         response
                     })
-                    .inner
+                    .inner;
+
+                    /* WHY: Provide scroll-past-end padding matching VS Code's behavior */
+                    const PADDING_RATIO: f32 = 0.9;
+                    ui.allocate_space(egui::vec2(0.0, ui.clip_rect().height() * PADDING_RATIO));
+
+                    horiz_response
                 })
             });
 
-            if sync_scroll {
-                EditorLogicOps::update_scroll_sync(
-                    scroll,
-                    output.inner.content_size.y,
-                    output.inner.inner_rect.height(),
-                    output.inner.state.offset.y,
-                    consuming_preview,
-                    SCROLL_SYNC_DEAD_ZONE,
-                );
-            }
+            EditorLogicOps::update_scroll_sync(
+                scroll,
+                output.inner.content_size.y,
+                output.inner.inner_rect.height(),
+                output.inner.state.offset.y,
+                consuming_preview,
+                SCROLL_SYNC_DEAD_ZONE,
+            );
         }
     }
 }

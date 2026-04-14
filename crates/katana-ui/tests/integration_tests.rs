@@ -11,6 +11,7 @@ pub mod integration {
     pub mod integration;
     pub mod overlap_checker;
     pub mod preview_pane;
+    pub mod preview_search;
     pub mod sample_fixture_tests;
     pub mod settings_window;
     pub mod shell_logic;

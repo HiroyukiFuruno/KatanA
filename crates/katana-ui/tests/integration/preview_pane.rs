@@ -288,7 +288,7 @@ fn show_section_markdown_variant_renders() {
     );
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -304,7 +304,7 @@ fn show_section_error_variant_renders() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -320,7 +320,7 @@ fn show_section_command_not_found_variant_renders() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -336,7 +336,7 @@ fn show_section_not_installed_variant_renders() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -351,7 +351,7 @@ fn show_section_pending_variant_renders() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
 }
@@ -370,7 +370,7 @@ fn show_section_image_variant_renders() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -391,7 +391,7 @@ fn render_sections_empty_shows_no_preview_label() {
     let mut pane = PreviewPane::default();
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -408,7 +408,7 @@ fn poll_renders_with_pending_does_not_crash() {
     );
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
 }
@@ -424,7 +424,7 @@ fn show_section_not_installed_download_button_returns_request() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        let _req = pane.show_content(ui, None, None, None, false);
+        let _req = pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -444,7 +444,7 @@ fn show_section_image_full_render_with_texture() {
     }];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -540,7 +540,7 @@ fn preset_colors_applied_without_crash_in_harness() {
     );
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -561,7 +561,7 @@ fn syntax_highlighted_code_block_renders_in_harness() {
     pane.update_markdown_sections(source, std::path::Path::new("/tmp/test.md"));
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -574,7 +574,7 @@ fn show_section_centered_markdown_variant_renders() {
     )];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 }
@@ -591,7 +591,7 @@ fn centered_badges_render_on_same_horizontal_row() {
     pane.sections = vec![RenderedSection::Markdown(html.to_string())];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
     harness.step();
@@ -610,7 +610,7 @@ fn centered_text_link_is_clickable() {
     pane.sections = vec![RenderedSection::Markdown(html.to_string())];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
     harness.step();
@@ -628,7 +628,7 @@ fn inline_html_text_fragments_are_not_split_into_multiple_widgets() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(400.0, 160.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     harness.step();
     harness.step();
@@ -658,7 +658,7 @@ fn blockquote_long_line_wraps_within_preview_width() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(520.0, 240.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     harness.step();
     harness.step();
@@ -1034,7 +1034,7 @@ fn preview_markdown_renders_emoji_as_inline_image_on_macos() {
         },
         |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -1060,7 +1060,7 @@ fn preview_markdown_renders_emoji_as_inline_image_on_macos() {
             None,
             None,
         );
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 
@@ -1082,7 +1082,7 @@ fn inline_emoji_stays_within_text_line_height_budget() {
             None,
             None,
         );
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.run();
 
@@ -1142,7 +1142,7 @@ fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
         },
         |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -1202,7 +1202,7 @@ fn html_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
         },
         |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -1262,7 +1262,7 @@ fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_mono
         },
         |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -1322,7 +1322,7 @@ fn preview_html_uses_proportional_body_font_even_when_ui_font_family_is_monospac
         },
         |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -1382,7 +1382,7 @@ fn preview_code_blocks_keep_monospace_font_when_body_text_is_proportional() {
         },
         |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -1420,7 +1420,7 @@ fn multiple_centered_paragraphs_have_increasing_y_positions() {
     pane.sections = vec![RenderedSection::Markdown(html.to_string())];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
     harness.step();
@@ -1480,7 +1480,7 @@ fn readme_header_full_structure_renders() {
     pane.sections = vec![RenderedSection::Markdown(html.to_string())];
 
     let mut harness = Harness::new_ui(move |ui| {
-        pane.show_content(ui, None, None, None, false);
+        pane.show_content(ui, None, None, None, None);
     });
     harness.step();
     harness.step();
@@ -1502,7 +1502,7 @@ fn centered_single_text_is_horizontally_centered() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(panel_width, 200.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     harness.step();
     harness.step();
@@ -1538,7 +1538,7 @@ fn centered_text_and_link_share_same_row() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(800.0, 200.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     harness.step();
     harness.step();
@@ -1595,7 +1595,7 @@ fn centered_heading_h1_is_horizontally_centered() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(panel_width, 200.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     harness.step();
     harness.step();
@@ -1632,7 +1632,7 @@ fn centered_description_paragraph_is_horizontally_centered() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(panel_width, 200.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     harness.step();
     harness.step();
@@ -1683,7 +1683,7 @@ fn readme_header_all_elements_horizontally_centered() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(panel_width, 400.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     for _ in 0..5 {
         harness.step();
@@ -1758,7 +1758,7 @@ fn centered_heading_then_description_both_centered() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(panel_width, 300.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     for _ in 0..5 {
         harness.step();
@@ -1804,7 +1804,7 @@ fn badges_then_language_selector_both_centered() {
     let mut harness = Harness::builder()
         .with_size(egui::vec2(panel_width, 300.0))
         .build_ui(move |ui| {
-            pane.show_content(ui, None, None, None, false);
+            pane.show_content(ui, None, None, None, None);
         });
     for _ in 0..5 {
         harness.step();
@@ -2314,7 +2314,7 @@ fn test_preview_accordion_auto_open_on_search_match() {
     let mut harness = Harness::builder()
         .with_size(egui::Vec2::new(800.0, 600.0))
         .build_ui(|ui| {
-            pane.show_content(ui, None, None, Some("MysteryWord".to_string()), false);
+            pane.show_content(ui, None, None, Some("MysteryWord".to_string()), None);
         });
 
     harness.step();
@@ -2361,7 +2361,7 @@ fn bare_anchor_img_inline_html_does_not_render_as_raw_text() {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let mut pane = PreviewPane::default();
                 pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -2409,7 +2409,7 @@ fn p_align_center_strong_link_does_not_render_as_raw_text() {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let mut pane = PreviewPane::default();
                 pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
             });
         },
     );
@@ -2460,7 +2460,7 @@ fn block_anchors_extracted_for_rich_blocks() {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let mut pane = PreviewPane::default();
                 pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
                 *anchors_clone.borrow_mut() = pane.block_anchors.clone();
             });
         },
@@ -2524,14 +2524,13 @@ fn consecutive_rich_blocks_produce_correct_block_anchors() {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let mut pane = PreviewPane::default();
                 pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
                 *anchors_clone.borrow_mut() = pane.block_anchors.clone();
             });
         },
     );
 
     let extracted = anchors.borrow();
-
     /* WHY: Expect at least 3 block anchors: one for each rich block */
     assert!(
         extracted.len() >= 3,
@@ -2606,7 +2605,7 @@ fn five_consecutive_alternating_blocks_all_produce_anchors() {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let mut pane = PreviewPane::default();
                 pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
-                pane.show_content(ui, None, None, None, false);
+                pane.show_content(ui, None, None, None, None);
                 *anchors_clone.borrow_mut() = pane.block_anchors.clone();
             });
         },
