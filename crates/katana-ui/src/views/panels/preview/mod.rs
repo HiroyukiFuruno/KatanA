@@ -1,11 +1,11 @@
 mod content;
+mod logic;
 mod side_panel_export;
 mod side_panel_story;
-mod side_panel_tools;
 mod side_panel_toc;
-mod tangochou;
-mod logic;
+mod side_panel_tools;
 mod side_panels;
+mod tangochou;
 pub mod types;
 
 pub use side_panels::*;

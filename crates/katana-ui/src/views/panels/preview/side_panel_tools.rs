@@ -1,5 +1,5 @@
 use super::side_panels::{
-    PreviewSidePanels, PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_WIDTH,
+    PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_WIDTH, PreviewSidePanels,
 };
 use crate::app_state::{AppAction, ViewMode};
 use crate::icon::IconSize;
@@ -167,7 +167,11 @@ impl<'a> PreviewSidePanels<'a> {
 
         if self.app.state.layout.show_tools_panel {
             if let Some(pos) = ui.input(|i| i.pointer.hover_pos())
-                && panel_resp.response.rect.expand(PANEL_HOVER_MARGIN).contains(pos)
+                && panel_resp
+                    .response
+                    .rect
+                    .expand(PANEL_HOVER_MARGIN)
+                    .contains(pos)
             {
                 keep_open = true;
             }

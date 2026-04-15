@@ -1,5 +1,5 @@
 use super::side_panels::{
-    PreviewSidePanels, PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_WIDTH,
+    PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_WIDTH, PreviewSidePanels,
 };
 use crate::app_state::AppAction;
 use eframe::egui;
@@ -82,7 +82,11 @@ impl<'a> PreviewSidePanels<'a> {
 
         if self.app.state.layout.show_export_panel {
             if let Some(pos) = ui.input(|i| i.pointer.hover_pos())
-                && panel_resp.response.rect.expand(PANEL_HOVER_MARGIN).contains(pos)
+                && panel_resp
+                    .response
+                    .rect
+                    .expand(PANEL_HOVER_MARGIN)
+                    .contains(pos)
             {
                 keep_open = true;
             }

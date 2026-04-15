@@ -1,6 +1,6 @@
 use super::side_panels::{
-    PreviewSidePanels, PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_ITEM_SPACE,
-    PANEL_WIDTH,
+    PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_ITEM_SPACE, PANEL_WIDTH,
+    PreviewSidePanels,
 };
 use crate::app_state::AppAction;
 use eframe::egui;
@@ -59,7 +59,8 @@ impl<'a> PreviewSidePanels<'a> {
                                 self.app.pending_action = AppAction::ToggleSlideshowHoverHighlight;
                             }
 
-                            let mut controls = self.app.state.layout.slideshow_show_diagram_controls;
+                            let mut controls =
+                                self.app.state.layout.slideshow_show_diagram_controls;
                             let controls_resp = ui.add(
                                 crate::widgets::LabeledToggle::new(
                                     i18n.preview.show_diagram_controls.clone(),
@@ -92,7 +93,11 @@ impl<'a> PreviewSidePanels<'a> {
 
         if self.app.state.layout.show_story_panel {
             if let Some(pos) = ui.input(|i| i.pointer.hover_pos())
-                && panel_resp.response.rect.expand(PANEL_HOVER_MARGIN).contains(pos)
+                && panel_resp
+                    .response
+                    .rect
+                    .expand(PANEL_HOVER_MARGIN)
+                    .contains(pos)
             {
                 keep_open = true;
             }

@@ -6,14 +6,31 @@ impl KatanaApp {
     #[allow(clippy::too_many_lines)]
     pub(super) fn dispatch_action(&mut self, ctx: &egui::Context, action: AppAction) {
         match action {
-            AppAction::PickOpenWorkspace => if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() { self.handle_open_explorer(path); }
+            AppAction::PickOpenWorkspace => {
+                if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
+                    self.handle_open_explorer(path);
+                }
+            }
             AppAction::OpenWorkspace(p) => self.handle_open_explorer(p),
             AppAction::RefreshExplorer => self.handle_refresh_explorer(),
-            AppAction::CreateFsNode { parent_dir, is_dir, target_path } => self.handle_action_create_fs_node(parent_dir, is_dir, target_path),
-            AppAction::RenameFsNode { target_path, new_path } => self.handle_action_rename_fs_node(target_path, new_path),
-            AppAction::DeleteFsNode { target_path } => self.handle_action_delete_fs_node(target_path),
+            AppAction::CreateFsNode {
+                parent_dir,
+                is_dir,
+                target_path,
+            } => self.handle_action_create_fs_node(parent_dir, is_dir, target_path),
+            AppAction::RenameFsNode {
+                target_path,
+                new_path,
+            } => self.handle_action_rename_fs_node(target_path, new_path),
+            AppAction::DeleteFsNode { target_path } => {
+                self.handle_action_delete_fs_node(target_path)
+            }
             AppAction::SelectDocument(p) => self.handle_action_select_document(p),
-            AppAction::SelectDocumentAndJump { path, line, byte_range: _ } => self.handle_action_select_and_jump(path, line),
+            AppAction::SelectDocumentAndJump {
+                path,
+                line,
+                byte_range: _,
+            } => self.handle_action_select_and_jump(path, line),
             AppAction::OpenMultipleDocuments(paths) => self.handle_action_open_multiple(paths),
             AppAction::RemoveWorkspace(path) => self.handle_remove_explorer(path),
             AppAction::RemoveWorkspaceHistory(path) => self.handle_remove_workspace_history(path),
@@ -140,16 +157,26 @@ impl KatanaApp {
                 }
             }
             AppAction::ToggleSlideshow => self.handle_action_toggle_slideshow(ctx),
-            AppAction::ToggleSlideshowHoverHighlight => self.state.layout.slideshow_hover_highlight ^= true,
-            AppAction::ToggleSlideshowShowDiagramControls => self.state.layout.slideshow_show_diagram_controls ^= true,
+            AppAction::ToggleSlideshowHoverHighlight => {
+                self.state.layout.slideshow_hover_highlight ^= true
+            }
+            AppAction::ToggleSlideshowShowDiagramControls => {
+                self.state.layout.slideshow_show_diagram_controls ^= true
+            }
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;
-                ctx.memory_mut(|m| m.data.insert_temp(egui::Id::new("search_newly_opened"), true));
+                ctx.memory_mut(|m| {
+                    m.data
+                        .insert_temp(egui::Id::new("search_newly_opened"), true)
+                });
             }
             AppAction::ToggleDocSearch => {
                 if !self.state.search.doc_search_open {
                     self.state.search.doc_search_open = true;
-                    ctx.memory_mut(|m| m.data.insert_temp(egui::Id::new("search_newly_opened"), true));
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("search_newly_opened"), true)
+                    });
                     self.trigger_action(AppAction::DocSearchQueryChanged);
                 } else {
                     self.state.search.doc_search_open = false;
@@ -159,12 +186,19 @@ impl KatanaApp {
             AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
             AppAction::DocSearchNext => self.handle_action_doc_search_next(ctx),
             AppAction::DocSearchPrev => self.handle_action_doc_search_prev(ctx),
-            AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open = !self.state.diagnostics.is_panel_open,
+            AppAction::ToggleProblemsPanel => {
+                self.state.diagnostics.is_panel_open = !self.state.diagnostics.is_panel_open
+            }
             AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
             AppAction::ToggleExplorerFilter => {
                 let current = self.state.search.filter_enabled;
                 self.state.search.filter_enabled = !current;
-                if !current { ctx.memory_mut(|m| m.data.insert_temp(egui::Id::new("filter_newly_enabled"), true)); }
+                if !current {
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("filter_newly_enabled"), true)
+                    });
+                }
             }
             other => self.dispatch_secondary(ctx, other),
         }

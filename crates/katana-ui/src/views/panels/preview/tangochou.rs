@@ -38,7 +38,7 @@ const RING_GRAY_DARK: u8 = 120;
 const RING_GRAY_LIGHT: u8 = 180;
 
 /* WHY: Flashcard-style widget for toggling between Code/Preview modes.
-   Named after Japanese "単語帳 (tangochou)" flash-card notebooks. */
+Named after Japanese "単語帳 (tangochou)" flash-card notebooks. */
 pub(super) struct TangochouWidget<'a> {
     pub view_mode: ViewMode,
     pub label_front: &'a str,
@@ -115,25 +115,39 @@ impl<'a> TangochouWidget<'a> {
                 ));
             }
 
-            let border_w = if is_front { FRONT_BORDER_W } else { BACK_BORDER_W };
+            let border_w = if is_front {
+                FRONT_BORDER_W
+            } else {
+                BACK_BORDER_W
+            };
             let border_col = if is_front { selection_col } else { stroke_col };
-            ui.painter()
-                .add(egui::Shape::convex_polygon(corners.into(), bg, egui::Stroke::new(border_w, border_col)));
+            ui.painter().add(egui::Shape::convex_polygon(
+                corners.into(),
+                bg,
+                egui::Stroke::new(border_w, border_col),
+            ));
 
             let hole_pos = rotate_pos(ring_center);
             ui.painter()
                 .circle_filled(hole_pos, HOLE_RADIUS, ui.visuals().window_fill());
-            ui.painter()
-                .circle_stroke(hole_pos, HOLE_RADIUS, egui::Stroke::new(BACK_BORDER_W, stroke_col));
+            ui.painter().circle_stroke(
+                hole_pos,
+                HOLE_RADIUS,
+                egui::Stroke::new(BACK_BORDER_W, stroke_col),
+            );
 
             let text_color = if is_front {
                 ui.visuals().text_color()
             } else {
-                ui.visuals().text_color().linear_multiply(HIGHLIGHT_ALPHA_MUL)
+                ui.visuals()
+                    .text_color()
+                    .linear_multiply(HIGHLIGHT_ALPHA_MUL)
             };
-            let galley = ui
-                .painter()
-                .layout_no_wrap(text.to_owned(), egui::FontId::proportional(TEXT_SIZE), text_color);
+            let galley = ui.painter().layout_no_wrap(
+                text.to_owned(),
+                egui::FontId::proportional(TEXT_SIZE),
+                text_color,
+            );
 
             let text_center = rect.center() + egui::vec2(TEXT_X_OFFSET, 0.0);
             let text_tl = text_center - galley.size() / 2.0;
@@ -159,12 +173,21 @@ impl<'a> TangochouWidget<'a> {
             ThemeBridgeOps::from_gray(RING_GRAY_LIGHT)
         };
         let ring_shadow = ThemeBridgeOps::from_black_alpha(RING_ALPHA);
-        ui.painter()
-            .circle_stroke(ring_center, RING_RADIUS, egui::Stroke::new(RING_STROKE_MAIN, ring_color));
-        ui.painter()
-            .circle_stroke(ring_center, RING_RADIUS_OUTER, egui::Stroke::new(RING_STROKE_ACCENT, ring_shadow));
-        ui.painter()
-            .circle_stroke(ring_center, RING_RADIUS_INNER, egui::Stroke::new(RING_STROKE_ACCENT, ring_shadow));
+        ui.painter().circle_stroke(
+            ring_center,
+            RING_RADIUS,
+            egui::Stroke::new(RING_STROKE_MAIN, ring_color),
+        );
+        ui.painter().circle_stroke(
+            ring_center,
+            RING_RADIUS_OUTER,
+            egui::Stroke::new(RING_STROKE_ACCENT, ring_shadow),
+        );
+        ui.painter().circle_stroke(
+            ring_center,
+            RING_RADIUS_INNER,
+            egui::Stroke::new(RING_STROKE_ACCENT, ring_shadow),
+        );
 
         /* WHY: Highlight segment makes the ring look metallic/3D. */
         ui.painter().line_segment(

@@ -37,9 +37,9 @@ impl PreviewLogicOps {
     }
 
     /* Compute the precise preview ScrollArea vertical offset to jump to a heading.
-       Uses the previous frame's `heading_anchors` (screen-space rects) and
-       `content_top_y` to derive the correct scroll offset. Returns `None` when
-       anchors are not yet available (first render or document just changed). */
+    Uses the previous frame's `heading_anchors` (screen-space rects) and
+    `content_top_y` to derive the correct scroll offset. Returns `None` when
+    anchors are not yet available (first render or document just changed). */
     pub fn heading_scroll_offset(
         heading_index: usize,
         anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
