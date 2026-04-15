@@ -923,7 +923,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     } else {
                         header_res.header_response.rect
                     };
-                    
+
                     // Fix: expand the rect to 100% width of the container
                     accordion_rect.min.x = ui.max_rect().min.x;
                     accordion_rect.max.x = ui.max_rect().max.x;
@@ -1772,7 +1772,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     // Fix: expand the rect to 100% width of the container
                     rect.min.x = ui.max_rect().min.x;
                     rect.max.x = ui.max_rect().max.x;
-                    
+
                     if let Some(active) = &self.active_char_range {
                         if active.start <= span.end && active.end >= span.start {
                             self.active_rects.push((rect, span.clone()));
@@ -1873,11 +1873,15 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         if end_y > start_y {
                             let min_x = ui.min_rect().left();
                             let width = ui.available_width();
-                            let rect = egui::Rect::from_min_max(
+                            let mut rect = egui::Rect::from_min_max(
                                 egui::pos2(min_x, start_y),
                                 egui::pos2(min_x + width, end_y),
                             );
 
+                            if matches!(tag, pulldown_cmark::TagEnd::Heading { .. }) {
+                                rect.min.y -= 10.0;
+                                rect.max.y -= 10.0;
+                            }
 
                             let is_container = matches!(
                                 tag,
@@ -2149,13 +2153,13 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
                             let url = mat.as_str();
                             let prev_link = self.link.take();
-                            
+
                             // Create and populate the link
                             let mut link = Link {
                                 destination: url.to_string(),
                                 text: vec![self.text_style.to_richtext(ui, url)],
                             };
-                            
+
                             // Apply search highlighting to the link text if needed
                             if let Some(regex) = &self.search_query {
                                 if regex.is_match(url) {
@@ -2165,7 +2169,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
                             // Render the link widget immediately
                             link.end(ui, cache);
-                            
+
                             self.link = prev_link;
                             self.after_inline_widget = true;
 
@@ -2413,8 +2417,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     anchors.push((
                         span,
                         egui::Rect::from_min_max(
-                            egui::pos2(min_x, start_y),
-                            egui::pos2(min_x + width, end_y),
+                            egui::pos2(min_x, start_y - 5.0),
+                            egui::pos2(min_x + width, end_y - 5.0),
                         ),
                     ));
                 }

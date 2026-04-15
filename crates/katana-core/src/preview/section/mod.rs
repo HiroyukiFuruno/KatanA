@@ -13,21 +13,16 @@ impl PreviewSectionOps {
         let mut acc = String::new();
         let mut rem = content;
 
-        while let Some(offset) = if rem.starts_with("```") {
-            Some(0)
-        } else {
-            rem.find("\n```").map(|p| p + 1)
-        } {
+        while let Some(offset) = Self::find_next_fence_offset(rem) {
             acc.push_str(&rem[..offset]);
             rem = &rem[offset..];
 
             if let Some((kind, source, after)) = DiagramSectionOps::try_parse_diagram_fence(rem) {
-                if !acc.is_empty() {
-                    sections.push(PreviewSection::Markdown(std::mem::take(&mut acc)));
-                }
-                /// WHY: source's '\n' count gives (content_lines - 1). We add
-                /// FENCE_LINE_COUNT = opening fence (1) + closing fence (1) + 1 for
-                /// the newline-count-to-line-count conversion.
+                Self::push_markdown_section(&mut sections, &mut acc);
+
+                /* WHY: source's '\n' count gives (content_lines - 1). We add
+                FENCE_LINE_COUNT = opening fence (1) + closing fence (1) + 1 for
+                the newline-count-to-line-count conversion. */
                 const FENCE_LINE_COUNT: usize = 3;
                 let lines = source.chars().filter(|c| *c == '\n').count() + FENCE_LINE_COUNT;
                 sections.push(PreviewSection::Diagram {
@@ -36,6 +31,10 @@ impl PreviewSectionOps {
                     lines,
                 });
                 rem = after;
+
+                /* WHY: Force isolation by inserting a mandatory newline for the next segment.
+                This ensures block-level elements (headers, etc.) are correctly parsed. */
+                acc.push('\n');
             } else {
                 acc.push_str("```");
                 rem = &rem["```".len()..];
@@ -48,6 +47,25 @@ impl PreviewSectionOps {
         }
 
         ImageSectionOps::extract_standalone_images(sections)
+    }
+
+    fn find_next_fence_offset(rem: &str) -> Option<usize> {
+        if rem.starts_with("```") {
+            Some(0)
+        } else {
+            rem.find("\n```").map(|p| p + 1)
+        }
+    }
+
+    fn push_markdown_section(sections: &mut Vec<PreviewSection>, acc: &mut String) {
+        if acc.is_empty() {
+            return;
+        }
+        /* WHY: Ensure markdown ends with newline to avoid joining blocks with diagrams. */
+        if !acc.ends_with('\n') {
+            acc.push('\n');
+        }
+        sections.push(PreviewSection::Markdown(std::mem::take(acc)));
     }
 
     pub fn split_into_sections(content: &str) -> Vec<PreviewSection> {

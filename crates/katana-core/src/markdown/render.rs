@@ -24,6 +24,15 @@ impl MarkdownRenderOps {
         opts.extension.autolink = true;
         opts.extension.tasklist = true;
         opts.extension.footnotes = true;
+        /* WHY: GFM Alerts ([!NOTE], [!TIP], etc.) must be enabled
+        to match the preview pane's rendering of alert blocks. */
+        opts.extension.alerts = true;
+        /* WHY: Math support ($inline$ and $$block$$) to match preview. */
+        opts.extension.math_dollars = true;
+        opts.extension.math_code = true;
+        /* WHY: Generate heading IDs so exported HTML anchors work. */
+        opts.extension.header_id_prefix = Some(String::new());
+        opts.extension.description_lists = true;
         opts.render.r#unsafe = true;
         opts
     }

@@ -79,7 +79,9 @@ impl MarkdownFenceOps {
             return;
         };
         if let Some(html) = Self::render_diagram_block(&block, renderer) {
+            output.push('\n');
             output.push_str(&html);
+            output.push('\n');
         } else {
             output.push_str(&block.raw);
         }
