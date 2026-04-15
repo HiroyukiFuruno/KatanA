@@ -11,8 +11,6 @@ impl<'a> PreviewContent<'a> {
         preview: &'a mut PreviewPane,
         document: Option<&'a katana_core::document::Document>,
         scroll: &'a mut crate::app_state::ScrollState,
-        show_export: bool,
-        show_story: bool,
         action: &'a mut AppAction,
         scroll_sync: bool,
         search_query: Option<String>,
@@ -22,8 +20,6 @@ impl<'a> PreviewContent<'a> {
             preview,
             document,
             scroll,
-            show_export,
-            show_story,
             action,
             scroll_sync,
             search_query,
@@ -36,8 +32,6 @@ impl<'a> PreviewContent<'a> {
             preview,
             document,
             scroll,
-            show_export,
-            show_story,
             action,
             scroll_sync,
             search_query,
@@ -47,13 +41,18 @@ impl<'a> PreviewContent<'a> {
         let mut download_req = None;
 
         /* WHY: Check for forced scroll target from Sync System or Navigation. */
-        let forced_offset = PreviewLogicOps::compute_forced_offset(
+        let mut forced_offset = PreviewLogicOps::compute_forced_offset(
             scroll_sync,
             scroll,
             preview,
             crate::shell::TREE_ROW_HEIGHT,
             ui.available_height(),
         );
+
+        if preview.scroll_request == Some(0) {
+            forced_offset = Some(0.0);
+            preview.scroll_request = None;
+        }
 
         let mut scroll_area = egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
@@ -139,8 +138,6 @@ impl<'a> PreviewContent<'a> {
         PreviewLogicOps::render_floating_buttons(
             ui,
             document.is_some(),
-            show_export,
-            show_story,
             show_back_to_top,
             action,
             preview,

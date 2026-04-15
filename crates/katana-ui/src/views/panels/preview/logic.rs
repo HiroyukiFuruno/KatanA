@@ -11,7 +11,9 @@ impl PreviewLogicOps {
     }
 
     pub fn invalidate_preview_image_cache(ctx: &egui::Context, action: &AppAction) {
-        if matches!(action, AppAction::RefreshDiagrams) { ctx.forget_all_images(); }
+        if matches!(action, AppAction::RefreshDiagrams) {
+            ctx.forget_all_images();
+        }
     }
 
     pub fn compute_forced_offset(
@@ -21,7 +23,9 @@ impl PreviewLogicOps {
         _row_height: f32,
         _inner_height: f32,
     ) -> Option<f32> {
-        if !scroll_sync { return None; }
+        if !scroll_sync {
+            return None;
+        }
         let consuming_editor = scroll_sync
             && scroll.source == crate::app_state::ScrollSource::Editor
             && scroll.scroll_to_line.is_none();
@@ -32,11 +36,10 @@ impl PreviewLogicOps {
         None
     }
 
-    /// Compute the precise preview ScrollArea vertical offset to jump to a heading.
-    ///
-    /// Uses the previous frame's `heading_anchors` (screen-space rects) and
-    /// `content_top_y` to derive the correct scroll offset. Returns `None` when
-    /// anchors are not yet available (first render or document just changed).
+    /* Compute the precise preview ScrollArea vertical offset to jump to a heading.
+       Uses the previous frame's `heading_anchors` (screen-space rects) and
+       `content_top_y` to derive the correct scroll offset. Returns `None` when
+       anchors are not yet available (first render or document just changed). */
     pub fn heading_scroll_offset(
         heading_index: usize,
         anchor_map: &[crate::preview_pane::types::DocumentAnchorMapItem],
@@ -45,9 +48,9 @@ impl PreviewLogicOps {
         let item = anchor_map.iter().find(|a| a.index == Some(heading_index))?;
         let rect = item.rect?;
         /* WHY: rect.min.y is screen-space. Subtracting content_top_y converts it   */
-        /* WHY: to the ScrollArea's virtual-space offset (scroll_offset = 0 when at  */
-        /* WHY: the very top of the content, before any Frame/padding offsets).      */
-        /* WHY: We clamp to 0.0 to avoid negative offsets on the first heading.     */
+        /* to the ScrollArea's virtual-space offset (scroll_offset = 0 when at      */
+        /* the very top of the content, before any Frame/padding offsets).         */
+        /* We clamp to 0.0 to avoid negative offsets on the first heading.          */
         Some((rect.min.y - content_top_y).max(0.0))
     }
 
@@ -67,8 +70,7 @@ impl PreviewLogicOps {
         for item in &preview.anchor_map {
             if let Some(rect) = item.rect {
                 /* WHY: Use physical editor line Y positions for ultra-high precision. */
-                /* This eliminates drift caused by soft-wrapping in the editor. */
-                /* If physical data is not yet available, we fallback to row-height estimation. */
+                /* This eliminates drift caused by soft-wrapping in the editor. Fallback to row-height. */
                 let editor_y = scroll
                     .editor_line_anchors
                     .get(item.line_span.start)
@@ -87,8 +89,13 @@ impl PreviewLogicOps {
         );
 
         let consuming = scroll.source == crate::app_state::ScrollSource::Editor;
-        if consuming { scroll.source = crate::app_state::ScrollSource::Neither; return; }
-        if max_scroll <= 0.0 { return; }
+        if consuming {
+            scroll.source = crate::app_state::ScrollSource::Neither;
+            return;
+        }
+        if max_scroll <= 0.0 {
+            return;
+        }
         if scroll.preview_echo.is_echo(offset_y) {
             return;
         }
@@ -124,18 +131,20 @@ impl PreviewLogicOps {
     pub fn render_floating_buttons(
         ui: &mut egui::Ui,
         has_doc: bool,
-        show_export: bool,
-        show_story: bool,
         show_back_to_top: bool,
-        action: &mut AppAction,
+        _action: &mut AppAction,
         preview: &mut crate::preview_pane::PreviewPane,
     ) {
         let mut button_count = 0.0;
-        if has_doc { button_count += 2.0; }
-        if show_back_to_top { button_count += 1.0; }
+        if has_doc {
+            button_count += 2.0;
+        }
+        if show_back_to_top {
+            button_count += 1.0;
+        }
 
         if button_count > 0.0 {
-            const BUTTON_ROUNDING: u8 = 4;
+            const BUTTON_ROUNDING: f32 = 4.0;
             const BUTTON_MARGIN: f32 = 20.0;
             const BUTTON_SIZE: f32 = 32.0;
 
@@ -158,25 +167,28 @@ impl PreviewLogicOps {
                     .layout(egui::Layout::right_to_left(egui::Align::Center)),
             );
 
-            let icon_bg = if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::from_gray(crate::shell_ui::LIGHT_MODE_ICON_BG) };
-            let active_bg = if ui.visuals().dark_mode { ui.visuals().widgets.active.bg_fill } else { crate::theme_bridge::ThemeBridgeOps::from_gray(crate::shell_ui::LIGHT_MODE_ICON_ACTIVE_BG) };
+            let icon_bg = if ui.visuals().dark_mode {
+                crate::theme_bridge::TRANSPARENT
+            } else {
+                crate::theme_bridge::ThemeBridgeOps::from_gray(crate::shell_ui::LIGHT_MODE_ICON_BG)
+            };
 
             overlay_ui.scope(|ui| {
                 ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
 
                 if show_back_to_top {
-                    let btn = egui::Button::image(crate::Icon::ArrowUp.ui_image(ui, crate::icon::IconSize::Medium)).rounding(egui::Rounding::same(BUTTON_ROUNDING)).fill(icon_bg);
-                    if ui.add(btn).on_hover_text(crate::i18n::I18nOps::get().action.back_to_top.clone()).clicked() { preview.scroll_request = Some(0); }
-                }
-
-                if has_doc {
-                    let export_bg = if show_export { active_bg } else { icon_bg };
-                    let btn1 = egui::Button::image(crate::Icon::Export.ui_image(ui, crate::icon::IconSize::Medium)).rounding(egui::Rounding::same(BUTTON_ROUNDING)).fill(export_bg);
-                    if ui.add(btn1).on_hover_text(crate::i18n::I18nOps::get().menu.export.clone()).clicked() { *action = AppAction::ToggleExportPanel; }
-
-                    let story_bg = if show_story { active_bg } else { icon_bg };
-                    let btn2 = egui::Button::image(crate::Icon::Preview.ui_image(ui, crate::icon::IconSize::Medium)).rounding(egui::Rounding::same(BUTTON_ROUNDING)).fill(story_bg);
-                    if ui.add(btn2).on_hover_text(crate::i18n::I18nOps::get().preview.slideshow_settings.clone()).clicked() { *action = AppAction::ToggleStoryPanel; }
+                    let btn = egui::Button::image(
+                        crate::Icon::ArrowUp.ui_image(ui, crate::icon::IconSize::Medium),
+                    )
+                    .rounding(egui::Rounding::same(BUTTON_ROUNDING as u8))
+                    .fill(icon_bg);
+                    if ui
+                        .add(btn)
+                        .on_hover_text(crate::i18n::I18nOps::get().action.back_to_top.clone())
+                        .clicked()
+                    {
+                        preview.scroll_request = Some(0);
+                    }
                 }
             });
         }
