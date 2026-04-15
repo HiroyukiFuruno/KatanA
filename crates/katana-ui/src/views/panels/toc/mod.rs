@@ -16,7 +16,7 @@ const TOC_MIN_WIDTH: f32 = 100.0;
 const TOC_MAX_WIDTH: f32 = 500.0;
 
 impl<'a> TocPanel<'a> {
-    pub fn show(mut self, ui: &mut egui::Ui) -> (Option<usize>, Option<usize>) {
+    pub fn show(mut self, ui: &mut egui::Ui) -> (Option<usize>, Option<usize>, egui::Rect) {
         use katana_platform::settings::TocPosition;
         let position = self.state.config.settings.settings().layout.toc_position;
         let mut clicked_line = None;
@@ -31,7 +31,7 @@ impl<'a> TocPanel<'a> {
         let frame =
             egui::Frame::side_top_panel(&ui.ctx().global_style()).inner_margin(TOC_PANEL_MARGIN);
 
-        panel
+        let panel_resp = panel
             .frame(frame)
             .default_width(width)
             .width_range(TOC_MIN_WIDTH..=TOC_MAX_WIDTH)
@@ -110,7 +110,7 @@ impl<'a> TocPanel<'a> {
                 });
             });
 
-        (clicked_line, active_index_out)
+        (clicked_line, active_index_out, panel_resp.response.rect)
     }
 
     fn render_header(&mut self, ui: &mut egui::Ui) {

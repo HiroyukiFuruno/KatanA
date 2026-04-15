@@ -7,8 +7,6 @@ pub(crate) struct PreviewContent<'a> {
     pub preview: &'a mut PreviewPane,
     pub document: Option<&'a katana_core::document::Document>,
     pub scroll: &'a mut crate::app_state::ScrollState,
-    pub show_export: bool,
-    pub show_story: bool,
     pub action: &'a mut AppAction,
     pub scroll_sync: bool,
     pub search_query: Option<String>,
