@@ -71,14 +71,10 @@ impl<'a> HorizontalSplit<'a> {
                         &mut app.tab_previews,
                         path.clone(),
                     );
-                    let show_export = app.state.layout.show_export_panel;
-                    let show_story = app.state.layout.show_story_panel;
                     download_req = PreviewContent::new(
                         pane,
                         app.state.document.active_document(),
                         &mut app.state.scroll,
-                        show_export,
-                        show_story,
                         &mut app.pending_action,
                         scroll_sync,
                         Some(app.state.search.doc_search.query.clone()),
