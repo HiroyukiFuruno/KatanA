@@ -2,6 +2,8 @@ use crate::settings::tabs::icons::{general, table};
 use crate::widgets::AlignCenter;
 use eframe::egui;
 
+const SCROLL_AREA_HEIGHT_RATIO: f32 = 0.8;
+
 /* WHY: Parameters for rendering the sliding panels to reduce mod.rs file length. */
 pub(crate) struct IconsPanelsOps;
 
@@ -14,12 +16,12 @@ impl IconsPanelsOps {
         icon_settings: &mut katana_platform::settings::types::icon::IconSettings,
         settings_changed: &mut bool,
     ) {
-        use crate::settings::tabs::icons::{
-            ADVANCED_PANEL_HEIGHT, ADVANCED_PANEL_ID, PANEL_PADDING,
-        };
+        use crate::settings::tabs::icons::{ADVANCED_PANEL_ID, PANEL_PADDING};
 
         egui::TopBottomPanel::bottom(ADVANCED_PANEL_ID)
-            .default_height(ADVANCED_PANEL_HEIGHT)
+            .resizable(true)
+            .min_height(100.0)
+            .max_height(ui.available_height() * SCROLL_AREA_HEIGHT_RATIO)
             .show_animated_inside(ui, *is_open, |ui| {
                 ui.add_space(PANEL_PADDING);
 
@@ -45,21 +47,11 @@ impl IconsPanelsOps {
                 ui.add_space(PANEL_PADDING);
                 ui.separator();
 
-                egui::ScrollArea::vertical()
-                    .id_source("icons_advanced_panel_scroll")
-                    .show(ui, |ui| {
-                        ui.add_space(PANEL_PADDING);
-                        general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
-                        ui.add_space(PANEL_PADDING);
-                        table::IconsTableOps::render(
-                            ui,
-                            state,
-                            i18n,
-                            icon_settings,
-                            settings_changed,
-                        );
-                        ui.add_space(PANEL_PADDING);
-                    });
+                ui.add_space(PANEL_PADDING);
+                general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
+                ui.add_space(PANEL_PADDING);
+                table::IconsTableOps::render(ui, state, i18n, icon_settings, settings_changed);
+                ui.add_space(PANEL_PADDING);
             });
     }
 

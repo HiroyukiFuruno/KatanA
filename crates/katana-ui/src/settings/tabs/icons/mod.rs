@@ -13,7 +13,6 @@ pub mod table;
 pub(crate) const ADVANCED_PANEL_ID: &str = "icon_advanced_panel";
 pub(crate) const TRIGGER_PANEL_ID: &str = "icon_settings_trigger_panel";
 pub(crate) const PREVIEW_SCROLL_ID: &str = "icons_preview_scroll";
-pub(crate) const ADVANCED_PANEL_HEIGHT: f32 = 480.0;
 pub(crate) const PANEL_PADDING: f32 = 8.0;
 pub(crate) const SYMMETRIC_PADDING_X: i8 = 0;
 pub(crate) const SYMMETRIC_PADDING_Y: i8 = 8;
