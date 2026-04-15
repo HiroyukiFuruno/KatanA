@@ -1,67 +1,67 @@
 {
   "open_workspace": {
-    "mac": "⌘ O",
-    "windows": "Ctrl+O",
-    "linux": "Ctrl+O"
+    "mac": "⌘ + O",
+    "windows": "Ctrl + O",
+    "linux": "Ctrl + O"
   },
   "open_palette": {
-    "mac": "⌘ P",
-    "windows": "Ctrl+P",
-    "linux": "Ctrl+P"
+    "mac": "⌘ + P",
+    "windows": "Ctrl + P",
+    "linux": "Ctrl + P"
   },
   "search_tab": {
-    "mac": "⌘ F",
-    "windows": "Ctrl+F",
-    "linux": "Ctrl+F"
+    "mac": "⌘ + F",
+    "windows": "Ctrl + F",
+    "linux": "Ctrl + F"
   },
   "toggle_sidebar": {
-    "mac": "⌘ B",
-    "windows": "Ctrl+B",
-    "linux": "Ctrl+B"
+    "mac": "⌘ + B",
+    "windows": "Ctrl + B",
+    "linux": "Ctrl + B"
   },
   "save_document": {
-    "mac": "⌘ S",
-    "windows": "Ctrl+S",
-    "linux": "Ctrl+S"
+    "mac": "⌘ + S",
+    "windows": "Ctrl + S",
+    "linux": "Ctrl + S"
   },
   "refresh_preview": {
-    "mac": "⌘ R",
-    "windows": "Ctrl+R",
-    "linux": "Ctrl+R"
+    "mac": "⌘ + R",
+    "windows": "Ctrl + R",
+    "linux": "Ctrl + R"
   },
   "close_tab": {
-    "mac": "⌘ W",
-    "windows": "Ctrl+W",
-    "linux": "Ctrl+W"
+    "mac": "⌘ + W",
+    "windows": "Ctrl + W",
+    "linux": "Ctrl + W"
   },
   "undo": {
-    "mac": "⌘ Z",
-    "windows": "Ctrl+Z",
-    "linux": "Ctrl+Z"
+    "mac": "⌘ + Z",
+    "windows": "Ctrl + Z",
+    "linux": "Ctrl + Z"
   },
   "search_workspace": {
-    "mac": "⌘ Shift F",
-    "windows": "Ctrl+Shift+F",
-    "linux": "Ctrl+Shift+F"
+    "mac": "⌘ + Shift + F",
+    "windows": "Ctrl + Shift + F",
+    "linux": "Ctrl + Shift + F"
   },
   "open_demo": {
-    "mac": "⌘ Option D",
-    "windows": "Ctrl+Alt+D",
-    "linux": "Ctrl+Alt+D"
+    "mac": "⌘ + Option + D",
+    "windows": "Ctrl + Alt + D",
+    "linux": "Ctrl + Alt + D"
   },
   "redo": {
-    "mac": "⌘ Shift Z",
-    "windows": "Ctrl+Shift+Z",
-    "linux": "Ctrl+Shift+Z"
+    "mac": "⌘ + Shift + Z",
+    "windows": "Ctrl + Shift + Z",
+    "linux": "Ctrl + Shift + Z"
   },
   "toggle_comment": {
-    "mac": "⌘ /",
-    "windows": "Ctrl+/",
-    "linux": "Ctrl+/"
+    "mac": "⌘ + /",
+    "windows": "Ctrl + /",
+    "linux": "Ctrl + /"
   },
   "open_settings": {
-    "mac": "⌘ ,",
-    "windows": "Ctrl+,",
-    "linux": "Ctrl+,"
+    "mac": "⌘ + ,",
+    "windows": "Ctrl + ,",
+    "linux": "Ctrl + ,"
   }
 }
