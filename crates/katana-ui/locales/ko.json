@@ -110,7 +110,8 @@
     },
     "slideshow_settings": "슬라이드쇼 설정",
     "highlight_hover": "[TODO-ko] Hover Highlight",
-    "show_diagram_controls": "[TODO-ko] Diagram Controls"
+    "show_diagram_controls": "[TODO-ko] Diagram Controls",
+    "toggle_slideshow": "[TODO-ko] Toggle Slideshow"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중…",
@@ -190,7 +191,8 @@
     "save_file": "파일 저장",
     "new_workspace": "새 워크스페이스",
     "open_workspace": "워크스페이스 열기",
-    "copy": "복사"
+    "copy": "복사",
+    "back_to_top": "[TODO-ko] Back to Top"
   },
   "ai": {
     "ai_unconfigured": "[AI: 구성되지 않음]"

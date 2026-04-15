@@ -110,7 +110,8 @@
     },
     "slideshow_settings": "投影片設定",
     "highlight_hover": "[TODO-zh-TW] Hover Highlight",
-    "show_diagram_controls": "[TODO-zh-TW] Diagram Controls"
+    "show_diagram_controls": "[TODO-zh-TW] Diagram Controls",
+    "toggle_slideshow": "[TODO-zh] Toggle Slideshow"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ 正在下載 PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "儲存檔案",
     "new_workspace": "新增專案",
     "open_workspace": "開啟專案",
-    "copy": "複製"
+    "copy": "複製",
+    "back_to_top": "[TODO-zh] Back to Top"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"

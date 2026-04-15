@@ -82,10 +82,8 @@ impl<'a> EditorContent<'a> {
                 scroll_area.show(ui, |ui| {
                     let horiz_response = ui.horizontal_top(|ui| {
                         const LINE_NUMBER_MARGIN: f32 = 40.0;
-                        const LINE_NUMBER_PAD_RIGHT: f32 = 8.0;
-                        let left_margin = LINE_NUMBER_MARGIN;
                         let (ln_rect, _) = ui.allocate_exact_size(
-                            egui::vec2(left_margin, 0.0),
+                            egui::vec2(LINE_NUMBER_MARGIN, 0.0),
                             egui::Sense::hover(),
                         );
 
@@ -117,14 +115,12 @@ impl<'a> EditorContent<'a> {
                             EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
                         }
 
-                        if sync_scroll {
-                            if response.clicked()
-                                && let Some(c) = text_output.cursor_range
-                            {
-                                let line =
-                                    EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
-                                scroll.scroll_to_line = Some(line);
-                            }
+                        if sync_scroll
+                            && response.clicked()
+                            && let Some(c) = text_output.cursor_range
+                        {
+                            let line = EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
+                            scroll.scroll_to_line = Some(line);
                         }
 
                         let current_cursor_y =
@@ -159,6 +155,7 @@ impl<'a> EditorContent<'a> {
                             self.doc_search_active_index,
                         );
 
+                        const PAD_RIGHT: f32 = 8.0;
                         super::line_numbers::EditorLineNumbers::render(
                             ui,
                             super::line_numbers::LineNumberParams {
@@ -169,8 +166,8 @@ impl<'a> EditorContent<'a> {
                                 current_cursor_y,
                                 ln_text,
                                 ln_active_text,
-                                left_margin,
-                                line_number_pad_right: LINE_NUMBER_PAD_RIGHT,
+                                left_margin: LINE_NUMBER_MARGIN,
+                                line_number_pad_right: PAD_RIGHT,
                             },
                         );
 
@@ -184,7 +181,6 @@ impl<'a> EditorContent<'a> {
                         (response, anchors)
                     });
 
-                    /* WHY: Provide virtual space (Ghost Space) and extra padding. */
                     EditorLogicOps::render_editor_padding(ui, scroll);
                     horiz_response
                 })

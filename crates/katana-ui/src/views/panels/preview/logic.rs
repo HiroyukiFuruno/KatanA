@@ -11,9 +11,7 @@ impl PreviewLogicOps {
     }
 
     pub fn invalidate_preview_image_cache(ctx: &egui::Context, action: &AppAction) {
-        if matches!(action, AppAction::RefreshDiagrams) {
-            ctx.forget_all_images();
-        }
+        if matches!(action, AppAction::RefreshDiagrams) { ctx.forget_all_images(); }
     }
 
     pub fn compute_forced_offset(
@@ -23,9 +21,7 @@ impl PreviewLogicOps {
         _row_height: f32,
         _inner_height: f32,
     ) -> Option<f32> {
-        if !scroll_sync {
-            return None;
-        }
+        if !scroll_sync { return None; }
         let consuming_editor = scroll_sync
             && scroll.source == crate::app_state::ScrollSource::Editor
             && scroll.scroll_to_line.is_none();
@@ -33,7 +29,6 @@ impl PreviewLogicOps {
             let raw_offset = scroll.mapper.logical_to_preview(scroll.logical_position);
             return Some(scroll.mapper.snap_to_heading_preview(raw_offset));
         }
-
         None
     }
 
@@ -91,16 +86,9 @@ impl PreviewLogicOps {
             &computed_anchors,
         );
 
-        let consuming_editor = scroll.source == crate::app_state::ScrollSource::Editor;
-        if consuming_editor {
-            scroll.source = crate::app_state::ScrollSource::Neither;
-            return;
-        }
-
-        if max_scroll <= 0.0 {
-            return;
-        }
-
+        let consuming = scroll.source == crate::app_state::ScrollSource::Editor;
+        if consuming { scroll.source = crate::app_state::ScrollSource::Neither; return; }
+        if max_scroll <= 0.0 { return; }
         if scroll.preview_echo.is_echo(offset_y) {
             return;
         }
@@ -131,5 +119,66 @@ impl PreviewLogicOps {
         const SCROLL_PAST_END_RATIO: f32 = 0.9;
         let viewport_pad = ui.clip_rect().height() * SCROLL_PAST_END_RATIO;
         ui.add_space(viewport_pad);
+    }
+
+    pub fn render_floating_buttons(
+        ui: &mut egui::Ui,
+        has_doc: bool,
+        show_export: bool,
+        show_story: bool,
+        show_back_to_top: bool,
+        action: &mut AppAction,
+        preview: &mut crate::preview_pane::PreviewPane,
+    ) {
+        let mut button_count = 0.0;
+        if has_doc { button_count += 2.0; }
+        if show_back_to_top { button_count += 1.0; }
+
+        if button_count > 0.0 {
+            const BUTTON_ROUNDING: u8 = 4;
+            const BUTTON_MARGIN: f32 = 20.0;
+            const BUTTON_SIZE: f32 = 32.0;
+
+            let margin = BUTTON_MARGIN;
+            let btn_size = egui::vec2(BUTTON_SIZE, BUTTON_SIZE);
+            let spacing = ui.spacing().item_spacing.x;
+            let total_width = (btn_size.x * button_count) + (spacing * (button_count - 1.0));
+
+            let btn_rect = egui::Rect::from_min_size(
+                egui::pos2(
+                    ui.max_rect().right() - margin - total_width,
+                    ui.max_rect().bottom() - margin - btn_size.y,
+                ),
+                egui::vec2(total_width, btn_size.y),
+            );
+
+            let mut overlay_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(btn_rect)
+                    .layout(egui::Layout::right_to_left(egui::Align::Center)),
+            );
+
+            let icon_bg = if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::from_gray(crate::shell_ui::LIGHT_MODE_ICON_BG) };
+            let active_bg = if ui.visuals().dark_mode { ui.visuals().widgets.active.bg_fill } else { crate::theme_bridge::ThemeBridgeOps::from_gray(crate::shell_ui::LIGHT_MODE_ICON_ACTIVE_BG) };
+
+            overlay_ui.scope(|ui| {
+                ui.visuals_mut().widgets.inactive.bg_fill = icon_bg;
+
+                if show_back_to_top {
+                    let btn = egui::Button::image(crate::Icon::ArrowUp.ui_image(ui, crate::icon::IconSize::Medium)).rounding(egui::Rounding::same(BUTTON_ROUNDING)).fill(icon_bg);
+                    if ui.add(btn).on_hover_text(crate::i18n::I18nOps::get().action.back_to_top.clone()).clicked() { preview.scroll_request = Some(0); }
+                }
+
+                if has_doc {
+                    let export_bg = if show_export { active_bg } else { icon_bg };
+                    let btn1 = egui::Button::image(crate::Icon::Export.ui_image(ui, crate::icon::IconSize::Medium)).rounding(egui::Rounding::same(BUTTON_ROUNDING)).fill(export_bg);
+                    if ui.add(btn1).on_hover_text(crate::i18n::I18nOps::get().menu.export.clone()).clicked() { *action = AppAction::ToggleExportPanel; }
+
+                    let story_bg = if show_story { active_bg } else { icon_bg };
+                    let btn2 = egui::Button::image(crate::Icon::Preview.ui_image(ui, crate::icon::IconSize::Medium)).rounding(egui::Rounding::same(BUTTON_ROUNDING)).fill(story_bg);
+                    if ui.add(btn2).on_hover_text(crate::i18n::I18nOps::get().preview.slideshow_settings.clone()).clicked() { *action = AppAction::ToggleStoryPanel; }
+                }
+            });
+        }
     }
 }

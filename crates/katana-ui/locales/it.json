@@ -110,7 +110,8 @@
     },
     "slideshow_settings": "Impostazioni presentazione",
     "highlight_hover": "[TODO-it] Hover Highlight",
-    "show_diagram_controls": "[TODO-it] Diagram Controls"
+    "show_diagram_controls": "[TODO-it] Diagram Controls",
+    "toggle_slideshow": "[TODO-it] Toggle Slideshow"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Download PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "Salva file",
     "new_workspace": "Nuovo progetto",
     "open_workspace": "Apri progetto",
-    "copy": "Copia"
+    "copy": "Copia",
+    "back_to_top": "[TODO-it] Back to Top"
   },
   "ai": {
     "ai_unconfigured": "[AI: Non configurata]"

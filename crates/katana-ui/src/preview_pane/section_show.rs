@@ -181,52 +181,26 @@ pub(super) fn show_section(
 
                 if let Some(anchors) = heading_anchors {
                     for anchor in &mut anchors[previous_anchor_count..] {
-                        let local_span = &anchor.0;
-                        let start_line = global_line_offset
-                            + md[..local_span.start]
-                                .chars()
-                                .filter(|c| *c == '\n')
-                                .count();
-                        let end_line = global_line_offset
-                            + md[..local_span.end].chars().filter(|c| *c == '\n').count();
-                        anchor.0 = start_line..end_line;
+                        anchor.0 = span_to_range(md, &anchor.0, global_line_offset, false, false);
                     }
                 }
                 if let Some(anchors) = block_anchors {
                     for (local_span, rect) in local_block_anchors {
-                        let start_line = global_line_offset
-                            + md[..local_span.start]
-                                .chars()
-                                .filter(|c| *c == '\n')
-                                .count();
-                        let end_line = global_line_offset
-                            + md[..local_span.end].chars().filter(|c| *c == '\n').count();
-                        let range_end = if end_line > start_line {
-                            end_line
-                        } else {
-                            start_line + 1
-                        };
-                        anchors.push((start_line..range_end, rect));
+                        anchors.push((
+                            span_to_range(md, &local_span, global_line_offset, true, false),
+                            rect,
+                        ));
                     }
                 }
                 if let Some(hovered) = hovered_lines {
                     for local_span in local_hovered_spans {
-                        let start_line = global_line_offset
-                            + md[..local_span.start]
-                                .chars()
-                                .filter(|c| *c == '\n')
-                                .count();
-                        /* WHY: Use saturating_sub(1) to exclude trailing newline */
-                        /* WHY: that pulldown_cmark includes in source spans. */
-                        let end_pos = local_span.end.saturating_sub(1).max(local_span.start);
-                        let end_line = global_line_offset
-                            + md[..end_pos].chars().filter(|c| *c == '\n').count();
-                        let range_end = if end_line > start_line {
-                            end_line
-                        } else {
-                            start_line + 1
-                        };
-                        hovered.push(start_line..range_end);
+                        hovered.push(span_to_range(
+                            md,
+                            &local_span,
+                            global_line_offset,
+                            true,
+                            true,
+                        ));
                     }
                 }
                 let spans = egui_commonmark::extract_task_list_spans(md);
@@ -349,6 +323,35 @@ pub(super) fn show_section(
             }
             (None, vec![])
         }
+    }
+}
+
+fn span_to_range(
+    md: &str,
+    span: &std::ops::Range<usize>,
+    global_line_offset: usize,
+    ensure_non_empty: bool,
+    exclude_trailing_newline: bool,
+) -> std::ops::Range<usize> {
+    let start_line = global_line_offset + md[..span.start].chars().filter(|c| *c == '\n').count();
+
+    let end_pos = if exclude_trailing_newline {
+        span.end.saturating_sub(1).max(span.start)
+    } else {
+        span.end
+    };
+
+    let end_line = global_line_offset + md[..end_pos].chars().filter(|c| *c == '\n').count();
+
+    if ensure_non_empty {
+        let range_end = if end_line > start_line {
+            end_line
+        } else {
+            start_line + 1
+        };
+        start_line..range_end
+    } else {
+        start_line..end_line
     }
 }
 

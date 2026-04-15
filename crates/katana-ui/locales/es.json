@@ -110,7 +110,8 @@
     },
     "slideshow_settings": "Configuración de presentación",
     "highlight_hover": "[TODO-es] Hover Highlight",
-    "show_diagram_controls": "[TODO-es] Diagram Controls"
+    "show_diagram_controls": "[TODO-es] Diagram Controls",
+    "toggle_slideshow": "[TODO-es] Toggle Slideshow"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Descargando PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "Guardar archivo",
     "new_workspace": "Nuevo proyecto",
     "open_workspace": "Abrir proyecto",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "back_to_top": "[TODO-es] Back to Top"
   },
   "ai": {
     "ai_unconfigured": "[AI: No configurada]"

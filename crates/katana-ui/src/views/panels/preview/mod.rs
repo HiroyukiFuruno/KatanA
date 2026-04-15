@@ -1,5 +1,4 @@
 mod content;
-mod header;
 mod logic;
 mod side_panels;
 pub mod types;

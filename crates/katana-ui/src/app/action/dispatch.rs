@@ -35,7 +35,7 @@ impl KatanaApp {
             AppAction::RemoveWorkspace(path) => self.handle_remove_explorer(path),
             AppAction::RemoveWorkspaceHistory(path) => self.handle_remove_workspace_history(path),
             AppAction::ShowStatusMessage(msg, status_type) => {
-                self.state.layout.status_message = Some((msg, status_type));
+                self.state.layout.status_message = Some((msg, status_type))
             }
             AppAction::CloseWorkspace => {
                 self.save_workspace_state();
@@ -85,33 +85,28 @@ impl KatanaApp {
                 /* WHY: Synchronize demo content localization if the demo is open */
                 self.handle_action_switch_demo_lang(&lang);
             }
-            AppAction::ToggleSettings => {
-                self.state.layout.show_settings = !self.state.layout.show_settings;
-            }
+            AppAction::ToggleSettings => self.state.layout.show_settings ^= true,
             AppAction::ToggleExportPanel => {
-                let current = self.state.layout.show_export_panel;
-                self.state.layout.show_export_panel = !current;
-                if !current {
+                if !self.state.layout.show_export_panel {
                     self.state.layout.show_story_panel = false;
                     self.state.layout.show_toc = false;
                 }
+                self.state.layout.show_export_panel ^= true;
             }
             AppAction::ToggleStoryPanel => {
-                let current = self.state.layout.show_story_panel;
-                self.state.layout.show_story_panel = !current;
-                if !current {
+                if !self.state.layout.show_story_panel {
                     self.state.layout.show_export_panel = false;
                     self.state.layout.show_toc = false;
                 }
+                self.state.layout.show_story_panel ^= true;
             }
             AppAction::ToggleAbout => self.show_about = !self.show_about,
             AppAction::ToggleToc => {
-                let current = self.state.layout.show_toc;
-                self.state.layout.show_toc = !current;
-                if !current {
+                if !self.state.layout.show_toc {
                     self.state.layout.show_export_panel = false;
                     self.state.layout.show_story_panel = false;
                 }
+                self.state.layout.show_toc ^= true;
             }
             AppAction::ToggleWorkspacePanel => {
                 let current = self.state.layout.show_workspace_panel;

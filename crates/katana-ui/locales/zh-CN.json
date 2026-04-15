@@ -110,7 +110,8 @@
     },
     "slideshow_settings": "幻灯片设置",
     "highlight_hover": "[TODO-zh-CN] Hover Highlight",
-    "show_diagram_controls": "[TODO-zh-CN] Diagram Controls"
+    "show_diagram_controls": "[TODO-zh-CN] Diagram Controls",
+    "toggle_slideshow": "[TODO-zh] Toggle Slideshow"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ 正在下载 PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "保存文件",
     "new_workspace": "新建项目",
     "open_workspace": "打开项目",
-    "copy": "复制"
+    "copy": "复制",
+    "back_to_top": "[TODO-zh] Back to Top"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未配置]"

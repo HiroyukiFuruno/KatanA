@@ -137,32 +137,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn preview_header_leaves_height_for_preview_body() {
-        let ctx = test_context();
-        let state = state_with_active_doc(std::path::Path::new("/tmp/preview.md"));
-        let mut action = AppAction::None;
-        let mut before_height = 0.0;
-        let mut remaining_height = 0.0;
-
-        let _ = ctx.run(test_input(egui::vec2(800.0, 600.0)), |ctx| {
-            egui::CentralPanel::default()
-                .frame(egui::Frame::central_panel(&ctx.global_style()).inner_margin(0.0))
-                .show(ctx, |ui| {
-                    before_height = ui.available_height();
-                    let has_doc = state.active_document().is_some();
-                    let toc_visible = state.config.settings.settings().layout.toc_visible;
-                    let show_toc = state.layout.show_toc;
-                    crate::views::panels::preview::PreviewHeader::new(has_doc, toc_visible, show_toc, &mut action).show(ui);
-                    remaining_height = ui.available_height();
-                });
-        });
-
-        assert!(
-            (before_height - remaining_height).abs() <= 1.0,
-            "preview header must overlay without consuming layout height, before={before_height}, after={remaining_height}"
-        );
-    }
 
     #[test]
     fn active_file_highlight_is_painted_before_text() {
