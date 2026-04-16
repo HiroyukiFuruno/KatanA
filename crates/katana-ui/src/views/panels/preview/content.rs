@@ -52,6 +52,15 @@ impl<'a> PreviewContent<'a> {
         if preview.scroll_request == Some(0) {
             forced_offset = Some(0.0);
             preview.scroll_request = None;
+        } else if let Some(idx) = preview.scroll_request
+            && let Some(offset) = PreviewLogicOps::heading_scroll_offset(
+                idx,
+                &preview.anchor_map,
+                preview.content_top_y,
+            )
+        {
+            forced_offset = Some(offset);
+            preview.scroll_request = None;
         }
 
         let mut scroll_area = egui::ScrollArea::vertical()

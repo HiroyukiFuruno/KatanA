@@ -7,6 +7,7 @@ use eframe::egui;
 
 const SLIDESHOW_BTN_H: f32 = 44.0;
 const SLIDESHOW_BTN_ROUNDING: f32 = 8.0;
+const STORY_RIGHT_MARGIN: f32 = 8.0;
 
 impl<'a> PreviewSidePanels<'a> {
     pub(super) fn render_story(&mut self, ui: &mut egui::Ui) {
@@ -42,8 +43,7 @@ impl<'a> PreviewSidePanels<'a> {
                         ui.scope(|ui| {
                             ui.spacing_mut().item_spacing.y = PANEL_ITEM_SPACE;
                             /* WHY: Reserve right margin so LabeledToggle doesn't clip. */
-                            let right_margin = 8.0;
-                            ui.set_max_width(ui.available_width() - right_margin);
+                            ui.set_max_width(ui.available_width() - STORY_RIGHT_MARGIN);
                             let i18n = crate::i18n::I18nOps::get();
 
                             let mut hover = self.app.state.layout.slideshow_hover_highlight;

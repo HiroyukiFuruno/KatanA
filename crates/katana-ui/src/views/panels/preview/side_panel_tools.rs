@@ -1,5 +1,6 @@
 use super::side_panels::{
-    PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_WIDTH, PreviewSidePanels,
+    LIGHT_MODE_ICON_BG, PANEL_ANIM_SPEED, PANEL_HEAD_SPACE, PANEL_HOVER_MARGIN, PANEL_WIDTH,
+    PreviewSidePanels,
 };
 use crate::app_state::{AppAction, ViewMode};
 use crate::icon::IconSize;
@@ -10,6 +11,7 @@ use super::tangochou::TangochouWidget;
 
 const SPLIT_SECTION_SPACE: f32 = 8.0;
 const ICON_BTN_SIZE: f32 = 32.0;
+const TOOLS_RIGHT_MARGIN: f32 = 8.0;
 
 impl<'a> PreviewSidePanels<'a> {
     pub(super) fn render_tools(&mut self, ui: &mut egui::Ui) {
@@ -42,12 +44,12 @@ impl<'a> PreviewSidePanels<'a> {
 
                     ui.indent("tools_content", |ui| {
                         /* WHY: Reserve right margin so LabeledToggle doesn't clip. */
-                        ui.set_max_width(ui.available_width() - 8.0);
+                        ui.set_max_width(ui.available_width() - TOOLS_RIGHT_MARGIN);
                         let i18n = crate::i18n::I18nOps::get();
                         let view_mode = self.app.state.active_view_mode();
                         let is_split = view_mode == ViewMode::Split;
 
-                        /* ── 分割トグル ── */
+                        /* Split Toggle */
                         let mut split_on = is_split;
                         let split_resp = ui.add(
                             crate::widgets::LabeledToggle::new(
@@ -59,8 +61,7 @@ impl<'a> PreviewSidePanels<'a> {
                         );
                         if split_resp.changed() {
                             if split_on {
-                                self.app.pending_action =
-                                    AppAction::SetViewMode(ViewMode::Split);
+                                self.app.pending_action = AppAction::SetViewMode(ViewMode::Split);
                             } else {
                                 self.app.pending_action =
                                     AppAction::SetViewMode(ViewMode::PreviewOnly);
@@ -70,7 +71,7 @@ impl<'a> PreviewSidePanels<'a> {
                         ui.add_space(SPLIT_SECTION_SPACE);
 
                         if is_split {
-                            /* ── 分割ON時: スクロール同期 ── */
+                            /* When Split is ON: Scroll Sync Setting */
                             let config_sync = self
                                 .app
                                 .state
@@ -79,12 +80,8 @@ impl<'a> PreviewSidePanels<'a> {
                                 .settings()
                                 .behavior
                                 .scroll_sync_enabled;
-                            let mut sync = self
-                                .app
-                                .state
-                                .scroll
-                                .sync_override
-                                .unwrap_or(config_sync);
+                            let mut sync =
+                                self.app.state.scroll.sync_override.unwrap_or(config_sync);
                             let sync_resp = ui.add(
                                 crate::widgets::LabeledToggle::new(
                                     i18n.settings.behavior.scroll_sync.clone(),
@@ -99,57 +96,78 @@ impl<'a> PreviewSidePanels<'a> {
 
                             ui.add_space(SPLIT_SECTION_SPACE);
 
-                            ui.horizontal(|ui| {
-                                let dir = self.app.state.active_split_direction();
-                                let order = self.app.state.active_pane_order();
+                            crate::widgets::AlignCenter::new()
+                                .content(|ui| {
+                                    let dir = self.app.state.active_split_direction();
+                                    let order = self.app.state.active_pane_order();
 
-                                /* 左右/上下 切り替えアイコン（現在の方向を表示、クリックでトグル） */
-                                let (dir_icon, dir_tip, next_dir) =
-                                    if dir == SplitDirection::Horizontal {
-                                        (
-                                            crate::Icon::SplitHorizontal,
-                                            i18n.split_toggle.vertical.clone(),
-                                            SplitDirection::Vertical,
-                                        )
+                                    let icon_bg = if ui.visuals().dark_mode {
+                                        crate::theme_bridge::TRANSPARENT
                                     } else {
-                                        (
-                                            crate::Icon::SplitVertical,
-                                            i18n.split_toggle.horizontal.clone(),
-                                            SplitDirection::Horizontal,
+                                        crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                            LIGHT_MODE_ICON_BG,
                                         )
                                     };
-                                let dir_img = dir_icon.ui_image(ui, IconSize::Medium);
-                                let btn_dir = egui::Button::image(dir_img)
-                                    .min_size(egui::vec2(ICON_BTN_SIZE, ICON_BTN_SIZE));
-                                if ui.add(btn_dir).on_hover_text(dir_tip).clicked() {
-                                    self.app.pending_action =
-                                        AppAction::SetSplitDirection(next_dir);
-                                }
 
-                                /* コード/プレビュー 入れ替えアイコン */
-                                let swap_icon = if dir == SplitDirection::Horizontal {
-                                    crate::Icon::SwapHorizontal
-                                } else {
-                                    crate::Icon::SwapVertical
-                                };
-                                let swap_tip = if order == PaneOrder::EditorFirst {
-                                    i18n.split_toggle.preview_first.clone()
-                                } else {
-                                    i18n.split_toggle.editor_first.clone()
-                                };
-                                let swap_img = swap_icon.ui_image(ui, IconSize::Medium);
-                                let btn_swap = egui::Button::image(swap_img)
-                                    .min_size(egui::vec2(ICON_BTN_SIZE, ICON_BTN_SIZE));
-                                if ui.add(btn_swap).on_hover_text(swap_tip).clicked() {
-                                    let new_order = match order {
-                                        PaneOrder::EditorFirst => PaneOrder::PreviewFirst,
-                                        PaneOrder::PreviewFirst => PaneOrder::EditorFirst,
+                                    /* Split Direction Icon (Horizontal/Vertical) */
+                                    let (dir_icon, dir_tip, next_dir) =
+                                        if dir == SplitDirection::Horizontal {
+                                            (
+                                                crate::Icon::SplitHorizontal,
+                                                i18n.split_toggle.vertical.clone(),
+                                                SplitDirection::Vertical,
+                                            )
+                                        } else {
+                                            (
+                                                crate::Icon::SplitVertical,
+                                                i18n.split_toggle.horizontal.clone(),
+                                                SplitDirection::Horizontal,
+                                            )
+                                        };
+                                    let dir_img = dir_icon.ui_image(ui, IconSize::Medium);
+                                    let btn_dir = egui::Button::image(dir_img)
+                                        .min_size(egui::vec2(ICON_BTN_SIZE, ICON_BTN_SIZE))
+                                        .fill(icon_bg);
+                                    let resp_dir = ui.add(btn_dir).on_hover_text(&dir_tip);
+                                    resp_dir.widget_info(|| {
+                                        egui::WidgetInfo::labeled(
+                                            egui::WidgetType::Button,
+                                            ui.is_enabled(),
+                                            &dir_tip,
+                                        )
+                                    });
+                                    if resp_dir.clicked() {
+                                        self.app.pending_action =
+                                            AppAction::SetSplitDirection(next_dir);
+                                    }
+
+                                    /* Swap Pane Order Icon (EditorFirst/PreviewFirst) */
+                                    let swap_icon = if dir == SplitDirection::Horizontal {
+                                        crate::Icon::SwapHorizontal
+                                    } else {
+                                        crate::Icon::SwapVertical
                                     };
-                                    self.app.pending_action = AppAction::SetPaneOrder(new_order);
-                                }
-                            });
+                                    let swap_tip = if order == PaneOrder::EditorFirst {
+                                        i18n.split_toggle.preview_first.clone()
+                                    } else {
+                                        i18n.split_toggle.editor_first.clone()
+                                    };
+                                    let swap_img = swap_icon.ui_image(ui, IconSize::Medium);
+                                    let btn_swap = egui::Button::image(swap_img)
+                                        .min_size(egui::vec2(ICON_BTN_SIZE, ICON_BTN_SIZE))
+                                        .fill(icon_bg);
+                                    if ui.add(btn_swap).on_hover_text(swap_tip).clicked() {
+                                        let new_order = match order {
+                                            PaneOrder::EditorFirst => PaneOrder::PreviewFirst,
+                                            PaneOrder::PreviewFirst => PaneOrder::EditorFirst,
+                                        };
+                                        self.app.pending_action =
+                                            AppAction::SetPaneOrder(new_order);
+                                    }
+                                })
+                                .show(ui);
                         } else {
-                            /* ── 分割OFF時: Tangochou（コード/プレビュー切替） ── */
+                            /* When Split is OFF: Tangochou (Code/Preview Switch) */
                             let i18n2 = crate::i18n::I18nOps::get();
                             if let Some(action) = (TangochouWidget {
                                 view_mode: self.app.state.active_view_mode(),

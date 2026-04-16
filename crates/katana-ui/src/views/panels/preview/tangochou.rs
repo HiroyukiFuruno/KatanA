@@ -2,40 +2,7 @@ use crate::app_state::ViewMode;
 use crate::theme_bridge::{ThemeBridgeOps, WHITE};
 use eframe::egui;
 
-const CARD_HEIGHT: f32 = 42.0;
-const CARD_PADDING: f32 = 12.0;
-const CARD_BACK_ANGLE_DEG: f32 = 12.0;
-const CARD_HOVER_BACK_EXTRA_DEG: f32 = 2.0;
-const CARD_HOVER_FRONT_OFFSET_DEG: f32 = 1.5;
-const RING_RADIUS_OUTER: f32 = 9.5;
-const RING_RADIUS_INNER: f32 = 6.5;
-const RING_RADIUS: f32 = 8.0;
-const RING_STROKE_MAIN: f32 = 3.0;
-const RING_STROKE_ACCENT: f32 = 1.0;
-const RING_X_OFFSET: f32 = 16.0;
-const HOLE_RADIUS: f32 = 5.0;
-const SHADOW_OFFSET: egui::Vec2 = egui::vec2(2.0, 4.0);
-const SHADOW_ALPHA: u8 = 45;
-const RING_ALPHA: u8 = 60;
-const HIGHLIGHT_ALPHA_MUL: f32 = 0.6;
-const CARD_CENTER_RATIO: f32 = 0.5;
-const TEXT_SIZE: f32 = 15.0;
-const TEXT_X_OFFSET: f32 = 8.0;
-const CARD_EXTRA_H_PAD: f32 = 12.0;
-const CARD_TOP_OFFSET: f32 = 4.0;
-const FRONT_BORDER_W: f32 = 1.5;
-const BACK_BORDER_W: f32 = 1.0;
-const HIGHLIGHT_Y1: f32 = 6.0;
-const HIGHLIGHT_X1: f32 = 4.0;
-const HIGHLIGHT_Y2: f32 = 8.0;
-const HIGHLIGHT_X2: f32 = 1.0;
-const HIGHLIGHT_STROKE_W: f32 = 1.5;
-const CARD_GRAY_DARK_BACK: u8 = 35;
-const CARD_GRAY_LIGHT_BACK: u8 = 225;
-const CARD_GRAY_DARK_FRONT: u8 = 65;
-const CARD_GRAY_LIGHT_FRONT: u8 = 255;
-const RING_GRAY_DARK: u8 = 120;
-const RING_GRAY_LIGHT: u8 = 180;
+use super::tangochou_consts::*;
 
 /* WHY: Flashcard-style widget for toggling between Code/Preview modes.
 Named after Japanese "単語帳 (tangochou)" flash-card notebooks. */
@@ -44,7 +11,6 @@ pub(super) struct TangochouWidget<'a> {
     pub label_front: &'a str,
     pub label_back: &'a str,
 }
-
 impl<'a> TangochouWidget<'a> {
     /* WHY: Returns Some(action) when clicked so caller owns the dispatch. */
     pub fn show(self, ui: &mut egui::Ui) -> Option<crate::app_state::AppAction> {
@@ -73,22 +39,21 @@ impl<'a> TangochouWidget<'a> {
         };
 
         let is_dark = ui.visuals().dark_mode;
-        let back_bg = if is_dark {
-            ThemeBridgeOps::from_gray(CARD_GRAY_DARK_BACK)
+        let back_bg = ThemeBridgeOps::from_gray(if is_dark {
+            CARD_GRAY_DARK_BACK
         } else {
-            ThemeBridgeOps::from_gray(CARD_GRAY_LIGHT_BACK)
-        };
-        let front_bg = if is_dark {
-            ThemeBridgeOps::from_gray(CARD_GRAY_DARK_FRONT)
+            CARD_GRAY_LIGHT_BACK
+        });
+        let front_bg = ThemeBridgeOps::from_gray(if is_dark {
+            CARD_GRAY_DARK_FRONT
         } else {
-            ThemeBridgeOps::from_gray(CARD_GRAY_LIGHT_FRONT)
-        };
+            CARD_GRAY_LIGHT_FRONT
+        });
         let stroke_col = ui.visuals().widgets.noninteractive.bg_stroke.color;
         let selection_col = ui.visuals().selection.bg_fill;
 
         let draw_card = |angle: f32, bg: egui::Color32, text: &str, is_front: bool| {
             let rect = egui::Rect::from_min_size(base_pos, egui::vec2(card_w, CARD_HEIGHT));
-
             let rotate_pos = |p: egui::Pos2| -> egui::Pos2 {
                 let dx = p.x - ring_center.x;
                 let dy = p.y - ring_center.y;
@@ -100,27 +65,29 @@ impl<'a> TangochouWidget<'a> {
             };
 
             let corners = [
-                rotate_pos(rect.left_top()),
-                rotate_pos(rect.right_top()),
-                rotate_pos(rect.right_bottom()),
-                rotate_pos(rect.left_bottom()),
-            ];
+                rect.left_top(),
+                rect.right_top(),
+                rect.right_bottom(),
+                rect.left_bottom(),
+            ]
+            .map(rotate_pos);
 
             if is_front {
-                let shadow_corners = corners.map(|p| p + SHADOW_OFFSET);
                 ui.painter().add(egui::Shape::convex_polygon(
-                    shadow_corners.into(),
+                    corners.map(|p| p + SHADOW_OFFSET).into(),
                     ThemeBridgeOps::from_black_alpha(SHADOW_ALPHA),
                     egui::Stroke::NONE,
                 ));
             }
 
-            let border_w = if is_front {
-                FRONT_BORDER_W
-            } else {
-                BACK_BORDER_W
+            let border_w = match is_front {
+                true => FRONT_BORDER_W,
+                false => BACK_BORDER_W,
             };
-            let border_col = if is_front { selection_col } else { stroke_col };
+            let border_col = match is_front {
+                true => selection_col,
+                false => stroke_col,
+            };
             ui.painter().add(egui::Shape::convex_polygon(
                 corners.into(),
                 bg,
@@ -148,7 +115,6 @@ impl<'a> TangochouWidget<'a> {
                 egui::FontId::proportional(TEXT_SIZE),
                 text_color,
             );
-
             let text_center = rect.center() + egui::vec2(TEXT_X_OFFSET, 0.0);
             let text_tl = text_center - galley.size() / 2.0;
 
@@ -162,16 +128,15 @@ impl<'a> TangochouWidget<'a> {
         } else {
             (self.label_back, self.label_front)
         };
-
         draw_card(actual_back_angle, back_bg, back_text, false);
         draw_card(actual_front_angle, front_bg, front_text, true);
 
         /* WHY: Layered ring strokes give a 3-D metallic binder-ring appearance. */
-        let ring_color = if is_dark {
-            ThemeBridgeOps::from_gray(RING_GRAY_DARK)
+        let ring_color = ThemeBridgeOps::from_gray(if is_dark {
+            RING_GRAY_DARK
         } else {
-            ThemeBridgeOps::from_gray(RING_GRAY_LIGHT)
-        };
+            RING_GRAY_LIGHT
+        });
         let ring_shadow = ThemeBridgeOps::from_black_alpha(RING_ALPHA);
         ui.painter().circle_stroke(
             ring_center,

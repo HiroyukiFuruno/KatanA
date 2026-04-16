@@ -7,6 +7,11 @@ impl<'a> PreviewSidePanels<'a> {
             return;
         }
 
+        let toc_visible = self.app.state.config.settings.settings().layout.toc_visible;
+        if !toc_visible {
+            return;
+        }
+
         let doc = match self.app.state.active_document() {
             Some(d) => d,
             None => return,
