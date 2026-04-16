@@ -37,21 +37,7 @@ impl KatanaApp {
             AppAction::ShowStatusMessage(msg, status_type) => {
                 self.state.layout.status_message = Some((msg, status_type))
             }
-            AppAction::CloseWorkspace => {
-                self.save_workspace_state();
-                self.state.workspace.data = None;
-                self.state.document.open_documents.clear();
-                self.state.document.active_doc_idx = None;
-                self.state.document.tab_groups.clear();
-                self.state.document.tab_view_modes.clear();
-                self.state.document.tab_split_states.clear();
-                self.state.document.recently_closed_tabs.clear();
-                self.state.search.filter_cache = None;
-                self.state.layout.status_message = Some((
-                    crate::i18n::I18nOps::get().status.closed_workspace.clone(),
-                    crate::app_state::StatusType::Success,
-                ));
-            }
+            AppAction::CloseWorkspace => self.handle_action_close_workspace(),
             AppAction::CloseDocument(idx) => self.handle_action_close_document(idx),
             AppAction::CloseActiveDocument => {
                 if let Some(idx) = self.state.document.active_doc_idx {
@@ -75,84 +61,24 @@ impl KatanaApp {
             AppAction::RefreshDocument { is_manual } => {
                 self.handle_action_refresh_document(ctx, is_manual)
             }
-            AppAction::ChangeLanguage(lang) => {
-                crate::i18n::I18nOps::set_language(&lang);
-                crate::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
-                self.state.config.settings.settings_mut().language = lang.clone();
-                if !self.state.config.try_save_settings() {
-                    tracing::warn!("Failed to save language setting");
-                }
-                /* WHY: Synchronize demo content localization if the demo is open */
-                self.handle_action_switch_demo_lang(&lang);
-            }
+            AppAction::ChangeLanguage(lang) => self.handle_action_change_language(lang),
             AppAction::ToggleSettings => self.state.layout.show_settings ^= true,
-            AppAction::ToggleExportPanel => {
-                if !self.state.layout.show_export_panel {
-                    self.state.layout.show_story_panel = false;
-                    self.state.layout.show_tools_panel = false;
-                    self.state.layout.show_toc = false;
-                }
-                self.state.layout.show_export_panel ^= true;
-            }
-            AppAction::ToggleStoryPanel => {
-                if !self.state.layout.show_story_panel {
-                    self.state.layout.show_export_panel = false;
-                    self.state.layout.show_tools_panel = false;
-                    self.state.layout.show_toc = false;
-                }
-                self.state.layout.show_story_panel ^= true;
-            }
-            AppAction::ToggleToolsPanel => {
-                if !self.state.layout.show_tools_panel {
-                    self.state.layout.show_export_panel = false;
-                    self.state.layout.show_story_panel = false;
-                    self.state.layout.show_toc = false;
-                }
-                self.state.layout.show_tools_panel ^= true;
-            }
+            AppAction::ToggleExportPanel => self.handle_toggle_panel("export"),
+            AppAction::ToggleStoryPanel => self.handle_toggle_panel("story"),
+            AppAction::ToggleToolsPanel => self.handle_toggle_panel("tools"),
             AppAction::ToggleAbout => self.show_about = !self.show_about,
-            AppAction::ToggleToc => {
-                if !self.state.layout.show_toc {
-                    self.state.layout.show_export_panel = false;
-                    self.state.layout.show_story_panel = false;
-                    self.state.layout.show_tools_panel = false;
-                }
-                self.state.layout.show_toc ^= true;
-            }
-            AppAction::ToggleWorkspacePanel => {
-                let current = self.state.layout.show_workspace_panel;
-                self.state.layout.show_workspace_panel = !current;
-                if !current {
-                    /* WHY: Reload from disk to show the latest persisted workspace list */
-                    self.state.global_workspace.reload();
-                }
-            }
-            AppAction::ToggleExplorer => {
-                let current = self.state.layout.show_explorer;
-                self.state.layout.show_explorer = !current;
-                if !current {
-                    /* WHY: Reload from disk to show the latest history in empty workspace view */
-                    self.state.global_workspace.reload();
-                }
-            }
-            AppAction::ToggleHistoryPanel => {
-                let current = self.state.layout.show_history_panel;
-                self.state.layout.show_history_panel = !current;
-                if !current {
-                    /* WHY: Reload from disk to show the latest history list */
-                    self.state.global_workspace.reload();
-                }
-            }
-            AppAction::ToggleSearchModal => {
-                self.state.layout.show_search_modal = !self.state.layout.show_search_modal;
-            }
+            AppAction::ToggleToc => self.handle_toggle_panel("toc"),
+            AppAction::ToggleWorkspacePanel => self.handle_toggle_reload_panel("workspace"),
+            AppAction::ToggleExplorer => self.handle_toggle_reload_panel("explorer"),
+            AppAction::ToggleHistoryPanel => self.handle_toggle_reload_panel("history"),
+            AppAction::ToggleSearchModal => self.state.layout.show_search_modal ^= true,
             AppAction::ToggleCommandPalette => self.state.command_palette.toggle(),
             AppAction::ToggleRailPopup(popup) => {
                 if self.state.layout.active_rail_popup == Some(popup) {
                     self.state.layout.active_rail_popup = None;
                 } else {
                     self.state.layout.active_rail_popup = Some(popup);
-                    /* WHY: Ensure the sidebar explorer remains visible whenever an activity rail panel is opened. */
+                    /* WHY: Ensure the sidebar explorer remains visible when a rail panel opens. */
                     self.state.layout.show_explorer = true;
                 }
             }
@@ -201,6 +127,72 @@ impl KatanaApp {
                 }
             }
             other => self.dispatch_secondary(ctx, other),
+        }
+    }
+
+    fn handle_toggle_reload_panel(&mut self, p: &str) {
+        /* WHY: These panels need disk reload when opened to reflect latest state */
+        let flag = match p {
+            "workspace" => &mut self.state.layout.show_workspace_panel,
+            "explorer" => &mut self.state.layout.show_explorer,
+            "history" => &mut self.state.layout.show_history_panel,
+            _ => return,
+        };
+        let was_open = *flag;
+        *flag = !was_open;
+        if !was_open {
+            self.state.global_workspace.reload();
+        }
+    }
+
+    fn handle_action_change_language(&mut self, lang: String) {
+        crate::i18n::I18nOps::set_language(&lang);
+        crate::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
+        self.state.config.settings.settings_mut().language = lang.clone();
+        if !self.state.config.try_save_settings() {
+            tracing::warn!("Failed to save language setting");
+        }
+        /* WHY: Synchronize demo content localization if the demo is open */
+        self.handle_action_switch_demo_lang(&lang);
+    }
+
+    fn handle_action_close_workspace(&mut self) {
+        self.save_workspace_state();
+        self.state.workspace.data = None;
+        self.state.document.open_documents.clear();
+        self.state.document.active_doc_idx = None;
+        self.state.document.tab_groups.clear();
+        self.state.document.tab_view_modes.clear();
+        self.state.document.tab_split_states.clear();
+        self.state.document.recently_closed_tabs.clear();
+        self.state.search.filter_cache = None;
+        self.state.layout.status_message = Some((
+            crate::i18n::I18nOps::get().status.closed_workspace.clone(),
+            crate::app_state::StatusType::Success,
+        ));
+    }
+
+    fn handle_toggle_panel(&mut self, p: &str) {
+        /* WHY: Close siblings before opening a new side panel */
+        let open = match p {
+            "export" => self.state.layout.show_export_panel,
+            "story" => self.state.layout.show_story_panel,
+            "tools" => self.state.layout.show_tools_panel,
+            "toc" => self.state.layout.show_toc,
+            _ => false,
+        };
+        if !open {
+            self.state.layout.show_export_panel = false;
+            self.state.layout.show_story_panel = false;
+            self.state.layout.show_tools_panel = false;
+            self.state.layout.show_toc = false;
+        }
+        match p {
+            "export" => self.state.layout.show_export_panel ^= true,
+            "story" => self.state.layout.show_story_panel ^= true,
+            "tools" => self.state.layout.show_tools_panel ^= true,
+            "toc" => self.state.layout.show_toc ^= true,
+            _ => {}
         }
     }
 }

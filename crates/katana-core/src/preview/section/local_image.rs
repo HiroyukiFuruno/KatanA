@@ -15,8 +15,6 @@ impl ImageSectionOps {
         result
     }
 
-    /// Split markdown text into paragraphs and extract standalone image paragraphs
-    /// as `LocalImage` sections while keeping other paragraphs as `Markdown`.
     fn split_paragraphs_extracting_images(md: &str, out: &mut Vec<PreviewSection>) {
         /* WHY: Split on double-newlines (paragraph boundary) to find standalone image paragraphs. */
         let paragraphs: Vec<&str> = md.split("\n\n").collect();
@@ -33,20 +31,19 @@ impl ImageSectionOps {
 
         let mut md_buf = String::new();
         for (i, para) in paragraphs.iter().enumerate() {
+            if i > 0 {
+                md_buf.push_str("\n\n");
+            }
+
             if let Some((path, alt)) = Self::try_parse_standalone_image(para) {
                 if !md_buf.is_empty() {
-                    out.push(PreviewSection::Markdown(md_buf.clone()));
-                    md_buf.clear();
+                    out.push(PreviewSection::Markdown(std::mem::take(&mut md_buf)));
                 }
                 let lines = para.chars().filter(|c| *c == '\n').count();
                 out.push(PreviewSection::LocalImage { path, alt, lines });
             } else {
-                if !md_buf.is_empty() {
-                    md_buf.push_str("\n\n");
-                }
                 md_buf.push_str(para);
             }
-            let _ = i;
         }
         if !md_buf.is_empty() {
             out.push(PreviewSection::Markdown(md_buf));
