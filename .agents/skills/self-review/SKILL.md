@@ -33,6 +33,7 @@ ignored. Per the `technical_debt_and_separation` skill:
 
 Record out-of-scope issues in `openspec/changes/technical-debt/proposal.md`
 with:
+
 - A description of the issue
 - The discovery context (what triggered you to notice it)
 
@@ -43,12 +44,14 @@ with:
 Verify compliance with the rules defined in `docs/coding-rules.md` (and `docs/coding-rules.ja.md`).
 
 ### Automated (enforced by `make check`)
+
 - `cargo fmt --check` — formatting
 - `cargo clippy` — lint (`#![deny(warnings)]` enforced)
 - `cargo test -p katana-linter` — AST Linter (magic numbers, function size, etc.)
 - `cargo-llvm-cov` — coverage gate
 
 ### Manual (AI visual inspection)
+
 - [ ] Function size ≤ 30 lines
 - [ ] Nesting depth ≤ 3 levels
 - [ ] Error-first pattern (`?` / `let...else`)
@@ -61,6 +64,7 @@ Verify compliance with the rules defined in `docs/coding-rules.md` (and `docs/co
 - [ ] **Release Consistency**: If on a `release/v*` branch, is `Cargo.toml` and `crates/katana-ui/Info.plist` version consistent with the branch name?
 
 ### AI Quality is Speed Check (No Sloppy Shortcuts)
+
 - [ ] Are there ANY lazy shortcuts? (e.g., `todo!()`, `unimplemented!()`, `dbg!()`, `unwrap()` used as a temporary bypass). **Fix them now.**
 - [ ] Does this design gracefully support future extension, avoiding hardcoded boolean flags or spaghetti state?
 - [ ] Is it built with the absolute principle of "丁寧＝早い (Careful = Fast)" preventing bugs later?
@@ -72,6 +76,7 @@ Verify compliance with the rules defined in `docs/coding-rules.md` (and `docs/co
 If working under an OpenSpec change, verify the task state is updated.
 
 ### Checklist
+
 - [ ] Completed tasks in `tasks.md` are marked as done (`[x]`)
 - [ ] In-progress tasks are clearly indicated
 - [ ] Task completion aligns with actual code changes
@@ -83,6 +88,7 @@ If working under an OpenSpec change, verify the task state is updated.
 Ensure tests are not distorted just to make them pass.
 
 ### Checklist
+
 - [ ] Tests verify real logic (no empty assertions like `assert!(true)`)
 - [ ] Assertions compare against concrete expected values
 - [ ] No unjustified relaxation of linter rules or allowed-list expansion. If done, is the reason legitimate?
@@ -99,13 +105,16 @@ Ensure tests are not distorted just to make them pass.
 Confirm the change does not break existing functionality.
 
 ### Checklist
+
 - [ ] `make check` passes all gates (fmt / lint / test / coverage)
 - [ ] All call sites are updated for changed public APIs (`pub fn`, `pub struct` fields)
 - [ ] Serde compatibility: existing JSON settings files can deserialize into the new structs (proper use of `#[serde(default)]`)
 - [ ] Type signature changes are propagated across all dependent crates
 
 ### Handling User-Reported Bugs
+
 When a user reports a bug that was not caught:
+
 - [ ] A unit test or integration test reproducing the reported issue was added **first**
 - [ ] The test FAILs before the fix and PASSes after
 - [ ] Similar edge-case test scenarios were also added
@@ -117,6 +126,7 @@ When a user reports a bug that was not caught:
 Verify the correct language is used in Git-managed files.
 
 ### Rules
+
 | File type | Language |
 |---|---|
 | Source code (`.rs`, `.toml`, `.yml`, etc.) | **English** |
@@ -128,6 +138,7 @@ Verify the correct language is used in Git-managed files.
 | Locale files (`locales/*.json`) | **Native language of the target locale** |
 
 ### Checklist
+
 - [ ] Comments in new/modified files are written in English
 - [ ] Any remaining Japanese comments are translated to English
 - [ ] Test function `///` doc comments and `assert!` messages are in English

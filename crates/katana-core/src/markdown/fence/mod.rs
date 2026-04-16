@@ -81,7 +81,9 @@ impl MarkdownFenceOps {
         if let Some(html) = Self::render_diagram_block(&block, renderer) {
             output.push('\n');
             output.push_str(&html);
-            output.push('\n');
+            /* WHY: CommonMark [HTML blocks, type 6] specifies that blocks end with a blank line.
+            Without explicit \n\n, subsequent Markdown elements like # Headings are swallowed! */
+            output.push_str("\n\n");
         } else {
             output.push_str(&block.raw);
         }
