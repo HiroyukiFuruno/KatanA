@@ -109,6 +109,11 @@ impl ThemeColorsLegacyData {
             } else {
                 LEGACY_HOVER_LINE_LIGHT
             },
+            active_line_background: if is_dark {
+                LEGACY_ACTIVE_LINE_DARK
+            } else {
+                LEGACY_ACTIVE_LINE_LIGHT
+            },
         }
     }
 

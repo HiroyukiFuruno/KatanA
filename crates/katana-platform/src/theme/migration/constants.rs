@@ -80,6 +80,18 @@ pub(crate) const LEGACY_HOVER_LINE_LIGHT: Rgba = Rgba {
     b: 0,
     a: 10,
 };
+pub(crate) const LEGACY_ACTIVE_LINE_DARK: Rgba = Rgba {
+    r: 255,
+    g: 255,
+    b: 255,
+    a: 40,
+};
+pub(crate) const LEGACY_ACTIVE_LINE_LIGHT: Rgba = Rgba {
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 40,
+};
 
 pub(crate) const LEGACY_DEFAULT_WARNING: Rgb = Rgb {
     r: 255,

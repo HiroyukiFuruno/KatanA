@@ -54,10 +54,13 @@ pub struct PreviewColors {
     pub selection: super::types::Rgb,
     #[serde(default = "PreviewColors::default_hover_line_background")]
     pub hover_line_background: Rgba,
+    #[serde(default = "PreviewColors::default_active_line_background")]
+    pub active_line_background: Rgba,
 }
 
 pub(crate) const DEFAULT_PREVIEW_LINE_BACKGROUND_RGB: u8 = 128;
 pub(crate) const DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA: u8 = 15;
+pub(crate) const DEFAULT_PREVIEW_ACTIVE_LINE_BACKGROUND_ALPHA: u8 = 40;
 
 impl PreviewColors {
     pub(crate) fn default_hover_line_background() -> Rgba {
@@ -66,6 +69,15 @@ impl PreviewColors {
             g: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
             b: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
             a: DEFAULT_PREVIEW_HOVER_LINE_BACKGROUND_ALPHA,
+        }
+    }
+
+    pub(crate) fn default_active_line_background() -> Rgba {
+        Rgba {
+            r: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
+            g: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
+            b: DEFAULT_PREVIEW_LINE_BACKGROUND_RGB,
+            a: DEFAULT_PREVIEW_ACTIVE_LINE_BACKGROUND_ALPHA,
         }
     }
 }
