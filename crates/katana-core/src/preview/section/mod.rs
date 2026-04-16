@@ -5,67 +5,35 @@ pub mod math;
 
 use crate::markdown::DiagramBlock;
 use crate::preview::types::{PreviewSection, PreviewSectionOps};
-use crate::preview::{DiagramSectionOps, HtmlPreviewOps, ImageSectionOps, MathPreviewOps};
+use crate::preview::{DiagramSectionOps, HtmlPreviewOps, MathPreviewOps};
 
 impl PreviewSectionOps {
-    pub fn split_sections(content: &str) -> Vec<PreviewSection> {
+    pub fn split_sections(markdown: &str) -> Vec<PreviewSection> {
         let mut sections = Vec::new();
-        let mut acc = String::new();
-        let mut rem = content;
+        let mut remaining = markdown;
 
-        while let Some(offset) = Self::find_next_fence_offset(rem) {
-            acc.push_str(&rem[..offset]);
-            rem = &rem[offset..];
+        while !remaining.is_empty() {
+            if let Some(fence_start) = remaining.find("```") {
+                if fence_start > 0 {
+                    sections.push(PreviewSection::Markdown(remaining[..fence_start].to_string()));
+                }
 
-            if let Some((kind, source, after)) = DiagramSectionOps::try_parse_diagram_fence(rem) {
-                Self::push_markdown_section(&mut sections, &mut acc);
-
-                /* WHY: source's '\n' count gives (content_lines - 1). We add
-                FENCE_LINE_COUNT = opening fence (1) + closing fence (1) + 1 for
-                the newline-count-to-line-count conversion. */
-                const FENCE_LINE_COUNT: usize = 3;
-                let lines = source.chars().filter(|c| *c == '\n').count() + FENCE_LINE_COUNT;
-                sections.push(PreviewSection::Diagram {
-                    kind,
-                    source,
-                    lines,
-                });
-                rem = after;
-
-                /* WHY: Force isolation by inserting a mandatory newline for the next segment.
-                This ensures block-level elements (headers, etc.) are correctly parsed. */
-                acc.push('\n');
+                let content_after_fence = &remaining[fence_start..];
+                if let Some((kind, source, _)) = DiagramSectionOps::try_parse_diagram_fence(content_after_fence) {
+                    let consumed = source.len() + 10; 
+                    sections.push(PreviewSection::Diagram { kind, source, lines: 0 });
+                    remaining = &content_after_fence[consumed.min(content_after_fence.len())..];
+                } else {
+                    sections.push(PreviewSection::Markdown("```".to_string()));
+                    remaining = &content_after_fence[3..];
+                }
             } else {
-                acc.push_str("```");
-                rem = &rem["```".len()..];
+                sections.push(PreviewSection::Markdown(remaining.to_string()));
+                break;
             }
         }
 
-        acc.push_str(rem);
-        if !acc.is_empty() {
-            sections.push(PreviewSection::Markdown(acc));
-        }
-
-        ImageSectionOps::extract_standalone_images(sections)
-    }
-
-    fn find_next_fence_offset(rem: &str) -> Option<usize> {
-        if rem.starts_with("```") {
-            Some(0)
-        } else {
-            rem.find("\n```").map(|p| p + 1)
-        }
-    }
-
-    fn push_markdown_section(sections: &mut Vec<PreviewSection>, acc: &mut String) {
-        if acc.is_empty() {
-            return;
-        }
-        /* WHY: Ensure markdown ends with newline to avoid joining blocks with diagrams. */
-        if !acc.ends_with('\n') {
-            acc.push('\n');
-        }
-        sections.push(PreviewSection::Markdown(std::mem::take(acc)));
+        sections
     }
 
     pub fn split_into_sections(content: &str) -> Vec<PreviewSection> {
