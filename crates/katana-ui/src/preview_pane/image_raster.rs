@@ -34,8 +34,6 @@ impl ImageLogicOps {
         let (container_rect, response) =
             ui.allocate_exact_size(Vec2::new(max_w, container_h), egui::Sense::click_and_drag());
 
-        draw_background(ui, container_rect, response.hovered());
-
         if let Some(state) = state.as_mut()
             && response.hovered()
         {
@@ -95,6 +93,8 @@ impl ImageLogicOps {
             egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
             crate::theme_bridge::WHITE,
         );
+
+        draw_background(ui, container_rect, response.hovered());
 
         if let Some(state) = state {
             if crate::diagram_controller::DiagramControllerOps::draw_fullscreen_button(

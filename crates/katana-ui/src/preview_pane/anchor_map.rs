@@ -42,6 +42,19 @@ impl DocumentAnchorMapItem {
                     && a.line_span.start.abs_diff(span.start) <= 1
             }) {
                 item.rect = Some(item.rect.map_or(*rect, |r| r.union(*rect)));
+            } else {
+                println!(
+                    "[SYNC DEBUG] Failed to map heading_anchor at span {:?} ! Existing anchors: {:?}",
+                    span,
+                    anchor_map
+                        .iter()
+                        .filter(|a| matches!(
+                            a.kind,
+                            katana_core::markdown::outline::AnchorKind::Heading
+                        ))
+                        .map(|a| a.line_span.start)
+                        .collect::<Vec<_>>()
+                );
             }
         }
         for (span, rect) in block_anchors {

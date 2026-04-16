@@ -99,6 +99,12 @@ impl PreviewPane {
             is_slideshow,
         );
 
+        crate::preview_pane::types::DocumentAnchorMapItem::sync_rects(
+            &mut self.anchor_map,
+            &self.heading_anchors,
+            &self.block_anchors,
+        );
+
         if let Some(ref mut h) = hovered_lines {
             for item in &self.anchor_map {
                 if let Some(rect) = item.rect
@@ -113,12 +119,6 @@ impl PreviewPane {
 
         let ctx = ui.ctx().clone();
         self.handle_fullscreen_request(fullscreen_request, Some(&ctx));
-
-        crate::preview_pane::types::DocumentAnchorMapItem::sync_rects(
-            &mut self.anchor_map,
-            &self.heading_anchors,
-            &self.block_anchors,
-        );
 
         (request, actions)
     }

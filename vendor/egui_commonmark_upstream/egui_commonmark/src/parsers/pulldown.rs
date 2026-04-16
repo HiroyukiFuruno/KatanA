@@ -17,6 +17,10 @@ use unicode_segmentation::UnicodeSegmentation;
 
 #[allow(dead_code)]
 const INLINE_EMOJI_URI_PREFIX: &str = "bytes://katana-inline-emoji-";
+/* WHY: Enhanced visibility for diagram highlights as requested in Image 1. */
+const RECT_ACTIVE_ALPHA: u8 = 40;
+/* WHY: Enhanced visibility for diagram highlights as requested in Image 1. */
+const RECT_HOVER_ALPHA: u8 = 25;
 #[allow(dead_code)]
 const INLINE_EMOJI_FILENAME_SUFFIX: &str = ".png";
 #[allow(dead_code)]
@@ -939,11 +943,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         {
                             self.active_rects
                                 .push((accordion_rect, accordion_span.clone()));
+                            /* WHY: Optical visibility for diagrams (Image 1 fix). */
                             let highlight_color = self.active_bg_color.unwrap_or_else(|| {
                                 if ui.visuals().dark_mode {
-                                    egui::Color32::from_white_alpha(15)
+                                    /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                    egui::Color32::from_white_alpha(RECT_ACTIVE_ALPHA)
                                 } else {
-                                    egui::Color32::from_black_alpha(15)
+                                    /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                    egui::Color32::from_black_alpha(RECT_ACTIVE_ALPHA)
                                 }
                             });
                             ui.painter()
@@ -955,11 +962,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         if let Some(pos) = ui.ctx().pointer_hover_pos() {
                             if accordion_rect.contains(pos) {
                                 hovered.push(accordion_span.clone());
+                                /* WHY: Optical visibility for diagrams (Image 1 fix). */
                                 let hover_color = self.hover_bg_color.unwrap_or_else(|| {
                                     if ui.visuals().dark_mode {
-                                        egui::Color32::from_white_alpha(8)
+                                        /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                        egui::Color32::from_white_alpha(RECT_HOVER_ALPHA)
                                     } else {
-                                        egui::Color32::from_black_alpha(8)
+                                        /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                        egui::Color32::from_black_alpha(RECT_HOVER_ALPHA)
                                     }
                                 });
                                 ui.painter().rect_filled(accordion_rect, 1.0, hover_color);
@@ -1776,11 +1786,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     if let Some(active) = &self.active_char_range {
                         if active.start <= span.end && active.end >= span.start {
                             self.active_rects.push((rect, span.clone()));
+                            /* WHY: Optical visibility for diagrams (Image 1 fix). */
                             let highlight_color = self.active_bg_color.unwrap_or_else(|| {
                                 if ui.visuals().dark_mode {
-                                    egui::Color32::from_white_alpha(15)
+                                    /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                    egui::Color32::from_white_alpha(RECT_ACTIVE_ALPHA)
                                 } else {
-                                    egui::Color32::from_black_alpha(15)
+                                    /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                    egui::Color32::from_black_alpha(RECT_ACTIVE_ALPHA)
                                 }
                             });
                             ui.painter().rect_filled(rect, 1.0, highlight_color);
@@ -1790,11 +1803,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         if let Some(pos) = ui.ctx().pointer_hover_pos() {
                             if rect.contains(pos) {
                                 hovered.push(span.clone());
+                                /* WHY: Optical visibility for diagrams (Image 1 fix). */
                                 let hover_color = self.hover_bg_color.unwrap_or_else(|| {
                                     if ui.visuals().dark_mode {
-                                        egui::Color32::from_white_alpha(8)
+                                        /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                        egui::Color32::from_white_alpha(RECT_HOVER_ALPHA)
                                     } else {
-                                        egui::Color32::from_black_alpha(8)
+                                        /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                        egui::Color32::from_black_alpha(RECT_HOVER_ALPHA)
                                     }
                                 });
                                 ui.painter().rect_filled(rect, 1.0, hover_color);

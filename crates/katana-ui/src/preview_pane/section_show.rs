@@ -45,6 +45,11 @@ pub(super) fn show_section(
                         tc.preview.hover_line_background,
                     )
                 });
+                let active_bg_color = theme_colors.as_ref().map(|tc| {
+                    crate::theme_bridge::ThemeBridgeOps::rgba_to_color32(
+                        tc.preview.active_line_background,
+                    )
+                });
                 let border_color = theme_colors.as_ref().map(|tc| {
                     crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.preview.border)
                 });
@@ -116,13 +121,14 @@ pub(super) fn show_section(
                     viewer = viewer.active_char_range(range.clone());
                 }
 
-                /* WHY: Both colors resolved from ThemeColors; fallback to hover_line_background */
-                /* WHY: since PreviewColors has no dedicated active_line_background. */
+                /* WHY: Both colors resolved from ThemeColors. */
                 let resolved_hover = hover_bg_color.unwrap_or(crate::theme_bridge::TRANSPARENT);
+                let resolved_active = active_bg_color.unwrap_or(crate::theme_bridge::TRANSPARENT);
+
                 let list_highlight_fn =
                     crate::widgets::MarkdownHooksOps::katana_list_item_highlight(
                         computed_active_range.clone(),
-                        resolved_hover,
+                        resolved_active,
                         resolved_hover,
                     );
                 viewer = viewer.custom_list_item_highlight_fn(Some(&list_highlight_fn));
@@ -257,6 +263,11 @@ pub(super) fn show_section(
                     res.rect,
                 ));
             }
+            if let Some(hovered) = hovered_lines
+                && res.hovered()
+            {
+                hovered.push(global_line_offset..global_line_offset + source_lines);
+            }
             (None, vec![])
         }
         RenderedSection::CommandNotFound {
@@ -278,6 +289,11 @@ pub(super) fn show_section(
                     res.rect,
                 ));
             }
+            if let Some(hovered) = hovered_lines
+                && res.hovered()
+            {
+                hovered.push(global_line_offset..global_line_offset + source_lines);
+            }
             (None, vec![])
         }
         RenderedSection::NotInstalled {
@@ -296,6 +312,14 @@ pub(super) fn show_section(
                 );
             if let Some(anchors) = block_anchors {
                 anchors.push((global_line_offset..global_line_offset + source_lines, rect));
+            }
+            if let Some(hovered) = hovered_lines {
+                /* WHY: NotInstalled fallback usually doesn't return a Response, but we can check if pointer is in rect */
+                if let Some(pos) = ui.input(|i| i.pointer.hover_pos())
+                    && rect.contains(pos)
+                {
+                    hovered.push(global_line_offset..global_line_offset + source_lines);
+                }
             }
             (req, vec![])
         }
@@ -320,6 +344,12 @@ pub(super) fn show_section(
                     global_line_offset..global_line_offset + source_lines,
                     res.rect,
                 ));
+            }
+            if let Some(hovered) = hovered_lines
+                && let Some(pos) = ui.input(|i| i.pointer.hover_pos())
+                && res.rect.contains(pos)
+            {
+                hovered.push(global_line_offset..global_line_offset + source_lines);
             }
             (None, vec![])
         }
