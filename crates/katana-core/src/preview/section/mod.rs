@@ -13,19 +13,30 @@ impl PreviewSectionOps {
         let mut remaining = markdown;
 
         while !remaining.is_empty() {
-            if let Some(fence_start) = remaining.find("```") {
-                if fence_start > 0 {
-                    sections.push(PreviewSection::Markdown(remaining[..fence_start].to_string()));
+            /* WHY: Find the earliest occurrence of any supported diagram marker. */
+            let markers = ["```", "<mxGraphModel", "@startuml"];
+            let mut earliest = None;
+            for m in markers {
+                if let Some(pos) = remaining.find(m) {
+                    if earliest.map_or(true, |(p, _)| pos < p) {
+                        earliest = Some((pos, m));
+                    }
+                }
+            }
+
+            if let Some((pos, marker)) = earliest {
+                if pos > 0 {
+                    sections.push(PreviewSection::Markdown(remaining[..pos].to_string()));
                 }
 
-                let content_after_fence = &remaining[fence_start..];
-                if let Some((kind, source, _)) = DiagramSectionOps::try_parse_diagram_fence(content_after_fence) {
-                    let consumed = source.len() + 10; 
+                let content_from_marker = &remaining[pos..];
+                if let Some((kind, source, after)) = DiagramSectionOps::try_parse_diagram_fence(content_from_marker) {
                     sections.push(PreviewSection::Diagram { kind, source, lines: 0 });
-                    remaining = &content_after_fence[consumed.min(content_after_fence.len())..];
+                    remaining = after;
                 } else {
-                    sections.push(PreviewSection::Markdown("```".to_string()));
-                    remaining = &content_after_fence[3..];
+                    /* WHY: If parsing fails, consume the marker as plain text to avoid infinite loop. */
+                    sections.push(PreviewSection::Markdown(marker.to_string()));
+                    remaining = &content_from_marker[marker.len()..];
                 }
             } else {
                 sections.push(PreviewSection::Markdown(remaining.to_string()));
