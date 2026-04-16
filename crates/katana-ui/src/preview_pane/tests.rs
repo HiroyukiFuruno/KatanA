@@ -987,4 +987,35 @@ mod tests {
             "is_loading should be false after abort_renders"
         );
     }
+
+    #[test]
+    fn test_regression_heading_highlight_after_rich_block() {
+        use egui_kittest::Harness;
+        
+        let mut harness = Harness::builder()
+            .with_size(egui::vec2(1024.0, 768.0))
+            .build_ui(|ui| {
+                let mut pane = PreviewPane::default();
+                let source = "```mermaid\ngraph TD; A-->B\n```\n\n# Heading After Diagram";
+                let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+                
+                pane.full_render(
+                    source,
+                    std::path::Path::new("/tmp/test.md"),
+                    cache,
+                    false,
+                    4,
+                );
+                pane.wait_for_renders();
+                
+                pane.show(ui);
+                
+                assert!(!pane.heading_anchors.is_empty());
+                let h1_rect = pane.heading_anchors[0].1;
+                
+                assert!(h1_rect.height() > 10.0, "Actual height: {:?}", h1_rect.height());
+            });
+
+        harness.run();
+    }
 }
