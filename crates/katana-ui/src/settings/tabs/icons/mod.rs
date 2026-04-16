@@ -11,14 +11,12 @@ pub mod row;
 pub mod table;
 
 pub(crate) const ADVANCED_PANEL_ID: &str = "icon_advanced_panel";
-pub(crate) const TRIGGER_PANEL_ID: &str = "icon_settings_trigger_panel";
 pub(crate) const PREVIEW_SCROLL_ID: &str = "icons_preview_scroll";
 pub(crate) const PANEL_PADDING: f32 = 8.0;
 pub(crate) const SYMMETRIC_PADDING_X: i8 = 0;
 pub(crate) const SYMMETRIC_PADDING_Y: i8 = 8;
 
 impl IconsTabOps {
-    /* WHY: Renders the primary entry point for the Icon settings tab. */
     pub(crate) fn render_icons_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
         let i18n = crate::i18n::I18nOps::get();
         popups::IconsPopupsOps::render(ui, state);
@@ -106,7 +104,7 @@ impl IconsTabOps {
             .data(|d| d.get_temp::<bool>(egui::Id::new("icons_advanced_is_open")))
             .unwrap_or(false);
 
-        panels::IconsPanelsOps::render_advanced_panel(
+        panels::IconsPanelsOps::render_panels(
             ui,
             state,
             i18n,
@@ -114,10 +112,6 @@ impl IconsTabOps {
             &mut icon_settings,
             &mut settings_changed,
         );
-
-        if !is_advanced_open {
-            panels::IconsPanelsOps::render_trigger_panel(ui, i18n, &mut is_advanced_open);
-        }
 
         ui.data_mut(|d| d.insert_temp(egui::Id::new("icons_advanced_is_open"), is_advanced_open));
 

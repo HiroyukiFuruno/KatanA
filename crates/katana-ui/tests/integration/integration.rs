@@ -164,6 +164,7 @@ fn test_integration_toc_panel_display() {
         .state_mut()
         .trigger_action(AppAction::SelectDocument(test_file1.clone()));
     harness.step();
+    harness.step();
 
     let toggle_btn_label = I18nOps::get().action.toggle_toc.clone();
     let toggle_btn = harness.get_by_label(&toggle_btn_label);
@@ -1896,7 +1897,7 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
         katana_platform::SplitDirection::Horizontal,
     );
 
-    let node = harness.get_by_label("Toggle Split Direction");
+    let node = harness.get_by_label("Toggle Vertical Split (Top/Bottom)");
     node.click();
     harness.step();
     /* WHY: Action is processed on the next frame */
