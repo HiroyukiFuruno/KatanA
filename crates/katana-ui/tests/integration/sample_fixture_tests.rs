@@ -606,21 +606,21 @@ fn fixture_ja_s5_4_long_column_wraps_in_table() {
     let pane = render_snippet(&section_md);
     // Render with limited panel width to enforce wrapping
     let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
-    
+
     // Get the node containing the exceedingly long text
     let node = harness.get_by_label_contains("\u{3053}\u{306e}\u{30c6}\u{30ad}\u{30b9}\u{30c8}\u{306f}\u{975e}\u{5e38}\u{306b}\u{9577}\u{3044}\u{884c}\u{3067}");
     let bounds = node
         .accesskit_node()
         .raw_bounds()
         .expect("long table text should have bounds");
-    
+
     let text_width = bounds.x1 - bounds.x0;
     assert!(
         text_width <= 590.0,
         "The text should wrap and be constrained to the table width, instead it took {:.1}px",
         text_width
     );
-    
+
     let text_height = bounds.y1 - bounds.y0;
     assert!(
         text_height > 24.0,
@@ -637,31 +637,30 @@ fn fixture_ja_s5_5_short_long_short_columns_wrap_properly() {
     let pane = render_snippet(&section_md);
     // Render with limited panel width to enforce wrapping on the long column
     let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
-    
+
     // Get the node containing the exceedingly long text
     let node = harness.get_by_label_contains("\u{3053}\u{306e}\u{30c6}\u{30ad}\u{30b9}\u{30c8}\u{306f}\u{975e}\u{5e38}\u{306b}\u{9577}\u{3044}\u{884c}\u{3067}");
     let bounds = node
         .accesskit_node()
         .raw_bounds()
         .expect("long table text should have bounds in mixed column table");
-        
+
     let text_width = bounds.x1 - bounds.x0;
-    // With 3 equal columns forced by max_width bounding, each should be ~ 1/3 of the width.
-    // 600 / 3 = 200, but there's margins.
+    // With the proportional width allocation, the long column should take up the lion's share
+    // of the 600px width, while the short columns shrink.
     assert!(
-        text_width <= 210.0,
-        "The mixed column table should constrain the text within its grid cell. Width was {:.1}px",
+        (350.0..=590.0).contains(&text_width),
+        "The mixed column table should give the long column more width. Width was {:.1}px",
         text_width
     );
-    
+
     let text_height = bounds.y1 - bounds.y0;
     assert!(
-        text_height > 40.0,
-        "The text should wrap aggressively due to smaller column size, but height was {:.1}px",
+        text_height > 20.0,
+        "The text should still wrap, but height was {:.1}px",
         text_height
     );
 }
-
 
 fn load_fixture_harness(filename: &str) -> Harness<'static> {
     let (pane, _, _) = load_fixture(filename);

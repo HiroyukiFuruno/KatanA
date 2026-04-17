@@ -1671,18 +1671,54 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
                         let header_bg_idx = ui.painter().add(egui::Shape::Noop);
 
-                        // If the intrinsic width of the table is less than `table_width`, 
-                        // we want to distribute the remaining space equally ("均等にautoを割り振る").
-                        // By setting `min_col_width`, columns will naturally expand equally 
-                        // to fill `table_width` if their text is short. If text is long, 
-                        // they can still expand past this minimum.
+                        // Apply water-filling proportional allocation algorithm for table column widths
+                        // Short columns shrink to fit their content while long columns share the remaining space.
+                        let mut col_max_chars = vec![0; num_cols];
+                        for col in 0..num_cols {
+                            let mut max_chars = 0;
+                            if let Some(header_col) = header.get(col) {
+                                let chars: usize = header_col.iter().map(|x| x.1.1.len()).sum();
+                                max_chars = max_chars.max(chars);
+                            }
+                            for row in rows.iter() {
+                                if let Some(col_data) = row.get(col) {
+                                    let chars: usize = col_data.iter().map(|x| x.1.1.len()).sum();
+                                    max_chars = max_chars.max(chars);
+                                }
+                            }
+                            col_max_chars[col] = max_chars;
+                        }
+
                         let spacing_x = ui.spacing().item_spacing.x;
-                        let ideal_min_col_width = ((table_width - (num_cols as f32 - 1.0) * spacing_x) / num_cols as f32).max(0.0);
+                        let mut available_w = (table_width - (num_cols as f32 - 1.0) * spacing_x).max(0.0);
+
+                        let mut ideal_w_and_index: Vec<(f32, usize)> = col_max_chars
+                            .into_iter()
+                            .enumerate()
+                            .map(|(i, len)| (((len as f32 * 6.0) + 16.0), i))
+                            .collect();
+
+                        ideal_w_and_index.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+                        let mut col_alloc_width = vec![0.0; num_cols];
+                        let mut remaining_cols = num_cols;
+
+                        for (ideal_w, idx) in ideal_w_and_index {
+                            let fair_share = available_w / remaining_cols as f32;
+                            if ideal_w < fair_share {
+                                col_alloc_width[idx] = ideal_w;
+                                available_w -= ideal_w;
+                            } else {
+                                col_alloc_width[idx] = fair_share;
+                                available_w -= fair_share;
+                            }
+                            remaining_cols -= 1;
+                        }
 
                         let _grid_res = egui::Grid::new(id)
                             .num_columns(num_cols)
                             .striped(true)
-                            .min_col_width(ideal_min_col_width)
+                            .min_col_width(10.0)
                             .show(ui, |ui| {
                                 // ── Header row ──
                                 for (col_idx, col) in header.iter().enumerate() {
@@ -1697,7 +1733,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                         );
                                     }
 
-                                    Self::apply_alignment(ui, alignment, ideal_min_col_width, |ui| {
+                                    Self::apply_alignment(ui, alignment, col_alloc_width[col_idx], |ui| {
                                         for (index, (e, src_span)) in col {
                                             let tmp_start = std::mem::replace(
                                                 &mut self.line.should_start_newline,
@@ -1735,7 +1771,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                                 .get(col_idx)
                                                 .unwrap_or(&pulldown_cmark::Alignment::None);
 
-                                            Self::apply_alignment(ui, alignment, ideal_min_col_width, |ui| {
+                                            Self::apply_alignment(ui, alignment, col_alloc_width[col_idx], |ui| {
                                                 for (index, (e, src_span)) in col_data {
                                                     let tmp_start = std::mem::replace(
                                                         &mut self.line.should_start_newline,
