@@ -42,7 +42,7 @@ mod split_tests {
         ));
         /* WHY: Without a blank line, "![alt](url)\nText" is one paragraph
         so it cannot be split into LocalImage + Markdown. */
-        assert!(matches!(sections[1], PreviewSection::Markdown(_)));
+        assert!(matches!(sections[1], PreviewSection::Markdown(_, _)));
     }
 
     #[test]
@@ -50,7 +50,7 @@ mod split_tests {
         let md = "Here is some math: $ E = mc^2 $ and a plain text test $ 500 $ 10.";
         let sections = PreviewSectionOps::split_into_sections(md);
         assert_eq!(sections.len(), 1);
-        if let PreviewSection::Markdown(text) = &sections[0] {
+        if let PreviewSection::Markdown(text, _) = &sections[0] {
             /* WHY: split_sections does not process math — text is passed as-is to downstream rendering. */
             assert!(text.contains("$ E = mc^2 $"));
             assert!(text.contains("$ 500 $ 10."));

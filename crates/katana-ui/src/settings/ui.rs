@@ -193,9 +193,9 @@ impl SettingsOps {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::app_state::SettingsTab;
     use egui_kittest::Harness;
     use egui_kittest::kittest::Queryable;
-    use crate::app_state::SettingsTab;
     use katana_core::ai::AiProviderRegistry;
     use katana_core::plugin::PluginRegistry;
 
@@ -210,7 +210,7 @@ mod tests {
                     katana_platform::SettingsService::default(),
                     std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
                 );
-                
+
                 state.layout.show_settings = true;
                 state.config.active_settings_tab = SettingsTab::Icons;
 
@@ -220,9 +220,10 @@ mod tests {
                 SettingsWindow::new(&mut state, &mut preview_pane).show(ui.ctx());
             });
 
-        harness.run();
+        harness.run_steps(10);
 
-        harness.get_by_label("高度な設定");
-        harness.get_by_label("アイコン");
+        let i18n = crate::i18n::I18nOps::get();
+        harness.get_by_label(&i18n.settings.icons.advanced_settings);
+        harness.get_by_label(&i18n.settings.icons.colorful_vendor_icons_label);
     }
 }

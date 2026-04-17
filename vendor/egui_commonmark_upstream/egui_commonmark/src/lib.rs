@@ -400,6 +400,12 @@ impl<'f> CommonMarkViewer<'f> {
         self
     }
 
+    /// Whether to render the collected footnotes at the end of the markdown string. Default is true.
+    pub fn render_footnotes(mut self, render: bool) -> Self {
+        self.options.render_footnotes = render;
+        self
+    }
+
     /// Shows rendered markdown
     pub fn show(
         self,

@@ -14,6 +14,11 @@ impl IconsListOps {
         current_pack: &str,
         _settings_changed: &mut bool,
     ) {
-        IconsPopupsOps::render_preview_grid(ui, icon_settings, current_pack);
+        egui::ScrollArea::vertical()
+            .id_salt("icon_pack_preview_scroll")
+            .auto_shrink(false)
+            .show(ui, |ui| {
+                IconsPopupsOps::render_preview_grid(ui, icon_settings, current_pack);
+            });
     }
 }

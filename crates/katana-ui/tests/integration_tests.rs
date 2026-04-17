@@ -7,6 +7,7 @@ pub mod integration {
     pub mod command_palette;
     pub mod font_bridge;
     pub mod font_realtime;
+    pub mod html_block_tests;
     pub mod i18n;
     pub mod integration;
     pub mod overlap_checker;

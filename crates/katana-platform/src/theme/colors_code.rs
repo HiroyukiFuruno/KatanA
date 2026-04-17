@@ -81,3 +81,14 @@ impl PreviewColors {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn coverage_default_active_line_background() {
+        let rgba = PreviewColors::default_active_line_background();
+        assert_eq!(rgba.a, DEFAULT_PREVIEW_ACTIVE_LINE_BACKGROUND_ALPHA);
+    }
+}

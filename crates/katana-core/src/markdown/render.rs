@@ -50,8 +50,26 @@ impl MarkdownRenderOps {
         renderer: &R,
     ) -> Result<RenderOutput, MarkdownError> {
         let transformed = MarkdownFenceOps::transform_diagram_blocks(source, renderer);
-        let html = markdown_to_html(&transformed, &Self::gfm_options());
+        let math_repaired = Self::repair_inline_math_spaces(&transformed);
+        let html = markdown_to_html(&math_repaired, &Self::gfm_options());
         Ok(RenderOutput { html })
+    }
+
+    /// Repairs `$ lenient $` math to `$strict$` so that comrak recognizes it.
+    /// Repairs `$ lenient $` math to `$strict$` so that comrak recognizes it.
+    fn repair_inline_math_spaces(source: &str) -> String {
+        use std::sync::LazyLock;
+        static MATH_REGEX: LazyLock<regex::Regex> = LazyLock::new(|| {
+            /* WHY: Match single `$` delimiters, capturing inner contents without `$` characters */
+            regex::Regex::new(r"(?s)\$([ \t]*)([^$]+?)([ \t]*)\$").unwrap()
+        });
+
+        MATH_REGEX
+            .replace_all(source, |caps: &regex::Captures| {
+                /* WHY: caps[2] is the inner content stripped of boundary spaces */
+                format!("${}$", &caps[2])
+            })
+            .to_string()
     }
 
     pub fn transform_only<R: DiagramRenderer>(

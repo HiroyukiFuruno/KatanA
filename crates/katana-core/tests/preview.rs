@@ -6,7 +6,57 @@ fn plain_markdown_becomes_one_section() {
     let src = "# Hello\n\nWorld";
     let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 1);
-    assert!(matches!(sections[0], PreviewSection::Markdown(_)));
+    assert!(matches!(sections[0], PreviewSection::Markdown(_, _)));
+}
+
+#[test]
+fn preview_section_is_cloned() {
+    let src = "text";
+    let sections = PreviewSectionOps::split_into_sections(src);
+    assert_eq!(sections.len(), 1);
+    let s2 = sections[0].clone();
+    assert!(matches!(s2, PreviewSection::Markdown(_, _)));
+}
+
+#[test]
+fn footnotes_are_extracted_and_appended_to_the_very_end() {
+    let src = "\
+A paragraph with a reference [^1].
+
+```mermaid
+graph TD; A-->B
+```
+
+[^1]: This is the footnote definition.
+
+More text here.";
+
+    let sections = PreviewSectionOps::split_into_sections(src);
+
+    // We expect 3 sections:
+    // 1: Markdown ("A paragraph with a reference [^1].\n\n\n")
+    // 2: Diagram (mermaid)
+    // 3: Markdown ("\n\n\nMore text here.\n\n[^1]: This is the footnote definition.\n")
+
+    assert_eq!(sections.len(), 3);
+
+    let PreviewSection::Markdown(ref first_md, _) = sections[0] else {
+        panic!("Expected first section to be markdown");
+    };
+    assert!(first_md.contains("[^1]"));
+    assert!(first_md.contains("[^1]:")); // Definition is now appended to ALL Markdown sections
+
+    let PreviewSection::Diagram { .. } = sections[1] else {
+        panic!("Expected second section to be diagram");
+    };
+
+    let PreviewSection::Markdown(ref last_md, _) = sections[2] else {
+        panic!("Expected third section to be markdown");
+    };
+
+    assert!(last_md.contains("More text here."));
+    // The definition should have been moved to the very end of the final section
+    assert!(last_md.contains("[^1]: This is the footnote definition.\n"));
 }
 
 #[test]
@@ -14,7 +64,7 @@ fn mermaid_fence_is_split_into_diagram_section() {
     let src = "before\n```mermaid\ngraph TD; A-->B\n```\nafter";
     let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 3);
-    assert!(matches!(sections[0], PreviewSection::Markdown(_)));
+    assert!(matches!(sections[0], PreviewSection::Markdown(_, _)));
     assert!(matches!(
         sections[1],
         PreviewSection::Diagram {
@@ -22,7 +72,7 @@ fn mermaid_fence_is_split_into_diagram_section() {
             ..
         }
     ));
-    assert!(matches!(sections[2], PreviewSection::Markdown(_)));
+    assert!(matches!(sections[2], PreviewSection::Markdown(_, _)));
 }
 
 #[test]
@@ -32,7 +82,7 @@ fn unknown_fence_remains_as_markdown() {
     assert!(
         sections
             .iter()
-            .all(|s| matches!(s, PreviewSection::Markdown(_)))
+            .all(|s| matches!(s, PreviewSection::Markdown(_, _)))
     );
 }
 
@@ -54,7 +104,7 @@ fn diagram_without_closing_fence_remains_as_markdown() {
     assert!(
         sections
             .iter()
-            .all(|s| matches!(s, PreviewSection::Markdown(_)))
+            .all(|s| matches!(s, PreviewSection::Markdown(_, _)))
     );
 }
 
@@ -65,7 +115,7 @@ fn markdown_if_fence_ends_without_newline() {
     assert!(
         sections
             .iter()
-            .all(|s| matches!(s, PreviewSection::Markdown(_)))
+            .all(|s| matches!(s, PreviewSection::Markdown(_, _)))
     );
 }
 
@@ -95,7 +145,7 @@ fn diagram_fence_at_start_with_trailing_text() {
             ..
         }
     ));
-    assert!(matches!(sections[1], PreviewSection::Markdown(_)));
+    assert!(matches!(sections[1], PreviewSection::Markdown(_, _)));
 }
 
 use std::path::Path;
@@ -212,7 +262,7 @@ fn html_blocks_remain_in_markdown_sections_for_pulldown_cmark() {
     let src = "text\n<p align=\"center\">\n  <img src=\"a.png\" alt=\"A\">\n</p>\nmore text\n<h1 align=\"center\">Title</h1>";
     let sections = PreviewSectionOps::split_into_sections(src);
     assert_eq!(sections.len(), 1);
-    if let PreviewSection::Markdown(ref s) = sections[0] {
+    if let PreviewSection::Markdown(ref s, _) = sections[0] {
         assert!(s.contains("text"), "Expected 'text' in markdown");
         assert!(
             s.contains("<p align=\"center\">"),
@@ -589,7 +639,7 @@ fn global_line_offset_accumulates_correctly_across_sections() {
     let total_lines: usize = sections
         .iter()
         .map(|s| match s {
-            PreviewSection::Markdown(md) => md.chars().filter(|c| *c == '\n').count(),
+            PreviewSection::Markdown(md, _) => md.chars().filter(|c| *c == '\n').count(),
             PreviewSection::Diagram { lines, .. } => *lines,
             PreviewSection::LocalImage { lines, .. } => *lines,
         })
@@ -621,7 +671,7 @@ fn global_line_offset_with_multiple_diagrams() {
     let total_lines: usize = sections
         .iter()
         .map(|s| match s {
-            PreviewSection::Markdown(md) => md.chars().filter(|c| *c == '\n').count(),
+            PreviewSection::Markdown(md, _) => md.chars().filter(|c| *c == '\n').count(),
             PreviewSection::Diagram { lines, .. } => *lines,
             PreviewSection::LocalImage { lines, .. } => *lines,
         })

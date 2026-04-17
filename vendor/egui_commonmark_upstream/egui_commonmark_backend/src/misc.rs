@@ -34,6 +34,7 @@ pub struct CommonMarkOptions<'f> {
     pub math_fn: Option<&'f crate::RenderMathFn>,
     pub html_fn: Option<&'f crate::RenderHtmlFn>,
     pub show_code_copy_button: bool,
+    pub render_footnotes: bool,
 }
 
 impl std::fmt::Debug for CommonMarkOptions<'_> {
@@ -44,6 +45,7 @@ impl std::fmt::Debug for CommonMarkOptions<'_> {
             .field("max_image_width", &self.max_image_width)
             .field("show_alt_text_on_hover", &self.show_alt_text_on_hover)
             .field("show_code_copy_button", &self.show_code_copy_button)
+            .field("render_footnotes", &self.render_footnotes)
             .field("default_width", &self.default_width);
 
         #[cfg(feature = "better_syntax_highlighting")]
@@ -79,6 +81,7 @@ impl Default for CommonMarkOptions<'_> {
             math_fn: None,
             html_fn: None,
             show_code_copy_button: true,
+            render_footnotes: true,
         }
     }
 }

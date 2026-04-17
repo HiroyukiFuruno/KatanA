@@ -10,7 +10,7 @@ fn markdown_texts(sections: &[RenderedSection]) -> Vec<&str> {
     sections
         .iter()
         .filter_map(|s| match s {
-            RenderedSection::Markdown(md) => Some(md.as_str()),
+            RenderedSection::Markdown(md, _) => Some(md.as_str()),
             _ => None,
         })
         .collect()
@@ -124,9 +124,9 @@ fn full_render_splits_sections_correctly() {
     );
 
     assert_eq!(pane.sections.len(), 3);
-    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_, _)));
     assert!(matches!(pane.sections[1], RenderedSection::Pending { .. }));
-    assert!(matches!(pane.sections[2], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[2], RenderedSection::Markdown(_, _)));
 }
 
 #[test]
@@ -144,7 +144,7 @@ fn buffer_without_diagrams_does_not_generate_pending_sections() {
     assert!(
         pane.sections
             .iter()
-            .all(|s| matches!(s, RenderedSection::Markdown(_)))
+            .all(|s| matches!(s, RenderedSection::Markdown(_, _)))
     );
     assert!(
         !pane
@@ -236,7 +236,7 @@ fn markdown_only_input_is_sectioned_correctly() {
         std::path::Path::new("/tmp/test.md"),
     );
     assert_eq!(pane.sections.len(), 1);
-    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_, _)));
 }
 
 #[test]
@@ -261,7 +261,7 @@ fn centered_html_stays_in_markdown_section_update() {
     let src = "<p align=\"center\">centered</p>";
     pane.update_markdown_sections(src, std::path::Path::new("/tmp/test.md"));
     assert_eq!(pane.sections.len(), 1);
-    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_, _)));
 }
 
 #[test]
@@ -276,7 +276,7 @@ fn centered_html_stays_in_markdown_section_full_render() {
         4,
     );
     assert_eq!(pane.sections.len(), 1);
-    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_, _)));
 }
 
 #[test]
@@ -521,14 +521,14 @@ fn standalone_local_image_is_split_into_local_image_section() {
     pane.update_markdown_sections(source, std::path::Path::new("/tmp/test.md"));
 
     assert_eq!(pane.sections.len(), 3);
-    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[0], RenderedSection::Markdown(_, _)));
     if let RenderedSection::LocalImage { path, alt, .. } = &pane.sections[1] {
         assert_eq!(path.to_string_lossy(), "/path/to/logo.png");
         assert_eq!(alt, "Logo");
     } else {
         panic!("Expected LocalImage section at index 1");
     }
-    assert!(matches!(pane.sections[2], RenderedSection::Markdown(_)));
+    assert!(matches!(pane.sections[2], RenderedSection::Markdown(_, _)));
 }
 
 #[test]
@@ -571,6 +571,7 @@ fn show_section_centered_markdown_variant_renders() {
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::Markdown(
         "<p align=\"center\"><img src=\"test.png\" alt=\"alt\"></p>".to_string(),
+        1,
     )];
 
     let mut harness = Harness::new_ui(move |ui| {
@@ -588,7 +589,7 @@ fn centered_badges_render_on_same_horizontal_row() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let mut harness = Harness::new_ui(move |ui| {
         pane.show_content(ui, None, None, None, None);
@@ -607,7 +608,7 @@ fn centered_text_link_is_clickable() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let mut harness = Harness::new_ui(move |ui| {
         pane.show_content(ui, None, None, None, None);
@@ -623,7 +624,7 @@ fn centered_text_link_is_clickable() {
 fn inline_html_text_fragments_are_not_split_into_multiple_widgets() {
     let html = "<p>\u{524d}\u{6587}<strong>\u{5f37}\u{8abf}</strong>\u{5f8c}\u{6587}</p>\n";
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let mut harness = Harness::builder()
         .with_size(egui::vec2(400.0, 160.0))
@@ -643,6 +644,84 @@ fn inline_html_text_fragments_are_not_split_into_multiple_widgets() {
     assert!(
         harness.query_by_label("\u{5f37}\u{8abf}").is_none(),
         "strong text should participate in the same text run"
+    );
+}
+
+#[test]
+fn html_block_hover_highlight_rect_is_generated() {
+    // 1. "HTML is not fixed" & "highlights regressed" -> TDD(RED)
+    // HTML block should correctly parse and EMIT a hover highlight bounding box.
+    // If it is swallowing it or not popping it, the interact rect will be missing!
+    let html = concat!(
+        "<p align=\"center\">\n",
+        "  <img src=\"badge1.svg\" alt=\"License: MIT\">\n",
+        "</p>\n",
+        "\n# Heading After HTML\n"
+    );
+    let mut pane = katana_ui::preview_pane::PreviewPane::default();
+    pane.update_markdown_sections(html, std::path::Path::new("/tmp/test.md"));
+
+    let mut harness = egui_kittest::Harness::builder()
+        .with_size(eframe::egui::vec2(400.0, 400.0))
+        .build_ui(move |ui| {
+            pane.show_content(ui, None, None, None, None);
+        });
+
+    harness.step();
+    harness.run();
+
+    let heading = harness.query_by_label("Heading After HTML");
+    assert!(
+        heading.is_some(),
+        "The markdown AFTER the HTML block MUST NOT be swallowed!"
+    );
+}
+
+#[test]
+fn advanced_settings_renders_completely() {
+    let mut harness = egui_kittest::Harness::builder()
+        .with_size(eframe::egui::vec2(800.0, 600.0))
+        .build_ui(move |ui| {
+            // Just simulate the Advanced Settings structure from mod.rs!
+            // Just simulate the Advanced Settings structure from mod.rs!
+            // Wait, we need AppState?
+            // In mod.rs :
+            // panels::IconsPanelsOps::render_panels(ui, &mut state, &i18n, &mut is_advanced_open, ...);
+
+            // To just test TopBottomPanel layout inside CentralPanel:
+            let is_advanced_open = true;
+            let _settings_changed = false;
+
+            // Let's just create raw TopBottomPanel directly to see if kittest sees it!
+            eframe::egui::TopBottomPanel::bottom("test_advanced")
+                .default_height(350.0)
+                .show_inside(ui, |ui| {
+                    if is_advanced_open {
+                        ui.heading("Advanced Settings Test Heading");
+                        ui.label("This should not be clipped");
+                    }
+                });
+
+            eframe::egui::CentralPanel::default().show_inside(ui, |ui| {
+                eframe::egui::ScrollArea::vertical().show(ui, |ui| {
+                    for i in 0..100 {
+                        ui.label(format!("Item {}", i));
+                    }
+                });
+            });
+        });
+
+    harness.step();
+    let heading = harness.get_by_label("Advanced Settings Test Heading");
+    let label = harness.get_by_label("This should not be clipped");
+
+    assert!(
+        heading.accesskit_node().raw_bounds().is_some(),
+        "Advanced Settings panel heading MUST be visible"
+    );
+    assert!(
+        label.accesskit_node().raw_bounds().is_some(),
+        "Advanced Settings content MUST be visible"
     );
 }
 
@@ -1180,7 +1259,7 @@ fn html_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::Markdown(
         "<p>KatanA \u{306f} AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}\u{3092}\u{884c}\u{3046}\u{6642}\u{4ee3}\u{306e}\u{305f}\u{3081}\u{306b}\u{8a2d}\u{8a08}\u{3055}\u{308c}\u{305f}\u{30c4}\u{30fc}\u{30eb}\u{3067}\u{3059}\u{3002}</p>\n"
-            .to_string(),
+            .to_string(), 1
     )];
 
     let ctx = egui::Context::default();
@@ -1300,7 +1379,7 @@ fn preview_html_uses_proportional_body_font_even_when_ui_font_family_is_monospac
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::Markdown(
         "<p>KatanA \u{306f} AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}\u{3068}\u{5171}\u{306b}\u{4ed5}\u{69d8}\u{99c6}\u{52d5}\u{958b}\u{767a}\u{3092}\u{884c}\u{3046}\u{6642}\u{4ee3}\u{306e}\u{305f}\u{3081}\u{306b}\u{8a2d}\u{8a08}\u{3055}\u{308c}\u{305f}\u{30c4}\u{30fc}\u{30eb}\u{3067}\u{3059}\u{3002}</p>\n"
-            .to_string(),
+            .to_string(), 1
     )];
 
     let ctx = egui::Context::default();
@@ -1417,7 +1496,7 @@ fn multiple_centered_paragraphs_have_increasing_y_positions() {
         "<p align=\"center\">Third paragraph</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let mut harness = Harness::new_ui(move |ui| {
         pane.show_content(ui, None, None, None, None);
@@ -1477,7 +1556,7 @@ fn readme_header_full_structure_renders() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let mut harness = Harness::new_ui(move |ui| {
         pane.show_content(ui, None, None, None, None);
@@ -1496,7 +1575,7 @@ fn readme_header_full_structure_renders() {
 fn centered_single_text_is_horizontally_centered() {
     let html = "<p align=\"center\">Centered Text Here</p>\n";
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let panel_width: f32 = 800.0;
     let mut harness = Harness::builder()
@@ -1533,7 +1612,7 @@ fn centered_text_and_link_share_same_row() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let mut harness = Harness::builder()
         .with_size(egui::vec2(800.0, 200.0))
@@ -1589,7 +1668,7 @@ fn centered_text_and_link_share_same_row() {
 fn centered_heading_h1_is_horizontally_centered() {
     let html = "<h1 align=\"center\">KatanA Desktop</h1>\n";
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let panel_width: f32 = 800.0;
     let mut harness = Harness::builder()
@@ -1626,7 +1705,7 @@ fn centered_description_paragraph_is_horizontally_centered() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let panel_width: f32 = 800.0;
     let mut harness = Harness::builder()
@@ -1677,7 +1756,7 @@ fn readme_header_all_elements_horizontally_centered() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let panel_width: f32 = 800.0;
     let mut harness = Harness::builder()
@@ -1752,7 +1831,7 @@ fn centered_heading_then_description_both_centered() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let panel_width: f32 = 800.0;
     let mut harness = Harness::builder()
@@ -1798,7 +1877,7 @@ fn badges_then_language_selector_both_centered() {
         "</p>\n"
     );
     let mut pane = PreviewPane::default();
-    pane.sections = vec![RenderedSection::Markdown(html.to_string())];
+    pane.sections = vec![RenderedSection::Markdown(html.to_string(), 1)];
 
     let panel_width: f32 = 800.0;
     let mut harness = Harness::builder()

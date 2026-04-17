@@ -5,5 +5,7 @@ pub static SERIAL_TEST_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 #[path = "integration/diagram_rendering.rs"]
 mod diagram_rendering;
+#[path = "integration/html_block_tests.rs"]
+mod html_block_tests;
 #[path = "integration/integration_i18n.rs"]
 mod integration_i18n;

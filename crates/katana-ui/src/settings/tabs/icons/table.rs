@@ -68,12 +68,13 @@ impl IconsTableOps {
         });
 
         const HEADER_BOTTOM_MARGIN: f32 = 8.0;
+        const BODY_MAX_HEIGHT: f32 = 400.0;
 
         ui.add_space(HEADER_BOTTOM_MARGIN); /* WHY: Spacing between fixed header and the scrollable accordion contents */
 
         egui::ScrollArea::vertical()
             .id_salt("icons_overrides_tree_scroll")
-            .auto_shrink(false)
+            .max_height(BODY_MAX_HEIGHT)
             .show(ui, |ui| {
                 for (category, icons) in grouped_icons {
                     egui::CollapsingHeader::new(&category)

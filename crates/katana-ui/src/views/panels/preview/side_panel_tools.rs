@@ -25,15 +25,6 @@ impl<'a> PreviewSidePanels<'a> {
             return;
         }
 
-        let mut keep_open = false;
-        if self.app.state.layout.show_tools_panel
-            && let Some(pos) = ui.input(|i| i.pointer.hover_pos())
-            && let Some(btn_rect) = self.tools_btn_rect
-            && btn_rect.expand(PANEL_HOVER_MARGIN).contains(pos)
-        {
-            keep_open = true;
-        }
-
         let panel_resp = egui::SidePanel::right("preview_tools_panel")
             .resizable(false)
             .exact_width(PANEL_WIDTH * anim)
@@ -183,18 +174,18 @@ impl<'a> PreviewSidePanels<'a> {
                 });
             });
 
-        if self.app.state.layout.show_tools_panel {
-            if let Some(pos) = ui.input(|i| i.pointer.hover_pos())
-                && panel_resp
-                    .response
-                    .rect
-                    .expand(PANEL_HOVER_MARGIN)
-                    .contains(pos)
-            {
-                keep_open = true;
-            }
-
-            if !keep_open && ui.input(|i| i.pointer.hover_pos().is_some()) {
+        if self.app.state.layout.show_tools_panel
+            && let Some(pos) = ui.input(|i| i.pointer.hover_pos())
+        {
+            let btn_hover = self
+                .tools_btn_rect
+                .is_some_and(|r| r.expand(PANEL_HOVER_MARGIN).contains(pos));
+            let panel_hover = panel_resp
+                .response
+                .rect
+                .expand(PANEL_HOVER_MARGIN)
+                .contains(pos);
+            if !btn_hover && !panel_hover {
                 self.app.state.layout.show_tools_panel = false;
             }
         }

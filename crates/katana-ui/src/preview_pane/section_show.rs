@@ -22,10 +22,11 @@ pub(super) fn show_section(
     search_query: Option<String>,
     search_active_index: Option<usize>,
     is_slideshow: bool,
+    is_last_section: bool,
 ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
     let mut actions = Vec::new();
     match section {
-        RenderedSection::Markdown(md) => {
+        RenderedSection::Markdown(md, source_lines) => {
             crate::preview_pane::PreviewPaneUtilsOps::with_preview_text_style(ui, |ui| {
                 let preset = if ui.visuals().dark_mode {
                     DiagramColorPreset::dark()
@@ -77,6 +78,7 @@ pub(super) fn show_section(
                     .heading_offset(heading_offset)
                     .render_html_fn(Some(&binding))
                     .render_math_fn(Some(&math_binding))
+                    .render_footnotes(is_last_section)
                     .hover_bg_color(hover_bg_color)
                     .show_code_copy_button(!is_slideshow)
                     .custom_task_box_fn(Some(&crate::widgets::MarkdownHooksOps::katana_task_box))
@@ -107,14 +109,12 @@ pub(super) fn show_section(
                 /* WHY: Compute the active char range once so it can be shared with the */
                 /* WHY: list-item highlight callback and the viewer builder. */
                 let mut computed_active_range: Option<std::ops::Range<usize>> = None;
-                if let Some(global_line) = active_editor_line {
-                    let lines_in_md = md.chars().filter(|c| *c == '\n').count();
-                    if global_line >= global_line_offset
-                        && global_line <= global_line_offset + lines_in_md
-                    {
-                        let local_line = global_line - global_line_offset;
-                        computed_active_range = byte_range_for_line(md, local_line);
-                    }
+                if let Some(global_line) = active_editor_line
+                    && global_line >= global_line_offset
+                    && global_line < global_line_offset + source_lines
+                {
+                    let local_line = global_line - global_line_offset;
+                    computed_active_range = byte_range_for_line(md, local_line);
                 }
 
                 if let Some(ref range) = computed_active_range {
@@ -356,6 +356,19 @@ pub(super) fn show_section(
     }
 }
 
+fn safe_byte_clamp(s: &str, idx: usize) -> usize {
+    /* WHY: span indices from pulldown-cmark are byte offsets. When the source contains
+    multi-byte characters (e.g. Japanese), a span boundary may fall inside a character.
+    Slicing at that point causes a panic. We walk backwards from the given index to find
+    the nearest valid char boundary before indexing into the string. */
+    let clamped = idx.min(s.len());
+    let mut safe = clamped;
+    while safe > 0 && !s.is_char_boundary(safe) {
+        safe -= 1;
+    }
+    safe
+}
+
 fn span_to_range(
     md: &str,
     span: &std::ops::Range<usize>,
@@ -363,7 +376,8 @@ fn span_to_range(
     ensure_non_empty: bool,
     exclude_trailing_newline: bool,
 ) -> std::ops::Range<usize> {
-    let start_line = global_line_offset + md[..span.start].chars().filter(|c| *c == '\n').count();
+    let safe_start = safe_byte_clamp(md, span.start);
+    let start_line = global_line_offset + md[..safe_start].chars().filter(|c| *c == '\n').count();
 
     let end_pos = if exclude_trailing_newline {
         span.end.saturating_sub(1).max(span.start)
@@ -371,7 +385,8 @@ fn span_to_range(
         span.end
     };
 
-    let end_line = global_line_offset + md[..end_pos].chars().filter(|c| *c == '\n').count();
+    let safe_end = safe_byte_clamp(md, end_pos);
+    let end_line = global_line_offset + md[..safe_end].chars().filter(|c| *c == '\n').count();
 
     if ensure_non_empty {
         let range_end = if end_line > start_line {

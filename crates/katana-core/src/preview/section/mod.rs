@@ -5,42 +5,125 @@ pub mod math;
 
 use crate::markdown::DiagramBlock;
 use crate::preview::types::{PreviewSection, PreviewSectionOps};
-use crate::preview::{DiagramSectionOps, HtmlPreviewOps, MathPreviewOps};
+use crate::preview::{DiagramSectionOps, HtmlPreviewOps};
 
 impl PreviewSectionOps {
-    pub fn split_sections(markdown: &str) -> Vec<PreviewSection> {
+    pub fn split_sections(content: &str) -> Vec<PreviewSection> {
+        let content_processed = content;
+
+        /* WHY: We must extract and remove footnote definitions globally before parsing block boundaries */
+        let mut opts = pulldown_cmark::Options::empty();
+        opts.insert(pulldown_cmark::Options::ENABLE_FOOTNOTES);
+        let parser = pulldown_cmark::Parser::new_ext(content_processed, opts).into_offset_iter();
+
+        let mut footnote_spans = Vec::new();
+        for (event, span) in parser {
+            if let pulldown_cmark::Event::Start(pulldown_cmark::Tag::FootnoteDefinition(_)) = event
+            {
+                footnote_spans.push(span);
+            }
+        }
+        footnote_spans.sort_by_key(|s| s.start);
+
+        let mut clean_content = String::with_capacity(content_processed.len());
+        let mut footnotes = String::new();
+        let mut last_end = 0;
+
+        for span in footnote_spans {
+            if span.start >= last_end {
+                clean_content.push_str(&content_processed[last_end..span.start]);
+                let footnote_text = &content_processed[span.start..span.end];
+                footnotes.push_str(footnote_text);
+                footnotes.push('\n');
+
+                /* WHY: Preserve exact line length of the original span so global_line_offset matches */
+                /* WHY: Put back the original newlines so the line mapping remains accurate */
+                let newlines_count = footnote_text.chars().filter(|c| *c == '\n').count();
+                clean_content.extend(std::iter::repeat_n('\n', newlines_count));
+
+                last_end = span.end;
+            }
+        }
+        clean_content.push_str(&content_processed[last_end..]);
+
+        /* WHY: Run the normal marker splitting on the cleaned string to ensure diagram fences parse correctly */
         let mut sections = Vec::new();
-        let mut remaining = markdown;
+        let mut remaining = clean_content.as_str();
+        let mut acc = String::new();
 
         while !remaining.is_empty() {
-            /* WHY: Find the earliest occurrence of any supported diagram marker. */
             let markers = ["```", "<mxGraphModel", "@startuml"];
             let mut earliest = None;
             for m in markers {
-                if let Some(pos) = remaining.find(m) {
-                    if earliest.map_or(true, |(p, _)| pos < p) {
-                        earliest = Some((pos, m));
-                    }
+                let pos_opt = if remaining.starts_with(m) {
+                    Some(0)
+                } else {
+                    /* WHY: Fences must start at the beginning of a line. */
+                    remaining.find(&format!("\n{m}")).map(|p| p + 1)
+                };
+
+                if let Some(pos) = pos_opt
+                    && earliest.is_none_or(|(p, _)| pos < p)
+                {
+                    earliest = Some((pos, m));
                 }
             }
 
             if let Some((pos, marker)) = earliest {
-                if pos > 0 {
-                    sections.push(PreviewSection::Markdown(remaining[..pos].to_string()));
+                let content_from_marker = &remaining[pos..];
+                let parsed_fence = DiagramSectionOps::try_parse_diagram_fence(content_from_marker);
+
+                if parsed_fence.is_none() {
+                    let consume_len = pos + marker.len();
+                    acc.push_str(&remaining[..consume_len]);
+                    remaining = &remaining[consume_len..];
+                    continue;
                 }
 
-                let content_from_marker = &remaining[pos..];
-                if let Some((kind, source, after)) = DiagramSectionOps::try_parse_diagram_fence(content_from_marker) {
-                    sections.push(PreviewSection::Diagram { kind, source, lines: 0 });
-                    remaining = after;
-                } else {
-                    /* WHY: If parsing fails, consume the marker as plain text to avoid infinite loop. */
-                    sections.push(PreviewSection::Markdown(marker.to_string()));
-                    remaining = &content_from_marker[marker.len()..];
+                let (kind, source, after) = parsed_fence.unwrap();
+
+                acc.push_str(&remaining[..pos]);
+                if !acc.is_empty() {
+                    sections.push(PreviewSection::Markdown(
+                        acc.clone(),
+                        Self::count_lines(&acc),
+                    ));
+                    acc.clear();
                 }
+
+                let consumed_len = content_from_marker.len() - after.len();
+                let consumed_text = &content_from_marker[..consumed_len];
+                sections.push(PreviewSection::Diagram {
+                    kind,
+                    source,
+                    lines: Self::count_lines(consumed_text),
+                });
+                remaining = after;
             } else {
-                sections.push(PreviewSection::Markdown(remaining.to_string()));
+                acc.push_str(remaining);
                 break;
+            }
+        }
+
+        if !acc.is_empty() {
+            sections.push(PreviewSection::Markdown(
+                acc.clone(),
+                Self::count_lines(&acc),
+            ));
+        }
+
+        /* WHY: Append global footnotes to all Markdown sections without changing their line counts */
+        if !footnotes.is_empty() {
+            let mut has_markdown = false;
+            for section in sections.iter_mut() {
+                if let PreviewSection::Markdown(md, _) = section {
+                    md.push_str("\n\n");
+                    md.push_str(&footnotes);
+                    has_markdown = true;
+                }
+            }
+            if !has_markdown {
+                sections.push(PreviewSection::Markdown(format!("\n\n{}", footnotes), 0));
             }
         }
 
@@ -48,22 +131,19 @@ impl PreviewSectionOps {
     }
 
     pub fn split_into_sections(content: &str) -> Vec<PreviewSection> {
-        Self::split_sections(content)
+        let initial = Self::split_sections(content);
+        crate::preview::ImageSectionOps::extract_standalone_images(initial)
     }
 
     pub fn render_sections(secs: Vec<PreviewSection>, base_dir: &std::path::Path) -> String {
         let mut html = String::new();
         for sec in secs {
             match sec {
-                PreviewSection::Markdown(md) => {
+                PreviewSection::Markdown(md, _) => {
                     html.push_str(&HtmlPreviewOps::parse_html(&md, base_dir));
                 }
                 PreviewSection::Diagram { kind, source, .. } => {
-                    let source_cow = MathPreviewOps::process_relaxed_math(&source);
-                    let block = DiagramBlock {
-                        kind,
-                        source: source_cow.into_owned(),
-                    };
+                    let block = DiagramBlock { kind, source };
                     html.push_str(&block.render().to_html());
                 }
                 PreviewSection::LocalImage { path, alt, .. } => {
@@ -72,5 +152,11 @@ impl PreviewSectionOps {
             }
         }
         html
+    }
+}
+
+impl PreviewSectionOps {
+    fn count_lines(s: &str) -> usize {
+        s.chars().filter(|c| *c == '\n').count() + usize::from(!s.is_empty() && !s.ends_with('\n'))
     }
 }

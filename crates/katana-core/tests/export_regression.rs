@@ -118,3 +118,83 @@ End.
     assert!(output.html.contains("<h2"), "Heading was swallowed");
     assert!(output.html.contains("End."), "Trailing text was swallowed");
 }
+
+/// RED test for Bug 3: Inline math with spaces must be rendered
+#[test]
+fn html_export_must_render_inline_math_with_spaces_correctly() {
+    let source = "Inline math: $ E = mc^2 $ should work.";
+    let output = MarkdownRenderOps::render_with_katana_renderer(source).unwrap();
+
+    eprintln!("=== INLINE MATH OUTPUT ===");
+    eprintln!("{}", output.html);
+    eprintln!("=== END ===");
+
+    // comrak outputs Math as something like: <span data-math-style="inline">E = mc^2</span>
+    // Note: If comrak's strict parser rejects it due to spaces, it will output:
+    // <p>Inline math: $ E = mc^2 $ should work.</p> (i.e. no special span/element)
+
+    assert!(
+        output.html.contains("data-math-style") || output.html.contains("<math"),
+        "Bug 3: Inline math WITH spaces was NOT recognized! HTML:\n{}",
+        output.html
+    );
+}
+
+/// RED test for Bug 2: Footnote definitions must appear at the end of the document
+#[test]
+fn html_export_must_move_footnotes_to_end() {
+    let source = r#"
+# Heading
+Reference [^1].
+
+[^1]: My definition here.
+
+## Subheading
+End of doc.
+"#;
+    let output = MarkdownRenderOps::render_with_katana_renderer(source).unwrap();
+
+    let html = output.html;
+    let def_pos = html.find("My definition here").expect("Footnote missing");
+    let text_pos = html.find("End of doc").expect("Text missing");
+
+    assert!(
+        def_pos > text_pos,
+        "Bug 2: Footnote definition should be placed after all document content, but instead was at pos {}, End of doc was at pos {}",
+        def_pos,
+        text_pos
+    );
+}
+
+/// RED test for Bug 1: Unfenced Diagram Markers (e.g. <mxGraphModel> and @startuml)
+/// must be properly rendered by the HTML export pipeline, not skipped.
+#[test]
+fn html_export_must_process_naked_diagram_markers() {
+    let source = r#"
+Here is a raw diagram:
+<mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="2" value="Test" style="rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="10" y="10" width="80" height="40" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>
+
+And naked PlantUML:
+@startuml
+A -> B: test
+@enduml
+"#;
+
+    let output = MarkdownRenderOps::render(source, &DummyRenderer).unwrap();
+
+    // We expect the diagram to be transformed by DummyRenderer, which outputs "Dummy Diagram"
+    let dummy_counts = output.html.matches("Dummy Diagram").count();
+    assert_eq!(
+        dummy_counts, 2,
+        "Bug 1: Naked <mxGraphModel> or @startuml blocks were skipped by HTML export! Output was: \n{}",
+        output.html
+    );
+}

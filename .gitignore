@@ -85,6 +85,7 @@ target/llvm-cov/
 
 tmp
 output
+scratch
 
 # local history
 .history

@@ -62,14 +62,14 @@ fn assert_standard_diagram_markdown_visible(harness: &Harness) {
 fn drawio_render_error_ui() {
     let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let sections = vec![
-        RenderedSection::Markdown("# DrawIo Diagram\n".to_string()),
+        RenderedSection::Markdown("# DrawIo Diagram\n".to_string(), 1),
         RenderedSection::Error {
             kind: "DrawIo".to_string(),
             _source: "<invalid/>".to_string(),
             message: "Failed to extract SVG from rendered HTML".to_string(),
             source_lines: 0,
         },
-        RenderedSection::Markdown("## After diagram\n".to_string()),
+        RenderedSection::Markdown("## After diagram\n".to_string(), 1),
     ];
     let harness = build_harness(sections, 600.0, 300.0);
     let expected_error = I18nOps::tf(
@@ -264,16 +264,16 @@ fn mixed_diagrams_with_fallbacks_render_semantically() {
     assert!(matches!(drawio_image, RenderedSection::Image { .. }));
 
     let sections = vec![
-        RenderedSection::Markdown("# Mixed Diagram Document\n".to_string()),
+        RenderedSection::Markdown("# Mixed Diagram Document\n".to_string(), 1),
         drawio_image,
-        RenderedSection::Markdown("---\n".to_string()),
+        RenderedSection::Markdown("---\n".to_string(), 1),
         RenderedSection::CommandNotFound {
             tool_name: "mmdc (Mermaid CLI)".to_string(),
             install_hint: "`npm install -g @mermaid-js/mermaid-cli`".to_string(),
             _source: "graph TD; A-->B".to_string(),
             source_lines: 0,
         },
-        RenderedSection::Markdown("---\n".to_string()),
+        RenderedSection::Markdown("---\n".to_string(), 1),
         RenderedSection::NotInstalled {
             kind: "PlantUML".to_string(),
             download_url:
@@ -282,7 +282,7 @@ fn mixed_diagrams_with_fallbacks_render_semantically() {
             install_path: std::path::PathBuf::from("/tmp/plantuml.jar"),
             source_lines: 0,
         },
-        RenderedSection::Markdown("## End\n".to_string()),
+        RenderedSection::Markdown("## End\n".to_string(), 1),
     ];
     let expected_missing = I18nOps::get()
         .error
@@ -302,7 +302,7 @@ fn mixed_diagrams_with_fallbacks_render_semantically() {
 fn snapshot_diagram_pending_spinner() {
     let _guard = crate::SERIAL_TEST_MUTEX.lock().unwrap();
     let sections = vec![
-        RenderedSection::Markdown("# Rendering in progress\n".to_string()),
+        RenderedSection::Markdown("# Rendering in progress\n".to_string(), 1),
         RenderedSection::Pending {
             kind: "Mermaid".to_string(),
             source: "".to_string(),
@@ -313,7 +313,7 @@ fn snapshot_diagram_pending_spinner() {
             source: "".to_string(),
             source_lines: 0,
         },
-        RenderedSection::Markdown("## Waiting...\n".to_string()),
+        RenderedSection::Markdown("## Waiting...\n".to_string(), 1),
     ];
 
     let mut harness = Harness::builder()
@@ -349,13 +349,13 @@ fn update_after_render_preserves_diagram_images() {
 
     assert_image(&pane.sections, 1, "After markdown-only update");
 
-    if let RenderedSection::Markdown(md) = &pane.sections[0] {
+    if let RenderedSection::Markdown(md, 1) = &pane.sections[0] {
         assert!(
             md.contains("Updated Title"),
             "Title should be updated, got: {md}"
         );
     }
-    if let RenderedSection::Markdown(md) = &pane.sections[2] {
+    if let RenderedSection::Markdown(md, 1) = &pane.sections[2] {
         assert!(
             md.contains("Updated Footer"),
             "Footer should be updated, got: {md}"

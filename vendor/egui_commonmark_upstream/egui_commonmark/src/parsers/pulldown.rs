@@ -448,7 +448,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         st_min_x = Some(st_min_x.map_or(gx, |v: f32| v.min(gx)));
                         st_max_x = Some(st_max_x.map_or(gx_end, |v: f32| v.max(gx_end)));
                     } else if let (Some(min_x), Some(max_x)) = (st_min_x.take(), st_max_x.take()) {
-                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.49;
+                        let y = text_pos.y + row_rect.center().y;
                         ui.painter().hline(min_x..=max_x, y, st_stroke);
                     }
 
@@ -458,7 +458,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         ul_min_x = Some(ul_min_x.map_or(gx, |v: f32| v.min(gx)));
                         ul_max_x = Some(ul_max_x.map_or(gx_end, |v: f32| v.max(gx_end)));
                     } else if let (Some(min_x), Some(max_x)) = (ul_min_x.take(), ul_max_x.take()) {
-                        let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.78; // Tighten precisely to the visual text baseline
+                        let y = text_pos.y + row_rect.bottom();
                         ui.painter().hline(min_x..=max_x, y, ul_stroke);
                     }
 
@@ -467,11 +467,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
                 // Flush remaining runs at end of row
                 if let (Some(min_x), Some(max_x)) = (st_min_x.take(), st_max_x.take()) {
-                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.49;
+                    let y = text_pos.y + row_rect.center().y;
                     ui.painter().hline(min_x..=max_x, y, st_stroke);
                 }
                 if let (Some(min_x), Some(max_x)) = (ul_min_x.take(), ul_max_x.take()) {
-                    let y = text_pos.y + row_rect.min.y + row_rect.height() * 0.78;
+                    let y = text_pos.y + row_rect.bottom();
                     ui.painter().hline(min_x..=max_x, y, ul_stroke);
                 }
             }
@@ -516,6 +516,35 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     }
                 }
             }
+        }
+    }
+
+    fn heading_row_height(&self, ui: &Ui, level: Option<u8>) -> f32 {
+        match level {
+            Some(0) => ui.text_style_height(&egui::TextStyle::Heading),
+            Some(l) => {
+                let style = ui.style();
+                let max_size = style
+                    .text_styles
+                    .get(&egui::TextStyle::Heading)
+                    .map_or(32.0, |d| d.size);
+                let min_size = style
+                    .text_styles
+                    .get(&egui::TextStyle::Body)
+                    .map_or(14.0, |d| d.size);
+                let diff = max_size - min_size;
+                let size = match l {
+                    1 => min_size + diff * 0.835,
+                    2 => min_size + diff * 0.668,
+                    3 => min_size + diff * 0.501,
+                    4 => min_size + diff * 0.334,
+                    _ => min_size + diff * 0.167,
+                };
+                ui.ctx().fonts_mut(|f| {
+                    f.row_height(&egui::FontId::new(size, egui::FontFamily::Proportional))
+                })
+            }
+            None => ui.text_style_height(&egui::TextStyle::Body),
         }
     }
 
@@ -648,7 +677,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 .into_offset_iter();
 
                 let (extracted_events, task_indices) =
-                    extract_custom_task_lists(extract_footnotes(raw_events));
+                    extract_custom_task_lists(extract_footnotes(raw_events, options.render_footnotes));
                 self.task_list_indices = task_indices;
 
                 let mut events = extracted_events.into_iter().enumerate().peekable();
@@ -724,7 +753,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
         let raw_events =
             pulldown_cmark::Parser::new_ext(text, parser_options_math(options.math_fn.is_some()))
                 .into_offset_iter();
-        let events = extract_footnotes(raw_events);
+        let events = extract_footnotes(raw_events, options.render_footnotes);
 
         let num_rows = events.len();
 
@@ -1869,9 +1898,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 self.start_tag(ui, tag, options)
             }
             pulldown_cmark::Event::End(tag) => {
+                let level_before = self.text_style.heading;
                 if Self::should_flush_before_end_tag(&tag) {
                     self.flush_pending_inline(ui, max_width);
                 }
+                let end_y_tight = ui.next_widget_position().y;
                 self.end_tag(ui, tag.clone(), cache, options, max_width);
 
                 // WHY: BlockQuote and CodeBlock already pop from block_states inside
@@ -1889,15 +1920,21 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         if end_y > start_y {
                             let min_x = ui.min_rect().left();
                             let width = ui.available_width();
-                            let mut rect = egui::Rect::from_min_max(
-                                egui::pos2(min_x, start_y),
-                                egui::pos2(min_x + width, end_y),
-                            );
 
-                            if matches!(tag, pulldown_cmark::TagEnd::Heading { .. }) {
-                                rect.min.y -= 10.0;
-                                rect.max.y -= 10.0;
-                            }
+                            let rect = if matches!(tag, pulldown_cmark::TagEnd::Heading { .. }) {
+                                let row_height = self.heading_row_height(ui, level_before);
+                                let mid_y = (start_y + end_y_tight) / 2.0;
+
+                                egui::Rect::from_min_max(
+                                    egui::pos2(min_x, mid_y - row_height / 2.0),
+                                    egui::pos2(min_x + width, mid_y + row_height / 2.0),
+                                )
+                            } else {
+                                egui::Rect::from_min_max(
+                                    egui::pos2(min_x, start_y),
+                                    egui::pos2(min_x + width, end_y),
+                                )
+                            };
 
                             let is_container = matches!(
                                 tag,
@@ -2420,21 +2457,26 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 }
             }
             pulldown_cmark::TagEnd::Heading { .. } => {
+                let level = self.text_style.heading;
+                let end_y = ui.next_widget_position().y;
                 self.line.try_insert_end(ui);
                 self.text_style.heading = None;
 
+                let row_height = self.heading_row_height(ui, level);
                 let last_state = self.block_states.last().cloned();
                 if let (Some(anchors), Some((start_y, span))) =
                     (&mut self.heading_anchors, last_state)
                 {
-                    let end_y = ui.next_widget_position().y;
                     let width = ui.available_width();
                     let min_x = ui.min_rect().left();
+
+                    let mid_y = (start_y + end_y) / 2.0;
+
                     anchors.push((
                         span,
                         egui::Rect::from_min_max(
-                            egui::pos2(min_x, start_y - 5.0),
-                            egui::pos2(min_x + width, end_y - 5.0),
+                            egui::pos2(min_x, mid_y - row_height / 2.0),
+                            egui::pos2(min_x + width, mid_y + row_height / 2.0),
                         ),
                     ));
                 }
@@ -2565,9 +2607,22 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     // Closing block: reset details state
                     self.details_summary = None;
                 } else if let Some(html_fn) = options.html_fn {
+                    let start_y = self.block_states.last().map(|(y, _)| *y).unwrap_or(ui.next_widget_position().y);
                     // Regular HTML block — delegate to the callback
                     html_fn(ui, &block);
                     self.line.try_insert_end(ui);
+                    let end_y = ui.next_widget_position().y;
+                    
+                    if let Some(span) = self.block_states.last().map(|(_, s)| s.clone()) {
+                        let rect = egui::Rect::from_min_max(
+                            egui::pos2(ui.min_rect().left(), start_y),
+                            egui::pos2(ui.max_rect().right(), end_y)
+                        );
+                        
+                        if let Some(anchors) = &mut self.block_anchors {
+                            anchors.push((span.clone(), rect));
+                        }
+                    }
                 }
             }
 
@@ -2807,6 +2862,7 @@ pub(crate) fn extract_custom_task_lists<'e>(
 
 fn extract_footnotes<'e>(
     raw_events: impl Iterator<Item = (pulldown_cmark::Event<'e>, std::ops::Range<usize>)>,
+    append: bool,
 ) -> Vec<(pulldown_cmark::Event<'e>, std::ops::Range<usize>)> {
     let mut main_events = Vec::new();
     let mut footnote_events = Vec::new();
@@ -2891,7 +2947,7 @@ fn extract_footnotes<'e>(
         }
     }
 
-    if !footnote_events.is_empty() {
+    if append && !footnote_events.is_empty() {
         main_events.push((pulldown_cmark::Event::Rule, 0..0));
         main_events.extend(footnote_events);
     }

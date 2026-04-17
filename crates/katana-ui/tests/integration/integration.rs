@@ -1889,6 +1889,7 @@ fn test_ui_split_dir_toggle_horizontal_to_vertical() {
         .state_mut()
         .app_state_mut()
         .set_active_view_mode(ViewMode::Split);
+    harness.state_mut().app_state_mut().layout.show_tools_panel = true;
     /* WHY: UI should render and the '⇕' button should appear */
     harness.step();
 

@@ -73,7 +73,7 @@ pub struct PreviewPaneUtilsOps;
 
 #[derive(Debug, Clone)]
 pub enum RenderedSection {
-    Markdown(String),
+    Markdown(String, usize),
     Image {
         svg_data: RasterizedSvg,
         alt: String,

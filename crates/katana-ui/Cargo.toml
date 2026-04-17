@@ -35,7 +35,7 @@ base64 = "0.22.1"
 mathjax_svg = "3.2.0"
 unicode-segmentation = "1.13.2"
 arboard = "3.6.1"
-uuid = { version = "1.23.0", features = ["v4"] }
+uuid = { version = "1.23.1", features = ["v4"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

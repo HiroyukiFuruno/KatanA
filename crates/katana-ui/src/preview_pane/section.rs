@@ -42,6 +42,7 @@ impl SectionLogicOps {
         search_query: Option<String>,
         search_active_index: Option<usize>,
         is_slideshow: bool,
+        is_last_section: bool,
     ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
         super::section_show::show_section(
             ui,
@@ -60,6 +61,7 @@ impl SectionLogicOps {
             search_query,
             search_active_index,
             is_slideshow,
+            is_last_section,
         )
     }
 
@@ -94,23 +96,21 @@ impl SectionLogicOps {
         for (i, section) in sections.iter().enumerate() {
             ui.push_id(format!("section_{i}"), |ui| {
                 let mut offset = 0;
-                let lines_in_section = if let RenderedSection::Markdown(md) = section {
-                    offset = current_heading_offset;
-                    current_heading_offset +=
-                        katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(md)
-                            .0
-                            .len();
-                    md.chars().filter(|c| *c == '\n').count()
-                } else {
-                    match section {
-                        RenderedSection::Image { source_lines, .. } => *source_lines,
-                        RenderedSection::LocalImage { source_lines, .. } => *source_lines,
-                        RenderedSection::Error { source_lines, .. } => *source_lines,
-                        RenderedSection::NotInstalled { source_lines, .. } => *source_lines,
-                        RenderedSection::Pending { source_lines, .. } => *source_lines,
-                        RenderedSection::CommandNotFound { source_lines, .. } => *source_lines,
-                        _ => 0,
+                let lines_in_section = match section {
+                    RenderedSection::Markdown(md, lines) => {
+                        offset = current_heading_offset;
+                        current_heading_offset +=
+                            katana_core::markdown::outline::MarkdownOutlineOps::extract_outline(md)
+                                .0
+                                .len();
+                        *lines
                     }
+                    RenderedSection::Image { source_lines, .. } => *source_lines,
+                    RenderedSection::LocalImage { source_lines, .. } => *source_lines,
+                    RenderedSection::Error { source_lines, .. } => *source_lines,
+                    RenderedSection::NotInstalled { source_lines, .. } => *source_lines,
+                    RenderedSection::Pending { source_lines, .. } => *source_lines,
+                    RenderedSection::CommandNotFound { source_lines, .. } => *source_lines,
                 };
                 match section {
                     RenderedSection::Image { svg_data, alt, .. } => {
@@ -165,6 +165,7 @@ impl SectionLogicOps {
                             search_query.clone(),
                             search_active_index,
                             is_slideshow,
+                            i == sections.len() - 1,
                         );
                         if let Some(lifecycle) = section_lifecycle.as_mut()
                             && i < lifecycle.len()
