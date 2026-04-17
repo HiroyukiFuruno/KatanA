@@ -2727,3 +2727,55 @@ fn five_consecutive_alternating_blocks_all_produce_anchors() {
         );
     }
 }
+
+#[test]
+fn code_block_nested_in_list_renders_as_independent_block() {
+    let md = concat!(
+        "1. First step:\n",
+        "   ```sh\n",
+        "   cargo build --release\n",
+        "   ```\n"
+    );
+
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
+
+    let mut harness = Harness::builder()
+        .with_size(egui::vec2(800.0, 600.0))
+        .build_ui(move |ui| {
+            pane.show_content(ui, None, None, None, None);
+        });
+
+    harness.step();
+    harness.run();
+
+    let list_item = harness.get_by_label("First step:");
+    let code_blocks = harness.get_all_by(|n| {
+        if let Some(v) = n.value() {
+            format!("{}", v).contains("cargo build")
+        } else {
+            false
+        }
+    });
+    let code_block = code_blocks
+        .into_iter()
+        .next()
+        .expect("code block must exist");
+
+    let list_rect = list_item
+        .accesskit_node()
+        .raw_bounds()
+        .expect("list item text must exist");
+    let code_rect = code_block
+        .accesskit_node()
+        .raw_bounds()
+        .expect("code block must exist");
+
+    assert!(
+        code_rect.y0 >= list_rect.y1 - 2.0,
+        "Code block MUST be rendered below the list item text as an independent block element. \
+         list_rect: {:?}, code_rect: {:?}",
+        list_rect,
+        code_rect
+    );
+}

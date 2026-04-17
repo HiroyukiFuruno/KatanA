@@ -2340,7 +2340,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     }
                 }
                 if !self.inside_blockquote {
-                    self.line.try_insert_start(ui);
+                    if self.is_list_item || self.list.is_inside_a_list() {
+                        newline(ui);
+                    } else {
+                        self.line.try_insert_start(ui);
+                    }
                 }
             }
 
@@ -2686,7 +2690,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 &mut self.search_scroll_pending,
             );
             if !self.inside_blockquote {
-                self.line.try_insert_end(ui);
+                if self.list.is_inside_a_list() {
+                    newline(ui);
+                } else {
+                    self.line.try_insert_end(ui);
+                }
             }
             return Some(response);
         }
