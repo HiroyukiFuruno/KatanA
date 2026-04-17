@@ -1240,7 +1240,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 ui.scroll_to_cursor(Some(egui::Align::Center));
                             }
                             block.frame.show(ui, |ui| {
-                                ui.set_min_width(footnote_width - 12.0);
+                                // REMOVED set_min_width here because it forcefully expanded the container upon jump!
+                                ui.set_max_width(footnote_width - 12.0);
                                 let inner_layout = egui::Layout::left_to_right(egui::Align::Center)
                                     .with_main_wrap(true);
                                 ui.with_layout(inner_layout, |ui| {
@@ -1593,6 +1594,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 ui.with_layout(layout, |ui| {
                     if min_width > 0.0 {
                         ui.set_min_width(min_width);
+                        ui.set_max_width(min_width);
                     }
                     add_contents(ui)
                 })
@@ -1602,6 +1604,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 ui.with_layout(layout, |ui| {
                     if min_width > 0.0 {
                         ui.set_min_width(min_width);
+                        ui.set_max_width(min_width);
                     }
                     add_contents(ui)
                 })
@@ -1612,6 +1615,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 ui.with_layout(layout, |ui| {
                     if min_width > 0.0 {
                         ui.set_min_width(min_width);
+                        ui.set_max_width(min_width);
                     }
                     add_contents(ui)
                 })
@@ -1633,22 +1637,19 @@ impl<'a> CommonMarkViewerInternal<'a> {
             let id = ui.id().with("_table").with(self.curr_table);
             self.curr_table += 1;
 
-            let table_width_key = id.with("_table_width");
-            let prev_table_width: Option<f32> = ui.memory(|mem| mem.data.get_temp(table_width_key));
-
             let Table { header, rows } = parse_table(events);
             let num_cols = header.len().max(1);
 
-            ui.horizontal(|ui| {
-                if let Some(prev_w) = prev_table_width {
-                    let available = ui.available_width();
-                    if available > prev_w {
-                        ui.add_space((available - prev_w) / 2.0);
-                    }
-                }
+            let parent_available_width = ui.available_width();
 
-                let frame_res = egui::Frame::group(ui.style())
-                    .inner_margin(egui::Margin::symmetric(5, 5))
+            let scroll_res = egui::ScrollArea::horizontal()
+                    .id_salt(id.with("table_scroll"))
+                    .auto_shrink([false, true])
+                    .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden) // "いかなる場合でも横スクロールは表示しない"
+                    .show(ui, |ui| {
+                        egui::Frame::group(ui.style())
+                            .inner_margin(egui::Margin::symmetric(5, 5))
+                            .outer_margin(egui::Margin::symmetric(5, 0)) // "左右のmarginには5pxを付与すること"
                     .show(ui, |ui| {
                         let mut col_boundaries = Vec::new();
                         let mut row_bottoms = Vec::new();
@@ -1657,19 +1658,31 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         ui.spacing_mut().item_spacing.x = 5.0; // 2.5px padding per side
                         ui.spacing_mut().item_spacing.y = 5.0;
 
-                        let table_width = ui.available_width();
+                        /* WHY: We use parent_available_width instead of ui.available_width() because 
+                           inside ScrollArea it evaluates to f32::INFINITY. This ensures the table 
+                           visually stretches to 100% of the preview pane without breaking the resizer.
+                           We subtract 22.0 to account for:
+                             - Frame outer_margin (5x2 = 10.0)
+                             - Frame inner_margin (5x2 = 10.0)
+                             - Frame stroke       (1x2 = 2.0) */
+                        let table_width = (parent_available_width - 22.0).max(0.0);
+                        ui.set_max_width(table_width);
                         ui.set_min_width(table_width);
 
-                        let spacing_total =
-                            ui.spacing().item_spacing.x * (num_cols.saturating_sub(1) as f32);
-                        let min_col = (table_width - spacing_total) / (num_cols as f32);
-
                         let header_bg_idx = ui.painter().add(egui::Shape::Noop);
+
+                        // If the intrinsic width of the table is less than `table_width`, 
+                        // we want to distribute the remaining space equally ("均等にautoを割り振る").
+                        // By setting `min_col_width`, columns will naturally expand equally 
+                        // to fill `table_width` if their text is short. If text is long, 
+                        // they can still expand past this minimum.
+                        let spacing_x = ui.spacing().item_spacing.x;
+                        let ideal_min_col_width = ((table_width - (num_cols as f32 - 1.0) * spacing_x) / num_cols as f32).max(0.0);
 
                         let _grid_res = egui::Grid::new(id)
                             .num_columns(num_cols)
                             .striped(true)
-                            .min_col_width(min_col.max(0.0))
+                            .min_col_width(ideal_min_col_width)
                             .show(ui, |ui| {
                                 // ── Header row ──
                                 for (col_idx, col) in header.iter().enumerate() {
@@ -1677,7 +1690,14 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                         .get(col_idx)
                                         .unwrap_or(&pulldown_cmark::Alignment::None);
 
-                                    Self::apply_alignment(ui, alignment, min_col, |ui| {
+                                    let cell_left_x = ui.cursor().min.x;
+                                    if col_idx > 0 && col_boundaries.len() < num_cols - 1 {
+                                        col_boundaries.push(
+                                            cell_left_x - ui.spacing().item_spacing.x / 2.0,
+                                        );
+                                    }
+
+                                    Self::apply_alignment(ui, alignment, ideal_min_col_width, |ui| {
                                         for (index, (e, src_span)) in col {
                                             let tmp_start = std::mem::replace(
                                                 &mut self.line.should_start_newline,
@@ -1701,13 +1721,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                         }
                                         self.flush_pending_inline(ui, ui.available_width());
                                     });
-
-                                    if col_boundaries.len() < num_cols - 1 && col_idx < num_cols - 1
-                                    {
-                                        col_boundaries.push(
-                                            ui.cursor().min.x - ui.spacing().item_spacing.x / 2.0,
-                                        );
-                                    }
                                 }
                                 header_bottom_y = Some(
                                     ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0,
@@ -1722,7 +1735,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                                 .get(col_idx)
                                                 .unwrap_or(&pulldown_cmark::Alignment::None);
 
-                                            Self::apply_alignment(ui, alignment, min_col, |ui| {
+                                            Self::apply_alignment(ui, alignment, ideal_min_col_width, |ui| {
                                                 for (index, (e, src_span)) in col_data {
                                                     let tmp_start = std::mem::replace(
                                                         &mut self.line.should_start_newline,
@@ -1796,15 +1809,10 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         for y in row_bottoms {
                             ui.painter().hline(visual_rect.x_range(), y, stroke);
                         }
-                    });
-
-                let current_table_width = frame_res.response.rect.width();
-                if prev_table_width.map_or(true, |pw| (pw - current_table_width).abs() > 0.1) {
-                    ui.memory_mut(|mem| {
-                        mem.data.insert_temp(table_width_key, current_table_width);
-                    });
-                    ui.ctx().request_repaint();
-                }
+                    })
+                });
+                
+                let frame_res = scroll_res.inner;
 
                 if let Some((_start_y, span)) = self.block_states.pop() {
                     let mut rect = frame_res.response.rect;
@@ -1847,7 +1855,6 @@ impl<'a> CommonMarkViewerInternal<'a> {
                         }
                     }
                 }
-            });
 
             if events.peek().is_none() {
                 self.line.should_end_newline_forced = false;

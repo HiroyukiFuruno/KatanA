@@ -72,6 +72,7 @@ path = "src/lib.rs"
 
 [dependencies]
 regex = "1.12.3"
+textwrap = "0.16.2"
 
 [dependencies.document-features]
 version = "0.2"

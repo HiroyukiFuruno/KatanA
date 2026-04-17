@@ -255,6 +255,18 @@ features:
 |---------|
 | 内容 |
 
+### 5.4 1カラムで折り返しが発生するような長カラム
+
+| ヘッダー |
+|---------|
+| このテキストは非常に長い行で、水平スクロールやワードラップが正しく動作するかを確認するためのものです。ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 を何度も繰り返します。ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 |
+
+### 5.5 短カラム+長カラム＋短カラム
+
+| 短い | 長いカラムのテスト | 短い |
+|------|------|------|
+| ID | このテキストは非常に長い行で、水平スクロールやワードラップが正しく動作するかを確認するためのものです。ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 を何度も繰り返します。ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 | 備考 |
+
 ---
 
 ## 6. 引用

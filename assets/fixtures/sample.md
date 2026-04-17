@@ -256,6 +256,18 @@ features:
 |--------|
 | Content |
 
+### 5.4 Long Column with Wrapping
+
+| Header |
+|---------|
+| This text is a very long line to verify if horizontal scrolling and word wrapping are working correctly. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated many times over. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 |
+
+### 5.5 Short + Long + Short Columns
+
+| Short | Long Column Test | Short |
+|------|------|------|
+| ID | This text is a very long line to verify if horizontal scrolling and word wrapping are working correctly. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated many times over. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 | Notes |
+
 ---
 
 ## 6. Blockquotes
