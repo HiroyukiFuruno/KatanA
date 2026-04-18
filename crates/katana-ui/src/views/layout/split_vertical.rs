@@ -63,7 +63,8 @@ impl<'a> VerticalSplit<'a> {
             egui::Panel::bottom(panel_id)
         };
 
-        let is_first_frame = egui::containers::panel::PanelState::load(ui.ctx(), panel_id).is_none();
+        let is_first_frame =
+            egui::containers::panel::PanelState::load(ui.ctx(), panel_id).is_none();
 
         panel
             .resizable(true)

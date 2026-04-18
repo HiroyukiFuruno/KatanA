@@ -60,7 +60,8 @@ impl<'a> HorizontalSplit<'a> {
                 .scroll_sync_enabled,
         );
 
-        let is_first_frame = egui::containers::panel::PanelState::load(ui.ctx(), panel_id).is_none();
+        let is_first_frame =
+            egui::containers::panel::PanelState::load(ui.ctx(), panel_id).is_none();
 
         panel_side
             .resizable(true)

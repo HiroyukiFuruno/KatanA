@@ -1,7 +1,7 @@
 /* WHY: Isolated theme saving modal logic to maintain UI focus and satisfy architectural line limits. */
 
 use crate::settings::*;
- 
+
 const THEME_SAVE_MODAL_WIDTH: f32 = 400.0;
 const THEME_SAVE_INPUT_WIDTH: f32 = 260.0;
 
@@ -15,11 +15,11 @@ impl ThemeEditorModalOps {
         }
         let mut close = false;
         let i18n = crate::i18n::I18nOps::get();
-         egui::Window::new(i18n.settings.theme.save_custom_theme_title.clone())
-             .collapsible(false)
-             .resizable(false)
-             .min_width(THEME_SAVE_MODAL_WIDTH)
-             .max_width(THEME_SAVE_MODAL_WIDTH)
+        egui::Window::new(i18n.settings.theme.save_custom_theme_title.clone())
+            .collapsible(false)
+            .resizable(false)
+            .min_width(THEME_SAVE_MODAL_WIDTH)
+            .max_width(THEME_SAVE_MODAL_WIDTH)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ui.ctx(), |ui| {
                 let name_id = egui::Id::new("custom_theme_name_input");
