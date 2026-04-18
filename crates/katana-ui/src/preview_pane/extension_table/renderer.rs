@@ -64,7 +64,7 @@ impl KatanaTableRenderer {
             .scope(|constrained_ui| {
                 constrained_ui.set_max_width(safe_width);
 
-                let scroll = egui::ScrollArea::horizontal()
+                let scroll_output = egui::ScrollArea::horizontal()
                     .id_salt(id.with("table_scroll"))
                     .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
                     .auto_shrink([true, false]) // Shrinking horizontally is fine, but vertical shouldn't be affected by tables.
@@ -127,7 +127,9 @@ impl KatanaTableRenderer {
                         frame_res.response
                     });
 
-                scroll.inner
+                let mut res = scroll_output.inner;
+                res.rect = scroll_output.inner_rect;
+                res
             })
             .inner;
 

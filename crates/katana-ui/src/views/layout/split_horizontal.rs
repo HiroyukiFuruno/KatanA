@@ -66,6 +66,7 @@ impl<'a> HorizontalSplit<'a> {
         panel_side
             .resizable(true)
             .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+            .max_width(available_width * crate::shell_ui::SPLIT_PANEL_MAX_RATIO)
             .default_size(half_width)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
