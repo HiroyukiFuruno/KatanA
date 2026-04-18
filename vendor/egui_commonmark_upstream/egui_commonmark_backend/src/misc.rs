@@ -280,7 +280,7 @@ impl Image {
                 }
             });
         }
-        
+
         response
     }
 }
@@ -323,7 +323,9 @@ impl CodeBlock {
                     let mut i = 0;
                     while i < job.sections.len() {
                         let section = &job.sections[i];
-                        if section.byte_range.end <= range.start || section.byte_range.start >= range.end {
+                        if section.byte_range.end <= range.start
+                            || section.byte_range.start >= range.end
+                        {
                             i += 1;
                             continue;
                         }
@@ -348,8 +350,8 @@ impl CodeBlock {
                             replace_with.push(p3);
                         }
 
-                        job.sections.splice(i..i+1, replace_with);
-                        i += 1; 
+                        job.sections.splice(i..i + 1, replace_with);
+                        i += 1;
                     }
                 }
 
@@ -361,7 +363,9 @@ impl CodeBlock {
                     let mut i = 0;
                     while i < job.sections.len() {
                         let section = &job.sections[i];
-                        if section.byte_range.end <= range.start || section.byte_range.start >= range.end {
+                        if section.byte_range.end <= range.start
+                            || section.byte_range.start >= range.end
+                        {
                             i += 1;
                             continue;
                         }
@@ -386,8 +390,8 @@ impl CodeBlock {
                             replace_with.push(p3);
                         }
 
-                        job.sections.splice(i..i+1, replace_with);
-                        i += 1; 
+                        job.sections.splice(i..i + 1, replace_with);
+                        i += 1;
                     }
                 }
 

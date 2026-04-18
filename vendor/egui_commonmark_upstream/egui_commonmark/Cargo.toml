@@ -84,6 +84,7 @@ default-features = false
 
 [dependencies.egui_commonmark_backend]
 version = "0.23.0"
+path = "../egui_commonmark_backend"
 default-features = false
 
 [dependencies.egui_commonmark_macros]

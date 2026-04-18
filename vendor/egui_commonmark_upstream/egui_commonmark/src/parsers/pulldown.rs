@@ -676,8 +676,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 )
                 .into_offset_iter();
 
-                let (extracted_events, task_indices) =
-                    extract_custom_task_lists(extract_footnotes(raw_events, options.render_footnotes));
+                let (extracted_events, task_indices) = extract_custom_task_lists(
+                    extract_footnotes(raw_events, options.render_footnotes),
+                );
                 self.task_list_indices = task_indices;
 
                 let mut events = extracted_events.into_iter().enumerate().peekable();
@@ -1515,7 +1516,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
             let was_inside = self.inside_blockquote;
             self.inside_blockquote = true;
 
-            let response = if let Some(alert) = parse_alerts(&options.alerts, &mut collected_events) {
+            let response = if let Some(alert) = parse_alerts(&options.alerts, &mut collected_events)
+            {
                 egui_commonmark_backend::alert_ui(alert, ui, |ui| {
                     let mut events_iter = collected_events.into_iter().peekable();
                     while let Some((index, (e, src_span))) = events_iter.next() {
@@ -1643,136 +1645,119 @@ impl<'a> CommonMarkViewerInternal<'a> {
             let parent_available_width = ui.available_width();
 
             let scroll_res = egui::ScrollArea::horizontal()
-                    .id_salt(id.with("table_scroll"))
-                    .auto_shrink([false, true])
-                    .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden) // "いかなる場合でも横スクロールは表示しない"
-                    .show(ui, |ui| {
-                        egui::Frame::group(ui.style())
-                            .inner_margin(egui::Margin::symmetric(5, 5))
-                            .outer_margin(egui::Margin::symmetric(5, 0)) // "左右のmarginには5pxを付与すること"
-                    .show(ui, |ui| {
-                        let mut col_boundaries = Vec::new();
-                        let mut row_bottoms = Vec::new();
-                        let mut header_bottom_y = None;
+                .id_salt(id.with("table_scroll"))
+                .auto_shrink([false, true])
+                .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden) // "いかなる場合でも横スクロールは表示しない"
+                .show(ui, |ui| {
+                    let mut header_bg_idx = None;
+                    let mut row_bg_indices = Vec::new();
+                    let mut header_bottom_y = None;
+                    let mut col_boundaries = Vec::new();
+                    let mut row_bounds = Vec::new();
 
-                        ui.spacing_mut().item_spacing.x = 5.0; // 2.5px padding per side
-                        ui.spacing_mut().item_spacing.y = 5.0;
-
-                        /* WHY: We use parent_available_width instead of ui.available_width() because 
-                           inside ScrollArea it evaluates to f32::INFINITY. This ensures the table 
-                           visually stretches to 100% of the preview pane without breaking the resizer.
-                           We subtract 22.0 to account for:
-                             - Frame outer_margin (5x2 = 10.0)
-                             - Frame inner_margin (5x2 = 10.0)
-                             - Frame stroke       (1x2 = 2.0) */
-                        let table_width = (parent_available_width - 22.0).max(0.0);
-                        ui.set_max_width(table_width);
-                        ui.set_min_width(table_width);
-
-                        let header_bg_idx = ui.painter().add(egui::Shape::Noop);
-
-                        // Apply water-filling proportional allocation algorithm for table column widths
-                        // Short columns shrink to fit their content while long columns share the remaining space.
-                        let mut col_max_chars = vec![0; num_cols];
-                        for col in 0..num_cols {
-                            let mut max_chars = 0;
-                            if let Some(header_col) = header.get(col) {
-                                let chars: usize = header_col.iter().map(|x| x.1.1.len()).sum();
-                                max_chars = max_chars.max(chars);
+                    let frame_res = egui::Frame::group(ui.style())
+                        .inner_margin(egui::Margin {
+                            left: 5,
+                            right: 5,
+                            top: 5,
+                            bottom: 5,
+                        })
+                        .outer_margin(egui::Margin::symmetric(5, 0)) // 左右のmarginには5pxを付与すること
+                        .stroke(egui::Stroke::NONE) // Manually draw stroke on top later
+                        .show(ui, |ui| {
+                            header_bg_idx = Some(ui.painter().add(egui::Shape::Noop));
+                            // ユーザーからの「ゼブラの表現でBGを付けるのは偶数行」というご要望。
+                            // ボディの偶数行（1-indexedの2行目、4行目...）＝インデックスとして1, 3, 5... (row_idx % 2 == 1)
+                            for row_idx in 0..rows.len() {
+                                if row_idx % 2 == 1 {
+                                    row_bg_indices
+                                        .push((row_idx, ui.painter().add(egui::Shape::Noop)));
+                                }
                             }
-                            for row in rows.iter() {
-                                if let Some(col_data) = row.get(col) {
-                                    let chars: usize = col_data.iter().map(|x| x.1.1.len()).sum();
+
+                            ui.spacing_mut().item_spacing.x = 10.0;
+                            ui.spacing_mut().item_spacing.y = 10.0;
+
+                            let table_width = (parent_available_width - 22.0).max(0.0);
+                            ui.set_max_width(table_width);
+                            ui.set_min_width(table_width);
+
+                            let mut col_max_chars = vec![0; num_cols];
+                            for col in 0..num_cols {
+                                let mut max_chars = 0;
+                                if let Some(header_col) = header.get(col) {
+                                    let chars: usize = header_col.iter().map(|x| x.1.1.len()).sum();
                                     max_chars = max_chars.max(chars);
                                 }
-                            }
-                            col_max_chars[col] = max_chars;
-                        }
-
-                        let spacing_x = ui.spacing().item_spacing.x;
-                        let mut available_w = (table_width - (num_cols as f32 - 1.0) * spacing_x).max(0.0);
-
-                        let mut ideal_w_and_index: Vec<(f32, usize)> = col_max_chars
-                            .into_iter()
-                            .enumerate()
-                            .map(|(i, len)| (((len as f32 * 6.0) + 16.0), i))
-                            .collect();
-
-                        ideal_w_and_index.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-
-                        let mut col_alloc_width = vec![0.0; num_cols];
-                        let mut remaining_cols = num_cols;
-
-                        for (ideal_w, idx) in ideal_w_and_index {
-                            let fair_share = available_w / remaining_cols as f32;
-                            if ideal_w < fair_share {
-                                col_alloc_width[idx] = ideal_w;
-                                available_w -= ideal_w;
-                            } else {
-                                col_alloc_width[idx] = fair_share;
-                                available_w -= fair_share;
-                            }
-                            remaining_cols -= 1;
-                        }
-
-                        let _grid_res = egui::Grid::new(id)
-                            .num_columns(num_cols)
-                            .striped(true)
-                            .min_col_width(10.0)
-                            .show(ui, |ui| {
-                                // ── Header row ──
-                                for (col_idx, col) in header.iter().enumerate() {
-                                    let alignment = alignments
-                                        .get(col_idx)
-                                        .unwrap_or(&pulldown_cmark::Alignment::None);
-
-                                    let cell_left_x = ui.cursor().min.x;
-                                    if col_idx > 0 && col_boundaries.len() < num_cols - 1 {
-                                        col_boundaries.push(
-                                            cell_left_x - ui.spacing().item_spacing.x / 2.0,
-                                        );
+                                for row in rows.iter() {
+                                    if let Some(col_data) = row.get(col) {
+                                        let chars: usize =
+                                            col_data.iter().map(|x| x.1.1.len()).sum();
+                                        max_chars = max_chars.max(chars);
                                     }
-
-                                    Self::apply_alignment(ui, alignment, col_alloc_width[col_idx], |ui| {
-                                        for (index, (e, src_span)) in col {
-                                            let tmp_start = std::mem::replace(
-                                                &mut self.line.should_start_newline,
-                                                false,
-                                            );
-                                            let tmp_end = std::mem::replace(
-                                                &mut self.line.should_end_newline,
-                                                false,
-                                            );
-                                            self.current_event_idx = *index;
-                                            self.event(
-                                                ui,
-                                                e.clone(),
-                                                src_span.clone(),
-                                                cache,
-                                                options,
-                                                ui.available_width(),
-                                            );
-                                            self.line.should_start_newline = tmp_start;
-                                            self.line.should_end_newline = tmp_end;
-                                        }
-                                        self.flush_pending_inline(ui, ui.available_width());
-                                    });
                                 }
-                                header_bottom_y = Some(
-                                    ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0,
-                                );
-                                ui.end_row();
+                                col_max_chars[col] = max_chars;
+                            }
 
-                                // ── Body rows ──
-                                for (row_idx, row_data) in rows.iter().enumerate() {
-                                    for col_idx in 0..num_cols {
-                                        if let Some(col_data) = row_data.get(col_idx) {
-                                            let alignment = alignments
-                                                .get(col_idx)
-                                                .unwrap_or(&pulldown_cmark::Alignment::None);
+                            let spacing_x = ui.spacing().item_spacing.x;
+                            let mut available_w =
+                                (table_width - (num_cols as f32 - 1.0) * spacing_x).max(0.0);
 
-                                            Self::apply_alignment(ui, alignment, col_alloc_width[col_idx], |ui| {
-                                                for (index, (e, src_span)) in col_data {
+                            let mut ideal_w_and_index: Vec<(f32, usize)> = col_max_chars
+                                .into_iter()
+                                .enumerate()
+                                .map(|(i, len)| (((len as f32 * 6.0) + 16.0), i))
+                                .collect();
+
+                            ideal_w_and_index.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+                            let mut col_alloc_width = vec![0.0; num_cols];
+                            let fair_w = available_w / num_cols as f32;
+                            let all_fit = ideal_w_and_index.iter().all(|(w, _)| *w <= fair_w);
+
+                            if all_fit {
+                                for col in 0..num_cols {
+                                    col_alloc_width[col] = fair_w;
+                                }
+                            } else {
+                                let mut remaining_cols = num_cols;
+                                for (ideal_w, idx) in ideal_w_and_index {
+                                    let fair_share = available_w / remaining_cols as f32;
+                                    if ideal_w < fair_share {
+                                        col_alloc_width[idx] = ideal_w;
+                                        available_w -= ideal_w;
+                                    } else {
+                                        col_alloc_width[idx] = fair_share;
+                                        available_w -= fair_share;
+                                    }
+                                    remaining_cols -= 1;
+                                }
+                            }
+
+                            let _grid_res = egui::Grid::new(id)
+                                .num_columns(num_cols)
+                                .striped(false) // Custom striped processing instead of Grid native
+                                .min_col_width(10.0)
+                                .show(ui, |ui| {
+                                    // HEADER ROW
+                                    for (col_idx, col) in header.iter().enumerate() {
+                                        let alignment = alignments
+                                            .get(col_idx)
+                                            .unwrap_or(&pulldown_cmark::Alignment::None);
+
+                                        let cell_left_x = ui.cursor().min.x;
+                                        if col_idx > 0 && col_boundaries.len() < num_cols - 1 {
+                                            col_boundaries.push(
+                                                cell_left_x - ui.spacing().item_spacing.x / 2.0,
+                                            );
+                                        }
+
+                                        Self::apply_alignment(
+                                            ui,
+                                            alignment,
+                                            col_alloc_width[col_idx],
+                                            |ui| {
+                                                for (index, (e, src_span)) in col {
                                                     let tmp_start = std::mem::replace(
                                                         &mut self.line.should_start_newline,
                                                         false,
@@ -1794,36 +1779,109 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                                     self.line.should_end_newline = tmp_end;
                                                 }
                                                 self.flush_pending_inline(ui, ui.available_width());
-                                            });
-                                        } else {
-                                            ui.label("");
-                                        }
-                                    }
-                                    if row_idx < rows.len() - 1 {
-                                        row_bottoms.push(
-                                            ui.min_rect().bottom()
-                                                + ui.spacing().item_spacing.y / 2.0,
+                                            },
                                         );
                                     }
+                                    let h_bottom =
+                                        ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0;
+                                    header_bottom_y = Some(h_bottom);
                                     ui.end_row();
-                                }
-                            });
 
-                        // Draw vertical and horizontal separators
-                        let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
-                        let visual_rect = ui.min_rect();
+                                    // BODY ROWS
+                                    let mut current_top_y = h_bottom;
+                                    for (_row_idx, row_data) in rows.iter().enumerate() {
+                                        for col_idx in 0..num_cols {
+                                            if let Some(col_data) = row_data.get(col_idx) {
+                                                let alignment = alignments
+                                                    .get(col_idx)
+                                                    .unwrap_or(&pulldown_cmark::Alignment::None);
 
-                        if let Some(y) = header_bottom_y {
-                            let header_bg_rect = egui::Rect::from_min_max(
-                                egui::pos2(visual_rect.left(), visual_rect.top()),
-                                egui::pos2(visual_rect.right(), y),
-                            );
-                            const TABLE_HEADER_ALPHA: f32 = 0.3;
+                                                Self::apply_alignment(
+                                                    ui,
+                                                    alignment,
+                                                    col_alloc_width[col_idx],
+                                                    |ui| {
+                                                        for (index, (e, src_span)) in col_data {
+                                                            let tmp_start = std::mem::replace(
+                                                                &mut self.line.should_start_newline,
+                                                                false,
+                                                            );
+                                                            let tmp_end = std::mem::replace(
+                                                                &mut self.line.should_end_newline,
+                                                                false,
+                                                            );
+                                                            self.current_event_idx = *index;
+                                                            self.event(
+                                                                ui,
+                                                                e.clone(),
+                                                                src_span.clone(),
+                                                                cache,
+                                                                options,
+                                                                ui.available_width(),
+                                                            );
+                                                            self.line.should_start_newline =
+                                                                tmp_start;
+                                                            self.line.should_end_newline = tmp_end;
+                                                        }
+                                                        self.flush_pending_inline(
+                                                            ui,
+                                                            ui.available_width(),
+                                                        );
+                                                    },
+                                                );
+                                            } else {
+                                                ui.label("");
+                                            }
+                                        }
+                                        let current_bottom_y = ui.min_rect().bottom()
+                                            + ui.spacing().item_spacing.y / 2.0;
+                                        row_bounds.push((current_top_y, current_bottom_y));
+                                        current_top_y = current_bottom_y;
+
+                                        ui.end_row();
+                                    }
+                                });
+
+                            _grid_res.response.rect // Return grid rect!
+                        }); // frame_res.inner now contains grid_rect!
+
+                    let _grid_rect = frame_res.inner;
+                    let frame_rect = frame_res.response.rect;
+
+                    // Use perfect frame boundaries for backgrounds to guarantee they snap to the stroke exactly.
+                    // Frame's response.rect does *not* include outer_margin, so we don't shrink it.
+                    let bg_left = frame_rect.left() - 10.0;
+                    let bg_right = frame_rect.right() + 10.0;
+                    let bg_top = frame_rect.top();
+                    let bg_bottom = frame_rect.bottom();
+                    let bg_x_range = bg_left..=bg_right;
+
+                    // Fill Header Background
+                    if let Some(mut y) = header_bottom_y {
+                        if rows.is_empty() {
+                            y = bg_bottom;
+                        }
+                        let header_bg_rect = egui::Rect::from_min_max(
+                            egui::pos2(bg_left, bg_top),
+                            egui::pos2(bg_right, y),
+                        );
+
+                        // Prevent overflowing the rounded corners of the outer frame
+                        let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
+                        let header_rounding = egui::CornerRadius {
+                            nw: corner_radius.nw,
+                            ne: corner_radius.ne,
+                            sw: if rows.is_empty() { corner_radius.sw } else { 0 },
+                            se: if rows.is_empty() { corner_radius.se } else { 0 },
+                        };
+
+                        const TABLE_HEADER_ALPHA: f32 = 0.3;
+                        if let Some(idx) = header_bg_idx {
                             ui.painter().set(
-                                header_bg_idx,
+                                idx,
                                 egui::Shape::rect_filled(
                                     header_bg_rect,
-                                    0.0,
+                                    header_rounding,
                                     ui.visuals()
                                         .selection
                                         .bg_fill
@@ -1831,53 +1889,113 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 ),
                             );
                         }
+                    }
 
-                        for x in col_boundaries {
-                            ui.painter().vline(x, visual_rect.y_range(), stroke);
-                        }
-                        if let (Some(y), false) = (header_bottom_y, rows.is_empty()) {
-                            let header_stroke = egui::Stroke::new(
-                                1.0,
-                                ui.visuals().text_color().gamma_multiply(0.4),
+                    // Fill Even Row Zebra Striping
+                    for (row_idx, shape_idx) in row_bg_indices {
+                        if let Some(&(top_y, mut bottom_y)) = row_bounds.get(row_idx) {
+                            // Extend the last row's background to fill the bottom margin gap perfectly
+                            if row_idx == rows.len() - 1 {
+                                bottom_y = bg_bottom;
+                            }
+                            let row_bg_rect = egui::Rect::from_min_max(
+                                egui::pos2(bg_left, top_y),
+                                egui::pos2(bg_right, bottom_y),
                             );
-                            ui.painter().hline(visual_rect.x_range(), y, header_stroke);
-                        }
-                        for y in row_bottoms {
-                            ui.painter().hline(visual_rect.x_range(), y, stroke);
-                        }
-                    })
-                });
-                
-                let frame_res = scroll_res.inner;
 
-                if let Some((_start_y, span)) = self.block_states.pop() {
-                    let mut rect = frame_res.response.rect;
-                    // Fix: expand the rect to 100% width of the container
-                    rect.min.x = ui.max_rect().min.x;
-                    rect.max.x = ui.max_rect().max.x;
-
-                    if let Some(active) = &self.active_char_range {
-                        if active.start <= span.end && active.end >= span.start {
-                            self.active_rects.push((rect, span.clone()));
-                            /* WHY: Optical visibility for diagrams (Image 1 fix). */
-                            let highlight_color = self.active_bg_color.unwrap_or_else(|| {
-                                if ui.visuals().dark_mode {
-                                    /* WHY: Fallback colors must be visible enough for rich blocks. */
-                                    egui::Color32::from_white_alpha(RECT_ACTIVE_ALPHA)
+                            let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
+                            let row_rounding = egui::CornerRadius {
+                                nw: 0,
+                                ne: 0,
+                                sw: if row_idx == rows.len() - 1 {
+                                    corner_radius.sw
                                 } else {
-                                    /* WHY: Fallback colors must be visible enough for rich blocks. */
-                                    egui::Color32::from_black_alpha(RECT_ACTIVE_ALPHA)
-                                }
-                            });
-                            ui.painter().rect_filled(rect, 1.0, highlight_color);
+                                    0
+                                },
+                                se: if row_idx == rows.len() - 1 {
+                                    corner_radius.se
+                                } else {
+                                    0
+                                },
+                            };
+
+                            ui.painter().set(
+                                shape_idx,
+                                egui::Shape::rect_filled(
+                                    row_bg_rect,
+                                    row_rounding,
+                                    ui.visuals().faint_bg_color,
+                                ),
+                            );
                         }
                     }
-                    if let Some(hovered) = &mut self.hovered_spans {
-                        if let Some(pos) = ui.ctx().pointer_hover_pos() {
-                            if rect.contains(pos) {
-                                hovered.push(span.clone());
-                                /* WHY: Optical visibility for diagrams (Image 1 fix). */
-                                let hover_color = self.hover_bg_color.unwrap_or_else(|| {
+
+                    let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
+
+                    // 1. Vertical columns (draw internal separators only)
+                    for x in &col_boundaries {
+                        ui.painter().vline(*x, bg_top..=bg_bottom, stroke);
+                    }
+
+                    // 2. Header horizontal bottom line
+                    if let Some(y) = header_bottom_y {
+                        if !rows.is_empty() {
+                            ui.painter().hline(bg_x_range.clone(), y, stroke);
+                        }
+                    }
+
+                    // 3. Body horizontal separator lines (draw line between rows)
+                    for (_, bottom_y) in row_bounds.iter().take(row_bounds.len().saturating_sub(1))
+                    {
+                        ui.painter().hline(bg_x_range.clone(), *bottom_y, stroke);
+                    }
+
+                    // 4. Draw outer frame border ON TOP of backgrounds and row lines
+                    let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
+                    let border_rect = egui::Rect::from_min_max(
+                        egui::pos2(bg_left, bg_top),
+                        egui::pos2(bg_right, bg_bottom),
+                    );
+                    ui.painter().rect_stroke(
+                        border_rect,
+                        corner_radius,
+                        stroke,
+                        egui::StrokeKind::Inside,
+                    );
+
+                    frame_res
+                });
+
+            let frame_res = scroll_res.inner;
+
+            if let Some((_start_y, span)) = self.block_states.pop() {
+                let mut rect = frame_res.response.rect;
+                // Fix: expand the rect to 100% width of the container
+                rect.min.x = ui.max_rect().min.x;
+                rect.max.x = ui.max_rect().max.x;
+
+                if let Some(active) = &self.active_char_range {
+                    if active.start <= span.end && active.end >= span.start {
+                        self.active_rects.push((rect, span.clone()));
+                        /* WHY: Optical visibility for diagrams (Image 1 fix). */
+                        let highlight_color = self.active_bg_color.unwrap_or_else(|| {
+                            if ui.visuals().dark_mode {
+                                /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                egui::Color32::from_white_alpha(RECT_ACTIVE_ALPHA)
+                            } else {
+                                /* WHY: Fallback colors must be visible enough for rich blocks. */
+                                egui::Color32::from_black_alpha(RECT_ACTIVE_ALPHA)
+                            }
+                        });
+                        ui.painter().rect_filled(rect, 1.0, highlight_color);
+                    }
+                }
+                if let Some(hovered) = &mut self.hovered_spans {
+                    if let Some(pos) = ui.ctx().pointer_hover_pos() {
+                        if rect.contains(pos) {
+                            hovered.push(span.clone());
+                            /* WHY: Optical visibility for diagrams (Image 1 fix). */
+                            let hover_color = self.hover_bg_color.unwrap_or_else(|| {
                                     if ui.visuals().dark_mode {
                                         /* WHY: Fallback colors must be visible enough for rich blocks. */
                                         egui::Color32::from_white_alpha(RECT_HOVER_ALPHA)
@@ -1886,11 +2004,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                         egui::Color32::from_black_alpha(RECT_HOVER_ALPHA)
                                     }
                                 });
-                                ui.painter().rect_filled(rect, 1.0, hover_color);
-                            }
+                            ui.painter().rect_filled(rect, 1.0, hover_color);
                         }
                     }
                 }
+            }
 
             if events.peek().is_none() {
                 self.line.should_end_newline_forced = false;
@@ -2259,7 +2377,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             // Apply search highlighting to the link text if needed
                             if let Some(regex) = &self.search_query {
                                 if regex.is_match(url) {
-                                    link.text[0] = link.text[0].clone().background_color(egui::Color32::from_rgba_unmultiplied(255, 255, 0, 60));
+                                    link.text[0] = link.text[0].clone().background_color(
+                                        egui::Color32::from_rgba_unmultiplied(255, 255, 0, 60),
+                                    );
                                 }
                             }
 
@@ -2272,7 +2392,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
                             current_text = &current_text[mat.end()..];
                         }
                         if !current_text.is_empty() {
-                            self.push_inline_text_with_search_highlight(current_text, ui, max_width);
+                            self.push_inline_text_with_search_highlight(
+                                current_text,
+                                ui,
+                                max_width,
+                            );
                         }
                     }
                     InlineSegment::Emoji(grapheme) => {
@@ -2654,18 +2778,22 @@ impl<'a> CommonMarkViewerInternal<'a> {
                     // Closing block: reset details state
                     self.details_summary = None;
                 } else if let Some(html_fn) = options.html_fn {
-                    let start_y = self.block_states.last().map(|(y, _)| *y).unwrap_or(ui.next_widget_position().y);
+                    let start_y = self
+                        .block_states
+                        .last()
+                        .map(|(y, _)| *y)
+                        .unwrap_or(ui.next_widget_position().y);
                     // Regular HTML block — delegate to the callback
                     html_fn(ui, &block);
                     self.line.try_insert_end(ui);
                     let end_y = ui.next_widget_position().y;
-                    
+
                     if let Some(span) = self.block_states.last().map(|(_, s)| s.clone()) {
                         let rect = egui::Rect::from_min_max(
                             egui::pos2(ui.min_rect().left(), start_y),
-                            egui::pos2(ui.max_rect().right(), end_y)
+                            egui::pos2(ui.max_rect().right(), end_y),
                         );
-                        
+
                         if let Some(anchors) = &mut self.block_anchors {
                             anchors.push((span.clone(), rect));
                         }

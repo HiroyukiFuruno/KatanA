@@ -476,9 +476,9 @@ impl<'f> CommonMarkViewer<'f> {
             if let Some(ref offset) = self.search_match_offset {
                 internal.search_match_counter = **offset;
             }
-            
+
             let result = internal.show(ui, cache, &self.options, text, None);
-            
+
             if let Some(offset) = self.search_match_offset {
                 *offset = internal.search_match_counter;
             }

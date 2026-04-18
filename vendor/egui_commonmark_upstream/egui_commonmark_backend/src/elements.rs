@@ -253,7 +253,11 @@ impl egui::Widget for ImmutableCheckbox<'_> {
     }
 }
 
-pub fn blockquote(ui: &mut Ui, accent: egui::Color32, add_contents: impl FnOnce(&mut Ui)) -> egui::Response {
+pub fn blockquote(
+    ui: &mut Ui,
+    accent: egui::Color32,
+    add_contents: impl FnOnce(&mut Ui),
+) -> egui::Response {
     let start = ui.painter().add(egui::Shape::Noop);
     let response = egui::Frame::new()
         // offset the frame so that we can use the space for the horizontal line and other stuff

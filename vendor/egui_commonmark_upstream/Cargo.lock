@@ -659,7 +659,7 @@ dependencies = [
  "document-features",
  "eframe",
  "egui 0.34.0",
- "egui_commonmark_backend 0.23.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "egui_commonmark_backend 0.23.0",
  "egui_commonmark_macros 0.23.0",
  "egui_extras",
  "image",
@@ -686,11 +686,9 @@ version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe04399ca5a2196965833a2918e50400449721fd9350e31ae7d84d6690859437"
 dependencies = [
- "data-url",
  "egui 0.34.0",
  "egui_extras",
  "pulldown-cmark",
- "syntect",
 ]
 
 [[package]]
