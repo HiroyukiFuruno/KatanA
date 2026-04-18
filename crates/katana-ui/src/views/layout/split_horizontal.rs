@@ -60,20 +60,14 @@ impl<'a> HorizontalSplit<'a> {
                 .scroll_sync_enabled,
         );
 
-        let is_first_frame =
-            egui::containers::panel::PanelState::load(ui.ctx(), panel_id).is_none();
 
         panel_side
             .resizable(true)
-            .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+            .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
             .max_width(available_width * crate::shell_ui::SPLIT_PANEL_MAX_RATIO)
-            .default_size(half_width)
+            .default_width(half_width)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
-                if is_first_frame {
-                    /* WHY: Force the panel to perfectly snap to half width on first load. */
-                    ui.set_min_width(half_width);
-                }
                 if let Some(path) = &active_path {
                     let pane = crate::shell::KatanaApp::get_preview_pane(
                         &mut app.tab_previews,
