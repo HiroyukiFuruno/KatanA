@@ -103,7 +103,7 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     code_block: Option<CodeBlock>,
     html_block: String,
     is_in_html_block: bool,
-    table_alignments: Option<Vec<pulldown_cmark::Alignment>>,
+    pub(crate) table_alignments: Option<Vec<pulldown_cmark::Alignment>>,
     is_blockquote: bool,
     /// True while processing events inside a blockquote. Used to suppress
     /// paragraph-level newlines that would otherwise create large vertical gaps.
@@ -114,14 +114,14 @@ pub(crate) struct CommonMarkViewerInternal<'a> {
     details_summary: Option<String>,
     details_id_counter: usize,
     task_list_indices: std::collections::HashSet<usize>,
-    current_event_idx: usize,
+    pub(crate) current_event_idx: usize,
     active_task_context_menu: Option<(char, std::ops::Range<usize>, bool)>,
-    active_char_range: Option<std::ops::Range<usize>>,
-    hovered_spans: Option<&'a mut Vec<std::ops::Range<usize>>>,
-    active_rects: Vec<(egui::Rect, std::ops::Range<usize>)>,
-    block_states: Vec<(f32, std::ops::Range<usize>)>,
-    active_bg_color: Option<egui::Color32>,
-    hover_bg_color: Option<egui::Color32>,
+    pub(crate) active_char_range: Option<std::ops::Range<usize>>,
+    pub(crate) hovered_spans: Option<&'a mut Vec<std::ops::Range<usize>>>,
+    pub(crate) active_rects: Vec<(egui::Rect, std::ops::Range<usize>)>,
+    pub(crate) block_states: Vec<(f32, std::ops::Range<usize>)>,
+    pub(crate) active_bg_color: Option<egui::Color32>,
+    pub(crate) hover_bg_color: Option<egui::Color32>,
     custom_task_box_fn: Option<
         &'a dyn Fn(
             &mut egui::Ui,
@@ -293,7 +293,7 @@ fn render_blockquote(
 }
 
 impl<'a> CommonMarkViewerInternal<'a> {
-    fn flush_pending_inline(&mut self, ui: &mut Ui, max_width: f32) {
+    pub(crate) fn flush_pending_inline(&mut self, ui: &mut Ui, max_width: f32) {
         if self.pending_inline.is_empty() {
             return;
         }
@@ -848,7 +848,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
         event: pulldown_cmark::Event,
         src_span: Range<usize>,
         cache: &mut CommonMarkCache,
-        options: &CommonMarkOptions,
+        options: &CommonMarkOptions<'e>,
         max_width: f32,
     ) {
         // When inside a <details> block, check if the CollapsingHeader was just entered.
@@ -1293,7 +1293,11 @@ impl<'a> CommonMarkViewerInternal<'a> {
 
         self.def_list_def_wrapping(events, max_width, cache, options, ui);
         self.item_list_wrapping(events, max_width, cache, options, ui);
-        self.table(events, cache, options, ui, max_width);
+        if !crate::parsers::table_hook::handle_custom_table(
+            self, ui, events, cache, options, max_width,
+        ) {
+            self.table(events, cache, options, ui, max_width);
+        }
         self.blockquote(events, max_width, cache, options, ui);
     }
 
@@ -2018,7 +2022,7 @@ impl<'a> CommonMarkViewerInternal<'a> {
         }
     }
 
-    fn event(
+    pub(crate) fn event(
         &mut self,
         ui: &mut Ui,
         event: pulldown_cmark::Event,

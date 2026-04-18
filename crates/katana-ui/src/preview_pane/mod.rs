@@ -1,6 +1,7 @@
 pub mod anchor_map;
 pub mod background;
 pub mod core_render;
+pub mod extension_table;
 mod render_workers;
 pub mod renderer;
 pub mod types;

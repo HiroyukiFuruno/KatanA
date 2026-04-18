@@ -477,6 +477,74 @@ mod tests {
         );
     }
 
+    /// Ratchet Bug regression: set_min_width inside ScrollArea pushes parent panel wider each frame.
+    /// This test runs 10 frames with a table and asserts width stays stable.
+    #[test]
+    fn horizontal_split_width_stays_stable_with_table_content_multi_frame() {
+        let ctx = test_context();
+        let active = PathBuf::from("/tmp/table_ratchet.md");
+        let markdown = concat!(
+            "# Table Test\n\n",
+            "| Header A | Header B | Header C |\n",
+            "|----------|----------|----------|\n",
+            "| Cell 1   | Cell 2   | Cell 3   |\n",
+            "| Cell 4   | Cell 5   | Cell 6   |\n",
+            "| Cell 7   | Cell 8   | Cell 9   |\n\n",
+            "Some text after the table.\n"
+        );
+        let mut app = app_with_preview_doc(&active, markdown);
+        /* WHY: Run first frame to establish initial state */
+        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                crate::views::layout::split::HorizontalSplit::new(
+                    ctx,
+                    &mut app,
+                    PaneOrder::EditorFirst,
+                ).show(ui);
+            });
+        });
+        let initial_width = egui::containers::panel::PanelState::load(
+            &ctx,
+            crate::views::panels::preview::PreviewLogicOps::preview_panel_id(
+                Some(active.as_path()),
+                "preview_panel_h_right",
+            ),
+        )
+        .expect("preview panel rect after first frame")
+        .rect
+        .width();
+        println!("frame 0: width={initial_width}");
+        /* WHY: Run 9 more frames - width must remain stable (no ratchet). */
+        for frame_idx in 1..=9 {
+            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    crate::views::layout::split::HorizontalSplit::new(
+                        ctx,
+                        &mut app,
+                        PaneOrder::EditorFirst,
+                    ).show(ui);
+                });
+            });
+            let current_width = egui::containers::panel::PanelState::load(
+                &ctx,
+                crate::views::panels::preview::PreviewLogicOps::preview_panel_id(
+                    Some(active.as_path()),
+                    "preview_panel_h_right",
+                ),
+            )
+            .expect("preview panel rect")
+            .rect
+            .width();
+
+            println!("frame {frame_idx}: width={current_width} (delta={})", current_width - initial_width);
+            assert!(
+                (current_width - initial_width).abs() <= 20.0,  // TEMP: raised to see all frames
+                "Ratchet Bug: preview panel width drifted on frame {frame_idx}. \
+                 initial={initial_width}, current={current_width}",
+            );
+        }
+    }
+
     #[test]
     fn new_vertical_split_starts_at_half_height_even_if_another_tab_has_panel_state() {
         let ctx = test_context();

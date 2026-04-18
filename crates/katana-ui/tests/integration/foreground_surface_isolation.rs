@@ -26,10 +26,11 @@ fn disabled_ui_prevents_background_clicks() {
     let is_blocked = app.is_foreground_surface_active(&ctx);
 
     /* WHY: Frame 1: seed the layout */
-    let _ = ctx.run(egui::RawInput::default(), |ctx| {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.set_enabled(!is_blocked);
-            let _ = ui.button("Background Button");
+    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| {
+            ui.add_enabled_ui(!is_blocked, |ui| {
+                let _ = ui.button("Background Button");
+            });
         });
     });
 
@@ -52,14 +53,16 @@ fn disabled_ui_prevents_background_clicks() {
     });
 
     let mut clicked = false;
-    let _ = ctx.run(raw_input, |ctx| {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.set_enabled(!is_blocked);
-            let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
-            let response = ui.put(rect, egui::Button::new("Background Button"));
-            if response.clicked() {
-                clicked = true;
-            }
+    let _ = ctx.run_ui(raw_input, |ctx| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| {
+            ui.add_enabled_ui(!is_blocked, |ui| {
+                let rect =
+                    egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
+                let response = ui.put(rect, egui::Button::new("Background Button"));
+                if response.clicked() {
+                    clicked = true;
+                }
+            });
         });
     });
 
@@ -79,11 +82,13 @@ fn disabled_ui_prevents_background_hover() {
     let is_blocked = app.is_foreground_surface_active(&ctx);
 
     /* WHY: Frame 1: seed the layout */
-    let _ = ctx.run(egui::RawInput::default(), |ctx| {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.set_enabled(!is_blocked);
-            let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
-            ui.put(rect, egui::Button::new("Hoverable Button"));
+    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| {
+            ui.add_enabled_ui(!is_blocked, |ui| {
+                let rect =
+                    egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
+                ui.put(rect, egui::Button::new("Hoverable Button"));
+            });
         });
     });
 
@@ -94,14 +99,16 @@ fn disabled_ui_prevents_background_hover() {
         .push(egui::Event::PointerMoved(egui::pos2(50.0, 50.0)));
 
     let mut hovered = false;
-    let _ = ctx.run(raw_input, |ctx| {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.set_enabled(!is_blocked);
-            let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
-            let response = ui.put(rect, egui::Button::new("Hoverable Button"));
-            if response.hovered() {
-                hovered = true;
-            }
+    let _ = ctx.run_ui(raw_input, |ctx| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| {
+            ui.add_enabled_ui(!is_blocked, |ui| {
+                let rect =
+                    egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
+                let response = ui.put(rect, egui::Button::new("Hoverable Button"));
+                if response.hovered() {
+                    hovered = true;
+                }
+            });
         });
     });
 

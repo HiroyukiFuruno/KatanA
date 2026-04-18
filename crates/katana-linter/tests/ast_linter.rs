@@ -17,9 +17,13 @@ use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
     vec![
         root.join("crates/katana-linter/src"),
+        root.join("crates/katana-linter/tests"),
         root.join("crates/katana-core/src"),
+        root.join("crates/katana-core/tests"),
         root.join("crates/katana-platform/src"),
+        root.join("crates/katana-platform/tests"),
         root.join("crates/katana-ui/src"),
+        root.join("crates/katana-ui/tests"),
     ]
 }
 
@@ -408,5 +412,17 @@ fn ast_linter_no_hardcoded_os_commands() {
         "no-hardcoded-os-commands",
         "Fix: Do not hardcode OS shortcuts like `\\u{2318}` or use invalid placeholder keys. Use {{os_cmd:key}} in Markdown and resolve dynamically.",
         &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_markdown_sandbox() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    use katana_linter::rules::MarkdownSandboxOps;
+    AstLinterOps::run(
+        "markdown-sandbox",
+        "Fix: `CommonMarkViewer` usage detected but missing `set_max_width`. You MUST sandbox the viewer call within `ui.scope(|ui| { ui.set_max_width(...); ... })` to prevent layout ratchet bugs.",
+        &target_crates(&root),
+        MarkdownSandboxOps::lint,
     );
 }

@@ -14,8 +14,28 @@ impl KatanaApp {
     }
 
     #[doc(hidden)]
+    pub fn enable_changelog_popup_for_test(&mut self) {
+        self.needs_changelog_display = true;
+    }
+
+    #[doc(hidden)]
     pub fn app_state_for_test(&self) -> &AppState {
         &self.state
+    }
+
+    #[doc(hidden)]
+    pub fn pending_action_for_test(&self) -> &crate::app_state::AppAction {
+        &self.pending_action
+    }
+
+    #[doc(hidden)]
+    pub fn needs_changelog_for_test(&self) -> bool {
+        self.needs_changelog_display
+    }
+
+    #[doc(hidden)]
+    pub fn explorer_rx_for_test(&self) -> bool {
+        self.explorer_rx.is_some()
     }
 
     #[doc(hidden)]

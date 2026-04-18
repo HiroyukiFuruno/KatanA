@@ -33,3 +33,16 @@ pub use syntect;
 pub type RenderMathFn = dyn Fn(&mut egui::Ui, &str, bool);
 /// Takes [`egui::Ui`] and the html text to be rendered/used
 pub type RenderHtmlFn = dyn Fn(&mut egui::Ui, &str);
+
+/// Takes [`egui::Ui`], cache, options, table data, alignments, and max_width.
+/// The function receives the fully-parsed [`Table`] data and is responsible for
+/// all rendering. Use `cache` and `options` directly for any inline content rendering.
+pub type RenderTableFn = dyn for<'e> Fn(
+    &mut egui::Ui,
+    &mut CommonMarkCache,
+    &CommonMarkOptions,
+    crate::pulldown::Table<'e>,
+    &[pulldown_cmark::Alignment],
+    f32,
+    &mut dyn FnMut(&mut egui::Ui, &mut CommonMarkCache, &[crate::pulldown::EventIteratorItem<'e>]),
+) -> egui::Response;

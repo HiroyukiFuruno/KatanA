@@ -79,11 +79,7 @@ impl<'a> PreviewContent<'a> {
                     0,
                 ))
                 .show(ui, |ui| {
-                    /* WHY: Expand to available width to ensure the Resizable SidePanel doesn't collapse. */
-                    ui.set_min_width(ui.available_width());
-
                     PreviewLogicOps::render_preview_top_padding(ui);
-
                     let is_interactive = ui.is_enabled();
                     let mut hovered_lines = Vec::new();
                     let hover_out = if is_interactive {

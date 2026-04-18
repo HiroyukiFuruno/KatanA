@@ -18,7 +18,7 @@ use crate::settings::*;
 use eframe::egui;
 
 impl ColorPropType {
-    pub(super) fn render_row(
+    pub(crate) fn render_row(
         &self,
         ui: &mut egui::Ui,
         new_colors: &mut ThemeColors,

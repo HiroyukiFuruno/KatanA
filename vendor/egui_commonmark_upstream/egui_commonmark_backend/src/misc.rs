@@ -33,6 +33,7 @@ pub struct CommonMarkOptions<'f> {
     pub mutable: bool,
     pub math_fn: Option<&'f crate::RenderMathFn>,
     pub html_fn: Option<&'f crate::RenderHtmlFn>,
+    pub table_fn: Option<&'f crate::RenderTableFn>,
     pub show_code_copy_button: bool,
     pub render_footnotes: bool,
 }
@@ -59,6 +60,9 @@ impl std::fmt::Debug for CommonMarkOptions<'_> {
             )
             .field("alerts", &self.alerts)
             .field("mutable", &self.mutable)
+            .field("math_fn", &self.math_fn.is_some())
+            .field("html_fn", &self.html_fn.is_some())
+            .field("table_fn", &self.table_fn.is_some())
             .finish()
     }
 }
@@ -80,6 +84,7 @@ impl Default for CommonMarkOptions<'_> {
             mutable: false,
             math_fn: None,
             html_fn: None,
+            table_fn: None,
             show_code_copy_button: true,
             render_footnotes: true,
         }

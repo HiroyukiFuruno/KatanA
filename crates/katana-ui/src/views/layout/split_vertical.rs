@@ -63,12 +63,18 @@ impl<'a> VerticalSplit<'a> {
             egui::Panel::bottom(panel_id)
         };
 
+        let is_first_frame = egui::containers::panel::PanelState::load(ui.ctx(), panel_id).is_none();
+
         panel
             .resizable(true)
             .default_size(half_height)
             .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
+                if is_first_frame {
+                    /* WHY: Force the panel to perfectly snap to half height on first load. */
+                    ui.set_min_height(half_height);
+                }
                 if let Some(path) = &active_path {
                     let pane = KatanaApp::get_preview_pane(&mut app.tab_previews, path.clone());
                     download_req = PreviewContent::new(

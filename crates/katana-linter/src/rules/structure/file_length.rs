@@ -1,7 +1,8 @@
 use crate::Violation;
 use std::path::Path;
 
-const MAX_FILE_LINES: usize = 200;
+const MAX_SOURCE_LINES: usize = 200;
+const MAX_TEST_LINES: usize = 300;
 
 pub struct FileLengthOps;
 
@@ -10,28 +11,13 @@ impl FileLengthOps {
         let mut violations = Vec::new();
 
         let path_str = path.to_string_lossy().replace('\\', "/");
-        if path_str.contains("/tests/") || path_str.ends_with("tests.rs") {
-            return violations;
-        }
+        let is_test = path_str.contains("/tests/") || path_str.ends_with("tests.rs");
 
-        const LEGACY_LONG_FILES: &[&str] = &[
-            "crates/katana-core/src/emoji/raster.rs",
-            "crates/katana-ui/src/app/workspace/open.rs",
-            "crates/katana-ui/src/html_renderer/render_inline.rs",
-            "crates/katana-ui/src/preview_pane/fullscreen_impl.rs",
-            "crates/katana-ui/src/preview_pane/section_show.rs",
-            "crates/katana-ui/src/preview_pane/slideshow.rs",
-            "crates/katana-ui/src/settings/tabs/theme.rs",
-            "crates/katana-ui/src/settings/tabs/theme_editor.rs",
-            "crates/katana-ui/src/shell_ui/shell_ui_frame.rs",
-            "crates/katana-ui/src/views/app_frame/tab_toolbar.rs",
-            "crates/katana-ui/src/views/modals/search_tabs.rs",
-            "crates/katana-ui/src/views/top_bar/tab_bar/tab_item.rs",
-        ];
-
-        if LEGACY_LONG_FILES.iter().any(|f| path_str.ends_with(f)) {
-            return violations;
-        }
+        let max_allowed = if is_test {
+            MAX_TEST_LINES
+        } else {
+            MAX_SOURCE_LINES
+        };
 
         let Ok(content) = std::fs::read_to_string(path) else {
             return violations;
@@ -54,13 +40,13 @@ impl FileLengthOps {
             lines += 1;
         }
 
-        if lines > MAX_FILE_LINES {
+        if lines > max_allowed {
             violations.push(Violation {
                 file: path.to_path_buf(),
                 line: 1,
                 column: 1,
                 message: format!(
-                    "File exceeds {MAX_FILE_LINES}-line limit (current: {lines}, excluding tests). Split into smaller modules."
+                    "File exceeds {max_allowed}-line limit (current: {lines}, excluding tests). Split into smaller modules."
                 ),
             });
         }
