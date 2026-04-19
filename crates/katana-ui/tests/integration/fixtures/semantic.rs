@@ -9,7 +9,7 @@ fn render_snippet(md: &str) -> PreviewPane {
 }
 
 #[test]
-fn fixture_en_s1_1_centered_heading() {
+fn fixture_en_centered_h1_heading() {
     /* WHY: Verify that H1 headings are correctly centered when wrapped in <p align="center"> tags. */
     let (_, _, source) = load_fixture("sample.md");
     let section_md = extract_section(&source, "### 1.1", "### 1.2");
@@ -19,7 +19,7 @@ fn fixture_en_s1_1_centered_heading() {
 }
 
 #[test]
-fn fixture_ja_s1_1_centered_heading() {
+fn fixture_ja_centered_h1_heading() {
     /* WHY: Verify that Japanese H1 headings are also correctly centered. */
     let (_, _, source) = load_fixture("sample.ja.md");
     let section_md = extract_section(&source, "### 1.1", "### 1.2");
@@ -28,7 +28,7 @@ fn fixture_ja_s1_1_centered_heading() {
 }
 
 #[test]
-fn fixture_en_s1_5_text_link_same_row() {
+fn fixture_en_inline_link_on_same_row() {
     /* WHY: Verify that inline links are rendered on the same row as their surrounding text,
      * guarding against incorrect line breaks in the markdown renderer. */
     let (_, _, source) = load_fixture("sample.md");
@@ -38,7 +38,7 @@ fn fixture_en_s1_5_text_link_same_row() {
 }
 
 #[test]
-fn fixture_en_s2_1_heading_hierarchy() {
+fn fixture_en_heading_level_hierarchy() {
     /* WHY: Verify that all markdown heading levels (H1-H6) are rendered in the correct order
      * and maintain relative vertical spacing. */
     let (_, _, source) = load_fixture("sample.md");

@@ -1,92 +1,137 @@
 use egui::{Rect, Shape, Ui, layers::ShapeIdx, pos2};
 
 const TABLE_HEADER_ALPHA: f32 = 0.3; /* WHY: Aesthetic choice for header background transparency. */
+const TABLE_HORIZONTAL_BLEED: f32 = 2.5;
 
 pub(crate) struct KatanaTableDecorations;
 
+#[derive(Clone, Copy)]
+struct TableGeometry {
+    border_rect: Rect,
+    header_rect: Option<Rect>,
+}
+
 impl KatanaTableDecorations {
+    fn horizontal_bounds(frame_rect: Rect) -> (f32, f32) {
+        (
+            frame_rect.left() - TABLE_HORIZONTAL_BLEED,
+            frame_rect.right() + TABLE_HORIZONTAL_BLEED,
+        )
+    }
+
+    fn border_rect(frame_rect: Rect) -> Rect {
+        let (left, right) = Self::horizontal_bounds(frame_rect);
+        Rect::from_min_max(
+            pos2(left, frame_rect.top()),
+            pos2(right, frame_rect.bottom()),
+        )
+    }
+
+    fn header_rect(border_rect: Rect, header_bounds: (f32, f32), num_rows: usize) -> Rect {
+        let (_, header_bottom) = header_bounds;
+        /* WHY: Use border_rect.top() so the header fill aligns exactly with the outer
+         * rect_stroke border — prevents a visual gap that creates a double-line effect. */
+        let top = border_rect.top();
+        let bottom = if num_rows == 0 {
+            border_rect.bottom()
+        } else {
+            header_bottom.max(top).min(border_rect.bottom())
+        };
+        Rect::from_min_max(
+            pos2(border_rect.left(), top),
+            pos2(border_rect.right(), bottom),
+        )
+    }
+
+    fn geometry(
+        frame_rect: Rect,
+        header_bounds: Option<(f32, f32)>,
+        num_rows: usize,
+    ) -> TableGeometry {
+        let border_rect = Self::border_rect(frame_rect);
+        let header_rect = header_bounds.map(|bounds| Self::header_rect(border_rect, bounds, num_rows));
+        TableGeometry {
+            border_rect,
+            header_rect,
+        }
+    }
+
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn draw_decorations(
         ui: &mut Ui,
         frame_rect: Rect,
         header_bg_idx: Option<ShapeIdx>,
-        header_top_y: Option<f32>,
-        header_bottom_y: Option<f32>,
+        header_bounds: Option<(f32, f32)>,
         col_boundaries: &[f32],
         num_rows: usize,
         row_bg_indices: &[(usize, ShapeIdx)],
         row_bounds: &[(f32, f32)],
     ) {
         let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
-
-        /* WHY: We do NOT need to expand beyond frame_rect.
-         * The frame_rect ALREADY includes the frame's inner_margin.
-         * The backgrounds naturally fill the bounding box exactly up to the border. */
-        let bg_left = frame_rect.left();
-        let bg_right = frame_rect.right();
-        let bg_top = frame_rect.top();
-        let bg_bottom = frame_rect.bottom();
+        let geometry = Self::geometry(frame_rect, header_bounds, num_rows);
+        let bg_left = geometry.border_rect.left();
+        let bg_right = geometry.border_rect.right();
+        let bg_top = geometry.border_rect.top();
+        let bg_bottom = geometry.border_rect.bottom();
         let bg_x_range = bg_left..=bg_right;
 
+        /* WHY: Inset fill boundaries by stroke.width so all fills sit entirely
+         * INSIDE the outer rect_stroke border. This eliminates the "double line"
+         * artifact caused by fill edges overlapping with the stroke band's
+         * two anti-aliased edges (outer and inner). */
+        let sw = stroke.width;
+        let fill_left = bg_left + sw;
+        let fill_right = bg_right - sw;
+        let fill_top = bg_top + sw;
+        let fill_bottom = bg_bottom - sw;
+
         /* WHY: Draw Header Background */
-        if let (Some(shape_idx), Some(mut h_bottom)) = (header_bg_idx, header_bottom_y) {
+        if let (Some(shape_idx), Some(header_rect)) = (header_bg_idx, geometry.header_rect) {
             let header_bg_color = ui
                 .visuals()
                 .selection
                 .bg_fill
                 .gamma_multiply(TABLE_HEADER_ALPHA);
-            let header_top = header_top_y.unwrap_or(bg_top);
 
-            let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
-            let header_rounding = egui::CornerRadius {
-                nw: corner_radius.nw,
-                ne: corner_radius.ne,
-                sw: if num_rows == 0 { corner_radius.sw } else { 0 },
-                se: if num_rows == 0 { corner_radius.se } else { 0 },
-            };
-
-            /* WHY: header-only table → fill the entire frame. */
-            if num_rows == 0 {
-                h_bottom = bg_bottom;
-            }
+            /* WHY: Use zero rounding for the fill — it sits inside the border's
+             * rounded corners, so fill rounding would create visible gaps. */
+            let header_fill_rect = Rect::from_min_max(
+                pos2(fill_left, fill_top),
+                pos2(fill_right, header_rect.bottom()),
+            );
 
             ui.painter().set(
                 shape_idx,
-                Shape::rect_filled(
-                    Rect::from_min_max(pos2(bg_left, header_top), pos2(bg_right, h_bottom)),
-                    header_rounding,
-                    header_bg_color,
-                ),
+                Shape::rect_filled(header_fill_rect, egui::CornerRadius::ZERO, header_bg_color),
             );
 
+            /* WHY: Draw separator between header and body rows.
+             * Uses the logical header_rect.bottom() for position calculation. */
             if num_rows > 0 {
-                ui.painter().hline(bg_x_range.clone(), h_bottom, stroke);
+                ui.painter()
+                    .hline(bg_x_range.clone(), header_rect.bottom(), stroke);
             }
         }
 
-        /* WHY: Draw Row backgrounds (Zebra striping). */
+        /* WHY: Draw Row backgrounds (Zebra striping) — inset from border edges. */
         for &(row_idx, shape_idx) in row_bg_indices {
             if let Some(&(top_y, mut bottom_y)) = row_bounds.get(row_idx) {
-                let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
                 let is_last = row_idx == num_rows.saturating_sub(1);
 
-                /* WHY: Extend last row to fill the bottom margin gap. */
+                /* WHY: Last row fills to the inset bottom boundary. */
                 if is_last {
-                    bottom_y = bg_bottom;
+                    bottom_y = fill_bottom;
                 }
-
-                let row_rounding = egui::CornerRadius {
-                    nw: 0,
-                    ne: 0,
-                    sw: if is_last { corner_radius.sw } else { 0 },
-                    se: if is_last { corner_radius.se } else { 0 },
-                };
 
                 ui.painter().set(
                     shape_idx,
                     Shape::rect_filled(
-                        Rect::from_min_max(pos2(bg_left, top_y), pos2(bg_right, bottom_y)),
-                        row_rounding,
+                        Rect::from_min_max(
+                            pos2(fill_left, top_y),
+                            pos2(fill_right, bottom_y),
+                        ),
+                        egui::CornerRadius::ZERO,
                         ui.visuals().faint_bg_color,
                     ),
                 );
@@ -103,10 +148,12 @@ impl KatanaTableDecorations {
             ui.painter().hline(bg_x_range.clone(), *bottom_y, stroke);
         }
 
-        /* WHY: Draw outer frame border. */
-        let border_rect = Rect::from_min_max(pos2(bg_left, bg_top), pos2(bg_right, bg_bottom));
+        /* WHY: Draw outer frame border with rounded corners.
+         * StrokeKind::Inside ensures the stroke occupies [edge, edge + stroke.width].
+         * All fills are inset by stroke.width, so they sit adjacent to (but not
+         * overlapping) the stroke — cleanly eliminating the double-line artifact. */
         ui.painter().add(egui::Shape::rect_stroke(
-            border_rect,
+            geometry.border_rect,
             ui.visuals().widgets.noninteractive.corner_radius,
             stroke,
             egui::StrokeKind::Inside,
@@ -133,8 +180,7 @@ mod tests {
             &mut ui,
             frame_rect,
             None,
-            Some(10.0),
-            Some(30.0),
+            Some((10.0, 30.0)),
             &boundaries,
             0,
             &[],

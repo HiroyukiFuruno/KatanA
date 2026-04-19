@@ -11,7 +11,7 @@ const CHAR_WIDTH_MUL: f32 = 6.0;
 const BASE_WIDTH_OFFSET: f32 = 16.0;
 const ITEM_SPACING: f32 = 10.0;
 const DEFAULT_MARGIN: i8 = 5;
-const TABLE_VERTICAL_SPACING: f32 = 5.0;
+const TABLE_VERTICAL_SPACING: f32 = 10.0;
 const MIN_COL_WIDTH: f32 = 10.0;
 const TABLE_WIDTH_PADDING: f32 = 22.0;
 
@@ -75,7 +75,7 @@ impl KatanaTableRenderer {
                                 }
                             }
 
-                            let mut header_top_y = None;
+                            let mut header_bounds = None;
                             let mut header_bottom_y = None;
                             let mut col_boundaries = Vec::new();
                             let mut row_bounds = Vec::new();
@@ -97,7 +97,7 @@ impl KatanaTableRenderer {
                                         &col_alloc_width,
                                         render_cell,
                                         num_cols,
-                                        &mut header_top_y,
+                                        &mut header_bounds,
                                         &mut header_bottom_y,
                                     );
                                     KatanaTableRendererParts::render_body(
@@ -115,8 +115,7 @@ impl KatanaTableRenderer {
 
                             (
                                 header_bg_idx,
-                                header_top_y,
-                                header_bottom_y,
+                                header_bounds,
                                 col_boundaries,
                                 row_bg_indices,
                                 row_bounds,
@@ -125,8 +124,7 @@ impl KatanaTableRenderer {
 
                     let (
                         header_bg_idx,
-                        header_top_y,
-                        header_bottom_y,
+                        header_bounds,
                         col_boundaries,
                         row_bg_indices,
                         row_bounds,
@@ -135,13 +133,18 @@ impl KatanaTableRenderer {
                     /* WHY: Apply decorations tracking coordinate system of inner_ui */
                     KatanaTableDecorations::draw_decorations(
                         inner_ui,
-                        frame_res
-                            .response
-                            .rect
-                            .shrink2(egui::vec2(0.0, TABLE_VERTICAL_SPACING)),
+                        /* WHY: Shrink only the TOP to align border with content start.
+                     * Do NOT shrink the bottom — the Frame's inner_margin provides
+                     * natural bottom padding between content and the border. */
+                    {
+                        let fr = frame_res.response.rect;
+                        egui::Rect::from_min_max(
+                            egui::pos2(fr.left(), fr.top() + TABLE_VERTICAL_SPACING),
+                            egui::pos2(fr.right(), fr.bottom()),
+                        )
+                    },
                         header_bg_idx,
-                        header_top_y,
-                        header_bottom_y,
+                        header_bounds,
                         &col_boundaries,
                         table_data.rows.len(),
                         &row_bg_indices,

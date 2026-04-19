@@ -5,6 +5,10 @@ use pulldown_cmark::Alignment;
 pub(crate) struct KatanaTableRendererParts;
 
 impl KatanaTableRendererParts {
+    fn header_row_bottom(ui: &Ui) -> f32 {
+        ui.min_rect().bottom()
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn render_header<'e>(
         ui: &mut Ui,
@@ -15,11 +19,10 @@ impl KatanaTableRendererParts {
         col_alloc_width: &[f32],
         render_cell: &mut dyn FnMut(&mut Ui, &mut CommonMarkCache, &[EventIteratorItem<'e>]),
         num_cols: usize,
-        header_top_y: &mut Option<f32>,
+        header_bounds: &mut Option<(f32, f32)>,
         header_bottom_y: &mut Option<f32>,
     ) {
-        *header_top_y = Some(ui.cursor().min.y);
-        let header_vertical_padding = ui.spacing().item_spacing.y / 2.0;
+        let header_row_top = ui.cursor().min.y;
         for (i, col_w) in col_alloc_width.iter().copied().enumerate().take(num_cols) {
             /* WHY: Capture the boundary between columns (internal separators only), matching pulldown.rs. */
             let cell_left_x = ui.cursor().min.x;
@@ -28,17 +31,19 @@ impl KatanaTableRendererParts {
             }
 
             let alignment = alignments.get(i).copied().unwrap_or(Alignment::None);
+            /* WHY: No explicit add_space padding — the Grid's item_spacing.y handles
+             * the vertical gap between header and body rows, keeping header_rect tight. */
             Self::apply_alignment(ui, alignment, col_w, |ui| {
-                ui.add_space(header_vertical_padding);
                 if let Some(hcol) = table_data.header.get(i) {
                     render_cell(ui, cache, hcol);
                 }
             });
         }
 
-        /* WHY: Capture header_bottom_y BEFORE end_row() — matches pulldown.rs reference line 1789-1792. */
-        let h_bottom = ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0;
-        *header_bottom_y = Some(h_bottom);
+        /* WHY: Use the actual laid out header row bounds as the single source of truth. */
+        let bottom = Self::header_row_bottom(ui);
+        *header_bounds = Some((header_row_top, bottom));
+        *header_bottom_y = Some(bottom);
         ui.end_row();
     }
 
@@ -52,11 +57,13 @@ impl KatanaTableRendererParts {
         render_cell: &mut dyn FnMut(&mut Ui, &mut CommonMarkCache, &[EventIteratorItem<'e>]),
         num_cols: usize,
         row_bounds: &mut Vec<(f32, f32)>,
-        header_bottom_y: Option<f32>,
+        _header_bottom_y: Option<f32>,
     ) {
-        /* WHY: Match pulldown.rs reference: current_top_y starts from header_bottom_y
-         * and is carried forward between rows (line 1795). */
-        let mut current_top_y = header_bottom_y.unwrap_or_else(|| ui.min_rect().bottom());
+        /* WHY: Use cursor position (after header's end_row() + Grid item_spacing)
+         * instead of header_bottom_y. The Grid advances the cursor past item_spacing.y
+         * after end_row(), so cursor().min.y is the actual body content start position.
+         * Using header_bottom_y would create a ghost gap above the first body row. */
+        let mut current_top_y = ui.cursor().min.y;
 
         for row in &table_data.rows {
             for (i, row_col) in row.iter().enumerate().take(num_cols) {
@@ -138,7 +145,7 @@ mod tests {
             let mut ui = egui::Ui::new(ctx.clone(), egui::Id::new("test"), builder);
 
             let mut boundaries = vec![];
-            let mut h_top_y = None;
+            let mut h_bounds = None;
             let mut h_bottom_y = None;
             let mut render_cell =
                 |_ui: &mut egui::Ui, _cache: &mut CommonMarkCache, _items: &[_]| {};
@@ -158,12 +165,12 @@ mod tests {
                     &[100.0],
                     &mut render_cell,
                     1,
-                    &mut h_top_y,
+                    &mut h_bounds,
                     &mut h_bottom_y,
                 );
             });
 
-            assert!(h_top_y.is_some());
+            assert!(h_bounds.is_some());
             assert!(h_bottom_y.is_some());
         });
     }
