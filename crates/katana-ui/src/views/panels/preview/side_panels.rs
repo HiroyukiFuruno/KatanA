@@ -56,6 +56,11 @@ impl<'a> PreviewSidePanels<'a> {
                         self.toc_btn_rect = Some(resp_toc.rect);
                         if resp_toc.clicked() {
                             self.app.pending_action = AppAction::ToggleToc;
+                            /* WHY: Set cooldown so hover does not re-open immediately
+                             * when the cursor stays on the button after a click. */
+                            ui.ctx().data_mut(|d| {
+                                d.insert_temp(egui::Id::new("toc_hover_cooldown"), true);
+                            });
                         }
                         ui.add_space(PREVIEW_SIDE_BAR_SPACING);
                     }
@@ -136,13 +141,15 @@ impl<'a> PreviewSidePanels<'a> {
                         self.app.pending_action = AppAction::ShowMetaInfo(doc.path.clone());
                     }
 
-                    /* ===== Centralized hover-delay logic for popup panels ===== */
+                    /* WHY: Popup hover (Export/Story/Tools) is centralized here. */
                     self.handle_popup_hover(
                         ui,
                         resp_export.hovered(),
                         resp_story.hovered(),
                         resp_tools.hovered(),
                     );
+                    /* WHY: TOC hover is managed entirely inside render_toc to avoid
+                     * data_mut calls competing with resp_toc.clicked() event state. */
                 });
             });
         self.sidebar_rect = Some(panel_resp.response.rect);

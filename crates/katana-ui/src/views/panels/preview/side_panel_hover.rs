@@ -97,6 +97,7 @@ impl<'a> PreviewSidePanels<'a> {
         self.app.state.layout.show_export_panel = panel == PendingPanel::Export;
         self.app.state.layout.show_story_panel = panel == PendingPanel::Story;
         self.app.state.layout.show_tools_panel = panel == PendingPanel::Tools;
-        self.app.state.layout.show_toc = false;
+        /* WHY: TOC pinned state (show_toc) is never touched here — it is controlled
+         * exclusively via ToggleToc action. Hover-open is managed by handle_toc_hover. */
     }
 }

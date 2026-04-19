@@ -383,7 +383,9 @@
       "close_confirm_cancel": "Cancel",
       "clear_http_cache": "Clear HTTP Cache",
       "cache_retention_days": "Cache Retention (Days)",
-      "days_suffix": " Days"
+      "days_suffix": " Days",
+      "toc_default_visible": "Show Table of Contents on startup",
+      "explorer_default_visible": "Show Explorer on startup"
     },
     "general": "General"
   },

@@ -383,7 +383,9 @@
       "close_confirm_cancel": "キャンセル",
       "clear_http_cache": "すべてのキャッシュをクリア",
       "cache_retention_days": "キャッシュ保持日数",
-      "days_suffix": " 日"
+      "days_suffix": " 日",
+      "toc_default_visible": "起動時に目次を表示する",
+      "explorer_default_visible": "起動時にエクスプローラーを表示する"
     },
     "general": "全般"
   },
