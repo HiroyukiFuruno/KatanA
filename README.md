@@ -44,10 +44,9 @@ As of **2026**, software development is rapidly evolving with the rise of **AI a
 
 Alongside this shift, **Spec-Driven Development (SDD)** is gaining attention as a development methodology where specifications, architecture descriptions, and tasks are defined before implementation. These specifications are typically written in **Markdown documents** and serve as the central source of truth for both developers and AI agents.
 
-This repository is operated with an AI-agent-first workflow in mind. The owner primarily uses [Antigravity](https://antigravity.google/) as the main development agent.
+This repository is operated with an AI-agent-first workflow in mind.
 Repository-local skills are maintained canonically under `.agents/skills/`.
 If another AI agent expects a different skill directory layout, copy the same skill content from `.agents/skills/` into that agent's expected path instead of maintaining a separate variant.
-Operational familiarity and maintenance priority are Antigravity-first.
 
 ### Mandatory Tools for AI-Agent Workflow
 

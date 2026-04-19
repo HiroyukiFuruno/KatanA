@@ -52,7 +52,7 @@ Temporary Items
 # Katana local and tool-specific ignores
 /.agent/workflows/opsx-*.md
 /.agent/skills/openspec-*/
-/.agents/skills/openspec-*/
+/.agents/
 /.claude/
 /CLAUDE.md
 /.claude/commands/opsx/
