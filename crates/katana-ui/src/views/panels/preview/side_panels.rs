@@ -1,6 +1,7 @@
 use crate::app_state::AppAction;
-use crate::shell::KatanaApp;
 use eframe::egui;
+
+pub use super::side_panel_types::*;
 
 pub(super) const PREVIEW_SIDE_BAR_WIDTH: f32 = 40.0;
 pub(super) const PREVIEW_SIDE_BAR_MARGIN: f32 = 4.0;
@@ -15,24 +16,18 @@ pub(super) const PANEL_HOVER_MARGIN: f32 = 12.0;
 pub(super) const PANEL_ANIM_SPEED: f32 = 0.15;
 pub(super) const TOGGLE_BUTTON_SIZE: f32 = 32.0;
 pub(super) const TOGGLE_BUTTON_ROUNDING: u8 = 4;
-pub struct PreviewSidePanels<'a> {
-    pub app: &'a mut KatanaApp,
-    pub(super) export_btn_rect: Option<egui::Rect>,
-    pub(super) story_btn_rect: Option<egui::Rect>,
-    pub(super) tools_btn_rect: Option<egui::Rect>,
-    pub(super) toc_btn_rect: Option<egui::Rect>,
-}
-impl<'a> PreviewSidePanels<'a> {
-    pub fn new(app: &'a mut KatanaApp) -> Self {
-        Self {
-            app,
-            export_btn_rect: None,
-            story_btn_rect: None,
-            tools_btn_rect: None,
-            toc_btn_rect: None,
-        }
-    }
+pub(super) const POPUP_ROUNDING: f32 = 8.0;
+pub(super) const POPUP_PADDING: i8 = 0;
+pub(super) const POPUP_SHADOW_ALPHA: u8 = 48;
+pub(super) const POPUP_GAP: f32 = 2.0;
 
+/// Delay (seconds) before switching to a different popup panel on hover.
+///
+/// WHY: Prevents accidental panel switches when the user moves the mouse
+/// across toggle buttons while trying to reach the active popup content.
+pub(super) const HOVER_SWITCH_DELAY: f64 = 0.25;
+
+impl<'a> PreviewSidePanels<'a> {
     pub fn show(&mut self, ui: &mut egui::Ui) {
         self.render_sidebar(ui);
         self.render_export(ui);
@@ -42,7 +37,7 @@ impl<'a> PreviewSidePanels<'a> {
     }
 
     fn render_sidebar(&mut self, ui: &mut egui::Ui) {
-        egui::SidePanel::right("preview_side_bar")
+        let panel_resp = egui::SidePanel::right("preview_side_bar")
             .resizable(false)
             .exact_width(PREVIEW_SIDE_BAR_WIDTH)
             .show_inside(ui, |ui| {
@@ -99,12 +94,6 @@ impl<'a> PreviewSidePanels<'a> {
                         &i18n.menu.export,
                     );
                     self.export_btn_rect = Some(resp_export.rect);
-                    if resp_export.hovered() {
-                        self.app.state.layout.show_export_panel = true;
-                        self.app.state.layout.show_story_panel = false;
-                        self.app.state.layout.show_tools_panel = false;
-                        self.app.state.layout.show_toc = false;
-                    }
                     if resp_export.clicked() {
                         self.app.pending_action = AppAction::ToggleExportPanel;
                     }
@@ -117,12 +106,6 @@ impl<'a> PreviewSidePanels<'a> {
                         &i18n.preview.slideshow_settings,
                     );
                     self.story_btn_rect = Some(resp_story.rect);
-                    if resp_story.hovered() {
-                        self.app.state.layout.show_story_panel = true;
-                        self.app.state.layout.show_export_panel = false;
-                        self.app.state.layout.show_tools_panel = false;
-                        self.app.state.layout.show_toc = false;
-                    }
                     if resp_story.clicked() {
                         self.app.pending_action = AppAction::ToggleStoryPanel;
                     }
@@ -135,12 +118,6 @@ impl<'a> PreviewSidePanels<'a> {
                         &i18n.menu.view,
                     );
                     self.tools_btn_rect = Some(resp_tools.rect);
-                    if resp_tools.hovered() {
-                        self.app.state.layout.show_tools_panel = true;
-                        self.app.state.layout.show_export_panel = false;
-                        self.app.state.layout.show_story_panel = false;
-                        self.app.state.layout.show_toc = false;
-                    }
                     if resp_tools.clicked() {
                         self.app.pending_action = AppAction::ToggleToolsPanel;
                     }
@@ -158,8 +135,17 @@ impl<'a> PreviewSidePanels<'a> {
                     {
                         self.app.pending_action = AppAction::ShowMetaInfo(doc.path.clone());
                     }
+
+                    /* ===== Centralized hover-delay logic for popup panels ===== */
+                    self.handle_popup_hover(
+                        ui,
+                        resp_export.hovered(),
+                        resp_story.hovered(),
+                        resp_tools.hovered(),
+                    );
                 });
             });
+        self.sidebar_rect = Some(panel_resp.response.rect);
     }
 
     pub(super) fn render_toggle_button(
