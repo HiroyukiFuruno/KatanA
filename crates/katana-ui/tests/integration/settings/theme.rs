@@ -7,7 +7,7 @@ use katana_ui::theme_bridge::ThemeBridgeOps;
 fn switching_preset_changes_effective_colors() {
     /* WHY: Verify that changing the ThemePreset in the settings service accurately updates the
      * effective ThemeColors used for UI derivation. */
-    let mut svc = SettingsService::new(Box::new(InMemoryRepository::default()));
+    let mut svc = SettingsService::new(Box::new(InMemoryRepository));
 
     let default_colors = svc.settings().effective_theme_colors();
     let expected_default_mode = SettingsDefaultOps::select_initial_preset().colors().mode;
@@ -31,7 +31,7 @@ fn switching_preset_changes_effective_colors() {
 fn switching_preset_changes_visuals() {
     /* WHY: Verify that ThemeBridgeOps correctly generates egui::Visuals from the effective
      * colors after a preset change (e.g., verifying dark_mode flag transition). */
-    let mut svc = SettingsService::new(Box::new(InMemoryRepository::default()));
+    let mut svc = SettingsService::new(Box::new(InMemoryRepository));
 
     let default_visuals =
         ThemeBridgeOps::visuals_from_theme(&svc.settings().effective_theme_colors());
@@ -55,7 +55,7 @@ fn switching_preset_changes_visuals() {
 fn custom_overrides_take_precedence_over_preset() {
     /* WHY: Verify that the custom_color_overrides field in settings correctly masks preset values,
      * allowing for fine-grained user branding without losing the underlying theme structure. */
-    let mut svc = SettingsService::new(Box::new(InMemoryRepository::default()));
+    let mut svc = SettingsService::new(Box::new(InMemoryRepository));
 
     svc.settings_mut().theme.preset = ThemePreset::Nord;
     let mut custom = ThemePreset::Nord.colors();

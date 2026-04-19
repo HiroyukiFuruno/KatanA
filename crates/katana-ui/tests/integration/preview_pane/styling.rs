@@ -48,15 +48,14 @@ fn markdown_text_uses_center_vertical_alignment_for_mixed_cjk_runs() {
     let text_shape = flat
         .into_iter()
         .find_map(|s| {
-            if let egui::epaint::Shape::Text(text) = s {
-                if text
+            if let egui::epaint::Shape::Text(text) = s
+                && text
                     .galley
                     .job
                     .text
                     .contains("AI\u{30a8}\u{30fc}\u{30b8}\u{30a7}\u{30f3}\u{30c8}")
-                {
-                    return Some(text);
-                }
+            {
+                return Some(text);
             }
             None
         })
@@ -93,10 +92,10 @@ fn preview_markdown_uses_proportional_body_font_even_when_ui_font_family_is_mono
     let text_shape = flat
         .into_iter()
         .find_map(|s| {
-            if let egui::epaint::Shape::Text(text) = s {
-                if text.galley.job.text.contains("Title") {
-                    return Some(text);
-                }
+            if let egui::epaint::Shape::Text(text) = s
+                && text.galley.job.text.contains("Title")
+            {
+                return Some(text);
             }
             None
         })

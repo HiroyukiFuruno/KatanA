@@ -1,95 +1,616 @@
-use katana_ui::preview_pane::PreviewPane;
-use eframe::egui;
 use crate::integration::harness_utils::flatten_clipped_shapes;
+use eframe::egui;
+use katana_ui::preview_pane::PreviewPane;
+use std::path::Path;
 
-#[test]
-fn markdown_table_stretches_to_full_width() {
-    /* WHY: Verify that markdown tables correctly expand to fill the entire available panel width, 
-     * adhering to our "100% width" design requirement. */
-    let table_md = "| Header A | Header B | Header C |\n|---|---|---|\n| Cell 1 | Cell 2 | Cell 3 |\n";
-    let preview_width = 600.0_f32;
+fn extract_section(source: &str, start_marker: &str, end_marker: &str) -> String {
+    let start_pos = source.find(start_marker).unwrap() + start_marker.len();
+    let after_start = source[start_pos..]
+        .find('\n')
+        .map(|p| start_pos + p + 1)
+        .unwrap_or(start_pos);
+    let end_pos = source[after_start..]
+        .find(end_marker)
+        .map(|p| after_start + p)
+        .unwrap_or(source.len());
+    source[after_start..end_pos].trim().to_string()
+}
+
+#[derive(Clone)]
+struct TextBounds {
+    text: String,
+    rect: egui::Rect,
+}
+
+fn render_section_shapes(
+    start_marker: &str,
+    end_marker: &str,
+    preview_width: f32,
+    preview_height: f32,
+) -> Vec<egui::epaint::Shape> {
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/fixtures/sample.md"),
+    )
+    .expect("failed to read sample.md");
+    let section_md = extract_section(&source, start_marker, end_marker);
+
     let mut pane = PreviewPane::default();
-    pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/table_test.md"));
+    pane.update_markdown_sections(&section_md, Path::new("/tmp/sample_section.md"));
 
     let ctx = egui::Context::default();
     let raw_input = egui::RawInput {
-        screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(preview_width, 400.0))),
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(preview_width, preview_height),
+        )),
         ..Default::default()
     };
 
-    let render = |ctx: &egui::Context, pane: &mut PreviewPane| {
-        ctx.run(raw_input.clone(), |ctx| {
-            egui::CentralPanel::default().frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8))).show(ctx, |ui| {
-                pane.show(ui);
+    // Render twice to stabilize one-frame-delayed geometry updates.
+    let _ = ctx.run_ui(raw_input.clone(), |ctx| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| pane.show(ui));
+    });
+    let output = ctx.run_ui(raw_input, |ctx| {
+        egui::CentralPanel::default().show_inside(ctx, |ui| pane.show(ui));
+    });
+
+    flatten_clipped_shapes(&output.shapes)
+}
+
+fn render_tables_block_shapes(preview_width: f32) -> Vec<egui::epaint::Shape> {
+    render_section_shapes(
+        "## 5. Tables (GFM)",
+        "## 6. Blockquotes",
+        preview_width,
+        1600.0,
+    )
+}
+
+fn raw_input_for_size(width: f32, height: f32) -> egui::RawInput {
+    egui::RawInput {
+        screen_rect: Some(egui::Rect::from_min_size(
+            egui::pos2(0.0, 0.0),
+            egui::vec2(width, height),
+        )),
+        ..Default::default()
+    }
+}
+
+fn find_text_bounds_contains<'a>(texts: &'a [TextBounds], needle: &str) -> &'a TextBounds {
+    texts
+        .iter()
+        .find(|t| t.text.contains(needle))
+        .expect("expected text marker was not rendered")
+}
+
+fn collect_text_bounds(shapes: &[egui::epaint::Shape]) -> Vec<TextBounds> {
+    let mut texts = Vec::new();
+    for shape in shapes {
+        if let egui::epaint::Shape::Text(text) = shape {
+            let text_str = text.galley.text().trim().to_string();
+            if text_str.is_empty() {
+                continue;
+            }
+            let rect = egui::Rect::from_min_max(
+                egui::pos2(
+                    text.pos.x + text.galley.rect.min.x,
+                    text.pos.y + text.galley.rect.min.y,
+                ),
+                egui::pos2(
+                    text.pos.x + text.galley.rect.max.x,
+                    text.pos.y + text.galley.rect.max.y,
+                ),
+            );
+            texts.push(TextBounds {
+                text: text_str,
+                rect,
             });
+        }
+    }
+    texts
+}
+
+fn find_table_rect_for_markers(
+    shapes: &[egui::epaint::Shape],
+    texts: &[TextBounds],
+    markers: &[&str],
+) -> egui::Rect {
+    let marker_centers: Vec<_> = markers
+        .iter()
+        .filter_map(|marker| {
+            texts
+                .iter()
+                .find(|t| t.text.contains(*marker))
+                .map(|t| t.rect.center())
         })
-    };
+        .collect();
 
-    let _ = render(&ctx, &mut pane);
-    let output = render(&ctx, &mut pane);
+    assert_eq!(
+        marker_centers.len(),
+        markers.len(),
+        "not all marker texts were rendered: {:?}",
+        markers
+    );
 
-    let content_width = preview_width - 16.0;
-    let flat = flatten_clipped_shapes(&output.shapes);
-    let mut table_frame_rect = egui::Rect::NOTHING;
-    for s in flat.iter() {
-        if let egui::epaint::Shape::Rect(rect_shape) = s {
-            if rect_shape.stroke.width > 0.0 && rect_shape.rect.width() > 50.0 {
-                table_frame_rect = rect_shape.rect;
-                break;
+    let mut candidates = Vec::new();
+    for shape in shapes {
+        if let egui::epaint::Shape::Rect(rect_shape) = shape {
+            if rect_shape.stroke.width <= 0.0 || rect_shape.rect.width() < 80.0 {
+                continue;
+            }
+            if marker_centers
+                .iter()
+                .all(|center| rect_shape.rect.contains(*center))
+            {
+                candidates.push(rect_shape.rect);
             }
         }
     }
 
-    assert!(table_frame_rect.width() > 0.0);
-    let fill_ratio = table_frame_rect.width() / content_width;
-    assert!((fill_ratio - 1.0).abs() < 0.05);
+    candidates
+        .into_iter()
+        .max_by(|a, b| {
+            let area_a = a.width() * a.height();
+            let area_b = b.width() * b.height();
+            area_a
+                .partial_cmp(&area_b)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .expect("failed to detect table border rectangle")
 }
 
-#[test]
-fn markdown_table_has_visible_vertical_lines() {
-    /* WHY: Verify that vertical lines between table columns are rendered with sufficient 
-     * visibility (width and opacity), which is a common regression point in custom grid rendering. */
-    let table_md = "| A | B | C |\n|---|---|---|\n| 1 | 2 | 3 |\n";
-    let mut pane = PreviewPane::default();
-    pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/vline_test.md"));
-
-    let ctx = egui::Context::default();
-    let output = ctx.run(egui::RawInput::default(), |ctx| {
-        egui::CentralPanel::default().show(ctx, |ui| pane.show(ui));
-    });
-
-    let flat = flatten_clipped_shapes(&output.shapes);
-    let vlines = flat.iter().filter(|s| match s {
-        egui::epaint::Shape::LineSegment { points, .. } => (points[0].x - points[1].x).abs() < 1.0 && (points[0].y - points[1].y).abs() > 5.0,
-        _ => false,
-    }).count();
-    assert!(vlines >= 2);
-}
-
-#[test]
-fn markdown_table_max_width_is_constrained() {
-    /* WHY: Verify that tables with extremely long content do not expand beyond the available 
-     * viewport width, ensuring they wrap correctly. */
-    let table_md = "| Header A | Header B |\n|---|---|\n| This is a very very extremely long sentence that should wrap | Short |\n";
-    let preview_width = 400.0_f32;
-    let mut pane = PreviewPane::default();
-    pane.update_markdown_sections(table_md, std::path::Path::new("/tmp/table_wrap.md"));
-
-    let ctx = egui::Context::default();
-    let output = ctx.run(egui::RawInput {
-        screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(preview_width, 400.0))),
-        ..Default::default()
-    }, |ctx| {
-        egui::CentralPanel::default().frame(egui::Frame::NONE.inner_margin(egui::Margin::same(8))).show(ctx, |ui| pane.show(ui));
-    });
-
-    let flat = flatten_clipped_shapes(&output.shapes);
-    let mut table_rect = egui::Rect::NOTHING;
-    for s in flat {
-        if let egui::epaint::Shape::Rect(r) = s {
-            if r.rect.width() > 50.0 { table_rect = r.rect; break; }
+fn vertical_boundaries_in_table(
+    shapes: &[egui::epaint::Shape],
+    table_rect: egui::Rect,
+) -> Vec<f32> {
+    let mut xs = Vec::new();
+    for shape in shapes {
+        if let egui::epaint::Shape::LineSegment { points, .. } = shape {
+            let is_vertical = (points[0].x - points[1].x).abs() < 1.0;
+            let line_height = (points[0].y - points[1].y).abs();
+            if !is_vertical || line_height < table_rect.height() * 0.4 {
+                continue;
+            }
+            let x = points[0].x;
+            let y_min = points[0].y.min(points[1].y);
+            let y_max = points[0].y.max(points[1].y);
+            if x > table_rect.left()
+                && x < table_rect.right()
+                && y_min <= table_rect.bottom()
+                && y_max >= table_rect.top()
+            {
+                xs.push(x);
+            }
         }
     }
-    assert!(table_rect.width() <= (preview_width - 16.0));
+
+    xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let mut dedup: Vec<f32> = Vec::new();
+    for x in xs {
+        if dedup
+            .last()
+            .map(|prev| (x - *prev).abs() > 1.0)
+            .unwrap_or(true)
+        {
+            dedup.push(x);
+        }
+    }
+    dedup
 }
 
+fn horizontal_separators_in_table(
+    shapes: &[egui::epaint::Shape],
+    table_rect: egui::Rect,
+) -> Vec<f32> {
+    let mut ys = Vec::new();
+    for shape in shapes {
+        if let egui::epaint::Shape::LineSegment { points, .. } = shape {
+            let is_horizontal = (points[0].y - points[1].y).abs() < 1.0;
+            let line_width = (points[0].x - points[1].x).abs();
+            if !is_horizontal || line_width < table_rect.width() * 0.8 {
+                continue;
+            }
+            let y = points[0].y;
+            if y > table_rect.top() && y < table_rect.bottom() {
+                ys.push(y);
+            }
+        }
+    }
+
+    ys.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    ys.dedup_by(|a, b| (*a - *b).abs() < 1.0);
+    ys
+}
+
+fn col_for_text(text_rect: egui::Rect, edges: &[f32]) -> Option<usize> {
+    let x = text_rect.center().x;
+    (0..edges.len().saturating_sub(1)).find(|idx| x >= edges[*idx] && x <= edges[*idx + 1])
+}
+
+#[test]
+fn assert_table_sample_md_5_1_has_even_columns_and_cell_padding() {
+    let preview_width = 760.0;
+    let shapes = render_section_shapes("### 5.1", "### 5.2", preview_width, 360.0);
+    let texts = collect_text_bounds(&shapes);
+    let table_rect =
+        find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
+
+    assert!(
+        table_rect.left() >= 4.0 && table_rect.right() <= preview_width - 4.0,
+        "table must stay inside panel with ~5px side margins: left={}, right={}, width={}",
+        table_rect.left(),
+        table_rect.right(),
+        preview_width
+    );
+
+    let boundaries = vertical_boundaries_in_table(&shapes, table_rect);
+    assert_eq!(
+        boundaries.len(),
+        2,
+        "expected 2 vertical separators for 3 columns"
+    );
+
+    let edges = vec![
+        table_rect.left(),
+        boundaries[0],
+        boundaries[1],
+        table_rect.right(),
+    ];
+    let widths = [
+        edges[1] - edges[0],
+        edges[2] - edges[1],
+        edges[3] - edges[2],
+    ];
+    let min_w = widths.iter().copied().fold(f32::INFINITY, f32::min);
+    let max_w = widths.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+    assert!(
+        (max_w - min_w) <= 6.0,
+        "columns must stay visually even when total width fits: widths={:?}",
+        widths
+    );
+
+    let separators = horizontal_separators_in_table(&shapes, table_rect);
+    let headers: Vec<_> = texts
+        .iter()
+        .filter(|t| t.text == "Feature" || t.text == "Status" || t.text == "Notes")
+        .collect();
+    let header_bottom = separators
+        .iter()
+        .copied()
+        .find(|y| *y > headers.iter().map(|h| h.rect.max.y).fold(0.0, f32::max))
+        .expect("failed to find header-bottom separator");
+
+    for header in headers {
+        let col_idx =
+            col_for_text(header.rect, &edges).expect("header text should be inside a column");
+        let left_pad = header.rect.left() - edges[col_idx];
+        let right_pad = edges[col_idx + 1] - header.rect.right();
+        assert!(
+            left_pad >= 2.0 && right_pad >= 2.0,
+            "header cell should keep horizontal margin (~2.5px): '{}' left_pad={} right_pad={}",
+            header.text,
+            left_pad,
+            right_pad
+        );
+
+        let top_pad = header.rect.top() - table_rect.top();
+        let bottom_pad = header_bottom - header.rect.bottom();
+        assert!(
+            top_pad >= 4.0 && bottom_pad >= 4.0 && (top_pad - bottom_pad).abs() <= 4.0,
+            "header vertical padding should keep readable top/bottom space: '{}' top_pad={} bottom_pad={}",
+            header.text,
+            top_pad,
+            bottom_pad
+        );
+    }
+}
+
+#[test]
+fn assert_table_sample_md_5_5_keeps_short_columns_visible_and_within_panel() {
+    let preview_width = 760.0;
+    let shapes = render_section_shapes("### 5.5", "## 6. Blockquotes", preview_width, 360.0);
+    let texts = collect_text_bounds(&shapes);
+    let table_rect =
+        find_table_rect_for_markers(&shapes, &texts, &["Long Column Test", "ID", "Notes"]);
+
+    assert!(
+        table_rect.left() >= 4.0 && table_rect.right() <= preview_width - 4.0,
+        "5.5 table must stay inside panel with ~5px side margins: left={}, right={}, width={}",
+        table_rect.left(),
+        table_rect.right(),
+        preview_width
+    );
+
+    let boundaries = vertical_boundaries_in_table(&shapes, table_rect);
+    assert_eq!(
+        boundaries.len(),
+        2,
+        "expected 2 vertical separators for 3 columns"
+    );
+
+    let edges = vec![
+        table_rect.left(),
+        boundaries[0],
+        boundaries[1],
+        table_rect.right(),
+    ];
+    let widths = [
+        edges[1] - edges[0],
+        edges[2] - edges[1],
+        edges[3] - edges[2],
+    ];
+
+    assert!(
+        widths[0] >= 40.0 && widths[2] >= 40.0,
+        "short side columns collapsed in 5.5: widths={:?}",
+        widths
+    );
+    assert!(
+        widths[1] > widths[0] && widths[1] > widths[2],
+        "long-content column should receive the largest width in 5.5: widths={:?}",
+        widths
+    );
+
+    // Ensure short-cell strings fit in their columns with at least small horizontal padding.
+    for target in ["ID", "Notes"] {
+        let text = texts
+            .iter()
+            .find(|t| t.text == target)
+            .expect("short-cell text missing");
+        let col_idx =
+            col_for_text(text.rect, &edges).expect("short-cell text should be inside a column");
+        let left_pad = text.rect.left() - edges[col_idx];
+        let right_pad = edges[col_idx + 1] - text.rect.right();
+        assert!(
+            left_pad >= 2.0 && right_pad >= 2.0,
+            "short-cell text should not touch cell border: '{}' left_pad={} right_pad={}",
+            target,
+            left_pad,
+            right_pad
+        );
+    }
+}
+
+#[test]
+fn table_full_tables_block_keeps_vertical_margins() {
+    let preview_width = 1200.0;
+    let shapes = render_tables_block_shapes(preview_width);
+    let texts = collect_text_bounds(&shapes);
+
+    let heading_5_1 = find_text_bounds_contains(&texts, "5.1 Basic Table");
+    let heading_5_2 = find_text_bounds_contains(&texts, "5.2 Table with Alignment");
+    let table_5_1 = find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
+
+    assert!(
+        table_5_1.top() - heading_5_1.rect.bottom() >= 4.0,
+        "table top margin is missing: heading_bottom={} table_top={}",
+        heading_5_1.rect.bottom(),
+        table_5_1.top()
+    );
+    assert!(
+        heading_5_2.rect.top() - table_5_1.bottom() >= 4.0,
+        "table bottom margin is missing: table_bottom={} next_heading_top={}",
+        table_5_1.bottom(),
+        heading_5_2.rect.top()
+    );
+}
+
+#[test]
+fn assert_table_full_tables_block_keeps_dynamic_width_rules() {
+    let preview_width = 1200.0;
+    let shapes = render_tables_block_shapes(preview_width);
+    let texts = collect_text_bounds(&shapes);
+    let table_5_1 = find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
+    let boundaries_5_1 = vertical_boundaries_in_table(&shapes, table_5_1);
+    assert_eq!(
+        boundaries_5_1.len(),
+        2,
+        "expected 2 vertical separators in first table"
+    );
+    let edges_5_1 = vec![
+        table_5_1.left(),
+        boundaries_5_1[0],
+        boundaries_5_1[1],
+        table_5_1.right(),
+    ];
+    let widths_5_1 = [
+        edges_5_1[1] - edges_5_1[0],
+        edges_5_1[2] - edges_5_1[1],
+        edges_5_1[3] - edges_5_1[2],
+    ];
+    let min_w_5_1 = widths_5_1.iter().copied().fold(f32::INFINITY, f32::min);
+    let max_w_5_1 = widths_5_1.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+    assert!(
+        (max_w_5_1 - min_w_5_1) <= 8.0,
+        "first table columns lost balanced distribution: widths={:?}",
+        widths_5_1
+    );
+
+    let table_5_5 = find_table_rect_for_markers(&shapes, &texts, &["Long Column Test", "ID"]);
+    let boundaries_5_5 = vertical_boundaries_in_table(&shapes, table_5_5);
+    assert_eq!(
+        boundaries_5_5.len(),
+        2,
+        "expected 2 vertical separators in last table"
+    );
+    let edges_5_5 = vec![
+        table_5_5.left(),
+        boundaries_5_5[0],
+        boundaries_5_5[1],
+        table_5_5.right(),
+    ];
+    let widths_5_5 = [
+        edges_5_5[1] - edges_5_5[0],
+        edges_5_5[2] - edges_5_5[1],
+        edges_5_5[3] - edges_5_5[2],
+    ];
+    assert!(
+        widths_5_5[0] >= 40.0 && widths_5_5[2] >= 40.0,
+        "short side columns collapsed in last table: widths={:?}",
+        widths_5_5
+    );
+    assert!(
+        widths_5_5[1] > widths_5_5[0] && widths_5_5[1] > widths_5_5[2],
+        "middle column should stay dominant for long content: widths={:?}",
+        widths_5_5
+    );
+}
+
+#[test]
+fn assert_table_preview_width_shrinks_after_resize_with_table_and_code() {
+    let markdown = r#"
+### Table
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Markdown | ✅ | Full support |
+| Mermaid | ✅ | Requires mmdc |
+
+```rust
+fn very_long_line_for_resize_regression() { let x = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; println!("{x}"); }
+```
+"#;
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(markdown, Path::new("/tmp/table_code_resize.md"));
+
+    let ctx = egui::Context::default();
+    let widths = [1100.0_f32, 620.0_f32, 420.0_f32];
+    for width in widths {
+        for _ in 0..2 {
+            let mut root_min_rect = egui::Rect::NOTHING;
+            let _ = ctx.run_ui(raw_input_for_size(width, 500.0), |ctx| {
+                egui::CentralPanel::default().show_inside(ctx, |ui| {
+                    pane.show(ui);
+                    root_min_rect = ui.min_rect();
+                });
+            });
+            assert!(
+                root_min_rect.width() <= width + 2.0,
+                "preview min width should follow resize even with tables: min_rect={}, width={}",
+                root_min_rect.width(),
+                width
+            );
+        }
+    }
+}
+
+#[test]
+fn assert_table_header_background_matches_border_bounds() {
+    let preview_width = 700.0;
+    let shapes = render_section_shapes("### 5.1", "### 5.2", preview_width, 360.0);
+    let texts = collect_text_bounds(&shapes);
+    let table_rect =
+        find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
+    let headers: Vec<_> = texts
+        .iter()
+        .filter(|t| t.text == "Feature" || t.text == "Status" || t.text == "Notes")
+        .collect();
+    let header_centers: Vec<_> = headers.iter().map(|t| t.rect.center()).collect();
+
+    let header_bg = shapes
+        .iter()
+        .filter_map(|shape| {
+            if let egui::epaint::Shape::Rect(r) = shape {
+                if r.fill != egui::Color32::TRANSPARENT
+                    && r.rect.height() < table_rect.height() * 0.6
+                    && header_centers.iter().all(|c| r.rect.contains(*c))
+                {
+                    return Some(r.rect);
+                }
+            }
+            None
+        })
+        .min_by(|a, b| {
+            (a.width() * a.height())
+                .partial_cmp(&(b.width() * b.height()))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .expect("header background rect was not detected");
+
+    let header_covering_rects = shapes
+        .iter()
+        .filter_map(|shape| {
+            if let egui::epaint::Shape::Rect(r) = shape {
+                if r.fill != egui::Color32::TRANSPARENT
+                    && r.rect.height() < table_rect.height() * 0.6
+                    && header_centers.iter().all(|c| r.rect.contains(*c))
+                {
+                    return Some(r.rect);
+                }
+            }
+            None
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        header_covering_rects.len(),
+        1,
+        "header area should be painted by a single background rect"
+    );
+
+    assert!(
+        (header_bg.left() - table_rect.left()).abs() <= 1.0
+            && (header_bg.right() - table_rect.right()).abs() <= 1.0,
+        "header background width should match border: bg={:?} border={:?}",
+        header_bg,
+        table_rect
+    );
+    assert!(
+        (header_bg.top() - table_rect.top()).abs() <= 1.0,
+        "header background top should match border top: bg_top={} border_top={}",
+        header_bg.top(),
+        table_rect.top()
+    );
+    let separators = horizontal_separators_in_table(&shapes, table_rect);
+    let header_separator = separators
+        .first()
+        .copied()
+        .expect("header separator was not detected");
+    assert!(
+        (header_bg.bottom() - header_separator).abs() <= 1.0,
+        "header background bottom should meet header separator: bg_bottom={} separator={}",
+        header_bg.bottom(),
+        header_separator
+    );
+}
+
+#[test]
+fn assert_table_multiline_row_short_cells_have_consistent_vertical_alignment() {
+    let preview_width = 420.0;
+    let shapes = render_section_shapes("### 5.5", "## 6. Blockquotes", preview_width, 420.0);
+    let texts = collect_text_bounds(&shapes);
+    let table_rect =
+        find_table_rect_for_markers(&shapes, &texts, &["Long Column Test", "ID", "Notes"]);
+    let separators = horizontal_separators_in_table(&shapes, table_rect);
+    let body_top = separators
+        .first()
+        .copied()
+        .expect("header/body separator was not detected");
+    let body_bottom = table_rect.bottom();
+
+    let id = texts
+        .iter()
+        .find(|t| t.text == "ID")
+        .expect("ID text was not rendered");
+    let notes = texts
+        .iter()
+        .find(|t| t.text == "Notes")
+        .expect("Notes text was not rendered");
+
+    let id_top_pad = id.rect.top() - body_top;
+    let notes_top_pad = notes.rect.top() - body_top;
+    let id_bottom_pad = body_bottom - id.rect.bottom();
+    let notes_bottom_pad = body_bottom - notes.rect.bottom();
+    assert!(
+        (id_top_pad - notes_top_pad).abs() <= 2.0,
+        "short cells should use consistent vertical alignment in multiline rows: id_pad={} notes_pad={}",
+        id_top_pad,
+        notes_top_pad
+    );
+    assert!(
+        id_top_pad <= id_bottom_pad && notes_top_pad <= notes_bottom_pad,
+        "short cells should stay top-aligned in multiline rows: id_top={} id_bottom={} notes_top={} notes_bottom={}",
+        id_top_pad,
+        id_bottom_pad,
+        notes_top_pad,
+        notes_bottom_pad
+    );
+}
