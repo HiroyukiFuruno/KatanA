@@ -2701,6 +2701,7 @@ name = "katana-linter"
 version = "0.22.2"
 dependencies = [
  "ignore",
+ "once_cell",
  "proc-macro2",
  "serde",
  "serde_json",
