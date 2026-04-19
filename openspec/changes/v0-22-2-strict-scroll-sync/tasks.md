@@ -39,9 +39,9 @@
 
 ## 3. Final Verification & Release Work
 
-- [ ] 3.1 `docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md` を用いた自己レビューの実施
-- [ ] 3.2 `make check` が終了コード 0 でパスすることを確認
-- [ ] 3.3 `release/v0-22-2` から `master` への PR を作成
-- [ ] 3.4 PR 上の CI チェック（Lint / Coverage / CodeQL）の成功を確認
-- [ ] 3.5 master へのマージ (`gh pr merge --merge --delete-branch`)
-- [ ] 3.6 GitHub Release の完了確認および `/opsx-archive` による本チェンジのアーカイブ
+- [x] 3.1 `docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md` を用いた自己レビューの実施
+- [x] 3.2 `make check` が終了コード 0 でパスすることを確認
+- [x] 3.3 `release/v0-22-2` から `master` への PR を作成
+- [x] 3.4 PR 上の CI チェック（Lint / Coverage / CodeQL）の成功を確認
+- [x] 3.5 master へのマージ (`gh pr merge --merge --delete-branch`)
+- [x] 3.6 GitHub Release の完了確認および `/opsx-archive` による本チェンジのアーカイブ
