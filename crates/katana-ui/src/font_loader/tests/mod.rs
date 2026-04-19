@@ -1,12 +1,8 @@
 /* WHY: Root module for font loader tests. Organizes tests by category into sub-modules for better maintainability and to comply with file length limits. */
 
 use super::*;
-#[cfg(target_os = "macos")]
-// #[cfg(target_os = "macos")]
-// use egui::FontData;
 use egui::FontDefinitions;
-// #[cfg(target_os = "macos")]
-// use egui::FontId;
+#[cfg(target_os = "macos")]
 use katana_core::markdown::color_preset::DiagramColorPreset;
 // use std::fs;
 // #[cfg(target_os = "macos")]
@@ -17,7 +13,9 @@ use katana_core::markdown::color_preset::DiagramColorPreset;
 const APPLE_COLOR_EMOJI_FONT_NAME: &str = "Apple Color Emoji";
 
 mod definitions;
+#[cfg(target_os = "macos")]
 mod emoji;
+#[cfg(target_os = "macos")]
 mod jitter;
 mod normalization;
 mod state;
