@@ -9,8 +9,9 @@ use katana_linter::rules::domains::theme::{
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
     FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps,
-    MagicNumberOps, NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
-    ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
+    MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps, ProcessCommandOps,
+    ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps,
+    TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -81,6 +82,28 @@ fn ast_linter_no_lazy_code() {
         "Fix: Remove `todo!()`, `unimplemented!()`, and `dbg!()` macros. Implement the actual logic.",
         &target_crates(root),
         LazyCodeOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_min_rect_width_height_leaks() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "min-rect-sizing",
+        "Fix: Do not derive parent-facing width/height from `ui.min_rect()`. This can leak intrinsic content size into any resizable parent layout and cause it to expand but not shrink. Use `available_width()`, `available_height()`, or `clip_rect()` instead.",
+        &target_crates(root),
+        MinRectSizingOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_scrollarea_inner_rect_leaks() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "scrollarea-inner-rect-leak",
+        "Fix: Do not assign `ScrollArea::inner_rect` directly to a parent-facing `rect`. This leaks unclipped content size into the parent layout and can cause ratchet growth (expand but not shrink).",
+        &target_crates(root),
+        ScrollAreaInnerRectLeakOps::lint,
     );
 }
 
