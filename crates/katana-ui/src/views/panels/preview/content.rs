@@ -39,6 +39,11 @@ impl<'a> PreviewContent<'a> {
         } = self;
 
         let mut download_req = None;
+        /* WHY: Lock preview content to the panel's current available width so
+         * intrinsic-size widgets cannot expand the parent resizable panel state. */
+        let panel_width = ui.available_width();
+        ui.set_min_width(panel_width);
+        ui.set_max_width(panel_width);
 
         /* WHY: Check for forced scroll target from Sync System or Navigation. */
         let mut forced_offset = PreviewLogicOps::compute_forced_offset(
@@ -71,66 +76,86 @@ impl<'a> PreviewContent<'a> {
             scroll_area = scroll_area.vertical_scroll_offset(offset);
         }
 
-        let output = scroll_area.show(ui, |ui| {
-            /* WHY: Use a Frame with explicit horizontal margin for consistent padding (12px). */
-            egui::Frame::none()
-                .inner_margin(egui::Margin::symmetric(
-                    crate::shell_ui::PREVIEW_CONTENT_PADDING,
-                    0,
-                ))
-                .show(ui, |ui| {
-                    PreviewLogicOps::render_preview_top_padding(ui);
-                    let is_interactive = ui.is_enabled();
-                    let mut hovered_lines = Vec::new();
-                    let hover_out = if is_interactive {
-                        Some(&mut hovered_lines)
-                    } else {
-                        None
-                    };
+        let spacing = ui.style().spacing.scroll;
+        let scroll_bar_width =
+            spacing.bar_width + spacing.bar_inner_margin + spacing.floating_allocated_width;
+        /* WHY: Mirror PreviewPane::show and cap the inner width before rendering.
+         * Without this sandbox, table/content min_rect can feed back into the
+         * surrounding resizable layout and prevent shrink after a wider frame. */
+        let inner_content_width = (ui.available_width() - scroll_bar_width).max(0.0);
+        let child_rect = egui::Rect::from_min_size(
+            ui.next_widget_position(),
+            egui::vec2(inner_content_width, ui.available_height()),
+        );
 
-                    let (req, actions) = preview.show_content(
-                        ui,
-                        scroll.active_editor_line,
-                        hover_out,
-                        search_query.clone(),
-                        doc_search_active_index,
-                    );
+        let output = ui
+            .scope_builder(
+                egui::UiBuilder::new()
+                    .max_rect(child_rect)
+                    .layout(egui::Layout::top_down(egui::Align::Min)),
+                |ui| {
+                    scroll_area.show(ui, |ui| {
+                        /* WHY: Use a Frame with explicit horizontal margin for consistent padding (12px). */
+                        egui::Frame::none()
+                            .inner_margin(egui::Margin::symmetric(
+                                crate::shell_ui::PREVIEW_CONTENT_PADDING,
+                                0,
+                            ))
+                            .show(ui, |ui| {
+                                PreviewLogicOps::render_preview_top_padding(ui);
+                                let is_interactive = ui.is_enabled();
+                                let mut hovered_lines = Vec::new();
+                                let hover_out = if is_interactive {
+                                    Some(&mut hovered_lines)
+                                } else {
+                                    None
+                                };
 
-                    /* WHY: Hover synchronization is decoupled from scroll_sync.        */
-                    if is_interactive {
-                        scroll.hovered_preview_lines = hovered_lines;
-                    }
+                                let (req, actions) = preview.show_content(
+                                    ui,
+                                    scroll.active_editor_line,
+                                    hover_out,
+                                    search_query.clone(),
+                                    doc_search_active_index,
+                                );
 
-                    /* WHY: Handle clicks for Editor-to-Preview navigation. */
-                    if is_interactive
-                        && ui.rect_contains_pointer(ui.min_rect())
-                        && ui.input(|i| i.pointer.primary_clicked())
-                        && let Some(hovered) = scroll.hovered_preview_lines.first()
-                    {
-                        scroll.scroll_to_line = Some(hovered.start);
-                    }
+                                /* WHY: Hover synchronization is decoupled from scroll_sync.        */
+                                if is_interactive {
+                                    scroll.hovered_preview_lines = hovered_lines;
+                                }
 
-                    download_req = req;
-                    /* WHY: Handle embedded actions like Task List toggling. */
-                    if let Some((global_index, new_state)) = actions.into_iter().next() {
-                        *action = AppAction::ToggleTaskList {
-                            global_index,
-                            new_state,
-                        };
-                    }
+                                /* WHY: Handle clicks for Editor-to-Preview navigation. */
+                                if is_interactive
+                                    && ui.rect_contains_pointer(ui.min_rect())
+                                    && ui.input(|i| i.pointer.primary_clicked())
+                                    && let Some(hovered) = scroll.hovered_preview_lines.first()
+                                {
+                                    scroll.scroll_to_line = Some(hovered.start);
+                                }
 
-                    PreviewLogicOps::render_preview_bottom_padding(ui, scroll);
-                });
-        });
+                                download_req = req;
+                                /* WHY: Handle embedded actions like Task List toggling. */
+                                if let Some((global_index, new_state)) = actions.into_iter().next() {
+                                    *action = AppAction::ToggleTaskList {
+                                        global_index,
+                                        new_state,
+                                    };
+                                }
+
+                                PreviewLogicOps::render_preview_bottom_padding(ui, scroll);
+                            });
+                    })
+                },
+            );
 
         if scroll_sync {
             PreviewLogicOps::update_scroll_sync(
                 scroll,
                 preview,
                 crate::shell::TREE_ROW_HEIGHT,
-                output.content_size.y,
-                output.inner_rect.height(),
-                output.state.offset.y,
+                output.inner.content_size.y,
+                output.inner.inner_rect.height(),
+                output.inner.state.offset.y,
             );
         }
 
@@ -138,7 +163,7 @@ impl<'a> PreviewContent<'a> {
         Export and Story view are now floating buttons at the bottom right. */
 
         /* WHY: Render floating action buttons at the bottom right. */
-        let scroll_offset = output.state.offset.y;
+        let scroll_offset = output.inner.state.offset.y;
         let show_back_to_top = scroll_offset > BACK_TO_TOP_THRESHOLD;
         PreviewLogicOps::render_floating_buttons(
             ui,

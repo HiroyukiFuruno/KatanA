@@ -379,7 +379,8 @@ fn table_full_tables_block_keeps_vertical_margins() {
 
     let basic_table_heading = find_text_bounds_contains(&texts, "5.1 Basic Table");
     let aligned_table_heading = find_text_bounds_contains(&texts, "5.2 Table with Alignment");
-    let basic_table = find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
+    let basic_table =
+        find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
 
     assert!(
         basic_table.top() - basic_table_heading.rect.bottom() >= 4.0,
@@ -400,7 +401,8 @@ fn assert_tables_follow_dynamic_width_allocation_rules() {
     let preview_width = 1200.0;
     let shapes = render_tables_block_shapes(preview_width);
     let texts = collect_text_bounds(&shapes);
-    let basic_table = find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
+    let basic_table =
+        find_table_rect_for_markers(&shapes, &texts, &["Feature", "Markdown", "Notes"]);
     let basic_table_boundaries = vertical_boundaries_in_table(&shapes, basic_table);
     assert_eq!(
         basic_table_boundaries.len(),
@@ -418,15 +420,22 @@ fn assert_tables_follow_dynamic_width_allocation_rules() {
         basic_table_edges[2] - basic_table_edges[1],
         basic_table_edges[3] - basic_table_edges[2],
     ];
-    let basic_min_width = basic_table_widths.iter().copied().fold(f32::INFINITY, f32::min);
-    let basic_max_width = basic_table_widths.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+    let basic_min_width = basic_table_widths
+        .iter()
+        .copied()
+        .fold(f32::INFINITY, f32::min);
+    let basic_max_width = basic_table_widths
+        .iter()
+        .copied()
+        .fold(f32::NEG_INFINITY, f32::max);
     assert!(
         (basic_max_width - basic_min_width) <= 8.0,
         "basic table columns lost balanced distribution: widths={:?}",
         basic_table_widths
     );
 
-    let long_content_table = find_table_rect_for_markers(&shapes, &texts, &["Long Column Test", "ID"]);
+    let long_content_table =
+        find_table_rect_for_markers(&shapes, &texts, &["Long Column Test", "ID"]);
     let long_content_table_boundaries = vertical_boundaries_in_table(&shapes, long_content_table);
     assert_eq!(
         long_content_table_boundaries.len(),
@@ -487,6 +496,38 @@ fn very_long_line_for_resize_regression() { let x = "ABCDEFGHIJKLMNOPQRSTUVWXYZa
             assert!(
                 root_min_rect.width() <= width + 2.0,
                 "preview min width should follow resize even with tables: min_rect={}, width={}",
+                root_min_rect.width(),
+                width
+            );
+        }
+    }
+}
+
+#[test]
+fn assert_tables_block_preview_width_shrinks_after_resize() {
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/fixtures/sample.md"),
+    )
+    .expect("failed to read sample.md");
+    let tables_md = extract_section(&source, "## 5. Tables (GFM)", "## 6. Blockquotes");
+
+    let mut pane = PreviewPane::default();
+    pane.update_markdown_sections(&tables_md, Path::new("/tmp/tables_resize.md"));
+
+    let ctx = egui::Context::default();
+    let widths = [1200.0_f32, 760.0_f32, 520.0_f32, 380.0_f32];
+    for width in widths {
+        for _ in 0..2 {
+            let mut root_min_rect = egui::Rect::NOTHING;
+            let _ = ctx.run_ui(raw_input_for_size(width, 900.0), |ctx| {
+                egui::CentralPanel::default().show_inside(ctx, |ui| {
+                    pane.show(ui);
+                    root_min_rect = ui.min_rect();
+                });
+            });
+            assert!(
+                root_min_rect.width() <= width + 2.0,
+                "tables preview min width should follow resize: min_rect={}, width={}",
                 root_min_rect.width(),
                 width
             );

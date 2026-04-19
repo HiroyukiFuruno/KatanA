@@ -5,8 +5,10 @@ use pulldown_cmark::Alignment;
 pub(crate) struct KatanaTableRendererParts;
 
 impl KatanaTableRendererParts {
+    const HEADER_VERTICAL_PADDING: f32 = 5.0;
+
     fn header_row_bottom(ui: &Ui) -> f32 {
-        ui.min_rect().bottom()
+        ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -31,12 +33,14 @@ impl KatanaTableRendererParts {
             }
 
             let alignment = alignments.get(i).copied().unwrap_or(Alignment::None);
-            /* WHY: No explicit add_space padding — the Grid's item_spacing.y handles
-             * the vertical gap between header and body rows, keeping header_rect tight. */
+            /* WHY: Apply explicit header cell vertical padding so text/background/border
+             * stay visually aligned without relying on global frame offsets. */
             Self::apply_alignment(ui, alignment, col_w, |ui| {
+                ui.add_space(Self::HEADER_VERTICAL_PADDING);
                 if let Some(hcol) = table_data.header.get(i) {
                     render_cell(ui, cache, hcol);
                 }
+                ui.add_space(Self::HEADER_VERTICAL_PADDING);
             });
         }
 

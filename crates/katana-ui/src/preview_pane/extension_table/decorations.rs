@@ -2,6 +2,13 @@ use egui::{Rect, Shape, Ui, layers::ShapeIdx, pos2};
 
 const TABLE_HEADER_ALPHA: f32 = 0.3; /* WHY: Aesthetic choice for header background transparency. */
 const TABLE_HORIZONTAL_BLEED: f32 = 2.5;
+/* WHY: Lift the visual frame slightly so header text has explicit top breathing room.
+ * This must stay paired with renderer top spacing to avoid collapsing heading->table margin. */
+const TABLE_TOP_BLEED: f32 = 4.0;
+/* WHY: The frame response includes trailing row spacing. We inset bottom so
+ * the outer border ends at the visual table end, keeping the following block
+ * margin intact and avoiding border-overlap with the next heading. */
+const TABLE_BOTTOM_INSET: f32 = 5.0;
 
 pub(crate) struct KatanaTableDecorations;
 
@@ -21,10 +28,9 @@ impl KatanaTableDecorations {
 
     fn border_rect(frame_rect: Rect) -> Rect {
         let (left, right) = Self::horizontal_bounds(frame_rect);
-        Rect::from_min_max(
-            pos2(left, frame_rect.top()),
-            pos2(right, frame_rect.bottom()),
-        )
+        let top = frame_rect.top() - TABLE_TOP_BLEED;
+        let bottom = (frame_rect.bottom() - TABLE_BOTTOM_INSET).max(top);
+        Rect::from_min_max(pos2(left, top), pos2(right, bottom))
     }
 
     fn header_rect(border_rect: Rect, header_bounds: (f32, f32), num_rows: usize) -> Rect {
@@ -49,13 +55,13 @@ impl KatanaTableDecorations {
         num_rows: usize,
     ) -> TableGeometry {
         let border_rect = Self::border_rect(frame_rect);
-        let header_rect = header_bounds.map(|bounds| Self::header_rect(border_rect, bounds, num_rows));
+        let header_rect =
+            header_bounds.map(|bounds| Self::header_rect(border_rect, bounds, num_rows));
         TableGeometry {
             border_rect,
             header_rect,
         }
     }
-
 
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn draw_decorations(
@@ -127,10 +133,7 @@ impl KatanaTableDecorations {
                 ui.painter().set(
                     shape_idx,
                     Shape::rect_filled(
-                        Rect::from_min_max(
-                            pos2(fill_left, top_y),
-                            pos2(fill_right, bottom_y),
-                        ),
+                        Rect::from_min_max(pos2(fill_left, top_y), pos2(fill_right, bottom_y)),
                         egui::CornerRadius::ZERO,
                         ui.visuals().faint_bg_color,
                     ),
