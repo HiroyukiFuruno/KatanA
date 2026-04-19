@@ -60,7 +60,6 @@ impl<'a> HorizontalSplit<'a> {
                 .scroll_sync_enabled,
         );
 
-
         panel_side
             .resizable(true)
             .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)

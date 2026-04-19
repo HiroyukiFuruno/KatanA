@@ -49,14 +49,14 @@ impl TableLayoutCalculator {
      *
      * Strategy:
      * 1. If ALL columns fit within fair_w (= available_w / num_cols), give every column fair_w.
-     *    This produces perfectly uniform column widths for simple tables (e.g. 5.1).
+     *    This keeps column widths visually uniform when content is short.
      * 2. Otherwise, process columns smallest-first:
      *    - If ideal_w < fair_share of remaining budget → use ideal_w
      *    - Otherwise → cap at fair_share
      *    This gives small columns their natural width and splits the rest evenly among big ones.
      *
      * Additionally, GUARANTEED_MIN_WIDTH prevents a column from collapsing to zero when a
-     * single column's ideal_w dominates the available space (e.g. 5.5 Short|Long|Short). */
+     * single column's ideal_w dominates the available space. */
     pub(crate) fn compute_alloc_widths(
         num_cols: usize,
         available_w: f32,
@@ -64,16 +64,13 @@ impl TableLayoutCalculator {
     ) -> Vec<f32> {
         let mut col_alloc_width = vec![0.0; num_cols];
 
-        /* WHY: Calculate the total ideal width of all columns. */
-        let total_ideal_w: f32 = ideal_w_and_index.iter().map(|(w, _)| w).sum();
-
-        /* WHY: Check if all columns easily fit the available space.
-         * If they do, evenly distribute the extra space among all columns
-         * so padding is uniform across columns (resolves 5.1 formatting). */
-        if total_ideal_w <= available_w {
-            let extra_space = (available_w - total_ideal_w) / (num_cols as f32);
-            for &(ideal_w, col_idx) in ideal_w_and_index {
-                col_alloc_width[col_idx] = ideal_w + extra_space;
+        /* WHY: When every ideal width fits inside fair share, force strict uniform widths.
+         * This avoids narrow-column drift in compact tables. */
+        let fair_w = available_w / num_cols as f32;
+        let all_fit = ideal_w_and_index.iter().all(|(w, _)| *w <= fair_w);
+        if all_fit {
+            for &(_, col_idx) in ideal_w_and_index {
+                col_alloc_width[col_idx] = fair_w;
             }
         } else {
             /* WHY: Not all fit → allocate greedily, smallest first (pulldown.rs reference). */
@@ -87,7 +84,7 @@ impl TableLayoutCalculator {
                     ideal_w
                 } else {
                     /* WHY: Cap at fair_share but guarantee at least GUARANTEED_MIN_WIDTH
-                     * so narrow columns next to a dominating column stay visible (5.5 fix). */
+                     * so narrow columns next to a dominating column stay visible. */
                     let reserved_for_others =
                         GUARANTEED_MIN_WIDTH * (remaining_cols.saturating_sub(1)) as f32;
                     let max_for_current =
@@ -122,15 +119,14 @@ mod tests {
 
     #[test]
     fn test_compute_alloc_widths_all_fit_uniform() {
-        /* WHY: When all columns fit, they should ALL get fair_w regardless of individual ideal_w.
-         * This is the 5.1 scenario: short data produces small ideal_w, but uniform distribution
-         * is visually correct. */
+        /* WHY: When all columns fit, they should ALL get fair_w regardless of individual ideal_w,
+         * so compact tables keep a uniform column balance. */
         let num_cols = 3;
         let available_w = 600.0;
         let ideal_w_and_index = vec![(50.0, 0), (80.0, 1), (100.0, 2)];
         let allocs =
             TableLayoutCalculator::compute_alloc_widths(num_cols, available_w, &ideal_w_and_index);
-        assert_eq!(allocs, vec![173.33334, 203.33334, 223.33334]);
+        assert_eq!(allocs, vec![200.0, 200.0, 200.0]);
     }
 
     #[test]
@@ -158,8 +154,7 @@ mod tests {
 
     #[test]
     fn test_compute_alloc_widths_short_long_short() {
-        /* WHY: Reproduces the 5.5 scenario: two very short columns + one extremely long column.
-         * Short columns must remain visible (≥ GUARANTEED_MIN_WIDTH). */
+        /* WHY: Reproduces mixed short+long columns where short columns must remain visible. */
         let num_cols = 3;
         let available_w = 500.0;
         let ideal_w_and_index = vec![(46.0, 0), (46.0, 2), (1576.0, 1)];

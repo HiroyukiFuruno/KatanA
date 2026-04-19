@@ -15,8 +15,11 @@ impl KatanaTableRendererParts {
         col_alloc_width: &[f32],
         render_cell: &mut dyn FnMut(&mut Ui, &mut CommonMarkCache, &[EventIteratorItem<'e>]),
         num_cols: usize,
+        header_top_y: &mut Option<f32>,
         header_bottom_y: &mut Option<f32>,
     ) {
+        *header_top_y = Some(ui.cursor().min.y);
+        let header_vertical_padding = ui.spacing().item_spacing.y / 2.0;
         for (i, col_w) in col_alloc_width.iter().copied().enumerate().take(num_cols) {
             /* WHY: Capture the boundary between columns (internal separators only), matching pulldown.rs. */
             let cell_left_x = ui.cursor().min.x;
@@ -26,6 +29,7 @@ impl KatanaTableRendererParts {
 
             let alignment = alignments.get(i).copied().unwrap_or(Alignment::None);
             Self::apply_alignment(ui, alignment, col_w, |ui| {
+                ui.add_space(header_vertical_padding);
                 if let Some(hcol) = table_data.header.get(i) {
                     render_cell(ui, cache, hcol);
                 }
@@ -82,22 +86,40 @@ impl KatanaTableRendererParts {
         width: f32,
         add_contents: impl FnOnce(&mut Ui) -> R,
     ) -> R {
-        ui.allocate_ui_with_layout(
-            egui::vec2(width, 0.0),
-            egui::Layout::top_down(Self::map_alignment(alignment)),
-            |ui| {
-                ui.set_max_width(width);
-                add_contents(ui)
-            },
-        )
-        .inner
-    }
-
-    fn map_alignment(alignment: Alignment) -> egui::Align {
         match alignment {
-            Alignment::Center => egui::Align::Center,
-            Alignment::Right => egui::Align::Max,
-            _ => egui::Align::Min,
+            Alignment::Center => {
+                let layout = egui::Layout::top_down(egui::Align::Center);
+                ui.with_layout(layout, |ui| {
+                    if width > 0.0 {
+                        ui.set_min_width(width);
+                        ui.set_max_width(width);
+                    }
+                    add_contents(ui)
+                })
+                .inner
+            }
+            Alignment::Right => {
+                let layout = egui::Layout::top_down(egui::Align::Max);
+                ui.with_layout(layout, |ui| {
+                    if width > 0.0 {
+                        ui.set_min_width(width);
+                        ui.set_max_width(width);
+                    }
+                    add_contents(ui)
+                })
+                .inner
+            }
+            _ => {
+                let layout = egui::Layout::top_down(egui::Align::Min);
+                ui.with_layout(layout, |ui| {
+                    if width > 0.0 {
+                        ui.set_min_width(width);
+                        ui.set_max_width(width);
+                    }
+                    add_contents(ui)
+                })
+                .inner
+            }
         }
     }
 }
@@ -116,6 +138,7 @@ mod tests {
             let mut ui = egui::Ui::new(ctx.clone(), egui::Id::new("test"), builder);
 
             let mut boundaries = vec![];
+            let mut h_top_y = None;
             let mut h_bottom_y = None;
             let mut render_cell =
                 |_ui: &mut egui::Ui, _cache: &mut CommonMarkCache, _items: &[_]| {};
@@ -135,10 +158,12 @@ mod tests {
                     &[100.0],
                     &mut render_cell,
                     1,
+                    &mut h_top_y,
                     &mut h_bottom_y,
                 );
             });
 
+            assert!(h_top_y.is_some());
             assert!(h_bottom_y.is_some());
         });
     }

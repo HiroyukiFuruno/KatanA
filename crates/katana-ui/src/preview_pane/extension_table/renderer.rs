@@ -13,6 +13,7 @@ const ITEM_SPACING: f32 = 10.0;
 const DEFAULT_MARGIN: i8 = 5;
 const TABLE_VERTICAL_SPACING: f32 = 5.0;
 const MIN_COL_WIDTH: f32 = 10.0;
+const TABLE_WIDTH_PADDING: f32 = 22.0;
 
 pub struct KatanaTableRenderer;
 
@@ -27,20 +28,16 @@ impl KatanaTableRenderer {
         render_cell: &mut dyn FnMut(&mut Ui, &mut CommonMarkCache, &[EventIteratorItem<'e>]),
     ) -> egui::Response {
         let num_cols = table_data.header.len().max(1);
-        let id = ui.id().with("table_grid");
+        /* WHY: Each table instance must use a distinct id to avoid cross-table layout state bleed. */
+        let table_id = ui.next_auto_id().with("table");
 
         /* WHY: available_width() in SplitView might be constrained by parent max_rect. */
         let parent_available_width = ui.available_width().min(max_width);
-
-        /* WHY: Add vertical separation: 5px as requested. */
         ui.add_space(TABLE_VERTICAL_SPACING);
 
-        let mut col_boundaries = vec![];
-        let mut header_bottom_y = None;
-        let mut row_bounds = vec![];
-
-        /* WHY: Calculate column widths based on the REMOTE logic (pulldown.rs reference). */
-        let table_width = (parent_available_width - (DEFAULT_MARGIN as f32) * 2.0).max(0.0);
+        let safe_width = parent_available_width;
+        /* WHY: Match upstream sizing contract so table frame + inner content never overflow panel. */
+        let table_width = (safe_width - TABLE_WIDTH_PADDING).max(0.0);
         let col_max_chars = TableLayoutCalculator::calculate_col_max_chars(&table_data, num_cols);
         let ideal_w_and_index = TableLayoutCalculator::compute_ideal_widths(
             &col_max_chars,
@@ -51,92 +48,116 @@ impl KatanaTableRenderer {
         let col_alloc_width =
             TableLayoutCalculator::compute_alloc_widths(num_cols, available_w, &ideal_w_and_index);
 
-        /* WHY: SYSTEMIC ARCHITECTURAL CONSTRAINT
-        We MUST wrap the child rendering in a strictly constrained scope.
-        Egui's ScrollArea uses `auto_shrink([false, true])` to span fully, which natively attempts to
-        grab `ui.available_width()`. If we do not restrict `ui.available_width()` explicitly using a scope,
-        the ScrollArea grabs the entire unconstrained parent bounds (e.g. 500px in tests, or full screen),
-        bypassing the `max_width` parameter entirely and permanently locking layout expansion. */
-        let safe_width = ui.available_width().min(max_width);
-        let table_width = (safe_width - (DEFAULT_MARGIN as f32) * 2.0).max(0.0);
+        let scroll_output = ui.scope(|constrained_ui| {
+            constrained_ui.set_max_width(safe_width);
 
-        let scroll_res = ui
-            .scope(|constrained_ui| {
-                constrained_ui.set_max_width(safe_width);
+            egui::ScrollArea::horizontal()
+                .id_salt(table_id.with("scroll"))
+                .auto_shrink([true, true]) // MUST shrink vertically to avoid expanding the panel.
+                .min_scrolled_width(0.0)
+                .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
+                .show(constrained_ui, |inner_ui| {
+                    /* WHY: We MUST clamp the inner UI so that the table does not
+                    request an infinite or expanding width across frames. */
+                    inner_ui.set_max_width(table_width);
 
-                let scroll_output = egui::ScrollArea::horizontal()
-                    .id_salt(id.with("table_scroll"))
-                    .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
-                    .auto_shrink([true, false]) // Shrinking horizontally is fine, but vertical shouldn't be affected by tables.
-                    .min_scrolled_width(0.0) // CRITICAL: Stop the ScrollArea from reporting the stretched table width as its own minimum!
-                    .show(constrained_ui, |inner_ui| {
-                        /* WHY: Specify the known computed widths.
-                        MUST NOT call set_min_width here - inside a ScrollArea it would push
-                        the parent panel's min_rect wider each frame (Ratchet Bug). */
-                        inner_ui.set_max_width(table_width);
+                    let frame_res = egui::Frame::none()
+                        .inner_margin(egui::Margin::same(DEFAULT_MARGIN))
+                        .show(inner_ui, |grid_ui| {
+                            /* WHY: Create placeholders for backgrounds BEFORE grid rendering,
+                            so they are drawn behind the text in the same coordinate space. */
+                            let header_bg_idx = Some(grid_ui.painter().add(egui::Shape::Noop));
+                            let mut row_bg_indices = Vec::new();
+                            for row_idx in 0..table_data.rows.len() {
+                                if row_idx % 2 == 1 {
+                                    row_bg_indices
+                                        .push((row_idx, grid_ui.painter().add(egui::Shape::Noop)));
+                                }
+                            }
 
-                        let frame_res = egui::Frame::none()
-                            .inner_margin(egui::Margin::same(DEFAULT_MARGIN))
-                            .show(inner_ui, |grid_ui| {
-                                grid_ui.spacing_mut().item_spacing =
-                                    egui::vec2(ITEM_SPACING, ITEM_SPACING);
+                            let mut header_top_y = None;
+                            let mut header_bottom_y = None;
+                            let mut col_boundaries = Vec::new();
+                            let mut row_bounds = Vec::new();
 
-                                egui::Grid::new(id)
-                                    .num_columns(num_cols)
-                                    .striped(true)
-                                    .min_col_width(MIN_COL_WIDTH)
-                                    .show(grid_ui, |grid_ui| {
-                                        KatanaTableRendererParts::render_header(
-                                            grid_ui,
-                                            cache,
-                                            &table_data,
-                                            alignments,
-                                            &mut col_boundaries,
-                                            &col_alloc_width,
-                                            render_cell,
-                                            num_cols,
-                                            &mut header_bottom_y,
-                                        );
-                                        KatanaTableRendererParts::render_body(
-                                            grid_ui,
-                                            cache,
-                                            &table_data,
-                                            alignments,
-                                            &col_alloc_width,
-                                            render_cell,
-                                            num_cols,
-                                            &mut row_bounds,
-                                            header_bottom_y,
-                                        );
-                                    });
-                            });
+                            grid_ui.spacing_mut().item_spacing.x = ITEM_SPACING;
+                            grid_ui.spacing_mut().item_spacing.y = ITEM_SPACING;
 
-                        /* WHY: Apply decorations tracking coordinate system of inner_ui */
-                        KatanaTableDecorations::draw_decorations(
-                            inner_ui,
-                            frame_res.response.rect,
-                            None,
-                            header_bottom_y,
-                            &col_boundaries,
-                            table_data.rows.len(),
-                            &[],
-                            &row_bounds,
-                        );
+                            egui::Grid::new(table_id.with("grid"))
+                                .num_columns(num_cols)
+                                .striped(false) // Handle striping manually via KatanaTableDecorations
+                                .min_col_width(MIN_COL_WIDTH)
+                                .show(grid_ui, |grid_ui| {
+                                    KatanaTableRendererParts::render_header(
+                                        grid_ui,
+                                        cache,
+                                        &table_data,
+                                        alignments,
+                                        &mut col_boundaries,
+                                        &col_alloc_width,
+                                        render_cell,
+                                        num_cols,
+                                        &mut header_top_y,
+                                        &mut header_bottom_y,
+                                    );
+                                    KatanaTableRendererParts::render_body(
+                                        grid_ui,
+                                        cache,
+                                        &table_data,
+                                        alignments,
+                                        &col_alloc_width,
+                                        render_cell,
+                                        num_cols,
+                                        &mut row_bounds,
+                                        header_bottom_y,
+                                    );
+                                });
 
-                        /* Return frame response representing the grid bounds */
-                        frame_res.response
-                    });
+                            (
+                                header_bg_idx,
+                                header_top_y,
+                                header_bottom_y,
+                                col_boundaries,
+                                row_bg_indices,
+                                row_bounds,
+                            )
+                        });
 
-                let mut res = scroll_output.inner;
-                res.rect = scroll_output.inner_rect;
-                res
-            })
-            .inner;
+                    let (
+                        header_bg_idx,
+                        header_top_y,
+                        header_bottom_y,
+                        col_boundaries,
+                        row_bg_indices,
+                        row_bounds,
+                    ) = frame_res.inner;
 
-        /* WHY: Add closing vertical separation outside the horizontal scope boundary */
+                    /* WHY: Apply decorations tracking coordinate system of inner_ui */
+                    KatanaTableDecorations::draw_decorations(
+                        inner_ui,
+                        frame_res
+                            .response
+                            .rect
+                            .shrink2(egui::vec2(0.0, TABLE_VERTICAL_SPACING)),
+                        header_bg_idx,
+                        header_top_y,
+                        header_bottom_y,
+                        &col_boundaries,
+                        table_data.rows.len(),
+                        &row_bg_indices,
+                        &row_bounds,
+                    );
+
+                    frame_res.response
+                })
+        });
+
+        /* WHY: Return the unaltered ScrollArea response, which respects max_width bounding.
+        DO NOT override .rect = scroll_output.inner.inner_rect, because inner_rect is
+        the full unclipped content width (e.g. 2600px). Returning it causes the parent layout
+        to expand and ratchetting to occur! scroll_output.response is the clipped visible bounds. */
         ui.add_space(TABLE_VERTICAL_SPACING);
-
-        scroll_res
+        scroll_output.response
     }
 }
 

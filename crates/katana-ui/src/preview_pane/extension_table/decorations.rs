@@ -1,9 +1,5 @@
 use egui::{Rect, Shape, Ui, layers::ShapeIdx, pos2};
 
-/* WHY: Match pulldown.rs reference line 1857-1858.
- * Frame::group outer_margin is symmetric(5, 0), so response.rect does NOT include outer_margin.
- * To make backgrounds span to the visual border edges, expand by 10px (outer_margin * 2). */
-const BG_EXPANSION: f32 = 10.0;
 const TABLE_HEADER_ALPHA: f32 = 0.3; /* WHY: Aesthetic choice for header background transparency. */
 
 pub(crate) struct KatanaTableDecorations;
@@ -14,6 +10,7 @@ impl KatanaTableDecorations {
         ui: &mut Ui,
         frame_rect: Rect,
         header_bg_idx: Option<ShapeIdx>,
+        header_top_y: Option<f32>,
         header_bottom_y: Option<f32>,
         col_boundaries: &[f32],
         num_rows: usize,
@@ -22,11 +19,11 @@ impl KatanaTableDecorations {
     ) {
         let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
 
-        /* WHY: Match pulldown.rs reference line 1857-1858.
-         * bg_left/bg_right expand beyond frame_rect to cover the outer_margin area,
-         * ensuring backgrounds snap exactly to the outer stroke border. */
-        let bg_left = frame_rect.left() - BG_EXPANSION;
-        let bg_right = frame_rect.right() + BG_EXPANSION;
+        /* WHY: We do NOT need to expand beyond frame_rect.
+         * The frame_rect ALREADY includes the frame's inner_margin.
+         * The backgrounds naturally fill the bounding box exactly up to the border. */
+        let bg_left = frame_rect.left();
+        let bg_right = frame_rect.right();
         let bg_top = frame_rect.top();
         let bg_bottom = frame_rect.bottom();
         let bg_x_range = bg_left..=bg_right;
@@ -38,6 +35,7 @@ impl KatanaTableDecorations {
                 .selection
                 .bg_fill
                 .gamma_multiply(TABLE_HEADER_ALPHA);
+            let header_top = header_top_y.unwrap_or(bg_top);
 
             let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
             let header_rounding = egui::CornerRadius {
@@ -47,7 +45,7 @@ impl KatanaTableDecorations {
                 se: if num_rows == 0 { corner_radius.se } else { 0 },
             };
 
-            /* WHY: header-only table → fill the entire frame (pulldown.rs line 1865-1867). */
+            /* WHY: header-only table → fill the entire frame. */
             if num_rows == 0 {
                 h_bottom = bg_bottom;
             }
@@ -55,7 +53,7 @@ impl KatanaTableDecorations {
             ui.painter().set(
                 shape_idx,
                 Shape::rect_filled(
-                    Rect::from_min_max(pos2(bg_left, bg_top), pos2(bg_right, h_bottom)),
+                    Rect::from_min_max(pos2(bg_left, header_top), pos2(bg_right, h_bottom)),
                     header_rounding,
                     header_bg_color,
                 ),
@@ -66,13 +64,13 @@ impl KatanaTableDecorations {
             }
         }
 
-        /* WHY: Draw Row backgrounds (Zebra striping) — pulldown.rs reference line 1898-1934. */
+        /* WHY: Draw Row backgrounds (Zebra striping). */
         for &(row_idx, shape_idx) in row_bg_indices {
             if let Some(&(top_y, mut bottom_y)) = row_bounds.get(row_idx) {
                 let corner_radius = ui.visuals().widgets.noninteractive.corner_radius;
                 let is_last = row_idx == num_rows.saturating_sub(1);
 
-                /* WHY: Extend last row to fill the bottom margin gap (pulldown.rs line 1901-1903). */
+                /* WHY: Extend last row to fill the bottom margin gap. */
                 if is_last {
                     bottom_y = bg_bottom;
                 }
@@ -95,18 +93,17 @@ impl KatanaTableDecorations {
             }
         }
 
-        /* WHY: Draw vertical column dividers (pulldown.rs line 1939-1942). */
+        /* WHY: Draw vertical column dividers. */
         for &x in col_boundaries.iter() {
             ui.painter().vline(x, bg_top..=bg_bottom, stroke);
         }
 
-        /* WHY: Draw horizontal separator lines between body rows (pulldown.rs line 1951-1955). */
+        /* WHY: Draw horizontal separator lines between body rows. */
         for (_, bottom_y) in row_bounds.iter().take(num_rows.saturating_sub(1)) {
             ui.painter().hline(bg_x_range.clone(), *bottom_y, stroke);
         }
 
-        /* WHY: Draw outer frame border on top (pulldown.rs line 1957-1968).
-         * Use bg_left/bg_right to match the expanded background area. */
+        /* WHY: Draw outer frame border. */
         let border_rect = Rect::from_min_max(pos2(bg_left, bg_top), pos2(bg_right, bg_bottom));
         ui.painter().add(egui::Shape::rect_stroke(
             border_rect,
@@ -136,6 +133,7 @@ mod tests {
             &mut ui,
             frame_rect,
             None,
+            Some(10.0),
             Some(30.0),
             &boundaries,
             0,

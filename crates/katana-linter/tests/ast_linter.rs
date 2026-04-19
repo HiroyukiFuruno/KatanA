@@ -422,7 +422,7 @@ fn ast_linter_markdown_sandbox() {
     AstLinterOps::run(
         "markdown-sandbox",
         "Fix: `CommonMarkViewer` usage detected but missing `set_max_width`. You MUST sandbox the viewer call within `ui.scope(|ui| { ui.set_max_width(...); ... })` to prevent layout ratchet bugs.",
-        &target_crates(&root),
+        &target_crates(root),
         MarkdownSandboxOps::lint,
     );
 }
