@@ -19,7 +19,7 @@ impl ThemeEditorGroupsOps {
                     ui.add_space(crate::settings::SUBSECTION_SPACING);
                 }
             })
-            .default_open(true)
+            .default_open(false)
             .show_vertical_line(show_vertical_line)
             .show(ui);
         } else {

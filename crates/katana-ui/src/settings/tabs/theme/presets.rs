@@ -75,8 +75,12 @@ impl ThemeTabOps {
         state: &mut crate::app_state::AppState,
         presets: &[&ThemePreset],
     ) {
+        let theme_settings = &state.config.settings.settings().theme;
+        let has_custom_theme_selection = theme_settings.active_custom_theme.is_some()
+            || theme_settings.custom_color_overrides.is_some();
         for preset in presets {
-            let is_selected = state.config.settings.settings().theme.preset == **preset;
+            let is_selected = !has_custom_theme_selection
+                && state.config.settings.settings().theme.preset == **preset;
             let colors = preset.colors();
             let bg_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.background);
             let accent_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(colors.system.accent);

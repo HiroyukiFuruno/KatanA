@@ -32,9 +32,9 @@ impl CustomThemeOps {
                 .settings
                 .settings()
                 .theme
-                .custom_color_overrides
-                .as_ref()
-                == Some(&custom_theme.colors);
+                .active_custom_theme
+                .as_deref()
+                == Some(custom_theme.name.as_str());
             let bg_color =
                 theme_bridge::ThemeBridgeOps::rgb_to_color32(custom_theme.colors.system.background);
             let accent_color =

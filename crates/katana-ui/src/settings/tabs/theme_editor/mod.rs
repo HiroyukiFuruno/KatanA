@@ -48,7 +48,7 @@ impl ThemeEditorOps {
                     }
                 },
             )
-            .default_open(true)
+            .default_open(false)
             .show_vertical_line(show_vertical_line)
             .show(ui);
             ui.add_space(SECTION_SPACING);

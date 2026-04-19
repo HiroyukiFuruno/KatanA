@@ -40,13 +40,6 @@ impl ThemeTabOps {
         Self::render_theme_preset_selector(ui, state);
         ui.add_space(SECTION_SPACING);
 
-        let is_open = state
-            .config
-            .settings
-            .settings()
-            .theme
-            .custom_color_overrides
-            .is_some();
         let show_line = state
             .config
             .settings
@@ -66,7 +59,7 @@ impl ThemeTabOps {
             .size(SECTION_HEADER_SIZE),
             |ui| super::theme_editor::ThemeEditorOps::render_custom_color_editor(ui, state),
         )
-        .default_open(is_open)
+        .default_open(false)
         .show_vertical_line(show_line)
         .show(ui);
     }
