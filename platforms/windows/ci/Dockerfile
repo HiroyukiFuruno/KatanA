@@ -1,4 +1,4 @@
-FROM rust:slim
+FROM rust:1.95.0-slim
 
 # Install dependencies required to download and build cross-compilation toolchains
 RUN apt-get update && apt-get install -y \
