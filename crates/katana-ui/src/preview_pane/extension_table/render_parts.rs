@@ -2,13 +2,19 @@ use egui::Ui;
 use egui_commonmark::{CommonMarkCache, EventIteratorItem, Table};
 use pulldown_cmark::Alignment;
 
+/* WHY: Uniform vertical padding applied inside every cell (header and body) via apply_alignment.
+ * This is the single source of per-row breathing room — grid item_spacing.y is 0, so the
+ * CELL_PAD_Y bottom of row N and CELL_PAD_Y top of row N+1 together form the visual gap
+ * around each separator line (8px total). */
+const CELL_PAD_Y: f32 = 4.0;
+
 pub(crate) struct KatanaTableRendererParts;
 
 impl KatanaTableRendererParts {
-    const HEADER_VERTICAL_PADDING: f32 = 5.0;
-
     fn header_row_bottom(ui: &Ui) -> f32 {
-        ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0
+        /* WHY: grid item_spacing.y is 0, so no half-spacing adjustment is needed.
+         * min_rect().bottom() is the exact bottom of the header cell content. */
+        ui.min_rect().bottom()
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -26,25 +32,20 @@ impl KatanaTableRendererParts {
     ) {
         let header_row_top = ui.cursor().min.y;
         for (i, col_w) in col_alloc_width.iter().copied().enumerate().take(num_cols) {
-            /* WHY: Capture the boundary between columns (internal separators only), matching pulldown.rs. */
+            /* WHY: Capture the boundary between columns (internal separators only). */
             let cell_left_x = ui.cursor().min.x;
             if i > 0 && col_boundaries.len() < num_cols - 1 {
                 col_boundaries.push(cell_left_x - ui.spacing().item_spacing.x / 2.0);
             }
 
             let alignment = alignments.get(i).copied().unwrap_or(Alignment::None);
-            /* WHY: Apply explicit header cell vertical padding so text/background/border
-             * stay visually aligned without relying on global frame offsets. */
             Self::apply_alignment(ui, alignment, col_w, |ui| {
-                ui.add_space(Self::HEADER_VERTICAL_PADDING);
                 if let Some(hcol) = table_data.header.get(i) {
                     render_cell(ui, cache, hcol);
                 }
-                ui.add_space(Self::HEADER_VERTICAL_PADDING);
             });
         }
 
-        /* WHY: Use the actual laid out header row bounds as the single source of truth. */
         let bottom = Self::header_row_bottom(ui);
         *header_bounds = Some((header_row_top, bottom));
         *header_bottom_y = Some(bottom);
@@ -63,10 +64,8 @@ impl KatanaTableRendererParts {
         row_bounds: &mut Vec<(f32, f32)>,
         _header_bottom_y: Option<f32>,
     ) {
-        /* WHY: Use cursor position (after header's end_row() + Grid item_spacing)
-         * instead of header_bottom_y. The Grid advances the cursor past item_spacing.y
-         * after end_row(), so cursor().min.y is the actual body content start position.
-         * Using header_bottom_y would create a ghost gap above the first body row. */
+        /* WHY: grid item_spacing.y is 0, so cursor().min.y after end_row() is exactly
+         * the bottom of the previous row — no half-spacing gap to account for. */
         let mut current_top_y = ui.cursor().min.y;
 
         for row in &table_data.rows {
@@ -82,8 +81,8 @@ impl KatanaTableRendererParts {
                 }
             }
 
-            /* WHY: Capture row_bottom_y BEFORE end_row() — matches pulldown.rs reference line 1840-1845. */
-            let current_bottom_y = ui.min_rect().bottom() + ui.spacing().item_spacing.y / 2.0;
+            /* WHY: grid item_spacing.y is 0 — row bottom is exactly min_rect().bottom(). */
+            let current_bottom_y = ui.min_rect().bottom();
             row_bounds.push((current_top_y, current_bottom_y));
             current_top_y = current_bottom_y;
 
@@ -97,41 +96,26 @@ impl KatanaTableRendererParts {
         width: f32,
         add_contents: impl FnOnce(&mut Ui) -> R,
     ) -> R {
-        match alignment {
-            Alignment::Center => {
-                let layout = egui::Layout::top_down(egui::Align::Center);
-                ui.with_layout(layout, |ui| {
-                    if width > 0.0 {
-                        ui.set_min_width(width);
-                        ui.set_max_width(width);
-                    }
-                    add_contents(ui)
-                })
-                .inner
+        let align = match alignment {
+            Alignment::Center => egui::Align::Center,
+            Alignment::Right => egui::Align::Max,
+            _ => egui::Align::Min,
+        };
+        ui.with_layout(egui::Layout::top_down(align), |ui| {
+            /* WHY: item_spacing.y is inherited from the parent grid (10px). Zero it here so
+             * that when a cell contains multiple widgets (e.g. plain text + inline code),
+             * they stack at natural line height with no extra gap between them. */
+            ui.spacing_mut().item_spacing.y = 0.0;
+            if width > 0.0 {
+                ui.set_min_width(width);
+                ui.set_max_width(width);
             }
-            Alignment::Right => {
-                let layout = egui::Layout::top_down(egui::Align::Max);
-                ui.with_layout(layout, |ui| {
-                    if width > 0.0 {
-                        ui.set_min_width(width);
-                        ui.set_max_width(width);
-                    }
-                    add_contents(ui)
-                })
-                .inner
-            }
-            _ => {
-                let layout = egui::Layout::top_down(egui::Align::Min);
-                ui.with_layout(layout, |ui| {
-                    if width > 0.0 {
-                        ui.set_min_width(width);
-                        ui.set_max_width(width);
-                    }
-                    add_contents(ui)
-                })
-                .inner
-            }
-        }
+            ui.add_space(CELL_PAD_Y);
+            let result = add_contents(ui);
+            ui.add_space(CELL_PAD_Y);
+            result
+        })
+        .inner
     }
 }
 
