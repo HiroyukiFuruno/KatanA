@@ -45,12 +45,7 @@ pub(crate) fn handle_custom_table<'a, 'e>(
         );
 
         if let Some((_start_y, span)) = viewer.block_states.pop() {
-            let mut rect = table_res.rect;
-            // Fix: ensure the rect doesn't expand vertically beyond the table.
-            // The table_res.rect (from ScrollArea's InnerResponse) should already be correct,
-            // but we expand horizontally to match Katana's full-width block selection style.
-            rect.min.x = ui.max_rect().min.x;
-            rect.max.x = ui.max_rect().max.x;
+            let rect = table_res.rect;
 
             if let Some(active) = &viewer.active_char_range {
                 if active.start <= span.end && active.end >= span.start {
@@ -72,6 +67,18 @@ pub(crate) fn handle_custom_table<'a, 'e>(
                 if let Some(pos) = ui.ctx().pointer_hover_pos() {
                     if rect.contains(pos) {
                         hovered.push(span.clone());
+
+                        /* WHY: Draw visual hover feedback matching pulldown.rs rich block pattern. */
+                        const RECT_HOVER_ALPHA: u8 = 25;
+                        let hover_color = viewer.hover_bg_color.unwrap_or_else(|| {
+                            if ui.visuals().dark_mode {
+                                egui::Color32::from_white_alpha(RECT_HOVER_ALPHA)
+                            } else {
+                                egui::Color32::from_black_alpha(RECT_HOVER_ALPHA)
+                            }
+                        });
+                        ui.painter()
+                            .rect_filled(rect, egui::CornerRadius::ZERO, hover_color);
                     }
                 }
             }
