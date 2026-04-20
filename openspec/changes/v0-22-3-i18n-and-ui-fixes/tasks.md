@@ -26,9 +26,10 @@
 - [x] 1.4 Cmd+Shift+P 押下時に `>` を付与しKatanaコマンドのみに限定する機能を追加。Cmd+P の場合はKatanaコマンドを除外するように改修。
 
 ### 2. Tab Navigation Layout Truncation Fix (UI/UX)
+**Branch**: `release/v0.22.3-task-2`
 
-- [ ] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
-- [ ] 全テスト（IT）がパスすること
+- [x] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
+- [x] 全テスト（IT）がパスすること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
