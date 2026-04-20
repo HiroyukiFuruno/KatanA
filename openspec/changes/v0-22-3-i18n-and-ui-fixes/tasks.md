@@ -18,6 +18,7 @@
 ## Tasks
 
 ### 1. Command Palette Scroll Behavior Fix (UI/UX)
+
 **Branch**: `v0-22-3-i18n-and-ui-fixes-task-1`
 
 - [x] 1.1 TDD (RED): `crates/katana-ui/src/views/modals/command_palette_scroll_tests.rs` 等の統合レイアウトテストを新規作成し、100件以上のダミーコマンドを表示した際、スクロール領域の `content_size` がウィンドウ制限を超え、スクロールバーが表示される（または正しく追従する）ことを IT で検証し、不具合を再現させる。
@@ -26,6 +27,7 @@
 - [x] 1.4 Cmd+Shift+P 押下時に `>` を付与しKatanaコマンドのみに限定する機能を追加。Cmd+P の場合はKatanaコマンドを除外するように改修。
 
 ### 2. Tab Navigation Layout Truncation Fix (UI/UX)
+
 **Branch**: `release/v0.22.3-task-2`
 
 - [x] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
@@ -34,7 +36,7 @@
 
 ---
 
-## 2. ショートカット設定 UI の再設計 (v0.22.1 からの引継ぎ)
+## 3. ショートカット設定 UI の再設計 (v0.22.1 からの引継ぎ)
 
 ### Definition of Ready (DoR)
 
