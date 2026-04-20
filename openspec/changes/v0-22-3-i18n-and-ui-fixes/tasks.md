@@ -30,7 +30,7 @@
 
 - [x] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
 - [x] 全テスト（IT）がパスすること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
