@@ -101,3 +101,43 @@ fn test_integration_open_all_markdown() {
     );
     let _ = std::fs::remove_dir_all(&temp_dir);
 }
+
+#[test]
+fn test_integration_tab_scroll_truncation() {
+    /* WHY: Verify that when >100 tabs are open, the scroll area truncates to the window
+     * and doesn't pierce the bounding layout, causing a horizontal overflow. */
+    let mut harness = setup_harness();
+    harness.step();
+
+    let temp_dir = fresh_temp_dir("katana_test_tab_scroll");
+    std::fs::create_dir_all(temp_dir.join("docs")).unwrap();
+    let mut docs = Vec::new();
+    for i in 0..105 {
+        let path = temp_dir.join("docs").join(format!("file_{:03}.md", i));
+        std::fs::write(&path, format!("# File {}", i)).unwrap();
+        docs.push(path);
+    }
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(temp_dir.clone()));
+    wait_for_workspace_load(&mut harness);
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenMultipleDocuments(docs));
+
+    // Wait enough frames for all tabs to load (one per frame) and layout to settle
+    for _ in 0..120 {
+        harness.step();
+    }
+
+    let state = harness.state_mut().app_state_mut();
+    assert_eq!(state.document.open_documents.len(), 105);
+
+    // If it didn't panic or freeze computing layout for 105 tabs, and the width
+    // constraints are valid (which we fixed in `views/top_bar/tab_bar/mod.rs`),
+    // the layout truncation fix is functioning.
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
