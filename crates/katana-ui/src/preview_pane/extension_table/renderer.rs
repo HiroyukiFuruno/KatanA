@@ -175,17 +175,17 @@ impl KatanaTableRenderer {
                             frame_res.response
                         });
 
-                /* WHY: Clamp the inner response before returning it. The scroll area's
-                 * content rect is intentionally wider than the viewport for horizontal
-                 * tables, but the parent layout must only see the visible width. */
                 let mut out_res = scroll_output.inner;
-                /* WHY: Keep the returned rect bounded to the visible viewport even if egui
-                 * preserves a slightly larger content rect internally. */
+                /* WHY: Clamp only for wide tables (horizontal scroll). For normal tables,
+                 * preserve the actual frame rect so table_hook.rs highlight matches the
+                 * drawn border rect used by draw_decorations exactly. */
                 let visible_rect = constrained_ui.clip_rect();
-                out_res.rect = egui::Rect::from_min_size(
-                    out_res.rect.min,
-                    egui::vec2(safe_width.min(visible_rect.width()), out_res.rect.height()),
-                );
+                if out_res.rect.width() > visible_rect.width() {
+                    out_res.rect = egui::Rect::from_min_size(
+                        out_res.rect.min,
+                        egui::vec2(visible_rect.width(), out_res.rect.height()),
+                    );
+                }
                 constrained_ui.add_space(TABLE_OUTER_MARGIN);
                 out_res
             },
