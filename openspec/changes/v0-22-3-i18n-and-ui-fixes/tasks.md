@@ -26,9 +26,10 @@
 - [x] 1.4 Cmd+Shift+P 押下時に `>` を付与しKatanaコマンドのみに限定する機能を追加。Cmd+P の場合はKatanaコマンドを除外するように改修。
 
 ### 2. Tab Navigation Layout Truncation Fix (UI/UX)
+**Branch**: `release/v0.22.3-task-2`
 
-- [ ] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
-- [ ] 全テスト（IT）がパスすること
+- [x] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
+- [x] 全テスト（IT）がパスすること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -116,14 +117,14 @@
 
 **Branch**: `release/v0.22.3-task-6`
 
-- [ ] 6.1 katana専用アイコン `html.svg`・`pdf.svg`・`image.svg` を新設
-- [ ] 6.2 各ベンダーから対応アイコンをダウンロード
-- [ ] 6.3 `icon/types.rs` に `Html`・`Pdf`・`Image` を登録
-- [ ] 6.4 `icon/pack/mod.rs` のマクロに3アイコンを追加
-- [ ] 6.5 `side_panel_export.rs` のアイコン参照を差し替え
-- [ ] 6.6 `make check-light` all pass
+- [x] 6.1 katana専用アイコン `html.svg`・`pdf.svg`・`image.svg` を新設
+- [x] 6.2 各ベンダーから対応アイコンをダウンロード
+- [x] 6.3 `icon/types.rs` に `Html`・`Pdf`・`Image` を登録
+- [x] 6.4 `icon/pack/mod.rs` のマクロに3アイコンを追加
+- [x] 6.5 `side_panel_export.rs` のアイコン参照を差し替え
+- [x] 6.6 `make check-light` all pass
 
 ### Definition of Done (DoD)
 
-- [ ] `make check-light` exit code 0
-- [ ] Execute `/openspec-delivery`
+- [x] `make check-light` exit code 0
+- [x] Execute `/openspec-delivery`
