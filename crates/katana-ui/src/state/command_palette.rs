@@ -95,6 +95,7 @@ pub struct CommandPaletteState {
     pub current_query: String,
     pub selected_index: usize,
     pub results: Vec<CommandPaletteResult>,
+    pub request_cursor_eof: bool,
 }
 
 impl CommandPaletteState {
@@ -104,6 +105,7 @@ impl CommandPaletteState {
             current_query: String::new(),
             selected_index: 0,
             results: Vec::new(),
+            request_cursor_eof: false,
         }
     }
 
@@ -113,6 +115,7 @@ impl CommandPaletteState {
             self.current_query.clear();
             self.selected_index = 0;
             self.results.clear();
+            self.request_cursor_eof = true;
         }
     }
 

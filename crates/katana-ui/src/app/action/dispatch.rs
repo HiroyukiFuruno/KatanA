@@ -76,7 +76,7 @@ impl KatanaApp {
             AppAction::ToggleKatanaCommandPalette => {
                 self.state.command_palette.toggle();
                 if self.state.command_palette.is_open {
-                    self.state.command_palette.current_query = "> ".to_string();
+                    self.state.command_palette.current_query = ">".to_string();
                 }
             }
             AppAction::ToggleRailPopup(popup) => {

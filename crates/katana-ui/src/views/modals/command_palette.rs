@@ -89,10 +89,11 @@ impl<'a> CommandPaletteModal<'a> {
                     response.request_focus();
                 }
 
-                if response.gained_focus() {
+                if self.state.request_cursor_eof && response.has_focus() {
                     let cursor = egui::text::CCursor::new(self.state.current_query.chars().count());
                     output.state.cursor.set_char_range(Some(egui::text::CCursorRange::one(cursor)));
                     output.state.store(ui.ctx(), response.id);
+                    self.state.request_cursor_eof = false;
                 }
 
                 /* WHY: Draw i18n placeholders manually so they can appear even if '> ' is prefilled */
