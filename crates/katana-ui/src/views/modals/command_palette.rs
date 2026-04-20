@@ -89,10 +89,25 @@ impl<'a> CommandPaletteModal<'a> {
                 let response = ui.add(text_edit);
 
                 if response.changed() || self.state.results.is_empty() {
-                    /* WHY: Gather results from all providers */
+                    /* WHY: Gather results from providers based on the query prefix.
+                       If the query starts with '>', it only searches Katana commands.
+                       Otherwise, it excludes Katana commands. */
                     let mut gathered = Vec::new();
+                    let is_action_mode = self.state.current_query.starts_with('>');
+                    let actual_query = if is_action_mode {
+                        self.state.current_query[1..].trim_start().to_string()
+                    } else {
+                        self.state.current_query.clone()
+                    };
+
                     for provider in self.providers {
-                        gathered.extend(provider.search(&self.state.current_query, self.workspace));
+                        if is_action_mode && provider.name() != "Commands" {
+                            continue;
+                        }
+                        if !is_action_mode && provider.name() == "Commands" {
+                            continue;
+                        }
+                        gathered.extend(provider.search(&actual_query, self.workspace));
                     }
                     gathered.sort_by(|a, b| {
                         b.score

@@ -74,7 +74,7 @@ fn test_integration_command_palette_ui() {
         .state_mut()
         .app_state_mut()
         .command_palette
-        .current_query = "Settings".into();
+        .current_query = "> Settings".into();
     harness.step();
 
     // 3. Verify results are populated in UI
@@ -130,7 +130,7 @@ fn test_integration_command_palette_keyboard_navigation() {
     // 1. Open Palette
     harness
         .state_mut()
-        .trigger_action(AppAction::ToggleCommandPalette);
+        .trigger_action(AppAction::ToggleKatanaCommandPalette);
     harness.step();
 
     // 2. Initial selection is 0
