@@ -33,7 +33,7 @@ impl KatanaApp {
         }
     }
 
-    pub(super) fn handle_action_doc_search_next(&mut self) {
+    pub(super) fn handle_action_doc_search_next(&mut self, ctx: &egui::Context) {
         let Some(doc) = self.state.document.active_document() else {
             return;
         };
@@ -45,10 +45,15 @@ impl KatanaApp {
             self.state.search.doc_search_active_index = result.new_active_index;
             self.state.scroll.last_scroll_to_line = None;
             self.state.scroll.scroll_to_line = result.scroll_to_line;
+            /* WHY: PreviewOnly mode doesn't render the editor, so scroll_to_line
+             * is never consumed. Trigger the preview's own scroll mechanism instead. */
+            ctx.data_mut(|d| {
+                d.insert_temp(egui::Id::new("katana_preview_search_scroll_pending"), true);
+            });
         }
     }
 
-    pub(super) fn handle_action_doc_search_prev(&mut self) {
+    pub(super) fn handle_action_doc_search_prev(&mut self, ctx: &egui::Context) {
         let Some(doc) = self.state.document.active_document() else {
             return;
         };
@@ -60,6 +65,11 @@ impl KatanaApp {
             self.state.search.doc_search_active_index = result.new_active_index;
             self.state.scroll.last_scroll_to_line = None;
             self.state.scroll.scroll_to_line = result.scroll_to_line;
+            /* WHY: PreviewOnly mode doesn't render the editor, so scroll_to_line
+             * is never consumed. Trigger the preview's own scroll mechanism instead. */
+            ctx.data_mut(|d| {
+                d.insert_temp(egui::Id::new("katana_preview_search_scroll_pending"), true);
+            });
         }
     }
 

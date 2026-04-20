@@ -1,4 +1,4 @@
-FROM rust:slim
+FROM rust:1.95.0-slim
 
 # Install required dependencies for Katana Linux
 RUN apt-get update && apt-get install -y \

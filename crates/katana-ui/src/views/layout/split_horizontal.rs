@@ -8,6 +8,8 @@ use crate::views::panels::editor::EditorContent;
 use crate::views::panels::preview::{PreviewContent, PreviewLogicOps};
 use katana_platform::PaneOrder;
 
+const LAYOUT_RATCHET_THRESHOLD: f32 = 0.5;
+
 pub(crate) struct HorizontalSplit<'a> {
     pub _ctx: &'a egui::Context,
     pub app: &'a mut KatanaApp,
@@ -24,7 +26,8 @@ impl<'a> HorizontalSplit<'a> {
     pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
         let app = self.app;
         let pane_order = self.pane_order;
-        let available_width = ui.ctx().content_rect().width();
+        /* WHY: Use local available width inside the split container, not global window width. */
+        let available_width = ui.available_width();
         let half_width = (available_width * SPLIT_HALF_RATIO).max(SPLIT_PREVIEW_PANEL_MIN_WIDTH);
         let _preview_bg = theme_bridge::ThemeBridgeOps::rgb_to_color32(
             app.state
@@ -50,6 +53,7 @@ impl<'a> HorizontalSplit<'a> {
             PaneOrder::EditorFirst => egui::Panel::right(panel_id),
             PaneOrder::PreviewFirst => egui::Panel::left(panel_id),
         };
+        let prev_panel_state = egui::containers::panel::PanelState::load(ui.ctx(), panel_id);
 
         let scroll_sync = app.state.scroll.sync_override.unwrap_or(
             app.state
@@ -62,8 +66,9 @@ impl<'a> HorizontalSplit<'a> {
 
         panel_side
             .resizable(true)
-            .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
-            .default_size(half_width)
+            .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+            .max_width(available_width * crate::shell_ui::SPLIT_PANEL_MAX_RATIO)
+            .default_width(half_width)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
                 if let Some(path) = &active_path {
@@ -71,22 +76,48 @@ impl<'a> HorizontalSplit<'a> {
                         &mut app.tab_previews,
                         path.clone(),
                     );
-                    let toc_visible = app.state.config.settings.settings().layout.toc_visible;
-                    let show_toc = app.state.layout.show_toc;
-                    download_req = PreviewContent::new(
-                        pane,
-                        app.state.document.active_document(),
-                        &mut app.state.scroll,
-                        toc_visible,
-                        show_toc,
-                        &mut app.pending_action,
-                        scroll_sync,
-                        Some(app.state.search.doc_search.query.clone()),
-                        Some(app.state.search.doc_search_active_index),
-                    )
-                    .show(ui);
+                    /* WHY: Render preview content in a fixed child rect so intrinsic-size
+                     * widgets (tables/code blocks) cannot leak width back into the resizable
+                     * panel state and cause expand-without-shrink behavior. */
+                    let preview_rect = ui.max_rect();
+                    let out = ui.allocate_ui_at_rect(preview_rect, |ui| {
+                        ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
+                            PreviewContent::new(
+                                pane,
+                                app.state.document.active_document(),
+                                &mut app.state.scroll,
+                                &mut app.pending_action,
+                                scroll_sync,
+                                Some(app.state.search.doc_search.query.clone()),
+                                Some(app.state.search.doc_search_active_index),
+                            )
+                            .show(ui)
+                        })
+                        .inner
+                    });
+                    download_req = out.inner;
                 }
             });
+        let current_panel_state = egui::containers::panel::PanelState::load(ui.ctx(), panel_id);
+        if let (Some(prev), Some(curr)) = (prev_panel_state, current_panel_state) {
+            let was_dragging = ui.ctx().input(|i| i.pointer.primary_down());
+            /* WHY: Guard against intrinsic-size leaks from preview contents.
+             * If panel width grows while the splitter is not being dragged, treat it
+             * as layout ratchet and restore the previous width. */
+            if !was_dragging && curr.rect.width() > prev.rect.width() + LAYOUT_RATCHET_THRESHOLD {
+                ui.ctx().data_mut(|data| {
+                    data.insert_persisted(
+                        panel_id,
+                        egui::containers::panel::PanelState {
+                            rect: egui::Rect::from_min_size(
+                                curr.rect.min,
+                                egui::vec2(prev.rect.width(), curr.rect.height()),
+                            ),
+                        },
+                    );
+                });
+            }
+        }
 
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))

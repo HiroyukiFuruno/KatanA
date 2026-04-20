@@ -10,13 +10,22 @@ impl ViewCommands {
         vec![
             /* WHY: View Group */
             CommandInventoryItem {
+                id: "view.katana_command_palette",
+                action: AppAction::ToggleKatanaCommandPalette,
+                group: CommandGroup::View,
+                context: ShortcutContext::Global,
+                label: || format!("Katana {}", I18nOps::get().menu.command_palette),
+                is_available: |_| true,
+                default_shortcuts: &["primary+Shift+P"],
+            },
+            CommandInventoryItem {
                 id: "view.command_palette",
                 action: AppAction::ToggleCommandPalette,
                 group: CommandGroup::View,
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().menu.command_palette.clone(),
                 is_available: |_| true,
-                default_shortcuts: &["primary+P", "primary+Shift+P", "primary+K"],
+                default_shortcuts: &["primary+P", "primary+K"],
             },
             CommandInventoryItem {
                 id: "view.explorer",

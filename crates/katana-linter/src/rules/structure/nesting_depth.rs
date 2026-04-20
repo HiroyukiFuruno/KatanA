@@ -76,23 +76,14 @@ impl<'ast> Visit<'ast> for NestingDepthVisitor {
     }
 
     fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
-        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
-            return;
-        }
         syn::visit::visit_item_mod(self, node);
     }
 
     fn visit_item_fn(&mut self, node: &'ast syn::ItemFn) {
-        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
-            return;
-        }
         syn::visit::visit_item_fn(self, node);
     }
 
     fn visit_impl_item_fn(&mut self, node: &'ast syn::ImplItemFn) {
-        if LinterParserOps::has_cfg_test_attr(&node.attrs) {
-            return;
-        }
         syn::visit::visit_impl_item_fn(self, node);
     }
 }

@@ -18,6 +18,9 @@ pub struct LayoutState {
     pub show_search_modal: bool,
 
     pub show_history_panel: bool,
+    pub show_export_panel: bool,
+    pub show_story_panel: bool,
+    pub show_tools_panel: bool,
     pub workspace_toggle_y: f32,
     pub history_toggle_y: f32,
     pub scale_override: f32,
@@ -58,6 +61,9 @@ impl LayoutState {
             show_search_modal: false,
 
             show_history_panel: false,
+            show_export_panel: false,
+            show_story_panel: false,
+            show_tools_panel: false,
             workspace_toggle_y: Self::DEFAULT_TOGGLE_Y,
             history_toggle_y: Self::DEFAULT_TOGGLE_Y,
             scale_override: 1.0,

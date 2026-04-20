@@ -125,6 +125,7 @@ impl<'a> TocPanel<'a> {
             }
         })
         .primary(item.level <= 2)
+        .icon_only_toggle(true)
         .default_open(true)
         .active(is_active)
         .force_open(ctx.force_open)

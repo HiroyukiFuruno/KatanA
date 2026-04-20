@@ -4,7 +4,7 @@ use crate::state::command_palette::{
 };
 use eframe::egui;
 
-const COMMAND_PALETTE_MAX_HEIGHT: f32 = 1200.0;
+const COMMAND_PALETTE_MAX_HEIGHT: f32 = 400.0;
 const COMMAND_PALETTE_MARGIN: f32 = 8.0;
 const COMMAND_PALETTE_INNER_MARGIN_Y: f32 = 4.0;
 
@@ -16,7 +16,7 @@ pub(super) fn render_results(
 ) {
     egui::ScrollArea::vertical()
         .max_height(COMMAND_PALETTE_MAX_HEIGHT)
-        .auto_shrink([false; 2])
+        .auto_shrink([false, true])
         .show(ui, |ui| {
             if state.results.is_empty() {
                 ui.label(

@@ -264,7 +264,7 @@ mod tests {
         tx.send(RenderMessage::Section {
             generation: pane.session_generation,
             ordinal: 0,
-            section: RenderedSection::Markdown("# Result".to_string()),
+            section: RenderedSection::Markdown("# Result".to_string(), 1),
         })
         .unwrap();
         drop(tx);
@@ -272,7 +272,7 @@ mod tests {
         let ctx = egui::Context::default();
         pane.poll_renders(&ctx);
 
-        assert_variant!(pane.sections[0], RenderedSection::Markdown(_));
+        assert_variant!(pane.sections[0], RenderedSection::Markdown(_, 1));
         assert!(pane.section_lifecycle[0].is_loaded);
         assert!(pane.render_rx.is_none());
     }
@@ -297,7 +297,7 @@ mod tests {
         tx.send(RenderMessage::Section {
             generation: 1, // Stale generation
             ordinal: 0,
-            section: RenderedSection::Markdown("# Result".to_string()),
+            section: RenderedSection::Markdown("# Result".to_string(), 1),
         })
         .unwrap();
         let ctx = egui::Context::default();
@@ -352,14 +352,14 @@ mod tests {
             let _ = tx.send(RenderMessage::Section {
                 generation: current_generation,
                 ordinal: 0,
-                section: RenderedSection::Markdown("# Done".to_string()),
+                section: RenderedSection::Markdown("# Done".to_string(), 1),
             });
         });
 
         pane.wait_for_renders();
 
         assert!(pane.render_rx.is_none());
-        assert_variant!(pane.sections[0], RenderedSection::Markdown(_));
+        assert_variant!(pane.sections[0], RenderedSection::Markdown(_, _));
     }
 
     #[test]
@@ -774,7 +774,7 @@ mod tests {
     fn handle_fullscreen_request_clears_for_non_image_section() {
         let mut pane = PreviewPane::default();
         pane.sections
-            .push(RenderedSection::Markdown("# Hello".to_string()));
+            .push(RenderedSection::Markdown("# Hello".to_string(), 1));
         pane.handle_fullscreen_request(Some(0), None);
         assert!(pane.fullscreen_image.is_none());
     }
@@ -986,5 +986,40 @@ mod tests {
             !pane.is_loading,
             "is_loading should be false after abort_renders"
         );
+    }
+
+    #[test]
+    fn test_regression_heading_highlight_after_rich_block() {
+        use egui_kittest::Harness;
+
+        let mut harness = Harness::builder()
+            .with_size(egui::vec2(1024.0, 768.0))
+            .build_ui(|ui| {
+                let mut pane = PreviewPane::default();
+                let source = "```mermaid\ngraph TD; A-->B\n```\n\n# Heading After Diagram";
+                let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+
+                pane.full_render(
+                    source,
+                    std::path::Path::new("/tmp/test.md"),
+                    cache,
+                    false,
+                    4,
+                );
+                pane.wait_for_renders();
+
+                pane.show(ui);
+
+                assert!(!pane.heading_anchors.is_empty());
+                let h1_rect = pane.heading_anchors[0].1;
+
+                assert!(
+                    h1_rect.height() > 10.0,
+                    "Actual height: {:?}",
+                    h1_rect.height()
+                );
+            });
+
+        harness.run();
     }
 }

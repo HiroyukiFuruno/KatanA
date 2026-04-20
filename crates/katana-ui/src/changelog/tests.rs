@@ -42,19 +42,21 @@ fn test_parse_changelog_body_extraction() {
 
 #[test]
 fn test_compare_versions() {
-    assert_eq!(ChangelogOps::compare_versions("0.8.0", "0.7.0"), 1);
-    assert_eq!(ChangelogOps::compare_versions("0.7.0", "0.8.0"), -1);
-    assert_eq!(ChangelogOps::compare_versions("0.8.0", "0.8.0"), 0);
-    assert_eq!(ChangelogOps::compare_versions("1.0.0", "0.9.9"), 1);
-    assert_eq!(ChangelogOps::compare_versions("0.8.0.1", "0.8.0"), 1);
+    use katana_core::update::types::UpdateOps;
+    assert_eq!(UpdateOps::compare_versions("0.8.0", "0.7.0"), 1);
+    assert_eq!(UpdateOps::compare_versions("0.7.0", "0.8.0"), -1);
+    assert_eq!(UpdateOps::compare_versions("0.8.0", "0.8.0"), 0);
+    assert_eq!(UpdateOps::compare_versions("1.0.0", "0.9.9"), 1);
+    assert_eq!(UpdateOps::compare_versions("0.8.0.1", "0.8.0"), 1);
 }
 
 #[test]
 fn test_compare_versions_with_hyphen() {
+    use katana_core::update::types::UpdateOps;
     /* WHY: Reproduce issue: "0.8.8-1" should be considered > "0.8.8" in KatanA's versioning (patch increment). */
-    assert_eq!(ChangelogOps::compare_versions("0.8.8-1", "0.8.8"), 1);
-    assert_eq!(ChangelogOps::compare_versions("0.8.8", "0.8.8-1"), -1);
-    assert_eq!(ChangelogOps::compare_versions("0.8.8-2", "0.8.8-1"), 1);
+    assert_eq!(UpdateOps::compare_versions("0.8.8-1", "0.8.8"), 1);
+    assert_eq!(UpdateOps::compare_versions("0.8.8", "0.8.8-1"), -1);
+    assert_eq!(UpdateOps::compare_versions("0.8.8-2", "0.8.8-1"), 1);
 }
 
 #[test]

@@ -78,7 +78,7 @@ use generator::*;
 
 use quote::quote_spanned;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{Expr, LitStr, Token, parse_macro_input};
+use syn::{parse_macro_input, Expr, LitStr, Token};
 
 struct Parameters {
     ui: Expr,

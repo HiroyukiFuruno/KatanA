@@ -6,6 +6,7 @@ pub mod logic;
 pub mod logic_colors;
 pub mod types;
 pub mod ui;
+pub mod utils;
 
 pub use authoring::*;
 pub use types::*;

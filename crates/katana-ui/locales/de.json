@@ -109,8 +109,9 @@
       "trackpad_help": "Trackpad: Zoomen mit zwei Fingern, Schieben mit einem"
     },
     "slideshow_settings": "Diashow-Einstellungen",
-    "highlight_hover": "[TODO-de] Hover Highlight",
-    "show_diagram_controls": "[TODO-de] Diagram Controls"
+    "highlight_hover": "Hervorhebung beim Hovern",
+    "show_diagram_controls": "Diagrammsteuerungen",
+    "toggle_slideshow": "Diashow umschalten"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Lade PlantUML JAR herunter…",
@@ -190,7 +191,8 @@
     "save_file": "Datei speichern",
     "new_workspace": "Neues Projekt",
     "open_workspace": "Projekt öffnen",
-    "copy": "Kopieren"
+    "copy": "Kopieren",
+    "back_to_top": "Zurück nach oben"
   },
   "ai": {
     "ai_unconfigured": "[AI: Nicht konfiguriert]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "Abbrechen",
       "clear_http_cache": "Cache leeren",
       "cache_retention_days": "Aufbewahrung (Tage)",
-      "days_suffix": " Tage"
+      "days_suffix": " Tage",
+      "toc_default_visible": "Inhaltsverzeichnis beim Start anzeigen",
+      "explorer_default_visible": "Explorer beim Start anzeigen"
     },
     "general": "Allgemein",
     "shortcuts": {
@@ -423,7 +427,7 @@
     "recent_searches": "Letzte Suchen",
     "clear_history": "Verlauf löschen",
     "ln_prefix": "Zeile ",
-    "palette_query_hint": "Befehl oder Suche…",
+    "palette_query_hint": "Dateien oder Inhalte suchen…",
     "command_settings": "Einstellungen",
     "command_explorer": "Explorer",
     "command_close_all": "Alles schließen",
@@ -451,7 +455,8 @@
     "match_word": "Ganzes Wort",
     "use_regex": "Regulärer Ausdruck",
     "doc_query_hint": "Im Dokument suchen…",
-    "doc_search_no_results": "Keine Ergebnisse gefunden"
+    "doc_search_no_results": "Keine Ergebnisse gefunden",
+    "palette_action_query_hint": "Katana-Befehle suchen…"
   },
   "toc": {
     "title": "Inhaltsverzeichnis",

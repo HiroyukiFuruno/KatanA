@@ -37,6 +37,8 @@ const COMMAND_PALETTE_DEFAULT_HEIGHT: f32 = 600.0;
 const COMMAND_PALETTE_MAX_HEIGHT: f32 = 1200.0;
 const COMMAND_PALETTE_MARGIN: f32 = 8.0;
 const COMMAND_PALETTE_INNER_MARGIN_Y: f32 = 4.0;
+const COMMAND_PALETTE_HINT_OPACITY: f32 = 0.4;
+const COMMAND_PALETTE_PREFIX_OPACITY: f32 = 0.0;
 
 pub(crate) struct CommandPaletteModal<'a> {
     pub state: &'a mut CommandPaletteState,
@@ -77,22 +79,61 @@ impl<'a> CommandPaletteModal<'a> {
                 ui.set_max_width(COMMAND_PALETTE_WIDTH);
 
                 let text_edit = egui::TextEdit::singleline(&mut self.state.current_query)
-                    .hint_text(
-                        crate::i18n::I18nOps::get()
-                            .search
-                            .palette_query_hint
-                            .clone(),
-                    )
                     .desired_width(f32::INFINITY)
                     .margin(egui::vec2(COMMAND_PALETTE_MARGIN, COMMAND_PALETTE_MARGIN));
 
                 let response = ui.add(text_edit);
 
+                /* WHY: Draw i18n placeholders manually so they can appear even if '> ' is prefilled */
+                let is_empty = self.state.current_query.is_empty();
+                let is_action_mode_empty = self.state.current_query == "> " || self.state.current_query == ">";
+
+                if is_empty || is_action_mode_empty {
+                    let hint_text = if is_action_mode_empty {
+                        crate::i18n::I18nOps::get().search.palette_action_query_hint.clone()
+                    } else {
+                        crate::i18n::I18nOps::get().search.palette_query_hint.clone()
+                    };
+
+                    let font_id = egui::TextStyle::Body.resolve(ui.style());
+                    let mut pos = response.rect.left_center();
+                    pos.x += COMMAND_PALETTE_MARGIN; // internal margin of text_edit
+
+                    if is_action_mode_empty {
+                        /* WHY: Offset by the width of the prefilled '> ' text */
+                        let prefix_galley = ui.painter().layout_no_wrap(
+                            self.state.current_query.clone(),
+                            font_id.clone(),
+                            ui.visuals().window_fill().gamma_multiply(COMMAND_PALETTE_PREFIX_OPACITY),
+                        );
+                        pos.x += prefix_galley.size().x;
+                    }
+
+                    let hint_color = ui.visuals().text_color().gamma_multiply(COMMAND_PALETTE_HINT_OPACITY);
+                    let galley = ui.painter().layout_no_wrap(hint_text, font_id, hint_color);
+                    ui.painter().galley(pos - egui::vec2(0.0, galley.size().y / 2.0), galley, ui.visuals().text_color());
+                }
+
                 if response.changed() || self.state.results.is_empty() {
-                    /* WHY: Gather results from all providers */
+                    /* WHY: Gather results from providers based on the query prefix.
+                    If the query starts with '>', it only searches Katana commands.
+                    Otherwise, it excludes Katana commands. */
                     let mut gathered = Vec::new();
+                    let is_action_mode = self.state.current_query.starts_with('>');
+                    let actual_query = if is_action_mode {
+                        self.state.current_query[1..].trim_start().to_string()
+                    } else {
+                        self.state.current_query.clone()
+                    };
+
                     for provider in self.providers {
-                        gathered.extend(provider.search(&self.state.current_query, self.workspace));
+                        if is_action_mode && provider.name() != "Commands" {
+                            continue;
+                        }
+                        if !is_action_mode && provider.name() == "Commands" {
+                            continue;
+                        }
+                        gathered.extend(provider.search(&actual_query, self.workspace));
                     }
                     gathered.sort_by(|a, b| {
                         b.score

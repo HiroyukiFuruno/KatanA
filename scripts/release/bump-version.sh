@@ -81,22 +81,15 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
         echo "No changes detected."
     fi
 else
-    # Local development: use standard git (likely signed by user)
-    git config --global user.name "github-actions[bot]"
-    git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-    if ! git diff --quiet; then
+    # Local development: commit only if version-related files changed
+    if ! git diff --quiet Cargo.toml Cargo.lock "$INFO_PLIST"; then
         git add Cargo.toml Cargo.lock "$INFO_PLIST"
-        git commit -m "chore: Release v${TARGET_VERSION} [skip ci]"
+        # Use localized authorship for the release commit
+        git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -n -m "chore: Release v${TARGET_VERSION} [skip ci]" -- Cargo.toml Cargo.lock "$INFO_PLIST"
         
-        BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-        echo "Pushing to branch: $BRANCH_NAME"
-        if git push origin "HEAD:$BRANCH_NAME"; then
-            echo "✅ Successfully pushed version bump."
-        else
-            echo "⚠️ Push failed (likely due to branch protection)."
-            echo "Continuing with current local state as version is already correct."
-        fi
+        echo "✅ Version bump committed locally."
+        echo "   (Note: Use 'git push' manually if the branch is not protected)"
     else
         echo "No changes detected after attempted bump."
     fi

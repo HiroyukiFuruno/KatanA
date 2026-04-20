@@ -79,8 +79,13 @@ pub mod ui_components;
 
 pub use egui_commonmark_backend::RenderHtmlFn;
 pub use egui_commonmark_backend::RenderMathFn;
+pub use egui_commonmark_backend::RenderTableFn;
 pub use egui_commonmark_backend::alerts::{Alert, AlertBundle};
-pub use egui_commonmark_backend::misc::CommonMarkCache;
+pub use egui_commonmark_backend::misc::{CommonMarkCache, CommonMarkOptions};
+pub use egui_commonmark_backend::{
+    bullet_point, bullet_point_hollow, newline, number_point,
+};
+pub use egui_commonmark_backend::pulldown::{EventIteratorItem, Table};
 
 /// An action emitted when a user interacts with a task list checkbox.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -100,7 +105,6 @@ pub use egui_commonmark_macros::*;
 #[doc(hidden)]
 pub use egui_commonmark_backend;
 
-use egui_commonmark_backend::*;
 
 pub struct CommonMarkViewer<'f> {
     options: CommonMarkOptions<'f>,
@@ -400,6 +404,18 @@ impl<'f> CommonMarkViewer<'f> {
         self
     }
 
+    /// Allows custom handling of tables.
+    pub fn render_table_fn(mut self, func: Option<&'f RenderTableFn>) -> Self {
+        self.options.table_fn = func;
+        self
+    }
+
+    /// Whether to render the collected footnotes at the end of the markdown string. Default is true.
+    pub fn render_footnotes(mut self, render: bool) -> Self {
+        self.options.render_footnotes = render;
+        self
+    }
+
     /// Shows rendered markdown
     pub fn show(
         self,
@@ -470,9 +486,9 @@ impl<'f> CommonMarkViewer<'f> {
             if let Some(ref offset) = self.search_match_offset {
                 internal.search_match_counter = **offset;
             }
-            
+
             let result = internal.show(ui, cache, &self.options, text, None);
-            
+
             if let Some(offset) = self.search_match_offset {
                 *offset = internal.search_match_counter;
             }
@@ -601,6 +617,7 @@ impl<'f> CommonMarkViewer<'f> {
         internal.search_active_match_index = self.search_active_match_index;
         internal.show_scrollable(Id::new(source_id), ui, cache, &self.options, text);
     }
+
 }
 
 pub(crate) struct ListLevel {

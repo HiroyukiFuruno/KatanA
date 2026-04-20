@@ -34,14 +34,14 @@ pub(crate) trait WorkspaceOps {
 
 impl WorkspaceOps for KatanaApp {
     fn handle_open_explorer(&mut self, path: std::path::PathBuf) {
-        open::handle_open_explorer(self, path);
+        open::WorkspaceOpenHandlersOps::handle_open_explorer(self, path);
     }
     fn finish_open_explorer(
         &mut self,
         path: std::path::PathBuf,
         ws: katana_core::workspace::Workspace,
     ) {
-        open::finish_open_explorer(self, path, ws);
+        open::WorkspaceOpenHandlersOps::finish_open_explorer(self, path, ws);
     }
     fn handle_refresh_explorer(&mut self) {
         poll::handle_refresh_explorer(self);

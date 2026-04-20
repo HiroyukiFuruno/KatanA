@@ -18,13 +18,19 @@ impl PreviewPane {
 
         let mut request: Option<DownloadRequest> = None;
         let mut actions = Vec::new();
-        let content_width = ui.available_width();
+
         ScrollArea::vertical()
             .auto_shrink([false; 2])
             .show(ui, |ui| {
+                let spacing = ui.style().spacing.scroll;
+                let scroll_bar_width =
+                    spacing.bar_width + spacing.bar_inner_margin + spacing.floating_allocated_width;
+                /* WHY: Preemptively subtract the scrollbar area to prevent the inner UI from
+                 * generating a min_rect that forces the ScrollArea to expand the parent. */
+                let inner_content_width = (ui.available_width() - scroll_bar_width).max(0.0);
                 let child_rect = egui::Rect::from_min_size(
                     ui.next_widget_position(),
-                    egui::vec2(content_width, 0.0),
+                    egui::vec2(inner_content_width, 0.0),
                 );
                 ui.scope_builder(
                     egui::UiBuilder::new()
@@ -99,6 +105,12 @@ impl PreviewPane {
             is_slideshow,
         );
 
+        crate::preview_pane::types::DocumentAnchorMapItem::sync_rects(
+            &mut self.anchor_map,
+            &self.heading_anchors,
+            &self.block_anchors,
+        );
+
         if let Some(ref mut h) = hovered_lines {
             for item in &self.anchor_map {
                 if let Some(rect) = item.rect
@@ -113,12 +125,6 @@ impl PreviewPane {
 
         let ctx = ui.ctx().clone();
         self.handle_fullscreen_request(fullscreen_request, Some(&ctx));
-
-        crate::preview_pane::types::DocumentAnchorMapItem::sync_rects(
-            &mut self.anchor_map,
-            &self.heading_anchors,
-            &self.block_anchors,
-        );
 
         (request, actions)
     }

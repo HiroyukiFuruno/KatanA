@@ -109,8 +109,9 @@
       "trackpad_help": "Trackpad: pizzica con due dita per lo zoom, trascina con una per spostare"
     },
     "slideshow_settings": "Impostazioni presentazione",
-    "highlight_hover": "[TODO-it] Hover Highlight",
-    "show_diagram_controls": "[TODO-it] Diagram Controls"
+    "highlight_hover": "Evidenzia al Passaggio",
+    "show_diagram_controls": "Controlli Diagramma",
+    "toggle_slideshow": "Attiva/Disattiva Presentazione"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Download PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "Salva file",
     "new_workspace": "Nuovo progetto",
     "open_workspace": "Apri progetto",
-    "copy": "Copia"
+    "copy": "Copia",
+    "back_to_top": "Torna in Cima"
   },
   "ai": {
     "ai_unconfigured": "[AI: Non configurata]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "Annulla",
       "clear_http_cache": "Svuota cache",
       "cache_retention_days": "Giorni ritenzione",
-      "days_suffix": " giorni"
+      "days_suffix": " giorni",
+      "toc_default_visible": "Mostra sommario all'avvio",
+      "explorer_default_visible": "Mostra esploratore all'avvio"
     },
     "general": "Generale",
     "shortcuts": {
@@ -423,7 +427,7 @@
     "recent_searches": "Ricerche recenti",
     "clear_history": "Svuota cronologia",
     "ln_prefix": "Riga ",
-    "palette_query_hint": "Comando o ricerca…",
+    "palette_query_hint": "Cerca file o contenuti…",
     "command_settings": "Impostazioni",
     "command_explorer": "Esplora file",
     "command_close_all": "Chiudi tutto",
@@ -451,7 +455,8 @@
     "match_word": "Parola intera",
     "use_regex": "Usa Regex",
     "doc_query_hint": "Cerca nel documento…",
-    "doc_search_no_results": "Nessun risultato trovato"
+    "doc_search_no_results": "Nessun risultato trovato",
+    "palette_action_query_hint": "Cerca comandi Katana…"
   },
   "toc": {
     "title": "Indice",

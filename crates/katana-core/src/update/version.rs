@@ -57,27 +57,40 @@ impl UpdateOps {
     }
 
     pub fn is_newer_version(current: &str, latest: &str) -> bool {
-        let current_stripped = current.trim_start_matches('v');
-        let latest_stripped = latest.trim_start_matches('v');
+        Self::compare_versions(current, latest) < 0
+    }
 
-        let parse_ver = |v: &str| {
-            let parts: Vec<&str> = v.splitn(2, '-').collect();
-            let base = parts[0];
-            let hotfix: u32 = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
-            (semver::Version::parse(base).ok(), hotfix)
+    pub fn compare_versions(a: &str, b: &str) -> i8 {
+        let a = a.trim_start_matches('v');
+        let b = b.trim_start_matches('v');
+
+        if a == b {
+            return 0;
+        }
+
+        let parse_parts = |s: &str| -> Vec<u32> {
+            s.split(['.', '-'])
+                .filter(|s| !s.is_empty())
+                .map(|s| s.parse::<u32>().unwrap_or(0))
+                .collect()
         };
 
-        let curr = parse_ver(current_stripped);
-        let lat = parse_ver(latest_stripped);
+        let a_parts = parse_parts(a);
+        let b_parts = parse_parts(b);
 
-        match (curr.0, lat.0) {
-            (Some(c), Some(l)) => {
-                let curr_tuple = (c, curr.1);
-                let lat_tuple = (l, lat.1);
-                lat_tuple > curr_tuple
+        for i in 0..std::cmp::max(a_parts.len(), b_parts.len()) {
+            let va = a_parts.get(i).unwrap_or(&0);
+            let vb = b_parts.get(i).unwrap_or(&0);
+            if va != vb {
+                return if va > vb { 1 } else { -1 };
             }
-            _ => latest_stripped != current_stripped,
         }
+
+        if a_parts.len() != b_parts.len() {
+            return if a_parts.len() > b_parts.len() { 1 } else { -1 };
+        }
+
+        0
     }
 
     pub fn check_for_updates_simple(current_version: &str) -> Result<Option<ReleaseInfo>> {

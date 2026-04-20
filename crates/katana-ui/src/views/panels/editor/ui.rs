@@ -82,10 +82,8 @@ impl<'a> EditorContent<'a> {
                 scroll_area.show(ui, |ui| {
                     let horiz_response = ui.horizontal_top(|ui| {
                         const LINE_NUMBER_MARGIN: f32 = 40.0;
-                        const LINE_NUMBER_PAD_RIGHT: f32 = 8.0;
-                        let left_margin = LINE_NUMBER_MARGIN;
                         let (ln_rect, _) = ui.allocate_exact_size(
-                            egui::vec2(left_margin, 0.0),
+                            egui::vec2(LINE_NUMBER_MARGIN, 0.0),
                             egui::Sense::hover(),
                         );
 
@@ -105,7 +103,7 @@ impl<'a> EditorContent<'a> {
                         let text_output = text_edit.show(ui);
                         let response = text_output.response;
 
-                        EditorLogicOps::render_context_menu(&response, action);
+                        EditorLogicOps::render_context_menu(ui, &response, action);
                         let galley = text_output.galley;
 
                         /* WHY: Capture the current cursor range so action handlers can read it. */
@@ -117,7 +115,8 @@ impl<'a> EditorContent<'a> {
                             EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
                         }
 
-                        if response.clicked()
+                        if sync_scroll
+                            && response.clicked()
                             && let Some(c) = text_output.cursor_range
                         {
                             let line = EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
@@ -156,6 +155,7 @@ impl<'a> EditorContent<'a> {
                             self.doc_search_active_index,
                         );
 
+                        const PAD_RIGHT: f32 = 8.0;
                         super::line_numbers::EditorLineNumbers::render(
                             ui,
                             super::line_numbers::LineNumberParams {
@@ -166,27 +166,26 @@ impl<'a> EditorContent<'a> {
                                 current_cursor_y,
                                 ln_text,
                                 ln_active_text,
-                                left_margin,
-                                line_number_pad_right: LINE_NUMBER_PAD_RIGHT,
+                                left_margin: LINE_NUMBER_MARGIN,
+                                line_number_pad_right: PAD_RIGHT,
                             },
                         );
 
                         if response.changed() {
                             *action = AppAction::UpdateBuffer(buffer.clone());
                         }
-                        EditorLogicOps::handle_scroll_to_line(ui, scroll, &buffer, &response, &galley);
-                        response
-                    })
-                    .inner;
+                        EditorLogicOps::handle_scroll_to_line(
+                            ui, scroll, &buffer, &response, &galley,
+                        );
+                        let anchors = EditorLogicOps::extract_line_anchors(&galley);
+                        (response, anchors)
+                    });
 
-                    /* WHY: Provide scroll-past-end padding matching VS Code's behavior */
-                    const PADDING_RATIO: f32 = 0.9;
-                    ui.allocate_space(egui::vec2(0.0, ui.clip_rect().height() * PADDING_RATIO));
-
+                    EditorLogicOps::render_editor_padding(ui, scroll);
                     horiz_response
                 })
             });
-
+            let (_response, anchors) = output.inner.inner.inner;
             EditorLogicOps::update_scroll_sync(
                 scroll,
                 output.inner.content_size.y,
@@ -194,6 +193,7 @@ impl<'a> EditorContent<'a> {
                 output.inner.state.offset.y,
                 consuming_preview,
                 SCROLL_SYNC_DEAD_ZONE,
+                anchors,
             );
         }
     }

@@ -4,7 +4,7 @@ impl ImageSectionOps {
     pub fn extract_standalone_images(secs: Vec<PreviewSection>) -> Vec<PreviewSection> {
         let mut result = Vec::with_capacity(secs.len());
         for sec in secs {
-            if let PreviewSection::Markdown(ref md) = sec {
+            if let PreviewSection::Markdown(ref md, _) = sec {
                 /* WHY: Split into paragraphs so standalone images can be extracted
                 even when embedded within larger markdown sections. */
                 Self::split_paragraphs_extracting_images(md, &mut result);
@@ -15,41 +15,51 @@ impl ImageSectionOps {
         result
     }
 
-    /// Split markdown text into paragraphs and extract standalone image paragraphs
-    /// as `LocalImage` sections while keeping other paragraphs as `Markdown`.
+    fn count_lines(text: &str) -> usize {
+        text.chars().filter(|c| *c == '\n').count()
+            + if !text.is_empty() && !text.ends_with('\n') {
+                1
+            } else {
+                0
+            }
+    }
+
     fn split_paragraphs_extracting_images(md: &str, out: &mut Vec<PreviewSection>) {
         /* WHY: Split on double-newlines (paragraph boundary) to find standalone image paragraphs. */
         let paragraphs: Vec<&str> = md.split("\n\n").collect();
 
         if paragraphs.len() <= 1 {
             if let Some((path, alt)) = Self::try_parse_standalone_image(md) {
-                let lines = md.chars().filter(|c| *c == '\n').count();
+                let lines = Self::count_lines(md);
                 out.push(PreviewSection::LocalImage { path, alt, lines });
             } else if !md.is_empty() {
-                out.push(PreviewSection::Markdown(md.to_string()));
+                let lines = Self::count_lines(md);
+                out.push(PreviewSection::Markdown(md.to_string(), lines));
             }
             return;
         }
 
         let mut md_buf = String::new();
         for (i, para) in paragraphs.iter().enumerate() {
+            if i > 0 {
+                md_buf.push_str("\n\n");
+            }
+
             if let Some((path, alt)) = Self::try_parse_standalone_image(para) {
                 if !md_buf.is_empty() {
-                    out.push(PreviewSection::Markdown(md_buf.clone()));
-                    md_buf.clear();
+                    let lines = Self::count_lines(&md_buf);
+                    out.push(PreviewSection::Markdown(std::mem::take(&mut md_buf), lines));
                 }
-                let lines = para.chars().filter(|c| *c == '\n').count();
+                /* WHY: For LocalImage, we must count the newlines consumed by this entire paragraph chunk + its leading newlines */
+                let lines = Self::count_lines(para);
                 out.push(PreviewSection::LocalImage { path, alt, lines });
             } else {
-                if !md_buf.is_empty() {
-                    md_buf.push_str("\n\n");
-                }
                 md_buf.push_str(para);
             }
-            let _ = i;
         }
         if !md_buf.is_empty() {
-            out.push(PreviewSection::Markdown(md_buf));
+            let lines = Self::count_lines(&md_buf);
+            out.push(PreviewSection::Markdown(md_buf, lines));
         }
     }
 

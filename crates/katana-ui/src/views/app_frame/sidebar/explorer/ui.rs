@@ -3,6 +3,9 @@ use crate::views::app_frame::types::*;
 use crate::shell::KatanaApp;
 use eframe::egui;
 
+/* WHY: Animation speed (seconds) for the hover overlay fade-in */
+const EXPLORER_ANIM_SPEED: f32 = 0.15;
+
 /* WHY: UI implementation for ExplorerSidebar. */
 impl<'a> ExplorerSidebar<'a> {
     /* WHY: Factory method to bind the layout state to the UI structure. */
@@ -13,7 +16,7 @@ impl<'a> ExplorerSidebar<'a> {
     pub(crate) fn show(self, ui: &mut egui::Ui) {
         let app = &mut *self.app;
 
-        egui::Panel::left("activity_rail")
+        let rail_resp = egui::Panel::left("activity_rail")
             .resizable(false)
             .exact_size(
                 crate::shell::SIDEBAR_COLLAPSED_TOGGLE_WIDTH + crate::shell::ACTIVITY_RAIL_PADDING,
@@ -45,6 +48,11 @@ impl<'a> ExplorerSidebar<'a> {
                 });
             });
 
+        /* WHY: Defined before the Case 1/2 split so Case 1 can reset it.
+         * Ensures hover does not immediately re-open after unpinning (spec item 4). */
+        let hover_id = egui::Id::new("explorer_hover_open");
+
+        /* Case 1: PINNED — SidePanel pushes content aside. */
         if app.state.layout.show_explorer {
             egui::Panel::left("explorer_tree")
                 .resizable(true)
@@ -76,107 +84,57 @@ impl<'a> ExplorerSidebar<'a> {
                     )
                     .show(ui);
                 });
-        }
-        Self::render_rail_popup(ui, app);
-    }
 
-    /* WHY: Renders the core activity rail items with drag-reorder capabilities. */
-    fn render_rail_items(ui: &mut egui::Ui, app: &mut KatanaApp) {
-        let order = app
-            .state
-            .config
-            .settings
-            .settings()
-            .layout
-            .activity_rail_order
-            .clone();
-
-        let mut rail_rects = Vec::new();
-        let mut responses = Vec::new();
-        let mut dragged_source: Option<(usize, f32)> = None;
-        let mut current_hovered_drop_y = None;
-
-        for (idx, item) in order.iter().enumerate() {
-            let interact_id = egui::Id::new("rail_drag").with(idx);
-            let is_being_dragged = ui.ctx().is_being_dragged(interact_id);
-
-            let act_resp = if is_being_dragged {
-                let (rect, _) = ui.allocate_exact_size(
-                    egui::vec2(
-                        ui.available_width(),
-                        crate::icon::IconSize::Large.to_vec2().y
-                            + crate::shell::ACTIVITY_RAIL_PADDING,
-                    ),
-                    egui::Sense::hover(),
-                );
-                Some(ui.interact(rect, interact_id, egui::Sense::click_and_drag()))
-            } else {
-                Self::render_single_act_rail_item(ui, app, item, interact_id, idx)
-            };
-
-            if let Some(interact_resp) = act_resp {
-                rail_rects.push((idx, interact_resp.rect));
-                responses.push((idx, item, interact_id, is_being_dragged, interact_resp));
-                ui.add_space(crate::shell::ACTIVITY_RAIL_PADDING);
-            }
+            /* WHY: Reset hover state while pinned so it starts clean after unpinning. */
+            ui.ctx().data_mut(|d| d.insert_temp(hover_id, false));
+            Self::render_rail_popup(ui, app);
+            return;
         }
 
-        ExplorerSidebarDrag::handle_rail_drag_effects(
-            ui,
-            app,
-            responses,
-            &rail_rects,
-            &mut dragged_source,
-            &mut current_hovered_drop_y,
+        /* Case 2: HOVER ONLY — float over content using Area::Foreground. */
+        let cooldown_id = egui::Id::new("explorer_hover_cooldown");
+        let explorer_hover_open = ui
+            .ctx()
+            .data(|d| d.get_temp::<bool>(hover_id))
+            .unwrap_or(false);
+
+        let explorer_btn_rect = ui
+            .ctx()
+            .data(|d| d.get_temp::<egui::Rect>(egui::Id::new("explorer_btn_rect")));
+
+        let in_cooldown: bool = ui.ctx().data(|d| d.get_temp(cooldown_id).unwrap_or(false));
+
+        let over_btn = ui.input(|i| i.pointer.hover_pos()).is_some_and(|pos| {
+            explorer_btn_rect
+                .is_some_and(|r| r.expand(super::hover::EXPLORER_HOVER_MARGIN).contains(pos))
+        });
+
+        /* WHY: Re-arm hover once cursor leaves the button after a click (spec item 4). */
+        if in_cooldown && !over_btn {
+            ui.ctx().data_mut(|d| d.insert_temp(cooldown_id, false));
+        }
+
+        /* WHY: Open hover overlay when the pointer enters the explorer toggle button */
+        if !explorer_hover_open && !in_cooldown && over_btn {
+            ui.ctx().data_mut(|d| d.insert_temp(hover_id, true));
+        }
+
+        let anim = ui.ctx().animate_bool_with_time(
+            egui::Id::new("explorer_hover_anim"),
+            explorer_hover_open,
+            EXPLORER_ANIM_SPEED,
         );
 
-        if let Some((target_y, x_range)) = current_hovered_drop_y {
-            let indicator_id = egui::Id::new("rail_drop_indicator");
-            let animated_y = ui.ctx().animate_value_with_time(
-                indicator_id,
-                target_y,
-                crate::shell::TAB_DROP_ANIMATION_TIME,
+        if anim > 0.0 {
+            super::hover::ExplorerHoverOverlay::show(
+                ui,
+                app,
+                anim,
+                rail_resp.response.rect,
+                explorer_btn_rect,
             );
-            let stroke = egui::Stroke::new(
-                crate::shell::TAB_DROP_INDICATOR_WIDTH,
-                ui.visuals().selection.bg_fill,
-            );
-            ui.painter().hline(x_range, animated_y, stroke);
         }
 
-        if let Some((src_idx, ghost_center_y)) = dragged_source
-            && let Some(action) =
-                ExplorerSidebarDrag::resolve_drag_drop_y(src_idx, ghost_center_y, &rail_rects)
-        {
-            app.pending_action = action;
-        }
-    }
-
-    /* WHY: Dispatches single item rendering based on activity rail configuration. */
-    fn render_single_act_rail_item(
-        ui: &mut egui::Ui,
-        app: &mut KatanaApp,
-        item: &katana_platform::settings::ActivityRailItem,
-        interact_id: egui::Id,
-        _idx: usize,
-    ) -> Option<egui::Response> {
-        match item {
-            katana_platform::settings::ActivityRailItem::AddWorkspace => {
-                ExplorerSidebarItems::render_add_workspace(ui, app, interact_id)
-            }
-            katana_platform::settings::ActivityRailItem::WorkspaceToggle => {
-                ExplorerSidebarItems::render_workspace_toggle(ui, app, interact_id)
-            }
-            katana_platform::settings::ActivityRailItem::ExplorerToggle => {
-                ExplorerSidebarItems::render_explorer_toggle(ui, app, interact_id)
-            }
-            katana_platform::settings::ActivityRailItem::Search => {
-                ExplorerSidebarItems::render_search_toggle(ui, app, interact_id)
-            }
-            katana_platform::settings::ActivityRailItem::History => {
-                /* WHY: History is now fixed at the bottom above Settings */
-                None
-            }
-        }
+        Self::render_rail_popup(ui, app);
     }
 }

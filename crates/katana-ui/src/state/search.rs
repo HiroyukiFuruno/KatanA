@@ -58,7 +58,7 @@ impl SearchState {
                 query: String::new(),
                 match_case: false,
                 match_word: false,
-                use_regex: true,
+                use_regex: false,
             },
             filter_cache: None,
 

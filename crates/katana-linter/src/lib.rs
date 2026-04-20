@@ -69,6 +69,17 @@ impl std::fmt::Display for JsonNodeKind {
     }
 }
 
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
+
+/* WHY: Cache parsed ASTs to avoid redundant parsing across multiple linter tests.
+We use thread_local to avoid requiring Sync on the syn::File type while still
+achieving significant speedups since tests run in long-lived threads. */
+thread_local! {
+    static AST_CACHE: RefCell<HashMap<PathBuf, Rc<syn::File>>> = RefCell::new(HashMap::new());
+}
+
 pub struct AstLinterOps;
 
 impl AstLinterOps {
@@ -82,7 +93,7 @@ impl AstLinterOps {
 
         for target_dir in target_dirs {
             for file in &utils::LinterFileOps::collect_rs_files(target_dir) {
-                match utils::LinterParserOps::parse_file(file) {
+                match Self::get_cached_ast(file) {
                     Ok(syntax) => {
                         let violations = lint_fn(file, &syntax);
                         all_violations.extend(violations);
@@ -95,5 +106,23 @@ impl AstLinterOps {
         }
 
         utils::ViolationReporterOps::panic(rule_name, hint, &all_violations);
+    }
+
+    fn get_cached_ast(file: &Path) -> Result<Rc<syn::File>, Vec<Violation>> {
+        AST_CACHE.with(|cache| {
+            let mut cache = cache.borrow_mut();
+            if let Some(cached) = cache.get(file) {
+                return Ok(Rc::clone(cached));
+            }
+
+            match utils::LinterParserOps::parse_file(file) {
+                Ok(syntax) => {
+                    let syntax_rc = Rc::new(syntax);
+                    cache.insert(file.to_path_buf(), Rc::clone(&syntax_rc));
+                    Ok(syntax_rc)
+                }
+                Err(errors) => Err(errors),
+            }
+        })
     }
 }

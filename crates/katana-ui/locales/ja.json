@@ -96,9 +96,10 @@
     "refresh_diagrams": "ダイアグラムを更新",
     "rendering": "{kind} レンダリング中…",
     "no_preview": "(プレビューなし)",
-    "slideshow_settings": "ストーリー設定",
+    "slideshow_settings": "スライドショー設定",
     "highlight_hover": "ホバーハイライト",
     "show_diagram_controls": "ダイアグラム操作",
+    "toggle_slideshow": "スライドショーを開始",
     "diagram_controller": {
       "pan_up": "上へ移動",
       "pan_down": "下へ移動",
@@ -130,7 +131,7 @@
   },
   "error": {
     "missing_dependency": "{tool_name} が見つかりません。{install_hint} を使用してインストールしてください。",
-    "curl_launch_failed": "curl 起動失敗",
+    "curl_launch_failed": "curl の起動に失敗しました",
     "download_failed": "ダウンロードに失敗しました",
     "render_error": "[{kind}] {message}"
   },
@@ -155,7 +156,7 @@
     "closed_workspace": "ワークスペースを閉じました。",
     "label_dirty": "変更あり",
     "label_loaded": "読み込み済み",
-    "label_pinned": "固定済み",
+    "label_pinned": "ピン留め済み",
     "label_path": "パス",
     "kind_markdown": "Markdown ドキュメント",
     "yes": "はい",
@@ -190,7 +191,8 @@
     "save_file": "ファイルを保存",
     "new_workspace": "新しいワークスペース",
     "open_workspace": "ワークスペースを開く",
-    "copy": "コピー"
+    "copy": "コピー",
+    "back_to_top": "トップへ戻る"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -240,8 +242,8 @@
     },
     "preview": {
       "title": "プレビュー",
-      "heading": "# サンプル見出し",
-      "normal_text": "通常テキストと",
+      "heading": "# 見出しのサンプル",
+      "normal_text": "通常のテキストと",
       "accent_link": "アクセントリンク",
       "secondary_text": "セカンダリテキストのサンプル",
       "code_sample": "fn main() { println!(\"こんにちは!\"); }"
@@ -381,7 +383,9 @@
       "close_confirm_cancel": "キャンセル",
       "clear_http_cache": "すべてのキャッシュをクリア",
       "cache_retention_days": "キャッシュ保持日数",
-      "days_suffix": " 日"
+      "days_suffix": " 日",
+      "toc_default_visible": "起動時に目次を表示する",
+      "explorer_default_visible": "起動時にエクスプローラーを表示する"
     },
     "general": "全般"
   },
@@ -389,10 +393,10 @@
     "nav_prev": "前のタブへ移動",
     "nav_next": "次のタブへ移動",
     "close": "閉じる",
-    "close_others": "他を閉じる",
+    "close_others": "他のタブを閉じる",
     "close_all": "すべて閉じる",
-    "close_right": "右側を閉じる",
-    "close_left": "左側を閉じる",
+    "close_right": "右側のタブを閉じる",
+    "close_left": "左側のタブを閉じる",
     "pin": "ピン留め",
     "unpin": "ピン留め解除",
     "restore_closed": "閉じたタブを復元",
@@ -400,7 +404,7 @@
     "create_group_button": "作成",
     "close_group": "グループを閉じる",
     "ungroup": "グループを解除",
-    "add_tab_to_group": "タブをグループに追加",
+    "add_tab_to_group": "グループにタブを追加",
     "remove_from_group": "グループから削除",
     "create_new_group": "新しいグループを作成",
     "add_to_group": "グループにタブを追加"
@@ -424,7 +428,7 @@
     "recent_searches": "最近の検索",
     "clear_history": "履歴を消去",
     "ln_prefix": "行 ",
-    "palette_query_hint": "コマンドを入力または検索…",
+    "palette_query_hint": "ファイルやコンテンツを検索…",
     "command_settings": "設定の表示切替",
     "command_explorer": "エクスプローラーを表示",
     "command_close_all": "すべてのドキュメントを閉じる",
@@ -451,16 +455,17 @@
     "match_case": "大文字・小文字を区別",
     "match_word": "単語単位",
     "use_regex": "正規表現を利用",
-    "doc_search_no_results": "検索結果がありません。"
+    "doc_search_no_results": "検索結果がありません。",
+    "palette_action_query_hint": "Katana コマンドを検索…"
   },
   "toc": {
     "title": "目次",
-    "empty": "見出しが見つかりません"
+    "empty": "見出しが見つかりません。"
   },
   "export": {
     "success": "{format} へのエクスポートが完了しました: {path}",
     "failed": "{format} へのエクスポートに失敗しました: {error}",
-    "tool_missing": "エクスポートツールが利用できません。{format} としてエクスポートするには、Chrome または Chromium がインストールされていることを確認してください。",
+    "tool_missing": "エクスポートツールが利用できません。{format} としてエクスポートするには、Chrome または Chromium がインストールされている必要があります。",
     "temp_file_error": "一時ファイルの作成に失敗しました: {error}",
     "write_error": "内容の書き込みに失敗しました: {error}",
     "persist_error": "一時ファイルの保持に失敗しました",
@@ -474,8 +479,8 @@
     "decline": "同意しない"
   },
   "dialog": {
-    "new_file_title": "新規ファイル",
-    "new_directory_title": "新規フォルダ",
+    "new_file_title": "新規ファイル作成",
+    "new_directory_title": "新規ディレクトリ作成",
     "rename_title": "名前変更",
     "delete_title": "削除の確認",
     "delete_confirm_msg": "'{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。",
@@ -502,17 +507,17 @@
     "label_updated": "更新日時",
     "label_dirty": "変更あり",
     "label_loaded": "読み込み済み",
-    "label_pinned": "固定済み",
+    "label_pinned": "ピン留め済み",
     "label_path": "パス",
-    "kind_markdown": "Markdown ドキュメント",
-    "yes": "はい",
-    "no": "いいえ",
     "label_size": "サイズ",
     "label_owner": "所有者",
-    "label_permissions": "パーミッション",
+    "label_permissions": "権限",
+    "kind_markdown": "Markdown ドキュメント",
     "kind_virtual": "仮想ドキュメント",
-    "virtual_embedded": "内蔵",
-    "unknown": "不明"
+    "virtual_embedded": "組み込み",
+    "unknown": "不明",
+    "yes": "はい",
+    "no": "いいえ"
   },
   "help": {
     "section_general": "全般",

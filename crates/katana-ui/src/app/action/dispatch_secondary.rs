@@ -141,8 +141,52 @@ impl KatanaApp {
             AppAction::IngestImageFile => self.handle_action_ingest_image_file(),
             AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
             AppAction::RevealImageAsset(path) => self.handle_action_reveal_image_asset(path),
+            AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
+            AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),
+            AppAction::SetViewMode(mode) => self.state.set_active_view_mode(mode),
+            AppAction::ToggleScrollSync(is_on) => {
+                self.state.scroll.sync_override = Some(is_on);
+            }
+            AppAction::Quit => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),
+            AppAction::OpenDocSearch => {
+                self.state.search.doc_search_open = true;
+                ctx.memory_mut(|m| {
+                    m.data
+                        .insert_temp(egui::Id::new("search_newly_opened"), true)
+                });
+            }
+            AppAction::ToggleDocSearch => {
+                if !self.state.search.doc_search_open {
+                    self.state.search.doc_search_open = true;
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("search_newly_opened"), true)
+                    });
+                    self.trigger_action(AppAction::DocSearchQueryChanged);
+                } else {
+                    self.state.search.doc_search_open = false;
+                    self.state.search.doc_search_matches.clear();
+                }
+            }
+            AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
+            AppAction::DocSearchNext => self.handle_action_doc_search_next(ctx),
+            AppAction::DocSearchPrev => self.handle_action_doc_search_prev(ctx),
+            AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open ^= true,
+            AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
+            AppAction::ToggleExplorerFilter => {
+                let current = self.state.search.filter_enabled;
+                self.state.search.filter_enabled = !current;
+                if !current {
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("filter_newly_enabled"), true)
+                    });
+                }
+            }
             _ => {}
         }
     }

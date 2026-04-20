@@ -15,9 +15,15 @@ impl<'a> Accordion<'a> {
             show_vertical_line: false,
             active: false,
             primary: false,
+            icon_only_toggle: false,
             indent: None,
             body: Box::new(body),
         }
+    }
+
+    pub fn icon_only_toggle(mut self, icon_only: bool) -> Self {
+        self.icon_only_toggle = icon_only;
+        self
     }
 
     pub fn primary(mut self, primary: bool) -> Self {

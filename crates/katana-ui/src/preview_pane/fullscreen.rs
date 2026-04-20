@@ -97,6 +97,6 @@ impl FullscreenLogicOps {
         layout: &mut crate::state::layout::LayoutState,
         pane: &mut crate::preview_pane::PreviewPane,
     ) {
-        super::slideshow::render_slideshow_modal(ctx, layout, pane);
+        super::slideshow::SlideshowModalOps::render_slideshow_modal(ctx, layout, pane);
     }
 }

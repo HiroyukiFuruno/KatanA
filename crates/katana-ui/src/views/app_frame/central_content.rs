@@ -2,6 +2,7 @@ use super::types::*;
 use crate::app_state::ViewMode;
 use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
+use crate::views::panels::preview::PreviewSidePanels;
 use eframe::egui;
 
 impl<'a> CentralContent<'a> {
@@ -26,7 +27,7 @@ impl<'a> CentralContent<'a> {
             }
         }
 
-        Self::render_toc_if_needed(ui, app);
+        Self::render_preview_side_panels(ui, app);
 
         if is_changelog_tab {
             egui::CentralPanel::default().show_inside(ui, |ui| {
@@ -67,27 +68,8 @@ impl<'a> CentralContent<'a> {
         None
     }
 
-    fn render_toc_if_needed(ui: &mut egui::Ui, app: &mut KatanaApp) {
-        if !app.state.layout.show_toc || !app.state.config.settings.settings().layout.toc_visible {
-            return;
-        }
-
-        let doc = match app.state.active_document() {
-            Some(d) => d,
-            None => return,
-        };
-
-        if let Some(preview) = app.tab_previews.iter_mut().find(|p| p.path == doc.path) {
-            let (clicked_line, active_index) =
-                crate::views::panels::toc::TocPanel::new(&mut preview.pane, &mut app.state)
-                    .show(ui);
-
-            if let Some(clicked) = clicked_line {
-                app.state.scroll.scroll_to_line = Some(clicked);
-                app.state.scroll.last_scroll_to_line = None;
-            }
-            app.state.active_toc_index = active_index;
-        }
+    fn render_preview_side_panels(ui: &mut egui::Ui, app: &mut KatanaApp) {
+        PreviewSidePanels::new(app).show(ui);
     }
 
     fn render_split_mode(ui: &mut egui::Ui, app: &mut KatanaApp) -> Option<DownloadRequest> {

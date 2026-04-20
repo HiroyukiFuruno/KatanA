@@ -50,9 +50,8 @@ Temporary Items
 .apdisk
 
 # Katana local and tool-specific ignores
-/.agent/workflows/opsx-*.md
-/.agent/skills/openspec-*/
-/.agents/skills/openspec-*/
+/.agent
+/.agents/
 /.claude/
 /CLAUDE.md
 /.claude/commands/opsx/
@@ -85,6 +84,7 @@ target/llvm-cov/
 
 tmp
 output
+scratch
 
 # local history
 .history

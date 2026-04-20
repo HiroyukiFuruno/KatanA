@@ -69,6 +69,8 @@ impl Default for LayoutSettings {
                 ActivityRailItem::History,
             ],
             accordion_vertical_line: true,
+            toc_default_visible: false,
+            explorer_default_visible: true,
         }
     }
 }

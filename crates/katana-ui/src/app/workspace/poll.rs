@@ -32,45 +32,47 @@ pub(super) fn handle_refresh_explorer(app: &mut KatanaApp) {
 
 pub(super) fn poll_explorer_load(app: &mut KatanaApp, ctx: &egui::Context) {
     const WORKSPACE_LOAD_POLL_INTERVAL_MS: u64 = 50;
-    let Some(rx) = &app.explorer_rx else { return };
-    let recv_result = rx.try_recv();
-    let done = match recv_result {
-        Ok((ExplorerLoadType::Open, path, Ok(ws))) => {
-            app.state.workspace.is_loading = false;
-            open::finish_open_explorer(app, path, ws);
-            true
+
+    if let Some(rx) = &app.explorer_rx {
+        let recv_result = rx.try_recv();
+        let done = match recv_result {
+            Ok((ExplorerLoadType::Open, path, Ok(ws))) => {
+                app.state.workspace.is_loading = false;
+                open::WorkspaceOpenHandlersOps::finish_open_explorer(app, path, ws);
+                true
+            }
+            Ok((ExplorerLoadType::Refresh, _path, Ok(ws))) => {
+                app.state.workspace.is_loading = false;
+                app.state.workspace.data = Some(ws);
+                app.state.search.filter_cache = None;
+                true
+            }
+            Ok((_load_type, _path, Err(e))) => {
+                app.state.workspace.is_loading = false;
+                let error = e.to_string();
+                app.state.layout.status_message = Some((
+                    crate::i18n::I18nOps::tf(
+                        &crate::i18n::I18nOps::get().status.cannot_open_workspace,
+                        &[("error", error.as_str())],
+                    ),
+                    crate::app_state::StatusType::Error,
+                ));
+                true
+            }
+            Err(std::sync::mpsc::TryRecvError::Empty) => {
+                ctx.request_repaint_after(std::time::Duration::from_millis(
+                    WORKSPACE_LOAD_POLL_INTERVAL_MS,
+                ));
+                false
+            }
+            Err(_) => {
+                app.state.workspace.is_loading = false;
+                true
+            }
+        };
+        if done {
+            app.explorer_rx = None;
         }
-        Ok((ExplorerLoadType::Refresh, _path, Ok(ws))) => {
-            app.state.workspace.is_loading = false;
-            app.state.workspace.data = Some(ws);
-            app.state.search.filter_cache = None;
-            true
-        }
-        Ok((_load_type, _path, Err(e))) => {
-            app.state.workspace.is_loading = false;
-            let error = e.to_string();
-            app.state.layout.status_message = Some((
-                crate::i18n::I18nOps::tf(
-                    &crate::i18n::I18nOps::get().status.cannot_open_workspace,
-                    &[("error", error.as_str())],
-                ),
-                crate::app_state::StatusType::Error,
-            ));
-            true
-        }
-        Err(std::sync::mpsc::TryRecvError::Empty) => {
-            ctx.request_repaint_after(std::time::Duration::from_millis(
-                WORKSPACE_LOAD_POLL_INTERVAL_MS,
-            ));
-            false
-        }
-        Err(_) => {
-            app.state.workspace.is_loading = false;
-            true
-        }
-    };
-    if done {
-        app.explorer_rx = None;
     }
     if app.needs_changelog_display
         && !app.state.workspace.is_loading

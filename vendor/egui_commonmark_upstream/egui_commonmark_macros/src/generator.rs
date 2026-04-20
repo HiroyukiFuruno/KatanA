@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 
 use egui_commonmark_backend::{
-    CodeBlock, CommonMarkOptions, Image, alerts::Alert, misc::Style, pulldown::*,
+    alerts::Alert, misc::Style, pulldown::*, CodeBlock, CommonMarkOptions, Image,
 };
 
 use proc_macro2::TokenStream;
@@ -295,7 +295,7 @@ impl CommonMarkViewerInternal {
                 matches!(tag, pulldown_cmark::TagEnd::DefinitionListDefinition)
             });
 
-            let mut events_iter = item_events.into_iter().enumerate().peekable();
+            let mut events_iter = item_events.into_iter().peekable();
 
             let mut inner = TokenStream::new();
 
@@ -352,7 +352,7 @@ impl CommonMarkViewerInternal {
             self.is_list_item = false;
 
             let item_events = delayed_events_list_item(events);
-            let mut events_iter = item_events.into_iter().enumerate().peekable();
+            let mut events_iter = item_events.into_iter().peekable();
 
             let mut inner = TokenStream::new();
 
@@ -394,7 +394,7 @@ impl CommonMarkViewerInternal {
                 } = alert;
 
                 let mut inner = TokenStream::new();
-                for (event, _) in collected_events.into_iter() {
+                for (_, (event, _)) in collected_events.into_iter() {
                     inner.extend(self.event(event, cache, options));
                 }
 
@@ -415,7 +415,7 @@ impl CommonMarkViewerInternal {
                 let mut inner = TokenStream::new();
 
                 self.text_style.quote = true;
-                for (event, _) in collected_events {
+                for (_, (event, _)) in collected_events {
                     inner.extend(self.event(event, cache, options));
                 }
                 self.text_style.quote = false;
@@ -449,7 +449,7 @@ impl CommonMarkViewerInternal {
             let mut header_stream = TokenStream::new();
             for col in header {
                 let mut inner = TokenStream::new();
-                for (e, _) in col {
+                for (_, (e, _)) in col {
                     self.line.should_start_newline = false;
                     self.line.should_end_newline = false;
                     inner.extend(self.event(e, cache, options));
@@ -465,7 +465,7 @@ impl CommonMarkViewerInternal {
                 let mut row_stream = TokenStream::new();
                 for col in row {
                     let mut inner = TokenStream::new();
-                    for (e, _) in col {
+                    for (_, (e, _)) in col {
                         self.line.should_start_newline = false;
                         self.line.should_end_newline = false;
                         inner.extend(self.event(e, cache, options));
