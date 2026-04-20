@@ -49,6 +49,7 @@ pub enum AppAction {
     ToggleHistoryPanel,
     ToggleSearchModal,
     ToggleCommandPalette,
+    ToggleKatanaCommandPalette,
     ToggleRailPopup(crate::state::layout::RailPopup),
     ToggleSlideshow,
     ToggleSlideshowHoverHighlight,

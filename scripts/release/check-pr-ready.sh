@@ -55,8 +55,14 @@ TARGET_VERSION=""
 if [[ -n "$EXPECTED_VERSION" ]]; then
     TARGET_VERSION="$EXPECTED_VERSION"
     info "Target version set by argument: v${TARGET_VERSION}"
-elif [[ "$CURRENT_BRANCH" =~ ^release/v ]]; then
-    TARGET_VERSION="${CURRENT_BRANCH#release/v}"
+elif [[ "$CURRENT_BRANCH" =~ ^release/v([0-9]+\.[0-9]+\.[0-9]+)(-task-[0-9]+(-fix)?)?$ ]]; then
+    # Skip full checks for task branches because Cargo.toml version bump 
+    # happens at final release preparation.
+    if [[ -n "${match[2]}" ]]; then
+        success "Task branch detected (${CURRENT_BRANCH}). Skipping final PR readiness checks."
+        exit 0
+    fi
+    TARGET_VERSION="${match[1]}"
     info "Target version detected from branch: v${TARGET_VERSION}"
 else
     TARGET_VERSION="$CUR_VERSION"
@@ -95,12 +101,13 @@ success "Cargo.lock is synced."
 
 # 5. Branch naming vs Target Version for Release branches
 if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
-    if [[ ! "$CURRENT_BRANCH" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-         error "Branch name '$CURRENT_BRANCH' does not follow release/vX.Y.Z format."
+    if [[ ! "$CURRENT_BRANCH" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+(-task-[0-9]+(-fix)?)?$ ]]; then
+         error "Branch name '$CURRENT_BRANCH' does not follow release/vX.Y.Z or release/vX.Y.Z-task-N format."
          exit 1
     fi
     
     BRANCH_VERSION="${CURRENT_BRANCH#release/v}"
+    BRANCH_VERSION="${BRANCH_VERSION%-task*}" # strip the task suffix
     if [[ "$BRANCH_VERSION" != "$TARGET_VERSION" ]]; then
         error "Branch version (v${BRANCH_VERSION}) does not match target version (v${TARGET_VERSION})."
         exit 1

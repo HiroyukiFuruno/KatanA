@@ -428,7 +428,7 @@
     "recent_searches": "最近の検索",
     "clear_history": "履歴を消去",
     "ln_prefix": "行 ",
-    "palette_query_hint": "コマンドを入力または検索…",
+    "palette_query_hint": "ファイルやコンテンツを検索…",
     "command_settings": "設定の表示切替",
     "command_explorer": "エクスプローラーを表示",
     "command_close_all": "すべてのドキュメントを閉じる",
@@ -455,7 +455,8 @@
     "match_case": "大文字・小文字を区別",
     "match_word": "単語単位",
     "use_regex": "正規表現を利用",
-    "doc_search_no_results": "検索結果がありません。"
+    "doc_search_no_results": "検索結果がありません。",
+    "palette_action_query_hint": "Katana コマンドを検索…"
   },
   "toc": {
     "title": "目次",

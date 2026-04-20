@@ -152,6 +152,41 @@ impl KatanaApp {
             }
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),
+            AppAction::OpenDocSearch => {
+                self.state.search.doc_search_open = true;
+                ctx.memory_mut(|m| {
+                    m.data
+                        .insert_temp(egui::Id::new("search_newly_opened"), true)
+                });
+            }
+            AppAction::ToggleDocSearch => {
+                if !self.state.search.doc_search_open {
+                    self.state.search.doc_search_open = true;
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("search_newly_opened"), true)
+                    });
+                    self.trigger_action(AppAction::DocSearchQueryChanged);
+                } else {
+                    self.state.search.doc_search_open = false;
+                    self.state.search.doc_search_matches.clear();
+                }
+            }
+            AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
+            AppAction::DocSearchNext => self.handle_action_doc_search_next(ctx),
+            AppAction::DocSearchPrev => self.handle_action_doc_search_prev(ctx),
+            AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open ^= true,
+            AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
+            AppAction::ToggleExplorerFilter => {
+                let current = self.state.search.filter_enabled;
+                self.state.search.filter_enabled = !current;
+                if !current {
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("filter_newly_enabled"), true)
+                    });
+                }
+            }
             _ => {}
         }
     }

@@ -427,7 +427,7 @@
     "recent_searches": "Ricerche recenti",
     "clear_history": "Svuota cronologia",
     "ln_prefix": "Riga ",
-    "palette_query_hint": "Comando o ricerca…",
+    "palette_query_hint": "Cerca file o contenuti…",
     "command_settings": "Impostazioni",
     "command_explorer": "Esplora file",
     "command_close_all": "Chiudi tutto",
@@ -455,7 +455,8 @@
     "match_word": "Parola intera",
     "use_regex": "Usa Regex",
     "doc_query_hint": "Cerca nel documento…",
-    "doc_search_no_results": "Nessun risultato trovato"
+    "doc_search_no_results": "Nessun risultato trovato",
+    "palette_action_query_hint": "Cerca comandi Katana…"
   },
   "toc": {
     "title": "Indice",
