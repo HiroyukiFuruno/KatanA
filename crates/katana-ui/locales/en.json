@@ -428,7 +428,7 @@
     "recent_searches": "Recent Searches",
     "clear_history": "Clear History",
     "ln_prefix": "Line ",
-    "palette_query_hint": "Type a command or search…",
+    "palette_query_hint": "Search files or content…",
     "command_settings": "Toggle Settings",
     "command_explorer": "Toggle Explorer Panel",
     "command_close_all": "Close All Documents",
@@ -455,7 +455,8 @@
     "match_case": "Match Case",
     "match_word": "Match Word",
     "use_regex": "Use Regex",
-    "doc_search_no_results": "No results found"
+    "doc_search_no_results": "No results found",
+    "palette_action_query_hint": "Search Katana commands…"
   },
   "toc": {
     "title": "Table of Contents",

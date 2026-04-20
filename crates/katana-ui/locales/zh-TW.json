@@ -427,7 +427,7 @@
     "recent_searches": "最近搜尋",
     "clear_history": "清除歷史",
     "ln_prefix": "行號 ",
-    "palette_query_hint": "輸入指令或搜尋…",
+    "palette_query_hint": "搜尋檔案或內容…",
     "command_settings": "設定",
     "command_explorer": "資源管理器",
     "command_close_all": "全部關閉",
@@ -455,7 +455,8 @@
     "match_word": "全字比對",
     "use_regex": "使用正規表示式",
     "doc_query_hint": "在文件内搜尋…",
-    "doc_search_no_results": "未找到結果"
+    "doc_search_no_results": "未找到結果",
+    "palette_action_query_hint": "搜尋 Katana 命令…"
   },
   "toc": {
     "title": "大綱",

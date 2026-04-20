@@ -427,7 +427,7 @@
     "recent_searches": "Buscas recentes",
     "clear_history": "Limpar histórico",
     "ln_prefix": "Linha ",
-    "palette_query_hint": "Comando ou busca…",
+    "palette_query_hint": "Pesquisar arquivos ou conteúdo…",
     "command_settings": "Configurações",
     "command_explorer": "Explorador",
     "command_close_all": "Fechar tudo",
@@ -455,7 +455,8 @@
     "match_word": "Palavra inteira",
     "use_regex": "Usar Regex.",
     "doc_query_hint": "Pesquisar no documento…",
-    "doc_search_no_results": "Nenhum resultado encontrado"
+    "doc_search_no_results": "Nenhum resultado encontrado",
+    "palette_action_query_hint": "Pesquisar comandos do Katana…"
   },
   "toc": {
     "title": "Índice",

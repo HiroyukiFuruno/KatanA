@@ -427,7 +427,7 @@
     "recent_searches": "最近搜索",
     "clear_history": "清除历史",
     "ln_prefix": "第 ",
-    "palette_query_hint": "输入命令或搜索…",
+    "palette_query_hint": "搜索文件或内容…",
     "command_settings": "设置",
     "command_explorer": "资源管理器",
     "command_close_all": "全部关闭",
@@ -455,7 +455,8 @@
     "match_word": "全字匹配",
     "use_regex": "使用正则",
     "doc_query_hint": "在文档内搜索…",
-    "doc_search_no_results": "未找到结果"
+    "doc_search_no_results": "未找到结果",
+    "palette_action_query_hint": "搜索 Katana 命令…"
   },
   "toc": {
     "title": "大纲",

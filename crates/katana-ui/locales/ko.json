@@ -427,7 +427,7 @@
     "recent_searches": "최근 검색",
     "clear_history": "기록 삭제",
     "ln_prefix": "줄 ",
-    "palette_query_hint": "명령어 입력 또는 검색…",
+    "palette_query_hint": "파일 또는 콘텐츠 검색…",
     "command_settings": "설정",
     "command_explorer": "탐색기",
     "command_close_all": "모두 닫기",
@@ -455,7 +455,8 @@
     "match_word": "단어 단위",
     "use_regex": "정규식 사용",
     "doc_query_hint": "문서 내 검색…",
-    "doc_search_no_results": "결과를 찾을 수 없습니다"
+    "doc_search_no_results": "결과를 찾을 수 없습니다",
+    "palette_action_query_hint": "Katana 명령 검색…"
   },
   "toc": {
     "title": "목차",
