@@ -25,14 +25,14 @@ pre-push:
         - ref: release/*
     check-strict:
       run: make -j 2 check
-      glob: "*.{rs,toml,lock}"
+      glob: "crates/**/*.{rs,toml,lock}"
       only:
         - ref: master
         - ref: release/*
 
     check-light:
       run: make check-light
-      glob: "*.{rs,toml,lock}"
+      glob: "crates/**/*.{rs,toml,lock}"
       skip:
         - ref: master
         - ref: release/*
