@@ -356,7 +356,11 @@
       "press_keys": "Press keys… (Esc to cancel)",
       "restore_defaults": "Restore Defaults",
       "none": "None",
-      "conflict_warning": "Warning: Shortcut has been overwritten. It was already in use by '{command}'."
+      "conflict_warning": "Warning: Shortcut has been overwritten. It was already in use by '{command}'.",
+      "capture_prompt": "Press a key combination…",
+      "confirm_key": "Enter to confirm",
+      "cancel_key": "Esc to cancel",
+      "search_placeholder": "Search shortcuts…"
     },
     "updates": {
       "section_title": "Updates",

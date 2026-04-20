@@ -386,7 +386,11 @@
       "press_keys": "Premi i tasti... (Esc per annullare)",
       "restore_defaults": "Ripristina predefiniti",
       "none": "Nessuno",
-      "conflict_warning": "Avviso: la scorciatoia è stata sovrascritta. Era già in uso da \"{command}\"."
+      "conflict_warning": "Avviso: la scorciatoia è stata sovrascritta. Era già in uso da \"{command}\".",
+      "capture_prompt": "Premere una combinazione di tasti…",
+      "confirm_key": "Invio per confermare",
+      "cancel_key": "Esc per annullare",
+      "search_placeholder": "Cerca scorciatoie…"
     }
   },
   "tab": {

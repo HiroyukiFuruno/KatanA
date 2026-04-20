@@ -386,7 +386,11 @@
       "press_keys": "Pressione as teclas... (Esc para cancelar)",
       "restore_defaults": "Restaurar padrões",
       "none": "Nenhum",
-      "conflict_warning": "Aviso: O atalho foi sobrescrito. Já estava em uso por \"{command}\"."
+      "conflict_warning": "Aviso: O atalho foi sobrescrito. Já estava em uso por \"{command}\".",
+      "capture_prompt": "Pressione uma combinação de teclas…",
+      "confirm_key": "Enter para confirmar",
+      "cancel_key": "Esc para cancelar",
+      "search_placeholder": "Pesquisar atalhos…"
     }
   },
   "tab": {

@@ -356,7 +356,11 @@
       "press_keys": "キーを入力… (Escでキャンセル)",
       "restore_defaults": "デフォルトに戻す",
       "none": "なし",
-      "conflict_warning": "警告: ショートカットが上書きされました。すでに '{command}' で使用されていました。"
+      "conflict_warning": "警告: ショートカットが上書きされました。すでに '{command}' で使用されていました。",
+      "capture_prompt": "キーの組み合わせを押してください…",
+      "confirm_key": "Enterで確定",
+      "cancel_key": "Escでキャンセル",
+      "search_placeholder": "ショートカットを検索…"
     },
     "updates": {
       "section_title": "アプリアップデート",

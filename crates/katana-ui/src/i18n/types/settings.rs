@@ -192,4 +192,8 @@ pub struct SettingsShortcutsMessages {
     pub restore_defaults: String,
     pub none: String,
     pub conflict_warning: String,
+    pub capture_prompt: String,
+    pub confirm_key: String,
+    pub cancel_key: String,
+    pub search_placeholder: String,
 }

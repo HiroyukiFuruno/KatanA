@@ -386,7 +386,11 @@
       "press_keys": "키 입력... (Esc 취소)",
       "restore_defaults": "기본값 복원",
       "none": "없음",
-      "conflict_warning": "경고: 단축키를 덮어썼습니다. \"{command}\"에서 이미 사용 중이었습니다."
+      "conflict_warning": "경고: 단축키를 덮어썼습니다. \"{command}\"에서 이미 사용 중이었습니다.",
+      "capture_prompt": "키 조합을 누르세요…",
+      "confirm_key": "Enter로 확인",
+      "cancel_key": "Esc로 취소",
+      "search_placeholder": "단축키 검색…"
     }
   },
   "tab": {

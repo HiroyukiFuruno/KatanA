@@ -386,7 +386,11 @@
       "press_keys": "Tasten drücken... (Esc zum Abbrechen)",
       "restore_defaults": "Standardwerte wiederherstellen",
       "none": "Keine",
-      "conflict_warning": "Warnung: Tastenkombination wurde überschrieben. Sie wurde bereits von \"{command}\" verwendet."
+      "conflict_warning": "Warnung: Tastenkombination wurde überschrieben. Sie wurde bereits von \"{command}\" verwendet.",
+      "capture_prompt": "Tastenkombination drücken…",
+      "confirm_key": "Enter zur Bestätigung",
+      "cancel_key": "Esc zum Abbrechen",
+      "search_placeholder": "Tastenkürzel suchen…"
     }
   },
   "tab": {

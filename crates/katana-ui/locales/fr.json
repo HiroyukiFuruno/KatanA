@@ -386,7 +386,11 @@
       "press_keys": "Appuyez sur les touches... (Esc pour annuler)",
       "restore_defaults": "Restaurer par défaut",
       "none": "Aucun",
-      "conflict_warning": "Avertissement : Le raccourci a été écrasé. Il était déjà utilisé par \"{command}\"."
+      "conflict_warning": "Avertissement : Le raccourci a été écrasé. Il était déjà utilisé par \"{command}\".",
+      "capture_prompt": "Appuyez sur une combinaison de touches…",
+      "confirm_key": "Entrée pour confirmer",
+      "cancel_key": "Échap pour annuler",
+      "search_placeholder": "Rechercher des raccourcis…"
     }
   },
   "tab": {

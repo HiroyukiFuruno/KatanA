@@ -386,7 +386,11 @@
       "press_keys": "請按鍵... (Esc 取消)",
       "restore_defaults": "恢復默認",
       "none": "無",
-      "conflict_warning": "警告: 快捷鍵已被覆蓋。它已被\"{command}\"使用。"
+      "conflict_warning": "警告: 快捷鍵已被覆蓋。它已被\"{command}\"使用。",
+      "capture_prompt": "請按下按鍵組合…",
+      "confirm_key": "Enter 確認",
+      "cancel_key": "Esc 取消",
+      "search_placeholder": "搜尋快捷鍵…"
     }
   },
   "tab": {
