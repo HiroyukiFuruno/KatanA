@@ -23,6 +23,8 @@ pub struct SearchMessages {
     pub clear_history: String,
     pub ln_prefix: String,
     pub palette_query_hint: String,
+    #[serde(default = "default_palette_action_query_hint")]
+    pub palette_action_query_hint: String,
     pub command_settings: String,
     pub command_explorer: String,
     pub command_close_all: String,
@@ -132,4 +134,7 @@ fn default_command_ingest_image_file() -> String {
 }
 fn default_command_ingest_clipboard_image() -> String {
     "Paste Image from Clipboard".to_string()
+}
+fn default_palette_action_query_hint() -> String {
+    "Search Katana commands...".to_string()
 }
