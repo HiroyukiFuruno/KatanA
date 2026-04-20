@@ -109,3 +109,21 @@
 - [ ] 5.8 Create PR from `release/v0.22.2` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 5.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 5.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
+
+---
+
+## 6. ファイルタイプアイコンの改善 (UI/UX)
+
+**Branch**: `release/v0.22.3-task-6`
+
+- [ ] 6.1 katana専用アイコン `html.svg`・`pdf.svg`・`image.svg` を新設
+- [ ] 6.2 各ベンダーから対応アイコンをダウンロード
+- [ ] 6.3 `icon/types.rs` に `Html`・`Pdf`・`Image` を登録
+- [ ] 6.4 `icon/pack/mod.rs` のマクロに3アイコンを追加
+- [ ] 6.5 `side_panel_export.rs` のアイコン参照を差し替え
+- [ ] 6.6 `make check-light` all pass
+
+### Definition of Done (DoD)
+
+- [ ] `make check-light` exit code 0
+- [ ] Execute `/openspec-delivery`

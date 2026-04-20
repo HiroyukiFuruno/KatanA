@@ -104,22 +104,22 @@ impl<'a> PreviewSidePanels<'a> {
             let i18n = crate::i18n::I18nOps::get();
             let formats = [
                 (
-                    crate::Icon::Markdown,
+                    crate::Icon::Html,
                     i18n.menu.export_html.clone(),
                     crate::app_state::ExportFormat::Html,
                 ),
                 (
-                    crate::Icon::Document,
+                    crate::Icon::Pdf,
                     i18n.menu.export_pdf.clone(),
                     crate::app_state::ExportFormat::Pdf,
                 ),
                 (
-                    crate::Icon::Markdown,
+                    crate::Icon::Image,
                     i18n.menu.export_png.clone(),
                     crate::app_state::ExportFormat::Png,
                 ),
                 (
-                    crate::Icon::Markdown,
+                    crate::Icon::Image,
                     i18n.menu.export_jpg.clone(),
                     crate::app_state::ExportFormat::Jpg,
                 ),

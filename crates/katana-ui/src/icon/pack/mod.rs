@@ -68,6 +68,9 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::UseRegex => Some(include_bytes!("../../../../../assets/icons/system/use-regex.svg")),
             crate::icon::Icon::Help => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "status/help", ".svg"))),
             crate::icon::Icon::Tools => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "system/tools", ".svg"))),
+            crate::icon::Icon::Html => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/html", ".svg"))),
+            crate::icon::Icon::Pdf => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/pdf", ".svg"))),
+            crate::icon::Icon::Image => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/image", ".svg"))),
         }
     };
 }

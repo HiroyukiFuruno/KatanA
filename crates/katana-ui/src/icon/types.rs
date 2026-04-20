@@ -84,6 +84,9 @@ define_icons! {
     FolderOpen      => "files/folder_open",
     FolderClosed    => "files/folder_closed",
     Markdown        => "files/markdown",
+    Html            => "files/html",
+    Pdf             => "files/pdf",
+    Image           => "files/image",
     /* WHY: system/ */
     Refresh         => "system/refresh",
     ExternalLink    => "system/external_link",
