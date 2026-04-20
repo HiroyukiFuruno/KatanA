@@ -124,26 +124,47 @@ impl ChangelogOps {
     }
 
     pub(super) fn is_newer_or_equal(ver_a: &str, ver_b: &str) -> bool {
-        Self::compare_versions(ver_a.trim_start_matches('v'), ver_b.trim_start_matches('v')) >= 0
+        katana_core::update::types::UpdateOps::compare_versions(ver_a, ver_b) >= 0
     }
 
     pub(super) fn is_older(ver_a: &str, ver_b: &str) -> bool {
-        Self::compare_versions(ver_a.trim_start_matches('v'), ver_b.trim_start_matches('v')) < 0
+        katana_core::update::types::UpdateOps::compare_versions(ver_a, ver_b) < 0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compare_versions() {
+        use katana_core::update::types::UpdateOps;
+        assert_eq!(UpdateOps::compare_versions("0.22.1", "0.22.1"), 0);
+        assert_eq!(UpdateOps::compare_versions("0.22.2", "0.22.1"), 1);
+        assert_eq!(UpdateOps::compare_versions("0.22.1", "0.22.2"), -1);
+
+        /* WHY: Hyphenated versions (Katana style hotfixes) */
+        assert_eq!(UpdateOps::compare_versions("0.22.1-1", "0.22.1"), 1);
+        assert_eq!(UpdateOps::compare_versions("0.22.1", "0.22.1-1"), -1);
+        assert_eq!(UpdateOps::compare_versions("0.22.1-2", "0.22.1-1"), 1);
+
+        /* WHY: Complex suffixes */
+        assert_eq!(UpdateOps::compare_versions("0.22.1-1-beta", "0.22.1-1"), 1);
+        assert_eq!(UpdateOps::compare_versions("0.22.1-1", "0.22.1-1-beta"), -1);
     }
 
-    pub(super) fn compare_versions(a: &str, b: &str) -> i32 {
-        let a_parts: Vec<u32> = a.split(['.', '-']).filter_map(|s| s.parse().ok()).collect();
-        let b_parts: Vec<u32> = b.split(['.', '-']).filter_map(|s| s.parse().ok()).collect();
-        for i in 0..std::cmp::max(a_parts.len(), b_parts.len()) {
-            let va = a_parts.get(i).unwrap_or(&0);
-            let vb = b_parts.get(i).unwrap_or(&0);
-            if va > vb {
-                return 1;
-            }
-            if va < vb {
-                return -1;
-            }
-        }
-        0
+    #[test]
+    fn test_is_newer_or_equal() {
+        assert!(ChangelogOps::is_newer_or_equal("0.22.1-1", "0.22.1"));
+        assert!(ChangelogOps::is_newer_or_equal("v0.22.1-1", "0.22.1"));
+        assert!(ChangelogOps::is_newer_or_equal("0.22.1-1", "v0.22.1"));
+        assert!(ChangelogOps::is_newer_or_equal("v0.22.1-1", "v0.22.1"));
+    }
+
+    #[test]
+    fn test_is_older() {
+        assert!(ChangelogOps::is_older("0.22.1", "0.22.1-1"));
+        assert!(ChangelogOps::is_older("v0.22.1", "0.22.1-1"));
+        assert!(ChangelogOps::is_older("0.22.1", "v0.22.1-1"));
     }
 }

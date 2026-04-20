@@ -31,4 +31,5 @@ pub struct ActionMessages {
     pub new_workspace: String,
     pub open_workspace: String,
     pub copy: String,
+    pub back_to_top: String,
 }

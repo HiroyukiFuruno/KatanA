@@ -2,7 +2,7 @@ use crate::markdown::DiagramKind;
 
 #[derive(Debug, Clone)]
 pub enum PreviewSection {
-    Markdown(String),
+    Markdown(String, usize),
     Diagram {
         kind: DiagramKind,
         source: String,

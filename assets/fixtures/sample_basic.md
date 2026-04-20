@@ -12,10 +12,15 @@ lists, code blocks, tables, blockquotes, note blocks, accordion, math, and edge 
 ## 1. Heading Levels
 
 # H1 Heading
+
 ## H2 Heading
+
 ### H3 Heading
+
 #### H4 Heading
+
 ##### H5 Heading
+
 ###### H6 Heading
 
 ---
@@ -34,7 +39,7 @@ lists, code blocks, tables, blockquotes, note blocks, accordion, math, and edge 
 
 - [Normal link](https://github.com)
 - [Email link](mailto:test@example.com)
-- Autolink: https://github.com
+- Autolink: <https://github.com>
 
 ### Horizontal Rule
 
@@ -87,7 +92,7 @@ fn main() {
 
 ### 4.2 Code Block Without Language
 
-```
+```text
 This is a code block without language specification.
 No syntax highlighting should be applied.
 ```
@@ -162,7 +167,7 @@ features:
 ### 5.1 Basic Table
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Markdown | ✅ | Full support |
 | Mermaid | ✅ | Requires mmdc |
 | PlantUML | ✅ | Requires jar |
@@ -171,14 +176,14 @@ features:
 ### 5.2 Table with Alignment
 
 | Left | Center | Right |
-|:-----|:------:|------:|
+| :----- | :------: | ------: |
 | text | text | text |
 | longer text | short | 12345 |
 
 ### 5.3 Single Row Table
 
 | Header |
-|--------|
+| -------- |
 | Content |
 
 ---
@@ -296,7 +301,7 @@ Verify no layout overlap between sections.
 ### Architecture Overview
 
 | Component | Role |
-|---|---|
+| --- | --- |
 | `PreviewPane` | Section management |
 | `show_content` | UI rendering |
 
@@ -321,7 +326,7 @@ enum RenderedSection {
 
 ### 12.1 Empty Code Block
 
-```
+```empty
 ```
 
 ### 12.2 Very Long Line
@@ -353,7 +358,7 @@ let code = "directly after quote";
 - A list item directly after code block
 
 | Header |
-|--------|
+| -------- |
 | Table after list |
 
 ↑ Proper spacing between each block element.

@@ -142,6 +142,10 @@ impl ThemeColors {
             .preview
             .hover_line_background
             .with_offset(offset_percent);
+        self.preview.active_line_background = self
+            .preview
+            .active_line_background
+            .with_offset(offset_percent);
 
         self
     }

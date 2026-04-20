@@ -109,8 +109,9 @@
       "trackpad_help": "Trackpad : pincez à deux doigts pour zoomer, faites glisser pour déplacer"
     },
     "slideshow_settings": "Paramètres du diaporama",
-    "highlight_hover": "[TODO-fr] Hover Highlight",
-    "show_diagram_controls": "[TODO-fr] Diagram Controls"
+    "highlight_hover": "Surbrillance au Survol",
+    "show_diagram_controls": "Contrôles du Diagramme",
+    "toggle_slideshow": "Basculer le Diaporama"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Téléchargement de PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "Enregistrer le fichier",
     "new_workspace": "Nouveau projet",
     "open_workspace": "Ouvrir un projet",
-    "copy": "Copier"
+    "copy": "Copier",
+    "back_to_top": "Retour en Haut"
   },
   "ai": {
     "ai_unconfigured": "[AI : Non configurée]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "Annuler",
       "clear_http_cache": "Vider le cache",
       "cache_retention_days": "Rétention (jours)",
-      "days_suffix": " jours"
+      "days_suffix": " jours",
+      "toc_default_visible": "Afficher la table des matières au démarrage",
+      "explorer_default_visible": "Afficher l'explorateur au démarrage"
     },
     "general": "Général",
     "shortcuts": {

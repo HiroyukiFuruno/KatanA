@@ -109,8 +109,9 @@
       "trackpad_help": "觸控板: 雙指縮放，單指拖拽移動"
     },
     "slideshow_settings": "投影片設定",
-    "highlight_hover": "[TODO-zh-TW] Hover Highlight",
-    "show_diagram_controls": "[TODO-zh-TW] Diagram Controls"
+    "highlight_hover": "懸停高亮",
+    "show_diagram_controls": "圖表控制項",
+    "toggle_slideshow": "切換投影片"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ 正在下載 PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "儲存檔案",
     "new_workspace": "新增專案",
     "open_workspace": "開啟專案",
-    "copy": "複製"
+    "copy": "複製",
+    "back_to_top": "回到頂部"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未設定]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "取消",
       "clear_http_cache": "清除 HTTP 快取",
       "cache_retention_days": "快取保留天數",
-      "days_suffix": " 天"
+      "days_suffix": " 天",
+      "toc_default_visible": "啟動時顯示目錄",
+      "explorer_default_visible": "啟動時顯示檔案總管"
     },
     "general": "一般",
     "shortcuts": {

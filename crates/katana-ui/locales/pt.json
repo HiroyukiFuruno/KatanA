@@ -109,8 +109,9 @@
       "trackpad_help": "Trackpad: belisque com dois dedos para zoom, arraste para mover"
     },
     "slideshow_settings": "Configurações de apresentação de slides",
-    "highlight_hover": "[TODO-pt] Hover Highlight",
-    "show_diagram_controls": "[TODO-pt] Diagram Controls"
+    "highlight_hover": "Destacar ao Passar o Mouse",
+    "show_diagram_controls": "Controles do Diagrama",
+    "toggle_slideshow": "Alternar Apresentação de Slides"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ Baixando PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "Salvar arquivo",
     "new_workspace": "Novo projeto",
     "open_workspace": "Abrir projeto",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "back_to_top": "Voltar ao Topo"
   },
   "ai": {
     "ai_unconfigured": "[AI: Não configurada]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "Cancelar",
       "clear_http_cache": "Limpar cachês",
       "cache_retention_days": "Dias de retenção",
-      "days_suffix": " dias"
+      "days_suffix": " dias",
+      "toc_default_visible": "Mostrar índice ao iniciar",
+      "explorer_default_visible": "Mostrar explorador ao iniciar"
     },
     "general": "Geral",
     "shortcuts": {

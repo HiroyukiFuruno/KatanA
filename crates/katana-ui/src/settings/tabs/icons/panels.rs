@@ -2,11 +2,15 @@ use crate::settings::tabs::icons::{general, table};
 use crate::widgets::AlignCenter;
 use eframe::egui;
 
-/* WHY: Parameters for rendering the sliding panels to reduce mod.rs file length. */
+const PADDING: f32 = 8.0;
+
+/* WHY: Renders the advanced settings panel as a full-height view. */
 pub(crate) struct IconsPanelsOps;
 
 impl IconsPanelsOps {
-    pub(crate) fn render_advanced_panel(
+    /// Renders the advanced settings as a full-height view (100% of settings tab).
+    /// When closed, this is a no-op — the trigger button lives in mod.rs.
+    pub(crate) fn render_panels(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
         i18n: &crate::i18n::I18nMessages,
@@ -14,80 +18,89 @@ impl IconsPanelsOps {
         icon_settings: &mut katana_platform::settings::types::icon::IconSettings,
         settings_changed: &mut bool,
     ) {
-        use crate::settings::tabs::icons::{
-            ADVANCED_PANEL_HEIGHT, ADVANCED_PANEL_ID, PANEL_PADDING,
-        };
+        if !*is_open {
+            return;
+        }
 
-        egui::TopBottomPanel::bottom(ADVANCED_PANEL_ID)
-            .default_height(ADVANCED_PANEL_HEIGHT)
-            .show_animated_inside(ui, *is_open, |ui| {
-                ui.add_space(PANEL_PADDING);
+        /* WHY: Header row — title left, close button right. */
+        AlignCenter::new()
+            .left(|ui| ui.heading(&i18n.settings.icons.advanced_settings))
+            .right(|ui| {
+                if ui
+                    .button(&i18n.common.close)
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                {
+                    *is_open = false;
+                }
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+            })
+            .show(ui);
 
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    ui.add_space(PANEL_PADDING);
-                    ui.heading(&i18n.settings.icons.advanced_settings);
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui
-                            .add(
-                                egui::ImageButton::new(
-                                    crate::icon::Icon::Close
-                                        .ui_image(ui, crate::icon::IconSize::Small),
-                                )
-                                .frame(false),
-                            )
-                            .clicked()
-                        {
-                            *is_open = false;
-                        }
-                    });
-                });
+        ui.separator();
 
-                ui.add_space(PANEL_PADDING);
+        /* WHY: Scrollable content fills 100% of remaining height — general settings + per-icon table + action buttons. */
+        egui::ScrollArea::vertical()
+            .id_salt("icon_advanced_scroll")
+            .auto_shrink(false)
+            .show(ui, |ui| {
+                general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
+
+                ui.add_space(PADDING);
+
+                table::IconsTableOps::render(ui, state, i18n, icon_settings, settings_changed);
+
+                ui.add_space(PADDING);
                 ui.separator();
+                ui.add_space(PADDING);
 
-                egui::ScrollArea::vertical()
-                    .id_source("icons_advanced_panel_scroll")
-                    .show(ui, |ui| {
-                        ui.add_space(PANEL_PADDING);
-                        general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
-                        ui.add_space(PANEL_PADDING);
-                        table::IconsTableOps::render(
-                            ui,
-                            state,
-                            i18n,
-                            icon_settings,
-                            settings_changed,
-                        );
-                        ui.add_space(PANEL_PADDING);
-                    });
-            });
-    }
-
-    pub(crate) fn render_trigger_panel(
-        ui: &mut egui::Ui,
-        i18n: &crate::i18n::I18nMessages,
-        is_open: &mut bool,
-    ) {
-        use crate::settings::tabs::icons::{
-            SYMMETRIC_PADDING_X, SYMMETRIC_PADDING_Y, TRIGGER_PANEL_ID,
-        };
-
-        egui::TopBottomPanel::bottom(TRIGGER_PANEL_ID)
-            .frame(egui::Frame::none().inner_margin(egui::Margin::symmetric(
-                SYMMETRIC_PADDING_X,
-                SYMMETRIC_PADDING_Y,
-            )))
-            .show_inside(ui, |ui| {
+                /* WHY: Action buttons (save preset / revert / delete) inside scroll area. */
                 AlignCenter::new()
                     .content(|ui| {
-                        if ui
-                            .add(
-                                egui::Button::new(&i18n.settings.icons.advanced_settings)
-                                    .frame_when_inactive(true),
-                            )
-                            .clicked()
+                        if ui.button(&i18n.settings.icons.save_preset).clicked() {
+                            ui.data_mut(|d| {
+                                d.insert_temp::<bool>(
+                                    egui::Id::new("katana_icon_saving_preset"),
+                                    true,
+                                )
+                            });
+                        }
+
+                        if !icon_settings.active_overrides.is_empty()
+                            && ui.button(&i18n.settings.icons.revert_default).clicked()
                         {
-                            *is_open = !*is_open;
+                            icon_settings.active_overrides.clear();
+                            icon_settings.active_preset = None;
+                            *settings_changed = true;
+                        }
+
+                        if let Some(active_preset) = &icon_settings.active_preset {
+                            let icon_bg = if ui.visuals().dark_mode {
+                                crate::theme_bridge::TRANSPARENT
+                            } else {
+                                crate::theme_bridge::ThemeBridgeOps::from_gray(
+                                    crate::shell_ui::LIGHT_MODE_ICON_BG,
+                                )
+                            };
+                            let clicked = ui
+                                .add(
+                                    egui::Button::image(
+                                        crate::Icon::Remove
+                                            .ui_image(ui, crate::icon::IconSize::Medium),
+                                    )
+                                    .fill(icon_bg),
+                                )
+                                .on_hover_text(
+                                    &crate::i18n::I18nOps::get().settings.theme.delete_custom,
+                                )
+                                .clicked();
+                            if clicked {
+                                let old_name = active_preset.clone();
+                                icon_settings.custom_presets.retain(|p| p.name != old_name);
+                                icon_settings.active_preset = None;
+                                icon_settings.active_overrides.clear();
+                                *settings_changed = true;
+                            }
                         }
                     })
                     .show(ui);

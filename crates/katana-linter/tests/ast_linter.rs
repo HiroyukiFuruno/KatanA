@@ -9,17 +9,22 @@ use katana_linter::rules::domains::theme::{
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
     FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps,
-    MagicNumberOps, NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
-    ProhibitedTypesOps, PubFreeFnOps, TypeSeparationOps,
+    MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps, ProcessCommandOps,
+    ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps,
+    TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
 fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
     vec![
         root.join("crates/katana-linter/src"),
+        root.join("crates/katana-linter/tests"),
         root.join("crates/katana-core/src"),
+        root.join("crates/katana-core/tests"),
         root.join("crates/katana-platform/src"),
+        root.join("crates/katana-platform/tests"),
         root.join("crates/katana-ui/src"),
+        root.join("crates/katana-ui/tests"),
     ]
 }
 
@@ -77,6 +82,28 @@ fn ast_linter_no_lazy_code() {
         "Fix: Remove `todo!()`, `unimplemented!()`, and `dbg!()` macros. Implement the actual logic.",
         &target_crates(root),
         LazyCodeOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_min_rect_width_height_leaks() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "min-rect-sizing",
+        "Fix: Do not derive parent-facing width/height from `ui.min_rect()`. This can leak intrinsic content size into any resizable parent layout and cause it to expand but not shrink. Use `available_width()`, `available_height()`, or `clip_rect()` instead.",
+        &target_crates(root),
+        MinRectSizingOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_scrollarea_inner_rect_leaks() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "scrollarea-inner-rect-leak",
+        "Fix: Do not assign `ScrollArea::inner_rect` directly to a parent-facing `rect`. This leaks unclipped content size into the parent layout and can cause ratchet growth (expand but not shrink).",
+        &target_crates(root),
+        ScrollAreaInnerRectLeakOps::lint,
     );
 }
 
@@ -408,5 +435,17 @@ fn ast_linter_no_hardcoded_os_commands() {
         "no-hardcoded-os-commands",
         "Fix: Do not hardcode OS shortcuts like `\\u{2318}` or use invalid placeholder keys. Use {{os_cmd:key}} in Markdown and resolve dynamically.",
         &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_markdown_sandbox() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    use katana_linter::rules::MarkdownSandboxOps;
+    AstLinterOps::run(
+        "markdown-sandbox",
+        "Fix: `CommonMarkViewer` usage detected but missing `set_max_width`. You MUST sandbox the viewer call within `ui.scope(|ui| { ui.set_max_width(...); ... })` to prevent layout ratchet bugs.",
+        &target_crates(root),
+        MarkdownSandboxOps::lint,
     );
 }

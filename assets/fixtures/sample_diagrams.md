@@ -226,7 +226,7 @@ graph LR
 Proper spacing between the flowchart above and this text.
 
 | Component | Role |
-|---|---|
+| --- | --- |
 | `PreviewPane` | Section management |
 | `show_content` | UI rendering |
 

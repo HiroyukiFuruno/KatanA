@@ -44,6 +44,16 @@ pub struct LayoutSettings {
     pub activity_rail_order: Vec<ActivityRailItem>,
     #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
     pub accordion_vertical_line: bool,
+    /* WHY: Controls the default pin state of the TOC panel at startup.
+     * false = starts collapsed (hover-only); true = starts pinned.
+     * Key absent from JSON → false (never written back to settings). */
+    #[serde(default)]
+    pub toc_default_visible: bool,
+    /* WHY: Controls the default pin state of the Explorer panel at startup.
+     * true = starts pinned (default); false = starts collapsed (hover-only).
+     * Key absent from JSON → true (never written back to settings). */
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
+    pub explorer_default_visible: bool,
 }
 
 impl LayoutSettings {

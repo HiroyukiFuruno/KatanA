@@ -9,6 +9,7 @@ pub struct PreviewMessages {
     pub slideshow_settings: String,
     pub highlight_hover: String,
     pub show_diagram_controls: String,
+    pub toggle_slideshow: String,
     #[serde(default = "default_missing_image_text")]
     pub missing_image: String,
     #[serde(default = "default_remote_image_text")]

@@ -66,15 +66,6 @@ impl<'a> TabToolbar<'a> {
             egui::vec2(available_width, TOOLBAR_ROW_HEIGHT),
             egui::Layout::right_to_left(egui::Align::Center),
             |ui| {
-                if !is_virtual {
-                    let icon_size = crate::icon::IconSize::Medium.to_vec2();
-                    let info_icon = egui::Image::new(crate::Icon::Info.uri())
-                        .tint(ui.visuals().weak_text_color())
-                        .fit_to_exact_size(icon_size);
-                    if ui.add(egui::ImageButton::new(info_icon)).clicked() {
-                        out_action = Some(AppAction::ShowMetaInfo(doc_path.clone()));
-                    }
-                }
                 /* WHY: Inner left_to_right fills remaining width with breadcrumbs. */
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     if is_virtual {
@@ -87,27 +78,7 @@ impl<'a> TabToolbar<'a> {
             },
         );
 
-        /* Row 3: View mode controls (right-aligned). Fixed height for layout stability. */
-        let row3 = crate::views::top_bar::view_mode::ViewModeBar::new(
-            app.state.active_view_mode(),
-            is_virtual,
-            app.state.active_split_direction(),
-            app.state.active_pane_order(),
-            app.state
-                .config
-                .settings
-                .settings()
-                .behavior
-                .scroll_sync_enabled,
-            app.state.scroll.sync_override,
-            app.state.update.available.is_some(),
-            app.state.update.checking,
-            true,
-        )
-        .show(ui, &mut app.state.search);
-        if let Some(a) = row3 {
-            out_action = Some(a);
-        }
+        /* Row 3 (View mode controls) was removed as requested. */
 
         /* Row 4 (popup): Document search bar — shown below Row 3 when active. */
         if app.state.search.doc_search_open

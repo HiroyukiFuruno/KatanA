@@ -109,8 +109,9 @@
       "trackpad_help": "触控板: 双指捏合缩放，单指拖拽移动"
     },
     "slideshow_settings": "幻灯片设置",
-    "highlight_hover": "[TODO-zh-CN] Hover Highlight",
-    "show_diagram_controls": "[TODO-zh-CN] Diagram Controls"
+    "highlight_hover": "悬停高亮",
+    "show_diagram_controls": "图表控件",
+    "toggle_slideshow": "切换幻灯片"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ 正在下载 PlantUML JAR…",
@@ -190,7 +191,8 @@
     "save_file": "保存文件",
     "new_workspace": "新建项目",
     "open_workspace": "打开项目",
-    "copy": "复制"
+    "copy": "复制",
+    "back_to_top": "回到顶部"
   },
   "ai": {
     "ai_unconfigured": "[AI: 未配置]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "取消",
       "clear_http_cache": "清除 HTTP 缓存",
       "cache_retention_days": "缓存保留天数",
-      "days_suffix": " 天"
+      "days_suffix": " 天",
+      "toc_default_visible": "启动时显示目录",
+      "explorer_default_visible": "启动时显示资源管理器"
     },
     "general": "通用",
     "shortcuts": {

@@ -181,6 +181,8 @@ pub struct SettingsBehaviorMessages {
     pub clear_http_cache: String,
     pub cache_retention_days: String,
     pub days_suffix: String,
+    pub toc_default_visible: String,
+    pub explorer_default_visible: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

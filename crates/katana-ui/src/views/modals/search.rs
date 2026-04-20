@@ -98,10 +98,12 @@ impl<'a> SearchModal<'a> {
 
                 match search.active_tab {
                     crate::app_state::SearchTab::FileName => {
-                        super::search_tabs::show_filename_tab(ui, search, workspace, action);
+                        super::search_tabs::FilenameTabOps::show_filename_tab(
+                            ui, search, workspace, action,
+                        );
                     }
                     crate::app_state::SearchTab::MarkdownContent => {
-                        super::search_tabs::show_md_tab(ui, search, workspace, action);
+                        super::search_tabs::MdTabOps::show_md_tab(ui, search, workspace, action);
                     }
                 }
             });

@@ -146,12 +146,6 @@ impl<'a> HtmlRenderer<'a> {
         let builder = egui::UiBuilder::new()
             .max_rect(child_max_rect)
             .layout(layout);
-        let builder = if memorized {
-            builder
-        } else {
-            self.ui.ctx().request_discard("center_inline_batch");
-            builder.sizing_pass().invisible()
-        };
 
         let mut child_ui = self.ui.new_child(builder);
         const HORIZONTAL_ITEM_SPACING: f32 = 4.0;

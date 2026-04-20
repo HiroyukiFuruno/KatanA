@@ -44,10 +44,9 @@ As of **2026**, software development is rapidly evolving with the rise of **AI a
 
 Alongside this shift, **Spec-Driven Development (SDD)** is gaining attention as a development methodology where specifications, architecture descriptions, and tasks are defined before implementation. These specifications are typically written in **Markdown documents** and serve as the central source of truth for both developers and AI agents.
 
-This repository is operated with an AI-agent-first workflow in mind. The owner primarily uses [Antigravity](https://antigravity.google/) as the main development agent.
+This repository is operated with an AI-agent-first workflow in mind.
 Repository-local skills are maintained canonically under `.agents/skills/`.
 If another AI agent expects a different skill directory layout, copy the same skill content from `.agents/skills/` into that agent's expected path instead of maintaining a separate variant.
-Operational familiarity and maintenance priority are Antigravity-first.
 
 ### Mandatory Tools for AI-Agent Workflow
 
@@ -108,21 +107,20 @@ xattr -cr /Applications/KatanA\ Desktop.app
 
 ### Windows
 
-#### Portable ZIP (Recommended)
+#### Winget (Recommended)
 
-1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
-2. Download `KatanA-windows-x86_64.zip`
-3. Extract the archive to your preferred location (e.g. `C:\Program Files\KatanA\`)
-4. Run `katana-desktop.exe`
+On Windows 10 / 11, you can easily install KatanA Desktop using the official `winget` package manager:
 
-> **Tip:** Pin it to the taskbar or create a shortcut for quick access.
+```powershell
+winget install HiroyukiFuruno.katana-desktop
+```
 
-#### MSI Installer (Windows)
+#### Manual Download (Windows)
 
-An MSI installer (`KatanA-windows-x86_64.msi`) is also available on the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest). It automatically creates Start Menu and Desktop shortcuts.
+You can also download the files manually from the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest).
 
-> **Note:** Since the MSI is not code-signed, Windows SmartScreen may display a warning when downloading.
-> In Edge, click **"…" → "Keep"** in the download bar. If a further dialog appears, click **"Show more" → "Keep anyway"** to proceed.
+- **Portable ZIP**: Extract the archive to your preferred location and run `katana-desktop.exe`.
+- **MSI Installer**: Automatically creates Start Menu and Desktop shortcuts. (Note: Since the MSI is not code-signed, Windows SmartScreen may display a warning. Select "More info" -> "Run anyway" to proceed).
 
 ### Linux
 

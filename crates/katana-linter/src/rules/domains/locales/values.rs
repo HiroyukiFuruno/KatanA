@@ -141,6 +141,17 @@ impl LocaleValueOps {
                 continue;
             };
 
+            /* WHY: Anti-Lazy Compliance: Reject pseudo-translations like "[TODO-ko] Settings" */
+            if actual_val.contains("[TODO") || actual_val.contains("[todo") {
+                violations.push(ViolationReporterOps::locale_violation(
+                    file,
+                    format!(
+                        "Locale value at `{path}` contains a pseudo-translation placeholder (\"{actual_val}\"). Lazy cheat detected. Please provide a true native translation."
+                    ),
+                ));
+                continue;
+            }
+
             if actual_val == en_val && !Self::is_allowed_duplicate(path, actual_val) {
                 violations.push(ViolationReporterOps::locale_violation(
                     file,

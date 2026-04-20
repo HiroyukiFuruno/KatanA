@@ -42,8 +42,8 @@ fn heading_with_align_center_is_centered() {
 
     harness.step();
 
-    let label = harness.get_by_label("Centered Heading");
-    let bounds = label
+    let bounds = harness.get_by_label("Centered Heading");
+    let bounds = bounds
         .accesskit_node()
         .raw_bounds()
         .expect("heading must have bounds");

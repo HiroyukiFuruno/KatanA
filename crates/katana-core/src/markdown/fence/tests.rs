@@ -60,3 +60,35 @@ fn transform_with_png_renderer_embeds_base64_in_output() {
     assert!(result.contains("data:image/png;base64,"));
     assert!(result.contains("After"));
 }
+
+#[test]
+fn transform_unrecognized_fence_remains_unchanged() {
+    /* WHY: Info string "unknown_lang" maps to DiagramKind::Unknown, skipping it. */
+    let source = "```unknown_lang\ncontent\n```";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &NoOpRenderer);
+    assert_eq!(result, source);
+}
+
+#[test]
+fn transform_handles_drawio_at_start() {
+    let source = "<mxGraphModel><root></root></mxGraphModel>After";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &NoOpRenderer);
+    /* WHY: Trigger logic for known diagram. Since NoOp doesn't add formatting that breaks parsing,
+    it'll output wrapped blocks. We just care that After remains. */
+    assert!(result.contains("After"));
+}
+
+#[test]
+fn transform_handles_drawio_unclosed() {
+    let source = "Before\n<mxGraphModel><root>";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &NoOpRenderer);
+    /* WHY: Should append the start tag and move on because end tag is missing */
+    assert_eq!(result, source);
+}
+
+#[test]
+fn transform_handles_plantuml_at_start() {
+    let source = "@startuml\nA->B\n@enduml After";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &NoOpRenderer);
+    assert!(result.contains("After"));
+}

@@ -189,3 +189,41 @@ impl SettingsOps {
         super::settings_helpers::add_styled_slider(ui, slider)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app_state::SettingsTab;
+    use egui_kittest::Harness;
+    use egui_kittest::kittest::Queryable;
+    use katana_core::ai::AiProviderRegistry;
+    use katana_core::plugin::PluginRegistry;
+
+    #[test]
+    fn advanced_settings_table_is_rendered() {
+        let mut harness = Harness::builder()
+            .with_size(egui::vec2(1024.0, 768.0))
+            .build_ui(|ui| {
+                let mut state = crate::app_state::AppState::new(
+                    AiProviderRegistry::new(),
+                    PluginRegistry::new(),
+                    katana_platform::SettingsService::default(),
+                    std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+                );
+
+                state.layout.show_settings = true;
+                state.config.active_settings_tab = SettingsTab::Icons;
+
+                ui.data_mut(|d| d.insert_temp(egui::Id::new("icons_advanced_is_open"), true));
+
+                let mut preview_pane = PreviewPane::default();
+                SettingsWindow::new(&mut state, &mut preview_pane).show(ui.ctx());
+            });
+
+        harness.run_steps(10);
+
+        let i18n = crate::i18n::I18nOps::get();
+        harness.get_by_label(&i18n.settings.icons.advanced_settings);
+        harness.get_by_label(&i18n.settings.icons.colorful_vendor_icons_label);
+    }
+}

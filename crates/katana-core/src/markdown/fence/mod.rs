@@ -4,7 +4,12 @@ pub use types::*;
 use crate::markdown::{DiagramBlock, DiagramKind, DiagramRenderer, DiagramResult};
 
 pub const FENCE_OPEN_LEN: usize = 3;
-pub const FENCE_CLOSE_LEN: usize = 4;
+
+enum MarkerType {
+    Fence,
+    Drawio,
+    Plantuml,
+}
 
 pub struct MarkdownFenceOps;
 
@@ -14,12 +19,18 @@ impl MarkdownFenceOps {
         let info_end = body.find('\n')?;
         let info = body[..info_end].trim().to_string();
         let after_info = &body[info_end + 1..];
-        let close = after_info.find("\n```")?;
-        let content = after_info[..close].to_string();
-        let raw = format!("```{info}\n{content}\n```");
-        let rest = after_info[close + FENCE_CLOSE_LEN..]
-            .strip_prefix('\n')
-            .unwrap_or(&after_info[close + FENCE_CLOSE_LEN..]);
+
+        let (content_end, close_start, close_len) = after_info
+            .starts_with("```")
+            .then_some((0, 0, FENCE_OPEN_LEN))
+            .or_else(|| after_info.find("\n```").map(|p| (p, p + 1, FENCE_OPEN_LEN)))?;
+
+        let content = after_info[..content_end].to_string();
+        let raw_len = FENCE_OPEN_LEN + (info_end + 1) + close_start + close_len;
+        let raw = s[..raw_len].to_string();
+        let rest_slice = &after_info[close_start + close_len..];
+        let rest = rest_slice.strip_prefix('\n').unwrap_or(rest_slice);
+
         Some((FenceBlock { info, content, raw }, rest))
     }
 
@@ -73,13 +84,21 @@ impl MarkdownFenceOps {
         remaining: &mut &str,
         renderer: &R,
     ) {
-        let Some((block, after)) = Self::extract_fence_block(remaining) else {
+        let extracted = Self::extract_fence_block(remaining);
+        if extracted.is_none() {
+            eprintln!("FAILED TO EXTRACT: {:.20}", remaining);
+        }
+        let Some((block, after)) = extracted else {
             output.push_str("```");
             *remaining = &remaining[FENCE_OPEN_LEN..];
             return;
         };
         if let Some(html) = Self::render_diagram_block(&block, renderer) {
+            output.push_str("\n\n");
             output.push_str(&html);
+            /* WHY: CommonMark [HTML blocks, type 6] specifies that blocks end with a blank line.
+            Without explicit \n\n, subsequent Markdown elements like # Headings are swallowed! */
+            output.push_str("\n\n");
         } else {
             output.push_str(&block.raw);
         }
@@ -90,20 +109,86 @@ impl MarkdownFenceOps {
         let mut output = String::with_capacity(source.len());
         let mut remaining = source;
         loop {
-            let fence_offset = if remaining.starts_with("```") {
-                Some(0)
-            } else {
-                remaining.find("\n```").map(|pos| pos + 1)
+            /* WHY: Find the closest diagram marker (fenced or unfenced) */
+            let find = |s: &str, n: &str| {
+                if remaining.starts_with(s) {
+                    0
+                } else {
+                    remaining.find(n).map(|p| p + 1).unwrap_or(usize::MAX)
+                }
             };
-            let Some(offset) = fence_offset else {
+            let pf = find("```", "\n```");
+            let pd = find("<mxGraphModel", "\n<mxGraphModel");
+            let pp = find("@startuml", "\n@startuml");
+
+            let Some((offset, marker_type)) = [
+                (pf, MarkerType::Fence),
+                (pd, MarkerType::Drawio),
+                (pp, MarkerType::Plantuml),
+            ]
+            .into_iter()
+            .filter(|&(p, _)| p != usize::MAX)
+            .min_by_key(|&(p, _)| p) else {
                 break;
             };
+
             output.push_str(&remaining[..offset]);
             remaining = &remaining[offset..];
-            Self::process_fence(&mut output, &mut remaining, renderer);
+
+            match marker_type {
+                MarkerType::Fence => {
+                    Self::process_fence(&mut output, &mut remaining, renderer);
+                }
+                MarkerType::Drawio => Self::process_raw_tag_diagram(
+                    &mut output,
+                    &mut remaining,
+                    renderer,
+                    "<mxGraphModel",
+                    "</mxGraphModel>",
+                    "drawio",
+                ),
+                MarkerType::Plantuml => Self::process_raw_tag_diagram(
+                    &mut output,
+                    &mut remaining,
+                    renderer,
+                    "@startuml",
+                    "@enduml",
+                    "plantuml",
+                ),
+            }
         }
         output.push_str(remaining);
         output
+    }
+
+    fn process_raw_tag_diagram<R: DiagramRenderer>(
+        output: &mut String,
+        remaining: &mut &str,
+        renderer: &R,
+        start_tag: &str,
+        end_tag: &str,
+        info: &str,
+    ) {
+        if let Some(end_pos) = remaining.find(end_tag) {
+            let content = remaining[..end_pos + end_tag.len()].to_string();
+            let html = Self::render_diagram_block(
+                &FenceBlock {
+                    info: info.to_string(),
+                    raw: content.clone(),
+                    content,
+                },
+                renderer,
+            )
+            .expect("Raw target diagrams known to not return None");
+            output.push_str("\n\n");
+            output.push_str(&html);
+            output.push_str("\n\n");
+            let after = &remaining[end_pos + end_tag.len()..];
+            *remaining = after.strip_prefix('\n').unwrap_or(after);
+        } else {
+            output.push_str(start_tag);
+            *remaining = &remaining[start_tag.len()..];
+        }
     }
 }
 

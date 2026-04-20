@@ -141,6 +141,15 @@ impl KatanaApp {
             AppAction::IngestImageFile => self.handle_action_ingest_image_file(),
             AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
             AppAction::RevealImageAsset(path) => self.handle_action_reveal_image_asset(path),
+            AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
+            AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),
+            AppAction::SetViewMode(mode) => self.state.set_active_view_mode(mode),
+            AppAction::ToggleScrollSync(is_on) => {
+                self.state.scroll.sync_override = Some(is_on);
+            }
+            AppAction::Quit => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),
             _ => {}

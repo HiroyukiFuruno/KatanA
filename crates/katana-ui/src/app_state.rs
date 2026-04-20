@@ -61,6 +61,10 @@ impl AppState {
         layout.slideshow_hover_highlight = settings.settings().behavior.slideshow_hover_highlight;
         layout.slideshow_show_diagram_controls =
             settings.settings().behavior.slideshow_show_diagram_controls;
+        /* WHY: Apply settings-driven defaults for panel pin state.
+         * These are read-only initial values — the user's runtime toggles are not persisted. */
+        layout.show_toc = settings.settings().layout.toc_default_visible;
+        layout.show_explorer = settings.settings().layout.explorer_default_visible;
 
         Self {
             document: DocumentState::new(),

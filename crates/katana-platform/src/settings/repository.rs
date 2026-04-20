@@ -115,6 +115,7 @@ impl SettingsRepository for JsonFileRepository {
     }
 }
 
+#[derive(Default)]
 pub struct InMemoryRepository;
 impl SettingsRepository for InMemoryRepository {
     fn load(&self) -> AppSettings {

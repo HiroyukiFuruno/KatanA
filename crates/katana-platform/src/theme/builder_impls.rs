@@ -103,6 +103,10 @@ impl ThemePresetBuilder {
                 self.accent,
                 DEFAULT_HOVER_LINE_HIGHLIGHT_ALPHA,
             ),
+            active_line_background: ThemeOps::to_rgba(
+                self.accent,
+                DEFAULT_ACTIVE_LINE_HIGHLIGHT_ALPHA,
+            ),
         }
     }
 }

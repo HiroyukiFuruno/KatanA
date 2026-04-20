@@ -1,5 +1,5 @@
 use egui_commonmark::CommonMarkCache;
-use katana_core::preview::{ImagePreviewOps, PreviewFlattenOps, PreviewSection, PreviewSectionOps};
+use katana_core::preview::{ImagePreviewOps, PreviewSection, PreviewSectionOps};
 
 use super::types::*;
 
@@ -23,17 +23,19 @@ impl PreviewPane {
             }
         }
 
-        let flattened = PreviewFlattenOps::flatten_list_code_blocks(&resolved);
-        let raw = PreviewSectionOps::split_sections(&flattened);
+        let raw = PreviewSectionOps::split_into_sections(&resolved);
         let mut new_sections = Vec::with_capacity(raw.len());
         let mut diagram_iter = self
             .sections
             .iter()
-            .filter(|s| !matches!(s, RenderedSection::Markdown(_)));
+            .filter(|s| !matches!(s, RenderedSection::Markdown(_, _)));
         for section in &raw {
             match section {
-                PreviewSection::Markdown(md) => {
-                    new_sections.push(RenderedSection::Markdown(md.clone()));
+                PreviewSection::Markdown(md, lines) => {
+                    let processed_md =
+                        katana_core::preview::types::MathPreviewOps::process_relaxed_math(md)
+                            .to_string();
+                    new_sections.push(RenderedSection::Markdown(processed_md, *lines));
                 }
                 PreviewSection::Diagram {
                     kind,
@@ -105,8 +107,7 @@ impl PreviewPane {
         self.image_cache.clear();
         self.image_preload_queue = extracted_paths;
 
-        let flattened = PreviewFlattenOps::flatten_list_code_blocks(&resolved);
-        let raw = PreviewSectionOps::split_sections(&flattened);
+        let raw = PreviewSectionOps::split_into_sections(&resolved);
         self.render_rx = None;
 
         let mut sections = Vec::with_capacity(raw.len());
@@ -118,8 +119,11 @@ impl PreviewPane {
 
         for (ordinal, section) in raw.iter().enumerate() {
             match section {
-                PreviewSection::Markdown(md) => {
-                    sections.push(RenderedSection::Markdown(md.clone()));
+                PreviewSection::Markdown(md, lines) => {
+                    let processed_md =
+                        katana_core::preview::types::MathPreviewOps::process_relaxed_math(md)
+                            .to_string();
+                    sections.push(RenderedSection::Markdown(processed_md, *lines));
                     lifecycle.push(SectionLifecycle {
                         is_loaded: true,
                         is_drawn: false,

@@ -35,12 +35,33 @@ impl HtmlExporter {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Exported Document</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <style>
 {css}
 </style>
 </head>
 <body>
 {body}
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {{
+    delimiters: [
+      {{left: '$$', right: '$$', display: true}},
+      {{left: '$', right: '$', display: false}}
+    ],
+    throwOnError: false
+  }});
+  document.querySelectorAll('[data-math-style=display]').forEach(function(el) {{
+    var src = el.textContent;
+    el.innerHTML = '';
+    katex.render(src, el, {{displayMode: true, throwOnError: false}});
+  }});
+  document.querySelectorAll('[data-math-style=inline]').forEach(function(el) {{
+    var src = el.textContent;
+    el.innerHTML = '';
+    katex.render(src, el, {{displayMode: false, throwOnError: false}});
+  }});
+"></script>
 </body>
 </html>"#
         )
@@ -115,7 +136,7 @@ pre code {{ background-color: transparent; padding: 0; }}
     }
 
     fn generate_elements_css(preset: &DiagramColorPreset, bg_color: &str) -> String {
-        format!(
+        let base = format!(
             r#"
 blockquote {{ border-left: 0.25em solid {stroke}; color: {text}; opacity: 0.8; padding: 0 1em; margin: 0; }}
 table {{ border-spacing: 0; border-collapse: collapse; margin-top: 0; margin-bottom: 16px; }}
@@ -126,6 +147,44 @@ hr {{ height: 0.25em; padding: 0; margin: 24px 0; background-color: {stroke}; bo
 "#,
             bg_color = bg_color,
             text = preset.text,
+            stroke = preset.stroke
+        );
+        let alerts = Self::generate_alerts_css();
+        let extras = Self::generate_extras_css(preset);
+        format!("{base}{alerts}{extras}")
+    }
+
+    fn generate_alerts_css() -> String {
+        /* WHY: GFM-compatible alert styling to match the preview pane's
+        rendering of [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]. */
+        r#"
+.markdown-alert { padding: 0.5rem 1rem; margin-bottom: 16px; border-left: 0.25em solid; border-radius: 4px; }
+.markdown-alert-title { font-weight: 600; margin-bottom: 0.25rem; }
+.markdown-alert-note { border-left-color: #539bf5; }
+.markdown-alert-note .markdown-alert-title { color: #539bf5; }
+.markdown-alert-tip { border-left-color: #57ab5a; }
+.markdown-alert-tip .markdown-alert-title { color: #57ab5a; }
+.markdown-alert-important { border-left-color: #986ee2; }
+.markdown-alert-important .markdown-alert-title { color: #986ee2; }
+.markdown-alert-warning { border-left-color: #c69026; }
+.markdown-alert-warning .markdown-alert-title { color: #c69026; }
+.markdown-alert-caution { border-left-color: #e5534b; }
+.markdown-alert-caution .markdown-alert-title { color: #e5534b; }
+"#.to_string()
+    }
+
+    fn generate_extras_css(preset: &DiagramColorPreset) -> String {
+        /* WHY: Task list, footnote, math, and description list styles. */
+        format!(
+            r#"
+ul.contains-task-list {{ list-style: none; padding-left: 1.5em; }}
+input[type="checkbox"] {{ margin-right: 0.5em; }}
+.footnotes {{ border-top: 1px solid {stroke}; margin-top: 2em; padding-top: 1em; font-size: 0.9em; }}
+.footnote-ref {{ font-size: 0.75em; vertical-align: super; }}
+math, .math-display, .math-inline {{ font-family: 'KaTeX_Main', 'Times New Roman', serif; }}
+dt {{ font-weight: 600; margin-top: 0.5em; }}
+dd {{ margin-left: 1.5em; margin-bottom: 0.5em; }}
+"#,
             stroke = preset.stroke
         )
     }

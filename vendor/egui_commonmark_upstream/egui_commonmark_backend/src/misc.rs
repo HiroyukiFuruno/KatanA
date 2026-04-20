@@ -33,7 +33,9 @@ pub struct CommonMarkOptions<'f> {
     pub mutable: bool,
     pub math_fn: Option<&'f crate::RenderMathFn>,
     pub html_fn: Option<&'f crate::RenderHtmlFn>,
+    pub table_fn: Option<&'f crate::RenderTableFn>,
     pub show_code_copy_button: bool,
+    pub render_footnotes: bool,
 }
 
 impl std::fmt::Debug for CommonMarkOptions<'_> {
@@ -44,6 +46,7 @@ impl std::fmt::Debug for CommonMarkOptions<'_> {
             .field("max_image_width", &self.max_image_width)
             .field("show_alt_text_on_hover", &self.show_alt_text_on_hover)
             .field("show_code_copy_button", &self.show_code_copy_button)
+            .field("render_footnotes", &self.render_footnotes)
             .field("default_width", &self.default_width);
 
         #[cfg(feature = "better_syntax_highlighting")]
@@ -57,6 +60,9 @@ impl std::fmt::Debug for CommonMarkOptions<'_> {
             )
             .field("alerts", &self.alerts)
             .field("mutable", &self.mutable)
+            .field("math_fn", &self.math_fn.is_some())
+            .field("html_fn", &self.html_fn.is_some())
+            .field("table_fn", &self.table_fn.is_some())
             .finish()
     }
 }
@@ -78,7 +84,9 @@ impl Default for CommonMarkOptions<'_> {
             mutable: false,
             math_fn: None,
             html_fn: None,
+            table_fn: None,
             show_code_copy_button: true,
+            render_footnotes: true,
         }
     }
 }
@@ -277,7 +285,7 @@ impl Image {
                 }
             });
         }
-        
+
         response
     }
 }
@@ -320,7 +328,9 @@ impl CodeBlock {
                     let mut i = 0;
                     while i < job.sections.len() {
                         let section = &job.sections[i];
-                        if section.byte_range.end <= range.start || section.byte_range.start >= range.end {
+                        if section.byte_range.end <= range.start
+                            || section.byte_range.start >= range.end
+                        {
                             i += 1;
                             continue;
                         }
@@ -345,8 +355,8 @@ impl CodeBlock {
                             replace_with.push(p3);
                         }
 
-                        job.sections.splice(i..i+1, replace_with);
-                        i += 1; 
+                        job.sections.splice(i..i + 1, replace_with);
+                        i += 1;
                     }
                 }
 
@@ -358,7 +368,9 @@ impl CodeBlock {
                     let mut i = 0;
                     while i < job.sections.len() {
                         let section = &job.sections[i];
-                        if section.byte_range.end <= range.start || section.byte_range.start >= range.end {
+                        if section.byte_range.end <= range.start
+                            || section.byte_range.start >= range.end
+                        {
                             i += 1;
                             continue;
                         }
@@ -383,8 +395,8 @@ impl CodeBlock {
                             replace_with.push(p3);
                         }
 
-                        job.sections.splice(i..i+1, replace_with);
-                        i += 1; 
+                        job.sections.splice(i..i + 1, replace_with);
+                        i += 1;
                     }
                 }
 

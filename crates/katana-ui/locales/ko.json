@@ -109,8 +109,9 @@
       "trackpad_help": "트랙패드: 두 손가락으로 핀치하여 확대/축소, 드래그하여 이동"
     },
     "slideshow_settings": "슬라이드쇼 설정",
-    "highlight_hover": "[TODO-ko] Hover Highlight",
-    "show_diagram_controls": "[TODO-ko] Diagram Controls"
+    "highlight_hover": "마우스 오버 하이라이트",
+    "show_diagram_controls": "다이어그램 컨트롤",
+    "toggle_slideshow": "슬라이드쇼 전환"
   },
   "plantuml": {
     "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중…",
@@ -190,7 +191,8 @@
     "save_file": "파일 저장",
     "new_workspace": "새 워크스페이스",
     "open_workspace": "워크스페이스 열기",
-    "copy": "복사"
+    "copy": "복사",
+    "back_to_top": "맨 위로 이동"
   },
   "ai": {
     "ai_unconfigured": "[AI: 구성되지 않음]"
@@ -374,7 +376,9 @@
       "close_confirm_cancel": "취소",
       "clear_http_cache": "캐시 지우기",
       "cache_retention_days": "캐시 보존 기간",
-      "days_suffix": " 일"
+      "days_suffix": " 일",
+      "toc_default_visible": "시작 시 목차 표시",
+      "explorer_default_visible": "시작 시 탐색기 표시"
     },
     "general": "일반",
     "shortcuts": {

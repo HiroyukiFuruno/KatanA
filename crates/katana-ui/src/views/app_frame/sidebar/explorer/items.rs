@@ -101,6 +101,11 @@ impl ExplorerSidebarItems {
 
         if interact_resp.clicked() {
             app.pending_action = crate::app_state::AppAction::ToggleExplorer;
+            /* WHY: Set cooldown so hover does not re-open immediately when the cursor
+             * stays on the button after a click (covers both pin and unpin). */
+            interact_resp
+                .ctx
+                .data_mut(|d| d.insert_temp(egui::Id::new("explorer_hover_cooldown"), true));
         }
         Some(interact_resp)
     }
