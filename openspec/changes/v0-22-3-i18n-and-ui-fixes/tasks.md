@@ -15,17 +15,16 @@
 
 ---
 
-## 1. コマンドパレットのスクロール挙動修正 (TDD)
+## Tasks
 
-### 概要
+### 1. Command Palette Scroll Behavior Fix (UI/UX)
+**Branch**: `v0-22-3-i18n-and-ui-fixes-task-1`
 
-検索結果が多い場合の縦スクロールが正しく機能しない不具合を TDD (RED) プロセスで修正します。
+- [x] 1.1 TDD (RED): `crates/katana-ui/src/views/modals/command_palette_scroll_tests.rs` 等の統合レイアウトテストを新規作成し、100件以上のダミーコマンドを表示した際、スクロール領域の `content_size` がウィンドウ制限を超え、スクロールバーが表示される（または正しく追従する）ことを IT で検証し、不具合を再現させる。
+- [x] 1.2 `crates/katana-ui/src/views/modals/command_palette.rs` のレイアウト実装（`egui::ScrollArea`）を修正。`max_height` やレイアウト制約の設定ミスを解消する。
+- [x] 1.3 TDD (GREEN): 1.1 のテストを実行し、パスすることを確認。
 
-- [ ] 1.1 **TDD (RED)**: `crates/katana-ui/src/views/modals/command_palette_scroll_tests.rs` を新規作成。100件以上のダミーコマンドを表示した際、スクロール領域の `content_size` がウィンドウ制限を超え、スクロールバーが表示される（または正しく追従する）ことを IT で検証し、不具合を再現させる。
-- [ ] 1.2 `crates/katana-ui/src/views/modals/command_palette.rs` のレイアウト実装（`egui::ScrollArea`）を修正。`max_height` やレイアウト制約の設定ミスを解消する。
-- [ ] 1.3 **TDD (GREEN)**: 1.1 のテストを実行し、パスすることを確認。
-
-### Definition of Done (DoD)
+### 2. Tab Navigation Layout Truncation Fix (UI/UX)
 
 - [ ] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
 - [ ] 全テスト（IT）がパスすること
