@@ -44,7 +44,7 @@ else
     # We check if komac is available, otherwise try to install it
     if ! command -v komac &> /dev/null; then
         echo "📦 Installing komac..."
-        brew install nicehash/tap/komac 2>/dev/null || true
+        brew install komac 2>/dev/null || true
     fi
 
     if ! command -v komac &> /dev/null; then
