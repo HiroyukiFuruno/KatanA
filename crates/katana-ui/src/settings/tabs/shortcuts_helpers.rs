@@ -130,7 +130,10 @@ impl ShortcutsHelpersOps {
         }
     }
 
-    /* WHY: Handles key input recording when the edit button is active */
+    /* WHY: Handles key input recording when the edit button is active.
+    NOTE: This helper is retained for potential future use but the primary
+    recording flow now runs via shortcuts.rs::show_capture_modal. */
+    #[allow(dead_code)]
     pub(crate) fn handle_shortcut_recording(
         ui: &mut egui::Ui,
         state: &mut AppState,

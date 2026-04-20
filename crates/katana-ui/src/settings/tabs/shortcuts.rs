@@ -1,5 +1,4 @@
 use super::ShortcutsTabOps;
-use super::shortcuts_helpers::ShortcutsHelpersOps;
 use crate::app_state::AppState;
 use crate::i18n::I18nOps;
 use crate::state::command_inventory::types::CommandGroup;
@@ -7,9 +6,10 @@ use crate::state::command_inventory::{CommandInventory, CommandInventoryItem};
 use eframe::egui;
 use std::collections::HashMap;
 
-const COLUMNS: usize = 3;
 const GRID_SPACING_X: f32 = 16.0;
 const GRID_SPACING_Y: f32 = 8.0;
+const SEARCH_FILTER_ID: &str = "shortcut_search_filter";
+const SHORTCUT_GRID_COLUMNS: usize = 3;
 
 impl ShortcutsTabOps {
     pub(crate) fn render_shortcuts_tab(ui: &mut egui::Ui, state: &mut AppState) {
@@ -36,47 +36,56 @@ impl ShortcutsTabOps {
                 .unwrap_or_default()
         });
 
+        /* WHY: If recording is active, show the capture modal and filter out key events */
+        if !recording_id.is_empty() {
+            Self::show_capture_modal(ui, state, &recording_id, recording_id_salt, &os_bindings);
+        }
+
         Self::render_conflict_warning(ui);
 
-        let show_line = state
+        /* WHY: Search bar to filter shortcuts by command name */
+        let mut search_query = ui.memory(|mem| {
+            mem.data
+                .get_temp::<String>(egui::Id::new(SEARCH_FILTER_ID))
+                .unwrap_or_default()
+        });
+
+        let i18n = I18nOps::get();
+        let search_response = ui.add(
+            egui::TextEdit::singleline(&mut search_query)
+                .hint_text(&i18n.settings.shortcuts.search_placeholder)
+                .desired_width(f32::INFINITY)
+                .id(egui::Id::new(SEARCH_FILTER_ID)),
+        );
+
+        if search_response.changed() {
+            let q = search_query.clone();
+            ui.memory_mut(|mem| {
+                mem.data.insert_temp(egui::Id::new(SEARCH_FILTER_ID), q);
+            });
+        }
+
+        ui.add_space(crate::settings::SECTION_SPACING);
+
+        let accordion_line = state
             .config
             .settings
             .settings()
             .layout
             .accordion_vertical_line;
-        for group in groups {
-            ui.push_id(group, |ui| {
-                crate::widgets::Accordion::new(
-                    format!("shortcuts_accordion_{:?}", group),
-                    egui::RichText::new(group.localized_name())
-                        .strong()
-                        .size(crate::settings::SECTION_HEADER_SIZE),
-                    |ui| {
-                        egui::Grid::new(format!("shortcuts_grid_{:?}", group))
-                            .num_columns(COLUMNS)
-                            .spacing([GRID_SPACING_X, GRID_SPACING_Y])
-                            .show(ui, |ui| {
-                                for cmd in
-                                    CommandInventory::all().iter().filter(|c| c.group == group)
-                                {
-                                    Self::render_command_row(
-                                        ui,
-                                        state,
-                                        cmd,
-                                        &recording_id,
-                                        recording_id_salt,
-                                        &os_bindings,
-                                    );
-                                }
-                            });
-                    },
-                )
-                .default_open(true)
-                .show_vertical_line(show_line)
-                .show(ui);
-            });
+        let search_lower = search_query.to_lowercase();
 
-            ui.add_space(crate::settings::SECTION_SPACING);
+        for group in groups {
+            Self::render_group(
+                ui,
+                state,
+                group,
+                &search_lower,
+                &recording_id,
+                recording_id_salt,
+                &os_bindings,
+                accordion_line,
+            );
         }
 
         let i18n = I18nOps::get();
@@ -92,67 +101,60 @@ impl ShortcutsTabOps {
         }
     }
 
-    /* WHY: Renders a warning message if a shortcut conflict was detected */
-    fn render_conflict_warning(ui: &mut egui::Ui) {
-        if let Some(conflict_msg) = ui.memory(|mem| {
-            mem.data
-                .get_temp::<String>(egui::Id::new("shortcut_conflict"))
-        }) {
-            let color = ui.visuals().error_fg_color;
-            ui.label(egui::RichText::new(conflict_msg).color(color));
-
-            let i18n = I18nOps::get();
-            if ui.button(&i18n.common.close).clicked() {
-                ui.memory_mut(|mem| {
-                    mem.data
-                        .remove::<String>(egui::Id::new("shortcut_conflict"))
-                });
-            }
-            ui.add_space(crate::settings::SECTION_SPACING);
-        }
-    }
-
-    /* WHY: Renders the table row for a specific command */
-    fn render_command_row(
+    /* WHY: Renders one accordion group of shortcuts, filtered by the search query */
+    #[allow(clippy::too_many_arguments)]
+    fn render_group(
         ui: &mut egui::Ui,
-        state: &mut AppState,
-        cmd: &CommandInventoryItem,
+        _state: &mut AppState,
+        group: CommandGroup,
+        search_lower: &str,
         recording_id: &str,
         recording_id_salt: egui::Id,
         os_bindings: &HashMap<String, String>,
+        accordion_line: bool,
     ) {
-        ui.label((cmd.label)());
+        let all_cmds = CommandInventory::all();
+        let cmds_in_group: Vec<&CommandInventoryItem> = all_cmds
+            .iter()
+            .filter(|c| {
+                c.group == group
+                    && (search_lower.is_empty()
+                        || (c.label)().to_lowercase().contains(search_lower))
+            })
+            .collect();
 
-        let i18n = I18nOps::get();
-
-        let shortcut_str = if let Some(custom) = os_bindings.get(cmd.id) {
-            custom.clone()
-        } else {
-            cmd.default_shortcuts.join(", ")
-        };
-
-        if shortcut_str.is_empty() {
-            ui.label(&i18n.settings.shortcuts.none);
-        } else {
-            ui.label(&shortcut_str);
+        if cmds_in_group.is_empty() {
+            return;
         }
 
-        let mut edit_label = i18n.settings.shortcuts.edit.as_str();
-        if recording_id == cmd.id {
-            edit_label = i18n.settings.shortcuts.press_keys.as_str();
-            ShortcutsHelpersOps::handle_shortcut_recording(
-                ui,
-                state,
-                cmd,
-                recording_id_salt,
-                os_bindings,
-            );
-        }
+        ui.push_id(group, |ui| {
+            crate::widgets::Accordion::new(
+                format!("shortcuts_accordion_{:?}", group),
+                egui::RichText::new(group.localized_name())
+                    .strong()
+                    .size(crate::settings::SECTION_HEADER_SIZE),
+                |ui| {
+                    egui::Grid::new(format!("shortcuts_grid_{:?}", group))
+                        .num_columns(SHORTCUT_GRID_COLUMNS)
+                        .spacing([GRID_SPACING_X, GRID_SPACING_Y])
+                        .show(ui, |ui| {
+                            for cmd in &cmds_in_group {
+                                Self::render_command_row(
+                                    ui,
+                                    cmd,
+                                    recording_id,
+                                    recording_id_salt,
+                                    os_bindings,
+                                );
+                            }
+                        });
+                },
+            )
+            .default_open(true)
+            .show_vertical_line(accordion_line)
+            .show(ui);
+        });
 
-        if ui.button(edit_label).clicked() {
-            ui.memory_mut(|mem| mem.data.insert_temp(recording_id_salt, cmd.id.to_string()));
-        }
-
-        ui.end_row();
+        ui.add_space(crate::settings::SECTION_SPACING);
     }
 }
