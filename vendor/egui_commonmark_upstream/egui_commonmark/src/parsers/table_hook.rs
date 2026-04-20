@@ -28,6 +28,7 @@ pub(crate) fn handle_custom_table<'a, 'e>(
             &alignments,
             max_width,
             &mut |inner_ui, inner_cache, block_events| {
+                viewer.inside_table_cell = true;
                 let cell_max_width = inner_ui.available_width();
                 for (i, (e, src_span)) in block_events.iter() {
                     viewer.current_event_idx = *i;
@@ -41,6 +42,7 @@ pub(crate) fn handle_custom_table<'a, 'e>(
                     );
                 }
                 viewer.flush_pending_inline(inner_ui, cell_max_width);
+                viewer.inside_table_cell = false;
             },
         );
 
