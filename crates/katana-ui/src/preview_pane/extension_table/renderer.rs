@@ -9,8 +9,8 @@ use crate::preview_pane::extension_table::render_parts::KatanaTableRendererParts
 const CHAR_WIDTH_MUL: f32 = 6.0;
 const BASE_WIDTH_OFFSET: f32 = 16.0;
 /* WHY: Horizontal item spacing between columns — unchanged from upstream reference. */
-const ITEM_SPACING: f32 = 10.0;
-const DEFAULT_MARGIN: i8 = 5;
+const ITEM_SPACING: f32 = 14.0;
+const DEFAULT_MARGIN: i8 = 10;
 const MIN_COL_WIDTH: f32 = 10.0;
 const TABLE_WIDTH_PADDING: f32 = 22.0;
 /* WHY: top_down scope_builder is required so add_space adds VERTICAL space.
@@ -74,6 +74,10 @@ impl KatanaTableRenderer {
                 constrained_ui.add_space(TABLE_OUTER_MARGIN);
                 constrained_ui.set_max_width(safe_width);
 
+                /* WHY: Disable egui::ScrollArea's default fade gradient which causes a black border artifact. */
+                constrained_ui.spacing_mut().scroll.fade.strength = 0.0;
+                constrained_ui.spacing_mut().scroll.fade.size = 0.0;
+
                 let scroll_output =
                     egui::ScrollArea::horizontal()
                         .id_salt(table_id.with("scroll"))
@@ -84,8 +88,13 @@ impl KatanaTableRenderer {
                             inner_ui.set_max_width(table_width);
 
                             let frame_res = egui::Frame::none()
-                        .inner_margin(egui::Margin::same(DEFAULT_MARGIN))
-                        .show(inner_ui, |grid_ui| {
+                                .inner_margin(egui::Margin {
+                                    left: DEFAULT_MARGIN,
+                                    right: DEFAULT_MARGIN,
+                                    top: 0,
+                                    bottom: 0,
+                                })
+                                .show(inner_ui, |grid_ui| {
                             /* WHY: Create placeholders for backgrounds BEFORE grid rendering,
                             so they are drawn behind the text in the same coordinate space. */
                             let header_bg_idx = Some(grid_ui.painter().add(egui::Shape::Noop));
