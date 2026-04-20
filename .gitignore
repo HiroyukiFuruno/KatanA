@@ -50,8 +50,7 @@ Temporary Items
 .apdisk
 
 # Katana local and tool-specific ignores
-/.agent/workflows/opsx-*.md
-/.agent/skills/openspec-*/
+/.agent
 /.agents/
 /.claude/
 /CLAUDE.md
