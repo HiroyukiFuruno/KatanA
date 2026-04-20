@@ -1,0 +1,34 @@
+{
+  "schema_version": "1",
+  "name": "workspace-main",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "en"
+    },
+    "workspace_files": [
+      {
+        "name": "README.md",
+        "content": "# Welcome to KatanA\n\nA native Markdown workspace.\n\n## Features\n\n- Live split-view preview\n- Diagram rendering (Mermaid, PlantUML, Draw.io)\n- Tab-based multi-document editing\n- Full i18n (EN / JA)\n"
+      },
+      {
+        "name": "diagrams.md",
+        "content": "# Diagrams\n\n```mermaid\ngraph TD\n    A[Write Markdown] --> B[Live Preview]\n    B --> C[Export]\n```\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 800 },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "workspace-main"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}
