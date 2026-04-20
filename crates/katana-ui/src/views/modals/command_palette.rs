@@ -82,7 +82,18 @@ impl<'a> CommandPaletteModal<'a> {
                     .desired_width(f32::INFINITY)
                     .margin(egui::vec2(COMMAND_PALETTE_MARGIN, COMMAND_PALETTE_MARGIN));
 
-                let response = ui.add(text_edit);
+                let mut output = text_edit.show(ui);
+                let response = output.response;
+
+                if !response.has_focus() {
+                    response.request_focus();
+                }
+
+                if response.gained_focus() {
+                    let cursor = egui::text::CCursor::new(self.state.current_query.chars().count());
+                    output.state.cursor.set_char_range(Some(egui::text::CCursorRange::one(cursor)));
+                    output.state.store(ui.ctx(), response.id);
+                }
 
                 /* WHY: Draw i18n placeholders manually so they can appear even if '> ' is prefilled */
                 let is_empty = self.state.current_query.is_empty();
@@ -145,11 +156,6 @@ impl<'a> CommandPaletteModal<'a> {
 
                 /* WHY: Keyboard interactions */
                 handle_key_input(ui, self.state, self.action, &mut is_open);
-
-                /* WHY: If just opened, request focus */
-                if response.gained_focus() || !response.has_focus() {
-                    response.request_focus();
-                }
 
                 ui.separator();
                 render_results(ui, self.state, self.action, &mut is_open);
