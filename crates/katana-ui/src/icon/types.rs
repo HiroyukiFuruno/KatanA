@@ -104,6 +104,7 @@ define_icons! {
     /* WHY: action/ */
     #[allow(dead_code)]
     More            => "action/more",
+    Edit            => "action/edit",
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
