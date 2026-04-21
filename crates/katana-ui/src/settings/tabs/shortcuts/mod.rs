@@ -9,6 +9,7 @@ use std::collections::HashMap;
 pub mod capture;
 pub mod helpers;
 pub mod key_events;
+pub mod modal_widgets;
 pub mod row;
 const SEARCH_FILTER_ID: &str = "shortcut_search_filter";
 
@@ -27,6 +28,7 @@ impl ShortcutsTabOps {
             CommandGroup::File,
             CommandGroup::Edit,
             CommandGroup::View,
+            CommandGroup::Behavior,
             CommandGroup::Help,
         ];
 
@@ -43,7 +45,7 @@ impl ShortcutsTabOps {
             Self::show_capture_modal(ui, state, &recording_id, recording_id_salt, &os_bindings);
         }
 
-        Self::render_conflict_warning(ui);
+        modal_widgets::ModalWidgets::render_conflict_warning(ui);
 
         /* WHY: Search bar to filter shortcuts by command name, styled like VS Code */
         let mut search_query = ui.memory(|mem| {
@@ -141,10 +143,14 @@ impl ShortcutsTabOps {
                         .column(egui_extras::Column::exact(
                             crate::settings::tabs::shortcuts::row::ROW_LABEL_WIDTH,
                         ))
+                        .column(
+                            egui_extras::Column::remainder().at_least(
+                                crate::settings::tabs::shortcuts::row::ROW_SHORTCUT_WIDTH,
+                            ),
+                        )
                         .column(egui_extras::Column::exact(
-                            crate::settings::tabs::shortcuts::row::ROW_SHORTCUT_WIDTH,
+                            crate::settings::tabs::shortcuts::row::ROW_ACTIONS_WIDTH,
                         ))
-                        .column(egui_extras::Column::remainder()) // Actions (remaining width)
                         .body(|body| {
                             body.rows(
                                 crate::settings::tabs::shortcuts::row::ROW_H,

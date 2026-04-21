@@ -11,8 +11,9 @@ const RECORDING_ICON: &str = "⏺";
 
 /// Row column widths
 /// Layout: [Label(fixed) | Shortcut(fixed) | Actions(fill, right-aligned to panel edge)]
-pub(super) const ROW_LABEL_WIDTH: f32 = 220.0;
+pub(super) const ROW_LABEL_WIDTH: f32 = 420.0;
 pub(super) const ROW_SHORTCUT_WIDTH: f32 = 180.0;
+pub(super) const ROW_ACTIONS_WIDTH: f32 = 64.0;
 pub(super) const ROW_H: f32 = 28.0;
 
 impl ShortcutsTabOps {
@@ -64,6 +65,8 @@ impl ShortcutsTabOps {
         /* Table Column 3: Action buttons */
         row.col(|ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                const RIGHT_MARGIN: f32 = 4.0;
+                ui.add_space(RIGHT_MARGIN); // Right margin
                 ui.spacing_mut().item_spacing.x = 2.0;
 
                 let edit_btn =

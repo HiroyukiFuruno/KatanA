@@ -3,6 +3,7 @@ mod align_center;
 mod color_picker;
 mod combo_box;
 mod interaction_facade;
+pub mod key_cap;
 pub mod markdown_hooks;
 mod menu_button;
 mod modal;

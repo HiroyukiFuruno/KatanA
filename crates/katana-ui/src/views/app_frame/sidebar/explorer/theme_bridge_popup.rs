@@ -117,6 +117,32 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
                                         &crate::i18n::I18nOps::get().help.shortcut_refresh,
                                     );
                                     ui.add_space(crate::shell::RAIL_POPUP_SPACING_LARGE);
+                                    ui.strong(
+                                        crate::i18n::I18nOps::get().help.section_behavior.clone(),
+                                    );
+                                    crate::os_command::OsCommandOps::render_shortcut_row(
+                                        ui,
+                                        &crate::i18n::I18nOps::get().help.shortcut_tab_prev,
+                                    );
+                                    crate::os_command::OsCommandOps::render_shortcut_row(
+                                        ui,
+                                        &crate::i18n::I18nOps::get().help.shortcut_tab_next,
+                                    );
+                                    crate::os_command::OsCommandOps::render_shortcut_row(
+                                        ui,
+                                        &crate::i18n::I18nOps::get().help.shortcut_toggle_split,
+                                    );
+                                    crate::os_command::OsCommandOps::render_shortcut_row(
+                                        ui,
+                                        &crate::i18n::I18nOps::get()
+                                            .help
+                                            .shortcut_toggle_code_preview,
+                                    );
+                                    crate::os_command::OsCommandOps::render_shortcut_row(
+                                        ui,
+                                        &crate::i18n::I18nOps::get().help.shortcut_toggle_slideshow,
+                                    );
+                                    ui.add_space(crate::shell::RAIL_POPUP_SPACING_LARGE);
                                     if ui
                                         .button(
                                             crate::i18n::I18nOps::get().menu.check_updates.clone(),

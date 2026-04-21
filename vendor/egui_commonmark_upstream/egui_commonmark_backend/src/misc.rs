@@ -36,6 +36,7 @@ pub struct CommonMarkOptions<'f> {
     pub table_fn: Option<&'f crate::RenderTableFn>,
     pub show_code_copy_button: bool,
     pub render_footnotes: bool,
+    pub custom_text_fn: Option<&'f crate::RenderTextFn>,
 }
 
 impl std::fmt::Debug for CommonMarkOptions<'_> {
@@ -87,6 +88,7 @@ impl Default for CommonMarkOptions<'_> {
             table_fn: None,
             show_code_copy_button: true,
             render_footnotes: true,
+            custom_text_fn: None,
         }
     }
 }

@@ -1,5 +1,6 @@
 use super::ShortcutsTabOps;
 use super::helpers::ShortcutsHelpersOps;
+use super::modal_widgets;
 use crate::app_state::AppState;
 use crate::i18n::I18nOps;
 use crate::state::command_inventory::CommandInventory;
@@ -11,7 +12,6 @@ const CAPTURE_MODAL_WIDTH: f32 = 340.0;
 const CAPTURE_MODAL_BODY_SPACING_TOP: f32 = 16.0;
 const CAPTURE_MODAL_BODY_SPACING_MID: f32 = 10.0;
 const CAPTURE_MODAL_FONT_SIZE: f32 = 16.0;
-const CONFLICT_WARNING_FONT_SCALE: f32 = 0.9;
 const OVERLAY_OPACITY: f32 = 0.8;
 
 impl ShortcutsTabOps {
@@ -106,7 +106,7 @@ impl ShortcutsTabOps {
             .show_body_only(ui.ctx(), |ui| {
                 ui.vertical_centered(|ui| {
                     ui.add_space(CAPTURE_MODAL_BODY_SPACING_TOP);
-                    Self::render_conflict_warning(ui);
+                    modal_widgets::ModalWidgets::render_conflict_warning(ui);
 
                     /* WHY: Real-time display of currently held modifiers inside a fake, focused Input box.
                     This provides immediate visual feedback exactly like VSCode. */
@@ -126,66 +126,63 @@ impl ShortcutsTabOps {
 
                         /* WHY: Force perfect horizontal centering without expanding vertically indefinitely.
                            Avoid centered_and_justified as it causes layout ratcheting inside auto-sizing Windows. */
-                        ui.vertical_centered(|ui| {
-                            if let Some(shortcut) = &temp_shortcut {
-                                crate::widgets::ShortcutWidget::new(shortcut).ui(ui);
-                            } else {
-                                let modifiers = ui.input(|i| i.modifiers);
-                                let mut parts = Vec::new();
-                                if modifiers.ctrl { parts.push(if is_mac { "ctrl" } else { "primary" }); }
-                                if modifiers.mac_cmd { parts.push(if is_mac { "primary" } else { "win" }); }
-                                if modifiers.shift { parts.push("shift"); }
-                                if modifiers.alt { parts.push("alt"); }
-
-                                if parts.is_empty() {
-                                    ui.label(
-                                        egui::RichText::new(&i18n.settings.shortcuts.capture_prompt)
-                                            .weak()
-                                            .size(CAPTURE_MODAL_FONT_SIZE)
-                                    );
+                        crate::widgets::AlignCenter::new()
+                            .shrink_to_fit(true)
+                            .content(|ui| {
+                                if let Some(shortcut) = &temp_shortcut {
+                                    crate::widgets::ShortcutWidget::new(shortcut).ui(ui);
                                 } else {
-                                    let shortcut_str = parts.join("+");
-                                    crate::widgets::ShortcutWidget::new(&shortcut_str).ui(ui);
+                                    let modifiers = ui.input(|i| i.modifiers);
+                                    let mut parts = Vec::new();
+                                    if modifiers.ctrl {
+                                        parts.push(if is_mac { "ctrl" } else { "primary" });
+                                    }
+                                    if modifiers.mac_cmd {
+                                        parts.push(if is_mac { "primary" } else { "win" });
+                                    }
+                                    if modifiers.shift {
+                                        parts.push("shift");
+                                    }
+                                    if modifiers.alt {
+                                        parts.push("alt");
+                                    }
+
+                                    if parts.is_empty() {
+                                        ui.label(
+                                            egui::RichText::new(&i18n.settings.shortcuts.capture_prompt)
+                                                .weak()
+                                                .size(CAPTURE_MODAL_FONT_SIZE),
+                                        );
+                                    } else {
+                                        let shortcut_str = parts.join("+");
+                                        crate::widgets::ShortcutWidget::new(&shortcut_str).ui(ui);
+                                    }
                                 }
-                            }
-                        });
+                            })
+                            .show(ui);
                     });
 
                     ui.add_space(CAPTURE_MODAL_BODY_SPACING_MID);
-                    ui.label(
-                        egui::RichText::new(crate::i18n::I18nOps::tf(
-                            "{confirm} / {cancel}",
-                            &[
-                                ("confirm", &i18n.settings.shortcuts.confirm_key),
-                                ("cancel", &i18n.settings.shortcuts.cancel_key),
-                            ],
-                        ))
-                        .weak(),
-                    );
+                    crate::widgets::AlignCenter::new()
+                        .shrink_to_fit(true)
+                        .content(|ui| {
+                            ui.label(
+                                egui::RichText::new(crate::i18n::I18nOps::tf(
+                                    "{confirm} / {cancel}",
+                                    &[
+                                        ("confirm", &i18n.settings.shortcuts.confirm_key),
+                                        ("cancel", &i18n.settings.shortcuts.cancel_key),
+                                    ],
+                                ))
+                                .weak(),
+                            );
+                        })
+                        .show(ui);
                     ui.add_space(CAPTURE_MODAL_BODY_SPACING_MID);
-                    if ui.button(&i18n.common.close).clicked() {
-                        ui.memory_mut(|mem| {
-                            mem.data.remove::<String>(recording_id_salt);
-                            mem.data
-                                .remove::<String>(egui::Id::new("shortcut_conflict"));
-                        });
-                    }
+                    modal_widgets::ModalWidgets::render_action_buttons(
+                        ui, state, cmd, &temp_shortcut, recording_id_salt, os_bindings, i18n,
+                    );
                 });
             });
-    }
-
-    /* WHY: Renders a warning msg if a conflict was detected */
-    pub(super) fn render_conflict_warning(ui: &mut egui::Ui) {
-        if let Some(msg) = ui.memory(|mem| {
-            mem.data
-                .get_temp::<String>(egui::Id::new("shortcut_conflict"))
-        }) {
-            ui.label(
-                egui::RichText::new(msg)
-                    .color(ui.visuals().error_fg_color)
-                    .size(CAPTURE_MODAL_FONT_SIZE * CONFLICT_WARNING_FONT_SCALE),
-            );
-            ui.add_space(CAPTURE_MODAL_BODY_SPACING_MID);
-        }
     }
 }

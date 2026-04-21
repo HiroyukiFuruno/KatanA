@@ -101,7 +101,9 @@ impl ShortcutsHelpersOps {
             egui::Key::Quote => "'",
             egui::Key::Questionmark => "?",
             egui::Key::Exclamationmark => "!",
-            egui::Key::Pipe => "|",
+            /* WHY: On JIS keyboards, Pipe is Shift+¥ (same physical key as Backslash).
+            Map both to "\\" so stored shortcuts are always canonical. */
+            egui::Key::Pipe => "\\",
             egui::Key::Backtick => "`",
             egui::Key::Slash => "/",
             egui::Key::Backslash => "\\",
@@ -146,5 +148,4 @@ impl ShortcutsHelpersOps {
             _ => "",
         }
     }
-
 }

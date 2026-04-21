@@ -43,6 +43,7 @@ impl<'a> PreviewSidePanels<'a> {
             .show_inside(ui, |ui| {
                 ui.add_space(PREVIEW_SIDE_BAR_MARGIN);
                 ui.vertical_centered(|ui| {
+                    ui.spacing_mut().item_spacing.y = PREVIEW_SIDE_BAR_SPACING;
                     let i18n = crate::i18n::I18nOps::get();
 
                     let toc_visible = self.app.state.config.settings.settings().layout.toc_visible;
@@ -63,7 +64,6 @@ impl<'a> PreviewSidePanels<'a> {
                                 d.insert_temp(egui::Id::new("toc_hover_cooldown"), true);
                             });
                         }
-                        ui.add_space(PREVIEW_SIDE_BAR_SPACING);
                     }
 
                     let resp_refresh = self.render_toggle_button(
@@ -76,7 +76,6 @@ impl<'a> PreviewSidePanels<'a> {
                     if resp_refresh.clicked() {
                         self.app.pending_action = AppAction::RefreshDocument { is_manual: true };
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let doc_search_shortcut = crate::os_command::OsCommandOps::get("search_tab");
                     let resp_search = self.render_toggle_button(
@@ -89,7 +88,6 @@ impl<'a> PreviewSidePanels<'a> {
                     if resp_search.clicked() {
                         self.app.pending_action = AppAction::ToggleDocSearch;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let resp_export = self.render_toggle_button(
                         ui,
@@ -102,7 +100,6 @@ impl<'a> PreviewSidePanels<'a> {
                     if resp_export.clicked() {
                         self.app.pending_action = AppAction::ToggleExportPanel;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let resp_story = self.render_toggle_button(
                         ui,
@@ -115,7 +112,6 @@ impl<'a> PreviewSidePanels<'a> {
                     if resp_story.clicked() {
                         self.app.pending_action = AppAction::ToggleStoryPanel;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let resp_tools = self.render_toggle_button(
                         ui,
@@ -128,7 +124,6 @@ impl<'a> PreviewSidePanels<'a> {
                     if resp_tools.clicked() {
                         self.app.pending_action = AppAction::ToggleToolsPanel;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     /* 7. Meta Info */
                     let resp_info = self.render_toggle_button(
@@ -170,11 +165,9 @@ impl<'a> PreviewSidePanels<'a> {
         let icon_bg = if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG) };
         #[rustfmt::skip]
         let active_bg = if ui.visuals().dark_mode { ui.visuals().selection.bg_fill } else { crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_ACTIVE_BG) };
-        let bg = if is_active { active_bg } else { icon_bg };
-
         let resp = ui.add(
             egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Medium))
-                .fill(bg)
+                .fill(if is_active { active_bg } else { icon_bg })
                 .min_size(egui::vec2(TOGGLE_BUTTON_SIZE, TOGGLE_BUTTON_SIZE))
                 .rounding(egui::Rounding::same(TOGGLE_BUTTON_ROUNDING)),
         );
@@ -186,14 +179,19 @@ impl<'a> PreviewSidePanels<'a> {
                 ui.allocate_ui_with_layout(
                     egui::vec2(0.0, 0.0),
                     egui::Layout::left_to_right(egui::Align::Center),
-                    |ui| { ui.label(tooltip); crate::widgets::ShortcutWidget::new(sc).ui(ui); },
+                    |ui| {
+                        ui.label(tooltip);
+                        crate::widgets::ShortcutWidget::new(sc).ui(ui);
+                    },
                 );
             })
         } else {
             resp.on_hover_text(tooltip)
         };
 
-        resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), txt.clone()));
+        resp.widget_info(|| {
+            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), txt.clone())
+        });
         resp
     }
 }

@@ -107,6 +107,14 @@ impl AppFrameOps {
                 continue;
             }
 
+            if url.starts_with("Katana://") {
+                app.process_action(
+                    ctx,
+                    AppAction::SelectDocument(std::path::PathBuf::from(url)),
+                );
+                continue;
+            }
+
             let mut path = std::path::PathBuf::from(url);
             if path.is_relative()
                 && let Some(parent) = app
