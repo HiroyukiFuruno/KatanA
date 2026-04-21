@@ -6,10 +6,11 @@ use crate::state::command_inventory::{CommandInventory, CommandInventoryItem};
 use eframe::egui;
 use std::collections::HashMap;
 
-const GRID_SPACING_X: f32 = 16.0;
-const GRID_SPACING_Y: f32 = 8.0;
+pub mod capture;
+pub mod helpers;
+pub mod key_events;
+pub mod row;
 const SEARCH_FILTER_ID: &str = "shortcut_search_filter";
-const SHORTCUT_GRID_COLUMNS: usize = 3;
 
 impl ShortcutsTabOps {
     pub(crate) fn render_shortcuts_tab(ui: &mut egui::Ui, state: &mut AppState) {
@@ -36,27 +37,26 @@ impl ShortcutsTabOps {
                 .unwrap_or_default()
         });
 
-        /* WHY: If recording is active, show the capture modal and filter out key events */
+        /* WHY: If recording is active, show the capture modal and filter out key events.
+        The modal renders at Foreground order to appear above the settings panel. */
         if !recording_id.is_empty() {
             Self::show_capture_modal(ui, state, &recording_id, recording_id_salt, &os_bindings);
         }
 
         Self::render_conflict_warning(ui);
 
-        /* WHY: Search bar to filter shortcuts by command name */
+        /* WHY: Search bar to filter shortcuts by command name, styled like VS Code */
         let mut search_query = ui.memory(|mem| {
             mem.data
                 .get_temp::<String>(egui::Id::new(SEARCH_FILTER_ID))
                 .unwrap_or_default()
         });
-
         let i18n = I18nOps::get();
-        let search_response = ui.add(
-            egui::TextEdit::singleline(&mut search_query)
-                .hint_text(&i18n.settings.shortcuts.search_placeholder)
-                .desired_width(f32::INFINITY)
-                .id(egui::Id::new(SEARCH_FILTER_ID)),
-        );
+        let search_response = crate::widgets::SearchBar::simple(&mut search_query)
+            .hint_text(&i18n.settings.shortcuts.search_placeholder)
+            .show_search_icon(true)
+            .id_source(SEARCH_FILTER_ID)
+            .show(ui);
 
         if search_response.changed() {
             let q = search_query.clone();
@@ -134,19 +134,33 @@ impl ShortcutsTabOps {
                     .strong()
                     .size(crate::settings::SECTION_HEADER_SIZE),
                 |ui| {
-                    egui::Grid::new(format!("shortcuts_grid_{:?}", group))
-                        .num_columns(SHORTCUT_GRID_COLUMNS)
-                        .spacing([GRID_SPACING_X, GRID_SPACING_Y])
-                        .show(ui, |ui| {
-                            for cmd in &cmds_in_group {
-                                Self::render_command_row(
-                                    ui,
-                                    cmd,
-                                    recording_id,
-                                    recording_id_salt,
-                                    os_bindings,
-                                );
-                            }
+                    egui_extras::TableBuilder::new(ui)
+                        .resizable(false)
+                        .vscroll(false)
+                        .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                        .column(egui_extras::Column::exact(
+                            crate::settings::tabs::shortcuts::row::ROW_LABEL_WIDTH,
+                        ))
+                        .column(egui_extras::Column::exact(
+                            crate::settings::tabs::shortcuts::row::ROW_SHORTCUT_WIDTH,
+                        ))
+                        .column(egui_extras::Column::remainder()) // Actions (remaining width)
+                        .body(|body| {
+                            body.rows(
+                                crate::settings::tabs::shortcuts::row::ROW_H,
+                                cmds_in_group.len(),
+                                |mut row| {
+                                    let cmd = cmds_in_group[row.index()];
+                                    Self::render_command_row(
+                                        &mut row,
+                                        _state,
+                                        cmd,
+                                        recording_id,
+                                        recording_id_salt,
+                                        os_bindings,
+                                    );
+                                },
+                            );
                         });
                 },
             )

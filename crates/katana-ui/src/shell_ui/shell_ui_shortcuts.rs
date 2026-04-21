@@ -21,10 +21,11 @@ fn parse_shortcut(s: &str) -> Option<egui::KeyboardShortcut> {
     for part in clean.split('+') {
         let p = part.trim().to_lowercase();
         match p.as_str() {
-            "primary" | "cmd" | "command" | "ctrl" => modifiers.command = true,
+            "primary" | "cmd" | "command" => modifiers.command = true,
+            "ctrl" => modifiers.ctrl = true,
             "shift" => modifiers.shift = true,
             "alt" | "option" => modifiers.alt = true,
-            "mac_cmd" => modifiers.mac_cmd = true,
+            "mac_cmd" | "win" | "super" | "meta" => modifiers.mac_cmd = true,
             _ => {
                 key = parse_key(&p);
             }
@@ -74,11 +75,28 @@ fn parse_key(s: &str) -> Option<egui::Key> {
         "9" => Some(egui::Key::Num9),
         "," => Some(egui::Key::Comma),
         "." => Some(egui::Key::Period),
+        "/" => Some(egui::Key::Slash),
+        "\\" | "¥" => Some(egui::Key::Backslash),
+        "-" => Some(egui::Key::Minus),
+        "=" => Some(egui::Key::Equals),
+        ";" | "semicolon" => Some(egui::Key::Semicolon),
+        ":" | "colon" => Some(egui::Key::Colon),
+        "{" => Some(egui::Key::OpenCurlyBracket),
+        "}" => Some(egui::Key::CloseCurlyBracket),
+        "[" => Some(egui::Key::OpenBracket),
+        "]" => Some(egui::Key::CloseBracket),
         "`" => Some(egui::Key::Backtick),
+        "@" => Some(egui::Key::OpenBracket),
+        "^" => Some(egui::Key::Equals),
+        "_" => Some(egui::Key::Minus),
         "space" => Some(egui::Key::Space),
         "enter" => Some(egui::Key::Enter),
         "esc" | "escape" => Some(egui::Key::Escape),
         "tab" => Some(egui::Key::Tab),
+        "|" => Some(egui::Key::Pipe),
+        "?" => Some(egui::Key::Questionmark),
+        "!" => Some(egui::Key::Exclamationmark),
+        "\"" | "'" | "quote" => Some(egui::Key::Quote),
         "backspace" => Some(egui::Key::Backspace),
         "delete" => Some(egui::Key::Delete),
         "up" => Some(egui::Key::ArrowUp),

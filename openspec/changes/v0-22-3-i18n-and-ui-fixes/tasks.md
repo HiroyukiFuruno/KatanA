@@ -40,28 +40,28 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 `shortcuts.rs` から Edit ボタンを廃止し、行全体クリックとペンSVGアイコンによる録音トリガーに変更する
-- [ ] 2.2 キー表示部分に OSネイティブキーSVGアイコン（⌘/⇧/⌥/Ctrl/Alt）を表示するロジックを実装する
-- [ ] 2.3 `ShortcutCaptureModal`（録音専用モーダル）を新規実装する（Enterで確定、Escでキャンセル）
-- [ ] 2.4 録音中は `egui` の `set_key_filter` を用いて Esc/Enter 以外の入力をブロックする
-- [ ] 2.5 i18n キーを追加する（EN + JA 同時）: `settings.shortcuts.capture_prompt`, `settings.shortcuts.confirm_key`, `settings.shortcuts.cancel_key`
-- [ ] 2.6 ショートカット設定画面に検索バーを追加する
-- [ ] 2.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.1 `shortcuts.rs` から Edit ボタンを廃止し、行全体クリックとペンSVGアイコンによる録音トリガーに変更する
+- [x] 2.2 キー表示部分に OSネイティブキーSVGアイコン（⌘/⇧/⌥/Ctrl/Alt）を表示するロジックを実装する
+- [x] 2.3 `ShortcutCaptureModal`（録音専用モーダル）を新規実装する（Enterで確定、Escでキャンセル）
+- [x] 2.4 録音中は `egui` の `set_key_filter` を用いて Esc/Enter 以外の入力をブロックする
+- [x] 2.5 i18n キーを追加する（EN + JA 同時）: `settings.shortcuts.capture_prompt`, `settings.shortcuts.confirm_key`, `settings.shortcuts.cancel_key`
+- [x] 2.6 ショートカット設定画面に検索バーを追加する
+- [x] 2.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
 - [ ] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] 編集ボタンが削除され、録音モーダルが起動すること
-- [ ] OSネイティブキーアイコンが正しく表示されること
-- [ ] `make check` がパスすること
+- [x] 編集ボタンが削除され、録音モーダルが起動すること
+- [x] OSネイティブキーアイコンが正しく表示されること
+- [x] `make check` がパスすること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 3. i18n 翻訳の完全補完 (v0.22.1 からの引継ぎ)
+## 3. i18n 翻訳の完全補完
 
 ### Definition of Ready (DoR)
 

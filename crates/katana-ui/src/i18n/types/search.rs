@@ -38,6 +38,10 @@ pub struct SearchMessages {
     pub command_doc_search: String,
     #[serde(default = "default_command_refresh_document")]
     pub command_refresh_document: String,
+    #[serde(default = "default_command_toggle_split")]
+    pub command_toggle_split: String,
+    #[serde(default = "default_command_toggle_code_preview")]
+    pub command_toggle_code_preview: String,
     /* WHY: Markdown authoring command labels shown in the command palette. */
     #[serde(default = "default_command_author_bold")]
     pub command_author_bold: String,
@@ -82,6 +86,12 @@ fn default_command_doc_search() -> String {
 }
 fn default_command_refresh_document() -> String {
     "Refresh Document".to_string()
+}
+fn default_command_toggle_split() -> String {
+    "Toggle Split Mode".to_string()
+}
+fn default_command_toggle_code_preview() -> String {
+    "Toggle Code Preview".to_string()
 }
 fn default_doc_search_no_results() -> String {
     "No results found.".to_string()

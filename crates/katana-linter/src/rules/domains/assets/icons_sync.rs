@@ -116,10 +116,7 @@ impl IconsSyncOps {
                 let Some(actual_icons) = per_theme_icons.get(theme) else {
                     continue;
                 };
-                if icon_path == "../system/match-case"
-                    || icon_path == "../system/whole-word"
-                    || icon_path == "../system/use-regex"
-                {
+                if icon_path.starts_with("../system/") {
                     continue;
                 }
 

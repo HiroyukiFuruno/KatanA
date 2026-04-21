@@ -23,6 +23,7 @@ mod tests {
                 id: format!("dummy_{}", i),
                 label: format!("Dummy Command {}", i),
                 secondary_label: None,
+                shortcut: None,
                 score: 1.0,
                 kind: CommandPaletteResultKind::Action,
                 execute_payload: CommandPaletteExecutePayload::DispatchAppAction(

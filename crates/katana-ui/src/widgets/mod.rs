@@ -7,6 +7,7 @@ pub mod markdown_hooks;
 mod menu_button;
 mod modal;
 mod search_bar;
+pub mod shortcut;
 pub mod toggle;
 
 pub use accordion::Accordion;
@@ -18,4 +19,5 @@ pub use markdown_hooks::MarkdownHooksOps;
 pub use menu_button::MenuButtonOps;
 pub use modal::Modal;
 pub use search_bar::SearchBar;
+pub use shortcut::ShortcutWidget;
 pub use toggle::{LabeledToggle, ToggleAlignment, ToggleOps, TogglePosition};

@@ -14,6 +14,10 @@ pub(super) fn render_results(
     action: &mut AppAction,
     is_open: &mut bool,
 ) {
+    /* WHY: Capture the panel width BEFORE the ScrollArea.
+    This is the authoritative width of the command palette window content area. */
+    let panel_width = ui.available_width();
+
     egui::ScrollArea::vertical()
         .max_height(COMMAND_PALETTE_MAX_HEIGHT)
         .auto_shrink([false, true])
@@ -32,40 +36,56 @@ pub(super) fn render_results(
                 } else {
                     ui.visuals().text_color()
                 };
-                let frame = egui::Frame::NONE.inner_margin(egui::vec2(
-                    COMMAND_PALETTE_MARGIN,
-                    COMMAND_PALETTE_INNER_MARGIN_Y,
-                ));
-                let response = frame
-                    .show(ui, |ui| {
-                        crate::widgets::AlignCenter::new()
-                            .shrink_to_fit(true)
-                            .content(|ui| {
-                                let icon = match result.kind {
-                                    CommandPaletteResultKind::Action => crate::Icon::Action,
-                                    CommandPaletteResultKind::File => crate::Icon::Document,
-                                    CommandPaletteResultKind::MarkdownContent => {
-                                        crate::Icon::Markdown
+
+                /* WHY: Use allocate_ui_with_layout to reserve the FULL panel width
+                for each row. This is the proven pattern (see status_bar.rs) that
+                ensures right_to_left layout has enough space to push content to
+                the right edge. ui.horizontal() shrink-wraps and breaks right-align. */
+                let row_height =
+                    ui.spacing().interact_size.y + COMMAND_PALETTE_INNER_MARGIN_Y * 2.0;
+                let response = ui
+                    .allocate_ui_with_layout(
+                        egui::vec2(panel_width, row_height),
+                        egui::Layout::left_to_right(egui::Align::Center),
+                        |ui| {
+                            ui.add_space(COMMAND_PALETTE_MARGIN);
+
+                            let icon = match result.kind {
+                                CommandPaletteResultKind::Action => crate::Icon::Action,
+                                CommandPaletteResultKind::File => crate::Icon::Document,
+                                CommandPaletteResultKind::MarkdownContent => crate::Icon::Markdown,
+                                CommandPaletteResultKind::RecentOrCommon => crate::Icon::Recent,
+                            };
+                            ui.visuals_mut().override_text_color = Some(text_color);
+                            let img = icon.ui_image(ui, crate::icon::IconSize::Medium);
+                            ui.add(img);
+                            ui.label(
+                                egui::RichText::new(&result.label)
+                                    .color(text_color)
+                                    .strong(),
+                            );
+                            if let Some(sec) = &result.secondary_label {
+                                ui.label(egui::RichText::new(sec).color(text_color).weak());
+                            }
+
+                            /* WHY: Switch to right_to_left layout for the remaining
+                            space. This pushes shortcut badges to the right edge.
+                            add_space(COMMAND_PALETTE_MARGIN) creates right padding. */
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |ui| {
+                                    ui.add_space(COMMAND_PALETTE_MARGIN);
+                                    if let Some(shortcut) = &result.shortcut {
+                                        crate::widgets::ShortcutWidget::new(shortcut).ui(ui);
                                     }
-                                    CommandPaletteResultKind::RecentOrCommon => crate::Icon::Recent,
-                                };
-                                ui.visuals_mut().override_text_color = Some(text_color);
-                                let img = icon.ui_image(ui, crate::icon::IconSize::Medium);
-                                ui.add(img);
-                                ui.label(
-                                    egui::RichText::new(&result.label)
-                                        .color(text_color)
-                                        .strong(),
-                                );
-                                if let Some(sec) = &result.secondary_label {
-                                    ui.label(egui::RichText::new(sec).color(text_color).weak());
-                                }
-                            })
-                            .show(ui);
-                    })
+                                },
+                            );
+                        },
+                    )
                     .response;
 
-                let interact = ui.interact(response.rect, response.id, egui::Sense::click());
+                let row_id = ui.id().with(&result.id);
+                let interact = ui.interact(response.rect, row_id, egui::Sense::click());
                 if interact.hovered() {
                     state.selected_index = idx;
                 }

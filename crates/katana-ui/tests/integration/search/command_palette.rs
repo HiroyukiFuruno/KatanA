@@ -10,11 +10,11 @@ fn test_app_command_provider() {
     let provider = AppCommandProvider;
 
     // Empty query returns generic recent/common actions
-    let results = provider.search("", None);
+    let results = provider.search("", None, None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::RecentOrCommon);
 
-    let results = provider.search("Settings", None);
+    let results = provider.search("Settings", None, None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::Action);
     assert_eq!(results[0].label, "Settings");
@@ -197,6 +197,7 @@ fn test_keyboard_navigation_state() {
                 id: "1".into(),
                 label: "Item 1".into(),
                 secondary_label: None,
+                shortcut: None,
                 score: 1.0,
                 kind: CommandPaletteResultKind::Action,
                 execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
@@ -207,6 +208,7 @@ fn test_keyboard_navigation_state() {
                 id: "2".into(),
                 label: "Item 2".into(),
                 secondary_label: None,
+                shortcut: None,
                 score: 0.9,
                 kind: CommandPaletteResultKind::Action,
                 execute_payload: CommandPaletteExecutePayload::DispatchAppAction(

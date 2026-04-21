@@ -92,6 +92,24 @@ impl ViewCommands {
                 is_available: |state| state.document.active_doc_idx.is_some(),
                 default_shortcuts: &["primary+R"],
             },
+            CommandInventoryItem {
+                id: "view.toggle_split_mode",
+                action: AppAction::ToggleSplitMode,
+                group: CommandGroup::View,
+                context: ShortcutContext::Global,
+                label: || I18nOps::get().search.command_toggle_split.clone(),
+                is_available: |_| true,
+                default_shortcuts: &["primary+Shift+\\"],
+            },
+            CommandInventoryItem {
+                id: "view.toggle_code_preview",
+                action: AppAction::ToggleCodePreview,
+                group: CommandGroup::View,
+                context: ShortcutContext::Global,
+                label: || I18nOps::get().search.command_toggle_code_preview.clone(),
+                is_available: |_| true,
+                default_shortcuts: &["primary+\\"],
+            },
         ]
     }
 }

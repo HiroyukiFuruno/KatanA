@@ -57,6 +57,8 @@ pub enum AppAction {
     ToggleExplorerFilter,
     CheckForUpdates,
     SetSplitDirection(SplitDirection),
+    ToggleSplitMode,
+    ToggleCodePreview,
     SetPaneOrder(PaneOrder),
     SetViewMode(ViewMode),
     ToggleScrollSync(bool),
