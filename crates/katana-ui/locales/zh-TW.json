@@ -460,7 +460,9 @@
     "use_regex": "使用正規表示式",
     "doc_query_hint": "在文件内搜尋…",
     "doc_search_no_results": "未找到結果",
-    "palette_action_query_hint": "搜尋 Katana 命令…"
+    "palette_action_query_hint": "搜尋 Katana 命令…",
+    "command_toggle_code_preview": "Toggle Code Preview",
+    "command_toggle_split": "Toggle Split View"
   },
   "toc": {
     "title": "大綱",

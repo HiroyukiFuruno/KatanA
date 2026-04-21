@@ -460,7 +460,9 @@
     "use_regex": "Regulärer Ausdruck",
     "doc_query_hint": "Im Dokument suchen…",
     "doc_search_no_results": "Keine Ergebnisse gefunden",
-    "palette_action_query_hint": "Katana-Befehle suchen…"
+    "palette_action_query_hint": "Katana-Befehle suchen…",
+    "command_toggle_code_preview": "Toggle Code Preview",
+    "command_toggle_split": "Toggle Split View"
   },
   "toc": {
     "title": "Inhaltsverzeichnis",

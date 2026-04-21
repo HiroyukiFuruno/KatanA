@@ -356,7 +356,7 @@
       "press_keys": "キーを入力… (Escでキャンセル)",
       "restore_defaults": "デフォルトに戻す",
       "none": "なし",
-      "conflict_warning": "警告: ショートカットが上書きされました。すでに '{command}' で使用されていました。",
+      "conflict_warning": "警告: すでに '{command}' で使用されています。\n別の組み合わせを選択してください。",
       "capture_prompt": "キーの組み合わせを押してください…",
       "confirm_key": "Enterで確定",
       "cancel_key": "Escでキャンセル",
@@ -434,8 +434,10 @@
     "ln_prefix": "行 ",
     "palette_query_hint": "ファイルやコンテンツを検索…",
     "command_settings": "設定の表示切替",
-    "command_explorer": "エクスプローラーを表示",
+    "command_explorer": "エクスプローラーを切り替え",
     "command_close_all": "すべてのドキュメントを閉じる",
+    "command_toggle_split": "分割",
+    "command_toggle_code_preview": "コード、プレビューの切り替え",
     "command_refresh_explorer": "エクスプローラーを更新",
     "command_updates": "アップデートを確認",
     "command_about": "KatanAについてを表示",
@@ -542,3 +544,4 @@
     "user_guide": "📚 ユーザーガイド"
   }
 }
+

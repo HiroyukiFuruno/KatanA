@@ -460,7 +460,9 @@
     "use_regex": "Utiliser Regex",
     "doc_query_hint": "Rechercher dans le document…",
     "doc_search_no_results": "Aucun résultat trouvé",
-    "palette_action_query_hint": "Rechercher des commandes Katana…"
+    "palette_action_query_hint": "Rechercher des commandes Katana…",
+    "command_toggle_code_preview": "Toggle Code Preview",
+    "command_toggle_split": "Toggle Split View"
   },
   "toc": {
     "title": "Sommaire",

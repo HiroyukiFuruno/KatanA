@@ -460,7 +460,9 @@
     "use_regex": "Usar Regex.",
     "doc_query_hint": "Pesquisar no documento…",
     "doc_search_no_results": "Nenhum resultado encontrado",
-    "palette_action_query_hint": "Pesquisar comandos do Katana…"
+    "palette_action_query_hint": "Pesquisar comandos do Katana…",
+    "command_toggle_code_preview": "Toggle Code Preview",
+    "command_toggle_split": "Toggle Split View"
   },
   "toc": {
     "title": "Índice",
