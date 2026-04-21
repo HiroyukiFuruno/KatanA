@@ -4,11 +4,11 @@ Welcome to **KatanA**, the next-generation Markdown knowledge base editor that t
 
 ## 💡 Getting Started
 
-Begin by testing out KatanA's rich rendering capabilities and markdown flavors! Use **File > Open Demo** to launch the built-in Demo Workspace.
+Begin by testing out KatanA's rich rendering capabilities and markdown flavors! Use **File > Open Demo** ({{os_cmd:open_demo}}) to launch the built-in Demo Workspace.
 
 | Action | Shortcut |
 | --- | --- |
-| **Open Demo Workspace** | `{{os_svg:open_demo}}` |
+| **Open Demo Workspace** | `{{os_cmd:open_demo}}` |
 
 ## 📚 Guides and Usage
 

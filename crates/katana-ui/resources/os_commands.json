@@ -40,9 +40,24 @@
     "linux": "Ctrl + S"
   },
   "refresh_preview": {
-    "mac": "⌘ + R",
-    "windows": "Ctrl + R",
-    "linux": "Ctrl + R"
+    "mac": "",
+    "windows": "",
+    "linux": ""
+  },
+  "refresh_document": {
+    "mac": "⌘ + ⇧ + R",
+    "windows": "Ctrl + Shift + R",
+    "linux": "Ctrl + Shift + R"
+  },
+  "zoom_in": {
+    "mac": "⌘ + ⇧ + +",
+    "windows": "Ctrl + Shift + +",
+    "linux": "Ctrl + Shift + +"
+  },
+  "zoom_out": {
+    "mac": "⌘ + ⇧ + -",
+    "windows": "Ctrl + Shift + -",
+    "linux": "Ctrl + Shift + -"
   },
   "close_tab": {
     "mac": "⌘ + W",
@@ -78,5 +93,30 @@
     "mac": "⌘ + ,",
     "windows": "Ctrl + ,",
     "linux": "Ctrl + ,"
+  },
+  "toggle_split": {
+    "mac": "⌘ + ⇧ + ¥",
+    "windows": "Ctrl + Shift + \\",
+    "linux": "Ctrl + Shift + \\"
+  },
+  "toggle_code_preview": {
+    "mac": "⌘ + ¥",
+    "windows": "Ctrl + \\",
+    "linux": "Ctrl + \\"
+  },
+  "tab_next": {
+    "mac": "⌘ + →",
+    "windows": "Ctrl + \u2192",
+    "linux": "Ctrl + \u2192"
+  },
+  "tab_prev": {
+    "mac": "⌘ + ←",
+    "windows": "Ctrl + \u2190",
+    "linux": "Ctrl + \u2190"
+  },
+  "toggle_slideshow": {
+    "mac": "⌘ + ⌥ + \u21b5",
+    "windows": "Ctrl + Alt + Enter",
+    "linux": "Ctrl + Alt + Enter"
   }
 }
