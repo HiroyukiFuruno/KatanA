@@ -128,17 +128,31 @@ impl KatanaTableRendererParts {
             Alignment::Right => egui::Align::Max,
             _ => egui::Align::Min,
         };
+        /* WHY: Outer top_down(align) handles vertical padding and column width constraints.
+         * Inner left_to_right(Center) flows mixed-content cells (e.g. emoji SVG + text)
+         * horizontally and vertically centers them. `with_main_align(align)` ensures
+         * the horizontal alignment of the row respects the table column alignment. */
         ui.with_layout(egui::Layout::top_down(align), |ui| {
-            /* WHY: item_spacing.y is inherited from the parent grid (10px). Zero it here so
-             * that when a cell contains multiple widgets (e.g. plain text + inline code),
-             * they stack at natural line height with no extra gap between them. */
             ui.spacing_mut().item_spacing.y = 0.0;
             if width > 0.0 {
                 ui.set_min_width(width);
                 ui.set_max_width(width);
             }
             ui.add_space(CELL_PAD_Y);
-            let result = add_contents(ui);
+            let result = ui
+                .with_layout(
+                    egui::Layout::left_to_right(egui::Align::Center)
+                        .with_main_wrap(true)
+                        .with_main_align(align),
+                    |ui| {
+                        /* WHY: Markdown text already provides spacing (e.g. "✅ 安定").
+                         * Setting item_spacing.x to 0.0 prevents egui from adding its default
+                         * gap between the emoji SVG widget and the following text labels. */
+                        ui.spacing_mut().item_spacing.x = 0.0;
+                        add_contents(ui)
+                    },
+                )
+                .inner;
             ui.add_space(CELL_PAD_Y);
             result
         })

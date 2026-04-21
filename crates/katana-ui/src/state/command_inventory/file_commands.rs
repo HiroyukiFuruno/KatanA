@@ -25,7 +25,7 @@ impl FileCommands {
                 context: ShortcutContext::Global,
                 label: || I18nOps::get().menu.close_workspace.clone(),
                 is_available: |state| state.workspace.data.is_some(),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+W"],
             },
             CommandInventoryItem {
                 id: "file.save",

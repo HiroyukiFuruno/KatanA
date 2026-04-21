@@ -70,18 +70,19 @@ fn test_integration_command_palette_ui() {
     assert!(harness.state().app_state_for_test().command_palette.is_open);
 
     // 2. Type query (triggers search)
-    harness
-        .state_mut()
-        .app_state_mut()
-        .command_palette
-        .current_query = "> Settings".into();
+    {
+        let cp_state = &mut harness.state_mut().app_state_mut().command_palette;
+        cp_state.current_query = "> Settings".into();
+        cp_state.results.clear(); // force re-search
+    }
     harness.step();
 
-    // 3. Verify results are populated in UI
-    let _ = harness.get_by_label("Settings");
-
-    // 4. Select and execution
-    harness.get_by_label("Settings").click();
+    // 3. Verify results are populated in UI and Select
+    harness
+        .get_all_by_value("Settings")
+        .next()
+        .expect("Should find Settings label in search results")
+        .click();
     harness.step();
     harness.step();
     harness.step();

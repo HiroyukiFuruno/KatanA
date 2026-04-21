@@ -102,8 +102,8 @@
 
 ## 5. Final Verification & Release Work
 
-- [ ] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 5.2 Ensure `make check` passes with exit code 0
+- [x] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 5.2 Ensure `make check` passes with exit code 0
 - [ ] 5.3 Create PR from Base Feature Branch targeting `master`
 - [ ] 5.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 5.5 Merge into master (`gh pr merge --merge --delete-branch`)

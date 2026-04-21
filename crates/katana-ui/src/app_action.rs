@@ -157,6 +157,10 @@ pub enum AppAction {
     IngestClipboardImage,
     /* WHY: Reveal local image asset in OS file manager. */
     RevealImageAsset(std::path::PathBuf),
+    SelectNextTab,
+    SelectPrevTab,
+    ZoomIn,
+    ZoomOut,
     Quit,
     None,
 }

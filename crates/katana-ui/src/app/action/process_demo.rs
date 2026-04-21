@@ -38,36 +38,16 @@ impl KatanaApp {
         }
     }
 
-    fn open_special_virtual_asset(&mut self, asset: super::demo_bundle::DemoAsset) {
-        let path = PathBuf::from(asset.virtual_path);
-
-        /* WHY: Check if already open */
-        let mut found_idx = None;
-        for (i, doc) in self.state.document.open_documents.iter_mut().enumerate() {
-            if doc.path == path {
-                /* WHY: Update reference state */
-                doc.is_reference = asset.is_reference;
-                found_idx = Some(i);
-                break;
-            }
+    pub(super) fn handle_action_switch_demo_lang(&mut self, target_lang: &str) {
+        let mut all_assets = super::demo_bundle::resolve_demo_bundle(target_lang);
+        if let Some(asset) = super::demo_bundle::resolve_single_asset(target_lang, "welcome.md") {
+            all_assets.push(asset);
+        }
+        if let Some(asset) = super::demo_bundle::resolve_single_asset(target_lang, "guide.md") {
+            all_assets.push(asset);
         }
 
-        let idx = if let Some(i) = found_idx {
-            i
-        } else {
-            /* WHY: Create document directly from embedded content.
-            No filesystem read needed — content is already in the binary. */
-            let mut doc = katana_core::document::Document::new(path.clone(), asset.content);
-            doc.is_reference = asset.is_reference;
-
-            self.state.document.open_documents.push(doc);
-            self.state.initialize_tab_split_state(path.clone());
-            self.state.document.open_documents.len() - 1
-        };
-
-        self.state.document.active_doc_idx = Some(idx);
-        let active_path = self.state.document.open_documents[idx].path.clone();
-        let src = self.state.document.open_documents[idx].buffer.clone();
+        let active_idx = self.state.document.active_doc_idx;
         let concurrency = self
             .state
             .config
@@ -75,122 +55,28 @@ impl KatanaApp {
             .settings()
             .performance
             .diagram_concurrency;
-        self.full_refresh_preview(&active_path, &src, false, concurrency);
-    }
-
-    fn open_demo_group(&mut self, demo_assets: Vec<super::demo_bundle::DemoAsset>) {
-        let demo_group_name = "Demo";
-        let demo_group_id = "demo".to_string();
-
-        /* WHY: Ensure the DEMO group exists */
-        if !self
-            .state
-            .document
-            .tab_groups
-            .iter()
-            .any(|g| g.id == demo_group_id)
-        {
-            self.state
-                .document
-                .tab_groups
-                .push(crate::state::document::TabGroup {
-                    id: demo_group_id.clone(),
-                    name: demo_group_name.to_string(),
-                    color_hex: "#808080".to_string(), // System/Demo Grey
-                    collapsed: false,
-                    members: Vec::new(),
-                });
-        }
-
-        /* WHY: Open the embedded assets and add to the group */
-        let mut first_opened_idx = None;
-        for asset in demo_assets {
-            let path = PathBuf::from(asset.virtual_path);
-
-            /* WHY: Check if already open */
-            let mut found_idx = None;
-            for (i, doc) in self.state.document.open_documents.iter_mut().enumerate() {
-                if doc.path == path {
-                    /* WHY: Update reference state if it was opened outside */
-                    doc.is_reference = asset.is_reference;
-                    found_idx = Some(i);
-                    break;
-                }
-            }
-
-            let idx = if let Some(i) = found_idx {
-                i
-            } else {
-                /* WHY: Create document directly from embedded content.
-                No filesystem read needed — content is already in the binary. */
-                let mut doc = katana_core::document::Document::new(path.clone(), asset.content);
-                doc.is_reference = asset.is_reference;
-
-                self.state.document.open_documents.push(doc);
-                self.state.initialize_tab_split_state(path.clone());
-                self.state.document.open_documents.len() - 1
-            };
-
-            if first_opened_idx.is_none() {
-                first_opened_idx = Some(idx);
-            }
-
-            /* WHY: Assign to group */
-            let path_str = path.to_string_lossy().to_string();
-            if let Some(group) = self
-                .state
-                .document
-                .tab_groups
-                .iter_mut()
-                .find(|g| g.id == demo_group_id)
-                && !group.members.contains(&path_str)
-            {
-                group.members.push(path_str);
-            }
-        }
-
-        /* WHY: Focus the first file (welcome.md) and trigger preview rendering */
-        if let Some(idx) = first_opened_idx {
-            self.state.document.active_doc_idx = Some(idx);
-            let path = self.state.document.open_documents[idx].path.clone();
-            let src = self.state.document.open_documents[idx].buffer.clone();
-            let concurrency = self
-                .state
-                .config
-                .settings
-                .settings()
-                .performance
-                .diagram_concurrency;
-            self.full_refresh_preview(&path, &src, false, concurrency);
-        }
-    }
-
-    pub(super) fn handle_action_switch_demo_lang(&mut self, target_lang: &str) {
-        let demo_assets = super::demo_bundle::resolve_demo_bundle(target_lang);
-        let active_idx = self.state.document.active_doc_idx;
-
-        for asset in demo_assets {
+        let mut refresh_targets = Vec::new();
+        for asset in all_assets {
             let virtual_path = PathBuf::from(&asset.virtual_path);
             for doc in self.state.document.open_documents.iter_mut() {
                 if doc.path == virtual_path {
                     doc.buffer = asset.content.to_string();
+                    /* WHY: Refresh the preview for all open demo documents to keep tabs synchronized. */
+                    refresh_targets.push((doc.path.clone(), doc.buffer.clone()));
                 }
             }
         }
 
+        for (path, buffer) in refresh_targets {
+            self.full_refresh_preview(&path, &buffer, false, concurrency);
+        }
+
         if let Some(idx) = active_idx
             && let Some(doc) = self.state.document.open_documents.get(idx)
-            && doc.path.to_string_lossy().starts_with("Katana://Demo/")
+            && doc.path.to_string_lossy().starts_with("Katana://")
         {
             let path = doc.path.clone();
             let src = doc.buffer.clone();
-            let concurrency = self
-                .state
-                .config
-                .settings
-                .settings()
-                .performance
-                .diagram_concurrency;
             self.full_refresh_preview(&path, &src, false, concurrency);
         }
     }

@@ -4,10 +4,10 @@ use crate::state::command_palette::{
 };
 use katana_core::workspace::Workspace;
 
-const MAX_FILE_RESULTS: usize = 50;
-const BASE_CONTENT_SCORE: f32 = 0.6;
-const FILE_PRIMARY_MATCH_SCORE: f32 = 0.9;
-const FILE_SECONDARY_MATCH_SCORE: f32 = 0.5;
+pub const MAX_FILE_RESULTS: usize = 50;
+pub const BASE_CONTENT_SCORE: f32 = 0.6;
+pub const FILE_PRIMARY_MATCH_SCORE: f32 = 0.9;
+pub const FILE_SECONDARY_MATCH_SCORE: f32 = 0.5;
 
 use crate::state::command_inventory::CommandInventory;
 
@@ -48,8 +48,16 @@ impl CommandPaletteProvider for AppCommandProvider {
             let is_empty = query_lower.is_empty();
             let label_lower = label.to_lowercase();
             if is_empty || label_lower.contains(&query_lower) {
-                let score = if is_empty { base_score - EMPTY_QUERY_PENALTY } else { base_score + label_lower.starts_with(&query_lower) as u32 as f32 };
-                let kind = if is_empty { CommandPaletteResultKind::RecentOrCommon } else { CommandPaletteResultKind::Action };
+                let score = if is_empty {
+                    base_score - EMPTY_QUERY_PENALTY
+                } else {
+                    base_score + label_lower.starts_with(&query_lower) as u32 as f32
+                };
+                let kind = if is_empty {
+                    CommandPaletteResultKind::RecentOrCommon
+                } else {
+                    CommandPaletteResultKind::Action
+                };
                 results.push(CommandPaletteResult {
                     id: cmd.id.to_string(),
                     label,
@@ -57,7 +65,9 @@ impl CommandPaletteProvider for AppCommandProvider {
                     shortcut,
                     score,
                     kind,
-                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(cmd.action.clone()),
+                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
+                        cmd.action.clone(),
+                    ),
                 });
             }
         }
@@ -134,64 +144,5 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
     }
 }
 
-/// Provides markdown content results.
-pub struct MarkdownContentProvider;
-
-impl CommandPaletteProvider for MarkdownContentProvider {
-    fn name(&self) -> &'static str {
-        "Content"
-    }
-
-    fn search(
-        &self,
-        query: &str,
-        workspace: Option<&Workspace>,
-        _os_bindings: Option<&std::collections::HashMap<String, String>>,
-    ) -> Vec<CommandPaletteResult> {
-        let mut results = Vec::new();
-        if query.is_empty() {
-            return results;
-        }
-
-        if let Some(ws) = workspace {
-            let matches = katana_core::search::WorkspaceSearchOps::search_workspace(
-                ws,
-                query,
-                false, // match_case
-                false, // match_word
-                false, // use_regex
-                MAX_FILE_RESULTS,
-            );
-            for m in matches {
-                let rel_path = crate::shell_logic::ShellLogicOps::relative_full_path(
-                    &m.file_path,
-                    Some(&ws.root),
-                );
-
-                let mut label = m.snippet.clone();
-                if label.len() > 100 {
-                    let end = label.floor_char_boundary(100);
-                    label.truncate(end);
-                    label.push_str("...");
-                }
-
-                results.push(CommandPaletteResult {
-                    id: format!("content_{}_{}", rel_path, m.line_number),
-                    label: label.trim().to_string(),
-                    secondary_label: Some(format!("{}:{}", rel_path, m.line_number + 1)),
-                    shortcut: None,
-                    /* WHY: slightly lower score than exact file matches */
-                    score: BASE_CONTENT_SCORE,
-                    kind: CommandPaletteResultKind::MarkdownContent,
-                    execute_payload: CommandPaletteExecutePayload::NavigateToContent {
-                        path: m.file_path.clone(),
-                        line: m.line_number,
-                        byte_range: m.start_col..m.end_col,
-                    },
-                });
-            }
-        }
-
-        results
-    }
-}
+pub mod markdown_content;
+pub use markdown_content::MarkdownContentProvider;

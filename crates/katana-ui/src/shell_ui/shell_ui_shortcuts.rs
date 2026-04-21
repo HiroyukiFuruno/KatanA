@@ -1,5 +1,5 @@
 use crate::shell::KatanaApp;
-use crate::state::command_inventory::CommandInventory;
+use crate::state::command_inventory::{CommandInventory, CommandInventoryItem};
 use crate::state::shortcut_context::{ShortcutContext, ShortcutContextResolver};
 use eframe::egui;
 
@@ -125,7 +125,32 @@ impl KatanaApp {
             .shortcuts
             .current_os_bindings();
 
-        for cmd in CommandInventory::all() {
+        /* WHY: egui's consume_shortcut uses matches_logically, which ignores extra
+        Shift/Alt modifiers. This means a shortcut like "primary+\" would also match
+        when the user presses "primary+Shift+\". By sorting commands so that shortcuts
+        with more modifiers are evaluated first, we ensure the more-specific shortcut
+        is consumed before the less-specific one can match. */
+        let mut commands = CommandInventory::all();
+        commands.sort_by(|a, b| {
+            let count_mods = |cmd: &CommandInventoryItem| -> usize {
+                let shortcuts: Vec<String> = if let Some(custom) = os_bindings.get(cmd.id) {
+                    vec![custom.clone()]
+                } else {
+                    cmd.default_shortcuts
+                        .iter()
+                        .map(|&s| s.to_string())
+                        .collect()
+                };
+                shortcuts
+                    .iter()
+                    .map(|s| s.split('+').count())
+                    .max()
+                    .unwrap_or(0)
+            };
+            count_mods(b).cmp(&count_mods(a))
+        });
+
+        for cmd in commands {
             /* WHY: Skip commands whose context does not match the active context.
             Global commands fire anywhere except Recording/Modal.
             Editor commands fire only when the text editor has focus. */

@@ -2,9 +2,11 @@
 mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;
+mod dispatch_tertiary;
 mod image_ingest;
 mod process_authoring;
 mod process_demo;
+mod process_demo_group;
 mod process_document;
 mod process_group_lifecycle;
 mod process_groups;
