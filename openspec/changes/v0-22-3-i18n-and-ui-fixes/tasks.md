@@ -50,14 +50,14 @@
 - [x] 2.5 i18n キーを追加する（EN + JA 同時）: `settings.shortcuts.capture_prompt`, `settings.shortcuts.confirm_key`, `settings.shortcuts.cancel_key`
 - [x] 2.6 ショートカット設定画面に検索バーを追加する
 - [x] 2.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
 - [x] 編集ボタンが削除され、録音モーダルが起動すること
 - [x] OSネイティブキーアイコンが正しく表示されること
 - [x] `make check` がパスすること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -65,21 +65,21 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle.
-- [ ] Base branch is synced.
+- [x] Ensure the previous task completed its full delivery cycle.
+- [x] Base branch is synced.
 
-- [ ] 3.1 画像で報告された英語のままのラベルを、日本語（`ja.json`）および全11言語に翻訳追加する
+- [x] 3.1 画像で報告された英語のままのラベルを、日本語（`ja.json`）および全11言語に翻訳追加する
   - `Close Document`, `Restore Closed Document`, `Global Search`, `Document Search`, `Toggle Explorer Filter` 等
-- [ ] 3.2 デフォルトショートカットの割り当て（Task 3.1〜3.15 の内容）
+- [x] 3.2 デフォルトショートカットの割り当て（Task 3.1〜3.15 の内容）
   - `file.close_workspace` → `primary+Shift+W`
   - `view.refresh_explorer` → `primary+Shift+R`
   - その他 `edit.*` 系ショートカットの追加
-- [ ] 3.3 割り当て後の重複チェック: `debug_assert!` による実行時重複検知の確認。
+- [x] 3.3 割り当て後の重複チェック: `debug_assert!` による実行時重複検知の確認。
 
 ### Definition of Done (DoD)
 
-- [ ] コマンドパレットや設定画面で英語フォールバックが発生していないこと
-- [ ] `make check` がパスすること
+- [x] コマンドパレットや設定画面で英語フォールバックが発生していないこと
+- [x] `make check` がパスすること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
