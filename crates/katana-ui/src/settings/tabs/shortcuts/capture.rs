@@ -38,7 +38,9 @@ impl ShortcutsTabOps {
 
         /* WHY: Consume all key events at the top-level ui to prevent Katana shortcuts from reacting while the capture modal is open */
         let (should_cancel, should_confirm, pressed_shortcut) =
-            crate::settings::tabs::shortcuts::key_events::KeyEventsOps::capture_key_from_events(ui, is_mac);
+            crate::settings::tabs::shortcuts::key_events::KeyEventsOps::capture_key_from_events(
+                ui, is_mac,
+            );
 
         let mut temp_shortcut = ui.memory_mut(|mem| {
             mem.data
@@ -105,11 +107,11 @@ impl ShortcutsTabOps {
                 ui.vertical_centered(|ui| {
                     ui.add_space(CAPTURE_MODAL_BODY_SPACING_TOP);
                     Self::render_conflict_warning(ui);
-                    
+
                     /* WHY: Real-time display of currently held modifiers inside a fake, focused Input box.
                     This provides immediate visual feedback exactly like VSCode. */
                     ui.add_space(CAPTURE_MODAL_BODY_SPACING_MID);
-                    
+
                     const BOX_INNER_MARGIN_X: i8 = 16;
                     const BOX_INNER_MARGIN_Y: i8 = 10;
                     let mut frame = egui::Frame::none()
@@ -121,7 +123,7 @@ impl ShortcutsTabOps {
                     frame.show(ui, |ui| {
                         /* WHY: Force full width for the input box */
                         ui.set_width(ui.available_width());
-                        
+
                         /* WHY: Force perfect horizontal centering without expanding vertically indefinitely.
                            Avoid centered_and_justified as it causes layout ratcheting inside auto-sizing Windows. */
                         ui.vertical_centered(|ui| {
@@ -186,5 +188,4 @@ impl ShortcutsTabOps {
             ui.add_space(CAPTURE_MODAL_BODY_SPACING_MID);
         }
     }
-
 }

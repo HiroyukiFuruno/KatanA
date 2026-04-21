@@ -30,15 +30,13 @@ impl KatanaTableRendererParts {
                 pulldown_cmark::Event::Code(t) => Some(t.as_ref()),
                 _ => None,
             };
-            if let Some(text) = text {
-                if text.starts_with("{{os_svg:") && text.ends_with("}}") {
-                    const OS_SVG_PREFIX_LEN: usize = "{{os_svg:".len();
-                    const OS_SVG_SUFFIX_LEN: usize = "}}".len();
-                    let key = &text[OS_SVG_PREFIX_LEN..text.len() - OS_SVG_SUFFIX_LEN];
-                    let raw = crate::os_command::OsCommandOps::get(key);
-                    crate::widgets::ShortcutWidget::new(&raw).ui(ui);
-                    replaced = true;
-                }
+            if let Some(text) = text.filter(|t| t.starts_with("{{os_svg:") && t.ends_with("}}")) {
+                const OS_SVG_PREFIX_LEN: usize = "{{os_svg:".len();
+                const OS_SVG_SUFFIX_LEN: usize = "}}".len();
+                let key = &text[OS_SVG_PREFIX_LEN..text.len() - OS_SVG_SUFFIX_LEN];
+                let raw = crate::os_command::OsCommandOps::get(key);
+                crate::widgets::ShortcutWidget::new(&raw).ui(ui);
+                replaced = true;
             }
         }
         if !replaced {
