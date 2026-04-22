@@ -59,6 +59,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     let theme_str = settings.theme.as_deref().unwrap_or("dark");
     let locale = settings.locale.as_deref().unwrap_or("en");
     let preset = if theme_str == "light" { "KatanaLight" } else { "KatanaDark" };
+    let explorer_visible = settings.explorer_visible.unwrap_or(false);
 
     let workspace_block = match workspace_dir {
         Some(dir) => format!(
@@ -79,6 +80,9 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
   "theme": {{
     "theme": "{theme_str}",
     "preset": "{preset}"
+  }},
+  "layout": {{
+    "explorer_default_visible": {explorer_visible}
   }}{workspace_block}
 }}"#
     )

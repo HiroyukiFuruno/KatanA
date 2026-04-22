@@ -28,6 +28,7 @@ pub struct WorkspaceFile {
 pub struct FixtureSettings {
     pub theme: Option<String>,
     pub locale: Option<String>,
+    pub explorer_visible: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
