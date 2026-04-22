@@ -4,7 +4,7 @@ use egui_kittest::Harness;
 use katana_core::workspace::TreeEntry;
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
 use katana_ui::shell::KatanaApp;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::time::Duration;
 
 pub fn run(
@@ -30,6 +30,7 @@ pub fn run(
 
     let settings_path = config_dir.join("settings.json");
     let workspace_dir_owned = workspace_dir.map(|p| p.to_path_buf());
+    let workspace_dir_for_lookup = workspace_dir_owned.clone();
     let output_dir = output_dir.to_path_buf();
 
     let mut harness = Harness::builder()
@@ -193,7 +194,13 @@ pub fn run(
                     .workspace
                     .data
                     .as_ref()
-                    .and_then(|ws| find_file_by_name(&ws.tree, &s.file_name));
+                    .and_then(|ws| {
+                        find_workspace_file(
+                            &ws.tree,
+                            workspace_dir_for_lookup.as_deref(),
+                            &s.file_name,
+                        )
+                    });
                 match path {
                     Some(p) => {
                         harness.state_mut().trigger_action(AppAction::SelectDocument(p));
@@ -379,6 +386,46 @@ fn first_file_in_tree(tree: &[TreeEntry]) -> Option<PathBuf> {
     None
 }
 
+fn find_workspace_file(
+    tree: &[TreeEntry],
+    workspace_root: Option<&Path>,
+    requested: &str,
+) -> Option<PathBuf> {
+    if let Some(root) = workspace_root {
+        if let Some(path) = find_file_by_relative_path(tree, root, Path::new(requested)) {
+            return Some(path);
+        }
+    }
+    find_file_by_name(tree, requested)
+}
+
+fn find_file_by_relative_path(
+    tree: &[TreeEntry],
+    workspace_root: &Path,
+    requested: &Path,
+) -> Option<PathBuf> {
+    let requested = normalize_relative_path(requested);
+    for entry in tree {
+        match entry {
+            TreeEntry::File { path } => {
+                let Ok(relative) = path.strip_prefix(workspace_root) else {
+                    continue;
+                };
+                if normalize_relative_path(relative) == requested {
+                    return Some(path.clone());
+                }
+            }
+            TreeEntry::Directory { children, .. } => {
+                if let Some(path) = find_file_by_relative_path(children, workspace_root, &requested)
+                {
+                    return Some(path);
+                }
+            }
+        }
+    }
+    None
+}
+
 fn find_file_by_name(tree: &[TreeEntry], name: &str) -> Option<PathBuf> {
     for entry in tree {
         match entry {
@@ -395,4 +442,71 @@ fn find_file_by_name(tree: &[TreeEntry], name: &str) -> Option<PathBuf> {
         }
     }
     None
+}
+
+fn normalize_relative_path(path: &Path) -> PathBuf {
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            Component::Normal(part) => normalized.push(part),
+            Component::RootDir | Component::Prefix(_) => {
+                normalized.push(component.as_os_str());
+            }
+        }
+    }
+    normalized
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{find_workspace_file, normalize_relative_path};
+    use katana_core::workspace::TreeEntry;
+    use std::path::{Path, PathBuf};
+
+    #[test]
+    fn open_file_prefers_workspace_relative_path_over_basename_match() {
+        let root = Path::new("/tmp/workspace");
+        let tree = vec![
+            TreeEntry::Directory {
+                path: root.join("openspec"),
+                children: vec![TreeEntry::File {
+                    path: root.join("openspec/README.md"),
+                }],
+            },
+            TreeEntry::File {
+                path: root.join("README.md"),
+            },
+        ];
+
+        let resolved = find_workspace_file(&tree, Some(root), "README.md");
+
+        assert_eq!(resolved, Some(root.join("README.md")));
+    }
+
+    #[test]
+    fn open_file_supports_nested_relative_paths() {
+        let root = Path::new("/tmp/workspace");
+        let tree = vec![TreeEntry::Directory {
+            path: root.join("openspec"),
+            children: vec![TreeEntry::File {
+                path: root.join("openspec/README.md"),
+            }],
+        }];
+
+        let resolved = find_workspace_file(&tree, Some(root), "openspec/README.md");
+
+        assert_eq!(resolved, Some(root.join("openspec/README.md")));
+    }
+
+    #[test]
+    fn normalize_relative_path_collapses_dot_segments() {
+        assert_eq!(
+            normalize_relative_path(Path::new("./docs/../README.md")),
+            PathBuf::from("README.md"),
+        );
+    }
 }
