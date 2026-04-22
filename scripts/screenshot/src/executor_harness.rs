@@ -5,6 +5,7 @@ use katana_core::workspace::TreeEntry;
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
 use katana_ui::shell::KatanaApp;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 pub fn run(
     steps: &[Step],
@@ -91,6 +92,7 @@ pub fn run(
             Step::Launch(_) => "launch",
             Step::Wait(_) => "wait",
             Step::Screenshot(_) => "screenshot",
+            Step::ExportPng(_) => "export_png",
             Step::OpenFile(_) => "open_file",
             Step::Action(_) => "action",
             Step::Quit => "quit",
@@ -125,9 +127,12 @@ pub fn run(
                 }
             }
             Step::Wait(s) => {
+                // Step egui frames AND sleep real time so async work (network
+                // fetches, subprocess launches) actually completes.
                 let frames = ((s.seconds * 60.0) as usize).max(1);
                 for _ in 0..frames {
                     harness.step();
+                    std::thread::sleep(Duration::from_millis(16));
                 }
             }
             Step::Screenshot(s) => {
@@ -135,11 +140,51 @@ pub fn run(
                 let image = harness
                     .render()
                     .map_err(|e| anyhow::anyhow!("render failed: {e}"))?;
+                let image = if let Some(crop) = s.crop {
+                    image::imageops::crop_imm(&image, crop.x, crop.y, crop.width, crop.height)
+                        .to_image()
+                } else {
+                    image
+                };
                 let out = output_dir.join(format!("{}.png", s.output_name));
                 image
                     .save(&out)
                     .map_err(|e| anyhow::anyhow!("save failed: {e}"))?;
                 println!("  saved: {}", out.display());
+            }
+            Step::ExportPng(s) => {
+                // Get the active document's markdown content and path
+                let doc_info = harness
+                    .state_mut()
+                    .app_state_mut()
+                    .active_document()
+                    .map(|d| (d.buffer.clone(), d.path.clone()));
+                let (source, doc_path) = match doc_info {
+                    Some(info) => info,
+                    None => {
+                        println!("  WARNING: no active document for export_png, skipping");
+                        continue;
+                    }
+                };
+                let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
+                let base_dir = doc_path.parent().map(|p| p.to_path_buf());
+                let tmp_html_name = format!("katana_screenshot_export_{}.html", s.output_name);
+                let html_path = katana_ui::shell_logic::ShellLogicOps::export_named_html_to_tmp(
+                    &source,
+                    &tmp_html_name,
+                    &preset,
+                    base_dir.as_deref(),
+                )
+                .map_err(|e| anyhow::anyhow!("html export failed: {e}"))?;
+                let out = output_dir.join(format!("{}.png", s.output_name));
+                katana_core::markdown::export::ImageExporter::export(
+                    &std::fs::read_to_string(&html_path)
+                        .map_err(|e| anyhow::anyhow!("read html failed: {e}"))?,
+                    &out,
+                )
+                .map_err(|e| anyhow::anyhow!("png export failed: {e}"))?;
+                let _ = std::fs::remove_file(&html_path);
+                println!("  exported: {}", out.display());
             }
             Step::OpenFile(s) => {
                 let path = harness
@@ -213,6 +258,45 @@ pub fn run(
                             harness.step();
                         }
                     }
+                    UiAction::SetScrollOffset { id: _, y } => {
+                        // Send wheel events in batches to reach the target offset.
+                        // Each batch moves the pointer to center and scrolls negatively
+                        // (positive y = scroll up in egui's convention).
+                        const BATCH: f32 = 200.0;
+                        let mut remaining = *y;
+                        while remaining > 0.0 {
+                            let delta = remaining.min(BATCH);
+                            remaining -= delta;
+                            let viewport = harness.ctx.viewport_rect();
+                            let pos = egui::pos2(viewport.center().x, viewport.center().y);
+                            harness.input_mut().events.push(egui::Event::PointerMoved(pos));
+                            harness.input_mut().events.push(egui::Event::MouseWheel {
+                                unit: egui::MouseWheelUnit::Point,
+                                delta: egui::Vec2::new(0.0, -delta),
+                                modifiers: egui::Modifiers::NONE,
+                                phase: egui::TouchPhase::Move,
+                            });
+                            for _ in 0..30 {
+                                harness.step();
+                            }
+                        }
+                    }
+                    UiAction::OpenFirstChangelogSection => {
+                        // Changelog accordion IDs are the version strings.
+                        // The first (top) section matches the current app version.
+                        let version = katana_ui::about_info::APP_VERSION;
+                        let egui_id = egui::Id::new(version);
+                        let mut state = egui::collapsing_header::CollapsingState::load_with_default_open(
+                            &harness.ctx,
+                            egui_id,
+                            false,
+                        );
+                        state.set_open(true);
+                        state.store(&harness.ctx);
+                        for _ in 0..60 {
+                            harness.step();
+                        }
+                    }
                     UiAction::SetViewMode { mode } => {
                         use katana_ui::app_state::ViewMode;
                         let view_mode = match mode.as_str() {
@@ -244,6 +328,8 @@ pub fn run(
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
                             | UiAction::ScrollDown { .. }
+                            | UiAction::SetScrollOffset { .. }
+                            | UiAction::OpenFirstChangelogSection
                             | UiAction::SetViewMode { .. } => unreachable!(),
                         };
                         harness.state_mut().trigger_action(app_action);
