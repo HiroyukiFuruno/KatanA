@@ -568,6 +568,17 @@
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
     "docs": "Docs_Linter",
     "disable_rule": "Disable_Linter_Rule",
-    "disable_rule_desc": "Disable_this_rule_for_linter"
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Markdown Linter 활성화",
+    "rule_severities": "규칙 심각도",
+    "advanced_workspace_settings": "고급 작업 공간 설정",
+    "workspace_has_config": "작업 공간에 .markdownlint.json 설정 파일이 있습니다.",
+    "open_config": "설정 열기",
+    "workspace_no_config": "현재 작업 공간에 .markdownlint.json이 없습니다.",
+    "create_config": "설정 만들기",
+    "open_workspace_to_configure": "작업 공간별 Lint 규칙을 구성하려면 작업 공간을 여세요.",
+    "severity_ignore": "무시",
+    "severity_warning": "경고",
+    "severity_error": "오류"
   }
 }

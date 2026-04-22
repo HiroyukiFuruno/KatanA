@@ -568,6 +568,17 @@
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
     "docs": "Docs_Linter",
     "disable_rule": "Disable_Linter_Rule",
-    "disable_rule_desc": "Disable_this_rule_for_linter"
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "啟用 Markdown Linter",
+    "rule_severities": "規則嚴重性",
+    "advanced_workspace_settings": "進階工作區設定",
+    "workspace_has_config": "工作區中存在 .markdownlint.json 設定檔。",
+    "open_config": "開啟設定",
+    "workspace_no_config": "目前工作區未找到 .markdownlint.json。",
+    "create_config": "建立設定",
+    "open_workspace_to_configure": "開啟一個工作區以配置工作區特定的Lint規則。",
+    "severity_ignore": "忽略",
+    "severity_warning": "警告",
+    "severity_error": "錯誤"
   }
 }

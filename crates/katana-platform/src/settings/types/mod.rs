@@ -21,6 +21,7 @@ pub use font::*;
 pub use icon::*;
 pub use ingest::*;
 pub use layout::*;
+pub use linter::*;
 pub use performance::*;
 pub use search::*;
 pub use shortcut::*;

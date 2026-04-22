@@ -568,6 +568,17 @@
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
     "docs": "Docs_Linter",
     "disable_rule": "Disable_Linter_Rule",
-    "disable_rule_desc": "Disable_this_rule_for_linter"
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Activer Markdown Linter",
+    "rule_severities": "Gravité des règles",
+    "advanced_workspace_settings": "Paramètres avancés de l’espace de travail",
+    "workspace_has_config": "L’espace de travail contient un fichier de configuration .markdownlint.json.",
+    "open_config": "Ouvrir la configuration",
+    "workspace_no_config": "Aucun .markdownlint.json trouvé dans l’espace de travail actuel.",
+    "create_config": "Créer une configuration",
+    "open_workspace_to_configure": "Ouvrez un espace de travail pour configurer les règles spécifiques de Lint.",
+    "severity_ignore": "Ignorer",
+    "severity_warning": "Avertissement",
+    "severity_error": "Erreur"
   }
 }

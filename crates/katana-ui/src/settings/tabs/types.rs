@@ -8,6 +8,7 @@ pub struct ThemeTabOps;
 pub struct UpdatesTabOps;
 pub struct WorkspaceTabOps;
 pub struct ShortcutsTabOps;
+pub struct LinterTabOps;
 
 pub(crate) enum ColorPropType {
     Rgb(fn(&ThemeColors) -> Rgb, fn(&mut ThemeColors, Rgb)),

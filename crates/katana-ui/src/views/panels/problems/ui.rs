@@ -159,17 +159,6 @@ fn show_diagnostic_row(
                         meta.docs_url,
                     );
                 }
-
-                let i18n = crate::i18n::I18nOps::get();
-                if ui
-                    .button(&i18n.linter.disable_rule)
-                    .on_hover_text(&i18n.linter.disable_rule_desc)
-                    .clicked()
-                {
-                    action = Some(crate::app_state::AppAction::ToggleLintRule(
-                        meta.code.to_string(),
-                    ));
-                }
             });
         });
 
