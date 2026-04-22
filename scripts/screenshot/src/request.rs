@@ -38,6 +38,9 @@ pub enum Step {
     Launch(LaunchStep),
     Wait(WaitStep),
     Screenshot(ScreenshotStep),
+    RecordStart(RecordStartStep),
+    RecordStop(RecordStopStep),
+    Scroll(ScrollStep),
     /// Export the active document as PNG using the app's export pipeline, then save to output_dir.
     ExportPng(ExportPngStep),
     /// Open a file by name from the workspace tree.
@@ -69,6 +72,41 @@ pub struct ScreenshotStep {
     pub output_name: String,
     /// Crop the rendered image to this rect (physical pixels, after pixels_per_point scaling).
     pub crop: Option<CropRect>,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum VideoFormat {
+    Webm,
+    Mp4,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RecordStartStep {
+    pub output_name: String,
+    /// Optional output format. Defaults to webm.
+    pub format: Option<VideoFormat>,
+    /// Optional target fps used for encoding. Defaults to 24.
+    pub fps: Option<u32>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RecordStopStep {}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum ScrollDirection {
+    Up,
+    Down,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ScrollStep {
+    pub direction: ScrollDirection,
+    /// Logical-pixel amount to scroll.
+    pub pixels: f32,
+    /// Duration for the scroll interaction.
+    pub duration_seconds: f64,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy)]
@@ -113,6 +151,41 @@ pub enum UiAction {
     OpenFirstChangelogSection,
     /// Set the editor view mode. mode: "preview_only" | "code_only" | "split"
     SetViewMode { mode: String },
+    /// Open the command palette, type a query, and optionally execute the top result.
+    RunCommandPalette {
+        query: String,
+        #[serde(default)]
+        katana_mode: bool,
+        #[serde(default)]
+        execute_first: bool,
+        #[serde(default)]
+        keystroke_delay_seconds: Option<f64>,
+        #[serde(default)]
+        pause_after_seconds: Option<f64>,
+    },
+    /// Open global search and populate a query in the selected tab.
+    RunGlobalSearch {
+        query: String,
+        tab: String,
+        #[serde(default)]
+        keystroke_delay_seconds: Option<f64>,
+        #[serde(default)]
+        pause_after_seconds: Option<f64>,
+    },
+    /// Open in-document search, type a query, and optionally advance matches.
+    RunDocumentSearch {
+        query: String,
+        #[serde(default)]
+        next_count: Option<u32>,
+        #[serde(default)]
+        keystroke_delay_seconds: Option<f64>,
+        #[serde(default)]
+        pause_after_seconds: Option<f64>,
+    },
+    /// Select a built-in theme preset from the visible Settings > Theme preset list.
+    SelectThemePresetInSettings { preset: String },
+    /// Advance slideshow pages as if paging through fullscreen content.
+    SlideshowNavigate { direction: String, steps: u32, wait_seconds: f64 },
 }
 
 #[derive(Debug, Deserialize)]
