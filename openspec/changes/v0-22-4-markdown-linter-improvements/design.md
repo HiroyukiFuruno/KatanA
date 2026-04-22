@@ -1,57 +1,58 @@
-# Markdown Linter Improvements Design
+# Markdown Linter 改善 設計
 
-## Overview
+## 概要
 
-This design outlines the implementation of enhanced markdown linting capabilities including full rule support, visual indicators, and improved diagnostics experience.
+markdownlint の完全ルールサポート、VSCode スタイルの視覚インジケーター、堅牢な設定 UI、およびアプリ内ドキュメントビューアーを含む、Markdown リンティング機能の強化設計。
 
-## Rule Support
+## 1. ルールサポートと設定
 
-### Current State
+### 現状
 
-- Only MD001 rule is supported
-- Requires extension to all official markdownlint rules
+- コマンドインベントリベースの単純なトグル（ON/OFF）操作のみ
+- ショートカット画面にリンタールール切替が混在している
 
-### Proposed Implementation
+### 提案する実装
 
-- Integrate full markdownlint rule set
-- Support all rules in markdownlint specification
-- Maintain backward compatibility
+- **設定 UI への移動**: ルール設定をショートカット画面から `設定 → Lint` セクションへ完全移行
+- **マスタースイッチ**: 「Markdown Linter を有効化」グローバルトグル（デフォルト: 有効）
+- **3段階の重大度設定**: 各ルールを単純な ON/OFF ではなく、ドロップダウンで以下から選択可能にする:
+  - `無視`（無効）
+  - `警告`（Warning）
+  - `エラー`（Error）
+- **デフォルト**: 全ルール有効（重大度: `警告`）
+- **高度なワークスペース設定**: ワークスペースごとに `.markdownlint.json` ファイルを生成・編集できる UI を提供。単純な重大度設定を超えた、パラメータレベルの詳細なルール設定が可能。
 
-## Visual Indicators
+## 2. 視覚インジケーター（VSCode スタイル）
 
-### Current State
+### 現状
 
-- Limited visual feedback for linting issues
+- lint 問題に対する視覚的フィードバックが限定的
 
-### Proposed Implementation
+### 提案する実装
 
-- Add yellow underline indicators for linting issues
-- Display visual warnings directly in the editor
-- Make warning color configurable by theme
+- **波線（Squiggly Underline）**: 問題箇所のテキスト下に波線を描画。重大度に応じた色分け:
+  - 黄色の波線 → `警告`
+  - 赤色の波線 → `エラー`
+- **💡 ガターアイコン**: 問題が発生している行番号の隣にライトバルブアイコンを表示
+- ライトバルブのクリック（またはホバー）で詳細な診断ポップアップを表示
 
-## Diagnostics Experience
+## 3. 診断と自動修正
 
-### Current State
+### 提案する実装
 
-- Limited popup warnings
-- No auto-fix capabilities
+- 詳細な lint 情報と違反コンテキストを表示するポップアップ
+- 自動修正をサポートするルールに対し、ライトバルブポップアップ内に修正アクションボタンを表示
+- 一括修正（Fix All）機能
 
-### Proposed Implementation
+## 4. アプリ内ルールドキュメントビューアー
 
-- Popup warnings with detailed linting information
-- Auto-fix buttons for simple issues
-- Integration with editor's existing warning system
+### 現状
 
-## Technical Design
+- ルールの `docs_url` クリック時に外部ブラウザが開く
 
-### Backend
+### 提案する実装
 
-- Extend linting engine to support full markdownlint rule set
-- Implement rule categorization for auto-fix functionality
-- Store diagnostic information with proper positioning
-
-### Frontend
-
-- Update editor component to display visual indicators
-- Implement popup warning system
-- Add theme-based color configuration for warning indicators
+- ルールドキュメントのクリックをインターセプト
+- markdownlint 公式 GitHub リポジトリから非同期 HTTP リクエストで生の Markdown コンテンツを取得
+- **セッションキャッシュ**: 取得した Markdown をセッション中メモリにキャッシュし、繰り返しのネットワークアクセスを防止
+- 取得した Markdown を KatanA の仮想プレビュー領域でネイティブにレンダリングし、ユーザーをアプリ内に留める

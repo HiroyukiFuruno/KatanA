@@ -1,9 +1,9 @@
 ## Definition of Ready (DoR)
 
-- [ ] `proposal.md`、`design.md` がレビュー済みであること
-- [ ] 対象バージョン 0.22.4 の変更 ID とスコープが確認されていること
-- [ ] v0.22.3 のリリースが完了していること
-- [ ] markdownlint の全ルール仕様を確認済みであること
+- [x] `proposal.md`、`design.md` がレビュー済みであること
+- [x] 対象バージョン 0.22.4 の変更 ID とスコープが確認されていること
+- [x] v0.22.3 のリリースが完了していること
+- [x] markdownlint の全ルール仕様を確認済みであること
 
 ## Branch Rule
 
@@ -35,112 +35,155 @@
   - `make check` が exit code 0 で通過
 - [x] 1.3 ルールカテゴリ別に自動修正可能なルールと手動修正が必要なルールを分類
   - `OfficialRuleMeta.is_fixable` フィールドで各ルールの自動修正可否を管理
-- [ ] 1.4 ルールの有効/無効設定をコマンドインベントリに追加
-- [ ] 1.5 既存の MD001 ルーとの後方互換性を確認
+- [x] 1.4 既存の MD001 ルールとの後方互換性を確認
+  - `HeadingStructureRule` を `HeadingIncrementRule` のエイリアスとして再エクスポート
 
 ### Definition of Done (DoD)
 
-- [ ] markdownlint 公式の全ルールが動作すること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] ルールの分類が正しく行われ、自動修正可能なルールが識別できること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] markdownlint 公式の主要ルールが動作すること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] ルールの分類が正しく行われ、自動修正可能なルールが識別できること
+- [x] `/openspec-delivery` ワークフローを実行してデリバリサイクルを完了する
 
 ---
 
-## 2. エディタ内視覚的インジケーター実装
+## 2. Lint 設定 UI 実装
+
+### 概要
+
+現在ショートカット画面に混在しているルールトグルを、専用の `設定 → Lint` セクションに移行。重大度の3段階制御と高度なワークスペース設定を提供する。
 
 ### Definition of Ready (DoR)
 
-- [ ] 1 つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR 作成、マージ、ブランチ削除）を完全に終えていること
-- [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること
+- [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
+- [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
 
-- [ ] 2.1 `crates/katana-ui/src/views/editor/` に lint エラーの視覚的インジケーターを実装
-- [ ] 2.2 問題行に黄色のアンダーラインを描画（テーマカラー適用可能）
-- [ ] 2.3 マウスホバーで問題の詳細を表示するツールチップを実装
-- [ ] 2.4 lint 問題の位置情報（行番号、列番号）をエディタ状態に格納
-- [ ] 2.5 複数問題が存在する場合の描画最適化（大量問題時のパフォーマンス確保）
+### タスク
+
+- [ ] 2.1 設定画面に `Lint` セクションを新設
+  - マスタースイッチ「Markdown Linter を有効化」（デフォルト: 有効）
+- [ ] 2.2 各ルールの重大度設定ドロップダウンを実装
+  - `無視`（無効） / `警告`（Warning） / `エラー`（Error）の3段階
+  - デフォルト: 全ルール `警告`
+- [ ] 2.3 重大度設定を `MarkdownDiagnostic` の `severity` に反映
+  - `disabled_rules: HashSet<String>` → `rule_severity: HashMap<String, Severity>` への移行
+- [ ] 2.4 ショートカット画面からリンタールール切替コマンドを削除
+  - `linter_commands.rs` のコマンド群を設定 UI に完全移行
+- [ ] 2.5 高度なワークスペース設定 UI を実装
+  - ワークスペースごとの `.markdownlint.json` を生成・編集できる画面
+  - ルールパラメータの詳細設定（markdownlint 公式の設定形式に準拠）
 
 ### Definition of Done (DoD)
 
-- [ ] lint 問題が黄色アンダーラインで視覚的に表示されること
-- [ ] ホバー時のツールチップが正しく動作すること
-- [ ] テーマ設定で警告色を変更できること
+- [ ] 設定画面から各ルールの重大度が変更できること
+- [ ] 設定変更が即座に lint 結果に反映されること
+- [ ] ワークスペース設定 JSON の生成・編集が動作すること
+- [ ] `make check` がエラーなしで通過すること
+- [ ] `/openspec-delivery` ワークフローを実行してデリバリサイクルを完了する
+
+---
+
+## 3. エディタ内視覚インジケーター実装（VSCode スタイル）
+
+### 概要
+
+lint 問題をエディタ上で直感的に把握できるよう、波線（squiggly underline）と💡ガターアイコンを実装する。
+
+### Definition of Ready (DoR)
+
+- [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
+- [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
+
+### タスク
+
+- [ ] 3.1 問題行に波線（squiggly underline）を描画
+  - 重大度に応じた色分け: 黄色（警告） / 赤色（エラー）
+  - テーマカラー適用可能
+- [ ] 3.2 行番号ガターに💡アイコンを表示
+  - 問題がある行の行番号横にライトバルブアイコンを描画
+- [ ] 3.3 💡クリックまたはホバーで診断ポップアップを表示
+  - ルール ID、ルール名、説明文、重大度を表示
+- [ ] 3.4 lint 問題の位置情報（行番号、列番号）をエディタ状態に格納
+- [ ] 3.5 大量問題時の描画最適化（パフォーマンス確保）
+
+### Definition of Done (DoD)
+
+- [ ] 警告は黄色、エラーは赤色の波線で視覚表示されること
+- [ ] 💡アイコンが正しく表示され、クリックで詳細が確認できること
 - [ ] 大量の lint 問題でも UI がカクつかないこと
 - [ ] `make check` がエラーなしで通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] `/openspec-delivery` ワークフローを実行してデリバリサイクルを完了する
 
 ---
 
-## 3. 診断ポップアップと自動修正機能
+## 4. 診断ポップアップと自動修正機能
 
 ### Definition of Ready (DoR)
 
 - [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
 - [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
 
-- [ ] 3.1 lint 問題上の右クリックメニューに「自動修正」オプションを追加
-- [ ] 3.2 自動修正可能なルールに対して修正ボタンを表示
-- [ ] 3.3 自動修正実行時のファイル変更管理（undo stack の管理）
-- [ ] 3.4 診断ポップアップに問題の詳細情報（ルールの説明、修正例）を表示
-- [ ] 3.5 一括修正機能（全文書・全ルールの自動修正）を実装
+### タスク
+
+- [ ] 4.1 診断ポップアップに詳細情報を表示
+  - ルールの説明、修正例、ドキュメントリンク
+- [ ] 4.2 自動修正可能なルールに対して修正ボタンを表示
+  - `is_fixable: true` のルールのみ修正アクションを提供
+- [ ] 4.3 自動修正実行時のファイル変更管理（undo stack の管理）
+- [ ] 4.4 一括修正機能（Fix All）を実装
+  - 全文書・全ルールの自動修正を一括実行
 
 ### Definition of Done (DoD)
 
-- [ ] 右クリックメニューから自動修正が可能であること
+- [ ] 💡ポップアップから自動修正が実行できること
 - [ ] 自動修正が正しく適用され、undo 可能であること
-- [ ] 診断ポップアップに詳細情報が表示されること
 - [ ] 一括修正機能が動作すること
 - [ ] `make check` がエラーなしで通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] `/openspec-delivery` ワークフローを実行してデリバリサイクルを完了する
 
 ---
 
-## 4. UI 統合とフィードバック
+## 5. アプリ内ルールドキュメントビューアー
+
+### 概要
+
+ルールドキュメント（MDXXX.md）を外部ブラウザではなく KatanA 内でネイティブ表示し、セッションキャッシュで快適な閲覧体験を提供する。
 
 ### Definition of Ready (DoR)
 
 - [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
 - [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
 
-- [ ] 4.1 設定画面に markdownlint ルール設定 UI を追加
-- [ ] 4.2 ルール個別の有効/無効設定可能な UI を実装
-- [ ] 4.3 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 4.4 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+### タスク
+
+- [ ] 5.1 ルールドキュメントリンクのクリックをインターセプト
+  - `docs_url` のクリック時に外部ブラウザを開かず、内部ハンドラに委譲
+- [ ] 5.2 非同期 HTTP で markdownlint 公式 GitHub から Markdown を取得
+  - `reqwest` 等を使用した非同期取得
+- [ ] 5.3 セッションキャッシュの実装
+  - 取得済みドキュメントをメモリにキャッシュし、同一セッション内での再取得を防止
+- [ ] 5.4 取得した Markdown を KatanA の仮想プレビュー領域でレンダリング
+  - 既存の Markdown プレビューエンジンを流用
 
 ### Definition of Done (DoD)
 
-- [ ] 設定画面からルール設定が可能であること
-- [ ] 設定変更が即座に反映されること
+- [ ] ルールドキュメントがアプリ内でネイティブ表示されること
+- [ ] 2回目以降のアクセスがキャッシュから即時表示されること
+- [ ] ネットワークエラー時にフォールバック（外部ブラウザ起動等）が動作すること
 - [ ] `make check` がエラーなしで通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] `/openspec-delivery` ワークフローを実行してデリバリサイクルを完了する
 
 ---
 
-## 2. Task 2
+## 6. Final Verification & Release Work
 
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
-- [ ] 2.1 Task 2 description
-
-### Definition of Done (DoD)
-
-- [ ] (Other task-specific verifiable conditions...)
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
-
----
-
-## 3. Final Verification & Release Work
-
-- [ ] 3.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 3.2 Ensure `make check` passes with exit code 0
-- [ ] 3.3 Create PR from Base Feature Branch targeting `master`
-- [ ] 3.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 3.5 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 3.6 Create `release/v0.22.4` branch from master
-- [ ] 3.7 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 3.8 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 3.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 3.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 6.1 自己レビューを実行（`docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md`）
+- [ ] 6.2 `make check` が exit code 0 で通過すること
+- [ ] 6.3 Base Feature Branch から `master` を対象に PR を作成
+- [ ] 6.4 PR 上の CI チェック（Lint / Coverage / CodeQL）が通過することを確認
+- [ ] 6.5 master にマージ（`gh pr merge --merge --delete-branch`）
+- [ ] 6.6 master から `release/v0.22.4` ブランチを作成
+- [ ] 6.7 `make release VERSION=0.22.4` を実行し、CHANGELOG を更新（`changelog-writing` スキル）
+- [ ] 6.8 `release/v0.22.4` から `master` を対象に PR を作成 — `Release Readiness` CI 通過を確認
+- [ ] 6.9 リリース PR を master にマージ（`gh pr merge --merge --delete-branch`）
+- [ ] 6.10 GitHub Release の完了を確認し、`/opsx-archive` でこの変更をアーカイブ
