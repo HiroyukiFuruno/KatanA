@@ -111,22 +111,6 @@ impl KatanaApp {
             AppAction::ToggleCollapseTabGroup(group_id) => {
                 self.handle_action_toggle_collapse_tab_group(group_id)
             }
-            AppAction::ToggleLintRule(rule_id) => {
-                let disabled = &mut self
-                    .state
-                    .config
-                    .settings
-                    .settings_mut()
-                    .linter
-                    .disabled_rules;
-                if disabled.contains(&rule_id) {
-                    disabled.remove(&rule_id);
-                } else {
-                    disabled.insert(rule_id);
-                }
-                let _ = self.state.config.try_save_settings();
-                self.trigger_action(AppAction::RefreshDiagnostics);
-            }
             _ => {}
         }
     }

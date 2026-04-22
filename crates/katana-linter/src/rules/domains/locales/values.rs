@@ -132,6 +132,18 @@ const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
         key: "section_general",
         value: "General",
     },
+    LocaleException {
+        key: "severity_error",
+        value: "Error",
+    },
+    LocaleException {
+        key: "severity_warning",
+        value: "Warning",
+    },
+    LocaleException {
+        key: "severity_ignore",
+        value: "Ignore",
+    },
 ];
 
 pub struct LocaleValueOps;

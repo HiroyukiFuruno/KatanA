@@ -568,6 +568,17 @@
     "rule_toggle": "Lintルール切替: {rule_code} ({rule_name})",
     "docs": "ドキュメント",
     "disable_rule": "無効化",
-    "disable_rule_desc": "このルールを無効化する"
+    "disable_rule_desc": "このルールを無効化する",
+    "enable_linter": "Markdown Linterを有効にする",
+    "rule_severities": "ルールの重要度",
+    "advanced_workspace_settings": "高度なワークスペース設定",
+    "workspace_has_config": "ワークスペースに .markdownlint.json 設定ファイルが存在します。",
+    "open_config": "設定を開く",
+    "workspace_no_config": "現在のワークスペースに .markdownlint.json が見つかりません。",
+    "create_config": "設定を作成",
+    "open_workspace_to_configure": "ワークスペースを開いて、ワークスペース固有のLintルールを設定してください。",
+    "severity_ignore": "無視",
+    "severity_warning": "警告",
+    "severity_error": "エラー"
   }
 }

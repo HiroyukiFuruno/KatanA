@@ -17,11 +17,40 @@ impl MarkdownLinterOps {
     pub fn evaluate_all(
         file_path: &std::path::Path,
         content: &str,
-        disabled_rules: &std::collections::HashSet<String>,
+        enabled: bool,
+        severity_map: &std::collections::HashMap<
+            String,
+            Option<crate::rules::markdown::DiagnosticSeverity>,
+        >,
     ) -> Vec<MarkdownDiagnostic> {
         let mut diagnostics = Vec::new();
 
-        let rules: Vec<Box<dyn MarkdownRule>> = vec![
+        let rules = Self::get_official_rules();
+
+        if !enabled {
+            return diagnostics;
+        }
+
+        for rule in rules {
+            let rule_id = rule.id();
+            let sev_opt = severity_map
+                .get(rule_id)
+                .copied()
+                .unwrap_or(Some(crate::rules::markdown::DiagnosticSeverity::Warning));
+            if let Some(severity) = sev_opt {
+                let mut diags = rule.evaluate(file_path, content);
+                for d in &mut diags {
+                    d.severity = severity;
+                }
+                diagnostics.extend(diags);
+            }
+        }
+
+        diagnostics
+    }
+
+    pub fn get_official_rules() -> Vec<Box<dyn MarkdownRule>> {
+        vec![
             /* WHY: MD001 — heading-increment (full impl in mod.rs) */
             Box::new(HeadingStructureRule),
             /* WHY: Internal-only broken link rule (hidden from user) */
@@ -40,11 +69,9 @@ impl MarkdownLinterOps {
             Box::new(RuleMD037), // no-space-in-emphasis
             Box::new(RuleMD038), // no-space-in-code
             Box::new(RuleMD039), // no-space-in-links
-            /* WHY: Whitespace rules */
-            Box::new(NoMultipleBlanksRule),          // MD012
-            Box::new(NoMultipleSpaceBlockquoteRule), // MD027
-            Box::new(NoBlanksBlockquoteRule),        // MD028
-            Box::new(SingleTrailingNewlineRule),     // MD047
+            /* WHY: Blockquote rules */
+            Box::new(NoBlanksBlockquoteRule),    // MD028
+            Box::new(SingleTrailingNewlineRule), // MD047
             /* WHY: Content rules */
             Box::new(NoInlineHtmlRule),       // MD033
             Box::new(FencedCodeLanguageRule), // MD040
@@ -58,14 +85,6 @@ impl MarkdownLinterOps {
             Box::new(HrStyleRule),             // MD035
             Box::new(NoEmphasisAsHeadingRule), // MD036
             Box::new(NoAltTextRule),           // MD045
-        ];
-
-        for rule in rules {
-            if !disabled_rules.contains(rule.id()) {
-                diagnostics.extend(rule.evaluate(file_path, content));
-            }
-        }
-
-        diagnostics
+        ]
     }
 }

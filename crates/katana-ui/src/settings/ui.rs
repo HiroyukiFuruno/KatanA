@@ -159,6 +159,11 @@ impl<'a> SettingsWindow<'a> {
                                                     ui, state,
                                                 );
                                             }
+                                            SettingsTab::Linter => {
+                                                if let Some(action) = crate::settings::tabs::LinterTabOps::render_linter_tab(ui, state) {
+                                                    triggered_action = Some(action);
+                                                }
+                                            }
                                             _ => {}
                                         })
                                 });
