@@ -28,6 +28,8 @@ pub struct WorkspaceFile {
 pub struct FixtureSettings {
     pub theme: Option<String>,
     pub locale: Option<String>,
+    pub explorer_visible: Option<bool>,
+    pub no_extension: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -36,11 +38,18 @@ pub enum Step {
     Launch(LaunchStep),
     Wait(WaitStep),
     Screenshot(ScreenshotStep),
+    /// Export the active document as PNG using the app's export pipeline, then save to output_dir.
+    ExportPng(ExportPngStep),
     /// Open a file by name from the workspace tree.
     OpenFile(OpenFileStep),
     /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
     Action(ActionStep),
     Quit,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ExportPngStep {
+    pub output_name: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -58,6 +67,16 @@ pub struct WaitStep {
 #[derive(Debug, Deserialize)]
 pub struct ScreenshotStep {
     pub output_name: String,
+    /// Crop the rendered image to this rect (physical pixels, after pixels_per_point scaling).
+    pub crop: Option<CropRect>,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+pub struct CropRect {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -76,6 +95,7 @@ pub enum UiAction {
     ToggleSettings,
     ToggleExplorer,
     ToggleSlideshow,
+    ToggleStoryPanel,
     ToggleExportPanel,
     OpenChangelog,
     /// Open settings and navigate to a specific tab.
@@ -87,6 +107,10 @@ pub enum UiAction {
     OpenIconsAdvancedPanel,
     /// Scroll down in the currently visible panel by the given logical-pixel amount.
     ScrollDown { amount: f32 },
+    /// Directly set the vertical scroll offset of an egui ScrollArea by its id_salt string.
+    SetScrollOffset { id: String, y: f32 },
+    /// Open the first (top) section in the changelog accordion.
+    OpenFirstChangelogSection,
     /// Set the editor view mode. mode: "preview_only" | "code_only" | "split"
     SetViewMode { mode: String },
 }
