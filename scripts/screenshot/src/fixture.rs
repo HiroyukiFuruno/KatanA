@@ -3,38 +3,46 @@ use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 
 pub struct FixtureEnv {
-    pub home_dir: PathBuf,
+    pub config_dir: PathBuf,
+    /// None means "launch with no workspace" (shows onboarding/welcome state).
+    pub workspace_dir: Option<PathBuf>,
 }
 
 pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
     let home_dir = tmp_root.join("home");
-    let workspace_dir = tmp_root.join("workspace");
     std::fs::create_dir_all(&home_dir)?;
-    std::fs::create_dir_all(&workspace_dir)?;
 
-    let workspace_dir = match &fixture.workspace_dir {
-        Some(p) => {
-            let resolved = PathBuf::from(p).canonicalize()
-                .with_context(|| format!("fixture.workspace_dir not found: {p}"))?;
-            anyhow::ensure!(resolved.is_dir(), "fixture.workspace_dir is not a directory: {p}");
-            resolved
-        }
-        None => {
-            for wf in &fixture.workspace_files {
-                let dest = workspace_dir.join(&wf.name);
-                std::fs::write(&dest, &wf.content)
-                    .with_context(|| format!("writing fixture file {}", wf.name))?;
+    let workspace_dir = if fixture.workspace_files.is_empty() && fixture.workspace_dir.is_none() {
+        None
+    } else {
+        let dir = tmp_root.join("workspace");
+        std::fs::create_dir_all(&dir)?;
+        let resolved = match &fixture.workspace_dir {
+            Some(p) => {
+                let r = PathBuf::from(p)
+                    .canonicalize()
+                    .with_context(|| format!("fixture.workspace_dir not found: {p}"))?;
+                anyhow::ensure!(r.is_dir(), "fixture.workspace_dir is not a directory: {p}");
+                r
             }
-            workspace_dir
-        }
+            None => {
+                for wf in &fixture.workspace_files {
+                    let dest = dir.join(&wf.name);
+                    std::fs::write(&dest, &wf.content)
+                        .with_context(|| format!("writing fixture file {}", wf.name))?;
+                }
+                dir
+            }
+        };
+        Some(resolved)
     };
 
-    let settings_dir = config_dir(&home_dir);
-    std::fs::create_dir_all(&settings_dir)?;
-    let settings_json = build_settings_json(&fixture.settings, &workspace_dir);
-    std::fs::write(settings_dir.join("settings.json"), settings_json)?;
+    let cfg_dir = config_dir(&home_dir);
+    std::fs::create_dir_all(&cfg_dir)?;
+    let settings_json = build_settings_json(&fixture.settings, workspace_dir.as_deref());
+    std::fs::write(cfg_dir.join("settings.json"), settings_json)?;
 
-    Ok(FixtureEnv { home_dir })
+    Ok(FixtureEnv { config_dir: cfg_dir, workspace_dir })
 }
 
 fn config_dir(home: &Path) -> PathBuf {
@@ -47,11 +55,21 @@ fn config_dir(home: &Path) -> PathBuf {
     }
 }
 
-fn build_settings_json(settings: &FixtureSettings, workspace_dir: &Path) -> String {
+fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>) -> String {
     let theme_str = settings.theme.as_deref().unwrap_or("dark");
     let locale = settings.locale.as_deref().unwrap_or("en");
     let preset = if theme_str == "light" { "KatanaLight" } else { "KatanaDark" };
-    let workspace_str = workspace_dir.display();
+
+    let workspace_block = match workspace_dir {
+        Some(dir) => format!(
+            r#",
+  "workspace": {{
+    "last_workspace": "{}"
+  }}"#,
+            dir.display()
+        ),
+        None => String::new(),
+    };
 
     format!(
         r#"{{
@@ -61,10 +79,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: &Path) -> Stri
   "theme": {{
     "theme": "{theme_str}",
     "preset": "{preset}"
-  }},
-  "workspace": {{
-    "last_workspace": "{workspace_str}"
-  }}
+  }}{workspace_block}
 }}"#
     )
 }

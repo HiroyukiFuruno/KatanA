@@ -1,8 +1,7 @@
 use std::path::Path;
 use std::process::{Child, Command, ExitStatus, Output};
 
-/// Provides cross-platform process management, with automatic window suppression on Windows.
-pub struct ProcessService;
+use super::types::ProcessService;
 
 impl ProcessService {
     pub fn create_command(program: &str) -> Command {
@@ -109,15 +108,58 @@ impl ProcessService {
             commands.push(("node".to_string(), vec!["-e".to_string(), node_script]));
         }
 
+        /* WHY: Accumulate per-command failure diagnostics so the final error
+         * message tells the user *why* every downloader failed (exit code +
+         * stderr), not just that "curl and fallbacks failed." */
+        let mut failures: Vec<String> = Vec::new();
+
         for (prog, args) in commands {
             let mut cmd = Self::create_command(&prog);
-            cmd.args(args);
-            if cmd.status().is_ok_and(|s| s.success()) {
-                return Ok(());
+            cmd.args(&args)
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::piped());
+
+            match cmd.output() {
+                Ok(out) if out.status.success() => {
+                    /* WHY: Verify the file was actually written and is non-empty.
+                     * GitHub redirects can silently produce a 0-byte file when
+                     * curl follows a redirect but the final response is an error
+                     * HTML page (e.g. rate-limit). */
+                    match std::fs::metadata(dest) {
+                        Ok(meta) if meta.len() > 0 => return Ok(()),
+                        Ok(_) => {
+                            let _ = std::fs::remove_file(dest);
+                            failures.push(format!(
+                                "{prog}: exited 0 but wrote an empty file (possible redirect/auth error)"
+                            ));
+                        }
+                        Err(e) /* panic! */ => {
+                            failures.push(format!("{prog}: exited 0 but dest not found: {e}")); /* panic! */
+                        }
+                    }
+                }
+                Ok(out) => {
+                    let stderr = String::from_utf8_lossy(&out.stderr)
+                        .trim()
+                        .replace('\n', " | ");
+                    let code = out
+                        .status
+                        .code()
+                        .map(|c| c.to_string())
+                        .unwrap_or_else(|| "signal".to_string());
+                    failures.push(format!("{prog}: exit {code} — {stderr}"));
+                }
+                Err(e) => {
+                    /* Spawn error — binary not found or permission denied */
+                    failures.push(format!("{prog}: not available ({e})"));
+                }
             }
         }
 
-        Err("Download failed: curl and all fallback mechanisms failed.".to_string())
+        Err(format!(
+            "Download failed. Tried all methods:\n{}",
+            failures.join("\n")
+        ))
     }
 }
 
@@ -129,12 +171,14 @@ mod tests {
 
     #[test]
     fn test_create_command() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let cmd = ProcessService::create_command("echo");
         assert!(cmd.get_program().to_string_lossy().contains("echo"));
     }
 
     #[test]
     fn test_output() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let mut cmd = ProcessService::create_command("echo");
         cmd.arg("hello");
         let output = ProcessService::output(cmd).unwrap();
@@ -144,6 +188,7 @@ mod tests {
 
     #[test]
     fn test_status() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let mut cmd = ProcessService::create_command("echo");
         cmd.arg("hello");
         let status = ProcessService::status(cmd).unwrap();
@@ -152,6 +197,7 @@ mod tests {
 
     #[test]
     fn test_spawn() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let mut cmd = ProcessService::create_command("sleep");
         cmd.arg("0.1");
         let mut child = ProcessService::spawn(cmd).unwrap();
@@ -161,6 +207,7 @@ mod tests {
 
     #[test]
     fn test_download_file_local() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let dir = tempdir().unwrap();
         let src_path = dir.path().join("src.txt");
         let dest_path = dir.path().join("dest.txt");
@@ -177,6 +224,7 @@ mod tests {
 
     #[test]
     fn test_download_file_fail() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let dir = tempdir().unwrap();
         let dest_path = dir.path().join("nonexistent.txt");
 
@@ -190,6 +238,7 @@ mod tests {
     #[cfg(not(coverage))]
     #[test]
     fn test_download_file_wget_fallback() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         /* WHY: Verify the wget fallback path is exercised on non-Windows platforms */
         let dir = tempdir().unwrap();
         let src_path = dir.path().join("wget_src.txt");
@@ -208,5 +257,42 @@ mod tests {
             assert_eq!(fs::read_to_string(&dest_path).unwrap(), "wget content");
         }
         /* WHY: If wget is not installed in the test environment, skip silently */
+    }
+
+    #[test]
+    fn test_download_empty_file() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        let dir = tempdir().unwrap();
+        let src_path = dir.path().join("empty_src.txt");
+        let dest_path = dir.path().join("empty_dest.txt");
+
+        fs::write(&src_path, "").unwrap();
+
+        let url = format!("file://{}", src_path.to_str().unwrap());
+        let result = ProcessService::download_file(&url, &dest_path);
+
+        assert!(result.is_err(), "Empty file download should be rejected");
+        assert!(result.unwrap_err().contains("empty file"));
+    }
+
+    static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    #[test]
+    fn test_download_no_binaries() {
+        let _guard = ENV_MUTEX.lock().unwrap();
+        let old_path = std::env::var("PATH").unwrap_or_default();
+        unsafe {
+            std::env::set_var("PATH", "");
+        }
+
+        let dir = tempdir().unwrap();
+        let dest_path = dir.path().join("dest.txt");
+        let result = ProcessService::download_file("http://example.com/none", &dest_path);
+
+        unsafe {
+            std::env::set_var("PATH", old_path);
+        }
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not available"));
     }
 }

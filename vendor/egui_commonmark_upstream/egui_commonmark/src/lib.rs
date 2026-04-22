@@ -80,6 +80,7 @@ pub mod ui_components;
 pub use egui_commonmark_backend::RenderHtmlFn;
 pub use egui_commonmark_backend::RenderMathFn;
 pub use egui_commonmark_backend::RenderTableFn;
+pub use egui_commonmark_backend::RenderTextFn;
 pub use egui_commonmark_backend::alerts::{Alert, AlertBundle};
 pub use egui_commonmark_backend::misc::{CommonMarkCache, CommonMarkOptions};
 pub use egui_commonmark_backend::{
@@ -161,6 +162,14 @@ impl<'f> Default for CommonMarkViewer<'f> {
 impl<'f> CommonMarkViewer<'f> {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn custom_text_fn(
+        mut self,
+        func: Option<&'f RenderTextFn>,
+    ) -> Self {
+        self.options.custom_text_fn = func;
+        self
     }
 
     pub fn custom_task_box_fn(

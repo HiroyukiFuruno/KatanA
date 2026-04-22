@@ -84,6 +84,9 @@ define_icons! {
     FolderOpen      => "files/folder_open",
     FolderClosed    => "files/folder_closed",
     Markdown        => "files/markdown",
+    Html            => "files/html",
+    Pdf             => "files/pdf",
+    Image           => "files/image",
     /* WHY: system/ */
     Refresh         => "system/refresh",
     ExternalLink    => "system/external_link",
@@ -98,9 +101,15 @@ define_icons! {
     Download        => "system/download",
     Hourglass       => "system/hourglass",
     Tools           => "system/tools",
+    MacCmd          => "../system/cmd",
+    MacCtrl         => "../system/ctrl",
+    MacShift        => "../system/shift",
+    MacAlt          => "../system/alt",
+    MacWin          => "../system/win",
     /* WHY: action/ */
     #[allow(dead_code)]
     More            => "action/more",
+    Edit            => "action/edit",
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

@@ -8,10 +8,10 @@ use katana_linter::rules::domains::theme::{
 };
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
-    FrameStrokeOps, FunctionLengthOps, HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps,
-    MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps, ProcessCommandOps,
-    ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps,
-    TypeSeparationOps,
+    FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps, HorizontalLayoutOps, IconButtonFillOps,
+    LazyCodeOps, MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps,
+    ProcessCommandOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps,
+    ScrollAreaInnerRectLeakOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -447,5 +447,27 @@ fn ast_linter_markdown_sandbox() {
         "Fix: `CommonMarkViewer` usage detected but missing `set_max_width`. You MUST sandbox the viewer call within `ui.scope(|ui| { ui.set_max_width(...); ... })` to prevent layout ratchet bugs.",
         &target_crates(root),
         MarkdownSandboxOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_global_menu_parity() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = GlobalMenuParityOps::lint(root);
+    ViolationReporterOps::panic(
+        "global-menu-parity",
+        "Fix: Windows/Linux global menu (`global_menu.rs`) and macOS native menu (`native_menu/mod.rs` & `macos_menu.m`) must have parity in their available `AppAction` variants. Ensure any action added to one is also added to the other.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_shortcut_duplicates() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = katana_linter::rules::domains::shortcut::ShortcutOps::lint(root);
+    ViolationReporterOps::panic(
+        "shortcut-duplicates",
+        "Fix: Duplicate shortcuts are not allowed across commands. Ensure each OS shortcut mapping in `os_commands.json` is unique.",
+        &all_violations,
     );
 }

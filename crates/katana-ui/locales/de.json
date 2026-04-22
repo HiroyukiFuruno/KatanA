@@ -13,12 +13,19 @@
     "export_png": "PNG-Bild (.png)",
     "export_jpg": "JPEG-Bild (.jpg)",
     "about": "Über KatanA",
+    "close_document": "Dokument schließen",
+    "restore_closed": "Geschlossenes Dokument wiederherstellen",
     "quit": "KatanA beenden",
     "help": "Hilfe",
     "check_updates": "Auf Updates prüfen…",
     "release_notes": "Versionshinweise",
     "view": "Ansicht",
     "command_palette": "Befehlspalette…",
+    "zoom_in": "Vergrößern",
+    "zoom_out": "Verkleinern",
+    "demo": "Demonstrationsversion",
+    "welcome_screen": "Willkommensbildschirm",
+    "user_guide": "Benutzerhandbuch",
     "language_en": "Englisch",
     "language_ja": "Japanisch",
     "language_zh_cn": "Chinesisch (Vereinfacht)",
@@ -29,9 +36,6 @@
     "language_de": "Deutsch",
     "language_es": "Spanisch",
     "language_it": "Italienisch",
-    "demo": "Demonstrationsversion",
-    "welcome_screen": "Willkommensbildschirm",
-    "user_guide": "Benutzerhandbuch",
     "github": "GitHub-Repository",
     "website": "Offizielle Website"
   },
@@ -358,7 +362,11 @@
       "daily": "Täglich",
       "weekly": "Wöchentlich",
       "monthly": "Monatlich",
-      "check_now": "Jetzt prüfen"
+      "check_now": "Jetzt prüfen",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML ist unter %path% installiert.",
+      "plantuml_not_installed": "PlantUML ist nicht installiert.",
+      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren"
     },
     "behavior": {
       "section_title": "Verhalten",
@@ -386,7 +394,11 @@
       "press_keys": "Tasten drücken... (Esc zum Abbrechen)",
       "restore_defaults": "Standardwerte wiederherstellen",
       "none": "Keine",
-      "conflict_warning": "Warnung: Tastenkombination wurde überschrieben. Sie wurde bereits von \"{command}\" verwendet."
+      "conflict_warning": "Warnung: Tastenkombination wurde überschrieben. Sie wurde bereits von \"{command}\" verwendet.",
+      "capture_prompt": "Tastenkombination drücken…",
+      "confirm_key": "Enter zur Bestätigung",
+      "cancel_key": "Esc zum Abbrechen",
+      "search_placeholder": "Tastenkürzel suchen…"
     }
   },
   "tab": {
@@ -424,16 +436,19 @@
     "tab_file_name": "Dateiname",
     "tab_markdown_content": "Markdown-Inhalt",
     "md_query_hint": "Inhalt suchen…",
+    "doc_query_hint": "Im Dokument suchen…",
     "recent_searches": "Letzte Suchen",
     "clear_history": "Verlauf löschen",
     "ln_prefix": "Zeile ",
-    "palette_query_hint": "Befehl oder Suche…",
+    "palette_query_hint": "Dateien oder Inhalte suchen…",
     "command_settings": "Einstellungen",
     "command_explorer": "Explorer",
     "command_close_all": "Alles schließen",
     "command_refresh_explorer": "Explorer aktualisieren",
     "command_updates": "Updates prüfen",
     "command_about": "Über KatanA umschalten",
+    "command_zoom_in": "Vergrößern",
+    "command_zoom_out": "Verkleinern",
     "command_type_action": "Befehl",
     "command_author_bold": "Fett",
     "command_author_italic": "Kursiv",
@@ -454,8 +469,14 @@
     "match_case": "Groß-/Kleinschreibung",
     "match_word": "Ganzes Wort",
     "use_regex": "Regulärer Ausdruck",
-    "doc_query_hint": "Im Dokument suchen…",
-    "doc_search_no_results": "Keine Ergebnisse gefunden"
+    "doc_search_no_results": "Keine Ergebnisse gefunden",
+    "palette_action_query_hint": "Katana-Befehle suchen…",
+    "command_global_search": "Globale Suche",
+    "command_doc_search": "Dokumentensuche",
+    "command_toggle_filter": "Explorer-Filter umschalten",
+    "command_refresh_document": "Dokument aktualisieren",
+    "command_toggle_split": "Geteilte Ansicht umschalten",
+    "command_toggle_code_preview": "Code/Vorschau umschalten"
   },
   "toc": {
     "title": "Inhaltsverzeichnis",
@@ -487,12 +508,13 @@
     "new_name_hint": "Neuer Name"
   },
   "markdown": {
-    "task_todo": "To-Do [ ]",
+    "task_todo": "Aufgabe [ ]",
     "task_in_progress": "In Arbeit [/]",
     "task_done": "Erledigt [x]"
   },
   "common": {
-    "close": "Schließen"
+    "close": "Schließen",
+    "save": "Speichern"
   },
   "meta_info": {
     "title": "Dokumentinfo",
@@ -520,12 +542,18 @@
   },
   "help": {
     "section_general": "Allgemein",
-    "section_editor": "Texteditor",
+    "section_editor": "Editor",
+    "section_behavior": "Verhalten",
     "shortcut_command_palette": "{{os_cmd:open_palette}}: Befehlspalette",
-    "shortcut_search": "{{os_cmd:search_workspace}}: Suche",
-    "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Seitenleiste",
+    "shortcut_search": "{{os_cmd:search_workspace}}: Workspace-Suche",
+    "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Seitenleiste umschalten",
     "shortcut_save": "{{os_cmd:save_document}}: Speichern",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Aktualisieren"
+    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Diagramme aktualisieren",
+    "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Geteilte Ansicht",
+    "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Code/Vorschau umschalten",
+    "shortcut_tab_next": "{{os_cmd:tab_next}}: Nächster Tab",
+    "shortcut_tab_prev": "{{os_cmd:tab_prev}}: Vorheriger Tab",
+    "shortcut_toggle_slideshow": "{{os_cmd:toggle_slideshow}}: Diashow"
   },
   "dashboard": {
     "welcome_title": "Willkommen bei KatanA",

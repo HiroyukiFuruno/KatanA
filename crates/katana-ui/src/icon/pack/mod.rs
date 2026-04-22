@@ -3,6 +3,7 @@ use crate::icon::Icon;
 #[rustfmt::skip]
 macro_rules! impl_icon_pack_match {
     ($dir:expr, $icon:expr) => {
+        #[allow(unreachable_patterns)]
         match $icon {
             crate::icon::Icon::Dot => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "ui/dot", ".svg"))),
             crate::icon::Icon::Close => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "ui/close", ".svg"))),
@@ -63,11 +64,21 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::Download => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "system/download", ".svg"))),
             crate::icon::Icon::Hourglass => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "system/hourglass", ".svg"))),
             crate::icon::Icon::More => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/more", ".svg"))),
+            crate::icon::Icon::Edit => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/edit", ".svg"))),
             crate::icon::Icon::MatchCase => Some(include_bytes!("../../../../../assets/icons/system/match-case.svg")),
             crate::icon::Icon::WholeWord => Some(include_bytes!("../../../../../assets/icons/system/whole-word.svg")),
             crate::icon::Icon::UseRegex => Some(include_bytes!("../../../../../assets/icons/system/use-regex.svg")),
+            crate::icon::Icon::MacCmd => Some(include_bytes!("../../../../../assets/icons/system/cmd.svg")),
+            crate::icon::Icon::MacCtrl => Some(include_bytes!("../../../../../assets/icons/system/ctrl.svg")),
+            crate::icon::Icon::MacShift => Some(include_bytes!("../../../../../assets/icons/system/shift.svg")),
+            crate::icon::Icon::MacAlt => Some(include_bytes!("../../../../../assets/icons/system/alt.svg")),
+            crate::icon::Icon::MacWin => Some(include_bytes!("../../../../../assets/icons/system/win.svg")),
             crate::icon::Icon::Help => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "status/help", ".svg"))),
             crate::icon::Icon::Tools => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "system/tools", ".svg"))),
+            crate::icon::Icon::Html => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/html", ".svg"))),
+            crate::icon::Icon::Pdf => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/pdf", ".svg"))),
+            crate::icon::Icon::Image => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/image", ".svg"))),
+            _ => None,
         }
     };
 }

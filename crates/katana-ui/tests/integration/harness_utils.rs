@@ -64,8 +64,10 @@ pub fn setup_harness() -> Harness<'static, KatanaApp> {
     let settings_path = harness_dir.join("settings.json");
     let _ = std::fs::remove_file(&settings_path);
 
-    Harness::builder().build_eframe(move |_cc| {
-        let ai_registry = AiProviderRegistry::new();
+    Harness::builder()
+        .with_size(eframe::egui::vec2(1200.0, 800.0))
+        .build_eframe(move |_cc| {
+            let ai_registry = AiProviderRegistry::new();
         let plugin_registry = PluginRegistry::new();
         let mut state = AppState::new(
             ai_registry,

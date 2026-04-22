@@ -43,6 +43,7 @@ impl<'a> PreviewSidePanels<'a> {
             .show_inside(ui, |ui| {
                 ui.add_space(PREVIEW_SIDE_BAR_MARGIN);
                 ui.vertical_centered(|ui| {
+                    ui.spacing_mut().item_spacing.y = PREVIEW_SIDE_BAR_SPACING;
                     let i18n = crate::i18n::I18nOps::get();
 
                     let toc_visible = self.app.state.config.settings.settings().layout.toc_visible;
@@ -52,6 +53,7 @@ impl<'a> PreviewSidePanels<'a> {
                             crate::Icon::Toc,
                             self.app.state.layout.show_toc,
                             &i18n.action.toggle_toc,
+                            None,
                         );
                         self.toc_btn_rect = Some(resp_toc.rect);
                         if resp_toc.clicked() {
@@ -62,7 +64,6 @@ impl<'a> PreviewSidePanels<'a> {
                                 d.insert_temp(egui::Id::new("toc_hover_cooldown"), true);
                             });
                         }
-                        ui.add_space(PREVIEW_SIDE_BAR_SPACING);
                     }
 
                     let resp_refresh = self.render_toggle_button(
@@ -70,63 +71,59 @@ impl<'a> PreviewSidePanels<'a> {
                         crate::Icon::Refresh,
                         false,
                         &i18n.action.refresh_document,
+                        None,
                     );
                     if resp_refresh.clicked() {
                         self.app.pending_action = AppAction::RefreshDocument { is_manual: true };
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
-                    let doc_search_tooltip = format!(
-                        "{} ({})",
-                        i18n.search.doc_search_title,
-                        crate::os_command::OsCommandOps::get("search_workspace")
-                    );
+                    let doc_search_shortcut = crate::os_command::OsCommandOps::get("search_tab");
                     let resp_search = self.render_toggle_button(
                         ui,
                         crate::Icon::Search,
                         self.app.state.search.doc_search_open,
-                        &doc_search_tooltip,
+                        &i18n.search.doc_search_title,
+                        Some(&doc_search_shortcut),
                     );
                     if resp_search.clicked() {
                         self.app.pending_action = AppAction::ToggleDocSearch;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let resp_export = self.render_toggle_button(
                         ui,
                         crate::Icon::Export,
                         self.app.state.layout.show_export_panel,
                         &i18n.menu.export,
+                        None,
                     );
                     self.export_btn_rect = Some(resp_export.rect);
                     if resp_export.clicked() {
                         self.app.pending_action = AppAction::ToggleExportPanel;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let resp_story = self.render_toggle_button(
                         ui,
                         crate::Icon::Preview,
                         self.app.state.layout.show_story_panel,
                         &i18n.preview.slideshow_settings,
+                        None,
                     );
                     self.story_btn_rect = Some(resp_story.rect);
                     if resp_story.clicked() {
                         self.app.pending_action = AppAction::ToggleStoryPanel;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     let resp_tools = self.render_toggle_button(
                         ui,
                         crate::Icon::Tools,
                         self.app.state.layout.show_tools_panel,
                         &i18n.menu.view,
+                        None,
                     );
                     self.tools_btn_rect = Some(resp_tools.rect);
                     if resp_tools.clicked() {
                         self.app.pending_action = AppAction::ToggleToolsPanel;
                     }
-                    ui.add_space(PREVIEW_SIDE_BAR_SPACING);
 
                     /* 7. Meta Info */
                     let resp_info = self.render_toggle_button(
@@ -134,6 +131,7 @@ impl<'a> PreviewSidePanels<'a> {
                         crate::Icon::Info,
                         false,
                         &i18n.meta_info.title,
+                        None,
                     );
                     if resp_info.clicked()
                         && let Some(doc) = self.app.state.active_document()
@@ -161,26 +159,39 @@ impl<'a> PreviewSidePanels<'a> {
         icon: crate::Icon,
         is_active: bool,
         tooltip: &str,
+        shortcut: Option<&str>,
     ) -> egui::Response {
         #[rustfmt::skip]
         let icon_bg = if ui.visuals().dark_mode { crate::theme_bridge::TRANSPARENT } else { crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_BG) };
         #[rustfmt::skip]
         let active_bg = if ui.visuals().dark_mode { ui.visuals().selection.bg_fill } else { crate::theme_bridge::ThemeBridgeOps::from_gray(LIGHT_MODE_ICON_ACTIVE_BG) };
-        let bg = if is_active { active_bg } else { icon_bg };
+        let resp = ui.add(
+            egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Medium))
+                .fill(if is_active { active_bg } else { icon_bg })
+                .min_size(egui::vec2(TOGGLE_BUTTON_SIZE, TOGGLE_BUTTON_SIZE))
+                .rounding(egui::Rounding::same(TOGGLE_BUTTON_ROUNDING)),
+        );
 
-        let resp = ui
-            .add(
-                egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Medium))
-                    .fill(bg)
-                    .min_size(egui::vec2(TOGGLE_BUTTON_SIZE, TOGGLE_BUTTON_SIZE))
-                    .rounding(egui::Rounding::same(TOGGLE_BUTTON_ROUNDING)),
-            )
-            .on_hover_text(tooltip);
+        let mut txt = tooltip.to_string();
+        let resp = if let Some(sc) = shortcut {
+            txt.push_str(&format!(" ({})", sc));
+            resp.on_hover_ui(|ui| {
+                ui.allocate_ui_with_layout(
+                    egui::vec2(0.0, 0.0),
+                    egui::Layout::left_to_right(egui::Align::Center),
+                    |ui| {
+                        ui.label(tooltip);
+                        crate::widgets::ShortcutWidget::new(sc).ui(ui);
+                    },
+                );
+            })
+        } else {
+            resp.on_hover_text(tooltip)
+        };
 
         resp.widget_info(|| {
-            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), tooltip)
+            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), txt.clone())
         });
-
         resp
     }
 }

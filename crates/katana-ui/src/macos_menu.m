@@ -23,13 +23,14 @@ enum {
     TAG_DEMO           = 18,
     TAG_WELCOME_SCREEN = 19,
     TAG_USER_GUIDE      = 20,
-    TAG_SEARCH_DOCUMENT = 21,
-    TAG_SEARCH_WORKSPACE = 22,
     TAG_CLOSE_WORKSPACE = 23,
     TAG_EXPLORER       = 24,
     TAG_REFRESH_EXPLORER = 25,
     TAG_CLOSE_ALL      = 26,
     TAG_GITHUB         = 27,
+    TAG_REFRESH_DOCUMENT = 34,
+    TAG_ZOOM_IN        = 35,
+    TAG_ZOOM_OUT       = 36,
 };
 
 /* WHY: Global: Tag of the last selected menu action. */
@@ -178,11 +179,39 @@ void katana_setup_native_menu(void) {
     NSMenuItem *refreshItem = [[NSMenuItem alloc]
         initWithTitle:@"Refresh Explorer"
         action:action
-        keyEquivalent:@"r"];
+        keyEquivalent:@""];
     [refreshItem setTarget:g_target];
     [refreshItem setTag:TAG_REFRESH_EXPLORER];
     [viewMenu addItem:refreshItem];
     g_refresh_explorer_item = refreshItem;
+
+    NSMenuItem *refreshDocItem = [[NSMenuItem alloc]
+        initWithTitle:@"Refresh Document"
+        action:action
+        keyEquivalent:@"R"];
+    [refreshDocItem setTarget:g_target];
+    [refreshDocItem setTag:TAG_REFRESH_DOCUMENT];
+    [viewMenu addItem:refreshDocItem];
+
+    [viewMenu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *zoomInItem = [[NSMenuItem alloc]
+        initWithTitle:@"Zoom In"
+        action:action
+        keyEquivalent:@"="];
+    [zoomInItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand | NSEventModifierFlagShift];
+    [zoomInItem setTarget:g_target];
+    [zoomInItem setTag:TAG_ZOOM_IN];
+    [viewMenu addItem:zoomInItem];
+
+    NSMenuItem *zoomOutItem = [[NSMenuItem alloc]
+        initWithTitle:@"Zoom Out"
+        action:action
+        keyEquivalent:@"-"];
+    [zoomOutItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand | NSEventModifierFlagShift];
+    [zoomOutItem setTarget:g_target];
+    [zoomOutItem setTag:TAG_ZOOM_OUT];
+    [viewMenu addItem:zoomOutItem];
 
     [viewMenu addItem:[NSMenuItem separatorItem]];
 
@@ -402,7 +431,10 @@ void katana_update_menu_strings(
     const char* explorer,
     const char* refresh_explorer,
     const char* close_all,
-    const char* github
+    const char* github,
+    const char* refresh_document,
+    const char* zoom_in,
+    const char* zoom_out
 ) {
     @autoreleasepool {
         if (g_file_menu && file) {
@@ -473,6 +505,18 @@ void katana_update_menu_strings(
         }
         if (g_demo_item && demo) {
             [g_demo_item setTitle:[NSString stringWithUTF8String:demo]];
+        }
+        /* WHY: Dynamically find items by tag for those we don't have global variables for yet. */
+        for (NSMenuItem *item in [g_view_menu itemArray]) {
+            if ([item tag] == TAG_REFRESH_DOCUMENT && refresh_document) {
+                [item setTitle:[NSString stringWithUTF8String:refresh_document]];
+            }
+            if ([item tag] == TAG_ZOOM_IN && zoom_in) {
+                [item setTitle:[NSString stringWithUTF8String:zoom_in]];
+            }
+            if ([item tag] == TAG_ZOOM_OUT && zoom_out) {
+                [item setTitle:[NSString stringWithUTF8String:zoom_out]];
+            }
         }
     }
 }

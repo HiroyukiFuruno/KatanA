@@ -43,7 +43,7 @@ pub(super) fn resolve_single_asset(lang: &str, filename: &str) -> Option<DemoAss
             };
             Some(DemoAsset {
                 virtual_path: Box::leak("Katana://Welcome.md".to_string().into_boxed_str()),
-                content: crate::os_command::OsCommandOps::replace_in_text(content),
+                content: content.to_string(),
                 is_reference: true,
             })
         }
@@ -55,7 +55,7 @@ pub(super) fn resolve_single_asset(lang: &str, filename: &str) -> Option<DemoAss
             };
             Some(DemoAsset {
                 virtual_path: Box::leak("Katana://Guide.md".to_string().into_boxed_str()),
-                content: crate::os_command::OsCommandOps::replace_in_text(content),
+                content: content.to_string(),
                 is_reference: true,
             })
         }
@@ -83,12 +83,12 @@ pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
         /* WHY: Walkthrough is always first */
         DemoAsset {
             virtual_path: demo_virtual_path(walkthrough_filename),
-            content: crate::os_command::OsCommandOps::replace_in_text(welcome),
+            content: welcome.to_string(),
             is_reference: true,
         },
         DemoAsset {
             virtual_path: demo_virtual_path(rendering_filename),
-            content: crate::os_command::OsCommandOps::replace_in_text(rendering),
+            content: rendering.to_string(),
             is_reference: true,
         },
     ]

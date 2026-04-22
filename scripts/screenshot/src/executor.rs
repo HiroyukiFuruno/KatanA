@@ -28,6 +28,15 @@ impl Session {
         let mut cmd = Command::new(&self.binary);
         cmd.env("HOME", &self.home_dir);
 
+        let config_dir = if cfg!(target_os = "macos") {
+            self.home_dir.join("Library").join("Application Support").join("KatanA")
+        } else if cfg!(target_os = "windows") {
+            self.home_dir.join("AppData").join("Roaming").join("KatanA")
+        } else {
+            self.home_dir.join(".config").join("KatanA")
+        };
+        cmd.env("KATANA_CONFIG_DIR", &config_dir);
+
         if cfg!(target_os = "linux") {
             cmd.env("XDG_CONFIG_HOME", self.home_dir.join(".config"));
         }

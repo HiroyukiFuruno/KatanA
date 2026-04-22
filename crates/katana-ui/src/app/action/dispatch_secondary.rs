@@ -1,4 +1,4 @@
-use crate::app::*;
+use crate::app::download::DownloadOps;
 use crate::app_state::*;
 use crate::shell::*;
 
@@ -19,111 +19,11 @@ impl KatanaApp {
             AppAction::ReorderActivityRail { from, to } => {
                 self.handle_action_reorder_activity_rail(from, to)
             }
-            AppAction::CheckForUpdates => self.start_update_check(true),
-            AppAction::ExportDocument(fmt) => self.handle_export_document(ctx, fmt),
-            AppAction::AcceptTerms(version) => {
-                self.state
-                    .config
-                    .settings
-                    .settings_mut()
-                    .terms_accepted_version = Some(version);
-                if !self.state.config.try_save_settings() {
-                    tracing::warn!("Failed to save terms acceptance");
-                }
-            }
-            AppAction::DeclineTerms => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
-            AppAction::ShowMetaInfo(path) => self.show_meta_info_for = Some(path),
-            AppAction::SkipVersion(version) => {
-                self.state
-                    .config
-                    .settings
-                    .settings_mut()
-                    .updates
-                    .skipped_version = Some(version);
-                let _ = self.state.config.try_save_settings();
-                self.show_update_dialog = false;
-            }
-            AppAction::DismissUpdate => self.show_update_dialog = false,
-            AppAction::ConfirmRelaunch => {
-                if let Some(_prep) = self.pending_relaunch.take() {
-                    #[cfg(all(not(test), not(coverage)))]
-                    {
-                        let _ = katana_core::update::UpdateInstallerOps::execute_relauncher(_prep);
-                        std::process::exit(0);
-                    }
-                }
-            }
-            AppAction::ShowReleaseNotes => self.handle_show_release_notes(),
-            AppAction::ClearAllCaches => self.handle_action_clear_all_caches(ctx),
-            AppAction::RequestNewFile(path) => {
-                let ext = self
-                    .state
-                    .config
-                    .settings
-                    .settings()
-                    .workspace
-                    .visible_extensions
-                    .first()
-                    .cloned();
-                self.state.layout.create_fs_node_modal = Some((path, String::new(), ext, false));
-            }
-            AppAction::RequestNewDirectory(path) => {
-                self.state.layout.create_fs_node_modal = Some((path, String::new(), None, true));
-            }
-            AppAction::RequestRename(path) => {
-                let name = path
-                    .file_name()
-                    .map(|n| n.to_string_lossy().into_owned())
-                    .unwrap_or_default();
-                self.state.layout.rename_modal = Some((path, name));
-            }
-            AppAction::RequestDelete(path) => self.state.layout.delete_modal = Some(path),
-            AppAction::CopyPathToClipboard(path) => {
-                ctx.copy_text(path.to_string_lossy().to_string());
-            }
-            AppAction::CopyRelativePathToClipboard(path) => {
-                let rel_path = if let Some(ws) = &self.state.workspace.data {
-                    path.strip_prefix(&ws.root).unwrap_or(&path).to_path_buf()
-                } else {
-                    path.clone()
-                };
-                ctx.copy_text(rel_path.to_string_lossy().to_string());
-            }
-            AppAction::RevealInOs(path) => self.handle_action_reveal_in_os(path),
-            AppAction::CreateTabGroup {
-                name,
-                color_hex,
-                initial_member,
-            } => self.handle_action_create_tab_group(name, color_hex, vec![initial_member]),
-            AppAction::CreateTabGroupMany {
-                name,
-                color_hex,
-                members,
-            } => self.handle_action_create_tab_group(name, color_hex, members),
-            AppAction::AddTabToGroup { group_id, member } => {
-                self.handle_action_add_tabs_to_group(group_id, vec![member])
-            }
-            AppAction::AddTabsToGroup { group_id, members } => {
-                self.handle_action_add_tabs_to_group(group_id, members)
-            }
-            AppAction::RemoveTabFromGroup(member) => {
-                self.handle_action_remove_tab_from_group(member)
-            }
-            AppAction::RenameTabGroup { group_id, new_name } => {
-                self.handle_action_rename_tab_group(group_id, new_name)
-            }
-            AppAction::ClearInlineRename => self.state.layout.inline_rename_group = None,
-            AppAction::RecolorTabGroup {
-                group_id,
-                new_color,
-            } => self.handle_action_recolor_tab_group(group_id, new_color),
-            AppAction::CloseTabGroup(group_id) => self.handle_action_close_tab_group(group_id),
-            AppAction::UngroupTabGroup(group_id) => {
-                self.state.document.tab_groups.retain(|g| g.id != group_id);
-                self.save_workspace_state();
-            }
-            AppAction::ToggleCollapseTabGroup(group_id) => {
-                self.handle_action_toggle_collapse_tab_group(group_id)
+            AppAction::StartPlantumlDownload { url, dest } => {
+                /* WHY: Reuse the existing DownloadOps pipeline (DownloadRequest → start_download).
+                 * This forces a fresh download even when the JAR already exists, enabling
+                 * users to update to the latest PlantUML release from the Settings screen. */
+                self.start_download(crate::preview_pane::DownloadRequest { url, dest });
             }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
@@ -152,7 +52,68 @@ impl KatanaApp {
             }
             AppAction::None => {}
             AppAction::InstallUpdate => self.handle_action_install_update(),
-            _ => {}
+            AppAction::OpenDocSearch => {
+                self.state.search.doc_search_open = true;
+                ctx.memory_mut(|m| {
+                    m.data
+                        .insert_temp(egui::Id::new("search_newly_opened"), true)
+                });
+            }
+            AppAction::ToggleDocSearch => {
+                if !self.state.search.doc_search_open {
+                    self.state.search.doc_search_open = true;
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("search_newly_opened"), true)
+                    });
+                    self.trigger_action(AppAction::DocSearchQueryChanged);
+                } else {
+                    self.state.search.doc_search_open = false;
+                    self.state.search.doc_search_matches.clear();
+                }
+            }
+            AppAction::DocSearchQueryChanged => self.handle_action_doc_search_changed(),
+            AppAction::DocSearchNext => self.handle_action_doc_search_next(ctx),
+            AppAction::DocSearchPrev => self.handle_action_doc_search_prev(ctx),
+            AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open ^= true,
+            AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
+            AppAction::ToggleExplorerFilter => {
+                let current = self.state.search.filter_enabled;
+                self.state.search.filter_enabled = !current;
+                if !current {
+                    ctx.memory_mut(|m| {
+                        m.data
+                            .insert_temp(egui::Id::new("filter_newly_enabled"), true)
+                    });
+                }
+            }
+            AppAction::ToggleSplitMode => {
+                self.state.set_active_view_mode(ViewMode::Split);
+            }
+            AppAction::ToggleCodePreview => {
+                let next_mode = match self.state.active_view_mode() {
+                    ViewMode::Split => ViewMode::PreviewOnly,
+                    ViewMode::PreviewOnly => ViewMode::CodeOnly,
+                    ViewMode::CodeOnly => ViewMode::PreviewOnly,
+                };
+                self.state.set_active_view_mode(next_mode);
+            }
+            AppAction::SelectNextTab => self.handle_action_next_tab(),
+            AppAction::SelectPrevTab => self.handle_action_prev_tab(),
+            AppAction::ZoomIn => {
+                const ZOOM_STEP: f32 = 0.1;
+                let current = ctx.zoom_factor();
+                ctx.set_zoom_factor(current + ZOOM_STEP);
+            }
+            AppAction::ZoomOut => {
+                const ZOOM_STEP: f32 = 0.1;
+                const ZOOM_MIN: f32 = 0.2;
+                let current = ctx.zoom_factor();
+                if current > ZOOM_MIN {
+                    ctx.set_zoom_factor(current - ZOOM_STEP);
+                }
+            }
+            _ => self.dispatch_tertiary(ctx, action),
         }
     }
 }

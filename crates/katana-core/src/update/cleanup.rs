@@ -1,66 +1,46 @@
 use super::types::UpdateCleanupOps;
 
+#[cfg(target_os = "macos")]
 impl UpdateCleanupOps {
     #[cfg(not(coverage))]
     pub fn perform_background_cleanup() {
-        let exe_path = match std::env::current_exe() {
-            Ok(p) => p,
-            Err(_) => return,
-        };
-
-        let mut app_path = exe_path.clone();
-        let mut is_app_bundle = false;
-        while app_path.pop() {
-            if let Some(ext) = app_path.extension()
-                && ext == "app"
-            {
-                is_app_bundle = true;
-                break;
-            }
-        }
-
-        if !is_app_bundle {
-            return;
-        }
-
-        let app_path_str = app_path.to_string_lossy().to_string();
-        let app_bak_str = format!("{}.bak", app_path_str);
-
-        std::thread::spawn(move || {
-            let script = format!(
-                r#"#!/bin/bash
-    export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-    if command -v brew >/dev/null 2>&1; then
-        if brew list --cask | grep -q "^katana-desktop$"; then
-            echo "Removing KatanA from Homebrew management..."
-
-            # We must prevent Homebrew from deleting the running app
-            if [ -d "{app_path}" ]; then
-                mv "{app_path}" "{app_bak}"
-            fi
-
-            brew uninstall --cask katana-desktop --force >/dev/null 2>&1 || true
-            brew untap HiroyukiFuruno/katana --force >/dev/null 2>&1 || true
-
-            # Restore the app
-            if [ -d "{app_bak}" ]; then
-                mv "{app_bak}" "{app_path}"
-            fi
-        fi
-    fi
-    "#,
-                app_path = app_path_str,
-                app_bak = app_bak_str,
-            );
-            let _ = crate::system::ProcessService::create_command("bash")
+        /* WHY: Untap the Homebrew tap on every macOS startup so that brew can no
+         * longer push automatic updates. The app itself stays installed and running —
+         * only the tap (update source) is removed. Future updates come through the
+         * in-app updater instead. Errors are suppressed with `|| true`. */
+        std::thread::spawn(|| {
+            let script = r#"export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+if command -v brew > /dev/null 2>&1; then
+    brew unpin katana --force > /dev/null 2>&1 || true
+    brew unpin katana-desktop --force > /dev/null 2>&1 || true
+    brew untap hiroyukifuruno/katana > /dev/null 2>&1 || true
+    brew untap HiroyukiFuruno/katana > /dev/null 2>&1 || true
+fi
+"#;
+            let mut command = crate::system::ProcessService::create_command("/bin/bash");
+            command
                 .arg("-c")
-                .arg(&script)
-                .status();
+                .arg(script)
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null());
+
+            if let Ok(status) = crate::system::ProcessService::status(command)
+                && !status.success()
+            {
+                tracing::warn!("brew untap script exited with status {:?}", status.code());
+            }
         });
     }
 
     #[cfg(coverage)]
     pub fn perform_background_cleanup() {
-        /* WHY: Coverage builds exclude the spawned thread to prevent false negatives from unreachable branches. */
+        /* WHY: Coverage builds exclude the spawned thread to prevent false negatives. */
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+impl UpdateCleanupOps {
+    pub fn perform_background_cleanup() {
+        /* WHY: brew cleanup is macOS-only. No-op on other platforms. */
     }
 }

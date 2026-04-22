@@ -36,7 +36,10 @@ pub enum Step {
     Launch(LaunchStep),
     Wait(WaitStep),
     Screenshot(ScreenshotStep),
+    /// Open a file by name from the workspace tree.
     OpenFile(OpenFileStep),
+    /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
+    Action(ActionStep),
     Quit,
 }
 
@@ -62,6 +65,35 @@ pub struct OpenFileStep {
     pub file_name: String,
     #[serde(default = "default_open_file_wait")]
     pub wait_seconds: f64,
+}
+
+/// Named UI actions that the harness can trigger after launch.
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum UiAction {
+    ToggleToc,
+    ToggleSplitView,
+    ToggleSettings,
+    ToggleExplorer,
+    ToggleSlideshow,
+    ToggleExportPanel,
+    OpenChangelog,
+    /// Open settings and navigate to a specific tab.
+    /// Tab names: "theme", "icons", "font", "layout", "workspace", "updates", "behavior", "shortcuts"
+    OpenSettingsTab { tab: String },
+    /// Force-open a collapsing accordion by its egui Id source string.
+    ForceOpenAccordion { id: String },
+    /// Open the icons advanced-settings panel (full-height override table view).
+    OpenIconsAdvancedPanel,
+    /// Scroll down in the currently visible panel by the given logical-pixel amount.
+    ScrollDown { amount: f32 },
+    /// Set the editor view mode. mode: "preview_only" | "code_only" | "split"
+    SetViewMode { mode: String },
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ActionStep {
+    pub action: UiAction,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy)]

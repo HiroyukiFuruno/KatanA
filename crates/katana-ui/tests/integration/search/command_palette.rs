@@ -10,11 +10,11 @@ fn test_app_command_provider() {
     let provider = AppCommandProvider;
 
     // Empty query returns generic recent/common actions
-    let results = provider.search("", None);
+    let results = provider.search("", None, None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::RecentOrCommon);
 
-    let results = provider.search("Settings", None);
+    let results = provider.search("Settings", None, None);
     assert!(!results.is_empty());
     assert_eq!(results[0].kind, CommandPaletteResultKind::Action);
     assert_eq!(results[0].label, "Settings");
@@ -70,18 +70,19 @@ fn test_integration_command_palette_ui() {
     assert!(harness.state().app_state_for_test().command_palette.is_open);
 
     // 2. Type query (triggers search)
-    harness
-        .state_mut()
-        .app_state_mut()
-        .command_palette
-        .current_query = "Settings".into();
+    {
+        let cp_state = &mut harness.state_mut().app_state_mut().command_palette;
+        cp_state.current_query = "> Settings".into();
+        cp_state.results.clear(); // force re-search
+    }
     harness.step();
 
-    // 3. Verify results are populated in UI
-    let _ = harness.get_by_label("Settings");
-
-    // 4. Select and execution
-    harness.get_by_label("Settings").click();
+    // 3. Verify results are populated in UI and Select
+    harness
+        .get_all_by_value("Settings")
+        .next()
+        .expect("Should find Settings label in search results")
+        .click();
     harness.step();
     harness.step();
     harness.step();
@@ -130,7 +131,7 @@ fn test_integration_command_palette_keyboard_navigation() {
     // 1. Open Palette
     harness
         .state_mut()
-        .trigger_action(AppAction::ToggleCommandPalette);
+        .trigger_action(AppAction::ToggleKatanaCommandPalette);
     harness.step();
 
     // 2. Initial selection is 0
@@ -197,6 +198,7 @@ fn test_keyboard_navigation_state() {
                 id: "1".into(),
                 label: "Item 1".into(),
                 secondary_label: None,
+                shortcut: None,
                 score: 1.0,
                 kind: CommandPaletteResultKind::Action,
                 execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
@@ -207,6 +209,7 @@ fn test_keyboard_navigation_state() {
                 id: "2".into(),
                 label: "Item 2".into(),
                 secondary_label: None,
+                shortcut: None,
                 score: 0.9,
                 kind: CommandPaletteResultKind::Action,
                 execute_payload: CommandPaletteExecutePayload::DispatchAppAction(

@@ -4,7 +4,7 @@ pub mod centering {
 
     /// Constant for optical Y-offset applied to the accordion triangle to counter native egui geometrical centering.
     /// Changed from -4.0 to 0.0 to fix vertical misalignment against text per user feedback.
-    const OPTICAL_Y_OFFSET: f32 = 0.0;
+    const OPTICAL_Y_OFFSET: f32 = 0.1;
 
     /// Helper struct for custom UI drawing with optical corrections.
     pub struct AccordionIcon;

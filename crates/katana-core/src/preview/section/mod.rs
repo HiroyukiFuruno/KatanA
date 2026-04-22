@@ -74,7 +74,11 @@ impl PreviewSectionOps {
                 let parsed_fence = DiagramSectionOps::try_parse_diagram_fence(content_from_marker);
 
                 if parsed_fence.is_none() {
-                    let consume_len = pos + marker.len();
+                    /* WHY: For non-diagram fences (```markdown, ```rust, etc.) skip the entire
+                     * fence body so nested diagram fences inside are not incorrectly extracted.
+                     * Delegates to DiagramSectionOps which implements CommonMark fence rules. */
+                    let consume_len =
+                        DiagramSectionOps::non_diagram_fence_consume_len(pos, marker, remaining);
                     acc.push_str(&remaining[..consume_len]);
                     remaining = &remaining[consume_len..];
                     continue;

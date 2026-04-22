@@ -50,11 +50,13 @@ impl<'a> TabBar<'a> {
         ui.style_mut().interaction.tooltip_delay = TAB_TOOLTIP_SHOW_DELAY_SECS;
         let icon_bg = self.resolve_icon_bg(ui);
 
+        let available_panel_width = ui.available_width();
+
         crate::widgets::AlignCenter::new()
             .shrink_to_fit(true)
             .content(|ui| {
                 let should_scroll = self.check_scroll_request(ui);
-                let scroll_width = ui.available_width() - TAB_NAV_BUTTONS_AREA_WIDTH;
+                let scroll_width = available_panel_width - TAB_NAV_BUTTONS_AREA_WIDTH;
                 egui::ScrollArea::horizontal()
                     .max_width(scroll_width)
                     .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)

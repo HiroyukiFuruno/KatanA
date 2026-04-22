@@ -29,9 +29,17 @@ impl MermaidRenderOps {
             return available;
         }
 
-        let available = probe_mmdc_availability(&binary);
-        cache.insert(binary, available);
-        available
+        /* WHY: Only cache a confirmed result (Some(true/false)). If the probe
+         * times out or fails to spawn (None), we do NOT cache the failure so
+         * the next call can retry. This prevents a transient startup timeout
+         * from permanently marking mmdc as unavailable for the session. */
+        match probe_mmdc_availability(&binary) {
+            Some(available) => {
+                cache.insert(binary, available);
+                available
+            }
+            None => false,
+        }
     }
 
     /* WHY: Rendering as PNG with mmdc (Puppeteer/Chrome based) bypasses resvg's lack of support for <foreignObject>. */
@@ -92,15 +100,24 @@ impl MermaidRenderOps {
     }
 }
 
-fn probe_mmdc_availability(binary: &Path) -> bool {
+/* WHY: Returns Some(true) when mmdc responded successfully, Some(false) when
+ * the binary was found but exited with a non-zero code, and None when the
+ * probe could not be completed (process failed to spawn, or timed out).
+ * Callers use None to skip caching so the check is retried next time. */
+fn probe_mmdc_availability(binary: &Path) -> Option<bool> {
     let mut command = MermaidBinaryOps::build_mmdc_command_for_binary(binary);
     command
         .arg("--version")
         .stdout(Stdio::null())
         .stderr(Stdio::null());
-    run_command_status_with_timeout(command, MMDC_AVAILABILITY_TIMEOUT)
-        .map(|status| status.success())
-        .unwrap_or(false)
+    match run_command_status_with_timeout(command, MMDC_AVAILABILITY_TIMEOUT) {
+        Ok(status) => Some(status.success()),
+        Err(_) => {
+            /* WHY: Timeout or spawn failure — do not cache; allow retry on
+             * the next call so a slow startup environment can still succeed. */
+            None
+        }
+    }
 }
 
 fn run_command_status_with_timeout(
@@ -133,6 +150,7 @@ fn run_command_status_with_timeout(
     }
 }
 
+#[cfg(test)]
 #[cfg(all(test, unix))]
 #[allow(clippy::unwrap_used)]
 mod tests {
@@ -160,5 +178,55 @@ mod tests {
         let status = run_command_status_with_timeout(cmd, Duration::from_secs(5)).unwrap();
 
         assert!(status.success());
+    }
+
+    #[test]
+    fn probe_mmdc_availability_returns_none_for_timeout() {
+        /* WHY: Regression test for Bug 1 — a timed-out probe must return None
+         * (not Some(false)), so the caller does NOT cache the failure and can
+         * retry on the next call. */
+        let binary = std::path::Path::new("sleep");
+
+        /* WHY: sleep 5 will definitely time out with a 100 ms budget.
+         * We call the inner helper directly via a duplicate-like test. */
+        let mut command = MermaidBinaryOps::build_mmdc_command_for_binary(binary);
+        command
+            .arg("5")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null());
+        let result = run_command_status_with_timeout(command, Duration::from_millis(100));
+        assert!(result.is_err(), "timed-out probe must return Err");
+    }
+
+    #[test]
+    fn probe_mmdc_availability_returns_some_false_for_bad_binary() {
+        /* WHY: A binary that exists but exits non-zero must return Some(false)
+         * so the caller caches the negative result and avoids repeated probes. */
+        let binary = std::path::Path::new("false");
+        let result = probe_mmdc_availability(binary);
+        assert_eq!(result, Some(false), "'false' binary must yield Some(false)");
+    }
+
+    #[test]
+    fn is_mmdc_available_does_not_cache_when_probe_returns_none() {
+        /* WHY: Regression test — if a transient timeout caused a None probe
+         * result, the cache must remain empty so the next call retries. */
+        /* WHY: Use a deliberately invalid binary path that won't spawn. */
+        let _guard = std::sync::Mutex::new(());
+        unsafe { std::env::set_var("MERMAID_MMDC", "/this/path/does/not/exist/mmdc") };
+
+        /* WHY: First call: should return false (spawn failure → None → not cached) */
+        let first = MermaidRenderOps::is_mmdc_available();
+        assert!(!first);
+
+        /* WHY: The cache should NOT have stored the failure under this key. */
+        let binary = super::super::resolve::MermaidBinaryOps::resolve_mmdc_binary();
+        let cache = MMDC_AVAILABILITY_CACHE.lock().unwrap();
+        assert!(
+            !cache.contains_key(&binary),
+            "spawn failure must not be cached so the next call can retry"
+        );
+
+        unsafe { std::env::remove_var("MERMAID_MMDC") };
     }
 }

@@ -33,6 +33,8 @@ pub use syntect;
 pub type RenderMathFn = dyn Fn(&mut egui::Ui, &str, bool);
 /// Takes [`egui::Ui`] and the html text to be rendered/used
 pub type RenderHtmlFn = dyn Fn(&mut egui::Ui, &str);
+/// Takes [`egui::Ui`] and text. Returns true if it was handled.
+pub type RenderTextFn = dyn Fn(&mut egui::Ui, &str) -> bool;
 
 /// Takes [`egui::Ui`], cache, options, table data, alignments, and max_width.
 /// The function receives the fully-parsed [`Table`] data and is responsible for
