@@ -567,6 +567,8 @@
   "linter": {
     "rule_toggle": "Toggle Linter Rule: {rule_code} ({rule_name})",
     "docs": "Docs",
+    "fix": "Fix",
+    "fix_all": "Fix All",
     "disable_rule": "Disable",
     "disable_rule_desc": "Disable this rule",
     "enable_linter": "Enable Markdown Linter",

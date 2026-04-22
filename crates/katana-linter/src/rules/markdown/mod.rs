@@ -70,6 +70,7 @@ impl MarkdownRule for HeadingIncrementRule {
                         ),
                         rule_id: meta.code.to_string(),
                         official_meta: Some(meta.clone()),
+                        fix_info: None,
                     });
                 }
                 last_level = current_level;

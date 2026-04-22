@@ -144,6 +144,7 @@ impl MarkdownRule for FirstLineHeadingRule {
             message: meta.description.to_string(),
             rule_id: meta.code.to_string(),
             official_meta: Some(meta),
+            fix_info: None,
         }]
     }
 }

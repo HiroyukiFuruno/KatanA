@@ -52,6 +52,20 @@ pub struct DiagnosticRange {
     pub end_column: usize,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiagnosticFix {
+    /// 1-indexed line number where the fix starts
+    pub start_line: usize,
+    /// 1-indexed column number where the fix starts
+    pub start_column: usize,
+    /// 1-indexed line number where the fix ends
+    pub end_line: usize,
+    /// 1-indexed column number where the fix ends
+    pub end_column: usize,
+    /// The replacement string
+    pub replacement: String,
+}
+
 /// A single diagnostic item produced by a markdown linting rule.
 ///
 /// `official_meta` is `Some` for rules with `RuleParityStatus::Official` or
@@ -69,6 +83,8 @@ pub struct MarkdownDiagnostic {
     pub rule_id: String,
     /// Official markdownlint metadata; `None` for hidden internal rules.
     pub official_meta: Option<OfficialRuleMeta>,
+    /// Optional fix information for auto-fixable rules.
+    pub fix_info: Option<DiagnosticFix>,
 }
 
 impl std::fmt::Display for MarkdownDiagnostic {

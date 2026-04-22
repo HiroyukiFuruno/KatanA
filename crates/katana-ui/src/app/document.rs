@@ -15,7 +15,6 @@ pub(crate) trait DocumentOps {
     fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool);
     fn force_close_document(&mut self, idx: usize);
     fn handle_update_buffer(&mut self, content: String);
-    fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String);
     fn handle_save_document(&mut self);
 }
 
@@ -129,31 +128,6 @@ impl DocumentOps for KatanaApp {
         doc.is_dirty = true;
 
         let path = doc.path.clone();
-        let concurrency = self
-            .state
-            .config
-            .settings
-            .settings()
-            .performance
-            .diagram_concurrency;
-        self.full_refresh_preview(&path, &content, true, concurrency);
-
-        if self.state.search.doc_search_open {
-            self.refresh_doc_search_matches(&content);
-        }
-        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
-    }
-
-    fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String) {
-        let Some(idx) = self.state.document.active_doc_idx else {
-            return;
-        };
-        let doc = &mut self.state.document.open_documents[idx];
-        doc.buffer.replace_range(span, &replacement);
-        doc.is_dirty = true;
-
-        let path = doc.path.clone();
-        let content = doc.buffer.clone();
         let concurrency = self
             .state
             .config

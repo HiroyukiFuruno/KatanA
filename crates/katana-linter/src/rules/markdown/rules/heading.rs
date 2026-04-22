@@ -91,13 +91,29 @@ impl MarkdownRule for BlanksAroundHeadingsRule {
             let needs_blank_before = i > 0 && !lines[i - 1].trim().is_empty();
             let needs_blank_after = i + 1 < lines.len() && !lines[i + 1].trim().is_empty();
             if needs_blank_before || needs_blank_after {
-                RuleHelpers::push_diag(
+                let mut replacement = String::new();
+                if needs_blank_before {
+                    replacement.push('\n');
+                }
+                replacement.push_str(line);
+                if needs_blank_after {
+                    replacement.push('\n');
+                }
+                let fix = crate::rules::markdown::types::DiagnosticFix {
+                    start_line: i + 1,
+                    start_column: 1,
+                    end_line: i + 1,
+                    end_column: line.len().max(1) + if line.is_empty() { 0 } else { 1 },
+                    replacement,
+                };
+                RuleHelpers::push_diag_with_fix(
                     &mut diagnostics,
                     file_path,
                     i,
                     line,
                     &meta,
                     DiagnosticSeverity::Warning,
+                    Some(fix),
                 );
             }
         }
@@ -139,13 +155,21 @@ impl MarkdownRule for HeadingStartLeftRule {
             }
             /* WHY: A heading with leading whitespace violates this rule */
             if RuleHelpers::is_atx_heading(trimmed) && line != trimmed {
-                RuleHelpers::push_diag(
+                let fix = crate::rules::markdown::types::DiagnosticFix {
+                    start_line: i + 1,
+                    start_column: 1,
+                    end_line: i + 1,
+                    end_column: line.len() - trimmed.len() + 1,
+                    replacement: String::new(),
+                };
+                RuleHelpers::push_diag_with_fix(
                     &mut diagnostics,
                     file_path,
                     i,
                     line,
                     &meta,
                     DiagnosticSeverity::Warning,
+                    Some(fix),
                 );
             }
         }

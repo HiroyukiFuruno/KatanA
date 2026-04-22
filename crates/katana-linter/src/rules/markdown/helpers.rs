@@ -57,6 +57,19 @@ impl RuleHelpers {
         meta: &OfficialRuleMeta,
         severity: DiagnosticSeverity,
     ) {
+        Self::push_diag_with_fix(diagnostics, file_path, line_idx, line, meta, severity, None);
+    }
+
+    /// Push a diagnostic with fix info.
+    pub fn push_diag_with_fix(
+        diagnostics: &mut Vec<MarkdownDiagnostic>,
+        file_path: &Path,
+        line_idx: usize,
+        line: &str,
+        meta: &OfficialRuleMeta,
+        severity: DiagnosticSeverity,
+        fix_info: Option<crate::rules::markdown::types::DiagnosticFix>,
+    ) {
         diagnostics.push(MarkdownDiagnostic {
             file: file_path.to_path_buf(),
             severity,
@@ -69,6 +82,7 @@ impl RuleHelpers {
             message: meta.description.to_string(),
             rule_id: meta.code.to_string(),
             official_meta: Some(meta.clone()),
+            fix_info,
         });
     }
 
@@ -142,6 +156,7 @@ impl RuleHelpers {
             message: format!("Broken local link: {}", link),
             rule_id: "md-broken-link".to_string(),
             official_meta: None,
+            fix_info: None,
         });
     }
 

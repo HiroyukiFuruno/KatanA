@@ -10,6 +10,7 @@ impl RowDiagnosticsRenderer {
         y: f32,
         ln_rect: &egui::Rect,
         row_height: f32,
+        action: &mut crate::app_state::AppAction,
     ) {
         let line_diagnostics: Vec<_> = diagnostics
             .iter()
@@ -80,6 +81,27 @@ impl RowDiagnosticsRenderer {
                 let fmt_str = format!("[{}] {} ({})", sev_text, d.rule_id, meta.title);
                 ui.label(egui::RichText::new(fmt_str).strong());
                 ui.label(&d.message);
+
+                if meta.is_fixable && d.fix_info.is_some() {
+                    /* WHY: allow(horizontal_layout) - Standard egui pattern for side-by-side buttons */
+                    ui.horizontal(|ui| {
+                        let linter_msgs = &crate::i18n::I18nOps::get().linter;
+                        if ui.button(&linter_msgs.fix).clicked() {
+                            let fixes = vec![d.fix_info.clone().unwrap()];
+                            *action = crate::app_state::AppAction::ApplyLintFixes(fixes);
+                            ui.close_menu();
+                        }
+                        if ui.button(&linter_msgs.fix_all).clicked() {
+                            let all_fixes = diagnostics
+                                .iter()
+                                .filter_map(|d| d.fix_info.clone())
+                                .collect();
+                            *action = crate::app_state::AppAction::ApplyLintFixes(all_fixes);
+                            ui.close_menu();
+                        }
+                    });
+                }
+                ui.hyperlink(meta.docs_url);
                 ui.add_space(TOOLTIP_SPACE);
             }
         });

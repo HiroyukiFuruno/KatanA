@@ -45,13 +45,21 @@ impl MarkdownRule for NoMultipleBlanksRule {
             if trimmed.is_empty() {
                 consecutive_blanks += 1;
                 if consecutive_blanks > 1 {
-                    RuleHelpers::push_diag(
+                    let fix = crate::rules::markdown::types::DiagnosticFix {
+                        start_line: i + 1,
+                        start_column: 1,
+                        end_line: i + 2,
+                        end_column: 1,
+                        replacement: String::new(),
+                    };
+                    RuleHelpers::push_diag_with_fix(
                         &mut diagnostics,
                         file_path,
                         i,
                         line,
                         &meta,
                         DiagnosticSeverity::Warning,
+                        Some(fix),
                     );
                 }
             } else {
@@ -99,13 +107,29 @@ impl MarkdownRule for NoMultipleSpaceBlockquoteRule {
                 .strip_prefix('>')
                 .is_some_and(|after| after.starts_with("  "))
             {
-                RuleHelpers::push_diag(
+                let gt_pos = line.find('>').unwrap();
+                let spaces_start = gt_pos + 1;
+                let mut spaces_end = spaces_start;
+                while spaces_end < line.len() && line[spaces_end..].starts_with(' ') {
+                    spaces_end += 1;
+                }
+
+                let fix = crate::rules::markdown::types::DiagnosticFix {
+                    start_line: i + 1,
+                    start_column: spaces_start + 1,
+                    end_line: i + 1,
+                    end_column: spaces_end + 1,
+                    replacement: " ".to_string(),
+                };
+
+                RuleHelpers::push_diag_with_fix(
                     &mut diagnostics,
                     file_path,
                     i,
                     line,
                     &meta,
                     DiagnosticSeverity::Warning,
+                    Some(fix),
                 );
             }
         }
@@ -150,6 +174,13 @@ impl MarkdownRule for SingleTrailingNewlineRule {
             message: meta.description.to_string(),
             rule_id: meta.code.to_string(),
             official_meta: Some(meta),
+            fix_info: Some(crate::rules::markdown::types::DiagnosticFix {
+                start_line: line_count,
+                start_column: content.lines().last().map_or(1, |l| l.len() + 1),
+                end_line: line_count,
+                end_column: content.lines().last().map_or(1, |l| l.len() + 1),
+                replacement: "\n".to_string(),
+            }),
         }]
     }
 }

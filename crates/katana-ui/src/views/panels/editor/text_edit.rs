@@ -118,6 +118,7 @@ impl TextEditRenderer {
                     left_margin: LINE_NUMBER_MARGIN,
                     line_number_pad_right: PAD_RIGHT,
                     diagnostics,
+                    action,
                 },
             );
 

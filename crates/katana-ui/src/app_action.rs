@@ -28,6 +28,7 @@ pub enum AppAction {
         span: std::ops::Range<usize>,
         replacement: String,
     },
+    ApplyLintFixes(Vec<katana_linter::rules::markdown::DiagnosticFix>),
     ToggleTaskList {
         global_index: usize,
         new_state: char,
