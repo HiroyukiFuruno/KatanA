@@ -78,6 +78,7 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::Html => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/html", ".svg"))),
             crate::icon::Icon::Pdf => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/pdf", ".svg"))),
             crate::icon::Icon::Image => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/image", ".svg"))),
+            crate::icon::Icon::LightBulb => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/light_bulb", ".svg"))),
             _ => None,
         }
     };

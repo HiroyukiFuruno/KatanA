@@ -581,6 +581,8 @@
     "open_workspace_to_configure": "Apri un’area di lavoro per configurare regole Lint specifiche.",
     "severity_ignore": "Ignora",
     "severity_warning": "Avviso",
-    "severity_error": "Errore"
-  }
+    "severity_error": "Errore",
+    "use_workspace_local_config": "Usa configurazione locale dell'area di lavoro"
+  },
+  "use_workspace_local_config": "Usa configurazione locale dell’area di lavoro"
 }

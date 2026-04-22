@@ -188,6 +188,7 @@ impl IconsSyncOps {
             "system/recent.svg", "system/github.svg", "layout/swap_horizontal.svg",
             "layout/swap_vertical.svg", "files/explorer.svg", "system/bug.svg",
             "view/reset_view.svg",
+            "action/light_bulb.svg", "system/action.svg",
             "../system/match-case.svg", "../system/whole-word.svg", "../system/use-regex.svg",
         ]
     }

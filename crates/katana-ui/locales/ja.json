@@ -581,6 +581,8 @@
     "open_workspace_to_configure": "ワークスペースを開いて、ワークスペース固有のLintルールを設定してください。",
     "severity_ignore": "無視",
     "severity_warning": "警告",
-    "severity_error": "エラー"
-  }
+    "severity_error": "エラー",
+    "use_workspace_local_config": "ワークスペース設定を優先する"
+  },
+  "use_workspace_local_config": "ワークスペース固有の .markdownlint.json を使用する"
 }

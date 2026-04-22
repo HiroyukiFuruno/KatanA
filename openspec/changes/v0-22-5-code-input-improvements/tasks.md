@@ -95,8 +95,6 @@
 
 - [ ] 4.1 画像挿入操作にショートカットを設定
 - [ ] 4.2 設定画面に画像保存先の設定を追加
-- [ ] 4.3 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 4.4 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### Definition of Done (DoD)
 
@@ -107,31 +105,23 @@
 
 ---
 
-## 2. Task 2
+## 5. User Review (Pre-Final Phase)
 
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
-- [ ] 2.1 Task 2 description
-
-### Definition of Done (DoD)
-
-- [ ] (Other task-specific verifiable conditions...)
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [ ] 5.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
+- [ ] 5.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
 ---
 
-## 3. Final Verification & Release Work
+## 6. Final Verification & Release Work
 
-- [ ] 3.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 3.2 Ensure `make check` passes with exit code 0
-- [ ] 3.3 Create PR from Base Feature Branch targeting `master`
-- [ ] 3.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 3.5 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 3.6 Create `release/v0.22.4` branch from master
-- [ ] 3.7 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 3.8 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 3.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 3.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [ ] 6.3 Ensure `make check` passes with exit code 0
+- [ ] 6.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 6.7 Create `release/v0.22.4` branch from master
+- [ ] 6.8 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 6.9 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

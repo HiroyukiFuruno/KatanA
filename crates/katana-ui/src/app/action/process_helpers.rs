@@ -73,7 +73,7 @@ impl KatanaApp {
         }
     }
 
-    pub(super) fn handle_action_refresh_diagnostics(&mut self) {
+    pub(crate) fn handle_action_refresh_diagnostics(&mut self) {
         let Some(doc) = self.state.active_document() else {
             return;
         };

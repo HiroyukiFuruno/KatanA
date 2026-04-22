@@ -581,6 +581,8 @@
     "open_workspace_to_configure": "작업 공간별 Lint 규칙을 구성하려면 작업 공간을 여세요.",
     "severity_ignore": "무시",
     "severity_warning": "경고",
-    "severity_error": "오류"
-  }
+    "severity_error": "오류",
+    "use_workspace_local_config": "작업 공간 설정 우선 사용"
+  },
+  "use_workspace_local_config": "작업 공간 로컬 설정 사용"
 }

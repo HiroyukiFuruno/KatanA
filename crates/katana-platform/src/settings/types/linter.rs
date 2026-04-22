@@ -15,6 +15,8 @@ pub struct LinterSettings {
     #[serde(default = "default_linter_enabled")]
     pub enabled: bool,
     #[serde(default)]
+    pub use_workspace_local_config: bool,
+    #[serde(default)]
     pub rule_severity: HashMap<String, RuleSeverity>,
 }
 
@@ -26,6 +28,7 @@ impl Default for LinterSettings {
     fn default() -> Self {
         Self {
             enabled: true,
+            use_workspace_local_config: false,
             rule_severity: HashMap::new(),
         }
     }

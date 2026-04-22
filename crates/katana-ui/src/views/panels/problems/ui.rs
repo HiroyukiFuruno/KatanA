@@ -154,10 +154,13 @@ fn show_diagnostic_row(
                 ui.label(egui::RichText::new(meta.description).italics());
 
                 if !meta.docs_url.is_empty() {
-                    ui.hyperlink_to(
-                        crate::i18n::I18nOps::get().linter.docs.as_str(),
-                        meta.docs_url,
-                    );
+                    let docs_text = &crate::i18n::I18nOps::get().linter.docs;
+                    if ui.link(docs_text).clicked() {
+                        action = Some(crate::app_state::AppAction::OpenLinterDoc(
+                            meta.code.to_string(),
+                            meta.docs_url.to_string(),
+                        ));
+                    }
                 }
             });
         });

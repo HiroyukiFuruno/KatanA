@@ -26,7 +26,9 @@ impl TextEditRenderer {
         ln_active_text: Option<egui::Color32>,
     ) -> egui::InnerResponse<(egui::AtomLayoutResponse, Vec<f32>)> {
         ui.horizontal_top(|ui| {
-            const LINE_NUMBER_MARGIN: f32 = 40.0;
+            /* WHY: Extra width accommodates the diagnostic gutter icon (14px) + margin without
+             * overlapping the line numbers. Increased from 40 to 52. */
+            const LINE_NUMBER_MARGIN: f32 = 52.0;
             let (ln_rect, _) =
                 ui.allocate_exact_size(egui::vec2(LINE_NUMBER_MARGIN, 0.0), egui::Sense::hover());
 

@@ -88,6 +88,6 @@ impl DocumentEditOps for KatanaApp {
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
-        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+        self.handle_action_refresh_diagnostics();
     }
 }

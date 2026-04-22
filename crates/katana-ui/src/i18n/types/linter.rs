@@ -19,6 +19,7 @@ pub struct LinterTranslations {
     pub severity_ignore: String,
     pub severity_warning: String,
     pub severity_error: String,
+    pub use_workspace_local_config: String,
 }
 
 impl Default for LinterTranslations {
@@ -43,6 +44,7 @@ impl Default for LinterTranslations {
             severity_ignore: "Ignore".to_string(),
             severity_warning: "Warning".to_string(),
             severity_error: "Error".to_string(),
+            use_workspace_local_config: "Use Workspace-Local Configuration".to_string(),
         }
     }
 }

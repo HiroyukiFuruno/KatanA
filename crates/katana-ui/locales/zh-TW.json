@@ -581,6 +581,8 @@
     "open_workspace_to_configure": "開啟一個工作區以配置工作區特定的Lint規則。",
     "severity_ignore": "忽略",
     "severity_warning": "警告",
-    "severity_error": "錯誤"
-  }
+    "severity_error": "錯誤",
+    "use_workspace_local_config": "使用工作區配置"
+  },
+  "use_workspace_local_config": "使用工作區本地設定"
 }

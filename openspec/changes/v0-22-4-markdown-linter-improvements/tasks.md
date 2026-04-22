@@ -175,15 +175,42 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 
 ---
 
-## 6. Final Verification & Release Work
+## 6. User Review (Pre-Final Phase)
 
-- [ ] 6.1 自己レビューを実行（`docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md`）
-- [ ] 6.2 `make check` が exit code 0 で通過すること
-- [ ] 6.3 Base Feature Branch から `master` を対象に PR を作成
-- [ ] 6.4 PR 上の CI チェック（Lint / Coverage / CodeQL）が通過することを確認
-- [ ] 6.5 master にマージ（`gh pr merge --merge --delete-branch`）
-- [ ] 6.6 master から `release/v0.22.4` ブランチを作成
-- [ ] 6.7 `make release VERSION=0.22.4` を実行し、CHANGELOG を更新（`changelog-writing` スキル）
-- [ ] 6.8 `release/v0.22.4` から `master` を対象に PR を作成 — `Release Readiness` CI 通過を確認
-- [ ] 6.9 リリース PR を master にマージ（`gh pr merge --merge --delete-branch`）
-- [ ] 6.10 GitHub Release の完了を確認し、`/opsx-archive` でこの変更をアーカイブ
+> ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
+> ブランチ: `feature/v0.22.4-task5-feedback`（task5 ブランチを継続使用）
+
+- [/] **FB1** 診断パネルのリンクジャンプ — プレビューモード中はコードモードへ切り替えてから対象行にジャンプ
+- [/] **FB2.a** `LightBulb` アイコンを全パック分ダウンロード・登録（`katana-icon-management` スキル準拠）
+- [/] **FB2.b** `row_diagnostics.rs` のアイコンを `Icon::LightBulb` に変更
+- [/] **FB3** ガターアイコンのめり込み修正 — 行番号ガターの余白調整（40→ 52px）
+- [/] **FB4** 設定タブ表記統一 — ナビ「linter」とヘッダーを「Linter」に合わせる（ロケール + default 値）
+- [/] **FB5.1** 設定レイアウト崩壊修正 — プルダウンが右にはみ出す問題を解消
+- [/] **FB5.2** `md-broken-link` を設定画面から非表示（内部専用ルール）
+- [/] **FB5.3** 全 MD00XX ルールが設定画面に表示されているか確認・修正
+- [/] **FB5.5** 重要度コントロールをプルダウンから 3 段階モダントグル（無視 / 警告 / エラー）に変更
+- [/] **FB6.a** `.markdownlint.json` のデフォルト保存先を KatanA アプリ設定領域に変更
+- [/] **FB6.b** 「ワークスペースに保存」トグルで保存先切り替えを可能にする
+- [/] **FB6.c** 切り替え時に相手側の JSON が存在すれば自動展開する
+- [/] **FB6.d** 「設定を開く」ボタンが機能しない不具合を修正
+- [/] **TDB1** (技術的負債) ドキュメント URL 404 修正: `regex_rule!` マクロが生成する URL が大文字 ID を使うが GitHub ファイル名は小文字。`process_linter.rs` でファイル名部分を小文字化する。
+- [/] **FB7** 検証用の `lint-fix.md` と `lint-fix.md.org` を作成しデモで readonly, code-only で表示する
+- [/] **FB8** ルールドキュメントのリンクが外部リンクになっている問題を修正
+- [/] **FB9** fix したあとに lint 判定が自動で再評価されUIに反映されるよう修正
+- [ ] **TDB2** (技術的負債・次変更) `katana-linter` を外部 Rust クレートに移譲する。クレート選定時に fix 機能が内包されているものを優先して採用する。
+
+---
+
+## 7. Final Verification & Release Work
+
+- [ ] 7.1 自己レビューを実行（`docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md`）
+- [ ] 7.2 markdownのフォーマット（format）および Lint修正（lintfix）を実行し、全ドキュメントの体裁を整える
+- [ ] 7.3 `make check` が exit code 0 で通過すること
+- [ ] 7.4 Base Feature Branch から `master` を対象に PR を作成
+- [ ] 7.5 PR 上の CI チェック（Lint / Coverage / CodeQL）が通過することを確認
+- [ ] 7.6 master にマージ（`gh pr merge --merge --delete-branch`）
+- [ ] 7.7 master から `release/v0.22.4` ブランチを作成
+- [ ] 7.8 `make release VERSION=0.22.4` を実行し、CHANGELOG を更新（`changelog-writing` スキル）
+- [ ] 7.9 `release/v0.22.4` から `master` を対象に PR を作成 — `Release Readiness` CI 通過を確認
+- [ ] 7.10 リリース PR を master にマージ（`gh pr merge --merge --delete-branch`）
+- [ ] 7.11 GitHub Release の完了を確認し、`/opsx-archive` でこの変更をアーカイブ
