@@ -6,6 +6,7 @@ mod severity_toggle;
 mod workspace;
 use severity_toggle::SEVERITY_SEGMENT_HEIGHT;
 use workspace::WorkspaceSettingsOps;
+const RULE_DESC_SPACING: f32 = 8.0;
 impl LinterTabOps {
     pub(crate) fn render_linter_tab(
         ui: &mut egui::Ui,
@@ -96,6 +97,19 @@ impl LinterTabOps {
 
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                         ui.add(egui::Label::new(&rule_id).truncate());
+
+                        let desc_key = rule_id.to_lowercase();
+                        let description = msgs
+                            .rule_descriptions
+                            .get(&desc_key)
+                            .map(|s| s.as_str())
+                            .or_else(|| rule.official_meta().map(|m| m.description))
+                            .unwrap_or("");
+
+                        if !description.is_empty() {
+                            ui.add_space(RULE_DESC_SPACING);
+                            ui.label(egui::RichText::new(description).weak().small());
+                        }
                     });
                 },
             );

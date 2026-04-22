@@ -586,7 +586,29 @@
     "severity_ignore": "Ignorar",
     "severity_warning": "Aviso",
     "severity_error": "Erro",
-    "use_workspace_local_config": "Usar configuração local do espaço de trabalho"
+    "use_workspace_local_config": "Usar configuração local do espaço de trabalho",
+    "rule_descriptions": {
+      "md001": "Os níveis de cabeçalho devem ser incrementados apenas um nível de cada vez.",
+      "md003": "O estilo do cabeçalho deve ser consistente.",
+      "md004": "Estilo de lista não ordenada inconsistente.",
+      "md012": "Múltiplas linhas em branco consecutivas.",
+      "md022": "Os cabeçalhos devem ser cercados por linhas em branco.",
+      "md023": "Os cabeçalhos devem começar no início da linha.",
+      "md025": "Vários cabeçalhos de nível superior no mesmo documento.",
+      "md026": "Pontuação final no cabeçalho.",
+      "md027": "Vários espaços após o símbolo de citação.",
+      "md028": "Linha em branco dentro da citação.",
+      "md029": "Prefixo de item de lista ordenada inconsistente.",
+      "md032": "As listas devem ser cercadas por linhas em branco.",
+      "md033": "HTML embutido.",
+      "md035": "Estilo de regra horizontal inconsistente.",
+      "md036": "Ênfase usada em vez de um cabeçalho.",
+      "md040": "Os blocos de código devem ter uma linguagem especificada.",
+      "md041": "A primeira linha de um arquivo deve ser um cabeçalho de nível superior.",
+      "md042": "Sem links vazios.",
+      "md045": "As imagens devem ter texto alternativo (alt).",
+      "md047": "Os arquivos devem terminar com um único caractere de nova linha."
+    }
   },
   "use_workspace_local_config": "Usar configuração local do espaço de trabalho"
 }

@@ -586,7 +586,29 @@
     "severity_ignore": "Ignore",
     "severity_warning": "Warning",
     "severity_error": "Error",
-    "use_workspace_local_config": "Use Workspace-Local Configuration"
+    "use_workspace_local_config": "Use Workspace-Local Configuration",
+    "rule_descriptions": {
+      "md001": "Heading levels should only increment by one level at a time.",
+      "md003": "Heading style should be consistent.",
+      "md004": "Unordered list style.",
+      "md012": "Multiple consecutive blank lines.",
+      "md022": "Headings should be surrounded by blank lines.",
+      "md023": "Headings must start at the beginning of the line.",
+      "md025": "Multiple top-level headings in the same document.",
+      "md026": "Trailing punctuation in heading.",
+      "md027": "Multiple spaces after blockquote symbol.",
+      "md028": "Blank line inside blockquote.",
+      "md029": "Ordered list item prefix.",
+      "md032": "Lists should be surrounded by blank lines.",
+      "md033": "Inline HTML.",
+      "md035": "Horizontal rule style.",
+      "md036": "Emphasis used instead of a heading.",
+      "md040": "Fenced code blocks should have a language specified.",
+      "md041": "First line in a file should be a top-level heading.",
+      "md042": "No empty links.",
+      "md045": "Images should have alternate text (alt text).",
+      "md047": "Files should end with a single newline character."
+    }
   },
   "use_workspace_local_config": "Use Workspace-Local Configuration"
 }

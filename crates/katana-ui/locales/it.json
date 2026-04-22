@@ -586,7 +586,29 @@
     "severity_ignore": "Ignora",
     "severity_warning": "Avviso",
     "severity_error": "Errore",
-    "use_workspace_local_config": "Usa configurazione locale dell'area di lavoro"
+    "use_workspace_local_config": "Usa configurazione locale dell'area di lavoro",
+    "rule_descriptions": {
+      "md001": "I livelli di intestazione dovrebbero incrementare solo di un livello alla volta.",
+      "md003": "Lo stile dell'intestazione dovrebbe essere coerente.",
+      "md004": "Stile elenco non ordinato incoerente.",
+      "md012": "Più righe vuote consecutive.",
+      "md022": "Le intestazioni dovrebbero essere circondate da righe vuote.",
+      "md023": "Le intestazioni devono iniziare all'inizio della riga.",
+      "md025": "Più intestazioni di primo livello nello stesso documento.",
+      "md026": "Punteggiatura finale nell'intestazione.",
+      "md027": "Più spazi dopo il simbolo di citazione.",
+      "md028": "Riga vuota all'interno della citazione.",
+      "md029": "Prefisso elemento elenco ordinato incoerente.",
+      "md032": "Gli elenchi dovrebbero essere circondati da righe vuote.",
+      "md033": "HTML in linea.",
+      "md035": "Stile riga orizzontale incoerente.",
+      "md036": "Enfasi usata al posto di un'intestazione.",
+      "md040": "I blocchi di codice dovrebbero specificare una lingua.",
+      "md041": "La prima riga di un file dovrebbe essere un'intestazione di primo livello.",
+      "md042": "Nessun collegamento vuoto.",
+      "md045": "Le immagini dovrebbero avere un testo alternativo (alt).",
+      "md047": "I file dovrebbero terminare con un singolo carattere di nuova riga."
+    }
   },
   "use_workspace_local_config": "Usa configurazione locale dell’area di lavoro"
 }

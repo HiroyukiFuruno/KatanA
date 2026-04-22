@@ -586,7 +586,29 @@
     "severity_ignore": "Ignorieren",
     "severity_warning": "Warnung",
     "severity_error": "Fehler",
-    "use_workspace_local_config": "Lokale Workspace-Konfiguration verwenden"
+    "use_workspace_local_config": "Lokale Workspace-Konfiguration verwenden",
+    "rule_descriptions": {
+      "md001": "Überschriftenebenen sollten nur um jeweils eine Ebene erhöht werden.",
+      "md003": "Der Überschriftenstil sollte einheitlich sein.",
+      "md004": "Uneinheitlicher Listenstil für ungeordnete Listen.",
+      "md012": "Mehrere aufeinanderfolgende Leerzeilen.",
+      "md022": "Überschriften sollten von Leerzeilen umgeben sein.",
+      "md023": "Überschriften müssen am Anfang der Zeile beginnen.",
+      "md025": "Mehrere Überschriften der obersten Ebene im selben Dokument.",
+      "md026": "Satzzeichen am Ende der Überschrift.",
+      "md027": "Mehrere Leerzeichen nach dem Blockzitat-Symbol.",
+      "md028": "Leerzeile innerhalb des Blockzitats.",
+      "md029": "Uneinheitliches Präfix für geordnete Listenelemente.",
+      "md032": "Listen sollten von Leerzeilen umgeben sein.",
+      "md033": "Inline-HTML.",
+      "md035": "Uneinheitlicher Stil für horizontale Linien.",
+      "md036": "Hervorhebung anstelle einer Überschrift verwendet.",
+      "md040": "Codeblöcke sollten eine Sprache angeben.",
+      "md041": "Die erste Zeile einer Datei sollte eine Überschrift der obersten Ebene sein.",
+      "md042": "Keine leeren Links.",
+      "md045": "Bilder sollten einen Alternativtext (alt) haben.",
+      "md047": "Dateien sollten mit einem einzelnen Zeilenumbruchzeichen enden."
+    }
   },
   "use_workspace_local_config": "Workspace-lokale Konfiguration verwenden"
 }
