@@ -1,7 +1,7 @@
 use crate::app_state::*;
 use crate::shell::*;
 
-pub(super) trait ExportPoll {
+pub(crate) trait ExportPoll {
     fn perform_tool_export(
         &mut self,
         source: &str,

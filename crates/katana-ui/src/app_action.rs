@@ -8,6 +8,7 @@ use katana_platform::{PaneOrder, SplitDirection};
 pub enum AppAction {
     InstallUpdate,
     PickOpenWorkspace,
+    PickExportDocument { doc_path: PathBuf, ext: String, source: String },
     OpenWorkspace(PathBuf),
     SelectDocument(PathBuf),
     SelectDocumentAndJump {

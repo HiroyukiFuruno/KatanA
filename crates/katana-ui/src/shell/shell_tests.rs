@@ -943,6 +943,8 @@ mod tests_extra {
             old_app_version: None,
             editor_cursor_range: None,
             pending_editor_cursor: None,
+            file_dialog: egui_file_dialog::FileDialog::new(),
+            pending_dialog_action: None,
         }
     }
 

@@ -66,4 +66,7 @@ pub struct KatanaApp {
     /* WHY: Authoring — pending cursor to restore after a buffer transform.
     Set by handle_action_author_markdown; consumed by EditorContent on the next frame. */
     pub(crate) pending_editor_cursor: Option<(usize, usize)>,
+
+    pub(crate) file_dialog: egui_file_dialog::FileDialog,
+    pub(crate) pending_dialog_action: Option<AppAction>,
 }
