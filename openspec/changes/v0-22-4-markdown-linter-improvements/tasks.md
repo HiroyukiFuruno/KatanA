@@ -197,20 +197,8 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 - [/] **FB7** 検証用の `lint-fix.md` と `lint-fix.md.org` を作成しデモで readonly, code-only で表示する
 - [/] **FB8** ルールドキュメントのリンクが外部リンクになっている問題を修正
 - [/] **FB9** fix したあとに lint 判定が自動で再評価されUIに反映されるよう修正
-- [ ] **TDB2** (技術的負債・次変更) `katana-linter` を外部 Rust クレートに移譲する。クレート選定時に fix 機能が内包されているものを優先して採用する。
-
----
-
-## 7. Final Verification & Release Work
-
-- [ ] 7.1 自己レビューを実行（`docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md`）
-- [ ] 7.2 markdownのフォーマット（format）および Lint修正（lintfix）を実行し、全ドキュメントの体裁を整える
-- [ ] 7.3 `make check` が exit code 0 で通過すること
-- [ ] 7.4 Base Feature Branch から `master` を対象に PR を作成
-- [ ] 7.5 PR 上の CI チェック（Lint / Coverage / CodeQL）が通過することを確認
-- [ ] 7.6 master にマージ（`gh pr merge --merge --delete-branch`）
-- [ ] 7.7 master から `release/v0.22.4` ブランチを作成
-- [ ] 7.8 `make release VERSION=0.22.4` を実行し、CHANGELOG を更新（`changelog-writing` スキル）
-- [ ] 7.9 `release/v0.22.4` から `master` を対象に PR を作成 — `Release Readiness` CI 通過を確認
-- [ ] 7.10 リリース PR を master にマージ（`gh pr merge --merge --delete-branch`）
-- [ ] 7.11 GitHub Release の完了を確認し、`/opsx-archive` でこの変更をアーカイブ
+- [/] **FB10** (技術的負債) `katana-linter` を外部 Rust クレートに移譲する。クレート選定時に fix 機能が内包されているものを優先して採用する。
+  - 調査完了: 成熟した外部ライブラリクレートが存在しないため、**独立リポジトリ `katana-markdown-linter` を新設**する方針に決定
+  - リポジトリ: https://github.com/HiroyukiFuruno/katana-markdown-linter （OpenSpec 定義済み）
+  - 実装は v0.23.x で実施 — 詳細は `design.md` §5 および新リポジトリの `openspec/` を参照- [/] **FB11** Linter タブ内の Rule Severities のレイアウト崩壊修正（`AlignCenter` 廃止、`right_to_left` で堅牢化）
+- [ ] **FB12** Rule Severities の MD001 などのルールIDの下に、ルール内容の簡単な説明（description）を追加（全言語対応 / `katana-i18n-management` 準拠）

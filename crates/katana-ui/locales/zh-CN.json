@@ -353,6 +353,10 @@
       {
         "key": "shortcuts",
         "name": "快捷键"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {

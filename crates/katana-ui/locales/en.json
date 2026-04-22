@@ -353,6 +353,10 @@
       {
         "key": "shortcuts",
         "name": "Shortcuts"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "shortcuts": {

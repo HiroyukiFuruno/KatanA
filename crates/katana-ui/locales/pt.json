@@ -353,6 +353,10 @@
       {
         "key": "shortcuts",
         "name": "Atalhos"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
