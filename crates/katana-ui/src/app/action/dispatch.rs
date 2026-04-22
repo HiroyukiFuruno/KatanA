@@ -52,6 +52,7 @@ impl KatanaApp {
             AppAction::ReplaceText { span, replacement } => {
                 self.handle_replace_text(span, replacement)
             }
+            AppAction::ApplyLintFixes(fixes) => self.handle_apply_lint_fixes(fixes),
             AppAction::ToggleTaskList {
                 global_index,
                 new_state,

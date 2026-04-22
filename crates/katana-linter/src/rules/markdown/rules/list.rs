@@ -44,13 +44,22 @@ impl MarkdownRule for UlStyleRule {
                 match first_bullet {
                     None => first_bullet = Some(bullet),
                     Some(expected) if bullet != expected => {
-                        RuleHelpers::push_diag(
+                        let bullet_pos = line.find(bullet).unwrap();
+                        let fix = crate::rules::markdown::types::DiagnosticFix {
+                            start_line: i + 1,
+                            start_column: bullet_pos + 1,
+                            end_line: i + 1,
+                            end_column: bullet_pos + 2,
+                            replacement: expected.to_string(),
+                        };
+                        RuleHelpers::push_diag_with_fix(
                             &mut diagnostics,
                             file_path,
                             i,
                             line,
                             &meta,
                             DiagnosticSeverity::Warning,
+                            Some(fix),
                         );
                     }
                     _ => {}
@@ -101,13 +110,23 @@ impl MarkdownRule for OlPrefixRule {
                     expected_number = 1;
                 }
                 if num != expected_number {
-                    RuleHelpers::push_diag(
+                    let dot_pos = line.find(". ").unwrap();
+                    let start_col = line.find(|c: char| c.is_ascii_digit()).unwrap();
+                    let fix = crate::rules::markdown::types::DiagnosticFix {
+                        start_line: i + 1,
+                        start_column: start_col + 1,
+                        end_line: i + 1,
+                        end_column: dot_pos + 1,
+                        replacement: expected_number.to_string(),
+                    };
+                    RuleHelpers::push_diag_with_fix(
                         &mut diagnostics,
                         file_path,
                         i,
                         line,
                         &meta,
                         DiagnosticSeverity::Warning,
+                        Some(fix),
                     );
                 }
                 expected_number += 1;
@@ -156,13 +175,21 @@ impl MarkdownRule for BlanksAroundListsRule {
                 && !lines[i - 1].trim().is_empty()
                 && !RuleHelpers::is_list_item(lines[i - 1].trim_start());
             if prev_is_problem {
-                RuleHelpers::push_diag(
+                let fix = crate::rules::markdown::types::DiagnosticFix {
+                    start_line: i + 1,
+                    start_column: 1,
+                    end_line: i + 1,
+                    end_column: 1,
+                    replacement: "\n".to_string(),
+                };
+                RuleHelpers::push_diag_with_fix(
                     &mut diagnostics,
                     file_path,
                     i,
                     line,
                     &meta,
                     DiagnosticSeverity::Warning,
+                    Some(fix),
                 );
             }
         }

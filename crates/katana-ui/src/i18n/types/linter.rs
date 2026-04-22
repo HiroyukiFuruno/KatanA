@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct LinterTranslations {
     pub rule_toggle: String,
     pub docs: String,
+    pub fix: String,
+    pub fix_all: String,
     pub disable_rule: String,
     pub disable_rule_desc: String,
     pub enable_linter: String,
@@ -24,6 +26,8 @@ impl Default for LinterTranslations {
         Self {
             rule_toggle: "Toggle Linter Rule: {rule_code} ({rule_name})".to_string(),
             docs: "Docs".to_string(),
+            fix: "Fix".to_string(),
+            fix_all: "Fix All".to_string(),
             disable_rule: "Disable".to_string(),
             disable_rule_desc: "Disable this rule".to_string(),
             enable_linter: "Enable Markdown Linter".to_string(),

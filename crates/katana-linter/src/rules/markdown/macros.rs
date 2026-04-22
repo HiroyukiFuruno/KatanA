@@ -41,6 +41,7 @@ macro_rules! regex_rule {
                                     message: $desc.to_string(),
                                     rule_id: $id.to_string(),
                                     official_meta: self.official_meta(),
+                                    fix_info: None,
                                 });
                             }
                         }

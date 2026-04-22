@@ -110,6 +110,7 @@ fn test_parity_status_boundary() {
             message: "Experimental rule".to_string(),
             rule_id: "MD000".to_string(),
             official_meta: Some(meta_exp),
+            fix_info: None,
         },
         MarkdownDiagnostic {
             file: std::path::PathBuf::from("test.md"),
@@ -123,6 +124,7 @@ fn test_parity_status_boundary() {
             message: "Hidden internal rule".to_string(),
             rule_id: "internal-001".to_string(),
             official_meta: None,
+            fix_info: None,
         },
     ];
 

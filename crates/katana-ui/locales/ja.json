@@ -567,6 +567,8 @@
   "linter": {
     "rule_toggle": "Lintルール切替: {rule_code} ({rule_name})",
     "docs": "ドキュメント",
+    "fix": "修正",
+    "fix_all": "一括修正",
     "disable_rule": "無効化",
     "disable_rule_desc": "このルールを無効化する",
     "enable_linter": "Markdown Linterを有効にする",
