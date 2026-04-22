@@ -5,21 +5,26 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 ## [0.22.3] - 2026-04-22 01:49:58 (UTC)
 
 ### 🚀 Features
+
 - Redesigned the shortcut settings interface: added a search bar, OS-native key icons (e.g. ⌘, ⇧, ⌥), and a dedicated shortcut capture modal with a cleaner row-click trigger.
 - Added custom file type icons for HTML, PDF, and image files in the explorer.
 - Added specific command filtering in the command palette (Cmd+Shift+P / Ctrl+Shift+P) exclusively for Katana-specific actions.
 
 ### ✨ Improvements
+
 - Completed localization translations across all 11 supported languages for previously untranslated labels (e.g. "Close Document", "Global Search").
 - Assigned new default shortcuts to various actions, including `file.close_workspace` and `view.refresh_explorer`.
 
 ### 🐛 Bug Fixes
+
 - Fixed layout truncation issues where the command palette and tab navigation could not be scrolled when containing a large number of items.
 - Resolved an issue where release notes would fail to display properly if the network fetch failed.
 
 ### 🔧 System
+
 - Enhanced internal stability and tooling by introducing an AST linter to statically detect duplicate shortcut definitions during development.
 - Addressed internal integration test instabilities related to environmental variable mutations.
+
 ## [0.22.2] - 2026-04-20 16:38:00 (UTC)
 
 ### 🚀 Features
