@@ -10,6 +10,7 @@ impl EditorDiagnostics {
         galley: &std::sync::Arc<egui::Galley>,
         response_rect: &egui::Rect,
         diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        action: &mut crate::app_state::AppAction,
     ) {
         for diag in diagnostics {
             if diag.official_meta.is_none() {
@@ -58,11 +59,15 @@ impl EditorDiagnostics {
                     start_row,
                     end_row,
                     color,
+                    diag,
+                    action,
+                    diagnostics,
                 );
             }
         }
     }
 
+    /* WHY: allow(nesting_depth) */
     #[allow(clippy::too_many_arguments)]
     fn paint_squiggly(
         ui: &mut egui::Ui,
@@ -73,6 +78,9 @@ impl EditorDiagnostics {
         start_row: usize,
         end_row: usize,
         color: egui::Color32,
+        diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
+        action: &mut crate::app_state::AppAction,
+        all_diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
     ) {
         for row_idx in start_row..=end_row {
             let Some(placed_row) = galley.rows.get(row_idx) else {
@@ -109,35 +117,35 @@ impl EditorDiagnostics {
             let y_mid = response_rect.min.y + row_rect.bottom() - 1.0;
 
             if max_x > min_x {
-                Self::draw_wave(ui, min_x, max_x, y_mid, color);
+                super::diagnostics_hover::DiagnosticsHoverOps::draw_wave(
+                    ui, min_x, max_x, y_mid, color,
+                );
+
+                let hover_rect = egui::Rect::from_min_max(
+                    egui::pos2(min_x, response_rect.min.y + row_rect.top()),
+                    egui::pos2(max_x, response_rect.min.y + row_rect.bottom()),
+                );
+
+                let id = ui.id().with((
+                    "diag_hover",
+                    &diag.rule_id,
+                    diag.range.start_line,
+                    diag.range.start_column,
+                ));
+                let resp = ui.interact(hover_rect, id, egui::Sense::hover());
+
+                resp.on_hover_ui(|ui| {
+                    if let Some(meta) = diag.official_meta.as_ref() {
+                        super::diagnostics_hover::DiagnosticsHoverOps::show_hover_ui(
+                            ui,
+                            diag,
+                            meta,
+                            all_diagnostics,
+                            action,
+                        );
+                    }
+                });
             }
         }
-    }
-
-    fn draw_wave(ui: &mut egui::Ui, min_x: f32, max_x: f32, y_mid: f32, color: egui::Color32) {
-        let mut points = vec![];
-        let mut x = min_x;
-        const AMPLITUDE: f32 = 1.5;
-        const PERIOD: f32 = 4.0;
-        let mut up = true;
-
-        while x < max_x {
-            let y = y_mid + if up { -AMPLITUDE } else { AMPLITUDE };
-            points.push(egui::pos2(x, y));
-            x += PERIOD;
-            up = !up;
-        }
-        if points.last().is_some_and(|last| last.x < max_x) {
-            points.push(egui::pos2(
-                max_x,
-                y_mid + if up { -AMPLITUDE } else { AMPLITUDE },
-            ));
-        }
-
-        ui.painter()
-            .add(egui::Shape::Path(egui::epaint::PathShape::line(
-                points,
-                egui::Stroke::new(1.0, color),
-            )));
     }
 }

@@ -110,17 +110,9 @@ impl KatanaApp {
             self.state.document.active_doc_idx = Some(self.state.document.open_documents.len() - 1);
         }
 
-        /* WHY: Auto-switch view so the rendered markdown is visible.
-         * CodeOnly → Split: user needs the preview to read the doc.
-         * PreviewOnly → Split: user needs the editor/code panel to see the rendered content.
-         * Split already shows both panels, so no change needed. */
-        match self.state.active_view_mode() {
-            crate::app_state::ViewMode::CodeOnly | crate::app_state::ViewMode::PreviewOnly => {
-                self.state
-                    .set_active_view_mode(crate::app_state::ViewMode::Split);
-            }
-            crate::app_state::ViewMode::Split => {}
-        }
+        /* WHY: FB8 - Always use PreviewOnly for LinterDocs, never allow split or code view */
+        self.state
+            .set_active_view_mode(crate::app_state::ViewMode::PreviewOnly);
 
         /* WHY: Trigger a refresh so diagram controller parses it */
         self.pending_action = AppAction::RefreshDocument { is_manual: false };

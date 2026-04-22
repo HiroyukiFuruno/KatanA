@@ -14,3 +14,4 @@ pub mod utils;
 pub use authoring::*;
 pub use types::*;
 pub(crate) use ui::*;
+pub(crate) mod diagnostics_hover;

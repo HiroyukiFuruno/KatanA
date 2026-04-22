@@ -6,6 +6,8 @@ use std::path::PathBuf;
 pub struct DiagnosticsState {
     pub problems: BTreeMap<PathBuf, Vec<MarkdownDiagnostic>>,
     pub is_panel_open: bool,
+    pub expand_all: Option<bool>,
+    pub last_buffer_update: Option<std::time::Instant>,
 }
 
 impl DiagnosticsState {
@@ -13,6 +15,8 @@ impl DiagnosticsState {
         Self {
             problems: BTreeMap::new(),
             is_panel_open: false,
+            expand_all: None,
+            last_buffer_update: None,
         }
     }
 

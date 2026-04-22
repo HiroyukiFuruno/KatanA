@@ -25,6 +25,11 @@ impl RowDiagnosticsRenderer {
             return;
         }
 
+        let has_fixable = line_diagnostics.iter().any(|d| d.fix_info.is_some());
+        if !has_fixable {
+            return;
+        }
+
         const WEIGHT_ERROR: u8 = 3;
         const WEIGHT_WARNING: u8 = 2;
         const WEIGHT_INFO: u8 = 1;

@@ -79,6 +79,15 @@ impl KatanaApp {
         };
         let path = doc.path.clone();
         let content = doc.buffer.clone();
+
+        let is_markdown = path
+            .extension()
+            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+            .unwrap_or(false);
+        if !is_markdown {
+            return;
+        }
+
         let linter_settings = &self.state.config.settings.settings().linter;
         let enabled = linter_settings.enabled;
         let mut severity_map = std::collections::HashMap::new();

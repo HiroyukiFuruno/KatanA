@@ -104,6 +104,7 @@ impl TextEditRenderer {
                 &galley,
                 &response.rect,
                 diagnostics,
+                action,
             );
 
             const PAD_RIGHT: f32 = 8.0;
