@@ -50,6 +50,8 @@ impl KatanaApp {
             update_install_rx: None,
             export_tasks: Vec::new(),
             pending_document_loads: std::collections::VecDeque::new(),
+            linter_doc_rx: None,
+            linter_docs_cache: std::collections::HashMap::new(),
             show_about: false,
             show_update_dialog: false,
             update_markdown_cache: egui_commonmark::CommonMarkCache::default(),
