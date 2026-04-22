@@ -80,7 +80,7 @@
 
 - [x] コマンドパレットや設定画面で英語フォールバックが発生していないこと
 - [x] `make check` がパスすること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -88,45 +88,47 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle.
+- [x] Ensure the previous task completed its full delivery cycle.
 
-- [ ] 4.1 `katana-linter/src/rules/domains/shortcut/` を作成し、コマンド定義ファイルからショートカット重複を検知するルールを実装。
-- [ ] 4.2 Makefile の `ast-lint` ターゲットに統合。
+- [x] 4.1 `katana-linter/src/rules/domains/shortcut/` を作成し、コマンド定義ファイルからショートカット重複を検知するルールを実装。
+- [x] 4.2 Makefile の `ast-lint` ターゲットに統合。
 
 ### Definition of Done (DoD)
 
-- [ ] `make ast-lint` でショートカットの重複が検知可能であること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] `make ast-lint` でショートカットの重複が検知可能であること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 5. Final Verification & Release Work
-
-- [x] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [x] 5.2 Ensure `make check` passes with exit code 0
-- [ ] 5.3 Create PR from Base Feature Branch targeting `master`
-- [ ] 5.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 5.5 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 5.6 Create `release/v0.22.2` branch from master
-- [ ] 5.7 Run `make release VERSION=0.22.2` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 5.8 Create PR from `release/v0.22.2` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 5.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 5.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
-
----
-
-## 6. ファイルタイプアイコンの改善 (UI/UX)
+## 5. ファイルタイプアイコンの改善 (UI/UX)
 
 **Branch**: `release/v0.22.3-task-6`
 
-- [x] 6.1 katana専用アイコン `html.svg`・`pdf.svg`・`image.svg` を新設
-- [x] 6.2 各ベンダーから対応アイコンをダウンロード
-- [x] 6.3 `icon/types.rs` に `Html`・`Pdf`・`Image` を登録
-- [x] 6.4 `icon/pack/mod.rs` のマクロに3アイコンを追加
-- [x] 6.5 `side_panel_export.rs` のアイコン参照を差し替え
-- [x] 6.6 `make check-light` all pass
+- [x] 5.1 katana専用アイコン `html.svg`・`pdf.svg`・`image.svg` を新設
+- [x] 5.2 各ベンダーから対応アイコンをダウンロード
+- [x] 5.3 `icon/types.rs` に `Html`・`Pdf`・`Image` を登録
+- [x] 5.4 `icon/pack/mod.rs` のマクロに3アイコンを追加
+- [x] 5.5 `side_panel_export.rs` のアイコン参照を差し替え
+- [x] 5.6 `make check-light` all pass
 
 ### Definition of Done (DoD)
 
 - [x] `make check-light` exit code 0
 - [x] Execute `/openspec-delivery`
+
+---
+
+## 6. Final Verification & Release Work
+
+- [x] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 6.2 Ensure `make check` passes with exit code 0
+- [ ] 6.3 Create PR from Base Feature Branch targeting `master`
+- [ ] 6.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 6.5 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 6.6 Create `release/v0.22.3` branch from master
+- [ ] 6.7 Run `make release VERSION=0.22.3` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 6.8 Create PR from `release/v0.22.3` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 6.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 6.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
+
+---

@@ -460,3 +460,14 @@ fn ast_linter_global_menu_parity() {
         &all_violations,
     );
 }
+
+#[test]
+fn ast_linter_shortcut_duplicates() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = katana_linter::rules::domains::shortcut::ShortcutOps::lint(root);
+    ViolationReporterOps::panic(
+        "shortcut-duplicates",
+        "Fix: Duplicate shortcuts are not allowed across commands. Ensure each OS shortcut mapping in `os_commands.json` is unique.",
+        &all_violations,
+    );
+}

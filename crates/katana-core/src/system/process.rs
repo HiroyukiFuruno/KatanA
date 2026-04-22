@@ -171,12 +171,14 @@ mod tests {
 
     #[test]
     fn test_create_command() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let cmd = ProcessService::create_command("echo");
         assert!(cmd.get_program().to_string_lossy().contains("echo"));
     }
 
     #[test]
     fn test_output() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let mut cmd = ProcessService::create_command("echo");
         cmd.arg("hello");
         let output = ProcessService::output(cmd).unwrap();
@@ -186,6 +188,7 @@ mod tests {
 
     #[test]
     fn test_status() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let mut cmd = ProcessService::create_command("echo");
         cmd.arg("hello");
         let status = ProcessService::status(cmd).unwrap();
@@ -194,6 +197,7 @@ mod tests {
 
     #[test]
     fn test_spawn() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let mut cmd = ProcessService::create_command("sleep");
         cmd.arg("0.1");
         let mut child = ProcessService::spawn(cmd).unwrap();
@@ -203,6 +207,7 @@ mod tests {
 
     #[test]
     fn test_download_file_local() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let dir = tempdir().unwrap();
         let src_path = dir.path().join("src.txt");
         let dest_path = dir.path().join("dest.txt");
@@ -219,6 +224,7 @@ mod tests {
 
     #[test]
     fn test_download_file_fail() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let dir = tempdir().unwrap();
         let dest_path = dir.path().join("nonexistent.txt");
 
@@ -232,6 +238,7 @@ mod tests {
     #[cfg(not(coverage))]
     #[test]
     fn test_download_file_wget_fallback() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         /* WHY: Verify the wget fallback path is exercised on non-Windows platforms */
         let dir = tempdir().unwrap();
         let src_path = dir.path().join("wget_src.txt");
@@ -254,6 +261,7 @@ mod tests {
 
     #[test]
     fn test_download_empty_file() {
+        let _guard = ENV_MUTEX.lock().unwrap();
         let dir = tempdir().unwrap();
         let src_path = dir.path().join("empty_src.txt");
         let dest_path = dir.path().join("empty_dest.txt");
@@ -267,9 +275,10 @@ mod tests {
         assert!(result.unwrap_err().contains("empty file"));
     }
 
+    static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     #[test]
     fn test_download_no_binaries() {
-        static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
         let _guard = ENV_MUTEX.lock().unwrap();
         let old_path = std::env::var("PATH").unwrap_or_default();
         unsafe {
