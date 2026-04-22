@@ -27,8 +27,14 @@
   - `guide_ja.md` / `guide_en.md` の表記を `refresh_document` へ変更
   - `locales/*.json` (全言語) の `shortcut_refresh` 内の参照を `refresh_document` へ変更
 - [x] 1.1 `crates/katana-linter/src/rules/markdown/` に markdownlint の全ルール実装を追加
-- [ ] 1.2 各ルールの検証ロジックを実装（MD001-MD052 の全ルール）
-- [ ] 1.3 ルールカテゴリ別に自動修正可能なルールと手動修正が必要なルールを分類
+  - `rules/` サブディレクトリを新設し、ルール実装ファイルを整理
+  - `helpers.rs` に共有ユーティリティを `RuleHelpers` struct として集約
+- [x] 1.2 各ルールの検証ロジックを実装（MD001-MD052 の全ルール）
+  - MD003, MD004, MD011→MD012, MD022-MD023, MD025-MD029, MD032-MD033, MD035-MD036, MD040-MD042, MD045, MD047 を実装
+  - AST linter 全項目（file-length, nesting-depth, magic-numbers, no-pub-free-fn）に完全準拠
+  - `make check` が exit code 0 で通過
+- [x] 1.3 ルールカテゴリ別に自動修正可能なルールと手動修正が必要なルールを分類
+  - `OfficialRuleMeta.is_fixable` フィールドで各ルールの自動修正可否を管理
 - [ ] 1.4 ルールの有効/無効設定をコマンドインベントリに追加
 - [ ] 1.5 既存の MD001 ルーとの後方互換性を確認
 
