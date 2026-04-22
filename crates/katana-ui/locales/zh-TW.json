@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 搜尋",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 側邊欄開關",
     "shortcut_save": "{{os_cmd:save_document}}: 儲存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 重新整理圖表",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 重新整理圖表",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 拆分視圖",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 切換代碼/預覽",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 下一個標籤頁",
@@ -563,5 +563,11 @@
     "no_recent_files": "無最近檔案",
     "welcome_screen": "🏠 歡迎頁",
     "user_guide": "📚 使用指南"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

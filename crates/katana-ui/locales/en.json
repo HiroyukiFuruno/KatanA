@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Workspace Search",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Toggle Sidebar",
     "shortcut_save": "{{os_cmd:save_document}}: Save",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Refresh Diagrams",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Refresh Diagrams",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Split View",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Toggle Code/Preview",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Next Tab",
@@ -563,5 +563,11 @@
     "no_recent_files": "No recent files found",
     "welcome_screen": "🏠 Welcome Screen",
     "user_guide": "📚 User Guide"
+  },
+  "linter": {
+    "rule_toggle": "Toggle Linter Rule: {rule_code} ({rule_name})",
+    "docs": "Docs",
+    "disable_rule": "Disable",
+    "disable_rule_desc": "Disable this rule"
   }
 }

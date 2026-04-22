@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Pesquisa no espaço de trabalho",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Alternar barra lateral",
     "shortcut_save": "{{os_cmd:save_document}}: Guardar",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Atualizar diagramas",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Atualizar diagramas",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Vista dividida",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Alternar Código/Aperçu",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Próximo separador",
@@ -563,5 +563,11 @@
     "no_recent_files": "Nenhum arquivo recente",
     "welcome_screen": "🏠 Tela inicial",
     "user_guide": "📚 Guia do usuário"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

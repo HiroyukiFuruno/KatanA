@@ -1,6 +1,7 @@
 mod types;
 pub use types::*;
 
+use crate::rules::markdown::helpers::RuleHelpers;
 use std::path::Path;
 
 pub trait MarkdownRule {
@@ -29,6 +30,7 @@ impl MarkdownRule for HeadingIncrementRule {
             description: "Heading levels should only increment by one level at a time.",
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md001.md",
             parity: RuleParityStatus::Official,
+            is_fixable: false,
         })
     }
 
@@ -48,7 +50,7 @@ impl MarkdownRule for HeadingIncrementRule {
             if in_code_block {
                 continue;
             }
-            if let Some(level) = get_heading_level(line) {
+            if let Some(level) = RuleHelpers::get_heading_level(line) {
                 let current_level = level;
                 if last_level > 0 && current_level > last_level + 1 {
                     diagnostics.push(MarkdownDiagnostic {
@@ -111,7 +113,7 @@ impl MarkdownRule for BrokenLinkRule {
                 if let Some(end_idx) = rest.find(')') {
                     let link = &rest[..end_idx];
                     let absolute_end = offset + end_idx;
-                    push_broken_link_violation(
+                    RuleHelpers::push_broken_link_violation(
                         &mut diagnostics,
                         file_path,
                         line_idx,
@@ -135,46 +137,19 @@ impl MarkdownRule for BrokenLinkRule {
  Re-export as a public alias so callers compile until migrated to HeadingIncrementRule. */
 pub use HeadingIncrementRule as HeadingStructureRule;
 
-/* WHY: Section: Private helpers
-======================================================= */
+#[macro_use]
+pub mod macros;
+#[rustfmt::skip]
+pub mod stubs;
+pub use stubs::*;
+pub mod stubs_regex;
+pub use stubs_regex::*;
 
-fn push_broken_link_violation(
-    diagnostics: &mut Vec<MarkdownDiagnostic>,
-    file_path: &Path,
-    line_idx: usize,
-    actual_start: usize,
-    absolute_end: usize,
-    base_dir: &Path,
-    link: &str,
-) {
-    if link.starts_with("http") || link.starts_with('#') {
-        return;
-    }
-    let target_path = base_dir.join(link);
-    if target_path.exists() || target_path.with_extension("md").exists() {
-        return;
-    }
-    diagnostics.push(MarkdownDiagnostic {
-        file: file_path.to_path_buf(),
-        severity: DiagnosticSeverity::Error,
-        range: DiagnosticRange {
-            start_line: line_idx + 1,
-            start_column: actual_start + 1,
-            end_line: line_idx + 1,
-            end_column: absolute_end + 2,
-        },
-        message: format!("Broken local link: {}", link),
-        rule_id: "md-broken-link".to_string(),
-        official_meta: None,
-    });
-}
+pub mod helpers;
 
-fn get_heading_level(line: &str) -> Option<usize> {
-    if line.starts_with('#') {
-        let count = line.chars().take_while(|c| *c == '#').count();
-        if line[count..].starts_with(' ') {
-            return Some(count);
-        }
-    }
-    None
-}
+/* WHY: Rule implementations live in rules/ subdirectory for clean separation */
+pub mod rules;
+pub use rules::*;
+
+pub mod eval;
+pub use eval::*;

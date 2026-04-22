@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 워크스페이스 검색",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 사이드바 전환",
     "shortcut_save": "{{os_cmd:save_document}}: 저장",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 다이어그램 새로고침",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 다이어그램 새로고침",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 분할 보기",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 코드/미리보기 전환",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 다음 탭",
@@ -563,5 +563,11 @@
     "no_recent_files": "최근 파일이 없습니다",
     "welcome_screen": "🏠 홈 화면",
     "user_guide": "📚 사용자 가이드"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

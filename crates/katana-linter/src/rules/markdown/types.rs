@@ -30,6 +30,8 @@ pub struct OfficialRuleMeta {
     pub docs_url: &'static str,
     /// Parity status of this rule.
     pub parity: RuleParityStatus,
+    /// Indicates if this rule can be automatically fixed.
+    pub is_fixable: bool,
 }
 
 /* WHY: Section: Diagnostic types
