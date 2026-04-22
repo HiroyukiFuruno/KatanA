@@ -2667,7 +2667,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.2"
+version = "0.22.3"
 dependencies = [
  "anyhow",
  "base64",
@@ -2696,7 +2696,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.2"
+version = "0.22.3"
 dependencies = [
  "ignore",
  "once_cell",
@@ -2709,7 +2709,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.2"
+version = "0.22.3"
 dependencies = [
  "anyhow",
  "cc",
@@ -2728,7 +2728,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.2"
+version = "0.22.3"
 dependencies = [
  "accesskit",
  "anyhow",

@@ -1,8 +1,8 @@
 ## Definition of Ready (DoR)
 
 - [x] v0.22.1 のリリースに向けた致命的不具合（フィルター、フォーカス）の修正がデリバリー済みであること
-- [ ] `proposal.md` と `design.md` がレビュー済みであること
-- [ ] 劣後させたタスクの要件が本 tasks.md に正しく統合されていること
+- [x] `proposal.md` と `design.md` がレビュー済みであること
+- [x] 劣後させたタスクの要件が本 tasks.md に正しく統合されていること
 
 ## Branch Rule
 
@@ -122,13 +122,13 @@
 
 - [x] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
 - [x] 6.2 Ensure `make check` passes with exit code 0
-- [ ] 6.3 Create PR from Base Feature Branch targeting `master`
-- [ ] 6.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 6.5 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.6 Create `release/v0.22.3` branch from master
-- [ ] 6.7 Run `make release VERSION=0.22.3` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 6.8 Create PR from `release/v0.22.3` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 6.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [x] 6.3 Create PR from Base Feature Branch targeting `master`
+- [x] 6.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [x] 6.5 Merge into master (`gh pr merge --merge --delete-branch`)
+- [x] 6.6 Create `release/v0.22.3` branch from master
+- [x] 6.7 Run `make release VERSION=0.22.3` and update CHANGELOG (`changelog-writing` skill)
+- [x] 6.8 Create PR from `release/v0.22.3` targeting `master` — Ensure `Release Readiness` CI passes
+- [x] 6.9 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [x] 6.10 Verify GitHub Release completion and archive this change using `/opsx-archive`
 
 ---
