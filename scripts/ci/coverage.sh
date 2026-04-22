@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 # =============================================================================
 # KatanA — Coverage Gate (100% Line Coverage)
 # =============================================================================
@@ -50,7 +50,7 @@ COVERAGE_IGNORE_PATTERNS=(
 )
 
 # Convert array to a pipe-separated string for llvm-cov
-COVERAGE_IGNORE=${(j:|:)COVERAGE_IGNORE_PATTERNS}
+COVERAGE_IGNORE=$(IFS="|"; echo "${COVERAGE_IGNORE_PATTERNS[*]}")
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
