@@ -101,7 +101,14 @@ impl RowDiagnosticsRenderer {
                         }
                     });
                 }
-                ui.hyperlink(meta.docs_url);
+                let docs_text = &crate::i18n::I18nOps::get().linter.docs;
+                if ui.link(format!("{} - {}", docs_text, meta.code)).clicked() {
+                    *action = crate::app_state::AppAction::OpenLinterDoc(
+                        meta.code.to_string(),
+                        meta.docs_url.to_string(),
+                    );
+                    ui.close_menu();
+                }
                 ui.add_space(TOOLTIP_SPACE);
             }
         });

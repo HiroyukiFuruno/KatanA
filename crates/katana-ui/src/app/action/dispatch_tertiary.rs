@@ -92,6 +92,9 @@ impl KatanaApp {
             AppAction::AddTabsToGroup { group_id, members } => {
                 self.handle_action_add_tabs_to_group(group_id, members)
             }
+            AppAction::OpenLinterDoc(rule_id, docs_url) => {
+                self.handle_open_linter_doc(ctx, rule_id, docs_url);
+            }
             AppAction::RemoveTabFromGroup(member) => {
                 self.handle_action_remove_tab_from_group(member)
             }
