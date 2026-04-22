@@ -362,7 +362,11 @@
       "daily": "每天",
       "weekly": "每周",
       "monthly": "每月",
-      "check_now": "立即检查"
+      "check_now": "立即检查",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML 已安装在 %path%。",
+      "plantuml_not_installed": "PlantUML 尚未安装。",
+      "plantuml_update_now": "更新 PlantUML 至最新版"
     },
     "behavior": {
       "section_title": "行为",

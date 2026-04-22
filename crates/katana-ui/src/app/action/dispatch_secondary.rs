@@ -1,3 +1,4 @@
+use crate::app::download::DownloadOps;
 use crate::app_state::*;
 use crate::shell::*;
 
@@ -17,6 +18,12 @@ impl KatanaApp {
             } => self.handle_action_reorder_document(from, to, new_group_id),
             AppAction::ReorderActivityRail { from, to } => {
                 self.handle_action_reorder_activity_rail(from, to)
+            }
+            AppAction::StartPlantumlDownload { url, dest } => {
+                /* WHY: Reuse the existing DownloadOps pipeline (DownloadRequest → start_download).
+                 * This forces a fresh download even when the JAR already exists, enabling
+                 * users to update to the latest PlantUML release from the Settings screen. */
+                self.start_download(crate::preview_pane::DownloadRequest { url, dest });
             }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),

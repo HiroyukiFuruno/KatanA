@@ -1,8 +1,7 @@
 use std::path::Path;
 use std::process::{Child, Command, ExitStatus, Output};
 
-/// Provides cross-platform process management, with automatic window suppression on Windows.
-pub struct ProcessService;
+use super::types::ProcessService;
 
 impl ProcessService {
     pub fn create_command(program: &str) -> Command {
@@ -109,15 +108,58 @@ impl ProcessService {
             commands.push(("node".to_string(), vec!["-e".to_string(), node_script]));
         }
 
+        /* WHY: Accumulate per-command failure diagnostics so the final error
+         * message tells the user *why* every downloader failed (exit code +
+         * stderr), not just that "curl and fallbacks failed." */
+        let mut failures: Vec<String> = Vec::new();
+
         for (prog, args) in commands {
             let mut cmd = Self::create_command(&prog);
-            cmd.args(args);
-            if cmd.status().is_ok_and(|s| s.success()) {
-                return Ok(());
+            cmd.args(&args)
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::piped());
+
+            match cmd.output() {
+                Ok(out) if out.status.success() => {
+                    /* WHY: Verify the file was actually written and is non-empty.
+                     * GitHub redirects can silently produce a 0-byte file when
+                     * curl follows a redirect but the final response is an error
+                     * HTML page (e.g. rate-limit). */
+                    match std::fs::metadata(dest) {
+                        Ok(meta) if meta.len() > 0 => return Ok(()),
+                        Ok(_) => {
+                            let _ = std::fs::remove_file(dest);
+                            failures.push(format!(
+                                "{prog}: exited 0 but wrote an empty file (possible redirect/auth error)"
+                            ));
+                        }
+                        Err(e) => {
+                            failures.push(format!("{prog}: exited 0 but dest not found: {e}"));
+                        }
+                    }
+                }
+                Ok(out) => {
+                    let stderr = String::from_utf8_lossy(&out.stderr)
+                        .trim()
+                        .replace('\n', " | ");
+                    let code = out
+                        .status
+                        .code()
+                        .map(|c| c.to_string())
+                        .unwrap_or_else(|| "signal".to_string());
+                    failures.push(format!("{prog}: exit {code} — {stderr}"));
+                }
+                Err(e) => {
+                    /* Spawn error — binary not found or permission denied */
+                    failures.push(format!("{prog}: not available ({e})"));
+                }
             }
         }
 
-        Err("Download failed: curl and all fallback mechanisms failed.".to_string())
+        Err(format!(
+            "Download failed. Tried all methods:\n{}",
+            failures.join("\n")
+        ))
     }
 }
 

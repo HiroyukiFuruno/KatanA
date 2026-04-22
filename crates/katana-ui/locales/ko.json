@@ -362,7 +362,11 @@
       "daily": "매일",
       "weekly": "매주",
       "monthly": "매월",
-      "check_now": "지금 확인"
+      "check_now": "지금 확인",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML이 %path%에 설치되어 있습니다.",
+      "plantuml_not_installed": "PlantUML이 설치되지 않았습니다.",
+      "plantuml_update_now": "PlantUML 최신 버전으로 업데이트"
     },
     "behavior": {
       "section_title": "동작",

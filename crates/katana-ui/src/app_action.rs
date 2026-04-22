@@ -56,6 +56,13 @@ pub enum AppAction {
     ToggleSlideshowShowDiagramControls,
     ToggleExplorerFilter,
     CheckForUpdates,
+    StartUpdateDownload,
+    InstallUpdateAndRestart,
+    StartPlantumlDownload {
+        url: String,
+        dest: std::path::PathBuf,
+    },
+
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
     ToggleCodePreview,

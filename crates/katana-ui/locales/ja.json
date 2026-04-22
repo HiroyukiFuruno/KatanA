@@ -373,7 +373,11 @@
       "daily": "毎日",
       "weekly": "毎週",
       "monthly": "毎月",
-      "check_now": "今すぐ更新をチェックする"
+      "check_now": "今すぐ更新をチェックする",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML は %path% にインストールされています。",
+      "plantuml_not_installed": "PlantUML はインストールされていません。",
+      "plantuml_update_now": "PlantUML を最新版に更新"
     },
     "behavior": {
       "section_title": "動作",

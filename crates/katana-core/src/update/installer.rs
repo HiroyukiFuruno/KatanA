@@ -212,11 +212,14 @@ mod tests {
         {
             assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
             assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
+            /* WHY: New script uses `if mv ... then` (success branch) instead of `if ! mv ... then`
+             * (failure branch) to correctly place chmod +x before launching. */
             assert!(content.contains(&format!(
-                "if ! mv \"{}\" \"{}\"; then",
+                "if mv \"{}\" \"{}\"",
                 extracted_path.display(),
                 target_path.display()
             )));
+            assert!(content.contains(&format!("chmod +x \"{}\"", target_path.display())));
             assert!(content.contains(&format!("\"{}\" &", target_path.display())));
             assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
         }

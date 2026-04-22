@@ -362,7 +362,11 @@
       "daily": "Täglich",
       "weekly": "Wöchentlich",
       "monthly": "Monatlich",
-      "check_now": "Jetzt prüfen"
+      "check_now": "Jetzt prüfen",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML ist unter %path% installiert.",
+      "plantuml_not_installed": "PlantUML ist nicht installiert.",
+      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren"
     },
     "behavior": {
       "section_title": "Verhalten",

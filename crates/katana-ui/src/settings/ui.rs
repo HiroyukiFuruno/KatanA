@@ -141,9 +141,11 @@ impl<'a> SettingsWindow<'a> {
                                                 );
                                             }
                                             SettingsTab::Updates => {
+                                                let jar_path =
+                                                    state.config.get_plantuml_jar_path_if_exists();
                                                 triggered_action =
                                                     crate::settings::tabs::UpdatesTabOps::render_updates_tab(
-                                                        ui, state,
+                                                        ui, state, jar_path,
                                                     );
                                             }
                                             SettingsTab::Behavior => {
