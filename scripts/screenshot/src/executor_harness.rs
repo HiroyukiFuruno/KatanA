@@ -329,6 +329,7 @@ pub fn run(
                             UiAction::ToggleSettings => AppAction::ToggleSettings,
                             UiAction::ToggleExplorer => AppAction::ToggleExplorer,
                             UiAction::ToggleSlideshow => AppAction::ToggleSlideshow,
+                            UiAction::ToggleStoryPanel => AppAction::ToggleStoryPanel,
                             UiAction::ToggleExportPanel => AppAction::ToggleExportPanel,
                             UiAction::OpenChangelog => AppAction::ShowReleaseNotes,
                             UiAction::OpenSettingsTab { .. }

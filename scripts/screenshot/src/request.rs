@@ -93,6 +93,7 @@ pub enum UiAction {
     ToggleSettings,
     ToggleExplorer,
     ToggleSlideshow,
+    ToggleStoryPanel,
     ToggleExportPanel,
     OpenChangelog,
     /// Open settings and navigate to a specific tab.
