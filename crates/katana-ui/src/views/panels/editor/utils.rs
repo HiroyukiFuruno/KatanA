@@ -22,6 +22,23 @@ impl super::types::EditorLogicOps {
         None
     }
 
+    /// Convert a line number and column number to a character index in the buffer.
+    pub fn line_col_to_char_index(
+        buffer: &str,
+        target_line: usize,
+        target_col: usize,
+    ) -> Option<usize> {
+        let line_start = Self::line_to_char_index(buffer, target_line)?;
+        let mut char_idx = line_start;
+        for (col, c) in buffer[line_start..].chars().enumerate() {
+            if col == target_col || c == '\n' {
+                break;
+            }
+            char_idx += 1;
+        }
+        Some(char_idx)
+    }
+
     /// Convert a line range to (start_char_index, end_char_index) in the buffer.
     pub fn line_range_to_char_range(
         buffer: &str,
