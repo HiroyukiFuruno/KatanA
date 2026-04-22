@@ -12,6 +12,7 @@ pub(crate) struct LineNumberParams<'a> {
     pub ln_active_text: Option<egui::Color32>,
     pub left_margin: f32,
     pub line_number_pad_right: f32,
+    pub diagnostics: &'a [katana_linter::rules::markdown::MarkdownDiagnostic],
 }
 
 struct RowRenderParams {
@@ -33,6 +34,7 @@ impl EditorLineNumbers {
             ln_active_text,
             left_margin,
             line_number_pad_right,
+            diagnostics,
         } = params;
         let clip_rect = ui.clip_rect().expand(100.0);
         let mut p = 0;
@@ -53,6 +55,14 @@ impl EditorLineNumbers {
                     y,
                     row_height: row_rect.height(),
                 };
+                super::row_diagnostics::RowDiagnosticsRenderer::render(
+                    ui,
+                    diagnostics,
+                    p,
+                    y,
+                    ln_rect,
+                    row_rect.height(),
+                );
                 Self::render_row_number(
                     ui,
                     rp,
@@ -63,6 +73,7 @@ impl EditorLineNumbers {
                     ln_active_text,
                     left_margin,
                     line_number_pad_right,
+                    diagnostics,
                 );
             }
 
@@ -84,6 +95,7 @@ impl EditorLineNumbers {
         ln_active_text: Option<egui::Color32>,
         left_margin: f32,
         line_number_pad_right: f32,
+        _diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
     ) {
         let RowRenderParams {
             p,

@@ -24,6 +24,10 @@ impl DiagnosticsState {
         }
     }
 
+    pub fn get_file_diagnostics(&self, path: &std::path::Path) -> &[MarkdownDiagnostic] {
+        self.problems.get(path).map(|v| v.as_slice()).unwrap_or(&[])
+    }
+
     pub fn total_problems(&self) -> usize {
         self.problems
             .values()
