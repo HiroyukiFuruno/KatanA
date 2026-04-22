@@ -563,5 +563,11 @@
     "no_recent_files": "No recent files found",
     "welcome_screen": "🏠 Welcome Screen",
     "user_guide": "📚 User Guide"
+  },
+  "linter": {
+    "rule_toggle": "Toggle Linter Rule: {rule_code} ({rule_name})",
+    "docs": "Docs",
+    "disable_rule": "Disable",
+    "disable_rule_desc": "Disable this rule"
   }
 }

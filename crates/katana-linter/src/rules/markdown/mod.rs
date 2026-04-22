@@ -29,6 +29,7 @@ impl MarkdownRule for HeadingIncrementRule {
             description: "Heading levels should only increment by one level at a time.",
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md001.md",
             parity: RuleParityStatus::Official,
+            is_fixable: false,
         })
     }
 
@@ -178,3 +179,14 @@ fn get_heading_level(line: &str) -> Option<usize> {
     }
     None
 }
+
+#[macro_use]
+pub mod macros;
+#[rustfmt::skip]
+pub mod stubs;
+pub use stubs::*;
+pub mod stubs_regex;
+pub use stubs_regex::*;
+
+pub mod eval;
+pub use eval::*;

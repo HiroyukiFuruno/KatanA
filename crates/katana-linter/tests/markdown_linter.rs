@@ -4,7 +4,7 @@
 //! violation and valid (no false positive) cases behave correctly,
 //! serving as the parity contract fixture corpus.
 
-use katana_linter::markdown::*;
+use katana_linter::rules::markdown::*;
 use std::path::PathBuf;
 
 /* WHY: MD001 — heading-increment parity fixture
@@ -74,7 +74,7 @@ fn md001_rule_id_is_official_code() {
 
 #[test]
 fn test_parity_status_boundary() {
-    use katana_linter::markdown::*;
+    use katana_linter::rules::markdown::*;
 
     let meta_exp = OfficialRuleMeta {
         code: "MD000",
@@ -82,6 +82,7 @@ fn test_parity_status_boundary() {
         description: "Test rule description.",
         docs_url: "https://example.com/md000",
         parity: RuleParityStatus::Experimental,
+        is_fixable: false,
     };
     assert_eq!(meta_exp.parity, RuleParityStatus::Experimental);
 
@@ -91,6 +92,7 @@ fn test_parity_status_boundary() {
         description: "Heading levels should only increment by one level at a time.",
         docs_url: "",
         parity: RuleParityStatus::Official,
+        is_fixable: false,
     };
     assert_eq!(meta_off.parity, RuleParityStatus::Official);
 

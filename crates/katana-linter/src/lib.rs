@@ -17,7 +17,6 @@
     clippy::cognitive_complexity
 )]
 
-pub mod markdown;
 pub mod rules;
 pub mod utils;
 

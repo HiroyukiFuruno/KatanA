@@ -563,5 +563,11 @@
     "no_recent_files": "No hay archivos recientes",
     "welcome_screen": "🏠 Pantalla de inicio",
     "user_guide": "📚 Guía de usuario"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

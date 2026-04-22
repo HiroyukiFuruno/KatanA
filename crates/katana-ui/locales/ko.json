@@ -563,5 +563,11 @@
     "no_recent_files": "최근 파일이 없습니다",
     "welcome_screen": "🏠 홈 화면",
     "user_guide": "📚 사용자 가이드"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

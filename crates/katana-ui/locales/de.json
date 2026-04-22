@@ -563,5 +563,11 @@
     "no_recent_files": "Keine kürzlich geöffneten Dateien",
     "welcome_screen": "🏠 Willkommensbildschirm",
     "user_guide": "📚 Benutzerhandbuch"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

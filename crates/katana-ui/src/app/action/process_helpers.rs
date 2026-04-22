@@ -79,11 +79,12 @@ impl KatanaApp {
         };
         let path = doc.path.clone();
         let content = doc.buffer.clone();
-        use katana_linter::markdown::MarkdownRule;
-        let heading_rule = katana_linter::markdown::HeadingStructureRule;
-        let link_rule = katana_linter::markdown::BrokenLinkRule;
-        let mut diagnostics = heading_rule.evaluate(&path, &content);
-        diagnostics.extend(link_rule.evaluate(&path, &content));
+        let disabled_rules = &self.state.config.settings.settings().linter.disabled_rules;
+        let diagnostics = katana_linter::rules::markdown::MarkdownLinterOps::evaluate_all(
+            &path,
+            &content,
+            disabled_rules,
+        );
         self.state.diagnostics.update_diagnostics(path, diagnostics);
     }
 

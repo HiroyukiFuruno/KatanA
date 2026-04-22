@@ -563,5 +563,11 @@
     "no_recent_files": "无最近文件",
     "welcome_screen": "🏠 欢迎页",
     "user_guide": "📚 用户指南"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter"
   }
 }

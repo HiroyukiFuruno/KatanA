@@ -563,5 +563,11 @@
     "no_recent_files": "最近のファイルはありません",
     "welcome_screen": "🏠 ようこそ画面",
     "user_guide": "📚 ユーザーガイド"
+  },
+  "linter": {
+    "rule_toggle": "Lintルール切替: {rule_code} ({rule_name})",
+    "docs": "ドキュメント",
+    "disable_rule": "無効化",
+    "disable_rule_desc": "このルールを無効化する"
   }
 }

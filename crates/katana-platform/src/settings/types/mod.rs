@@ -5,6 +5,7 @@ pub mod font;
 pub mod icon;
 pub mod ingest;
 pub mod layout;
+pub mod linter;
 pub mod ops;
 pub mod performance;
 pub mod search;

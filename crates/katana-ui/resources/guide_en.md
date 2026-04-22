@@ -26,7 +26,7 @@ Click a filename in the Explorer, or use the Command Palette ({{os_cmd:open_pale
 | {{os_cmd:search_tab}} | Text Search |
 | {{os_cmd:toggle_sidebar}} | Toggle Sidebar |
 | {{os_cmd:save_document}} | Save File |
-| {{os_cmd:refresh_document}} | Refresh Preview |
+
 | {{os_cmd:close_tab}} | Close Tab |
 | {{os_cmd:undo}} | Undo |
 | {{os_cmd:redo}} | Redo |

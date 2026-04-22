@@ -1,4 +1,4 @@
-use katana_linter::markdown::MarkdownDiagnostic;
+use katana_linter::rules::markdown::MarkdownDiagnostic;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 

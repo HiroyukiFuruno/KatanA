@@ -76,7 +76,7 @@ impl<'a> ProblemsPanel<'a> {
 fn show_file_diagnostics(
     ui: &mut egui::Ui,
     path: &std::path::Path,
-    diagnostics: &[katana_linter::markdown::MarkdownDiagnostic],
+    diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
 ) -> Option<crate::app_state::AppAction> {
     let active_diags: Vec<_> = diagnostics
         .iter()
@@ -90,12 +90,8 @@ fn show_file_diagnostics(
     let filename = path.file_name().unwrap_or_default().to_string_lossy();
     ui.label(egui::RichText::new(filename).strong());
     for diag in active_diags {
-        if show_diagnostic_row(ui, diag) {
-            return Some(crate::app_state::AppAction::SelectDocumentAndJump {
-                path: path.to_path_buf(),
-                line: diag.range.start_line,
-                byte_range: 0..0,
-            });
+        if let Some(action) = show_diagnostic_row(ui, diag, path) {
+            return Some(action);
         }
     }
     None
@@ -103,52 +99,79 @@ fn show_file_diagnostics(
 
 fn show_diagnostic_row(
     ui: &mut egui::Ui,
-    diag: &katana_linter::markdown::MarkdownDiagnostic,
-) -> bool {
+    diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
+    path: &std::path::Path,
+) -> Option<crate::app_state::AppAction> {
     let icon = match diag.severity {
-        katana_linter::markdown::DiagnosticSeverity::Error => "🔴",
-        katana_linter::markdown::DiagnosticSeverity::Warning => "🟡",
-        katana_linter::markdown::DiagnosticSeverity::Info => "🔵",
+        katana_linter::rules::markdown::DiagnosticSeverity::Error => "🔴",
+        katana_linter::rules::markdown::DiagnosticSeverity::Warning => "🟡",
+        katana_linter::rules::markdown::DiagnosticSeverity::Info => "🔵",
     };
 
     let meta = diag.official_meta.as_ref().expect("hidden rules filtered");
-    let is_experimental = meta.parity == katana_linter::markdown::RuleParityStatus::Experimental;
+    let is_experimental =
+        meta.parity == katana_linter::rules::markdown::RuleParityStatus::Experimental;
 
-    let mut clicked = false;
-    crate::widgets::AlignCenter::new()
-        .shrink_to_fit(true)
-        .content(|ui| {
-            ui.label(icon);
+    let mut action = None;
 
-            let rule_label = if is_experimental {
-                format!("{} (Exp)", meta.code)
-            } else {
-                meta.code.to_string()
-            };
+    const PROBLEM_ITEM_MARGIN_X: f32 = 4.0;
+    const PROBLEM_ITEM_MARGIN_Y: f32 = 2.0;
 
-            let location = format!("[{}:{}]", diag.range.start_line, diag.range.start_column);
-            let msg = format!("{} {} {}", location, rule_label, diag.message);
+    egui::Frame::none()
+        .inner_margin(egui::vec2(PROBLEM_ITEM_MARGIN_X, PROBLEM_ITEM_MARGIN_Y))
+        .show(ui, |ui| {
+            ui.horizontal_wrapped(|ui| {
+                ui.label(icon);
 
-            let mut button_text = egui::RichText::new(msg);
-            if is_experimental {
-                button_text = button_text.weak();
-            }
+                let rule_label = if is_experimental {
+                    format!("{} (Exp)", meta.code)
+                } else {
+                    meta.code.to_string()
+                };
 
-            /* WHY: scroll list item; jump triggered on click */
-            if ui
-                .add(egui::Button::selectable(false, button_text).frame_when_inactive(true))
+                let location = format!("[{}:{}]", diag.range.start_line, diag.range.start_column);
+                let msg = format!("{} {} {}", location, rule_label, diag.message);
+
+                let mut button_text = egui::RichText::new(msg);
+                if is_experimental {
+                    button_text = button_text.weak();
+                }
+
+                /* WHY: scroll list item; jump triggered on click */
+                if egui::Widget::ui(
+                    egui::Button::selectable(false, button_text).frame_when_inactive(true),
+                    ui,
+                )
                 .clicked()
-            {
-                clicked = true;
-            }
+                {
+                    action = Some(crate::app_state::AppAction::SelectDocumentAndJump {
+                        path: path.to_path_buf(),
+                        line: diag.range.start_line,
+                        byte_range: 0..0,
+                    });
+                }
 
-            if !meta.docs_url.is_empty() {
-                ui.hyperlink_to(
-                    crate::i18n::I18nOps::get().about.documentation.as_str(),
-                    meta.docs_url,
-                );
-            }
-        })
-        .show(ui);
-    clicked
+                ui.label(egui::RichText::new(meta.description).italics());
+
+                if !meta.docs_url.is_empty() {
+                    ui.hyperlink_to(
+                        crate::i18n::I18nOps::get().linter.docs.as_str(),
+                        meta.docs_url,
+                    );
+                }
+
+                let i18n = crate::i18n::I18nOps::get();
+                if ui
+                    .button(&i18n.linter.disable_rule)
+                    .on_hover_text(&i18n.linter.disable_rule_desc)
+                    .clicked()
+                {
+                    action = Some(crate::app_state::AppAction::ToggleLintRule(
+                        meta.code.to_string(),
+                    ));
+                }
+            });
+        });
+
+    action
 }

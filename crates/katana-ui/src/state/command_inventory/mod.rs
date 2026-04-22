@@ -6,6 +6,7 @@ pub mod app_commands;
 pub mod edit_commands;
 pub mod file_commands;
 pub mod help_commands;
+pub mod linter_commands;
 pub mod view_commands;
 
 pub struct CommandInventory;
@@ -18,6 +19,7 @@ impl CommandInventory {
         commands.extend(view_commands::ViewCommands::get());
         commands.extend(help_commands::HelpCommands::get());
         commands.extend(edit_commands::EditCommands::get());
+        commands.extend(linter_commands::LinterCommands::get());
 
         #[cfg(debug_assertions)]
         Self::validate_shortcuts(&commands);
