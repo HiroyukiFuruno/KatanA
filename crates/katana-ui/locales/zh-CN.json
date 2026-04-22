@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 搜索",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 侧边栏",
     "shortcut_save": "{{os_cmd:save_document}}: 保存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 刷新",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 刷新",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 拆分视图",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 切换代码/预览",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 下一个标签页",

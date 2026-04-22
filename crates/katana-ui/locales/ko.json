@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 워크스페이스 검색",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 사이드바 전환",
     "shortcut_save": "{{os_cmd:save_document}}: 저장",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 다이어그램 새로고침",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 다이어그램 새로고침",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 분할 보기",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 코드/미리보기 전환",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 다음 탭",

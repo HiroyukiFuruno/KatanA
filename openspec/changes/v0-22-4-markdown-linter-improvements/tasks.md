@@ -22,6 +22,10 @@
 
 現在の MD001 のみサポートから、markdownlint の全公式ルールをサポートするように拡張する。
 
+- [x] 1.0 `refresh_preview` のショートカットを `refresh_document` に統合
+  - `os_commands.json` から `refresh_preview` キーを削除
+  - `guide_ja.md` / `guide_en.md` の表記を `refresh_document` へ変更
+  - `locales/*.json` (全言語) の `shortcut_refresh` 内の参照を `refresh_document` へ変更
 - [ ] 1.1 `crates/katana-linter/src/rules/markdown/` に markdownlint の全ルール実装を追加
 - [ ] 1.2 各ルールの検証ロジックを実装（MD001-MD052 の全ルール）
 - [ ] 1.3 ルールカテゴリ別に自動修正可能なルールと手動修正が必要なルールを分類

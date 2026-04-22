@@ -409,12 +409,10 @@ fn assert_tables_follow_dynamic_width_allocation_rules() {
         2,
         "expected 2 vertical separators in basic table"
     );
-    let basic_table_edges = vec![
-        basic_table.left(),
+    let basic_table_edges = [basic_table.left(),
         basic_table_boundaries[0],
         basic_table_boundaries[1],
-        basic_table.right(),
-    ];
+        basic_table.right()];
     let basic_table_widths = [
         basic_table_edges[1] - basic_table_edges[0],
         basic_table_edges[2] - basic_table_edges[1],
@@ -442,12 +440,10 @@ fn assert_tables_follow_dynamic_width_allocation_rules() {
         2,
         "expected 2 vertical separators in long-content table"
     );
-    let long_content_table_edges = vec![
-        long_content_table.left(),
+    let long_content_table_edges = [long_content_table.left(),
         long_content_table_boundaries[0],
         long_content_table_boundaries[1],
-        long_content_table.right(),
-    ];
+        long_content_table.right()];
     let long_content_table_widths = [
         long_content_table_edges[1] - long_content_table_edges[0],
         long_content_table_edges[2] - long_content_table_edges[1],
@@ -551,14 +547,13 @@ fn assert_table_header_background_matches_border_bounds() {
     let header_bg = shapes
         .iter()
         .filter_map(|shape| {
-            if let egui::epaint::Shape::Rect(r) = shape {
-                if r.fill != egui::Color32::TRANSPARENT
+            if let egui::epaint::Shape::Rect(r) = shape
+                && r.fill != egui::Color32::TRANSPARENT
                     && r.rect.height() < table_rect.height() * 0.6
                     && header_centers.iter().all(|c| r.rect.contains(*c))
                 {
                     return Some(r.rect);
                 }
-            }
             None
         })
         .min_by(|a, b| {
@@ -571,14 +566,13 @@ fn assert_table_header_background_matches_border_bounds() {
     let header_covering_rects = shapes
         .iter()
         .filter_map(|shape| {
-            if let egui::epaint::Shape::Rect(r) = shape {
-                if r.fill != egui::Color32::TRANSPARENT
+            if let egui::epaint::Shape::Rect(r) = shape
+                && r.fill != egui::Color32::TRANSPARENT
                     && r.rect.height() < table_rect.height() * 0.6
                     && header_centers.iter().all(|c| r.rect.contains(*c))
                 {
                     return Some(r.rect);
                 }
-            }
             None
         })
         .collect::<Vec<_>>();

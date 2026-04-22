@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: ワークスペース検索",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: サイドバー切替",
     "shortcut_save": "{{os_cmd:save_document}}: 保存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 図表を更新",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 図表を更新",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 分割",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: コード、プレビューの切り替え",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 次のタブへ移動",

@@ -548,7 +548,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Ricerca nell'area di lavoro",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Attiva/disattiva barra laterale",
     "shortcut_save": "{{os_cmd:save_document}}: Salva",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Aggiorna diagrammi",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Aggiorna diagrammi",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Vista divisa",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Alterna Codice/Anteprima",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Scheda successiva",
