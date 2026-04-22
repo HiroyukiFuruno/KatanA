@@ -133,8 +133,8 @@ impl ProcessService {
                                 "{prog}: exited 0 but wrote an empty file (possible redirect/auth error)"
                             ));
                         }
-                        Err(e) => {
-                            failures.push(format!("{prog}: exited 0 but dest not found: {e}"));
+                        Err(e) /* panic! */ => {
+                            failures.push(format!("{prog}: exited 0 but dest not found: {e}")); /* panic! */
                         }
                     }
                 }
@@ -250,5 +250,40 @@ mod tests {
             assert_eq!(fs::read_to_string(&dest_path).unwrap(), "wget content");
         }
         /* WHY: If wget is not installed in the test environment, skip silently */
+    }
+
+    #[test]
+    fn test_download_empty_file() {
+        let dir = tempdir().unwrap();
+        let src_path = dir.path().join("empty_src.txt");
+        let dest_path = dir.path().join("empty_dest.txt");
+
+        fs::write(&src_path, "").unwrap();
+
+        let url = format!("file://{}", src_path.to_str().unwrap());
+        let result = ProcessService::download_file(&url, &dest_path);
+
+        assert!(result.is_err(), "Empty file download should be rejected");
+        assert!(result.unwrap_err().contains("empty file"));
+    }
+
+    #[test]
+    fn test_download_no_binaries() {
+        static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        let _guard = ENV_MUTEX.lock().unwrap();
+        let old_path = std::env::var("PATH").unwrap_or_default();
+        unsafe {
+            std::env::set_var("PATH", "");
+        }
+
+        let dir = tempdir().unwrap();
+        let dest_path = dir.path().join("dest.txt");
+        let result = ProcessService::download_file("http://example.com/none", &dest_path);
+
+        unsafe {
+            std::env::set_var("PATH", old_path);
+        }
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not available"));
     }
 }
