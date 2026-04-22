@@ -56,7 +56,16 @@ pub enum AppAction {
     ToggleSlideshowShowDiagramControls,
     ToggleExplorerFilter,
     CheckForUpdates,
+    StartUpdateDownload,
+    InstallUpdateAndRestart,
+    StartPlantumlDownload {
+        url: String,
+        dest: std::path::PathBuf,
+    },
+
     SetSplitDirection(SplitDirection),
+    ToggleSplitMode,
+    ToggleCodePreview,
     SetPaneOrder(PaneOrder),
     SetViewMode(ViewMode),
     ToggleScrollSync(bool),
@@ -155,6 +164,10 @@ pub enum AppAction {
     IngestClipboardImage,
     /* WHY: Reveal local image asset in OS file manager. */
     RevealImageAsset(std::path::PathBuf),
+    SelectNextTab,
+    SelectPrevTab,
+    ZoomIn,
+    ZoomOut,
     Quit,
     None,
 }

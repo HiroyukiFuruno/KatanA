@@ -8,6 +8,7 @@ pub enum CommandGroup {
     Edit,
     File,
     View,
+    Behavior,
     Help,
 }
 
@@ -20,6 +21,7 @@ impl CommandGroup {
             Self::Edit => i18n.settings.shortcuts.edit.clone(),
             Self::File => i18n.menu.file.clone(),
             Self::View => i18n.menu.view.clone(),
+            Self::Behavior => i18n.settings.behavior.section_title.clone(),
             Self::Help => i18n.menu.help.clone(),
         }
     }

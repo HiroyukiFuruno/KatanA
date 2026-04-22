@@ -13,12 +13,19 @@
     "export_png": "PNG 图片 (.png)",
     "export_jpg": "JPEG 图片 (.jpg)",
     "about": "关于 KatanA",
+    "close_document": "关闭文档",
+    "restore_closed": "还原关闭的文档",
     "quit": "退出 KatanA",
     "help": "帮助",
     "check_updates": "检查更新…",
     "release_notes": "发行说明",
     "view": "视图",
     "command_palette": "命令面板…",
+    "zoom_in": "放大",
+    "zoom_out": "缩小",
+    "demo": "演示",
+    "welcome_screen": "欢迎屏幕",
+    "user_guide": "用户指南",
     "language_en": "英语",
     "language_ja": "日语",
     "language_zh_cn": "中文 (简体)",
@@ -29,9 +36,6 @@
     "language_de": "德语",
     "language_es": "西班牙语",
     "language_it": "意大利语",
-    "demo": "演示",
-    "welcome_screen": "欢迎屏幕",
-    "user_guide": "用户指南",
     "github": "GitHub 仓库",
     "website": "官方网站"
   },
@@ -358,7 +362,11 @@
       "daily": "每天",
       "weekly": "每周",
       "monthly": "每月",
-      "check_now": "立即检查"
+      "check_now": "立即检查",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML 已安装在 %path%。",
+      "plantuml_not_installed": "PlantUML 尚未安装。",
+      "plantuml_update_now": "更新 PlantUML 至最新版"
     },
     "behavior": {
       "section_title": "行为",
@@ -386,7 +394,11 @@
       "press_keys": "请按键... (Esc 取消)",
       "restore_defaults": "恢复默认",
       "none": "无",
-      "conflict_warning": "警告: 快捷键已被覆盖。它已被\"{command}\"使用。"
+      "conflict_warning": "警告: 快捷键已被覆盖。它已被\"{command}\"使用。",
+      "capture_prompt": "请按下按键组合…",
+      "confirm_key": "Enter 确认",
+      "cancel_key": "Esc 取消",
+      "search_placeholder": "搜索快捷键…"
     }
   },
   "tab": {
@@ -424,6 +436,7 @@
     "tab_file_name": "文件名",
     "tab_markdown_content": "内容",
     "md_query_hint": "搜索 MD 内容…",
+    "doc_query_hint": "在文档内搜索…",
     "recent_searches": "最近搜索",
     "clear_history": "清除历史",
     "ln_prefix": "第 ",
@@ -434,6 +447,8 @@
     "command_refresh_explorer": "刷新资源管理器",
     "command_updates": "检查更新",
     "command_about": "切换关于 KatanA",
+    "command_zoom_in": "放大",
+    "command_zoom_out": "缩小",
     "command_type_action": "命令",
     "command_author_bold": "加粗字体",
     "command_author_italic": "倾斜",
@@ -454,9 +469,14 @@
     "match_case": "区分大小写",
     "match_word": "全字匹配",
     "use_regex": "使用正则",
-    "doc_query_hint": "在文档内搜索…",
     "doc_search_no_results": "未找到结果",
-    "palette_action_query_hint": "搜索 Katana 命令…"
+    "palette_action_query_hint": "搜索 Katana 命令…",
+    "command_global_search": "全局搜索",
+    "command_doc_search": "文档搜索",
+    "command_toggle_filter": "切换资源管理器过滤器",
+    "command_refresh_document": "刷新文档",
+    "command_toggle_split": "切换分屏模式",
+    "command_toggle_code_preview": "切换代码/预览"
   },
   "toc": {
     "title": "大纲",
@@ -493,7 +513,8 @@
     "task_done": "完成 [x]"
   },
   "common": {
-    "close": "关闭"
+    "close": "关闭",
+    "save": "保存"
   },
   "meta_info": {
     "title": "文档信息",
@@ -522,11 +543,17 @@
   "help": {
     "section_general": "通用",
     "section_editor": "编辑器",
+    "section_behavior": "行为",
     "shortcut_command_palette": "{{os_cmd:open_palette}}: 面板",
     "shortcut_search": "{{os_cmd:search_workspace}}: 搜索",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 侧边栏",
     "shortcut_save": "{{os_cmd:save_document}}: 保存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 刷新"
+    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 刷新",
+    "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 拆分视图",
+    "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 切换代码/预览",
+    "shortcut_tab_next": "{{os_cmd:tab_next}}: 下一个标签页",
+    "shortcut_tab_prev": "{{os_cmd:tab_prev}}: 上一个标签页",
+    "shortcut_toggle_slideshow": "{{os_cmd:toggle_slideshow}}: 投影片放映"
   },
   "dashboard": {
     "welcome_title": "欢迎使用 KatanA",

@@ -101,9 +101,15 @@ define_icons! {
     Download        => "system/download",
     Hourglass       => "system/hourglass",
     Tools           => "system/tools",
+    MacCmd          => "../system/cmd",
+    MacCtrl         => "../system/ctrl",
+    MacShift        => "../system/shift",
+    MacAlt          => "../system/alt",
+    MacWin          => "../system/win",
     /* WHY: action/ */
     #[allow(dead_code)]
     More            => "action/more",
+    Edit            => "action/edit",
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

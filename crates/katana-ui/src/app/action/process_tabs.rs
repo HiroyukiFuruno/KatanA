@@ -166,4 +166,26 @@ impl KatanaApp {
         }
         self.save_workspace_state();
     }
+
+    pub(super) fn handle_action_next_tab(&mut self) {
+        if let Some(idx) = self.state.document.active_doc_idx {
+            let count = self.state.document.open_documents.len();
+            if count > 1 {
+                let new_idx = crate::shell_logic::utils::ShellUtils::next_tab_index(idx, count);
+                let path = self.state.document.open_documents[new_idx].path.clone();
+                self.handle_action_select_document(path);
+            }
+        }
+    }
+
+    pub(super) fn handle_action_prev_tab(&mut self) {
+        if let Some(idx) = self.state.document.active_doc_idx {
+            let count = self.state.document.open_documents.len();
+            if count > 1 {
+                let new_idx = crate::shell_logic::utils::ShellUtils::prev_tab_index(idx, count);
+                let path = self.state.document.open_documents[new_idx].path.clone();
+                self.handle_action_select_document(path);
+            }
+        }
+    }
 }

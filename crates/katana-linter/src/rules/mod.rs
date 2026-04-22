@@ -18,3 +18,4 @@ pub use domains::font_normalization::FontNormalizationOps;
 pub use domains::i18n::{I18nOps, IconOps};
 pub use domains::locales::LocaleOps;
 pub use domains::theme::{HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps};
+pub use domains::ui::GlobalMenuParityOps;

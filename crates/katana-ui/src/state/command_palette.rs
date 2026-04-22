@@ -60,6 +60,8 @@ pub struct CommandPaletteResult {
     pub label: String,
     /// The secondary text providing context (e.g., "openspec/changes/...").
     pub secondary_label: Option<String>,
+    /// Optional shortcut string (e.g. "cmd+s") to display next to the label.
+    pub shortcut: Option<String>,
     /// Ranking score, higher is better.
     pub score: f32,
     /// The kind of result, used for rendering icons or colors.
@@ -85,6 +87,7 @@ pub trait CommandPaletteProvider {
         &self,
         query: &str,
         workspace: Option<&katana_core::workspace::Workspace>,
+        os_bindings: Option<&std::collections::HashMap<String, String>>,
     ) -> Vec<CommandPaletteResult>;
 }
 

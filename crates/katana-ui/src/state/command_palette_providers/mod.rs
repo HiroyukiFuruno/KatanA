@@ -4,10 +4,10 @@ use crate::state::command_palette::{
 };
 use katana_core::workspace::Workspace;
 
-const MAX_FILE_RESULTS: usize = 50;
-const BASE_CONTENT_SCORE: f32 = 0.6;
-const FILE_PRIMARY_MATCH_SCORE: f32 = 0.9;
-const FILE_SECONDARY_MATCH_SCORE: f32 = 0.5;
+pub const MAX_FILE_RESULTS: usize = 50;
+pub const BASE_CONTENT_SCORE: f32 = 0.6;
+pub const FILE_PRIMARY_MATCH_SCORE: f32 = 0.9;
+pub const FILE_SECONDARY_MATCH_SCORE: f32 = 0.5;
 
 use crate::state::command_inventory::CommandInventory;
 
@@ -19,7 +19,12 @@ impl CommandPaletteProvider for AppCommandProvider {
         "Commands"
     }
 
-    fn search(&self, query: &str, _workspace: Option<&Workspace>) -> Vec<CommandPaletteResult> {
+    fn search(
+        &self,
+        query: &str,
+        _workspace: Option<&Workspace>,
+        os_bindings: Option<&std::collections::HashMap<String, String>>,
+    ) -> Vec<CommandPaletteResult> {
         let commands = CommandInventory::all();
         let msgs = &crate::i18n::I18nOps::get().search;
 
@@ -36,29 +41,30 @@ impl CommandPaletteProvider for AppCommandProvider {
             let label = (cmd.label)();
             let base_score = COMMAND_BASE_SCORE;
 
-            if query_lower.is_empty() {
-                /* WHY: If empty query, we return all as recent/common */
+            let shortcut = os_bindings
+                .and_then(|b| b.get(cmd.id).cloned())
+                .or_else(|| cmd.default_shortcuts.first().map(|s| s.to_string()));
+
+            let is_empty = query_lower.is_empty();
+            let label_lower = label.to_lowercase();
+            if is_empty || label_lower.contains(&query_lower) {
+                let score = if is_empty {
+                    base_score - EMPTY_QUERY_PENALTY
+                } else {
+                    base_score + label_lower.starts_with(&query_lower) as u32 as f32
+                };
+                let kind = if is_empty {
+                    CommandPaletteResultKind::RecentOrCommon
+                } else {
+                    CommandPaletteResultKind::Action
+                };
                 results.push(CommandPaletteResult {
                     id: cmd.id.to_string(),
-                    label: label.clone(),
+                    label,
                     secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
-                    /* WHY: lower base score for empty query so history can be higher */
-                    score: base_score - EMPTY_QUERY_PENALTY,
-                    kind: CommandPaletteResultKind::RecentOrCommon,
-                    execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
-                        cmd.action.clone(),
-                    ),
-                });
-            } else if label.to_lowercase().contains(&query_lower) {
-                /* WHY: Calculate basic score */
-                let bonus = label.to_lowercase().starts_with(&query_lower) as u32 as f32;
-                let score = base_score + bonus;
-                results.push(CommandPaletteResult {
-                    id: cmd.id.to_string(),
-                    label: label.clone(),
-                    secondary_label: Some(format!("{} - {}", cmd.group.localized_name(), cmd_type)),
+                    shortcut,
                     score,
-                    kind: CommandPaletteResultKind::Action,
+                    kind,
                     execute_payload: CommandPaletteExecutePayload::DispatchAppAction(
                         cmd.action.clone(),
                     ),
@@ -77,7 +83,12 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
         "Files"
     }
 
-    fn search(&self, query: &str, workspace: Option<&Workspace>) -> Vec<CommandPaletteResult> {
+    fn search(
+        &self,
+        query: &str,
+        workspace: Option<&Workspace>,
+        _os_bindings: Option<&std::collections::HashMap<String, String>>,
+    ) -> Vec<CommandPaletteResult> {
         let mut results = Vec::new();
         if query.is_empty() {
             return results;
@@ -121,6 +132,7 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
                     id: format!("file_{}", rel_path),
                     label: file_name,
                     secondary_label: Some(rel_path.clone()),
+                    shortcut: None,
                     score,
                     kind: CommandPaletteResultKind::File,
                     execute_payload: CommandPaletteExecutePayload::OpenFile(file_path),
@@ -132,58 +144,5 @@ impl CommandPaletteProvider for WorkspaceFileProvider {
     }
 }
 
-/// Provides markdown content results.
-pub struct MarkdownContentProvider;
-
-impl CommandPaletteProvider for MarkdownContentProvider {
-    fn name(&self) -> &'static str {
-        "Content"
-    }
-
-    fn search(&self, query: &str, workspace: Option<&Workspace>) -> Vec<CommandPaletteResult> {
-        let mut results = Vec::new();
-        if query.is_empty() {
-            return results;
-        }
-
-        if let Some(ws) = workspace {
-            let matches = katana_core::search::WorkspaceSearchOps::search_workspace(
-                ws,
-                query,
-                false, // match_case
-                false, // match_word
-                false, // use_regex
-                MAX_FILE_RESULTS,
-            );
-            for m in matches {
-                let rel_path = crate::shell_logic::ShellLogicOps::relative_full_path(
-                    &m.file_path,
-                    Some(&ws.root),
-                );
-
-                let mut label = m.snippet.clone();
-                if label.len() > 100 {
-                    let end = label.floor_char_boundary(100);
-                    label.truncate(end);
-                    label.push_str("...");
-                }
-
-                results.push(CommandPaletteResult {
-                    id: format!("content_{}_{}", rel_path, m.line_number),
-                    label: label.trim().to_string(),
-                    secondary_label: Some(format!("{}:{}", rel_path, m.line_number + 1)),
-                    /* WHY: slightly lower score than exact file matches */
-                    score: BASE_CONTENT_SCORE,
-                    kind: CommandPaletteResultKind::MarkdownContent,
-                    execute_payload: CommandPaletteExecutePayload::NavigateToContent {
-                        path: m.file_path.clone(),
-                        line: m.line_number,
-                        byte_range: m.start_col..m.end_col,
-                    },
-                });
-            }
-        }
-
-        results
-    }
-}
+pub mod markdown_content;
+pub use markdown_content::MarkdownContentProvider;

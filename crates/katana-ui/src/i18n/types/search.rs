@@ -38,6 +38,10 @@ pub struct SearchMessages {
     pub command_doc_search: String,
     #[serde(default = "default_command_refresh_document")]
     pub command_refresh_document: String,
+    #[serde(default = "default_command_toggle_split")]
+    pub command_toggle_split: String,
+    #[serde(default = "default_command_toggle_code_preview")]
+    pub command_toggle_code_preview: String,
     /* WHY: Markdown authoring command labels shown in the command palette. */
     #[serde(default = "default_command_author_bold")]
     pub command_author_bold: String,
@@ -72,6 +76,12 @@ pub struct SearchMessages {
     pub command_ingest_image_file: String,
     #[serde(default = "default_command_ingest_clipboard_image")]
     pub command_ingest_clipboard_image: String,
+    #[serde(default = "default_command_zoom_in")]
+    pub command_zoom_in: String,
+    #[serde(default = "default_command_zoom_out")]
+    pub command_zoom_out: String,
+    #[serde(default = "default_command_toggle_filter")]
+    pub command_toggle_filter: String,
 }
 
 fn default_command_global_search() -> String {
@@ -83,8 +93,23 @@ fn default_command_doc_search() -> String {
 fn default_command_refresh_document() -> String {
     "Refresh Document".to_string()
 }
+fn default_command_toggle_split() -> String {
+    "Toggle Split Mode".to_string()
+}
+fn default_command_toggle_code_preview() -> String {
+    "Toggle Code Preview".to_string()
+}
 fn default_doc_search_no_results() -> String {
     "No results found.".to_string()
+}
+fn default_command_zoom_in() -> String {
+    "Zoom In".to_string()
+}
+fn default_command_zoom_out() -> String {
+    "Zoom Out".to_string()
+}
+fn default_command_toggle_filter() -> String {
+    "Toggle Explorer Filter".to_string()
 }
 /* WHY: Authoring command defaults (English fallback for locales not yet updated). */
 fn default_command_author_bold() -> String {
@@ -130,7 +155,7 @@ fn default_command_author_insert_table() -> String {
     "Insert Table".to_string()
 }
 fn default_command_ingest_image_file() -> String {
-    "Attach Image File…".to_string()
+    "Attach Image File\u{2026}".to_string()
 }
 fn default_command_ingest_clipboard_image() -> String {
     "Paste Image from Clipboard".to_string()

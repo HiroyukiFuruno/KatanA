@@ -1299,6 +1299,12 @@ impl<'a> CommonMarkViewerInternal<'a> {
             self, ui, events, cache, options, max_width,
         ) {
             self.table(events, cache, options, ui, max_width);
+        } else {
+            /* WHY: handle_custom_table renders via an external table_fn and does not call
+             * table() internally. Unlike table(), it does not invoke line.try_insert_end,
+             * so without this call the next block element (e.g. a blockquote/alert) would
+             * not receive the newline separator and would fail to render correctly. */
+            self.line.try_insert_end(ui);
         }
         self.blockquote(events, max_width, cache, options, ui);
     }
@@ -1947,6 +1953,16 @@ impl<'a> CommonMarkViewerInternal<'a> {
         _options: &CommonMarkOptions,
         max_width: f32,
     ) {
+        if let Some(custom_text_fn) = _options.custom_text_fn {
+            // WHY: Flush pending inline content before calling the custom hook
+            // to ensure correct layout positioning for the custom widget.
+            self.flush_pending_inline(ui, max_width);
+            if custom_text_fn(ui, &text) {
+                self.after_inline_widget = true;
+                return;
+            }
+        }
+
         if self.is_in_html_block {
             /* WHY: Count search matches inside HTML blocks so the global counter */
             /* WHY: stays in sync with the editor's char-index-based match list. */

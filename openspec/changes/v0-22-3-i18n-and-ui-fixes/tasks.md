@@ -18,6 +18,7 @@
 ## Tasks
 
 ### 1. Command Palette Scroll Behavior Fix (UI/UX)
+
 **Branch**: `v0-22-3-i18n-and-ui-fixes-task-1`
 
 - [x] 1.1 TDD (RED): `crates/katana-ui/src/views/modals/command_palette_scroll_tests.rs` 等の統合レイアウトテストを新規作成し、100件以上のダミーコマンドを表示した際、スクロール領域の `content_size` がウィンドウ制限を超え、スクロールバーが表示される（または正しく追従する）ことを IT で検証し、不具合を再現させる。
@@ -26,6 +27,7 @@
 - [x] 1.4 Cmd+Shift+P 押下時に `>` を付与しKatanaコマンドのみに限定する機能を追加。Cmd+P の場合はKatanaコマンドを除外するように改修。
 
 ### 2. Tab Navigation Layout Truncation Fix (UI/UX)
+
 **Branch**: `release/v0.22.3-task-2`
 
 - [x] 100件以上の項目があってもリストがウィンドウを突き抜けず、スクロールが可能であること
@@ -34,50 +36,50 @@
 
 ---
 
-## 2. ショートカット設定 UI の再設計 (v0.22.1 からの引継ぎ)
+## 3. ショートカット設定 UI の再設計 (v0.22.1 からの引継ぎ)
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 `shortcuts.rs` から Edit ボタンを廃止し、行全体クリックとペンSVGアイコンによる録音トリガーに変更する
-- [ ] 2.2 キー表示部分に OSネイティブキーSVGアイコン（⌘/⇧/⌥/Ctrl/Alt）を表示するロジックを実装する
-- [ ] 2.3 `ShortcutCaptureModal`（録音専用モーダル）を新規実装する（Enterで確定、Escでキャンセル）
-- [ ] 2.4 録音中は `egui` の `set_key_filter` を用いて Esc/Enter 以外の入力をブロックする
-- [ ] 2.5 i18n キーを追加する（EN + JA 同時）: `settings.shortcuts.capture_prompt`, `settings.shortcuts.confirm_key`, `settings.shortcuts.cancel_key`
-- [ ] 2.6 ショートカット設定画面に検索バーを追加する
-- [ ] 2.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
-- [ ] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
+- [x] 2.1 `shortcuts.rs` から Edit ボタンを廃止し、行全体クリックとペンSVGアイコンによる録音トリガーに変更する
+- [x] 2.2 キー表示部分に OSネイティブキーSVGアイコン（⌘/⇧/⌥/Ctrl/Alt）を表示するロジックを実装する
+- [x] 2.3 `ShortcutCaptureModal`（録音専用モーダル）を新規実装する（Enterで確定、Escでキャンセル）
+- [x] 2.4 録音中は `egui` の `set_key_filter` を用いて Esc/Enter 以外の入力をブロックする
+- [x] 2.5 i18n キーを追加する（EN + JA 同時）: `settings.shortcuts.capture_prompt`, `settings.shortcuts.confirm_key`, `settings.shortcuts.cancel_key`
+- [x] 2.6 ショートカット設定画面に検索バーを追加する
+- [x] 2.7 ユーザーへのUIスナップショット（画像等）の提示および動作報告
+- [x] 2.8 ユーザーからのフィードバックに基づくUIの微調整および改善実装
 
 ### Definition of Done (DoD)
 
-- [ ] 編集ボタンが削除され、録音モーダルが起動すること
-- [ ] OSネイティブキーアイコンが正しく表示されること
-- [ ] `make check` がパスすること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] 編集ボタンが削除され、録音モーダルが起動すること
+- [x] OSネイティブキーアイコンが正しく表示されること
+- [x] `make check` がパスすること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 3. i18n 翻訳の完全補完 (v0.22.1 からの引継ぎ)
+## 3. i18n 翻訳の完全補完
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle.
-- [ ] Base branch is synced.
+- [x] Ensure the previous task completed its full delivery cycle.
+- [x] Base branch is synced.
 
-- [ ] 3.1 画像で報告された英語のままのラベルを、日本語（`ja.json`）および全11言語に翻訳追加する
+- [x] 3.1 画像で報告された英語のままのラベルを、日本語（`ja.json`）および全11言語に翻訳追加する
   - `Close Document`, `Restore Closed Document`, `Global Search`, `Document Search`, `Toggle Explorer Filter` 等
-- [ ] 3.2 デフォルトショートカットの割り当て（Task 3.1〜3.15 の内容）
+- [x] 3.2 デフォルトショートカットの割り当て（Task 3.1〜3.15 の内容）
   - `file.close_workspace` → `primary+Shift+W`
   - `view.refresh_explorer` → `primary+Shift+R`
   - その他 `edit.*` 系ショートカットの追加
-- [ ] 3.3 割り当て後の重複チェック: `debug_assert!` による実行時重複検知の確認。
+- [x] 3.3 割り当て後の重複チェック: `debug_assert!` による実行時重複検知の確認。
 
 ### Definition of Done (DoD)
 
-- [ ] コマンドパレットや設定画面で英語フォールバックが発生していないこと
-- [ ] `make check` がパスすること
+- [x] コマンドパレットや設定画面で英語フォールバックが発生していないこと
+- [x] `make check` がパスすること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -100,8 +102,8 @@
 
 ## 5. Final Verification & Release Work
 
-- [ ] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 5.2 Ensure `make check` passes with exit code 0
+- [x] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 5.2 Ensure `make check` passes with exit code 0
 - [ ] 5.3 Create PR from Base Feature Branch targeting `master`
 - [ ] 5.4 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 5.5 Merge into master (`gh pr merge --merge --delete-branch`)

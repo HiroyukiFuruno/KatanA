@@ -145,7 +145,7 @@ impl<'a> CommandPaletteModal<'a> {
                         if !is_action_mode && provider.name() == "Commands" {
                             continue;
                         }
-                        gathered.extend(provider.search(&actual_query, self.workspace));
+                        gathered.extend(provider.search(&actual_query, self.workspace, None));
                     }
                     gathered.sort_by(|a, b| {
                         b.score

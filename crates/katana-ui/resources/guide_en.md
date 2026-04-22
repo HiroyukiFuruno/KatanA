@@ -9,12 +9,12 @@ This guide explains the core features and interactions.
 
 ### Open a Workspace
 
-Go to **File → Open Workspace...** or press `{{os_cmd:open_workspace}}` to select a folder containing Markdown files.
+Go to **File → Open Workspace...** or press {{os_cmd:open_workspace}} to select a folder containing Markdown files.
 KatanA will index all `.md` files and display them in the Explorer sidebar.
 
 ### Open a File
 
-Click a filename in the Explorer, or use the Command Palette (`{{os_cmd:open_palette}}`) to search for files.
+Click a filename in the Explorer, or use the Command Palette ({{os_cmd:open_palette}}) to search for files.
 
 ---
 
@@ -22,15 +22,15 @@ Click a filename in the Explorer, or use the Command Palette (`{{os_cmd:open_pal
 
 | Shortcut | Action |
 | --- | --- |
-| `{{os_cmd:open_palette}}` | Open Command Palette |
-| `{{os_cmd:search_tab}}` | Text Search |
-| `{{os_cmd:toggle_sidebar}}` | Toggle Sidebar |
-| `{{os_cmd:save_document}}` | Save File |
-| `{{os_cmd:refresh_preview}}` | Refresh Preview |
-| `{{os_cmd:close_tab}}` | Close Tab |
-| `{{os_cmd:undo}}` | Undo |
-| `{{os_cmd:redo}}` | Redo |
-| `{{os_cmd:toggle_comment}}` | Toggle Comment |
+| {{os_cmd:open_palette}} | Open Command Palette |
+| {{os_cmd:search_tab}} | Text Search |
+| {{os_cmd:toggle_sidebar}} | Toggle Sidebar |
+| {{os_cmd:save_document}} | Save File |
+| {{os_cmd:refresh_preview}} | Refresh Preview |
+| {{os_cmd:close_tab}} | Close Tab |
+| {{os_cmd:undo}} | Undo |
+| {{os_cmd:redo}} | Redo |
+| {{os_cmd:toggle_comment}} | Toggle Comment |
 
 ---
 
@@ -68,7 +68,7 @@ In Split mode, you can toggle scroll synchronization on or off.
 
 ## Command Palette
 
-Press `{{os_cmd:open_palette}}` to open the Command Palette. You can search for both filenames and commands.
+Press {{os_cmd:open_palette}} to open the Command Palette. You can search for both filenames and commands.
 
 - Type a filename → Open the file.
 - Start with `>` → Execute a command (e.g., `> Export`).
@@ -164,12 +164,14 @@ $$
 
 ### Diagrams (Mermaid)
 
+````markdown
 ```mermaid
 graph TD
     A[Start] --> B{Condition}
     B -->|Yes| C[Process A]
     B -->|No| D[Process B]
 ```
+````
 
 Diagrams can be viewed in full screen by clicking them.
 

@@ -161,6 +161,10 @@ pub struct SettingsUpdateMessages {
     pub weekly: String,
     pub monthly: String,
     pub check_now: String,
+    pub plantuml_section_title: String,
+    pub plantuml_installed: String,
+    pub plantuml_not_installed: String,
+    pub plantuml_update_now: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -185,11 +189,10 @@ pub struct SettingsBehaviorMessages {
     pub explorer_default_visible: String,
 }
 
+#[rustfmt::skip]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SettingsShortcutsMessages {
-    pub edit: String,
-    pub press_keys: String,
-    pub restore_defaults: String,
-    pub none: String,
-    pub conflict_warning: String,
+    pub edit: String, pub press_keys: String, pub restore_defaults: String, pub none: String,
+    pub conflict_warning: String, pub capture_prompt: String, pub confirm_key: String,
+    pub cancel_key: String, pub search_placeholder: String,
 }

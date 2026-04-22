@@ -23,13 +23,14 @@ mod ffi {
     pub const TAG_DEMO: i32 = 18;
     pub const TAG_WELCOME_SCREEN: i32 = 19;
     pub const TAG_USER_GUIDE: i32 = 20;
-    pub const TAG_SEARCH_DOCUMENT: i32 = 21;
-    pub const TAG_SEARCH_WORKSPACE: i32 = 22;
     pub const TAG_CLOSE_WORKSPACE: i32 = 23;
     pub const TAG_EXPLORER: i32 = 24;
     pub const TAG_REFRESH_EXPLORER: i32 = 25;
     pub const TAG_CLOSE_ALL: i32 = 26;
     pub const TAG_GITHUB: i32 = 27;
+    pub const TAG_REFRESH_DOCUMENT: i32 = 34;
+    pub const TAG_ZOOM_IN: i32 = 35;
+    pub const TAG_ZOOM_OUT: i32 = 36;
     #[allow(dead_code)]
     unsafe extern "C" {
         pub fn katana_setup_native_menu();
@@ -59,6 +60,9 @@ mod ffi {
             refresh_explorer: *const std::ffi::c_char,
             close_all: *const std::ffi::c_char,
             github: *const std::ffi::c_char,
+            refresh_document: *const std::ffi::c_char,
+            zoom_in: *const std::ffi::c_char,
+            zoom_out: *const std::ffi::c_char,
         );
         pub fn katana_update_menu_state(
             save_enabled: bool,
@@ -122,10 +126,7 @@ impl NativeMenuOps {
     pub fn update_availability(_state: &crate::app_state::AppState) {}
 
     #[cfg(target_os = "macos")]
-    pub(crate) fn poll(
-        show_about: &mut bool,
-        _open_folder_dialog: fn() -> Option<std::path::PathBuf>,
-    ) -> AppAction {
+    pub(crate) fn poll(_open_folder_dialog: fn() -> Option<std::path::PathBuf>) -> AppAction {
         let action = unsafe { ffi::katana_poll_menu_action() };
         match action {
             ffi::TAG_OPEN_WORKSPACE => AppAction::PickOpenWorkspace,
@@ -140,10 +141,7 @@ impl NativeMenuOps {
             ffi::TAG_LANG_DE => AppAction::ChangeLanguage("de".to_string()),
             ffi::TAG_LANG_ES => AppAction::ChangeLanguage("es".to_string()),
             ffi::TAG_LANG_IT => AppAction::ChangeLanguage("it".to_string()),
-            ffi::TAG_ABOUT => {
-                *show_about = !*show_about;
-                AppAction::None
-            }
+            ffi::TAG_ABOUT => AppAction::ToggleAbout,
             ffi::TAG_CHECK_UPDATES => AppAction::CheckForUpdates,
             ffi::TAG_RELEASE_NOTES => AppAction::ShowReleaseNotes,
             ffi::TAG_SETTINGS => AppAction::ToggleSettings,
@@ -151,22 +149,20 @@ impl NativeMenuOps {
             ffi::TAG_DEMO => AppAction::OpenHelpDemo,
             ffi::TAG_WELCOME_SCREEN => AppAction::OpenWelcomeScreen,
             ffi::TAG_USER_GUIDE => AppAction::OpenUserGuide,
-            ffi::TAG_SEARCH_DOCUMENT => AppAction::OpenDocSearch,
-            ffi::TAG_SEARCH_WORKSPACE => AppAction::ToggleSearchModal,
             ffi::TAG_CLOSE_WORKSPACE => AppAction::CloseWorkspace,
             ffi::TAG_EXPLORER => AppAction::ToggleExplorer,
             ffi::TAG_REFRESH_EXPLORER => AppAction::RefreshExplorer,
             ffi::TAG_CLOSE_ALL => AppAction::CloseAllDocuments,
             ffi::TAG_GITHUB => AppAction::OpenGitHub,
+            ffi::TAG_REFRESH_DOCUMENT => AppAction::RefreshDocument { is_manual: true },
+            ffi::TAG_ZOOM_IN => AppAction::ZoomIn,
+            ffi::TAG_ZOOM_OUT => AppAction::ZoomOut,
             _ => AppAction::None,
         }
     }
 
     #[cfg(not(target_os = "macos"))]
-    pub(crate) fn poll(
-        _show_about: &mut bool,
-        _open_folder_dialog: fn() -> Option<std::path::PathBuf>,
-    ) -> AppAction {
+    pub(crate) fn poll(_open_folder_dialog: fn() -> Option<std::path::PathBuf>) -> AppAction {
         AppAction::None
     }
 }

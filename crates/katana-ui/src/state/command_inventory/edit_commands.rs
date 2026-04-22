@@ -27,7 +27,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_bold.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &["primary+B"],
+                default_shortcuts: &["primary+Shift+B"],
             },
             CommandInventoryItem {
                 id: "edit.italic",
@@ -45,7 +45,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_strikethrough.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+X"],
             },
             CommandInventoryItem {
                 id: "edit.inline_code",
@@ -63,7 +63,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_heading1.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+1"],
             },
             CommandInventoryItem {
                 id: "edit.heading2",
@@ -72,7 +72,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_heading2.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+2"],
             },
             CommandInventoryItem {
                 id: "edit.heading3",
@@ -81,7 +81,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_heading3.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+3"],
             },
             CommandInventoryItem {
                 id: "edit.bullet_list",
@@ -90,7 +90,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_bullet_list.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+8"],
             },
             CommandInventoryItem {
                 id: "edit.numbered_list",
@@ -99,7 +99,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_numbered_list.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+7"],
             },
             CommandInventoryItem {
                 id: "edit.blockquote",
@@ -108,7 +108,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_blockquote.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+9"],
             },
             CommandInventoryItem {
                 id: "edit.code_block",
@@ -117,7 +117,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_code_block.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+C"],
             },
             CommandInventoryItem {
                 id: "edit.horizontal_rule",
@@ -126,7 +126,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_horizontal_rule.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+Shift+H"],
             },
             CommandInventoryItem {
                 id: "edit.insert_link",
@@ -144,7 +144,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_insert_table.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+alt+T"],
             },
             /* WHY: Image ingest commands — also Edit group since they mutate the document. */
             CommandInventoryItem {

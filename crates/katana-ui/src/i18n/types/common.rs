@@ -101,6 +101,7 @@ pub struct MarkdownMessages {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommonMessages {
     pub close: String,
+    pub save: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -113,11 +114,17 @@ pub struct LanguageEntry {
 pub struct HelpMessages {
     pub section_general: String,
     pub section_editor: String,
+    pub section_behavior: String,
     pub shortcut_command_palette: String,
     pub shortcut_search: String,
     pub shortcut_sidebar: String,
     pub shortcut_save: String,
     pub shortcut_refresh: String,
+    pub shortcut_toggle_split: String,
+    pub shortcut_toggle_code_preview: String,
+    pub shortcut_tab_next: String,
+    pub shortcut_tab_prev: String,
+    pub shortcut_toggle_slideshow: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

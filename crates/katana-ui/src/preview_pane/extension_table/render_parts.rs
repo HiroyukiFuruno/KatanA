@@ -17,6 +17,33 @@ impl KatanaTableRendererParts {
         ui.min_rect().bottom()
     }
 
+    fn render_mixed_cell<'e>(
+        ui: &mut Ui,
+        cache: &mut CommonMarkCache,
+        items: &[EventIteratorItem<'e>],
+        render_cell: &mut dyn FnMut(&mut Ui, &mut CommonMarkCache, &[EventIteratorItem<'e>]),
+    ) {
+        let mut replaced = false;
+        if items.len() == 1 {
+            let text = match &items[0].1.0 {
+                pulldown_cmark::Event::Text(t) => Some(t.as_ref()),
+                pulldown_cmark::Event::Code(t) => Some(t.as_ref()),
+                _ => None,
+            };
+            if let Some(text) = text.filter(|t| t.starts_with("{{os_svg:") && t.ends_with("}}")) {
+                const OS_SVG_PREFIX_LEN: usize = "{{os_svg:".len();
+                const OS_SVG_SUFFIX_LEN: usize = "}}".len();
+                let key = &text[OS_SVG_PREFIX_LEN..text.len() - OS_SVG_SUFFIX_LEN];
+                let raw = crate::os_command::OsCommandOps::get(key);
+                crate::widgets::ShortcutWidget::new(&raw).ui(ui);
+                replaced = true;
+            }
+        }
+        if !replaced {
+            render_cell(ui, cache, items);
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn render_header<'e>(
         ui: &mut Ui,
@@ -41,7 +68,7 @@ impl KatanaTableRendererParts {
             let alignment = alignments.get(i).copied().unwrap_or(Alignment::None);
             Self::apply_alignment(ui, alignment, col_w, |ui| {
                 if let Some(hcol) = table_data.header.get(i) {
-                    render_cell(ui, cache, hcol);
+                    Self::render_mixed_cell(ui, cache, hcol, render_cell);
                 }
             });
         }
@@ -73,7 +100,7 @@ impl KatanaTableRendererParts {
                 if let Some(&col_w) = col_alloc_width.get(i) {
                     let alignment = alignments.get(i).copied().unwrap_or(Alignment::None);
                     Self::apply_alignment(ui, alignment, col_w, |ui| {
-                        render_cell(ui, cache, row_col);
+                        Self::render_mixed_cell(ui, cache, row_col, render_cell);
                     });
                 } else {
                     /* WHY: Fallback empty label for missing columns, same as pulldown.rs line 1837. */
@@ -101,17 +128,31 @@ impl KatanaTableRendererParts {
             Alignment::Right => egui::Align::Max,
             _ => egui::Align::Min,
         };
+        /* WHY: Outer top_down(align) handles vertical padding and column width constraints.
+         * Inner left_to_right(Center) flows mixed-content cells (e.g. emoji SVG + text)
+         * horizontally and vertically centers them. `with_main_align(align)` ensures
+         * the horizontal alignment of the row respects the table column alignment. */
         ui.with_layout(egui::Layout::top_down(align), |ui| {
-            /* WHY: item_spacing.y is inherited from the parent grid (10px). Zero it here so
-             * that when a cell contains multiple widgets (e.g. plain text + inline code),
-             * they stack at natural line height with no extra gap between them. */
             ui.spacing_mut().item_spacing.y = 0.0;
             if width > 0.0 {
                 ui.set_min_width(width);
                 ui.set_max_width(width);
             }
             ui.add_space(CELL_PAD_Y);
-            let result = add_contents(ui);
+            let result = ui
+                .with_layout(
+                    egui::Layout::left_to_right(egui::Align::Center)
+                        .with_main_wrap(true)
+                        .with_main_align(align),
+                    |ui| {
+                        /* WHY: Markdown text already provides spacing (e.g. "✅ 安定").
+                         * Setting item_spacing.x to 0.0 prevents egui from adding its default
+                         * gap between the emoji SVG widget and the following text labels. */
+                        ui.spacing_mut().item_spacing.x = 0.0;
+                        add_contents(ui)
+                    },
+                )
+                .inner;
             ui.add_space(CELL_PAD_Y);
             result
         })

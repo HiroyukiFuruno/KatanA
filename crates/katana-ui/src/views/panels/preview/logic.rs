@@ -147,6 +147,7 @@ impl PreviewLogicOps {
             const BUTTON_ROUNDING: f32 = 4.0;
             const BUTTON_MARGIN: f32 = 20.0;
             const BUTTON_SIZE: f32 = 32.0;
+            const BACK_TO_TOP_LEFT_OFFSET: f32 = 5.0;
 
             let margin = BUTTON_MARGIN;
             let btn_size = egui::vec2(BUTTON_SIZE, BUTTON_SIZE);
@@ -155,7 +156,7 @@ impl PreviewLogicOps {
 
             let btn_rect = egui::Rect::from_min_size(
                 egui::pos2(
-                    ui.max_rect().right() - margin - total_width,
+                    ui.max_rect().right() - margin - total_width - BACK_TO_TOP_LEFT_OFFSET,
                     ui.max_rect().bottom() - margin - btn_size.y,
                 ),
                 egui::vec2(total_width, btn_size.y),

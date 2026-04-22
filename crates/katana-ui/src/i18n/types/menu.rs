@@ -45,6 +45,18 @@ pub struct MenuMessages {
     pub restore_closed: String,
     #[serde(default = "default_menu_website")]
     pub website: String,
+    #[serde(default = "default_menu_zoom_in")]
+    pub zoom_in: String,
+    #[serde(default = "default_menu_zoom_out")]
+    pub zoom_out: String,
+}
+
+fn default_menu_zoom_in() -> String {
+    "Zoom In".to_string()
+}
+
+fn default_menu_zoom_out() -> String {
+    "Zoom Out".to_string()
 }
 
 fn default_menu_demo() -> String {

@@ -32,7 +32,11 @@ impl ShortcutsHelpersOps {
                     .collect()
             };
 
-            if other_shortcuts.contains(&new_shortcut.to_string()) {
+            let new_shortcut_lower = new_shortcut.to_lowercase();
+            if other_shortcuts
+                .iter()
+                .any(|s| s.to_lowercase() == new_shortcut_lower)
+            {
                 conflict_id = Some(other_cmd);
                 break;
             }
@@ -49,6 +53,7 @@ impl ShortcutsHelpersOps {
                 mem.data
                     .insert_temp(egui::Id::new("shortcut_conflict"), msg)
             });
+            return; // EXIT EARLY: DO NOT OVERWRITE, KEEP MODAL OPEN
         } else {
             ui.memory_mut(|mem| {
                 mem.data
@@ -65,14 +70,11 @@ impl ShortcutsHelpersOps {
         map.insert(cmd.id.to_string(), new_shortcut.to_string());
         state.config.try_save_settings();
 
-        ui.memory_mut(|mem| mem.data.remove::<String>(recording_id_salt));
-    }
-
-    /* WHY: Pushes a modifier part if the condition is true */
-    pub(crate) fn add_modifier_if<'a>(cond: bool, name: &'a str, parts: &mut Vec<&'a str>) {
-        if cond {
-            parts.push(name);
-        }
+        ui.memory_mut(|mem| {
+            mem.data.remove::<String>(recording_id_salt);
+            mem.data
+                .remove::<String>(egui::Id::new("shortcut_temp").with(recording_id_salt));
+        });
     }
 
     /* WHY: Maps an egui key enum to its string representation used in shortcut storage */
@@ -88,8 +90,25 @@ impl ShortcutsHelpersOps {
             egui::Key::Enter => "enter",
             egui::Key::Space => "space",
             egui::Key::Delete => "delete",
-            egui::Key::Comma => "comma",
+            egui::Key::Comma => ",",
             egui::Key::Period => ".",
+            egui::Key::Colon => ":",
+            egui::Key::Semicolon => ";",
+            egui::Key::OpenBracket => "[",
+            egui::Key::CloseBracket => "]",
+            egui::Key::OpenCurlyBracket => "{",
+            egui::Key::CloseCurlyBracket => "}",
+            egui::Key::Quote => "'",
+            egui::Key::Questionmark => "?",
+            egui::Key::Exclamationmark => "!",
+            /* WHY: On JIS keyboards, Pipe is Shift+¥ (same physical key as Backslash).
+            Map both to "\\" so stored shortcuts are always canonical. */
+            egui::Key::Pipe => "\\",
+            egui::Key::Backtick => "`",
+            egui::Key::Slash => "/",
+            egui::Key::Backslash => "\\",
+            egui::Key::Minus => "-",
+            egui::Key::Equals => "=",
             egui::Key::Num0 => "0",
             egui::Key::Num1 => "1",
             egui::Key::Num2 => "2",
@@ -127,63 +146,6 @@ impl ShortcutsHelpersOps {
             egui::Key::Y => "y",
             egui::Key::Z => "z",
             _ => "",
-        }
-    }
-
-    /* WHY: Handles key input recording when the edit button is active */
-    pub(crate) fn handle_shortcut_recording(
-        ui: &mut egui::Ui,
-        state: &mut AppState,
-        cmd: &CommandInventoryItem,
-        recording_id_salt: egui::Id,
-        os_bindings: &HashMap<String, String>,
-    ) {
-        let (should_cancel, keys, modifiers) = ui.input(|i| {
-            if i.key_pressed(egui::Key::Escape) {
-                (true, Vec::new(), i.modifiers)
-            } else {
-                let pressed_keys: Vec<egui::Key> = i
-                    .events
-                    .iter()
-                    .filter_map(|e| {
-                        if let egui::Event::Key {
-                            key, pressed: true, ..
-                        } = e
-                        {
-                            Some(*key)
-                        } else {
-                            None
-                        }
-                    })
-                    .collect();
-                (false, pressed_keys, i.modifiers)
-            }
-        });
-
-        if should_cancel {
-            ui.memory_mut(|mem| mem.data.remove::<String>(recording_id_salt));
-        } else if let Some(&key) = keys.first() {
-            let key_str = Self::key_to_string(key);
-
-            if !key_str.is_empty() {
-                let mut parts = Vec::new();
-                Self::add_modifier_if(modifiers.command, "primary", &mut parts);
-                Self::add_modifier_if(modifiers.shift, "shift", &mut parts);
-                Self::add_modifier_if(modifiers.alt, "alt", &mut parts);
-                Self::add_modifier_if(modifiers.mac_cmd, "mac_cmd", &mut parts);
-                parts.push(key_str);
-
-                let new_shortcut = parts.join("+");
-
-                Self::check_and_save_shortcut(
-                    ui,
-                    state,
-                    cmd,
-                    &new_shortcut,
-                    recording_id_salt,
-                    os_bindings,
-                );
-            }
         }
     }
 }

@@ -13,12 +13,16 @@
     "export_png": "PNG画像 (.png)",
     "export_jpg": "JPEG画像 (.jpg)",
     "about": "KatanA について",
+    "close_document": "ドキュメントを閉じる",
+    "restore_closed": "閉じたドキュメントを復元",
     "quit": "KatanA を終了",
     "help": "ヘルプ",
     "check_updates": "更新を確認…",
     "release_notes": "リリースノート",
     "view": "表示",
     "command_palette": "コマンドパレット…",
+    "zoom_in": "拡大",
+    "zoom_out": "縮小",
     "demo": "デモ・機能紹介を見る",
     "welcome_screen": "ようこそ画面",
     "user_guide": "ユーザーガイド",
@@ -356,7 +360,11 @@
       "press_keys": "キーを入力… (Escでキャンセル)",
       "restore_defaults": "デフォルトに戻す",
       "none": "なし",
-      "conflict_warning": "警告: ショートカットが上書きされました。すでに '{command}' で使用されていました。"
+      "conflict_warning": "警告: すでに '{command}' で使用されています。\n別の組み合わせを選択してください。",
+      "capture_prompt": "キーの組み合わせを押してください…",
+      "confirm_key": "Enterで確定",
+      "cancel_key": "Escでキャンセル",
+      "search_placeholder": "ショートカットを検索…"
     },
     "updates": {
       "section_title": "アプリアップデート",
@@ -365,7 +373,11 @@
       "daily": "毎日",
       "weekly": "毎週",
       "monthly": "毎月",
-      "check_now": "今すぐ更新をチェックする"
+      "check_now": "今すぐ更新をチェックする",
+      "plantuml_section_title": "PlantUML",
+      "plantuml_installed": "PlantUML は %path% にインストールされています。",
+      "plantuml_not_installed": "PlantUML はインストールされていません。",
+      "plantuml_update_now": "PlantUML を最新版に更新"
     },
     "behavior": {
       "section_title": "動作",
@@ -430,11 +442,13 @@
     "ln_prefix": "行 ",
     "palette_query_hint": "ファイルやコンテンツを検索…",
     "command_settings": "設定の表示切替",
-    "command_explorer": "エクスプローラーを表示",
+    "command_explorer": "エクスプローラーを切り替え",
     "command_close_all": "すべてのドキュメントを閉じる",
     "command_refresh_explorer": "エクスプローラーを更新",
     "command_updates": "アップデートを確認",
     "command_about": "KatanAについてを表示",
+    "command_zoom_in": "拡大",
+    "command_zoom_out": "縮小",
     "command_type_action": "コマンド",
     "command_author_bold": "太字",
     "command_author_italic": "斜体",
@@ -456,7 +470,13 @@
     "match_word": "単語単位",
     "use_regex": "正規表現を利用",
     "doc_search_no_results": "検索結果がありません。",
-    "palette_action_query_hint": "Katana コマンドを検索…"
+    "palette_action_query_hint": "Katana コマンドを検索…",
+    "command_global_search": "ワークスペース全体を検索",
+    "command_doc_search": "ドキュメント内検索",
+    "command_toggle_filter": "エクスプローラーのフィルター切替",
+    "command_refresh_document": "ドキュメントを再読込",
+    "command_toggle_split": "分割表示の切り替え",
+    "command_toggle_code_preview": "コード/プレビューの切り替え"
   },
   "toc": {
     "title": "目次",
@@ -493,7 +513,8 @@
     "task_done": "完了 [x]"
   },
   "common": {
-    "close": "閉じる"
+    "close": "閉じる",
+    "save": "保存"
   },
   "meta_info": {
     "title": "ドキュメント情報",
@@ -522,11 +543,17 @@
   "help": {
     "section_general": "全般",
     "section_editor": "エディタ",
+    "section_behavior": "動作",
     "shortcut_command_palette": "{{os_cmd:open_palette}}: コマンドパレット",
     "shortcut_search": "{{os_cmd:search_workspace}}: ワークスペース検索",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: サイドバー切替",
     "shortcut_save": "{{os_cmd:save_document}}: 保存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 図表を更新"
+    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 図表を更新",
+    "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 分割",
+    "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: コード、プレビューの切り替え",
+    "shortcut_tab_next": "{{os_cmd:tab_next}}: 次のタブへ移動",
+    "shortcut_tab_prev": "{{os_cmd:tab_prev}}: 前のタブへ移動",
+    "shortcut_toggle_slideshow": "{{os_cmd:toggle_slideshow}}: スライドショー"
   },
   "dashboard": {
     "welcome_title": "KatanA へようこそ",

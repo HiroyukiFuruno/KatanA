@@ -28,6 +28,9 @@ pub(super) fn update_from_i18n() {
             &msgs.search.command_refresh_explorer,
             &msgs.search.command_close_all,
             &msgs.menu.github,
+            &msgs.action.refresh_document,
+            &msgs.menu.zoom_in,
+            &msgs.menu.zoom_out,
         );
     }
 }
@@ -56,6 +59,9 @@ unsafe fn update_menu_strings(
     refresh_explorer: &str,
     close_all: &str,
     github: &str,
+    refresh_document: &str,
+    zoom_in: &str,
+    zoom_out: &str,
 ) {
     let mk = |s: &str| std::ffi::CString::new(s).unwrap_or_default();
     let c_file = mk(file);
@@ -79,6 +85,9 @@ unsafe fn update_menu_strings(
     let c_refresh_explorer = mk(refresh_explorer);
     let c_close_all = mk(close_all);
     let c_github = mk(github);
+    let c_refresh_document = mk(refresh_document);
+    let c_zoom_in = mk(zoom_in);
+    let c_zoom_out = mk(zoom_out);
 
     ffi::katana_update_menu_strings(
         c_file.as_ptr(),
@@ -102,5 +111,8 @@ unsafe fn update_menu_strings(
         c_refresh_explorer.as_ptr(),
         c_close_all.as_ptr(),
         c_github.as_ptr(),
+        c_refresh_document.as_ptr(),
+        c_zoom_in.as_ptr(),
+        c_zoom_out.as_ptr(),
     );
 }

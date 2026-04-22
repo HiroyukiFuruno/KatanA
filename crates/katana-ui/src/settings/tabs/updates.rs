@@ -1,109 +1,124 @@
-use super::types::*;
-use crate::app_state::AppAction;
-use crate::settings::*;
-use crate::widgets::StyledComboBox;
+use std::path::PathBuf;
 
-impl UpdatesTabOps {
+use crate::app_action::AppAction;
+use crate::state::update::UpdatePhase;
+
+const SECTION_SPACING: f32 = 8.0;
+const SECTION_SEPARATOR_SPACING: f32 = 24.0;
+const SECTION_AFTER_SEPARATOR_SPACING: f32 = 16.0;
+const PLANTUML_DOWNLOAD_URL: &str =
+    "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar";
+
+impl crate::settings::tabs::UpdatesTabOps {
     pub(crate) fn render_updates_tab(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
+        jar_path: Option<PathBuf>,
     ) -> Option<AppAction> {
-        let update_msgs = &crate::i18n::I18nOps::get().settings.updates;
+        let mut pending_action = None;
+        let i18n_root = crate::i18n::I18nOps::get();
+        let i18n_update = &i18n_root.update;
+        let i18n_settings = &i18n_root.settings.updates;
 
-        SettingsOps::section_header(ui, &update_msgs.section_title);
+        ui.vertical(|ui| {
+            /* 1. App Updates Section */
+            ui.heading(&i18n_settings.section_title);
+            ui.add_space(SECTION_SPACING);
 
-        let ver_str = format!("Current version: v{}", env!("CARGO_PKG_VERSION"));
-        ui.label(egui::RichText::new(ver_str).weak().size(HINT_FONT_SIZE));
+            let current_version = env!("CARGO_PKG_VERSION");
+            crate::widgets::AlignCenter::new()
+                .content(|ui| {
+                    ui.label(&i18n_root.about.version);
+                    ui.strong(current_version);
+                })
+                .show(ui);
 
-        crate::widgets::AlignCenter::new()
-            .shrink_to_fit(true)
-            .content(|ui| {
-                ui.label(&update_msgs.interval);
+            if let Some(update) = &state.update.available {
+                ui.add_space(SECTION_SPACING);
+                ui.label(&i18n_update.update_available);
+                ui.strong(&update.tag_name);
 
-                let mut interval = state.config.settings.settings().updates.interval;
-                use katana_platform::settings::UpdateInterval;
-                let mut changed = false;
-
-                StyledComboBox::new(
-                    "update_interval",
-                    match interval {
-                        UpdateInterval::Never => update_msgs.never.as_str(),
-                        UpdateInterval::Daily => update_msgs.daily.as_str(),
-                        UpdateInterval::Weekly => update_msgs.weekly.as_str(),
-                        UpdateInterval::Monthly => update_msgs.monthly.as_str(),
-                    },
-                )
-                .show(ui, |ui| {
-                    /* WHY: in popup/list context; future: standardize as atom */
-                    if ui
-                        .add(
-                            egui::Button::selectable(
-                                interval == UpdateInterval::Never,
-                                &update_msgs.never,
-                            )
-                            .frame_when_inactive(true),
-                        )
-                        .clicked()
-                    {
-                        interval = UpdateInterval::Never;
-                        changed = true;
+                match &state.update.phase {
+                    Some(UpdatePhase::Downloading { .. }) => {
+                        ui.add_space(SECTION_SPACING);
+                        crate::widgets::AlignCenter::new()
+                            .content(|ui| {
+                                ui.spinner();
+                                ui.label(&i18n_update.downloading);
+                            })
+                            .show(ui);
                     }
-                    /* WHY: in popup/list context; future: standardize as atom */
-                    if ui
-                        .add(
-                            egui::Button::selectable(
-                                interval == UpdateInterval::Daily,
-                                &update_msgs.daily,
-                            )
-                            .frame_when_inactive(true),
-                        )
-                        .clicked()
-                    {
-                        interval = UpdateInterval::Daily;
-                        changed = true;
+                    Some(UpdatePhase::ReadyToRelaunch) => {
+                        ui.add_space(SECTION_SPACING);
+                        if ui.button(&i18n_update.install_update).clicked() {
+                            pending_action = Some(AppAction::InstallUpdateAndRestart);
+                        }
                     }
-                    /* WHY: in popup/list context; future: standardize as atom */
-                    if ui
-                        .add(
-                            egui::Button::selectable(
-                                interval == UpdateInterval::Weekly,
-                                &update_msgs.weekly,
-                            )
-                            .frame_when_inactive(true),
-                        )
-                        .clicked()
-                    {
-                        interval = UpdateInterval::Weekly;
-                        changed = true;
+                    _ => {
+                        ui.add_space(SECTION_SPACING);
+                        if ui.button(&i18n_update.download_update).clicked() {
+                            pending_action = Some(AppAction::StartUpdateDownload);
+                        }
                     }
-                    /* WHY: in popup/list context; future: standardize as atom */
-                    if ui
-                        .add(
-                            egui::Button::selectable(
-                                interval == UpdateInterval::Monthly,
-                                &update_msgs.monthly,
-                            )
-                            .frame_when_inactive(true),
-                        )
-                        .clicked()
-                    {
-                        interval = UpdateInterval::Monthly;
-                        changed = true;
-                    }
-                });
-
-                if changed {
-                    state.config.settings.settings_mut().updates.interval = interval;
-                    let _ = state.config.try_save_settings();
                 }
-            })
-            .show(ui);
+            } else if state.update.checking {
+                ui.add_space(SECTION_SPACING);
+                crate::widgets::AlignCenter::new()
+                    .content(|ui| {
+                        ui.spinner();
+                        ui.label(&i18n_update.checking_for_updates);
+                    })
+                    .show(ui);
+            } else {
+                ui.add_space(SECTION_SPACING);
+                ui.label(&i18n_update.up_to_date);
+                if ui.button(&i18n_settings.check_now).clicked() {
+                    pending_action = Some(AppAction::CheckForUpdates);
+                }
+            }
 
-        ui.add_space(SUBSECTION_SPACING);
+            ui.add_space(SECTION_SEPARATOR_SPACING);
+            ui.separator();
+            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-        if ui.button(&update_msgs.check_now).clicked() {
-            return Some(AppAction::CheckForUpdates);
-        }
-        None
+            /* 2. PlantUML Section */
+            ui.heading(&i18n_settings.plantuml_section_title);
+            ui.add_space(SECTION_SPACING);
+
+            if let Some(path) = jar_path {
+                let path_str = path.to_string_lossy().to_string();
+                ui.label(
+                    egui::RichText::new(crate::i18n::I18nOps::tf(
+                        &i18n_settings.plantuml_installed,
+                        &[("path", &path_str)],
+                    ))
+                    .color(ui.visuals().weak_text_color()),
+                );
+
+                ui.add_space(SECTION_SPACING);
+                if ui.button(&i18n_settings.plantuml_update_now).clicked() {
+                    pending_action = Some(AppAction::StartPlantumlDownload {
+                        url: PLANTUML_DOWNLOAD_URL.to_string(),
+                        dest: path,
+                    });
+                }
+            } else {
+                ui.label(
+                    egui::RichText::new(&i18n_settings.plantuml_not_installed)
+                        .color(ui.visuals().warn_fg_color),
+                );
+                ui.add_space(SECTION_SPACING);
+                if ui.button(&i18n_settings.plantuml_update_now).clicked()
+                    && let Some(dest) = state.config.try_get_plantuml_jar_path()
+                {
+                    pending_action = Some(AppAction::StartPlantumlDownload {
+                        url: PLANTUML_DOWNLOAD_URL.to_string(),
+                        dest,
+                    });
+                }
+            }
+        });
+
+        pending_action
     }
 }

@@ -74,7 +74,8 @@ impl SectionMarkdownOps {
                 ))
                 .render_table_fn(Some(
                     &crate::preview_pane::extension_table::KatanaTableRenderer::render,
-                ));
+                ))
+                .custom_text_fn(Some(&crate::os_command::ShortcutFacade::render_inline));
 
             let previous_anchor_count = heading_anchors.as_ref().map(|a| a.len()).unwrap_or(0);
             if let Some(anchors) = heading_anchors.as_mut() {

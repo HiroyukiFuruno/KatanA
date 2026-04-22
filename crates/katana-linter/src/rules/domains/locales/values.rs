@@ -124,6 +124,14 @@ const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
         key: "*",
         value: "Text",
     },
+    LocaleException {
+        key: "section_editor",
+        value: "Editor",
+    },
+    LocaleException {
+        key: "section_general",
+        value: "General",
+    },
 ];
 
 pub struct LocaleValueOps;
