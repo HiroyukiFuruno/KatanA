@@ -1,0 +1,28 @@
+[workspace]
+
+[package]
+name = "katana-screenshot"
+version = "0.1.0"
+edition = "2021"
+description = "Generic screenshot runner for KatanA — invoked by katana-astro or other website tooling"
+
+[[bin]]
+name = "katana-screenshot"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+tempfile = "3"
+katana-ui = { path = "../../crates/katana-ui" }
+katana-platform = { path = "../../crates/katana-platform" }
+katana-core = { path = "../../crates/katana-core" }
+egui_kittest = { version = "0.34", features = ["wgpu", "eframe"] }
+egui = "0.34"
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[patch.crates-io]
+egui_commonmark = { path = "../../vendor/egui_commonmark_upstream/egui_commonmark" }
+egui_commonmark_backend = { path = "../../vendor/egui_commonmark_upstream/egui_commonmark_backend" }
