@@ -41,6 +41,5 @@ mod theme;
 #[path = "integration/settings/theme_bridge.rs"]
 mod theme_bridge;
 
-
 #[path = "integration/preview_pane/styling.rs"]
 mod underline_rendering;
