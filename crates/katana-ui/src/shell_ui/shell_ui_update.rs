@@ -73,10 +73,10 @@ impl KatanaApp {
     pub(crate) fn update_file_dialog(&mut self, ctx: &egui::Context) {
         self.file_dialog.update(ctx);
 
-        if let Some(path) = self.file_dialog.take_picked() {
-            if let Some(action) = self.pending_dialog_action.take() {
-                self.handle_file_dialog_action(path, action);
-            }
+        if let Some(path) = self.file_dialog.take_picked()
+            && let Some(action) = self.pending_dialog_action.take()
+        {
+            self.handle_file_dialog_action(path, action);
         }
     }
 
