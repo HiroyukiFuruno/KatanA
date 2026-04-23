@@ -28,6 +28,12 @@ impl MarkdownRule for NoEmphasisAsHeadingRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md036.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[crate::rule_prop!(
+                String,
+                "punctuation",
+                "Punctuation characters",
+                ".,;:!?。，；：！？"
+            )],
         })
     }
 
@@ -60,53 +66,6 @@ impl MarkdownRule for NoEmphasisAsHeadingRule {
     }
 }
 
-/// MD045 / no-alt-text — Images should have alternate text (alt text).
-pub struct NoAltTextRule;
-
-impl MarkdownRule for NoAltTextRule {
-    fn id(&self) -> &'static str {
-        "MD045"
-    }
-
-    fn official_meta(&self) -> Option<OfficialRuleMeta> {
-        Some(OfficialRuleMeta {
-            code: "MD045",
-            title: "no-alt-text",
-            description: "Images should have alternate text (alt text).",
-            docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md045.md",
-            parity: RuleParityStatus::Official,
-            is_fixable: false,
-        })
-    }
-
-    fn evaluate(&self, file_path: &Path, content: &str) -> Vec<MarkdownDiagnostic> {
-        let meta = self.official_meta().expect("always Some for MD045");
-        let mut diagnostics = Vec::new();
-        let mut in_code_block = false;
-        for (i, line) in content.lines().enumerate() {
-            let trimmed = line.trim_start();
-            if RuleHelpers::is_fence(trimmed) {
-                in_code_block = !in_code_block;
-                continue;
-            }
-            if in_code_block {
-                continue;
-            }
-            if line.contains("![]") {
-                RuleHelpers::push_diag(
-                    &mut diagnostics,
-                    file_path,
-                    i,
-                    line,
-                    &meta,
-                    DiagnosticSeverity::Warning,
-                );
-            }
-        }
-        diagnostics
-    }
-}
-
 /// MD035 / hr-style — Horizontal rule style should be consistent.
 pub struct HrStyleRule;
 
@@ -123,6 +82,12 @@ impl MarkdownRule for HrStyleRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md035.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[crate::rule_prop!(
+                String,
+                "style",
+                "Horizontal rule style",
+                "consistent"
+            )],
         })
     }
 
@@ -165,8 +130,6 @@ impl MarkdownRule for HrStyleRule {
 ======================================================= */
 
 fn is_emphasis_heading(trimmed: &str, lines: &[&str], idx: usize) -> bool {
-    /* WHY: A line is "emphasis-as-heading" if it is entirely bold
-    and surrounded by blank lines (or at start/end of document) */
     let is_bold = (trimmed.starts_with("**")
         && trimmed.ends_with("**")
         && trimmed.len() > MIN_BOLD_LEN)

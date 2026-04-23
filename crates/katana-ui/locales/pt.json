@@ -304,14 +304,14 @@
       "custom_preset": "Personalizado",
       "save_preset": "Salvar como preset…",
       "revert_default": "Padrão",
-      "advanced_settings": "Avançado",
       "colorful_vendor_icons_label": "Ícones com cor",
       "table_header_icon": "Ícone",
       "table_header_vendor": "Fornecedor",
       "table_header_color": "Cor",
       "table_header_border": "Moldura",
       "table_header_preview": "Visualização",
-      "preset_name": "Nome:"
+      "preset_name": "Nome:",
+      "search_placeholder": "pesquisar"
     },
     "tabs": [
       {
@@ -493,7 +493,7 @@
     "temp_file_error": "Erro no arquivo temporário: {error}",
     "write_error": "Erro de gravação: {error}",
     "persist_error": "Falha ao salvar.",
-    "exporting": "⏳ A exportar {filename}…"
+    "exporting": "A exportar {filename}…"
   },
   "terms": {
     "title": "Termos de uso",
@@ -518,7 +518,10 @@
   },
   "common": {
     "close": "Fechar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "advanced_settings": "Configurações Avançadas",
+    "expand_all": "Expandir Tudo",
+    "collapse_all": "Recolher Tudo"
   },
   "meta_info": {
     "title": "Info do documento",
@@ -565,8 +568,8 @@
     "start_section": "Início",
     "recent_section": "Arquivos recentes",
     "no_recent_files": "Nenhum arquivo recente",
-    "welcome_screen": "🏠 Tela inicial",
-    "user_guide": "📚 Guia do usuário"
+    "welcome_screen": "Tela inicial",
+    "user_guide": "Guia do usuário"
   },
   "linter": {
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
@@ -607,8 +610,43 @@
       "md041": "A primeira linha de um arquivo deve ser um cabeçalho de nível superior.",
       "md042": "Sem links vazios.",
       "md045": "As imagens devem ter texto alternativo (alt).",
-      "md047": "Os arquivos devem terminar com um único caractere de nova linha."
-    }
+      "md047": "Os arquivos devem terminar com um único caractere de nova linha.",
+      "md005": "Recuo inconsistente para itens de lista no mesmo nível.",
+      "md007": "Recuo de lista não ordenada.",
+      "md009": "Espaços finais.",
+      "md010": "Tabulações fixas.",
+      "md011": "Sintaxe de link invertida.",
+      "md013": "Comprimento da linha.",
+      "md014": "Sinais de dólar usados antes de comandos sem mostrar saída.",
+      "md018": "Nenhum espaço após o hash no cabeçalho estilo ATX.",
+      "md019": "Vários espaços após o hash no cabeçalho estilo ATX.",
+      "md020": "Nenhum espaço dentro de hashes no cabeçalho fechado estilo ATX.",
+      "md021": "Vários espaços dentro de hashes no cabeçalho fechado estilo ATX.",
+      "md024": "Vários cabeçalhos com o mesmo conteúdo.",
+      "md030": "Espaços após os marcadores de lista.",
+      "md031": "Os blocos de código isolados devem ser cercados por linhas em branco.",
+      "md034": "URL nua usada.",
+      "md037": "Espaços dentro de marcadores de ênfase.",
+      "md038": "Espaços dentro de elementos de intervalo de código.",
+      "md039": "Espaços dentro do texto do link.",
+      "md043": "Estrutura de cabeçalho necessária.",
+      "md044": "Os nomes próprios devem ter a capitalização correta.",
+      "md046": "Estilo de bloco de código.",
+      "md048": "Estilo de isolamento de código.",
+      "md049": "O estilo de ênfase deve ser consistente.",
+      "md050": "O estilo forte deve ser consistente.",
+      "md051": "Os fragmentos de link devem ser válidos.",
+      "md052": "Os links e imagens de referência devem usar um rótulo definido.",
+      "md053": "As definições de referência de link e imagem devem ser necessárias.",
+      "md054": "O estilo de link e imagem deve ser consistente.",
+      "md055": "O estilo de tubo da tabela deve ser consistente.",
+      "md056": "A contagem de colunas da tabela deve ser consistente.",
+      "md058": "As tabelas devem ser cercadas por linhas em branco.",
+      "md059": "O texto do link deve ser descritivo.",
+      "md060": "O estilo das colunas da tabela não é consistente."
+    },
+    "view_on_github": "Ver no GitHub oficial",
+    "search_placeholder": "Pesquisar regras…"
   },
   "use_workspace_local_config": "Usar configuração local do espaço de trabalho"
 }

@@ -58,10 +58,31 @@ impl DiagnosticsRendererOps {
         diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
         path: &std::path::Path,
     ) -> Option<crate::app_state::AppAction> {
-        let icon = match diag.severity {
-            katana_linter::rules::markdown::DiagnosticSeverity::Error => "🔴",
-            katana_linter::rules::markdown::DiagnosticSeverity::Warning => "🟡",
-            katana_linter::rules::markdown::DiagnosticSeverity::Info => "🔵",
+        /* WHY: Severity icons use #FFFFFF base SVG from system/ and are tinted here
+         * with the semantic color sourced from ThemeColors (system.error_text etc.),
+         * so the hue follows the active theme rather than hardcoded values. */
+        let tc = ui.data(|d| {
+            d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new("katana_theme_colors"))
+        });
+        let (sev_icon, sev_tint) = match diag.severity {
+            katana_linter::rules::markdown::DiagnosticSeverity::Error => (
+                crate::icon::Icon::CircleFilled,
+                tc.as_ref().map(|c| {
+                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(c.system.error_text)
+                }),
+            ),
+            katana_linter::rules::markdown::DiagnosticSeverity::Warning => (
+                crate::icon::Icon::CircleFilled,
+                tc.as_ref().map(|c| {
+                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(c.system.warning_text)
+                }),
+            ),
+            katana_linter::rules::markdown::DiagnosticSeverity::Info => (
+                crate::icon::Icon::CircleFilled,
+                tc.as_ref().map(|c| {
+                    crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(c.system.success_text)
+                }),
+            ),
         };
 
         let meta = diag.official_meta.as_ref().expect("hidden rules filtered");
@@ -86,7 +107,13 @@ impl DiagnosticsRendererOps {
 
         /* WHY: allow(horizontal_layout) */
         ui.horizontal(|ui| {
-            ui.label(icon);
+            let img = sev_icon.image(crate::icon::IconSize::Small);
+            let img = if let Some(tint) = sev_tint {
+                img.tint(tint)
+            } else {
+                img
+            };
+            ui.add(img);
             /* WHY: scroll list item; jump triggered on click */
             if egui::Widget::ui(
                 egui::Button::selectable(false, button_text).frame_when_inactive(true),

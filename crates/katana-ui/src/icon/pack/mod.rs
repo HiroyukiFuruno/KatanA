@@ -79,6 +79,9 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::Pdf => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/pdf", ".svg"))),
             crate::icon::Icon::Image => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/image", ".svg"))),
             crate::icon::Icon::LightBulb => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/light_bulb", ".svg"))),
+            /* WHY: CircleFilled is a system-common circle icon used for severities, badges, etc.
+             * It lives in assets/icons/system/ and is tinted in code with egui's tint. */
+            crate::icon::Icon::CircleFilled => Some(include_bytes!("../../../../../assets/icons/system/circle-filled.svg")),
             _ => None,
         }
     };

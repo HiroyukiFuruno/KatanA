@@ -167,5 +167,6 @@ impl DocumentOps for KatanaApp {
             crate::i18n::I18nOps::get().status.saved.clone(),
             crate::app_state::StatusType::Success,
         ));
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics; /* WHY: FB32 */
     }
 }

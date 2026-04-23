@@ -13,6 +13,7 @@
 #   - cargo-outdated  : Detect stale Cargo dependencies
 #   - cargo-bloat     : Analyse binary size (make bloat)
 #   - cargo-bundle    : macOS .app bundle packaging
+#   - cargo-sweep     : Clean up unused build artifacts
 #   - tokei           : Count lines of source code (make loc)
 #   - lefthook        : Git hooks runner (pre-commit / pre-push)
 #   - create-dmg      : macOS .dmg installer builder
@@ -212,6 +213,7 @@ echo "    • cargo-watch     (make watch / make watch-run)"
 echo "    • cargo-outdated  (make outdated)"
 echo "    • cargo-bloat     (make bloat)"
 echo "    • cargo-bundle    (make package-mac)"
+echo "    • cargo-sweep     (make sweep)"
 echo ""
 echo "  ${BOLD}Development utilities${RESET}"
 echo "    • tokei           (make loc)"
@@ -373,7 +375,7 @@ else
 fi
 
 # =============================================================================
-# 8c. git-cliff
+# 8d. git-cliff
 # =============================================================================
 header "git-cliff"
 

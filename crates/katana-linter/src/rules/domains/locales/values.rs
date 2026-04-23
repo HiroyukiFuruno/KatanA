@@ -1,7 +1,11 @@
 use crate::Violation;
 use crate::utils::{LinterParserOps, ViolationReporterOps};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::collections::BTreeMap;
 use std::path::Path;
+
+static EMOJI_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\p{Emoji_Presentation}").unwrap());
 
 struct LocaleException {
     key: &'static str,
@@ -12,6 +16,7 @@ struct LocaleException {
 1. Add identical values across languages (proper nouns, versions, etc.).
 2. Use `*` for broad matching.
 3. Meaningful words ("File", "Search") MUST NOT be excluded. */
+#[rustfmt::skip]
 const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
     LocaleException {
         key: "rust",
@@ -93,50 +98,17 @@ const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
         key: "*",
         value: "Code",
     },
-    LocaleException {
-        key: "*",
-        value: "Links",
-    },
-    LocaleException {
-        key: "*",
-        value: "Theme",
-    },
-    LocaleException {
-        key: "*",
-        value: "Architecture",
-    },
-    LocaleException {
-        key: "*",
-        value: "Documentation",
-    },
-    LocaleException {
-        key: "*",
-        value: "Text",
-    },
-    LocaleException {
-        key: "section_editor",
-        value: "Editor",
-    },
-    LocaleException {
-        key: "section_general",
-        value: "General",
-    },
-    LocaleException {
-        key: "severity_error",
-        value: "Error",
-    },
-    LocaleException {
-        key: "severity_warning",
-        value: "Warning",
-    },
-    LocaleException {
-        key: "severity_ignore",
-        value: "Ignore",
-    },
-    LocaleException {
-        key: "*",
-        value: "Linter",
-    },
+    LocaleException { key: "*", value: "Links" },
+    LocaleException { key: "*", value: "Theme" },
+    LocaleException { key: "*", value: "Architecture" },
+    LocaleException { key: "*", value: "Documentation" },
+    LocaleException { key: "*", value: "Text" },
+    LocaleException { key: "section_editor", value: "Editor" },
+    LocaleException { key: "section_general", value: "General" },
+    LocaleException { key: "severity_error", value: "Error" },
+    LocaleException { key: "severity_warning", value: "Warning" },
+    LocaleException { key: "severity_ignore", value: "Ignore" },
+    LocaleException { key: "*", value: "Linter" },
 ];
 
 pub struct LocaleValueOps;
@@ -160,6 +132,17 @@ impl LocaleValueOps {
                     file,
                     format!(
                         "Locale value at `{path}` contains a pseudo-translation placeholder (\"{actual_val}\"). Lazy cheat detected. Please provide a true native translation."
+                    ),
+                ));
+                continue;
+            }
+
+            /* WHY: Reject embedded emojis/icons to enforce SVG component usage */
+            if EMOJI_REGEX.is_match(actual_val) {
+                violations.push(ViolationReporterOps::locale_violation(
+                    file,
+                    format!(
+                        "Locale value at `{path}` contains an embedded emoji/icon (\"{actual_val}\"). Embedded emojis/icons are not allowed. Please use SVG components instead (e.g., `{{{{os_cmd:save_document}}}}: `)."
                     ),
                 ));
                 continue;

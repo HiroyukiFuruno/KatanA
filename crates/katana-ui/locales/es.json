@@ -304,14 +304,14 @@
       "custom_preset": "Personalizado",
       "save_preset": "Guardar como preset…",
       "revert_default": "Predeterminado",
-      "advanced_settings": "Avanzado",
       "colorful_vendor_icons_label": "Iconos con color",
       "table_header_icon": "Icono",
       "table_header_vendor": "Proveedor",
       "table_header_color": "Color",
       "table_header_border": "Marco",
       "table_header_preview": "Previsualización",
-      "preset_name": "Nombre:"
+      "preset_name": "Nombre:",
+      "search_placeholder": "buscar"
     },
     "tabs": [
       {
@@ -493,7 +493,7 @@
     "temp_file_error": "Error de archivo temporal: {error}",
     "write_error": "Error de escritura: {error}",
     "persist_error": "Error al guardar.",
-    "exporting": "⏳ Exportando {filename}…"
+    "exporting": "Exportando {filename}…"
   },
   "terms": {
     "title": "Términos de uso",
@@ -518,7 +518,10 @@
   },
   "common": {
     "close": "Cerrar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "advanced_settings": "Configuración avanzada",
+    "expand_all": "Expandir todo",
+    "collapse_all": "Contraer todo"
   },
   "meta_info": {
     "title": "Info de documento",
@@ -565,8 +568,8 @@
     "start_section": "Inicio",
     "recent_section": "Archivos recientes",
     "no_recent_files": "No hay archivos recientes",
-    "welcome_screen": "🏠 Pantalla de inicio",
-    "user_guide": "📚 Guía de usuario"
+    "welcome_screen": "Pantalla de inicio",
+    "user_guide": "Guía de usuario"
   },
   "linter": {
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
@@ -607,8 +610,43 @@
       "md041": "La primera línea de un archivo debe ser un encabezado de nivel superior.",
       "md042": "No hay enlaces vacíos.",
       "md045": "Las imágenes deben tener texto alternativo (alt).",
-      "md047": "Los archivos deben terminar con un solo carácter de nueva línea."
-    }
+      "md047": "Los archivos deben terminar con un solo carácter de nueva línea.",
+      "md005": "Sangría inconsistente para elementos de lista en el mismo nivel.",
+      "md007": "Sangría de lista desordenada.",
+      "md009": "Espacios finales.",
+      "md010": "Tabulaciones duras.",
+      "md011": "Sintaxis de enlace invertida.",
+      "md013": "Longitud de línea.",
+      "md014": "Signos de dólar usados antes de comandos sin mostrar salida.",
+      "md018": "Sin espacio después del hash en el encabezado estilo ATX.",
+      "md019": "Múltiples espacios después del hash en el encabezado estilo ATX.",
+      "md020": "Sin espacio dentro de los hashes en el encabezado estilo ATX cerrado.",
+      "md021": "Múltiples espacios dentro de los hashes en el encabezado estilo ATX cerrado.",
+      "md024": "Múltiples encabezados con el mismo contenido.",
+      "md030": "Espacios después de los marcadores de lista.",
+      "md031": "Los bloques de código cercados deben estar rodeados por líneas en blanco.",
+      "md034": "URL desnuda utilizada.",
+      "md037": "Espacios dentro de los marcadores de énfasis.",
+      "md038": "Espacios dentro de elementos de tramo de código.",
+      "md039": "Espacios dentro del texto del enlace.",
+      "md043": "Estructura de encabezado requerida.",
+      "md044": "Los nombres propios deben tener la capitalización correcta.",
+      "md046": "Estilo de bloque de código.",
+      "md048": "Estilo de cerca de código.",
+      "md049": "El estilo de énfasis debe ser consistente.",
+      "md050": "El estilo fuerte debe ser consistente.",
+      "md051": "Los fragmentos de enlace deben ser válidos.",
+      "md052": "Los enlaces e imágenes de referencia deben usar una etiqueta que esté definida.",
+      "md053": "Las definiciones de referencia de enlace e imagen deberían ser necesarias.",
+      "md054": "El estilo de enlace e imagen debe ser consistente.",
+      "md055": "El estilo de tubería de tabla debe ser consistente.",
+      "md056": "El recuento de columnas de tabla debe ser consistente.",
+      "md058": "Las tablas deben estar rodeadas por líneas en blanco.",
+      "md059": "El texto del enlace debe ser descriptivo.",
+      "md060": "El estilo de las columnas de la tabla no es consistente."
+    },
+    "view_on_github": "Ver en el GitHub oficial",
+    "search_placeholder": "Buscar reglas…"
   },
   "use_workspace_local_config": "Usar configuración local del espacio de trabajo"
 }

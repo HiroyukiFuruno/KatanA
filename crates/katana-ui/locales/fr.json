@@ -304,14 +304,14 @@
       "custom_preset": "Personnalisé",
       "save_preset": "Enregistrer comme preset…",
       "revert_default": "Par défaut",
-      "advanced_settings": "Avancé",
       "colorful_vendor_icons_label": "Icones avec couleur",
       "table_header_icon": "Icone",
       "table_header_vendor": "Fournisseur",
       "table_header_color": "Couleur",
       "table_header_border": "Cadre",
       "table_header_preview": "Aperçu",
-      "preset_name": "Nom :"
+      "preset_name": "Nom :",
+      "search_placeholder": "recherche"
     },
     "tabs": [
       {
@@ -493,7 +493,7 @@
     "temp_file_error": "Erreur de fichier temporaire : {error}",
     "write_error": "Erreur d'écriture : {error}",
     "persist_error": "Échec de sauvegarde.",
-    "exporting": "⏳ Exportation de {filename}…"
+    "exporting": "Exportation de {filename}…"
   },
   "terms": {
     "title": "Conditions d'utilisation",
@@ -518,7 +518,10 @@
   },
   "common": {
     "close": "Fermer",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "advanced_settings": "Paramètres avancés",
+    "expand_all": "Tout développer",
+    "collapse_all": "Tout réduire"
   },
   "meta_info": {
     "title": "Infos document",
@@ -565,8 +568,8 @@
     "start_section": "Démarrer",
     "recent_section": "Fichiers récents",
     "no_recent_files": "Aucun fichier récent",
-    "welcome_screen": "🏠 Écran d'accueil",
-    "user_guide": "📚 Guide d'utilisation"
+    "welcome_screen": "Écran d'accueil",
+    "user_guide": "Guide d'utilisation"
   },
   "linter": {
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
@@ -607,8 +610,43 @@
       "md041": "La première ligne d'un fichier doit être un titre de premier niveau.",
       "md042": "Aucun lien vide.",
       "md045": "Les images doivent avoir un texte alternatif (alt).",
-      "md047": "Les fichiers doivent se terminer par un seul caractère de nouvelle ligne."
-    }
+      "md047": "Les fichiers doivent se terminer par un seul caractère de nouvelle ligne.",
+      "md005": "Indentation incohérente pour les éléments de liste au même niveau.",
+      "md007": "Indentation de liste non ordonnée.",
+      "md009": "Espaces de fin.",
+      "md010": "Tabulations dures.",
+      "md011": "Syntaxe de lien inversée.",
+      "md013": "Longueur de ligne.",
+      "md014": "Signes de dollar utilisés avant les commandes sans montrer la sortie.",
+      "md018": "Pas d'espace après le dièse sur l'en-tête de style ATX.",
+      "md019": "Plusieurs espaces après le dièse sur l'en-tête de style ATX.",
+      "md020": "Pas d'espace à l'intérieur des dièses sur l'en-tête de style ATX fermé.",
+      "md021": "Plusieurs espaces à l'intérieur des dièses sur l'en-tête de style ATX fermé.",
+      "md024": "Plusieurs en-têtes avec le même contenu.",
+      "md030": "Espaces après les marqueurs de liste.",
+      "md031": "Les blocs de code clôturés doivent être entourés de lignes vides.",
+      "md034": "URL nue utilisée.",
+      "md037": "Espaces à l'intérieur des marqueurs d'accentuation.",
+      "md038": "Espaces à l'intérieur des éléments d'étendue de code.",
+      "md039": "Espaces à l'intérieur du texte du lien.",
+      "md043": "Structure d'en-tête requise.",
+      "md044": "Les noms propres doivent avoir la bonne capitalisation.",
+      "md046": "Style de bloc de code.",
+      "md048": "Style de clôture de code.",
+      "md049": "Le style d'accentuation doit être cohérent.",
+      "md050": "Le style fort doit être cohérent.",
+      "md051": "Les fragments de lien doivent être valides.",
+      "md052": "Les liens de référence et les images doivent utiliser une étiquette définie.",
+      "md053": "Les définitions de référence de lien et d'image devraient être nécessaires.",
+      "md054": "Le style de lien et d'image doit être cohérent.",
+      "md055": "Le style de tuyau de table doit être cohérent.",
+      "md056": "Le nombre de colonnes de tableau doit être cohérent.",
+      "md058": "Les tableaux doivent être entourés de lignes vides.",
+      "md059": "Le texte du lien doit être descriptif.",
+      "md060": "Le style des colonnes du tableau n'est pas cohérent."
+    },
+    "view_on_github": "Voir sur le GitHub officiel",
+    "search_placeholder": "Rechercher des règles…"
   },
   "use_workspace_local_config": "Utiliser la configuration de l’espace de travail"
 }

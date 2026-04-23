@@ -43,10 +43,18 @@ impl<'a> TabToolbar<'a> {
                 let is_virtual = p.starts_with("Katana://ChangeLog")
                     || p.starts_with("Katana://Welcome")
                     || p.starts_with("Katana://Guide");
-                (doc.path.clone(), is_virtual)
+                /* WHY: LinterDocs get a special "View on GitHub" button in the toolbar. */
+                let linter_rule_id = if p.starts_with("Katana://LinterDocs/") {
+                    p.strip_prefix("Katana://LinterDocs/")
+                        .and_then(|s| s.strip_suffix(".md"))
+                        .map(|s| s.to_ascii_uppercase())
+                } else {
+                    None
+                };
+                (doc.path.clone(), is_virtual, linter_rule_id)
             });
-            if let Some((doc_path, is_virtual)) = doc_info {
-                Self::render_document_toolbar(ui, app, doc_path, is_virtual);
+            if let Some((doc_path, is_virtual, linter_rule_id)) = doc_info {
+                Self::render_document_toolbar(ui, app, doc_path, is_virtual, linter_rule_id);
             }
         });
     }
@@ -56,6 +64,7 @@ impl<'a> TabToolbar<'a> {
         app: &mut KatanaApp,
         doc_path: std::path::PathBuf,
         is_virtual: bool,
+        _linter_rule_id: Option<String>,
     ) {
         let mut out_action = None;
         let available_width = ui.available_width();
@@ -66,6 +75,8 @@ impl<'a> TabToolbar<'a> {
             egui::vec2(available_width, TOOLBAR_ROW_HEIGHT),
             egui::Layout::right_to_left(egui::Align::Center),
             |ui| {
+                /* WHY: FB25 — GitHub button moved to preview pane (content.rs). */
+
                 /* WHY: Inner left_to_right fills remaining width with breadcrumbs. */
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     if is_virtual {

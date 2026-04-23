@@ -80,6 +80,14 @@ impl KatanaApp {
         let path = doc.path.clone();
         let content = doc.buffer.clone();
 
+        /* WHY: Virtual documents (e.g. "Katana://LinterDocs/MD*.md", "Katana://Demo/...") are not real
+         * filesystem files; running the linter on them would produce spurious diagnostics
+         * shown to the user without a backing file. Skip any path starting with "Katana://". */
+        use crate::state::document::VirtualPathExt as _;
+        if path.is_virtual_path() {
+            return;
+        }
+
         let is_markdown = path
             .extension()
             .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))

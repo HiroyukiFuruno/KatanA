@@ -83,6 +83,7 @@ fn test_parity_status_boundary() {
         docs_url: "https://example.com/md000",
         parity: RuleParityStatus::Experimental,
         is_fixable: false,
+        properties: &[],
     };
     assert_eq!(meta_exp.parity, RuleParityStatus::Experimental);
 
@@ -90,9 +91,10 @@ fn test_parity_status_boundary() {
         code: "MD001",
         title: "heading-increment",
         description: "Heading levels should only increment by one level at a time.",
-        docs_url: "",
+        docs_url: "dummy",
         parity: RuleParityStatus::Official,
         is_fixable: false,
+        properties: &[],
     };
     assert_eq!(meta_off.parity, RuleParityStatus::Official);
 
@@ -191,6 +193,139 @@ fn broken_link_rule_is_hidden_from_user_facing_diagnostics() {
         rule.official_meta().is_none(),
         "BrokenLinkRule must be hidden (official_meta = None)"
     );
+}
+
+/* WHY: MD022 / blanks-around-headings fix integrity tests
+ * These guard against the "cascading fix" bug where applying a fix produced
+ * a new violation instead of resolving the original one.
+======================================================= */
+
+#[test]
+fn md022_valid_blank_lines_no_diagnostic() {
+    use katana_linter::rules::markdown::rules::heading::BlanksAroundHeadingsRule;
+    let rule = BlanksAroundHeadingsRule;
+    let path = std::path::PathBuf::from("test.md");
+    let content = "# Title\n\n## Section\n\nContent here\n";
+    let diagnostics = rule.evaluate(&path, content);
+    assert!(
+        diagnostics.is_empty(),
+        "Properly spaced headings must produce no diagnostics"
+    );
+}
+
+#[test]
+fn md022_fix_missing_blank_before_heading_resolves_violation() {
+    use katana_linter::rules::markdown::rules::heading::BlanksAroundHeadingsRule;
+    let rule = BlanksAroundHeadingsRule;
+    let path = std::path::PathBuf::from("test.md");
+    /* WHY: "Content" directly before "## Section" — no blank line */
+    let content = "Content\n## Section\n\nMore\n";
+    let diagnostics = rule.evaluate(&path, content);
+    assert_eq!(
+        diagnostics.len(),
+        1,
+        "Missing blank before heading: 1 diagnostic"
+    );
+    let fix = diagnostics[0]
+        .fix_info
+        .as_ref()
+        .expect("Fix must be present");
+    let fixed = apply_md_fix(content, fix);
+    let after = rule.evaluate(&path, &fixed);
+    assert!(
+        after.is_empty(),
+        "After applying fix the heading should be properly surrounded. Got:\n{fixed:?}"
+    );
+}
+
+#[test]
+fn md022_fix_missing_blank_after_heading_resolves_violation() {
+    use katana_linter::rules::markdown::rules::heading::BlanksAroundHeadingsRule;
+    let rule = BlanksAroundHeadingsRule;
+    let path = std::path::PathBuf::from("test.md");
+    /* WHY: "## Section" directly followed by "Content" — no blank line after */
+    let content = "# Title\n\n## Section\nContent\n";
+    let diagnostics = rule.evaluate(&path, content);
+    assert_eq!(
+        diagnostics.len(),
+        1,
+        "Missing blank after heading: 1 diagnostic"
+    );
+    let fix = diagnostics[0]
+        .fix_info
+        .as_ref()
+        .expect("Fix must be present");
+    let fixed = apply_md_fix(content, fix);
+    let after = rule.evaluate(&path, &fixed);
+    assert!(
+        after.is_empty(),
+        "After applying fix the heading should be properly surrounded. Got:\n{fixed:?}"
+    );
+}
+
+#[test]
+fn md022_fix_sequential_application_reaches_clean_state() {
+    use katana_linter::rules::markdown::rules::heading::BlanksAroundHeadingsRule;
+    let rule = BlanksAroundHeadingsRule;
+    let path = std::path::PathBuf::from("test.md");
+    /* WHY: Multiple consecutive headings without blank lines — the "cascading fix" scenario
+     * that previously caused applying one fix to create new violations. */
+    let content = "# A\n## B\n## C\n## D\n";
+    let mut buffer = content.to_string();
+    /* WHY: Apply fixes one at a time (re-evaluate after each) to simulate the UI behavior */
+    for _ in 0..20 {
+        let diags = rule.evaluate(&path, &buffer);
+        if diags.is_empty() {
+            break;
+        }
+        let fix = diags[0]
+            .fix_info
+            .as_ref()
+            .expect("Fixable rule must have fix_info");
+        buffer = apply_md_fix(&buffer, fix);
+    }
+    let final_diags = rule.evaluate(&path, &buffer);
+    assert!(
+        final_diags.is_empty(),
+        "Sequential fix application must converge to a clean document. Got:\n{buffer:?}"
+    );
+}
+
+/* WHY: Helper — apply a single DiagnosticFix to a buffer using the same coordinate
+ * convention (1-based line, 1-based column) as the production fix applier. */
+fn apply_md_fix(content: &str, fix: &katana_linter::rules::markdown::DiagnosticFix) -> String {
+    let start = md_line_col_to_byte(fix.start_line, fix.start_column, content);
+    let end = md_line_col_to_byte(fix.end_line, fix.end_column, content);
+    let mut result = content.to_string();
+    result.replace_range(start..end, &fix.replacement);
+    result
+}
+
+fn md_line_col_to_byte(line_1: usize, col_1: usize, content: &str) -> usize {
+    let mut cur_line = 1usize;
+    let mut line_start = 0usize;
+    for (byte_idx, c) in content.char_indices() {
+        if cur_line == line_1 {
+            line_start = byte_idx;
+            break;
+        }
+        if c == '\n' {
+            cur_line += 1;
+        }
+    }
+    /* WHY: If line_1 > total lines, clamp to EOF */
+    if cur_line < line_1 {
+        return content.len();
+    }
+    let col0 = col_1.saturating_sub(1);
+    let mut byte_idx = line_start;
+    for (col, (off, c)) in content[line_start..].char_indices().enumerate() {
+        if col == col0 || c == '\n' {
+            return line_start + off;
+        }
+        byte_idx = line_start + off + c.len_utf8();
+    }
+    byte_idx
 }
 
 trait BoolExt {

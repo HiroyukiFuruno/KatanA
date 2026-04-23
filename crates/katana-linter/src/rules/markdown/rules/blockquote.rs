@@ -24,6 +24,7 @@ impl MarkdownRule for NoBlanksBlockquoteRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md028.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[],
         })
     }
 

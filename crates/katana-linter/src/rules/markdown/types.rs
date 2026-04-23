@@ -32,6 +32,8 @@ pub struct OfficialRuleMeta {
     pub parity: RuleParityStatus,
     /// Indicates if this rule can be automatically fixed.
     pub is_fixable: bool,
+    /// Configurable properties for this rule.
+    pub properties: &'static [crate::rules::markdown::RuleProperty],
 }
 
 /* WHY: Section: Diagnostic types
@@ -105,4 +107,23 @@ impl std::fmt::Display for MarkdownDiagnostic {
             self.message
         )
     }
+}
+
+/// The type of a rule property, matching the UI layer expectations.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RulePropertyType {
+    Boolean,
+    Number,
+    String,
+    StringArray,
+    Enum(&'static [&'static str]),
+}
+
+/// A property definition for an official markdownlint rule.
+#[derive(Debug, Clone)]
+pub struct RuleProperty {
+    pub key: &'static str,
+    pub prop_type: RulePropertyType,
+    pub description: &'static str,
+    pub default_value: &'static str,
 }

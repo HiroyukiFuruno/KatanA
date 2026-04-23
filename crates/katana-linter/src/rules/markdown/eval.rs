@@ -3,10 +3,15 @@ use crate::rules::markdown::HeadingStructureRule;
 
 use crate::rules::markdown::rules::blockquote::*;
 use crate::rules::markdown::rules::content::*;
+use crate::rules::markdown::rules::content_ext::*;
 use crate::rules::markdown::rules::heading::*;
 use crate::rules::markdown::rules::heading_ext::*;
+use crate::rules::markdown::rules::heading_style::*;
+use crate::rules::markdown::rules::image::*;
 use crate::rules::markdown::rules::list::*;
+use crate::rules::markdown::rules::list_ext::*;
 use crate::rules::markdown::rules::style::*;
+use crate::rules::markdown::rules::table::*;
 use crate::rules::markdown::rules::whitespace::*;
 use crate::rules::markdown::stubs_regex::*;
 use crate::rules::markdown::{MarkdownDiagnostic, MarkdownRule};
@@ -147,7 +152,7 @@ impl MarkdownLinterOps {
             Box::new(RuleMD056),
             Box::new(RuleMD058),
             Box::new(RuleMD059),
-            Box::new(RuleMD060),
+            Box::new(TableColumnStyleRule),
         ];
 
         /* WHY: Collect existing IDs first to avoid duplicating rules already in get_official_rules(). */

@@ -53,16 +53,20 @@ impl DocumentEditOps for KatanaApp {
         });
 
         for fix in fixes {
+            /* WHY: DiagnosticFix uses 1-indexed line numbers, but
+             * line_col_to_byte_index expects 0-indexed lines.
+             * Without this conversion, the replacement targets the wrong
+             * line, causing duplicate/shifted text (FB29 root cause). */
             let start_opt =
                 crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
                     &doc.buffer,
-                    fix.start_line,
+                    fix.start_line.saturating_sub(1),
                     fix.start_column,
                 );
             let end_opt =
                 crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
                     &doc.buffer,
-                    fix.end_line,
+                    fix.end_line.saturating_sub(1),
                     fix.end_column,
                 );
             if let (Some(start), Some(end)) = (start_opt, end_opt) {

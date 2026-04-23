@@ -42,6 +42,38 @@ impl DiagnosticsHoverOps {
         all_diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
         action: &mut crate::app_state::AppAction,
     ) {
+        /* WHY: Collect all diagnostics on the same line (including the hovered one) so
+         * we can render a complete list instead of just the first-hit diagnostic.
+         * The hovered `diag` is always rendered first (primary), followed by any
+         * additional same-line diagnostics as secondary sections. */
+        let same_line_others: Vec<_> = all_diagnostics
+            .iter()
+            .filter(|d| {
+                d.range.start_line == diag.range.start_line
+                    && d.rule_id != diag.rule_id
+                    && d.official_meta.is_some()
+            })
+            .collect();
+
+        /* WHY: Primary diagnostic section */
+        Self::render_single_diag_section(ui, diag, meta, all_diagnostics, action);
+
+        /* WHY: Additional same-line diagnostics — each gets its own separator + section */
+        for other in same_line_others {
+            if let Some(other_meta) = other.official_meta.as_ref() {
+                ui.separator();
+                Self::render_single_diag_section(ui, other, other_meta, all_diagnostics, action);
+            }
+        }
+    }
+
+    fn render_single_diag_section(
+        ui: &mut egui::Ui,
+        diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
+        meta: &katana_linter::rules::markdown::OfficialRuleMeta,
+        all_diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        action: &mut crate::app_state::AppAction,
+    ) {
         let sev_text = format!("{:?}", diag.severity);
         let label_text = format!("[{}] {} ({})", sev_text, diag.rule_id, meta.title);
         ui.label(egui::RichText::new(label_text).strong());

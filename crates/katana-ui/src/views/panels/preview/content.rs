@@ -173,6 +173,12 @@ impl<'a> PreviewContent<'a> {
             preview,
         );
 
+        /* WHY: FB25 — For LinterDocs, render a "View on GitHub" button at the
+         * top-right inside the preview pane (not in the toolbar). */
+        if let Some(doc) = document {
+            PreviewLogicOps::render_linter_docs_github_button(ui, &doc.path);
+        }
+
         download_req
     }
 }

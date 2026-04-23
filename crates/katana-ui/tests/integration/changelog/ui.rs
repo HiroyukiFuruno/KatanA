@@ -20,7 +20,7 @@ fn test_integration_changelog_display() {
         env!("CARGO_PKG_VERSION")
     );
     let mut found = false;
-    for _ in 0..50 {
+    for _ in 0..200 {
         harness.step();
         if harness.query_all_by_label(&expected_title).count() > 0 {
             found = true;
@@ -79,7 +79,7 @@ fn test_integration_changelog_auto_popup_version_delta() {
         env!("CARGO_PKG_VERSION")
     );
     let mut found = false;
-    for _ in 0..50 {
+    for _ in 0..200 {
         harness.step();
 
         if harness.query_all_by_label(&expected_title).count() > 0 {

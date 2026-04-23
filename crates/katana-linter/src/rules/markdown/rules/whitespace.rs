@@ -24,6 +24,12 @@ impl MarkdownRule for NoMultipleBlanksRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md012.md",
             parity: RuleParityStatus::Official,
             is_fixable: true,
+            properties: &[crate::rule_prop!(
+                Number,
+                "maximum",
+                "Consecutive blank lines",
+                "1"
+            )],
         })
     }
 
@@ -86,6 +92,12 @@ impl MarkdownRule for NoMultipleSpaceBlockquoteRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md027.md",
             parity: RuleParityStatus::Official,
             is_fixable: true,
+            properties: &[crate::rule_prop!(
+                Boolean,
+                "list_items",
+                "Include list items",
+                "true"
+            )],
         })
     }
 
@@ -153,6 +165,7 @@ impl MarkdownRule for SingleTrailingNewlineRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md047.md",
             parity: RuleParityStatus::Official,
             is_fixable: true,
+            properties: &[],
         })
     }
 

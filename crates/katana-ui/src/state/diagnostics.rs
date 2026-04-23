@@ -38,4 +38,15 @@ impl DiagnosticsState {
             .map(|v| v.iter().filter(|d| d.official_meta.is_some()).count())
             .sum()
     }
+
+    /// Remove all diagnostics for a deleted file or directory prefix.
+    /// Called when a file/dir is removed so Problems panel stays in sync.
+    pub fn remove_file_diagnostics(&mut self, path: &std::path::Path) {
+        /* WHY: For files, one exact key. For directories, remove all paths under it. */
+        if path.is_file() || !path.exists() {
+            self.problems.remove(path);
+        } else {
+            self.problems.retain(|k, _| !k.starts_with(path));
+        }
+    }
 }

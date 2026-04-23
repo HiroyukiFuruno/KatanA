@@ -31,6 +31,12 @@ impl MarkdownRule for HeadingIncrementRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md001.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[crate::rule_prop!(
+                String,
+                "front_matter_title",
+                "RegExp for matching title in front matter",
+                "^\\s*title\\s*[:=]"
+            )],
         })
     }
 
@@ -154,3 +160,12 @@ pub use rules::*;
 
 pub mod eval;
 pub use eval::*;
+
+pub mod config;
+pub use config::*;
+
+pub mod adapter;
+pub use adapter::*;
+
+pub mod adapter_internal;
+pub use adapter_internal::*;

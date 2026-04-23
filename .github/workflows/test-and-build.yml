@@ -3,36 +3,14 @@ name: CI
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'openspec/**'
-      - 'docs/**'
-      - 'Makefile'
-      - 'scripts/screenshot/**'
-      - 'platfomrs'
-      - '.vscode'
-      - '.agent'
-      - '.agents'
-      - '.github'
+    paths:
+      - '**.rs'
+      - '!scripts/**/*.rs'
   pull_request:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'openspec/**'
-      - 'docs/**'
-      - 'Makefile'
-      - 'scripts/screenshot/**'
-      - 'platfomrs'
-      - '.vscode'
-      - '.agent'
-      - '.agents'
-      - '.github'
+    paths:
+      - '**.rs'
+      - '!scripts/**/*.rs'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

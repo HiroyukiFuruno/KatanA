@@ -111,7 +111,8 @@ define_icons! {
     More            => "action/more",
     Edit            => "action/edit",
     /* WHY: Diagnostic gutter icon — 💡 LightBulb for lint hints. */
-    LightBulb       => "action/light_bulb",
+    LightBulb           => "action/light_bulb",
+    CircleFilled        => "../system/circle-filled",
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

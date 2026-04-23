@@ -927,6 +927,7 @@ fn parse_settings_tab(tab: &str) -> (SettingsTab, SettingsSection) {
         "updates" => SettingsTab::Updates,
         "behavior" => SettingsTab::Behavior,
         "shortcuts" => SettingsTab::Shortcuts,
+        "linter" => SettingsTab::Linter,
         other => {
             println!("  WARNING: unknown settings tab {other:?}, defaulting to theme");
             SettingsTab::Theme

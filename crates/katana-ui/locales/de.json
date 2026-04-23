@@ -304,14 +304,14 @@
       "custom_preset": "Benutzerdefiniert",
       "save_preset": "Als Preset speichern…",
       "revert_default": "Standard",
-      "advanced_settings": "Erweitert",
       "colorful_vendor_icons_label": "Standardfarben für Icons",
       "table_header_icon": "Symbol",
       "table_header_vendor": "Vendor.",
       "table_header_color": "Farbe",
       "table_header_border": "Rahmen",
       "table_header_preview": "Vorschau",
-      "preset_name": "Name:"
+      "preset_name": "Name:",
+      "search_placeholder": "suche"
     },
     "tabs": [
       {
@@ -493,7 +493,7 @@
     "temp_file_error": "Temporärer Dateifehler: {error}",
     "write_error": "Schreibfehler: {error}",
     "persist_error": "Speichern fehlgeschlagen.",
-    "exporting": "⏳ Exportiere {filename}…"
+    "exporting": "Exportiere {filename}…"
   },
   "terms": {
     "title": "Nutzungsbedingungen",
@@ -518,7 +518,10 @@
   },
   "common": {
     "close": "Schließen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "advanced_settings": "Erweiterte Einstellungen",
+    "expand_all": "Alle erweitern",
+    "collapse_all": "Alle reduzieren"
   },
   "meta_info": {
     "title": "Dokumentinfo",
@@ -565,8 +568,8 @@
     "start_section": "Start.",
     "recent_section": "Zuletzt geöffnet",
     "no_recent_files": "Keine kürzlich geöffneten Dateien",
-    "welcome_screen": "🏠 Willkommensbildschirm",
-    "user_guide": "📚 Benutzerhandbuch"
+    "welcome_screen": "Willkommensbildschirm",
+    "user_guide": "Benutzerhandbuch"
   },
   "linter": {
     "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
@@ -607,8 +610,43 @@
       "md041": "Die erste Zeile einer Datei sollte eine Überschrift der obersten Ebene sein.",
       "md042": "Keine leeren Links.",
       "md045": "Bilder sollten einen Alternativtext (alt) haben.",
-      "md047": "Dateien sollten mit einem einzelnen Zeilenumbruchzeichen enden."
-    }
+      "md047": "Dateien sollten mit einem einzelnen Zeilenumbruchzeichen enden.",
+      "md005": "Inkonsistente Einrückung für Listenelemente auf derselben Ebene.",
+      "md007": "Einrückung für ungeordnete Listen.",
+      "md009": "Nachgestellte Leerzeichen.",
+      "md010": "Harte Tabulatoren.",
+      "md011": "Umgekehrte Link-Syntax.",
+      "md013": "Zeilenlänge.",
+      "md014": "Dollarzeichen vor Befehlen ohne Ausgabe verwendet.",
+      "md018": "Kein Leerzeichen nach Raute bei ATX-Überschrift.",
+      "md019": "Mehrere Leerzeichen nach Raute bei ATX-Überschrift.",
+      "md020": "Kein Leerzeichen innerhalb von Rauten bei geschlossener ATX-Überschrift.",
+      "md021": "Mehrere Leerzeichen innerhalb von Rauten bei geschlossener ATX-Überschrift.",
+      "md024": "Mehrere Überschriften mit demselben Inhalt.",
+      "md030": "Leerzeichen nach Listenmarkierungen.",
+      "md031": "Gefasste Codeblöcke sollten von Leerzeilen umgeben sein.",
+      "md034": "Nackte URL verwendet.",
+      "md037": "Leerzeichen innerhalb von Hervorhebungsmarkierungen.",
+      "md038": "Leerzeichen innerhalb von Code-Span-Elementen.",
+      "md039": "Leerzeichen innerhalb von Linktext.",
+      "md043": "Erforderliche Überschriftenstruktur.",
+      "md044": "Eigennamen sollten die richtige Großschreibung haben.",
+      "md046": "Codeblock-Stil.",
+      "md048": "Code-Fence-Stil.",
+      "md049": "Hervorhebungsstil sollte konsistent sein.",
+      "md050": "Starker Stil sollte konsistent sein.",
+      "md051": "Link-Fragmente sollten gültig sein.",
+      "md052": "Referenzlinks und Bilder sollten eine definierte Bezeichnung verwenden.",
+      "md053": "Definitionen von Link- und Bildreferenzen sollten benötigt werden.",
+      "md054": "Link- und Bildstil sollte konsistent sein.",
+      "md055": "Tabellen-Pipe-Stil sollte konsistent sein.",
+      "md056": "Tabellenspaltenanzahl sollte konsistent sein.",
+      "md058": "Tabellen sollten von Leerzeilen umgeben sein.",
+      "md059": "Linktext sollte beschreibend sein.",
+      "md060": "Der Spaltenstil der Tabelle ist nicht einheitlich."
+    },
+    "view_on_github": "Auf offiziellem GitHub anzeigen",
+    "search_placeholder": "Regeln suchen…"
   },
   "use_workspace_local_config": "Workspace-lokale Konfiguration verwenden"
 }

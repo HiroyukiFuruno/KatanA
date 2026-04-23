@@ -190,6 +190,11 @@ impl IconsSyncOps {
             "view/reset_view.svg",
             "action/light_bulb.svg", "system/action.svg",
             "../system/match-case.svg", "../system/whole-word.svg", "../system/use-regex.svg",
+            /* WHY: system/circle-filled.svg is intentionally identical across all vendor packs.
+             * These are system-common icons (no vendor differentiation) per design policy:
+             * assets/icons/system/ is the canonical source; vendor copies are required
+             * by the icon-sync check but must share the same #FFFFFF monochrome SVG. */
+            "system/circle-filled.svg",
         ]
     }
 }

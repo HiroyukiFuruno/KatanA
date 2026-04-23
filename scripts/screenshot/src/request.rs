@@ -30,6 +30,7 @@ pub struct FixtureSettings {
     pub locale: Option<String>,
     pub explorer_visible: Option<bool>,
     pub no_extension: Option<bool>,
+    pub linter_enabled: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,5 +1,6 @@
 mod content;
 mod logic;
+mod logic_linter_docs;
 mod side_panel_export;
 mod side_panel_hover;
 mod side_panel_story;
