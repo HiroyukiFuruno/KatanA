@@ -22,6 +22,7 @@ pub mod html_renderer;
 pub(crate) mod http_cache_loader;
 pub mod i18n;
 pub mod icon;
+pub mod markdown_authoring_op;
 pub use icon::*;
 pub mod changelog;
 pub mod diagram_controller;

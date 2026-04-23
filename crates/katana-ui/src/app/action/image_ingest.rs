@@ -13,7 +13,8 @@ impl KatanaApp {
             rfd::FileDialog::new()
                 .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp", "bmp"])
                 .pick_file()
-        }).unwrap_or(None);
+        })
+        .unwrap_or(None);
 
         if let Some(source_path) = files {
             let Ok(bytes) = std::fs::read(&source_path) else {

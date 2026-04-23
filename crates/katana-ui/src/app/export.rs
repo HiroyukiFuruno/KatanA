@@ -133,7 +133,7 @@ impl ExportOps for KatanaApp {
             self.pending_dialog_action = Some(crate::app_state::AppAction::PickExportDocument {
                 doc_path: doc_path.to_path_buf(),
                 ext: ext.to_string(),
-                source: source.to_string()
+                source: source.to_string(),
             });
             self.file_dialog.save_file();
             return;
@@ -144,15 +144,22 @@ impl ExportOps for KatanaApp {
                 .set_file_name(&default_name)
                 .add_filter(ext, &[ext])
                 .save_file()
-        }).unwrap_or(None);
+        })
+        .unwrap_or(None);
 
         if let Some(output_path) = path {
-            crate::app::export_poll::ExportPoll::perform_tool_export(self, source, ext, output_path, doc_path);
+            crate::app::export_poll::ExportPoll::perform_tool_export(
+                self,
+                source,
+                ext,
+                output_path,
+                doc_path,
+            );
         } else {
             self.pending_dialog_action = Some(crate::app_state::AppAction::PickExportDocument {
                 doc_path: doc_path.to_path_buf(),
                 ext: ext.to_string(),
-                source: source.to_string()
+                source: source.to_string(),
             });
             self.file_dialog.save_file();
         }

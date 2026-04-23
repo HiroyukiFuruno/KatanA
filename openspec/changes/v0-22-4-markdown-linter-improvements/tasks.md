@@ -236,11 +236,11 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 - [x] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
 - [x] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
 - [x] 7.3 Ensure `make check` passes with exit code 0
-- [ ] 7.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.7 Create `release/v0.22.4` branch from master
-- [ ] 7.8 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 7.9 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [x] 7.4 Create PR from Base Feature Branch targeting `master`
+- [x] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [x] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [x] 7.7 Create `release/v0.22.4` branch from master
+- [x] 7.8 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
+- [x] 7.9 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
+- [x] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [x] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

@@ -94,19 +94,16 @@ impl KatanaApp {
                 let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("png");
                 self.process_image_ingest(&bytes, ext);
             }
-            AppAction::PickExportDocument { doc_path, ext, source } => {
+            AppAction::PickExportDocument {
+                doc_path,
+                ext,
+                source,
+            } => {
                 use crate::app::export_poll::ExportPoll;
-                self.perform_tool_export(
-                    &source,
-                    &ext,
-                    path,
-                    &doc_path,
-                );
+                self.perform_tool_export(&source, &ext, path, &doc_path);
             }
             _ => {}
         }
-
-
     }
 
     fn tick_auto_save(&mut self) {

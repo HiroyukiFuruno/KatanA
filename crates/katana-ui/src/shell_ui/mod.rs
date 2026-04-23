@@ -27,9 +27,7 @@ impl ShellUiOps {
     }
 
     pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
-        std::panic::catch_unwind(|| {
-            rfd::FileDialog::new().pick_folder()
-        }).unwrap_or(None)
+        std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()).unwrap_or(None)
     }
 
     pub(crate) fn pick_open_workspace() -> AppAction {

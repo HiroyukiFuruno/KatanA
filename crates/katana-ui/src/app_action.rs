@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::app_state::ExportFormat;
+pub use crate::markdown_authoring_op::MarkdownAuthoringOp;
 use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
 
@@ -8,7 +9,11 @@ use katana_platform::{PaneOrder, SplitDirection};
 pub enum AppAction {
     InstallUpdate,
     PickOpenWorkspace,
-    PickExportDocument { doc_path: PathBuf, ext: String, source: String },
+    PickExportDocument {
+        doc_path: PathBuf,
+        ext: String,
+        source: String,
+    },
     OpenWorkspace(PathBuf),
     SelectDocument(PathBuf),
     SelectDocumentAndJump {
@@ -173,26 +178,4 @@ pub enum AppAction {
     ZoomOut,
     Quit,
     None,
-}
-
-/// Operations available via the Markdown authoring command set.
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum MarkdownAuthoringOp {
-    /* WHY: Inline decorations */
-    Bold,
-    Italic,
-    Strikethrough,
-    InlineCode,
-    /* WHY: Block / structural */
-    Heading1,
-    Heading2,
-    Heading3,
-    BulletList,
-    NumberedList,
-    Blockquote,
-    CodeBlock,
-    HorizontalRule,
-    /* WHY: Reference structures */
-    InsertLink,
-    InsertTable,
 }
