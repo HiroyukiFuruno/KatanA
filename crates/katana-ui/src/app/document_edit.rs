@@ -33,7 +33,7 @@ impl DocumentEditOps for KatanaApp {
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
-        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+        self.state.diagnostics.last_buffer_update = Some(std::time::Instant::now()); /* WHY: FB32 */
     }
 
     fn handle_apply_lint_fixes(

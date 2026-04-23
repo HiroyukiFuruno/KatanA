@@ -77,7 +77,13 @@ impl DiagnosticsHoverOps {
         let sev_text = format!("{:?}", diag.severity);
         let label_text = format!("[{}] {} ({})", sev_text, diag.rule_id, meta.title);
         ui.label(egui::RichText::new(label_text).strong());
-        ui.label(&diag.message);
+        let localized_msg = crate::i18n::I18nOps::get()
+            .linter
+            .rule_descriptions
+            .get(&diag.rule_id.to_lowercase())
+            .cloned()
+            .unwrap_or_else(|| diag.message.clone());
+        ui.label(localized_msg);
 
         if meta.is_fixable && diag.fix_info.is_some() {
             /* WHY: allow(horizontal_layout) */

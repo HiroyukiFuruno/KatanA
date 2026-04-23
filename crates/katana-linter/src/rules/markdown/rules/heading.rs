@@ -46,21 +46,32 @@ impl MarkdownRule for BlanksAroundHeadingsRule {
             }
             let needs_blank_before = i > 0 && !lines[i - 1].trim().is_empty();
             let needs_blank_after = i + 1 < lines.len() && !lines[i + 1].trim().is_empty();
-            if needs_blank_before || needs_blank_after {
-                let mut replacement = String::new();
-                if needs_blank_before {
-                    replacement.push('\n');
-                }
-                replacement.push_str(line);
-                if needs_blank_after {
-                    replacement.push('\n');
-                }
+            if needs_blank_before {
                 let fix = crate::rules::markdown::types::DiagnosticFix {
                     start_line: i + 1,
                     start_column: 1,
                     end_line: i + 1,
-                    end_column: line.len().max(1) + if line.is_empty() { 0 } else { 1 },
-                    replacement,
+                    end_column: 1,
+                    replacement: "\n".to_string(),
+                };
+                RuleHelpers::push_diag_with_fix(
+                    &mut diagnostics,
+                    file_path,
+                    i,
+                    line,
+                    &meta,
+                    DiagnosticSeverity::Warning,
+                    Some(fix),
+                );
+            }
+            if needs_blank_after {
+                let end_col = line.len().max(1) + if line.is_empty() { 0 } else { 1 };
+                let fix = crate::rules::markdown::types::DiagnosticFix {
+                    start_line: i + 1,
+                    start_column: end_col,
+                    end_line: i + 1,
+                    end_column: end_col,
+                    replacement: "\n".to_string(),
                 };
                 RuleHelpers::push_diag_with_fix(
                     &mut diagnostics,

@@ -56,22 +56,7 @@ regex_rule!(
     DiagnosticSeverity::Warning,
     &[]
 );
-regex_rule!(
-    RuleMD037,
-    "MD037",
-    "Spaces inside emphasis markers",
-    r"(?:\*\*|__|\*|_)\s+[^\s].*[^\s]\s+(?:\*\*|__|\*|_)",
-    DiagnosticSeverity::Warning,
-    &[]
-);
-regex_rule!(
-    RuleMD038,
-    "MD038",
-    "Spaces inside code span elements",
-    r"`\s+[^`]+\s+`",
-    DiagnosticSeverity::Warning,
-    &[]
-);
+
 regex_rule!(
     RuleMD039,
     "MD039",

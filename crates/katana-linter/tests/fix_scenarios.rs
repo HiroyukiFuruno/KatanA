@@ -268,3 +268,50 @@ fn adapter_fix_all_produces_clean_document() {
         fixable_remaining,
     );
 }
+#[test]
+fn test_md060_detection() {
+    use katana_linter::rules::markdown::MarkdownRule;
+    use katana_linter::rules::markdown::rules::table::TableColumnStyleRule;
+    use std::path::Path;
+
+    let rule = TableColumnStyleRule;
+    let md = "| Header |\n|-------|\n| Cell |";
+    let diags = rule.evaluate(Path::new("test.md"), md);
+    assert!(!diags.is_empty(), "MD060 should be detected");
+}
+#[test]
+fn test_md060_exact() {
+    use katana_linter::rules::markdown::MarkdownRule;
+    use katana_linter::rules::markdown::rules::table::TableColumnStyleRule;
+    use std::path::Path;
+
+    let rule = TableColumnStyleRule;
+    let md = "
+| Header | Header | Header |
+|-------|-------|---------|
+| Cell | Cell | Cell |
+
+| Header | Header | Header |
+|:-------|:-------:|---------:|
+| Cell | Cell | Cell |
+
+| 参照先 | 用途 |
+|--------|------|
+| `.claude/commands/opensp | |
+
+|:--------|:------:|--------:|
+| Cell | Cell | Cell |
+
+Some text.
+
+---
+
+Another text.
+";
+    let diags = rule.evaluate(Path::new("test.md"), md);
+    assert_eq!(
+        diags.len(),
+        5,
+        "All five violating rows should have MD060 detected"
+    );
+}

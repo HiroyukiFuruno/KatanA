@@ -129,7 +129,13 @@ impl DiagnosticsRendererOps {
             }
         });
 
-        ui.label(egui::RichText::new(diag.message.clone()));
+        let localized_msg = crate::i18n::I18nOps::get()
+            .linter
+            .rule_descriptions
+            .get(&diag.rule_id.to_lowercase())
+            .cloned()
+            .unwrap_or_else(|| diag.message.clone());
+        ui.label(egui::RichText::new(localized_msg));
 
         ui.allocate_ui_with_layout(
             egui::vec2(ui.available_width(), 0.0),

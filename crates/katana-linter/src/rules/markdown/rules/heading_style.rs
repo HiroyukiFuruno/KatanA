@@ -51,14 +51,20 @@ impl MarkdownRule for HeadingStyleRule {
             }
             /* WHY: Detect setext-style headings (underline with === or ---) */
             if is_setext_underline(trimmed) && i > 0 {
-                RuleHelpers::push_diag(
-                    &mut diagnostics,
-                    file_path,
-                    i,
-                    line,
-                    &meta,
-                    DiagnosticSeverity::Warning,
-                );
+                let prev_line = content.lines().nth(i - 1).unwrap().trim();
+                if !prev_line.is_empty()
+                    && !RuleHelpers::is_fence(prev_line)
+                    && !is_setext_underline(prev_line)
+                {
+                    RuleHelpers::push_diag(
+                        &mut diagnostics,
+                        file_path,
+                        i,
+                        line,
+                        &meta,
+                        DiagnosticSeverity::Warning,
+                    );
+                }
             }
         }
         diagnostics

@@ -114,6 +114,7 @@ impl MarkdownRule for TableColumnStyleRule {
         let lines: Vec<&str> = content.lines().collect();
 
         let mut in_code_block = false;
+        let mut in_table = false;
 
         for (i, line) in lines.iter().enumerate() {
             let trimmed = line.trim_start();
@@ -121,26 +122,47 @@ impl MarkdownRule for TableColumnStyleRule {
                 in_code_block = !in_code_block;
                 continue;
             }
-            if in_code_block || i == 0 {
+            if in_code_block {
                 continue;
             }
 
-            let prev_line = lines[i - 1].trim();
-            /* WHY: A table delimiter row must follow a header row (which contains a pipe). */
-            if !prev_line.contains('|') {
-                continue;
-            }
-
-            /* WHY: Check if current line is a delimiter row. */
-            if !trimmed.contains('-')
-                || !trimmed
+            /* WHY: Check if current line is a delimiter row */
+            let is_delimiter_row = trimmed.contains('-')
+                && trimmed.contains('|')
+                && trimmed
                     .chars()
-                    .all(|c| c.is_whitespace() || c == '|' || c == '-' || c == ':')
-            {
+                    .all(|c| c.is_whitespace() || c == '|' || c == '-' || c == ':');
+
+            if in_table {
+                /* WHY: We are inside a table. Does this line look like a table row? */
+                if trimmed.contains('|') {
+                    /* WHY: It's a data row (or another delimiter row, which is weird but okay) */
+                    Self::fix_table_row(file_path, i, line, trimmed, &meta, &mut diagnostics);
+                } else {
+                    /* WHY: Table ended */
+                    in_table = false;
+                }
                 continue;
             }
 
-            Self::fix_table_row(file_path, i, line, trimmed, &meta, &mut diagnostics);
+            if is_delimiter_row {
+                in_table = true;
+                /* WHY: Check if previous line could be a header row */
+                let prev_has_pipe = i > 0 && lines[i - 1].trim().contains('|');
+                if prev_has_pipe {
+                    /* WHY: Format the header row (i - 1) */
+                    Self::fix_table_row(
+                        file_path,
+                        i - 1,
+                        lines[i - 1],
+                        lines[i - 1].trim_start(),
+                        &meta,
+                        &mut diagnostics,
+                    );
+                }
+                /* WHY: Format the delimiter row (i) */
+                Self::fix_table_row(file_path, i, line, trimmed, &meta, &mut diagnostics);
+            }
         }
 
         diagnostics

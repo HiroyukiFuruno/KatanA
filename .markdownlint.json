@@ -36,6 +36,11 @@
     "style": "asterisk"
   },
   "MD052": {
+    "ignored_labels": [
+      "x",
+      "/",
+      "-"
+    ],
     "shortcut_syntax": true
   },
   "MD055": {

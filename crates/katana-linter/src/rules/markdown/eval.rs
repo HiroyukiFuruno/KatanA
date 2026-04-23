@@ -10,6 +10,8 @@ use crate::rules::markdown::rules::heading_style::*;
 use crate::rules::markdown::rules::image::*;
 use crate::rules::markdown::rules::list::*;
 use crate::rules::markdown::rules::list_ext::*;
+use crate::rules::markdown::rules::spaces_in_code::NoSpaceInCodeRule;
+use crate::rules::markdown::rules::spaces_in_emphasis::SpacesInEmphasisRule;
 use crate::rules::markdown::rules::style::*;
 use crate::rules::markdown::rules::table::*;
 use crate::rules::markdown::rules::whitespace::*;
@@ -67,13 +69,13 @@ impl MarkdownLinterOps {
             Box::new(SingleH1Rule),              // MD025
             Box::new(NoTrailingPunctuationRule), // MD026
             /* WHY: Regex-based rules */
-            Box::new(RuleMD009), // trailing-spaces
-            Box::new(RuleMD010), // hard-tabs
-            Box::new(RuleMD018), // no-missing-space-atx
-            Box::new(RuleMD019), // no-multiple-space-atx
-            Box::new(RuleMD037), // no-space-in-emphasis
-            Box::new(RuleMD038), // no-space-in-code
-            Box::new(RuleMD039), // no-space-in-links
+            Box::new(RuleMD009),            // trailing-spaces
+            Box::new(RuleMD010),            // hard-tabs
+            Box::new(RuleMD018),            // no-missing-space-atx
+            Box::new(RuleMD019),            // no-multiple-space-atx
+            Box::new(SpacesInEmphasisRule), // MD037
+            Box::new(NoSpaceInCodeRule),    // MD038
+            Box::new(RuleMD039),            // no-space-in-links
             /* WHY: Blockquote rules */
             Box::new(NoBlanksBlockquoteRule),    // MD028
             Box::new(SingleTrailingNewlineRule), // MD047
@@ -90,6 +92,7 @@ impl MarkdownLinterOps {
             Box::new(HrStyleRule),             // MD035
             Box::new(NoEmphasisAsHeadingRule), // MD036
             Box::new(NoAltTextRule),           // MD045
+            Box::new(TableColumnStyleRule),    // MD060
         ]
     }
 
@@ -152,7 +155,6 @@ impl MarkdownLinterOps {
             Box::new(RuleMD056),
             Box::new(RuleMD058),
             Box::new(RuleMD059),
-            Box::new(TableColumnStyleRule),
         ];
 
         /* WHY: Collect existing IDs first to avoid duplicating rules already in get_official_rules(). */

@@ -18,11 +18,12 @@ impl PreviewLogicOps {
         };
 
         const GITHUB_BTN_SIZE: f32 = 28.0;
-        const GITHUB_BTN_MARGIN: f32 = 16.0;
+        const GITHUB_BTN_MARGIN_TOP: f32 = 6.0;
+        const GITHUB_BTN_MARGIN_RIGHT: f32 = 26.0;
         let btn_rect = egui::Rect::from_min_size(
             egui::pos2(
-                ui.max_rect().right() - GITHUB_BTN_MARGIN - GITHUB_BTN_SIZE,
-                ui.max_rect().top() + GITHUB_BTN_MARGIN,
+                ui.max_rect().right() - GITHUB_BTN_MARGIN_RIGHT - GITHUB_BTN_SIZE,
+                ui.max_rect().top() + GITHUB_BTN_MARGIN_TOP,
             ),
             egui::vec2(GITHUB_BTN_SIZE, GITHUB_BTN_SIZE),
         );

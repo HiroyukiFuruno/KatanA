@@ -30,6 +30,12 @@ pub use list::*;
 pub mod list_ext;
 pub use list_ext::*;
 
+pub mod spaces_in_code;
+pub use spaces_in_code::*;
+
+pub mod spaces_in_emphasis;
+pub use spaces_in_emphasis::*;
+
 pub mod style;
 pub use style::*;
 
