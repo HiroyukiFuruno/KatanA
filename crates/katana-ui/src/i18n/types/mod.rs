@@ -4,11 +4,13 @@ pub mod action;
 pub mod common;
 pub mod dashboard;
 pub mod error;
+pub mod linter;
 pub mod menu;
 pub mod meta;
 pub mod preview;
 pub mod search;
 pub mod settings;
+pub mod settings_color;
 pub mod status;
 pub mod tab;
 pub mod workspace;
@@ -17,6 +19,7 @@ pub use action::*;
 pub use common::*;
 pub use dashboard::*;
 pub use error::*;
+pub use linter::*;
 pub use menu::*;
 pub use meta::*;
 pub use preview::*;
@@ -53,4 +56,6 @@ pub struct I18nMessages {
     pub meta_info: MetaInfoMessages,
     pub help: HelpMessages,
     pub dashboard: DashboardMessages,
+    #[serde(default)]
+    pub linter: LinterTranslations,
 }

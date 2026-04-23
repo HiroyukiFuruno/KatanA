@@ -304,14 +304,14 @@
       "custom_preset": "自訂",
       "save_preset": "另存為預設…",
       "revert_default": "還原預設值",
-      "advanced_settings": "進階設定",
       "colorful_vendor_icons_label": "彩色供應商圖示",
       "table_header_icon": "圖示",
       "table_header_vendor": "供應商",
       "table_header_color": "顏色",
       "table_header_border": "邊框",
       "table_header_preview": "預覽",
-      "preset_name": "名稱:"
+      "preset_name": "名稱:",
+      "search_placeholder": "搜尋"
     },
     "tabs": [
       {
@@ -353,6 +353,10 @@
       {
         "key": "shortcuts",
         "name": "快捷鍵"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -489,7 +493,7 @@
     "temp_file_error": "暫存檔案錯誤: {error}",
     "write_error": "寫入錯誤: {error}",
     "persist_error": "持久化失敗。",
-    "exporting": "⏳ 正在匯出 {filename}…"
+    "exporting": "正在匯出 {filename}…"
   },
   "terms": {
     "title": "使用條款",
@@ -514,7 +518,10 @@
   },
   "common": {
     "close": "關閉",
-    "save": "儲存"
+    "save": "儲存",
+    "advanced_settings": "進階設定",
+    "expand_all": "全部展開",
+    "collapse_all": "全部折疊"
   },
   "meta_info": {
     "title": "文件資訊",
@@ -548,7 +555,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 搜尋",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 側邊欄開關",
     "shortcut_save": "{{os_cmd:save_document}}: 儲存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 重新整理圖表",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 重新整理圖表",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 拆分視圖",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 切換代碼/預覽",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 下一個標籤頁",
@@ -561,7 +568,85 @@
     "start_section": "開始",
     "recent_section": "最近檔案",
     "no_recent_files": "無最近檔案",
-    "welcome_screen": "🏠 歡迎頁",
-    "user_guide": "📚 使用指南"
-  }
+    "welcome_screen": "歡迎頁",
+    "user_guide": "使用指南"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "啟用 Markdown Linter",
+    "rule_severities": "規則嚴重性",
+    "advanced_workspace_settings": "進階工作區設定",
+    "workspace_has_config": "工作區中存在 .markdownlint.json 設定檔。",
+    "open_config": "開啟設定",
+    "workspace_no_config": "目前工作區未找到 .markdownlint.json。",
+    "create_config": "建立設定",
+    "open_workspace_to_configure": "開啟一個工作區以配置工作區特定的Lint規則。",
+    "severity_ignore": "忽略",
+    "severity_warning": "警告",
+    "severity_error": "錯誤",
+    "use_workspace_local_config": "使用工作區配置",
+    "rule_descriptions": {
+      "md001": "標題層級應每次只增加一級。",
+      "md003": "標題樣式應保持一致。",
+      "md004": "無序列表樣式不一致。",
+      "md012": "存在多個連續的空白行。",
+      "md022": "標題前後必須有空白行。",
+      "md023": "標題必須從行首開始。",
+      "md025": "同一文件中存在多個頂級標題。",
+      "md026": "標題末尾包含標點符號。",
+      "md027": "引用符號後有多個空格。",
+      "md028": "引用區塊內部包含空白行。",
+      "md029": "有序列表前綴不一致。",
+      "md032": "列表前後必須有空白行。",
+      "md033": "包含行內 HTML。",
+      "md035": "水平線樣式不一致。",
+      "md036": "使用了強調而不是標題。",
+      "md040": "程式碼區塊必須指定語言。",
+      "md041": "文件的第一行必須是頂級標題。",
+      "md042": "存在空連結。",
+      "md045": "圖片必須有替代文字（alt）。",
+      "md047": "文件末尾必須以單個換行符結束。",
+      "md005": "相同級別列表項的縮排不一致。",
+      "md007": "無序列表縮排。",
+      "md009": "尾隨空格。",
+      "md010": "硬製表符。",
+      "md011": "反向連結語法。",
+      "md013": "行長度。",
+      "md014": "錢幣符號用於命令前未顯示輸出。",
+      "md018": "ATX 風格標題的井號後沒有空格。",
+      "md019": "ATX 風格標題的井號後有多個空格。",
+      "md020": "封閉的 ATX 風格標題的井號內沒有空格。",
+      "md021": "封閉的 ATX 風格標題的井號內有多個空格。",
+      "md024": "具有相同內容的多個標題。",
+      "md030": "列表標記後的空格。",
+      "md031": "圍欄代碼塊應被空行包圍。",
+      "md034": "使用了裸 URL。",
+      "md037": "強調標記內的空格。",
+      "md038": "代碼跨度元素內的空格。",
+      "md039": "連結文本內的空格。",
+      "md043": "必需的標題結構。",
+      "md044": "專有名詞應具有正確的大小寫。",
+      "md046": "代碼塊風格。",
+      "md048": "代碼圍欄風格。",
+      "md049": "強調風格應該一致。",
+      "md050": "強風格應該一致。",
+      "md051": "連結片段必須有效。",
+      "md052": "參考連結和圖像必須使用已定義的標籤。",
+      "md053": "必須需要連結和圖像參考定義。",
+      "md054": "連結和圖像風格應該一致。",
+      "md055": "表格管道風格應該一致。",
+      "md056": "表格列數應該一致。",
+      "md058": "表格周圍應有空行。",
+      "md059": "連結文本應具有描述性。",
+      "md060": "表格的欄位樣式不一致。"
+    },
+    "view_on_github": "在官方 GitHub 上查看",
+    "search_placeholder": "搜尋規則…"
+  },
+  "use_workspace_local_config": "使用工作區本地設定"
 }

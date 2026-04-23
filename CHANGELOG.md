@@ -2,6 +2,25 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.4] - 2026-04-23 21:40:00 (UTC)
+
+### 🚀 Features
+
+- **Markdown Linter UI & Auto-Fix Integration**:
+  - Implemented an interactive Linter Settings UI supporting localized rule descriptions (i18n).
+  - Added real-time in-editor visualization for linting errors with squiggly lines and gutter icons.
+  - Implemented diagnostic popups with "Quick Fix" and "Fix All" automated formatting capabilities.
+  - Added an in-app documentation viewer for MarkdownLint rules with visual examples.
+  - Refactored markdownlint rules to comply with strict AST linter constraints.
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where the file dialog could crash on certain limited Linux environments.
+
+### 🔧 System
+
+- Optimized internal test execution and added fallback testing for the DrawIO rendering pipeline.
+
 ## [0.22.3] - 2026-04-22 01:49:58 (UTC)
 
 ### 🚀 Features

@@ -11,9 +11,11 @@ KatanA ワークスペース内で `HashMap` および固定長配列 `[T; N]` /
 ## Capabilities
 
 ### New Capabilities
+
 - `linter-rules`: AST Linterに追加される `HashMap` 禁止および固定長・リテラル配列禁止ルール。
 
 ### Modified Capabilities
+
 - `settings`: `settings.json` における設定の構造変更とマイグレーション（`extra: HashMap` から `extra: Vec<ExtraSetting>` への移行）。
 - `i18n`: 辞書構造のリスト化（`HashMap` から `Vec<I18nDictionaryEntry>` への移行）。
 - `ai-providers`: `params` および `metadata` などのマップ構造のリスト化（`Vec<AiParam>`等への移行）。

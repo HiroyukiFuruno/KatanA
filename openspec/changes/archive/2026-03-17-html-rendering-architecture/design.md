@@ -8,6 +8,7 @@
 4. 新要素の追加が困難で技術的負債が蓄積される
 
 ### 技術スタック
+
 - **パース**: `comrak` crate のAST（`NodeValue::HtmlBlock`, `HtmlInline`）を活用 + 内部タグ抽出に `regex`
 - **UI**: egui 0.33 + egui_extras 0.33（SVGテキストは `svg_text` feature）
 - **既存**: `comrak` でMarkdown→AST変換済み。HTMLブロックは `NodeValue::HtmlBlock` として取得可能
@@ -15,6 +16,7 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - HTMLの inline/block 表示モードをタグごとに正しく分類し、改行制御を標準準拠にする
 - リンク先を external/internal/anchor に分類し、開き方のポリシーを定義する
 - パースとレンダリングを完全に分離し、パーサーをUI非依存でテスト可能にする
@@ -22,6 +24,7 @@
 - 将来のナビゲーション機能（戻る/進む、タブ管理）を見据えた拡張ポイントを確保する
 
 **Non-Goals:**
+
 - 完全なHTMLレンダリングエンジンの実装（対象はMarkdown内のHTML要素に限定）
 - CSSパーサーの実装（`align` 属性など既知の属性のみ対応）
 - JavaScript実行
@@ -35,6 +38,7 @@
 **理由**: パーサーとモデルを `katana-core`（UI非依存）に配置することで、ユニットテストでパース結果を検証可能にする。レンダラーのみ `katana-ui` に配置。
 
 **代替案**:
+
 - 全てを `katana-ui` に配置 → テスト不可能、却下
 - `html5ever` 依存 → 正確だがオーバースペック。現時点では不要
 
@@ -44,6 +48,7 @@
 **理由**: `comrak` は既にMarkdown→ASTの変換を行っており、HTMLブロックの判定も完了している。HTMLブロックの内部タグ（`<img>`, `<a>`, `<p>` 等）の属性抽出は浅いネストに限定されるため、regex で十分。完全な自前HTMLパーサーは車輪の再発明。
 
 **代替案**:
+
 - 完全自前パーサー → comrak と責務が重複、却下
 - `html5ever` で内部タグもパース → 依存が大きい。将来の移行パスとして `HtmlNode` ツリー構造を採用しておく
 

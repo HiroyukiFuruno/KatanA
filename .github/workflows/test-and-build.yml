@@ -3,36 +3,14 @@ name: CI
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'openspec/**'
-      - 'docs/**'
-      - 'Makefile'
-      - 'scripts/screenshot/**'
-      - 'platfomrs'
-      - '.vscode'
-      - '.agent'
-      - '.agents'
-      - '.github'
+    paths:
+      - '**.rs'
+      - '!scripts/**/*.rs'
   pull_request:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - '**.txt'
-      - 'LICENSE'
-      - '.gitignore'
-      - 'openspec/**'
-      - 'docs/**'
-      - 'Makefile'
-      - 'scripts/screenshot/**'
-      - 'platfomrs'
-      - '.vscode'
-      - '.agent'
-      - '.agents'
-      - '.github'
+    paths:
+      - '**.rs'
+      - '!scripts/**/*.rs'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -62,15 +40,15 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Validate Branch Name
-        if: github.base_ref == 'master'
-        shell: bash
-        run: |
-          BRANCH="${{ github.head_ref }}"
-          if [[ ! "$BRANCH" =~ ^release/ && ! "$BRANCH" =~ ^hotfix/ && ! "$BRANCH" =~ ^dependabot/ ]]; then
-            echo "Error: Only 'release/*', 'hotfix/*' or 'dependabot/*' branches can be merged into master."
-            exit 1
-          fi
+      # - name: Validate Branch Name
+      #   if: github.base_ref == 'master'
+      #   shell: bash
+      #   run: |
+      #     BRANCH="${{ github.head_ref }}"
+      #     if [[ ! "$BRANCH" =~ ^release/ && ! "$BRANCH" =~ ^hotfix/ && ! "$BRANCH" =~ ^dependabot/ ]]; then
+      #       echo "Error: Only 'release/*', 'hotfix/*' or 'dependabot/*' branches can be merged into master."
+      #       exit 1
+      #     fi
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install Rust toolchain

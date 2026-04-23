@@ -128,13 +128,40 @@ impl ExportOps for KatanaApp {
         }
 
         let default_name = self.export_filename(doc_path, ext);
-        let path = rfd::FileDialog::new()
-            .set_file_name(&default_name)
-            .add_filter(ext, &[ext])
-            .save_file();
+
+        if crate::shell_ui::ShellUiOps::is_headless() {
+            self.pending_dialog_action = Some(crate::app_state::AppAction::PickExportDocument {
+                doc_path: doc_path.to_path_buf(),
+                ext: ext.to_string(),
+                source: source.to_string(),
+            });
+            self.file_dialog.save_file();
+            return;
+        }
+
+        let path = std::panic::catch_unwind(|| {
+            rfd::FileDialog::new()
+                .set_file_name(&default_name)
+                .add_filter(ext, &[ext])
+                .save_file()
+        })
+        .unwrap_or(None);
 
         if let Some(output_path) = path {
-            ExportPoll::perform_tool_export(self, source, ext, output_path, doc_path);
+            crate::app::export_poll::ExportPoll::perform_tool_export(
+                self,
+                source,
+                ext,
+                output_path,
+                doc_path,
+            );
+        } else {
+            self.pending_dialog_action = Some(crate::app_state::AppAction::PickExportDocument {
+                doc_path: doc_path.to_path_buf(),
+                ext: ext.to_string(),
+                source: source.to_string(),
+            });
+            self.file_dialog.save_file();
         }
     }
     fn poll_export(&mut self, ctx: &egui::Context) {

@@ -47,8 +47,7 @@ graph TD; A-->B
     let has_diagram_output =
         output.html.contains("katana-diagram") || output.html.contains("data:image/png");
     let has_error_output = output.html.contains("katana-diagram-error");
-    let has_raw_code =
-        output.html.contains("language-mermaid") || output.html.contains("<code>graph TD");
+    let has_raw_code = output.html.contains("language-mermaid");
 
     eprintln!("=== ACTUAL HTML OUTPUT ===");
     eprintln!("{}", output.html);

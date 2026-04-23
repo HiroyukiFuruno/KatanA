@@ -12,6 +12,7 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `split-scroll-sync`: エディタとプレビューを論理座標（Logical Position）を介して厳格に同期させる機能。
 
 ### Modified Capabilities

@@ -7,12 +7,14 @@ The work is focused on tab hit testing and action routing. `0.16.6` should there
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Make the visible pin icon a direct unpin toggle
 - Keep tab activation separate from unpin action
 - Preserve existing context-menu and ordering behavior
 - Add one real interaction test for the icon click path
 
 **Non-Goals:**
+
 - Redesign tab grouping
 - Change other context-menu actions
 - Alter pinned-tab ordering rules

@@ -9,6 +9,7 @@ This change is cross-cutting because it touches menu dispatch, asset resolution,
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add a Help-menu demo entry that opens bundled feature assets from `assets/feature`
 - Resolve localized Markdown demo assets deterministically: Japanese uses `*.ja.md`, every other locale uses the base English file without a locale suffix
 - Open the resolved bundle inside the existing tab surface and cluster it under a `demo` tab group
@@ -17,6 +18,7 @@ This change is cross-cutting because it touches menu dispatch, asset resolution,
 - Keep failure cases recoverable when the demo bundle or localized files are missing
 
 **Non-Goals:**
+
 - Building a separate tutorial window, carousel, or onboarding-specific renderer
 - Making all Help or changelog documents read-only
 - Introducing locale variants beyond `ja` and the default English filenames in this change

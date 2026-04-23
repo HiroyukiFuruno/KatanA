@@ -7,6 +7,7 @@ The problem is broader than diagrams. Mermaid, PlantUML, and Draw.io use worker 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Keep per-tab preview work alive across tab switches for Mermaid, PlantUML, Draw.io, and tab-owned image-backed preview sections
 - Introduce explicit per-tab preview lifecycle state that separates loaded background results from drawn/attached visible state
 - Reattach completed background work on tab revisit without forcing the user through a stale loading state or a needless rerender
@@ -14,6 +15,7 @@ The problem is broader than diagrams. Mermaid, PlantUML, and Draw.io use worker 
 - Add regression coverage for tab switching during unfinished preview work
 
 **Non-Goals:**
+
 - Redesign the underlying Mermaid, PlantUML, or Draw.io render backends
 - Persist preview job state across application restarts
 - Keep completed preview results alive after a tab is fully closed

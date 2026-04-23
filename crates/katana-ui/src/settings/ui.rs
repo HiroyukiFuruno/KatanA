@@ -159,6 +159,11 @@ impl<'a> SettingsWindow<'a> {
                                                     ui, state,
                                                 );
                                             }
+                                            SettingsTab::Linter => {
+                                                if let Some(action) = crate::settings::tabs::LinterTabOps::render_linter_tab(ui, state) {
+                                                    triggered_action = Some(action);
+                                                }
+                                            }
                                             _ => {}
                                         })
                                 });
@@ -225,7 +230,7 @@ mod tests {
         harness.run_steps(10);
 
         let i18n = crate::i18n::I18nOps::get();
-        harness.get_by_label(&i18n.settings.icons.advanced_settings);
+        harness.get_by_label(&i18n.common.advanced_settings);
         harness.get_by_label(&i18n.settings.icons.colorful_vendor_icons_label);
     }
 }

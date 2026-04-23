@@ -7,8 +7,14 @@ impl KatanaApp {
     pub(super) fn dispatch_action(&mut self, ctx: &egui::Context, action: AppAction) {
         match action {
             AppAction::PickOpenWorkspace => {
-                if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
+                if crate::shell_ui::ShellUiOps::is_headless() {
+                    self.pending_dialog_action = Some(AppAction::PickOpenWorkspace);
+                    self.file_dialog.pick_directory();
+                } else if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
                     self.handle_open_explorer(path);
+                } else {
+                    self.pending_dialog_action = Some(AppAction::PickOpenWorkspace);
+                    self.file_dialog.pick_directory();
                 }
             }
             AppAction::OpenWorkspace(p) => self.handle_open_explorer(p),
@@ -52,6 +58,7 @@ impl KatanaApp {
             AppAction::ReplaceText { span, replacement } => {
                 self.handle_replace_text(span, replacement)
             }
+            AppAction::ApplyLintFixes(fixes) => self.handle_apply_lint_fixes(fixes),
             AppAction::ToggleTaskList {
                 global_index,
                 new_state,

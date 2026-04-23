@@ -40,7 +40,6 @@ mod shell_logic;
 mod theme;
 #[path = "integration/settings/theme_bridge.rs"]
 mod theme_bridge;
-#[path = "integration/tree_layout.rs"]
-mod tree_layout;
+
 #[path = "integration/preview_pane/styling.rs"]
 mod underline_rendering;

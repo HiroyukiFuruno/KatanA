@@ -14,10 +14,12 @@ Katana already has strong preview and tab workflows, but there is no first-run o
 ## Capabilities
 
 ### New Capabilities
+
 - `help-demo-bundle`: Help-driven opening of localized demo assets from `assets/feature`, including grouped tab expansion and code-vs-document routing
 - `reference-mode`: A view-only code presentation mode for bundled reference assets that uses the existing tab/editor surface but disallows editing
 
 ### Modified Capabilities
+
 - `menu-enhancement`: The Help menu gains a Demo entry that launches the bundled feature walkthrough
 - `i18n`: Demo asset resolution follows a deterministic language fallback contract of `ja` for Japanese and default English filenames for all other locales
 

@@ -50,7 +50,7 @@ If another AI agent expects a different skill directory layout, copy the same sk
 
 ### Mandatory Tools for AI-Agent Workflow
 
-To minimize token consumption and manage context window bloat, the use of **[rtk](https://github.com/fission-ai/rtk)** is **mandatory** for all AI agents working in this repository. 
+To minimize token consumption and manage context window bloat, the use of **[rtk](https://github.com/fission-ai/rtk)** is **mandatory** for all AI agents working in this repository.
 
 AI agents MUST wrap noisy commands (tests, linters, builds) with `rtk` to ensure outputs are filtered and summarized before being ingested into the context.
 

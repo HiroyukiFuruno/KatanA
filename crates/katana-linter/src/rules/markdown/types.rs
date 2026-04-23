@@ -30,6 +30,10 @@ pub struct OfficialRuleMeta {
     pub docs_url: &'static str,
     /// Parity status of this rule.
     pub parity: RuleParityStatus,
+    /// Indicates if this rule can be automatically fixed.
+    pub is_fixable: bool,
+    /// Configurable properties for this rule.
+    pub properties: &'static [crate::rules::markdown::RuleProperty],
 }
 
 /* WHY: Section: Diagnostic types
@@ -50,6 +54,20 @@ pub struct DiagnosticRange {
     pub end_column: usize,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiagnosticFix {
+    /// 1-indexed line number where the fix starts
+    pub start_line: usize,
+    /// 1-indexed column number where the fix starts
+    pub start_column: usize,
+    /// 1-indexed line number where the fix ends
+    pub end_line: usize,
+    /// 1-indexed column number where the fix ends
+    pub end_column: usize,
+    /// The replacement string
+    pub replacement: String,
+}
+
 /// A single diagnostic item produced by a markdown linting rule.
 ///
 /// `official_meta` is `Some` for rules with `RuleParityStatus::Official` or
@@ -67,6 +85,8 @@ pub struct MarkdownDiagnostic {
     pub rule_id: String,
     /// Official markdownlint metadata; `None` for hidden internal rules.
     pub official_meta: Option<OfficialRuleMeta>,
+    /// Optional fix information for auto-fixable rules.
+    pub fix_info: Option<DiagnosticFix>,
 }
 
 impl std::fmt::Display for MarkdownDiagnostic {
@@ -87,4 +107,23 @@ impl std::fmt::Display for MarkdownDiagnostic {
             self.message
         )
     }
+}
+
+/// The type of a rule property, matching the UI layer expectations.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RulePropertyType {
+    Boolean,
+    Number,
+    String,
+    StringArray,
+    Enum(&'static [&'static str]),
+}
+
+/// A property definition for an official markdownlint rule.
+#[derive(Debug, Clone)]
+pub struct RuleProperty {
+    pub key: &'static str,
+    pub prop_type: RulePropertyType,
+    pub description: &'static str,
+    pub default_value: &'static str,
 }

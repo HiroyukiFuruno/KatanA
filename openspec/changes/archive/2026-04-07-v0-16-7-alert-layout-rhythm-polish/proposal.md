@@ -16,6 +16,7 @@ This is isolated markdown rendering polish and should be specified independently
 ### New Capabilities
 
 ### Modified Capabilities
+
 - `markdown-authoring`: GitHub Flavored Markdown alert/admonition blocks use compact vertical rhythm
 
 ## Impact

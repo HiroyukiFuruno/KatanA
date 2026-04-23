@@ -304,14 +304,14 @@
       "custom_preset": "Personalizado",
       "save_preset": "Guardar como preset…",
       "revert_default": "Predeterminado",
-      "advanced_settings": "Avanzado",
       "colorful_vendor_icons_label": "Iconos con color",
       "table_header_icon": "Icono",
       "table_header_vendor": "Proveedor",
       "table_header_color": "Color",
       "table_header_border": "Marco",
       "table_header_preview": "Previsualización",
-      "preset_name": "Nombre:"
+      "preset_name": "Nombre:",
+      "search_placeholder": "buscar"
     },
     "tabs": [
       {
@@ -353,6 +353,10 @@
       {
         "key": "shortcuts",
         "name": "Atajos"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -489,7 +493,7 @@
     "temp_file_error": "Error de archivo temporal: {error}",
     "write_error": "Error de escritura: {error}",
     "persist_error": "Error al guardar.",
-    "exporting": "⏳ Exportando {filename}…"
+    "exporting": "Exportando {filename}…"
   },
   "terms": {
     "title": "Términos de uso",
@@ -514,7 +518,10 @@
   },
   "common": {
     "close": "Cerrar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "advanced_settings": "Configuración avanzada",
+    "expand_all": "Expandir todo",
+    "collapse_all": "Contraer todo"
   },
   "meta_info": {
     "title": "Info de documento",
@@ -548,7 +555,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Búsqueda en el espacio de trabajo",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Alternar barra lateral",
     "shortcut_save": "{{os_cmd:save_document}}: Guardar",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Actualizar diagramas",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Actualizar diagramas",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Vista dividida",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Alternar código/vista previa",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Siguiente pestaña",
@@ -561,7 +568,85 @@
     "start_section": "Inicio",
     "recent_section": "Archivos recientes",
     "no_recent_files": "No hay archivos recientes",
-    "welcome_screen": "🏠 Pantalla de inicio",
-    "user_guide": "📚 Guía de usuario"
-  }
+    "welcome_screen": "Pantalla de inicio",
+    "user_guide": "Guía de usuario"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Habilitar Markdown Linter",
+    "rule_severities": "Gravedad de las reglas",
+    "advanced_workspace_settings": "Configuración avanzada del espacio de trabajo",
+    "workspace_has_config": "El espacio de trabajo tiene un archivo de configuración .markdownlint.json.",
+    "open_config": "Abrir configuración",
+    "workspace_no_config": "No se encontró .markdownlint.json en el espacio de trabajo actual.",
+    "create_config": "Crear configuración",
+    "open_workspace_to_configure": "Abra un espacio de trabajo para configurar reglas específicas de Lint.",
+    "severity_ignore": "Ignorar",
+    "severity_warning": "Advertencia",
+    "severity_error": "Error",
+    "use_workspace_local_config": "Usar configuración local del espacio de trabajo",
+    "rule_descriptions": {
+      "md001": "Los niveles de encabezado solo deben incrementarse de a uno por vez.",
+      "md003": "El estilo de encabezado debe ser consistente.",
+      "md004": "Estilo de lista desordenada inconsistente.",
+      "md012": "Varias líneas en blanco consecutivas.",
+      "md022": "Los encabezados deben estar rodeados de líneas en blanco.",
+      "md023": "Los encabezados deben comenzar al principio de la línea.",
+      "md025": "Múltiples encabezados de nivel superior en el mismo documento.",
+      "md026": "Puntuación final en el encabezado.",
+      "md027": "Varios espacios después del símbolo de cita.",
+      "md028": "Línea en blanco dentro de la cita.",
+      "md029": "Prefijo de elemento de lista ordenada inconsistente.",
+      "md032": "Las listas deben estar rodeadas de líneas en blanco.",
+      "md033": "HTML en línea.",
+      "md035": "Estilo de regla horizontal inconsistente.",
+      "md036": "Énfasis utilizado en lugar de un encabezado.",
+      "md040": "Los bloques de código deben tener un idioma especificado.",
+      "md041": "La primera línea de un archivo debe ser un encabezado de nivel superior.",
+      "md042": "No hay enlaces vacíos.",
+      "md045": "Las imágenes deben tener texto alternativo (alt).",
+      "md047": "Los archivos deben terminar con un solo carácter de nueva línea.",
+      "md005": "Sangría inconsistente para elementos de lista en el mismo nivel.",
+      "md007": "Sangría de lista desordenada.",
+      "md009": "Espacios finales.",
+      "md010": "Tabulaciones duras.",
+      "md011": "Sintaxis de enlace invertida.",
+      "md013": "Longitud de línea.",
+      "md014": "Signos de dólar usados antes de comandos sin mostrar salida.",
+      "md018": "Sin espacio después del hash en el encabezado estilo ATX.",
+      "md019": "Múltiples espacios después del hash en el encabezado estilo ATX.",
+      "md020": "Sin espacio dentro de los hashes en el encabezado estilo ATX cerrado.",
+      "md021": "Múltiples espacios dentro de los hashes en el encabezado estilo ATX cerrado.",
+      "md024": "Múltiples encabezados con el mismo contenido.",
+      "md030": "Espacios después de los marcadores de lista.",
+      "md031": "Los bloques de código cercados deben estar rodeados por líneas en blanco.",
+      "md034": "URL desnuda utilizada.",
+      "md037": "Espacios dentro de los marcadores de énfasis.",
+      "md038": "Espacios dentro de elementos de tramo de código.",
+      "md039": "Espacios dentro del texto del enlace.",
+      "md043": "Estructura de encabezado requerida.",
+      "md044": "Los nombres propios deben tener la capitalización correcta.",
+      "md046": "Estilo de bloque de código.",
+      "md048": "Estilo de cerca de código.",
+      "md049": "El estilo de énfasis debe ser consistente.",
+      "md050": "El estilo fuerte debe ser consistente.",
+      "md051": "Los fragmentos de enlace deben ser válidos.",
+      "md052": "Los enlaces e imágenes de referencia deben usar una etiqueta que esté definida.",
+      "md053": "Las definiciones de referencia de enlace e imagen deberían ser necesarias.",
+      "md054": "El estilo de enlace e imagen debe ser consistente.",
+      "md055": "El estilo de tubería de tabla debe ser consistente.",
+      "md056": "El recuento de columnas de tabla debe ser consistente.",
+      "md058": "Las tablas deben estar rodeadas por líneas en blanco.",
+      "md059": "El texto del enlace debe ser descriptivo.",
+      "md060": "El estilo de las columnas de la tabla no es consistente."
+    },
+    "view_on_github": "Ver en el GitHub oficial",
+    "search_placeholder": "Buscar reglas…"
+  },
+  "use_workspace_local_config": "Usar configuración local del espacio de trabajo"
 }

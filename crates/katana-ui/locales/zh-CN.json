@@ -304,14 +304,14 @@
       "custom_preset": "自定义",
       "save_preset": "另存为预设…",
       "revert_default": "恢复默认",
-      "advanced_settings": "高级设置",
       "colorful_vendor_icons_label": "彩色供应商图标",
       "table_header_icon": "图标",
       "table_header_vendor": "供应商",
       "table_header_color": "颜色",
       "table_header_border": "边框",
       "table_header_preview": "预览",
-      "preset_name": "名称:"
+      "preset_name": "名称:",
+      "search_placeholder": "搜索"
     },
     "tabs": [
       {
@@ -353,6 +353,10 @@
       {
         "key": "shortcuts",
         "name": "快捷键"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -489,7 +493,7 @@
     "temp_file_error": "临时文件错误: {error}",
     "write_error": "写入错误: {error}",
     "persist_error": "持久化失败。",
-    "exporting": "⏳ 正在导出 {filename}…"
+    "exporting": "正在导出 {filename}…"
   },
   "terms": {
     "title": "使用条款",
@@ -514,7 +518,10 @@
   },
   "common": {
     "close": "关闭",
-    "save": "保存"
+    "save": "保存",
+    "advanced_settings": "高级设置",
+    "expand_all": "全部展开",
+    "collapse_all": "全部折叠"
   },
   "meta_info": {
     "title": "文档信息",
@@ -548,7 +555,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 搜索",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 侧边栏",
     "shortcut_save": "{{os_cmd:save_document}}: 保存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 刷新",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 刷新",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 拆分视图",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 切换代码/预览",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 下一个标签页",
@@ -561,7 +568,85 @@
     "start_section": "开始",
     "recent_section": "最近文件",
     "no_recent_files": "无最近文件",
-    "welcome_screen": "🏠 欢迎页",
-    "user_guide": "📚 用户指南"
-  }
+    "welcome_screen": "欢迎页",
+    "user_guide": "用户指南"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "启用 Markdown Linter",
+    "rule_severities": "规则严重性",
+    "advanced_workspace_settings": "高级工作区设置",
+    "workspace_has_config": "工作区中存在 .markdownlint.json 配置文件。",
+    "open_config": "打开配置",
+    "workspace_no_config": "当前工作区未找到 .markdownlint.json。",
+    "create_config": "创建配置",
+    "open_workspace_to_configure": "打开一个工作区以配置工作区特定的Lint规则。",
+    "severity_ignore": "忽略",
+    "severity_warning": "警告",
+    "severity_error": "错误",
+    "use_workspace_local_config": "使用工作区配置",
+    "rule_descriptions": {
+      "md001": "标题级别应每次只增加一级。",
+      "md003": "标题样式应保持一致。",
+      "md004": "无序列表样式不一致。",
+      "md012": "存在多个连续的空行。",
+      "md022": "标题前后必须有空行。",
+      "md023": "标题必须从行首开始。",
+      "md025": "同一文档中存在多个顶级标题。",
+      "md026": "标题末尾包含标点符号。",
+      "md027": "引用符号后有多个空格。",
+      "md028": "引用块内部包含空行。",
+      "md029": "有序列表前缀不一致。",
+      "md032": "列表前后必须有空行。",
+      "md033": "包含内联 HTML。",
+      "md035": "水平线样式不一致。",
+      "md036": "使用了强调而不是标题。",
+      "md040": "代码块必须指定语言。",
+      "md041": "文件的第一行必须是顶级标题。",
+      "md042": "存在空链接。",
+      "md045": "图片必须有替代文本（alt）。",
+      "md047": "文件末尾必须以单个换行符结束。",
+      "md005": "同一级别列表项的缩进不一致。",
+      "md007": "无序列表缩进。",
+      "md009": "尾随空格。",
+      "md010": "硬制表符。",
+      "md011": "反向链接语法。",
+      "md013": "行长度。",
+      "md014": "美元符号用于命令前未显示输出。",
+      "md018": "ATX 风格标题的井号后没有空格。",
+      "md019": "ATX 风格标题的井号后有多个空格。",
+      "md020": "封闭的 ATX 风格标题的井号内没有空格。",
+      "md021": "封闭的 ATX 风格标题的井号内有多个空格。",
+      "md024": "具有相同内容的多个标题。",
+      "md030": "列表标记后的空格。",
+      "md031": "围栏代码块应被空行包围。",
+      "md034": "使用了裸 URL。",
+      "md037": "强调标记内的空格。",
+      "md038": "代码跨度元素内的空格。",
+      "md039": "链接文本内的空格。",
+      "md043": "必需的标题结构。",
+      "md044": "专有名词应具有正确的大小写。",
+      "md046": "代码块风格。",
+      "md048": "代码围栏风格。",
+      "md049": "强调风格应该一致。",
+      "md050": "强风格应该一致。",
+      "md051": "链接片段必须有效。",
+      "md052": "参考链接和图像必须使用已定义的标签。",
+      "md053": "必须需要链接和图像参考定义。",
+      "md054": "链接和图像风格应该一致。",
+      "md055": "表格管道风格应该一致。",
+      "md056": "表格列数应该一致。",
+      "md058": "表格周围应有空行。",
+      "md059": "链接文本应具有描述性。",
+      "md060": "表格的列样式不一致。"
+    },
+    "view_on_github": "在官方 GitHub 上查看",
+    "search_placeholder": "搜索规则…"
+  },
+  "use_workspace_local_config": "使用工作区本地配置"
 }

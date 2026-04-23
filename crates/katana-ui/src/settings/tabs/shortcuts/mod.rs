@@ -2,11 +2,10 @@ use super::ShortcutsTabOps;
 use crate::app_state::AppState;
 use crate::i18n::I18nOps;
 use crate::state::command_inventory::types::CommandGroup;
-use crate::state::command_inventory::{CommandInventory, CommandInventoryItem};
 use eframe::egui;
-use std::collections::HashMap;
 
 pub mod capture;
+pub mod group;
 pub mod helpers;
 pub mod key_events;
 pub mod modal_widgets;
@@ -47,24 +46,42 @@ impl ShortcutsTabOps {
 
         modal_widgets::ModalWidgets::render_conflict_warning(ui);
 
-        /* WHY: Search bar to filter shortcuts by command name, styled like VS Code */
+        /* WHY: Search bar to filter shortcuts by command name, styled like VS Code, alongside Expand/Collapse buttons */
         let mut search_query = ui.memory(|mem| {
             mem.data
                 .get_temp::<String>(egui::Id::new(SEARCH_FILTER_ID))
                 .unwrap_or_default()
         });
-        let i18n = I18nOps::get();
-        let search_response = crate::widgets::SearchBar::simple(&mut search_query)
-            .hint_text(&i18n.settings.shortcuts.search_placeholder)
-            .show_search_icon(true)
-            .id_source(SEARCH_FILTER_ID)
+        let mut force_open: Option<bool> = None;
+        crate::widgets::AlignCenter::new()
+            .left(|ui| {
+                let i18n_common = &crate::i18n::I18nOps::get().common;
+                if ui.button(&i18n_common.expand_all).clicked() {
+                    force_open = Some(true);
+                }
+                if ui.button(&i18n_common.collapse_all).clicked() {
+                    force_open = Some(false);
+                }
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+            })
             .show(ui);
 
-        if search_response.changed() {
-            let q = search_query.clone();
-            ui.memory_mut(|mem| {
-                mem.data.insert_temp(egui::Id::new(SEARCH_FILTER_ID), q);
-            });
+        ui.add_space(crate::settings::SECTION_SPACING);
+
+        {
+            let i18n = I18nOps::get();
+            let search_response = crate::widgets::SearchBar::simple(&mut search_query)
+                .hint_text(&i18n.settings.shortcuts.search_placeholder)
+                .show_search_icon(true)
+                .id_source(SEARCH_FILTER_ID)
+                .show(ui);
+
+            if search_response.changed() {
+                let q = search_query.clone();
+                ui.memory_mut(|mem| {
+                    mem.data.insert_temp(egui::Id::new(SEARCH_FILTER_ID), q);
+                });
+            }
         }
 
         ui.add_space(crate::settings::SECTION_SPACING);
@@ -87,6 +104,7 @@ impl ShortcutsTabOps {
                 recording_id_salt,
                 &os_bindings,
                 accordion_line,
+                force_open,
             );
         }
 
@@ -101,80 +119,5 @@ impl ShortcutsTabOps {
             s.shortcuts.windows.clear();
             state.config.try_save_settings();
         }
-    }
-
-    /* WHY: Renders one accordion group of shortcuts, filtered by the search query */
-    #[allow(clippy::too_many_arguments)]
-    fn render_group(
-        ui: &mut egui::Ui,
-        _state: &mut AppState,
-        group: CommandGroup,
-        search_lower: &str,
-        recording_id: &str,
-        recording_id_salt: egui::Id,
-        os_bindings: &HashMap<String, String>,
-        accordion_line: bool,
-    ) {
-        let all_cmds = CommandInventory::all();
-        let cmds_in_group: Vec<&CommandInventoryItem> = all_cmds
-            .iter()
-            .filter(|c| {
-                c.group == group
-                    && (search_lower.is_empty()
-                        || (c.label)().to_lowercase().contains(search_lower))
-            })
-            .collect();
-
-        if cmds_in_group.is_empty() {
-            return;
-        }
-
-        ui.push_id(group, |ui| {
-            crate::widgets::Accordion::new(
-                format!("shortcuts_accordion_{:?}", group),
-                egui::RichText::new(group.localized_name())
-                    .strong()
-                    .size(crate::settings::SECTION_HEADER_SIZE),
-                |ui| {
-                    egui_extras::TableBuilder::new(ui)
-                        .resizable(false)
-                        .vscroll(false)
-                        .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                        .column(egui_extras::Column::exact(
-                            crate::settings::tabs::shortcuts::row::ROW_LABEL_WIDTH,
-                        ))
-                        .column(
-                            egui_extras::Column::remainder().at_least(
-                                crate::settings::tabs::shortcuts::row::ROW_SHORTCUT_WIDTH,
-                            ),
-                        )
-                        .column(egui_extras::Column::exact(
-                            crate::settings::tabs::shortcuts::row::ROW_ACTIONS_WIDTH,
-                        ))
-                        .body(|body| {
-                            body.rows(
-                                crate::settings::tabs::shortcuts::row::ROW_H,
-                                cmds_in_group.len(),
-                                |mut row| {
-                                    let cmd = cmds_in_group[row.index()];
-                                    Self::render_command_row(
-                                        &mut row,
-                                        _state,
-                                        cmd,
-                                        recording_id,
-                                        recording_id_salt,
-                                        os_bindings,
-                                    );
-                                },
-                            );
-                        });
-                },
-            )
-            .default_open(true)
-            .show_vertical_line(accordion_line)
-            .show(ui);
-        });
-
-        ui.add_space(crate::settings::SECTION_SPACING);
     }
 }

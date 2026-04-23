@@ -127,19 +127,27 @@ impl LayoutTabOps {
         let mut changed = false;
         let mut to_remove = None;
 
-        ui.vertical(|ui| {
+        ui.with_layout(egui::Layout::top_down(egui::Align::Max), |ui| {
             for (i, item) in list.iter_mut().enumerate() {
                 ui.push_id(i, |ui| {
                     crate::widgets::AlignCenter::new()
                         .shrink_to_fit(true)
-                        .content(|ui| {
-                            let response = ui.text_edit_singleline(item);
+                        .left(|ui| {
+                            const STRING_LIST_INPUT_WIDTH: f32 = 140.0;
+                            let response = ui.add(
+                                egui::TextEdit::singleline(item)
+                                    .desired_width(STRING_LIST_INPUT_WIDTH),
+                            );
                             if response.changed() {
                                 changed = true;
                             }
+                            ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+                        })
+                        .right(|ui| {
                             if ui.button("-").clicked() {
                                 to_remove = Some(i);
                             }
+                            ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
                         })
                         .show(ui);
                 });

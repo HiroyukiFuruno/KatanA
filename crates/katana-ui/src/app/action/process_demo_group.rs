@@ -94,6 +94,17 @@ impl KatanaApp {
                 self.state.document.open_documents.len() - 1
             };
 
+            /* WHY: Force specific view modes for certain demos */
+            if asset.virtual_path.ends_with("lint-fix.md") {
+                self.state
+                    .document
+                    .tab_view_modes
+                    .push(crate::state::document::TabViewMode {
+                        path: path.clone(),
+                        mode: crate::state::document::ViewMode::CodeOnly,
+                    });
+            }
+
             if first_opened_idx.is_none() {
                 first_opened_idx = Some(idx);
             }

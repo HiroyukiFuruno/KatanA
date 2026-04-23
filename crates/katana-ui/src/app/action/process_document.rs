@@ -54,6 +54,7 @@ impl KatanaApp {
             return;
         }
         self.handle_refresh_explorer();
+        self.state.diagnostics.remove_file_diagnostics(&target_path); /* WHY: FB30 */
         let Some(idx) = self
             .state
             .document
@@ -91,18 +92,23 @@ impl KatanaApp {
             Some(active_idx)
         }
     }
-
     pub(super) fn handle_action_select_document(&mut self, p: std::path::PathBuf) {
         self.handle_select_document(p, true);
         if self.state.layout.show_search_modal {
             self.state.layout.show_search_modal = false;
         }
     }
-
     pub(super) fn handle_action_select_and_jump(&mut self, path: std::path::PathBuf, line: usize) {
         self.handle_select_document(path, true);
         if self.state.layout.show_search_modal {
             self.state.layout.show_search_modal = false;
+        }
+        /* WHY: FB1 — If the active document is currently in PreviewOnly mode the editor pane
+         * is not rendered, so scroll_to_line would never be consumed. Force CodeOnly so the
+         * editor becomes visible and the jump actually scrolls to the target line. */
+        use crate::state::document::ViewMode;
+        if self.state.active_view_mode() == ViewMode::PreviewOnly {
+            self.state.set_active_view_mode(ViewMode::CodeOnly);
         }
         self.state.scroll.scroll_to_line = Some(line);
     }

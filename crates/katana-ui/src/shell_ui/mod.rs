@@ -13,8 +13,21 @@ impl ShellUiOps {
         crate::native_menu::NativeMenuOps::update_native_menu_strings_from_i18n();
     }
 
+    pub(crate) fn is_headless() -> bool {
+        if std::env::var("KATANA_HEADLESS").is_ok() {
+            return true;
+        }
+        #[cfg(target_os = "linux")]
+        {
+            if std::env::var("DISPLAY").is_err() && std::env::var("WAYLAND_DISPLAY").is_err() {
+                return true;
+            }
+        }
+        false
+    }
+
     pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
-        rfd::FileDialog::new().pick_folder()
+        std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()).unwrap_or(None)
     }
 
     pub(crate) fn pick_open_workspace() -> AppAction {
@@ -75,6 +88,7 @@ impl eframe::App for KatanaApp {
         }
 
         self.show_modals(ctx);
+        self.update_file_dialog(ctx);
 
         self.state.scroll.scroll_to_line = None;
         crate::views::app_frame::AppFrameOps::intercept_url_commands(ctx, self);

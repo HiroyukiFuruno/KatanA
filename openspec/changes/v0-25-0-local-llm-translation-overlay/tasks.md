@@ -60,8 +60,6 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 3.1 診断パネル (diagnostics)、LLMのAI応答、およびその他要翻訳（eligible target）と判定された箇所に対して、実際の翻訳オーバーレイ表現 (translation overlay UI) を追加する
 - [ ] 3.2 翻訳後のテキストを表示しつつも、元のオリジナルの英語テキストも参照できる導線 (トグル等) を追加する
 - [ ] 3.3 自動翻訳の処理中 (loading) / キャッシュ利用済み (cached) / 失敗に伴うフォールバック (fallback) といった状態の推移を、UI上に視覚的に反映させる
-- [ ] 3.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告（※オーバーレイ表示による領域拡張で、プレビューのスクロール同期やテキスト選択挙動が壊れていないかを含めて入念に検証する）
-- [ ] 3.5 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### Definition of Done (DoD)
 
@@ -72,12 +70,20 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ---
 
-## 4. Final Verification & Release Work (最終確認とリリース対応)
+## 4. User Review (Pre-Final Phase)
 
-- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 4.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 4.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 4.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 4.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.25.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 4.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+- [ ] 4.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
+- [ ] 4.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+
+---
+
+## 5. Final Verification & Release Work (最終確認とリリース対応)
+
+- [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [ ] 5.2 markdownのフォーマット（format）および Lint修正（lintfix）を実行し、全ドキュメントの体裁を整える
+- [ ] 5.3 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 5.4 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [ ] 5.5 `master` に向けて PR（プルリクエスト）を作成する
+- [ ] 5.6 `master` へマージする (※ `--admin` の利用は許容される)
+- [ ] 5.7 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.25.0` のリリースタグ打ちとリリース作成を実行する
+- [ ] 5.8 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
