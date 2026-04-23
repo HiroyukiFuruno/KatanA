@@ -72,6 +72,43 @@ impl KatanaApp {
         theme_colors
     }
 
+    pub(crate) fn update_file_dialog(&mut self, ctx: &egui::Context) {
+        self.file_dialog.update(ctx);
+
+        if let Some(path) = self.file_dialog.take_picked()
+            && let Some(action) = self.pending_dialog_action.take()
+        {
+            self.handle_file_dialog_action(path, action);
+        }
+    }
+
+    fn handle_file_dialog_action(&mut self, path: std::path::PathBuf, action: AppAction) {
+        match action {
+            AppAction::PickOpenWorkspace => {
+                self.handle_open_explorer(path);
+            }
+            AppAction::IngestImageFile => {
+                let Ok(bytes) = std::fs::read(&path) else {
+                    return;
+                };
+                let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("png");
+                self.process_image_ingest(&bytes, ext);
+            }
+            AppAction::PickExportDocument { doc_path, ext, source } => {
+                use crate::app::export_poll::ExportPoll;
+                self.perform_tool_export(
+                    &source,
+                    &ext,
+                    path,
+                    &doc_path,
+                );
+            }
+            _ => {}
+        }
+
+
+    }
+
     fn tick_auto_save(&mut self) {
         let behavior = self.state.config.settings.settings().behavior.clone();
         if behavior.auto_save && behavior.auto_save_interval_secs > 0.0 {

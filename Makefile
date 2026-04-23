@@ -132,11 +132,11 @@ test-integration: ## Run integration tests — fixture tests only (requires: egu
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
-	$(RTK) docker-compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "cargo sweep --time 7 && cargo test -q --workspace"
+	$(RTK) docker compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "cargo sweep --time 7 && cargo test -q --workspace"
 
 .PHONY: check-windows
 check-windows: ## Verify Windows cross-compilation without running tests
-	$(RTK) docker-compose -f platforms/windows/ci/compose.yml run --rm windows-test bash -c "cargo sweep --time 7 && cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests"
+	$(RTK) docker compose -f platforms/windows/ci/compose.yml run --rm windows-test bash -c "cargo sweep --time 7 && cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests"
 
 .PHONY: check-platforms
 check-platforms: check-linux check-windows ## Verify test/compilation across all target platforms (Linux, Windows)
