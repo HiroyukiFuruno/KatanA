@@ -15,6 +15,7 @@ impl TableColumnStyleRule {
         trimmed: &str,
         meta: &OfficialRuleMeta,
         diagnostics: &mut Vec<MarkdownDiagnostic>,
+        is_delimiter_row: bool,
     ) {
         let has_leading = trimmed.starts_with('|');
         let has_trailing = trimmed.trim_end().ends_with('|');
@@ -31,7 +32,12 @@ impl TableColumnStyleRule {
             }
             let s = seg.trim();
             if !s.is_empty() {
-                new_cells.push(format!(" {} ", s));
+                /* WHY: Delimiter rows (|---|) should NOT have spaces. Data rows (| cell |) should. */
+                if is_delimiter_row {
+                    new_cells.push(s.to_string());
+                } else {
+                    new_cells.push(format!(" {} ", s));
+                }
             }
         }
 
@@ -47,6 +53,7 @@ impl TableColumnStyleRule {
             new_line.push('|');
         }
 
+        /* WHY: Joined segments should have no spaces around | if delimiter, or use the spaces if data. */
         new_line.push_str(&new_cells.join("|"));
 
         if has_trailing {
@@ -137,7 +144,15 @@ impl MarkdownRule for TableColumnStyleRule {
                 /* WHY: We are inside a table. Does this line look like a table row? */
                 if trimmed.contains('|') {
                     /* WHY: It's a data row (or another delimiter row, which is weird but okay) */
-                    Self::fix_table_row(file_path, i, line, trimmed, &meta, &mut diagnostics);
+                    Self::fix_table_row(
+                        file_path,
+                        i,
+                        line,
+                        trimmed,
+                        &meta,
+                        &mut diagnostics,
+                        is_delimiter_row,
+                    );
                 } else {
                     /* WHY: Table ended */
                     in_table = false;
@@ -150,7 +165,7 @@ impl MarkdownRule for TableColumnStyleRule {
                 /* WHY: Check if previous line could be a header row */
                 let prev_has_pipe = i > 0 && lines[i - 1].trim().contains('|');
                 if prev_has_pipe {
-                    /* WHY: Format the header row (i - 1) */
+                    /* WHY: Format the header row (i - 1) as a non-delimiter row */
                     Self::fix_table_row(
                         file_path,
                         i - 1,
@@ -158,10 +173,11 @@ impl MarkdownRule for TableColumnStyleRule {
                         lines[i - 1].trim_start(),
                         &meta,
                         &mut diagnostics,
+                        false,
                     );
                 }
-                /* WHY: Format the delimiter row (i) */
-                Self::fix_table_row(file_path, i, line, trimmed, &meta, &mut diagnostics);
+                /* WHY: Format the delimiter row (i) as a delimiter row */
+                Self::fix_table_row(file_path, i, line, trimmed, &meta, &mut diagnostics, true);
             }
         }
 

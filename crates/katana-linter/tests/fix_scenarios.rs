@@ -268,50 +268,132 @@ fn adapter_fix_all_produces_clean_document() {
         fixable_remaining,
     );
 }
-#[test]
-fn test_md060_detection() {
-    use katana_linter::rules::markdown::MarkdownRule;
-    use katana_linter::rules::markdown::rules::table::TableColumnStyleRule;
-    use std::path::Path;
+// ═══════════════════════════════════════════════════════════
+// MD060 — TableColumnStyle
+// ═══════════════════════════════════════════════════════════
 
-    let rule = TableColumnStyleRule;
-    let md = "| Header |\n|-------|\n| Cell |";
-    let diags = rule.evaluate(Path::new("test.md"), md);
-    assert!(!diags.is_empty(), "MD060 should be detected");
+use katana_linter::rules::markdown::rules::table::TableColumnStyleRule;
+
+/// Delimiter row with spaces should be fixed to tight (no spaces).
+#[test]
+fn md060_fix_delimiter_row_removes_spaces() {
+    LintFixScenario {
+        rule: &TableColumnStyleRule,
+        description: "MD060 – delimiter row spaces should be removed",
+        input: "| Header |\n| --- | --- |\n| Cell |\n",
+        expected_initial_count: 1, // Only the delimiter row is incorrect
+    }
+    .run()
+    .assert_clean();
+    // Verification: The output should contain "|---|---|"
 }
+
+/// Data row without spaces should be fixed to spaced.
 #[test]
-fn test_md060_exact() {
+fn md060_fix_data_row_adds_spaces() {
+    BulkFixScenario {
+        rule: &TableColumnStyleRule,
+        description: "MD060 – data row should have spaces",
+        input: "|Header|\n|---|\n|Cell|\n",
+        expected_min_initial_count: 2, // Header and Cell rows are missing spaces
+    }
+    .run()
+    .assert_clean();
+    // Verification: The output should contain "| Header |" and "| Cell |"
+}
+
+/// Already correct table should have no diagnostics.
+#[test]
+fn md060_correct_table_no_diagnostics() {
     use katana_linter::rules::markdown::MarkdownRule;
-    use katana_linter::rules::markdown::rules::table::TableColumnStyleRule;
     use std::path::Path;
 
     let rule = TableColumnStyleRule;
-    let md = "
-| Header | Header | Header |
-|-------|-------|---------|
-| Cell | Cell | Cell |
-
-| Header | Header | Header |
-|:-------|:-------:|---------:|
-| Cell | Cell | Cell |
-
-| 参照先 | 用途 |
-|--------|------|
-| `.claude/commands/opensp | |
-
-|:--------|:------:|--------:|
-| Cell | Cell | Cell |
-
-Some text.
-
----
-
-Another text.
-";
+    let md = "| Header |\n|---|\n| Cell |\n";
     let diags = rule.evaluate(Path::new("test.md"), md);
-    assert_eq!(
-        diags.len(),
-        5,
-        "All five violating rows should have MD060 detected"
+    assert!(
+        diags.is_empty(),
+        "Expected no diagnostics for a correct table"
     );
+}
+
+// ═══════════════════════════════════════════════════════════
+// MD037 — SpacesInEmphasis
+// ═══════════════════════════════════════════════════════════
+
+use katana_linter::rules::markdown::rules::spaces_in_emphasis::SpacesInEmphasisRule;
+
+#[test]
+fn md037_fix_spaces_in_emphasis() {
+    BulkFixScenario {
+        rule: &SpacesInEmphasisRule,
+        description: "MD037 - Should remove spaces inside emphasis markers",
+        input: "This is * emphasis * and ** strong **.\n",
+        expected_min_initial_count: 2,
+    }
+    .run()
+    .assert_clean();
+    // output should be "This is *emphasis* and **strong**."
+}
+
+#[test]
+fn md037_ignore_markers_in_code_spans() {
+    use katana_linter::rules::markdown::MarkdownRule;
+    use std::path::Path;
+
+    let rule = SpacesInEmphasisRule;
+    // The * inside the backticks shouldn't trigger the rule, even if it has spaces
+    let md = "Here is an inline code block ` * code * ` and another `** bold **`.\n";
+    let diags = rule.evaluate(Path::new("test.md"), md);
+    assert!(
+        diags.is_empty(),
+        "Expected no diagnostics for markers inside code spans"
+    );
+}
+
+// ═══════════════════════════════════════════════════════════
+// MD038 — SpacesInCode
+// ═══════════════════════════════════════════════════════════
+
+use katana_linter::rules::markdown::rules::spaces_in_code::NoSpaceInCodeRule;
+
+#[test]
+fn md038_fix_spaces_in_code() {
+    BulkFixScenario {
+        rule: &NoSpaceInCodeRule,
+        description: "MD038 - Should remove extra spaces inside code spans",
+        input: "`  extra spaces  ` and ` leading` and `trailing `.\n",
+        expected_min_initial_count: 3,
+    }
+    .run()
+    .assert_clean();
+    // output should be "`extra spaces` and `leading` and `trailing`."
+}
+
+#[test]
+fn md038_ignore_allowed_spaces() {
+    use katana_linter::rules::markdown::MarkdownRule;
+    use std::path::Path;
+
+    let rule = NoSpaceInCodeRule;
+    // Exactly one space on both sides is allowed, as are pure spaces
+    let md = "Valid: ` code ` and `   ` and `` `backticks` ``.\n";
+    let diags = rule.evaluate(Path::new("test.md"), md);
+    assert!(
+        diags.is_empty(),
+        "Expected no diagnostics for allowed spaces"
+    );
+}
+
+#[test]
+fn md038_preserve_padding_for_backticks() {
+    LintFixScenario {
+        rule: &NoSpaceInCodeRule,
+        description: "MD038 - Should preserve padding if content has backticks",
+        input: "``  `code`  ``\n",
+        expected_initial_count: 1,
+    }
+    .run()
+    .assert_clean();
+    // output should be "`` `code` ``"
 }

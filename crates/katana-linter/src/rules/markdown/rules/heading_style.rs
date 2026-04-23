@@ -75,5 +75,15 @@ fn is_setext_underline(trimmed: &str) -> bool {
     if trimmed.len() < 2 {
         return false;
     }
-    trimmed.chars().all(|c| c == '=') || trimmed.chars().all(|c| c == '-')
+
+    /* WHY: Exclude lines consisting entirely of hyphens (e.g., `---`)
+       to prevent false positives with thematic breaks and YAML frontmatter.
+       Users often use `---` without preceding blank lines, which technically
+       makes it a Setext heading in Markdown, but usually they meant a horizontal rule.
+    */
+    if trimmed.chars().all(|c| c == '-') {
+        return false;
+    }
+
+    trimmed.chars().all(|c| c == '=')
 }

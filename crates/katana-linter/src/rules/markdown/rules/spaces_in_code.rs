@@ -116,18 +116,38 @@ impl NoSpaceInCodeRule {
         }
 
         let inner_text = &line[inner_start..end_idx];
-        if !inner_text.starts_with(' ') && !inner_text.ends_with(' ') {
+
+        /* WHY: 1. Pure spaces are allowed */
+        if inner_text.chars().all(|c| c == ' ') {
+            return;
+        }
+
+        let has_leading = inner_text.starts_with(' ');
+        let has_trailing = inner_text.ends_with(' ');
+
+        /* WHY: If no spaces at the edges, it's valid */
+        if !has_leading && !has_trailing {
+            return;
+        }
+
+        /* WHY: 2. Exactly one space on BOTH sides is allowed */
+        let has_exact_one_leading = has_leading && !inner_text.starts_with("  ");
+        let has_exact_one_trailing = has_trailing && !inner_text.ends_with("  ");
+
+        if has_exact_one_leading && has_exact_one_trailing {
             return;
         }
 
         /* WHY: Space inside code span detected */
         let trimmed_inner = inner_text.trim();
-        let replacement = format!(
-            "{}{}{}",
-            "`".repeat(count),
-            trimmed_inner,
-            "`".repeat(count)
-        );
+        let needs_padding = trimmed_inner.starts_with('`') || trimmed_inner.ends_with('`');
+
+        let replacement = if needs_padding {
+            format!("{0} {1} {0}", "`".repeat(count), trimmed_inner)
+        } else {
+            format!("{0}{1}{0}", "`".repeat(count), trimmed_inner)
+        };
+
         let fix = Some(crate::rules::markdown::types::DiagnosticFix {
             start_line: line_idx + 1,
             start_column: start_idx + 1,
