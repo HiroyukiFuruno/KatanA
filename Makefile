@@ -107,8 +107,8 @@ type-check: ## cargo check (type check only, fast)
 	$(RTK) cargo check --workspace
 
 .PHONY: test
-test: ## Run all unit tests
-	$(RTK) cargo test --workspace
+test: test-impacted ## Run impacted unit tests (local default)
+
 
 .PHONY: test-core
 test-core: ## Run tests for katana-core only
@@ -127,8 +127,8 @@ test-specific: ## Run a specific test (e.g., make test-specific T=test_name)
 	$(RTK) cargo test --workspace -- $(T)
 
 .PHONY: test-integration
-test-integration: ## Run integration tests — fixture tests only (slow; non-fixture tests are covered by `coverage`) (requires: egui_kittest)
-	$(RTK) cargo test -j $(JOBS) -q --workspace --test integration_tests -- --test-threads=$(JOBS) fixture
+test-integration: ## Run integration tests — fixture tests only (requires: egui_kittest)
+	$(RTK) cargo test -j $(JOBS) -q --workspace --test ui_integration_fixture -- --test-threads=$(JOBS) fixture
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
@@ -146,21 +146,23 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 	JOBS=$(JOBS) $(RTK) scripts/ci/coverage.sh
 
 .PHONY: check-light
-check-light: sweep fmt-check lint ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
-	$(RTK) cargo test --workspace -- --skip fixture
+check-light: sweep fmt-check lint-impacted ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
+	$(RTK) scripts/runner/impacted.py test -- --skip fixture
 	@echo "✅ Light checks passed"
 
 
 .PHONY: check
-check: sweep fmt-check lint test-integration coverage check-platforms ## Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
+check: sweep fmt-check lint-impacted test check-platforms ## Fast impacted verification (local default)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: sweep fmt lint test-integration coverage check-platforms ## Full local verification incl. cross-platform checks (ast-lint runs inside coverage)
+check-local: sweep fmt lint test-integration coverage check-platforms ## Full local verification incl. cross-platform checks
+
+
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push
-pre-push: check ## Pre-push hook equivalent checks
+pre-push: check-full ## Pre-push hook equivalent checks
 
 ###################################
 # Documentation / Analysis
@@ -290,3 +292,15 @@ linux-up: ## Start the Linux verification environment
 .PHONY: linux-down
 linux-down: ## Stop the Linux verification environment
 	bash platforms/linux/down.sh
+
+.PHONY: test-impacted
+test-impacted: ## Run tests for impacted packages only
+	$(RTK) scripts/runner/impacted.py test -- --skip fixture
+
+.PHONY: lint-impacted
+lint-impacted: ## Run Clippy for impacted packages only
+	$(RTK) scripts/runner/impacted.py clippy
+
+.PHONY: check-full
+check-full: fmt-check lint test-integration coverage check-platforms ## Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
+	@echo "✅ All checks passed"

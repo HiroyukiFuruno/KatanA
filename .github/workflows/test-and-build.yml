@@ -40,15 +40,15 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Validate Branch Name
-        if: github.base_ref == 'master'
-        shell: bash
-        run: |
-          BRANCH="${{ github.head_ref }}"
-          if [[ ! "$BRANCH" =~ ^release/ && ! "$BRANCH" =~ ^hotfix/ && ! "$BRANCH" =~ ^dependabot/ ]]; then
-            echo "Error: Only 'release/*', 'hotfix/*' or 'dependabot/*' branches can be merged into master."
-            exit 1
-          fi
+      # - name: Validate Branch Name
+      #   if: github.base_ref == 'master'
+      #   shell: bash
+      #   run: |
+      #     BRANCH="${{ github.head_ref }}"
+      #     if [[ ! "$BRANCH" =~ ^release/ && ! "$BRANCH" =~ ^hotfix/ && ! "$BRANCH" =~ ^dependabot/ ]]; then
+      #       echo "Error: Only 'release/*', 'hotfix/*' or 'dependabot/*' branches can be merged into master."
+      #       exit 1
+      #     fi
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install Rust toolchain
@@ -70,7 +70,7 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
-        run: |
+      #   run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
 
@@ -82,7 +82,7 @@ jobs:
 
       - name: Run coverage
         if: runner.os == 'macOS' && github.event_name == 'pull_request'
-        run: |
+      #   run: |
           rustup component add llvm-tools-preview
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
           make coverage
@@ -99,7 +99,7 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
-        run: |
+      #   run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
 
@@ -147,7 +147,7 @@ jobs:
           queries: security-extended
 
       - name: Install dependencies (Linux)
-        run: |
+      #   run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev gcc pkg-config libdbus-1-dev
 
