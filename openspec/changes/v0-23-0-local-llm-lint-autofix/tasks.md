@@ -1,4 +1,5 @@
 ## Definition of Ready (DoR)
+
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
 - [ ] 対象バージョン 0.23.0 の変更 ID とスコープが確認されていること
 - [ ] `v0.19.0` の markdownlint 検知結果データ構造 (diagnostics payload) が安定利用できる状態であること
@@ -28,6 +29,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 ## 2. Autofix Request and Apply Pipeline (自動修復リクエストと適用パイプラインの構築)
 
 ### Definition of Ready (DoR)
+
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
@@ -49,6 +51,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 ## 3. Settings and Diagnostics UI Integration (設定画面とエラープレビューパネル全体の統合)
 
 ### Definition of Ready (DoR)
+
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 

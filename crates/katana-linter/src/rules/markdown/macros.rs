@@ -1,5 +1,8 @@
 macro_rules! regex_rule {
     ($struct_name:ident, $id:expr, $desc:expr, $regex:expr, $severity:expr) => {
+        crate::regex_rule!($struct_name, $id, $desc, $regex, $severity, &[]);
+    };
+    ($struct_name:ident, $id:expr, $desc:expr, $regex:expr, $severity:expr, $properties:expr) => {
         pub struct $struct_name;
         impl crate::rules::markdown::MarkdownRule for $struct_name {
             fn id(&self) -> &'static str {
@@ -17,6 +20,7 @@ macro_rules! regex_rule {
                     ),
                     parity: crate::rules::markdown::RuleParityStatus::Experimental,
                     is_fixable: false,
+                    properties: $properties,
                 })
             }
             fn evaluate(
@@ -56,6 +60,12 @@ macro_rules! regex_rule {
 #[macro_export]
 macro_rules! official_rule {
     ($struct_name:ident, $id:expr, $docs_url:expr) => {
+        $crate::official_rule!($struct_name, $id, "TBD", "TBD", $docs_url, &[]);
+    };
+    ($struct_name:ident, $id:expr, $docs_url:expr, $properties:expr) => {
+        $crate::official_rule!($struct_name, $id, "TBD", "TBD", $docs_url, $properties);
+    };
+    ($struct_name:ident, $id:expr, $title:expr, $desc:expr, $docs_url:expr, $properties:expr) => {
         pub struct $struct_name;
         impl $crate::rules::markdown::MarkdownRule for $struct_name {
             fn id(&self) -> &'static str {
@@ -64,11 +74,12 @@ macro_rules! official_rule {
             fn official_meta(&self) -> Option<$crate::rules::markdown::OfficialRuleMeta> {
                 Some($crate::rules::markdown::OfficialRuleMeta {
                     code: $id,
-                    title: "TBD",
-                    description: "TBD",
+                    title: $title,
+                    description: $desc,
                     docs_url: $docs_url,
                     parity: $crate::rules::markdown::RuleParityStatus::Official,
                     is_fixable: false,
+                    properties: $properties,
                 })
             }
             fn evaluate(
@@ -78,6 +89,30 @@ macro_rules! official_rule {
             ) -> Vec<$crate::rules::markdown::MarkdownDiagnostic> {
                 vec![]
             }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! rule_prop {
+    ($pt:ident, $k:expr, $d:expr, $def:expr) => {
+        $crate::rules::markdown::RuleProperty {
+            key: $k,
+            prop_type: $crate::rules::markdown::RulePropertyType::$pt,
+            description: $d,
+            default_value: $def,
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! rule_prop_enum {
+    ($k:expr, $d:expr, $def:expr, $options:expr) => {
+        $crate::rules::markdown::RuleProperty {
+            key: $k,
+            prop_type: $crate::rules::markdown::RulePropertyType::Enum($options),
+            description: $d,
+            default_value: $def,
         }
     };
 }

@@ -18,6 +18,14 @@ impl KatanaApp {
         let raw_url = docs_url
             .replace("github.com", "raw.githubusercontent.com")
             .replace("/blob/", "/");
+        /* WHY: GitHub raw file paths are case-sensitive. Rule IDs like "MD038" are uppercase,
+         * but the actual doc filenames are lowercase (e.g. md038.md). Lowercase the filename. */
+        let raw_url = if let Some(pos) = raw_url.rfind('/') {
+            let (prefix, filename) = raw_url.split_at(pos + 1);
+            format!("{}{}", prefix, filename.to_lowercase())
+        } else {
+            raw_url
+        };
 
         let (tx, rx) = std::sync::mpsc::channel();
         self.linter_doc_rx = Some(rx);
@@ -102,11 +110,9 @@ impl KatanaApp {
             self.state.document.active_doc_idx = Some(self.state.document.open_documents.len() - 1);
         }
 
-        /* WHY: Auto-switch to split mode for docs */
-        if self.state.active_view_mode() == crate::app_state::ViewMode::CodeOnly {
-            self.state
-                .set_active_view_mode(crate::app_state::ViewMode::Split);
-        }
+        /* WHY: FB8 - Always use PreviewOnly for LinterDocs, never allow split or code view */
+        self.state
+            .set_active_view_mode(crate::app_state::ViewMode::PreviewOnly);
 
         /* WHY: Trigger a refresh so diagram controller parses it */
         self.pending_action = AppAction::RefreshDocument { is_manual: false };

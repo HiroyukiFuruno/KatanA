@@ -59,16 +59,45 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     let theme_str = settings.theme.as_deref().unwrap_or("dark");
     let locale = settings.locale.as_deref().unwrap_or("en");
     let preset = if theme_str == "light" { "KatanaLight" } else { "KatanaDark" };
+    let explorer_visible = settings.explorer_visible.unwrap_or(false);
+    let linter_enabled = settings.linter_enabled.unwrap_or(true);
 
-    let workspace_block = match workspace_dir {
-        Some(dir) => format!(
+    let no_extension = settings.no_extension.unwrap_or(false);
+    
+    let linter_block = if settings.linter_enabled.is_some() {
+        format!(
+            r#",
+  "linter": {{
+    "enabled": {}
+  }}"#,
+            linter_enabled
+        )
+    } else {
+        String::new()
+    };
+
+    let workspace_block = match (workspace_dir, no_extension) {
+        (Some(dir), true) => format!(
+            r#",
+  "workspace": {{
+    "last_workspace": "{}",
+    "visible_extensions": ["md", "markdown", "txt", ""]
+  }}"#,
+            dir.display()
+        ),
+        (Some(dir), false) => format!(
             r#",
   "workspace": {{
     "last_workspace": "{}"
   }}"#,
             dir.display()
         ),
-        None => String::new(),
+        (None, true) => r#",
+  "workspace": {
+    "visible_extensions": ["md", "markdown", "txt", ""]
+  }"#
+        .to_string(),
+        (None, false) => String::new(),
     };
 
     format!(
@@ -79,7 +108,10 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
   "theme": {{
     "theme": "{theme_str}",
     "preset": "{preset}"
-  }}{workspace_block}
+  }},
+  "layout": {{
+    "explorer_default_visible": {explorer_visible}
+  }}{workspace_block}{linter_block}
 }}"#
     )
 }

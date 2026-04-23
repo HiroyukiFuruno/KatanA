@@ -9,6 +9,8 @@ impl IconsTableOps {
         i18n: &crate::i18n::I18nMessages,
         icon_settings: &mut katana_platform::settings::types::icon::IconSettings,
         settings_changed: &mut bool,
+        force_open: Option<bool>,
+        search_query: &str,
     ) {
         const COL_ICON_WIDTH: f32 = 180.0;
         const COL_VENDOR_WIDTH: f32 = 140.0;
@@ -24,6 +26,11 @@ impl IconsTableOps {
         for icon in crate::icon::ALL_ICONS {
             let name = icon.name();
             if name.starts_with("../system/") {
+                continue;
+            }
+            /* WHY: Filter icons by search query for consistency with other settings tabs */
+            let search_lower = search_query.to_lowercase();
+            if !search_lower.is_empty() && !name.to_lowercase().contains(&search_lower) {
                 continue;
             }
             let vendor = if let Some(slash_idx) = name.find('/') {
@@ -77,9 +84,10 @@ impl IconsTableOps {
             .max_height(BODY_MAX_HEIGHT)
             .show(ui, |ui| {
                 for (category, icons) in grouped_icons {
-                    egui::CollapsingHeader::new(&category)
-                        .default_open(true)
-                        .show(ui, |ui| {
+                    crate::widgets::Accordion::new(
+                        format!("icons_advanced_{}", category),
+                        egui::RichText::new(&category).strong(),
+                        |ui| {
                             egui_extras::TableBuilder::new(ui)
                                 .striped(true)
                                 .resizable(false)
@@ -92,106 +100,22 @@ impl IconsTableOps {
                                 .column(egui_extras::Column::remainder().at_least(COL_PREVIEW_MIN))
                                 .body(|body| {
                                     body.rows(ROW_HEIGHT, icons.len(), |mut row| {
-                                        let icon = icons[row.index()];
-                                        let icon_name = icon.name();
-
-                                        row.col(|ui| {
-                                            /* WHY: Only display the icon name without its category path visually */
-                                            let display_name = icon_name.rsplit('/').next().unwrap_or(icon_name);
-                                            ui.label(display_name);
-                                        });
-
-                                        let mut current_vendor = icon_settings
-                                            .active_overrides
-                                            .get(icon_name)
-                                            .and_then(|o| o.vendor.clone())
-                                            .unwrap_or_else(|| "default".to_string());
-
-                                        let mut row_changed = false;
-
-                                        row.col(|ui| {
-                                            super::row::IconsRowOps::render_vendor_col(
-                                                ui,
-                                                icon_name,
-                                                &mut current_vendor,
-                                                &mut row_changed,
-                                            );
-                                        });
-
-                                        let mut current_color = icon_settings
-                                            .active_overrides
-                                            .get(icon_name)
-                                            .and_then(|o| o.color);
-
-                                        row.col(|_ui| {
-                                            super::row::IconsRowOps::render_color_col(
-                                                _ui,
-                                                &mut current_color,
-                                                &mut row_changed,
-                                                icon_settings.colorful_vendor_icons,
-                                            );
-                                        });
-
-                                        let mut current_frame_color = icon_settings
-                                            .active_overrides
-                                            .get(icon_name)
-                                            .and_then(|o| o.frame_color);
-
-                                        row.col(|_ui| {
-                                            super::row::IconsRowOps::render_frame_color_col(
-                                                _ui,
-                                                &mut current_frame_color,
-                                                &mut row_changed,
-                                                icon_settings.colorful_vendor_icons,
-                                            );
-                                        });
-
-                                        row.col(|ui| {
-                                            super::row::IconsRowOps::render_preview_col(
-                                                ui,
-                                                state,
-                                                icon,
-                                                &current_vendor,
-                                                &current_color,
-                                                &current_frame_color,
-                                                icon_settings.colorful_vendor_icons,
-                                            );
-                                        });
-
-                                        /* WHY: Apply row changes to settings */
-                                        if row_changed {
-                                            *settings_changed = true;
-
-                                            let ov = icon_settings
-                                                .active_overrides
-                                                .entry(icon_name.to_string())
-                                                .or_insert_with(|| {
-                                                    katana_platform::settings::types::icon::IconOverride {
-                                                        vendor: None,
-                                                        color: None,
-                                                        frame_color: None,
-                                                    }
-                                                });
-
-                                            ov.vendor = if current_vendor == "default" {
-                                                None
-                                            } else {
-                                                Some(current_vendor)
-                                            };
-                                            ov.color = current_color;
-                                            ov.frame_color = current_frame_color;
-
-                                            if ov.vendor.is_none()
-                                                && ov.color.is_none()
-                                                && ov.frame_color.is_none()
-                                            {
-                                                icon_settings.active_overrides.remove(icon_name);
-                                            }
-                                            icon_settings.active_preset = None;
-                                        }
+                                        let index = row.index();
+                                        let icon = icons[index];
+                                        super::table_row::IconsTableRowOps::render_row(
+                                            &mut row,
+                                            state,
+                                            icon,
+                                            icon_settings,
+                                            settings_changed,
+                                        );
                                     });
                                 });
-                        });
+                        },
+                    )
+                    .default_open(true)
+                    .force_open(force_open)
+                    .show(ui);
                 }
             });
     }

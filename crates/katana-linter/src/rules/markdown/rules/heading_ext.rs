@@ -24,6 +24,15 @@ impl MarkdownRule for SingleH1Rule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md025.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[
+                crate::rule_prop!(
+                    String,
+                    "front_matter_title",
+                    "RegExp for matching title in front matter",
+                    "^\\s*title\\s*[:=]"
+                ),
+                crate::rule_prop!(Number, "level", "Heading level", "1"),
+            ],
         })
     }
 
@@ -75,6 +84,12 @@ impl MarkdownRule for NoTrailingPunctuationRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md026.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[crate::rule_prop!(
+                String,
+                "punctuation",
+                "Punctuation characters",
+                ".,;:!。，；：！"
+            )],
         })
     }
 

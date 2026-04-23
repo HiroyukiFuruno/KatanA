@@ -5,6 +5,7 @@
 テスト除外で200行を超える全ファイルを、責務単位でサブモジュールに分割する (MUST be separated).
 
 #### Scenario: Verify file decomposition
+
 - **Given** a file with more than 200 lines excluding tests
 - **When** the code is refactored
 - **Then** the file is split into submodules by responsibility

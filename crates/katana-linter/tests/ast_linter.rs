@@ -1,7 +1,7 @@
 use katana_linter::AstLinterOps;
 use katana_linter::rules::domains::changelog::ChangelogOps;
 use katana_linter::rules::domains::i18n::{I18nOps, IconOps};
-use katana_linter::rules::domains::locales::LocaleOps;
+use katana_linter::rules::domains::locales::{LocaleAudit, LocaleCompleteness, LocaleOps};
 use katana_linter::rules::domains::markdown::MarkdownOps;
 use katana_linter::rules::domains::theme::{
     HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps,
@@ -462,6 +462,18 @@ fn ast_linter_global_menu_parity() {
 }
 
 #[test]
+fn ast_linter_settings_alignment() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    use katana_linter::rules::domains::ui::settings_alignment::SettingsAlignmentOps;
+    let all_violations = SettingsAlignmentOps::check_settings_alignment(&root);
+    ViolationReporterOps::panic(
+        "settings-alignment",
+        "Fix: Layout properties inside settings must use `AlignCenter` and `egui::Align::Max` to prevent alignment breakages. Do not use `LabeledToggle` or `Align::Min`.",
+        &all_violations,
+    );
+}
+
+#[test]
 fn ast_linter_shortcut_duplicates() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     let all_violations = katana_linter::rules::domains::shortcut::ShortcutOps::lint(root);
@@ -470,4 +482,130 @@ fn ast_linter_shortcut_duplicates() {
         "Fix: Duplicate shortcuts are not allowed across commands. Ensure each OS shortcut mapping in `os_commands.json` is unique.",
         &all_violations,
     );
+}
+
+#[test]
+fn ast_linter_i18n_no_unused_keys() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let locale_dir = root.join("crates/katana-ui/locales");
+    let all_violations = LocaleAudit::lint_unused_keys(&root, &locale_dir);
+    ViolationReporterOps::panic(
+        "i18n-unused-keys",
+        "Fix: The locale key is not referenced in any Rust source file. \
+         Consider removing it to keep translations lean.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_i18n_rule_descriptions_completeness() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let locale_dir = root.join("crates/katana-ui/locales");
+    let all_violations =
+        LocaleCompleteness::lint_rule_descriptions_completeness(&root, &locale_dir);
+    ViolationReporterOps::panic(
+        "i18n-rule-descriptions-completeness",
+        "Fix: A markdownlint rule does not have a translated description in the locale files. \
+         Please add a translation for it in `rule_descriptions` to ensure the UI shows native text.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_i18n_no_duplicate_values() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let locale_dir = root.join("crates/katana-ui/locales");
+    /* WHY: Only check the base locale (en.json) — duplicates there affect all languages. */
+    let en_path = locale_dir.join("en.json");
+    let all_violations = LocaleAudit::lint_duplicate_values_within_file(&en_path);
+    ViolationReporterOps::panic(
+        "i18n-duplicate-values",
+        "Fix: The locale value appears in multiple sections. \
+         Consider consolidating it into `common` to avoid maintaining the same \
+         translation in multiple places.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_stubs_parity() {
+    let root = katana_linter::utils::LinterFileOps::workspace_root().unwrap();
+    let schema_path =
+        root.join("crates/katana-linter/tests/fixtures/markdownlint-v0.40.0-schema.json");
+    let schema_str = std::fs::read_to_string(&schema_path).expect("Failed to read schema");
+    let schema: serde_json::Value =
+        serde_json::from_str(&schema_str).expect("Failed to parse schema");
+    let props = schema.get("properties").expect("no properties");
+
+    let mut violations = Vec::new();
+
+    for rule in
+        katana_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
+    {
+        let rule_id = rule.id();
+        let meta = rule.official_meta();
+        if meta.is_none() {
+            continue;
+        }
+        let meta = meta.unwrap();
+
+        if let Some(rule_schema) = props.get(rule_id) {
+            let mut schema_props = Vec::new();
+            if let Some(p) = rule_schema.get("properties") {
+                schema_props.push(p);
+            }
+            if let Some(one_of) = rule_schema.get("oneOf").and_then(|v| v.as_array()) {
+                for variant in one_of {
+                    if let Some(p) = variant.get("properties") {
+                        schema_props.push(p);
+                    }
+                }
+            }
+
+            // Check KatanA's properties against the schema
+            for katana_prop in meta.properties {
+                let mut found = false;
+                for p in &schema_props {
+                    if p.get(katana_prop.key).is_some() {
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    violations.push(format!(
+                        "Rule {} has property {} not found in schema",
+                        rule_id, katana_prop.key
+                    ));
+                }
+            }
+
+            // Also check if any schema property is missing from KatanA
+            for p in &schema_props {
+                if let Some(obj) = p.as_object() {
+                    for key in obj.keys() {
+                        if key == "enabled" || key == "severity" {
+                            continue;
+                        }
+                        let mut found = false;
+                        for katana_prop in meta.properties {
+                            if katana_prop.key == key {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if !found {
+                            violations.push(format!(
+                                "Rule {} is missing property {} from schema",
+                                rule_id, key
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if !violations.is_empty() {
+        panic!("Stubs parity violations:\n{}", violations.join("\n"));
+    }
 }

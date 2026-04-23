@@ -18,6 +18,7 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `macos-packaging`: macOS 向けの `.app` バンドルおよび配布用の `.dmg` ファイルを生成する機能の追加。
 - `release-management`: バージョンタグ管理、チェンジログ自動生成、リリースのフロー自動化機能の追加。
 - `oss-transition`: OSS化に向けたCI/CD権限強化、ドキュメントのユーザー向け再構築、パブリック公開タスクの整備。

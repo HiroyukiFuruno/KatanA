@@ -9,6 +9,7 @@ pub mod panels;
 pub mod popups;
 pub mod row;
 pub mod table;
+mod table_row;
 
 impl IconsTabOps {
     /* WHY: Renders the primary entry point for the Icon settings tab. */
@@ -166,7 +167,7 @@ impl IconsTabOps {
                 AlignCenter::new()
                     .content(|ui| {
                         if ui
-                            .button(&i18n.settings.icons.advanced_settings)
+                            .button(&i18n.common.advanced_settings)
                             .on_hover_cursor(egui::CursorIcon::PointingHand)
                             .clicked()
                         {

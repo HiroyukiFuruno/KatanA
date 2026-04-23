@@ -16,6 +16,7 @@ This behavior is self-contained and should be specified independently as `0.16.6
 ### New Capabilities
 
 ### Modified Capabilities
+
 - `tab-context-menu`: The visible pin icon on a pinned tab becomes a direct unpin affordance
 
 ## Impact

@@ -24,6 +24,15 @@ impl MarkdownRule for NoInlineHtmlRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md033.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[
+                crate::rule_prop!(StringArray, "allowed_elements", "Allowed elements", "[]"),
+                crate::rule_prop!(
+                    StringArray,
+                    "table_allowed_elements",
+                    "Allowed elements in tables",
+                    "[]"
+                ),
+            ],
         })
     }
 
@@ -71,6 +80,10 @@ impl MarkdownRule for FencedCodeLanguageRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md040.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[
+                crate::rule_prop!(StringArray, "allowed_languages", "List of languages", "[]"),
+                crate::rule_prop!(Boolean, "language_only", "Require language only", "false"),
+            ],
         })
     }
 
@@ -119,6 +132,21 @@ impl MarkdownRule for FirstLineHeadingRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md041.md",
             parity: RuleParityStatus::Official,
             is_fixable: false,
+            properties: &[
+                crate::rule_prop!(
+                    Boolean,
+                    "allow_preamble",
+                    "Allow content before first heading",
+                    "false"
+                ),
+                crate::rule_prop!(
+                    String,
+                    "front_matter_title",
+                    "RegExp for matching title in front matter",
+                    "^\\s*title\\s*[:=]"
+                ),
+                crate::rule_prop!(Number, "level", "Heading level", "1"),
+            ],
         })
     }
 
@@ -146,52 +174,5 @@ impl MarkdownRule for FirstLineHeadingRule {
             official_meta: Some(meta),
             fix_info: None,
         }]
-    }
-}
-
-/// MD042 / no-empty-links — No empty links.
-pub struct NoEmptyLinksRule;
-
-impl MarkdownRule for NoEmptyLinksRule {
-    fn id(&self) -> &'static str {
-        "MD042"
-    }
-
-    fn official_meta(&self) -> Option<OfficialRuleMeta> {
-        Some(OfficialRuleMeta {
-            code: "MD042",
-            title: "no-empty-links",
-            description: "No empty links.",
-            docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md042.md",
-            parity: RuleParityStatus::Official,
-            is_fixable: false,
-        })
-    }
-
-    fn evaluate(&self, file_path: &Path, content: &str) -> Vec<MarkdownDiagnostic> {
-        let meta = self.official_meta().expect("always Some for MD042");
-        let mut diagnostics = Vec::new();
-        let mut in_code_block = false;
-        for (i, line) in content.lines().enumerate() {
-            let trimmed = line.trim_start();
-            if RuleHelpers::is_fence(trimmed) {
-                in_code_block = !in_code_block;
-                continue;
-            }
-            if in_code_block {
-                continue;
-            }
-            if line.contains("]()") || line.contains("](#)") {
-                RuleHelpers::push_diag(
-                    &mut diagnostics,
-                    file_path,
-                    i,
-                    line,
-                    &meta,
-                    DiagnosticSeverity::Warning,
-                );
-            }
-        }
-        diagnostics
     }
 }

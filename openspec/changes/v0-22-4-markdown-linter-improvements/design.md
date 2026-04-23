@@ -56,3 +56,33 @@ markdownlint の完全ルールサポート、VSCode スタイルの視覚イン
 - markdownlint 公式 GitHub リポジトリから非同期 HTTP リクエストで生の Markdown コンテンツを取得
 - **セッションキャッシュ**: 取得した Markdown をセッション中メモリにキャッシュし、繰り返しのネットワークアクセスを防止
 - 取得した Markdown を KatanA の仮想プレビュー領域でネイティブにレンダリングし、ユーザーをアプリ内に留める
+
+## 5. 外部クレートへの移行計画（FB10: 技術的負債）
+
+### 調査結果
+
+v0.22.4 で Rust エコシステムの Markdown リンタークレートを調査した結果、**現時点で KatanA に組み込み可能な成熟したライブラリクレートは存在しない** ことが判明した。
+
+#### 候補クレートの評価
+
+| クレート | Stars | Forks | ルール数 | Fix | ライブラリ API | 評価 |
+|---|---|---|---|---|---|---|
+| `rumdl` | ⭐1,100+ | 46 | 71 | ✅ | ❌ CLI 専用（docs.rs 404） | ライブラリとして利用不可 |
+| `mkdlint` | ⭐0 | 0 | 64 | ✅ 90.6% | ✅ `lint_sync()`, `apply_fixes()` | API は完璧だが将来性リスク大 |
+| `markdownlint-rs` | 不明 | 不明 | 不明 | ✅ | 不明 | 情報不足で判断不能 |
+
+#### 詳細
+
+- **`rumdl`**: Star数・活発さはトップだが、`[lib]` は CLI の内部実装であり公開 API ドキュメントが存在しない。`clap`, `tower-lsp`, `tokio` 等の CLI/LSP 依存を引きずる。ライブラリとしての組み込みは非推奨。
+- **`mkdlint`**: docs.rs で 100% documented。`lint_sync()` / `apply_fixes()` という明確なライブラリ API を持ち、README にも「As a Library Dependency」として利用方法を明記。ただし star 0 / fork 0 / 185 commits で、単独開発者プロジェクトの域を出ない。
+
+### 決定事項
+
+- **方針**: 外部クレートへの依存ではなく、**`katana-markdown-linter` を独立リポジトリとして新設**する
+- **リポジトリ**: [HiroyukiFuruno/katana-markdown-linter](https://github.com/HiroyukiFuruno/katana-markdown-linter)
+- **理由**: 成熟したライブラリクレートが存在しないため、Library-First 設計の自前クレートを公開リポジトリで管理
+- **スコープ**: `katana-linter/src/rules/markdown/` 配下の全コードを新リポジトリに移行
+  - `katana-linter` は AST/コード品質ルール（`rules/coding/`, `rules/structure/`, `rules/domains/`）に専念
+  - `katana-markdown-linter` は markdownlint 互換ルール + fix 機能を独立クレートとして提供
+- **統合**: `katana-linter` が `katana-markdown-linter` を git 依存として参照
+- **拡張**: crates.io への公開、`pulldown-cmark` ベースの AST パーサ導入等

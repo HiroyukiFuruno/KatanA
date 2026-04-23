@@ -33,7 +33,7 @@ impl DocumentEditOps for KatanaApp {
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
-        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+        self.state.diagnostics.last_buffer_update = Some(std::time::Instant::now()); /* WHY: FB32 */
     }
 
     fn handle_apply_lint_fixes(
@@ -53,16 +53,20 @@ impl DocumentEditOps for KatanaApp {
         });
 
         for fix in fixes {
+            /* WHY: DiagnosticFix uses 1-indexed line numbers, but
+             * line_col_to_byte_index expects 0-indexed lines.
+             * Without this conversion, the replacement targets the wrong
+             * line, causing duplicate/shifted text (FB29 root cause). */
             let start_opt =
                 crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
                     &doc.buffer,
-                    fix.start_line,
+                    fix.start_line.saturating_sub(1),
                     fix.start_column,
                 );
             let end_opt =
                 crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
                     &doc.buffer,
-                    fix.end_line,
+                    fix.end_line.saturating_sub(1),
                     fix.end_column,
                 );
             if let (Some(start), Some(end)) = (start_opt, end_opt) {
@@ -88,6 +92,6 @@ impl DocumentEditOps for KatanaApp {
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
-        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+        self.handle_action_refresh_diagnostics();
     }
 }

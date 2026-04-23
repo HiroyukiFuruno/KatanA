@@ -1,4 +1,5 @@
 ## Definition of Ready (DoR)
+
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
 - [ ] 対象バージョン 0.24.0 の変更 ID とスコープが確認されていること
 - [ ] `v0.23.0` で実装したローカルLLMプロバイダー設定と接続可否判定 (availability 判定) が利用可能であること
@@ -28,6 +29,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 ## 2. Write and Insert Execution Pipeline (ファイル書き込みとテキスト挿入実行パイプラインの構築)
 
 ### Definition of Ready (DoR)
+
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
@@ -48,14 +50,13 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 ## 3. UI Integration and Review Flow (UIの統合とプレビュー・レビュー体験の構築)
 
 ### Definition of Ready (DoR)
+
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
 - [ ] 3.1 3種類の生成アクション（既存ドキュメント / 新規ファイル / テンプレート）を呼び出すための入り口 (entry point) を UI に追加する
 - [ ] 3.2 LLMによる生成結果のプレビュー、挿入・保存先の選択、および最終確認ボタン (confirmation) への UI 導線を追加する
 - [ ] 3.3 プロバイダー接続エラー (unavailable)、同名ファイルとの衝突 (file collision)、生成結果が空 (empty result) 等の異常状態 (error state) を表現する表示を追加する
-- [ ] 3.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 3.5 ユーザーからのフィードバックに基づく UI の微調整および改善実装
 
 ### Definition of Done (DoD)
 
@@ -66,12 +67,20 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 ---
 
-## 4. Final Verification & Release Work (最終確認とリリース対応)
+## 4. User Review (Pre-Final Phase)
 
-- [ ] 4.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
-- [ ] 4.2 `make check` がエラーなし (exit code 0) で通過することを確認する
-- [ ] 4.3 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
-- [ ] 4.4 `master` に向けて PR（プルリクエスト）を作成する
-- [ ] 4.5 `master` へマージする (※ `--admin` の利用は許容される)
-- [ ] 4.6 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.24.0` のリリースタグ打ちとリリース作成を実行する
-- [ ] 4.7 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする
+- [ ] 4.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
+- [ ] 4.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+
+---
+
+## 5. Final Verification & Release Work (最終確認とリリース対応)
+
+- [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
+- [ ] 5.2 markdownのフォーマット（format）および Lint修正（lintfix）を実行し、全ドキュメントの体裁を整える
+- [ ] 5.3 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 5.4 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
+- [ ] 5.5 `master` に向けて PR（プルリクエスト）を作成する
+- [ ] 5.6 `master` へマージする (※ `--admin` の利用は許容される)
+- [ ] 5.7 `.agents/skills/release_workflow/SKILL.md` を用いて、`0.24.0` のリリースタグ打ちとリリース作成を実行する
+- [ ] 5.8 `/opsx-archive` などの OpenSpec スキルを活用して、このチェンジ全体をアーカイブする

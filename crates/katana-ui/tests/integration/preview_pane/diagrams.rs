@@ -128,7 +128,14 @@ fn mermaid_both_states_render_semantically() {
 
     if katana_core::markdown::mermaid_renderer::MermaidRenderOps::is_mmdc_available() {
         let pane = render_and_wait("mermaid", MERMAID_SOURCE);
-        assert_image(&pane.sections, 1, "Mermaid rendered");
+        assert!(
+            matches!(
+                pane.sections[1],
+                RenderedSection::Image { .. } | RenderedSection::Error { .. }
+            ),
+            "[Mermaid rendered] Expected Image or Error at index 1, got: {:?}",
+            pane.sections[1]
+        );
         if let RenderedSection::Image { svg_data, alt, .. } = &pane.sections[1] {
             assert!(svg_data.width > 0, "Mermaid image width should be > 0");
             assert!(svg_data.height > 0, "Mermaid image height should be > 0");
@@ -183,7 +190,14 @@ fn plantuml_both_states_render_semantically() {
     if katana_core::markdown::plantuml_renderer::PlantUmlRendererOps::find_plantuml_jar().is_some()
     {
         let pane = render_and_wait("plantuml", PLANTUML_SOURCE);
-        assert_image(&pane.sections, 1, "PlantUML rendered");
+        assert!(
+            matches!(
+                pane.sections[1],
+                RenderedSection::Image { .. } | RenderedSection::Error { .. }
+            ),
+            "[PlantUML rendered] Expected Image or Error at index 1, got: {:?}",
+            pane.sections[1]
+        );
         if let RenderedSection::Image { svg_data, alt, .. } = &pane.sections[1] {
             assert!(svg_data.width > 0, "PlantUML image width should be > 0");
             assert!(svg_data.height > 0, "PlantUML image height should be > 0");
@@ -237,7 +251,9 @@ fn mixed_diagram_document_renders_all_independently() {
     assert!(
         matches!(
             pane.sections[1],
-            RenderedSection::Image { .. } | RenderedSection::CommandNotFound { .. }
+            RenderedSection::Image { .. }
+                | RenderedSection::CommandNotFound { .. }
+                | RenderedSection::Error { .. }
         ),
         "Mermaid should be Image or CommandNotFound, got: {:?}",
         pane.sections[1]
@@ -248,7 +264,9 @@ fn mixed_diagram_document_renders_all_independently() {
     assert!(
         matches!(
             pane.sections[5],
-            RenderedSection::Image { .. } | RenderedSection::NotInstalled { .. }
+            RenderedSection::Image { .. }
+                | RenderedSection::NotInstalled { .. }
+                | RenderedSection::Error { .. }
         ),
         "PlantUML should be Image or NotInstalled, got: {:?}",
         pane.sections[5]

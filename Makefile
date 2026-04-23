@@ -47,23 +47,23 @@ init: ## Bootstrap the development environment interactively
 ###################################
 
 .PHONY: run-release
-run-release: ## Run the application in release mode
+run-release: sweep ## Run the application in release mode
 	$(RTK) cargo run --bin KatanA --release
 
 .PHONY: run-performance
-run-performance: ## Run in release mode with FPS monitor logging
+run-performance: sweep ## Run in release mode with FPS monitor logging
 	RUST_LOG=warn $(RTK) cargo run --bin KatanA --release
 
 .PHONY: run
-run: build ## Run the application (KatanA)
+run: sweep build ## Run the application (KatanA)
 	$(RTK) cargo run --bin KatanA
 
 .PHONY: watch
-watch: ## Watch file changes & auto check (requires cargo-watch)
+watch: sweep ## Watch file changes & auto check (requires cargo-watch)
 	$(RTK) cargo watch -x 'check --workspace' -x 'test --workspace'
 
 .PHONY: watch-run
-watch-run: ## Watch file changes & auto restart (requires cargo-watch)
+watch-run: sweep ## Watch file changes & auto restart (requires cargo-watch)
 	$(RTK) cargo watch -x 'run --bin KatanA'
 
 ###################################
@@ -71,11 +71,11 @@ watch-run: ## Watch file changes & auto restart (requires cargo-watch)
 ###################################
 
 .PHONY: build
-build: ## Build the entire workspace (debug)
+build: sweep ## Build the entire workspace (debug)
 	$(RTK) cargo build --workspace
 
 .PHONY: build-release
-build-release: ## Release build (optimized)
+build-release: sweep ## Release build (optimized)
 	$(RTK) cargo build --workspace --release
 
 ###################################
@@ -132,11 +132,11 @@ test-integration: ## Run integration tests — fixture tests only (slow; non-fix
 
 .PHONY: check-linux
 check-linux: ## Verify test execution in isolated Linux environment
-	$(RTK) docker-compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test cargo test -q --workspace
+	$(RTK) docker-compose -f platforms/linux/ci/compose.yml run --rm -e RUSTFLAGS="$(RUSTFLAGS) -C link-arg=-fuse-ld=lld" ubuntu-test bash -c "cargo sweep --time 7 && cargo test -q --workspace"
 
 .PHONY: check-windows
 check-windows: ## Verify Windows cross-compilation without running tests
-	$(RTK) docker-compose -f platforms/windows/ci/compose.yml run --rm windows-test cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests
+	$(RTK) docker-compose -f platforms/windows/ci/compose.yml run --rm windows-test bash -c "cargo sweep --time 7 && cargo xwin check -q --workspace --target x86_64-pc-windows-msvc --tests"
 
 .PHONY: check-platforms
 check-platforms: check-linux check-windows ## Verify test/compilation across all target platforms (Linux, Windows)
@@ -146,17 +146,17 @@ coverage: ## Run tests and verify 100% test coverage (requires cargo-llvm-cov)
 	JOBS=$(JOBS) $(RTK) scripts/ci/coverage.sh
 
 .PHONY: check-light
-check-light: fmt-check lint ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
+check-light: sweep fmt-check lint ## Quick verification (skip slow fixture tests; ast-lint runs inside cargo test)
 	$(RTK) cargo test --workspace -- --skip fixture
 	@echo "✅ Light checks passed"
 
 
 .PHONY: check
-check: fmt-check lint test-integration coverage check-platforms ## Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
+check: sweep fmt-check lint test-integration coverage check-platforms ## Full verification (fmt + clippy + fixture IT + 100% coverage; ast-lint runs inside coverage)
 	@echo "✅ All checks passed"
 
 .PHONY: check-local
-check-local: fmt lint test-integration coverage check-platforms ## Full local verification incl. cross-platform checks (ast-lint runs inside coverage)
+check-local: sweep fmt lint test-integration coverage check-platforms ## Full local verification incl. cross-platform checks (ast-lint runs inside coverage)
 	@echo "✅ All checks passed"
 
 .PHONY: pre-push
@@ -246,8 +246,12 @@ endif
 # Maintenance
 ###################################
 
+.PHONY: sweep
+sweep: ## Sweep old build artifacts locally (older than 7 days)
+	@$(RTK) cargo sweep --time 7 || true
+
 .PHONY: clean
-clean: ## Remove build artifacts
+clean: sweep ## Remove build artifacts
 	cargo clean
 
 .PHONY: update-safe

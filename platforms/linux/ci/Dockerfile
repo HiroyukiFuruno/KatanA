@@ -15,5 +15,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN cargo install cargo-sweep
+
 WORKDIR /app
-CMD ["cargo", "test", "--workspace"]
+CMD cargo sweep --time 7 && cargo test --workspace

@@ -16,6 +16,7 @@ This is a shell-level interaction contract problem, not an isolated widget bug. 
 ### New Capabilities
 
 ### Modified Capabilities
+
 - `workspace-shell`: Foreground windows, popups, menus, and overlays block pointer interaction from reaching background panes
 
 ## Impact
@@ -41,4 +42,4 @@ This is a shell-level interaction contract problem, not an isolated widget bug. 
 - Affected tests:
   - `crates/katana-ui/tests/integration/*.rs`
   - `crates/katana-ui/src/*_tests.rs`
- - No external API change is expected, but shell interaction behavior changes at the UI contract level.
+- No external API change is expected, but shell interaction behavior changes at the UI contract level.

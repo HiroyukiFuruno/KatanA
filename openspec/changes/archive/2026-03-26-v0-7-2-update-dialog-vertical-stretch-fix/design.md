@@ -8,10 +8,12 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - `ScrollArea::auto_shrink` を `[true, true]` に変更してコンテンツに追従した高さを確保する
 - integration test で縦伸び状態（高さが過剰に大きい）を TDD(RED) で再現し、GREEN で修正を担保する
 
 **Non-Goals:**
+
 - ウィンドウの width や他のダイアログへの変更
 
 ## Decisions

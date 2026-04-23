@@ -159,6 +159,7 @@ impl Icon {
             Self::Download => '⬇',
             Self::Hourglass => '⏳',
             Self::Info => 'ℹ',
+            Self::LightBulb => '💡',
             _ => ' ',
         }
     }

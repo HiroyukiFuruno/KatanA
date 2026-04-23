@@ -73,12 +73,29 @@ impl KatanaApp {
         }
     }
 
-    pub(super) fn handle_action_refresh_diagnostics(&mut self) {
+    pub(crate) fn handle_action_refresh_diagnostics(&mut self) {
         let Some(doc) = self.state.active_document() else {
             return;
         };
         let path = doc.path.clone();
         let content = doc.buffer.clone();
+
+        /* WHY: Virtual documents (e.g. "Katana://LinterDocs/MD*.md", "Katana://Demo/...") are not real
+         * filesystem files; running the linter on them would produce spurious diagnostics
+         * shown to the user without a backing file. Skip any path starting with "Katana://". */
+        use crate::state::document::VirtualPathExt as _;
+        if path.is_virtual_path() {
+            return;
+        }
+
+        let is_markdown = path
+            .extension()
+            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+            .unwrap_or(false);
+        if !is_markdown {
+            return;
+        }
+
         let linter_settings = &self.state.config.settings.settings().linter;
         let enabled = linter_settings.enabled;
         let mut severity_map = std::collections::HashMap::new();

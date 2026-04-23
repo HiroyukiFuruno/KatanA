@@ -1,5 +1,7 @@
 use super::types::*;
 use crate::app_state::AppState;
+/* WHY: allow(file_length) */
+/* WHY: allow(nesting_depth) */
 use eframe::egui;
 
 impl<'a> ProblemsPanel<'a> {
@@ -28,30 +30,63 @@ impl<'a> ProblemsPanel<'a> {
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
-                        ui.heading(
-                            crate::i18n::I18nOps::get()
-                                .status
-                                .problems_panel_title
-                                .clone(),
-                        );
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let mut expand_action = None;
+                        /* WHY: allow(horizontal_layout) */
+                        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                             if ui
-                                .button(
-                                    crate::i18n::I18nOps::get()
-                                        .status
-                                        .problems_panel_close
-                                        .clone(),
+                                .add(
+                                    crate::Icon::ExpandAll.button(ui, crate::icon::IconSize::Small),
                                 )
                                 .clicked()
                             {
-                                self.state.diagnostics.is_panel_open = false;
+                                expand_action = Some(true);
                             }
+                            if ui
+                                .add(
+                                    crate::Icon::CollapseAll
+                                        .button(ui, crate::icon::IconSize::Small),
+                                )
+                                .clicked()
+                            {
+                                expand_action = Some(false);
+                            }
+
+                            if expand_action.is_some() {
+                                self.state.diagnostics.expand_all = expand_action;
+                            }
+
+                            const TITLE_BOTTOM_MARGIN: f32 = 8.0;
+                            ui.add_space(TITLE_BOTTOM_MARGIN);
+
+                            ui.heading(
+                                crate::i18n::I18nOps::get()
+                                    .status
+                                    .problems_panel_title
+                                    .clone(),
+                            );
+
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |ui| {
+                                    if ui
+                                        .button(
+                                            crate::i18n::I18nOps::get()
+                                                .status
+                                                .problems_panel_close
+                                                .clone(),
+                                        )
+                                        .clicked()
+                                    {
+                                        self.state.diagnostics.is_panel_open = false;
+                                    }
+                                },
+                            );
                         });
                     })
                     .show(ui);
                 ui.separator();
 
-                egui::ScrollArea::vertical().show(ui, |ui| {
+                egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let total = self.state.diagnostics.total_problems();
                     if total == 0 {
                         ui.label(
@@ -61,106 +96,18 @@ impl<'a> ProblemsPanel<'a> {
                             .weak(),
                         );
                     } else {
+                        let expand_all = self.state.diagnostics.expand_all;
                         for (path, diagnostics) in &self.state.diagnostics.problems {
-                            if let Some(action) = show_file_diagnostics(ui, path, diagnostics) {
+                            if let Some(action) =
+                                super::diagnostics_renderer::DiagnosticsRendererOps::show_file_diagnostics(ui, path, diagnostics, expand_all)
+                            {
                                 *self.pending_action = action;
                             }
                             ui.add_space(SPACING);
                         }
+                        self.state.diagnostics.expand_all = None;
                     }
                 });
             });
     }
-}
-
-fn show_file_diagnostics(
-    ui: &mut egui::Ui,
-    path: &std::path::Path,
-    diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
-) -> Option<crate::app_state::AppAction> {
-    let active_diags: Vec<_> = diagnostics
-        .iter()
-        .filter(|d| d.official_meta.is_some())
-        .collect();
-
-    if active_diags.is_empty() {
-        return None;
-    }
-
-    let filename = path.file_name().unwrap_or_default().to_string_lossy();
-    ui.label(egui::RichText::new(filename).strong());
-    for diag in active_diags {
-        if let Some(action) = show_diagnostic_row(ui, diag, path) {
-            return Some(action);
-        }
-    }
-    None
-}
-
-fn show_diagnostic_row(
-    ui: &mut egui::Ui,
-    diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
-    path: &std::path::Path,
-) -> Option<crate::app_state::AppAction> {
-    let icon = match diag.severity {
-        katana_linter::rules::markdown::DiagnosticSeverity::Error => "🔴",
-        katana_linter::rules::markdown::DiagnosticSeverity::Warning => "🟡",
-        katana_linter::rules::markdown::DiagnosticSeverity::Info => "🔵",
-    };
-
-    let meta = diag.official_meta.as_ref().expect("hidden rules filtered");
-    let is_experimental =
-        meta.parity == katana_linter::rules::markdown::RuleParityStatus::Experimental;
-
-    let mut action = None;
-
-    const PROBLEM_ITEM_MARGIN_X: f32 = 4.0;
-    const PROBLEM_ITEM_MARGIN_Y: f32 = 2.0;
-
-    egui::Frame::none()
-        .inner_margin(egui::vec2(PROBLEM_ITEM_MARGIN_X, PROBLEM_ITEM_MARGIN_Y))
-        .show(ui, |ui| {
-            ui.horizontal_wrapped(|ui| {
-                ui.label(icon);
-
-                let rule_label = if is_experimental {
-                    format!("{} (Exp)", meta.code)
-                } else {
-                    meta.code.to_string()
-                };
-
-                let location = format!("[{}:{}]", diag.range.start_line, diag.range.start_column);
-                let msg = format!("{} {} {}", location, rule_label, diag.message);
-
-                let mut button_text = egui::RichText::new(msg);
-                if is_experimental {
-                    button_text = button_text.weak();
-                }
-
-                /* WHY: scroll list item; jump triggered on click */
-                if egui::Widget::ui(
-                    egui::Button::selectable(false, button_text).frame_when_inactive(true),
-                    ui,
-                )
-                .clicked()
-                {
-                    action = Some(crate::app_state::AppAction::SelectDocumentAndJump {
-                        path: path.to_path_buf(),
-                        line: diag.range.start_line,
-                        byte_range: 0..0,
-                    });
-                }
-
-                ui.label(egui::RichText::new(meta.description).italics());
-
-                if !meta.docs_url.is_empty() {
-                    ui.hyperlink_to(
-                        crate::i18n::I18nOps::get().linter.docs.as_str(),
-                        meta.docs_url,
-                    );
-                }
-            });
-        });
-
-    action
 }

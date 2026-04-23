@@ -7,54 +7,6 @@ use std::path::Path;
 /* WHY: Section: Heading-related markdownlint rule implementations
 ======================================================= */
 
-/// MD003 / heading-style — Enforce consistent heading style (atx).
-pub struct HeadingStyleRule;
-
-impl MarkdownRule for HeadingStyleRule {
-    fn id(&self) -> &'static str {
-        "MD003"
-    }
-
-    fn official_meta(&self) -> Option<OfficialRuleMeta> {
-        Some(OfficialRuleMeta {
-            code: "MD003",
-            title: "heading-style",
-            description: "Heading style should be consistent (atx expected).",
-            docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md003.md",
-            parity: RuleParityStatus::Official,
-            is_fixable: false,
-        })
-    }
-
-    fn evaluate(&self, file_path: &Path, content: &str) -> Vec<MarkdownDiagnostic> {
-        let meta = self.official_meta().expect("always Some for MD003");
-        let mut diagnostics = Vec::new();
-        let mut in_code_block = false;
-        for (i, line) in content.lines().enumerate() {
-            let trimmed = line.trim_start();
-            if RuleHelpers::is_fence(trimmed) {
-                in_code_block = !in_code_block;
-                continue;
-            }
-            if in_code_block {
-                continue;
-            }
-            /* WHY: Detect setext-style headings (underline with === or ---) */
-            if is_setext_underline(trimmed) && i > 0 {
-                RuleHelpers::push_diag(
-                    &mut diagnostics,
-                    file_path,
-                    i,
-                    line,
-                    &meta,
-                    DiagnosticSeverity::Warning,
-                );
-            }
-        }
-        diagnostics
-    }
-}
-
 /// MD022 / blanks-around-headings — Headings should be surrounded by blank lines.
 pub struct BlanksAroundHeadingsRule;
 
@@ -71,6 +23,10 @@ impl MarkdownRule for BlanksAroundHeadingsRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md022.md",
             parity: RuleParityStatus::Official,
             is_fixable: true,
+            properties: &[
+                crate::rule_prop!(Number, "lines_above", "Blank lines above heading", "1"),
+                crate::rule_prop!(Number, "lines_below", "Blank lines below heading", "1"),
+            ],
         })
     }
 
@@ -90,21 +46,32 @@ impl MarkdownRule for BlanksAroundHeadingsRule {
             }
             let needs_blank_before = i > 0 && !lines[i - 1].trim().is_empty();
             let needs_blank_after = i + 1 < lines.len() && !lines[i + 1].trim().is_empty();
-            if needs_blank_before || needs_blank_after {
-                let mut replacement = String::new();
-                if needs_blank_before {
-                    replacement.push('\n');
-                }
-                replacement.push_str(line);
-                if needs_blank_after {
-                    replacement.push('\n');
-                }
+            if needs_blank_before {
                 let fix = crate::rules::markdown::types::DiagnosticFix {
                     start_line: i + 1,
                     start_column: 1,
                     end_line: i + 1,
-                    end_column: line.len().max(1) + if line.is_empty() { 0 } else { 1 },
-                    replacement,
+                    end_column: 1,
+                    replacement: "\n".to_string(),
+                };
+                RuleHelpers::push_diag_with_fix(
+                    &mut diagnostics,
+                    file_path,
+                    i,
+                    line,
+                    &meta,
+                    DiagnosticSeverity::Warning,
+                    Some(fix),
+                );
+            }
+            if needs_blank_after {
+                let end_col = line.len().max(1) + if line.is_empty() { 0 } else { 1 };
+                let fix = crate::rules::markdown::types::DiagnosticFix {
+                    start_line: i + 1,
+                    start_column: end_col,
+                    end_line: i + 1,
+                    end_column: end_col,
+                    replacement: "\n".to_string(),
                 };
                 RuleHelpers::push_diag_with_fix(
                     &mut diagnostics,
@@ -137,6 +104,7 @@ impl MarkdownRule for HeadingStartLeftRule {
             docs_url: "https://github.com/DavidAnson/markdownlint/blob/main/doc/md023.md",
             parity: RuleParityStatus::Official,
             is_fixable: true,
+            properties: &[],
         })
     }
 
@@ -175,14 +143,4 @@ impl MarkdownRule for HeadingStartLeftRule {
         }
         diagnostics
     }
-}
-
-/* WHY: Section: Private helpers
-======================================================= */
-
-fn is_setext_underline(trimmed: &str) -> bool {
-    if trimmed.len() < 2 {
-        return false;
-    }
-    trimmed.chars().all(|c| c == '=') || trimmed.chars().all(|c| c == '-')
 }

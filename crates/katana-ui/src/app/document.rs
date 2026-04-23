@@ -140,7 +140,7 @@ impl DocumentOps for KatanaApp {
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
         }
-        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+        self.state.diagnostics.last_buffer_update = Some(std::time::Instant::now());
     }
 
     fn handle_save_document(&mut self) {
@@ -167,5 +167,6 @@ impl DocumentOps for KatanaApp {
             crate::i18n::I18nOps::get().status.saved.clone(),
             crate::app_state::StatusType::Success,
         ));
+        self.pending_action = crate::app_state::AppAction::RefreshDiagnostics; /* WHY: FB32 */
     }
 }

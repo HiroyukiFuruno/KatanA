@@ -11,6 +11,7 @@ pub struct LinterTranslations {
     pub enable_linter: String,
     pub rule_severities: String,
     pub advanced_workspace_settings: String,
+    pub search_placeholder: String,
     pub workspace_has_config: String,
     pub open_config: String,
     pub workspace_no_config: String,
@@ -19,6 +20,11 @@ pub struct LinterTranslations {
     pub severity_ignore: String,
     pub severity_warning: String,
     pub severity_error: String,
+    pub use_workspace_local_config: String,
+    #[serde(default)]
+    pub view_on_github: String,
+    #[serde(default)]
+    pub rule_descriptions: std::collections::HashMap<String, String>,
 }
 
 impl Default for LinterTranslations {
@@ -33,6 +39,7 @@ impl Default for LinterTranslations {
             enable_linter: "Enable Markdown Linter".to_string(),
             rule_severities: "Rule Severities".to_string(),
             advanced_workspace_settings: "Advanced Workspace Settings".to_string(),
+            search_placeholder: "Search rules…".to_string(),
             workspace_has_config: "Workspace has a .markdownlint.json configuration file."
                 .to_string(),
             open_config: "Open Configuration".to_string(),
@@ -43,6 +50,9 @@ impl Default for LinterTranslations {
             severity_ignore: "Ignore".to_string(),
             severity_warning: "Warning".to_string(),
             severity_error: "Error".to_string(),
+            use_workspace_local_config: "Use Workspace-Local Configuration".to_string(),
+            view_on_github: "View on official GitHub".to_string(),
+            rule_descriptions: std::collections::HashMap::new(),
         }
     }
 }

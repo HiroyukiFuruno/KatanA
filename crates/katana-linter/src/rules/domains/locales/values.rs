@@ -1,7 +1,11 @@
 use crate::Violation;
 use crate::utils::{LinterParserOps, ViolationReporterOps};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::collections::BTreeMap;
 use std::path::Path;
+
+static EMOJI_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\p{Emoji_Presentation}").unwrap());
 
 struct LocaleException {
     key: &'static str,
@@ -9,20 +13,10 @@ struct LocaleException {
 }
 
 /* WHY: Exclusion list for translation value validation.
-
-[Operating Rules]
-1. As a general rule, values that are identical across all languages (same as English) should be added here.
-2. Applies to proper nouns (App names, Tool names, etc.), programming terms (Rust, etc.), and version numbers.
-3. Using `*` for the key (`key`) or value (`value`) allows for broad matching.
-4. However, meaningful words ("File", "Search", etc.) MUST NOT be broadly excluded. They require translation.
-
-[Examples of patterns that must NOT be excluded]
-- Common menu items like "Edit", "View", "Help" (should be translated in each language).
-- Sentence fragments or message text that conveys meaning to the user.
-
-[Procedure for adding]
-When new proper nouns or universal identifiers (e.g. v1.0.0) are introduced, if the Linter generates false positives,
-carefully review and consider before adding them to this list. */
+1. Add identical values across languages (proper nouns, versions, etc.).
+2. Use `*` for broad matching.
+3. Meaningful words ("File", "Search") MUST NOT be excluded. */
+#[rustfmt::skip]
 const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
     LocaleException {
         key: "rust",
@@ -104,46 +98,17 @@ const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
         key: "*",
         value: "Code",
     },
-    LocaleException {
-        key: "*",
-        value: "Links",
-    },
-    LocaleException {
-        key: "*",
-        value: "Theme",
-    },
-    LocaleException {
-        key: "*",
-        value: "Architecture",
-    },
-    LocaleException {
-        key: "*",
-        value: "Documentation",
-    },
-    LocaleException {
-        key: "*",
-        value: "Text",
-    },
-    LocaleException {
-        key: "section_editor",
-        value: "Editor",
-    },
-    LocaleException {
-        key: "section_general",
-        value: "General",
-    },
-    LocaleException {
-        key: "severity_error",
-        value: "Error",
-    },
-    LocaleException {
-        key: "severity_warning",
-        value: "Warning",
-    },
-    LocaleException {
-        key: "severity_ignore",
-        value: "Ignore",
-    },
+    LocaleException { key: "*", value: "Links" },
+    LocaleException { key: "*", value: "Theme" },
+    LocaleException { key: "*", value: "Architecture" },
+    LocaleException { key: "*", value: "Documentation" },
+    LocaleException { key: "*", value: "Text" },
+    LocaleException { key: "section_editor", value: "Editor" },
+    LocaleException { key: "section_general", value: "General" },
+    LocaleException { key: "severity_error", value: "Error" },
+    LocaleException { key: "severity_warning", value: "Warning" },
+    LocaleException { key: "severity_ignore", value: "Ignore" },
+    LocaleException { key: "*", value: "Linter" },
 ];
 
 pub struct LocaleValueOps;
@@ -167,6 +132,17 @@ impl LocaleValueOps {
                     file,
                     format!(
                         "Locale value at `{path}` contains a pseudo-translation placeholder (\"{actual_val}\"). Lazy cheat detected. Please provide a true native translation."
+                    ),
+                ));
+                continue;
+            }
+
+            /* WHY: Reject embedded emojis/icons to enforce SVG component usage */
+            if EMOJI_REGEX.is_match(actual_val) {
+                violations.push(ViolationReporterOps::locale_violation(
+                    file,
+                    format!(
+                        "Locale value at `{path}` contains an embedded emoji/icon (\"{actual_val}\"). Embedded emojis/icons are not allowed. Please use SVG components instead (e.g., `{{{{os_cmd:save_document}}}}: `)."
                     ),
                 ));
                 continue;

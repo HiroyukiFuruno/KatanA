@@ -10,6 +10,7 @@ pub mod meta;
 pub mod preview;
 pub mod search;
 pub mod settings;
+pub mod settings_color;
 pub mod status;
 pub mod tab;
 pub mod workspace;

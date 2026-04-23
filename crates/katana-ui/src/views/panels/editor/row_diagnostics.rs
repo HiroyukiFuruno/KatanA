@@ -25,6 +25,11 @@ impl RowDiagnosticsRenderer {
             return;
         }
 
+        let has_fixable = line_diagnostics.iter().any(|d| d.fix_info.is_some());
+        if !has_fixable {
+            return;
+        }
+
         const WEIGHT_ERROR: u8 = 3;
         const WEIGHT_WARNING: u8 = 2;
         const WEIGHT_INFO: u8 = 1;
@@ -51,7 +56,6 @@ impl RowDiagnosticsRenderer {
             .unwrap_or(ui.visuals().warn_fg_color);
 
         const ICON_SIZE: f32 = 14.0;
-        const ICON_FONT_SIZE: f32 = 12.0;
         const ICON_MARGIN: f32 = 2.0;
         const TOOLTIP_SPACE: f32 = 4.0;
 
@@ -63,14 +67,11 @@ impl RowDiagnosticsRenderer {
             egui::vec2(ICON_SIZE, ICON_SIZE),
         );
 
-        let icon_text = egui::RichText::new(crate::icon::Icon::Info.as_char().to_string())
-            .color(icon_color)
-            .size(ICON_FONT_SIZE);
-
         let icon_resp = ui.put(
             icon_rect,
-            egui::Label::new(icon_text)
-                .selectable(true)
+            crate::icon::Icon::LightBulb
+                .image(crate::icon::IconSize::Small)
+                .tint(icon_color)
                 .sense(egui::Sense::click()),
         );
 

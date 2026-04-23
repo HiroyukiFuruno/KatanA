@@ -3,11 +3,13 @@
 現在のショートカット設定UIには3つの根本的な課題がある。
 
 **1. UX品質の低下（UI面）**
+
 - 「Edit」ボタンが列を占有し視覚的にノイズが多い
 - キー表示がプレーンテキストで「primary+S」など技術的な文字列が露出する
 - 録音中（editing中）フォーカスの境界が曖昧で、他のUIへの誤操作を招く
 
 **2. ショートカット実行の設計的欠陥（Context境界の欠如）**
+
 - 現在 `handle_shortcuts()` はフレームごとに全コマンドを `is_available` チェック後に実行するが、
   「どこにフォーカスがあるか」という Context 概念が存在しない。
 - エディタがカレントの場合に `primary+B`（Bold）と `view.explorer`（Toggle Explorer）が
@@ -17,18 +19,21 @@
   ショートカット処理が9箇所以上に分散している。
 
 **3. 重複検知の欠如（Linter面）**
+
 - ショートカットの重複は現在ランタイムの警告のみ（`shortcut_conflict` メモリ）で管理されている。
   本来は i18n linter のように、ショートカット定義自体を静的解析で重複を検知すべきである。
 
 ## What Changes
 
 ### A. ショートカット設定UI再設計（UX改善）
+
 - 編集ボタンを廃止し、行全体またはペンSVGアイコンをクリックして「録音モーダル（専用入力画面）」を開く
 - 録音中はアプリ全体の入力をescape/enter以外無効化（`request_focus` + `set_key_filter`）
 - キー表示部分にOSごとのネイティブキーSVGアイコン（⌘/Ctrl/Win/Super）を追加
 - Enterで確定、Escでキャンセル（OSごとの差異を吸収）
 
 ### B. コンテキスト境界を持つショートカット管理システム（大規模リファクタリング）
+
 - `ShortcutContext` enum（`Global`, `Editor`, `Preview`, `Explorer`, `Modal`, `Recording`）の導入
 - `CommandInventoryItem` に `context: ShortcutContext` フィールドを追加
 - フレームごとにアクティブなコンテキストを判定する `ShortcutContextResolver` を実装
@@ -36,11 +41,13 @@
 - `[editor]` サフィックスなどの場当たり的な仕組みを撤廃
 
 ### C. ショートカットAST Linter（静的重複検知）
+
 - `katana-linter` に新ドメイン `shortcut` を追加
 - `CommandInventory::all()` の `default_shortcuts` フィールドを静的解析し、コンテキストを考慮した重複をビルド時に検知
 - `{action, context, os, shortcut}` の構造でルールを管理
 
 ### D. キー未割り当てコマンドへのデフォルト割り当て
+
 - `file.close_workspace`, `view.refresh_explorer`, `view.close_all`,
   `edit.strikethrough`, `edit.heading1〜3`, `edit.bullet_list`,
   `edit.numbered_list`, `edit.blockquote`, `edit.code_block`,

@@ -7,12 +7,14 @@ Because this is renderer-owned layout, the cleanest change is to specify and pat
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Tighten alert title/body spacing
 - Restrain whole-block vertical margins
 - Keep the patch localized to the vendored alert renderer
 - Add layout assertions against nearby paragraphs/lists
 
 **Non-Goals:**
+
 - Rework global markdown spacing policy
 - Change non-alert blockquote behavior unless needed for regression safety
 - Modify preview highlight or split sync behavior

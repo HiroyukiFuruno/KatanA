@@ -96,7 +96,7 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 
 ### タスク
 
-- [ ] 3.1 問題行に波線（squiggly underline）を描画
+- [x] 3.1 問題行に波線（squiggly underline）を描画
   - 重大度に応じた色分け: 黄色（警告） / 赤色（エラー）
   - テーマカラー適用可能
 - [x] 3.2 行番号ガターに💡アイコンを表示
@@ -151,8 +151,8 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 
 ### Definition of Ready (DoR)
 
-- [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
-- [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
+- [x] 1 つ前のタスクがデリバリサイクルを完全に終えていること
+- [x] ベースブランチが最新化されており、新しいブランチが作成されていること
 
 ### タスク
 
@@ -175,15 +175,72 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 
 ---
 
-## 6. Final Verification & Release Work
+## 6. User Review (Pre-Final Phase)
 
-- [ ] 6.1 自己レビューを実行（`docs/coding-rules.ja.md` および `.agents/skills/self-review/SKILL.md`）
-- [ ] 6.2 `make check` が exit code 0 で通過すること
-- [ ] 6.3 Base Feature Branch から `master` を対象に PR を作成
-- [ ] 6.4 PR 上の CI チェック（Lint / Coverage / CodeQL）が通過することを確認
-- [ ] 6.5 master にマージ（`gh pr merge --merge --delete-branch`）
-- [ ] 6.6 master から `release/v0.22.4` ブランチを作成
-- [ ] 6.7 `make release VERSION=0.22.4` を実行し、CHANGELOG を更新（`changelog-writing` スキル）
-- [ ] 6.8 `release/v0.22.4` から `master` を対象に PR を作成 — `Release Readiness` CI 通過を確認
-- [ ] 6.9 リリース PR を master にマージ（`gh pr merge --merge --delete-branch`）
-- [ ] 6.10 GitHub Release の完了を確認し、`/opsx-archive` でこの変更をアーカイブ
+> ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
+> ブランチ: `feature/v0.22.4-task5-feedback`（task5 ブランチを継続使用）
+
+- [x] **FB1** 診断パネルのリンクジャンプ — プレビューモード中はコードモードへ切り替えてから対象行にジャンプ
+- [x] **FB2.a** `LightBulb` アイコンを全パック分ダウンロード・登録（`katana-icon-management` スキル拠）
+- [x] **FB2.b** `row_diagnostics.rs` のアイコンを `Icon::LightBulb` に変更
+- [x] **FB3** ガターアイコンのめり込み修正 — 行番号ガターの余白調整（40→ 52px）
+- [x] **FB4** 設定タブ表記統一 — ナビ「linter」とヘッダーを「Linter」に合わせる（ロケール + default 値）
+- [x] **FB5.1** 設定レイアウト崩壊修正 — プルダウンが右にはみ出す問題を解消
+- [x] **FB5.2** `md-broken-link` を設定画面から非表示（内部専用ルール）
+- [x] **FB5.3** 全 MD00XX ルールが設定画面に表示されているか確認・修正
+- [x] **FB5.5** 重要度コントロールをプルダウンから 3 段階モダントグル（無視 / 警告 / エラー）に変更
+- [x] **FB6.a** `.markdownlint.json` のデフォルト保存先を KatanA アプリ設定領域に変更
+- [x] **FB6.b** 「ワークスペースに保存」トグルで保存先切り替えを可能にする
+- [x] **FB6.c** 切り替え時に相手側の JSON が存在すれば自動展開する
+- [x] **FB6.d** 「設定を開く」を「高度な設定」ボタンに変更し、クリック時に JSON を直接エディタタブで開くのではなく、アイコンの高度な設定のような GUI モーダルを開いて設定値（`allow_keyword`, `types`, `default` 値など）を組み立てて JSON を更新・検証する仕組みに変更する（ルール・スキーマ定義は `katana-markdown-linter` モジュール側に持たせ、それを元に GUI を描画する）
+- [x] **TDB1** (技術的負債) ドキュメント URL 404 修正: `regex_rule!` マクロが生成する URL が大文字 ID を使うが GitHub ファイル名は小文字。`process_linter.rs` でファイル名部分を小文字化する。
+- [x] **FB7** 検証用の `lint-fix.md` と `lint-fix.md.org` を作成しデモで readonly, code-only で表示する
+- [x] **FB8** ルールドキュメントのリンクが外部リンクになっている問題を修正（常にプレビューのみで表示し、表示分割やコードビューを許容しない）
+- [x] **FB9** fix したあとに lint 判定が自動で再評価されUIに反映されるよう修正 — `handle_apply_lint_fixes` 末尾で `handle_action_refresh_diagnostics()` を即時呼び出し
+- [x] **FB10** (技術的負債) `katana-linter` を外部 Rust クレートに移譲する。クレート選定時に fix 機能が内包されているものを優先して採用する。
+  - 調査完了: 成熟した外部ライブラリクレートが存在しないため、**独立リポジトリ `katana-markdown-linter` を新設**する方針に決定
+  - リポジトリ: <https://github.com/HiroyukiFuruno/katana-markdown-linter> （OpenSpec 定義済み）
+  - 詳細は `design.md` §5 および新リポジトリの `openspec/` を参照
+- [x] **FB11** Linter タブ内の Rule Severities のレイアウト崩壊修正（`AlignCenter` 廃止、`right_to_left` で堅牢化）
+- [x] **FB12** Rule Severities の MD001 などのルールIDの下に、ルール内容の簡単な説明（description）を追加（全言語対応 / `katana-i18n-management` 準拠）
+- [x] **FB13** lintの対象が `.markdownlint.json` 等のJSONになっている問題を修正（設定の拡張子以外は許容しない）
+- [x] **FB14** 問題ビューにて、ファイルごとに複数の問題をアコーディオンでグループ化する。「全開」「全閉」ボタンを「問題」タイトルの左側に配置する
+- [x] **FB15** 問題ビューの横幅をパネルの100%にする。ドキュメントリンクは常に右寄せとし、詳細の開始位置を上下で左揃えにする（ショートカットキーUIのパターンを踏襲）
+- [x] **FB16** 問題ビューからも Fix（修正）アクションを実行可能にする（UX/UIは一任）
+- [x] **FB17** 行番号ガターの 💡 アイコンは、実際に Fix 可能な問題が存在する場合のみ表示する仕様に変更する
+- [x] **FB18** エディタ上で問題にホバーした際、VSCodeのようなポップオーバー（消えにくく、背後へのイベントバブリングを抑止するモーダル/ツールチップ）を展開し、そこから Fix を実行できるようにする
+- [x] **FB19** 問題ビュー（アコーディオン）を閉じた際に、ユーザーが広げたパネルサイズが強制的に縮小されるリサイズバグを修正（`auto_shrink([false, false])` を適用）
+- [x] **FB20** Fix 機能バグ — MD022（blanks-around-headings）の fix を適用すると新たな違反が発生するカスケードバグを修正。root cause: `DiagnosticFix` の座標計算が誤っており、replacement 文字列内の改行と既存改行が二重になっていた。UT 追加（`md022_fix_*` 3本）も必須。
+- [x] **FB21** 仮想ドキュメント（`Katana://LinterDocs/MD*.md` 等）に対して Linter が実行され、spurious な診断が出る問題を修正。`handle_action_refresh_diagnostics` に `is_virtual_path()` ガードを追加。
+- [x] **FB1** 診断パネルのリンクジャンプ — プレビューモード中はコードモードへ切り替えてから対象行にジャンプ（`handle_action_select_and_jump` で `ViewMode::PreviewOnly` 時に `set_active_view_mode(CodeOnly)` を追加）
+- [x] **FB22** ホバーポップオーバー表示バグ — 同一行に複数の診断（例: MD025 + MD023）が存在する場合、最初の診断内容のみ表示し後続診断はリンクのみ追記される誤表示。全診断をセクション分けして正しく表示すべき。
+- [x] **FB23** Fix 機能 UT 強化 — `tests/fix_harness.rs`（ポータブルハーネス: `LintFixScenario` / `BulkFixScenario` / `apply_single_fix` / `apply_bulk_fixes` Interface定義）と `tests/fix_scenarios.rs`（MD022 / MD023 / MD032 の single / bulk / convergence シナリオ）を新設。repository移譲対応の分離設計（`katana_linter` 以外依存なし）。8/8テスト通過。
+- [x] **FB12** Rule Severities の MD001 などのルールIDの下に、ルール内容の簡単な説明（description）を追加（全言語対応 / `katana-i18n-management` 準拠）— `official_rule!` マクロに title/desc パラメータを追加し、`stubs.rs` の全ルールに正式な説明を付与済み。i18n ロケールファイルの日本語対応が残タスク。
+- [x] **FB24** パンくずバグ — `Katana://LinterDocs/MD003.md` を `split('/')` すると空文字セグメントが生まれ □ が表示されていた。LinterDocs 仮想パスを Demo 同様にファイル名のみ表示する特別処理へ変更し、一般パスでも空セグメントを filter で除去するよう `breadcrumbs.rs` を修正。
+- [x] **FB25** LinterDocs（MDXX.md）の右上に「公式GitHubで確認」ボタンを配置 — `render_document_toolbar` に `linter_rule_id: Option<String>` を追加し、`Katana://LinterDocs/` 仮想ドキュメント表示時のみ `Github` アイコン + `view_on_github` i18n ツールチップ付きボタンをmdのプレビューの内の右端表示。クリックで `open::that()` によりシステムブラウザで markdownlint 公式 GitHub を開く。
+- [x] **FB26** Fix 適用後に lint が即時再評価されない — FB9 と同一修正で解決済み（`handle_action_refresh_diagnostics()` 即時呼び出し） — `ApplyLintFixes` アクション完了後に再 lint トリガーが走らず、波線や Problems パネルが古い状態のまま残る。Fix 後に `RefreshDocument` or lint パスを強制起動する必要がある。
+- [-] **FB27** (v0.22.8へ見送り) Fix の変更内容がプレビューできない — Problems パネルの「修正」ボタンを押す前に「何が変わるか」をユーザーが確認できない。修正内容のプレビュー（diff またはツールチップ）が必要。※実装コストが高いため、LLM系の対応前のDoR（Definition of Ready）として次期バージョン（v0.22.8）で実施。
+- [x] **FB28** Problems パネルの severity を SVG アイコン化 — 全6パック × 3種（error / warning / info）= 18ファイルを `assets/icons/*/linter/` に配置。`Icon::LinterSeverityError/Warning/Info` を enum に登録し `pack/mod.rs` マクロに追加。`diagnostics_renderer.rs` で `.image()` 直描画（tint 不適用）。`svg.rs` の色チェックから `linter/` カテゴリを除外、`icons_sync.rs` の duplicate ホワイトリストに追加。
+- [x] **FB29** Fix 重複挿入バグ（0幅挿入方式で解決） — 複数の連続する heading に一括 fix を適用すると `## B\n\n## B` のように heading が二重挿入される。`DiagnosticFix.replacement` が heading テキストを含む形式のため、descending sort での一括適用時に重複が発生。fix 生成ロジックの replacement 形式を「差分のみ」に変更する必要がある（FB20 の根本原因と関連）。
+- [x] **FB30** 削除済みファイルの診断が Problems パネルに残存 — ファイルを削除しても Problems パネルに警告・エラーが表示され続ける。ファイル削除イベント（`handle_action_delete_fs_node`）と連動して、削除されたファイルの診断を `diagnostics_state` から除去する必要がある。
+- [x] **FB31** ダークテーマで severity アイコン不可視 — `linter/` SVG が白ストロークのためダークテーマで消える。全6パック × 3種に solid circle SVG（error: `#EF4444`、warning: `#F59E0B`、info: `#3B82F6`）を配置・上書き済み（確認待ち）。
+- [x] **FB32** Problems パネルの自動 re-lint — バッファ変更（debounce）・fix 適用後・ファイル保存時の 3 イベントで自動再 lint する。手動ボタンは不要。fix 適用後の即時 re-lint（FB26 統合）と保存時トリガーの追加実装が必要。※問題viewのコードの行の更新が必要
+- [x] **FB33** ファイルを開いたときに lint が未実行 — ファイルオープンイベント（`AppAction::OpenDocument` 等）の処理後に `RefreshDiagnostics` を発行すれば解決。起動時の復元ファイルも同様に open イベント経由なので同じ修正で対応可能。
+- [x] **FB34** MD003 誤検知修正 — 水平線 (`---`) が MD003 (Heading Style) として誤検知されるバグを修正。前の行が空行やFenced Codeでない場合のみSetext Headingとして評価するように `heading_style.rs` を修正。
+- [x] **FB35** MD038 誤検知修正 — バッククォートの外側のスペース（例: `` `xxx` yyy ``）がコードスパン内のスペースとして誤検知されるバグを修正。単純な正規表現（`stubs_regex.rs`）を廃止し、バッククォートのペアを正確にパースする専用ルール `NoSpaceInCodeRule` (`spaces_in_code.rs`) を新設。
+- [x] **FB36** MD060（Table Column Style）検知漏れ修正 — ヘッダー行が存在しない単独のテーブル区切り行（`|---|`）や、データ行に対しても、パイプ（`|`）の前後の半角スペース不足を柔軟に検知しフォーマットできるよう判定ロジックを大幅に拡張・修正。
+- [x] **FB37** MD037 誤検知修正 — 別の `**` 強調記号の終了タグと開始タグの間のスペースを拾ってしまい「強調記号の内部にスペースがあります」と誤検知するバグ（例: `**A** B **C**`）を修正。正規表現を廃止し、専用の構文パースルール `SpacesInEmphasisRule` (`spaces_in_emphasis.rs`) を新設。
+
+## 7. Final Verification & Release Work
+
+- [x] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [x] 7.3 Ensure `make check` passes with exit code 0
+- [ ] 7.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.7 Create `release/v0.22.4` branch from master
+- [ ] 7.8 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 7.9 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
