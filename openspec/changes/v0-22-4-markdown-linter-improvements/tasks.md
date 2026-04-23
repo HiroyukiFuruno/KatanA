@@ -235,7 +235,7 @@ lint 問題をエディタ上で直感的に把握できるよう、波線（squ
 
 - [x] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
 - [x] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 7.3 Ensure `make check` passes with exit code 0
+- [x] 7.3 Ensure `make check` passes with exit code 0
 - [ ] 7.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
