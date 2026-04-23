@@ -33,7 +33,7 @@ def determine_impacted_packages():
     global_impact = False
 
     for diff in diffs:
-        if diff in ["Cargo.toml", "Cargo.lock", "Makefile"] or diff.startswith("scripts/") or diff.startswith(".github/"):
+        if diff in ["Cargo.toml", "Cargo.lock", "Makefile", "rust-toolchain.toml"] or diff.startswith("scripts/") or diff.startswith(".github/") or diff.startswith(".cargo/"):
             global_impact = True
             break
 
