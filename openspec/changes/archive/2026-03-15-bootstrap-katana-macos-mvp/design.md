@@ -7,6 +7,7 @@ The MVP success criteria are narrow but strict: a workspace can be opened, Markd
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Deliver a macOS desktop architecture that supports the MVP flows of workspace navigation, Markdown authoring, and live preview.
 - Render `Mermaid`, `PlantUML`, and `Draw.io` blocks in the default preview experience because spec-driven Markdown loses value if common diagram syntax is not visualized.
 - Separate the system into UI, core, and platform layers so filesystem, settings, rendering, and future integrations can evolve independently.
@@ -15,6 +16,7 @@ The MVP success criteria are narrow but strict: a workspace can be opened, Markd
 - Prefer implementation choices that can be validated locally and extended to Windows and Linux later.
 
 **Non-Goals:**
+
 - Implement real-time collaboration, cloud sync, multi-user SaaS features, or any remote-first storage model.
 - Build full AI assistant workflows in the MVP beyond the provider abstraction and orchestration boundaries.
 - Support externally distributed dynamic plugins in the first delivery; the MVP only needs internal extension hooks and registration contracts.
@@ -25,6 +27,7 @@ The MVP success criteria are narrow but strict: a workspace can be opened, Markd
 ## Definition of Ready
 
 Implementation work for this change starts only after the following conditions are met:
+
 - Repository bootstrap and account-specific Git/GitHub setup are handled outside this change in a temporary operational runbook, and that runbook is removed after setup is complete.
 - Diagram input formats are fixed to raw fenced `mermaid` source, raw fenced `plantuml` source containing `@startuml` and `@enduml`, and raw uncompressed fenced `drawio` XML containing `<mxfile>` or `<mxGraphModel>`.
 - The PlantUML runtime path is fixed to a fully local renderer bundle that ships with the app distribution and does not depend on a hosted service.
@@ -33,6 +36,7 @@ Implementation work for this change starts only after the following conditions a
 ## Definition of Done
 
 Work on this change is done only when all of the following are true:
+
 - The workspace, editor, preview, and built-in diagram flows operate from a sample spec-driven workspace on macOS.
 - Automated tests cover workspace loading, unsaved buffer preview sync, Mermaid rendering, PlantUML rendering, Draw.io rendering, and fallback behavior for invalid diagram blocks.
 - The application remains usable when no AI provider is configured and when a bundled plugin fails to initialize.
@@ -45,6 +49,7 @@ Work on this change is done only when all of the following are true:
 ### 1. Use a layered module layout aligned to the product architecture
 
 Katana will be organized around three top-level layers:
+
 - `ui`: egui application shell, panes, menu wiring, and presentation state.
 - `core`: document model, workspace model, markdown pipeline, preview coordination, AI orchestration interfaces, and plugin contracts.
 - `platform`: filesystem access, settings persistence, keybindings, clipboard, and OS-specific integrations.
@@ -122,6 +127,7 @@ This preserves extensibility without taking on the complexity of dynamic library
 Before Katana is published as an open source repository, the project will define a repository security baseline that covers vulnerability reporting, dependency monitoring, code scanning, secret protection, and hardened GitHub Actions defaults. This baseline is generic to the repository and should avoid maintainer-specific credentials or personal contact details in tracked files.
 
 The baseline will include:
+
 - a versioned `SECURITY.md` that points reporters to GitHub private vulnerability reporting
 - dependency graph, Dependabot alerts, and Dependabot security updates
 - CodeQL default setup for public repository scanning

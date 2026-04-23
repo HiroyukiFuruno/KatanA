@@ -1,4 +1,5 @@
 ## Definition of Ready (DoR)
+
 - [ ] `proposal.md`、`design.md`、`specs` が揃っていること
 - [ ] 対象バージョン 0.24.0 の変更 ID とスコープが確認されていること
 - [ ] `v0.23.0` で実装したローカルLLMプロバイダー設定と接続可否判定 (availability 判定) が利用可能であること
@@ -28,6 +29,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 ## 2. Write and Insert Execution Pipeline (ファイル書き込みとテキスト挿入実行パイプラインの構築)
 
 ### Definition of Ready (DoR)
+
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 
@@ -48,6 +50,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 ## 3. UI Integration and Review Flow (UIの統合とプレビュー・レビュー体験の構築)
 
 ### Definition of Ready (DoR)
+
 - [ ] 1つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR作成、マージ、ブランチ削除）を完全に終えていること。
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること。
 

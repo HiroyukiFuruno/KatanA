@@ -5,6 +5,7 @@
 `docs/coding-rules.ja.md` に記載されたルールのうち、機械的にチェック可能なものをすべてast_linterまたはclippy `#![deny]` で強制する (MUST be enforced).
 
 #### Scenario: Verify AST linter rules additions
+
 - **Given** the coding rules
 - **When** linter runs
 - **Then** rules are checked mechanically.
@@ -40,6 +41,7 @@
 ### 5. clippy `#![deny]` 設定の統一（★設定修正）
 
 - 各クレートの `lib.rs` / `main.rs` に以下の `#![deny]` を設定する:
+
   ```rust
   #![deny(
       clippy::too_many_lines,
@@ -51,6 +53,7 @@
       clippy::unimplemented,
   )]
   ```
+
 - 現状は `#![deny(warnings)]` のみで、個別ルールの明示的な `#![deny]` が欠落している
 - `coding-rules.ja.md` §9 に記載されているが実装されていない状態を解消する
 

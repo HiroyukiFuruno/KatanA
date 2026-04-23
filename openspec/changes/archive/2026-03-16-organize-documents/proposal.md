@@ -12,6 +12,7 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `document-organization`: `docs`ディレクトリには現在の説明ドキュメントのみを配置し、日本語版/英語版を並行管理する体制を定義します。
 - `english-first-policy`: 全てのソースコードコメントおよび一般ドキュメント（`docs`以外）を英語化するポリシーを定義します。`.gitignore`対象や`i18n`関連ファイルは除外します。
 

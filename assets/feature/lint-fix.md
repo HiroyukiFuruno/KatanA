@@ -18,34 +18,41 @@ It contains intentional lint violations.
 ---
 
 ## Violation Samples (Fixable)
-# MD022: Headings should be surrounded by blank lines
+
+# MD022: Headings should be su
+
+rrounded by blank lines
 The heading just above this line has no blank lines around it (MD022 violation).
+
 # MD022: Same here
+
 ## Further subheading
-No blank line between the heading lines above.
+
+No blank line between
+
+ the heading lines above.
 
 ---
 
 ## Violation Samples (Fixable) — MD023: Headings must start at the beginning of the line
 
-  # Indented heading (MD023 violation)
-  ## Same here
+# Indented heading (MD023 violation)
+
+## Same here
 
 ---
 
 ## Violation Samples (Fixable) — MD027: Multiple spaces after blockquote symbol
 
->  Multiple spaces present (MD027 violation)
->   More spaces
->  This is also a violation
+> Multiple spaces present (MD027 violation)
+> More spaces
+> This is also a violation
 
 ---
 
 ## Violation Samples (Fixable) — MD012: Multiple consecutive blank lines
 
-
 Two blank lines above (MD012 violation).
-
 
 Two more lines.
 
@@ -62,6 +69,7 @@ Two more lines.
 ## Violation Samples (Fixable) — MD032: Lists should be surrounded by blank lines
 
 The list comes immediately after the sentence (MD032 violation):
+
 - Item A
 - Item B
 The next sentence is immediately after the list (MD032 violation).

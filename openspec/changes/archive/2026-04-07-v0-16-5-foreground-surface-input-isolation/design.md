@@ -7,12 +7,14 @@ The problem belongs to the shell interaction model rather than to any one modal 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Centralize foreground-surface blocking decisions in the shell
 - Cover representative shell windows, popups, menus, and overlays
 - Suppress background pane interaction without breaking the active foreground surface itself
 - Add response-based UI tests for representative surfaces
 
 **Non-Goals:**
+
 - Redesign the modal framework
 - Change tab pinning behavior
 - Adjust markdown layout or preview mapping

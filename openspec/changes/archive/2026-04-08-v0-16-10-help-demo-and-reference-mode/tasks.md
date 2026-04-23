@@ -52,7 +52,6 @@
 
 ---
 
-
 ## 4. Fix Custom Task Checkbox Regression (追加タスク)
 
 ### Definition of Ready (DoR)

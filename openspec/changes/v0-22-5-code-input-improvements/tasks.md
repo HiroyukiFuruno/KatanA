@@ -1,8 +1,8 @@
 ## Definition of Ready (DoR)
 
 - [ ] `proposal.md`、`design.md` がレビュー済みであること
-- [ ] 対象バージョン 0.22.4 の変更 ID とスコープが確認されていること
-- [ ] v0.22.3 のリリースが完了していること
+- [ ] 対象バージョン 0.22.5 の変更 ID とスコープが確認されていること
+- [ ] v0.22.4 のリリースが完了していること
 - [ ] システム SVG アイコンの仕様を確認済みであること
 
 ## Branch Rule
@@ -120,8 +120,8 @@
 - [ ] 6.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.7 Create `release/v0.22.4` branch from master
-- [ ] 6.8 Run `make release VERSION=0.22.4` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 6.9 Create PR from `release/v0.22.4` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 6.7 Create `release/v0.22.5` branch from master
+- [ ] 6.8 Run `make release VERSION=0.22.5` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 6.9 Create PR from `release/v0.22.5` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

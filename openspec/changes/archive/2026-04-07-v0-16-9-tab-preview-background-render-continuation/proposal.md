@@ -16,9 +16,11 @@ The preview pipeline already keeps per-tab panes, but it does not preserve an ex
 ## Capabilities
 
 ### New Capabilities
+
 - `tab-preview-lifecycle`: Per-tab preview session state, background render continuity, and reattachment/hydration behavior when the user returns to a tab
 
 ### Modified Capabilities
+
 - `diagram-block-preview`: Diagram blocks continue background rendering across tab switches and reattach finished results without re-entering a stuck loading state
 - `local-asset-preview`: Local image preview loading continues across tab switches and reuses completed results when the user revisits the tab
 

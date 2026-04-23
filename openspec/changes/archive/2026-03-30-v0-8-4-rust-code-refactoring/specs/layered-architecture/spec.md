@@ -10,6 +10,7 @@
 - `pub use` による re-export で外部APIの互換性を維持する
 
 #### Scenario: Verify modularity
+
 - **Given** a layer structure
 - **When** code is organized
 - **Then** it follows the 1 file 1 responsibility rule and types/impls pattern.
@@ -25,6 +26,7 @@
 - **DIP未整備**: レイヤー間の具象型直接参照 → trait抽象の検討
 
 #### Scenario: Verify SOLID
+
 - **Given** existing God Objects and tight coupling
 - **When** refactored
 - **Then** SRP is respected and massive files are split.
@@ -70,6 +72,7 @@ katana-ui       → katana-core, katana-platform
 逆方向の依存（例: coreがuiに依存する）は禁止する。
 
 #### Scenario: Verify Dependency Direction
+
 - **Given** the 4 crates
 - **When** analyzed using `cargo tree`
 - **Then** core does not depend on ui, and dependencies only flow inward.
