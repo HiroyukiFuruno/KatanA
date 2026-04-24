@@ -10,10 +10,10 @@ pre-commit:
       glob: "*.rs"
       run: make fmt
     clippy:
-      glob: "*.rs"
+      glob: "crates/**/*.{rs,toml,lock}"
       run: make lint
     ast-lint:
-      glob: "*.rs"
+      glob: "crates/**/*.{rs,toml,lock}"
       run: make ast-lint
 
 pre-push:
