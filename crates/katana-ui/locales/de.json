@@ -93,7 +93,8 @@
     "open_workspace_button": "Ordner öffnen",
     "remove_history_tooltip": "Aus Verlauf entfernen",
     "max_depth_exceeded": "Maximale Tiefe überschritten",
-    "filter_hint": "Filtern…"
+    "filter_hint": "Filtern…",
+    "referenced_images_section": "Referenzierte Bilder"
   },
   "preview": {
     "preview_title": "Vorschau",
@@ -386,7 +387,11 @@
       "cache_retention_days": "Aufbewahrung (Tage)",
       "days_suffix": " Tage",
       "toc_default_visible": "Inhaltsverzeichnis beim Start anzeigen",
-      "explorer_default_visible": "Explorer beim Start anzeigen"
+      "explorer_default_visible": "Explorer beim Start anzeigen",
+      "ingest_section_title": "Bildimport",
+      "ingest_image_save_directory": "Bildspeicherverzeichnis",
+      "ingest_image_name_format": "Bildnamenformat",
+      "ingest_create_directory": "Verzeichnis erstellen, wenn nicht vorhanden"
     },
     "general": "Allgemein",
     "shortcuts": {

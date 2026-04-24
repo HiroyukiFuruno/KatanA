@@ -93,7 +93,8 @@
     "open_workspace_button": "폴더 열기",
     "remove_history_tooltip": "기록에서 제거",
     "max_depth_exceeded": "최대 스캔 깊이를 초과했습니다",
-    "filter_hint": "필터…"
+    "filter_hint": "필터…",
+    "referenced_images_section": "참조 이미지"
   },
   "preview": {
     "preview_title": "미리보기",
@@ -386,7 +387,11 @@
       "cache_retention_days": "캐시 보존 기간",
       "days_suffix": " 일",
       "toc_default_visible": "시작 시 목차 표시",
-      "explorer_default_visible": "시작 시 탐색기 표시"
+      "explorer_default_visible": "시작 시 탐색기 표시",
+      "ingest_section_title": "이미지 가져오기",
+      "ingest_image_save_directory": "이미지 저장 디렉토리",
+      "ingest_image_name_format": "이미지 이름 형식",
+      "ingest_create_directory": "디렉토리가 없으면 생성"
     },
     "general": "일반",
     "shortcuts": {

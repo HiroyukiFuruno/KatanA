@@ -39,6 +39,30 @@ impl EditorLogicOps {
                 *action = AppAction::SaveDocument;
                 ui.close_menu();
             }
+            if ui
+                .button(
+                    crate::i18n::I18nOps::get()
+                        .search
+                        .command_ingest_clipboard_image
+                        .as_str(),
+                )
+                .clicked()
+            {
+                *action = AppAction::IngestClipboardImage;
+                ui.close_menu();
+            }
+            if ui
+                .button(
+                    crate::i18n::I18nOps::get()
+                        .search
+                        .command_ingest_image_file
+                        .as_str(),
+                )
+                .clicked()
+            {
+                *action = AppAction::IngestImageFile;
+                ui.close_menu();
+            }
         });
     }
 

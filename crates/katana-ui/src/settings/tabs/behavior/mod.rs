@@ -3,6 +3,7 @@ use crate::app_state::AppAction;
 use crate::settings::*;
 
 mod editor;
+mod ingest;
 
 impl BehaviorTabOps {
     pub(crate) fn render_behavior_tab(
@@ -10,6 +11,8 @@ impl BehaviorTabOps {
         state: &mut crate::app_state::AppState,
     ) -> Option<AppAction> {
         editor::BehaviorEditorOps::render(ui, state);
+        ui.add_space(SUBSECTION_SPACING);
+        ingest::BehaviorIngestOps::render(ui, state);
         ui.add_space(SUBSECTION_SPACING);
 
         let behavior_msgs = &crate::i18n::I18nOps::get().settings.behavior;

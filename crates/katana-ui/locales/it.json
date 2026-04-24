@@ -93,7 +93,8 @@
     "open_workspace_button": "Apri cartella",
     "remove_history_tooltip": "Rimuovi dalla cronologia",
     "max_depth_exceeded": "Profondità massima superata",
-    "filter_hint": "Filtra…"
+    "filter_hint": "Filtra…",
+    "referenced_images_section": "Immagini referenziate"
   },
   "preview": {
     "preview_title": "Anteprima",
@@ -386,7 +387,11 @@
       "cache_retention_days": "Giorni ritenzione",
       "days_suffix": " giorni",
       "toc_default_visible": "Mostra sommario all'avvio",
-      "explorer_default_visible": "Mostra esploratore all'avvio"
+      "explorer_default_visible": "Mostra esploratore all'avvio",
+      "ingest_section_title": "Importazione immagine",
+      "ingest_image_save_directory": "Directory di salvataggio",
+      "ingest_image_name_format": "Formato nome immagine",
+      "ingest_create_directory": "Crea directory se non esiste"
     },
     "general": "Generale",
     "shortcuts": {
