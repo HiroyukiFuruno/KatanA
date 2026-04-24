@@ -137,6 +137,7 @@ pub enum UiAction {
     ToggleStoryPanel,
     ToggleExportPanel,
     OpenChangelog,
+    OpenHelpDemo,
     /// Open settings and navigate to a specific tab.
     /// Tab names: "theme", "icons", "font", "layout", "workspace", "updates", "behavior", "shortcuts"
     OpenSettingsTab { tab: String },

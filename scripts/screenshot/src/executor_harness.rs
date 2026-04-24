@@ -552,6 +552,7 @@ pub fn run(
                             UiAction::ToggleStoryPanel => AppAction::ToggleStoryPanel,
                             UiAction::ToggleExportPanel => AppAction::ToggleExportPanel,
                             UiAction::OpenChangelog => AppAction::ShowReleaseNotes,
+                            UiAction::OpenHelpDemo => AppAction::OpenHelpDemo,
                             UiAction::OpenSettingsTab { .. }
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
