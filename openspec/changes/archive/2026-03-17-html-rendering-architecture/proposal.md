@@ -3,6 +3,7 @@
 現在のHTMLレンダリングは正規表現ベースのアドホックなパース＋条件分岐の直書きで実装されており、拡張性・保守性・テスト可能性のすべてに問題がある。
 
 具体的な不具合:
+
 - inline/block要素の区別がないため改行制御が壊れる（`<a>`, `<img>` は横に流れるべきだがブロック的に縦に並ぶ）
 - リンク処理が未分類（外部HTTP/内部ファイル/アンカーの区別なし、ブラウザ/エディタの開き先制御なし）
 - パースとレンダリングが混在しUIコンテキスト必須 → ユニットテスト不可能
@@ -25,11 +26,13 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `html-element-model`: HTML要素の構造化表現（HtmlNode/DisplayMode）とパーサー
 - `link-resolution`: リンク先分類（external/internal/anchor）とアクション決定ロジック
 - `html-renderer`: メソッドチェーン式のegui描画エンジン
 
 ### Modified Capabilities
+
 - `diagram-block-preview`: プレビューペインのHTML描画が新レンダラーに移行
 
 ## Impact

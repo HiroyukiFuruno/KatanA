@@ -298,21 +298,23 @@
       "no_extension_warning_title": "Avviso",
       "no_extension_warning": "Nessuna garanzia di corretta visualizzazione senza estensione. Continuare?",
       "extensionless_excludes": "Esclusi (senza estensione)",
-      "extensionless_excludes_hint": "Separa con virgole"
+      "extensionless_excludes_hint": "Separa con virgole",
+      "enable_drawio_mount": "Abilita caricamento diretto di Draw.io (*.drawio, *.drowio)"
     },
     "icons": {
       "preset_label": "Preselezione:",
       "custom_preset": "Personalizzato",
       "save_preset": "Salva come preset…",
       "revert_default": "Predefinito",
-      "advanced_settings": "Avanzate",
       "colorful_vendor_icons_label": "Icone con colori",
       "table_header_icon": "Icona",
       "table_header_vendor": "Fornitore",
       "table_header_color": "Colore",
       "table_header_border": "Cornice",
       "table_header_preview": "Anteprima",
-      "preset_name": "Denominazione:"
+      "preset_name": "Denominazione:",
+      "search_placeholder": "cerca",
+      "advanced_settings": "Avanzate"
     },
     "tabs": [
       {
@@ -354,6 +356,10 @@
       {
         "key": "shortcuts",
         "name": "Scorciatoie"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -367,7 +373,11 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML è installato in %path%.",
       "plantuml_not_installed": "PlantUML non è installato.",
-      "plantuml_update_now": "Aggiorna PlantUML all'ultima versione"
+      "plantuml_update_now": "Aggiorna PlantUML all'ultima versione",
+      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_installed": "Draw.io viewer è installato in {path}",
+      "drawio_not_installed": "Draw.io viewer non è installato.",
+      "drawio_update_now": "Aggiorna Draw.io all'ultima versione"
     },
     "behavior": {
       "section_title": "Comportamento",
@@ -462,10 +472,10 @@
     "command_author_heading1": "Intestazione 1",
     "command_author_heading2": "Intestazione 2",
     "command_author_heading3": "Intestazione 3",
-    "command_author_bullet_list": "Elenco puntato",
-    "command_author_numbered_list": "Elenco numerato",
-    "command_author_blockquote": "Citazione",
-    "command_author_code_block": "Blocco di codice",
+    "command_author_bullet_list": "Inserisci elenco puntato",
+    "command_author_numbered_list": "Inserisci elenco numerato",
+    "command_author_blockquote": "Inserisci citazione",
+    "command_author_code_block": "Inserisci blocco di codice",
     "command_author_horizontal_rule": "Linea orizzontale",
     "command_author_insert_link": "Inserisci link",
     "command_author_insert_table": "Inserisci tabella",
@@ -494,18 +504,7 @@
     "temp_file_error": "Errore file temporaneo: {error}",
     "write_error": "Errore di scrittura: {error}",
     "persist_error": "Salvataggio fallito.",
-    "exporting": "⏳ Esportazione di {filename}…"
-  },
-  "editor": {
-    "toolbar": {
-      "heading1": "T1",
-      "heading2": "T2",
-      "heading3": "T3",
-      "bullet_list": "Elenco puntato",
-      "numbered_list": "Elenco numerato",
-      "blockquote": "Citazione in blocco",
-      "code_block": "Blocco di codice"
-    }
+    "exporting": "Esportazione di {filename}…"
   },
   "terms": {
     "title": "Termini d'uso",
@@ -530,7 +529,10 @@
   },
   "common": {
     "close": "Chiudi",
-    "save": "Salva"
+    "save": "Salva",
+    "advanced_settings": "Impostazioni avanzate",
+    "expand_all": "Espandi tutto",
+    "collapse_all": "Comprimi tutto"
   },
   "meta_info": {
     "title": "Info documento",
@@ -564,7 +566,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Ricerca nell'area di lavoro",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Attiva/disattiva barra laterale",
     "shortcut_save": "{{os_cmd:save_document}}: Salva",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Aggiorna diagrammi",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Aggiorna diagrammi",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Vista divisa",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Alterna Codice/Anteprima",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Scheda successiva",
@@ -577,7 +579,96 @@
     "start_section": "Inizio",
     "recent_section": "File recenti",
     "no_recent_files": "Nessun file recente",
-    "welcome_screen": "🏠 Schermata iniziale",
-    "user_guide": "📚 Guida utente"
+    "welcome_screen": "Schermata iniziale",
+    "user_guide": "Guida utente"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Abilita Markdown Linter",
+    "rule_severities": "Gravità delle regole",
+    "advanced_workspace_settings": "Impostazioni avanzate dell’area di lavoro",
+    "workspace_has_config": "L’area di lavoro ha un file di configurazione .markdownlint.json.",
+    "open_config": "Apri configurazione",
+    "workspace_no_config": "Nessun .markdownlint.json trovato nell’area di lavoro corrente.",
+    "create_config": "Crea configurazione",
+    "open_workspace_to_configure": "Apri un’area di lavoro per configurare regole Lint specifiche.",
+    "severity_ignore": "Ignora",
+    "severity_warning": "Avviso",
+    "severity_error": "Errore",
+    "use_workspace_local_config": "Usa configurazione locale dell'area di lavoro",
+    "rule_descriptions": {
+      "md001": "I livelli di intestazione dovrebbero incrementare solo di un livello alla volta.",
+      "md003": "Lo stile dell'intestazione dovrebbe essere coerente.",
+      "md004": "Stile elenco non ordinato incoerente.",
+      "md012": "Più righe vuote consecutive.",
+      "md022": "Le intestazioni dovrebbero essere circondate da righe vuote.",
+      "md023": "Le intestazioni devono iniziare all'inizio della riga.",
+      "md025": "Più intestazioni di primo livello nello stesso documento.",
+      "md026": "Punteggiatura finale nell'intestazione.",
+      "md027": "Più spazi dopo il simbolo di citazione.",
+      "md028": "Riga vuota all'interno della citazione.",
+      "md029": "Prefisso elemento elenco ordinato incoerente.",
+      "md032": "Gli elenchi dovrebbero essere circondati da righe vuote.",
+      "md033": "HTML in linea.",
+      "md035": "Stile riga orizzontale incoerente.",
+      "md036": "Enfasi usata al posto di un'intestazione.",
+      "md040": "I blocchi di codice dovrebbero specificare una lingua.",
+      "md041": "La prima riga di un file dovrebbe essere un'intestazione di primo livello.",
+      "md042": "Nessun collegamento vuoto.",
+      "md045": "Le immagini dovrebbero avere un testo alternativo (alt).",
+      "md047": "I file dovrebbero terminare con un singolo carattere di nuova riga.",
+      "md005": "Rientro incoerente per gli elementi dell'elenco allo stesso livello.",
+      "md007": "Rientro dell'elenco non ordinato.",
+      "md009": "Spazi finali.",
+      "md010": "Tabulazioni rigide.",
+      "md011": "Sintassi del link invertita.",
+      "md013": "Lunghezza della riga.",
+      "md014": "Simboli del dollaro utilizzati prima dei comandi senza mostrare l'output.",
+      "md018": "Nessuno spazio dopo il cancelletto nell'intestazione in stile ATX.",
+      "md019": "Più spazi dopo il cancelletto nell'intestazione in stile ATX.",
+      "md020": "Nessuno spazio all'interno dei cancelletti nell'intestazione in stile ATX chiusa.",
+      "md021": "Più spazi all'interno dei cancelletti nell'intestazione in stile ATX chiusa.",
+      "md024": "Più intestazioni con lo stesso contenuto.",
+      "md030": "Spazi dopo i marcatori di elenco.",
+      "md031": "I blocchi di codice recintati dovrebbero essere circondati da righe vuote.",
+      "md034": "URL nudo utilizzato.",
+      "md037": "Spazi all'interno dei marcatori di enfasi.",
+      "md038": "Spazi all'interno di elementi span di codice.",
+      "md039": "Spazi all'interno del testo del link.",
+      "md043": "Struttura di intestazione richiesta.",
+      "md044": "I nomi propri dovrebbero avere la corretta capitalizzazione.",
+      "md046": "Stile del blocco di codice.",
+      "md048": "Stile della recinzione del codice.",
+      "md049": "Lo stile di enfasi dovrebbe essere coerente.",
+      "md050": "Lo stile forte dovrebbe essere coerente.",
+      "md051": "I frammenti di link dovrebbero essere validi.",
+      "md052": "I link di riferimento e le immagini dovrebbero utilizzare un'etichetta definita.",
+      "md053": "Dovrebbero essere necessarie definizioni di riferimento di link e immagini.",
+      "md054": "Lo stile di link e immagini dovrebbe essere coerente.",
+      "md055": "Lo stile del tubo della tabella dovrebbe essere coerente.",
+      "md056": "Il numero di colonne della tabella dovrebbe essere coerente.",
+      "md058": "Le tabelle dovrebbero essere circondate da righe vuote.",
+      "md059": "Il testo del link dovrebbe essere descrittivo.",
+      "md060": "Lo stile delle colonne della tabella non è coerente."
+    },
+    "view_on_github": "Visualizza su GitHub ufficiale",
+    "search_placeholder": "Cerca regole…"
+  },
+  "use_workspace_local_config": "Usa configurazione locale dell’area di lavoro",
+  "editor": {
+    "toolbar": {
+      "heading1": "T1",
+      "heading2": "T2",
+      "heading3": "T3",
+      "bullet_list": "Elenco puntato",
+      "numbered_list": "Elenco numerato",
+      "blockquote": "Citazione in blocco",
+      "code_block": "Blocco di codice"
+    }
   }
 }

@@ -113,14 +113,17 @@ impl KatanaApp {
 ### 2.1 行レイアウト変更
 
 現状（3カラムGrid）:
+
 ```
 [コマンド名] [shortcut文字列] [Editボタン]
 ```
 
 新設計（2カラム + ペンアイコン）:
+
 ```
 [コマンド名]  [OSアイコン付きキー表示] [🖊]
 ```
+
 - 行全体がクリック可能（`ui.interact(row_rect, id, Sense::click())`）
 - ペン（🖊）SVGアイコンは右端に最小サイズで配置
 - クリックで「録音モーダル（ShortcutCaptureModal）」を開く
@@ -172,6 +175,7 @@ katana-linter/src/rules/domains/shortcut/
 ### 3.2 重複ルール
 
 `{context, os, shortcut}` が同一の場合に違反:
+
 - `Global` コンテキスト同士は完全重複禁止
 - `Editor` と `Global` は重複許可（コンテキスト優先度で解決）
 - `Editor` 同士は重複禁止（例: `primary+B[editor]` が2つあった場合エラー）
@@ -216,12 +220,15 @@ katana-linter/src/rules/domains/shortcut/
 ## 5. 移行戦略
 
 ### Phase 1: 既存コードの[editor]サフィックス
+
 現在の `[editor]` サフィックスは `ShortcutContext::Editor` に対応する一時的な変換ルールとして維持し、
 コンテキスト移行完了後に削除する。
 
 ### Phase 2: モーダルの key_pressed を統合
+
 `views/modals/` 内の `key_pressed` 呼び出しは `ShortcutContext::Modal` の範囲内として
 `handle_shortcuts()` に吸収する（段階的移行）。
 
 ### Phase 3: AST Linter の段階投入
+
 Linter は Phase 2 完了後に有効化する（既存の競合が解消されてから）。

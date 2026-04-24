@@ -1,5 +1,3 @@
-/* WHY: Optimized session restoration logic to handle versioned schema migrations and state persistent synchronization. */
-
 use crate::app::preview::PreviewOps;
 use crate::app::workspace::WorkspaceTabSessionV2;
 use crate::app::workspace::manage;
@@ -189,6 +187,10 @@ impl WorkspaceOpenSessionOps {
                 .performance
                 .diagram_concurrency;
             app.full_refresh_preview(&doc_path, &src, false, concurrency);
+            /* WHY: FB33 — Trigger lint on all restored documents so Problems panel
+             * is populated on startup without requiring a manual edit. The open
+             * event fires here, which is the canonical trigger for diagnostics. */
+            app.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
         }
         if !app.state.config.try_save_settings() {
             tracing::warn!("Failed to save settings");

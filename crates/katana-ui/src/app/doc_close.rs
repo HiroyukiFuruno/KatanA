@@ -19,6 +19,13 @@ impl DocCloseOps for KatanaApp {
                 .retain(|g| !g.members.is_empty());
             self.state
                 .push_recently_closed(closed_doc.path.clone(), closed_doc.is_pinned);
+
+            /* WHY: Remove diagnostics for the closed document so they don't linger in the Problems view.
+             * This prevents errors when clicking diagnostics for virtual paths that can't be loaded from FS. */
+            self.state
+                .diagnostics
+                .remove_file_diagnostics(&closed_doc.path);
+
             self.state.document.active_doc_idx = if self.state.document.open_documents.is_empty() {
                 None
             } else {

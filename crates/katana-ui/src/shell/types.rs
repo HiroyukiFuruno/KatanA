@@ -43,6 +43,8 @@ pub struct KatanaApp {
     pub(crate) update_install_rx: Option<std::sync::mpsc::Receiver<UpdateInstallEvent>>,
     pub(crate) export_tasks: Vec<ExportTask>,
     pub(crate) pending_document_loads: std::collections::VecDeque<std::path::PathBuf>,
+    pub(crate) linter_doc_rx: Option<std::sync::mpsc::Receiver<(String, Result<String, String>)>>,
+    pub(crate) linter_docs_cache: std::collections::HashMap<String, String>,
 
     pub(crate) show_about: bool,
     pub(crate) show_update_dialog: bool,
@@ -66,4 +68,7 @@ pub struct KatanaApp {
     /* WHY: Authoring — pending cursor to restore after a buffer transform.
     Set by handle_action_author_markdown; consumed by EditorContent on the next frame. */
     pub(crate) pending_editor_cursor: Option<(usize, usize)>,
+
+    pub(crate) file_dialog: egui_file_dialog::FileDialog,
+    pub(crate) pending_dialog_action: Option<AppAction>,
 }

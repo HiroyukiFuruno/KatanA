@@ -131,6 +131,11 @@ impl<'a> HorizontalSplit<'a> {
                     app.state.search.doc_search_active_index,
                     &mut app.editor_cursor_range,
                     app.pending_editor_cursor.take(),
+                    app.state
+                        .document
+                        .active_document()
+                        .map(|doc| app.state.diagnostics.get_file_diagnostics(&doc.path))
+                        .unwrap_or(&[]),
                 )
                 .show(ui);
             });

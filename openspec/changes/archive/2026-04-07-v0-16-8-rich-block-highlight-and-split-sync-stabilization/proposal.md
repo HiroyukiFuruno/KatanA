@@ -14,10 +14,12 @@ This should be specified independently as `0.16.8`, because it is a preview/sour
 ## Capabilities
 
 ### New Capabilities
+
 - `block-highlight-improvements`: Stabilize preview-hover to source-highlight mapping for rendered diagrams and alert/admonition blocks
 - `split-scroll-sync`: Keep split-mode preview/editor synchronization stable when rendered diagrams and alert/admonition blocks affect preview geometry
 
 ### Modified Capabilities
+
 - `diagram-block-preview`: Preserve stable source anchoring for rendered Mermaid, PlantUML, and Draw.io blocks
 
 ## Impact

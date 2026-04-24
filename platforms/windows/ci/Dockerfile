@@ -24,5 +24,8 @@ RUN ARCH=$(uname -m) && \
 # Add windows target
 RUN rustup target add x86_64-pc-windows-msvc
 
+# Install cargo-sweep
+RUN cargo install cargo-sweep
+
 WORKDIR /app
-CMD ["cargo", "xwin", "check", "--workspace", "--target", "x86_64-pc-windows-msvc", "--tests"]
+CMD cargo sweep --time 7 && cargo xwin check --workspace --target x86_64-pc-windows-msvc --tests

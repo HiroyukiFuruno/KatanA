@@ -20,4 +20,9 @@ pub struct WorkspaceSettings {
     pub extensionless_excludes: Vec<String>,
     #[serde(default = "super::super::defaults::SettingsDefaultOps::default_restore_session")]
     pub restore_session: bool,
+    #[serde(
+        default = "super::super::defaults::SettingsDefaultOps::true_default",
+        skip_serializing
+    )]
+    pub enable_drawio_mount: bool,
 }

@@ -25,6 +25,9 @@ impl KatanaApp {
                  * users to update to the latest PlantUML release from the Settings screen. */
                 self.start_download(crate::preview_pane::DownloadRequest { url, dest });
             }
+            AppAction::StartDrawioDownload { url, dest } => {
+                self.start_download(crate::preview_pane::DownloadRequest { url, dest });
+            }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
             AppAction::OpenUserGuide => self.handle_action_open_user_guide(),

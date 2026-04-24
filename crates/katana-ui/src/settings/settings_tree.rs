@@ -95,6 +95,12 @@ pub(super) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
                 SettingsTab::Shortcuts,
                 settings_msgs.tab_name("shortcuts"),
             );
+            show_tab_button(
+                ui,
+                &mut state.config.active_settings_tab,
+                SettingsTab::Linter,
+                settings_msgs.tab_name("linter"),
+            );
         },
     )
     .default_open(true)

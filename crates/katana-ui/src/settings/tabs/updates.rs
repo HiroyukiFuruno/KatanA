@@ -8,12 +8,14 @@ const SECTION_SEPARATOR_SPACING: f32 = 24.0;
 const SECTION_AFTER_SEPARATOR_SPACING: f32 = 16.0;
 const PLANTUML_DOWNLOAD_URL: &str =
     "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar";
+const DRAWIO_DOWNLOAD_URL: &str = "https://viewer.diagrams.net/js/viewer-static.min.js";
 
 impl crate::settings::tabs::UpdatesTabOps {
     pub(crate) fn render_updates_tab(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
         jar_path: Option<PathBuf>,
+        drawio_path: Option<PathBuf>,
     ) -> Option<AppAction> {
         let mut pending_action = None;
         let i18n_root = crate::i18n::I18nOps::get();
@@ -113,6 +115,47 @@ impl crate::settings::tabs::UpdatesTabOps {
                 {
                     pending_action = Some(AppAction::StartPlantumlDownload {
                         url: PLANTUML_DOWNLOAD_URL.to_string(),
+                        dest,
+                    });
+                }
+            }
+
+            ui.add_space(SECTION_SEPARATOR_SPACING);
+            ui.separator();
+            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
+
+            /* 3. Draw.io Section */
+            ui.heading(&i18n_settings.drawio_section_title);
+            ui.add_space(SECTION_SPACING);
+
+            if let Some(path) = drawio_path {
+                let path_str = path.to_string_lossy().to_string();
+                ui.label(
+                    egui::RichText::new(crate::i18n::I18nOps::tf(
+                        &i18n_settings.drawio_installed,
+                        &[("path", &path_str)],
+                    ))
+                    .color(ui.visuals().weak_text_color()),
+                );
+
+                ui.add_space(SECTION_SPACING);
+                if ui.button(&i18n_settings.drawio_update_now).clicked() {
+                    pending_action = Some(AppAction::StartDrawioDownload {
+                        url: DRAWIO_DOWNLOAD_URL.to_string(),
+                        dest: path,
+                    });
+                }
+            } else {
+                ui.label(
+                    egui::RichText::new(&i18n_settings.drawio_not_installed)
+                        .color(ui.visuals().warn_fg_color),
+                );
+                ui.add_space(SECTION_SPACING);
+                if ui.button(&i18n_settings.drawio_update_now).clicked()
+                    && let Some(dest) = state.config.try_get_drawio_js_path()
+                {
+                    pending_action = Some(AppAction::StartDrawioDownload {
+                        url: DRAWIO_DOWNLOAD_URL.to_string(),
                         dest,
                     });
                 }

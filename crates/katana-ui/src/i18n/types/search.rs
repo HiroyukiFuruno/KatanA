@@ -134,16 +134,16 @@ fn default_command_author_heading3() -> String {
     "Heading 3".to_string()
 }
 fn default_command_author_bullet_list() -> String {
-    "Bullet List".to_string()
+    "Insert Bullet List".to_string()
 }
 fn default_command_author_numbered_list() -> String {
-    "Numbered List".to_string()
+    "Insert Numbered List".to_string()
 }
 fn default_command_author_blockquote() -> String {
-    "Blockquote".to_string()
+    "Insert Blockquote".to_string()
 }
 fn default_command_author_code_block() -> String {
-    "Code Block".to_string()
+    "Insert Code Block".to_string()
 }
 fn default_command_author_horizontal_rule() -> String {
     "Horizontal Rule".to_string()

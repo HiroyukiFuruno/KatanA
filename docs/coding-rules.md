@@ -62,6 +62,7 @@ Fusing states into a single massive struct or using ad-hoc `HashMap`s is conside
 | **Tab (Tab-Specific)** | Independent, isolated cache per document tab. | `SplitViewState` (per-tab split state overrides) |
 
 **Implementation Principles:**
+
 - The moment a tab is opened, copy/cache the Initial Value from the Global settings to generate and isolate the Tab-specific state (e.g., `SplitViewState`).
 - Individual UI elements (like toggle buttons) mutate **ONLY the Tab-Specific** state.
 - When Global settings change, re-initialize existing Tab states (overwrite and sync with the latest Global value) to prevent state mismatch.
@@ -77,6 +78,7 @@ Files exceeding 200 lines will be blocked by the AST Linter (`file_length` rule)
 
 **Separation for Testability**
 When splitting files to resolve line count limits, do not merely slice them mechanically by line count. You must separate the "Rendering Layer (UI)" and the "State Calculation / Pure Logic Layer (Logic)" at the physical file level.
+
 - Rendering functions that take `egui::Ui` as an argument should be isolated in `_ui.rs` etc. and excluded from coverage (`COVERAGE_IGNORE`).
 - Pure data processing independent of `egui` should be separated into `_logic.rs` or `state/` modules, and a 100% branch coverage unit test (UT/IT) is mandatory.
 
@@ -466,7 +468,7 @@ Strings consisting purely of symbols are automatically bypassed as the "AST pars
 
 To automatically enforce these coding conventions (including i18n rules and prohibited type constraints) in CI rather than manually, we operate a Custom Linter using AST (Abstract Syntax Tree) traversal with Rust's `syn` crate.
 
-> * For specification details, see `docs/ast-linter-plan.md`.
+> - For specification details, see `docs/ast-linter-plan.md`.
 
 ### 12.1 Flow of Enforcement (`pre-commit` / `pre-push`)
 

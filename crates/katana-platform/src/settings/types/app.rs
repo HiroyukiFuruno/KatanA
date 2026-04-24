@@ -1,8 +1,8 @@
 use super::{
     behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, icon::IconSettings,
-    ingest::IngestSettings, layout::LayoutSettings, performance::PerformanceSettings,
-    search::SearchSettings, shortcut::ShortcutSettings, theme::ThemeSettings,
-    update::UpdateSettings, workspace::WorkspaceSettings,
+    ingest::IngestSettings, layout::LayoutSettings, linter::LinterSettings,
+    performance::PerformanceSettings, search::SearchSettings, shortcut::ShortcutSettings,
+    theme::ThemeSettings, update::UpdateSettings, workspace::WorkspaceSettings,
 };
 use serde::{Deserialize, Serialize};
 
@@ -66,6 +66,9 @@ pub struct AppSettings {
     /* WHY: Additional key-value settings for future use. */
     #[serde(default)]
     pub extra: Vec<ExtraSetting>,
+    /* WHY: Linter settings. */
+    #[serde(default)]
+    pub linter: LinterSettings,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

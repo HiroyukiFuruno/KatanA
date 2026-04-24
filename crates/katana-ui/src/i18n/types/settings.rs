@@ -79,43 +79,7 @@ pub struct SettingsPreviewMessages {
     pub code_sample: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingsColorMessages {
-    pub background: String,
-    pub panel_background: String,
-    pub text: String,
-    pub text_secondary: String,
-    pub accent: String,
-    pub border: String,
-    pub selection: String,
-    pub code_background: String,
-    pub preview_background: String,
-    pub code_text: String,
-    pub preview_text: String,
-    pub highlight: String,
-    pub section_system: String,
-    pub section_code: String,
-    pub section_preview: String,
-    pub group_basic: String,
-    pub group_text: String,
-    pub group_ui_elements: String,
-    pub title_bar_text: String,
-    pub active_file_highlight: String,
-    pub success_text: String,
-    pub warning_text: String,
-    pub error_text: String,
-    pub button_background: String,
-    pub button_active_background: String,
-    pub splash_background: String,
-    pub splash_progress: String,
-    pub line_number_text: String,
-    pub line_number_active_text: String,
-    pub current_line_background: String,
-    pub hover_line_background: String,
-    pub file_tree_text: String,
-    pub search_match: String,
-    pub search_active: String,
-}
+pub use crate::i18n::types::settings_color::SettingsColorMessages;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SettingsWorkspaceMessages {
@@ -128,6 +92,7 @@ pub struct SettingsWorkspaceMessages {
     pub no_extension_warning: String,
     pub extensionless_excludes: String,
     pub extensionless_excludes_hint: String,
+    pub enable_drawio_mount: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -136,7 +101,6 @@ pub struct SettingsIconsMessages {
     pub custom_preset: String,
     pub save_preset: String,
     pub revert_default: String,
-    pub advanced_settings: String,
     pub colorful_vendor_icons_label: String,
     pub table_header_icon: String,
     pub table_header_vendor: String,
@@ -144,6 +108,12 @@ pub struct SettingsIconsMessages {
     pub table_header_border: String,
     pub table_header_preview: String,
     pub preset_name: String,
+    #[serde(default = "default_icons_search_placeholder")]
+    pub search_placeholder: String,
+}
+
+fn default_icons_search_placeholder() -> String {
+    "Search icons…".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,6 +135,14 @@ pub struct SettingsUpdateMessages {
     pub plantuml_installed: String,
     pub plantuml_not_installed: String,
     pub plantuml_update_now: String,
+    #[serde(default)]
+    pub drawio_section_title: String,
+    #[serde(default)]
+    pub drawio_installed: String,
+    #[serde(default)]
+    pub drawio_not_installed: String,
+    #[serde(default)]
+    pub drawio_update_now: String,
 }
 
 #[rustfmt::skip]

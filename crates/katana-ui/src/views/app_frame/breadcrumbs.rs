@@ -21,19 +21,23 @@ impl<'a> Breadcrumbs<'a> {
         let mut breadcrumb_action = None;
 
         ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-            let segments: Vec<&str> = rel.split('/').collect();
-            let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
-
-            /* WHY: demo files don't need full paths shown in breadcrumbs */
-            if rel.starts_with("Katana://Demo/") {
-                if let Some(name) = segments.last() {
+            /* WHY: Virtual paths use "Katana://" prefix which, when split on '/', produces an
+             * empty segment between the colon and the first real path component.
+             * We handle known virtual prefixes explicitly, and filter empty segments for safety. */
+            if rel.starts_with("Katana://Demo/") || rel.starts_with("Katana://LinterDocs/") {
+                /* WHY: Virtual documents show only the filename — no directory traversal needed. */
+                if let Some(name) = rel.split('/').rfind(|s| !s.is_empty()) {
                     ui.add(
-                        egui::Label::new(egui::RichText::new(*name).small())
+                        egui::Label::new(egui::RichText::new(name).small())
                             .sense(egui::Sense::hover()),
                     );
                 }
                 return;
             }
+
+            /* WHY: Filter empty segments that arise from double-slash prefixes or trailing slashes. */
+            let segments: Vec<&str> = rel.split('/').filter(|s| !s.is_empty()).collect();
+            let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
 
             for (i, seg) in segments.iter().enumerate() {
                 if i > 0 {

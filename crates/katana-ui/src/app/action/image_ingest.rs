@@ -3,18 +3,31 @@ use crate::shell::*;
 impl KatanaApp {
     /// Ingest an image file from the local filesystem.
     pub(crate) fn handle_action_ingest_image_file(&mut self) {
-        let files = rfd::FileDialog::new()
-            .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp", "bmp"])
-            .pick_file();
+        if crate::shell_ui::ShellUiOps::is_headless() {
+            self.pending_dialog_action = Some(crate::app_state::AppAction::IngestImageFile);
+            self.file_dialog.pick_file();
+            return;
+        }
 
-        if let Some(source_path) = files
-            && let Ok(bytes) = std::fs::read(&source_path)
-        {
+        let files = std::panic::catch_unwind(|| {
+            rfd::FileDialog::new()
+                .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp", "bmp"])
+                .pick_file()
+        })
+        .unwrap_or(None);
+
+        if let Some(source_path) = files {
+            let Ok(bytes) = std::fs::read(&source_path) else {
+                return;
+            };
             let ext = source_path
                 .extension()
                 .and_then(|s| s.to_str())
                 .unwrap_or("png");
             self.process_image_ingest(&bytes, ext);
+        } else {
+            self.pending_dialog_action = Some(crate::app_state::AppAction::IngestImageFile);
+            self.file_dialog.pick_file();
         }
     }
 
@@ -38,7 +51,7 @@ impl KatanaApp {
     }
 
     /// Process the ingested image bytes: save to asset dir and insert markdown tag.
-    fn process_image_ingest(&mut self, source_bytes: &[u8], extension: &str) {
+    pub(crate) fn process_image_ingest(&mut self, source_bytes: &[u8], extension: &str) {
         let settings = self.state.config.settings.settings().clone();
 
         let Some(doc) = self.state.active_document() else {

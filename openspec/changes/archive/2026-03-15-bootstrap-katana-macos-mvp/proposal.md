@@ -14,6 +14,7 @@ Katana needs an implementation-ready plan that turns the product vision in `kata
 ## Capabilities
 
 ### New Capabilities
+
 - `workspace-shell`: Open a local project workspace, show its file structure, and manage the active document within a three-pane desktop layout.
 - `markdown-authoring`: Edit GitHub Flavored Markdown and render synchronized preview output suitable for spec-driven development documents.
 - `diagram-block-preview`: Render `Mermaid`, `PlantUML`, and `Draw.io` blocks inline in the standard preview experience.
@@ -22,6 +23,7 @@ Katana needs an implementation-ready plan that turns the product vision in `kata
 - `oss-repository-security`: Establish the public repository security baseline for vulnerability reporting, dependency monitoring, code scanning, and hardened automation.
 
 ### Modified Capabilities
+
 - None.
 
 ## Impact

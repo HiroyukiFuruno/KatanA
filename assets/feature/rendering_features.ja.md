@@ -20,10 +20,15 @@
 ## 2. 見出し（H1〜H6）
 
 # H1 — 最上位見出し
+
 ## H2 — セクション見出し
+
 ### H3 — サブセクション
+
 #### H4 — 詳細
+
 ##### H5 — 小見出し
+
 ###### H6 — 最小見出し
 
 ---
@@ -32,7 +37,7 @@
 
 - [GitHub](https://github.com) — 外部リンク
 - [メール](mailto:hello@example.com) — mailto リンク
-- 自動検出: https://github.com
+- 自動検出: <https://github.com>
 
 ---
 

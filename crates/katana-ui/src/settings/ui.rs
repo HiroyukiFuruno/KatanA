@@ -141,12 +141,11 @@ impl<'a> SettingsWindow<'a> {
                                                 );
                                             }
                                             SettingsTab::Updates => {
-                                                let jar_path =
-                                                    state.config.get_plantuml_jar_path_if_exists();
-                                                triggered_action =
-                                                    crate::settings::tabs::UpdatesTabOps::render_updates_tab(
-                                                        ui, state, jar_path,
-                                                    );
+                                                triggered_action = crate::settings::tabs::UpdatesTabOps::render_updates_tab(
+                                                    ui, state,
+                                                    state.config.get_plantuml_jar_path_if_exists(),
+                                                    state.config.get_drawio_js_path_if_exists(),
+                                                );
                                             }
                                             SettingsTab::Behavior => {
                                                 triggered_action =
@@ -158,6 +157,11 @@ impl<'a> SettingsWindow<'a> {
                                                 crate::settings::tabs::ShortcutsTabOps::render_shortcuts_tab(
                                                     ui, state,
                                                 );
+                                            }
+                                            SettingsTab::Linter => {
+                                                if let Some(action) = crate::settings::tabs::LinterTabOps::render_linter_tab(ui, state) {
+                                                    triggered_action = Some(action);
+                                                }
                                             }
                                             _ => {}
                                         })
@@ -225,7 +229,7 @@ mod tests {
         harness.run_steps(10);
 
         let i18n = crate::i18n::I18nOps::get();
-        harness.get_by_label(&i18n.settings.icons.advanced_settings);
+        harness.get_by_label(&i18n.common.advanced_settings);
         harness.get_by_label(&i18n.settings.icons.colorful_vendor_icons_label);
     }
 }

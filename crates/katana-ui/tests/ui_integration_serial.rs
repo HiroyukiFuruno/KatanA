@@ -19,3 +19,5 @@ pub mod diagram_rendering;
 pub mod html_block_tests;
 #[path = "integration/settings/integration_i18n.rs"]
 pub mod integration_i18n;
+#[path = "integration/tree_layout.rs"]
+mod tree_layout;

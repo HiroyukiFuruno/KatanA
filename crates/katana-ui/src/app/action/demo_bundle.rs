@@ -24,6 +24,14 @@ const WELCOME_JA: &str = include_str!("../../../../../assets/feature/feature_wal
 const RENDERING_FEATURES_JA: &str =
     include_str!("../../../../../assets/feature/rendering_features.ja.md");
 
+/* WHY: Linter fix demo asset */
+const LINT_FIX_DEMO_EN: &str = include_str!("../../../../../assets/feature/lint-fix.md");
+const LINT_FIX_DEMO_JA: &str = include_str!("../../../../../assets/feature/lint-fix.ja.md");
+
+/* WHY: Draw.io direct mount demo asset */
+const DIRECT_AWS_DRAWIO: &str =
+    include_str!("../../../../../assets/feature/katana-architecture.md");
+
 /* WHY: Guide assets */
 const GUIDE_JA: &str = include_str!("../../../resources/guide_ja.md");
 const GUIDE_EN: &str = include_str!("../../../resources/guide_en.md");
@@ -70,10 +78,10 @@ pub(super) fn resolve_single_asset(lang: &str, filename: &str) -> Option<DemoAss
 /// - Prefer Japanese variant when `lang == "ja"`, fall back to English.
 /// - Welcome document is always returned first.
 pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
-    let (welcome, rendering) = if lang.starts_with("ja") {
-        (WELCOME_JA, RENDERING_FEATURES_JA)
+    let (welcome, rendering, lint_fix) = if lang.starts_with("ja") {
+        (WELCOME_JA, RENDERING_FEATURES_JA, LINT_FIX_DEMO_JA)
     } else {
-        (WELCOME_EN, RENDERING_FEATURES_EN)
+        (WELCOME_EN, RENDERING_FEATURES_EN, LINT_FIX_DEMO_EN)
     };
 
     let walkthrough_filename = "feature_walkthrough.md";
@@ -89,6 +97,16 @@ pub(super) fn resolve_demo_bundle(lang: &str) -> Vec<DemoAsset> {
         DemoAsset {
             virtual_path: demo_virtual_path(rendering_filename),
             content: rendering.to_string(),
+            is_reference: true,
+        },
+        DemoAsset {
+            virtual_path: demo_virtual_path("lint-fix.md"),
+            content: lint_fix.to_string(),
+            is_reference: true,
+        },
+        DemoAsset {
+            virtual_path: demo_virtual_path("katana-architecture.md"),
+            content: DIRECT_AWS_DRAWIO.to_string(),
             is_reference: true,
         },
     ]
@@ -111,19 +129,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn resolve_demo_bundle_returns_two_assets_en() {
+    fn resolve_demo_bundle_returns_assets_en() {
         let bundle = resolve_demo_bundle("en");
-        assert_eq!(bundle.len(), 2);
+        assert_eq!(bundle.len(), 4);
         assert!(bundle[0].virtual_path.contains("feature_walkthrough.md"));
         assert!(bundle[1].virtual_path.contains("rendering_features.md"));
+        assert!(bundle[2].virtual_path.contains("lint-fix.md"));
+        assert!(bundle[3].virtual_path.contains("katana-architecture.md"));
     }
 
     #[test]
-    fn resolve_demo_bundle_returns_two_assets_ja() {
+    fn resolve_demo_bundle_returns_assets_ja() {
         let bundle = resolve_demo_bundle("ja");
-        assert_eq!(bundle.len(), 2);
+        assert_eq!(bundle.len(), 4);
         assert!(bundle[0].virtual_path.contains("feature_walkthrough.md"));
         assert!(bundle[1].virtual_path.contains("rendering_features.md"));
+        assert!(bundle[2].virtual_path.contains("lint-fix.md"));
+        assert!(bundle[3].virtual_path.contains("katana-architecture.md"));
     }
 
     #[test]

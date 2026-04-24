@@ -6,17 +6,26 @@ impl AppState {
     pub fn set_active_view_mode(&mut self, mode: ViewMode) {
         if let Some(doc) = self.active_document() {
             let path = doc.path.clone();
+
+            /* WHY: FB8: LinterDocs are always PreviewOnly, prevent changing */
+            let actual_mode = if path.to_string_lossy().starts_with("Katana://LinterDocs/") {
+                ViewMode::PreviewOnly
+            } else {
+                mode
+            };
+
             if let Some(t) = self
                 .document
                 .tab_view_modes
                 .iter_mut()
                 .find(|t| t.path == path)
             {
-                t.mode = mode;
+                t.mode = actual_mode;
             } else {
-                self.document
-                    .tab_view_modes
-                    .push(TabViewMode { path, mode });
+                self.document.tab_view_modes.push(TabViewMode {
+                    path,
+                    mode: actual_mode,
+                });
             }
         }
     }

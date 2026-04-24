@@ -118,6 +118,18 @@ pub struct MarkdownMessages {
 pub struct CommonMessages {
     pub close: String,
     pub save: String,
+    pub advanced_settings: String,
+    #[serde(default = "default_expand_all")]
+    pub expand_all: String,
+    #[serde(default = "default_collapse_all")]
+    pub collapse_all: String,
+}
+
+fn default_expand_all() -> String {
+    "Expand All".to_string()
+}
+fn default_collapse_all() -> String {
+    "Collapse All".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

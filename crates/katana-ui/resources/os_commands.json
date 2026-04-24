@@ -1,16 +1,16 @@
 {
   "modifier_primary": {
-    "mac": "\u2318",
+    "mac": "⌘",
     "windows": "Ctrl",
     "linux": "Ctrl"
   },
   "modifier_shift": {
-    "mac": "\u21e7",
+    "mac": "⇧",
     "windows": "Shift",
     "linux": "Shift"
   },
   "modifier_alt": {
-    "mac": "\u2325",
+    "mac": "⌥",
     "windows": "Alt",
     "linux": "Alt"
   },
@@ -38,11 +38,6 @@
     "mac": "⌘ + S",
     "windows": "Ctrl + S",
     "linux": "Ctrl + S"
-  },
-  "refresh_preview": {
-    "mac": "",
-    "windows": "",
-    "linux": ""
   },
   "refresh_document": {
     "mac": "⌘ + ⇧ + R",
@@ -106,16 +101,16 @@
   },
   "tab_next": {
     "mac": "⌘ + →",
-    "windows": "Ctrl + \u2192",
-    "linux": "Ctrl + \u2192"
+    "windows": "Ctrl + →",
+    "linux": "Ctrl + →"
   },
   "tab_prev": {
     "mac": "⌘ + ←",
-    "windows": "Ctrl + \u2190",
-    "linux": "Ctrl + \u2190"
+    "windows": "Ctrl + ←",
+    "linux": "Ctrl + ←"
   },
   "toggle_slideshow": {
-    "mac": "⌘ + ⌥ + \u21b5",
+    "mac": "⌘ + ⌥ + ↵",
     "windows": "Ctrl + Alt + Enter",
     "linux": "Ctrl + Alt + Enter"
   }

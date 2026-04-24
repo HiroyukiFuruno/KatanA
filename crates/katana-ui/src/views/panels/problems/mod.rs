@@ -1,3 +1,4 @@
+mod diagnostics_renderer;
 pub mod types;
 mod ui;
 

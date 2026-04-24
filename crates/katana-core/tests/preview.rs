@@ -420,10 +420,8 @@ Some text here.
                 in_html_block = true;
                 current_html.clear();
             }
-            Event::Html(text) => {
-                if in_html_block {
-                    current_html.push_str(&text);
-                }
+            Event::Html(text) if in_html_block => {
+                current_html.push_str(&text);
             }
             Event::End(TagEnd::HtmlBlock) => {
                 html_blocks.push(current_html.clone());
@@ -507,10 +505,8 @@ More text.
                 in_html_block = true;
                 current_html.clear();
             }
-            Event::Html(text) => {
-                if in_html_block {
-                    current_html.push_str(&text);
-                }
+            Event::Html(text) if in_html_block => {
+                current_html.push_str(&text);
             }
             Event::End(TagEnd::HtmlBlock) => {
                 html_blocks.push(current_html.clone());

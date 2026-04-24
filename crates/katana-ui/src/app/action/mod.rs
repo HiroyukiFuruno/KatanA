@@ -12,6 +12,7 @@ mod process_document;
 mod process_group_lifecycle;
 mod process_groups;
 mod process_helpers;
+mod process_linter;
 mod process_reorder;
 mod process_tabs;
 mod process_update;

@@ -50,49 +50,41 @@ fn get_render_policy(_pack_dir: &str) -> &'static str {
     "TintedMonochrome"
 }
 
+/* WHY: Centralises skip logic for tint validation:
+ * - NativeColor packs are exempt by design. */
+fn should_skip_tint_check(path: &std::path::Path) -> bool {
+    let components: Vec<_> = path
+        .components()
+        .map(|c| c.as_os_str().to_string_lossy())
+        .collect();
+    let mut after_icons = components.iter().skip_while(|c| *c != "icons");
+    let pack_dir = after_icons
+        .next()
+        .and_then(|_| after_icons.next())
+        .map(|s| s.as_ref())
+        .unwrap_or("");
+    get_render_policy(pack_dir) == "NativeColor"
+}
+
 pub struct SvgOps;
 
 impl SvgOps {
     pub fn lint_svg_colors(workspace_root: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
         let icons_dir = workspace_root.join("assets/icons");
-
         if !icons_dir.exists() {
             return violations;
         }
-
-        let files = LinterFileOps::collect_files_by_extension(&icons_dir, "svg");
-
-        for path in files {
-            /* WHY: Path is typically <workspace>/assets/icons/<pack_dir>/... */
-            let components: Vec<_> = path
-                .components()
-                .map(|c| c.as_os_str().to_string_lossy())
-                .collect();
-            let pack_dir = components
-                .iter()
-                .skip_while(|c| *c != "icons")
-                .nth(1)
-                .map(|s| s.as_ref())
-                .unwrap_or("katana");
-
-            if get_render_policy(pack_dir) == "NativeColor" {
-                /* WHY: Skip tint validation for packs utilizing native colors */
+        for path in LinterFileOps::collect_files_by_extension(&icons_dir, "svg") {
+            if should_skip_tint_check(&path) {
                 continue;
             }
-
-            let content = match fs::read_to_string(&path) {
-                Ok(content) => content,
-                Err(_) => continue,
+            let Ok(content) = fs::read_to_string(&path) else {
+                continue;
             };
-
-            /* WHY: For TintedMonochrome packs, we ensure all icons use `#FFFFFF` or `currentColor`
-            This supports egui's dynamic tinting without destroying the icon's intended shapes. */
-
-            let has_fill = content.contains("fill=\"");
-            let has_stroke = content.contains("stroke=\"");
-
-            if !has_fill && !has_stroke {
+            /* WHY: For TintedMonochrome packs, all icons must use `#FFFFFF` or `currentColor`
+             * to support egui's dynamic tinting without destroying icon shapes. */
+            if !content.contains("fill=\"") && !content.contains("stroke=\"") {
                 violations.push(Violation {
                     file: path.clone(),
                     line: 1,
@@ -100,15 +92,12 @@ impl SvgOps {
                     message: "Blackout Bug Detected: SVG has neither `fill` nor `stroke`. It will render as black and fail dynamic tinting. Add `fill=\"#FFFFFF\"` or `stroke=\"#FFFFFF\"`.".to_string(),
                 });
             }
-
-            let lines: Vec<&str> = content.lines().collect();
-            for (i, line) in lines.iter().enumerate() {
-                if let Some(violation) = check_line_for_invalid_colors(&path, i + 1, line) {
-                    violations.push(violation);
+            for (i, line) in content.lines().enumerate() {
+                if let Some(v) = check_line_for_invalid_colors(&path, i + 1, line) {
+                    violations.push(v);
                 }
             }
         }
-
         violations
     }
 

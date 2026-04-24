@@ -54,6 +54,8 @@ impl KatanaApp {
         self.poll_update_check(ctx);
         self.poll_changelog(ctx);
         self.poll_export(ctx);
+        self.poll_linter_docs(ctx);
+        self.tick_diagnostics(ctx);
 
         crate::native_menu::NativeMenuOps::update_availability(&self.state);
         let native_action = crate::native_menu::NativeMenuOps::poll(ShellUiOps::open_folder_dialog);
@@ -68,6 +70,40 @@ impl KatanaApp {
         self.process_action(ctx, action);
 
         theme_colors
+    }
+
+    pub(crate) fn update_file_dialog(&mut self, ctx: &egui::Context) {
+        self.file_dialog.update(ctx);
+
+        if let Some(path) = self.file_dialog.take_picked()
+            && let Some(action) = self.pending_dialog_action.take()
+        {
+            self.handle_file_dialog_action(path, action);
+        }
+    }
+
+    fn handle_file_dialog_action(&mut self, path: std::path::PathBuf, action: AppAction) {
+        match action {
+            AppAction::PickOpenWorkspace => {
+                self.handle_open_explorer(path);
+            }
+            AppAction::IngestImageFile => {
+                let Ok(bytes) = std::fs::read(&path) else {
+                    return;
+                };
+                let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("png");
+                self.process_image_ingest(&bytes, ext);
+            }
+            AppAction::PickExportDocument {
+                doc_path,
+                ext,
+                source,
+            } => {
+                use crate::app::export_poll::ExportPoll;
+                self.perform_tool_export(&source, &ext, path, &doc_path);
+            }
+            _ => {}
+        }
     }
 
     fn tick_auto_save(&mut self) {
@@ -137,6 +173,22 @@ impl KatanaApp {
         self.cached_theme = Some(theme_colors.clone());
         if matches!(self.pending_action, AppAction::None) {
             self.pending_action = AppAction::RefreshDiagrams;
+        }
+    }
+
+    fn tick_diagnostics(&mut self, ctx: &egui::Context) {
+        const DIAGNOSTICS_DEBOUNCE_MS: u128 = 500;
+        if let Some(last) = self.state.diagnostics.last_buffer_update {
+            let elapsed = last.elapsed().as_millis();
+            if elapsed > DIAGNOSTICS_DEBOUNCE_MS {
+                self.state.diagnostics.last_buffer_update = None;
+                if matches!(self.pending_action, crate::app_state::AppAction::None) {
+                    self.pending_action = crate::app_state::AppAction::RefreshDiagnostics;
+                }
+            } else {
+                let remaining = (DIAGNOSTICS_DEBOUNCE_MS - elapsed) as u64;
+                ctx.request_repaint_after(std::time::Duration::from_millis(remaining));
+            }
         }
     }
 }

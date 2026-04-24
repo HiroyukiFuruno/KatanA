@@ -298,21 +298,23 @@
       "no_extension_warning_title": "Warnung",
       "no_extension_warning": "Keine Garantie für korrekte Markdown-Anzeige ohne Endung. Fortfahren?",
       "extensionless_excludes": "Ausgeschlossen (ohne Endung)",
-      "extensionless_excludes_hint": "Komma-getrennt"
+      "extensionless_excludes_hint": "Komma-getrennt",
+      "enable_drawio_mount": "Direktes Laden von Draw.io aktivieren (*.drawio, *.drowio)"
     },
     "icons": {
       "preset_label": "Preset..:",
       "custom_preset": "Benutzerdefiniert",
       "save_preset": "Als Preset speichern…",
       "revert_default": "Standard",
-      "advanced_settings": "Erweitert",
       "colorful_vendor_icons_label": "Standardfarben für Icons",
       "table_header_icon": "Symbol",
       "table_header_vendor": "Vendor.",
       "table_header_color": "Farbe",
       "table_header_border": "Rahmen",
       "table_header_preview": "Vorschau",
-      "preset_name": "Name:"
+      "preset_name": "Name:",
+      "search_placeholder": "suche",
+      "advanced_settings": "Erweitert"
     },
     "tabs": [
       {
@@ -354,6 +356,10 @@
       {
         "key": "shortcuts",
         "name": "Tastenkombinationen"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -367,7 +373,11 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML ist unter %path% installiert.",
       "plantuml_not_installed": "PlantUML ist nicht installiert.",
-      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren"
+      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren",
+      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_installed": "Draw.io viewer ist installiert unter {path}",
+      "drawio_not_installed": "Draw.io viewer ist nicht installiert.",
+      "drawio_update_now": "Draw.io auf neueste Version aktualisieren"
     },
     "behavior": {
       "section_title": "Verhalten",
@@ -462,10 +472,10 @@
     "command_author_heading1": "Überschrift 1",
     "command_author_heading2": "Überschrift 2",
     "command_author_heading3": "Überschrift 3",
-    "command_author_bullet_list": "Aufzählungsliste",
-    "command_author_numbered_list": "Nummerierte Liste",
-    "command_author_blockquote": "Blockzitat",
-    "command_author_code_block": "Codeblock",
+    "command_author_bullet_list": "Aufzählungsliste einfügen",
+    "command_author_numbered_list": "Nummerierte Liste einfügen",
+    "command_author_blockquote": "Blockzitat einfügen",
+    "command_author_code_block": "Codeblock einfügen",
     "command_author_horizontal_rule": "Horizontale Linie",
     "command_author_insert_link": "Link einfügen",
     "command_author_insert_table": "Tabelle einfügen",
@@ -494,18 +504,7 @@
     "temp_file_error": "Temporärer Dateifehler: {error}",
     "write_error": "Schreibfehler: {error}",
     "persist_error": "Speichern fehlgeschlagen.",
-    "exporting": "⏳ Exportiere {filename}…"
-  },
-  "editor": {
-    "toolbar": {
-      "heading1": "Ü1",
-      "heading2": "Ü2",
-      "heading3": "Ü3",
-      "bullet_list": "Aufzählungsliste",
-      "numbered_list": "Nummerierte Liste",
-      "blockquote": "Blockzitat",
-      "code_block": "Codeblock"
-    }
+    "exporting": "Exportiere {filename}…"
   },
   "terms": {
     "title": "Nutzungsbedingungen",
@@ -530,7 +529,10 @@
   },
   "common": {
     "close": "Schließen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "advanced_settings": "Erweiterte Einstellungen",
+    "expand_all": "Alle erweitern",
+    "collapse_all": "Alle reduzieren"
   },
   "meta_info": {
     "title": "Dokumentinfo",
@@ -564,7 +566,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Workspace-Suche",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Seitenleiste umschalten",
     "shortcut_save": "{{os_cmd:save_document}}: Speichern",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Diagramme aktualisieren",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Diagramme aktualisieren",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Geteilte Ansicht",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Code/Vorschau umschalten",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Nächster Tab",
@@ -577,7 +579,96 @@
     "start_section": "Start.",
     "recent_section": "Zuletzt geöffnet",
     "no_recent_files": "Keine kürzlich geöffneten Dateien",
-    "welcome_screen": "🏠 Willkommensbildschirm",
-    "user_guide": "📚 Benutzerhandbuch"
+    "welcome_screen": "Willkommensbildschirm",
+    "user_guide": "Benutzerhandbuch"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Markdown Linter aktivieren",
+    "rule_severities": "Schweregrad der Regeln",
+    "advanced_workspace_settings": "Erweiterte Workspace-Einstellungen",
+    "workspace_has_config": "Workspace hat eine .markdownlint.json Konfigurationsdatei.",
+    "open_config": "Konfiguration öffnen",
+    "workspace_no_config": "Keine .markdownlint.json im aktuellen Workspace gefunden.",
+    "create_config": "Konfiguration erstellen",
+    "open_workspace_to_configure": "Öffnen Sie einen Workspace, um spezifische Lint-Regeln zu konfigurieren.",
+    "severity_ignore": "Ignorieren",
+    "severity_warning": "Warnung",
+    "severity_error": "Fehler",
+    "use_workspace_local_config": "Lokale Workspace-Konfiguration verwenden",
+    "rule_descriptions": {
+      "md001": "Überschriftenebenen sollten nur um jeweils eine Ebene erhöht werden.",
+      "md003": "Der Überschriftenstil sollte einheitlich sein.",
+      "md004": "Uneinheitlicher Listenstil für ungeordnete Listen.",
+      "md012": "Mehrere aufeinanderfolgende Leerzeilen.",
+      "md022": "Überschriften sollten von Leerzeilen umgeben sein.",
+      "md023": "Überschriften müssen am Anfang der Zeile beginnen.",
+      "md025": "Mehrere Überschriften der obersten Ebene im selben Dokument.",
+      "md026": "Satzzeichen am Ende der Überschrift.",
+      "md027": "Mehrere Leerzeichen nach dem Blockzitat-Symbol.",
+      "md028": "Leerzeile innerhalb des Blockzitats.",
+      "md029": "Uneinheitliches Präfix für geordnete Listenelemente.",
+      "md032": "Listen sollten von Leerzeilen umgeben sein.",
+      "md033": "Inline-HTML.",
+      "md035": "Uneinheitlicher Stil für horizontale Linien.",
+      "md036": "Hervorhebung anstelle einer Überschrift verwendet.",
+      "md040": "Codeblöcke sollten eine Sprache angeben.",
+      "md041": "Die erste Zeile einer Datei sollte eine Überschrift der obersten Ebene sein.",
+      "md042": "Keine leeren Links.",
+      "md045": "Bilder sollten einen Alternativtext (alt) haben.",
+      "md047": "Dateien sollten mit einem einzelnen Zeilenumbruchzeichen enden.",
+      "md005": "Inkonsistente Einrückung für Listenelemente auf derselben Ebene.",
+      "md007": "Einrückung für ungeordnete Listen.",
+      "md009": "Nachgestellte Leerzeichen.",
+      "md010": "Harte Tabulatoren.",
+      "md011": "Umgekehrte Link-Syntax.",
+      "md013": "Zeilenlänge.",
+      "md014": "Dollarzeichen vor Befehlen ohne Ausgabe verwendet.",
+      "md018": "Kein Leerzeichen nach Raute bei ATX-Überschrift.",
+      "md019": "Mehrere Leerzeichen nach Raute bei ATX-Überschrift.",
+      "md020": "Kein Leerzeichen innerhalb von Rauten bei geschlossener ATX-Überschrift.",
+      "md021": "Mehrere Leerzeichen innerhalb von Rauten bei geschlossener ATX-Überschrift.",
+      "md024": "Mehrere Überschriften mit demselben Inhalt.",
+      "md030": "Leerzeichen nach Listenmarkierungen.",
+      "md031": "Gefasste Codeblöcke sollten von Leerzeilen umgeben sein.",
+      "md034": "Nackte URL verwendet.",
+      "md037": "Leerzeichen innerhalb von Hervorhebungsmarkierungen.",
+      "md038": "Leerzeichen innerhalb von Code-Span-Elementen.",
+      "md039": "Leerzeichen innerhalb von Linktext.",
+      "md043": "Erforderliche Überschriftenstruktur.",
+      "md044": "Eigennamen sollten die richtige Großschreibung haben.",
+      "md046": "Codeblock-Stil.",
+      "md048": "Code-Fence-Stil.",
+      "md049": "Hervorhebungsstil sollte konsistent sein.",
+      "md050": "Starker Stil sollte konsistent sein.",
+      "md051": "Link-Fragmente sollten gültig sein.",
+      "md052": "Referenzlinks und Bilder sollten eine definierte Bezeichnung verwenden.",
+      "md053": "Definitionen von Link- und Bildreferenzen sollten benötigt werden.",
+      "md054": "Link- und Bildstil sollte konsistent sein.",
+      "md055": "Tabellen-Pipe-Stil sollte konsistent sein.",
+      "md056": "Tabellenspaltenanzahl sollte konsistent sein.",
+      "md058": "Tabellen sollten von Leerzeilen umgeben sein.",
+      "md059": "Linktext sollte beschreibend sein.",
+      "md060": "Der Spaltenstil der Tabelle ist nicht einheitlich."
+    },
+    "view_on_github": "Auf offiziellem GitHub anzeigen",
+    "search_placeholder": "Regeln suchen…"
+  },
+  "use_workspace_local_config": "Workspace-lokale Konfiguration verwenden",
+  "editor": {
+    "toolbar": {
+      "heading1": "Ü1",
+      "heading2": "Ü2",
+      "heading3": "Ü3",
+      "bullet_list": "Aufzählungsliste",
+      "numbered_list": "Nummerierte Liste",
+      "blockquote": "Blockzitat",
+      "code_block": "Codeblock"
+    }
   }
 }

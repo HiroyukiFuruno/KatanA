@@ -1,42 +1,42 @@
 [
-    {
-        "code": "en",
-        "name": "English"
-    },
-    {
-        "code": "ja",
-        "name": "日本語"
-    },
-    {
-        "code": "zh-CN",
-        "name": "简体中文"
-    },
-    {
-        "code": "zh-TW",
-        "name": "繁體中文"
-    },
-    {
-        "code": "ko",
-        "name": "한국어"
-    },
-    {
-        "code": "pt",
-        "name": "Português"
-    },
-    {
-        "code": "fr",
-        "name": "Français"
-    },
-    {
-        "code": "de",
-        "name": "Deutsch"
-    },
-    {
-        "code": "es",
-        "name": "Español"
-    },
-    {
-        "code": "it",
-        "name": "Italiano"
-    }
+	{
+		"code": "en",
+		"name": "English"
+	},
+	{
+		"code": "ja",
+		"name": "日本語"
+	},
+	{
+		"code": "zh-CN",
+		"name": "简体中文"
+	},
+	{
+		"code": "zh-TW",
+		"name": "繁體中文"
+	},
+	{
+		"code": "ko",
+		"name": "한국어"
+	},
+	{
+		"code": "pt",
+		"name": "Português"
+	},
+	{
+		"code": "fr",
+		"name": "Français"
+	},
+	{
+		"code": "de",
+		"name": "Deutsch"
+	},
+	{
+		"code": "es",
+		"name": "Español"
+	},
+	{
+		"code": "it",
+		"name": "Italiano"
+	}
 ]

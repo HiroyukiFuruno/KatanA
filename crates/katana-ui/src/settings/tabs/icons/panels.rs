@@ -22,9 +22,11 @@ impl IconsPanelsOps {
             return;
         }
 
+        let mut force_open: Option<bool> = None;
+
         /* WHY: Header row — title left, close button right. */
         AlignCenter::new()
-            .left(|ui| ui.heading(&i18n.settings.icons.advanced_settings))
+            .left(|ui| ui.heading(&i18n.common.advanced_settings))
             .right(|ui| {
                 if ui
                     .button(&i18n.common.close)
@@ -39,7 +41,41 @@ impl IconsPanelsOps {
 
         ui.separator();
 
-        /* WHY: Scrollable content fills 100% of remaining height — general settings + per-icon table + action buttons. */
+        /* WHY: Action buttons (Expand / Collapse) and Scrollable content fills 100% of remaining height — general settings + per-icon table + action buttons. */
+        AlignCenter::new()
+            .left(|ui| {
+                let i18n_common = &crate::i18n::I18nOps::get().common;
+                if ui.button(&i18n_common.expand_all).clicked() {
+                    force_open = Some(true);
+                }
+                if ui.button(&i18n_common.collapse_all).clicked() {
+                    force_open = Some(false);
+                }
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+            })
+            .show(ui);
+
+        ui.add_space(PADDING);
+
+        /* WHY: Search bar for icon filtering — consistent with Linter and Shortcuts tabs */
+        let mut search_query = ui.memory(|mem| {
+            mem.data
+                .get_temp::<String>(egui::Id::new("icon_advanced_search_filter"))
+                .unwrap_or_default()
+        });
+        let search_response = crate::widgets::SearchBar::simple(&mut search_query)
+            .hint_text(&i18n.settings.icons.search_placeholder)
+            .show_search_icon(true)
+            .id_source("icon_advanced_search_filter")
+            .show(ui);
+        if search_response.changed() {
+            let q = search_query.clone();
+            ui.memory_mut(|mem| {
+                mem.data
+                    .insert_temp(egui::Id::new("icon_advanced_search_filter"), q);
+            });
+        }
+
         egui::ScrollArea::vertical()
             .id_salt("icon_advanced_scroll")
             .auto_shrink(false)
@@ -48,7 +84,15 @@ impl IconsPanelsOps {
 
                 ui.add_space(PADDING);
 
-                table::IconsTableOps::render(ui, state, i18n, icon_settings, settings_changed);
+                table::IconsTableOps::render(
+                    ui,
+                    state,
+                    i18n,
+                    icon_settings,
+                    settings_changed,
+                    force_open,
+                    &search_query,
+                );
 
                 ui.add_space(PADDING);
                 ui.separator();
@@ -56,7 +100,7 @@ impl IconsPanelsOps {
 
                 /* WHY: Action buttons (save preset / revert / delete) inside scroll area. */
                 AlignCenter::new()
-                    .content(|ui| {
+                    .right(|ui| {
                         if ui.button(&i18n.settings.icons.save_preset).clicked() {
                             ui.data_mut(|d| {
                                 d.insert_temp::<bool>(
@@ -102,6 +146,7 @@ impl IconsPanelsOps {
                                 *settings_changed = true;
                             }
                         }
+                        ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
                     })
                     .show(ui);
             });

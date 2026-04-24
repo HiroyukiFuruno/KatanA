@@ -73,17 +73,55 @@ impl KatanaApp {
         }
     }
 
-    pub(super) fn handle_action_refresh_diagnostics(&mut self) {
+    pub(crate) fn handle_action_refresh_diagnostics(&mut self) {
         let Some(doc) = self.state.active_document() else {
             return;
         };
         let path = doc.path.clone();
         let content = doc.buffer.clone();
-        use katana_linter::markdown::MarkdownRule;
-        let heading_rule = katana_linter::markdown::HeadingStructureRule;
-        let link_rule = katana_linter::markdown::BrokenLinkRule;
-        let mut diagnostics = heading_rule.evaluate(&path, &content);
-        diagnostics.extend(link_rule.evaluate(&path, &content));
+
+        /* WHY: Virtual documents (e.g. "Katana://LinterDocs/MD*.md", "Katana://Demo/...") are not real
+         * filesystem files; running the linter on them would produce spurious diagnostics
+         * shown to the user without a backing file. Skip any path starting with "Katana://".
+         * Exception: "lint-fix.md" is explicitly designed to demonstrate the linter. */
+        use crate::state::document::VirtualPathExt as _;
+        if path.is_virtual_path() {
+            let path_str = path.to_string_lossy();
+            if !path_str.ends_with("lint-fix.md") && !path_str.ends_with("lint-fix.ja.md") {
+                return;
+            }
+        }
+
+        let is_markdown = path
+            .extension()
+            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+            .unwrap_or(false);
+        if !is_markdown {
+            return;
+        }
+
+        let linter_settings = &self.state.config.settings.settings().linter;
+        let enabled = linter_settings.enabled;
+        let mut severity_map = std::collections::HashMap::new();
+        for (rule_id, severity) in &linter_settings.rule_severity {
+            let mapped_severity = match severity {
+                katana_platform::settings::types::RuleSeverity::Ignore => None,
+                katana_platform::settings::types::RuleSeverity::Warning => {
+                    Some(katana_linter::rules::markdown::DiagnosticSeverity::Warning)
+                }
+                katana_platform::settings::types::RuleSeverity::Error => {
+                    Some(katana_linter::rules::markdown::DiagnosticSeverity::Error)
+                }
+            };
+            severity_map.insert(rule_id.clone(), mapped_severity);
+        }
+
+        let diagnostics = katana_linter::rules::markdown::MarkdownLinterOps::evaluate_all(
+            &path,
+            &content,
+            enabled,
+            &severity_map,
+        );
         self.state.diagnostics.update_diagnostics(path, diagnostics);
     }
 

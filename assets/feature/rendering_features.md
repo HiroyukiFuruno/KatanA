@@ -20,10 +20,15 @@ Combined: **bold with *nested italic* inside**.
 ## 2. Headings (H1–H6)
 
 # H1 — Top-level heading
+
 ## H2 — Section heading
+
 ### H3 — Subsection
+
 #### H4 — Detail
+
 ##### H5 — Minor detail
+
 ###### H6 — Finest level
 
 ---
@@ -32,7 +37,7 @@ Combined: **bold with *nested italic* inside**.
 
 - [GitHub](https://github.com) — external link
 - [Email](mailto:hello@example.com) — mailto link
-- Auto-detected: https://github.com
+- Auto-detected: <https://github.com>
 
 ---
 

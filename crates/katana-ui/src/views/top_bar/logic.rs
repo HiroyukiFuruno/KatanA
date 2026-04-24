@@ -63,6 +63,7 @@ impl TopBarOps {
     pub fn tab_display_title(
         original_filename: &str,
         is_changelog: bool,
+        is_demo: bool,
         is_dirty: bool,
         _is_pinned: bool,
     ) -> String {
@@ -74,6 +75,8 @@ impl TopBarOps {
                 .trim_start_matches("CHANGELOG_v")
                 .trim_end_matches(".md");
             format!("{} {}", crate::i18n::I18nOps::get().menu.release_notes, ver)
+        } else if is_demo {
+            original_filename.trim_end_matches(".md").to_string()
         } else {
             original_filename.to_string()
         };
@@ -164,31 +167,31 @@ mod tests {
 
     #[test]
     fn tab_display_title_normal() {
-        let title = TopBarOps::tab_display_title("readme.md", false, false, false);
+        let title = TopBarOps::tab_display_title("readme.md", false, false, false, false);
         assert_eq!(title, "readme.md");
     }
 
     #[test]
     fn tab_display_title_dirty() {
-        let title = TopBarOps::tab_display_title("readme.md", false, true, false);
+        let title = TopBarOps::tab_display_title("readme.md", false, false, true, false);
         assert_eq!(title, "readme.md *");
     }
 
     #[test]
     fn tab_display_title_pinned() {
-        let title = TopBarOps::tab_display_title("readme.md", false, false, true);
+        let title = TopBarOps::tab_display_title("readme.md", false, false, false, true);
         assert_eq!(title, "readme.md");
     }
 
     #[test]
     fn tab_display_title_pinned_dirty() {
-        let title = TopBarOps::tab_display_title("readme.md", false, true, true);
+        let title = TopBarOps::tab_display_title("readme.md", false, false, true, true);
         assert_eq!(title, "readme.md *");
     }
 
     #[test]
     fn tab_display_title_changelog() {
-        let title = TopBarOps::tab_display_title("ChangeLog", true, false, false);
+        let title = TopBarOps::tab_display_title("ChangeLog", true, false, false, false);
         assert_eq!(title, "ChangeLog");
     }
 }

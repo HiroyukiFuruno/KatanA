@@ -298,21 +298,23 @@
       "no_extension_warning_title": "警告",
       "no_extension_warning": "markdownとして正しく表示できる保証はありません。またappが想定しない動作でクラッシュする可能性があります。本当に有効にしますか。",
       "extensionless_excludes": "表示除外ファイル（拡張子完全一致）",
-      "extensionless_excludes_hint": "「拡張子なし」有効時に除外するファイル名リストを追加します（例: .DS_Store, .gitignore）。"
+      "extensionless_excludes_hint": "「拡張子なし」有効時に除外するファイル名リストを追加します（例: .DS_Store, .gitignore）。",
+      "enable_drawio_mount": "Draw.ioファイルを直接開く（*.drawio, *.drowio）"
     },
     "icons": {
       "preset_label": "プリセット:",
       "custom_preset": "カスタム",
       "save_preset": "カスタムプリセットとして保存…",
       "revert_default": "デフォルトに戻す",
-      "advanced_settings": "高度な設定",
       "colorful_vendor_icons_label": "非Katanaアイコンにデフォルトカラーを適用する",
       "table_header_icon": "アイコン",
       "table_header_vendor": "ベンダー",
       "table_header_color": "テキスト色",
       "table_header_border": "枠の色",
       "table_header_preview": "プレビュー",
-      "preset_name": "プリセット名:"
+      "preset_name": "プリセット名:",
+      "search_placeholder": "アイコンを検索…",
+      "advanced_settings": "高度な設定"
     },
     "tabs": [
       {
@@ -354,6 +356,10 @@
       {
         "key": "shortcuts",
         "name": "ショートカット"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "shortcuts": {
@@ -378,7 +384,11 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML は %path% にインストールされています。",
       "plantuml_not_installed": "PlantUML はインストールされていません。",
-      "plantuml_update_now": "PlantUML を最新版に更新"
+      "plantuml_update_now": "PlantUML を最新版に更新",
+      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_installed": "Draw.io viewer は {path} にインストールされています",
+      "drawio_not_installed": "Draw.io viewer がインストールされていません。",
+      "drawio_update_now": "Draw.io を最新版に更新"
     },
     "behavior": {
       "section_title": "動作",
@@ -462,10 +472,10 @@
     "command_author_heading1": "見出し 1",
     "command_author_heading2": "見出し 2",
     "command_author_heading3": "見出し 3",
-    "command_author_bullet_list": "箇条書きリスト",
-    "command_author_numbered_list": "番号付きリスト",
-    "command_author_blockquote": "引用ブロック",
-    "command_author_code_block": "コードブロック",
+    "command_author_bullet_list": "箇条書きを挿入",
+    "command_author_numbered_list": "番号付きリストを挿入",
+    "command_author_blockquote": "引用を挿入",
+    "command_author_code_block": "コードブロックを挿入",
     "command_author_horizontal_rule": "区切り線 (水平線)",
     "command_author_insert_link": "リンク挿入",
     "command_author_insert_table": "テーブル挿入",
@@ -494,18 +504,7 @@
     "temp_file_error": "一時ファイルの作成に失敗しました: {error}",
     "write_error": "内容の書き込みに失敗しました: {error}",
     "persist_error": "一時ファイルの保持に失敗しました",
-    "exporting": "⏳ {filename} を生成中…"
-  },
-  "editor": {
-    "toolbar": {
-      "heading1": "H1",
-      "heading2": "H2",
-      "heading3": "H3",
-      "bullet_list": "箇条書き",
-      "numbered_list": "番号付きリスト",
-      "blockquote": "ブロック引用",
-      "code_block": "コードブロック"
-    }
+    "exporting": "{{lucide:hourglass}} {filename} を生成中…"
   },
   "terms": {
     "title": "利用規約",
@@ -530,7 +529,10 @@
   },
   "common": {
     "close": "閉じる",
-    "save": "保存"
+    "save": "保存",
+    "advanced_settings": "高度な設定",
+    "expand_all": "すべて展開",
+    "collapse_all": "すべて折りたたむ"
   },
   "meta_info": {
     "title": "ドキュメント情報",
@@ -564,7 +566,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: ワークスペース検索",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: サイドバー切替",
     "shortcut_save": "{{os_cmd:save_document}}: 保存",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 図表を更新",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 図表を更新",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 分割",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: コード、プレビューの切り替え",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 次のタブへ移動",
@@ -577,7 +579,96 @@
     "start_section": "開始",
     "recent_section": "最近のファイル",
     "no_recent_files": "最近のファイルはありません",
-    "welcome_screen": "🏠 ようこそ画面",
-    "user_guide": "📚 ユーザーガイド"
+    "welcome_screen": "{{lucide:house}} ようこそ画面",
+    "user_guide": "{{lucide:book}} ユーザーガイド"
+  },
+  "linter": {
+    "rule_toggle": "Lintルール切替: {rule_code} ({rule_name})",
+    "docs": "ドキュメント",
+    "fix": "修正",
+    "fix_all": "一括修正",
+    "disable_rule": "無効化",
+    "disable_rule_desc": "このルールを無効化する",
+    "enable_linter": "Markdown Linterを有効にする",
+    "rule_severities": "ルールの重要度",
+    "advanced_workspace_settings": "ワークスペース詳細設定",
+    "workspace_has_config": "ワークスペースに .markdownlint.json 設定ファイルが存在します。",
+    "open_config": "設定を開く",
+    "workspace_no_config": "現在のワークスペースに .markdownlint.json が見つかりません。",
+    "create_config": "設定を作成",
+    "open_workspace_to_configure": "ワークスペースを開いて、ワークスペース固有のLintルールを設定してください。",
+    "severity_ignore": "無視",
+    "severity_warning": "警告",
+    "severity_error": "エラー",
+    "use_workspace_local_config": "ワークスペース設定を優先する",
+    "view_on_github": "公式GitHubで確認",
+    "search_placeholder": "ルールを検索…",
+    "rule_descriptions": {
+      "md001": "見出しレベルは一度に1つずつインクリメントする必要があります。",
+      "md003": "見出しスタイルが一貫していません。",
+      "md004": "順序なしリストのスタイルが一貫していません。",
+      "md005": "同じレベルのリスト項目のインデントが一貫していません。",
+      "md007": "順序なしリストのインデントが不正です。",
+      "md009": "行末に空白があります。",
+      "md010": "ハードタブが使用されています。",
+      "md011": "リンクの構文が逆です: [text](url) を使用してください。",
+      "md012": "複数の連続した空白行があります。",
+      "md013": "行の長さが制限を超えています。",
+      "md014": "コマンドの前にドル記号($)が使用されていますが、出力が示されていません。",
+      "md018": "ATXスタイルの見出しのハッシュの後にスペースがありません。",
+      "md019": "ATXスタイルの見出しのハッシュの後に複数のスペースがあります。",
+      "md020": "クローズドATXスタイルの見出しのハッシュの内部にスペースがありません。",
+      "md021": "クローズドATXスタイルの見出しのハッシュの内部に複数のスペースがあります。",
+      "md022": "見出しの前後には空白行が必要です。",
+      "md023": "見出しは行の先頭から開始する必要があります。",
+      "md024": "同じ内容の見出しが複数あります。",
+      "md025": "同一ドキュメント内に複数のトップレベル見出しがあります。",
+      "md026": "見出しの末尾に句読点が含まれています。",
+      "md027": "引用記号の後に複数のスペースがあります。",
+      "md028": "引用ブロック内に空白行が含まれています。",
+      "md029": "順序付きリストのプレフィックスが一貫していません。",
+      "md030": "リストマーカーの後のスペースが不正です。",
+      "md031": "フェンスコードブロックの前後には空白行が必要です。",
+      "md032": "リストの前後には空白行が必要です。",
+      "md033": "インライン HTML が含まれています。",
+      "md034": "生のURLが使用されています。",
+      "md035": "水平線のスタイルが一貫していません。",
+      "md036": "見出しの代わりに強調表示が使用されています。",
+      "md037": "強調記号の内部にスペースがあります。",
+      "md038": "コードスパンの内部にスペースがあります。",
+      "md039": "リンクテキストの内部にスペースがあります。",
+      "md040": "コードブロックには言語の指定が必要です。",
+      "md041": "ファイルの最初の行はトップレベルの見出しである必要があります。",
+      "md042": "空のリンクが存在します。",
+      "md043": "見出しの構造が必要です。",
+      "md044": "固有名詞の大文字・小文字が正しくありません。",
+      "md045": "画像には代替テキスト（alt属性）が必要です。",
+      "md046": "コードブロックのスタイルが一貫していません。",
+      "md047": "ファイルの最後は単一の改行で終わる必要があります。",
+      "md048": "コードフェンスのスタイルが一貫していません。",
+      "md049": "強調のスタイルが一貫していません。",
+      "md050": "強い強調のスタイルが一貫していません。",
+      "md051": "リンク切れがあります。",
+      "md052": "参照リンクと画像のラベルが定義されていません。",
+      "md053": "リンクと画像の参照定義が必要です。",
+      "md054": "リンクと画像のスタイルが一貫していません。",
+      "md055": "テーブルのパイプスタイルが一貫していません。",
+      "md056": "テーブルの列数が一貫していません。",
+      "md058": "テーブルの前後には空白行が必要です。",
+      "md059": "リンクテキストは説明的である必要があります。",
+      "md060": "テーブルの列スタイルが統一されていません。"
+    }
+  },
+  "use_workspace_local_config": "ワークスペース固有の .markdownlint.json を使用する",
+  "editor": {
+    "toolbar": {
+      "heading1": "H1",
+      "heading2": "H2",
+      "heading3": "H3",
+      "bullet_list": "箇条書き",
+      "numbered_list": "番号付きリスト",
+      "blockquote": "ブロック引用",
+      "code_block": "コードブロック"
+    }
   }
 }

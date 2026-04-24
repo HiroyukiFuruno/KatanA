@@ -94,7 +94,7 @@ mod tests {
             source: r#"<mxGraphModel><root><mxCell id="0"/></root></mxGraphModel>"#.to_string(),
         };
         let result = RendererLogicOps::dispatch_renderer(&block);
-        assert_variant!(result, DiagramResult::Ok(_) | DiagramResult::Err { .. });
+        assert_variant!(result, DiagramResult::OkPng(_) | DiagramResult::Err { .. });
     }
 
     #[test]

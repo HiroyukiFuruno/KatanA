@@ -298,21 +298,23 @@
       "no_extension_warning_title": "경고",
       "no_extension_warning": "확장자가 없는 경우 올바르게 표시되지 않을 수 있습니다. 계속하시겠습니까?",
       "extensionless_excludes": "제외 (확장자 없음)",
-      "extensionless_excludes_hint": "쉼표로 구분"
+      "extensionless_excludes_hint": "쉼표로 구분",
+      "enable_drawio_mount": "Draw.io 직접 로드 활성화 (*.drawio, *.drowio)"
     },
     "icons": {
       "preset_label": "프리셋:",
       "custom_preset": "사용자 지정",
       "save_preset": "프리셋으로 저장…",
       "revert_default": "기본값으로 복원",
-      "advanced_settings": "고급 설정",
       "colorful_vendor_icons_label": "컬러 아이콘 사용",
       "table_header_icon": "아이콘",
       "table_header_vendor": "벤더",
       "table_header_color": "색상",
       "table_header_border": "테두리",
       "table_header_preview": "미리보기",
-      "preset_name": "이름:"
+      "preset_name": "이름:",
+      "search_placeholder": "검색",
+      "advanced_settings": "고급 설정"
     },
     "tabs": [
       {
@@ -354,6 +356,10 @@
       {
         "key": "shortcuts",
         "name": "단축키"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -367,7 +373,11 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML이 %path%에 설치되어 있습니다.",
       "plantuml_not_installed": "PlantUML이 설치되지 않았습니다.",
-      "plantuml_update_now": "PlantUML 최신 버전으로 업데이트"
+      "plantuml_update_now": "PlantUML 최신 버전으로 업데이트",
+      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_installed": "Draw.io viewer가 {path}에 설치되어 있습니다",
+      "drawio_not_installed": "Draw.io viewer가 설치되어 있지 않습니다.",
+      "drawio_update_now": "Draw.io 최신 버전으로 업데이트"
     },
     "behavior": {
       "section_title": "동작",
@@ -462,10 +472,10 @@
     "command_author_heading1": "제목 1",
     "command_author_heading2": "제목 2",
     "command_author_heading3": "제목 3",
-    "command_author_bullet_list": "글머리 기호 목록",
-    "command_author_numbered_list": "번호 매기기 목록",
-    "command_author_blockquote": "인용구",
-    "command_author_code_block": "코드 블록",
+    "command_author_bullet_list": "글머리 기호 목록 삽입",
+    "command_author_numbered_list": "번호 매기기 목록 삽입",
+    "command_author_blockquote": "인용구 삽입",
+    "command_author_code_block": "코드 블록 삽입",
     "command_author_horizontal_rule": "가로선",
     "command_author_insert_link": "링크 삽입",
     "command_author_insert_table": "표 삽입",
@@ -494,18 +504,7 @@
     "temp_file_error": "임시 파일 생성 실패: {error}",
     "write_error": "내용 쓰기 실패: {error}",
     "persist_error": "임시 파일 저장 실패",
-    "exporting": "⏳ {filename} 내보내는 중…"
-  },
-  "editor": {
-    "toolbar": {
-      "heading1": "제1",
-      "heading2": "제2",
-      "heading3": "제3",
-      "bullet_list": "글머리 기호 목록",
-      "numbered_list": "번호 매기기 목록",
-      "blockquote": "블록 인용",
-      "code_block": "코드 블록"
-    }
+    "exporting": "{filename} 내보내는 중…"
   },
   "terms": {
     "title": "이용 약관",
@@ -530,7 +529,10 @@
   },
   "common": {
     "close": "닫기",
-    "save": "저장"
+    "save": "저장",
+    "advanced_settings": "고급 설정",
+    "expand_all": "모두 확장",
+    "collapse_all": "모두 축소"
   },
   "meta_info": {
     "title": "문서 정보",
@@ -564,7 +566,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: 워크스페이스 검색",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: 사이드바 전환",
     "shortcut_save": "{{os_cmd:save_document}}: 저장",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: 다이어그램 새로고침",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: 다이어그램 새로고침",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: 분할 보기",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: 코드/미리보기 전환",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: 다음 탭",
@@ -577,7 +579,96 @@
     "start_section": "시작",
     "recent_section": "최근 파일",
     "no_recent_files": "최근 파일이 없습니다",
-    "welcome_screen": "🏠 홈 화면",
-    "user_guide": "📚 사용자 가이드"
+    "welcome_screen": "홈 화면",
+    "user_guide": "사용자 가이드"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Markdown Linter 활성화",
+    "rule_severities": "규칙 심각도",
+    "advanced_workspace_settings": "고급 작업 공간 설정",
+    "workspace_has_config": "작업 공간에 .markdownlint.json 설정 파일이 있습니다.",
+    "open_config": "설정 열기",
+    "workspace_no_config": "현재 작업 공간에 .markdownlint.json이 없습니다.",
+    "create_config": "설정 만들기",
+    "open_workspace_to_configure": "작업 공간별 Lint 규칙을 구성하려면 작업 공간을 여세요.",
+    "severity_ignore": "무시",
+    "severity_warning": "경고",
+    "severity_error": "오류",
+    "use_workspace_local_config": "작업 공간 설정 우선 사용",
+    "rule_descriptions": {
+      "md001": "제목 레벨은 한 번에 하나씩만 증가해야 합니다.",
+      "md003": "제목 스타일이 일관되어야 합니다.",
+      "md004": "순서 없는 목록 스타일이 일관되지 않습니다.",
+      "md012": "연속된 빈 줄이 여러 개 있습니다.",
+      "md022": "제목 앞뒤에는 빈 줄이 있어야 합니다.",
+      "md023": "제목은 줄의 시작 부분에서 시작해야 합니다.",
+      "md025": "동일한 문서에 여러 개의 최상위 제목이 있습니다.",
+      "md026": "제목 끝에 문장 부호가 포함되어 있습니다.",
+      "md027": "인용 기호 뒤에 여러 개의 공백이 있습니다.",
+      "md028": "인용 블록 안에 빈 줄이 있습니다.",
+      "md029": "순서 있는 목록 접두사가 일관되지 않습니다.",
+      "md032": "목록 앞뒤에는 빈 줄이 있어야 합니다.",
+      "md033": "인라인 HTML이 포함되어 있습니다.",
+      "md035": "수평선 스타일이 일관되지 않습니다.",
+      "md036": "제목 대신 강조 표시가 사용되었습니다.",
+      "md040": "코드 블록에는 언어가 지정되어야 합니다.",
+      "md041": "파일의 첫 번째 줄은 최상위 제목이어야 합니다.",
+      "md042": "빈 링크가 존재합니다.",
+      "md045": "이미지에는 대체 텍스트(alt)가 있어야 합니다.",
+      "md047": "파일 끝은 단일 줄 바꿈으로 끝나야 합니다.",
+      "md005": "같은 수준의 목록 항목에 대한 일관성 없는 들여쓰기.",
+      "md007": "순서 없는 목록 들여쓰기.",
+      "md009": "후행 공백.",
+      "md010": "하드 탭.",
+      "md011": "반전된 링크 구문.",
+      "md013": "줄 길이.",
+      "md014": "출력을 표시하지 않고 명령어 앞에 사용된 달러 기호.",
+      "md018": "atx 스타일 제목에서 해시 뒤에 공백 없음.",
+      "md019": "atx 스타일 제목에서 해시 뒤에 여러 공백.",
+      "md020": "닫힌 atx 스타일 제목에서 해시 내부에 공백 없음.",
+      "md021": "닫힌 atx 스타일 제목에서 해시 내부에 여러 공백.",
+      "md024": "내용이 같은 여러 제목.",
+      "md030": "목록 마커 뒤의 공백.",
+      "md031": "펜스 코드 블록은 빈 줄로 둘러싸여 있어야 합니다.",
+      "md034": "베어 URL이 사용되었습니다.",
+      "md037": "강조 마커 내부의 공백.",
+      "md038": "코드 스팬 요소 내부의 공백.",
+      "md039": "링크 텍스트 내부의 공백.",
+      "md043": "필요한 제목 구조.",
+      "md044": "고유 명사는 대소문자를 올바르게 사용해야 합니다.",
+      "md046": "코드 블록 스타일.",
+      "md048": "코드 펜스 스타일.",
+      "md049": "강조 스타일은 일관되어야 합니다.",
+      "md050": "강한 스타일은 일관되어야 합니다.",
+      "md051": "링크 프래그먼트는 유효해야 합니다.",
+      "md052": "참조 링크 및 이미지는 정의된 레이블을 사용해야 합니다.",
+      "md053": "링크 및 이미지 참조 정의가 필요해야 합니다.",
+      "md054": "링크 및 이미지 스타일은 일관되어야 합니다.",
+      "md055": "표 파이프 스타일은 일관되어야 합니다.",
+      "md056": "표 열 개수는 일관되어야 합니다.",
+      "md058": "표는 빈 줄로 둘러싸여 있어야 합니다.",
+      "md059": "링크 텍스트는 설명적이어야 합니다.",
+      "md060": "표의 열 스타일이 일관되지 않습니다."
+    },
+    "view_on_github": "공식 GitHub에서 보기",
+    "search_placeholder": "규칙 검색…"
+  },
+  "use_workspace_local_config": "작업 공간 로컬 설정 사용",
+  "editor": {
+    "toolbar": {
+      "heading1": "제1",
+      "heading2": "제2",
+      "heading3": "제3",
+      "bullet_list": "글머리 기호 목록",
+      "numbered_list": "번호 매기기 목록",
+      "blockquote": "블록 인용",
+      "code_block": "코드 블록"
+    }
   }
 }

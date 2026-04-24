@@ -136,6 +136,7 @@ impl Default for AppSettings {
             terms_accepted_version: None,
             language: SettingsDefaultOps::default_language(),
             extra: Vec::new(),
+            linter: crate::settings::types::linter::LinterSettings::default(),
         }
     }
 }

@@ -28,11 +28,20 @@ impl ToggleOps {
             let visuals = ui.style().interact_selectable(response, on);
             let rect = rect.expand(visuals.expansion);
             let radius = TOGGLE_RADIUS_RATIO * rect.height();
+
+            let mut track_stroke = visuals.bg_stroke;
+            const DIM_ALPHA_THRESHOLD: u8 = 30;
+            if track_stroke.is_empty() || track_stroke.color.a() < DIM_ALPHA_THRESHOLD {
+                let hovered_stroke = ui.style().visuals.widgets.hovered.bg_stroke;
+                /* WHY: The user requested the border to be as visible as it is on hover to improve discoverability */
+                track_stroke = egui::Stroke::new(1.0, hovered_stroke.color);
+            }
+
             ui.painter().rect(
                 rect,
                 radius,
                 visuals.bg_fill,
-                visuals.bg_stroke,
+                track_stroke,
                 egui::StrokeKind::Inside,
             );
             let circle_x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), how_on);

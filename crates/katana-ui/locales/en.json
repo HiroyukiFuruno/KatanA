@@ -298,21 +298,23 @@
       "no_extension_warning_title": "Warning",
       "no_extension_warning": "There is no guarantee that files without extensions will display correctly as Markdown. Also, unexpected behavior might crash the app. Are you sure you want to enable this?",
       "extensionless_excludes": "Excluded Extensionless Files",
-      "extensionless_excludes_hint": "Comma-separated"
+      "extensionless_excludes_hint": "Comma-separated",
+      "enable_drawio_mount": "Enable Direct Draw.io Loading (*.drawio, *.drowio)"
     },
     "icons": {
       "preset_label": "Preset:",
       "custom_preset": "Custom",
       "save_preset": "Save as Preset…",
       "revert_default": "Revert to Default",
-      "advanced_settings": "Advanced Settings",
       "colorful_vendor_icons_label": "Apply default colors to non-Katana icons",
       "table_header_icon": "Icon",
       "table_header_vendor": "Vendor",
       "table_header_color": "Text Color",
       "table_header_border": "Frame Color",
       "table_header_preview": "Preview",
-      "preset_name": "Preset Name:"
+      "preset_name": "Preset Name:",
+      "search_placeholder": "Search icons…",
+      "advanced_settings": "Advanced Settings"
     },
     "tabs": [
       {
@@ -354,6 +356,10 @@
       {
         "key": "shortcuts",
         "name": "Shortcuts"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "shortcuts": {
@@ -378,7 +384,11 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML is installed at %path%.",
       "plantuml_not_installed": "PlantUML is not installed.",
-      "plantuml_update_now": "Update PlantUML to Latest"
+      "plantuml_update_now": "Update PlantUML to Latest",
+      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_installed": "Draw.io viewer is installed at {path}",
+      "drawio_not_installed": "Draw.io viewer is not installed.",
+      "drawio_update_now": "Update Draw.io to Latest"
     },
     "behavior": {
       "section_title": "Behavior",
@@ -462,10 +472,10 @@
     "command_author_heading1": "Heading 1",
     "command_author_heading2": "Heading 2",
     "command_author_heading3": "Heading 3",
-    "command_author_bullet_list": "Bullet List",
-    "command_author_numbered_list": "Numbered List",
-    "command_author_blockquote": "Blockquote",
-    "command_author_code_block": "Code Block",
+    "command_author_bullet_list": "Insert Bullet List",
+    "command_author_numbered_list": "Insert Numbered List",
+    "command_author_blockquote": "Insert Blockquote",
+    "command_author_code_block": "Insert Code Block",
     "command_author_horizontal_rule": "Horizontal Rule",
     "command_author_insert_link": "Insert Link",
     "command_author_insert_table": "Insert Table",
@@ -494,18 +504,7 @@
     "temp_file_error": "Failed to create temporary file: {error}",
     "write_error": "Failed to write content: {error}",
     "persist_error": "Failed to save temporary file",
-    "exporting": "⏳ Exporting {filename}…"
-  },
-  "editor": {
-    "toolbar": {
-      "heading1": "H1",
-      "heading2": "H2",
-      "heading3": "H3",
-      "bullet_list": "Bullet List",
-      "numbered_list": "Numbered List",
-      "blockquote": "Blockquote",
-      "code_block": "Code Block"
-    }
+    "exporting": "{{lucide:hourglass}} Exporting {filename}…"
   },
   "terms": {
     "title": "Terms of Use",
@@ -530,7 +529,10 @@
   },
   "common": {
     "close": "Close",
-    "save": "Save"
+    "save": "Save",
+    "advanced_settings": "Advanced Settings",
+    "expand_all": "Expand All",
+    "collapse_all": "Collapse All"
   },
   "meta_info": {
     "title": "Document Info",
@@ -564,7 +566,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Workspace Search",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Toggle Sidebar",
     "shortcut_save": "{{os_cmd:save_document}}: Save",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Refresh Diagrams",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Refresh Diagrams",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Split View",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Toggle Code/Preview",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Next Tab",
@@ -577,7 +579,96 @@
     "start_section": "Start",
     "recent_section": "Recent Files",
     "no_recent_files": "No recent files found",
-    "welcome_screen": "🏠 Welcome Screen",
-    "user_guide": "📚 User Guide"
+    "welcome_screen": "{{lucide:house}} Welcome Screen",
+    "user_guide": "{{lucide:book}} User Guide"
+  },
+  "linter": {
+    "rule_toggle": "Toggle Linter Rule: {rule_code} ({rule_name})",
+    "docs": "Docs",
+    "fix": "Fix",
+    "fix_all": "Fix All",
+    "disable_rule": "Disable",
+    "disable_rule_desc": "Disable this rule",
+    "enable_linter": "Enable Markdown Linter",
+    "rule_severities": "Rule Severities",
+    "advanced_workspace_settings": "Advanced Workspace Settings",
+    "workspace_has_config": "Workspace has a .markdownlint.json configuration file.",
+    "open_config": "Open Configuration",
+    "workspace_no_config": "No .markdownlint.json found in current workspace.",
+    "create_config": "Create Configuration",
+    "open_workspace_to_configure": "Open a workspace to configure workspace-specific lint rules.",
+    "severity_ignore": "Ignore",
+    "severity_warning": "Warning",
+    "severity_error": "Error",
+    "use_workspace_local_config": "Use Workspace-Local Configuration",
+    "view_on_github": "View on official GitHub",
+    "search_placeholder": "Search rules…",
+    "rule_descriptions": {
+      "md001": "Heading levels should only increment by one level at a time.",
+      "md003": "Heading style should be consistent.",
+      "md004": "Unordered list style.",
+      "md005": "Inconsistent indentation for list items at the same level.",
+      "md007": "Unordered list indentation.",
+      "md009": "Trailing spaces",
+      "md010": "Hard tabs",
+      "md011": "Reversed link syntax: use [text](url) not (text)[url].",
+      "md012": "Multiple consecutive blank lines.",
+      "md013": "Line length.",
+      "md014": "Dollar signs used before commands without showing output.",
+      "md018": "No space after hash on atx style heading",
+      "md019": "Multiple spaces after hash on atx style heading",
+      "md020": "No space inside hashes on closed atx-style heading.",
+      "md021": "Multiple spaces inside hashes on closed atx-style heading.",
+      "md022": "Headings should be surrounded by blank lines.",
+      "md023": "Headings must start at the beginning of the line.",
+      "md024": "Multiple headings with the same content.",
+      "md025": "Multiple top-level headings in the same document.",
+      "md026": "Trailing punctuation in heading.",
+      "md027": "Multiple spaces after blockquote symbol.",
+      "md028": "Blank line inside blockquote.",
+      "md029": "Ordered list item prefix.",
+      "md030": "Spaces after list markers.",
+      "md031": "Fenced code blocks should be surrounded by blank lines.",
+      "md032": "Lists should be surrounded by blank lines.",
+      "md033": "Inline HTML.",
+      "md034": "Bare URL used.",
+      "md035": "Horizontal rule style.",
+      "md036": "Emphasis used instead of a heading.",
+      "md037": "Spaces inside emphasis markers.",
+      "md038": "Spaces inside code span elements.",
+      "md039": "Spaces inside link text.",
+      "md040": "Fenced code blocks should have a language specified.",
+      "md041": "First line in a file should be a top-level heading.",
+      "md042": "No empty links.",
+      "md043": "Required heading structure.",
+      "md044": "Proper names should have the correct capitalization.",
+      "md045": "Images should have alternate text (alt text).",
+      "md046": "Code block style should be consistent.",
+      "md047": "Files should end with a single newline character.",
+      "md048": "Code fence style should be consistent.",
+      "md049": "Emphasis style should be consistent.",
+      "md050": "Strong style should be consistent.",
+      "md051": "Link fragments should be valid.",
+      "md052": "Reference links and images should use a label that is defined.",
+      "md053": "Link and image reference definitions should be needed.",
+      "md054": "Link and image style should be consistent.",
+      "md055": "Table pipe style should be consistent.",
+      "md056": "Table column count should be consistent.",
+      "md058": "Tables should be surrounded by blank lines.",
+      "md059": "Link text should be descriptive.",
+      "md060": "Table column style should be consistent."
+    }
+  },
+  "use_workspace_local_config": "Use Workspace-Local Configuration",
+  "editor": {
+    "toolbar": {
+      "heading1": "H1",
+      "heading2": "H2",
+      "heading3": "H3",
+      "bullet_list": "Bullet List",
+      "numbered_list": "Numbered List",
+      "blockquote": "Blockquote",
+      "code_block": "Code Block"
+    }
   }
 }

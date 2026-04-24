@@ -60,8 +60,21 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     let locale = settings.locale.as_deref().unwrap_or("en");
     let preset = if theme_str == "light" { "KatanaLight" } else { "KatanaDark" };
     let explorer_visible = settings.explorer_visible.unwrap_or(false);
+    let linter_enabled = settings.linter_enabled.unwrap_or(true);
 
     let no_extension = settings.no_extension.unwrap_or(false);
+    
+    let linter_block = if settings.linter_enabled.is_some() {
+        format!(
+            r#",
+  "linter": {{
+    "enabled": {}
+  }}"#,
+            linter_enabled
+        )
+    } else {
+        String::new()
+    };
 
     let workspace_block = match (workspace_dir, no_extension) {
         (Some(dir), true) => format!(
@@ -98,7 +111,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
   }},
   "layout": {{
     "explorer_default_visible": {explorer_visible}
-  }}{workspace_block}
+  }}{workspace_block}{linter_block}
 }}"#
     )
 }

@@ -7,12 +7,14 @@ Rich preview blocks do not behave like plain markdown text. Diagram blocks are r
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Stabilize hover-highlight source mapping for Mermaid, PlantUML, Draw.io, and alert/admonition blocks
 - Keep split sync aligned around rich-block boundaries
 - Preserve stable source anchors across pending-to-rendered replacement for diagrams
 - Add response-based integration coverage
 
 **Non-Goals:**
+
 - Redesign diagram render backends
 - Change modal or tab behavior
 - Adjust alert spacing constants

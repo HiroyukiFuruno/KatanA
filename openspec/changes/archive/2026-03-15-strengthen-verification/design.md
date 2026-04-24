@@ -3,6 +3,7 @@
 katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crate 構成（`katana-core`, `katana-platform`, `katana-ui`）。
 
 現状の品質インフラ：
+
 - **CI**: `cargo check` + `cargo test` + `cargo fmt --check` + `cargo clippy -- -D warnings` + CodeQL
 - **pre-push hook**: `cargo-husky` 経由で fmt / clippy / test を実行
 - **clippy.toml**: `too-many-lines-threshold = 30`, `cognitive-complexity-threshold = 10`
@@ -10,6 +11,7 @@ katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crat
 - **UI テスト**: 無し — 手動確認のみ
 
 問題：
+
 1. Clippy で `render_edge`（too_many_lines）と `border_point`（too_many_arguments）が error/warning 状態
 2. `settings.rs`, `shell.rs`（ロジック部分）, `preview_pane.rs`（テスト関数なし）にテストが無い
 3. UI の視覚的な正しさを自動検証する手段がない
@@ -35,6 +37,7 @@ katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crat
 ## Decisions
 
 ### 1. Clippy 厳格化方針
+
 **決定**: 各 crate のルートに `#![deny(clippy::too_many_lines, clippy::cognitive_complexity)]` を配置し、ワークスペース全体で warning をエラーとして扱う。
 
 **理由**: `clippy.toml` による閾値設定は既にあるが、`deny` アトリビュートが一部ファイルにしかない。ワークスペースレベルの `Cargo.toml` に `[workspace.lints.clippy]` を追加するか、各 `lib.rs` / `main.rs` に `#![deny(warnings)]` を追加する。
@@ -42,9 +45,11 @@ katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crat
 **代替案**: `RUSTFLAGS="-D warnings"` を CI のみで設定 → ローカル開発時に見逃す可能性があるため不採用。
 
 ### 2. カバレッジツール選定
+
 **決定**: `cargo-llvm-cov` を採用する。
 
 **理由**:
+
 - Rust 公式ツールチェーンと親和性が高い
 - `--fail-under-lines` オプションで CI ゲートとして機能する
 - GitHub Actions での導入実績が豊富
@@ -53,6 +58,7 @@ katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crat
 **代替案**: `grcov` → LLVM ベースだが設定が複雑。`tarpaulin` → Linux 限定で macOS CI に不適合。
 
 ### 3. UI テスト戦略
+
 **決定**: ロジック分離 + ユニットテスト（Phase 1）と `egui_kittest` による E2E テスト（Phase 2）の 2 段階で進める。
 
 **理由**:
@@ -70,11 +76,13 @@ katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crat
 - スナップショットテスト: UI レンダリング結果の回帰検知
 
 ### 4. カバレッジ閾値
+
 **決定**: 行カバレッジ 100% を必須とする。一切の例外を認めない。
 
 **理由**: カバレッジの妥協はテストの抜け漏れを許容することと同義であり、品質ゲートとして機能しなくなる。UI 描画コードについてもロジックを適切に分離すれば 100% は達成可能。
 
 ### 5. shell.rs のリファクタリング方針
+
 **決定**: プレゼンテーションロジックと描画コードを分離する。
 
 - `shell_logic.rs`: `hash_str`, `relative_full_path`, `process_action`, tab navigation ロジック等の純粋関数・メソッド
@@ -83,6 +91,7 @@ katana は Rust（egui）製のデスクトップ Markdown エディタ。3 crat
 **理由**: 描画コードは egui Context に依存するため UT が困難。ロジックだけを抽出すればテスト可能になる。
 
 ### 6. テストの src / tests 分離
+
 **決定**: すべてのテストコードを `src/` 内の `#[cfg(test)] mod tests` から `tests/` ディレクトリに移行する。`src/` 内にテストコードを残すことを禁止する。
 
 **理由**:

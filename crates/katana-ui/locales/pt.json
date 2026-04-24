@@ -298,21 +298,23 @@
       "no_extension_warning_title": "Aviso",
       "no_extension_warning": "Sem garantia de correta visualização sem extensão. Continuar?",
       "extensionless_excludes": "Excluídos (sem extensão)",
-      "extensionless_excludes_hint": "Separe por vírgulas"
+      "extensionless_excludes_hint": "Separe por vírgulas",
+      "enable_drawio_mount": "Ativar carregamento direto do Draw.io (*.drawio, *.drowio)"
     },
     "icons": {
       "preset_label": "Predefinido:",
       "custom_preset": "Personalizado",
       "save_preset": "Salvar como preset…",
       "revert_default": "Padrão",
-      "advanced_settings": "Avançado",
       "colorful_vendor_icons_label": "Ícones com cor",
       "table_header_icon": "Ícone",
       "table_header_vendor": "Fornecedor",
       "table_header_color": "Cor",
       "table_header_border": "Moldura",
       "table_header_preview": "Visualização",
-      "preset_name": "Nome:"
+      "preset_name": "Nome:",
+      "search_placeholder": "pesquisar",
+      "advanced_settings": "Avançado"
     },
     "tabs": [
       {
@@ -354,6 +356,10 @@
       {
         "key": "shortcuts",
         "name": "Atalhos"
+      },
+      {
+        "key": "linter",
+        "name": "Linter"
       }
     ],
     "updates": {
@@ -367,7 +373,11 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "O PlantUML está instalado em %path%.",
       "plantuml_not_installed": "PlantUML não está instalado.",
-      "plantuml_update_now": "Atualizar PlantUML para a versão mais recente"
+      "plantuml_update_now": "Atualizar PlantUML para a versão mais recente",
+      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_installed": "Draw.io viewer está instalado em {path}",
+      "drawio_not_installed": "Draw.io viewer não está instalado.",
+      "drawio_update_now": "Atualizar Draw.io para a versão mais recente"
     },
     "behavior": {
       "section_title": "Comportamento",
@@ -462,10 +472,10 @@
     "command_author_heading1": "Título 1",
     "command_author_heading2": "Título 2",
     "command_author_heading3": "Título 3",
-    "command_author_bullet_list": "Lista com marcadores",
-    "command_author_numbered_list": "Lista numerada",
-    "command_author_blockquote": "Citação em bloco",
-    "command_author_code_block": "Bloco de código",
+    "command_author_bullet_list": "Inserir lista com marcadores",
+    "command_author_numbered_list": "Inserir lista numerada",
+    "command_author_blockquote": "Inserir citação em bloco",
+    "command_author_code_block": "Inserir bloco de código",
     "command_author_horizontal_rule": "Linha horizontal",
     "command_author_insert_link": "Inserir link",
     "command_author_insert_table": "Inserir tabela",
@@ -494,18 +504,7 @@
     "temp_file_error": "Erro no arquivo temporário: {error}",
     "write_error": "Erro de gravação: {error}",
     "persist_error": "Falha ao salvar.",
-    "exporting": "⏳ A exportar {filename}…"
-  },
-  "editor": {
-    "toolbar": {
-      "heading1": "T1",
-      "heading2": "T2",
-      "heading3": "T3",
-      "bullet_list": "Lista de marcadores",
-      "numbered_list": "Lista numerada",
-      "blockquote": "Citação em bloco",
-      "code_block": "Bloco de código"
-    }
+    "exporting": "A exportar {filename}…"
   },
   "terms": {
     "title": "Termos de uso",
@@ -530,7 +529,10 @@
   },
   "common": {
     "close": "Fechar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "advanced_settings": "Configurações Avançadas",
+    "expand_all": "Expandir Tudo",
+    "collapse_all": "Recolher Tudo"
   },
   "meta_info": {
     "title": "Info do documento",
@@ -564,7 +566,7 @@
     "shortcut_search": "{{os_cmd:search_workspace}}: Pesquisa no espaço de trabalho",
     "shortcut_sidebar": "{{os_cmd:toggle_sidebar}}: Alternar barra lateral",
     "shortcut_save": "{{os_cmd:save_document}}: Guardar",
-    "shortcut_refresh": "{{os_cmd:refresh_preview}}: Atualizar diagramas",
+    "shortcut_refresh": "{{os_cmd:refresh_document}}: Atualizar diagramas",
     "shortcut_toggle_split": "{{os_cmd:toggle_split}}: Vista dividida",
     "shortcut_toggle_code_preview": "{{os_cmd:toggle_code_preview}}: Alternar Código/Aperçu",
     "shortcut_tab_next": "{{os_cmd:tab_next}}: Próximo separador",
@@ -577,7 +579,96 @@
     "start_section": "Início",
     "recent_section": "Arquivos recentes",
     "no_recent_files": "Nenhum arquivo recente",
-    "welcome_screen": "🏠 Tela inicial",
-    "user_guide": "📚 Guia do usuário"
+    "welcome_screen": "Tela inicial",
+    "user_guide": "Guia do usuário"
+  },
+  "linter": {
+    "rule_toggle": "Toggle_Linter_Rule: {rule_code} ({rule_name})",
+    "docs": "Docs_Linter",
+    "fix": "Fix_Linter",
+    "fix_all": "Fix_All_Linter",
+    "disable_rule": "Disable_Linter_Rule",
+    "disable_rule_desc": "Disable_this_rule_for_linter",
+    "enable_linter": "Ativar Markdown Linter",
+    "rule_severities": "Gravidade das Regras",
+    "advanced_workspace_settings": "Configurações Avançadas do Espaço de Trabalho",
+    "workspace_has_config": "O espaço de trabalho tem um arquivo de configuração .markdownlint.json.",
+    "open_config": "Abrir Configuração",
+    "workspace_no_config": "Nenhum .markdownlint.json encontrado no espaço de trabalho atual.",
+    "create_config": "Criar Configuração",
+    "open_workspace_to_configure": "Abra um espaço de trabalho para configurar regras específicas de Lint.",
+    "severity_ignore": "Ignorar",
+    "severity_warning": "Aviso",
+    "severity_error": "Erro",
+    "use_workspace_local_config": "Usar configuração local do espaço de trabalho",
+    "rule_descriptions": {
+      "md001": "Os níveis de cabeçalho devem ser incrementados apenas um nível de cada vez.",
+      "md003": "O estilo do cabeçalho deve ser consistente.",
+      "md004": "Estilo de lista não ordenada inconsistente.",
+      "md012": "Múltiplas linhas em branco consecutivas.",
+      "md022": "Os cabeçalhos devem ser cercados por linhas em branco.",
+      "md023": "Os cabeçalhos devem começar no início da linha.",
+      "md025": "Vários cabeçalhos de nível superior no mesmo documento.",
+      "md026": "Pontuação final no cabeçalho.",
+      "md027": "Vários espaços após o símbolo de citação.",
+      "md028": "Linha em branco dentro da citação.",
+      "md029": "Prefixo de item de lista ordenada inconsistente.",
+      "md032": "As listas devem ser cercadas por linhas em branco.",
+      "md033": "HTML embutido.",
+      "md035": "Estilo de regra horizontal inconsistente.",
+      "md036": "Ênfase usada em vez de um cabeçalho.",
+      "md040": "Os blocos de código devem ter uma linguagem especificada.",
+      "md041": "A primeira linha de um arquivo deve ser um cabeçalho de nível superior.",
+      "md042": "Sem links vazios.",
+      "md045": "As imagens devem ter texto alternativo (alt).",
+      "md047": "Os arquivos devem terminar com um único caractere de nova linha.",
+      "md005": "Recuo inconsistente para itens de lista no mesmo nível.",
+      "md007": "Recuo de lista não ordenada.",
+      "md009": "Espaços finais.",
+      "md010": "Tabulações fixas.",
+      "md011": "Sintaxe de link invertida.",
+      "md013": "Comprimento da linha.",
+      "md014": "Sinais de dólar usados antes de comandos sem mostrar saída.",
+      "md018": "Nenhum espaço após o hash no cabeçalho estilo ATX.",
+      "md019": "Vários espaços após o hash no cabeçalho estilo ATX.",
+      "md020": "Nenhum espaço dentro de hashes no cabeçalho fechado estilo ATX.",
+      "md021": "Vários espaços dentro de hashes no cabeçalho fechado estilo ATX.",
+      "md024": "Vários cabeçalhos com o mesmo conteúdo.",
+      "md030": "Espaços após os marcadores de lista.",
+      "md031": "Os blocos de código isolados devem ser cercados por linhas em branco.",
+      "md034": "URL nua usada.",
+      "md037": "Espaços dentro de marcadores de ênfase.",
+      "md038": "Espaços dentro de elementos de intervalo de código.",
+      "md039": "Espaços dentro do texto do link.",
+      "md043": "Estrutura de cabeçalho necessária.",
+      "md044": "Os nomes próprios devem ter a capitalização correta.",
+      "md046": "Estilo de bloco de código.",
+      "md048": "Estilo de isolamento de código.",
+      "md049": "O estilo de ênfase deve ser consistente.",
+      "md050": "O estilo forte deve ser consistente.",
+      "md051": "Os fragmentos de link devem ser válidos.",
+      "md052": "Os links e imagens de referência devem usar um rótulo definido.",
+      "md053": "As definições de referência de link e imagem devem ser necessárias.",
+      "md054": "O estilo de link e imagem deve ser consistente.",
+      "md055": "O estilo de tubo da tabela deve ser consistente.",
+      "md056": "A contagem de colunas da tabela deve ser consistente.",
+      "md058": "As tabelas devem ser cercadas por linhas em branco.",
+      "md059": "O texto do link deve ser descritivo.",
+      "md060": "O estilo das colunas da tabela não é consistente."
+    },
+    "view_on_github": "Ver no GitHub oficial",
+    "search_placeholder": "Pesquisar regras…"
+  },
+  "use_workspace_local_config": "Usar configuração local do espaço de trabalho",
+  "editor": {
+    "toolbar": {
+      "heading1": "T1",
+      "heading2": "T2",
+      "heading3": "T3",
+      "bullet_list": "Lista de marcadores",
+      "numbered_list": "Lista numerada",
+      "blockquote": "Citação em bloco",
+      "code_block": "Bloco de código"
+    }
   }
 }

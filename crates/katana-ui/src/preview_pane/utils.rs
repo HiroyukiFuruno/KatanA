@@ -56,4 +56,67 @@ impl PreviewPaneUtilsOps {
             }
         }
     }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn handle_local_image_section(
+        path: &str,
+        alt: &str,
+        lines: usize,
+        md_file_path: &std::path::Path,
+        cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
+        force: bool,
+        current_generation: u64,
+        ordinal: usize,
+        sections: &mut Vec<RenderedSection>,
+        jobs: &mut Vec<RenderJob>,
+        lifecycle: &mut Vec<SectionLifecycle>,
+    ) {
+        let path_buf = std::path::PathBuf::from(path.trim_start_matches("file://"));
+
+        if path_buf.extension().and_then(|s| s.to_str()) == Some("drawio") {
+            let Ok(xml) = std::fs::read_to_string(&path_buf) else {
+                return Self::push_normal_image(&path_buf, alt, lines, sections, lifecycle);
+            };
+            sections.push(RenderedSection::Pending {
+                kind: "Drawio".to_string(),
+                source: xml.clone(),
+                source_lines: lines,
+            });
+            jobs.push(RenderJob {
+                kind: katana_core::markdown::DiagramKind::DrawIo,
+                src: xml,
+                path: md_file_path.to_path_buf(),
+                cache,
+                force,
+                source_lines: lines,
+                generation: current_generation,
+                ordinal,
+            });
+            lifecycle.push(SectionLifecycle {
+                is_loaded: false,
+                is_drawn: false,
+            });
+            return;
+        }
+
+        Self::push_normal_image(&path_buf, alt, lines, sections, lifecycle);
+    }
+
+    fn push_normal_image(
+        path_buf: &std::path::Path,
+        alt: &str,
+        lines: usize,
+        sections: &mut Vec<RenderedSection>,
+        lifecycle: &mut Vec<SectionLifecycle>,
+    ) {
+        sections.push(RenderedSection::LocalImage {
+            path: path_buf.to_path_buf(),
+            alt: alt.to_string(),
+            source_lines: lines,
+        });
+        lifecycle.push(SectionLifecycle {
+            is_loaded: true,
+            is_drawn: false,
+        });
+    }
 }

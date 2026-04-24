@@ -6,14 +6,34 @@ All notable changes to KatanA Desktop. This file records the major changes to Ka
 
 ### 🚀 Features
 
-- **Rich Text Toolbar**: Added a visual formatting toolbar above the Markdown editor with buttons for Bold, Italic, Strikethrough, Inline Code, Code Block, Headings (H1–H3), Bullet List, Numbered List, Blockquote, and Link. Inline formatting buttons are enabled only when text is selected; block-level buttons are always available.
-- **Clipboard Image Paste**: Added support for pasting images directly from the clipboard into the editor via the right-click context menu or the `Cmd+Shift+V` shortcut. Images are saved to the configured directory and inserted as Markdown image syntax.
+- **Contextual Markdown Input Controls**: Added cursor-adjacent Markdown input controls with buttons for Bold, Italic, Strikethrough, Inline Code, Code Block, Headings (H1–H3), Bullet List, Numbered List, Blockquote, and image insertion. Inline formatting buttons are enabled only when text is selected; block-level buttons are always available while editing.
+- **Clipboard Image Paste**: Added support for pasting images directly from the clipboard into the editor via normal paste (`Cmd+V` on macOS) or the grouped context menu. Images are saved to the configured directory and inserted as Markdown image syntax.
 - **Explorer Referenced Images**: The Explorer panel now displays a collapsible "Referenced Images" section listing all images referenced in the active document. Clicking an image reveals it in Finder/Explorer.
 - **Image Ingest Settings**: Added image ingest configuration to the Behavior settings tab, including save directory, filename format, and auto-create directory toggle.
 
 ### 🔧 System
 
+- **Preview-First Default**: Newly opened documents now default to preview mode unless the user explicitly switches the active tab to code or split mode.
 - Refactored `ExplorerPanel` and `ExplorerContent` to use a builder pattern (`with_referenced_images()`) to stay within the argument-count linting limit.
+
+## [0.22.4] - 2026-04-23 21:40:00 (UTC)
+
+### 🚀 Features
+
+- **Markdown Linter UI & Auto-Fix Integration**:
+  - Implemented an interactive Linter Settings UI supporting localized rule descriptions (i18n).
+  - Added real-time in-editor visualization for linting errors with squiggly lines and gutter icons.
+  - Implemented diagnostic popups with "Quick Fix" and "Fix All" automated formatting capabilities.
+  - Added an in-app documentation viewer for MarkdownLint rules with visual examples.
+  - Refactored markdownlint rules to comply with strict AST linter constraints.
+
+### 🐛 Bug Fixes
+
+- Fixed an issue where the file dialog could crash on certain limited Linux environments.
+
+### 🔧 System
+
+- Optimized internal test execution and added fallback testing for the DrawIO rendering pipeline.
 
 ## [0.22.3] - 2026-04-22 01:49:58 (UTC)
 
