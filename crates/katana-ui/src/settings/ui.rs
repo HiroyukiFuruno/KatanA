@@ -141,12 +141,11 @@ impl<'a> SettingsWindow<'a> {
                                                 );
                                             }
                                             SettingsTab::Updates => {
-                                                let jar_path =
-                                                    state.config.get_plantuml_jar_path_if_exists();
-                                                triggered_action =
-                                                    crate::settings::tabs::UpdatesTabOps::render_updates_tab(
-                                                        ui, state, jar_path,
-                                                    );
+                                                triggered_action = crate::settings::tabs::UpdatesTabOps::render_updates_tab(
+                                                    ui, state,
+                                                    state.config.get_plantuml_jar_path_if_exists(),
+                                                    state.config.get_drawio_js_path_if_exists(),
+                                                );
                                             }
                                             SettingsTab::Behavior => {
                                                 triggered_action =

@@ -33,6 +33,7 @@ COVERAGE_IGNORE_PATTERNS=(
     # WHY: Third-party tool execution wrappers (PlantUML, Mermaid) relying on external headless browsers/Java VMs.
     "plantuml_renderer\.rs" "plantuml_renderer/.*"
     "mermaid_renderer/.*" "mermaid_renderer\.rs"
+    "drawio_renderer/.*" "drawio_renderer\.rs"
     "html_renderer\.rs" "html_renderer/.*"
     "svg_loader/.*" "svg_loader\.rs"
     "font_loader/.*" "font_loader\.rs"

@@ -297,7 +297,8 @@
 			"no_extension_warning_title": "Warning",
 			"no_extension_warning": "There is no guarantee that files without extensions will display correctly as Markdown. Also, unexpected behavior might crash the app. Are you sure you want to enable this?",
 			"extensionless_excludes": "Excluded Extensionless Files",
-			"extensionless_excludes_hint": "Comma-separated"
+			"extensionless_excludes_hint": "Comma-separated",
+			"enable_drawio_mount": "Enable Direct Draw.io Loading (*.drawio, *.drowio)"
 		},
 		"icons": {
 			"preset_label": "Preset:",
@@ -381,7 +382,11 @@
 			"plantuml_section_title": "PlantUML",
 			"plantuml_installed": "PlantUML is installed at %path%.",
 			"plantuml_not_installed": "PlantUML is not installed.",
-			"plantuml_update_now": "Update PlantUML to Latest"
+			"plantuml_update_now": "Update PlantUML to Latest",
+			"drawio_section_title": "Draw.io / Mermaid",
+			"drawio_installed": "Draw.io viewer is installed at {path}",
+			"drawio_not_installed": "Draw.io viewer is not installed.",
+			"drawio_update_now": "Update Draw.io to Latest"
 		},
 		"behavior": {
 			"section_title": "Behavior",

@@ -92,6 +92,7 @@ pub struct SettingsWorkspaceMessages {
     pub no_extension_warning: String,
     pub extensionless_excludes: String,
     pub extensionless_excludes_hint: String,
+    pub enable_drawio_mount: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -134,6 +135,14 @@ pub struct SettingsUpdateMessages {
     pub plantuml_installed: String,
     pub plantuml_not_installed: String,
     pub plantuml_update_now: String,
+    #[serde(default)]
+    pub drawio_section_title: String,
+    #[serde(default)]
+    pub drawio_installed: String,
+    #[serde(default)]
+    pub drawio_not_installed: String,
+    #[serde(default)]
+    pub drawio_update_now: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

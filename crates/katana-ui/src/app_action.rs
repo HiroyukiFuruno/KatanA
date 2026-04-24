@@ -70,6 +70,10 @@ pub enum AppAction {
         url: String,
         dest: std::path::PathBuf,
     },
+    StartDrawioDownload {
+        url: String,
+        dest: std::path::PathBuf,
+    },
 
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,

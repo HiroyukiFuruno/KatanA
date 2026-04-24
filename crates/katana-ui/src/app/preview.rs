@@ -45,7 +45,18 @@ impl PreviewOps for KatanaApp {
         }
     }
     fn refresh_preview(&mut self, path: &std::path::Path, source: &str) {
-        let h = ShellLogicOps::hash_str(source);
+        let is_drawio = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.eq_ignore_ascii_case("drawio") || e.eq_ignore_ascii_case("drowio"))
+            .unwrap_or(false);
+        let actual_source = if is_drawio {
+            format!("```drawio\n{}\n```", source)
+        } else {
+            source.to_string()
+        };
+
+        let h = ShellLogicOps::hash_str(&actual_source);
         let path_buf = path.to_path_buf();
 
         let current_hash = self
@@ -60,7 +71,7 @@ impl PreviewOps for KatanaApp {
         }
 
         Self::get_preview_pane(&mut self.tab_previews, path_buf.clone())
-            .update_markdown_sections(source, path);
+            .update_markdown_sections(&actual_source, path);
 
         if let Some(tab) = self.tab_previews.iter_mut().find(|t| t.path == path_buf) {
             tab.hash = h;
@@ -73,7 +84,18 @@ impl PreviewOps for KatanaApp {
         force: bool,
         concurrency: usize,
     ) {
-        let h = ShellLogicOps::hash_str(source);
+        let is_drawio = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|e| e.eq_ignore_ascii_case("drawio") || e.eq_ignore_ascii_case("drowio"))
+            .unwrap_or(false);
+        let actual_source = if is_drawio {
+            format!("```drawio\n{}\n```", source)
+        } else {
+            source.to_string()
+        };
+
+        let h = ShellLogicOps::hash_str(&actual_source);
         let path_buf = path.to_path_buf();
         let current_hash = self
             .tab_previews
@@ -96,7 +118,7 @@ impl PreviewOps for KatanaApp {
 
         let pane = Self::get_preview_pane(&mut self.tab_previews, path_buf.clone());
         pane.full_render(
-            source,
+            &actual_source,
             path,
             self.state.config.cache.clone(),
             force,

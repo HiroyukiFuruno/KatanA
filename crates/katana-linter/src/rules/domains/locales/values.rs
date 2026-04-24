@@ -109,6 +109,7 @@ const LOCALE_VALUE_EXCEPTIONS: &[LocaleException] = &[
     LocaleException { key: "severity_warning", value: "Warning" },
     LocaleException { key: "severity_ignore", value: "Ignore" },
     LocaleException { key: "*", value: "Linter" },
+    LocaleException { key: "*", value: "Draw.io / Mermaid" },
 ];
 
 pub struct LocaleValueOps;

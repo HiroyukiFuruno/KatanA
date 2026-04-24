@@ -1,7 +1,7 @@
 /* WHY: Refactored tab item orchestration to maintain a clean structure and manage architectural complexity via specialized sub-modules. */
 
 use crate::app_state::AppAction;
-use crate::state::document::TabGroup;
+use crate::state::document::{TabGroup, VirtualPathExt};
 use crate::views::top_bar::types::TopBarOps;
 use eframe::egui;
 use katana_core::document::Document;
@@ -43,9 +43,11 @@ impl<'a> TabItem<'a> {
             .path
             .to_string_lossy()
             .starts_with("Katana://ChangeLog");
+        let is_demo = self.doc.path.is_demo_path();
         let title = TopBarOps::tab_display_title(
             self.doc.file_name().unwrap_or("untitled"),
             is_changelog,
+            is_demo,
             self.doc.is_dirty,
             self.doc.is_pinned,
         );
@@ -67,8 +69,6 @@ impl<'a> TabItem<'a> {
             .map_or(title_resp.rect, |c| title_resp.rect.union(c.rect));
         self.draw_group_underline(ui, full_rect);
 
-        use crate::state::document::VirtualPathExt;
-        let is_demo = self.doc.path.is_demo_path();
         let tab_interact = ui.interact(
             title_resp.rect,
             egui::Id::new("tab_interact").with(self.idx),

@@ -11,5 +11,6 @@ pub mod theme_editor;
 pub mod types;
 pub mod updates;
 pub mod workspace;
+pub mod workspace_modal;
 
 pub use types::*;

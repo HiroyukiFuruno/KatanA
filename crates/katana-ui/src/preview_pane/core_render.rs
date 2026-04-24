@@ -155,16 +155,19 @@ impl PreviewPane {
                     });
                 }
                 PreviewSection::LocalImage { path, alt, lines } => {
-                    let path_buf = std::path::PathBuf::from(path.trim_start_matches("file://"));
-                    sections.push(RenderedSection::LocalImage {
-                        path: path_buf,
-                        alt: alt.clone(),
-                        source_lines: *lines,
-                    });
-                    lifecycle.push(SectionLifecycle {
-                        is_loaded: true,
-                        is_drawn: false,
-                    });
+                    crate::preview_pane::types::PreviewPaneUtilsOps::handle_local_image_section(
+                        path,
+                        alt,
+                        *lines,
+                        &self.md_file_path,
+                        cache.clone(),
+                        force,
+                        current_generation,
+                        ordinal,
+                        &mut sections,
+                        &mut jobs,
+                        &mut lifecycle,
+                    );
                 }
             }
         }

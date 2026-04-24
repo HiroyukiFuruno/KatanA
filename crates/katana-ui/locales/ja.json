@@ -297,7 +297,8 @@
 			"no_extension_warning_title": "警告",
 			"no_extension_warning": "markdownとして正しく表示できる保証はありません。またappが想定しない動作でクラッシュする可能性があります。本当に有効にしますか。",
 			"extensionless_excludes": "表示除外ファイル（拡張子完全一致）",
-			"extensionless_excludes_hint": "「拡張子なし」有効時に除外するファイル名リストを追加します（例: .DS_Store, .gitignore）。"
+			"extensionless_excludes_hint": "「拡張子なし」有効時に除外するファイル名リストを追加します（例: .DS_Store, .gitignore）。",
+			"enable_drawio_mount": "Draw.ioファイルを直接開く（*.drawio, *.drowio）"
 		},
 		"icons": {
 			"preset_label": "プリセット:",
@@ -381,7 +382,11 @@
 			"plantuml_section_title": "PlantUML",
 			"plantuml_installed": "PlantUML は %path% にインストールされています。",
 			"plantuml_not_installed": "PlantUML はインストールされていません。",
-			"plantuml_update_now": "PlantUML を最新版に更新"
+			"plantuml_update_now": "PlantUML を最新版に更新",
+			"drawio_section_title": "Draw.io / Mermaid",
+			"drawio_installed": "Draw.io viewer は {path} にインストールされています",
+			"drawio_not_installed": "Draw.io viewer がインストールされていません。",
+			"drawio_update_now": "Draw.io を最新版に更新"
 		},
 		"behavior": {
 			"section_title": "動作",

@@ -104,6 +104,15 @@ impl ConfigState {
         self.try_get_plantuml_jar_path()
             .filter(|path| path.exists())
     }
+
+    pub fn try_get_drawio_js_path(&self) -> Option<std::path::PathBuf> {
+        use katana_core::markdown::drawio_renderer::DrawioRendererOps;
+        DrawioRendererOps::find_drawio_js()
+    }
+
+    pub fn get_drawio_js_path_if_exists(&self) -> Option<std::path::PathBuf> {
+        self.try_get_drawio_js_path().filter(|path| path.exists())
+    }
 }
 
 #[cfg(test)]
