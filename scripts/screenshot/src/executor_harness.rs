@@ -207,14 +207,12 @@ pub fn run(
             Step::Wait(s) => {
                 // Step egui frames AND sleep real time so async work (network
                 // fetches, subprocess launches) actually completes.
-                // Step egui frames AND sleep real time so async work (network
-                // fetches, subprocess launches) actually completes.
                 let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                 let frames = ((s.seconds * fps) as usize).max(1);
                 for _ in 0..frames {
                     harness.step();
                     maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
-                    std::thread::sleep(Duration::from_millis(16));
+                    sleep_frame(fps);
                 }
             }
             Step::Screenshot(s) => {
@@ -285,7 +283,7 @@ pub fn run(
                     });
                     harness.step();
                     maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
-                    std::thread::sleep(Duration::from_millis(16));
+                    sleep_frame(fps);
                 }
             }
             Step::ExportPng(s) => {
@@ -540,6 +538,26 @@ pub fn run(
                             *wait_seconds,
                         )?;
                     }
+                    UiAction::SelectDemoTab { file_name } => {
+                        let path = PathBuf::from(format!("Katana://Demo/{file_name}"));
+                        let is_open = harness
+                            .state_mut()
+                            .app_state_mut()
+                            .document
+                            .open_documents
+                            .iter()
+                            .any(|doc| doc.path == path);
+                        if !is_open {
+                            bail!(
+                                "demo tab {:?} is not open; call open_help_demo before select_demo_tab",
+                                file_name
+                            );
+                        }
+                        harness
+                            .state_mut()
+                            .trigger_action(AppAction::SelectDocument(path));
+                        step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
+                    }
                     other => {
                         let app_action = match other {
                             UiAction::ToggleToc => AppAction::ToggleToc,
@@ -565,7 +583,8 @@ pub fn run(
                             | UiAction::RunGlobalSearch { .. }
                             | UiAction::RunDocumentSearch { .. }
                             | UiAction::SelectThemePresetInSettings { .. }
-                            | UiAction::SlideshowNavigate { .. } => unreachable!(),
+                            | UiAction::SlideshowNavigate { .. }
+                            | UiAction::SelectDemoTab { .. } => unreachable!(),
                         };
                         harness.state_mut().trigger_action(app_action);
                         let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
@@ -918,9 +937,13 @@ fn step_for_seconds(
     for _ in 0..frames {
         harness.step();
         maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
-        std::thread::sleep(Duration::from_millis(16));
+        sleep_frame(fps);
     }
     Ok(())
+}
+
+fn sleep_frame(fps: f64) {
+    std::thread::sleep(Duration::from_secs_f64(1.0 / fps.max(1.0)));
 }
 
 fn parse_settings_tab(tab: &str) -> (SettingsTab, SettingsSection) {
