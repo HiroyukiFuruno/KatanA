@@ -553,6 +553,7 @@ pub fn run(
                             UiAction::ToggleExportPanel => AppAction::ToggleExportPanel,
                             UiAction::OpenChangelog => AppAction::ShowReleaseNotes,
                             UiAction::OpenHelpDemo => AppAction::OpenHelpDemo,
+                            UiAction::SelectNextTab => AppAction::SelectNextTab,
                             UiAction::OpenSettingsTab { .. }
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
@@ -618,7 +619,11 @@ fn encode_video(recorder: &ActiveRecording, output_path: &Path) -> Result<()> {
                 .arg("-b:v")
                 .arg("0")
                 .arg("-crf")
-                .arg("32");
+                .arg("32")
+                .arg("-row-mt")
+                .arg("1")
+                .arg("-cpu-used")
+                .arg("4");
         }
         VideoFormat::Mp4 => {
             cmd.arg("-c:v")
@@ -635,8 +640,8 @@ fn encode_video(recorder: &ActiveRecording, output_path: &Path) -> Result<()> {
     }
 
     cmd.arg(output_path)
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null());
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit());
 
     let status = cmd
         .status()
