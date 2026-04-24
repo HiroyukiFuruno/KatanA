@@ -1,5 +1,6 @@
 pub mod authoring;
 pub mod authoring_utils;
+pub mod context_menu;
 pub mod decorations;
 pub mod line_numbers;
 pub mod logic;

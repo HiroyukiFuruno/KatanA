@@ -20,20 +20,19 @@ impl KatanaApp {
 
     /// Ingest an image from the clipboard.
     pub(crate) fn handle_action_ingest_clipboard_image(&mut self) {
-        if let Ok(mut clipboard) = arboard::Clipboard::new()
-            && let Ok(image) = clipboard.get_image()
-        {
-            let width = image.width as u32;
-            let height = image.height as u32;
-            let mut out_bytes = Vec::new();
-
-            use image::ImageEncoder;
-            let encoder = image::codecs::png::PngEncoder::new(&mut out_bytes);
-            if encoder
-                .write_image(&image.bytes, width, height, image::ExtendedColorType::Rgba8)
-                .is_ok()
-            {
-                self.process_image_ingest(&out_bytes, "png");
+        match super::clipboard_image::ClipboardImageOps::read_image_payload() {
+            Ok(payload) => self.process_image_ingest(&payload.bytes, payload.extension),
+            Err(err) => {
+                tracing::warn!("Clipboard image ingest failed: {err}");
+                self.state.layout.status_message = Some((
+                    format!(
+                        "{}: {err}",
+                        crate::i18n::I18nOps::get()
+                            .search
+                            .command_ingest_clipboard_image
+                    ),
+                    crate::app_state::StatusType::Error,
+                ));
             }
         }
     }
@@ -48,6 +47,10 @@ impl KatanaApp {
 
         if doc.path.as_os_str().is_empty() {
             tracing::warn!("Image ingest requires a saved Markdown file.");
+            self.state.layout.status_message = Some((
+                "Image ingest requires a saved Markdown file.".to_string(),
+                crate::app_state::StatusType::Error,
+            ));
             return;
         }
 

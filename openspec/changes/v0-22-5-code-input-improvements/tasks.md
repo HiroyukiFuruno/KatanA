@@ -115,3 +115,15 @@
 - [x] 5.4 `make check` が exit code 0 で通過することを確認する
 - [x] 5.5 `release/v0.22.5` 上で impl-release workflow がこの active change を参照できることを確認する
 - [ ] 5.6 Release Readiness CI と GitHub Release 完了後、この change を `/opsx-archive` で archive する
+
+---
+
+## 6. User Review Feedback: Image Ingest Completion
+
+- [x] 6.1 クリップボード画像 paste が実際に画像データを取得できない経路を調査し、通常 paste で Markdown 画像参照が挿入されるよう修正する
+- [x] 6.2 Finder など OS ファイルエクスプローラでコピーした画像ファイルも clipboard image paste として取り込めるようにする
+- [x] 6.3 editor toolbar/control icon から画像ファイル挿入を開始できるようにし、OS file picker で選択した画像を既存 ingest path に接続する
+- [x] 6.4 editor context menu から toolbar/control 相当の Markdown authoring と画像挿入操作を grouped submenu として実行できるようにする
+- [x] 6.5 `markdown-asset-ingest` spec に toolbar control、grouped context menu、clipboard image file paste、`Command+V` の受け入れ条件を追記する
+- [x] 6.6 focused tests と `openspec validate v0-22-5-code-input-improvements` を通す
+- [x] 6.7 toolbar group separator を `|` 表示にし、separator と icon group の上下中央を揃える

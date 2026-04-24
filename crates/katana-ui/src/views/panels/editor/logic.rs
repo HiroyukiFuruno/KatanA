@@ -1,5 +1,5 @@
 use super::types::*;
-use crate::app_state::{AppAction, ScrollSource};
+use crate::app_state::ScrollSource;
 use eframe::egui;
 
 impl EditorLogicOps {
@@ -24,46 +24,6 @@ impl EditorLogicOps {
             ts.cursor.set_char_range(Some(new_range));
             egui::TextEdit::store_state(ui.ctx(), editor_id, ts);
         }
-    }
-
-    pub fn render_context_menu(
-        _ui: &mut egui::Ui,
-        response: &egui::Response,
-        action: &mut AppAction,
-    ) {
-        response.context_menu(|ui| {
-            if ui
-                .button(crate::i18n::I18nOps::get().action.save.as_str())
-                .clicked()
-            {
-                *action = AppAction::SaveDocument;
-                ui.close_menu();
-            }
-            if ui
-                .button(
-                    crate::i18n::I18nOps::get()
-                        .search
-                        .command_ingest_clipboard_image
-                        .as_str(),
-                )
-                .clicked()
-            {
-                *action = AppAction::IngestClipboardImage;
-                ui.close_menu();
-            }
-            if ui
-                .button(
-                    crate::i18n::I18nOps::get()
-                        .search
-                        .command_ingest_image_file
-                        .as_str(),
-                )
-                .clicked()
-            {
-                *action = AppAction::IngestImageFile;
-                ui.close_menu();
-            }
-        });
     }
 
     pub fn should_ingest_clipboard_image_paste(
@@ -111,7 +71,8 @@ impl EditorLogicOps {
         response: &egui::Response,
         text_changed: bool,
     ) -> bool {
-        let response_has_focus = response.has_focus();
+        let response_has_focus = response.has_focus()
+            || ui.memory(|mem| mem.focused().is_some_and(|id| id == response.id));
         ui.input(|i| {
             Self::should_ingest_clipboard_image_paste(response_has_focus, text_changed, &i.events)
         })

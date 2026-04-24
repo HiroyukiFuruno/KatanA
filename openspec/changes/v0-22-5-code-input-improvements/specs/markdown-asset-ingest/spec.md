@@ -15,6 +15,24 @@ The system SHALL expose image file attach as a command palette action when an ed
 - **WHEN** no editable Markdown document is active
 - **THEN** the system MUST NOT present image attach as an executable command palette action
 
+### Requirement: User can attach an image file from the editor controls
+
+The system SHALL expose image file attach as an editor toolbar control when an editable Markdown document is active.
+
+#### Scenario: Image toolbar control opens the OS file picker
+
+- **WHEN** the user clicks the image attach control in the editor toolbar
+- **THEN** the system opens the operating system file picker filtered to image files
+- **THEN** choosing an image saves it through the configured image ingest path
+- **THEN** the system inserts a relative Markdown image reference at the editor insertion point
+
+#### Scenario: Image attach is available from the grouped editor context menu
+
+- **WHEN** the user opens the editor context menu in an editable Markdown document
+- **THEN** image ingest actions are available under a grouped image or ingest submenu
+- **THEN** choosing the image file action opens the operating system file picker filtered to image files
+- **THEN** choosing the clipboard image action uses the configured clipboard image ingest path
+
 ### Requirement: User can paste clipboard images with normal paste
 
 The system SHALL support normal paste for clipboard image data in an editable Markdown document.
@@ -22,7 +40,15 @@ The system SHALL support normal paste for clipboard image data in an editable Ma
 #### Scenario: Clipboard image normal paste
 
 - **WHEN** the user focuses an editable Markdown document and the clipboard contains image data
+- **THEN** the user can invoke the platform normal paste gesture such as `Command+V` on macOS
+- **THEN** the system saves the image through the configured image ingest path
+- **THEN** the system inserts a relative Markdown image reference at the editor insertion point
+
+#### Scenario: Clipboard image file normal paste
+
+- **WHEN** the user focuses an editable Markdown document and the clipboard contains a copied image file from the operating system file manager
 - **THEN** the user can invoke the platform normal paste gesture
+- **THEN** the system reads the copied image file
 - **THEN** the system saves the image through the configured image ingest path
 - **THEN** the system inserts a relative Markdown image reference at the editor insertion point
 

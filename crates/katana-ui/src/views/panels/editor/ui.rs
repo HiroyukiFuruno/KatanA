@@ -97,9 +97,14 @@ impl<'a> EditorContent<'a> {
                             .frame(egui::Frame::NONE);
                         let text_output = text_edit.show(ui);
                         let response = text_output.response;
-                        EditorLogicOps::render_context_menu(ui, &response, action);
                         let galley = text_output.galley;
-                        if let Some(range) = text_output.cursor_range {
+                        let cursor_range = text_output.cursor_range;
+                        super::context_menu::EditorContextMenu::render(
+                            &response,
+                            action,
+                            cursor_range,
+                        );
+                        if let Some(range) = cursor_range {
                             *cursor_range_out = Some(range);
                         }
                         if let Some(cursor_range) = self.pending_cursor {
@@ -107,7 +112,7 @@ impl<'a> EditorContent<'a> {
                         }
                         if sync_scroll
                             && response.clicked()
-                            && let Some(c) = text_output.cursor_range
+                            && let Some(c) = cursor_range
                         {
                             let line = EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
                             scroll.scroll_to_line = Some(line);
@@ -118,7 +123,7 @@ impl<'a> EditorContent<'a> {
                                 super::decorations::CursorLineParams {
                                     buffer: &buffer,
                                     galley: &galley,
-                                    cursor_range: text_output.cursor_range,
+                                    cursor_range,
                                     scroll,
                                     ln_rect: &ln_rect,
                                     response_rect: &response.rect,

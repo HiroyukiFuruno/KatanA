@@ -4,6 +4,9 @@ use crate::icon::{Icon, IconSize};
 use crate::widgets::AlignCenter;
 use egui::Ui;
 
+const TOOLBAR_SEPARATOR_TEXT: &str = "|";
+const TOOLBAR_SEPARATOR_WIDTH: f32 = 6.0;
+
 pub(crate) struct EditorToolbar<'a> {
     action: &'a mut AppAction,
     has_selection: bool,
@@ -35,14 +38,28 @@ impl<'a> EditorToolbar<'a> {
         AlignCenter::new()
             .content(|ui| {
                 Self::inline_group(ui, action, has_selection);
-                ui.separator();
+                Self::separator(ui);
                 Self::heading_group(ui, action);
-                ui.separator();
+                Self::separator(ui);
                 Self::list_group(ui, action);
-                ui.separator();
+                Self::separator(ui);
                 Self::block_group(ui, action);
+                Self::separator(ui);
+                Self::image_group(ui, action);
             })
             .show(ui);
+    }
+
+    fn separator(ui: &mut Ui) {
+        let size = egui::vec2(TOOLBAR_SEPARATOR_WIDTH, ui.spacing().interact_size.y);
+        let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
+        ui.painter().text(
+            rect.center(),
+            egui::Align2::CENTER_CENTER,
+            TOOLBAR_SEPARATOR_TEXT,
+            egui::TextStyle::Button.resolve(ui.style()),
+            ui.visuals().weak_text_color(),
+        );
     }
 
     fn inline_group(ui: &mut Ui, action: &mut AppAction, has_sel: bool) {
@@ -134,6 +151,16 @@ impl<'a> EditorToolbar<'a> {
             .clicked()
         {
             *action = AppAction::AuthorMarkdown(MarkdownAuthoringOp::CodeBlock);
+        }
+    }
+
+    fn image_group(ui: &mut Ui, action: &mut AppAction) {
+        if ui
+            .add(Icon::Image.button(ui, IconSize::Small))
+            .on_hover_text(I18nOps::get().search.command_ingest_image_file.clone())
+            .clicked()
+        {
+            *action = AppAction::IngestImageFile;
         }
     }
 }

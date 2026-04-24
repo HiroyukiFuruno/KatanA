@@ -32,6 +32,13 @@ The system SHALL show the Markdown input support toolbar for editable Markdown d
 - **THEN** the system shows the authoring toolbar in the editor panel
 - **THEN** the toolbar includes controls for common Markdown insertion actions such as inline formatting, headings, lists, quotes, and code blocks
 
+#### Scenario: Toolbar groups are visually separated and aligned
+
+- **WHEN** the system shows multiple authoring toolbar groups in an editable Markdown document
+- **THEN** the system separates adjacent groups with visible `|` separators
+- **THEN** each separator is vertically centered with the toolbar icon buttons
+- **THEN** each separator preserves stable toolbar spacing without shifting icon controls
+
 #### Scenario: Toolbar stays out of read-only documents
 
 - **WHEN** the active document is read-only, reference-only, or a virtual built-in document
