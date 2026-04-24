@@ -17,8 +17,6 @@ fn diagram_md(lang: &str, body: &str) -> String {
     format!("# Diagram Test\n\n```{lang}\n{body}\n```\n\n## Footer\n")
 }
 
-
-
 fn render_and_wait(lang: &str, source: &str) -> PreviewPane {
     let md = diagram_md(lang, source);
     let mut pane = PreviewPane::default();
