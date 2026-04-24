@@ -1,7 +1,7 @@
 use super::command_palette_results::{execute_payload, render_results};
 use crate::app_state::AppAction;
 use crate::state::command_palette::{
-    CommandPaletteExecutePayload, CommandPaletteProvider, CommandPaletteState,
+    CommandPaletteExecutePayload, CommandPaletteProvider, CommandPaletteResult, CommandPaletteState,
 };
 use eframe::egui;
 
@@ -39,6 +39,15 @@ const COMMAND_PALETTE_MARGIN: f32 = 8.0;
 const COMMAND_PALETTE_INNER_MARGIN_Y: f32 = 4.0;
 const COMMAND_PALETTE_HINT_OPACITY: f32 = 0.4;
 const COMMAND_PALETTE_PREFIX_OPACITY: f32 = 0.0;
+
+fn command_result_visible_in_normal_palette(result: &CommandPaletteResult) -> bool {
+    matches!(
+        &result.execute_payload,
+        CommandPaletteExecutePayload::DispatchAppAction(
+            AppAction::IngestImageFile | AppAction::IngestClipboardImage
+        )
+    )
+}
 
 pub(crate) struct CommandPaletteModal<'a> {
     pub state: &'a mut CommandPaletteState,
@@ -142,10 +151,16 @@ impl<'a> CommandPaletteModal<'a> {
                         if is_action_mode && provider.name() != "Commands" {
                             continue;
                         }
+                        let results = provider.search(&actual_query, self.workspace, None);
                         if !is_action_mode && provider.name() == "Commands" {
-                            continue;
+                            gathered.extend(
+                                results
+                                    .into_iter()
+                                    .filter(command_result_visible_in_normal_palette),
+                            );
+                        } else {
+                            gathered.extend(results);
                         }
-                        gathered.extend(provider.search(&actual_query, self.workspace, None));
                     }
                     gathered.sort_by(|a, b| {
                         b.score
@@ -165,3 +180,6 @@ impl<'a> CommandPaletteModal<'a> {
         self.state.is_open = is_open;
     }
 }
+
+#[cfg(test)]
+include!("command_palette_tests.rs");
