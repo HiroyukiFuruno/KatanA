@@ -46,7 +46,7 @@ impl<'a> EditorContent<'a> {
         let cursor_range_out = self.cursor_range_out;
         if let Some(doc) = self.document {
             let mut buffer = doc.buffer.clone();
-
+            super::toolbar::EditorToolbar::render(ui, action, cursor_range_out);
             let colors: EditorColors = EditorLogicOps::resolve_editor_colors(ui);
             let (
                 code_bg,

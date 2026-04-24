@@ -491,6 +491,17 @@
     "persist_error": "Failed to save temporary file",
     "exporting": "⏳ Exporting {filename}…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "H1",
+      "heading2": "H2",
+      "heading3": "H3",
+      "bullet_list": "Bullet List",
+      "numbered_list": "Numbered List",
+      "blockquote": "Blockquote",
+      "code_block": "Code Block"
+    }
+  },
   "terms": {
     "title": "Terms of Use",
     "version_label": "Version: {version}",

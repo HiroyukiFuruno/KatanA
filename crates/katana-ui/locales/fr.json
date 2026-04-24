@@ -491,6 +491,17 @@
     "persist_error": "Échec de sauvegarde.",
     "exporting": "⏳ Exportation de {filename}…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "T1",
+      "heading2": "T2",
+      "heading3": "T3",
+      "bullet_list": "Liste à puces",
+      "numbered_list": "Liste numérotée",
+      "blockquote": "Citation en bloc",
+      "code_block": "Bloc de code"
+    }
+  },
   "terms": {
     "title": "Conditions d'utilisation",
     "version_label": "Version : {version}",

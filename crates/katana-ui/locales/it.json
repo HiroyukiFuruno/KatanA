@@ -491,6 +491,17 @@
     "persist_error": "Salvataggio fallito.",
     "exporting": "⏳ Esportazione di {filename}…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "T1",
+      "heading2": "T2",
+      "heading3": "T3",
+      "bullet_list": "Elenco puntato",
+      "numbered_list": "Elenco numerato",
+      "blockquote": "Citazione in blocco",
+      "code_block": "Blocco di codice"
+    }
+  },
   "terms": {
     "title": "Termini d'uso",
     "version_label": "Versione: {version}",

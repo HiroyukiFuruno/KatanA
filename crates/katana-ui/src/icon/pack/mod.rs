@@ -3,7 +3,6 @@ use crate::icon::Icon;
 #[rustfmt::skip]
 macro_rules! impl_icon_pack_match {
     ($dir:expr, $icon:expr) => {
-        #[allow(unreachable_patterns)]
         match $icon {
             crate::icon::Icon::Dot => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "ui/dot", ".svg"))),
             crate::icon::Icon::Close => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "ui/close", ".svg"))),
@@ -78,7 +77,18 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::Html => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/html", ".svg"))),
             crate::icon::Icon::Pdf => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/pdf", ".svg"))),
             crate::icon::Icon::Image => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "files/image", ".svg"))),
-            _ => None,
+            crate::icon::Icon::Bold => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/bold", ".svg"))),
+            crate::icon::Icon::Italic => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/italic", ".svg"))),
+            crate::icon::Icon::Strikethrough => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/strikethrough", ".svg"))),
+            crate::icon::Icon::Code => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/code", ".svg"))),
+            crate::icon::Icon::Heading => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/heading", ".svg"))),
+            crate::icon::Icon::List => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/list", ".svg"))),
+            crate::icon::Icon::ListOrdered => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/list-ordered", ".svg"))),
+            crate::icon::Icon::Quote => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/quote", ".svg"))),
+            crate::icon::Icon::LightBulb => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "action/light_bulb", ".svg"))),
+            /* WHY: CircleFilled is a system-common circle icon used for severities, badges, etc.
+             * It lives in assets/icons/system/ and is tinted in code with egui's tint. */
+            crate::icon::Icon::CircleFilled => Some(include_bytes!("../../../../../assets/icons/system/circle-filled.svg")),
         }
     };
 }

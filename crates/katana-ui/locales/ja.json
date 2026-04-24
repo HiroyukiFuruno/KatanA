@@ -491,6 +491,17 @@
     "persist_error": "一時ファイルの保持に失敗しました",
     "exporting": "⏳ {filename} を生成中…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "H1",
+      "heading2": "H2",
+      "heading3": "H3",
+      "bullet_list": "箇条書き",
+      "numbered_list": "番号付きリスト",
+      "blockquote": "ブロック引用",
+      "code_block": "コードブロック"
+    }
+  },
   "terms": {
     "title": "利用規約",
     "version_label": "バージョン: {version}",
