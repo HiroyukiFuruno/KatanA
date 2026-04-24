@@ -17,7 +17,11 @@ impl DocumentEditOps for KatanaApp {
         };
         let doc = &mut self.state.document.open_documents[idx];
         doc.buffer.replace_range(span, &replacement);
-        doc.is_dirty = true;
+
+        use crate::state::document::VirtualPathExt as _;
+        if !doc.path.is_virtual_path() {
+            doc.is_dirty = true;
+        }
 
         let path = doc.path.clone();
         let content = doc.buffer.clone();
@@ -69,12 +73,19 @@ impl DocumentEditOps for KatanaApp {
                     fix.end_line.saturating_sub(1),
                     fix.end_column,
                 );
-            if let (Some(start), Some(end)) = (start_opt, end_opt) {
-                let valid = start <= end && end <= doc.buffer.len();
-                if valid {
-                    doc.buffer.replace_range(start..end, &fix.replacement);
-                    doc.is_dirty = true;
-                }
+            let (Some(start), Some(end)) = (start_opt, end_opt) else {
+                continue;
+            };
+
+            if start > end || end > doc.buffer.len() {
+                continue;
+            }
+
+            doc.buffer.replace_range(start..end, &fix.replacement);
+
+            use crate::state::document::VirtualPathExt as _;
+            if !doc.path.is_virtual_path() {
+                doc.is_dirty = true;
             }
         }
 

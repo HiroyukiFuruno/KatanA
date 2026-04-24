@@ -125,7 +125,11 @@ impl DocumentOps for KatanaApp {
         };
         let doc = &mut self.state.document.open_documents[idx];
         doc.buffer = content.clone();
-        doc.is_dirty = true;
+
+        use crate::state::document::VirtualPathExt as _;
+        if !doc.path.is_virtual_path() {
+            doc.is_dirty = true;
+        }
 
         let path = doc.path.clone();
         let concurrency = self
@@ -149,6 +153,12 @@ impl DocumentOps for KatanaApp {
         };
         let doc = &mut self.state.document.open_documents[idx];
         if !doc.is_dirty {
+            return;
+        }
+
+        use crate::state::document::VirtualPathExt as _;
+        if doc.path.is_virtual_path() {
+            doc.is_dirty = false;
             return;
         }
 
