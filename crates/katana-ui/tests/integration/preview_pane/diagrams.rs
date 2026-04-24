@@ -17,13 +17,7 @@ fn diagram_md(lang: &str, body: &str) -> String {
     format!("# Diagram Test\n\n```{lang}\n{body}\n```\n\n## Footer\n")
 }
 
-fn assert_image(sections: &[RenderedSection], idx: usize, context: &str) {
-    assert!(
-        matches!(sections.get(idx), Some(RenderedSection::Image { .. })),
-        "[{context}] Expected Image at index {idx}, got: {:?}",
-        sections.get(idx)
-    );
-}
+
 
 fn render_and_wait(lang: &str, source: &str) -> PreviewPane {
     let md = diagram_md(lang, source);

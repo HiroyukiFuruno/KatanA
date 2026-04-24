@@ -93,7 +93,8 @@ impl LinterAdvancedSettingsOps {
 
         /* WHY: Load the current configuration to populate the UI and save updates */
         let mut config =
-            katana_linter::rules::markdown::config::MarkdownLintConfig::load(&target_path);
+            katana_linter::rules::markdown::config::MarkdownLintConfig::load(&target_path)
+                .unwrap_or_default();
 
         for rule in
             katana_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()

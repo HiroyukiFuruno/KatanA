@@ -2727,6 +2727,7 @@ name = "katana-linter"
 version = "0.22.4"
 dependencies = [
  "ignore",
+ "katana-markdown-linter",
  "once_cell",
  "proc-macro2",
  "regex",
@@ -2734,6 +2735,18 @@ dependencies = [
  "serde_json",
  "syn",
  "tempfile",
+]
+
+[[package]]
+name = "katana-markdown-linter"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c36887726d649e76a046ff7c86538ff288ae1036eba06637b3a407cb483e42b"
+dependencies = [
+ "glob",
+ "regex",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -2776,6 +2789,7 @@ dependencies = [
  "image",
  "katana-core",
  "katana-linter",
+ "katana-markdown-linter",
  "katana-platform",
  "libc",
  "mathjax_svg",
