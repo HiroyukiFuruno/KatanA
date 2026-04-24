@@ -48,8 +48,10 @@ impl KatanaApp {
 
         /* WHY: Store the result cursor range so the editor can restore the selection
         on the next frame (see EditorContent::show). */
-        let new_char_start = transform.buffer[..transform.cursor_start].chars().count();
-        let new_char_end = transform.buffer[..transform.cursor_end].chars().count();
+        let safe_start = transform.cursor_start.min(transform.buffer.len());
+        let safe_end = transform.cursor_end.min(transform.buffer.len());
+        let new_char_start = transform.buffer[..safe_start].chars().count();
+        let new_char_end = transform.buffer[..safe_end].chars().count();
         self.pending_editor_cursor = Some((new_char_start, new_char_end));
     }
 
