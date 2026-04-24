@@ -10,10 +10,7 @@ pub(crate) struct EditorContent<'a> {
     pub sync_scroll: bool,
     pub doc_search_matches: &'a [std::ops::Range<usize>],
     pub doc_search_active_index: usize,
-    /// Output: receives the cursor range reported by `TextEdit` this frame.
     pub cursor_range_out: &'a mut Option<egui::text::CCursorRange>,
-    /// Input: if set, the `TextEdit` cursor is programmatically moved to this
-    /// char-index range on this frame (used after an authoring transform).
     pub pending_cursor: Option<(usize, usize)>,
 }
 impl<'a> EditorContent<'a> {
@@ -46,7 +43,9 @@ impl<'a> EditorContent<'a> {
         let cursor_range_out = self.cursor_range_out;
         if let Some(doc) = self.document {
             let mut buffer = doc.buffer.clone();
-            super::toolbar::EditorToolbar::render(ui, action, cursor_range_out);
+            if !doc.is_reference {
+                super::toolbar::EditorToolbar::render(ui, action, cursor_range_out);
+            }
             let colors: EditorColors = EditorLogicOps::resolve_editor_colors(ui);
             let (
                 code_bg,
@@ -57,12 +56,11 @@ impl<'a> EditorContent<'a> {
                 ln_text,
                 ln_active_text,
             ) = colors;
-
-            let mut scroll_area = egui::ScrollArea::vertical().id_salt("editor_scroll");
+            let mut scroll_area =
+                egui::ScrollArea::vertical().id_salt(("editor_scroll", &doc.path));
             if scroll.scroll_to_line.is_some() {
                 scroll_area = scroll_area.animated(false);
             }
-
             let consuming_preview = sync_scroll
                 && scroll.source == ScrollSource::Preview
                 && scroll.scroll_to_line.is_none();
@@ -71,14 +69,12 @@ impl<'a> EditorContent<'a> {
                     scroll.mapper.logical_to_editor(scroll.logical_position),
                 );
             }
-
             let output = egui::Frame::NONE.fill(code_bg).show(ui, |ui| {
                 ui.style_mut().visuals.override_text_color = Some(code_text);
                 ui.style_mut().visuals.extreme_bg_color = code_bg;
                 if let Some(sel) = code_selection {
                     ui.style_mut().visuals.selection.bg_fill = sel;
                 }
-
                 scroll_area.show(ui, |ui| {
                     let horiz_response = ui.horizontal_top(|ui| {
                         const LINE_NUMBER_MARGIN: f32 = 40.0;
@@ -86,8 +82,8 @@ impl<'a> EditorContent<'a> {
                             egui::vec2(LINE_NUMBER_MARGIN, 0.0),
                             egui::Sense::hover(),
                         );
-
                         let text_edit = egui::TextEdit::multiline(&mut buffer)
+                            .id(egui::Id::new("editor_text_edit"))
                             .interactive(!doc.is_reference)
                             .font(egui::TextStyle::Monospace)
                             .desired_width(f32::INFINITY)
@@ -99,22 +95,16 @@ impl<'a> EditorContent<'a> {
                                 bottom: 0,
                             })
                             .frame(egui::Frame::NONE);
-
                         let text_output = text_edit.show(ui);
                         let response = text_output.response;
-
                         EditorLogicOps::render_context_menu(ui, &response, action);
                         let galley = text_output.galley;
-
-                        /* WHY: Capture the current cursor range so action handlers can read it. */
                         if let Some(range) = text_output.cursor_range {
                             *cursor_range_out = Some(range);
                         }
-
                         if let Some(cursor_range) = self.pending_cursor {
                             EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
                         }
-
                         if sync_scroll
                             && response.clicked()
                             && let Some(c) = text_output.cursor_range
@@ -122,7 +112,6 @@ impl<'a> EditorContent<'a> {
                             let line = EditorLogicOps::char_index_to_line(&buffer, c.primary.index);
                             scroll.scroll_to_line = Some(line);
                         }
-
                         let current_cursor_y =
                             super::decorations::EditorDecorations::render_cursor_line(
                                 ui,
@@ -136,7 +125,6 @@ impl<'a> EditorContent<'a> {
                                     current_line_bg,
                                 },
                             );
-
                         super::decorations::EditorDecorations::render_hovered_lines(
                             ui,
                             &buffer,
@@ -146,7 +134,6 @@ impl<'a> EditorContent<'a> {
                             &response.rect,
                             hover_line_bg,
                         );
-
                         super::decorations::EditorDecorations::render_search_matches(
                             ui,
                             &galley,
@@ -154,7 +141,6 @@ impl<'a> EditorContent<'a> {
                             self.doc_search_matches,
                             self.doc_search_active_index,
                         );
-
                         const PAD_RIGHT: f32 = 8.0;
                         super::line_numbers::EditorLineNumbers::render(
                             ui,
@@ -171,8 +157,17 @@ impl<'a> EditorContent<'a> {
                             },
                         );
 
-                        if response.changed() {
+                        let text_changed = response.changed();
+                        let should_ingest_clipboard_image =
+                            EditorLogicOps::editor_clipboard_image_paste_requested(
+                                ui,
+                                &response,
+                                text_changed,
+                            );
+                        if text_changed {
                             *action = AppAction::UpdateBuffer(buffer.clone());
+                        } else if !doc.is_reference && should_ingest_clipboard_image {
+                            *action = AppAction::IngestClipboardImage;
                         }
                         EditorLogicOps::handle_scroll_to_line(
                             ui, scroll, &buffer, &response, &galley,

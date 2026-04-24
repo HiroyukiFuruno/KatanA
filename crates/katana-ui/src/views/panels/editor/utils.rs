@@ -28,31 +28,24 @@ impl super::types::EditorLogicOps {
         line_start: usize,
         line_end: usize,
     ) -> Option<(usize, usize)> {
-        let mut current_line = 0;
-        let mut start_char = None;
-        let mut end_char = None;
+        if line_start > line_end {
+            return None;
+        }
 
+        let start = Self::line_to_char_index(buffer, line_start)?;
+        let mut current_line = 0;
+        let mut end = None;
         for (char_idx, c) in buffer.chars().enumerate() {
-            if current_line == line_start && start_char.is_none() {
-                start_char = Some(char_idx);
-            }
-            if current_line == line_end && end_char.is_none() {
-                end_char = Some(char_idx);
+            if current_line == line_end && c == '\n' {
+                end = Some(char_idx);
+                break;
             }
             if c == '\n' {
                 current_line += 1;
             }
         }
-
-        if start_char.is_some() && end_char.is_none() {
-            end_char = Some(buffer.len());
-        }
-
-        if let (Some(s), Some(e)) = (start_char, end_char) {
-            Some((s, e))
-        } else {
-            None
-        }
+        let end = end.unwrap_or_else(|| buffer.chars().count());
+        Some((start, end))
     }
 
     /* WHY: Extract physical row Y positions for the start of each logical line. */

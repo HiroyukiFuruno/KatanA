@@ -1,6 +1,6 @@
 use crate::integration::harness_utils::{fresh_temp_dir, setup_harness, wait_for_workspace_load};
 use egui_kittest::kittest::Queryable;
-use katana_ui::app_state::AppAction;
+use katana_ui::app_state::{AppAction, ViewMode};
 use katana_ui::i18n::I18nOps;
 
 #[test]
@@ -26,6 +26,10 @@ fn test_integration_toc_panel_display() {
         .state_mut()
         .trigger_action(AppAction::SelectDocument(test_file1.clone()));
     harness.step();
+    harness
+        .state_mut()
+        .app_state_mut()
+        .set_active_view_mode(ViewMode::Split);
     harness.step();
 
     /* WHY: Verify the toggle button is present in the rendered UI with the correct label. */

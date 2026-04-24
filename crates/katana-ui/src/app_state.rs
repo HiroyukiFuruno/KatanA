@@ -112,6 +112,18 @@ impl AppState {
                     .find(|t| t.path == doc.path)
                     .map(|t| t.mode)
             })
-            .unwrap_or(ViewMode::PreviewOnly)
+            .unwrap_or_else(|| {
+                self.active_document()
+                    .map(Self::default_view_mode_for_document)
+                    .unwrap_or(ViewMode::PreviewOnly)
+            })
+    }
+
+    fn default_view_mode_for_document(doc: &Document) -> ViewMode {
+        if doc.is_reference || doc.path.to_string_lossy().starts_with("Katana://") {
+            ViewMode::PreviewOnly
+        } else {
+            ViewMode::CodeOnly
+        }
     }
 }

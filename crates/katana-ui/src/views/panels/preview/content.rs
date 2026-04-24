@@ -70,7 +70,10 @@ impl<'a> PreviewContent<'a> {
 
         let mut scroll_area = egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
-            .id_source("preview_scroll_area");
+            .id_salt((
+                "preview_scroll_area",
+                document.map(|doc| doc.path.as_path()),
+            ));
 
         if let Some(offset) = forced_offset {
             scroll_area = scroll_area.vertical_scroll_offset(offset);

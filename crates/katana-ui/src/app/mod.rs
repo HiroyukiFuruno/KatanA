@@ -2,6 +2,7 @@ pub mod action;
 pub mod doc_close;
 pub mod doc_search;
 pub mod document;
+pub(crate) mod document_scroll;
 pub mod download;
 pub mod export;
 pub mod export_poll;

@@ -5,6 +5,7 @@ use eframe::egui;
 mod shell_ui_frame;
 mod shell_ui_shortcuts;
 mod shell_ui_update;
+mod shortcut_keys;
 mod types;
 pub use types::ShellUiOps;
 

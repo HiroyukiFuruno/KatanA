@@ -66,6 +66,57 @@ impl EditorLogicOps {
         });
     }
 
+    pub fn should_ingest_clipboard_image_paste(
+        response_has_focus: bool,
+        text_changed: bool,
+        events: &[egui::Event],
+    ) -> bool {
+        if !response_has_focus || text_changed {
+            return false;
+        }
+
+        let mut paste_signal = false;
+        for event in events {
+            match event {
+                egui::Event::Paste(text) => {
+                    if !text.is_empty() {
+                        return false;
+                    }
+                    paste_signal = true;
+                }
+                egui::Event::Key {
+                    key,
+                    pressed,
+                    repeat,
+                    modifiers,
+                    ..
+                } if *key == egui::Key::V
+                    && *pressed
+                    && !*repeat
+                    && modifiers.command
+                    && !modifiers.shift
+                    && !modifiers.alt =>
+                {
+                    paste_signal = true;
+                }
+                _ => {}
+            }
+        }
+
+        paste_signal
+    }
+
+    pub fn editor_clipboard_image_paste_requested(
+        ui: &egui::Ui,
+        response: &egui::Response,
+        text_changed: bool,
+    ) -> bool {
+        let response_has_focus = response.has_focus();
+        ui.input(|i| {
+            Self::should_ingest_clipboard_image_paste(response_has_focus, text_changed, &i.events)
+        })
+    }
+
     pub fn handle_scroll_to_line(
         ui: &mut egui::Ui,
         scroll: &mut crate::app_state::ScrollState,
@@ -123,6 +174,10 @@ impl EditorLogicOps {
             return;
         }
 
+        if scroll.scroll_to_line.is_some() {
+            return;
+        }
+
         let current_logical = scroll.logical_position;
         let next_logical = scroll.mapper.editor_to_logical(offset_y);
 
@@ -138,3 +193,6 @@ impl EditorLogicOps {
         }
     }
 }
+
+#[cfg(test)]
+include!("logic_tests.rs");
