@@ -23,10 +23,10 @@ fn test_integration_toggle_view_modes() {
         .trigger_action(AppAction::SelectDocument(abs_path));
     harness.step();
 
-    // 1. Editable Markdown documents should open in CodeOnly so authoring controls are visible.
+    // 1. Editable Markdown documents open in PreviewOnly unless the user chooses another mode.
     assert_eq!(
         harness.state_mut().app_state_mut().active_view_mode(),
-        ViewMode::CodeOnly
+        ViewMode::PreviewOnly
     );
 
     // 2. ToggleSplitMode -> Always Split

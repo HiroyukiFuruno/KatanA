@@ -119,11 +119,7 @@ impl AppState {
             })
     }
 
-    fn default_view_mode_for_document(doc: &Document) -> ViewMode {
-        if doc.is_reference || doc.path.to_string_lossy().starts_with("Katana://") {
-            ViewMode::PreviewOnly
-        } else {
-            ViewMode::CodeOnly
-        }
+    fn default_view_mode_for_document(_doc: &Document) -> ViewMode {
+        ViewMode::PreviewOnly
     }
 }

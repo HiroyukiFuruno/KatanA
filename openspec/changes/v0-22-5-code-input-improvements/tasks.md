@@ -127,3 +127,13 @@
 - [x] 6.5 `markdown-asset-ingest` spec に toolbar control、grouped context menu、clipboard image file paste、`Command+V` の受け入れ条件を追記する
 - [x] 6.6 focused tests と `openspec validate v0-22-5-code-input-improvements` を通す
 - [x] 6.7 toolbar group separator を `|` 表示にし、separator と icon group の上下中央を揃える
+
+---
+
+## 7. User Review Feedback: Preview-first and Contextual Input Controls
+
+- [x] 7.1 未指定の active view mode は editable/reference/virtual document を問わず `PreviewOnly` にし、明示的な user-selected mode は維持する
+- [x] 7.2 入力サポート UI を常時表示 toolbar から、editable editor focus と cursor range に連動する cursor-adjacent popup に変更する
+- [x] 7.3 popup 内の authoring group は `|` separator で区切り、separator と icon 群の上下中央を揃えたまま維持する
+- [x] 7.4 egui の特殊文字・OS絵文字制約を避ける独自入力ウィンドウ案は、v0.22.5 の実装範囲外の設計 follow-up として `design.md` に明記する
+- [x] 7.5 focused tests、`openspec validate v0-22-5-code-input-improvements`、必要な full check を通す

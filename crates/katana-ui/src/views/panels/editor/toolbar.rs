@@ -20,22 +20,11 @@ impl<'a> EditorToolbar<'a> {
         }
     }
 
-    pub(crate) fn render(
-        ui: &mut Ui,
-        action: &'a mut AppAction,
-        cursor_range: &Option<egui::text::CCursorRange>,
-    ) {
-        let has_sel = cursor_range
-            .as_ref()
-            .map(|r| r.primary.index != r.secondary.index)
-            .unwrap_or(false);
-        Self::new(action, has_sel).show(ui);
-    }
-
     pub(crate) fn show(&mut self, ui: &mut Ui) {
         let action = &mut *self.action;
         let has_selection = self.has_selection;
         AlignCenter::new()
+            .shrink_to_fit(true)
             .content(|ui| {
                 Self::inline_group(ui, action, has_selection);
                 Self::separator(ui);

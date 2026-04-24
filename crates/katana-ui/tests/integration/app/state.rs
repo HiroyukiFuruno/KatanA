@@ -44,7 +44,7 @@ fn active_document_returns_correct_doc_when_set() {
 }
 
 #[test]
-fn markdown_document_defaults_to_code_mode() {
+fn markdown_document_defaults_to_preview_mode() {
     let mut state = AppState::new(
         AiProviderRegistry::new(),
         PluginRegistry::new(),
@@ -57,7 +57,7 @@ fn markdown_document_defaults_to_code_mode() {
         .push(Document::new("memo.md", "# Memo"));
     state.document.active_doc_idx = Some(0);
 
-    assert_eq!(state.active_view_mode(), ViewMode::CodeOnly);
+    assert_eq!(state.active_view_mode(), ViewMode::PreviewOnly);
 }
 
 #[test]

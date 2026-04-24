@@ -2,12 +2,13 @@
 
 v0.22.5 is a redo of the code input improvements work for the `release/v0.22.5` integration branch. The previous archived change still contains stale version labels and a dummy task, while the release workflow needs an active OpenSpec change that captures the latest user review feedback.
 
-The release priority is not to expand authoring scope. It is to fix input regressions first: Markdown must be typeable, input support UI must be visible, scrolling must remain recoverable upward, and image attach/paste paths must be discoverable and usable without fighting editor input behavior.
+The release priority is not to expand authoring scope. It is to fix input regressions first: Markdown must be typeable, KatanA must stay preview-first by default, input support UI must appear when the user is actually editing, scrolling must remain recoverable upward, and image attach/paste paths must be discoverable and usable without fighting editor input behavior.
 
 ## What Changes
 
 - Treat editor input mode as a protected text-entry context: application shortcuts that conflict with native editor/input behavior MUST be disabled while the text editor is focused.
-- Restore and verify the editor authoring support toolbar for editable Markdown documents.
+- Keep newly opened documents in preview mode by default unless the user explicitly switches the active tab's view mode.
+- Move editor authoring support controls from a persistent toolbar to a cursor-adjacent popup for editable Markdown input.
 - Keep ordinary Markdown typing, IME composition, selection, undo/redo, and normal paste behavior intact.
 - Make clipboard images work through the normal paste flow when the clipboard contains image data.
 - Add a command palette route for attaching an image file to the active Markdown document.
@@ -22,10 +23,10 @@ The release priority is not to expand authoring scope. It is to fix input regres
 
 ### Modified Capabilities
 
-- `markdown-authoring`: Editor input safety, source-first authoring controls, toolbar visibility, and editor scroll recovery.
+- `markdown-authoring`: Editor input safety, preview-first defaults, source-first contextual authoring controls, and editor scroll recovery.
 
 ## Impact
 
-- Primary UI/action areas: `crates/katana-ui/src/views/panels/editor/ui.rs`, `crates/katana-ui/src/views/panels/editor/toolbar.rs`, `crates/katana-ui/src/views/panels/editor/logic.rs`, `crates/katana-ui/src/app/action/process_authoring.rs`, and `crates/katana-ui/src/app/action/image_ingest.rs`.
+- Primary UI/action areas: `crates/katana-ui/src/views/panels/editor/ui.rs`, `crates/katana-ui/src/views/panels/editor/toolbar.rs`, `crates/katana-ui/src/views/panels/editor/toolbar_popup.rs`, `crates/katana-ui/src/views/panels/editor/logic.rs`, `crates/katana-ui/src/app/action/process_authoring.rs`, and `crates/katana-ui/src/app/action/image_ingest.rs`.
 - Shortcut and command routing areas: `crates/katana-ui/src/state/shortcut_context.rs`, `crates/katana-ui/src/shell_ui/shell_ui_shortcuts.rs`, `crates/katana-ui/src/state/command_inventory/edit_commands.rs`, and command palette providers/results.
 - Verification areas: focused unit tests for shortcut context and image ingest, editor logic tests for scroll recovery, and UI/integration coverage proving Markdown input, toolbar visibility, command palette image attach, and normal clipboard image paste.

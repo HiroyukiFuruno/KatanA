@@ -1,5 +1,21 @@
 ## ADDED Requirements
 
+### Requirement: Documents open in preview mode by default
+
+The system SHALL resolve the active view mode to preview mode when the active document has no explicit user-selected view mode.
+
+#### Scenario: Editable Markdown defaults to preview
+
+- **WHEN** the user opens an editable Markdown document
+- **THEN** the system displays the document in preview mode by default
+- **THEN** the system MUST NOT switch the document to code mode unless the user explicitly requests an editing view
+
+#### Scenario: Explicit view selection remains effective
+
+- **WHEN** the user explicitly switches the active document to code or split mode
+- **THEN** the system applies the selected mode for that active document
+- **THEN** later default-view resolution MUST NOT override that explicit active-tab selection
+
 ### Requirement: Editor input mode protects native text entry
 
 The system MUST NOT consume editor-owned or OS-owned text-entry shortcuts as application commands while an editable Markdown editor has keyboard focus.
@@ -22,24 +38,30 @@ The system MUST NOT consume editor-owned or OS-owned text-entry shortcuts as app
 - **THEN** the system MAY dispatch that editor command
 - **THEN** the command MUST preserve the Markdown source-first editing contract
 
-### Requirement: Editable Markdown documents show authoring support UI
+### Requirement: Editable Markdown documents show contextual authoring support UI
 
-The system SHALL show the Markdown input support toolbar for editable Markdown documents without requiring a stale cursor selection state.
+The system SHALL show Markdown input support controls as a cursor-adjacent popup while editable Markdown input is active.
 
-#### Scenario: Toolbar appears for editable Markdown
+#### Scenario: Authoring controls appear under the input cursor
 
-- **WHEN** the user opens an editable Markdown document in editor mode
-- **THEN** the system shows the authoring toolbar in the editor panel
-- **THEN** the toolbar includes controls for common Markdown insertion actions such as inline formatting, headings, lists, quotes, and code blocks
+- **WHEN** the user focuses an editable Markdown document in an editing view and the editor has an input cursor
+- **THEN** the system shows the authoring controls below the current input cursor
+- **THEN** the controls include common Markdown insertion actions such as inline formatting, headings, lists, quotes, code blocks, and image insertion
 
-#### Scenario: Toolbar groups are visually separated and aligned
+#### Scenario: Authoring controls are not persistently shown over preview-first UI
 
-- **WHEN** the system shows multiple authoring toolbar groups in an editable Markdown document
+- **WHEN** the active document is displayed in preview mode
+- **THEN** the system MUST NOT show a persistent editor toolbar
+- **THEN** the user can still explicitly switch to an editing view to access input controls
+
+#### Scenario: Authoring control groups are visually separated and aligned
+
+- **WHEN** the system shows multiple authoring control groups in an editable Markdown document
 - **THEN** the system separates adjacent groups with visible `|` separators
 - **THEN** each separator is vertically centered with the toolbar icon buttons
 - **THEN** each separator preserves stable toolbar spacing without shifting icon controls
 
-#### Scenario: Toolbar stays out of read-only documents
+#### Scenario: Contextual controls stay out of read-only documents
 
 - **WHEN** the active document is read-only, reference-only, or a virtual built-in document
 - **THEN** the system MUST NOT show mutating authoring controls for that document

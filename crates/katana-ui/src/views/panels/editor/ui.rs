@@ -2,6 +2,7 @@ use crate::app_state::{AppAction, ScrollSource};
 use crate::shell::{EDITOR_INITIAL_VISIBLE_ROWS, SCROLL_SYNC_DEAD_ZONE};
 use eframe::egui;
 
+use super::toolbar_popup::ToolbarPopup;
 use super::types::{EditorColors, EditorLogicOps};
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
@@ -43,9 +44,7 @@ impl<'a> EditorContent<'a> {
         let cursor_range_out = self.cursor_range_out;
         if let Some(doc) = self.document {
             let mut buffer = doc.buffer.clone();
-            if !doc.is_reference {
-                super::toolbar::EditorToolbar::render(ui, action, cursor_range_out);
-            }
+            let editable = !doc.is_reference;
             let colors: EditorColors = EditorLogicOps::resolve_editor_colors(ui);
             let (
                 code_bg,
@@ -84,7 +83,7 @@ impl<'a> EditorContent<'a> {
                         );
                         let text_edit = egui::TextEdit::multiline(&mut buffer)
                             .id(egui::Id::new("editor_text_edit"))
-                            .interactive(!doc.is_reference)
+                            .interactive(editable)
                             .font(egui::TextStyle::Monospace)
                             .desired_width(f32::INFINITY)
                             .desired_rows(EDITOR_INITIAL_VISIBLE_ROWS)
@@ -107,6 +106,7 @@ impl<'a> EditorContent<'a> {
                         if let Some(range) = cursor_range {
                             *cursor_range_out = Some(range);
                         }
+                        ToolbarPopup::show(ui, action, &response, &galley, cursor_range, editable);
                         if let Some(cursor_range) = self.pending_cursor {
                             EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
                         }
@@ -171,7 +171,7 @@ impl<'a> EditorContent<'a> {
                             );
                         if text_changed {
                             *action = AppAction::UpdateBuffer(buffer.clone());
-                        } else if !doc.is_reference && should_ingest_clipboard_image {
+                        } else if editable && should_ingest_clipboard_image {
                             *action = AppAction::IngestClipboardImage;
                         }
                         EditorLogicOps::handle_scroll_to_line(
