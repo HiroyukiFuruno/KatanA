@@ -139,6 +139,8 @@ pub enum UiAction {
     OpenChangelog,
     OpenHelpDemo,
     SelectNextTab,
+    /// Select an already-open demo tab by its file name, e.g. "katana-architecture.md".
+    SelectDemoTab { file_name: String },
     /// Open settings and navigate to a specific tab.
     /// Tab names: "theme", "icons", "font", "layout", "workspace", "updates", "behavior", "shortcuts"
     OpenSettingsTab { tab: String },
