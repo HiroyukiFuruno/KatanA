@@ -30,7 +30,7 @@
 
 - [x] v0.22.5 で修正すべき入力回帰が、再現条件と期待結果つきで整理されていること
 - [x] 以降のタスクが参照できる検証項目として、ユーザーFB 1-4 がすべて追跡可能になっていること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -51,7 +51,7 @@
 - [x] editor 入力モードで、入力機能と競合する shortcut が無効化されていること
 - [x] Markdown typing、IME composition、selection movement、normal paste、undo/redo が app command と競合しないこと
 - [x] shortcut 関連 unit test が pass すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -75,7 +75,7 @@
 - [x] 入力サポート UI/toolbar が editable Markdown document で表示されること
 - [x] 長い Markdown document で下へ scroll した後、先頭まで上に戻せること
 - [x] editor/toolbar/scroll 関連の focused tests が pass すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -98,7 +98,7 @@
 - [x] クリップボード画像を通常 paste で Markdown document に挿入できること
 - [x] text clipboard の通常 paste が壊れていないこと
 - [x] image ingest 関連の focused tests が pass すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
