@@ -1,6 +1,6 @@
 use super::{
-    behavior::BehaviorSettings, export::ExportSettings, font::FontSettings, icon::IconSettings,
-    ingest::IngestSettings, layout::LayoutSettings, linter::LinterSettings,
+    ai::AiSettings, behavior::BehaviorSettings, export::ExportSettings, font::FontSettings,
+    icon::IconSettings, ingest::IngestSettings, layout::LayoutSettings, linter::LinterSettings,
     performance::PerformanceSettings, search::SearchSettings, shortcut::ShortcutSettings,
     theme::ThemeSettings, update::UpdateSettings, workspace::WorkspaceSettings,
 };
@@ -69,6 +69,10 @@ pub struct AppSettings {
     /* WHY: Linter settings. */
     #[serde(default)]
     pub linter: LinterSettings,
+
+    /* WHY: Local AI provider settings. */
+    #[serde(default)]
+    pub ai: AiSettings,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

@@ -36,6 +36,15 @@ fn test_app_settings_default_values() {
     assert_eq!(s.behavior.auto_save_interval_secs, 5.0);
     assert!(s.behavior.auto_refresh);
     assert_eq!(s.behavior.auto_refresh_interval_secs, 2.0);
+    assert_eq!(
+        s.ai.ollama.endpoint,
+        katana_core::ai::DEFAULT_OLLAMA_ENDPOINT
+    );
+    assert!(s.ai.ollama.selected_model.is_empty());
+    assert_eq!(
+        s.ai.ollama.timeout_secs,
+        katana_core::ai::DEFAULT_OLLAMA_TIMEOUT_SECS
+    );
 }
 
 #[test]

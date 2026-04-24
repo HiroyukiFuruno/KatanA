@@ -1,3 +1,4 @@
+pub mod ai;
 pub mod app;
 pub mod behavior;
 pub mod export;
@@ -14,6 +15,7 @@ pub mod theme;
 pub mod update;
 pub mod workspace;
 
+pub use ai::*;
 pub use app::*;
 pub use behavior::*;
 pub use export::*;
