@@ -2,6 +2,19 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.5] - 2026-04-24 05:10:00 (UTC)
+
+### 🚀 Features
+
+- **Rich Text Toolbar**: Added a visual formatting toolbar above the Markdown editor with buttons for Bold, Italic, Strikethrough, Inline Code, Code Block, Headings (H1–H3), Bullet List, Numbered List, Blockquote, and Link. Inline formatting buttons are enabled only when text is selected; block-level buttons are always available.
+- **Clipboard Image Paste**: Added support for pasting images directly from the clipboard into the editor via the right-click context menu or the `Cmd+Shift+V` shortcut. Images are saved to the configured directory and inserted as Markdown image syntax.
+- **Explorer Referenced Images**: The Explorer panel now displays a collapsible "Referenced Images" section listing all images referenced in the active document. Clicking an image reveals it in Finder/Explorer.
+- **Image Ingest Settings**: Added image ingest configuration to the Behavior settings tab, including save directory, filename format, and auto-create directory toggle.
+
+### 🔧 System
+
+- Refactored `ExplorerPanel` and `ExplorerContent` to use a builder pattern (`with_referenced_images()`) to stay within the argument-count linting limit.
+
 ## [0.22.3] - 2026-04-22 01:49:58 (UTC)
 
 ### 🚀 Features

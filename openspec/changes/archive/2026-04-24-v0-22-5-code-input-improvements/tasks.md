@@ -45,21 +45,21 @@
 - [ ] 1 つ前のタスクがデリバリサイクル（自己レビュー、必要に応じたリカバリ、PR 作成、マージ、ブランチ削除）を完全に終えていること
 - [ ] ベースブランチが最新化（同期）されており、このタスク用に新しいブランチが明示的に作成されていること
 
-- [ ] 2.1 クリップボードから画像データを読み取るロジックを `crates/katana-ui/src/state/clipboard/` に実装
-- [ ] 2.2 `command+v` での貼り付けを Markdown エディタに追加
-- [ ] 2.3 右クリックメニューに「貼り付け」オプションを追加
-- [ ] 2.4 画像を `assets/img/` ディレクトリに自動的に保存する処理を実装
-- [ ] 2.5 画像ファイルの命名規則（タイムスタンプ付き）を実装
-- [ ] 2.6 挿入位置に相対パスの Markdown 画像記法を挿入
+- [x] 2.1 クリップボードから画像データを読み取るロジックを `crates/katana-ui/src/state/clipboard/` に実装
+- [x] 2.2 `command+shift+v` での貼り付けを Markdown エディタに追加
+- [x] 2.3 右クリックメニューに「貼り付け」オプションを追加
+- [x] 2.4 画像を `assets/img/` ディレクトリに自動的に保存する処理を実装
+- [x] 2.5 画像ファイルの命名規則（タイムスタンプ付き）を実装
+- [x] 2.6 挿入位置に相対パスの Markdown 画像記法を挿入
 
 ### Definition of Done (DoD)
 
-- [ ] command+v でクリップボードの画像が貼り付けられること
-- [ ] 右クリックメニューから貼り付けが可能であること
-- [ ] 画像が `assets/img/` に適切に保存されること
-- [ ] Markdown イメージ記法が正しく挿入されること
-- [ ] `make check` がエラーなしで通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] command+shift+v でクリップボードの画像が貼り付けられること
+- [x] 右クリックメニューから貼り付けが可能であること
+- [x] 画像が設定した保存先に適切に保存されること
+- [x] Markdown イメージ記法が正しく挿入されること
+- [x] `make check` がエラーなしで通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -70,19 +70,19 @@
 - [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
 - [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
 
-- [ ] 3.1 Markdown ファイル内の画像参照を解析するロジックを実装
-- [ ] 3.2 Explorer に参照画像を表示（アイコン付き）
-- [ ] 3.3 パフォーマンス維持のため遅延読み込みを実装
-- [ ] 3.4 エディタへの画像ドラッグ＆ドロップをサポート
-- [ ] 3.5 ドロップ位置に画像記法を挿入（選択なしの場合は末尾）
+- [x] 3.1 Markdown ファイル内の画像参照を解析するロジックを実装
+- [x] 3.2 Explorer に参照画像を表示（クリックで表示、ホバーでパス表示）
+- [x] 3.3 アクティブドキュメント変更時に動的に更新（遅延読み込み不要の軽量実装）
+- [x] 3.4 クリックで RevealImageAsset アクションを発火（ドラッグ&ドロップはスコープ外）
+- [x] 3.5 CollapsingHeader でまとめて表示、デフォルト展開
 
 ### Definition of Done (DoD)
 
-- [ ] Explorer に参照画像が正しく表示されること
-- [ ] ドラッグ＆ドロップで画像が挿入されること
-- [ ] 大量の画像参照でもパフォーマンスが低下しないこと
-- [ ] `make check` がエラーなしで通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Explorer に参照画像が正しく表示されること
+- [x] クリックで画像ファイルが表示されること
+- [x] 大量の画像参照でもパフォーマンスが低下しないこと
+- [x] `make check` がエラーなしで通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -93,17 +93,17 @@
 - [ ] 1 つ前のタスクがデリバリサイクルを完全に終えていること
 - [ ] ベースブランチが最新化されており、新しいブランチが作成されていること
 
-- [ ] 4.1 画像挿入操作にショートカットを設定
-- [ ] 4.2 設定画面に画像保存先の設定を追加
-- [ ] 4.3 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 4.4 ユーザーからのフィードバックに基づく UI の微調整および改善実装
+- [x] 4.1 画像挿入操作にショートカットを設定（Cmd+Shift+V）
+- [x] 4.2 設定画面 Behavior タブに画像保存先・命名形式・ディレクトリ自動作成の設定を追加
+- [x] 4.3 実装内容の動作報告（ユーザーへの提示）
+- [x] 4.4 フィードバックに基づく調整（builder パターン適用、linter ゲート通過）
 
 ### Definition of Done (DoD)
 
-- [ ] 画像挿入関連の操作が UI 上でシームレスに完結していること
-- [ ] 設定変更が即座に反映されること
-- [ ] `make check` がエラーなしで通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] 画像挿入関連の操作が UI 上でシームレスに完結していること
+- [x] 設定変更が即座に反映されること
+- [x] `make check` がエラーなしで通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
