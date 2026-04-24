@@ -82,10 +82,14 @@ impl KatanaApp {
 
         /* WHY: Virtual documents (e.g. "Katana://LinterDocs/MD*.md", "Katana://Demo/...") are not real
          * filesystem files; running the linter on them would produce spurious diagnostics
-         * shown to the user without a backing file. Skip any path starting with "Katana://". */
+         * shown to the user without a backing file. Skip any path starting with "Katana://".
+         * Exception: "lint-fix.md" is explicitly designed to demonstrate the linter. */
         use crate::state::document::VirtualPathExt as _;
         if path.is_virtual_path() {
-            return;
+            let path_str = path.to_string_lossy();
+            if !path_str.ends_with("lint-fix.md") && !path_str.ends_with("lint-fix.ja.md") {
+                return;
+            }
         }
 
         let is_markdown = path
