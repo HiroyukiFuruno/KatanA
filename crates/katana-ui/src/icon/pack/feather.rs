@@ -18,6 +18,9 @@ impl IconPackContract for FeatherPack {
     }
 
     fn get_asset(&self, icon: Icon) -> Option<&'static [u8]> {
-        impl_icon_pack_match!("feather", icon)
+        match icon {
+            Icon::Strikethrough | Icon::Heading => None,
+            _ => impl_icon_pack_match!("feather", icon),
+        }
     }
 }

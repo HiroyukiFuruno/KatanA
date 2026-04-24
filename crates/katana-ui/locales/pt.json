@@ -491,6 +491,17 @@
     "persist_error": "Falha ao salvar.",
     "exporting": "⏳ A exportar {filename}…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "T1",
+      "heading2": "T2",
+      "heading3": "T3",
+      "bullet_list": "Lista de marcadores",
+      "numbered_list": "Lista numerada",
+      "blockquote": "Citação em bloco",
+      "code_block": "Bloco de código"
+    }
+  },
   "terms": {
     "title": "Termos de uso",
     "version_label": "Versão: {version}",

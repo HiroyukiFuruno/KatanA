@@ -18,6 +18,6 @@ impl IconPackContract for KatanaIconPack {
     }
 
     fn get_asset(&self, icon: Icon) -> Option<&'static [u8]> {
-        Some(icon.svg_bytes())
+        impl_icon_pack_match!("katana", icon)
     }
 }

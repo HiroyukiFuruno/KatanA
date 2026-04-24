@@ -491,6 +491,17 @@
     "persist_error": "Speichern fehlgeschlagen.",
     "exporting": "⏳ Exportiere {filename}…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "Ü1",
+      "heading2": "Ü2",
+      "heading3": "Ü3",
+      "bullet_list": "Aufzählungsliste",
+      "numbered_list": "Nummerierte Liste",
+      "blockquote": "Blockzitat",
+      "code_block": "Codeblock"
+    }
+  },
   "terms": {
     "title": "Nutzungsbedingungen",
     "version_label": "Version: {version}",

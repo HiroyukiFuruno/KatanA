@@ -563,5 +563,16 @@
     "no_recent_files": "No hay archivos recientes",
     "welcome_screen": "🏠 Pantalla de inicio",
     "user_guide": "📚 Guía de usuario"
+  },
+  "editor": {
+    "toolbar": {
+      "heading1": "T1",
+      "heading2": "T2",
+      "heading3": "T3",
+      "bullet_list": "Lista de viñetas",
+      "numbered_list": "Lista numerada",
+      "blockquote": "Cita en bloque",
+      "code_block": "Bloque de código"
+    }
   }
 }

@@ -491,6 +491,17 @@
     "persist_error": "持久化失敗。",
     "exporting": "⏳ 正在匯出 {filename}…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "標1",
+      "heading2": "標2",
+      "heading3": "標3",
+      "bullet_list": "無序列表",
+      "numbered_list": "有序列表",
+      "blockquote": "區塊引言",
+      "code_block": "程式碼區塊"
+    }
+  },
   "terms": {
     "title": "使用條款",
     "version_label": "版本: {version}",

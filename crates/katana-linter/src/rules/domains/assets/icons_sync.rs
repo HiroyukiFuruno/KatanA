@@ -189,6 +189,12 @@ impl IconsSyncOps {
             "layout/swap_vertical.svg", "files/explorer.svg", "system/bug.svg",
             "view/reset_view.svg",
             "../system/match-case.svg", "../system/whole-word.svg", "../system/use-regex.svg",
+            /* WHY: v0.22.5 action icons — placeholder SVGs may share content with existing icons;
+             * get_asset() returns None for unsupported vendors so placeholders are never rendered. */
+            "action/bold.svg", "action/italic.svg", "action/strikethrough.svg", "action/code.svg",
+            "action/heading.svg", "action/list.svg", "action/list-ordered.svg",
+            "action/quote.svg", "action/light_bulb.svg", "action/edit.svg", "action/more.svg",
+            "navigation/toc.svg", "files/html.svg", "system/action.svg",
         ]
     }
 }

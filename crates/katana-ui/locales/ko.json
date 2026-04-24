@@ -491,6 +491,17 @@
     "persist_error": "임시 파일 저장 실패",
     "exporting": "⏳ {filename} 내보내는 중…"
   },
+  "editor": {
+    "toolbar": {
+      "heading1": "제1",
+      "heading2": "제2",
+      "heading3": "제3",
+      "bullet_list": "글머리 기호 목록",
+      "numbered_list": "번호 매기기 목록",
+      "blockquote": "블록 인용",
+      "code_block": "코드 블록"
+    }
+  },
   "terms": {
     "title": "이용 약관",
     "version_label": "버전: {version}",
