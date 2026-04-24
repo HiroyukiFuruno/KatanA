@@ -14,6 +14,7 @@ pub(crate) struct ExplorerPanel<'a> {
     pub tab_groups: &'a [crate::state::document::TabGroup],
     pub action: &'a mut AppAction,
     pub show_vertical_line: bool,
+    pub referenced_images: Vec<std::path::PathBuf>,
 }
 
 impl<'a> ExplorerPanel<'a> {
@@ -34,7 +35,13 @@ impl<'a> ExplorerPanel<'a> {
             tab_groups,
             action,
             show_vertical_line,
+            referenced_images: Vec::new(),
         }
+    }
+
+    pub fn with_referenced_images(mut self, images: Vec<std::path::PathBuf>) -> Self {
+        self.referenced_images = images;
+        self
     }
 
     pub fn show(self, ui: &mut egui::Ui) {
@@ -76,6 +83,7 @@ impl<'a> ExplorerPanel<'a> {
                 action,
                 self.show_vertical_line,
             )
+            .with_referenced_images(self.referenced_images)
             .show(ui);
         }
     }

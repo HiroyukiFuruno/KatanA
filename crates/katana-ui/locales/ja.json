@@ -93,7 +93,8 @@
     "open_folder_hint": "KatanAを使い始めるために、フォルダを開いてください。",
     "open_workspace_button": "ワークスペースを開く",
     "remove_history_tooltip": "履歴から除去",
-    "max_depth_exceeded": "最大深度を超過しました"
+    "max_depth_exceeded": "最大深度を超過しました",
+    "referenced_images_section": "参照画像"
   },
   "preview": {
     "preview_title": "プレビュー",
@@ -397,7 +398,11 @@
       "cache_retention_days": "キャッシュ保持日数",
       "days_suffix": " 日",
       "toc_default_visible": "起動時に目次を表示する",
-      "explorer_default_visible": "起動時にエクスプローラーを表示する"
+      "explorer_default_visible": "起動時にエクスプローラーを表示する",
+      "ingest_section_title": "画像の取り込み",
+      "ingest_image_save_directory": "画像の保存先",
+      "ingest_image_name_format": "画像ファイル名の形式",
+      "ingest_create_directory": "保存先フォルダが存在しない場合は作成する"
     },
     "general": "全般"
   },

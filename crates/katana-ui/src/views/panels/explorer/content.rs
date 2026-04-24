@@ -13,6 +13,7 @@ pub(crate) struct ExplorerContent<'a> {
     pub tab_groups: &'a [crate::state::document::TabGroup],
     pub action: &'a mut AppAction,
     pub show_vertical_line: bool,
+    pub referenced_images: Vec<std::path::PathBuf>,
 }
 
 impl<'a> ExplorerContent<'a> {
@@ -33,7 +34,13 @@ impl<'a> ExplorerContent<'a> {
             tab_groups,
             action,
             show_vertical_line,
+            referenced_images: Vec::new(),
         }
+    }
+
+    pub fn with_referenced_images(mut self, images: Vec<std::path::PathBuf>) -> Self {
+        self.referenced_images = images;
+        self
     }
 
     pub fn show(self, ui: &mut egui::Ui) {
@@ -51,6 +58,7 @@ impl<'a> ExplorerContent<'a> {
     fn show_active_workspace(self, ui: &mut egui::Ui) {
         let (workspace, search, active_path, action) =
             (self.workspace, self.search, self.active_path, self.action);
+        let referenced_images = self.referenced_images;
         let ws = workspace.data.as_ref().unwrap();
         let entries = ws.tree.clone();
         let ws_root = ws.root.clone();
@@ -85,6 +93,12 @@ impl<'a> ExplorerContent<'a> {
                         TreeEntryNode::new(entry, &mut ctx).show(ui);
                     }
                 }
+
+                super::referenced_images::ReferencedImagesSection::new(
+                    &referenced_images,
+                    ctx.action,
+                )
+                .show(ui);
             });
     }
 

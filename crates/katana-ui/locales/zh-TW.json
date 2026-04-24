@@ -93,7 +93,8 @@
     "open_workspace_button": "開啟資料夾",
     "remove_history_tooltip": "從歷史記錄中移除",
     "max_depth_exceeded": "超過最大掃描深度",
-    "filter_hint": "篩選…"
+    "filter_hint": "篩選…",
+    "referenced_images_section": "引用圖像"
   },
   "preview": {
     "preview_title": "預覽",
@@ -386,7 +387,11 @@
       "cache_retention_days": "快取保留天數",
       "days_suffix": " 天",
       "toc_default_visible": "啟動時顯示目錄",
-      "explorer_default_visible": "啟動時顯示檔案總管"
+      "explorer_default_visible": "啟動時顯示檔案總管",
+      "ingest_section_title": "圖像匯入",
+      "ingest_image_save_directory": "圖像儲存目錄",
+      "ingest_image_name_format": "圖像名稱格式",
+      "ingest_create_directory": "目錄不存在時自動建立"
     },
     "general": "一般",
     "shortcuts": {

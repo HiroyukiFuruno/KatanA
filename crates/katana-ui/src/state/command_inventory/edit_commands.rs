@@ -163,7 +163,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_ingest_clipboard_image.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+shift+V"],
             },
         ]
     }

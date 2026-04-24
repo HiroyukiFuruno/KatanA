@@ -93,7 +93,8 @@
     "open_folder_hint": "Open a folder to start using KatanA.",
     "open_workspace_button": "Open Workspace",
     "remove_history_tooltip": "Remove from history",
-    "max_depth_exceeded": "Max depth exceeded"
+    "max_depth_exceeded": "Max depth exceeded",
+    "referenced_images_section": "Referenced Images"
   },
   "preview": {
     "preview_title": "Preview",
@@ -397,7 +398,11 @@
       "cache_retention_days": "Cache Retention (Days)",
       "days_suffix": " Days",
       "toc_default_visible": "Show Table of Contents on startup",
-      "explorer_default_visible": "Show Explorer on startup"
+      "explorer_default_visible": "Show Explorer on startup",
+      "ingest_section_title": "Image Ingest",
+      "ingest_image_save_directory": "Image Save Directory",
+      "ingest_image_name_format": "Image Name Format",
+      "ingest_create_directory": "Create directory if not exists"
     },
     "general": "General"
   },

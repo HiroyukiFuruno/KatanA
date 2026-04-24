@@ -22,19 +22,19 @@
 
 マークダウンエディタに視覚的な書式設定ボタンを追加し、キーボードショートカットだけでなく GUI 操作も可能にする。
 
-- [ ] 1.1 システム SVG 基盤のボタンコンポーネントを `crates/katana-ui/src/components/buttons/` に実装
-- [ ] 1.2 太字、斜体、見出し、リスト、コードなど一般的な Markdown 書式のボタンを追加
-- [ ] 1.3 エディタ上部にツールバーを表示（コンテキスト認識型）
-- [ ] 1.4 テキスト選択状態に応じてボタンの有効/無効を切り替え
-- [ ] 1.5 ショートカットキーとの統合（ボタンクリックとキー操作の両方で動作）
+- [x] 1.1 システム SVG 基盤のボタンコンポーネントを `crates/katana-ui/src/views/panels/editor/toolbar.rs` に実装
+- [x] 1.2 太字、斜体、見出し、リスト、コードなど一般的な Markdown 書式のボタンを追加
+- [x] 1.3 エディタ上部にツールバーを表示（コンテキスト認識型、AlignCenter ウィジェットで水平配置）
+- [x] 1.4 テキスト選択状態に応じてボタンの有効/無効を切り替え
+- [x] 1.5 ショートカットキーとの統合（ボタンクリックとキー操作の両方で動作）
 
 ### Definition of Done (DoD)
 
-- [ ] トールバーから Markdown 書式設定が可能であること
-- [ ] 選択テキストに応じてボタンが有効/無効に切り替わる 것
-- [ ] ショートカットキーと同等の動作を確認
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] ツールバーから Markdown 書式設定が可能であること
+- [x] 選択テキストに応じてボタンが有効/無効に切り替わる
+- [x] ショートカットキーと同等の動作を確認
+- [x] `make check` がエラーなし (exit code 0) で通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
