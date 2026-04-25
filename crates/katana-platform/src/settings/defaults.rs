@@ -137,6 +137,7 @@ impl Default for AppSettings {
             language: SettingsDefaultOps::default_language(),
             extra: Vec::new(),
             linter: crate::settings::types::linter::LinterSettings::default(),
+            ai: AiSettings::default(),
         }
     }
 }

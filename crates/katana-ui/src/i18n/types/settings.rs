@@ -1,3 +1,4 @@
+use super::settings_ai::SettingsAiMessages;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15,6 +16,8 @@ pub struct SettingsMessages {
     pub updates: SettingsUpdateMessages,
     pub behavior: SettingsBehaviorMessages,
     pub shortcuts: SettingsShortcutsMessages,
+    #[serde(default)]
+    pub ai: SettingsAiMessages,
     pub general: String,
 }
 
@@ -24,7 +27,14 @@ impl SettingsMessages {
             .iter()
             .find(|t| t.key == key)
             .map(|t| t.name.clone())
-            .unwrap_or_else(|| key.to_string())
+            .unwrap_or_else(|| Self::default_tab_name(key))
+    }
+
+    fn default_tab_name(key: &str) -> String {
+        match key {
+            "ai" => "AI".to_string(),
+            _ => key.to_string(),
+        }
     }
 }
 

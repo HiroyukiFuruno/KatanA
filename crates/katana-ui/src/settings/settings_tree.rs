@@ -101,6 +101,12 @@ pub(super) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_sta
                 SettingsTab::Linter,
                 settings_msgs.tab_name("linter"),
             );
+            show_tab_button(
+                ui,
+                &mut state.config.active_settings_tab,
+                SettingsTab::Ai,
+                settings_msgs.tab_name("ai"),
+            );
         },
     )
     .default_open(true)

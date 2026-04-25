@@ -35,6 +35,18 @@ impl AiProvider for EchoProvider {
             metadata: Vec::new(),
         })
     }
+    fn capabilities(&self) -> AiCapabilities {
+        AiCapabilities {
+            chat: true,
+            autofix: false,
+        }
+    }
+    fn list_models(&self) -> Result<Vec<AiModel>, AiError> {
+        Ok(vec![AiModel {
+            name: "echo-model".to_string(),
+            size_bytes: 1024,
+        }])
+    }
 }
 
 #[test]
@@ -87,6 +99,27 @@ fn has_active_provider_reflects_available_state() {
     registry.register(Box::new(EchoProvider));
     registry.set_active("echo");
     assert!(registry.has_active_provider());
+}
+
+#[test]
+fn registry_exposes_active_provider_capabilities() {
+    let mut registry = AiProviderRegistry::new();
+    registry.register(Box::new(EchoProvider));
+    registry.set_active("echo");
+    let capabilities = registry.active_capabilities().unwrap();
+    assert!(capabilities.chat);
+    assert!(!capabilities.autofix);
+}
+
+#[test]
+fn registry_lists_active_provider_models() {
+    let mut registry = AiProviderRegistry::new();
+    registry.register(Box::new(EchoProvider));
+    registry.set_active("echo");
+    let models = registry.list_models().unwrap();
+    assert_eq!(models.len(), 1);
+    assert_eq!(models[0].name, "echo-model");
+    assert_eq!(models[0].size_bytes, 1024);
 }
 
 #[test]

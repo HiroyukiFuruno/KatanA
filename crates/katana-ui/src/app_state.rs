@@ -12,7 +12,11 @@ pub use crate::state::workspace::WorkspaceState;
 
 pub use katana_platform::CacheFacade;
 
-use katana_core::{ai::AiProviderRegistry, document::Document, plugin::PluginRegistry};
+use katana_core::{
+    ai::{AiProviderRegistry, OllamaProvider},
+    document::Document,
+    plugin::PluginRegistry,
+};
 use katana_platform::SettingsService;
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ExportFormat {
@@ -33,6 +37,7 @@ pub enum StatusType {
 }
 
 pub struct AppState {
+    pub ai_registry: AiProviderRegistry,
     pub document: DocumentState,
     pub workspace: WorkspaceState,
     pub layout: LayoutState,
@@ -53,7 +58,6 @@ impl AppState {
         settings: SettingsService,
         cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
     ) -> Self {
-        let _ = ai_registry;
         let mut search = SearchState::new();
         search.md_history.recent_terms = settings.settings().search.recent_md_queries.clone();
 
@@ -67,6 +71,7 @@ impl AppState {
         layout.show_explorer = settings.settings().layout.explorer_default_visible;
 
         Self {
+            ai_registry,
             document: DocumentState::new(),
             workspace: WorkspaceState::new(),
             layout,
@@ -85,6 +90,18 @@ impl AppState {
 
     pub fn is_dirty(&self) -> bool {
         self.active_document().map(|d| d.is_dirty).unwrap_or(false)
+    }
+
+    pub fn refresh_ai_registry_from_settings(&mut self) {
+        let ollama = self.config.settings.settings().ai.ollama.clone();
+        let mut registry = AiProviderRegistry::new();
+        registry.register(Box::new(OllamaProvider::new(
+            ollama.endpoint,
+            ollama.selected_model,
+            ollama.timeout_secs,
+        )));
+        registry.set_active(OllamaProvider::ID);
+        self.ai_registry = registry;
     }
 
     pub fn active_document(&self) -> Option<&Document> {

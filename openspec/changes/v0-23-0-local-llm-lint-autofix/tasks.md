@@ -46,17 +46,17 @@
 
 ## 1. Ollama Provider Contract and Settings
 
-- [ ] 1.1 Ollama endpoint、model、capability、timeout を保持する設定スキーマを追加する
-- [ ] 1.2 `AiProvider` abstraction に接続する Ollama adapter を追加する
-- [ ] 1.3 Ollama の availability check と model list 取得を実装する
-- [ ] 1.4 Ollama モデル選択を必須入力として settings UI に追加する
-- [ ] 1.5 1桁GB級の lightweight model を選びやすい推奨導線を settings UI に追加する
+- [x] 1.1 Ollama endpoint、model、capability、timeout を保持する設定スキーマを追加する
+- [x] 1.2 `AiProvider` abstraction に接続する Ollama adapter を追加する
+- [x] 1.3 Ollama の availability check と model list 取得を実装する
+- [x] 1.4 Ollama モデル選択を必須入力として settings UI に追加する
+- [x] 1.5 1桁GB級の lightweight model を選びやすい推奨導線を settings UI に追加する
 
 ### Definition of Done (DoD)
 
-- [ ] ユーザーが UI から Ollama endpoint と model を設定し、保存、再選択できること
-- [ ] モデル未選択では chat / autofix request が送信されないこと
-- [ ] Ollama 未設定の状態でも、アプリケーションの通常編集機能が問題なく維持されること
+- [x] ユーザーが UI から Ollama endpoint と model を設定し、保存、再選択できること
+- [x] モデル未選択では chat / autofix request が送信されないこと
+- [x] Ollama 未設定の状態でも、アプリケーションの通常編集機能が問題なく維持されること
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---

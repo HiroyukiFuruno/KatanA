@@ -69,6 +69,40 @@ fn test_app_settings_serde_missing_fields_use_defaults() {
     assert_eq!(loaded.theme.theme, "custom");
     assert!((loaded.font.size - 14.0).abs() < f32::EPSILON);
     assert_eq!(loaded.language, "en");
+    assert_eq!(
+        loaded.ai.ollama.endpoint,
+        katana_core::ai::DEFAULT_OLLAMA_ENDPOINT
+    );
+    assert!(loaded.ai.ollama.selected_model.is_empty());
+}
+
+#[test]
+fn test_ai_settings_serde_roundtrip() {
+    let settings = AiSettings {
+        ollama: OllamaSettings {
+            endpoint: "http://localhost:11435".to_string(),
+            selected_model: "llama3.2:3b".to_string(),
+            timeout_secs: 45,
+            chat_enabled: true,
+            autofix_enabled: false,
+        },
+    };
+    let json = serde_json::to_string(&settings).unwrap();
+    let loaded: AiSettings = serde_json::from_str(&json).unwrap();
+    assert_eq!(loaded, settings);
+}
+
+#[test]
+fn test_ollama_settings_serde_missing_fields_use_defaults() {
+    let loaded: OllamaSettings = serde_json::from_str("{}").unwrap();
+    assert_eq!(loaded.endpoint, katana_core::ai::DEFAULT_OLLAMA_ENDPOINT);
+    assert!(loaded.selected_model.is_empty());
+    assert_eq!(
+        loaded.timeout_secs,
+        katana_core::ai::DEFAULT_OLLAMA_TIMEOUT_SECS
+    );
+    assert!(loaded.chat_enabled);
+    assert!(loaded.autofix_enabled);
 }
 
 #[test]
