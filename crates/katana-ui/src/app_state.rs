@@ -1,3 +1,4 @@
+pub use crate::state::autofix::{AutofixState, FileAutofixCandidate};
 pub use crate::state::chat::{ChatMessage, ChatRole, ChatState};
 pub use crate::state::command_palette::CommandPaletteState;
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
@@ -42,6 +43,7 @@ pub struct AppState {
     pub document: DocumentState,
     pub workspace: WorkspaceState,
     pub layout: LayoutState,
+    pub autofix: AutofixState,
     pub chat: ChatState,
     pub search: SearchState,
     pub scroll: ScrollState,
@@ -77,6 +79,7 @@ impl AppState {
             document: DocumentState::new(),
             workspace: WorkspaceState::new(),
             layout,
+            autofix: AutofixState::new(),
             chat: ChatState::new(),
             search,
             scroll: ScrollState::new(),

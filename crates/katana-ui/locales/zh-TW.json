@@ -667,6 +667,19 @@
 			"md060": "表格的欄位樣式不一致。"
 		},
 		"view_on_github": "在官方 GitHub 上查看",
+		"autofix": "用 AI 修正檔案",
+		"autofix_pending": "正在產生 AI 修正建議…",
+		"autofix_disabled": "AI 修正已停用。",
+		"autofix_model_required": "請先選擇 Ollama 模型，再執行 AI 修正。",
+		"autofix_no_diagnostics": "此檔案沒有可用的診斷。",
+		"autofix_diff_title": "AI 修正預覽",
+		"autofix_apply": "套用",
+		"autofix_cancel": "取消",
+		"autofix_no_changes": "該建議未變更檔案。",
+		"autofix_stale": "產生建議後檔案已變更。請重新執行 AI 修正。",
+		"autofix_applied": "已套用 AI 修正、儲存並重新執行 lint。",
+		"autofix_failed": "AI 修正失敗：{error}",
+		"autofix_interrupted": "AI 修正回應已中斷。",
 		"search_placeholder": "搜尋規則…"
 	},
 	"use_workspace_local_config": "使用工作區本地設定"

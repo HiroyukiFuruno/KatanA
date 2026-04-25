@@ -395,6 +395,31 @@ mod tests {
     }
 
     #[test]
+    fn autofix_candidate_does_not_mutate_until_apply_action() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path.clone(), true);
+        let request = crate::state::FileAutofixRequest {
+            path: path.clone(),
+            original_content: "# Test".to_string(),
+            deterministic_fixed_content: "# Test".to_string(),
+            residual_diagnostics: Vec::new(),
+            model: "llama3.2".to_string(),
+        };
+        let candidate = crate::state::FileAutofixCandidate::new(&request, "# Fixed".to_string());
+
+        app.state.autofix.set_candidate(candidate);
+        assert_eq!(app.state.active_document().unwrap().buffer, "# Test");
+
+        app.process_action(&egui::Context::default(), AppAction::ApplyAutofixCandidate);
+
+        assert_eq!(app.state.active_document().unwrap().buffer, "# Fixed");
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "# Fixed");
+        assert!(app.state.autofix.candidate.is_none());
+    }
+
+    #[test]
     fn start_download_sets_download_state() {
         let mut app = make_app();
         app.start_download(crate::preview_pane::DownloadRequest {

@@ -667,6 +667,19 @@
 			"md060": "표의 열 스타일이 일관되지 않습니다."
 		},
 		"view_on_github": "공식 GitHub에서 보기",
+		"autofix": "AI로 파일 수정",
+		"autofix_pending": "AI 수정안을 생성하는 중…",
+		"autofix_disabled": "AI 수정이 비활성화되어 있습니다.",
+		"autofix_model_required": "AI 수정을 실행하기 전에 Ollama 모델을 선택하세요.",
+		"autofix_no_diagnostics": "이 파일에 사용할 수 있는 진단이 없습니다.",
+		"autofix_diff_title": "AI 수정 미리보기",
+		"autofix_apply": "적용",
+		"autofix_cancel": "취소",
+		"autofix_no_changes": "제안이 파일을 변경하지 않았습니다.",
+		"autofix_stale": "제안 생성 후 파일이 변경되었습니다. AI 수정을 다시 실행하세요.",
+		"autofix_applied": "AI 수정을 적용하고 저장한 뒤 다시 lint를 실행했습니다.",
+		"autofix_failed": "AI 수정 실패: {error}",
+		"autofix_interrupted": "AI 수정 응답이 중단되었습니다.",
 		"search_placeholder": "규칙 검색…"
 	},
 	"use_workspace_local_config": "작업 공간 로컬 설정 사용"

@@ -667,6 +667,19 @@
 			"md060": "Lo stile delle colonne della tabella non è coerente."
 		},
 		"view_on_github": "Visualizza su GitHub ufficiale",
+		"autofix": "Correggi file con IA",
+		"autofix_pending": "Generazione della proposta di correzione IA…",
+		"autofix_disabled": "La correzione IA è disattivata.",
+		"autofix_model_required": "Seleziona un modello Ollama prima di eseguire la correzione IA.",
+		"autofix_no_diagnostics": "Non sono disponibili diagnostiche per questo file.",
+		"autofix_diff_title": "Anteprima correzione IA",
+		"autofix_apply": "Applica",
+		"autofix_cancel": "Annulla",
+		"autofix_no_changes": "La proposta non ha modificato il file.",
+		"autofix_stale": "Il file è cambiato dopo la generazione della proposta. Esegui di nuovo la correzione IA.",
+		"autofix_applied": "La correzione IA è stata applicata, salvata e verificata di nuovo.",
+		"autofix_failed": "Correzione IA non riuscita: {error}",
+		"autofix_interrupted": "La risposta della correzione IA è stata interrotta.",
 		"search_placeholder": "Cerca regole…"
 	},
 	"use_workspace_local_config": "Usa configurazione locale dell’area di lavoro"

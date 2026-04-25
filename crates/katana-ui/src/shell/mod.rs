@@ -157,6 +157,7 @@ impl KatanaApp {
             || self.state.command_palette.is_open
             || self.show_about
             || self.show_update_dialog
+            || self.state.autofix.candidate.is_some()
             || self.needs_splash
             || self.splash_start.is_some()
             || self.show_meta_info_for.is_some()

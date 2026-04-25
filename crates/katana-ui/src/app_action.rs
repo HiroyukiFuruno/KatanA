@@ -35,6 +35,9 @@ pub enum AppAction {
         replacement: String,
     },
     ApplyLintFixes(Vec<katana_linter::rules::markdown::DiagnosticFix>),
+    RequestFileAutofix(PathBuf),
+    ApplyAutofixCandidate,
+    CancelAutofixCandidate,
     OpenLinterDoc(String, String),
     ToggleTaskList {
         global_index: usize,

@@ -1,10 +1,12 @@
 pub mod app_state_impl;
+pub mod autofix;
 pub mod chat;
 pub mod command_inventory;
 pub mod command_palette;
 pub mod command_palette_providers;
 pub mod config;
 pub mod diagnostics;
+pub mod diff_preview;
 pub mod document;
 pub mod layout;
 pub mod scroll;
@@ -14,8 +16,10 @@ pub mod shortcut_context;
 pub mod update;
 pub mod workspace;
 
+pub use autofix::*;
 pub use chat::*;
 pub use config::*;
+pub use diff_preview::*;
 pub use document::*;
 pub use layout::*;
 pub use scroll::*;

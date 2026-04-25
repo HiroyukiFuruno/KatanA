@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 pub mod about;
 pub(super) mod about_widgets;
+pub mod autofix_diff;
 pub mod command_palette;
 pub(super) mod command_palette_results;
 mod command_palette_scroll_tests;

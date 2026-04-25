@@ -22,6 +22,32 @@ pub struct LinterTranslations {
     pub severity_error: String,
     pub use_workspace_local_config: String,
     #[serde(default)]
+    pub autofix: String,
+    #[serde(default)]
+    pub autofix_pending: String,
+    #[serde(default)]
+    pub autofix_disabled: String,
+    #[serde(default)]
+    pub autofix_model_required: String,
+    #[serde(default)]
+    pub autofix_no_diagnostics: String,
+    #[serde(default)]
+    pub autofix_diff_title: String,
+    #[serde(default)]
+    pub autofix_apply: String,
+    #[serde(default)]
+    pub autofix_cancel: String,
+    #[serde(default)]
+    pub autofix_no_changes: String,
+    #[serde(default)]
+    pub autofix_stale: String,
+    #[serde(default)]
+    pub autofix_applied: String,
+    #[serde(default)]
+    pub autofix_failed: String,
+    #[serde(default)]
+    pub autofix_interrupted: String,
+    #[serde(default)]
     pub view_on_github: String,
     #[serde(default)]
     pub rule_descriptions: std::collections::HashMap<String, String>,
@@ -51,6 +77,21 @@ impl Default for LinterTranslations {
             severity_warning: "Warning".to_string(),
             severity_error: "Error".to_string(),
             use_workspace_local_config: "Use Workspace-Local Configuration".to_string(),
+            autofix: "AI Fix File".to_string(),
+            autofix_pending: "Generating AI autofix proposal...".to_string(),
+            autofix_disabled: "AI autofix is disabled.".to_string(),
+            autofix_model_required: "Select an Ollama model before running AI autofix.".to_string(),
+            autofix_no_diagnostics: "No diagnostics are available for this file.".to_string(),
+            autofix_diff_title: "AI Autofix Preview".to_string(),
+            autofix_apply: "Apply".to_string(),
+            autofix_cancel: "Cancel".to_string(),
+            autofix_no_changes: "The proposal did not change the file.".to_string(),
+            autofix_stale:
+                "The file changed after the proposal was generated. Run AI autofix again."
+                    .to_string(),
+            autofix_applied: "AI autofix was applied, saved, and linted again.".to_string(),
+            autofix_failed: "AI autofix failed: {error}".to_string(),
+            autofix_interrupted: "AI autofix response was interrupted.".to_string(),
             view_on_github: "View on official GitHub".to_string(),
             rule_descriptions: std::collections::HashMap::new(),
         }

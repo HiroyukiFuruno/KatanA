@@ -667,6 +667,19 @@
 			"md060": "Le style des colonnes du tableau n'est pas cohérent."
 		},
 		"view_on_github": "Voir sur le GitHub officiel",
+		"autofix": "Corriger le fichier avec l'IA",
+		"autofix_pending": "Génération de la proposition de correction IA…",
+		"autofix_disabled": "La correction IA est désactivée.",
+		"autofix_model_required": "Sélectionnez un modèle Ollama avant de lancer la correction IA.",
+		"autofix_no_diagnostics": "Aucun diagnostic n'est disponible pour ce fichier.",
+		"autofix_diff_title": "Aperçu de la correction IA",
+		"autofix_apply": "Appliquer",
+		"autofix_cancel": "Annuler",
+		"autofix_no_changes": "La proposition n'a pas modifié le fichier.",
+		"autofix_stale": "Le fichier a changé après la génération de la proposition. Relancez la correction IA.",
+		"autofix_applied": "La correction IA a été appliquée, enregistrée et relancée au lint.",
+		"autofix_failed": "La correction IA a échoué : {error}",
+		"autofix_interrupted": "La réponse de correction IA a été interrompue.",
 		"search_placeholder": "Rechercher des règles…"
 	},
 	"use_workspace_local_config": "Utiliser la configuration de l’espace de travail"

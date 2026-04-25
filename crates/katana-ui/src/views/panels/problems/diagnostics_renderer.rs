@@ -31,7 +31,19 @@ impl DiagnosticsRendererOps {
         let mut action = None;
         state
             .show_header(ui, |ui| {
-                ui.label(egui::RichText::new(filename).strong());
+                crate::widgets::AlignCenter::new()
+                    .content(|ui| {
+                        ui.label(egui::RichText::new(filename).strong());
+                        if ui
+                            .button(&crate::i18n::I18nOps::get().linter.autofix)
+                            .clicked()
+                        {
+                            action = Some(crate::app_state::AppAction::RequestFileAutofix(
+                                path.to_path_buf(),
+                            ));
+                        }
+                    })
+                    .show(ui);
             })
             .body(|ui| {
                 const GRID_COLS: usize = 3;

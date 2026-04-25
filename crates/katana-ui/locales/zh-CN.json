@@ -667,6 +667,19 @@
 			"md060": "表格的列样式不一致。"
 		},
 		"view_on_github": "在官方 GitHub 上查看",
+		"autofix": "用 AI 修复文件",
+		"autofix_pending": "正在生成 AI 修复建议…",
+		"autofix_disabled": "AI 修复已禁用。",
+		"autofix_model_required": "请先选择 Ollama 模型，再运行 AI 修复。",
+		"autofix_no_diagnostics": "此文件没有可用的诊断。",
+		"autofix_diff_title": "AI 修复预览",
+		"autofix_apply": "应用",
+		"autofix_cancel": "取消",
+		"autofix_no_changes": "该建议未更改文件。",
+		"autofix_stale": "生成建议后文件已更改。请重新运行 AI 修复。",
+		"autofix_applied": "已应用 AI 修复、保存并重新运行 lint。",
+		"autofix_failed": "AI 修复失败：{error}",
+		"autofix_interrupted": "AI 修复响应已中断。",
 		"search_placeholder": "搜索规则…"
 	},
 	"use_workspace_local_config": "使用工作区本地配置"

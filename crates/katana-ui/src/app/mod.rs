@@ -1,4 +1,7 @@
 pub mod action;
+pub mod autofix;
+pub mod autofix_request;
+pub mod autofix_support;
 pub mod chat;
 pub mod doc_close;
 pub mod doc_search;
@@ -7,12 +10,14 @@ pub mod document_edit;
 pub mod download;
 pub mod export;
 pub mod export_poll;
+pub mod lint_fix;
 pub mod preview;
 pub mod types;
 pub mod update;
 pub mod workspace;
 
 pub(crate) use action::ActionOps;
+pub(crate) use autofix::AutofixOps;
 pub(crate) use chat::ChatOps;
 pub(crate) use document::DocumentOps;
 pub(crate) use document_edit::DocumentEditOps;

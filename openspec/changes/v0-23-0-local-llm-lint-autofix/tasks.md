@@ -92,23 +92,23 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 元 content、KML 一括 fix 後 content、残存 diagnostics、file path から file-level autofix request を組み立てる
-- [ ] 3.2 Ollama からの応答を、アプリケーション内部で扱う normalized file-level fix candidate に変換する
-- [ ] 3.3 元 content と proposal content の差分を表示する reusable diff preview surface を実装する
-- [ ] 3.4 生成された file-level autofix candidate について、diff preview / confirm / apply flow を実装する
-- [ ] 3.5 apply 後に save、re-lint、error recovery が一連の動作として成立するか確認する
+- [x] 3.1 元 content、KML 一括 fix 後 content、残存 diagnostics、file path から file-level autofix request を組み立てる
+- [x] 3.2 Ollama からの応答を、アプリケーション内部で扱う normalized file-level fix candidate に変換する
+- [x] 3.3 元 content と proposal content の差分を表示する reusable diff preview surface を実装する
+- [x] 3.4 生成された file-level autofix candidate について、diff preview / confirm / apply flow を実装する
+- [x] 3.5 apply 後に save、re-lint、error recovery が一連の動作として成立するか確認する
 
 ### Definition of Done (DoD)
 
-- [ ] autofix が file diagnostics を起点にして一括実行できること
-- [ ] KML の deterministic fix 結果と残存 diagnostics が LLM context に含まれること
-- [ ] 元 content と LLM proposal content の差分を apply 前に preview できること
-- [ ] ユーザーの confirmation 無しに、勝手に Markdown が書き換わらないこと
-- [ ] 修正の適用後に再び lint が走り、エラーが解消された事実を確認できること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [x] autofix が file diagnostics を起点にして一括実行できること
+- [x] KML の deterministic fix 結果と残存 diagnostics が LLM context に含まれること
+- [x] 元 content と LLM proposal content の差分を apply 前に preview できること
+- [x] ユーザーの confirmation 無しに、勝手に Markdown が書き換わらないこと
+- [x] 修正の適用後に再び lint が走り、エラーが解消された事実を確認できること
+- [x] `make check` がエラーなし (exit code 0) で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
