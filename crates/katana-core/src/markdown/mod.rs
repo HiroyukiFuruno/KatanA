@@ -1,5 +1,6 @@
 pub mod color_preset;
 pub mod diagram;
+pub mod diagram_backend;
 pub mod drawio_renderer;
 pub mod export;
 pub mod fence;
@@ -10,5 +11,6 @@ pub mod render;
 pub mod svg_rasterize;
 pub mod types;
 
+pub use diagram_backend::*;
 pub use export::{HtmlExporter, ImageExporter, PdfExporter};
 pub use types::*;

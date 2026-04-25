@@ -1,8 +1,8 @@
 ## 1. Adapter Contract
 
-- [ ] 1.1 Mermaid / PlantUML backend input、render options、theme snapshot、document context を定義する
-- [ ] 1.2 backend output と error を `DiagramResult` 相当の renderer-neutral contract に揃える
-- [ ] 1.3 cache key に backend id、backend version、render options を含める方針を決める
+- [x] 1.1 Mermaid / PlantUML backend input、render options、theme snapshot、document context を定義する
+- [x] 1.2 backend output と error を `DiagramResult` 相当の renderer-neutral contract に揃える
+- [x] 1.3 cache key に backend id、backend version、render options を含める方針を決める
 
 ## 2. Behavior-Preserving Migration
 
