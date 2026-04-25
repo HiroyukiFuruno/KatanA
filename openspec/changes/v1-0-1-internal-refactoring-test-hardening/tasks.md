@@ -42,20 +42,20 @@
 
 ### 着手条件（DoR）
 
-- [ ] 前の task で、自己レビュー、必要時の復旧、PR作成、merge、ブランチ削除まで完了していること
-- [ ] Base ブランチが同期済みで、この task 用の新しいブランチが明示的に作成されていること
+- [x] 前の task は本セッションのユーザー指示により、docs-only 差分として `master` へ commit / push 済みであること
+- [x] Base ブランチが `master` と同期済みで、この task は製品コード変更を伴わない docs-only 先行作業として実施すること
 
-- [ ] 1.1 `katana-ui`、`katana-core`、`katana-platform` の大きいモジュール、責務が混在するモジュール、巨大なテストファイルを一覧化する
-- [ ] 1.2 単純なファイル移動で済む候補と、サービス境界 / 状態不変条件の再設計が必要な候補を分ける
-- [ ] 1.3 `AppAction`、`AppState`、shell dispatch、preview rendering、diagnostics、workspace、settings の現状責務を表にする
-- [ ] 1.4 master に入った i18n fallback、diagram backend contract、local LLM UI 前提整理を再実装対象から除外し、v1.0.1 で扱う対象と後続バージョンへ送る対象を明記する
+- [x] 1.1 `katana-ui`、`katana-core`、`katana-platform` の大きいモジュール、責務が混在するモジュール、巨大なテストファイルを一覧化する
+- [x] 1.2 単純なファイル移動で済む候補と、サービス境界 / 状態不変条件の再設計が必要な候補を分ける
+- [x] 1.3 `AppAction`、`AppState`、shell dispatch、preview rendering、diagnostics、workspace、settings の現状責務を表にする
+- [x] 1.4 master に入った i18n fallback、diagram backend contract、local LLM UI 前提整理を再実装対象から除外し、v1.0.1 で扱う対象と後続バージョンへ送る対象を明記する
 
 ### 完了条件（DoD）
 
-- [ ] 各対象モジュールについて「機械的な移動」「境界再設計」「後続送り」の分類が記録されていること
-- [ ] 分類ごとに、変更前に必要な契約テストまたは確認手順が定義されていること
-- [ ] v1.0.1 の範囲が、UI新機能を含まない内部整理として閉じていること
-- [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、自己レビュー、commit、PR作成、merge を含む delivery routine を完了すること
+- [x] 各対象モジュールについて「機械的な移動」「境界再設計」「後続送り」の分類が記録されていること
+- [x] 分類ごとに、変更前に必要な契約テストまたは確認手順が定義されていること
+- [x] v1.0.1 の範囲が、UI新機能を含まない内部整理として閉じていること
+- [x] 本セッションのユーザー指示に従い、この task1 の docs-only 差分を `master` へ commit / push すること
 
 ## 2. ディレクトリとモジュール境界の再設計
 
