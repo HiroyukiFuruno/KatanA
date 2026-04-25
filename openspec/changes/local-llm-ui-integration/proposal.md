@@ -2,12 +2,15 @@
 
 Ollama provider、chat UI、file-level autofix の土台が分離して進んだため、次はユーザーが設定から chat / diagnostics autofix まで迷わず辿れる導線を整える必要がある。ここを独立 change に切り出すことで、内部 pipeline を広げずに UI の到達性と復旧導線を先行して固める。
 
+この change は、`v0-23-0-local-llm-lint-autofix` の LLM MVP（Ollama 設定、chat UI 土台、file-level autofix / diff preview）が `master` に merge 済みになった後の導線整理として扱う。`release/v0.23.0` にだけ存在する実装を、`master` 上で完了済みとして扱わない。
+
 ## What Changes
 
 - AI 設定画面に Ollama endpoint、model 選択、接続確認、autofix 有効化状態を一貫して扱う UI を整備する。
 - chat パネル、Problems パネル、settings の間に明確な移動導線を追加する。
 - provider 未設定、model 未選択、Ollama unavailable、timeout、invalid response の理由をユーザーに見える状態として表示する。
 - diagnostics 上の autofix entry point を、利用可能時と利用不可時で分かる状態にする。
+- `v0.23.0` MVP と重複する provider / chat / autofix 本体実装は再実装せず、`master` merge 後の状態差分だけを扱う。
 - UI snapshot または同等の確認結果を残し、ユーザーフィードバックをこの change の tasks に反映する。
 - chat 履歴の永続化、remote provider、音声入力、document generation はこの change に含めない。
 

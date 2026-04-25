@@ -1,5 +1,15 @@
 ## ADDED Requirements
 
+### Requirement: Integration work starts after v0.23.0 MVP reaches master
+
+システムは、`v0-23-0-local-llm-lint-autofix` の LLM MVP が `master` に merge された後に、local LLM UI integration の実装へ進まなければならない（MUST）。
+
+#### Scenario: v0.23.0 implementation is only on release branch
+
+- **WHEN** Ollama 設定、chat UI 土台、file-level autofix / diff preview が `release/v0.23.0` にだけ存在する
+- **THEN** system は local LLM UI integration の task を完了済みとして扱わない
+- **THEN** implementer は `master` merge 後の残差分だけをこの change の対象にする
+
 ### Requirement: Local LLM settings are the recovery entry point
 
 システムは、local LLM の provider 未設定、model 未選択、接続不可状態を検出したとき、AI 設定画面へ戻る復旧導線を提供しなければならない（SHALL）。

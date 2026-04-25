@@ -2,12 +2,15 @@
 
 Local LLM の土台は provider 設定、chat state、autofix request / diff preview の3つに分かれている。現状の残り課題は、ユーザーが「どこでモデルを選ぶか」「なぜ送信できないか」「diagnostics から修正に進むには何が足りないか」を UI 上で判断できる状態にすること。
 
+この change は `v0-23-0-local-llm-lint-autofix` の LLM MVP が `master` に merge された後に着手する。`release/v0.23.0` にだけ存在する Ollama 設定 UI、chat UI 土台、file-level autofix / diff preview は前提候補として参照できるが、`master` に入るまでは完了済み task として扱わない。
+
 この change は機能追加というより、既存の local LLM MVP をユーザー操作として閉じる作業である。provider や autofix pipeline の内部仕様は大きく変えず、設定と復旧導線を整える。
 
 ## Goals / Non-Goals
 
 **Goals:**
 
+- `v0.23.0` MVP が `master` に入った後の残差分として、UI 導線と復旧表示を整理する。
 - settings、chat、Problems panel の間に明確な導線を作る。
 - provider unavailable の理由を UI 表示と状態で説明できるようにする。
 - model 未選択時は request を送らず、設定画面へ戻れるようにする。
@@ -16,6 +19,8 @@ Local LLM の土台は provider 設定、chat state、autofix request / diff pre
 
 **Non-Goals:**
 
+- `release/v0.23.0` にだけ存在する LLM MVP 実装を、`master` 未反映のまま完了扱いにすること。
+- Ollama provider、chat state、file-level autofix / diff preview の本体を重複実装すること。
 - chat 履歴の永続化。
 - OpenAI / Vertex AI / Bedrock provider の追加。
 - 音声入力。
@@ -50,11 +55,13 @@ UI screenshot はユーザーレビュー用に使えるが、回帰検知は st
 
 ## Migration Plan
 
-1. settings の AI セクションを local LLM の起点として整理する。
-2. chat / autofix の disabled reason を統一モデルで表現する。
-3. Problems panel の autofix entry point と recovery 導線を調整する。
-4. semantic UI tests を追加する。
-5. UI snapshot または操作確認結果をユーザーに提示し、feedback を tasks に記録する。
+0. `v0.23.0` MVP が `master` に merge 済みであることを確認し、未反映ならこの change の実装へ進まない。
+1. `master` 上の settings / chat / autofix 実装差分を確認し、重複実装が残らないよう task を更新する。
+2. settings の AI セクションを local LLM の起点として整理する。
+3. chat / autofix の disabled reason を統一モデルで表現する。
+4. Problems panel の autofix entry point と recovery 導線を調整する。
+5. semantic UI tests を追加する。
+6. UI snapshot または操作確認結果をユーザーに提示し、feedback を tasks に記録する。
 
 ## Open Questions
 

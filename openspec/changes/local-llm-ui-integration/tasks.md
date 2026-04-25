@@ -1,3 +1,9 @@
+## 着手前提
+
+- [ ] `v0-23-0-local-llm-lint-autofix` の LLM MVP（Ollama 設定、chat UI 土台、file-level autofix / diff preview）が `master` に merge 済みであること
+- [ ] `release/v0.23.0` にだけ存在する実装を、`master` 上で完了済み task として扱っていないこと
+- [ ] `master` 上の settings / chat / autofix 実装差分を確認し、この change では重複実装ではなく UI 導線と復旧表示の残差分だけを扱うこと
+
 ## 1. Settings Recovery Flow
 
 - [ ] 1.1 AI settings に Ollama endpoint、model、接続確認、autofix 有効状態が一貫して見える UI を整理する
