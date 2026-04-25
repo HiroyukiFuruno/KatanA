@@ -1,7 +1,9 @@
+pub mod adapter;
 pub mod image;
 pub mod section;
 pub mod types;
 
+pub use adapter::*;
 pub use section::*;
 pub use types::*;
 

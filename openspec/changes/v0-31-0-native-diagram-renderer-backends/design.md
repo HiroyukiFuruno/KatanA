@@ -4,6 +4,12 @@ Current Mermaid rendering uses `mmdc` and writes a temporary `.mmd` file, then a
 
 The candidate evaluation below was performed on 2026-04-24 using crates.io metadata and local crate README / source packages.
 
+## 2026-04-25 master 同期
+
+`diagram-backend-adapter` Task 1 が `9ffeb570 feat: 図表backend adapter契約を追加` として `master` に入った。Mermaid / PlantUML の backend input、render options、theme snapshot、document context、renderer-neutral output / error、cache key contract は既に `katana-core` 側に追加済みである。
+
+この change では同じ契約型を再定義しない。以降の実装は、既存外部 Mermaid CLI / PlantUML jar backend をこの adapter contract の implementation へ移すこと、および Rust-native backend spike / default selection に集中する。
+
 ## Candidate Evaluation
 
 | Target | Candidate | Version | Evidence | Assessment |
@@ -36,7 +42,7 @@ The candidate evaluation below was performed on 2026-04-24 using crates.io metad
 
 ### Backend Adapter Contract
 
-Define a backend adapter for each diagram kind. A backend receives diagram source, theme snapshot, document context, and render options, then returns a renderer-neutral `DiagramResult`. Preview, export, and cache code select a backend through this adapter instead of calling `mmdc` or `java` directly.
+Define a backend adapter for each diagram kind. A backend receives diagram source, theme snapshot, document context, and render options, then returns a renderer-neutral `DiagramResult`. The initial contract is already available on `master`; this change should migrate external and Rust-native implementations behind that contract instead of defining another parallel contract.
 
 ### Default Selection Is Gate-Driven
 
