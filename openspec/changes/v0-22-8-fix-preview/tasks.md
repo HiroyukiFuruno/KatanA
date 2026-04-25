@@ -1,14 +1,14 @@
 ## 0. Definition of Ready (DoR)
 
-- [ ] 本タスクは `v0.22.6` のリリースが完全に完了したのちに着手すること。
+- [ ] 本タスクは `v0.22.7` のリリースが完全に完了したのちに着手すること。
 - [ ] 関連する UI コンポーネントおよび Diagnostics データ構造について、実装方針が開発環境上で検証可能であること。
 
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-22-7-fix-preview`
-- **作業ブランチ**: 標準は `v0-22-7-fix-preview-task-x` (xはタスク番号)
+- **標準（Base）ブランチ**: `v0-22-8-fix-preview`
+- **作業ブランチ**: 標準は `v0-22-8-fix-preview-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 
@@ -56,8 +56,8 @@
 - [ ] 3.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 3.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 3.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 3.7 Create `release/v0-22-7` branch from master
-- [ ] 3.8 Run `make release VERSION=0-22-7` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 3.9 Create PR from `release/v0-22-7` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 3.7 Create `release/v0-22-8` branch from master
+- [ ] 3.8 Run `make release VERSION=0-22-8` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 3.9 Create PR from `release/v0-22-8` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 3.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 3.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
