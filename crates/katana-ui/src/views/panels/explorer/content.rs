@@ -2,6 +2,7 @@ use super::file_entry::FileEntryNode;
 use super::tree_entry::TreeEntryNode;
 use super::types::ExplorerLogicOps;
 use crate::app_state::AppAction;
+use crate::shell::TREE_ROW_HEIGHT;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
 
@@ -85,6 +86,7 @@ impl<'a> ExplorerContent<'a> {
                         TreeEntryNode::new(entry, &mut ctx).show(ui);
                     }
                 }
+                Self::show_workspace_root_drop_area(ui, &mut ctx, &ws_root);
             });
     }
 
@@ -118,6 +120,37 @@ impl<'a> ExplorerContent<'a> {
                     Self::collect_files(children, out)
                 }
             }
+        }
+    }
+
+    fn show_workspace_root_drop_area(
+        ui: &mut egui::Ui,
+        ctx: &mut TreeRenderContext,
+        ws_root: &std::path::Path,
+    ) {
+        let (rect, resp) = ui.allocate_at_least(
+            egui::vec2(ui.available_width(), TREE_ROW_HEIGHT * 2.0),
+            egui::Sense::hover(),
+        );
+        if let Some(source_path) = resp.dnd_release_payload::<std::path::PathBuf>()
+            && source_path.as_path() != ws_root
+            && source_path.parent() != Some(ws_root)
+        {
+            *ctx.action = AppAction::RequestMoveFsNode {
+                source_path: (*source_path).clone(),
+                target_dir: ws_root.to_path_buf(),
+            };
+        }
+        if resp.hovered() && egui::DragAndDrop::has_any_payload(ui.ctx()) {
+            ui.painter().rect_filled(
+                rect,
+                crate::shell::TREE_HOVER_ROUNDING,
+                ui.visuals()
+                    .widgets
+                    .hovered
+                    .bg_fill
+                    .gamma_multiply(crate::shell::TREE_HOVER_GAMMA),
+            );
         }
     }
 }

@@ -966,6 +966,258 @@ mod tests_extra {
         let _ = std::fs::remove_dir_all(&temp_dir);
     }
 
+    #[test]
+    fn open_file_new_workspace_marks_temporary_root_and_selects_file() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("test.md");
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInNewWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+
+        assert!(app.state.workspace.is_temporary_root(dir.path()));
+        assert_eq!(app.state.active_path(), Some(file_path));
+    }
+
+    #[test]
+    fn open_file_current_workspace_without_workspace_creates_temporary_workspace() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("test.md");
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+
+        assert!(app.state.workspace.is_temporary_root(dir.path()));
+        assert_eq!(app.state.active_path(), Some(file_path));
+    }
+
+    #[test]
+    fn open_file_temporary_workspace_is_not_saved_as_workspace_history() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let file_path = dir.path().join("test.md");
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+        app.save_workspace_state();
+
+        let path_text = dir.path().display().to_string();
+        assert!(!app
+            .state
+            .global_workspace
+            .state()
+            .histories
+            .contains(&path_text));
+        assert!(!app
+            .state
+            .global_workspace
+            .state()
+            .persisted
+            .contains(&path_text));
+        assert_ne!(
+            app.state
+                .config
+                .settings
+                .settings()
+                .workspace
+                .last_workspace
+                .as_deref(),
+            Some(path_text.as_str())
+        );
+    }
+
+    #[test]
+    fn app_startup_clears_transient_workspace_restore_state() {
+        let temp_path = std::env::temp_dir().join("katana-transient-workspace-test");
+        let temp_text = temp_path.display().to_string();
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::new(
+                katana_platform::workspace::GlobalWorkspaceState {
+                    persisted: vec![temp_text.clone(), "/workspace/real".to_string()],
+                    histories: vec![temp_text.clone(), "/workspace/real".to_string()],
+                },
+            ),
+        ));
+        {
+            let settings = state.config.settings.settings_mut();
+            settings.workspace.last_workspace = Some(temp_text.clone());
+            settings.workspace.open_tabs = vec![temp_path.join("missing.md").display().to_string()];
+            settings.workspace.active_tab_idx = Some(0);
+        }
+
+        let app = KatanaApp::new(state);
+
+        assert_eq!(
+            app.state.global_workspace.state().persisted,
+            vec!["/workspace/real".to_string()]
+        );
+        assert_eq!(
+            app.state.global_workspace.state().histories,
+            vec!["/workspace/real".to_string()]
+        );
+        assert!(app
+            .state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .last_workspace
+            .is_none());
+        assert!(app
+            .state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .open_tabs
+            .is_empty());
+    }
+
+    #[test]
+    fn open_file_respects_configured_visible_extension() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions
+            .push("adr".to_string());
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("decision.adr");
+        std::fs::write(&file_path, "# Decision").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path.clone()),
+        );
+        wait_for_explorer(&mut app);
+
+        assert_eq!(app.state.active_path(), Some(file_path));
+    }
+
+    #[test]
+    fn open_file_rejects_unconfigured_extension() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("note.rs");
+        std::fs::write(&file_path, "fn main() {}").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::OpenFileInCurrentWorkspace(file_path),
+        );
+
+        assert!(app.state.workspace.data.is_none());
+        assert!(app.state.document.open_documents.is_empty());
+        assert!(matches!(
+            app.state.layout.status_message.as_ref(),
+            Some((_, crate::app_state::StatusType::Warning))
+        ));
+    }
+
+    #[test]
+    fn move_fs_node_updates_open_document_path_without_confirmation() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_file_move = false;
+        let dir = make_temp_workspace();
+        let target_dir = dir.path().join("nested");
+        std::fs::create_dir_all(&target_dir).unwrap();
+        let source_path = dir.path().join("test.md");
+        let target_path = target_dir.join("test.md");
+
+        app.handle_select_document(source_path.clone(), true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            },
+        );
+
+        assert!(target_path.exists());
+        assert_eq!(app.state.active_path(), Some(target_path));
+    }
+
+    #[test]
+    fn move_fs_node_moves_directory_without_confirmation() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_file_move = false;
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("source");
+        let target_dir = dir.path().join("target");
+        let target_path = target_dir.join("source");
+        std::fs::create_dir_all(&source_path).unwrap();
+        std::fs::create_dir_all(&target_dir).unwrap();
+        std::fs::write(source_path.join("test.md"), "# Test").unwrap();
+
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            },
+        );
+
+        assert!(target_path.join("test.md").exists());
+    }
+
+    #[test]
+    fn move_fs_node_updates_image_reference_buffer() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .behavior
+            .confirm_file_move = false;
+        let dir = tempfile::tempdir().unwrap();
+        let target_dir = dir.path().join("nested");
+        std::fs::create_dir_all(&target_dir).unwrap();
+        let source_path = dir.path().join("image.png");
+        let target_path = target_dir.join("image.png");
+        std::fs::write(&source_path, [137, 80, 78, 71]).unwrap();
+
+        app.handle_select_document(source_path.clone(), true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            },
+        );
+
+        let doc = app.state.active_document().expect("active image document");
+        assert_eq!(doc.path, target_path);
+        assert!(doc.buffer.contains(&target_path.display().to_string()));
+    }
+
     use crate::app_state::AppState;
     use crate::preview_pane::PreviewPane;
     use katana_platform::FilesystemService;
@@ -989,6 +1241,7 @@ mod tests_extra {
             update_install_rx: None,
             export_tasks: Vec::new(),
             pending_document_loads: std::collections::VecDeque::new(),
+            pending_workspace_file_open: None,
             linter_doc_rx: None,
             linter_docs_cache: std::collections::HashMap::new(),
             show_about: false,

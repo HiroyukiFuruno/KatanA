@@ -2,6 +2,25 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.6] - 2026-04-25 14:03:32 (UTC)
+
+### 🚀 Features
+
+- **Open File Flow**: Added a dedicated File > Open File action for opening supported documents, images, and DrawIO files without mixing it with the folder-only Open Workspace flow.
+- **External File Drop**: Files dropped onto the app window now open as tabs in the current workspace, including multi-file drops.
+- **Explorer Move Operations**: Files and folders can now be moved directly from the Explorer, including drops onto folders or the workspace root area.
+
+### ✨ Improvements
+
+- **File Type Filtering**: Open File and external file drops now share the same supported-extension checks, including user-configured Markdown extensions, images, and DrawIO files.
+- **Temporary Workspace Handling**: Opening a file without an active workspace uses a temporary workspace for the current session without saving it to workspace history or restoring it on the next app launch.
+- **Markdown Lint Reliability**: Updated the bundled Markdown lint engine so editor diagnostics and quick fixes follow the latest rule behavior available in KatanA.
+
+### 🐛 Bug Fixes
+
+- Fixed moved image tabs so they continue pointing to the new file location after Explorer move operations.
+- Fixed file move confirmation and settings labels so the UI uses localized text consistently.
+
 ## [0.22.5] - 2026-04-25 07:59:44 (UTC)
 
 ### 🚀 Features

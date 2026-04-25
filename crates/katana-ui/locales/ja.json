@@ -93,7 +93,8 @@
     "open_folder_hint": "KatanAを使い始めるために、フォルダを開いてください。",
     "open_workspace_button": "ワークスペースを開く",
     "remove_history_tooltip": "履歴から除去",
-    "max_depth_exceeded": "最大深度を超過しました"
+    "max_depth_exceeded": "最大深度を超過しました",
+    "temporary_workspace_tooltip": "一時ワークスペース"
   },
   "preview": {
     "preview_title": "プレビュー",
@@ -164,7 +165,9 @@
     "label_path": "パス",
     "kind_markdown": "Markdown ドキュメント",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "move_failed": "項目を移動できません: {error}",
+    "moved_file": "{source} から {target} へ項目を移動しました。"
   },
   "action": {
     "expand_all": "すべて展開",
@@ -411,7 +414,8 @@
       "ingest_section_title": "画像の取り込み",
       "ingest_image_save_directory": "画像の保存先",
       "ingest_image_name_format": "画像ファイル名の形式",
-      "ingest_create_directory": "保存先フォルダが存在しない場合は作成する"
+      "ingest_create_directory": "保存先フォルダが存在しない場合は作成する",
+      "confirm_file_move": "ファイル移動前に確認する"
     },
     "general": "全般"
   },
@@ -519,7 +523,9 @@
     "delete_title": "削除の確認",
     "delete_confirm_msg": "'{name}' を削除してもよろしいですか？\nこの操作は元に戻せません。",
     "name_hint": "名前",
-    "new_name_hint": "新しい名前"
+    "new_name_hint": "新しい名前",
+    "move_title": "移動の確認",
+    "move_confirm_msg": "{source} から {target} へ移動しますか？"
   },
   "markdown": {
     "task_todo": "未実施 [ ]",

@@ -10,6 +10,7 @@ pub struct WorkspaceState {
     pub is_loading: bool,
     pub expanded_directories: HashSet<PathBuf>,
     pub in_memory_dirs: HashSet<PathBuf>,
+    pub temporary_roots: HashSet<PathBuf>,
     pub force_tree_open: Option<bool>,
     pub flat_views: Vec<(PathBuf, bool)>,
 }
@@ -28,6 +29,7 @@ impl WorkspaceState {
             is_loading: false,
             expanded_directories: HashSet::new(),
             in_memory_dirs: HashSet::new(),
+            temporary_roots: HashSet::new(),
             force_tree_open: None,
             flat_views: Vec::new(),
         }
@@ -51,5 +53,9 @@ impl WorkspaceState {
         } else {
             self.flat_views.push((workspace_root, flat));
         }
+    }
+
+    pub fn is_temporary_root(&self, workspace_root: &Path) -> bool {
+        self.temporary_roots.contains(workspace_root)
     }
 }

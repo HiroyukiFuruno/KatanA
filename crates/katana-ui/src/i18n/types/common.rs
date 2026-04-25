@@ -103,6 +103,8 @@ pub struct DialogMessages {
     pub rename_title: String,
     pub delete_title: String,
     pub delete_confirm_msg: String,
+    pub move_title: String,
+    pub move_confirm_msg: String,
     pub name_hint: String,
     pub new_name_hint: String,
 }

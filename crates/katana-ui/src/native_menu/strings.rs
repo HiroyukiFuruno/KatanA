@@ -9,6 +9,7 @@ pub(super) fn update_from_i18n() {
         update_menu_strings(
             &msgs.menu.file,
             &msgs.menu.open_workspace,
+            &msgs.action.open_file,
             &msgs.menu.save,
             &msgs.menu.settings,
             &preferences,
@@ -40,6 +41,7 @@ pub(super) fn update_from_i18n() {
 unsafe fn update_menu_strings(
     file: &str,
     open_workspace: &str,
+    open_file: &str,
     save: &str,
     settings: &str,
     preferences: &str,
@@ -66,6 +68,7 @@ unsafe fn update_menu_strings(
     let mk = |s: &str| std::ffi::CString::new(s).unwrap_or_default();
     let c_file = mk(file);
     let c_open_workspace = mk(open_workspace);
+    let c_open_file = mk(open_file);
     let c_save = mk(save);
     let c_settings = mk(settings);
     let c_preferences = mk(preferences);
@@ -92,6 +95,7 @@ unsafe fn update_menu_strings(
     ffi::katana_update_menu_strings(
         c_file.as_ptr(),
         c_open_workspace.as_ptr(),
+        c_open_file.as_ptr(),
         c_save.as_ptr(),
         c_settings.as_ptr(),
         c_preferences.as_ptr(),

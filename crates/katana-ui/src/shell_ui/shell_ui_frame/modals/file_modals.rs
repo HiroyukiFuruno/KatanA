@@ -42,5 +42,14 @@ impl KatanaApp {
         {
             self.state.layout.delete_modal = Some(modal_data);
         }
+        if let Some(modal_data) = self.state.layout.move_modal.take()
+            && !crate::views::modals::file_ops::MoveModal::new(
+                &modal_data,
+                &mut self.pending_action,
+            )
+            .show(ctx)
+        {
+            self.state.layout.move_modal = Some(modal_data);
+        }
     }
 }

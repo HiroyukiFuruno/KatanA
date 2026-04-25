@@ -19,6 +19,8 @@ pub struct BehaviorSettings {
     #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
     pub confirm_close_dirty_tab: bool,
     #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
+    pub confirm_file_move: bool,
+    #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
     pub slideshow_hover_highlight: bool,
     #[serde(default = "super::super::defaults::SettingsDefaultOps::true_default")]
     pub slideshow_show_diagram_controls: bool,

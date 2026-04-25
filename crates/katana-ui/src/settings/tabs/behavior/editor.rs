@@ -35,6 +35,28 @@ impl BehaviorEditorOps {
         }
         ui.add_space(SUBSECTION_SPACING);
 
+        let mut confirm_move = state.config.settings.settings().behavior.confirm_file_move;
+        if ui
+            .add(
+                crate::widgets::LabeledToggle::new(
+                    &behavior_msgs.confirm_file_move,
+                    &mut confirm_move,
+                )
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
+            )
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .behavior
+                .confirm_file_move = confirm_move;
+            let _ = state.config.try_save_settings();
+        }
+        ui.add_space(SUBSECTION_SPACING);
+
         let mut scroll_sync = state
             .config
             .settings

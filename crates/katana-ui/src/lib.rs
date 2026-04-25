@@ -24,6 +24,7 @@ pub mod i18n;
 pub mod icon;
 pub(crate) mod linter_bridge;
 pub(crate) mod linter_config_bridge;
+pub(crate) mod linter_options_bridge;
 pub mod markdown_authoring_op;
 pub use icon::*;
 pub mod changelog;

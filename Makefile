@@ -22,7 +22,7 @@ RTK := $(shell command -v rtk 2> /dev/null || echo "")
 
 VERSION := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 
-KML_VERSION ?= 0.5.0
+KML_VERSION ?= 0.11.1
 KML ?= kml
 KML_MCP ?= kml-mcp
 KML_INSTALL_FEATURES ?= cli,mcp,jsonc
@@ -31,6 +31,7 @@ KML_CONFIG ?= .markdownlint.json
 KML_SCOPE ?= .
 KML_EXCLUDE_ARGS ?= --exclude "openspec/changes/archive/**" --exclude "target/**" --exclude "scripts/screenshot/target/**"
 KML_CHECK_ARGS ?= --config $(KML_CONFIG) --include "**/*.md" --include "**/*.markdown" $(KML_EXCLUDE_ARGS) $(KML_SCOPE)
+OPENSPEC ?= scripts/openspec
 
 # Suppress "ar: illegal option -- D" warning on macOS by using llvm-ar if available
 UNAME_S := $(shell uname -s)
@@ -135,6 +136,14 @@ kml-fix: kml-require ## Apply KML safe Markdown fixes
 .PHONY: kml-mcp
 kml-mcp: kml-mcp-require ## Start the KML MCP server over stdio
 	$(KML_MCP)
+
+.PHONY: openspec-require
+openspec-require: ## Verify OpenSpec CLI through the repo wrapper
+	@$(OPENSPEC) --version >/dev/null
+
+.PHONY: openspec-list
+openspec-list: openspec-require ## List active OpenSpec changes
+	$(OPENSPEC) list
 
 .PHONY: ast-lint
 ast-lint: ## Run AST-based custom linters (comment style, etc.)

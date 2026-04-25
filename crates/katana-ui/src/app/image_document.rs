@@ -59,11 +59,26 @@ impl ImageDocumentOps {
         Some((src, concurrency))
     }
 
+    pub(crate) fn buffer_for_path(path: &Path) -> String {
+        format!("![](file://{})", path.display())
+    }
+
+    pub(crate) fn refresh_reference_path(
+        doc: &mut Document,
+        source_path: &Path,
+        target_path: &Path,
+    ) {
+        if doc.path != source_path {
+            return;
+        }
+        doc.path = target_path.to_path_buf();
+        if doc.is_reference && katana_core::workspace::TreeEntry::path_is_image(target_path) {
+            doc.buffer = Self::buffer_for_path(target_path);
+        }
+    }
+
     fn new_document(path: &Path) -> Document {
-        let mut doc = Document::new(
-            path.to_path_buf(),
-            format!("![](file://{})", path.display()),
-        );
+        let mut doc = Document::new(path.to_path_buf(), Self::buffer_for_path(path));
         doc.is_reference = true;
         doc
     }

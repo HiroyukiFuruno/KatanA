@@ -1,6 +1,7 @@
 /* WHY: Isolated workspace loading handlers to coordinate asynchronous filesystem operations and UI feedback. */
 
 use super::session::WorkspaceOpenSessionOps;
+use crate::app::DocumentOps;
 use crate::app::workspace::ExplorerLoadType;
 use crate::app::workspace::manage;
 use crate::shell::KatanaApp;
@@ -84,5 +85,8 @@ impl WorkspaceOpenHandlersOps {
             .to_string();
         let (to_open, active_idx) = WorkspaceOpenSessionOps::restore_session_tabs(app, &path_str);
         WorkspaceOpenSessionOps::apply_session_tabs(app, to_open, active_idx, path_str);
+        if let Some(path) = app.pending_workspace_file_open.take() {
+            app.handle_select_document(path, true);
+        }
     }
 }

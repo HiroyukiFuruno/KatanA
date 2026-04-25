@@ -93,7 +93,8 @@
     "open_workspace_button": "Ordner öffnen",
     "remove_history_tooltip": "Aus Verlauf entfernen",
     "max_depth_exceeded": "Maximale Tiefe überschritten",
-    "filter_hint": "Filtern…"
+    "filter_hint": "Filtern…",
+    "temporary_workspace_tooltip": "Temporärer Arbeitsbereich"
   },
   "preview": {
     "preview_title": "Vorschau",
@@ -164,7 +165,9 @@
     "label_path": "Pfad",
     "kind_markdown": "Markdown-Dokument",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "move_failed": "Element konnte nicht verschoben werden: {error}",
+    "moved_file": "Element von {source} nach {target} verschoben."
   },
   "action": {
     "expand_all": "Alle erweitern",
@@ -400,7 +403,8 @@
       "ingest_section_title": "Bildimport",
       "ingest_image_save_directory": "Bildspeicherverzeichnis",
       "ingest_image_name_format": "Bildnamenformat",
-      "ingest_create_directory": "Verzeichnis erstellen, wenn nicht vorhanden"
+      "ingest_create_directory": "Verzeichnis erstellen, wenn nicht vorhanden",
+      "confirm_file_move": "Vor dem Verschieben von Dateien bestätigen"
     },
     "general": "Allgemein",
     "shortcuts": {
@@ -519,7 +523,9 @@
     "delete_title": "Löschen",
     "delete_confirm_msg": "Sicher löschen? {name}",
     "name_hint": "Name.",
-    "new_name_hint": "Neuer Name"
+    "new_name_hint": "Neuer Name",
+    "move_title": "Verschieben bestätigen",
+    "move_confirm_msg": "{source} nach {target} verschieben?"
   },
   "markdown": {
     "task_todo": "Aufgabe [ ]",

@@ -1,6 +1,7 @@
 use crate::shell::{
-    ACTIVE_FILE_HIGHLIGHT_ROUNDING, TREE_FONT_SIZE, TREE_HOVER_GAMMA, TREE_HOVER_ROUNDING,
-    TREE_ICON_ARROW_GAP, TREE_ICON_LABEL_GAP, TREE_INDENT_STEP, TREE_ROW_HEIGHT,
+    ACTIVE_FILE_HIGHLIGHT_ROUNDING, TREE_DRAG_GHOST_GAMMA, TREE_FONT_SIZE, TREE_HOVER_GAMMA,
+    TREE_HOVER_ROUNDING, TREE_ICON_ARROW_GAP, TREE_ICON_LABEL_GAP, TREE_INDENT_STEP,
+    TREE_ROW_HEIGHT,
 };
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
@@ -44,28 +45,20 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
         };
         let (full_rect, mut resp) = ui.allocate_at_least(
             egui::vec2(ui.available_width(), TREE_ROW_HEIGHT),
-            egui::Sense::click(),
+            egui::Sense::click_and_drag(),
         );
-        resp = resp.on_hover_cursor(egui::CursorIcon::PointingHand);
+        let is_dragged = ui.ctx().is_being_dragged(resp.id);
+        resp = if is_dragged {
+            resp.on_hover_cursor(egui::CursorIcon::Grabbing)
+        } else {
+            resp.on_hover_cursor(egui::CursorIcon::Grab)
+        };
+        if resp.drag_started() {
+            resp.dnd_set_drag_payload(path.to_path_buf());
+        }
 
         if ui.is_rect_visible(full_rect) {
-            if is_active {
-                let highlight_color = ui.visuals().selection.bg_fill;
-                ui.painter().rect_filled(
-                    full_rect,
-                    ACTIVE_FILE_HIGHLIGHT_ROUNDING,
-                    highlight_color,
-                );
-            } else if ui.rect_contains_pointer(full_rect) && ui.is_enabled() {
-                let hover_color = ui
-                    .visuals()
-                    .widgets
-                    .hovered
-                    .bg_fill
-                    .gamma_multiply(TREE_HOVER_GAMMA);
-                ui.painter()
-                    .rect_filled(full_rect, TREE_HOVER_ROUNDING, hover_color);
-            }
+            Self::paint_background(ui, full_rect, is_dragged, is_active);
 
             let mut child_ui = ui.new_child(
                 egui::UiBuilder::new()
@@ -122,6 +115,37 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
 
         if resp.clicked() {
             *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
+        }
+    }
+
+    fn paint_background(ui: &egui::Ui, full_rect: egui::Rect, is_dragged: bool, is_active: bool) {
+        if is_dragged {
+            let color = ui
+                .visuals()
+                .selection
+                .bg_fill
+                .gamma_multiply(TREE_DRAG_GHOST_GAMMA);
+            ui.painter()
+                .rect_filled(full_rect, ACTIVE_FILE_HIGHLIGHT_ROUNDING, color);
+            return;
+        }
+        if is_active {
+            ui.painter().rect_filled(
+                full_rect,
+                ACTIVE_FILE_HIGHLIGHT_ROUNDING,
+                ui.visuals().selection.bg_fill,
+            );
+            return;
+        }
+        if ui.rect_contains_pointer(full_rect) && ui.is_enabled() {
+            let color = ui
+                .visuals()
+                .widgets
+                .hovered
+                .bg_fill
+                .gamma_multiply(TREE_HOVER_GAMMA);
+            ui.painter()
+                .rect_filled(full_rect, TREE_HOVER_ROUNDING, color);
         }
     }
 }

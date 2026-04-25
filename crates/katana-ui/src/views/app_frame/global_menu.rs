@@ -60,6 +60,8 @@ impl<'a> GlobalMenuBar<'a> {
                         "open_workspace",
                         AppAction::PickOpenWorkspace
                     );
+                    let open_file = &i18n.action.open_file;
+                    btn!(ui, "file.open_file_current_workspace", open_file, AppAction::PickOpenFileInCurrentWorkspace);
                     btn!(
                         ui,
                         "file.close_workspace",

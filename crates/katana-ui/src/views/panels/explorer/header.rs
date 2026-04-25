@@ -40,6 +40,15 @@ impl<'a> ExplorerHeader<'a> {
             egui::Layout::left_to_right(egui::Align::Center),
             |ui| {
                 if workspace.data.is_some() {
+                    if workspace.is_temporary_root(&ws_root) {
+                        ui.add(crate::Icon::Hourglass.ui_image(ui, crate::icon::IconSize::Small))
+                            .on_hover_text(
+                                crate::i18n::I18nOps::get()
+                                    .workspace
+                                    .temporary_workspace_tooltip
+                                    .clone(),
+                            );
+                    }
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
                             .add(crate::Icon::ExpandAll.button(ui, crate::icon::IconSize::Small))
@@ -69,42 +78,13 @@ impl<'a> ExplorerHeader<'a> {
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     ui.scope(|ui| {
-                        let more_img = crate::Icon::More.ui_image(ui, crate::icon::IconSize::Small);
-                        ui.menu_image_button(more_img, |ui| {
-                            if ui
-                                .button(crate::i18n::I18nOps::get().menu.open_workspace.clone())
-                                .clicked()
-                            {
-                                *action = crate::shell_ui::ShellUiOps::pick_open_workspace();
-                                ui.close();
-                            }
-
-                            if workspace.data.is_some() {
-                                ui.separator();
-                                let mut is_flat_mut = is_flat;
-                                if ui
-                                    .checkbox(
-                                        &mut is_flat_mut,
-                                        crate::i18n::I18nOps::get().workspace.flat_view.clone(),
-                                    )
-                                    .clicked()
-                                {
-                                    workspace.set_flat_view(ws_root, is_flat_mut);
-                                    ui.close();
-                                }
-
-                                ui.separator();
-                                if ui
-                                    .button(
-                                        crate::i18n::I18nOps::get().menu.close_workspace.clone(),
-                                    )
-                                    .clicked()
-                                {
-                                    *action = AppAction::CloseWorkspace;
-                                    ui.close();
-                                }
-                            }
-                        });
+                        super::header_menu::ExplorerHeaderMenu {
+                            workspace,
+                            action,
+                            ws_root,
+                            is_flat,
+                        }
+                        .show(ui);
                     });
 
                     if workspace.data.is_some() {

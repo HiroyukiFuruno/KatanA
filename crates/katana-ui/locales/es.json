@@ -93,7 +93,8 @@
     "open_workspace_button": "Abrir carpeta",
     "remove_history_tooltip": "Quitar del historial",
     "max_depth_exceeded": "Profundidad máxima excedida",
-    "filter_hint": "Filtrar…"
+    "filter_hint": "Filtrar…",
+    "temporary_workspace_tooltip": "Espacio de trabajo temporal"
   },
   "preview": {
     "preview_title": "Vista previa",
@@ -164,7 +165,9 @@
     "label_path": "Ruta",
     "kind_markdown": "Documento Markdown",
     "yes": "Sí",
-    "no": "Falso"
+    "no": "Falso",
+    "move_failed": "No se pudo mover el elemento: {error}",
+    "moved_file": "Elemento movido de {source} a {target}."
   },
   "action": {
     "expand_all": "Expandir todo",
@@ -400,7 +403,8 @@
       "ingest_section_title": "Importación de imagen",
       "ingest_image_save_directory": "Directorio de guardado",
       "ingest_image_name_format": "Formato del nombre de imagen",
-      "ingest_create_directory": "Crear directorio si no existe"
+      "ingest_create_directory": "Crear directorio si no existe",
+      "confirm_file_move": "Confirmar antes de mover archivos"
     },
     "general": "Generalidad",
     "shortcuts": {
@@ -519,7 +523,9 @@
     "delete_title": "Eliminar",
     "delete_confirm_msg": "¿Seguro? {name}",
     "name_hint": "Nombre",
-    "new_name_hint": "Nuevo nombre"
+    "new_name_hint": "Nuevo nombre",
+    "move_title": "Confirmar movimiento",
+    "move_confirm_msg": "¿Mover {source} a {target}?"
   },
   "markdown": {
     "task_todo": "Tarea [ ]",
