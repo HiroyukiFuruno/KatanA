@@ -22,6 +22,16 @@ RTK := $(shell command -v rtk 2> /dev/null || echo "")
 
 VERSION := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 
+KML_VERSION ?= 0.5.0
+KML ?= kml
+KML_MCP ?= kml-mcp
+KML_INSTALL_FEATURES ?= cli,mcp,jsonc
+KML_INSTALL_FLAGS ?=
+KML_CONFIG ?= .markdownlint.json
+KML_SCOPE ?= .
+KML_EXCLUDE_ARGS ?= --exclude "openspec/changes/archive/**" --exclude "target/**" --exclude "scripts/screenshot/target/**"
+KML_CHECK_ARGS ?= --config $(KML_CONFIG) --include "**/*.md" --include "**/*.markdown" $(KML_EXCLUDE_ARGS) $(KML_SCOPE)
+
 # Suppress "ar: illegal option -- D" warning on macOS by using llvm-ar if available
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -97,6 +107,34 @@ lint: ## Run Clippy (forces zero warnings)
 .PHONY: lint-fix
 lint-fix: ## Run Clippy and apply automatic fixes
 	$(RTK) cargo clippy --workspace --fix --allow-dirty --allow-staged -- -D warnings
+
+.PHONY: kml-install
+kml-install: ## Install KML CLI and MCP server (katana-markdown-linter)
+	$(RTK) cargo install katana-markdown-linter --version $(KML_VERSION) --features $(KML_INSTALL_FEATURES) --force $(KML_INSTALL_FLAGS)
+
+.PHONY: kml-require
+kml-require:
+	@command -v $(KML) >/dev/null || { echo "kml not found. Run: make kml-install"; exit 127; }
+
+.PHONY: kml-mcp-require
+kml-mcp-require:
+	@command -v $(KML_MCP) >/dev/null || { echo "kml-mcp not found. Run: make kml-install"; exit 127; }
+
+.PHONY: kml-check
+kml-check: kml-require ## Run KML markdown lint without modifying files
+	$(KML) check $(KML_CHECK_ARGS)
+
+.PHONY: kml-check-json
+kml-check-json: kml-require ## Run KML markdown lint and print JSON diagnostics
+	$(KML) check --output json $(KML_CHECK_ARGS)
+
+.PHONY: kml-fix
+kml-fix: kml-require ## Apply KML safe Markdown fixes
+	$(KML) fix $(KML_CHECK_ARGS)
+
+.PHONY: kml-mcp
+kml-mcp: kml-mcp-require ## Start the KML MCP server over stdio
+	$(KML_MCP)
 
 .PHONY: ast-lint
 ast-lint: ## Run AST-based custom linters (comment style, etc.)

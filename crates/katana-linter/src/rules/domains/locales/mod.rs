@@ -6,7 +6,6 @@ use std::path::Path;
 
 pub mod audit;
 pub mod catalog;
-pub mod completeness;
 pub mod discovery;
 pub mod structure;
 pub mod values;
@@ -17,7 +16,6 @@ use structure::LocaleStructureOps;
 use values::LocaleValueOps;
 
 pub use audit::LocaleAuditOps as LocaleAudit;
-pub use completeness::LocaleCompletenessOps as LocaleCompleteness;
 
 pub struct LocaleOps;
 

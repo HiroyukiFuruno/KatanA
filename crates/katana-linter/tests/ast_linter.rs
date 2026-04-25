@@ -1,7 +1,7 @@
 use katana_linter::AstLinterOps;
 use katana_linter::rules::domains::changelog::ChangelogOps;
 use katana_linter::rules::domains::i18n::{I18nOps, IconOps};
-use katana_linter::rules::domains::locales::{LocaleAudit, LocaleCompleteness, LocaleOps};
+use katana_linter::rules::domains::locales::{LocaleAudit, LocaleOps};
 use katana_linter::rules::domains::markdown::MarkdownOps;
 use katana_linter::rules::domains::theme::{
     HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps,
@@ -493,20 +493,6 @@ fn ast_linter_i18n_no_unused_keys() {
         "i18n-unused-keys",
         "Fix: The locale key is not referenced in any Rust source file. \
          Consider removing it to keep translations lean.",
-        &all_violations,
-    );
-}
-
-#[test]
-fn ast_linter_i18n_rule_descriptions_completeness() {
-    let root = LinterFileOps::workspace_root().expect("Test requirement");
-    let locale_dir = root.join("crates/katana-ui/locales");
-    let all_violations =
-        LocaleCompleteness::lint_rule_descriptions_completeness(&root, &locale_dir);
-    ViolationReporterOps::panic(
-        "i18n-rule-descriptions-completeness",
-        "Fix: A markdownlint rule does not have a translated description in the locale files. \
-         Please add a translation for it in `rule_descriptions` to ensure the UI shows native text.",
         &all_violations,
     );
 }

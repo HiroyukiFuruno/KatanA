@@ -37,9 +37,9 @@ impl DiagnosticsHoverOps {
 
     pub(crate) fn show_hover_ui(
         ui: &mut egui::Ui,
-        diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
-        meta: &katana_linter::rules::markdown::OfficialRuleMeta,
-        all_diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
+        meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
+        all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         action: &mut crate::app_state::AppAction,
     ) {
         /* WHY: Collect all diagnostics on the same line (including the hovered one) so
@@ -69,23 +69,17 @@ impl DiagnosticsHoverOps {
 
     fn render_single_diag_section(
         ui: &mut egui::Ui,
-        diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
-        meta: &katana_linter::rules::markdown::OfficialRuleMeta,
-        all_diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
+        meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
+        all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         action: &mut crate::app_state::AppAction,
     ) {
         let sev_text = format!("{:?}", diag.severity);
         let label_text = format!("[{}] {} ({})", sev_text, diag.rule_id, meta.title);
         ui.label(egui::RichText::new(label_text).strong());
-        let localized_msg = crate::i18n::I18nOps::get()
-            .linter
-            .rule_descriptions
-            .get(&diag.rule_id.to_lowercase())
-            .cloned()
-            .unwrap_or_else(|| diag.message.clone());
-        ui.label(localized_msg);
+        ui.label(crate::linter_bridge::MarkdownLinterBridgeOps::diagnostic_message(diag));
 
-        if meta.is_fixable && diag.fix_info.is_some() {
+        if crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix(diag) {
             /* WHY: allow(horizontal_layout) */
             ui.horizontal(|ui| {
                 let linter_msgs = &crate::i18n::I18nOps::get().linter;

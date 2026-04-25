@@ -5,9 +5,9 @@ pub(super) struct RulePropertiesOps;
 impl RulePropertiesOps {
     pub(super) fn render_string_array_property(
         ui: &mut egui::Ui,
-        meta: &katana_linter::rules::markdown::OfficialRuleMeta,
-        prop: &katana_linter::rules::markdown::RuleProperty,
-        config: &mut katana_linter::rules::markdown::config::MarkdownLintConfig,
+        meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
+        prop: &katana_markdown_linter::rules::markdown::RuleProperty,
+        config: &mut katana_markdown_linter::rules::markdown::config::MarkdownLintConfig,
         target_path: &std::path::Path,
     ) {
         let mut current_arr: Vec<String> = config
@@ -46,12 +46,12 @@ impl RulePropertiesOps {
 
     pub(super) fn render_singleline_property(
         ui: &mut egui::Ui,
-        meta: &katana_linter::rules::markdown::OfficialRuleMeta,
-        prop: &katana_linter::rules::markdown::RuleProperty,
-        config: &mut katana_linter::rules::markdown::config::MarkdownLintConfig,
+        meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
+        prop: &katana_markdown_linter::rules::markdown::RuleProperty,
+        config: &mut katana_markdown_linter::rules::markdown::config::MarkdownLintConfig,
         target_path: &std::path::Path,
     ) {
-        if prop.prop_type == katana_linter::rules::markdown::RulePropertyType::Boolean {
+        if prop.prop_type == katana_markdown_linter::rules::markdown::RulePropertyType::Boolean {
             let current_bool: bool = config
                 .get_rule_property(meta.code, prop.key)
                 .and_then(|v| v.as_bool())
@@ -113,7 +113,8 @@ impl RulePropertiesOps {
             .right(|ui| {
                 let mut changed = false;
 
-                if let katana_linter::rules::markdown::RulePropertyType::Enum(opts) = prop.prop_type
+                if let katana_markdown_linter::rules::markdown::RulePropertyType::Enum(opts) =
+                    prop.prop_type
                 {
                     const MAX_TOGGLE_OPTIONS: usize = 3;
                     if opts.len() <= MAX_TOGGLE_OPTIONS {

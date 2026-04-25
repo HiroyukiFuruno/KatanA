@@ -22,6 +22,8 @@ pub mod html_renderer;
 pub(crate) mod http_cache_loader;
 pub mod i18n;
 pub mod icon;
+pub(crate) mod linter_bridge;
+pub(crate) mod linter_config_bridge;
 pub mod markdown_authoring_op;
 pub use icon::*;
 pub mod changelog;

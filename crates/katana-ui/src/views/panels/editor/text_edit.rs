@@ -20,7 +20,7 @@ impl TextEditRenderer {
         doc_search_active_index: usize,
         cursor_range_out: &mut Option<egui::text::CCursorRange>,
         pending_cursor: Option<(usize, usize)>,
-        diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         current_line_bg: Option<egui::Color32>,
         hover_line_bg: Option<egui::Color32>,
         ln_text: Option<egui::Color32>,

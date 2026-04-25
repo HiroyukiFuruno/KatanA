@@ -444,6 +444,25 @@ mod tests_extra {
     }
 
     #[test]
+    fn native_workspace_dialog_cancel_does_not_open_fallback_dialog() {
+        let mut app = make_app();
+        app.handle_pick_open_workspace_result(crate::shell_ui::NativeDialogResult::Cancelled);
+
+        assert!(app.pending_dialog_action.is_none());
+    }
+
+    #[test]
+    fn native_workspace_dialog_unavailable_opens_fallback_dialog() {
+        let mut app = make_app();
+        app.handle_pick_open_workspace_result(crate::shell_ui::NativeDialogResult::Unavailable);
+
+        assert_eq!(
+            format!("{:?}", app.pending_dialog_action),
+            format!("{:?}", Some(AppAction::PickOpenWorkspace))
+        );
+    }
+
+    #[test]
     fn handle_select_document_rerenders_when_hash_changed() {
         let mut app = make_app();
         let dir = make_temp_workspace();

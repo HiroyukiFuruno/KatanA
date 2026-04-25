@@ -8,7 +8,7 @@ impl DiagnosticsRendererOps {
     pub(crate) fn show_file_diagnostics(
         ui: &mut egui::Ui,
         path: &std::path::Path,
-        diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         expand_all: Option<bool>,
     ) -> Option<crate::app_state::AppAction> {
         let active_diags: Vec<_> = diagnostics
@@ -55,7 +55,7 @@ impl DiagnosticsRendererOps {
     /* WHY: allow(horizontal_layout) */
     pub(crate) fn show_diagnostic_row(
         ui: &mut egui::Ui,
-        diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
+        diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         path: &std::path::Path,
     ) -> Option<crate::app_state::AppAction> {
         /* WHY: Severity icons use #FFFFFF base SVG from system/ and are tinted here
@@ -65,19 +65,19 @@ impl DiagnosticsRendererOps {
             d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new("katana_theme_colors"))
         });
         let (sev_icon, sev_tint) = match diag.severity {
-            katana_linter::rules::markdown::DiagnosticSeverity::Error => (
+            katana_markdown_linter::rules::markdown::DiagnosticSeverity::Error => (
                 crate::icon::Icon::CircleFilled,
                 tc.as_ref().map(|c| {
                     crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(c.system.error_text)
                 }),
             ),
-            katana_linter::rules::markdown::DiagnosticSeverity::Warning => (
+            katana_markdown_linter::rules::markdown::DiagnosticSeverity::Warning => (
                 crate::icon::Icon::CircleFilled,
                 tc.as_ref().map(|c| {
                     crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(c.system.warning_text)
                 }),
             ),
-            katana_linter::rules::markdown::DiagnosticSeverity::Info => (
+            katana_markdown_linter::rules::markdown::DiagnosticSeverity::Info => (
                 crate::icon::Icon::CircleFilled,
                 tc.as_ref().map(|c| {
                     crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(c.system.success_text)
@@ -87,7 +87,7 @@ impl DiagnosticsRendererOps {
 
         let meta = diag.official_meta.as_ref().expect("hidden rules filtered");
         let is_experimental =
-            meta.parity == katana_linter::rules::markdown::RuleParityStatus::Experimental;
+            meta.parity == katana_markdown_linter::rules::markdown::RuleParityStatus::Experimental;
 
         let mut action = None;
 
@@ -129,13 +129,9 @@ impl DiagnosticsRendererOps {
             }
         });
 
-        let localized_msg = crate::i18n::I18nOps::get()
-            .linter
-            .rule_descriptions
-            .get(&diag.rule_id.to_lowercase())
-            .cloned()
-            .unwrap_or_else(|| diag.message.clone());
-        ui.label(egui::RichText::new(localized_msg));
+        ui.label(egui::RichText::new(
+            crate::linter_bridge::MarkdownLinterBridgeOps::diagnostic_message(diag),
+        ));
 
         ui.allocate_ui_with_layout(
             egui::vec2(ui.available_width(), 0.0),

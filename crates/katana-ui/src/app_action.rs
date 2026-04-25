@@ -34,7 +34,7 @@ pub enum AppAction {
         span: std::ops::Range<usize>,
         replacement: String,
     },
-    ApplyLintFixes(Vec<katana_linter::rules::markdown::DiagnosticFix>),
+    ApplyLintFixes(Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>),
     OpenLinterDoc(String, String),
     ToggleTaskList {
         global_index: usize,

@@ -15,7 +15,7 @@ pub(crate) struct EditorContent<'a> {
     /// Input: if set, the `TextEdit` cursor is programmatically moved to this
     /// char-index range on this frame (used after an authoring transform).
     pub pending_cursor: Option<(usize, usize)>,
-    pub diagnostics: &'a [katana_linter::rules::markdown::MarkdownDiagnostic],
+    pub diagnostics: &'a [katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
 }
 impl<'a> EditorContent<'a> {
     #[allow(clippy::too_many_arguments)]
@@ -28,7 +28,7 @@ impl<'a> EditorContent<'a> {
         doc_search_active_index: usize,
         cursor_range_out: &'a mut Option<egui::text::CCursorRange>,
         pending_cursor: Option<(usize, usize)>,
-        diagnostics: &'a [katana_linter::rules::markdown::MarkdownDiagnostic],
+        diagnostics: &'a [katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
     ) -> Self {
         Self {
             document,

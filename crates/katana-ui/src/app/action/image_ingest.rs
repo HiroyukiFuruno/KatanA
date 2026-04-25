@@ -9,25 +9,28 @@ impl KatanaApp {
             return;
         }
 
-        let files = std::panic::catch_unwind(|| {
+        let file_result = std::panic::catch_unwind(|| {
             rfd::FileDialog::new()
                 .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp", "bmp"])
                 .pick_file()
-        })
-        .unwrap_or(None);
+        });
 
-        if let Some(source_path) = files {
-            let Ok(bytes) = std::fs::read(&source_path) else {
-                return;
-            };
-            let ext = source_path
-                .extension()
-                .and_then(|s| s.to_str())
-                .unwrap_or("png");
-            self.process_image_ingest(&bytes, ext);
-        } else {
-            self.pending_dialog_action = Some(crate::app_state::AppAction::IngestImageFile);
-            self.file_dialog.pick_file();
+        match file_result {
+            Ok(Some(source_path)) => {
+                let Ok(bytes) = std::fs::read(&source_path) else {
+                    return;
+                };
+                let ext = source_path
+                    .extension()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("png");
+                self.process_image_ingest(&bytes, ext);
+            }
+            Ok(None) => {}
+            Err(_) => {
+                self.pending_dialog_action = Some(crate::app_state::AppAction::IngestImageFile);
+                self.file_dialog.pick_file();
+            }
         }
     }
 

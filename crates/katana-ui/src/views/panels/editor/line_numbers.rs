@@ -12,7 +12,7 @@ pub(crate) struct LineNumberParams<'a> {
     pub ln_active_text: Option<egui::Color32>,
     pub left_margin: f32,
     pub line_number_pad_right: f32,
-    pub diagnostics: &'a [katana_linter::rules::markdown::MarkdownDiagnostic],
+    pub diagnostics: &'a [katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
     pub action: &'a mut crate::app_state::AppAction,
 }
 
@@ -98,7 +98,7 @@ impl EditorLineNumbers {
         ln_active_text: Option<egui::Color32>,
         left_margin: f32,
         line_number_pad_right: f32,
-        _diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        _diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
     ) {
         let RowRenderParams {
             p,

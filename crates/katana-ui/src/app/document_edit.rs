@@ -6,7 +6,7 @@ pub(crate) trait DocumentEditOps {
     fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String);
     fn handle_apply_lint_fixes(
         &mut self,
-        fixes: Vec<katana_linter::rules::markdown::DiagnosticFix>,
+        fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
     );
 }
 
@@ -42,7 +42,7 @@ impl DocumentEditOps for KatanaApp {
 
     fn handle_apply_lint_fixes(
         &mut self,
-        mut fixes: Vec<katana_linter::rules::markdown::DiagnosticFix>,
+        mut fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
     ) {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;

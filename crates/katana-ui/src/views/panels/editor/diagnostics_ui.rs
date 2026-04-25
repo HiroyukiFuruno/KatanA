@@ -9,7 +9,7 @@ impl EditorDiagnostics {
         buffer: &str,
         galley: &std::sync::Arc<egui::Galley>,
         response_rect: &egui::Rect,
-        diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         action: &mut crate::app_state::AppAction,
     ) {
         for diag in diagnostics {
@@ -27,13 +27,13 @@ impl EditorDiagnostics {
 
             if let (Some(start), Some(end)) = (start_idx, end_idx) {
                 let color = match diag.severity {
-                    katana_linter::rules::markdown::DiagnosticSeverity::Error => {
+                    katana_markdown_linter::rules::markdown::DiagnosticSeverity::Error => {
                         ui.visuals().error_fg_color
                     }
-                    katana_linter::rules::markdown::DiagnosticSeverity::Warning => {
+                    katana_markdown_linter::rules::markdown::DiagnosticSeverity::Warning => {
                         ui.visuals().warn_fg_color
                     }
-                    katana_linter::rules::markdown::DiagnosticSeverity::Info => {
+                    katana_markdown_linter::rules::markdown::DiagnosticSeverity::Info => {
                         ui.visuals().text_color()
                     }
                 };
@@ -78,9 +78,9 @@ impl EditorDiagnostics {
         start_row: usize,
         end_row: usize,
         color: egui::Color32,
-        diag: &katana_linter::rules::markdown::MarkdownDiagnostic,
+        diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         action: &mut crate::app_state::AppAction,
-        all_diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
     ) {
         for row_idx in start_row..=end_row {
             let Some(placed_row) = galley.rows.get(row_idx) else {

@@ -2732,7 +2732,6 @@ name = "katana-linter"
 version = "0.22.5"
 dependencies = [
  "ignore",
- "katana-markdown-linter",
  "once_cell",
  "proc-macro2",
  "regex",
@@ -2744,9 +2743,9 @@ dependencies = [
 
 [[package]]
 name = "katana-markdown-linter"
-version = "0.2.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "804a01c37d1610651579535fc11b954a1b593e56f0936945928d4bec5272c03a"
+checksum = "28150ee241a3b30fcfe5be7003f7836f742f9df171d4ed008798554a3aad015a"
 dependencies = [
  "glob",
  "ignore",
@@ -2794,7 +2793,6 @@ dependencies = [
  "ehttp",
  "image",
  "katana-core",
- "katana-linter",
  "katana-markdown-linter",
  "katana-platform",
  "libc",
