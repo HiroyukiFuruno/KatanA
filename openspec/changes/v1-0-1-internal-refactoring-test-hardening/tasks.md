@@ -2,11 +2,11 @@
 
 ## 着手条件（DoR）
 
-- [ ] `proposal.md`、`design.md`、`specs`、`tasks.md` が揃っていること
-- [ ] 対象バージョンが `v1.0.1` であり、change ディレクトリが `v1-0-1-internal-refactoring-test-hardening` であること
-- [ ] 策定日が 2026-04-25 であることが `proposal.md`、`design.md`、`tasks.md` に明記されていること
-- [ ] この計画は 2026-04-25 時点の解析結果であり、実装着手時に task0 で差分反映する前提が明記されていること
-- [ ] この change は v1.0.1 の最初の規格として、ユーザー向け新機能ではなく内部リファクタリングと回帰検知強化を扱うこと
+- [x] `proposal.md`、`design.md`、`specs`、`tasks.md` が揃っていること
+- [x] 対象バージョンが `v1.0.1` であり、change ディレクトリが `v1-0-1-internal-refactoring-test-hardening` であること
+- [x] 策定日が 2026-04-25 であることが `proposal.md`、`design.md`、`tasks.md` に明記されていること
+- [x] この計画は 2026-04-25 時点の解析結果であり、実装着手時に task0 で差分反映する前提が明記されていること
+- [x] この change は v1.0.1 の最初の規格として、ユーザー向け新機能ではなく内部リファクタリングと回帰検知強化を扱うこと
 
 ## Branch Rule
 
@@ -20,21 +20,23 @@
 
 ### 着手条件（DoR）
 
-- [ ] Base ブランチが最新の `master` または `release/v1.0.1` に追従していること
-- [ ] 2026-04-25 から着手日までの差分を確認するための比較対象 commit が特定できていること
+- [x] Base ブランチが最新の `master` または `release/v1.0.1` に追従していること
+- [x] 2026-04-25 から着手日までの差分を確認するための比較対象 commit が特定できていること
 
-- [ ] 0.1 2026-04-25 から着手日までの `master`、active OpenSpec、`.agents` ワークフロー、Makefile、テスト実行基盤の差分を確認する
-- [ ] 0.2 `katana-ui` のモジュール構造、大きいファイル、テスト配置を再計測し、2026-04-25 時点の解析との差分を整理する
-- [ ] 0.3 既に別 change で整理済みの領域、または新しく追加された領域を `design.md` の現状分析へ反映する
-- [ ] 0.4 task1 以降の対象順序、DoR、DoD、検証対象を最新状態に合わせて更新する
+実施記録: 2026-04-25 14:53 JST に、比較基準 `512f6864` から `9ffeb570` までの `master` 差分、active OpenSpec、`.agents` / `.codex` workflow、Makefile、`scripts/runner`、`katana-ui` 構造、主要 test file 行数を確認した。
+
+- [x] 0.1 2026-04-25 から着手日までの `master`、active OpenSpec、`.agents` ワークフロー、Makefile、テスト実行基盤の差分を確認する
+- [x] 0.2 `katana-ui` のモジュール構造、大きいファイル、テスト配置を再計測し、2026-04-25 時点の解析との差分を整理する
+- [x] 0.3 既に別 change で整理済みの領域、または新しく追加された領域を `design.md` の現状分析へ反映する
+- [x] 0.4 task1 以降の対象順序、DoR、DoD、検証対象を最新状態に合わせて更新する
 
 ### 完了条件（DoD）
 
-- [ ] 2026-04-25 から着手日までの差分が `design.md` または `tasks.md` に記録されていること
-- [ ] task1 以降の作業順序が、着手日時点のコード構造と active change 状態に合っていること
-- [ ] この task では製品コードの移動や挙動変更を行っていないこと
-- [ ] `openspec validate v1-0-1-internal-refactoring-test-hardening` が exit code 0 で通過すること
-- [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、自己レビュー、commit、PR作成、merge を含む delivery routine を完了すること
+- [x] 2026-04-25 から着手日までの差分が `design.md` または `tasks.md` に記録されていること
+- [x] task1 以降の作業順序が、着手日時点のコード構造と active change 状態に合っていること
+- [x] この task では製品コードの移動や挙動変更を行っていないこと
+- [x] `openspec validate v1-0-1-internal-refactoring-test-hardening` が exit code 0 で通過すること
+- [x] 本セッションのユーザー指示に従い、この task0 の docs-only 差分を `master` へ commit / push すること
 
 ## 1. 構造棚卸しと分類
 
@@ -46,7 +48,7 @@
 - [ ] 1.1 `katana-ui`、`katana-core`、`katana-platform` の大きいモジュール、責務が混在するモジュール、巨大なテストファイルを一覧化する
 - [ ] 1.2 単純なファイル移動で済む候補と、サービス境界 / 状態不変条件の再設計が必要な候補を分ける
 - [ ] 1.3 `AppAction`、`AppState`、shell dispatch、preview rendering、diagnostics、workspace、settings の現状責務を表にする
-- [ ] 1.4 v1.0.1 で扱う対象と後続バージョンへ送る対象を明記する
+- [ ] 1.4 master に入った i18n fallback、diagram backend contract、local LLM UI 前提整理を再実装対象から除外し、v1.0.1 で扱う対象と後続バージョンへ送る対象を明記する
 
 ### 完了条件（DoD）
 
@@ -65,7 +67,7 @@
 - [ ] 2.1 `features/document`、`features/workspace`、`features/preview`、`features/diagnostics`、`features/settings` の目標構造を確定する
 - [ ] 2.2 `shell`、`views`、`widgets`、`features` の import rule と ownership rule を定義する
 - [ ] 2.3 ファイル移動だけで可能なモジュールを、挙動変更なしの小さい PR 単位に分割する
-- [ ] 2.4 移動後も public API、feature state、ユーザーから見える挙動が変わらないことを確認する
+- [ ] 2.4 既存 `app/action/*` と `state/*` の所有境界を明文化してから移動し、移動後も public API、feature state、ユーザーから見える挙動が変わらないことを確認する
 
 ### 完了条件（DoD）
 
@@ -105,8 +107,9 @@
 - [ ] 4.1 `shell_tests.rs`、`shell_ui_tests.rs`、`preview_pane/tests.rs` を契約単位へ分割する計画を作る
 - [ ] 4.2 pure logic / state transition は単体テストに寄せ、UI harness 依存を減らす
 - [ ] 4.3 user workflow は統合テストに残し、state、semantic text、layout rect、action dispatch の assertion を強化する
-- [ ] 4.4 過去 bug の regression test を fixture と test name で追跡できるようにする
-- [ ] 4.5 fixed wait に依存している harness helper を特定し、条件待機へ移す
+- [ ] 4.4 既存 integration の `preview_pane/tables.rs`、`preview_pane/diagrams.rs` を release regression gate へ接続するか、通常 integration contract として残すかを分類する
+- [ ] 4.5 過去 bug の regression test を fixture と test name で追跡できるようにする
+- [ ] 4.6 fixed wait に依存している harness helper を特定し、条件待機へ移す
 
 ### 完了条件（DoD）
 

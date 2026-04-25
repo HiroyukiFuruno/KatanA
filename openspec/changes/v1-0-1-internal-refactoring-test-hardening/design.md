@@ -14,6 +14,28 @@
 - `preview_pane`、`views/panels/preview`、`katana-core/src/markdown/*` の間で preview / diagram / render worker の責務境界が曖昧になりやすい。
 - integration tests は増えているが、正式リリース後に守るべき product contract、migration contract、error recovery contract が明示的な gate として整理されていない。
 
+## Task 0 差分反映（2026-04-25 14:53 JST）
+
+比較基準は、この change を作成した `512f6864 docs(openspec): v1-0-1-internal-refactoring-test-hardening change を追加` とした。着手時点の `master` は `9ffeb570 feat: 図表backend adapter契約を追加` である。
+
+2026-04-25 の策定後に確認した差分は次の通り。
+
+- `local-llm-ui-integration` は、`v0-23-0-local-llm-lint-autofix` の LLM MVP が `master` に入った後の導線整理として前提が明記された。この v1.0.1 change では LLM UI / Ollama / chat 導線を扱わない。
+- `i18n-runtime-safety` Task 1 が `master` に入り、未知の runtime language code は fallback language へ解決されるようになった。v1.0.1 ではこの fallback の再実装を扱わず、settings / state / action の境界整理で既存挙動を壊さないことを検証対象にする。
+- `diagram-backend-adapter` Task 1 が `master` に入り、Mermaid / PlantUML 用の backend input、render options、theme snapshot、document context、renderer-neutral output / error、cache key contract が追加された。v1.0.1 の preview / diagram 整理ではこの契約を前提にし、同じ契約型を再定義しない。
+- active OpenSpec には `preview-adapter-contract`、`diagram-backend-adapter`、`i18n-runtime-safety`、`local-llm-ui-integration` と、v0.22.x から v0.31.0 系の複数 change が残っている。v1.0.1 はそれらの機能 change を吸収せず、内部構造と回帰検知の土台に限定する。
+- `.agents` / `.codex` workflow、Makefile、`scripts/runner` には、策定後に v1.0.1 の作業順序を変える差分は確認されなかった。現時点の verification gate は引き続き `make check` を主軸にする。
+- `katana-ui` の再計測では、`shell_tests.rs` 1241 行、`shell_ui_tests.rs` 1091 行、`preview_pane/tests.rs` 1025 行が最大の単体テスト群として残っている。integration 側では `tests/integration/preview_pane/tables.rs` 656 行、`preview_pane/diagrams.rs` 273 行が大きい。
+- `katana-ui/src` は既に `app/action/*`、`state/*`、`shell/*`、`shell_ui/*`、`views/*`、`widgets/*` に分かれているが、`features/*` という所有境界はまだ存在しない。Task 1 ではこの現状を前提に、単純移動で済む領域と service boundary の再設計が必要な領域を分ける。
+
+この反映により、Task 1 以降の優先順は次のように最適化する。
+
+1. Task 1 では、master に入った i18n fallback と diagram backend contract を既存前提として棚卸し対象へ含めるが、再実装対象にはしない。
+2. Task 2 のディレクトリ再設計は、`features/*` 新設を確定する前に、既存 `app/action/*` と `state/*` の所有境界を表にする。
+3. Task 3 は、引き続き `AppAction`、root `AppState`、shell dispatch を優先する。preview / diagram の深い実装移行は active change との衝突を避ける。
+4. Task 4 は、巨大 unit test の分割に加え、既存 integration tests の大きい preview table / diagram 領域を release regression gate へどう接続するかを明記する。
+5. Task 5 は、現在の `make check` が macOS impacted test、Linux workspace test、Windows xwin check を含む前提で、常時 gate と release-only gate の境界を再判断する。
+
 ## Goals / Non-Goals
 
 **Goals:**
