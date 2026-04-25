@@ -2,6 +2,7 @@ use crate::app::*;
 use crate::app_state::AppAction;
 use eframe::egui;
 
+mod dropped_files;
 mod shell_ui_frame;
 mod shell_ui_shortcuts;
 mod shell_ui_update;
@@ -40,6 +41,20 @@ impl ShellUiOps {
 
     pub(crate) fn open_folder_dialog_result() -> NativeDialogResult<std::path::PathBuf> {
         match std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()) {
+            Ok(Some(path)) => NativeDialogResult::Picked(path),
+            Ok(None) => NativeDialogResult::Cancelled,
+            Err(_) => NativeDialogResult::Unavailable,
+        }
+    }
+
+    pub(crate) fn open_file_dialog_result(
+        extensions: &[String],
+    ) -> NativeDialogResult<std::path::PathBuf> {
+        match std::panic::catch_unwind(|| {
+            rfd::FileDialog::new()
+                .add_filter("KatanA", extensions)
+                .pick_file()
+        }) {
             Ok(Some(path)) => NativeDialogResult::Picked(path),
             Ok(None) => NativeDialogResult::Cancelled,
             Err(_) => NativeDialogResult::Unavailable,

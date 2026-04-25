@@ -5,6 +5,7 @@
 enum {
     TAG_OPEN_WORKSPACE = 1,
     TAG_SAVE           = 2,
+    TAG_OPEN_FILE      = 21,
     TAG_LANG_EN        = 3,
     TAG_LANG_JA        = 4,
     TAG_ABOUT          = 5,
@@ -52,6 +53,7 @@ static KatanaMenuTarget *g_target = nil;
 
 static NSMenu *g_file_menu = nil;
 static NSMenuItem *g_open_workspace_item = nil;
+static NSMenuItem *g_open_file_item = nil;
 static NSMenuItem *g_close_workspace_item = nil;
 static NSMenuItem *g_save_item = nil;
 static NSMenu *g_view_menu = nil;
@@ -129,6 +131,15 @@ void katana_setup_native_menu(void) {
     [openItem setTag:TAG_OPEN_WORKSPACE];
     [fileMenu addItem:openItem];
     g_open_workspace_item = openItem;
+
+    NSMenuItem *openFileItem = [[NSMenuItem alloc]
+        initWithTitle:@"Open File…"
+        action:action
+        keyEquivalent:@""];
+    [openFileItem setTarget:g_target];
+    [openFileItem setTag:TAG_OPEN_FILE];
+    [fileMenu addItem:openFileItem];
+    g_open_file_item = openFileItem;
 
     NSMenuItem *closeWsItem = [[NSMenuItem alloc]
         initWithTitle:@"Close Workspace"
@@ -413,6 +424,7 @@ int katana_poll_menu_action(void) {
 void katana_update_menu_strings(
     const char* file, 
     const char* open_workspace, 
+    const char* open_file, 
     const char* save, 
     const char* settings, 
     const char* preferences, 
@@ -442,6 +454,9 @@ void katana_update_menu_strings(
         }
         if (g_open_workspace_item && open_workspace) {
             [g_open_workspace_item setTitle:[NSString stringWithUTF8String:open_workspace]];
+        }
+        if (g_open_file_item && open_file) {
+            [g_open_file_item setTitle:[NSString stringWithUTF8String:open_file]];
         }
         if (g_close_workspace_item && close_workspace) {
             [g_close_workspace_item setTitle:[NSString stringWithUTF8String:close_workspace]];

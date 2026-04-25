@@ -93,7 +93,8 @@
     "open_workspace_button": "開啟資料夾",
     "remove_history_tooltip": "從歷史記錄中移除",
     "max_depth_exceeded": "超過最大掃描深度",
-    "filter_hint": "篩選…"
+    "filter_hint": "篩選…",
+    "temporary_workspace_tooltip": "暫時工作區"
   },
   "preview": {
     "preview_title": "預覽",
@@ -164,7 +165,9 @@
     "label_path": "路徑",
     "kind_markdown": "Markdown 文件",
     "yes": "是",
-    "no": "否"
+    "no": "否",
+    "move_failed": "無法移動項目：{error}",
+    "moved_file": "已將項目從 {source} 移動到 {target}。"
   },
   "action": {
     "expand_all": "全部展開",
@@ -400,7 +403,8 @@
       "ingest_section_title": "圖像匯入",
       "ingest_image_save_directory": "圖像儲存目錄",
       "ingest_image_name_format": "圖像名稱格式",
-      "ingest_create_directory": "目錄不存在時自動建立"
+      "ingest_create_directory": "目錄不存在時自動建立",
+      "confirm_file_move": "移動檔案前確認"
     },
     "general": "一般",
     "shortcuts": {
@@ -519,7 +523,9 @@
     "delete_title": "刪除",
     "delete_confirm_msg": "確定刪除嗎？ {name}",
     "name_hint": "名稱",
-    "new_name_hint": "新名稱"
+    "new_name_hint": "新名稱",
+    "move_title": "確認移動",
+    "move_confirm_msg": "將 {source} 移動到 {target}？"
   },
   "markdown": {
     "task_todo": "待辦 [ ]",

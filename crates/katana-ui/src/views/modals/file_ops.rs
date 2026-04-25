@@ -149,4 +149,5 @@ impl<'a> CreateFsNodeModal<'a> {
     }
 }
 
+pub(crate) use super::file_ops_move::MoveModal;
 pub(crate) use super::file_ops_rename_delete::{DeleteModal, RenameModal};

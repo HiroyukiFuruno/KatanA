@@ -1,6 +1,7 @@
 use crate::app::preview::PreviewOps;
 use crate::app::workspace::WorkspaceTabSessionV2;
 use crate::app::workspace::manage;
+use crate::app::workspace::open::registration::WorkspaceRegistrationOps;
 use crate::shell::KatanaApp;
 
 pub struct WorkspaceOpenSessionOps;
@@ -120,22 +121,7 @@ impl WorkspaceOpenSessionOps {
         active_idx: Option<usize>,
         path_str: String,
     ) {
-        {
-            let is_temp = path_str.contains("/var/folders/") || path_str.contains("/tmp/");
-            if !is_temp || app.state.global_workspace.is_ephemeral() {
-                let global_state = app.state.global_workspace.state_mut();
-                /* WHY: All open-workspace routes (dialog, list, history) share identical behavior:
-                 * both `persisted` and `histories` are updated here. */
-                global_state.persisted.retain(|p| p != &path_str);
-                global_state.persisted.push(path_str.clone());
-                global_state.histories.retain(|p| p != &path_str);
-                global_state.histories.push(path_str.clone());
-                let _ = app.state.global_workspace.save();
-            }
-
-            let settings = app.state.config.settings.settings_mut();
-            settings.workspace.last_workspace = Some(path_str);
-        }
+        WorkspaceRegistrationOps::sync_opened_workspace(app, &path_str);
         to_open.retain(|(p, _)| std::path::Path::new(p).exists());
         let existing: std::collections::HashSet<String> =
             to_open.iter().map(|(p, _)| p.clone()).collect();

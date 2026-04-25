@@ -93,7 +93,8 @@
     "open_folder_hint": "Open a folder to start using KatanA.",
     "open_workspace_button": "Open Workspace",
     "remove_history_tooltip": "Remove from history",
-    "max_depth_exceeded": "Max depth exceeded"
+    "max_depth_exceeded": "Max depth exceeded",
+    "temporary_workspace_tooltip": "Temporary workspace"
   },
   "preview": {
     "preview_title": "Preview",
@@ -164,7 +165,9 @@
     "label_path": "Path",
     "kind_markdown": "Markdown Document",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "move_failed": "Failed to move item: {error}",
+    "moved_file": "Moved item from {source} to {target}."
   },
   "action": {
     "expand_all": "Expand All",
@@ -411,7 +414,8 @@
       "ingest_section_title": "Image Ingest",
       "ingest_image_save_directory": "Image Save Directory",
       "ingest_image_name_format": "Image Name Format",
-      "ingest_create_directory": "Create directory if not exists"
+      "ingest_create_directory": "Create directory if not exists",
+      "confirm_file_move": "Confirm before moving files"
     },
     "general": "General"
   },
@@ -519,7 +523,9 @@
     "delete_title": "Delete",
     "delete_confirm_msg": "Are you sure you want to delete {name}?",
     "name_hint": "Name",
-    "new_name_hint": "New name"
+    "new_name_hint": "New name",
+    "move_title": "Confirm Move",
+    "move_confirm_msg": "Move {source} to {target}?"
   },
   "markdown": {
     "task_todo": "Task [ ]",

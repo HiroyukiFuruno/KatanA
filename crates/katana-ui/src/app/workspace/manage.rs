@@ -117,6 +117,9 @@ pub(super) fn save_workspace_state(app: &mut KatanaApp) {
     let Some(ws) = &app.state.workspace.data else {
         return;
     };
+    if app.state.workspace.is_temporary_root(&ws.root) {
+        return;
+    }
     let state_key = compute_workspace_hash(&ws.root.to_string_lossy());
     let expanded: std::collections::HashSet<String> = app
         .state

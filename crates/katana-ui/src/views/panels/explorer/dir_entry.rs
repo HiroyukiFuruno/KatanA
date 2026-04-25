@@ -1,8 +1,8 @@
 use super::tree_entry::TreeEntryNode;
 use crate::shell::{
     TREE_ACCORDION_LINE_GAMMA, TREE_ACCORDION_LINE_OFFSET, TREE_ACCORDION_LINE_WIDTH,
-    TREE_FONT_SIZE, TREE_HOVER_GAMMA, TREE_HOVER_ROUNDING, TREE_ICON_ARROW_GAP,
-    TREE_ICON_LABEL_GAP, TREE_INDENT_STEP, TREE_ROW_HEIGHT,
+    TREE_DRAG_GHOST_GAMMA, TREE_FONT_SIZE, TREE_HOVER_GAMMA, TREE_HOVER_ROUNDING,
+    TREE_ICON_ARROW_GAP, TREE_ICON_LABEL_GAP, TREE_INDENT_STEP, TREE_ROW_HEIGHT,
 };
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
@@ -41,9 +41,26 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
         let file_tree_color = ui.visuals().text_color();
         let (rect, mut resp) = ui.allocate_at_least(
             egui::vec2(ui.available_width(), TREE_ROW_HEIGHT),
-            egui::Sense::click(),
+            egui::Sense::click_and_drag(),
         );
-        resp = resp.on_hover_cursor(egui::CursorIcon::PointingHand);
+        resp = if ui.ctx().is_being_dragged(resp.id) {
+            resp.on_hover_cursor(egui::CursorIcon::Grabbing)
+        } else {
+            resp.on_hover_cursor(egui::CursorIcon::Grab)
+        };
+        if resp.drag_started() {
+            resp.dnd_set_drag_payload(path.to_path_buf());
+        }
+        if let Some(source_path) = resp.dnd_release_payload::<std::path::PathBuf>()
+            && source_path.as_path() != path
+            && source_path.parent() != Some(path)
+            && !path.starts_with(source_path.as_path())
+        {
+            *ctx.action = crate::app_state::AppAction::RequestMoveFsNode {
+                source_path: (*source_path).clone(),
+                target_dir: path.to_path_buf(),
+            };
+        }
 
         let accessible_label = format!("dir {}", name);
         resp.widget_info(|| {
@@ -59,7 +76,16 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
         }
 
         if ui.is_rect_visible(rect) {
-            if ui.rect_contains_pointer(rect) && ui.is_enabled() {
+            if ui.ctx().is_being_dragged(resp.id) {
+                ui.painter().rect_filled(
+                    rect,
+                    TREE_HOVER_ROUNDING,
+                    ui.visuals()
+                        .selection
+                        .bg_fill
+                        .gamma_multiply(TREE_DRAG_GHOST_GAMMA),
+                );
+            } else if ui.rect_contains_pointer(rect) && ui.is_enabled() {
                 let hover_color = ui
                     .visuals()
                     .widgets

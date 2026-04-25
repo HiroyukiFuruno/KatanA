@@ -19,6 +19,15 @@ impl FileCommands {
                 default_shortcuts: &["primary+O"],
             },
             CommandInventoryItem {
+                id: "file.open_file_current_workspace",
+                action: AppAction::PickOpenFileInCurrentWorkspace,
+                group: CommandGroup::File,
+                context: ShortcutContext::Global,
+                label: || I18nOps::get().action.open_file.clone(),
+                is_available: |_| true,
+                default_shortcuts: &[],
+            },
+            CommandInventoryItem {
                 id: "file.close_workspace",
                 action: AppAction::CloseWorkspace,
                 group: CommandGroup::File,

@@ -86,6 +86,13 @@ impl ExplorerSidebarItems {
                 app.pending_action = crate::shell_ui::ShellUiOps::pick_open_workspace();
                 ui.close();
             }
+            if ui
+                .button(crate::i18n::I18nOps::get().action.open_file.clone())
+                .clicked()
+            {
+                app.pending_action = crate::app_state::AppAction::PickOpenFileInCurrentWorkspace;
+                ui.close();
+            }
 
             if app.state.workspace.data.is_some() {
                 ui.separator();

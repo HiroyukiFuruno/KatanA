@@ -9,12 +9,17 @@ use katana_platform::{PaneOrder, SplitDirection};
 pub enum AppAction {
     InstallUpdate,
     PickOpenWorkspace,
+    PickOpenFileInCurrentWorkspace,
+    PickOpenFileInNewWorkspace,
     PickExportDocument {
         doc_path: PathBuf,
         ext: String,
         source: String,
     },
     OpenWorkspace(PathBuf),
+    OpenFileInCurrentWorkspace(PathBuf),
+    OpenFileInNewWorkspace(PathBuf),
+    OpenDroppedFiles(Vec<PathBuf>),
     SelectDocument(PathBuf),
     SelectDocumentAndJump {
         path: PathBuf,
@@ -96,6 +101,14 @@ pub enum AppAction {
         new_path: PathBuf,
     },
     DeleteFsNode {
+        target_path: PathBuf,
+    },
+    RequestMoveFsNode {
+        source_path: PathBuf,
+        target_dir: PathBuf,
+    },
+    MoveFsNode {
+        source_path: PathBuf,
         target_path: PathBuf,
     },
     CloseOtherDocuments(usize),

@@ -149,6 +149,7 @@ pub struct SettingsUpdateMessages {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SettingsBehaviorMessages {
     pub section_title: String, pub confirm_close_dirty_tab: String,
+    pub confirm_file_move: String,
     pub scroll_sync: String, pub auto_save: String,
     pub auto_save_interval: String, pub auto_save_interval_hint: String,
     pub auto_refresh: String, pub auto_refresh_interval: String,

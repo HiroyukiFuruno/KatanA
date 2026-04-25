@@ -5,6 +5,7 @@ use crate::app_state::AppAction;
 mod ffi {
     pub const TAG_OPEN_WORKSPACE: i32 = 1;
     pub const TAG_SAVE: i32 = 2;
+    pub const TAG_OPEN_FILE: i32 = 21;
     pub const TAG_LANG_EN: i32 = 3;
     pub const TAG_LANG_JA: i32 = 4;
     pub const TAG_ABOUT: i32 = 5;
@@ -41,6 +42,7 @@ mod ffi {
         pub fn katana_update_menu_strings(
             file: *const std::ffi::c_char,
             open_workspace: *const std::ffi::c_char,
+            open_file: *const std::ffi::c_char,
             save: *const std::ffi::c_char,
             settings: *const std::ffi::c_char,
             preferences: *const std::ffi::c_char,
@@ -130,6 +132,7 @@ impl NativeMenuOps {
         let action = unsafe { ffi::katana_poll_menu_action() };
         match action {
             ffi::TAG_OPEN_WORKSPACE => AppAction::PickOpenWorkspace,
+            ffi::TAG_OPEN_FILE => AppAction::PickOpenFileInCurrentWorkspace,
             ffi::TAG_SAVE => AppAction::SaveDocument,
             ffi::TAG_LANG_EN => AppAction::ChangeLanguage("en".to_string()),
             ffi::TAG_LANG_JA => AppAction::ChangeLanguage("ja".to_string()),
