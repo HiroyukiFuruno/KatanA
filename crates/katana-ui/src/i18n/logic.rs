@@ -5,6 +5,8 @@ use std::sync::atomic::{AtomicPtr, Ordering};
 use std::sync::{LazyLock, OnceLock};
 
 impl I18nOps {
+    const FALLBACK_LANGUAGE: &'static str = "en";
+
     pub fn supported_languages() -> &'static [(String, String)] {
         static LANGS: OnceLock<Vec<(String, String)>> = OnceLock::new();
         LANGS.get_or_init(|| {
@@ -16,11 +18,20 @@ impl I18nOps {
     }
 
     pub fn set_language(lang: &str) {
+        let resolved = Self::resolve_language(lang);
         {
             let mut current = write_guard(&CURRENT_LANGUAGE);
-            *current = lang.to_string();
+            *current = resolved.clone();
         }
-        Self::update_cached_messages(lang);
+        Self::update_cached_messages(&resolved);
+    }
+
+    pub fn resolve_language(lang: &str) -> String {
+        if Self::is_supported_language(lang) {
+            lang.to_string()
+        } else {
+            Self::FALLBACK_LANGUAGE.to_string()
+        }
     }
 
     pub fn get_language() -> String {
@@ -61,6 +72,12 @@ impl I18nOps {
             .map(|(_, n)| n.clone())
             .unwrap_or_else(|| "???".to_string())
     }
+
+    fn is_supported_language(lang: &str) -> bool {
+        Self::supported_languages()
+            .iter()
+            .any(|(code, _)| code == lang)
+    }
 }
 
 /* WHY: LazyLock is required because parking_lot::RwLock cannot be const-initialized in a static context. */
@@ -70,7 +87,7 @@ static CURRENT_MESSAGES_CACHED: AtomicPtr<I18nMessages> = AtomicPtr::new(ptr::nu
 fn init_current_language() {
     let mut current = write_guard(&CURRENT_LANGUAGE);
     if current.is_empty() {
-        *current = "en".to_string();
+        *current = I18nOps::FALLBACK_LANGUAGE.to_string();
     }
 }
 
@@ -94,14 +111,15 @@ fn get_dictionary() -> &'static Vec<DictionaryEntry> {
 }
 
 fn get_messages_for_lang(lang: &str) -> &'static I18nMessages {
+    let resolved = I18nOps::resolve_language(lang);
     let dict = get_dictionary();
     let entry = dict
         .iter()
-        .find(|e| e.lang == lang)
+        .find(|e| e.lang == resolved)
         .expect("BUG: Supported language missing from dictionary.");
 
     entry.messages.get_or_init(|| {
-        let json = match lang {
+        let json = match resolved.as_str() {
             "en" => include_str!("../../locales/en.json"),
             "ja" => include_str!("../../locales/ja.json"),
             "zh-CN" => include_str!("../../locales/zh-CN.json"),
@@ -114,8 +132,12 @@ fn get_messages_for_lang(lang: &str) -> &'static I18nMessages {
             "it" => include_str!("../../locales/it.json"),
             _ => panic!("BUG: Unhandled language code: {lang}"),
         };
-        serde_json::from_str(json).unwrap_or_else(|e| panic!("BUG: {lang}.json is invalid: {e}"))
+        parse_messages_for_lang(&resolved, json)
     })
+}
+
+fn parse_messages_for_lang(lang: &str, json: &str) -> I18nMessages {
+    serde_json::from_str(json).unwrap_or_else(|e| panic!("BUG: {lang}.json is invalid: {e}"))
 }
 
 fn read_guard(lock: &RwLock<String>) -> RwLockReadGuard<'_, String> {
@@ -124,4 +146,48 @@ fn read_guard(lock: &RwLock<String>) -> RwLockReadGuard<'_, String> {
 
 fn write_guard(lock: &RwLock<String>) -> RwLockWriteGuard<'_, String> {
     lock.write()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct LanguageGuard {
+        previous: String,
+    }
+
+    impl LanguageGuard {
+        fn capture() -> Self {
+            Self {
+                previous: I18nOps::get_language(),
+            }
+        }
+    }
+
+    impl Drop for LanguageGuard {
+        fn drop(&mut self) {
+            I18nOps::set_language(&self.previous);
+        }
+    }
+
+    #[test]
+    fn unknown_runtime_language_resolves_to_fallback() {
+        assert_eq!(I18nOps::resolve_language("unknown-lang"), "en");
+    }
+
+    #[test]
+    fn set_language_with_unknown_code_does_not_panic() {
+        let _guard = LanguageGuard::capture();
+
+        I18nOps::set_language("unknown-lang");
+
+        assert_eq!(I18nOps::get_language(), "en");
+        assert_eq!(I18nOps::get().menu.file, "File");
+    }
+
+    #[test]
+    #[should_panic(expected = "BUG: broken.json is invalid")]
+    fn invalid_embedded_locale_still_fails_fast() {
+        let _ = parse_messages_for_lang("broken", "{");
+    }
 }

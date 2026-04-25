@@ -1,8 +1,8 @@
 ## 1. Runtime Fallback
 
-- [ ] 1.1 `I18nOps` に fallback-aware language resolver を追加する
-- [ ] 1.2 user settings 由来の未知 language code で panic しないように dictionary lookup を修正する
-- [ ] 1.3 embedded locale corruption は fail fast のまま維持するテストを追加する
+- [x] 1.1 `I18nOps` に fallback-aware language resolver を追加する
+- [x] 1.2 user settings 由来の未知 language code で panic しないように dictionary lookup を修正する
+- [x] 1.3 embedded locale corruption は fail fast のまま維持するテストを追加する
 
 ## 2. Formatter Adapter
 
