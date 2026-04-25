@@ -27,7 +27,7 @@ egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonm
 
 # Markdown
 comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
-katana-markdown-linter = "0.11.0"
+katana-markdown-linter = "0.12.1"
 
 # Serialization / config
 serde = { version = "1", features = ["derive"] }
@@ -44,7 +44,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Networking / Auto Update
 ureq = { version = "3.3", features = ["json"] }
 semver = "1.0"
-zip = "8.5"
+zip = "8.6"
 tar = "0.4.45"
 flate2 = "1.1.9"
 
