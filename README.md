@@ -48,6 +48,10 @@ This repository is operated with an AI-agent-first workflow in mind.
 Repository-local skills are maintained canonically under `.agents/skills/`.
 If another AI agent expects a different skill directory layout, copy the same skill content from `.agents/skills/` into that agent's expected path instead of maintaining a separate variant.
 
+KatanA itself is also developed through a **Codex-centered AI-agent workflow**.
+We primarily use **[Codex](https://openai.com/codex)** and combine it with other AI agents where they fit best, such as implementation, review, investigation, documentation, and release preparation.
+This keeps the project aligned with the same human-and-agent collaboration model that KatanA is built to support.
+
 ### Mandatory Tools for AI-Agent Workflow
 
 To minimize token consumption and manage context window bloat, the use of **[rtk](https://github.com/fission-ai/rtk)** is **mandatory** for all AI agents working in this repository.
