@@ -1,8 +1,8 @@
 ## 1. Adapter Contract
 
-- [ ] 1.1 `PreviewInput`、`PreviewThemeSnapshot`、`PreviewWorkspaceContext`、`PreviewRenderMetadata`、`PreviewAction` 相当の型を定義する
-- [ ] 1.2 adapter 外へ出してよい型と出してはいけない renderer-specific 型を文書化する
-- [ ] 1.3 parser / vendor / renderer internals が public adapter contract に入らない compile-time boundary を追加する
+- [x] 1.1 `PreviewInput`、`PreviewThemeSnapshot`、`PreviewWorkspaceContext`、`PreviewRenderMetadata`、`PreviewAction` 相当の型を定義する
+- [x] 1.2 adapter 外へ出してよい型と出してはいけない renderer-specific 型を文書化する
+- [x] 1.3 parser / vendor / renderer internals が public adapter contract に入らない compile-time boundary を追加する
 
 ## 2. Metadata Contract Tests
 
