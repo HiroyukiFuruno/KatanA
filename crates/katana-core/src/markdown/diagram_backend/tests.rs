@@ -83,6 +83,18 @@ fn backend_output_converts_to_existing_diagram_result() {
 
 #[test]
 fn backend_error_converts_to_existing_diagram_result() {
+    match (DiagramBackendError::RenderFailed {
+        message: "render failed".to_string(),
+    })
+    .into_diagram_result("graph TD; A-->B")
+    {
+        DiagramResult::Err { source, error } => {
+            assert_eq!(source, "graph TD; A-->B");
+            assert_eq!(error, "render failed");
+        }
+        other => panic!("unexpected result: {other:?}"),
+    }
+
     match (DiagramBackendError::CommandNotFound {
         tool_name: "mmdc".to_string(),
         install_hint: "npm install".to_string(),

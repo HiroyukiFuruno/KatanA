@@ -92,11 +92,16 @@ if [[ -f "$INFO_PLIST" ]]; then
     success "$INFO_PLIST is consistent with v${TARGET_VERSION}."
 fi
 
-# Check Cargo.lock sync
-if ! cargo check --locked >/dev/null 2>&1; then
-    error "Cargo.lock is out of sync with Cargo.toml. Please run 'cargo update --workspace'."
+# Check Cargo.lock sync. Keep this to dependency resolution only; compile/type checks
+# run in the regular CI matrix and can fail for unrelated platform reasons.
+LOCK_CHECK_OUTPUT=$(mktemp)
+if ! cargo metadata --locked --format-version=1 >"$LOCK_CHECK_OUTPUT" 2>&1; then
+    cat "$LOCK_CHECK_OUTPUT" >&2
+    rm -f "$LOCK_CHECK_OUTPUT"
+    error "Cargo.lock is not resolvable with Cargo.toml. Please run 'cargo update --workspace'."
     exit 1
 fi
+rm -f "$LOCK_CHECK_OUTPUT"
 success "Cargo.lock is synced."
 
 # 5. Branch naming vs Target Version for Release branches

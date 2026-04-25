@@ -36,6 +36,7 @@ jobs:
         !contains(github.event.head_commit.message, '(#')
       )
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -91,6 +92,7 @@ jobs:
     name: Lint
     if: github.event_name == 'pull_request'
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -184,5 +186,11 @@ jobs:
         with:
           toolchain: stable
       - name: Run PR readiness check
-        run: ./scripts/release/check-pr-ready.sh
-
+        shell: bash
+        run: |
+          version=""
+          if [[ "${GITHUB_HEAD_REF}" == release/v* ]]; then
+            version="${GITHUB_HEAD_REF#release/v}"
+            version="${version%%-*}"
+          fi
+          ./scripts/release/check-pr-ready.sh "$version"
