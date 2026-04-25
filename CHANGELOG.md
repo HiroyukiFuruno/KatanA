@@ -2,6 +2,27 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.5] - 2026-04-25 07:59:44 (UTC)
+
+### 🚀 Features
+
+- **Contextual Markdown Input Controls**: Added cursor-adjacent Markdown input controls with buttons for Bold, Italic, Strikethrough, Inline Code, Code Block, Headings (H1–H3), Bullet List, Numbered List, Blockquote, and image insertion. Inline formatting buttons are enabled only when text is selected; block-level buttons are always available while editing.
+- **Clipboard Image Paste**: Added support for pasting images directly from the clipboard into the editor via normal paste (`Cmd+V` on macOS) or the grouped context menu. Images are saved to the configured directory and inserted as Markdown image syntax.
+- **Explorer Referenced Images**: The Explorer panel now displays a collapsible "Referenced Images" section listing all images referenced in the active document. Clicking an image reveals it in Finder/Explorer.
+- **Image Ingest Settings**: Added image ingest configuration to the Behavior settings tab, including save directory, filename format, and auto-create directory toggle.
+
+### 🐛 Bug Fixes
+
+- Fixed editor input regressions that could interrupt typing, hide the Markdown input controls, or let editor shortcuts conflict with tab navigation while editing.
+- Fixed clipboard image paste so regular paste inserts the image at the current cursor position when the clipboard contains image data.
+- Fixed linter diagnostics so workspace Markdown lint configuration is respected and editor-side quick fixes are shown consistently with the Problems panel.
+- Fixed file dialog cancellation so canceling the native macOS picker no longer opens the fallback in-app file picker.
+
+### 🔧 System
+
+- **Preview-First Default**: Newly opened documents now default to preview mode unless the user explicitly switches the active tab to code or split mode.
+- Refactored `ExplorerPanel` and `ExplorerContent` to use a builder pattern (`with_referenced_images()`) to stay within the argument-count linting limit.
+
 ## [0.22.4] - 2026-04-23 21:40:00 (UTC)
 
 ### 🚀 Features

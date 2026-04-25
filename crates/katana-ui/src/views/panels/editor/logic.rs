@@ -1,5 +1,5 @@
 use super::types::*;
-use crate::app_state::{AppAction, ScrollSource};
+use crate::app_state::ScrollSource;
 use eframe::egui;
 
 impl EditorLogicOps {
@@ -26,20 +26,28 @@ impl EditorLogicOps {
         }
     }
 
-    pub fn render_context_menu(
-        _ui: &mut egui::Ui,
+    pub fn should_ingest_clipboard_image_paste(
+        response_has_focus: bool,
+        text_changed: bool,
+        events: &[egui::Event],
+    ) -> bool {
+        super::paste::EditorPasteOps::should_ingest_clipboard_image_paste(
+            response_has_focus,
+            text_changed,
+            events,
+        )
+    }
+
+    pub fn editor_clipboard_image_paste_requested(
+        ui: &egui::Ui,
         response: &egui::Response,
-        action: &mut AppAction,
-    ) {
-        response.context_menu(|ui| {
-            if ui
-                .button(crate::i18n::I18nOps::get().action.save.as_str())
-                .clicked()
-            {
-                *action = AppAction::SaveDocument;
-                ui.close_menu();
-            }
-        });
+        text_changed: bool,
+    ) -> bool {
+        let response_has_focus = response.has_focus()
+            || ui.memory(|mem| mem.focused().is_some_and(|id| id == response.id));
+        ui.input(|i| {
+            Self::should_ingest_clipboard_image_paste(response_has_focus, text_changed, &i.events)
+        })
     }
 
     pub fn handle_scroll_to_line(
@@ -99,6 +107,10 @@ impl EditorLogicOps {
             return;
         }
 
+        if scroll.scroll_to_line.is_some() {
+            return;
+        }
+
         let current_logical = scroll.logical_position;
         let next_logical = scroll.mapper.editor_to_logical(offset_y);
 
@@ -114,3 +126,6 @@ impl EditorLogicOps {
         }
     }
 }
+
+#[cfg(test)]
+include!("logic_tests.rs");

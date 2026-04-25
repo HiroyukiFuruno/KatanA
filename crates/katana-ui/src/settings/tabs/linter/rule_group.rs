@@ -6,11 +6,10 @@ pub(super) struct RuleGroupOps;
 impl RuleGroupOps {
     pub(super) fn render_rule_group(
         ui: &mut egui::Ui,
-        rule: &dyn katana_linter::rules::markdown::MarkdownRule,
-        config: &mut katana_linter::rules::markdown::config::MarkdownLintConfig,
+        rule: &dyn katana_markdown_linter::rules::markdown::MarkdownRule,
+        config: &mut katana_markdown_linter::rules::markdown::config::MarkdownLintConfig,
         target_path: &std::path::Path,
         search_query: &str,
-        msgs: &crate::i18n::LinterTranslations,
         force_open: Option<bool>,
     ) {
         if let Some(meta) = rule.official_meta() {
@@ -18,18 +17,15 @@ impl RuleGroupOps {
                 return;
             }
 
-            let fallback = format!("MISSING TRANSLATION: {}", meta.code);
-            let localized_desc = msgs
-                .rule_descriptions
-                .get(&meta.code.to_lowercase())
-                .map(|s| s.as_str())
-                .unwrap_or(&fallback);
-
+            let localized_description =
+                crate::linter_bridge::MarkdownLinterBridgeOps::rule_description(&meta);
             let search_lower = search_query.to_lowercase();
+            let localized_description_lower = localized_description.to_lowercase();
             if !search_lower.is_empty()
                 && !meta.code.to_lowercase().contains(&search_lower)
                 && !meta.title.to_lowercase().contains(&search_lower)
-                && !localized_desc.to_lowercase().contains(&search_lower)
+                && !meta.description.to_lowercase().contains(&search_lower)
+                && !localized_description_lower.contains(&search_lower)
             {
                 return;
             }
@@ -48,7 +44,7 @@ impl RuleGroupOps {
                 },
             );
             label_job.append(
-                &format!("  {}", localized_desc),
+                &format!("  {localized_description}"),
                 0.0,
                 egui::TextFormat {
                     font_id: egui::TextStyle::Body.resolve(ui.style()),
@@ -64,7 +60,7 @@ impl RuleGroupOps {
                     /* WHY: Render Properties */
                     for prop in meta.properties {
                         match prop.prop_type {
-                            katana_linter::rules::markdown::RulePropertyType::StringArray => {
+                            katana_markdown_linter::rules::markdown::RulePropertyType::StringArray => {
                                 super::properties::RulePropertiesOps::render_string_array_property(
                                     ui,
                                     &meta,

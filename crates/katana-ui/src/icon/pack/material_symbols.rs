@@ -18,6 +18,16 @@ impl IconPackContract for MaterialSymbolsPack {
     }
 
     fn get_asset(&self, icon: Icon) -> Option<&'static [u8]> {
-        impl_icon_pack_match!("material-symbols", icon)
+        match icon {
+            Icon::Bold
+            | Icon::Italic
+            | Icon::Strikethrough
+            | Icon::Code
+            | Icon::Heading
+            | Icon::List
+            | Icon::ListOrdered
+            | Icon::Quote => None,
+            _ => impl_icon_pack_match!("material-symbols", icon),
+        }
     }
 }

@@ -32,3 +32,22 @@ fn test_workspace_collection() {
     assert_eq!(dirs.len(), 1);
     assert!(dirs.contains(&sub));
 }
+
+#[test]
+fn test_image_extension_detection() {
+    let image = TreeEntry::File {
+        path: PathBuf::from("/root/asset/img/example.PNG"),
+    };
+    let markdown = TreeEntry::File {
+        path: PathBuf::from("/root/readme.md"),
+    };
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/asset"),
+        children: Vec::new(),
+    };
+
+    assert!(image.is_image());
+    assert!(!markdown.is_image());
+    assert!(!directory.is_image());
+    assert!(TreeEntry::image_extensions().contains(&"png"));
+}

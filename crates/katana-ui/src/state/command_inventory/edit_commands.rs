@@ -17,9 +17,8 @@ impl EditCommands {
     pub fn get() -> Vec<CommandInventoryItem> {
         vec![
             /* WHY: Edit Group — Markdown authoring commands.
-            All edit commands use ShortcutContext::Editor so they only fire
-            when the text editor pane has keyboard focus, preventing conflicts
-            with Global shortcuts that share the same key combinations. */
+            Text-entry shortcut conflicts are filtered by shell_ui_shortcuts;
+            toolbar and command palette routes remain available for protected keys. */
             CommandInventoryItem {
                 id: "edit.bold",
                 action: AppAction::AuthorMarkdown(MarkdownAuthoringOp::Bold),
@@ -163,7 +162,7 @@ impl EditCommands {
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_ingest_clipboard_image.clone(),
                 is_available: |state| is_active_editable_markdown(state),
-                default_shortcuts: &[],
+                default_shortcuts: &["primary+shift+V"],
             },
         ]
     }

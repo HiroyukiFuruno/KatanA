@@ -1,8 +1,51 @@
 use super::image_raster::{MAX_ZOOM, MIN_ZOOM};
 use crate::preview_pane::ViewerState;
-use eframe::egui::{self, Vec2};
+use eframe::egui::{self, TextureHandle, Vec2};
 
 pub use super::types::ImageLogicOps;
+
+fn load_local_image_texture(
+    ui: &mut egui::Ui,
+    path: &std::path::Path,
+    id: usize,
+) -> Option<TextureHandle> {
+    let bytes = std::fs::read(path).ok()?;
+    let color_img = if path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("svg"))
+    {
+        let svg = std::str::from_utf8(&bytes).ok()?;
+        let rasterized =
+            katana_core::markdown::svg_rasterize::SvgRasterizeOps::rasterize_svg(svg, 1.0).ok()?;
+        egui::ColorImage::from_rgba_unmultiplied(
+            std::array::from_fn(|i| {
+                if i == 0 {
+                    rasterized.width as usize
+                } else {
+                    rasterized.height as usize
+                }
+            }),
+            &rasterized.rgba,
+        )
+    } else {
+        let rgba = image::load_from_memory(&bytes).ok()?.into_rgba8();
+        let size = std::array::from_fn(|i| {
+            if i == 0 {
+                rgba.width() as usize
+            } else {
+                rgba.height() as usize
+            }
+        });
+        egui::ColorImage::from_rgba_unmultiplied(size, &rgba)
+    };
+
+    Some(ui.ctx().load_texture(
+        format!("local_image_{id}"),
+        color_img,
+        egui::TextureOptions::LINEAR,
+    ))
+}
 
 impl ImageLogicOps {
     pub(crate) fn show_local_image(
@@ -15,24 +58,8 @@ impl ImageLogicOps {
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> Option<egui::Rect> {
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
-            if state.texture.is_none()
-                && let Ok(bytes) = std::fs::read(path)
-                && let Ok(dyn_img) = image::load_from_memory(&bytes)
-            {
-                let rgba = dyn_img.into_rgba8();
-                let size = std::array::from_fn(|i| {
-                    if i == 0 {
-                        rgba.width() as usize
-                    } else {
-                        rgba.height() as usize
-                    }
-                });
-                let color_img = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
-                state.texture = Some(ui.ctx().load_texture(
-                    format!("local_image_{id}"),
-                    color_img,
-                    egui::TextureOptions::LINEAR,
-                ));
+            if state.texture.is_none() {
+                state.texture = load_local_image_texture(ui, path, id);
             }
             state.texture.clone()
         } else {

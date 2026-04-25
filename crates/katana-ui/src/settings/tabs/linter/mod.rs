@@ -105,7 +105,7 @@ impl LinterTabOps {
                 /* WHY: get_user_configurable_rules() filters out internal-only rules (e.g. BrokenLinkRule)
                  * and returns them sorted by ID for consistent presentation. */
                 for rule in
-                    katana_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
+                    katana_markdown_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
                 {
                     let rule_id = rule.id().to_string();
                     let current_severity = state
@@ -147,16 +147,17 @@ impl LinterTabOps {
                             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                 ui.add(egui::Label::new(&rule_id).truncate());
 
-                                let fallback = format!("MISSING TRANSLATION: {}", rule.id());
-                                let description = msgs
-                                    .rule_descriptions
-                                    .get(&rule.id().to_lowercase())
-                                    .cloned()
-                                    .unwrap_or(fallback);
-
-                                if !description.is_empty() {
-                                    ui.add_space(RULE_DESC_SPACING);
-                                    ui.label(egui::RichText::new(description).weak().small());
+                                if let Some(meta) = rule.official_meta() {
+                                    let description =
+                                        crate::linter_bridge::MarkdownLinterBridgeOps::rule_description(
+                                            &meta,
+                                        );
+                                    if !description.is_empty() {
+                                        ui.add_space(RULE_DESC_SPACING);
+                                        ui.label(
+                                            egui::RichText::new(description).weak().small(),
+                                        );
+                                    }
                                 }
                             });
                         },

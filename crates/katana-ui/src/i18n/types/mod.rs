@@ -49,6 +49,7 @@ pub struct I18nMessages {
     pub search: SearchMessages,
     pub toc: TocMessages,
     pub export: ExportMessages,
+    pub editor: EditorMessages,
     pub terms: TermsMessages,
     pub dialog: DialogMessages,
     pub markdown: MarkdownMessages,

@@ -62,7 +62,13 @@ impl SettingsDefaultOps {
         DEFAULT_MAX_DEPTH
     }
     pub fn default_visible_extensions() -> Vec<String> {
-        vec!["md".to_string(), "markdown".to_string(), "txt".to_string()]
+        let mut extensions = vec!["md".to_string(), "markdown".to_string(), "txt".to_string()];
+        extensions.extend(
+            katana_core::workspace::TreeEntry::image_extensions()
+                .iter()
+                .map(|ext| (*ext).to_string()),
+        );
+        extensions
     }
     pub fn default_extensionless_excludes() -> Vec<String> {
         vec!["LICENSE".to_string(), "Makefile".to_string()]

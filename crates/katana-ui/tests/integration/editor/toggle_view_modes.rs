@@ -23,7 +23,7 @@ fn test_integration_toggle_view_modes() {
         .trigger_action(AppAction::SelectDocument(abs_path));
     harness.step();
 
-    // 1. Initial mode should be PreviewOnly (default)
+    // 1. Editable Markdown documents open in PreviewOnly unless the user chooses another mode.
     assert_eq!(
         harness.state_mut().app_state_mut().active_view_mode(),
         ViewMode::PreviewOnly

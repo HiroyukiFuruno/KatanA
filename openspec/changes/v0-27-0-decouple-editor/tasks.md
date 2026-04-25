@@ -27,10 +27,10 @@
 - [ ] Expose public API for `katana-ui`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
-- [ ] 2.1 Design and define `EditorConfig` (for injected settings, specifically fonts/emojis fallback configurations) and communication interfaces
+- [ ] 2.1 Design and define `EditorConfig` (for injected settings, specifically fonts/emojis fallback configurations) and communication interfaces, while keeping egui `TextEdit` replacement out of scope for `x-x-x-native-input-surface`
 - [ ] 2.2 Migrate editor state structures from `katana-ui` to `katana-editor`
 - [ ] 2.3 Migrate text editing logic and keybindings
-- [ ] 2.4 Implement and expose `EditorWidget`
+- [ ] 2.4 Implement and expose `EditorWidget` as the editor component boundary; do not make this task responsible for the future native input surface
 
 ## 3. Refactor katana-ui
 

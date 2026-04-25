@@ -66,6 +66,9 @@ info()    { echo "${CYAN}[INFO]${RESET}  $*"; }
 success() { echo "${GREEN}[OK]${RESET}    $*"; }
 error()   { echo "${RED}[ERROR]${RESET} $*" >&2; }
 header()  { echo "${BOLD}${CYAN}==> $*${RESET}"; }
+llvm_cov() {
+    RUSTFLAGS="${RUSTFLAGS:-} --cfg coverage" cargo llvm-cov --no-cfg-coverage "$@"
+}
 
 # ── Execution ─────────────────────────────────────────────────────────────────
 header "Testing Code Coverage Gate"
@@ -80,23 +83,19 @@ info "Cleaning up old coverage data..."
 cargo llvm-cov clean --workspace
 
 info "Running workspace lib/bin tests with llvm-cov (-j $JOBS)..."
-cargo llvm-cov --no-report --jobs "$JOBS" --workspace --lib --bins -q \
-    --ignore-filename-regex "${COVERAGE_IGNORE}" \
+llvm_cov --no-report --jobs "$JOBS" --workspace --lib --bins -q \
     -- --test-threads="$JOBS"
 
 info "Running workspace integration tests (parallel-safe) with llvm-cov (-j $JOBS)..."
-cargo llvm-cov --no-report --jobs "$JOBS" --workspace --test '*' --exclude katana-ui -q \
-    --ignore-filename-regex "${COVERAGE_IGNORE}" \
+llvm_cov --no-report --jobs "$JOBS" --workspace --test '*' --exclude katana-ui -q \
     -- --test-threads="$JOBS" --skip fixture
 
 info "Running katana-ui parallel integration tests with llvm-cov (-j $JOBS)..."
-cargo llvm-cov --no-report --jobs "$JOBS" -p katana-ui --test ui_integration_parallel -q \
-    --ignore-filename-regex "${COVERAGE_IGNORE}" \
+llvm_cov --no-report --jobs "$JOBS" -p katana-ui --test ui_integration_parallel -q \
     -- --test-threads="$JOBS"
 
 info "Running katana-ui serial integration tests with llvm-cov (1 thread)..."
-cargo llvm-cov --no-report --jobs 1 -p katana-ui --test ui_integration_serial -q \
-    --ignore-filename-regex "${COVERAGE_IGNORE}" \
+llvm_cov --no-report --jobs 1 -p katana-ui --test ui_integration_serial -q \
     -- --test-threads=1
 
 info "Analyzing coverage report for truly unreachable lines..."

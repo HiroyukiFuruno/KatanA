@@ -43,8 +43,7 @@ impl LocaleAuditOps {
 
             let used = source_corpus.contains(key_path.as_str())
                 || source_corpus.contains(section_leaf.as_str())
-                || source_corpus.contains(leaf)
-                || key_path.starts_with("linter.rule_descriptions.");
+                || source_corpus.contains(leaf);
 
             if !used {
                 violations.push(crate::utils::ViolationReporterOps::locale_violation(
@@ -108,7 +107,6 @@ impl LocaleAuditOps {
 
         for (key, val) in &leaf_values {
             /* WHY: Skip trivial or template-only strings to reduce noise.
-             * Also skip rule_descriptions which intentionally share long-form prose.
              * Skip values registered in `common` — they are the canonical source.
              * Skip grandfathered duplicates (pre-existing, tracked for future cleanup).
              * Threshold of 8 chars avoids flagging short words naturally shared. */
@@ -117,7 +115,6 @@ impl LocaleAuditOps {
                     .chars()
                     .all(|c| c.is_ascii_digit() || c == '.' || c == '-')
                 || val.starts_with('{')
-                || key.contains("rule_descriptions")
                 || common_values.contains(val.as_str())
                 || GRANDFATHERED_DUPLICATES.contains(&val.as_str());
             if !is_trivial {

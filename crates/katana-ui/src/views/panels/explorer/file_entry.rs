@@ -84,6 +84,8 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
 
             let icon = if entry.is_markdown() {
                 crate::icon::Icon::Markdown
+            } else if entry.is_image() {
+                crate::icon::Icon::Image
             } else {
                 crate::icon::Icon::Document
             };

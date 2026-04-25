@@ -67,37 +67,15 @@ impl LinterAdvancedSettingsOps {
 
         ui.add_space(SETTINGS_TOGGLE_SPACING);
 
-        let use_workspace = state
-            .config
-            .settings
-            .settings()
-            .linter
-            .use_workspace_local_config;
-
-        let global_config_dir = dirs::config_dir()
-            .unwrap_or_else(|| std::path::PathBuf::from("."))
-            .join("KatanA");
-        let global_json_path = global_config_dir.join(".markdownlint.json");
-
-        let workspace_json_path = state
-            .workspace
-            .data
-            .as_ref()
-            .map(|w| w.root.join(".markdownlint.json"));
-
-        let target_path = if use_workspace {
-            workspace_json_path.unwrap_or(global_json_path)
-        } else {
-            global_json_path
-        };
+        let target_path =
+            crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(state);
 
         /* WHY: Load the current configuration to populate the UI and save updates */
         let mut config =
-            katana_linter::rules::markdown::config::MarkdownLintConfig::load(&target_path)
-                .unwrap_or_default();
+            katana_markdown_linter::MarkdownLintConfig::load(&target_path).unwrap_or_default();
 
         for rule in
-            katana_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
+            katana_markdown_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
         {
             RuleGroupOps::render_rule_group(
                 ui,
@@ -105,7 +83,6 @@ impl LinterAdvancedSettingsOps {
                 &mut config,
                 &target_path,
                 &search_query,
-                msgs,
                 force_open,
             );
         }

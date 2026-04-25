@@ -9,7 +9,6 @@ description = "KatanA UI: egui application shell, panes, menu wiring, and presen
 [dependencies]
 katana-core = { path = "../katana-core" }
 katana-platform = { path = "../katana-platform" }
-katana-linter = { path = "../katana-linter" }
 katana-markdown-linter.workspace = true
 eframe.workspace = true
 egui.workspace = true
@@ -21,7 +20,7 @@ parking_lot = "0.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 rfd = "0.17"
-image = { version = "0.25", default-features = false, features = ["png"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
 serde_json.workspace = true
 open = "5.3.4"
 resvg = { version = "0.47.0", default-features = true }

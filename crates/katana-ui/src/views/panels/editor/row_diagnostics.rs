@@ -5,7 +5,7 @@ pub(crate) struct RowDiagnosticsRenderer;
 impl RowDiagnosticsRenderer {
     pub(crate) fn render(
         ui: &mut egui::Ui,
-        diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         p: usize,
         y: f32,
         ln_rect: &egui::Rect,
@@ -38,18 +38,20 @@ impl RowDiagnosticsRenderer {
             .iter()
             .map(|d| d.severity)
             .max_by_key(|s| match s {
-                katana_linter::rules::markdown::DiagnosticSeverity::Error => WEIGHT_ERROR,
-                katana_linter::rules::markdown::DiagnosticSeverity::Warning => WEIGHT_WARNING,
-                katana_linter::rules::markdown::DiagnosticSeverity::Info => WEIGHT_INFO,
+                katana_markdown_linter::rules::markdown::DiagnosticSeverity::Error => WEIGHT_ERROR,
+                katana_markdown_linter::rules::markdown::DiagnosticSeverity::Warning => {
+                    WEIGHT_WARNING
+                }
+                katana_markdown_linter::rules::markdown::DiagnosticSeverity::Info => WEIGHT_INFO,
             })
             .map(|s| match s {
-                katana_linter::rules::markdown::DiagnosticSeverity::Error => {
+                katana_markdown_linter::rules::markdown::DiagnosticSeverity::Error => {
                     ui.visuals().error_fg_color
                 }
-                katana_linter::rules::markdown::DiagnosticSeverity::Warning => {
+                katana_markdown_linter::rules::markdown::DiagnosticSeverity::Warning => {
                     ui.visuals().warn_fg_color
                 }
-                katana_linter::rules::markdown::DiagnosticSeverity::Info => {
+                katana_markdown_linter::rules::markdown::DiagnosticSeverity::Info => {
                     ui.visuals().text_color()
                 }
             })
@@ -83,7 +85,7 @@ impl RowDiagnosticsRenderer {
                 ui.label(egui::RichText::new(fmt_str).strong());
                 ui.label(&d.message);
 
-                if meta.is_fixable && d.fix_info.is_some() {
+                if crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix(d) {
                     /* WHY: allow(horizontal_layout) - Standard egui pattern for side-by-side buttons */
                     ui.horizontal(|ui| {
                         let linter_msgs = &crate::i18n::I18nOps::get().linter;

@@ -69,6 +69,22 @@ impl AuthoringUtils {
         } else {
             &buffer[line_start..hi.min(buffer.len())]
         };
+
+        /* WHY: When region is empty (cursor on blank line or past all content),
+         * `.lines()` returns nothing and joining gives "" — the prefix would never
+         * be inserted yet new_start still advances by prefix.len(), going out of
+         * bounds.  Insert the prefix directly instead. */
+        if region.is_empty() {
+            let before = &buffer[..line_start];
+            let after = &buffer[line_start..];
+            let new_cursor = before.len() + prefix.len();
+            return AuthoringTransform {
+                buffer: format!("{before}{prefix}{after}"),
+                cursor_start: new_cursor,
+                cursor_end: new_cursor,
+            };
+        }
+
         let prefixed: String = region
             .lines()
             .map(|l| format!("{prefix}{l}"))
@@ -105,6 +121,19 @@ impl AuthoringUtils {
         } else {
             &buffer[line_start..hi.min(buffer.len())]
         };
+
+        /* WHY: Same empty-region guard as prefix_each_line — see that function. */
+        if region.is_empty() {
+            let before = &buffer[..line_start];
+            let after = &buffer[line_start..];
+            let new_cursor = before.len() + "1. ".len();
+            return AuthoringTransform {
+                buffer: format!("{before}1. {after}"),
+                cursor_start: new_cursor,
+                cursor_end: new_cursor,
+            };
+        }
+
         let prefixed: String = region
             .lines()
             .enumerate()

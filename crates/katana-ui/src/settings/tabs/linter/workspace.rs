@@ -23,18 +23,13 @@ impl WorkspaceSettingsOps {
                     .linter
                     .use_workspace_local_config;
 
-                let global_config_dir = dirs::config_dir()
-                    .unwrap_or_else(|| std::path::PathBuf::from("."))
-                    .join("KatanA");
-                let global_json_path = global_config_dir.join(".markdownlint.json");
-
                 let workspace_json_path = state
                     .workspace
                     .data
                     .as_ref()
                     .map(|w| w.root.join(".markdownlint.json"));
 
-                if let Some(ws_path) = &workspace_json_path {
+                if workspace_json_path.is_some() {
                     if ui
                         .add(
                             crate::widgets::LabeledToggle::new(
@@ -54,11 +49,10 @@ impl WorkspaceSettingsOps {
                             .use_workspace_local_config = use_workspace;
                         let _ = state.config.try_save_settings();
 
-                        let target_path = if use_workspace {
-                            ws_path.clone()
-                        } else {
-                            global_json_path.clone()
-                        };
+                        let target_path =
+                            crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(
+                                state,
+                            );
 
                         /* WHY: If switching and the target file exists, automatically open the advanced settings */
                         if target_path.exists() {
@@ -68,11 +62,8 @@ impl WorkspaceSettingsOps {
                     ui.add_space(SETTINGS_TOGGLE_SPACING);
                 }
 
-                let json_path = if use_workspace {
-                    workspace_json_path.unwrap_or(global_json_path)
-                } else {
-                    global_json_path
-                };
+                let json_path =
+                    crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(state);
 
                 if json_path.exists() {
                     ui.label(&msgs.workspace_has_config);

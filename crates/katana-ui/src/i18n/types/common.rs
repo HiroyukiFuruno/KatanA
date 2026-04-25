@@ -72,6 +72,22 @@ pub struct ExportMessages {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EditorToolbarMessages {
+    pub heading1: String,
+    pub heading2: String,
+    pub heading3: String,
+    pub bullet_list: String,
+    pub numbered_list: String,
+    pub blockquote: String,
+    pub code_block: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EditorMessages {
+    pub toolbar: EditorToolbarMessages,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TermsMessages {
     pub title: String,
     pub version_label: String,

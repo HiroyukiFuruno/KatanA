@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+mod clipboard_file_url;
+mod clipboard_image;
 mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;

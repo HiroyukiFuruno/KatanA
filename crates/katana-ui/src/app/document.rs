@@ -5,6 +5,8 @@ use crate::shell::*;
 
 use crate::app::doc_close::DocCloseOps;
 use crate::app::doc_search::DocSearchRefresh;
+use crate::app::document_scroll::DocumentScrollOps;
+use crate::app::image_document::ImageDocumentOps;
 use crate::preview_pane::{DownloadRequest, PreviewPane};
 use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
@@ -20,6 +22,8 @@ pub(crate) trait DocumentOps {
 
 impl DocumentOps for KatanaApp {
     fn handle_select_document(&mut self, path: std::path::PathBuf, activate: bool) {
+        let previous_active_path = self.state.active_path();
+
         if activate {
             let mut parent = path.parent();
             while let Some(p) = parent {
@@ -34,7 +38,6 @@ impl DocumentOps for KatanaApp {
             }
         }
 
-        /* WHY: Check if already open. If so, just activate if requested. */
         if let Some(idx) = self
             .state
             .document
@@ -44,15 +47,11 @@ impl DocumentOps for KatanaApp {
         {
             if activate {
                 self.state.document.active_doc_idx = Some(idx);
+                self.reset_scroll_for_new_active_path(&previous_active_path, &path);
 
-                /* WHY: Load if needed. */
-                let doc_is_loaded = self.state.document.open_documents[idx].is_loaded;
-                if !doc_is_loaded
-                    && !path.to_string_lossy().starts_with("Katana://")
-                    && let Ok(mut loaded_doc) = self.fs.load_document(&path)
+                if let Some(loaded_doc) =
+                    ImageDocumentOps::replacement_for_unloaded(&self.fs, &self.state, idx, &path)
                 {
-                    let pinned = self.state.document.open_documents[idx].is_pinned;
-                    loaded_doc.is_pinned = pinned;
                     self.state.document.open_documents[idx] = loaded_doc;
                 }
 
@@ -73,9 +72,8 @@ impl DocumentOps for KatanaApp {
             return;
         }
 
-        /* WHY: Not open yet. Load and add to open documents. */
         let doc = if activate {
-            match self.fs.load_document(&path) {
+            match ImageDocumentOps::load_or_create(&self.fs, &path) {
                 Ok(d) => d,
                 Err(e) => {
                     self.state.layout.status_message = Some((
@@ -104,6 +102,7 @@ impl DocumentOps for KatanaApp {
         self.state.document.open_documents.push(doc);
         if activate {
             self.state.document.active_doc_idx = Some(self.state.document.open_documents.len() - 1);
+            self.reset_scroll_for_new_active_path(&previous_active_path, &path);
             if search_open {
                 /* WHY: Refresh search matches only when activating a document.
                 Background loading must not disrupt the current UI state. */

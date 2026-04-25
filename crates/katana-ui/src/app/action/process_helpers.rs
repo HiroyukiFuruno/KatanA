@@ -100,27 +100,10 @@ impl KatanaApp {
             return;
         }
 
-        let linter_settings = &self.state.config.settings.settings().linter;
-        let enabled = linter_settings.enabled;
-        let mut severity_map = std::collections::HashMap::new();
-        for (rule_id, severity) in &linter_settings.rule_severity {
-            let mapped_severity = match severity {
-                katana_platform::settings::types::RuleSeverity::Ignore => None,
-                katana_platform::settings::types::RuleSeverity::Warning => {
-                    Some(katana_linter::rules::markdown::DiagnosticSeverity::Warning)
-                }
-                katana_platform::settings::types::RuleSeverity::Error => {
-                    Some(katana_linter::rules::markdown::DiagnosticSeverity::Error)
-                }
-            };
-            severity_map.insert(rule_id.clone(), mapped_severity);
-        }
-
-        let diagnostics = katana_linter::rules::markdown::MarkdownLinterOps::evaluate_all(
-            &path,
+        let diagnostics = crate::linter_bridge::MarkdownLinterBridgeOps::evaluate_document(
+            &self.state,
+            path.as_path(),
             &content,
-            enabled,
-            &severity_map,
         );
         self.state.diagnostics.update_diagnostics(path, diagnostics);
     }

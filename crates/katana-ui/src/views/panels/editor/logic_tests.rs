@@ -59,7 +59,7 @@ mod tests {
     fn line_range_to_char_range_to_end() {
         let buf = "line0\nline1\nline2";
         let result = EditorLogicOps::line_range_to_char_range(buf, 2, 2);
-        assert_eq!(result, Some((12, 16)));
+        assert_eq!(result, Some((12, 17)));
     }
 
     #[test]
@@ -96,7 +96,7 @@ mod tests {
         };
         EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 250.0, true, 0.01, vec![]);
         assert_eq!(scroll.source, ScrollSource::Neither);
-        assert!(scroll.editor_echo.is_echo(250.0));
+        assert_eq!(scroll.editor_y, 250.0);
     }
 
     #[test]
@@ -116,7 +116,7 @@ mod tests {
             source: ScrollSource::Neither,
             ..Default::default()
         };
-        scroll.editor_echo.record(250.0);
+        scroll.editor_echo.offset_y = 250.0;
         EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 251.0, false, 0.01, vec![]);
         assert_eq!(scroll.source, ScrollSource::Neither);
     }
@@ -146,5 +146,65 @@ mod tests {
             "When scroll_to_line is active, source must NOT be set to Editor; \
              otherwise the preview's scroll_request position will be overwritten by mapper"
         );
+    }
+
+    #[test]
+    fn empty_paste_with_focus_requests_clipboard_image_ingest() {
+        let events = vec![egui::Event::Paste(String::new())];
+        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn text_paste_does_not_request_clipboard_image_ingest() {
+        let events = vec![egui::Event::Paste("text".to_string())];
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn image_file_url_paste_requests_clipboard_image_ingest() {
+        let events = vec![egui::Event::Paste(
+            "file:///Users/me/Pictures/cat%20photo.PNG".to_string(),
+        )];
+        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn non_image_file_url_paste_remains_text_paste() {
+        let events = vec![egui::Event::Paste(
+            "file:///Users/me/Documents/note.md".to_string(),
+        )];
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn command_v_without_text_requests_clipboard_image_ingest() {
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        let events = vec![egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        }];
+        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn changed_text_does_not_request_clipboard_image_ingest() {
+        let events = vec![egui::Event::Paste(String::new())];
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, true, &events
+        ));
     }
     }

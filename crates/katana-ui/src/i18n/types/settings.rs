@@ -145,26 +145,20 @@ pub struct SettingsUpdateMessages {
     pub drawio_update_now: String,
 }
 
+#[rustfmt::skip]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SettingsBehaviorMessages {
-    pub section_title: String,
-    pub confirm_close_dirty_tab: String,
-    pub scroll_sync: String,
-    pub auto_save: String,
-    pub auto_save_interval: String,
-    pub auto_save_interval_hint: String,
-    pub auto_refresh: String,
-    pub auto_refresh_interval: String,
-    pub seconds: String,
-    pub close_confirm_title: String,
-    pub close_confirm_msg: String,
-    pub close_confirm_discard: String,
-    pub close_confirm_cancel: String,
-    pub clear_http_cache: String,
-    pub cache_retention_days: String,
-    pub days_suffix: String,
-    pub toc_default_visible: String,
-    pub explorer_default_visible: String,
+    pub section_title: String, pub confirm_close_dirty_tab: String,
+    pub scroll_sync: String, pub auto_save: String,
+    pub auto_save_interval: String, pub auto_save_interval_hint: String,
+    pub auto_refresh: String, pub auto_refresh_interval: String,
+    pub seconds: String, pub close_confirm_title: String,
+    pub close_confirm_msg: String, pub close_confirm_discard: String,
+    pub close_confirm_cancel: String, pub clear_http_cache: String,
+    pub cache_retention_days: String, pub days_suffix: String,
+    pub toc_default_visible: String, pub explorer_default_visible: String,
+    pub ingest_section_title: String, pub ingest_image_save_directory: String,
+    pub ingest_image_name_format: String, pub ingest_create_directory: String,
 }
 
 #[rustfmt::skip]

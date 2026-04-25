@@ -11,14 +11,6 @@ macro_rules! define_icons {
                     $( Self::$variant => $file, )+
                 }
             }
-
-            pub fn svg_bytes(&self) -> &'static [u8] {
-                match self {
-                    $( Self::$variant => include_bytes!(
-                        concat!("../../../../assets/icons/katana/", $file, ".svg")
-                    ), )+
-                }
-            }
         }
 
         pub const ALL_ICONS: &[Icon] = &[
@@ -110,6 +102,14 @@ define_icons! {
     #[allow(dead_code)]
     More            => "action/more",
     Edit            => "action/edit",
+    Bold            => "action/bold",
+    Italic          => "action/italic",
+    Strikethrough   => "action/strikethrough",
+    Code            => "action/code",
+    Heading         => "action/heading",
+    List            => "action/list",
+    ListOrdered     => "action/list-ordered",
+    Quote           => "action/quote",
     /* WHY: Diagnostic gutter icon — 💡 LightBulb for lint hints. */
     LightBulb           => "action/light_bulb",
     CircleFilled        => "../system/circle-filled",

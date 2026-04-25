@@ -44,6 +44,23 @@ fn active_document_returns_correct_doc_when_set() {
 }
 
 #[test]
+fn markdown_document_defaults_to_preview_mode() {
+    let mut state = AppState::new(
+        AiProviderRegistry::new(),
+        PluginRegistry::new(),
+        katana_platform::SettingsService::default(),
+        std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+    );
+    state
+        .document
+        .open_documents
+        .push(Document::new("memo.md", "# Memo"));
+    state.document.active_doc_idx = Some(0);
+
+    assert_eq!(state.active_view_mode(), ViewMode::PreviewOnly);
+}
+
+#[test]
 fn is_dirty_reflects_active_document_state() {
     /* WHY: Verify that the top-level is_dirty() check correctly reports the dirty status of the currently active document. */
     let mut state = AppState::new(

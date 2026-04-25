@@ -18,6 +18,9 @@ impl IconPackContract for HeroiconsPack {
     }
 
     fn get_asset(&self, icon: Icon) -> Option<&'static [u8]> {
-        impl_icon_pack_match!("heroicons", icon)
+        match icon {
+            Icon::Code | Icon::Heading | Icon::Quote => None,
+            _ => impl_icon_pack_match!("heroicons", icon),
+        }
     }
 }

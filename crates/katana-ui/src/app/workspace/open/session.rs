@@ -1,5 +1,3 @@
-/* WHY: Optimized session restoration logic to handle versioned schema migrations and state persistent synchronization. */
-
 use crate::app::preview::PreviewOps;
 use crate::app::workspace::WorkspaceTabSessionV2;
 use crate::app::workspace::manage;
@@ -178,6 +176,7 @@ impl WorkspaceOpenSessionOps {
                 .unwrap_or(0)
                 .min(app.state.document.open_documents.len() - 1);
             app.state.document.active_doc_idx = Some(idx);
+            app.state.scroll.reset_for_document_change();
             let src = app.state.document.open_documents[idx].buffer.clone();
             let doc_path = app.state.document.open_documents[idx].path.clone();
             let concurrency = app

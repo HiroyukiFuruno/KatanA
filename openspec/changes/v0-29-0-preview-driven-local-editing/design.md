@@ -2,6 +2,8 @@
 
 v0.29.0 は v0.28.0 の preview adapter migration を前提にします。KatanA の主面は preview であり、source editor は「常に書く場所」ではなく、source を確認する inspector または fallback です。Typora 風の滑らかな入力感は参考にしますが、KatanA では full-document WYSIWYG ではなく、preview node から必要箇所だけを修正する体験を優先します。
 
+この approach は、egui source input の制約を正面から全面置換するのではなく、そもそも code を主軸にしないことで入力負荷を下げる方向です。egui `TextEdit` を置き換える独自入力 surface は `x-x-x-native-input-surface` に劣後・分離し、本変更は preview からの局所修正に集中します。
+
 ## Goals
 
 - Rendered preview node から局所編集 session を開始できる。
@@ -14,6 +16,7 @@ v0.29.0 は v0.28.0 の preview adapter migration を前提にします。KatanA
 
 - Typora と同等の full WYSIWYG editor を実装すること。
 - 全 Markdown 文法を inline で常時編集可能にすること。
+- egui `TextEdit` を完全に置き換える独自入力 surface を実装すること（`x-x-x-native-input-surface` の責務）。
 - WebView、React、DOM runtime を導入すること。
 - v0.28.0 の adapter migration を飛ばして renderer internals へ直接依存すること。
 - Linter、AI provider、workspace shell の contract を変更すること。
@@ -44,5 +47,5 @@ Rendered rect と source range の対応は adapter の責務です。UI は poi
 
 - **Risk: stale source ranges** - AI update、external reload、fallback source edit により range が古くなる可能性がある。Expected original text と buffer snapshot hash で検証し、失敗時は再選択を求める。
 - **Risk: malformed Markdown after patch** - 局所 patch が Markdown 構造を壊す可能性がある。Commit 前後で parser validation と preview fallback を行い、失敗時は buffer 更新を行わない。
-- **Risk: IME and cursor complexity** - full-document editor を preview 内で再現すると IME / selection / layout が複雑になる。Local edit surface は通常の egui text input や structured form に限定する。
+- **Risk: IME and cursor complexity** - full-document editor を preview 内で再現すると IME / selection / layout が複雑になる。Local edit surface は通常の text input や structured form に限定し、egui `TextEdit` 置換が必要な場合は `x-x-x-native-input-surface` の責務として扱う。
 - **Trade-off: source inspector is less powerful by default** - 直接 source を常時編集する体験は弱くなる。代わりに view-first の主体験と source safety を優先し、明示的 fallback を残す。

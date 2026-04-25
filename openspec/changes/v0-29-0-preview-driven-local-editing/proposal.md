@@ -12,6 +12,7 @@ v0.28.0 で preview adapter を導入した後、その adapter が返す source
 - Source code panel は read-only source inspector を基本とし、直接編集が必要な場合だけ明示的な fallback source-edit mode として扱う。
 - Paragraph、heading、fenced code、Mermaid、Draw.io、math、table、link、image などの主要 node に対して、node kind に応じた編集 surface を提供する。
 - WebView、React、DOM runtime は導入しない。Typora と同等の full-document WYSIWYG を目標にしない。
+- egui `TextEdit` を置き換える独自入力 surface は本変更の主目的にしない。必要になった場合は `x-x-x-native-input-surface` の input model / surface contract を利用する。
 
 ## Capabilities
 

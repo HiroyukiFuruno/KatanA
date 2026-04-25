@@ -2,6 +2,7 @@ use crate::app_state::AppAction;
 use crate::shell::EDITOR_INITIAL_VISIBLE_ROWS;
 use eframe::egui;
 
+use super::toolbar_popup::ToolbarPopup;
 use super::types::EditorLogicOps;
 
 pub(crate) struct TextEditRenderer;
@@ -19,7 +20,7 @@ impl TextEditRenderer {
         doc_search_active_index: usize,
         cursor_range_out: &mut Option<egui::text::CCursorRange>,
         pending_cursor: Option<(usize, usize)>,
-        diagnostics: &[katana_linter::rules::markdown::MarkdownDiagnostic],
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         current_line_bg: Option<egui::Color32>,
         hover_line_bg: Option<egui::Color32>,
         ln_text: Option<egui::Color32>,
@@ -32,8 +33,10 @@ impl TextEditRenderer {
             let (ln_rect, _) =
                 ui.allocate_exact_size(egui::vec2(LINE_NUMBER_MARGIN, 0.0), egui::Sense::hover());
 
+            let editable = !doc.is_reference;
             let text_edit = egui::TextEdit::multiline(buffer)
-                .interactive(!doc.is_reference)
+                .id(egui::Id::new("editor_text_edit"))
+                .interactive(editable)
                 .font(egui::TextStyle::Monospace)
                 .desired_width(f32::INFINITY)
                 .desired_rows(EDITOR_INITIAL_VISIBLE_ROWS)
@@ -48,12 +51,18 @@ impl TextEditRenderer {
             let text_output = text_edit.show(ui);
             let response = text_output.response;
 
-            EditorLogicOps::render_context_menu(ui, &response, action);
+            super::context_menu::EditorContextMenu::render(
+                &response,
+                action,
+                text_output.cursor_range,
+            );
             let galley = text_output.galley;
 
+            let popup_cursor_range = text_output.cursor_range.or(*cursor_range_out);
             if let Some(range) = text_output.cursor_range {
                 *cursor_range_out = Some(range);
             }
+            ToolbarPopup::show(ui, action, &response, &galley, popup_cursor_range, editable);
 
             if let Some(cursor_range) = pending_cursor {
                 EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
@@ -125,8 +134,13 @@ impl TextEditRenderer {
                 },
             );
 
-            if response.changed() {
+            let text_changed = response.changed();
+            let should_ingest_clipboard_image =
+                EditorLogicOps::editor_clipboard_image_paste_requested(ui, &response, text_changed);
+            if text_changed {
                 *action = AppAction::UpdateBuffer(buffer.clone());
+            } else if editable && should_ingest_clipboard_image {
+                *action = AppAction::IngestClipboardImage;
             }
             EditorLogicOps::handle_scroll_to_line(ui, scroll, buffer, &response, &galley);
             let anchors = EditorLogicOps::extract_line_anchors(&galley);

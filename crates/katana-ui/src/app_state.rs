@@ -112,6 +112,14 @@ impl AppState {
                     .find(|t| t.path == doc.path)
                     .map(|t| t.mode)
             })
-            .unwrap_or(ViewMode::PreviewOnly)
+            .unwrap_or_else(|| {
+                self.active_document()
+                    .map(Self::default_view_mode_for_document)
+                    .unwrap_or(ViewMode::PreviewOnly)
+            })
+    }
+
+    fn default_view_mode_for_document(_doc: &Document) -> ViewMode {
+        ViewMode::PreviewOnly
     }
 }

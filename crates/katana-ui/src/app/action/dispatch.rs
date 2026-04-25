@@ -10,11 +10,10 @@ impl KatanaApp {
                 if crate::shell_ui::ShellUiOps::is_headless() {
                     self.pending_dialog_action = Some(AppAction::PickOpenWorkspace);
                     self.file_dialog.pick_directory();
-                } else if let Some(path) = crate::shell_ui::ShellUiOps::open_folder_dialog() {
-                    self.handle_open_explorer(path);
                 } else {
-                    self.pending_dialog_action = Some(AppAction::PickOpenWorkspace);
-                    self.file_dialog.pick_directory();
+                    self.handle_pick_open_workspace_result(
+                        crate::shell_ui::ShellUiOps::open_folder_dialog_result(),
+                    );
                 }
             }
             AppAction::OpenWorkspace(p) => self.handle_open_explorer(p),
@@ -169,6 +168,20 @@ impl KatanaApp {
             "tools" => self.state.layout.show_tools_panel ^= true,
             "toc" => self.state.layout.show_toc ^= true,
             _ => {}
+        }
+    }
+
+    pub(crate) fn handle_pick_open_workspace_result(
+        &mut self,
+        result: crate::shell_ui::NativeDialogResult<std::path::PathBuf>,
+    ) {
+        match result {
+            crate::shell_ui::NativeDialogResult::Picked(path) => self.handle_open_explorer(path),
+            crate::shell_ui::NativeDialogResult::Cancelled => {}
+            crate::shell_ui::NativeDialogResult::Unavailable => {
+                self.pending_dialog_action = Some(AppAction::PickOpenWorkspace);
+                self.file_dialog.pick_directory();
+            }
         }
     }
 }

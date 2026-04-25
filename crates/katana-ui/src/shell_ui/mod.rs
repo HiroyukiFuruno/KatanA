@@ -5,8 +5,16 @@ use eframe::egui;
 mod shell_ui_frame;
 mod shell_ui_shortcuts;
 mod shell_ui_update;
+mod shortcut_keys;
 mod types;
 pub use types::ShellUiOps;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum NativeDialogResult<T> {
+    Picked(T),
+    Cancelled,
+    Unavailable,
+}
 
 impl ShellUiOps {
     pub fn update_native_menu_strings_from_i18n() {
@@ -28,6 +36,14 @@ impl ShellUiOps {
 
     pub(crate) fn open_folder_dialog() -> Option<std::path::PathBuf> {
         std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()).unwrap_or(None)
+    }
+
+    pub(crate) fn open_folder_dialog_result() -> NativeDialogResult<std::path::PathBuf> {
+        match std::panic::catch_unwind(|| rfd::FileDialog::new().pick_folder()) {
+            Ok(Some(path)) => NativeDialogResult::Picked(path),
+            Ok(None) => NativeDialogResult::Cancelled,
+            Err(_) => NativeDialogResult::Unavailable,
+        }
     }
 
     pub(crate) fn pick_open_workspace() -> AppAction {

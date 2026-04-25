@@ -55,4 +55,39 @@ impl ScrollState {
             sync_override: None,
         }
     }
+
+    pub fn reset_for_document_change(&mut self) {
+        let sync_override = self.sync_override;
+        *self = Self {
+            sync_override,
+            ..Self::new()
+        };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reset_for_document_change_clears_scroll_offsets() {
+        let mut scroll = ScrollState {
+            source: ScrollSource::Editor,
+            editor_y: 320.0,
+            preview_y: 180.0,
+            scroll_to_line: Some(12),
+            last_scroll_to_line: Some(12),
+            sync_override: Some(false),
+            ..Default::default()
+        };
+
+        scroll.reset_for_document_change();
+
+        assert_eq!(scroll.source, ScrollSource::Neither);
+        assert_eq!(scroll.editor_y, 0.0);
+        assert_eq!(scroll.preview_y, 0.0);
+        assert_eq!(scroll.scroll_to_line, None);
+        assert_eq!(scroll.last_scroll_to_line, None);
+        assert_eq!(scroll.sync_override, Some(false));
+    }
 }
