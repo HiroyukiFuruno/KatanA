@@ -23,7 +23,7 @@
 - `local-llm-ui-integration` は、`v0-23-0-local-llm-lint-autofix` の LLM MVP が `master` に入った後の導線整理として前提が明記された。この v1.0.1 change では LLM UI / Ollama / chat 導線を扱わない。
 - `i18n-runtime-safety` Task 1 が `master` に入り、未知の runtime language code は fallback language へ解決されるようになった。v1.0.1 ではこの fallback の再実装を扱わず、settings / state / action の境界整理で既存挙動を壊さないことを検証対象にする。
 - `diagram-backend-adapter` Task 1 が `master` に入り、Mermaid / PlantUML 用の backend input、render options、theme snapshot、document context、renderer-neutral output / error、cache key contract が追加された。v1.0.1 の preview / diagram 整理ではこの契約を前提にし、同じ契約型を再定義しない。
-- active OpenSpec には `preview-adapter-contract`、`diagram-backend-adapter`、`i18n-runtime-safety`、`local-llm-ui-integration` と、v0.22.x から v0.31.0 系の複数 change が残っている。v1.0.1 はそれらの機能 change を吸収せず、内部構造と回帰検知の土台に限定する。
+- 2026-04-25 の OpenSpec 整理で、無印の `preview-adapter-contract`、`diagram-backend-adapter`、`i18n-runtime-safety`、`local-llm-ui-integration` は superseded archive へ移した。今後は versioned change を正の実施単位とする。
 - `.agents` / `.codex` workflow、Makefile、`scripts/runner` には、策定後に v1.0.1 の作業順序を変える差分は確認されなかった。現時点の verification gate は引き続き `make check` を主軸にする。
 - `katana-ui` の再計測では、`shell_tests.rs` 1241 行、`shell_ui_tests.rs` 1091 行、`preview_pane/tests.rs` 1025 行が最大の単体テスト群として残っている。integration 側では `tests/integration/preview_pane/tables.rs` 656 行、`preview_pane/diagrams.rs` 273 行が大きい。
 - `katana-ui/src` は既に `app/action/*`、`state/*`、`shell/*`、`shell_ui/*`、`views/*`、`widgets/*` に分かれているが、`features/*` という所有境界はまだ存在しない。Task 1 ではこの現状を前提に、単純移動で済む領域と service boundary の再設計が必要な領域を分ける。
@@ -46,7 +46,7 @@ Task 1 では実装移動を行わず、v1.0.1 で扱う整理対象と、active
 | --- | --- | --- | --- |
 | `crates/katana-ui/src/shell/shell_tests.rs` | 1241 行。shell lifecycle、download、update、workspace、action dispatch 系の期待が同居している。 | 機械的分割を先行可能 | 分割前後で shell action contract の test name と assertion を対応付ける。 |
 | `crates/katana-ui/src/shell_ui/shell_ui_tests.rs` | 1091 行。shell UI layout と操作導線が同居している。 | 機械的分割を先行可能 | layout contract、toolbar contract、panel visibility contract を分けて同じ観点を維持する。 |
-| `crates/katana-ui/src/preview_pane/tests.rs` | 1025 行。preview 表示、code block、diagram、scroll / anchor 系が混在している。 | 境界再設計後に分割 | `preview-adapter-contract` の metadata / action contract を前提に、semantic assertion を先に固定する。 |
+| `crates/katana-ui/src/preview_pane/tests.rs` | 1025 行。preview 表示、code block、diagram、scroll / anchor 系が混在している。 | 境界再設計後に分割 | `v0-28-0-preview-adapter-migration` の metadata / action contract を前提に、semantic assertion を先に固定する。 |
 | `crates/katana-ui/tests/integration/preview_pane/tables.rs` | 656 行。table 表示の integration regression が大きい。 | release gate 分類 | 通常 integration contract に残す範囲と release-only gate に回す範囲を決める。 |
 | `crates/katana-ui/src/svg_loader/logic.rs` | 590 行。SVG decode、cache、theme adaptation の責務が寄りやすい。 | 境界再設計 | loader input / output と cache failure の contract test を先に定義する。 |
 | `crates/katana-ui/src/main.rs` | 403 行。bootstrap と runtime wiring が集まっている。 | 境界再設計 | entrypoint から config / service assembly を分離する前に startup smoke を固定する。 |
@@ -54,8 +54,8 @@ Task 1 では実装移動を行わず、v1.0.1 で扱う整理対象と、active
 | `crates/katana-platform/src/filesystem/scanner.rs` | 347 行。filesystem traversal と workspace scan policy が近い。 | 境界再設計 | hidden file、ignore、symlink、permission error の期待を固定する。 |
 | `crates/katana-platform/src/theme/builder.rs` | 322 行。theme assembly が大きく、settings との接続も近い。 | 境界再設計 | theme token の fallback と serialization roundtrip を固定する。 |
 | `crates/katana-core/src/system/process.rs` | 298 行。外部 process 実行の共通面を持つ。 | 境界再設計 | process success / failure / timeout / stderr handling の contract を定義する。 |
-| `crates/katana-core/src/markdown/mermaid_renderer/render.rs` | 232 行。Mermaid 外部 renderer 実装。 | 後続送り | `diagram-backend-adapter` 後続 task で adapter implementation に移す。 |
-| `crates/katana-core/src/preview/section/mod.rs` | 166 行。preview section metadata。 | 後続送り | `preview-adapter-contract` の metadata contract と重複させない。 |
+| `crates/katana-core/src/markdown/mermaid_renderer/render.rs` | 232 行。Mermaid 外部 renderer 実装。 | 後続送り | `v0-31-0-native-diagram-renderer-backends` 後続 task で adapter implementation に移す。 |
+| `crates/katana-core/src/preview/section/mod.rs` | 166 行。preview section metadata。 | 後続送り | `v0-28-0-preview-adapter-migration` の metadata contract と重複させない。 |
 
 ### 責務別の現状分類
 
@@ -73,12 +73,12 @@ Task 1 では実装移動を行わず、v1.0.1 で扱う整理対象と、active
 
 | 対象 | 状態 | v1.0.1 での扱い |
 | --- | --- | --- |
-| i18n fallback | `i18n-runtime-safety` Task 1 として `185d2913` で `master` に実装済み。 | 再実装しない。settings / state 整理で挙動を壊さない検証対象にする。 |
-| diagram backend contract | `diagram-backend-adapter` Task 1 として `9ffeb570` で `master` に実装済み。 | 契約型を再定義しない。diagram 実装移行は diagram 系 active change に残す。 |
-| local LLM UI 前提整理 | `local-llm-ui-integration` に、v0.23.0 LLM MVP 後の導線整理として明記済み。 | v1.0.1 では LLM chat / Ollama / model selection を扱わない。 |
-| preview adapter 契約 | active change `preview-adapter-contract` の Task 1 として先行可能。 | v1.0.1 では契約を前提にし、preview 深部移行は吸収しない。 |
+| i18n fallback | 無印 `i18n-runtime-safety` Task 1 として `185d2913` で `master` に実装済み。無印 change は archive 済み。 | 再実装しない。`v0-30-0-advanced-i18n-runtime` で後続を扱う。 |
+| diagram backend contract | 無印 `diagram-backend-adapter` Task 1 として `9ffeb570` で `master` に実装済み。無印 change は archive 済み。 | 契約型を再定義しない。`v0-31-0-native-diagram-renderer-backends` で後続を扱う。 |
+| local LLM UI 前提整理 | 無印 `local-llm-ui-integration` は未実装の参考資料として archive 済み。 | v1.0.1 では LLM chat / Ollama / model selection を扱わない。必要時は local LLM 系 versioned change で再起票する。 |
+| preview adapter 契約 | 無印 `preview-adapter-contract` の initial DTO / contract は `05341608` で `master` に実装済み。無印 change は archive 済み。 | `v0-28-0-preview-adapter-migration` の既存前提として扱い、preview 深部移行は v1.0.1 に吸収しない。 |
 
-この分類により、v1.0.1 の最初の実装対象は `AppAction`、root dispatch、root `AppState`、巨大 test file の contract 分割、release regression gate に絞る。preview / diagram / LLM / i18n runtime fallback は、既存 active change または実装済み差分を尊重し、同じ契約や UI を再作成しない。
+この分類により、v1.0.1 の最初の実装対象は `AppAction`、root dispatch、root `AppState`、巨大 test file の contract 分割、release regression gate に絞る。preview / diagram / LLM / i18n runtime fallback は、versioned change または実装済み差分を尊重し、同じ契約や UI を再作成しない。
 
 ## Goals / Non-Goals
 

@@ -1,3 +1,10 @@
+## Active 整理メモ
+
+- [x] 2026-04-25: この無印 change は active 対象から外す
+- [x] 理由: version なしのまま preview adapter の先行 contract だけが残り、`v0-28-0-preview-adapter-migration` と実施単位が重複していたため
+- [x] 後続: `v0-28-0-preview-adapter-migration` を正の実施単位とする
+- [x] 引き継ぎ: `05341608 feat: preview adapter契約を追加` の initial DTO / contract 実装は、v0.28.0 Task 1 の既存前提として再確認する
+
 ## 1. Adapter Contract
 
 - [x] 1.1 `PreviewInput`、`PreviewThemeSnapshot`、`PreviewWorkspaceContext`、`PreviewRenderMetadata`、`PreviewAction` 相当の型を定義する

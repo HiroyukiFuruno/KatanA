@@ -8,14 +8,16 @@
 
 ## 1. Adapter Contract
 
+実装状態: initial DTO / contract は `preview-adapter-contract` から移管済み。無印 change は `openspec/changes/archive/2026-04-25-superseded-preview-adapter-contract/` へ archive した。残作業は metadata requirements の fixture 固定と current renderer migration への接続である。
+
 ### Definition of Done (DoD)
 
-- [ ] Define the preview adapter API using KatanA-owned DTOs for input, theme, workspace context, actions, render metadata, and errors.
-- [ ] Document which types are allowed to cross from the adapter into `katana-ui`.
+- [x] Define the preview adapter API using KatanA-owned DTOs for input, theme, workspace context, actions, render metadata, and errors.
+- [x] Document which types are allowed to cross from the adapter into `katana-ui`.
 - [ ] Ensure parser/vendor/renderer internal types are not part of the public adapter contract.
 - [ ] Execute `/openspec-delivery` workflow for this task.
 
-- [ ] 1.1 Define `PreviewInput`, `PreviewThemeSnapshot`, `PreviewWorkspaceContext`, `PreviewRenderMetadata`, `PreviewAction`, and preview error DTOs or equivalent local types.
+- [x] 1.1 Define `PreviewInput`, `PreviewThemeSnapshot`, `PreviewWorkspaceContext`, `PreviewRenderMetadata`, `PreviewAction`, and preview error DTOs or equivalent local types.
 - [ ] 1.2 Add compile-time boundaries that prevent `katana-ui` from depending on renderer-specific or vendor-specific types.
 - [ ] 1.3 Capture current TOC, scroll sync, block highlight, search, and action hook metadata requirements in adapter-level tests.
 

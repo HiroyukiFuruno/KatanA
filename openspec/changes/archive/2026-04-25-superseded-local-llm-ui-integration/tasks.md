@@ -1,3 +1,10 @@
+## Active 整理メモ
+
+- [x] 2026-04-25: この無印 change は active 対象から外す
+- [x] 理由: 実装進捗がなく、`v0-23-0-local-llm-lint-autofix` 完了後の残差分として再スコープすべき状態だったため
+- [x] 後続: local LLM 系の versioned change で必要になった時点で、設定・chat・Problems panel の導線整理として再起票する
+- [x] 引き継ぎ: この change の文書は参考資料として archive に残すが、active な実装計画としては扱わない
+
 ## 着手前提
 
 - [ ] `v0-23-0-local-llm-lint-autofix` の LLM MVP（Ollama 設定、chat UI 土台、file-level autofix / diff preview）が `master` に merge 済みであること

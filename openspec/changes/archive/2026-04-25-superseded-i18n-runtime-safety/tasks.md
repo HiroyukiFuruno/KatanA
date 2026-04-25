@@ -1,3 +1,10 @@
+## Active 整理メモ
+
+- [x] 2026-04-25: この無印 change は active 対象から外す
+- [x] 理由: version なしのまま一部実装だけが残り、今後の実施単位が不明確になっていたため
+- [x] 後続: `v0-30-0-advanced-i18n-runtime` を正の実施単位とする
+- [x] 引き継ぎ: `185d2913 fix: 未対応言語を安全にフォールバック` の runtime fallback 実装は後続 change の Task 1 前提として扱う
+
 ## 1. Runtime Fallback
 
 - [x] 1.1 `I18nOps` に fallback-aware language resolver を追加する

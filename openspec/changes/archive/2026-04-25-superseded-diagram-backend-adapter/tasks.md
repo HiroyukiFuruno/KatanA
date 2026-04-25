@@ -1,3 +1,10 @@
+## Active 整理メモ
+
+- [x] 2026-04-25: この無印 change は active 対象から外す
+- [x] 理由: version なしのまま一部実装だけが残り、今後の実施単位が不明確になっていたため
+- [x] 後続: `v0-31-0-native-diagram-renderer-backends` を正の実施単位とする
+- [x] 引き継ぎ: `9ffeb570 feat: 図表backend adapter契約を追加` の contract 実装は後続 change の Task 1 前提として扱う
+
 ## 1. Adapter Contract
 
 - [x] 1.1 Mermaid / PlantUML backend input、render options、theme snapshot、document context を定義する

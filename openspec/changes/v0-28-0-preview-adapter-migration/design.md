@@ -20,6 +20,12 @@ v0.26.0 / v0.27.0 では preview と editor の分離が検討されていまし
 
 ## Decisions
 
+### 2026-04-25 Active 整理の反映
+
+無印の `preview-adapter-contract` は active 対象から外し、`openspec/changes/archive/2026-04-25-superseded-preview-adapter-contract/` へ移した。`05341608 feat: preview adapter契約を追加` で入った initial DTO / contract 実装は、この v0.28.0 の既存前提として扱う。
+
+v0.28.0 の残作業は、既存 DTO を再定義することではなく、現行 renderer の adapter implementation 化、preview call site の移行、TOC / scroll sync / block highlight / search / action hook metadata の contract 固定、vendor ownership の整理である。
+
 ### Adapter-Owned Contract
 
 Preview の public surface は adapter が所有します。KatanA UI は `PreviewInput`、`PreviewThemeSnapshot`、`PreviewWorkspaceContext`、`PreviewRenderMetadata`、`PreviewAction` のような KatanA 側の型だけを扱い、Markdown parser token、`egui_commonmark` の内部型、vendor fork 固有 API を直接扱いません。
