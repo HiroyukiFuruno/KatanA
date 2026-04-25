@@ -8,14 +8,16 @@
 
 ## 1. Backend Adapter Contract
 
+実装状態: contract 定義は `diagram-backend-adapter` Task 1 として `master` に実装済み。残作業は外部 backend implementation の移行と、preview / export call site の adapter output 消費への寄せである。
+
 ### Definition of Done (DoD)
 
-- [ ] Define KatanA-owned Mermaid and PlantUML backend adapter traits or equivalent service boundaries.
+- [x] Define KatanA-owned Mermaid and PlantUML backend adapter traits or equivalent service boundaries.
 - [ ] Preserve the existing `DiagramResult` / preview fallback contract across all backends.
 - [ ] Move direct `mmdc`, `java`, and `plantuml.jar` process calls behind backend implementations.
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Contract 定義は `9ffeb570 feat: 図表backend adapter契約を追加` で `master` へ反映済み。
 
-- [ ] 1.1 Define backend input types for source, theme snapshot, document context, and render options.
+- [x] 1.1 Define backend input types for source, theme snapshot, document context, and render options.
 - [ ] 1.2 Implement external Mermaid CLI and external PlantUML jar backends through the adapter as the initial behavior-preserving migration.
 - [ ] 1.3 Add tests proving preview and export code consume only adapter output.
 

@@ -2,10 +2,16 @@
 
 The current i18n implementation loads JSON into generated Rust structs and exposes `I18nOps::get()` plus `I18nOps::tf(template, params)`. This is fast and type-friendly for static labels, but it has two problems that matter for a desktop app:
 
-1. Language selection can still panic when the selected language is not represented by the embedded dictionary.
+1. Language selection used to panic when the selected language was not represented by the embedded dictionary; this is now covered by the `i18n-runtime-safety` implementation on `master`.
 2. Formatting is plain string replacement, so messages such as result counts or problem counts cannot express locale-aware plural forms.
 
 PR #236 also mentioned `task_todo` translations, but current locale files already contain localized values such as `Aufgabe [ ]`, `Tarea [ ]`, `Tarefa [ ]`, and `Attività [ ]`. That item is stale and should not drive a new task.
+
+## 2026-04-25 master 同期
+
+`i18n-runtime-safety` Task 1 が `185d2913 fix: 未対応言語を安全にフォールバック` として `master` に入った。これにより、未知の runtime language code は fallback language へ解決され、embedded locale corruption は fail fast のまま維持されている。
+
+この change では同じ runtime fallback を再実装しない。以降の実装は formatter adapter、plural candidate selection、locale quality guardrails に集中する。
 
 ## Goals
 

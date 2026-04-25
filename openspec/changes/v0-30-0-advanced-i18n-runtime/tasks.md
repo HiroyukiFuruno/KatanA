@@ -8,16 +8,18 @@
 
 ## 1. I18n Runtime Safety
 
+実装状態: `i18n-runtime-safety` Task 1 として `master` に実装済み。この change では同じ runtime fallback を再実装せず、Task 2 以降へ進む。
+
 ### Definition of Done (DoD)
 
-- [ ] Replace unsupported runtime language panic paths with deterministic fallback to the configured default language.
-- [ ] Preserve test or startup failure for embedded locale files that are structurally invalid.
-- [ ] Add regression tests for unknown language code, supported language lookup, and fallback message lookup.
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Replace unsupported runtime language panic paths with deterministic fallback to the configured default language.
+- [x] Preserve test or startup failure for embedded locale files that are structurally invalid.
+- [x] Add regression tests for unknown language code, supported language lookup, and fallback message lookup.
+- [x] Runtime fallback は `185d2913 fix: 未対応言語を安全にフォールバック` で `master` へ反映済み。
 
-- [ ] 1.1 Add a fallback-aware language resolver for `I18nOps`.
-- [ ] 1.2 Replace dictionary lookup `expect` / `panic!` paths that can be reached from runtime language values.
-- [ ] 1.3 Add tests that demonstrate unsupported user settings do not crash application startup.
+- [x] 1.1 Add a fallback-aware language resolver for `I18nOps`.
+- [x] 1.2 Replace dictionary lookup `expect` / `panic!` paths that can be reached from runtime language values.
+- [x] 1.3 Add tests that demonstrate unsupported user settings do not crash application startup.
 
 ## 2. Formatter Adapter
 
