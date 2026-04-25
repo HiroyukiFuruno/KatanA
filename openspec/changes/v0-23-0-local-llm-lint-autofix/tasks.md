@@ -84,7 +84,7 @@
 - [x] chat messages は app session 中だけ扱われ、再起動後に履歴復元されないこと
 - [x] chat の request lifecycle が専用 state に閉じており、lint autofix や document generation の実装と競合しないこと
 - [x] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
