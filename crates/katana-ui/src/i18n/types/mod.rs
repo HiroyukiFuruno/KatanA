@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub mod action;
+pub mod chat;
 pub mod common;
 pub mod dashboard;
 pub mod error;
@@ -17,6 +18,7 @@ pub mod tab;
 pub mod workspace;
 
 pub use action::*;
+pub use chat::*;
 pub use common::*;
 pub use dashboard::*;
 pub use error::*;
@@ -45,6 +47,8 @@ pub struct I18nMessages {
     pub status: StatusMessages,
     pub action: ActionMessages,
     pub ai: AiMessages,
+    #[serde(default)]
+    pub chat: ChatMessages,
     pub tool: ToolMessages,
     pub settings: SettingsMessages,
     pub tab: TabMessages,

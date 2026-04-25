@@ -88,6 +88,7 @@ impl LayoutSettings {
             ActivityRailItem::WorkspaceToggle,
             ActivityRailItem::ExplorerToggle,
             ActivityRailItem::Search,
+            ActivityRailItem::Chat,
             ActivityRailItem::History,
         ];
 

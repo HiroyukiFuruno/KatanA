@@ -1,4 +1,5 @@
 pub mod app_state_impl;
+pub mod chat;
 pub mod command_inventory;
 pub mod command_palette;
 pub mod command_palette_providers;
@@ -13,6 +14,7 @@ pub mod shortcut_context;
 pub mod update;
 pub mod workspace;
 
+pub use chat::*;
 pub use config::*;
 pub use document::*;
 pub use layout::*;

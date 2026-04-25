@@ -70,6 +70,16 @@ impl KatanaApp {
             }
             AppAction::ChangeLanguage(lang) => self.handle_action_change_language(lang),
             AppAction::ToggleSettings => self.state.layout.show_settings ^= true,
+            AppAction::ToggleChatPanel => {
+                self.state.layout.show_chat_panel ^= true;
+                self.state.chat.is_open = self.state.layout.show_chat_panel;
+            }
+            AppAction::ToggleChatPinned => {
+                self.state.layout.chat_pinned ^= true;
+                self.state.chat.is_pinned = self.state.layout.chat_pinned;
+                self.state.layout.show_chat_panel = true;
+                self.state.chat.is_open = true;
+            }
             AppAction::ToggleExportPanel => self.handle_toggle_panel("export"),
             AppAction::ToggleStoryPanel => self.handle_toggle_panel("story"),
             AppAction::ToggleToolsPanel => self.handle_toggle_panel("tools"),

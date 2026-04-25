@@ -1,3 +1,4 @@
+pub mod chat;
 pub mod dashboard;
 pub mod editor;
 pub mod explorer;

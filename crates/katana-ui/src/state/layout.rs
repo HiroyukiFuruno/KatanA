@@ -14,6 +14,8 @@ pub struct LayoutState {
     pub show_workspace_panel: bool,
     pub show_explorer: bool,
     pub show_settings: bool,
+    pub show_chat_panel: bool,
+    pub chat_pinned: bool,
     pub show_toc: bool,
     pub show_search_modal: bool,
 
@@ -57,6 +59,8 @@ impl LayoutState {
             show_workspace_panel: false,
             show_explorer: true,
             show_settings: false,
+            show_chat_panel: false,
+            chat_pinned: true,
             show_toc: false,
             show_search_modal: false,
 

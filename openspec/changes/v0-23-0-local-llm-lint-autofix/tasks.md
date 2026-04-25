@@ -31,6 +31,7 @@
 - [/] chat UI はアイコン操作で表示・非表示・固定表示を制御できるようにする
 - [/] MVP のチャット履歴はアプリ起動中の一時状態に限定し、履歴保存・履歴一覧・履歴管理は後続 task に分離する
 - [/] MVP では Ollama モデル選択を必須にし、細かい生成設定は後続 task に分離する
+- [/] task ごとの PR は残さず、チェック通過後に `release/v0.23.0` へ merge してから次 task へ進む
 - [ ] widget 依存の追加許容範囲を egui 系 crate までとするか決める
 - [ ] Vertex AI / Bedrock / OpenAI 系 provider をどの version milestone に切るか決める
 
@@ -57,7 +58,7 @@
 - [x] ユーザーが UI から Ollama endpoint と model を設定し、保存、再選択できること
 - [x] モデル未選択では chat / autofix request が送信されないこと
 - [x] Ollama 未設定の状態でも、アプリケーションの通常編集機能が問題なく維持されること
-- [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -65,24 +66,24 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 app session 内だけで保持する chat message、pending request、error state、selected model を持つ専用 state を追加する
-- [ ] 2.2 editor / preview / diagnostics と分離した VS Code 風の chat サイドパネルを `katana-ui` に追加する
-- [ ] 2.3 画面端のアイコン操作で chat サイドパネルを表示・非表示・固定表示できるようにする
-- [ ] 2.4 user message を Ollama provider に送り、assistant response を app session 内のチャット履歴へ追加する
-- [ ] 2.5 provider 未設定 / モデル未選択 / unavailable / timeout / invalid response の disabled state と recovery 導線を追加する
-- [ ] 2.6 チャット履歴の永続化、履歴一覧、履歴検索、履歴削除管理を MVP に含めないことをテストまたは仕様上で確認する
-- [ ] 2.7 chat response が user confirmation なしに document や workspace file を変更しないことをテストする
+- [x] 2.1 app session 内だけで保持する chat message、pending request、error state、selected model を持つ専用 state を追加する
+- [x] 2.2 editor / preview / diagnostics と分離した VS Code 風の chat サイドパネルを `katana-ui` に追加する
+- [x] 2.3 画面端のアイコン操作で chat サイドパネルを表示・非表示・固定表示できるようにする
+- [x] 2.4 user message を Ollama provider に送り、assistant response を app session 内のチャット履歴へ追加する
+- [x] 2.5 provider 未設定 / モデル未選択 / unavailable / timeout / invalid response の disabled state と recovery 導線を追加する
+- [x] 2.6 チャット履歴の永続化、履歴一覧、履歴検索、履歴削除管理を MVP に含めないことをテストまたは仕様上で確認する
+- [x] 2.7 chat response が user confirmation なしに document や workspace file を変更しないことをテストする
 
 ### Definition of Done (DoD)
 
-- [ ] chat UI が単独で開閉でき、既存 editor / preview / diagnostics の状態を破壊しないこと
-- [ ] chat UI を画面端アイコンから開閉・固定表示できること
-- [ ] chat messages は app session 中だけ扱われ、再起動後に履歴復元されないこと
-- [ ] chat の request lifecycle が専用 state に閉じており、lint autofix や document generation の実装と競合しないこと
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [x] chat UI が単独で開閉でき、既存 editor / preview / diagnostics の状態を破壊しないこと
+- [x] chat UI を画面端アイコンから開閉・固定表示できること
+- [x] chat messages は app session 中だけ扱われ、再起動後に履歴復元されないこと
+- [x] chat の request lifecycle が専用 state に閉じており、lint autofix や document generation の実装と競合しないこと
+- [x] `make check` がエラーなし (exit code 0) で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---

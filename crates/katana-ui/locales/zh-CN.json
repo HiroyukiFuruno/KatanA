@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: 未配置]"
 	},
+	"chat": {
+		"title": "聊天",
+		"close": "关闭聊天",
+		"pin": "固定聊天面板",
+		"model_required": "请在设置中选择 Ollama 模型。",
+		"disabled_error": "聊天已在 AI 设置中禁用。",
+		"interrupted_error": "聊天请求已中断。",
+		"open_settings": "打开 AI 设置",
+		"model_label": "模型：{model}",
+		"empty_session": "本次应用会话中没有消息。",
+		"waiting": "正在等待 Ollama...",
+		"input_hint": "询问本地 LLM",
+		"send": "发送",
+		"user": "你",
+		"assistant": "助手"
+	},
 	"tool": {
 		"not_installed": "{tool} 未安装。",
 		"install_path": "路径: {path}",

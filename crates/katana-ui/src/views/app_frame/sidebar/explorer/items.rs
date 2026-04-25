@@ -141,4 +141,28 @@ impl ExplorerSidebarItems {
         }
         Some(interact_resp)
     }
+
+    pub(crate) fn render_chat_toggle(
+        ui: &mut egui::Ui,
+        app: &mut KatanaApp,
+        interact_id: egui::Id,
+    ) -> Option<egui::Response> {
+        let resp = ui.add(
+            crate::Icon::Action
+                .selected_button(
+                    ui,
+                    crate::icon::IconSize::Large,
+                    app.state.layout.show_chat_panel,
+                )
+                .sense(egui::Sense::hover()),
+        );
+        let interact_resp = ui
+            .interact(resp.rect, interact_id, egui::Sense::click_and_drag())
+            .on_hover_text(&crate::i18n::I18nOps::get().chat.title);
+        if interact_resp.clicked() {
+            app.pending_action = crate::app_state::AppAction::ToggleChatPanel;
+            app.state.layout.active_rail_popup = None;
+        }
+        Some(interact_resp)
+    }
 }

@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: Nicht konfiguriert]"
 	},
+	"chat": {
+		"title": "Unterhaltung",
+		"close": "Chat schließen",
+		"pin": "Chatbereich anheften",
+		"model_required": "Wähle in den Einstellungen ein Ollama-Modell aus.",
+		"disabled_error": "Die Unterhaltung ist in den KI-Einstellungen deaktiviert.",
+		"interrupted_error": "Die Unterhaltungsanfrage wurde unterbrochen.",
+		"open_settings": "KI-Einstellungen öffnen",
+		"model_label": "Modell: {model}",
+		"empty_session": "Keine Nachrichten in dieser App-Sitzung.",
+		"waiting": "Warten auf Ollama...",
+		"input_hint": "Lokales LLM fragen",
+		"send": "Senden",
+		"user": "Du",
+		"assistant": "Assistent"
+	},
 	"tool": {
 		"not_installed": "{tool} ist nicht installiert.",
 		"install_path": "Pfad: {path}",

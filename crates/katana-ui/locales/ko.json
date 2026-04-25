@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: 구성되지 않음]"
 	},
+	"chat": {
+		"title": "채팅",
+		"close": "채팅 닫기",
+		"pin": "채팅 패널 고정",
+		"model_required": "설정에서 Ollama 모델을 선택하세요.",
+		"disabled_error": "AI 설정에서 채팅이 비활성화되어 있습니다.",
+		"interrupted_error": "채팅 요청이 중단되었습니다.",
+		"open_settings": "AI 설정 열기",
+		"model_label": "모델: {model}",
+		"empty_session": "이 앱 세션에는 메시지가 없습니다.",
+		"waiting": "Ollama 응답 대기 중...",
+		"input_hint": "로컬 LLM에 질문",
+		"send": "보내기",
+		"user": "나",
+		"assistant": "어시스턴트"
+	},
 	"tool": {
 		"not_installed": "{tool}이(가) 설치되지 않았습니다.",
 		"install_path": "경로: {path}",

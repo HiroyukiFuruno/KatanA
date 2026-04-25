@@ -1,3 +1,4 @@
+use crate::app::ChatOps;
 use crate::app::download::DownloadOps;
 use crate::app_state::*;
 use crate::shell::*;
@@ -80,6 +81,7 @@ impl KatanaApp {
             AppAction::DocSearchPrev => self.handle_action_doc_search_prev(ctx),
             AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open ^= true,
             AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
+            AppAction::SubmitChatMessage => self.submit_chat_message(),
             AppAction::ToggleExplorerFilter => {
                 let current = self.state.search.filter_enabled;
                 self.state.search.filter_enabled = !current;

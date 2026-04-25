@@ -30,5 +30,6 @@ pub enum ActivityRailItem {
     WorkspaceToggle,
     ExplorerToggle,
     Search,
+    Chat,
     History,
 }

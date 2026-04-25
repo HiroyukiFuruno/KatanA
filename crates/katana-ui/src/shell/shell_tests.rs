@@ -294,6 +294,71 @@ mod tests {
     }
 
     #[test]
+    fn process_action_toggle_chat_panel_toggles_flag() {
+        let mut app = make_app();
+        assert!(!app.state.layout.show_chat_panel);
+        app.process_action(&egui::Context::default(), AppAction::ToggleChatPanel);
+        assert!(app.state.layout.show_chat_panel);
+        assert!(app.state.chat.is_open);
+        app.process_action(&egui::Context::default(), AppAction::ToggleChatPanel);
+        assert!(!app.state.layout.show_chat_panel);
+        assert!(!app.state.chat.is_open);
+    }
+
+    #[test]
+    fn submit_chat_without_model_does_not_mutate_document() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path, true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::UpdateBuffer("# Original".to_string()),
+        );
+        app.state.chat.draft = "change the document".to_string();
+        app.process_action(&egui::Context::default(), AppAction::SubmitChatMessage);
+        assert_eq!(
+            app.state
+                .active_document()
+                .expect("test document should be active")
+                .buffer,
+            "# Original"
+        );
+        assert!(app.state.chat.messages.is_empty());
+        assert!(app.state.chat.error.is_some());
+    }
+
+    #[test]
+    fn chat_response_appends_message_without_document_mutation() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("test.md");
+        app.handle_select_document(path, true);
+        app.process_action(
+            &egui::Context::default(),
+            AppAction::UpdateBuffer("# Original".to_string()),
+        );
+        let (tx, rx) = std::sync::mpsc::channel();
+        tx.send(Ok("assistant response".to_string()))
+            .expect("mock chat response should be sent");
+        app.state.chat.is_pending = true;
+        app.state.chat.response_rx = Some(rx);
+        app.poll_chat(&egui::Context::default());
+        assert_eq!(
+            app.state
+                .active_document()
+                .expect("test document should be active")
+                .buffer,
+            "# Original"
+        );
+        assert_eq!(app.state.chat.messages.len(), 1);
+        assert_eq!(
+            app.state.chat.messages[0].role,
+            crate::app_state::ChatRole::Assistant
+        );
+    }
+
+    #[test]
     fn process_action_none_does_nothing() {
         let mut app = make_app();
         app.process_action(&egui::Context::default(), AppAction::None);

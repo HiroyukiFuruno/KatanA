@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: Não configurada]"
 	},
+	"chat": {
+		"title": "Conversa",
+		"close": "Fechar chat",
+		"pin": "Fixar painel de chat",
+		"model_required": "Selecione um modelo Ollama nas Configurações.",
+		"disabled_error": "O chat está desativado nas configurações de IA.",
+		"interrupted_error": "A solicitação do chat foi interrompida.",
+		"open_settings": "Abrir configurações de IA",
+		"model_label": "Modelo: {model}",
+		"empty_session": "Sem mensagens nesta sessão do app.",
+		"waiting": "Aguardando o Ollama...",
+		"input_hint": "Perguntar ao LLM local",
+		"send": "Enviar",
+		"user": "Você",
+		"assistant": "Assistente"
+	},
 	"tool": {
 		"not_installed": "{tool} não está instalado.",
 		"install_path": "Caminho: {path}",
