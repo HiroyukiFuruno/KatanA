@@ -43,6 +43,7 @@ pub struct KatanaApp {
     pub(crate) update_install_rx: Option<std::sync::mpsc::Receiver<UpdateInstallEvent>>,
     pub(crate) export_tasks: Vec<ExportTask>,
     pub(crate) pending_document_loads: std::collections::VecDeque<std::path::PathBuf>,
+    pub(crate) pending_workspace_file_open: Option<std::path::PathBuf>,
     pub(crate) linter_doc_rx: Option<std::sync::mpsc::Receiver<(String, Result<String, String>)>>,
     pub(crate) linter_docs_cache: std::collections::HashMap<String, String>,
 

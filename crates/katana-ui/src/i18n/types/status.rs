@@ -8,6 +8,8 @@ pub struct StatusMessages {
     pub opened_workspace: String,
     pub cannot_open_workspace: String,
     pub cannot_open_file: String,
+    pub move_failed: String,
+    pub moved_file: String,
     pub refresh_success: String,
     pub refresh_skipped_dirty: String,
     pub refresh_no_changes: String,

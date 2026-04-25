@@ -109,6 +109,66 @@ mod tests {
         app
     }
 
+    fn app_for_drop_tests() -> KatanaApp {
+        let state = AppState::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        KatanaApp::new(state)
+    }
+
+    fn raw_input_with_dropped_path(path: PathBuf) -> egui::RawInput {
+        egui::RawInput {
+            dropped_files: vec![egui::DroppedFile {
+                path: Some(path),
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn dropped_file_queue_ignores_unconfigured_extension() {
+        let ctx = test_context();
+        let mut app = app_for_drop_tests();
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("note.rs");
+        std::fs::write(&file_path, "fn main() {}").unwrap();
+
+        let _ = ctx.run(raw_input_with_dropped_path(file_path), |ctx| {
+            dropped_files::DroppedFileOps::queue(&mut app, ctx);
+        });
+
+        assert!(matches!(app.pending_action, crate::app_state::AppAction::None));
+    }
+
+    #[test]
+    fn dropped_file_queue_accepts_configured_extension() {
+        let ctx = test_context();
+        let mut app = app_for_drop_tests();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions
+            .push("adr".to_string());
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("decision.adr");
+        std::fs::write(&file_path, "# Decision").unwrap();
+
+        let _ = ctx.run(raw_input_with_dropped_path(file_path.clone()), |ctx| {
+            dropped_files::DroppedFileOps::queue(&mut app, ctx);
+        });
+
+        assert!(matches!(
+            app.pending_action,
+            crate::app_state::AppAction::OpenDroppedFiles(ref paths) if paths == &vec![file_path]
+        ));
+    }
+
     struct CountingBytesLoader {
         forget_all_calls: Arc<AtomicUsize>,
     }

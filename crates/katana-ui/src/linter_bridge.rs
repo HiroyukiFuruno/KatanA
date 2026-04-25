@@ -16,9 +16,10 @@ impl MarkdownLinterBridgeOps {
         content: &str,
     ) -> Vec<MarkdownDiagnostic> {
         let linter_settings = &state.config.settings.settings().linter;
-        let options = crate::linter_config_bridge::MarkdownLinterConfigOps::load_options_for_path(
-            state, path,
-        );
+        let options =
+            crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::load_effective_options(
+                state, path,
+            );
         let mut severity_map = Self::severity_map(&options);
         for (rule_id, severity) in &linter_settings.rule_severity {
             severity_map.insert(rule_id.clone(), Self::configured_severity(severity));

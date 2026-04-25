@@ -5,6 +5,7 @@ mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;
 mod dispatch_tertiary;
+mod file_open;
 mod image_ingest;
 mod process_authoring;
 mod process_demo;
@@ -22,6 +23,7 @@ mod refresh_content;
 use crate::app::*;
 use crate::app_state::*;
 use crate::shell::*;
+pub(crate) use file_open::FileOpenOps;
 
 pub(crate) trait ActionOps {
     fn take_action(&mut self) -> AppAction;

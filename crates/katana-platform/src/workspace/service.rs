@@ -57,4 +57,12 @@ mod tests {
         /* WHY: After reload, the service state should be the saved repository state again */
         assert_eq!(svc.state().persisted, vec!["/initial"]);
     }
+
+    #[test]
+    fn test_is_ephemeral_delegates_to_repository() {
+        let repo = InMemoryWorkspaceRepository::default();
+        let svc = GlobalWorkspaceService::new(Box::new(repo));
+
+        assert!(svc.is_ephemeral());
+    }
 }

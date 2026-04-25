@@ -4,6 +4,7 @@ pub mod dir_entry;
 pub mod empty;
 pub mod file_entry;
 pub mod header;
+pub mod header_menu;
 pub mod logic;
 pub mod panel;
 pub mod shared;

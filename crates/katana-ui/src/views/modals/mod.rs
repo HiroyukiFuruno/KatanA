@@ -16,6 +16,7 @@ pub mod command_palette;
 pub(super) mod command_palette_results;
 mod command_palette_scroll_tests;
 pub mod file_ops;
+pub(super) mod file_ops_move;
 pub(super) mod file_ops_rename_delete;
 pub mod meta_info;
 mod meta_info_fields;

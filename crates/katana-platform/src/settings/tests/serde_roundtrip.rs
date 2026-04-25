@@ -11,6 +11,7 @@ fn test_behavior_settings_serde_roundtrip() {
         auto_save_interval_secs: 10.0,
         auto_refresh: false,
         auto_refresh_interval_secs: 10.0,
+        confirm_file_move: false,
         slideshow_hover_highlight: true,
         slideshow_show_diagram_controls: true,
     };
@@ -22,6 +23,7 @@ fn test_behavior_settings_serde_roundtrip() {
     assert_eq!(loaded.auto_save_interval_secs, 10.0);
     assert!(!loaded.auto_refresh);
     assert_eq!(loaded.auto_refresh_interval_secs, 10.0);
+    assert!(!loaded.confirm_file_move);
 }
 
 #[test]
@@ -34,6 +36,7 @@ fn test_behavior_settings_serde_missing_fields_use_defaults() {
     assert_eq!(loaded.auto_save_interval_secs, 5.0);
     assert!(loaded.auto_refresh);
     assert_eq!(loaded.auto_refresh_interval_secs, 2.0);
+    assert!(loaded.confirm_file_move);
 }
 
 #[test]

@@ -16,6 +16,7 @@ pub struct WorkspaceMessages {
     pub flat_view: String,
     pub filter_hint: String,
     pub open_folder_hint: String,
+    pub temporary_workspace_tooltip: String,
     pub open_workspace_button: String,
     pub remove_history_tooltip: String,
     pub max_depth_exceeded: String,

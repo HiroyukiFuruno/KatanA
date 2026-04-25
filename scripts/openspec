@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if command -v openspec >/dev/null 2>&1; then
+  exec openspec "$@"
+fi
+
+if command -v bunx >/dev/null 2>&1; then
+  exec bunx @fission-ai/openspec "$@"
+fi
+
+if command -v npx >/dev/null 2>&1; then
+  exec npx @fission-ai/openspec "$@"
+fi
+
+cat >&2 <<'EOF'
+OpenSpec CLI is not available.
+
+Install it globally:
+  npm install -g @fission-ai/openspec
+
+Or install Bun / npm so this wrapper can run:
+  bunx @fission-ai/openspec ...
+  npx @fission-ai/openspec ...
+EOF
+exit 127

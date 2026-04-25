@@ -5,8 +5,7 @@ use crate::shell_ui::ShellUiOps;
 use eframe::egui;
 
 impl KatanaApp {
-    /// Per-frame state updates: auto-save, auto-refresh, theme, font, shortcuts, polling.
-    /// Returns resolved theme colors for the rendering phase.
+    /// Per-frame state updates and rendering prerequisites.
     pub(super) fn poll_and_prepare(
         &mut self,
         ctx: &egui::Context,
@@ -42,6 +41,7 @@ impl KatanaApp {
         }
 
         self.handle_shortcuts(ctx);
+        super::dropped_files::DroppedFileOps::queue(self, ctx);
         self.poll_download(ctx);
         self.poll_explorer_load(ctx);
 
@@ -86,6 +86,12 @@ impl KatanaApp {
         match action {
             AppAction::PickOpenWorkspace => {
                 self.handle_open_explorer(path);
+            }
+            AppAction::PickOpenFileInCurrentWorkspace => {
+                crate::app::action::FileOpenOps::open_in_current_workspace(self, path);
+            }
+            AppAction::PickOpenFileInNewWorkspace => {
+                crate::app::action::FileOpenOps::open_as_temporary_workspace(self, path);
             }
             AppAction::IngestImageFile => {
                 let Ok(bytes) = std::fs::read(&path) else {

@@ -14,9 +14,7 @@
     "code_block_line_length": 10000,
     "line_length": 10000
   },
-  "MD022": {
-    "lines_below": 1
-  },
+  "MD022": true,
   "MD029": {
     "style": "one_or_ordered"
   },
@@ -46,11 +44,8 @@
   "MD055": {
     "style": "consistent"
   },
-  "default": true,
-  "first-line-h1": {
-    "allow_preamble": true
-  },
-  "first-line-heading": false,
-  "no-duplicate-heading": false,
-  "no-inline-html": false
+  "MD024": false,
+  "MD033": false,
+  "MD041": false,
+  "default": true
 }

@@ -9,6 +9,7 @@ use crate::{
     preview_pane::PreviewPane,
 };
 mod test_hooks;
+mod transient_workspace;
 mod types;
 pub(crate) use types::{ExplorerLoadType, ExportTask, TabPreviewCache};
 pub use types::{KatanaApp, UpdateInstallEvent};
@@ -26,6 +27,7 @@ pub(crate) const TREE_ICON_ARROW_GAP: f32 = 4.0;
 pub(crate) const TREE_ICON_LABEL_GAP: f32 = 6.0;
 pub(crate) const TREE_HOVER_ROUNDING: f32 = 2.0;
 pub(crate) const TREE_HOVER_GAMMA: f32 = 0.4;
+pub(crate) const TREE_DRAG_GHOST_GAMMA: f32 = 0.7;
 pub(crate) const TREE_ACCORDION_LINE_OFFSET: f32 = 6.0;
 pub(crate) const TREE_ACCORDION_LINE_WIDTH: f32 = 1.0;
 pub(crate) const TREE_ACCORDION_LINE_GAMMA: f32 = 0.2;
@@ -50,6 +52,7 @@ impl KatanaApp {
             update_install_rx: None,
             export_tasks: Vec::new(),
             pending_document_loads: std::collections::VecDeque::new(),
+            pending_workspace_file_open: None,
             linter_doc_rx: None,
             linter_docs_cache: std::collections::HashMap::new(),
             show_about: false,
@@ -98,6 +101,7 @@ impl KatanaApp {
             app.needs_changelog_display = true;
         }
 
+        app.clear_transient_workspace_restore_state();
         katana_core::update::UpdateCleanupOps::perform_background_cleanup();
         tracing::debug!("KatanaApp::new: Background cleanup done");
         app.start_update_check(false);

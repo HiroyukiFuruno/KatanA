@@ -5,6 +5,26 @@ use crate::shell::*;
 impl KatanaApp {
     pub(super) fn dispatch_secondary(&mut self, ctx: &egui::Context, action: AppAction) {
         match action {
+            AppAction::PickOpenFileInCurrentWorkspace | AppAction::PickOpenFileInNewWorkspace => {
+                self.handle_action_pick_open_file(action);
+            }
+            AppAction::OpenFileInCurrentWorkspace(p) => {
+                crate::app::action::FileOpenOps::open_in_current_workspace(self, p);
+            }
+            AppAction::OpenFileInNewWorkspace(p) => {
+                crate::app::action::FileOpenOps::open_as_temporary_workspace(self, p);
+            }
+            AppAction::OpenDroppedFiles(paths) => {
+                crate::app::action::FileOpenOps::open_dropped_files(self, paths);
+            }
+            AppAction::RequestMoveFsNode {
+                source_path,
+                target_dir,
+            } => self.handle_action_request_move_fs_node(source_path, target_dir),
+            AppAction::MoveFsNode {
+                source_path,
+                target_path,
+            } => self.handle_action_move_fs_node(source_path, target_path),
             AppAction::CloseOtherDocuments(idx) => self.handle_action_close_other_documents(idx),
             AppAction::CloseAllDocuments => self.handle_action_close_all_documents(),
             AppAction::CloseDocumentsToRight(idx) => self.handle_action_close_to_right(idx),
