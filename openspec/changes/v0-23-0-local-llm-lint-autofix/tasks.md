@@ -109,7 +109,7 @@
 - [x] ユーザーの confirmation 無しに、勝手に Markdown が書き換わらないこと
 - [x] 修正の適用後に再び lint が走り、エラーが解消された事実を確認できること
 - [x] `make check` がエラーなし (exit code 0) で通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
