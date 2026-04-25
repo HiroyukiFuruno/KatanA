@@ -1,3 +1,4 @@
+pub mod ai;
 pub mod behavior;
 pub mod font;
 pub mod icons;

@@ -16,7 +16,7 @@
 )]
 
 #[cfg(not(test))]
-use katana_core::ai::AiProviderRegistry;
+use katana_core::ai::{AiProviderRegistry, OllamaProvider};
 use katana_core::plugin::PluginRegistry;
 #[cfg(not(test))]
 use katana_platform::{JsonFileRepository, SettingsService};
@@ -46,8 +46,6 @@ fn main() -> eframe::Result<()> {
         katana_ui::native_menu::NativeMenuOps::set_process_name();
     }
 
-    let ai_registry = AiProviderRegistry::new();
-
     let mut plugin_registry = PluginRegistry::new();
     GuiSetupOps::register_builtin_plugins(&mut plugin_registry);
 
@@ -56,6 +54,8 @@ fn main() -> eframe::Result<()> {
 
     settings.apply_os_default_theme();
     settings.apply_os_default_language(katana_platform::OsLocaleOps::get_default_language());
+
+    let ai_registry = build_ai_registry(settings.settings().ai.ollama.clone());
 
     let saved_language = settings.settings().language.clone();
     let saved_icon_pack = settings.settings().theme.icon_pack.clone();
@@ -132,6 +132,18 @@ fn main() -> eframe::Result<()> {
             Ok(Box::new(app))
         }),
     )
+}
+
+#[cfg(not(test))]
+fn build_ai_registry(ollama: katana_platform::OllamaSettings) -> AiProviderRegistry {
+    let mut registry = AiProviderRegistry::new();
+    registry.register(Box::new(OllamaProvider::new(
+        ollama.endpoint,
+        ollama.selected_model,
+        ollama.timeout_secs,
+    )));
+    registry.set_active(OllamaProvider::ID);
+    registry
 }
 
 pub mod gui_setup;
