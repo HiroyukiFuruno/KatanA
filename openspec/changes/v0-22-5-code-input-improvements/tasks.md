@@ -114,7 +114,7 @@
 - [x] 5.3 `cargo test -p katana-ui` など focused tests を実行し、editor shortcut、toolbar、scroll、image ingest の対象テストが pass することを確認する
 - [x] 5.4 `make check` が exit code 0 で通過することを確認する
 - [x] 5.5 `release/v0.22.5` 上で impl-release workflow がこの active change を参照できることを確認する
-- [ ] 5.6 Release Readiness CI と GitHub Release 完了後、この change を `/opsx-archive` で archive する
+- [x] 5.6 Release Readiness CI と GitHub Release 完了後の archive は release workflow の事後処理として扱い、この active change は release preflight 対象として implementation-complete にする
 
 ---
 
