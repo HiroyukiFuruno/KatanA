@@ -42,47 +42,17 @@ impl DocumentEditOps for KatanaApp {
 
     fn handle_apply_lint_fixes(
         &mut self,
-        mut fixes: Vec<katana_linter::rules::markdown::DiagnosticFix>,
+        fixes: Vec<katana_linter::rules::markdown::DiagnosticFix>,
     ) {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
         let doc = &mut self.state.document.open_documents[idx];
+        let next_content =
+            crate::app::lint_fix::LintFixApplication::apply_to_content(&doc.buffer, &fixes);
 
-        /* WHY: Sort fixes descending by start_line and start_column so replacements don't invalidate subsequent offsets */
-        fixes.sort_by(|a, b| {
-            b.start_line
-                .cmp(&a.start_line)
-                .then_with(|| b.start_column.cmp(&a.start_column))
-        });
-
-        for fix in fixes {
-            /* WHY: DiagnosticFix uses 1-indexed line numbers, but
-             * line_col_to_byte_index expects 0-indexed lines.
-             * Without this conversion, the replacement targets the wrong
-             * line, causing duplicate/shifted text (FB29 root cause). */
-            let start_opt =
-                crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
-                    &doc.buffer,
-                    fix.start_line.saturating_sub(1),
-                    fix.start_column,
-                );
-            let end_opt =
-                crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
-                    &doc.buffer,
-                    fix.end_line.saturating_sub(1),
-                    fix.end_column,
-                );
-            let (Some(start), Some(end)) = (start_opt, end_opt) else {
-                continue;
-            };
-
-            if start > end || end > doc.buffer.len() {
-                continue;
-            }
-
-            doc.buffer.replace_range(start..end, &fix.replacement);
-
+        if next_content != doc.buffer {
+            doc.buffer = next_content;
             use crate::state::document::VirtualPathExt as _;
             if !doc.path.is_virtual_path() {
                 doc.is_dirty = true;

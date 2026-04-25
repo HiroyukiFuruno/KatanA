@@ -85,6 +85,7 @@ impl<'a> ProblemsPanel<'a> {
                     })
                     .show(ui);
                 ui.separator();
+                self.show_autofix_status(ui);
 
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
                     let total = self.state.diagnostics.total_problems();
@@ -109,5 +110,16 @@ impl<'a> ProblemsPanel<'a> {
                     }
                 });
             });
+    }
+
+    fn show_autofix_status(&self, ui: &mut egui::Ui) {
+        if self.state.autofix.is_pending {
+            ui.label(egui::RichText::new(
+                &crate::i18n::I18nOps::get().linter.autofix_pending,
+            ));
+        }
+        if let Some(error) = &self.state.autofix.error {
+            ui.label(egui::RichText::new(error).color(ui.visuals().error_fg_color));
+        }
     }
 }

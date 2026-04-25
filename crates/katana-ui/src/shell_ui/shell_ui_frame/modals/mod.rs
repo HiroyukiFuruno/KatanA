@@ -14,5 +14,10 @@ impl KatanaApp {
         self.show_search_and_palette_modals(ctx);
         self.show_file_operations_modals(ctx);
         self.show_system_modals(ctx);
+        crate::views::modals::autofix_diff::AutofixDiffModal::new(
+            &self.state.autofix,
+            &mut self.pending_action,
+        )
+        .show(ctx);
     }
 }

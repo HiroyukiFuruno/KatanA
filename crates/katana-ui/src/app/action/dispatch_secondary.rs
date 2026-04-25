@@ -1,3 +1,4 @@
+use crate::app::AutofixOps;
 use crate::app::ChatOps;
 use crate::app::download::DownloadOps;
 use crate::app_state::*;
@@ -82,6 +83,9 @@ impl KatanaApp {
             AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open ^= true,
             AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
             AppAction::SubmitChatMessage => self.submit_chat_message(),
+            AppAction::RequestFileAutofix(path) => self.request_file_autofix(path),
+            AppAction::ApplyAutofixCandidate => self.apply_autofix_candidate(),
+            AppAction::CancelAutofixCandidate => self.cancel_autofix_candidate(),
             AppAction::ToggleExplorerFilter => {
                 let current = self.state.search.filter_enabled;
                 self.state.search.filter_enabled = !current;

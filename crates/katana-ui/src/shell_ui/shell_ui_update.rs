@@ -56,6 +56,7 @@ impl KatanaApp {
         self.poll_export(ctx);
         self.poll_linter_docs(ctx);
         self.poll_chat(ctx);
+        self.poll_autofix(ctx);
         self.tick_diagnostics(ctx);
 
         crate::native_menu::NativeMenuOps::update_availability(&self.state);

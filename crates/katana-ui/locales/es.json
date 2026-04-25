@@ -667,6 +667,19 @@
 			"md060": "El estilo de las columnas de la tabla no es consistente."
 		},
 		"view_on_github": "Ver en el GitHub oficial",
+		"autofix": "Corregir archivo con IA",
+		"autofix_pending": "Generando propuesta de corrección con IA…",
+		"autofix_disabled": "La corrección con IA está desactivada.",
+		"autofix_model_required": "Selecciona un modelo de Ollama antes de ejecutar la corrección con IA.",
+		"autofix_no_diagnostics": "No hay diagnósticos disponibles para este archivo.",
+		"autofix_diff_title": "Vista previa de corrección con IA",
+		"autofix_apply": "Aplicar",
+		"autofix_cancel": "Cancelar",
+		"autofix_no_changes": "La propuesta no cambió el archivo.",
+		"autofix_stale": "El archivo cambió después de generar la propuesta. Ejecuta de nuevo la corrección con IA.",
+		"autofix_applied": "La corrección con IA se aplicó, se guardó y se volvió a comprobar.",
+		"autofix_failed": "La corrección con IA falló: {error}",
+		"autofix_interrupted": "La respuesta de la corrección con IA se interrumpió.",
 		"search_placeholder": "Buscar reglas…"
 	},
 	"use_workspace_local_config": "Usar configuración local del espacio de trabajo"

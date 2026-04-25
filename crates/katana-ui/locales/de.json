@@ -667,6 +667,19 @@
 			"md060": "Der Spaltenstil der Tabelle ist nicht einheitlich."
 		},
 		"view_on_github": "Auf offiziellem GitHub anzeigen",
+		"autofix": "Datei mit KI korrigieren",
+		"autofix_pending": "KI-Korrekturvorschlag wird erstellt…",
+		"autofix_disabled": "KI-Korrektur ist deaktiviert.",
+		"autofix_model_required": "Wählen Sie ein Ollama-Modell aus, bevor Sie die KI-Korrektur ausführen.",
+		"autofix_no_diagnostics": "Für diese Datei sind keine Diagnosen verfügbar.",
+		"autofix_diff_title": "KI-Korrekturvorschau",
+		"autofix_apply": "Anwenden",
+		"autofix_cancel": "Abbrechen",
+		"autofix_no_changes": "Der Vorschlag hat die Datei nicht geändert.",
+		"autofix_stale": "Die Datei wurde nach dem Erstellen des Vorschlags geändert. Führen Sie die KI-Korrektur erneut aus.",
+		"autofix_applied": "Die KI-Korrektur wurde angewendet, gespeichert und erneut geprüft.",
+		"autofix_failed": "KI-Korrektur fehlgeschlagen: {error}",
+		"autofix_interrupted": "Die Antwort der KI-Korrektur wurde unterbrochen.",
 		"search_placeholder": "Regeln suchen…"
 	},
 	"use_workspace_local_config": "Workspace-lokale Konfiguration verwenden"
