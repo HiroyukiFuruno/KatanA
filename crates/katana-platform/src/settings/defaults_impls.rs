@@ -67,6 +67,7 @@ impl Default for LayoutSettings {
                 ActivityRailItem::WorkspaceToggle,
                 ActivityRailItem::ExplorerToggle,
                 ActivityRailItem::Search,
+                ActivityRailItem::Chat,
                 ActivityRailItem::History,
             ],
             accordion_vertical_line: true,

@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: No configurada]"
 	},
+	"chat": {
+		"title": "Conversación",
+		"close": "Cerrar chat",
+		"pin": "Fijar panel de chat",
+		"model_required": "Selecciona un modelo de Ollama en Configuración.",
+		"disabled_error": "La conversación está desactivada en la configuración de IA.",
+		"interrupted_error": "La solicitud de conversación se interrumpió.",
+		"open_settings": "Abrir configuración de IA",
+		"model_label": "Modelo: {model}",
+		"empty_session": "No hay mensajes en esta sesión de la app.",
+		"waiting": "Esperando a Ollama...",
+		"input_hint": "Preguntar al LLM local",
+		"send": "Enviar",
+		"user": "Tú",
+		"assistant": "Asistente"
+	},
 	"tool": {
 		"not_installed": "{tool} no está instalado.",
 		"install_path": "Ruta: {path}",

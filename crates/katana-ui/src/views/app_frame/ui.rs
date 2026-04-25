@@ -51,6 +51,7 @@ impl<'a> MainPanels<'a> {
         GlobalMenuBar::new(app).show(ui);
         TitleBar::new(app, theme_colors).show(ui);
         ExplorerSidebar::new(app).show(ui);
+        crate::views::panels::chat::ChatPanel::new(app).show(ui);
         TabToolbar::new(app).show(ui);
         CentralContent::new(app).show(ui)
     }

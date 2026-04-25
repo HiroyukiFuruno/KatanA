@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: Unconfigured]"
 	},
+	"chat": {
+		"title": "Chat",
+		"close": "Close chat",
+		"pin": "Pin chat panel",
+		"model_required": "Select an Ollama model in Settings.",
+		"disabled_error": "Chat is disabled in AI settings.",
+		"interrupted_error": "Chat request was interrupted.",
+		"open_settings": "Open AI Settings",
+		"model_label": "Model: {model}",
+		"empty_session": "No messages in this app session.",
+		"waiting": "Waiting for Ollama...",
+		"input_hint": "Ask local LLM",
+		"send": "Send",
+		"user": "You",
+		"assistant": "Assistant"
+	},
 	"tool": {
 		"not_installed": "{tool} is not installed.",
 		"install_path": "Install path: {path}",

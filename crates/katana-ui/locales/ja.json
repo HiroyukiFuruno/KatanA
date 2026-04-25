@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI: 未設定]"
 	},
+	"chat": {
+		"title": "チャット",
+		"close": "チャットを閉じる",
+		"pin": "チャットパネルを固定",
+		"model_required": "設定でOllamaモデルを選択してください。",
+		"disabled_error": "AI設定でチャットが無効です。",
+		"interrupted_error": "チャットリクエストが中断されました。",
+		"open_settings": "AI設定を開く",
+		"model_label": "モデル: {model}",
+		"empty_session": "このアプリ起動中のメッセージはありません。",
+		"waiting": "Ollamaの応答待ち...",
+		"input_hint": "ローカルLLMに質問",
+		"send": "送信",
+		"user": "あなた",
+		"assistant": "アシスタント"
+	},
 	"tool": {
 		"not_installed": "{tool} がインストールされていません",
 		"install_path": "インストール先: {path}",

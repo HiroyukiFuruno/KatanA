@@ -201,6 +201,22 @@
 	"ai": {
 		"ai_unconfigured": "[AI : Non configurée]"
 	},
+	"chat": {
+		"title": "Discussion",
+		"close": "Fermer le chat",
+		"pin": "Épingler le panneau de chat",
+		"model_required": "Sélectionnez un modèle Ollama dans les paramètres.",
+		"disabled_error": "La discussion est désactivée dans les paramètres IA.",
+		"interrupted_error": "La requête de discussion a été interrompue.",
+		"open_settings": "Ouvrir les paramètres IA",
+		"model_label": "Modèle : {model}",
+		"empty_session": "Aucun message dans cette session de l'application.",
+		"waiting": "En attente d'Ollama...",
+		"input_hint": "Demander au LLM local",
+		"send": "Envoyer",
+		"user": "Vous",
+		"assistant": "Assistant IA"
+	},
 	"tool": {
 		"not_installed": "{tool} n'est pas installé.",
 		"install_path": "Chemin : {path}",

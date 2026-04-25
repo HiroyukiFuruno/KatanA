@@ -163,6 +163,13 @@ impl ExplorerSidebarDrag {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Search")
                         });
                     }
+                    katana_platform::settings::ActivityRailItem::Chat => {
+                        ui.add(crate::Icon::Action.selected_button(
+                            ui,
+                            crate::icon::IconSize::Large,
+                            app.state.layout.show_chat_panel,
+                        ));
+                    }
                     katana_platform::settings::ActivityRailItem::History => {
                         ui.add(crate::Icon::History.button(ui, crate::icon::IconSize::Large));
                     }

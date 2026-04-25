@@ -102,6 +102,9 @@ impl<'a> ExplorerSidebar<'a> {
             katana_platform::settings::ActivityRailItem::Search => {
                 ExplorerSidebarItems::render_search_toggle(ui, app, interact_id)
             }
+            katana_platform::settings::ActivityRailItem::Chat => {
+                ExplorerSidebarItems::render_chat_toggle(ui, app, interact_id)
+            }
             katana_platform::settings::ActivityRailItem::History => None,
         }
     }

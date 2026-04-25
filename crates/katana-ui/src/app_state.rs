@@ -1,3 +1,4 @@
+pub use crate::state::chat::{ChatMessage, ChatRole, ChatState};
 pub use crate::state::command_palette::CommandPaletteState;
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
 pub use crate::state::diagnostics::DiagnosticsState;
@@ -41,6 +42,7 @@ pub struct AppState {
     pub document: DocumentState,
     pub workspace: WorkspaceState,
     pub layout: LayoutState,
+    pub chat: ChatState,
     pub search: SearchState,
     pub scroll: ScrollState,
     pub update: UpdateState,
@@ -75,6 +77,7 @@ impl AppState {
             document: DocumentState::new(),
             workspace: WorkspaceState::new(),
             layout,
+            chat: ChatState::new(),
             search,
             scroll: ScrollState::new(),
             update: UpdateState::new(),
