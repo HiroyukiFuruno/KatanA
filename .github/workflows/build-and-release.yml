@@ -275,7 +275,7 @@ jobs:
         run: cargo build --workspace --release
 
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@d8b2727b3a60691310e57c65e989cb974c787690 # main
+        uses: cargo-bins/cargo-binstall@d53a6272dbf8d0bb6b2b9cbad1e50c821d9f7d09 # main
 
       - name: Package Windows Artifacts
         shell: bash
