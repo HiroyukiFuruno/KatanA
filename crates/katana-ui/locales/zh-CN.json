@@ -93,8 +93,7 @@
     "open_workspace_button": "打开文件夹",
     "remove_history_tooltip": "从历史记录中移除",
     "max_depth_exceeded": "超过最大扫描深度",
-    "filter_hint": "过滤…",
-    "referenced_images_section": "引用图像"
+    "filter_hint": "过滤…"
   },
   "preview": {
     "preview_title": "预览",

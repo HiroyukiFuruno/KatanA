@@ -6,6 +6,7 @@ use crate::shell::*;
 use crate::app::doc_close::DocCloseOps;
 use crate::app::doc_search::DocSearchRefresh;
 use crate::app::document_scroll::DocumentScrollOps;
+use crate::app::image_document::ImageDocumentOps;
 use crate::preview_pane::{DownloadRequest, PreviewPane};
 use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
@@ -48,13 +49,9 @@ impl DocumentOps for KatanaApp {
                 self.state.document.active_doc_idx = Some(idx);
                 self.reset_scroll_for_new_active_path(&previous_active_path, &path);
 
-                let doc_is_loaded = self.state.document.open_documents[idx].is_loaded;
-                if !doc_is_loaded
-                    && !path.to_string_lossy().starts_with("Katana://")
-                    && let Ok(mut loaded_doc) = self.fs.load_document(&path)
+                if let Some(loaded_doc) =
+                    ImageDocumentOps::replacement_for_unloaded(&self.fs, &self.state, idx, &path)
                 {
-                    let pinned = self.state.document.open_documents[idx].is_pinned;
-                    loaded_doc.is_pinned = pinned;
                     self.state.document.open_documents[idx] = loaded_doc;
                 }
 
@@ -76,7 +73,7 @@ impl DocumentOps for KatanaApp {
         }
 
         let doc = if activate {
-            match self.fs.load_document(&path) {
+            match ImageDocumentOps::load_or_create(&self.fs, &path) {
                 Ok(d) => d,
                 Err(e) => {
                     self.state.layout.status_message = Some((

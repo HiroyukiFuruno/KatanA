@@ -35,6 +35,7 @@ impl TextEditRenderer {
 
             let editable = !doc.is_reference;
             let text_edit = egui::TextEdit::multiline(buffer)
+                .id(egui::Id::new("editor_text_edit"))
                 .interactive(editable)
                 .font(egui::TextStyle::Monospace)
                 .desired_width(f32::INFINITY)
@@ -57,17 +58,11 @@ impl TextEditRenderer {
             );
             let galley = text_output.galley;
 
+            let popup_cursor_range = text_output.cursor_range.or(*cursor_range_out);
             if let Some(range) = text_output.cursor_range {
                 *cursor_range_out = Some(range);
             }
-            ToolbarPopup::show(
-                ui,
-                action,
-                &response,
-                &galley,
-                text_output.cursor_range,
-                editable,
-            );
+            ToolbarPopup::show(ui, action, &response, &galley, popup_cursor_range, editable);
 
             if let Some(cursor_range) = pending_cursor {
                 EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);

@@ -124,4 +124,4 @@ The implementation is complete only when the following user review cases are dem
 
 - Whether clipboard image paste should take priority when the clipboard contains both text and image data. The default implementation should prefer text paste unless product review explicitly wants image priority.
 - Whether to keep `primary+shift+V` as a secondary image paste command after normal paste is implemented.
-- Whether a future release should introduce a detached custom input window to bypass egui limitations around colored emoji, OS emoji fonts, and special-character rendering. That option should be designed separately because it creates new interaction contracts for cursor anchoring, IME composition, focus transfer, undo/redo, accessibility, and preview synchronization.
+- Whether a future release should introduce a native input surface to bypass egui limitations around colored emoji, OS emoji fonts, and special-character rendering. This is now tracked separately by `x-x-x-native-input-surface` because it creates new interaction contracts for cursor anchoring, IME composition, focus transfer, undo/redo, accessibility, and preview synchronization.

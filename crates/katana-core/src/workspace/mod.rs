@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 mod types;
 pub use types::*;
 
+const IMAGE_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"];
+
 impl TreeEntry {
     pub fn path(&self) -> &Path {
         match self {
@@ -28,6 +30,27 @@ impl TreeEntry {
             }
             _ => false,
         }
+    }
+
+    pub fn is_image(&self) -> bool {
+        match self {
+            Self::File { path } => Self::path_is_image(path),
+            _ => false,
+        }
+    }
+
+    pub fn path_is_image(path: &Path) -> bool {
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| {
+                IMAGE_EXTENSIONS
+                    .iter()
+                    .any(|image_ext| image_ext.eq_ignore_ascii_case(ext))
+            })
+    }
+
+    pub fn image_extensions() -> &'static [&'static str] {
+        IMAGE_EXTENSIONS
     }
 
     pub fn collect_all_directory_paths(&self, paths: &mut Vec<PathBuf>) {

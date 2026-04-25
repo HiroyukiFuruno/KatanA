@@ -93,8 +93,7 @@
     "open_workspace_button": "폴더 열기",
     "remove_history_tooltip": "기록에서 제거",
     "max_depth_exceeded": "최대 스캔 깊이를 초과했습니다",
-    "filter_hint": "필터…",
-    "referenced_images_section": "참조 이미지"
+    "filter_hint": "필터…"
   },
   "preview": {
     "preview_title": "미리보기",

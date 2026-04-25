@@ -93,8 +93,7 @@
     "open_workspace_button": "開啟資料夾",
     "remove_history_tooltip": "從歷史記錄中移除",
     "max_depth_exceeded": "超過最大掃描深度",
-    "filter_hint": "篩選…",
-    "referenced_images_section": "引用圖像"
+    "filter_hint": "篩選…"
   },
   "preview": {
     "preview_title": "預覽",

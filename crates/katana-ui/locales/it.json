@@ -93,8 +93,7 @@
     "open_workspace_button": "Apri cartella",
     "remove_history_tooltip": "Rimuovi dalla cronologia",
     "max_depth_exceeded": "Profondità massima superata",
-    "filter_hint": "Filtra…",
-    "referenced_images_section": "Immagini referenziate"
+    "filter_hint": "Filtra…"
   },
   "preview": {
     "preview_title": "Anteprima",

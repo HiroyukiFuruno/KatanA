@@ -165,6 +165,26 @@ mod tests {
     }
 
     #[test]
+    fn image_file_url_paste_requests_clipboard_image_ingest() {
+        let events = vec![egui::Event::Paste(
+            "file:///Users/me/Pictures/cat%20photo.PNG".to_string(),
+        )];
+        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn non_image_file_url_paste_remains_text_paste() {
+        let events = vec![egui::Event::Paste(
+            "file:///Users/me/Documents/note.md".to_string(),
+        )];
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
     fn command_v_without_text_requests_clipboard_image_ingest() {
         let mut modifiers = egui::Modifiers::NONE;
         modifiers.command = true;

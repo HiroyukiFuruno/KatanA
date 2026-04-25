@@ -3,6 +3,7 @@
 mod tests {
     use super::*;
     use crate::shell_logic::ShellLogicOps;
+    use crate::state::ViewMode;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
     use std::path::PathBuf;
     use tempfile::TempDir;
@@ -59,10 +60,54 @@ mod tests {
     }
 
     #[test]
+    fn handle_open_explorer_includes_image_files_without_user_visible_toggle() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let image_dir = dir.path().join("asset").join("img");
+        std::fs::create_dir_all(&image_dir).unwrap();
+        let image = image_dir.join("example.png");
+        std::fs::write(&image, [137, 80, 78, 71]).unwrap();
+
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+
+        let ws = app.state.workspace.data.as_ref().unwrap();
+        let mut results = Vec::new();
+        ShellLogicOps::collect_matches(
+            &ws.tree,
+            "example",
+            &[],
+            &[],
+            &ws.root,
+            false,
+            false,
+            false,
+            &mut results,
+        );
+        assert_eq!(results, vec![image]);
+    }
+
+    #[test]
     fn handle_select_document_file_not_found_sets_status_message() {
         let mut app = make_app();
         app.handle_select_document(PathBuf::from("/nonexistent/file.md"), true);
         assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn handle_select_document_image_opens_image_only_reference_tab() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("example.png");
+        std::fs::write(&path, [137, 80, 78, 71]).unwrap();
+
+        app.handle_select_document(path.clone(), true);
+
+        let doc = app.state.active_document().unwrap();
+        assert_eq!(doc.path, path);
+        assert!(doc.is_reference);
+        assert!(doc.buffer.starts_with("![](file://"));
+        assert_eq!(app.state.active_view_mode(), ViewMode::PreviewOnly);
     }
 
     #[test]

@@ -93,8 +93,7 @@
     "open_folder_hint": "Open a folder to start using KatanA.",
     "open_workspace_button": "Open Workspace",
     "remove_history_tooltip": "Remove from history",
-    "max_depth_exceeded": "Max depth exceeded",
-    "referenced_images_section": "Referenced Images"
+    "max_depth_exceeded": "Max depth exceeded"
   },
   "preview": {
     "preview_title": "Preview",

@@ -106,6 +106,22 @@ impl ShortcutContextResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use katana_core::document::Document;
+
+    fn state_with_active_doc() -> AppState {
+        let mut state = AppState::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state
+            .document
+            .open_documents
+            .push(Document::new("/tmp/editor.md", ""));
+        state.document.active_doc_idx = Some(0);
+        state
+    }
 
     #[test]
     fn global_context_fires_in_global_active() {
@@ -213,5 +229,34 @@ mod tests {
             ShortcutContext::Recording,
             ShortcutContext::Global
         ));
+    }
+
+    #[test]
+    fn resolve_returns_editor_when_text_edit_has_stable_focus_id() {
+        let state = state_with_active_doc();
+        let ctx = egui::Context::default();
+        ctx.memory_mut(|mem| mem.request_focus(egui::Id::new("editor_text_edit")));
+
+        assert_eq!(
+            ShortcutContextResolver::resolve(&state, &ctx),
+            ShortcutContext::Editor
+        );
+    }
+
+    #[test]
+    fn resolve_ignores_editor_focus_without_active_document() {
+        let state = AppState::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        let ctx = egui::Context::default();
+        ctx.memory_mut(|mem| mem.request_focus(egui::Id::new("editor_text_edit")));
+
+        assert_eq!(
+            ShortcutContextResolver::resolve(&state, &ctx),
+            ShortcutContext::Global
+        );
     }
 }

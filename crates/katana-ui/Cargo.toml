@@ -21,7 +21,7 @@ parking_lot = "0.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 rfd = "0.17"
-image = { version = "0.25", default-features = false, features = ["png"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
 serde_json.workspace = true
 open = "5.3.4"
 resvg = { version = "0.47.0", default-features = true }

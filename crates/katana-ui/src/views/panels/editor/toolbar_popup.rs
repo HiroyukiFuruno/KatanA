@@ -2,6 +2,7 @@ use crate::app_state::AppAction;
 use eframe::egui;
 
 const POPUP_ID: &str = "editor_authoring_toolbar_popup";
+const POPUP_OPEN_ID: &str = "editor_authoring_toolbar_popup_open";
 const POPUP_GAP: f32 = 6.0;
 const POPUP_EDGE_PADDING: f32 = 8.0;
 const POPUP_ESTIMATED_WIDTH: f32 = 352.0;
@@ -19,7 +20,14 @@ impl ToolbarPopup {
         cursor_range: Option<egui::text::CCursorRange>,
         editable: bool,
     ) {
-        if !editable || !Self::editor_has_input_focus(ui, response) {
+        let editor_focused = Self::editor_has_input_focus(ui, response);
+        let was_open = ui.memory(|mem| {
+            mem.data
+                .get_temp::<bool>(egui::Id::new(POPUP_OPEN_ID))
+                .unwrap_or(false)
+        });
+        if !Self::should_show(editable, editor_focused, was_open, cursor_range.is_some()) {
+            Self::store_open(ui, false);
             return;
         }
 
@@ -31,7 +39,7 @@ impl ToolbarPopup {
         let popup_pos = Self::popup_position(response.rect, cursor_rect, ui.ctx().content_rect());
         let has_selection = cursor_range.primary.index != cursor_range.secondary.index;
 
-        egui::Area::new(egui::Id::new(POPUP_ID))
+        let area_response = egui::Area::new(egui::Id::new(POPUP_ID))
             .order(egui::Order::Foreground)
             .fixed_pos(popup_pos)
             .show(ui.ctx(), |ui| {
@@ -41,6 +49,7 @@ impl ToolbarPopup {
                         super::toolbar::EditorToolbar::new(action, has_selection).show(ui);
                     });
             });
+        Self::store_open(ui, editor_focused || area_response.response.hovered());
     }
 
     fn editor_has_input_focus(ui: &egui::Ui, response: &egui::Response) -> bool {
@@ -60,6 +69,14 @@ impl ToolbarPopup {
         let max_y = (viewport_rect.max.y - POPUP_ESTIMATED_HEIGHT - POPUP_EDGE_PADDING).max(min_y);
 
         egui::pos2(desired_x.clamp(min_x, max_x), desired_y.clamp(min_y, max_y))
+    }
+
+    fn should_show(editable: bool, editor_focused: bool, was_open: bool, has_cursor: bool) -> bool {
+        editable && has_cursor && (editor_focused || was_open)
+    }
+
+    fn store_open(ui: &egui::Ui, open: bool) {
+        ui.memory_mut(|mem| mem.data.insert_temp(egui::Id::new(POPUP_OPEN_ID), open));
     }
 }
 
@@ -87,5 +104,15 @@ mod tests {
         let actual = ToolbarPopup::popup_position(response, cursor, viewport);
 
         assert_eq!(actual, egui::pos2(440.0, 548.0));
+    }
+
+    #[test]
+    fn popup_stays_available_after_editor_focus_moves_to_toolbar() {
+        assert!(ToolbarPopup::should_show(true, false, true, true));
+    }
+
+    #[test]
+    fn popup_does_not_show_without_cursor() {
+        assert!(!ToolbarPopup::should_show(true, true, false, false));
     }
 }

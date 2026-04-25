@@ -64,21 +64,6 @@ impl ExplorerHoverOverlay {
                         .settings()
                         .layout
                         .accordion_vertical_line;
-                    let referenced_images = app
-                        .state
-                        .document
-                        .active_doc_idx
-                        .and_then(|idx| app.state.document.open_documents.get(idx))
-                        .filter(|doc| !doc.is_reference && !doc.path.as_os_str().is_empty())
-                        .map(|doc| {
-                            let (_, paths) =
-                                katana_core::preview::ImagePreviewOps::resolve_image_paths(
-                                    &doc.buffer,
-                                    &doc.path,
-                                );
-                            paths
-                        })
-                        .unwrap_or_default();
                     crate::views::panels::explorer::ExplorerPanel::new(
                         &mut app.state.workspace,
                         &mut app.state.search,
@@ -88,7 +73,6 @@ impl ExplorerHoverOverlay {
                         &mut app.pending_action,
                         show_vertical_line,
                     )
-                    .with_referenced_images(referenced_images)
                     .show(ui);
                 });
             });

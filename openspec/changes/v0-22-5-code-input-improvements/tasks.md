@@ -135,5 +135,15 @@
 - [x] 7.1 未指定の active view mode は editable/reference/virtual document を問わず `PreviewOnly` にし、明示的な user-selected mode は維持する
 - [x] 7.2 入力サポート UI を常時表示 toolbar から、editable editor focus と cursor range に連動する cursor-adjacent popup に変更する
 - [x] 7.3 popup 内の authoring group は `|` separator で区切り、separator と icon 群の上下中央を揃えたまま維持する
-- [x] 7.4 egui の特殊文字・OS絵文字制約を避ける独自入力ウィンドウ案は、v0.22.5 の実装範囲外の設計 follow-up として `design.md` に明記する
+- [x] 7.4 egui の特殊文字・OS絵文字制約を避ける独自入力 surface は、v0.22.5 の実装範囲外として `x-x-x-native-input-surface` に分離する
 - [x] 7.5 focused tests、`openspec validate v0-22-5-code-input-improvements`、必要な full check を通す
+
+---
+
+## 8. User Review Feedback: Post-merge Input Regression and Referenced Images
+
+- [x] 8.1 `TextEdit` に `ShortcutContextResolver` と一致する stable focus id を設定し、editor focus 中の text-entry shortcut を app/global tab navigation が横取りしないよう復旧する
+- [x] 8.2 cursor-adjacent 入力補助 popup が toolbar button click のフレームで消えないよう、editor focus から popup focus/hover への遷移中も表示状態を保持する
+- [x] 8.3 `Command+V` normal paste で clipboard image data と画像 file URL paste を image ingest path に接続し、通常 text paste は横取りしない
+- [x] 8.4 common image extension を system-controlled workspace scan/file search 対象に含め、別枠 summary ではなく通常 Explorer tree に画像ファイルと親ディレクトリが表示されるようにする
+- [x] 8.5 参照画像 tree 表示の詳細 UX を確定する: 親ディレクトリは自動展開しない、画像拡張子は設定UIに出さず system-controlled、画像 file row click は KatanA の image-only tab を開く

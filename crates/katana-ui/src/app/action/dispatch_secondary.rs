@@ -43,7 +43,6 @@ impl KatanaApp {
             /* WHY: Image ingest — implemented in Task 2 (stubs for now). */
             AppAction::IngestImageFile => self.handle_action_ingest_image_file(),
             AppAction::IngestClipboardImage => self.handle_action_ingest_clipboard_image(),
-            AppAction::RevealImageAsset(path) => self.handle_action_reveal_image_asset(path),
             AppAction::SetSplitDirection(dir) => self.state.set_active_split_direction(dir),
             AppAction::SetPaneOrder(order) => self.state.set_active_pane_order(order),
             AppAction::SetViewMode(mode) => self.state.set_active_view_mode(mode),

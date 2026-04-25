@@ -19,5 +19,4 @@ pub struct WorkspaceMessages {
     pub open_workspace_button: String,
     pub remove_history_tooltip: String,
     pub max_depth_exceeded: String,
-    pub referenced_images_section: String,
 }

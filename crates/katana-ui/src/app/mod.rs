@@ -7,6 +7,7 @@ pub(crate) mod document_scroll;
 pub mod download;
 pub mod export;
 pub mod export_poll;
+pub(crate) mod image_document;
 pub mod preview;
 pub mod types;
 pub mod update;

@@ -174,8 +174,6 @@ pub enum AppAction {
     /* WHY: Image ingest — attach a local file image or paste clipboard image into the document. */
     IngestImageFile,
     IngestClipboardImage,
-    /* WHY: Reveal local image asset in OS file manager. */
-    RevealImageAsset(std::path::PathBuf),
     SelectNextTab,
     SelectPrevTab,
     ZoomIn,

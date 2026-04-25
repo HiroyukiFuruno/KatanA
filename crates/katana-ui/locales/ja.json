@@ -93,8 +93,7 @@
     "open_folder_hint": "KatanAを使い始めるために、フォルダを開いてください。",
     "open_workspace_button": "ワークスペースを開く",
     "remove_history_tooltip": "履歴から除去",
-    "max_depth_exceeded": "最大深度を超過しました",
-    "referenced_images_section": "参照画像"
+    "max_depth_exceeded": "最大深度を超過しました"
   },
   "preview": {
     "preview_title": "プレビュー",

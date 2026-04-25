@@ -18,6 +18,18 @@ pub(crate) mod manage;
 mod open;
 mod poll;
 
+fn append_system_image_extensions(extensions: &mut Vec<String>) {
+    for ext in katana_core::workspace::TreeEntry::image_extensions() {
+        if extensions
+            .iter()
+            .any(|existing| existing.eq_ignore_ascii_case(ext))
+        {
+            continue;
+        }
+        extensions.push((*ext).to_string());
+    }
+}
+
 pub(crate) trait WorkspaceOps {
     fn handle_open_explorer(&mut self, path: std::path::PathBuf);
     fn finish_open_explorer(

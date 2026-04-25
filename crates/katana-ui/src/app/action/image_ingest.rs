@@ -97,13 +97,6 @@ impl KatanaApp {
     }
 }
 
-/// Reveal an image asset path in the OS file manager.
-impl KatanaApp {
-    pub(crate) fn handle_action_reveal_image_asset(&mut self, path: std::path::PathBuf) {
-        self.handle_action_reveal_in_os(path);
-    }
-}
-
 /// Pure function to calculate save destination and markdown tag path.
 fn resolve_image_ingest_paths(
     doc_path: &std::path::Path,

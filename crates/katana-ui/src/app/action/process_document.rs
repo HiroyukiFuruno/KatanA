@@ -1,5 +1,4 @@
 use crate::app::*;
-use crate::app_state::StatusType;
 use crate::shell::*;
 
 impl KatanaApp {
@@ -142,59 +141,6 @@ impl KatanaApp {
             self.state.layout.pending_close_confirm = Some(idx);
         } else {
             self.force_close_document(idx);
-        }
-    }
-
-    pub(super) fn handle_action_refresh_diagrams(&mut self, ctx: &egui::Context) {
-        ctx.forget_all_images();
-        crate::icon::IconRegistry::install(ctx);
-        for tab in &mut self.tab_previews {
-            tab.hash = 0;
-            for viewer in tab.pane.viewer_states.iter_mut() {
-                viewer.texture = None;
-            }
-            tab.pane.fullscreen_viewer_state.texture = None;
-        }
-        let Some(doc) = self.state.active_document_mut() else {
-            return;
-        };
-        let path = doc.path.clone();
-        let src = doc.buffer.clone();
-        let concurrency = self
-            .state
-            .config
-            .settings
-            .settings()
-            .performance
-            .diagram_concurrency;
-        self.full_refresh_preview(&path, &src, true, concurrency);
-    }
-
-    pub(super) fn handle_action_refresh_document(&mut self, ctx: &egui::Context, is_manual: bool) {
-        let Some(idx) = self.state.document.active_doc_idx else {
-            return;
-        };
-        let path = self.state.document.open_documents[idx].path.clone();
-        if path.to_string_lossy().starts_with("Katana://") {
-            if is_manual {
-                /* WHY: For virtual documents (like Demo), there is no filesystem file to read.
-                However, if the user explicitly clicked Refresh, they likely installed
-                missing dependencies (like mmdc or Java) and want to retry rendering. */
-                self.handle_action_refresh_diagrams(ctx);
-            }
-            return;
-        }
-        match std::fs::read_to_string(&path) {
-            Ok(new_content) => {
-                self.apply_refreshed_content(ctx, idx, &path, new_content, is_manual)
-            }
-            Err(e) => {
-                let msg = crate::i18n::I18nOps::get()
-                    .status
-                    .refresh_failed
-                    .replace("{error}", &e.to_string());
-                self.state.layout.status_message = Some((msg, StatusType::Error));
-            }
         }
     }
 }

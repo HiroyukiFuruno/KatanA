@@ -93,8 +93,7 @@
     "open_workspace_button": "Abrir pasta",
     "remove_history_tooltip": "Remover do histórico",
     "max_depth_exceeded": "Profundidade máxima excedida",
-    "filter_hint": "Filtragem…",
-    "referenced_images_section": "Imagens referenciadas"
+    "filter_hint": "Filtragem…"
   },
   "preview": {
     "preview_title": "Visualização",

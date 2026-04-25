@@ -35,6 +35,7 @@ impl WorkspaceOpenHandlersOps {
             visible_exts.push("drawio".to_string());
             visible_exts.push("drowio".to_string());
         }
+        super::super::append_system_image_extensions(&mut visible_exts);
         let in_memory_dirs = app.state.workspace.in_memory_dirs.clone();
         std::thread::spawn(move || {
             let fs = katana_platform::FilesystemService::new();

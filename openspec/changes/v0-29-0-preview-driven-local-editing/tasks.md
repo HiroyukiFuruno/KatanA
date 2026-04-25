@@ -51,6 +51,7 @@
 - [ ] Add preview actions that open local edit sessions from selected editable nodes.
 - [ ] Provide scoped edit surfaces for block-level and metadata-oriented edits.
 - [ ] Keep the rest of the document in preview mode during local edits.
+- [ ] Keep full egui `TextEdit` replacement and native input surface architecture out of scope; use `x-x-x-native-input-surface` if that capability is needed later.
 - [ ] Execute `/openspec-delivery` workflow for this task.
 
 - [ ] 3.1 Implement edit surfaces for paragraph and heading nodes.
@@ -83,3 +84,4 @@
 - [ ] 5.4 Run diagram/math/table local edit regression tests.
 - [ ] 5.5 Run `openspec validate v0-29-0-preview-driven-local-editing`.
 - [ ] 5.6 Confirm no WebView, React, DOM runtime, or bundled web app is introduced.
+- [ ] 5.7 Confirm native input surface ownership remains with `x-x-x-native-input-surface`, not this preview-local editing change.

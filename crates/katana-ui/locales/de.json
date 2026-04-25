@@ -93,8 +93,7 @@
     "open_workspace_button": "Ordner öffnen",
     "remove_history_tooltip": "Aus Verlauf entfernen",
     "max_depth_exceeded": "Maximale Tiefe überschritten",
-    "filter_hint": "Filtern…",
-    "referenced_images_section": "Referenzierte Bilder"
+    "filter_hint": "Filtern…"
   },
   "preview": {
     "preview_title": "Vorschau",

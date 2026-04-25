@@ -6,7 +6,6 @@ pub mod file_entry;
 pub mod header;
 pub mod logic;
 pub mod panel;
-pub mod referenced_images;
 pub mod shared;
 pub mod tree_entry;
 pub mod types;

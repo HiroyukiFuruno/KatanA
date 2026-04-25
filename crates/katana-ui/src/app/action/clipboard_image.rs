@@ -24,6 +24,11 @@ impl ClipboardImageOps {
             Err(err) => errors.push(err),
         }
 
+        match super::clipboard_file_url::ClipboardFileUrlOps::read_image_payload() {
+            Ok(payload) => return Ok(payload),
+            Err(err) => errors.push(err),
+        }
+
         #[cfg(target_os = "macos")]
         match Self::read_macos_pasteboard_image() {
             Ok(payload) => return Ok(payload),
