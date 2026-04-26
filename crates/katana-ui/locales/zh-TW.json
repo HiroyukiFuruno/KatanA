@@ -236,7 +236,8 @@
       "reset_contrast": "重置",
       "ui_contrast_offset": "UI 對比度",
       "show_more": "顯示更多…",
-      "show_less": "顯示更少…"
+      "show_less": "顯示更少…",
+      "search_placeholder": "搜尋顏色…"
     },
     "font": {
       "size": "字型大小",

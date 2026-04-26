@@ -14,8 +14,9 @@ impl LinterAdvancedSettingsOps {
         is_advanced_open: &mut bool,
     ) {
         let config_path_id = egui::Id::new("linter_advanced_config_path");
+        let i18n_common = &crate::i18n::I18nOps::get().common;
         crate::widgets::AlignCenter::new()
-            .left(|ui| ui.heading(&msgs.rule_details))
+            .left(|ui| ui.heading(&i18n_common.advanced_settings))
             .right(|ui| {
                 if ui
                     .button(&crate::i18n::I18nOps::get().common.close)
@@ -43,7 +44,6 @@ impl LinterAdvancedSettingsOps {
         let mut force_open: Option<bool> = None;
         crate::widgets::AlignCenter::new()
             .left(|ui| {
-                let i18n_common = &crate::i18n::I18nOps::get().common;
                 if ui.button(&i18n_common.expand_all).clicked() {
                     force_open = Some(true);
                 }
@@ -80,7 +80,9 @@ impl LinterAdvancedSettingsOps {
 
         /* WHY: Load the current configuration to populate the UI and save updates */
         let mut config =
-            katana_markdown_linter::MarkdownLintConfig::load(&target_path).unwrap_or_default();
+            crate::linter_config_bridge::MarkdownLinterConfigOps::load_config_or_katana_default(
+                &target_path,
+            );
 
         egui::ScrollArea::vertical()
             .id_salt("linter_advanced_scroll")

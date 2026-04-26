@@ -55,11 +55,10 @@ impl PresetWidgetOps {
         user_presets: &[PresetReference],
         response: &mut PresetWidgetResponse,
     ) {
-        egui::ComboBox::from_id_source(id_source)
-            .selected_text(Self::selected_text(state))
+        crate::widgets::StyledComboBox::new(id_source, Self::selected_text(state))
             .width(ui.available_width())
             .truncate()
-            .show_ui(ui, |ui| {
+            .show(ui, |ui| {
                 Self::render_options(ui, state, built_in_presets, response);
                 if !user_presets.is_empty() {
                     ui.separator();

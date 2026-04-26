@@ -279,16 +279,30 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 このスキル内で `openspec ...` と書かれているコマンドは、リポジトリルートから `./scripts/openspec ...` として実行する。
 
-## 7. Final Verification & Release Work
+## 7. Mermaid / Drawio Rendering and Update Settings Migration
 
-- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 7.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
-- [ ] 7.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.7 Create `release/v0.22.7` branch from master
-- [ ] 7.8 Run `make release VERSION=0.22.7` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 7.9 Create PR from `release/v0.22.7` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 7.1 `mmdc` への依存を廃止し、公式 Mermaid.js を HTML ベースでレンダリングし、WebView の `background` 経由で Rust 側の SVG 化とプレビュー表示を実現する
+- [ ] 7.2 設定画面の「アップデート」配下、Drawio / Mermaid 設定更新で起きているバグを修正する
+- [ ] 7.3 起動時に Drawio.js と Mermaid.js を必ず取得し、ユーザー保存領域へキャッシュする。PlantUML と同様に、起動後の再 DL を抑えつつ、ユーザー主導で強制更新できる手段を用意する
+
+### Definition of Done (DoD)
+
+- [ ] mmdc を削除した経路で図形描画（mermaid/plantuml/drawio）プレビューが表示できること
+- [ ] 設定画面の Drawio / Mermaid 更新操作が正常に動作し、保存済み設定との整合が取れていること
+- [ ] 起動時の js 取得とキャッシュが動作し、既定では再取得を抑制しつつ、明示更新フラグで最新化できること
+- [ ] `crates/katana-renderer`、`crates/katana-ui`、関連ドキュメントの対象テストと `openspec` 自己レビューの観点で検証可能な状態であること
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+## 8. Final Verification & Release Work
+
+- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 8.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [ ] 8.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
+- [ ] 8.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 8.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 8.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 8.7 Create `release/v0.22.7` branch from master
+- [ ] 8.8 Run `make release VERSION=0.22.7` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 8.9 Create PR from `release/v0.22.7` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 8.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 8.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

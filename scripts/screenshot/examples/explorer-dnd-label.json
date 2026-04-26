@@ -1,0 +1,67 @@
+{
+  "schema_version": "1",
+  "name": "explorer-dnd-label",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "en",
+      "explorer_visible": true
+    },
+    "workspace_files": [
+      {
+        "name": "docs/keep.md",
+        "content": "# docs\n"
+      },
+      {
+        "name": "notes.md",
+        "content": "# notes\n"
+      },
+      {
+        "name": "storage/readme.md",
+        "content": "# target\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "wait_seconds": 2.5
+    },
+    {
+      "type": "wait",
+      "seconds": 0.5
+    },
+    {
+      "type": "record_start",
+      "output_name": "explorer-dnd-label",
+      "format": "mp4",
+      "fps": 24
+    },
+    {
+      "type": "action",
+      "action": {
+        "drag_by_label": {
+          "from_label": "file notes.md",
+          "to_label": "dir storage",
+          "move_steps": 28,
+          "hold_seconds": 0.12,
+          "wait_seconds": 0.6
+        }
+      }
+    },
+    {
+      "type": "record_stop"
+    },
+    {
+      "type": "screenshot",
+      "output_name": "explorer-dnd-label-final"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

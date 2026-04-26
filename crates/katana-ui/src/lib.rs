@@ -25,6 +25,9 @@ pub mod icon;
 pub mod lint_fix_batch;
 pub(crate) mod linter_bridge;
 pub(crate) mod linter_config_bridge;
+#[cfg(test)]
+mod linter_config_bridge_tests;
+pub(crate) mod linter_default_config;
 pub(crate) mod linter_options_bridge;
 #[cfg(test)]
 mod linter_options_bridge_tests;

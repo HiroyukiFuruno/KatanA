@@ -236,7 +236,8 @@
       "reset_contrast": "Restablecer",
       "ui_contrast_offset": "Contraste UI",
       "show_more": "Mostrar más…",
-      "show_less": "Mostrar menos…"
+      "show_less": "Mostrar menos…",
+      "search_placeholder": "Buscar colores…"
     },
     "font": {
       "size": "Tamaño de fuente",

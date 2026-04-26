@@ -58,10 +58,7 @@ impl<'a> LabeledColorPicker<'a> {
             egui::Layout::left_to_right(egui::Align::Center),
             |ui| {
                 ui.add_space(COLOR_LABEL_MARGIN);
-                ui.add_sized(
-                    [self.label_width, row_height],
-                    egui::Label::new(self.label).truncate(),
-                );
+                self.show_label(ui, row_height);
                 ui.add_space(self.spacing);
                 let button_size = ui.spacing().interact_size;
                 let (button_rect, _) = ui.allocate_exact_size(button_size, egui::Sense::hover());
@@ -76,6 +73,26 @@ impl<'a> LabeledColorPicker<'a> {
             },
         )
         .inner
+    }
+
+    fn show_label(&self, ui: &mut egui::Ui, row_height: f32) {
+        let (rect, response) = ui.allocate_exact_size(
+            egui::vec2(self.label_width, row_height),
+            egui::Sense::hover(),
+        );
+        response
+            .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, self.label));
+
+        let font_id = egui::TextStyle::Body.resolve(ui.style());
+        let galley = egui::WidgetText::from(self.label).into_galley(
+            ui,
+            Some(egui::TextWrapMode::Truncate),
+            self.label_width,
+            font_id,
+        );
+        let text_pos = egui::pos2(rect.min.x, rect.center().y - galley.size().y / 2.0);
+        ui.painter()
+            .galley(text_pos, galley, ui.visuals().text_color());
     }
 }
 

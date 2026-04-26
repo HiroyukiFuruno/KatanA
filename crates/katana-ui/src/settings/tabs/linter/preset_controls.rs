@@ -22,7 +22,7 @@ impl LinterPresetControlsOps {
             title: &i18n.linter.preset_label,
             save: &i18n.settings.icons.save_preset,
             revert: &i18n.settings.icons.revert_default,
-            advanced: Some(&i18n.linter.rule_details),
+            advanced: Some(&i18n.common.advanced_settings),
         };
         let response = crate::settings::tabs::preset_widget::PresetWidgetOps::render(
             ui,
@@ -44,13 +44,21 @@ impl LinterPresetControlsOps {
     ) {
         let mut changed = false;
         if let Some(reference) = response.selected {
+            let target_path =
+                crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(state);
             changed = LinterPresetOps::apply_reference(
                 &mut state.config.settings.settings_mut().linter,
                 &reference,
+                &target_path,
             );
         }
         if response.revert_clicked {
-            changed = LinterPresetOps::apply_base(&mut state.config.settings.settings_mut().linter);
+            let target_path =
+                crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(state);
+            changed = LinterPresetOps::apply_base(
+                &mut state.config.settings.settings_mut().linter,
+                &target_path,
+            );
         }
         if response.save_clicked {
             LinterPresetOps::sync_user_preset_state(

@@ -1,12 +1,16 @@
 pub mod breadcrumb;
 pub mod content;
 pub mod dir_entry;
+pub mod dir_entry_paint;
+pub mod drag;
 pub mod empty;
 pub mod file_entry;
+pub mod file_entry_paint;
 pub mod header;
 pub mod header_menu;
 pub mod logic;
 pub mod panel;
+pub mod root_drop_area;
 pub mod shared;
 pub mod tree_entry;
 pub mod types;

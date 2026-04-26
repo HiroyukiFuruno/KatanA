@@ -48,6 +48,8 @@ pub enum Step {
     OpenFile(OpenFileStep),
     /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
     Action(ActionStep),
+    /// Drag a labelled source node to a labelled target node.
+    Drag(DragStep),
     Quit,
 }
 
@@ -125,6 +127,21 @@ pub struct OpenFileStep {
     pub wait_seconds: f64,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct DragStep {
+    pub from_label: String,
+    pub to_label: String,
+    /// Number of pointer move frames while dragging. Defaults to 20.
+    #[serde(default)]
+    pub move_steps: Option<u32>,
+    /// Hold time on mouse down before move starts (seconds).
+    #[serde(default)]
+    pub hold_seconds: Option<f64>,
+    /// Pause time after release (seconds).
+    #[serde(default = "default_open_file_wait")]
+    pub wait_seconds: f64,
+}
+
 /// Named UI actions that the harness can trigger after launch.
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -197,6 +214,27 @@ pub enum UiAction {
     HoverAt { x: f32, y: f32, wait_seconds: f64 },
     /// Click a logical viewport coordinate.
     ClickAt { x: f32, y: f32, button: ClickButton, wait_seconds: f64 },
+    /// Drag between two widgets by label.
+    DragByLabel {
+        from_label: String,
+        to_label: String,
+        #[serde(default)]
+        move_steps: Option<u32>,
+        #[serde(default)]
+        hold_seconds: Option<f64>,
+        #[serde(default = "default_open_file_wait")]
+        wait_seconds: f64,
+    },
+}
+
+const fn default_drag_steps() -> u32 {
+    20
+}
+
+impl DragStep {
+    pub fn move_steps(&self) -> u32 {
+        self.move_steps.unwrap_or(default_drag_steps())
+    }
 }
 
 #[derive(Debug, Deserialize, Clone, Copy, PartialEq)]

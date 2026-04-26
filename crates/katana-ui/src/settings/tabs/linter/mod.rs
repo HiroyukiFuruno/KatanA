@@ -4,10 +4,16 @@ use crate::i18n::LinterTranslations;
 use crate::settings::*;
 
 mod advanced;
+mod preset_configs;
 mod preset_controls;
 mod preset_dialog;
+#[cfg(test)]
+mod preset_dialog_tests;
 mod presets;
+#[cfg(test)]
+mod presets_tests;
 mod properties;
+mod properties_combobox;
 mod properties_helpers;
 mod rule_group;
 mod rule_severity;

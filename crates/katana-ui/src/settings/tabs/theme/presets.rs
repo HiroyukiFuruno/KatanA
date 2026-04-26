@@ -9,8 +9,9 @@ impl ThemeTabOps {
     pub(crate) fn render_theme_preset_selector(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
+        is_advanced_open: &mut bool,
     ) {
-        super::preset_controls::ThemePresetControlsOps::render(ui, state);
+        super::preset_controls::ThemePresetControlsOps::render(ui, state, is_advanced_open);
         ui.add_space(SUBSECTION_SPACING);
 
         SettingsOps::section_header(ui, &crate::i18n::I18nOps::get().settings.theme.preset);

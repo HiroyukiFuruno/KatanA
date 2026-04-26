@@ -6,11 +6,17 @@ impl<'a> StyledComboBox<'a> {
             id,
             selected_text: selected_text.into(),
             width: None,
+            truncate: false,
         }
     }
 
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
+        self
+    }
+
+    pub fn truncate(mut self) -> Self {
+        self.truncate = true;
         self
     }
 
@@ -20,8 +26,14 @@ impl<'a> StyledComboBox<'a> {
         if let Some(width) = self.width {
             combo = combo.width(width);
         }
+        if self.truncate {
+            combo = combo.truncate();
+        }
 
         combo.show_ui(ui, |ui| {
+            ui.style_mut().visuals.widgets.inactive.bg_fill = crate::theme_bridge::TRANSPARENT;
+            ui.style_mut().visuals.widgets.inactive.bg_stroke = egui::Stroke::NONE;
+
             content(ui);
         });
     }

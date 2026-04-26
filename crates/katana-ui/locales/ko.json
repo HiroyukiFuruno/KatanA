@@ -236,7 +236,8 @@
       "reset_contrast": "초기화",
       "ui_contrast_offset": "UI 대비",
       "show_more": "더 보기…",
-      "show_less": "간략히 보기…"
+      "show_less": "간략히 보기…",
+      "search_placeholder": "색상 검색…"
     },
     "font": {
       "size": "글꼴 크기",

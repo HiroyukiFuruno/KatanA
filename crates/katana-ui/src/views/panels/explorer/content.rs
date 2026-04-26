@@ -2,7 +2,6 @@ use super::file_entry::FileEntryNode;
 use super::tree_entry::TreeEntryNode;
 use super::types::ExplorerLogicOps;
 use crate::app_state::AppAction;
-use crate::shell::TREE_ROW_HEIGHT;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
 
@@ -86,7 +85,9 @@ impl<'a> ExplorerContent<'a> {
                         TreeEntryNode::new(entry, &mut ctx).show(ui);
                     }
                 }
-                Self::show_workspace_root_drop_area(ui, &mut ctx, &ws_root);
+                crate::views::panels::explorer::root_drop_area::ExplorerRootDropArea::show(
+                    ui, &mut ctx, &ws_root,
+                );
             });
     }
 
@@ -123,68 +124,17 @@ impl<'a> ExplorerContent<'a> {
         }
     }
 
-    fn show_workspace_root_drop_area(
-        ui: &mut egui::Ui,
-        ctx: &mut TreeRenderContext,
-        ws_root: &std::path::Path,
-    ) {
-        let (rect, resp) = ui.allocate_at_least(
-            egui::vec2(ui.available_width(), TREE_ROW_HEIGHT * 2.0),
-            egui::Sense::click_and_drag(),
-        );
-        resp.context_menu(|ui| {
-            Self::show_workspace_root_context_menu(ui, ctx, ws_root);
-        });
-        if let Some(source_path) = resp.dnd_release_payload::<std::path::PathBuf>()
-            && source_path.as_path() != ws_root
-            && source_path.parent() != Some(ws_root)
-        {
-            *ctx.action = AppAction::RequestMoveFsNode {
-                source_path: (*source_path).clone(),
-                target_dir: ws_root.to_path_buf(),
-            };
-        }
-        if resp.hovered() && egui::DragAndDrop::has_any_payload(ui.ctx()) {
-            ui.painter().rect_filled(
-                rect,
-                crate::shell::TREE_HOVER_ROUNDING,
-                ui.visuals()
-                    .widgets
-                    .hovered
-                    .bg_fill
-                    .gamma_multiply(crate::shell::TREE_HOVER_GAMMA),
-            );
-        }
-    }
-
-    fn show_workspace_root_context_menu(
-        ui: &mut egui::Ui,
-        ctx: &mut TreeRenderContext,
-        ws_root: &std::path::Path,
-    ) {
-        let msg = &crate::i18n::I18nOps::get().action;
-        if ui.button(msg.format_workspace_markdown.clone()).clicked() {
-            *ctx.action = Self::format_workspace_markdown_action(ws_root);
-            ui.close();
-        }
-        if ui.button(msg.new_file.clone()).clicked() {
-            *ctx.action = Self::new_workspace_root_file_action(ws_root);
-            ui.close();
-        }
-        if ui.button(msg.new_directory.clone()).clicked() {
-            *ctx.action = Self::new_workspace_root_directory_action(ws_root);
-            ui.close();
-        }
-    }
-
+    #[allow(dead_code)]
     pub(crate) fn format_workspace_markdown_action(ws_root: &std::path::Path) -> AppAction {
         AppAction::FormatWorkspaceMarkdown(ws_root.to_path_buf())
     }
 
+    #[allow(dead_code)]
     pub(crate) fn new_workspace_root_file_action(ws_root: &std::path::Path) -> AppAction {
         AppAction::RequestNewFile(ws_root.to_path_buf())
     }
 
+    #[allow(dead_code)]
     pub(crate) fn new_workspace_root_directory_action(ws_root: &std::path::Path) -> AppAction {
         AppAction::RequestNewDirectory(ws_root.to_path_buf())
     }

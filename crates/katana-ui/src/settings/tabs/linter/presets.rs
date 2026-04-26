@@ -2,13 +2,12 @@ use katana_platform::settings::LinterPreset;
 use katana_platform::settings::LinterSettings;
 use katana_platform::settings::PresetReference;
 use katana_platform::settings::PresetSource;
-use katana_platform::settings::RuleSeverity;
-use std::collections::HashMap;
+use std::path::Path;
 
-const KATANA_PRESET_ID: &str = "katana";
-const DISABLED_PRESET_ID: &str = "disabled";
-const STRICT_PRESET_ID: &str = "strict";
-const WARNING_PRESET_ID: &str = "warning";
+use super::preset_configs::{
+    DISABLED_PRESET_ID, KATANA_PRESET_ID, LinterPresetConfigOps, STRICT_PRESET_ID,
+    WARNING_PRESET_ID,
+};
 
 pub(crate) struct LinterPresetOps;
 
@@ -35,21 +34,22 @@ impl LinterPresetOps {
     pub(crate) fn apply_reference(
         settings: &mut LinterSettings,
         reference: &PresetReference,
+        target_path: &Path,
     ) -> bool {
         match reference.source {
             PresetSource::BuiltIn => {
-                Self::apply_built_in(settings, &reference.id, &reference.label)
+                Self::apply_built_in(settings, &reference.id, &reference.label, target_path)
             }
             PresetSource::User => Self::apply_user(settings, &reference.id),
             PresetSource::Custom | PresetSource::Unknown => false,
         }
     }
 
-    pub(crate) fn apply_base(settings: &mut LinterSettings) -> bool {
+    pub(crate) fn apply_base(settings: &mut LinterSettings, target_path: &Path) -> bool {
         let Some(base) = settings.preset_state.base.clone() else {
-            return Self::apply_built_in(settings, KATANA_PRESET_ID, "KatanA");
+            return Self::apply_built_in(settings, KATANA_PRESET_ID, "KatanA", target_path);
         };
-        Self::apply_reference(settings, &base)
+        Self::apply_reference(settings, &base, target_path)
     }
 
     pub(crate) fn save_current_as_user_preset(settings: &mut LinterSettings, name: &str) {
@@ -85,17 +85,36 @@ impl LinterPresetOps {
             .sync_user_preset_names(settings.custom_presets.iter().map(|preset| &preset.name));
     }
 
-    fn apply_built_in(settings: &mut LinterSettings, id: &str, label: &str) -> bool {
-        match id {
-            KATANA_PRESET_ID => settings.rule_severity.clear(),
-            DISABLED_PRESET_ID => settings.rule_severity = Self::all_rules(RuleSeverity::Ignore),
-            STRICT_PRESET_ID => settings.rule_severity = Self::all_rules(RuleSeverity::Error),
-            WARNING_PRESET_ID => settings.rule_severity = Self::all_rules(RuleSeverity::Warning),
-            _ => return false,
+    fn apply_built_in(
+        settings: &mut LinterSettings,
+        id: &str,
+        label: &str,
+        target_path: &Path,
+    ) -> bool {
+        let Some(preset) = LinterPresetConfigOps::built_in(id) else {
+            return false;
+        };
+        if !Self::save_markdownlint_config(&preset.config, target_path) {
+            return false;
         }
+        settings.rule_severity = preset.rule_severity;
         settings.preset_state.select_built_in(id, label);
         Self::sync_user_preset_state(settings);
         true
+    }
+
+    fn save_markdownlint_config(
+        config: &katana_markdown_linter::MarkdownLintConfig,
+        target_path: &Path,
+    ) -> bool {
+        if let Some(parent) = target_path
+            .parent()
+            .filter(|path| !path.as_os_str().is_empty())
+            && std::fs::create_dir_all(parent).is_err()
+        {
+            return false;
+        }
+        config.save(target_path).is_ok()
     }
 
     fn apply_user(settings: &mut LinterSettings, name: &str) -> bool {
@@ -111,55 +130,5 @@ impl LinterPresetOps {
         settings.preset_state.select_user(name);
         Self::sync_user_preset_state(settings);
         true
-    }
-
-    fn all_rules(severity: RuleSeverity) -> HashMap<String, RuleSeverity> {
-        katana_markdown_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
-            .into_iter()
-            .map(|rule| (rule.id().to_string(), severity))
-            .collect()
-    }
-}
-
-#[cfg(test)]
-#[allow(clippy::unwrap_used)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn strict_builtin_preset_sets_all_rules_to_error() {
-        let mut settings = LinterSettings::default();
-        let reference = PresetReference::built_in(STRICT_PRESET_ID, "Strict");
-
-        assert!(LinterPresetOps::apply_reference(&mut settings, &reference));
-
-        assert!(!settings.rule_severity.is_empty());
-        assert!(
-            settings
-                .rule_severity
-                .values()
-                .all(|severity| *severity == RuleSeverity::Error)
-        );
-        assert_eq!(settings.preset_state.current.unwrap().id, STRICT_PRESET_ID);
-    }
-
-    #[test]
-    fn user_preset_round_trip_keeps_rule_severity() {
-        let mut settings = LinterSettings::default();
-        settings
-            .rule_severity
-            .insert("MD013".to_string(), RuleSeverity::Ignore);
-
-        LinterPresetOps::save_current_as_user_preset(&mut settings, "Team");
-        settings.rule_severity.clear();
-        let reference = PresetReference::user("Team");
-
-        assert!(LinterPresetOps::apply_reference(&mut settings, &reference));
-        assert_eq!(
-            settings.rule_severity.get("MD013"),
-            Some(&RuleSeverity::Ignore)
-        );
-        assert_eq!(settings.preset_state.current.unwrap().id, "Team");
-        assert_eq!(settings.preset_state.user_presets.len(), 1);
     }
 }

@@ -10,13 +10,21 @@
       ""
     ]
   },
+  "MD012": {
+    "maximum": 1
+  },
   "MD013": false,
   "MD022": true,
   "MD024": false,
+  "MD026": {
+    "punctuation": ".,;:!。，；：！"
+  },
   "MD029": {
     "style": "one_or_ordered"
   },
-  "MD033": false,
+  "MD033": {
+    "allowed_elements": []
+  },
   "MD041": false,
   "MD044": {
     "names": []
@@ -37,7 +45,10 @@
     "ignored_labels": [
       "x",
       "/",
-      "-"
+      "-",
+      "?",
+      "!",
+      "~"
     ],
     "shortcut_syntax": true
   },

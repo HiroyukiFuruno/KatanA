@@ -6,16 +6,19 @@ const MOVE_MODAL_SPACING: f32 = 8.0;
 
 pub(crate) struct MoveModal<'a> {
     pub modal_data: &'a (PathBuf, PathBuf),
+    pub ws_root: Option<&'a std::path::Path>,
     pub pending_action: &'a mut crate::app_state::AppAction,
 }
 
 impl<'a> MoveModal<'a> {
     pub fn new(
         modal_data: &'a (PathBuf, PathBuf),
+        ws_root: Option<&'a std::path::Path>,
         pending_action: &'a mut crate::app_state::AppAction,
     ) -> Self {
         Self {
             modal_data,
+            ws_root,
             pending_action,
         }
     }
@@ -35,8 +38,18 @@ impl<'a> MoveModal<'a> {
             .max_width(MOVE_MODAL_WIDTH)
             .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
             .show(ctx, |ui| {
-                let source = source_path.display().to_string();
-                let target = target_path.display().to_string();
+                let source =
+                    crate::views::panels::explorer::drag::ExplorerDragUi::relative_display_path(
+                        source_path,
+                        self.ws_root,
+                        false,
+                    );
+                let target =
+                    crate::views::panels::explorer::drag::ExplorerDragUi::relative_display_path(
+                        &target_path,
+                        self.ws_root,
+                        false,
+                    );
                 ui.label(crate::i18n::I18nOps::tf(
                     &crate::i18n::I18nOps::get().dialog.move_confirm_msg,
                     &[("source", source.as_str()), ("target", target.as_str())],

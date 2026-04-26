@@ -1,5 +1,7 @@
 /* WHY: Isolated color group rendering to manage UI complexity and maintain strict line limits. */
 
+const ADVANCED_GROUP_BODY_INDENT: f32 = 10.0;
+
 pub struct ThemeEditorGroupsOps;
 
 impl ThemeEditorGroupsOps {
@@ -10,6 +12,7 @@ impl ThemeEditorGroupsOps {
         new_colors: &mut katana_platform::theme::ThemeColors,
         changed: &mut bool,
         show_vertical_line: bool,
+        force_open: Option<bool>,
     ) {
         if let Some(group_name) = group_opt {
             crate::widgets::Accordion::new(group_name.clone(), group_name.clone(), |ui| {
@@ -19,7 +22,9 @@ impl ThemeEditorGroupsOps {
                     ui.add_space(crate::settings::SUBSECTION_SPACING);
                 }
             })
-            .default_open(false)
+            .default_open(true)
+            .force_open(force_open)
+            .indent(ADVANCED_GROUP_BODY_INDENT)
             .show_vertical_line(show_vertical_line)
             .show(ui);
         } else {

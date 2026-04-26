@@ -1,8 +1,4 @@
-use crate::shell::{
-    ACTIVE_FILE_HIGHLIGHT_ROUNDING, TREE_DRAG_GHOST_GAMMA, TREE_FONT_SIZE, TREE_HOVER_GAMMA,
-    TREE_HOVER_ROUNDING, TREE_ICON_ARROW_GAP, TREE_ICON_LABEL_GAP, TREE_INDENT_STEP,
-    TREE_ROW_HEIGHT,
-};
+use crate::shell::TREE_ROW_HEIGHT;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
 
@@ -53,51 +49,45 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
         } else {
             resp.on_hover_cursor(egui::CursorIcon::Grab)
         };
+        let icon = if entry.is_markdown() {
+            crate::icon::Icon::Markdown
+        } else if entry.is_image() {
+            crate::icon::Icon::Image
+        } else {
+            crate::icon::Icon::Document
+        };
+        let drag_target_dir =
+            egui::DragAndDrop::payload::<std::path::PathBuf>(ui.ctx()).and_then(|source_path| {
+                crate::views::panels::explorer::drag::ExplorerDragUi::resolve_drop_target_dir(
+                    source_path.as_path(),
+                    path,
+                    false,
+                )
+            });
         if resp.drag_started() {
             resp.dnd_set_drag_payload(path.to_path_buf());
         }
+        resp.widget_info(|| {
+            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, &accessible_label)
+        });
+        if resp.drag_started() || is_dragged {
+            crate::views::panels::explorer::drag::ExplorerDragUi::render_drag_ghost(
+                ui,
+                path,
+                false,
+                full_rect,
+                ctx.ws_root,
+                icon,
+            );
+        }
 
         if ui.is_rect_visible(full_rect) {
-            Self::paint_background(ui, full_rect, is_dragged, is_active);
-
-            let mut child_ui = ui.new_child(
-                egui::UiBuilder::new()
-                    .max_rect(full_rect)
-                    .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            crate::views::panels::explorer::file_entry_paint::FileEntryPaintOps::paint_background(
+                ui, full_rect, is_dragged, is_active,
             );
-            child_ui.spacing_mut().item_spacing.x = 0.0;
-
-            let indent = ctx.depth as f32 * TREE_INDENT_STEP;
-            child_ui.add_space(indent);
-
-            let arrow_width = crate::icon::IconSize::Small.to_vec2().x;
-            child_ui.add_space(arrow_width + TREE_ICON_ARROW_GAP);
-
-            child_ui.visuals_mut().override_text_color = Some(text_color);
-
-            let icon = if entry.is_markdown() {
-                crate::icon::Icon::Markdown
-            } else if entry.is_image() {
-                crate::icon::Icon::Image
-            } else {
-                crate::icon::Icon::Document
-            };
-
-            let img = icon.ui_image(&child_ui, crate::icon::IconSize::Medium);
-            child_ui.add(img);
-            child_ui.add_space(TREE_ICON_LABEL_GAP);
-
-            let mut rich = egui::RichText::new(name)
-                .color(text_color)
-                .size(TREE_FONT_SIZE);
-            if is_active {
-                rich = rich.strong();
-            }
-            let resp_label = child_ui.add(egui::Label::new(rich).truncate().selectable(false));
-
-            resp_label.widget_info(|| {
-                egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &accessible_label)
-            });
+            crate::views::panels::explorer::file_entry_paint::FileEntryPaintOps::paint_row_content(
+                ui, full_rect, ctx, name, icon, text_color, is_active,
+            );
         }
 
         if !ctx.disable_context_menu {
@@ -113,39 +103,37 @@ impl<'a, 'b, 'c> FileEntryNode<'a, 'b, 'c> {
             });
         }
 
+        if let Some(source_path) = resp.dnd_release_payload::<std::path::PathBuf>()
+            && let Some(target_dir) =
+                crate::views::panels::explorer::drag::ExplorerDragUi::resolve_drop_target_dir(
+                    source_path.as_path(),
+                    path,
+                    false,
+                )
+        {
+            *ctx.action = crate::app_state::AppAction::RequestMoveFsNode {
+                source_path: (*source_path).clone(),
+                target_dir,
+            };
+        }
+
         if resp.clicked() {
             *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
         }
-    }
 
-    fn paint_background(ui: &egui::Ui, full_rect: egui::Rect, is_dragged: bool, is_active: bool) {
-        if is_dragged {
-            let color = ui
-                .visuals()
-                .selection
-                .bg_fill
-                .gamma_multiply(TREE_DRAG_GHOST_GAMMA);
-            ui.painter()
-                .rect_filled(full_rect, ACTIVE_FILE_HIGHLIGHT_ROUNDING, color);
+        if !ui.is_rect_visible(full_rect) {
             return;
         }
-        if is_active {
-            ui.painter().rect_filled(
+
+        if let Some(target_dir) = drag_target_dir {
+            crate::views::panels::explorer::file_entry_paint::FileEntryPaintOps::paint_drop_target(
+                ui,
                 full_rect,
-                ACTIVE_FILE_HIGHLIGHT_ROUNDING,
-                ui.visuals().selection.bg_fill,
+                &target_dir,
+                ctx,
+                &resp,
+                is_dragged,
             );
-            return;
-        }
-        if ui.rect_contains_pointer(full_rect) && ui.is_enabled() {
-            let color = ui
-                .visuals()
-                .widgets
-                .hovered
-                .bg_fill
-                .gamma_multiply(TREE_HOVER_GAMMA);
-            ui.painter()
-                .rect_filled(full_rect, TREE_HOVER_ROUNDING, color);
         }
     }
 }

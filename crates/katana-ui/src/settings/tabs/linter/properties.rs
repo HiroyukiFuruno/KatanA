@@ -118,17 +118,15 @@ impl RulePropertiesOps {
                 {
                     const MAX_TOGGLE_OPTIONS: usize = 3;
                     if opts.len() <= MAX_TOGGLE_OPTIONS {
-                        if ui
-                            .add(crate::widgets::SegmentedStringToggle::new(
-                                format!("{}_{}_seg", meta.code, prop.key),
-                                opts,
-                                &mut current_val,
-                            ))
-                            .changed()
-                        {
+                        let toggle = crate::widgets::SegmentedStringToggle::new(
+                            format!("{}_{}_seg", meta.code, prop.key),
+                            opts,
+                            &mut current_val,
+                        );
+                        if ui.add(toggle).changed() {
                             changed = true;
                         }
-                    } else if Self::render_combobox(
+                    } else if super::properties_combobox::RulePropertyComboboxOps::render(
                         ui,
                         &format!("{}_{}_combo", meta.code, prop.key),
                         opts,
@@ -164,32 +162,5 @@ impl RulePropertiesOps {
                 ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
             })
             .show(ui);
-    }
-
-    pub(super) fn render_combobox(
-        ui: &mut egui::Ui,
-        combo_id: &str,
-        opts: &[&str],
-        current_val: &mut String,
-    ) -> bool {
-        let mut changed = false;
-        const COMBO_BOX_WIDTH: f32 = 120.0;
-        crate::widgets::StyledComboBox::new(combo_id, current_val.as_str())
-            .width(COMBO_BOX_WIDTH)
-            .show(ui, |ui| {
-                for &opt in opts {
-                    if ui
-                        .add(
-                            egui::Button::selectable(*current_val == opt, opt.to_string())
-                                .frame_when_inactive(true),
-                        )
-                        .clicked()
-                    {
-                        *current_val = opt.to_string();
-                        changed = true;
-                    }
-                }
-            });
-        changed
     }
 }
