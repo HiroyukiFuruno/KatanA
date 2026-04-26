@@ -1,12 +1,12 @@
 pub use super::types::IconsTabOps;
 use crate::settings::*;
-use crate::widgets::AlignCenter;
 
 pub mod colors;
 mod general;
 pub mod list;
 pub mod panels;
 pub mod popups;
+mod preset_controls;
 pub mod row;
 pub mod table;
 mod table_row;
@@ -33,6 +33,7 @@ impl IconsTabOps {
                 state,
                 i18n,
                 &mut is_advanced_open,
+                &current_pack,
                 &mut icon_settings,
                 &mut settings_changed,
             );
@@ -88,64 +89,13 @@ impl IconsTabOps {
         settings_changed: &mut bool,
         is_advanced_open: &mut bool,
     ) {
-        let available_packs = [
-            ("katana", "KatanA (Default)"),
-            ("material-symbols", "Material Symbols"),
-            ("lucide", "Lucide"),
-            ("tabler-icons", "Tabler Icons"),
-            ("heroicons", "Heroicons"),
-            ("feather", "Feather"),
-        ];
-
-        let selected_name = if let Some(preset_name) = &icon_settings.active_preset {
-            preset_name.clone()
-        } else {
-            available_packs
-                .iter()
-                .find(|(id, _)| *id == *current_pack)
-                .map(|(_, name)| name.to_string())
-                .unwrap_or_else(|| current_pack.clone())
-        };
-
-        AlignCenter::new()
-            .content(|ui| {
-                egui::ComboBox::from_id_source("icon_pack_combobox")
-                    .selected_text(selected_name.clone())
-                    .show_ui(ui, |ui| {
-                        for (id, display_name) in available_packs.iter() {
-                            let is_selected =
-                                icon_settings.active_preset.is_none() && *current_pack == *id;
-                            let response = ui.add(
-                                egui::Button::selectable(is_selected, *display_name)
-                                    .frame_when_inactive(true),
-                            );
-                            if response.clicked() {
-                                *current_pack = id.to_string();
-                                icon_settings.active_preset = None;
-                                icon_settings.active_overrides.clear();
-                                *settings_changed = true;
-                            }
-                        }
-
-                        if !icon_settings.custom_presets.is_empty() {
-                            ui.separator();
-                            for preset in &icon_settings.custom_presets {
-                                let is_selected = icon_settings.active_preset.as_deref()
-                                    == Some(preset.name.as_str());
-                                let response = ui.add(
-                                    egui::Button::selectable(is_selected, &preset.name)
-                                        .frame_when_inactive(true),
-                                );
-                                if response.clicked() {
-                                    icon_settings.active_preset = Some(preset.name.clone());
-                                    icon_settings.active_overrides = preset.overrides.clone();
-                                    *settings_changed = true;
-                                }
-                            }
-                        }
-                    });
-            })
-            .show(ui);
+        preset_controls::IconPresetControlsOps::render(
+            ui,
+            current_pack,
+            icon_settings,
+            settings_changed,
+            is_advanced_open,
+        );
 
         if *current_pack != state.config.settings.settings().theme.icon_pack {
             state.config.settings.settings_mut().theme.icon_pack = current_pack.clone();
@@ -159,25 +109,7 @@ impl IconsTabOps {
 
         ui.add_space(SECTION_SPACING);
 
-        /* WHY: "Advanced Settings" button pinned at the bottom of the tab. */
-        const BOTTOM_PANEL_MARGIN_Y: f32 = 8.0;
-        egui::TopBottomPanel::bottom("icon_settings_advanced_button_panel")
-            .frame(egui::Frame::none().inner_margin(egui::vec2(0.0, BOTTOM_PANEL_MARGIN_Y)))
-            .show_inside(ui, |ui| {
-                AlignCenter::new()
-                    .content(|ui| {
-                        if ui
-                            .button(&i18n.common.advanced_settings)
-                            .on_hover_cursor(egui::CursorIcon::PointingHand)
-                            .clicked()
-                        {
-                            *is_advanced_open = true;
-                        }
-                    })
-                    .show(ui);
-            });
-
-        /* WHY: Icon preview grid fills remaining space between ComboBox and button. */
+        /* WHY: Icon preview grid follows the shared preset controls in the normal view. */
         list::IconsListOps::render(
             ui,
             state,

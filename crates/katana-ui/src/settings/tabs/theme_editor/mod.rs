@@ -55,12 +55,12 @@ impl ThemeEditorOps {
         }
 
         if changed {
-            state
-                .config
-                .settings
-                .settings_mut()
-                .theme
-                .custom_color_overrides = Some(new_colors);
+            let theme = &mut state.config.settings.settings_mut().theme;
+            theme.custom_color_overrides = Some(new_colors);
+            theme.preset_state.mark_modified();
+            theme
+                .preset_state
+                .sync_user_preset_names(theme.custom_themes.iter().map(|preset| &preset.name));
             let _ = state.config.try_save_settings();
         }
         ui.add_space(SUBSECTION_SPACING);

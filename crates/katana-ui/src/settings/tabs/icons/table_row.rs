@@ -100,6 +100,13 @@ impl IconsTableRowOps {
                 icon_settings.active_overrides.remove(icon_name);
             }
             icon_settings.active_preset = None;
+            icon_settings.preset_state.mark_modified();
+            icon_settings.preset_state.sync_user_preset_names(
+                icon_settings
+                    .custom_presets
+                    .iter()
+                    .map(|preset| &preset.name),
+            );
         }
     }
 }
