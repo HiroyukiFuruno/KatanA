@@ -29,14 +29,14 @@
 - [/] 同じ空き領域メニューに「ファイルの新規作成」「フォルダの新規作成」を追加する
 - [/] エクスプローラーのフィルター左にファイル追加・フォルダ追加アイコンを配置する
 - [/] 追加アイコンは `katana-icon-management` に従い、各 icon pack の native SVG を使う
-- [ ] `.markdownlint.json` に KatanA namespace を保存してよいか、KML と外部 markdownlint の互換性を実装時に確認する
+- [/] `.markdownlint.json` に KatanA namespace を保存してよいか、KML と外部 markdownlint の互換性を実装時に確認する
 - [ ] KML の format API がファイルパス、文字列、設定構造体のどれを受け取るか実装時に確認する
-- [ ] エディタ左端の Lint アイコンをホバーしても診断内容がポップ表示されない
+- [/] エディタ左端の Lint アイコンをホバーしても診断内容がポップ表示されない
 - [/] 行番号横の Lint アイコンは、多行診断でも問題 view と同じく診断の開始行だけに表示する
 - [ ] Task 2 着手前に、既存の Lint 設定 UI を前提にせず、設定画面全体の情報設計と操作導線を見直す
 - [ ] Lint 設定 UI は、通常の操作では設定 JSON をユーザーに意識させない設計思想を維持する
 - [ ] 詳しいユーザー向けに、KatanA 管理の共通ルールをワークスペースのルールとして展開する導線を用意する
-- [ ] ワークスペースに既存の markdownlint ルールファイルがある場合は、そのワークスペースのルールとして利用する
+- [/] ワークスペースに既存の markdownlint ルールファイルがある場合は、そのワークスペースのルールとして利用する
 - [ ] Lint の高度な設定は、アイコン設定の高度な設定と操作パターンを揃えつつ、内容は Lint ルール詳細として最適化する
 - [ ] Lint プリセットは、テーマ/アイコンと同じく選べるが、適用後は現在のルールへコピーするテンプレートとして扱う
 - [ ] 組み込みプリセットとして `KatanA`、`全て無効`、`厳格`、`すべて警告` を用意する
@@ -117,15 +117,15 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### 2B. Lint Effective Config and Workspace Ownership
 
-- [ ] 2B.1 現在の `LinterSettings`、`MarkdownLinterConfigOps`、`MarkdownLinterOptionsBridgeOps` の責務を整理し、`workspace > global > default` の優先順位で effective config を解決する単一入口を追加または整理する
-- [ ] 2B.2 一般設定の「無視 / 警告 / エラー」と `.markdownlint.json` のルール適用設定の境界をテストで固定する
-- [ ] 2B.3 ワークスペース設定のオン/オフ切り替えで `linter_advanced_is_open` が変更されない回帰テストを追加する
-- [ ] 2B.4 一般設定の `RuleSeverity::Ignore` が、詳細設定を削除せず KatanA 側の診断抑制として働くことを実装する
-- [ ] 2B.5 `Ignore` から `Warning` / `Error` に戻した時、保持していた詳細設定が復元されることを実装する
-- [ ] 2B.6 `.markdownlint.json` に KatanA namespace を保存できるか検証し、不可の場合は既存 workspace state に重大度だけを保存する方針へ確定する
-- [ ] 2B.7 KatanA 管理の共通ルールを、ワークスペースのルールとして展開する操作を設計・実装する
-- [ ] 2B.8 KML に渡す config を、ファイルパスまたは KML が要求する構造体として確実に渡し、診断とフォーマットが同じ effective config を使うことをテストする
-- [ ] 2B.9 既存のワークスペースルールがある場合に、それを優先して読み込み、設定画面を開いただけでプリセットや共通ルールに上書きしないことをテストする
+- [x] 2B.1 現在の `LinterSettings`、`MarkdownLinterConfigOps`、`MarkdownLinterOptionsBridgeOps` の責務を整理し、`workspace > global > default` の優先順位で effective config を解決する単一入口を追加または整理する
+- [x] 2B.2 一般設定の「無視 / 警告 / エラー」と `.markdownlint.json` のルール適用設定の境界をテストで固定する
+- [x] 2B.3 ワークスペース設定のオン/オフ切り替えで `linter_advanced_is_open` が変更されない回帰テストを追加する
+- [x] 2B.4 一般設定の `RuleSeverity::Ignore` が、詳細設定を削除せず KatanA 側の診断抑制として働くことを実装する
+- [x] 2B.5 `Ignore` から `Warning` / `Error` に戻した時、保持していた詳細設定が復元されることを実装する
+- [x] 2B.6 `.markdownlint.json` に KatanA namespace を保存できるか検証し、不可の場合は既存 workspace state に重大度だけを保存する方針へ確定する
+- [x] 2B.7 KatanA 管理の共通ルールを、ワークスペースのルールとして展開する操作を設計・実装する
+- [x] 2B.8 KML に渡す診断 config を、ファイルパスまたは KML が要求する構造体として確実に渡す。フォーマット側は Task 3 の action 実装時に同じ effective config 入口へ接続する
+- [x] 2B.9 既存のワークスペースルールがある場合に、それを優先して読み込み、設定画面を開いただけでプリセットや共通ルールに上書きしないことをテストする
 
 ### 2C. Shared Preset Widget and Settings UI
 
@@ -172,7 +172,7 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 KML の format API を確認し、必要なら `katana-markdown-linter` の workspace dependency を更新する
+- [ ] 3.1 KML の format API を確認し、必要なら `katana-markdown-linter` の workspace dependency を更新し、2B で追加した effective config 入口をフォーマットにも使う
 - [ ] 3.2 ファイル単位の Markdown フォーマットを行う action とサービスを追加する
 - [ ] 3.3 ワークスペース内の Markdown を一括フォーマットする action とサービスを追加する
 - [ ] 3.4 一括フォーマット対象から hidden infrastructure directory を除外する

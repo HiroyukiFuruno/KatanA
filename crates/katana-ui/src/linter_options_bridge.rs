@@ -20,8 +20,10 @@ impl MarkdownLinterOptionsBridgeOps {
 
     fn apply_katana_settings(options: &mut LintOptions, settings: &LinterSettings) {
         for (rule_id, severity) in &settings.rule_severity {
-            let rule_config = options.rules.entry(rule_id.clone()).or_default();
-            rule_config.enabled = !matches!(severity, RuleSeverity::Ignore);
+            if matches!(severity, RuleSeverity::Ignore) {
+                let rule_config = options.rules.entry(rule_id.clone()).or_default();
+                rule_config.enabled = false;
+            }
         }
     }
 }
@@ -72,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn katana_warning_enables_rule_in_effective_options() {
+    fn katana_warning_does_not_reenable_disabled_markdownlint_rule() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
             dir.path().join(".markdownlint.json"),
@@ -93,6 +95,62 @@ mod tests {
             &dir.path().join("doc.md"),
         );
 
-        assert!(options.rules.get("MD001").unwrap().enabled);
+        assert!(!options.rules.get("MD001").unwrap().enabled);
+    }
+
+    #[test]
+    fn katana_ignore_keeps_rule_properties_for_restore() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join(".markdownlint.json"),
+            r#"{"MD013": {"enabled": true, "line_length": 80}}"#,
+        )
+        .unwrap();
+        let mut state = make_state(&dir);
+        state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .rule_severity
+            .insert("MD013".to_string(), RuleSeverity::Ignore);
+
+        let ignored_options = MarkdownLinterOptionsBridgeOps::load_effective_options(
+            &state,
+            &dir.path().join("doc.md"),
+        );
+        assert!(!ignored_options.rules.get("MD013").unwrap().enabled);
+        assert_eq!(
+            ignored_options
+                .rules
+                .get("MD013")
+                .unwrap()
+                .properties
+                .get("line_length"),
+            Some(&"80".to_string())
+        );
+
+        state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .rule_severity
+            .insert("MD013".to_string(), RuleSeverity::Warning);
+        let restored_options = MarkdownLinterOptionsBridgeOps::load_effective_options(
+            &state,
+            &dir.path().join("doc.md"),
+        );
+
+        assert!(restored_options.rules.get("MD013").unwrap().enabled);
+        assert_eq!(
+            restored_options
+                .rules
+                .get("MD013")
+                .unwrap()
+                .properties
+                .get("line_length"),
+            Some(&"80".to_string())
+        );
     }
 }
