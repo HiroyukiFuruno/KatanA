@@ -122,13 +122,9 @@ impl EditorContextMenu {
             MarkdownAuthoringOp::Blockquote,
             true,
         );
-        Self::author_button(
-            ui,
-            action,
-            &s.command_author_code_block,
-            MarkdownAuthoringOp::CodeBlock,
-            true,
-        );
+        MenuButtonOps::show(ui, &s.command_author_code_block, |ui| {
+            super::code_block_menu::CodeBlockMenuOps::show(ui, action);
+        });
         Self::author_button(
             ui,
             action,

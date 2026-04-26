@@ -52,7 +52,7 @@ impl PreviewSectionOps {
         let mut acc = String::new();
 
         while !remaining.is_empty() {
-            let markers = ["```", "<mxGraphModel", "@startuml"];
+            let markers = ["```", "~~~", "<mxGraphModel", "@startuml"];
             let mut earliest = None;
             for m in markers {
                 let pos_opt = if remaining.starts_with(m) {

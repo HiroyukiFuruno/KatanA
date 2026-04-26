@@ -48,8 +48,48 @@ mod tests {
     /* --- CodeBlock --- */
     #[test]
     fn code_block_wraps_selection() {
-        let t = apply("hello world", (6, 11), MarkdownAuthoringOp::CodeBlock);
-        assert_eq!(t.buffer, "hello ```\nworld\n```");
+        let t = apply(
+            "hello world",
+            (6, 11),
+            MarkdownAuthoringOp::CodeBlock(CodeBlockKind::Text),
+        );
+        assert_eq!(t.buffer, "hello ```text\nworld\n```");
+    }
+
+    #[test]
+    fn code_block_language_wraps_selection() {
+        let transform = apply(
+            "graph TD\nA-->B",
+            (0, 14),
+            MarkdownAuthoringOp::CodeBlock(CodeBlockKind::Mermaid),
+        );
+
+        assert_eq!(transform.buffer, "```mermaid\ngraph TD\nA-->B\n```");
+    }
+
+    #[test]
+    fn code_block_language_options_include_required_entries() {
+        let entries = CodeBlockKind::all()
+            .iter()
+            .map(|kind| kind.info_string())
+            .collect::<Vec<_>>();
+
+        assert!(entries.contains(&"text"));
+        assert!(entries.contains(&"markdown"));
+        assert!(entries.contains(&"bash"));
+        assert!(entries.contains(&"zsh"));
+        assert!(entries.contains(&"mermaid"));
+        assert!(entries.contains(&"drawio"));
+        assert!(entries.contains(&"plantuml"));
+        assert!(entries.contains(&"rust"));
+        assert!(entries.contains(&"typescript"));
+    }
+
+    #[test]
+    fn code_block_kind_display_label_matches_inserted_info_string() {
+        for kind in CodeBlockKind::all() {
+            assert_eq!(kind.display_label(), kind.info_string());
+        }
     }
 
     /* --- HorizontalRule --- */

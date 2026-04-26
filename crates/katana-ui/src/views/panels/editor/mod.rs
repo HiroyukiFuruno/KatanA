@@ -1,5 +1,6 @@
 pub mod authoring;
 pub mod authoring_utils;
+pub mod code_block_menu;
 pub mod context_menu;
 pub mod decorations;
 pub mod diagnostics_ui;
