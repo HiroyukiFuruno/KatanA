@@ -81,6 +81,10 @@ pub enum AppAction {
         url: String,
         dest: std::path::PathBuf,
     },
+    StartMermaidDownload {
+        url: String,
+        dest: std::path::PathBuf,
+    },
 
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
@@ -186,9 +190,7 @@ pub enum AppAction {
     RefreshDiagnostics,
     FormatMarkdownFile(PathBuf),
     FormatWorkspaceMarkdown(PathBuf),
-    /* WHY: Markdown authoring — insert/transform Markdown syntax around cursor or selection. */
     AuthorMarkdown(MarkdownAuthoringOp),
-    /* WHY: Image ingest — attach a local file image or paste clipboard image into the document. */
     IngestImageFile,
     IngestClipboardImage,
     SelectNextTab,

@@ -57,7 +57,7 @@ impl KatanaApp {
                 .settings
                 .settings()
                 .performance
-                .diagram_concurrency;
+                .resolved_diagram_concurrency();
             let buffer_clone = self.state.document.open_documents[idx].buffer.clone();
             self.full_refresh_preview(path, &buffer_clone, true, concurrency);
         }
@@ -98,7 +98,7 @@ impl KatanaApp {
             .settings
             .settings()
             .performance
-            .diagram_concurrency;
+            .resolved_diagram_concurrency();
         self.full_refresh_preview(&path, &src, true, concurrency);
     }
 

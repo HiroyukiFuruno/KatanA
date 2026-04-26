@@ -89,27 +89,28 @@ mod tests {
 
     #[test]
     fn dispatch_renderer_drawio_returns_result() {
+        let dir = tempfile::tempdir().unwrap();
+        unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
         let block = DiagramBlock {
             kind: DiagramKind::DrawIo,
             source: r#"<mxGraphModel><root><mxCell id="0"/></root></mxGraphModel>"#.to_string(),
         };
         let result = RendererLogicOps::dispatch_renderer(&block);
-        assert_variant!(result, DiagramResult::OkPng(_) | DiagramResult::Err { .. });
+        unsafe { std::env::remove_var("DRAWIO_JS") };
+        assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
 
     #[test]
-    fn dispatch_renderer_mermaid_when_no_mmdc_returns_command_not_found() {
+    fn dispatch_renderer_mermaid_when_no_js_returns_not_installed() {
+        let dir = tempfile::tempdir().unwrap();
+        unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
         let block = DiagramBlock {
             kind: DiagramKind::Mermaid,
             source: "graph TD; A-->B".to_string(),
         };
         let result = RendererLogicOps::dispatch_renderer(&block);
-        assert_variant!(
-            result,
-            DiagramResult::CommandNotFound { .. }
-                | DiagramResult::OkPng(_)
-                | DiagramResult::Err { .. }
-        );
+        unsafe { std::env::remove_var("MERMAID_JS") };
+        assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
 
     #[test]
@@ -215,8 +216,8 @@ mod tests {
             &DiagramKind::Mermaid,
             "src",
             DiagramResult::CommandNotFound {
-                tool_name: "mmdc".to_string(),
-                install_hint: "npm install".to_string(),
+                tool_name: "renderer".to_string(),
+                install_hint: "install renderer".to_string(),
                 source: "src".to_string(),
             },
             0,

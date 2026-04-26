@@ -171,7 +171,7 @@ impl WorkspaceOpenSessionOps {
                 .settings
                 .settings()
                 .performance
-                .diagram_concurrency;
+                .resolved_diagram_concurrency();
             app.full_refresh_preview(&doc_path, &src, false, concurrency);
             /* WHY: FB33 — Trigger lint on all restored documents so Problems panel
              * is populated on startup without requiring a manual edit. The open
