@@ -5,6 +5,7 @@ use eframe::egui;
 use super::types::{EditorColors, EditorLogicOps};
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
+    pub workspace_root: Option<&'a std::path::Path>,
     pub scroll: &'a mut crate::app_state::ScrollState,
     pub action: &'a mut AppAction,
     pub sync_scroll: bool,
@@ -21,6 +22,7 @@ impl<'a> EditorContent<'a> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         document: Option<&'a katana_core::document::Document>,
+        workspace_root: Option<&'a std::path::Path>,
         scroll: &'a mut crate::app_state::ScrollState,
         action: &'a mut AppAction,
         sync_scroll: bool,
@@ -32,6 +34,7 @@ impl<'a> EditorContent<'a> {
     ) -> Self {
         Self {
             document,
+            workspace_root,
             scroll,
             action,
             sync_scroll,
@@ -87,6 +90,7 @@ impl<'a> EditorContent<'a> {
                         ui,
                         &mut buffer,
                         doc,
+                        self.workspace_root,
                         scroll,
                         action,
                         sync_scroll,

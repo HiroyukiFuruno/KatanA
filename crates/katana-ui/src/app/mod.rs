@@ -3,6 +3,8 @@ pub mod doc_close;
 pub mod doc_search;
 pub mod document;
 pub mod document_edit;
+#[cfg(test)]
+mod document_edit_tests;
 pub(crate) mod document_scroll;
 pub mod download;
 pub mod export;

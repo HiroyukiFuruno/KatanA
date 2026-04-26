@@ -2,6 +2,11 @@ use eframe::egui;
 
 pub(crate) struct RowDiagnosticsRenderer;
 
+pub(crate) const ACTION_ICON_SIZE: f32 = 14.0;
+pub(crate) const ACTION_ICON_MARGIN: f32 = 2.0;
+pub(crate) const ACTION_ICON_GUTTER_WIDTH: f32 =
+    ACTION_ICON_SIZE + ACTION_ICON_MARGIN + ACTION_ICON_MARGIN;
+
 impl RowDiagnosticsRenderer {
     pub(crate) fn render(
         ui: &mut egui::Ui,
@@ -11,16 +16,12 @@ impl RowDiagnosticsRenderer {
         ln_rect: &egui::Rect,
         row_height: f32,
         action: &mut crate::app_state::AppAction,
-    ) {
+    ) -> bool {
         let line_number = p + 1;
         let line_diagnostics = Self::action_icon_diagnostics(diagnostics, line_number);
 
         if line_diagnostics.is_empty() {
-            return;
-        }
-
-        if !Self::has_applicable_fix(&line_diagnostics) {
-            return;
+            return false;
         }
 
         const WEIGHT_ERROR: u8 = 3;
@@ -50,16 +51,14 @@ impl RowDiagnosticsRenderer {
             })
             .unwrap_or(ui.visuals().warn_fg_color);
 
-        const ICON_SIZE: f32 = 14.0;
-        const ICON_MARGIN: f32 = 2.0;
         const TOOLTIP_SPACE: f32 = 4.0;
 
         let icon_rect = egui::Rect::from_min_size(
             egui::pos2(
-                ln_rect.min.x + ICON_MARGIN,
-                y + (row_height - ICON_SIZE) / 2.0,
+                ln_rect.min.x + ACTION_ICON_MARGIN,
+                y + (row_height - ACTION_ICON_SIZE) / 2.0,
             ),
-            egui::vec2(ICON_SIZE, ICON_SIZE),
+            egui::vec2(ACTION_ICON_SIZE, ACTION_ICON_SIZE),
         );
 
         let icon_resp = ui.put(
@@ -69,6 +68,7 @@ impl RowDiagnosticsRenderer {
                 .tint(icon_color)
                 .sense(egui::Sense::click()),
         );
+        let hovered = icon_resp.hovered();
 
         icon_resp.on_hover_ui(|ui| {
             for (index, diagnostic) in line_diagnostics.iter().enumerate() {
@@ -87,6 +87,7 @@ impl RowDiagnosticsRenderer {
                 ui.add_space(TOOLTIP_SPACE);
             }
         });
+        hovered
     }
 
     fn action_icon_diagnostics(
@@ -99,14 +100,6 @@ impl RowDiagnosticsRenderer {
                 diagnostic.official_meta.is_some() && diagnostic.range.start_line == line_number
             })
             .collect()
-    }
-
-    fn has_applicable_fix(
-        diagnostics: &[&katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
-    ) -> bool {
-        diagnostics.iter().any(|diagnostic| {
-            crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix(diagnostic)
-        })
     }
 }
 
@@ -170,5 +163,17 @@ mod tests {
         let diagnostics = vec![diagnostic];
 
         assert!(RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 2).is_empty());
+    }
+
+    #[test]
+    fn action_icon_diagnostics_include_non_fixable_official_diagnostics() {
+        let mut diagnostic = diagnostic(2, 2);
+        diagnostic.fix_info = None;
+        let diagnostics = vec![diagnostic];
+
+        assert_eq!(
+            RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 2).len(),
+            1
+        );
     }
 }

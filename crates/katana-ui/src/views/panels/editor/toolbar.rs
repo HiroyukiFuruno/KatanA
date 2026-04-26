@@ -1,7 +1,7 @@
 use crate::app_action::{AppAction, MarkdownAuthoringOp};
 use crate::i18n::I18nOps;
 use crate::icon::{Icon, IconSize};
-use crate::widgets::{AlignCenter, MenuButtonOps};
+use crate::widgets::AlignCenter;
 use egui::Ui;
 
 const TOOLBAR_SEPARATOR_TEXT: &str = "|";
@@ -134,10 +134,7 @@ impl<'a> EditorToolbar<'a> {
     }
 
     fn block_group(ui: &mut Ui, action: &mut AppAction) {
-        let label = I18nOps::get().editor.toolbar.code_block.clone();
-        MenuButtonOps::show(ui, label, |ui| {
-            super::code_block_menu::CodeBlockMenuOps::show(ui, action);
-        });
+        super::code_block_menu::CodeBlockMenuPopupOps::show(ui, action);
     }
 
     fn image_group(ui: &mut Ui, action: &mut AppAction) {

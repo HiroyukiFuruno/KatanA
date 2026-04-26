@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::app_state::ExportFormat;
+pub use crate::lint_fix_batch::LintFixBatch;
 pub use crate::markdown_authoring_op::{CodeBlockKind, MarkdownAuthoringOp};
 use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
@@ -40,6 +41,7 @@ pub enum AppAction {
         replacement: String,
     },
     ApplyLintFixes(Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>),
+    ApplyLintFixesForFiles(Vec<LintFixBatch>),
     OpenLinterDoc(String, String),
     ToggleTaskList {
         global_index: usize,

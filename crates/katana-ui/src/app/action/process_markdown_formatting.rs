@@ -7,22 +7,38 @@ use crate::markdown_formatting_bridge::{
 };
 use crate::shell::*;
 
+use super::process_markdown_formatting_paths::{
+    MarkdownFormattingPathFailureOps, MarkdownFormattingPathOps,
+};
+
 impl KatanaApp {
-    pub(crate) fn handle_action_format_markdown_file(&mut self, path: PathBuf) {
-        let summary = self.format_markdown_files(vec![path]);
+    pub(crate) fn handle_action_format_markdown_file(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        path: PathBuf,
+    ) {
+        let summary = self.format_markdown_files(ctx, vec![path]);
         self.show_markdown_format_summary(summary);
     }
 
-    pub(crate) fn handle_action_format_workspace_markdown(&mut self, root: PathBuf) {
+    pub(crate) fn handle_action_format_workspace_markdown(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        root: PathBuf,
+    ) {
         let paths = self.collect_workspace_markdown_paths(&root);
-        let summary = self.format_markdown_files(paths);
+        let summary = self.format_markdown_files(ctx, paths);
         self.show_markdown_format_summary(summary);
     }
 
-    fn format_markdown_files(&mut self, paths: Vec<PathBuf>) -> MarkdownFormattingSummary {
+    fn format_markdown_files(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        paths: Vec<PathBuf>,
+    ) -> MarkdownFormattingSummary {
         let mut summary = MarkdownFormattingSummary::default();
         for path in paths {
-            match self.format_markdown_path(&path) {
+            match self.format_markdown_path(ctx, &path) {
                 Ok(true) => summary.changed_files += 1,
                 Ok(false) => summary.unchanged_files += 1,
                 Err(failure) => summary.failures.push(failure),
@@ -31,13 +47,15 @@ impl KatanaApp {
         summary
     }
 
-    fn format_markdown_path(&mut self, path: &Path) -> Result<bool, MarkdownFormatFailure> {
+    fn format_markdown_path(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        path: &Path,
+    ) -> Result<bool, MarkdownFormatFailure> {
         if !Self::is_markdown_path(path) {
-            let message = crate::i18n::I18nOps::get()
-                .status
-                .format_markdown_not_markdown
-                .clone();
-            return Err(MarkdownFormatFailure::new(path, message));
+            return Err(MarkdownFormattingPathFailureOps::markdown_path_failure(
+                path,
+            ));
         }
         let content = self.load_format_source(path)?;
         let outcome = MarkdownFormattingBridgeOps::format_content(&self.state, path, &content)?;
@@ -46,7 +64,7 @@ impl KatanaApp {
             return Ok(false);
         }
 
-        self.save_formatted_content(path, outcome.content)?;
+        self.save_formatted_content(ctx, path, outcome.content)?;
         Ok(true)
     }
 
@@ -62,23 +80,26 @@ impl KatanaApp {
 
     fn save_formatted_content(
         &mut self,
+        ctx: &eframe::egui::Context,
         path: &Path,
         content: String,
     ) -> Result<(), MarkdownFormatFailure> {
         if let Some(idx) = self.open_document_index(path) {
-            self.save_open_formatted_document(idx, content)
+            self.save_open_formatted_document(ctx, idx, content)
         } else {
-            self.save_unopened_formatted_document(path, content)
+            self.save_unopened_formatted_document(ctx, path, content)
         }
     }
 
     fn save_open_formatted_document(
         &mut self,
+        ctx: &eframe::egui::Context,
         idx: usize,
         content: String,
     ) -> Result<(), MarkdownFormatFailure> {
         let path = self.state.document.open_documents[idx].path.clone();
         let is_active = self.state.document.active_doc_idx == Some(idx);
+        let before = self.state.document.open_documents[idx].buffer.clone();
         {
             let doc = &mut self.state.document.open_documents[idx];
             doc.buffer = content.clone();
@@ -87,21 +108,47 @@ impl KatanaApp {
                 .save_document(doc)
                 .map_err(|err| MarkdownFormatFailure::new(&path, err.to_string()))?;
         }
+        self.record_formatted_undo(ctx, &path, &before, &content);
         self.refresh_after_format(path, &content, is_active);
         Ok(())
     }
 
     fn save_unopened_formatted_document(
         &mut self,
+        ctx: &eframe::egui::Context,
         path: &Path,
         content: String,
     ) -> Result<(), MarkdownFormatFailure> {
+        let before = self.load_format_source(path)?;
         let mut doc = katana_core::document::Document::new(path, content.clone());
         self.fs
             .save_document(&mut doc)
             .map_err(|err| MarkdownFormatFailure::new(path, err.to_string()))?;
+        self.record_formatted_undo(ctx, path, &before, &content);
         self.refresh_formatted_diagnostics(path.to_path_buf(), &content);
         Ok(())
+    }
+
+    fn record_formatted_undo(
+        &self,
+        ctx: &eframe::egui::Context,
+        path: &Path,
+        before: &str,
+        after: &str,
+    ) {
+        let workspace_root = self
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .map(|ws| ws.root.as_path());
+        crate::editor_undo::EditorUndoOps::record_external_change(
+            ctx,
+            workspace_root,
+            path,
+            before,
+            after,
+        );
     }
 
     fn refresh_after_format(&mut self, path: PathBuf, content: &str, is_active: bool) {
@@ -129,67 +176,6 @@ impl KatanaApp {
             content,
         );
         self.state.diagnostics.update_diagnostics(path, diagnostics);
-    }
-
-    fn collect_workspace_markdown_paths(&self, root: &Path) -> Vec<PathBuf> {
-        let Some(workspace) = &self.state.workspace.data else {
-            return Vec::new();
-        };
-        if !root.starts_with(&workspace.root) {
-            return Vec::new();
-        }
-        workspace
-            .collect_all_markdown_file_paths()
-            .into_iter()
-            .filter(|path| path.starts_with(root))
-            .filter(|path| {
-                !Self::is_inside_ignored_directory(
-                    &workspace.root,
-                    path,
-                    &self
-                        .state
-                        .config
-                        .settings
-                        .settings()
-                        .workspace
-                        .ignored_directories,
-                )
-            })
-            .collect()
-    }
-
-    fn is_inside_ignored_directory(
-        root: &Path,
-        path: &Path,
-        ignored_directories: &[String],
-    ) -> bool {
-        let Ok(relative_path) = path.strip_prefix(root) else {
-            return false;
-        };
-        relative_path.components().any(|component| {
-            let std::path::Component::Normal(name) = component else {
-                return false;
-            };
-            ignored_directories
-                .iter()
-                .any(|ignored| name == std::ffi::OsStr::new(ignored.as_str()))
-        })
-    }
-
-    fn open_document_index(&self, path: &Path) -> Option<usize> {
-        self.state
-            .document
-            .open_documents
-            .iter()
-            .position(|doc| doc.path == path)
-    }
-
-    fn is_markdown_path(path: &Path) -> bool {
-        path.extension()
-            .and_then(|ext| ext.to_str())
-            .is_some_and(|ext| {
-                ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown")
-            })
     }
 
     fn show_markdown_format_summary(&mut self, summary: MarkdownFormattingSummary) {

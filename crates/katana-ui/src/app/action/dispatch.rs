@@ -55,9 +55,12 @@ impl KatanaApp {
             }
             AppAction::UpdateBuffer(c) => self.handle_update_buffer(c),
             AppAction::ReplaceText { span, replacement } => {
-                self.handle_replace_text(span, replacement)
+                self.handle_replace_text(ctx, span, replacement)
             }
-            AppAction::ApplyLintFixes(fixes) => self.handle_apply_lint_fixes(fixes),
+            AppAction::ApplyLintFixes(fixes) => self.handle_apply_lint_fixes(ctx, fixes),
+            AppAction::ApplyLintFixesForFiles(batches) => {
+                self.handle_apply_lint_fixes_for_files(ctx, batches)
+            }
             AppAction::ToggleTaskList {
                 global_index,
                 new_state,
