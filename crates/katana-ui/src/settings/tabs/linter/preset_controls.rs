@@ -22,7 +22,7 @@ impl LinterPresetControlsOps {
             title: &i18n.linter.preset_label,
             save: &i18n.settings.icons.save_preset,
             revert: &i18n.settings.icons.revert_default,
-            advanced: Some(&i18n.common.advanced_settings),
+            advanced: Some(&i18n.linter.rule_details),
         };
         let response = crate::settings::tabs::preset_widget::PresetWidgetOps::render(
             ui,
