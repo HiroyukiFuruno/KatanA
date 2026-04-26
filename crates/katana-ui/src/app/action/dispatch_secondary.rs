@@ -99,6 +99,10 @@ impl KatanaApp {
             AppAction::DocSearchPrev => self.handle_action_doc_search_prev(ctx),
             AppAction::ToggleProblemsPanel => self.state.diagnostics.is_panel_open ^= true,
             AppAction::RefreshDiagnostics => self.handle_action_refresh_diagnostics(),
+            AppAction::FormatMarkdownFile(path) => self.handle_action_format_markdown_file(path),
+            AppAction::FormatWorkspaceMarkdown(root) => {
+                self.handle_action_format_workspace_markdown(root)
+            }
             AppAction::ToggleExplorerFilter => {
                 let current = self.state.search.filter_enabled;
                 self.state.search.filter_enabled = !current;
