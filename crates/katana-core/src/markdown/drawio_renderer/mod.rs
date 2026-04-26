@@ -53,7 +53,7 @@ impl DrawioRendererOps {
         let _ = fs::create_dir_all(&cache_dir);
         let cache_file = cache_dir.join(format!("{:016x}.png", hash));
 
-        if let Some(data) = fs::read(&cache_file).ok() {
+        if let Ok(data) = fs::read(&cache_file) {
             return DiagramResult::OkPng(data);
         }
 

@@ -24,18 +24,15 @@ impl MermaidRenderOps {
         };
 
         let preset = DiagramColorPreset::current();
-        let cache_file = Self::cache_file_path(&block.source, &preset);
+        let cache_file = Self::cache_file_path(&block.source, preset);
         let _ = std::fs::create_dir_all(cache_file.parent().unwrap_or_else(|| Path::new(".")));
 
-        if let Some(data) = std::fs::read(&cache_file).ok() {
+        if let Ok(data) = std::fs::read(&cache_file) {
             return DiagramResult::OkPng(data);
         }
 
-        match MermaidWebRendererOps::render_with_headless_chrome(
-            &block.source,
-            &mermaid_js,
-            &preset,
-        ) {
+        match MermaidWebRendererOps::render_with_headless_chrome(&block.source, &mermaid_js, preset)
+        {
             Ok(data) => {
                 let _ = std::fs::write(&cache_file, &data);
                 DiagramResult::OkPng(data)
