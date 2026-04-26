@@ -98,5 +98,9 @@ fn save_custom_theme(ui: &mut egui::Ui, state: &mut crate::app_state::AppState, 
     s.theme.custom_themes = themes;
     s.theme.custom_color_overrides = Some(tc);
     s.theme.active_custom_theme = Some(name.to_string());
+    s.theme.preset_state.select_user(name);
+    s.theme
+        .preset_state
+        .sync_user_preset_names(s.theme.custom_themes.iter().map(|preset| &preset.name));
     let _ = state.config.try_save_settings();
 }

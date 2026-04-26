@@ -4,6 +4,7 @@ use super::types::*;
 use crate::settings::*;
 
 mod custom;
+mod preset_controls;
 mod presets;
 
 impl ThemeTabOps {
@@ -46,6 +47,9 @@ impl ThemeTabOps {
             .settings()
             .layout
             .accordion_vertical_line;
+        let force_custom_colors_open = ui.data_mut(|data| {
+            data.remove_temp::<bool>(egui::Id::new("theme_custom_colors_force_open"))
+        });
         crate::widgets::Accordion::new(
             "custom_color_overrides_accordion",
             egui::RichText::new(
@@ -60,6 +64,7 @@ impl ThemeTabOps {
             |ui| super::theme_editor::ThemeEditorOps::render_custom_color_editor(ui, state),
         )
         .default_open(false)
+        .force_open(force_custom_colors_open)
         .show_vertical_line(show_line)
         .show(ui);
     }

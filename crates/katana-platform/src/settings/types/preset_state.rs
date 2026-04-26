@@ -86,4 +86,30 @@ impl PresetState {
         self.user_presets = user_presets;
         self
     }
+
+    pub fn select_built_in(&mut self, id: impl Into<String>, label: impl Into<String>) {
+        let reference = PresetReference::built_in(id, label);
+        self.current = Some(reference.clone());
+        self.base = Some(reference);
+        self.modified = false;
+    }
+
+    pub fn select_user(&mut self, name: impl Into<String>) {
+        let reference = PresetReference::user(name);
+        self.current = Some(reference.clone());
+        self.base = Some(reference);
+        self.modified = false;
+    }
+
+    pub fn mark_modified(&mut self) {
+        self.modified = true;
+    }
+
+    pub fn sync_user_preset_names<I>(&mut self, names: I)
+    where
+        I: IntoIterator,
+        I::Item: Into<String>,
+    {
+        self.user_presets = names.into_iter().map(PresetReference::user).collect();
+    }
 }

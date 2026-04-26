@@ -73,6 +73,11 @@ impl CustomThemeOps {
                             .settings_mut()
                             .theme
                             .active_custom_theme = Some(custom_theme.name.clone());
+                        let theme = &mut state.config.settings.settings_mut().theme;
+                        theme.preset_state.select_user(custom_theme.name.clone());
+                        theme.preset_state.sync_user_preset_names(
+                            theme.custom_themes.iter().map(|preset| &preset.name),
+                        );
                         let _ = state.config.try_save_settings();
                     }
                     response.context_menu(|ui| {
@@ -141,6 +146,15 @@ fn apply_theme_delete(
     if is_selected {
         config.settings.settings_mut().theme.custom_color_overrides = None;
         config.settings.settings_mut().theme.active_custom_theme = None;
+        let theme = &mut config.settings.settings_mut().theme;
+        let preset = theme.preset;
+        theme
+            .preset_state
+            .select_built_in(format!("{preset:?}"), preset.display_name());
     }
+    let theme = &mut config.settings.settings_mut().theme;
+    theme
+        .preset_state
+        .sync_user_preset_names(theme.custom_themes.iter().map(|preset| &preset.name));
     let _ = config.try_save_settings();
 }

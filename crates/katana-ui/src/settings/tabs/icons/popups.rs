@@ -45,6 +45,13 @@ impl IconsPopupsOps {
                                     );
                                 }
                                 icon_settings.active_preset = Some(preset_name.clone());
+                                icon_settings.preset_state.select_user(preset_name.clone());
+                                icon_settings.preset_state.sync_user_preset_names(
+                                    icon_settings
+                                        .custom_presets
+                                        .iter()
+                                        .map(|preset| &preset.name),
+                                );
                                 state.config.settings.settings_mut().icon = icon_settings;
                                 let _ = state.config.try_save_settings();
 

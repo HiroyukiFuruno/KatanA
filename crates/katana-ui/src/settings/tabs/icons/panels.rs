@@ -15,6 +15,7 @@ impl IconsPanelsOps {
         state: &mut crate::app_state::AppState,
         i18n: &crate::i18n::I18nMessages,
         is_open: &mut bool,
+        current_pack: &str,
         icon_settings: &mut katana_platform::settings::types::icon::IconSettings,
         settings_changed: &mut bool,
     ) {
@@ -115,6 +116,18 @@ impl IconsPanelsOps {
                         {
                             icon_settings.active_overrides.clear();
                             icon_settings.active_preset = None;
+                            icon_settings.preset_state.select_built_in(
+                                current_pack,
+                                super::preset_controls::IconPresetControlsOps::pack_label(
+                                    current_pack,
+                                ),
+                            );
+                            icon_settings.preset_state.sync_user_preset_names(
+                                icon_settings
+                                    .custom_presets
+                                    .iter()
+                                    .map(|preset| &preset.name),
+                            );
                             *settings_changed = true;
                         }
 
@@ -143,6 +156,18 @@ impl IconsPanelsOps {
                                 icon_settings.custom_presets.retain(|p| p.name != old_name);
                                 icon_settings.active_preset = None;
                                 icon_settings.active_overrides.clear();
+                                icon_settings.preset_state.select_built_in(
+                                    current_pack,
+                                    super::preset_controls::IconPresetControlsOps::pack_label(
+                                        current_pack,
+                                    ),
+                                );
+                                icon_settings.preset_state.sync_user_preset_names(
+                                    icon_settings
+                                        .custom_presets
+                                        .iter()
+                                        .map(|preset| &preset.name),
+                                );
                                 *settings_changed = true;
                             }
                         }
