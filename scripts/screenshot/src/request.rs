@@ -193,6 +193,8 @@ pub enum UiAction {
     SlideshowNavigate { direction: String, steps: u32, wait_seconds: f64 },
     /// Click a widget by its accessibility label.
     ClickNode { label: String, button: ClickButton, wait_seconds: f64 },
+    /// Move the pointer to a logical viewport coordinate without clicking.
+    HoverAt { x: f32, y: f32, wait_seconds: f64 },
     /// Click a logical viewport coordinate.
     ClickAt { x: f32, y: f32, button: ClickButton, wait_seconds: f64 },
 }

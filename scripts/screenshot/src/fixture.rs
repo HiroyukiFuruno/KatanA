@@ -28,6 +28,10 @@ pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
             None => {
                 for wf in &fixture.workspace_files {
                     let dest = dir.join(&wf.name);
+                    if let Some(parent) = dest.parent() {
+                        std::fs::create_dir_all(parent)
+                            .with_context(|| format!("creating fixture dir for {}", wf.name))?;
+                    }
                     std::fs::write(&dest, &wf.content)
                         .with_context(|| format!("writing fixture file {}", wf.name))?;
                 }
@@ -63,7 +67,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     let linter_enabled = settings.linter_enabled.unwrap_or(true);
 
     let no_extension = settings.no_extension.unwrap_or(false);
-    
+
     let linter_block = if settings.linter_enabled.is_some() {
         format!(
             r#",

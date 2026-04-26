@@ -562,6 +562,10 @@ pub fn run(
                         click_node(&mut harness, label, *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
+                    UiAction::HoverAt { x, y, wait_seconds } => {
+                        harness.hover_at(egui::pos2(*x, *y));
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
                     UiAction::ClickAt { x, y, button, wait_seconds } => {
                         click_at(&mut harness, egui::pos2(*x, *y), *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
@@ -594,6 +598,7 @@ pub fn run(
                             | UiAction::SlideshowNavigate { .. }
                             | UiAction::SelectDemoTab { .. }
                             | UiAction::ClickNode { .. }
+                            | UiAction::HoverAt { .. }
                             | UiAction::ClickAt { .. } => unreachable!(),
                         };
                         harness.state_mut().trigger_action(app_action);

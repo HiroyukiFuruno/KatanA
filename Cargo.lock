@@ -2766,9 +2766,9 @@ dependencies = [
 
 [[package]]
 name = "katana-markdown-linter"
-version = "0.12.1"
+version = "0.12.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb731bba51e9ffb9ead76dca3103afc39768e29c4c237a6ca4fa43eec2d504b8"
+checksum = "81b029776eef6cf77095d488bd43ee599f4ac218f206a863d35d355e95a7e2af"
 dependencies = [
  "glob",
  "ignore",
@@ -3829,13 +3829,13 @@ checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 
 [[package]]
 name = "plist"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "740ebea15c5d1428f910cd1a5f52cebf8d25006245ed8ade92702f4943d91e07"
+checksum = "092791278e026273c1b65bbdcfbba3a300f2994c896bd01ab01da613c29c46f1"
 dependencies = [
  "base64",
  "indexmap",
- "quick-xml 0.38.4",
+ "quick-xml 0.39.2",
  "serde",
  "time",
 ]

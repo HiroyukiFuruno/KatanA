@@ -134,15 +134,15 @@ features:
    cargo build --release
    ```
 
-2. Second step:
+1. Second step:
 
    ```sh
    ./target/release/KatanA
    ```
 
-3. Verify:
-   - Sub-item A
-   - Sub-item B
+1. Verify:
+  - Sub-item A
+  - Sub-item B
 
 ↑ Code blocks should be correctly indented within list items.
 
@@ -167,7 +167,7 @@ features:
 ### 5.1 Basic Table
 
 | Feature | Status | Notes |
-| --------- | -------- | ------- |
+| --- | --- | --- |
 | Markdown | ✅ | Full support |
 | Mermaid | ✅ | Requires mmdc |
 | PlantUML | ✅ | Requires jar |
@@ -176,14 +176,14 @@ features:
 ### 5.2 Table with Alignment
 
 | Left | Center | Right |
-| :----- | :------: | ------: |
+| :--- | :---: | ---: |
 | text | text | text |
 | longer text | short | 12345 |
 
 ### 5.3 Single Row Table
 
 | Header |
-| -------- |
+| --- |
 | Content |
 
 ---
@@ -358,7 +358,7 @@ let code = "directly after quote";
 - A list item directly after code block
 
 | Header |
-| -------- |
+| --- |
 | Table after list |
 
 ↑ Proper spacing between each block element.
