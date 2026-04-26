@@ -185,6 +185,8 @@
     "show_meta_info": "顯示後設資訊",
     "new_file": "新增檔案",
     "new_directory": "新增資料夾",
+    "format_markdown_file": "格式化 Markdown 檔案",
+    "format_workspace_markdown": "格式化工作區 Markdown",
     "open": "開啟",
     "rename": "重新命名",
     "delete": "刪除",

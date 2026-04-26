@@ -43,3 +43,5 @@ mod theme_bridge;
 
 #[path = "integration/preview_pane/styling.rs"]
 mod underline_rendering;
+#[path = "integration/workspace/header_actions.rs"]
+mod workspace_header_actions;
