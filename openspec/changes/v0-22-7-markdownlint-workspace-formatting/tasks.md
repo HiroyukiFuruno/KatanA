@@ -30,7 +30,7 @@
 - [/] エクスプローラーのフィルター左にファイル追加・フォルダ追加アイコンを配置する
 - [/] 追加アイコンは `katana-icon-management` に従い、各 icon pack の native SVG を使う
 - [/] `.markdownlint.json` に KatanA namespace を保存してよいか、KML と外部 markdownlint の互換性を実装時に確認する
-- [ ] KML の format API がファイルパス、文字列、設定構造体のどれを受け取るか実装時に確認する
+- [/] KML の format API がファイルパス、文字列、設定構造体のどれを受け取るか実装時に確認する
 - [/] エディタ左端の Lint アイコンをホバーしても診断内容がポップ表示されない
 - [/] 行番号横の Lint アイコンは、多行診断でも問題 view と同じく診断の開始行だけに表示する
 - [/] Task 2 着手前に、既存の Lint 設定 UI を前提にせず、設定画面全体の情報設計と操作導線を見直す
@@ -179,22 +179,23 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 KML の format API を確認し、必要なら `katana-markdown-linter` の workspace dependency を更新し、2B で追加した effective config 入口をフォーマットにも使う
-- [ ] 3.2 ファイル単位の Markdown フォーマットを行う action とサービスを追加する
-- [ ] 3.3 ワークスペース内の Markdown を一括フォーマットする action とサービスを追加する
-- [ ] 3.4 一括フォーマット対象から hidden infrastructure directory を除外する
-- [ ] 3.5 フォーマット後にエディタ buffer、保存状態、diagnostics が更新されるようにする
-- [ ] 3.6 失敗時は対象ファイルと理由をステータス表示または復旧可能なエラーとして示す
+- [x] 3.1 KML の format API を確認し、必要なら `katana-markdown-linter` の workspace dependency を更新し、2B で追加した effective config 入口をフォーマットにも使う
+  - KML 0.12.1 の `format_markdown` は文字列と `FormatOptions` だけを受け取り、config を受け取らない。診断と同じ effective config を使うため、KatanA の「フォーマット」操作は内部で `fix` API に `LintOptions` を渡す。
+- [x] 3.2 ファイル単位の Markdown フォーマットを行う action とサービスを追加する
+- [x] 3.3 ワークスペース内の Markdown を一括フォーマットする action とサービスを追加する
+- [x] 3.4 一括フォーマット対象から hidden infrastructure directory を除外する
+- [x] 3.5 フォーマット後にエディタ buffer、保存状態、diagnostics が更新されるようにする
+- [x] 3.6 失敗時は対象ファイルと理由をステータス表示または復旧可能なエラーとして示す
 
 ### Definition of Done (DoD)
 
-- [ ] 有効な Markdown ファイルをファイル単位でフォーマットできること
-- [ ] ワークスペース内の Markdown を一括フォーマットできること
-- [ ] フォーマットは effective config を使い、`.markdownlint.json` の指定を無視しないこと
-- [ ] 失敗したファイルがある場合、成功分まで隠さず、失敗件数と理由が分かること
+- [x] 有効な Markdown ファイルをファイル単位でフォーマットできること
+- [x] ワークスペース内の Markdown を一括フォーマットできること
+- [x] フォーマットは effective config を使い、`.markdownlint.json` の指定を無視しないこと
+- [x] 失敗したファイルがある場合、成功分まで隠さず、失敗件数と理由が分かること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---

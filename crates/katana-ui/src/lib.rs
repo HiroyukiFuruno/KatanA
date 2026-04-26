@@ -26,6 +26,7 @@ pub(crate) mod linter_bridge;
 pub(crate) mod linter_config_bridge;
 pub(crate) mod linter_options_bridge;
 pub mod markdown_authoring_op;
+pub(crate) mod markdown_formatting_bridge;
 pub use icon::*;
 pub mod changelog;
 pub mod diagram_controller;

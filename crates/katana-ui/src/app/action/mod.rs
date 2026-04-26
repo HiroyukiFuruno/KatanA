@@ -15,10 +15,14 @@ mod process_group_lifecycle;
 mod process_groups;
 mod process_helpers;
 mod process_linter;
+mod process_markdown_formatting;
 mod process_reorder;
 mod process_tabs;
 mod process_update;
 mod refresh_content;
+
+#[cfg(test)]
+mod process_markdown_formatting_tests;
 
 use crate::app::*;
 use crate::app_state::*;
