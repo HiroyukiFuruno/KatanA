@@ -1,6 +1,8 @@
 use crate::theme::{ThemeColors, ThemePreset};
 use serde::{Deserialize, Serialize};
 
+use super::preset_state::PresetState;
+
 pub const MAX_CUSTOM_THEMES: usize = 10;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -25,4 +27,6 @@ pub struct ThemeSettings {
     pub custom_themes: Vec<CustomTheme>,
     #[serde(default)]
     pub active_custom_theme: Option<String>,
+    #[serde(default)]
+    pub preset_state: PresetState,
 }

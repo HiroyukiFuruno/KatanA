@@ -110,10 +110,10 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### 2A. Preset State Model and Migration
 
-- [ ] 2A.1 テーマ、アイコン、Lint で共通利用するプリセット保存仕様を定義し、現在値、元プリセット、変更状態、ユーザープリセット一覧を同じ構造で扱う
-- [ ] 2A.2 既存保存値の移行を fixture 付きで実装し、テーマの `preset` / `custom_color_overrides` / `active_custom_theme`、`theme.icon_pack`、アイコンの `active_preset` / `active_overrides` / `custom_presets` が見た目を変えずに統一保存仕様へ移行することをテストする
-- [ ] 2A.3 Lint の既存 `enabled` / `use_workspace_local_config` / `rule_severity` が、統一保存仕様導入後も同じ診断状態を保つことをテストする
-- [ ] 2A.4 移行後の保存で、元プリセット不明のカスタム状態を根拠なく既存プリセット扱いにしない
+- [x] 2A.1 テーマ、アイコン、Lint で共通利用するプリセット保存仕様を定義し、現在値、元プリセット、変更状態、ユーザープリセット一覧を同じ構造で扱う
+- [x] 2A.2 既存保存値の移行を fixture 付きで実装し、テーマの `preset` / `custom_color_overrides` / `active_custom_theme`、`theme.icon_pack`、アイコンの `active_preset` / `active_overrides` / `custom_presets` が見た目を変えずに統一保存仕様へ移行することをテストする
+- [x] 2A.3 Lint の既存 `enabled` / `use_workspace_local_config` / `rule_severity` が、統一保存仕様導入後も同じ診断状態を保つことをテストする
+- [x] 2A.4 移行後の保存で、元プリセット不明のカスタム状態を根拠なく既存プリセット扱いにしない
 
 ### 2B. Lint Effective Config and Workspace Ownership
 
