@@ -121,7 +121,9 @@
   "plantuml": {
     "downloading_plantuml": "⬇ Baixando PlantUML JAR…",
     "plantuml_installed": "PlantUML instalado. Atualizando visualização…",
-    "download_error": "Erro de download: "
+    "download_error": "Erro de download: ",
+    "downloading_tool": "Baixando {tool}…",
+    "tool_installed": "{tool} instalado. Atualizando visualização…"
   },
   "view_mode": {
     "preview": "Visualização",
@@ -382,13 +384,17 @@
       "monthly": "Mensal",
       "check_now": "Verificar agora",
       "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "O PlantUML está instalado em %path%.",
+      "plantuml_installed": "O PlantUML está instalado em {path}.",
       "plantuml_not_installed": "PlantUML não está instalado.",
       "plantuml_update_now": "Atualizar PlantUML para a versão mais recente",
-      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_section_title": "Draw.io",
       "drawio_installed": "Draw.io viewer está instalado em {path}",
       "drawio_not_installed": "Draw.io viewer não está instalado.",
-      "drawio_update_now": "Atualizar Draw.io para a versão mais recente"
+      "drawio_update_now": "Atualizar Draw.io para a versão mais recente",
+      "mermaid_section_title": "Mermaid",
+      "mermaid_installed": "Mermaid.js está instalado em {path}",
+      "mermaid_not_installed": "Mermaid.js não está instalado.",
+      "mermaid_update_now": "Atualizar Mermaid.js para a versão mais recente"
     },
     "behavior": {
       "section_title": "Comportamento",
@@ -407,13 +413,20 @@
       "clear_http_cache": "Limpar cachês",
       "cache_retention_days": "Dias de retenção",
       "days_suffix": " dias",
+      "startup_behavior_section_title": "Comportamento ao iniciar",
       "toc_default_visible": "Mostrar índice ao iniciar",
       "explorer_default_visible": "Mostrar explorador ao iniciar",
       "ingest_section_title": "Importação de imagem",
       "ingest_image_save_directory": "Diretório de salvamento",
       "ingest_image_name_format": "Formato do nome da imagem",
       "ingest_create_directory": "Criar diretório se não existir",
-      "confirm_file_move": "Confirmar antes de mover arquivos"
+      "confirm_file_move": "Confirmar antes de mover arquivos",
+      "diagram_rendering_section_title": "Renderização de diagramas",
+      "diagram_concurrency": "Número de renderizações paralelas",
+      "diagram_concurrency_hint": "Se o Markdown contiver muitos diagramas e o processamento estiver lento, reduza o número de renderizações paralelas.",
+      "diagram_concurrency_unlimited": "Paralelismo ilimitado",
+      "diagram_concurrency_unlimited_warning_title": "Ativar paralelismo ilimitado?",
+      "diagram_concurrency_unlimited_warning_message": "Todos os diagramas detectados serão renderizados ao mesmo tempo. Em arquivos Markdown com muitos diagramas, o KatanA ou todo o sistema pode ficar lento."
     },
     "general": "Geral",
     "shortcuts": {
