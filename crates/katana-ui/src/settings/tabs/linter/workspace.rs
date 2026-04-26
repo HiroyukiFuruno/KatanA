@@ -53,7 +53,10 @@ impl WorkspaceSettingsOps {
                     ui.label(&msgs.workspace_rules_found);
                     ui.add_space(SETTINGS_TOGGLE_SPACING);
                     if ui
-                        .add(egui::Button::new(&msgs.rule_details).frame_when_inactive(true))
+                        .add(
+                            egui::Button::new(&crate::i18n::I18nOps::get().common.advanced_settings)
+                                .frame_when_inactive(true),
+                        )
                         .clicked()
                     {
                         Self::set_advanced_config_path(ui, config_path);

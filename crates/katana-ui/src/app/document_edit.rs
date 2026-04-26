@@ -3,19 +3,36 @@ use crate::app::*;
 use crate::shell::KatanaApp;
 
 pub(crate) trait DocumentEditOps {
-    fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String);
+    fn handle_replace_text(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        span: std::ops::Range<usize>,
+        replacement: String,
+    );
     fn handle_apply_lint_fixes(
         &mut self,
+        ctx: &eframe::egui::Context,
         fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
+    );
+    fn handle_apply_lint_fixes_for_files(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        batches: Vec<crate::app_action::LintFixBatch>,
     );
 }
 
 impl DocumentEditOps for KatanaApp {
-    fn handle_replace_text(&mut self, span: std::ops::Range<usize>, replacement: String) {
+    fn handle_replace_text(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        span: std::ops::Range<usize>,
+        replacement: String,
+    ) {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
         let doc = &mut self.state.document.open_documents[idx];
+        let before = doc.buffer.clone();
         doc.buffer.replace_range(span, &replacement);
 
         use crate::state::document::VirtualPathExt as _;
@@ -25,6 +42,19 @@ impl DocumentEditOps for KatanaApp {
 
         let path = doc.path.clone();
         let content = doc.buffer.clone();
+        let workspace_root = self
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .map(|ws| ws.root.as_path());
+        crate::editor_undo::EditorUndoOps::record_external_change(
+            ctx,
+            workspace_root,
+            &path,
+            &before,
+            &content,
+        );
         let concurrency = self
             .state
             .config
@@ -42,12 +72,14 @@ impl DocumentEditOps for KatanaApp {
 
     fn handle_apply_lint_fixes(
         &mut self,
+        ctx: &eframe::egui::Context,
         mut fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
     ) {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
         let doc = &mut self.state.document.open_documents[idx];
+        let before = doc.buffer.clone();
 
         /* WHY: Sort fixes descending by start_line and start_column so replacements don't invalidate subsequent offsets */
         fixes.sort_by(|a, b| {
@@ -91,6 +123,19 @@ impl DocumentEditOps for KatanaApp {
 
         let path = doc.path.clone();
         let content = doc.buffer.clone();
+        let workspace_root = self
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .map(|ws| ws.root.as_path());
+        crate::editor_undo::EditorUndoOps::record_external_change(
+            ctx,
+            workspace_root,
+            &path,
+            &before,
+            &content,
+        );
         let concurrency = self
             .state
             .config
@@ -104,5 +149,29 @@ impl DocumentEditOps for KatanaApp {
             self.refresh_doc_search_matches(&content);
         }
         self.handle_action_refresh_diagnostics();
+    }
+
+    fn handle_apply_lint_fixes_for_files(
+        &mut self,
+        ctx: &eframe::egui::Context,
+        batches: Vec<crate::app_action::LintFixBatch>,
+    ) {
+        let original_path = self.state.active_path();
+
+        for batch in batches {
+            if batch.fixes.is_empty() {
+                continue;
+            }
+            let target_path = batch.path;
+            self.handle_select_document(target_path.clone(), true);
+            if self.state.active_path().as_ref() != Some(&target_path) {
+                continue;
+            }
+            self.handle_apply_lint_fixes(ctx, batch.fixes);
+        }
+
+        if let Some(path) = original_path {
+            self.handle_select_document(path, true);
+        }
     }
 }

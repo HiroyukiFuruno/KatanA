@@ -156,6 +156,8 @@
     "no_problems_found": "Nenhum problema encontrado.",
     "toggle_problems_panel": "Alternar painel de problemas",
     "problems_count_format": "Problemas: {count}",
+    "fix_file_problems": "Corrigir este arquivo",
+    "fix_all_detected_problems": "Corrigir todos detectados",
     "format_markdown_success": "Markdown formatado: alterados {changed} / sem alterações {unchanged}",
     "format_markdown_partial_failure": "A formatação de Markdown falhou parcialmente: alterados {changed} / sem alterações {unchanged} / falhas {failed}. Exemplo: {path}: {reason}",
     "format_markdown_not_markdown": "Este não é um arquivo Markdown.",
@@ -187,6 +189,7 @@
     "new_directory": "Nova pasta",
     "format_markdown_file": "Formatar arquivo Markdown",
     "format_workspace_markdown": "Formatar Markdown do espaço de trabalho",
+    "format_directory_markdown": "Formatar Markdown nesta pasta recursivamente",
     "open": "Abrir",
     "rename": "Renomear",
     "delete": "Excluir",
@@ -233,7 +236,8 @@
       "reset_contrast": "Redefinir",
       "ui_contrast_offset": "Contraste UI",
       "show_more": "Mostrar mais…",
-      "show_less": "Exibir menos…"
+      "show_less": "Exibir menos…",
+      "search_placeholder": "Pesquisar cores…"
     },
     "font": {
       "size": "Tamanho da fonte",

@@ -6,6 +6,8 @@ mod general;
 pub mod list;
 pub mod panels;
 pub mod popups;
+#[cfg(test)]
+mod popups_tests;
 mod preset_controls;
 pub mod row;
 pub mod table;

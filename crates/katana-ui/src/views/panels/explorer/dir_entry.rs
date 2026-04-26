@@ -1,9 +1,5 @@
 use super::tree_entry::TreeEntryNode;
-use crate::shell::{
-    TREE_ACCORDION_LINE_GAMMA, TREE_ACCORDION_LINE_OFFSET, TREE_ACCORDION_LINE_WIDTH,
-    TREE_DRAG_GHOST_GAMMA, TREE_FONT_SIZE, TREE_HOVER_GAMMA, TREE_HOVER_ROUNDING,
-    TREE_ICON_ARROW_GAP, TREE_ICON_LABEL_GAP, TREE_INDENT_STEP, TREE_ROW_HEIGHT,
-};
+use crate::shell::TREE_ROW_HEIGHT;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
 
@@ -51,14 +47,39 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
         if resp.drag_started() {
             resp.dnd_set_drag_payload(path.to_path_buf());
         }
+        let drag_target_dir =
+            egui::DragAndDrop::payload::<std::path::PathBuf>(ui.ctx()).and_then(|source_path| {
+                crate::views::panels::explorer::drag::ExplorerDragUi::resolve_drop_target_dir(
+                    source_path.as_path(),
+                    path,
+                    true,
+                )
+            });
+        if resp.drag_started() || ui.ctx().is_being_dragged(resp.id) {
+            crate::views::panels::explorer::drag::ExplorerDragUi::render_drag_ghost(
+                ui,
+                path,
+                true,
+                rect,
+                ctx.ws_root,
+                if is_open {
+                    crate::icon::Icon::FolderOpen
+                } else {
+                    crate::icon::Icon::FolderClosed
+                },
+            );
+        }
         if let Some(source_path) = resp.dnd_release_payload::<std::path::PathBuf>()
-            && source_path.as_path() != path
-            && source_path.parent() != Some(path)
-            && !path.starts_with(source_path.as_path())
+            && let Some(target_dir) =
+                crate::views::panels::explorer::drag::ExplorerDragUi::resolve_drop_target_dir(
+                    source_path.as_path(),
+                    path,
+                    true,
+                )
         {
             *ctx.action = crate::app_state::AppAction::RequestMoveFsNode {
                 source_path: (*source_path).clone(),
-                target_dir: path.to_path_buf(),
+                target_dir,
             };
         }
 
@@ -76,65 +97,20 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
         }
 
         if ui.is_rect_visible(rect) {
-            if ui.ctx().is_being_dragged(resp.id) {
-                ui.painter().rect_filled(
-                    rect,
-                    TREE_HOVER_ROUNDING,
-                    ui.visuals()
-                        .selection
-                        .bg_fill
-                        .gamma_multiply(TREE_DRAG_GHOST_GAMMA),
-                );
-            } else if ui.rect_contains_pointer(rect) && ui.is_enabled() {
-                let hover_color = ui
-                    .visuals()
-                    .widgets
-                    .hovered
-                    .bg_fill
-                    .gamma_multiply(TREE_HOVER_GAMMA);
-                ui.painter()
-                    .rect_filled(rect, TREE_HOVER_ROUNDING, hover_color);
-            }
-
-            let mut child_ui = ui.new_child(
-                egui::UiBuilder::new()
-                    .max_rect(rect)
-                    .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            crate::views::panels::explorer::dir_entry_paint::DirectoryEntryPaintOps::paint_background_and_drop_hint(
+                ui,
+                rect,
+                &resp,
+                drag_target_dir.as_deref(),
+                ctx,
             );
-            child_ui.spacing_mut().item_spacing.x = 0.0;
-
-            let indent = ctx.depth as f32 * TREE_INDENT_STEP;
-            child_ui.add_space(indent);
-
-            let arrow_icon = if is_open {
-                crate::icon::Icon::ChevronDown
-            } else {
-                crate::icon::Icon::ChevronRight
-            };
-            let folder_icon = if is_open {
-                crate::icon::Icon::FolderOpen
-            } else {
-                crate::icon::Icon::FolderClosed
-            };
-
-            child_ui.visuals_mut().override_text_color = Some(file_tree_color);
-
-            let img_arrow = arrow_icon.ui_image(&child_ui, crate::icon::IconSize::Small);
-            child_ui.add(img_arrow);
-            child_ui.add_space(TREE_ICON_ARROW_GAP);
-
-            let img_folder = folder_icon.ui_image(&child_ui, crate::icon::IconSize::Medium);
-            child_ui.add(img_folder);
-            child_ui.add_space(TREE_ICON_LABEL_GAP);
-
-            child_ui.add(
-                egui::Label::new(
-                    egui::RichText::new(name)
-                        .color(file_tree_color)
-                        .size(TREE_FONT_SIZE),
-                )
-                .selectable(false)
-                .truncate(),
+            crate::views::panels::explorer::dir_entry_paint::DirectoryEntryPaintOps::paint_row(
+                ui,
+                rect,
+                ctx,
+                name,
+                is_open,
+                file_tree_color,
             );
         }
 
@@ -173,20 +149,12 @@ impl<'a, 'b, 'c> DirectoryEntryNode<'a, 'b, 'c> {
             ctx.depth = prev_depth;
 
             if ctx.show_vertical_line {
-                let indent_x = rect.left() + (ctx.depth as f32) * TREE_INDENT_STEP;
-                let line_x = indent_x + TREE_ACCORDION_LINE_OFFSET;
-                let stroke = egui::Stroke::new(
-                    TREE_ACCORDION_LINE_WIDTH,
-                    ui.visuals()
-                        .text_color()
-                        .gamma_multiply(TREE_ACCORDION_LINE_GAMMA),
-                );
-                ui.painter().line_segment(
-                    [
-                        egui::pos2(line_x, line_start_y),
-                        egui::pos2(line_x, line_end_y),
-                    ],
-                    stroke,
+                crate::views::panels::explorer::dir_entry_paint::DirectoryEntryPaintOps::paint_vertical_line(
+                    ui,
+                    rect,
+                    line_start_y,
+                    line_end_y,
+                    ctx.depth,
                 );
             }
         }

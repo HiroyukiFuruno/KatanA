@@ -168,6 +168,7 @@ pub fn run(
             Step::ExportPng(_) => "export_png",
             Step::OpenFile(_) => "open_file",
             Step::Action(_) => "action",
+            Step::Drag(_) => "drag",
             Step::Quit => "quit",
         };
         println!("step {}/{}: {label}", i + 1, steps.len());
@@ -562,9 +563,30 @@ pub fn run(
                         click_node(&mut harness, label, *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
+                    UiAction::HoverAt { x, y, wait_seconds } => {
+                        harness.hover_at(egui::pos2(*x, *y));
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
                     UiAction::ClickAt { x, y, button, wait_seconds } => {
                         click_at(&mut harness, egui::pos2(*x, *y), *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
+                    UiAction::DragByLabel {
+                        from_label,
+                        to_label,
+                        move_steps,
+                        hold_seconds,
+                        wait_seconds,
+                    } => {
+                        perform_drag_by_labels(
+                            &mut harness,
+                            recording.as_mut(),
+                            from_label,
+                            to_label,
+                            move_steps.as_ref().copied().unwrap_or(20),
+                            hold_seconds.unwrap_or(0.0),
+                            *wait_seconds,
+                        )?;
                     }
                     other => {
                         let app_action = match other {
@@ -594,7 +616,9 @@ pub fn run(
                             | UiAction::SlideshowNavigate { .. }
                             | UiAction::SelectDemoTab { .. }
                             | UiAction::ClickNode { .. }
-                            | UiAction::ClickAt { .. } => unreachable!(),
+                            | UiAction::HoverAt { .. }
+                            | UiAction::ClickAt { .. }
+                            | UiAction::DragByLabel { .. } => unreachable!(),
                         };
                         harness.state_mut().trigger_action(app_action);
                         let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
@@ -604,6 +628,17 @@ pub fn run(
                         }
                     }
                 }
+            }
+            Step::Drag(step) => {
+                perform_drag_by_labels(
+                    &mut harness,
+                    recording.as_mut(),
+                    &step.from_label,
+                    &step.to_label,
+                    step.move_steps(),
+                    step.hold_seconds.unwrap_or(0.0),
+                    step.wait_seconds,
+                )?;
             }
             Step::Quit => {}
         }
@@ -964,6 +999,64 @@ fn click_at(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2, button: Click
         modifiers: egui::Modifiers::NONE,
     });
     harness.step();
+}
+
+fn perform_drag_by_labels(
+    harness: &mut Harness<'_, KatanaApp>,
+    mut recording: Option<&mut ActiveRecording>,
+    from_label: &str,
+    to_label: &str,
+    move_steps: u32,
+    hold_seconds: f64,
+    wait_seconds: f64,
+) -> Result<()> {
+    let move_steps = move_steps.max(1);
+
+    let from_node = harness.get_by_label(from_label);
+    let to_node = harness.get_by_label(to_label);
+    let from_pos = from_node.rect().center();
+    let to_pos = to_node.rect().center();
+
+    harness.input_mut().events.push(egui::Event::PointerMoved(from_pos));
+    harness.step();
+    maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+
+    if hold_seconds > 0.0 {
+        step_for_seconds(harness, recording.as_deref_mut(), hold_seconds)?;
+    }
+
+    harness.input_mut().events.push(egui::Event::PointerButton {
+        pos: from_pos,
+        button: egui::PointerButton::Primary,
+        pressed: true,
+        modifiers: egui::Modifiers::NONE,
+    });
+    harness.step();
+    maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+
+    for i in 1..=move_steps {
+        let t = (i as f32) / (move_steps as f32);
+        let current = egui::pos2(
+            from_pos.x + (to_pos.x - from_pos.x) * t,
+            from_pos.y + (to_pos.y - from_pos.y) * t,
+        );
+        harness.input_mut().events.push(egui::Event::PointerMoved(current));
+        harness.step();
+        maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+        sleep_frame(60.0);
+    }
+
+    harness.input_mut().events.push(egui::Event::PointerButton {
+        pos: to_pos,
+        button: egui::PointerButton::Primary,
+        pressed: false,
+        modifiers: egui::Modifiers::NONE,
+    });
+    harness.step();
+    maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
+
+    step_for_seconds(harness, recording, wait_seconds)?;
+    Ok(())
 }
 
 fn step_for_seconds(

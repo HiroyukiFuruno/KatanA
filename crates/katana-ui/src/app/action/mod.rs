@@ -16,6 +16,7 @@ mod process_groups;
 mod process_helpers;
 mod process_linter;
 mod process_markdown_formatting;
+mod process_markdown_formatting_paths;
 mod process_reorder;
 mod process_tabs;
 mod process_update;

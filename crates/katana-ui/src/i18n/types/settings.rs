@@ -46,6 +46,12 @@ pub struct SettingsThemeMessages {
     pub ui_contrast_offset: String,
     pub show_more: String,
     pub show_less: String,
+    #[serde(default = "default_theme_search_placeholder")]
+    pub search_placeholder: String,
+}
+
+fn default_theme_search_placeholder() -> String {
+    "Search colors…".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

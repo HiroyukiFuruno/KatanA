@@ -78,7 +78,10 @@ mod tests {
             .find(|n| n.value().as_deref() == Some("aa_dir"))
             .expect("should find aa_dir label");
 
-        let file_node = harness.get_by_label_contains("zz_file.md");
+        let file_node = all_labels
+            .iter()
+            .find(|n| n.value().as_deref() == Some("zz_file.md"))
+            .expect("should find zz_file.md label");
 
         let dir_rect = dir_node.rect();
         let file_rect = file_node.rect();

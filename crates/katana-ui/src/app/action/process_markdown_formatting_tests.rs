@@ -20,18 +20,20 @@ mod tests {
     #[test]
     fn format_markdown_file_saves_active_buffer_and_refreshes_diagnostics() {
         let mut app = make_app();
+        let ctx = eframe::egui::Context::default();
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("doc.md");
         std::fs::write(&path, "# Title").unwrap();
 
         app.handle_select_document(path.clone(), true);
-        app.handle_action_format_markdown_file(path.clone());
+        app.handle_action_format_markdown_file(&ctx, path.clone());
 
         let doc = app.state.active_document().unwrap();
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "# Title\n");
         assert_eq!(doc.buffer, "# Title\n");
         assert!(!doc.is_dirty);
         assert!(app.state.diagnostics.get_file_diagnostics(&path).is_empty());
+        assert_eq!(undo_text(&ctx, &path, "# Title\n"), "# Title");
     }
 
     #[test]
@@ -59,7 +61,10 @@ mod tests {
             ],
         ));
 
-        app.handle_action_format_workspace_markdown(PathBuf::from(dir.path()));
+        app.handle_action_format_workspace_markdown(
+            &eframe::egui::Context::default(),
+            PathBuf::from(dir.path()),
+        );
 
         assert_eq!(
             std::fs::read_to_string(&visible_path).unwrap(),
@@ -92,7 +97,10 @@ mod tests {
             }],
         ));
 
-        app.handle_action_format_workspace_markdown(PathBuf::from(dir.path()));
+        app.handle_action_format_workspace_markdown(
+            &eframe::egui::Context::default(),
+            PathBuf::from(dir.path()),
+        );
 
         assert_eq!(std::fs::read_to_string(&ignored_path).unwrap(), "# Ignored");
     }
@@ -104,12 +112,26 @@ mod tests {
         let path = dir.path().join("note.txt");
         std::fs::write(&path, "plain").unwrap();
 
-        app.handle_action_format_markdown_file(path);
+        app.handle_action_format_markdown_file(&eframe::egui::Context::default(), path);
 
         let Some((message, status_type)) = app.state.layout.status_message else {
             panic!("status message should be set");
         };
         assert_eq!(status_type, crate::app_state::StatusType::Warning);
         assert!(message.contains("note.txt"));
+    }
+
+    fn undo_text(ctx: &eframe::egui::Context, path: &std::path::Path, current: &str) -> String {
+        let id = crate::editor_undo::EditorUndoIdentity::text_edit_id(None, path);
+        let state = eframe::egui::TextEdit::load_state(ctx, id).unwrap();
+        let mut undoer = state.undoer();
+        let cursor = eframe::egui::text::CCursorRange::one(eframe::egui::text::CCursor::new(
+            current.chars().count(),
+        ));
+        undoer
+            .undo(&(cursor, current.to_string()))
+            .unwrap()
+            .1
+            .clone()
     }
 }

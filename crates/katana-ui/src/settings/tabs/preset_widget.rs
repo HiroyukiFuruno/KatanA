@@ -20,6 +20,8 @@ pub(crate) struct PresetWidgetResponse {
 pub(crate) struct PresetWidgetOps;
 
 impl PresetWidgetOps {
+    const ACTION_BUTTON_WIDTH: f32 = 180.0;
+
     pub(crate) fn render(
         ui: &mut egui::Ui,
         id_source: &'static str,
@@ -31,19 +33,16 @@ impl PresetWidgetOps {
         crate::settings::SettingsOps::section_header(ui, labels.title);
         let mut response = PresetWidgetResponse::default();
 
-        crate::widgets::AlignCenter::new()
-            .content(|ui| {
-                Self::render_combo(
-                    ui,
-                    id_source,
-                    state,
-                    built_in_presets,
-                    user_presets,
-                    &mut response,
-                );
-                Self::render_actions(ui, state, labels, &mut response);
-            })
-            .show(ui);
+        Self::render_combo(
+            ui,
+            id_source,
+            state,
+            built_in_presets,
+            user_presets,
+            &mut response,
+        );
+        ui.add_space(crate::settings::SUBSECTION_SPACING);
+        Self::render_actions(ui, state, labels, &mut response);
 
         response
     }
@@ -56,9 +55,10 @@ impl PresetWidgetOps {
         user_presets: &[PresetReference],
         response: &mut PresetWidgetResponse,
     ) {
-        egui::ComboBox::from_id_source(id_source)
-            .selected_text(Self::selected_text(state))
-            .show_ui(ui, |ui| {
+        crate::widgets::StyledComboBox::new(id_source, Self::selected_text(state))
+            .width(ui.available_width())
+            .truncate()
+            .show(ui, |ui| {
                 Self::render_options(ui, state, built_in_presets, response);
                 if !user_presets.is_empty() {
                     ui.separator();
@@ -93,23 +93,41 @@ impl PresetWidgetOps {
         labels: PresetWidgetLabels<'_>,
         response: &mut PresetWidgetResponse,
     ) {
-        if ui.button(labels.save).clicked() {
-            response.save_clicked = true;
-        }
-        if ui
-            .add_enabled(
-                state.modified && state.base.is_some(),
-                egui::Button::new(labels.revert),
-            )
-            .clicked()
-        {
-            response.revert_clicked = true;
-        }
-        if let Some(advanced) = labels.advanced
-            && ui.button(advanced).clicked()
-        {
-            response.advanced_clicked = true;
-        }
+        let button_width = Self::ACTION_BUTTON_WIDTH.min(ui.available_width());
+        let button_height = ui.spacing().interact_size.y;
+        ui.horizontal_wrapped(|ui| {
+            if ui
+                .add_sized(
+                    [button_width, button_height],
+                    egui::Button::new(labels.save).truncate(),
+                )
+                .clicked()
+            {
+                response.save_clicked = true;
+            }
+            let can_revert = state.modified && state.base.is_some();
+            ui.add_enabled_ui(can_revert, |ui| {
+                if ui
+                    .add_sized(
+                        [button_width, button_height],
+                        egui::Button::new(labels.revert).truncate(),
+                    )
+                    .clicked()
+                {
+                    response.revert_clicked = true;
+                }
+            });
+            if let Some(advanced) = labels.advanced
+                && ui
+                    .add_sized(
+                        [button_width, button_height],
+                        egui::Button::new(advanced).truncate(),
+                    )
+                    .clicked()
+            {
+                response.advanced_clicked = true;
+            }
+        });
     }
 
     fn selected_text(state: &PresetState) -> String {

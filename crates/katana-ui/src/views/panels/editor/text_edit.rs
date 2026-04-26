@@ -13,6 +13,7 @@ impl TextEditRenderer {
         ui: &mut egui::Ui,
         buffer: &mut String,
         doc: &katana_core::document::Document,
+        workspace_root: Option<&std::path::Path>,
         scroll: &mut crate::app_state::ScrollState,
         action: &mut AppAction,
         sync_scroll: bool,
@@ -35,7 +36,10 @@ impl TextEditRenderer {
 
             let editable = !doc.is_reference;
             let text_edit = egui::TextEdit::multiline(buffer)
-                .id(egui::Id::new("editor_text_edit"))
+                .id(crate::editor_undo::EditorUndoIdentity::text_edit_id(
+                    workspace_root,
+                    &doc.path,
+                ))
                 .interactive(editable)
                 .font(egui::TextStyle::Monospace)
                 .desired_width(f32::INFINITY)
@@ -54,6 +58,8 @@ impl TextEditRenderer {
             super::context_menu::EditorContextMenu::render(
                 &response,
                 action,
+                &doc.path,
+                editable,
                 text_output.cursor_range,
             );
             let galley = text_output.galley;
@@ -62,7 +68,6 @@ impl TextEditRenderer {
             if let Some(range) = text_output.cursor_range {
                 *cursor_range_out = Some(range);
             }
-            ToolbarPopup::show(ui, action, &response, &galley, popup_cursor_range, editable);
 
             if let Some(cursor_range) = pending_cursor {
                 EditorLogicOps::apply_pending_cursor(ui, response.id, cursor_range);
@@ -107,7 +112,7 @@ impl TextEditRenderer {
                 doc_search_active_index,
             );
 
-            super::diagnostics_ui::EditorDiagnostics::render_diagnostics(
+            let diagnostic_hovered = super::diagnostics_ui::EditorDiagnostics::render_diagnostics(
                 ui,
                 buffer,
                 &galley,
@@ -117,7 +122,7 @@ impl TextEditRenderer {
             );
 
             const PAD_RIGHT: f32 = 8.0;
-            super::line_numbers::EditorLineNumbers::render(
+            let line_diagnostic_hovered = super::line_numbers::EditorLineNumbers::render(
                 ui,
                 super::line_numbers::LineNumberParams {
                     galley: &galley,
@@ -132,6 +137,16 @@ impl TextEditRenderer {
                     diagnostics,
                     action,
                 },
+            );
+
+            ToolbarPopup::show(
+                ui,
+                action,
+                &response,
+                &galley,
+                popup_cursor_range,
+                editable,
+                diagnostic_hovered || line_diagnostic_hovered,
             );
 
             let text_changed = response.changed();

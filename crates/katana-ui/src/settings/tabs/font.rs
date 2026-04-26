@@ -43,7 +43,11 @@ impl FontTabOps {
             .show(|ui| {
                 ui.set_min_width(FONT_FAMILY_COMBOBOX_WIDTH);
 
-                let search_resp = ui.text_edit_singleline(&mut query);
+                let search_resp = crate::widgets::SearchBar::simple(&mut query)
+                    .id_source("font_family_search_input")
+                    .show_search_icon(true)
+                    .desired_width(FONT_FAMILY_COMBOBOX_WIDTH)
+                    .show(ui);
                 if search_resp.changed() {
                     ui.data_mut(|d: &mut egui::util::IdTypeMap| {
                         d.insert_temp(search_id, query.clone())

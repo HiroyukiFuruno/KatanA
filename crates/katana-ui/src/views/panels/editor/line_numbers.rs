@@ -24,7 +24,7 @@ struct RowRenderParams {
 }
 
 impl EditorLineNumbers {
-    pub(crate) fn render(ui: &mut egui::Ui, params: LineNumberParams<'_>) {
+    pub(crate) fn render(ui: &mut egui::Ui, params: LineNumberParams<'_>) -> bool {
         let LineNumberParams {
             galley,
             response_rect,
@@ -41,6 +41,7 @@ impl EditorLineNumbers {
         let clip_rect = ui.clip_rect().expand(100.0);
         let mut p = 0;
         let mut is_start_of_para = true;
+        let mut diagnostic_hovered = false;
 
         for row in &galley.rows {
             let row_rect = row.rect();
@@ -57,7 +58,7 @@ impl EditorLineNumbers {
                     y,
                     row_height: row_rect.height(),
                 };
-                super::row_diagnostics::RowDiagnosticsRenderer::render(
+                diagnostic_hovered |= super::row_diagnostics::RowDiagnosticsRenderer::render(
                     ui,
                     diagnostics,
                     p,
@@ -85,6 +86,7 @@ impl EditorLineNumbers {
                 p += 1;
             }
         }
+        diagnostic_hovered
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -119,10 +121,8 @@ impl EditorLineNumbers {
             })
         };
         let font_id = egui::TextStyle::Monospace.resolve(ui.style());
-        let label_rect = egui::Rect::from_min_size(
-            egui::pos2(ln_rect.min.x, y),
-            egui::vec2(left_margin - line_number_pad_right, row_height),
-        );
+        let label_rect =
+            Self::row_number_label_rect(ln_rect, y, row_height, left_margin, line_number_pad_right);
         let mut text_rt = egui::RichText::new(text).color(color).font(font_id);
         if is_current {
             text_rt = text_rt.strong();
@@ -142,5 +142,37 @@ impl EditorLineNumbers {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }
         ui.put(tight_rect, egui::Label::new(text_rt).selectable(false));
+    }
+
+    fn row_number_label_rect(
+        ln_rect: &egui::Rect,
+        y: f32,
+        row_height: f32,
+        left_margin: f32,
+        line_number_pad_right: f32,
+    ) -> egui::Rect {
+        let gutter_width = super::row_diagnostics::ACTION_ICON_GUTTER_WIDTH;
+        let label_width = (left_margin - line_number_pad_right - gutter_width).max(0.0);
+        egui::Rect::from_min_size(
+            egui::pos2(ln_rect.min.x + gutter_width, y),
+            egui::vec2(label_width, row_height),
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn row_number_hit_rect_does_not_cover_diagnostic_icon_gutter() {
+        let ln_rect = egui::Rect::from_min_size(egui::pos2(100.0, 0.0), egui::vec2(52.0, 0.0));
+
+        let actual = EditorLineNumbers::row_number_label_rect(&ln_rect, 20.0, 18.0, 52.0, 8.0);
+
+        assert_eq!(
+            actual.left(),
+            ln_rect.min.x + crate::views::panels::editor::row_diagnostics::ACTION_ICON_GUTTER_WIDTH
+        );
     }
 }

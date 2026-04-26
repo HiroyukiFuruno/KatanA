@@ -156,6 +156,8 @@
     "no_problems_found": "未發現問題。",
     "toggle_problems_panel": "切換問題面板",
     "problems_count_format": "問題: {count}",
+    "fix_file_problems": "修正此檔案",
+    "fix_all_detected_problems": "修正所有已偵測項目",
     "format_markdown_success": "Markdown 已格式化: 已變更 {changed} / 未變更 {unchanged}",
     "format_markdown_partial_failure": "Markdown 格式化部分失敗: 已變更 {changed} / 未變更 {unchanged} / 失敗 {failed}。範例: {path}: {reason}",
     "format_markdown_not_markdown": "這不是 Markdown 檔案。",
@@ -187,6 +189,7 @@
     "new_directory": "新增資料夾",
     "format_markdown_file": "格式化 Markdown 檔案",
     "format_workspace_markdown": "格式化工作區 Markdown",
+    "format_directory_markdown": "遞迴格式化此資料夾中的 Markdown",
     "open": "開啟",
     "rename": "重新命名",
     "delete": "刪除",
@@ -233,7 +236,8 @@
       "reset_contrast": "重置",
       "ui_contrast_offset": "UI 對比度",
       "show_more": "顯示更多…",
-      "show_less": "顯示更少…"
+      "show_less": "顯示更少…",
+      "search_placeholder": "搜尋顏色…"
     },
     "font": {
       "size": "字型大小",

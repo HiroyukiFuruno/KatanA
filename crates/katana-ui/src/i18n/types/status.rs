@@ -19,6 +19,8 @@ pub struct StatusMessages {
     pub no_problems_found: String,
     pub toggle_problems_panel: String,
     pub problems_count_format: String,
+    pub fix_file_problems: String,
+    pub fix_all_detected_problems: String,
     pub format_markdown_success: String,
     pub format_markdown_partial_failure: String,
     pub format_markdown_not_markdown: String,

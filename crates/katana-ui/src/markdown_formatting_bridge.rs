@@ -90,6 +90,10 @@ impl MarkdownFormattingBridgeOps {
                 state, path,
             );
         Self::disable_non_layout_rules(&mut options);
+        crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(
+            &mut options,
+            content,
+        );
         let fixed = katana_markdown_linter::fix(content, &options)
             .map_err(|err| MarkdownFormatFailure::new(path, err.to_string()))?;
         Ok(MarkdownFormatOutcome {
@@ -109,77 +113,5 @@ impl MarkdownFormattingBridgeOps {
                 rule_config.enabled = false;
             }
         }
-    }
-}
-
-#[cfg(test)]
-#[allow(clippy::unwrap_used)]
-mod tests {
-    use super::*;
-    use katana_core::workspace::Workspace;
-    use std::sync::Arc;
-
-    fn make_workspace_state(dir: &tempfile::TempDir) -> crate::app_state::AppState {
-        let mut state = crate::app_state::AppState::new(
-            Default::default(),
-            Default::default(),
-            katana_platform::SettingsService::default(),
-            Arc::new(katana_platform::InMemoryCacheService::default()),
-        );
-        state
-            .config
-            .settings
-            .settings_mut()
-            .linter
-            .use_workspace_local_config = true;
-        state.workspace.data = Some(Workspace::new(dir.path(), Vec::new()));
-        state
-    }
-
-    #[test]
-    fn format_content_uses_effective_markdownlint_config() {
-        let dir = tempfile::tempdir().unwrap();
-        std::fs::write(dir.path().join(".markdownlint.json"), r#"{"MD047": false}"#).unwrap();
-        let state = make_workspace_state(&dir);
-        let path = dir.path().join("doc.md");
-
-        let outcome = MarkdownFormattingBridgeOps::format_content(&state, &path, "# Title")
-            .expect("format should succeed");
-
-        assert_eq!(outcome.content, "# Title");
-        assert_eq!(outcome.applied_fixes, 0);
-    }
-
-    #[test]
-    fn format_content_respects_disabled_linter_setting() {
-        let dir = tempfile::tempdir().unwrap();
-        let mut state = make_workspace_state(&dir);
-        state.config.settings.settings_mut().linter.enabled = false;
-        let path = dir.path().join("doc.md");
-
-        let outcome = MarkdownFormattingBridgeOps::format_content(&state, &path, "# Title")
-            .expect("format should succeed");
-
-        assert_eq!(outcome.content, "# Title");
-        assert_eq!(outcome.applied_fixes, 0);
-    }
-
-    #[test]
-    fn format_content_does_not_apply_non_layout_fixes() {
-        let dir = tempfile::tempdir().unwrap();
-        std::fs::write(
-            dir.path().join(".markdownlint.json"),
-            r#"{"default": false, "MD034": true, "MD047": false}"#,
-        )
-        .unwrap();
-        let state = make_workspace_state(&dir);
-        let path = dir.path().join("doc.md");
-
-        let outcome =
-            MarkdownFormattingBridgeOps::format_content(&state, &path, "https://example.com")
-                .expect("format should succeed");
-
-        assert_eq!(outcome.content, "https://example.com");
-        assert_eq!(outcome.applied_fixes, 0);
     }
 }

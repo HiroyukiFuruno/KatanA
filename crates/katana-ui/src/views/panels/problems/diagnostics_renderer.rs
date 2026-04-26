@@ -29,9 +29,19 @@ impl DiagnosticsRendererOps {
         }
 
         let mut action = None;
+        let file_batch = super::bulk_fixes::ProblemBulkFixOps::file_batch(path, diagnostics);
         state
             .show_header(ui, |ui| {
                 ui.label(egui::RichText::new(filename).strong());
+                if let Some(batch) = file_batch.as_ref()
+                    && ui
+                        .button(&crate::i18n::I18nOps::get().status.fix_file_problems)
+                        .clicked()
+                {
+                    action = Some(crate::app_state::AppAction::ApplyLintFixesForFiles(vec![
+                        batch.clone(),
+                    ]));
+                }
             })
             .body(|ui| {
                 const GRID_COLS: usize = 3;
@@ -150,8 +160,11 @@ impl DiagnosticsRendererOps {
                 if let Some(fix_info) = &diag.fix_info
                     && ui.button(&crate::i18n::I18nOps::get().linter.fix).clicked()
                 {
-                    action = Some(crate::app_state::AppAction::ApplyLintFixes(vec![
-                        fix_info.clone(),
+                    action = Some(crate::app_state::AppAction::ApplyLintFixesForFiles(vec![
+                        crate::app_action::LintFixBatch {
+                            path: path.to_path_buf(),
+                            fixes: vec![fix_info.clone()],
+                        },
                     ]));
                 }
             },

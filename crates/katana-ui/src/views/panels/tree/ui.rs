@@ -43,6 +43,10 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
                 *ctx.action = crate::app_state::AppAction::RequestNewDirectory(target_dir);
                 ui.close();
             }
+            if ui.button(msg.format_directory_markdown.clone()).clicked() {
+                *ctx.action = Self::format_directory_markdown_action(path);
+                ui.close();
+            }
             ui.separator();
 
             if ui
@@ -153,42 +157,13 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
         }
     }
 
-    fn should_offer_markdown_format(entry: Option<&TreeEntry>) -> bool {
+    pub(super) fn should_offer_markdown_format(entry: Option<&TreeEntry>) -> bool {
         entry.is_some_and(TreeEntry::is_markdown)
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::path::PathBuf;
-
-    #[test]
-    fn markdown_format_is_offered_only_for_markdown_files() {
-        let markdown = TreeEntry::File {
-            path: PathBuf::from("/workspace/README.md"),
-        };
-        let markdown_long_ext = TreeEntry::File {
-            path: PathBuf::from("/workspace/README.markdown"),
-        };
-        let text = TreeEntry::File {
-            path: PathBuf::from("/workspace/README.txt"),
-        };
-        let directory = TreeEntry::Directory {
-            path: PathBuf::from("/workspace/docs"),
-            children: Vec::new(),
-        };
-
-        assert!(TreeContextMenu::should_offer_markdown_format(Some(
-            &markdown
-        )));
-        assert!(TreeContextMenu::should_offer_markdown_format(Some(
-            &markdown_long_ext
-        )));
-        assert!(!TreeContextMenu::should_offer_markdown_format(Some(&text)));
-        assert!(!TreeContextMenu::should_offer_markdown_format(Some(
-            &directory
-        )));
-        assert!(!TreeContextMenu::should_offer_markdown_format(None));
+    pub(super) fn format_directory_markdown_action(
+        path: &std::path::Path,
+    ) -> crate::app_state::AppAction {
+        crate::app_state::AppAction::FormatWorkspaceMarkdown(path.to_path_buf())
     }
 }

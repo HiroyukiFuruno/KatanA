@@ -10,14 +10,22 @@
       ""
     ]
   },
-  "MD013": {
-    "code_block_line_length": 10000,
-    "line_length": 10000
+  "MD012": {
+    "maximum": 1
   },
+  "MD013": false,
   "MD022": true,
+  "MD024": false,
+  "MD026": {
+    "punctuation": ".,;:!。，；：！"
+  },
   "MD029": {
     "style": "one_or_ordered"
   },
+  "MD033": {
+    "allowed_elements": []
+  },
+  "MD041": false,
   "MD044": {
     "names": []
   },
@@ -25,7 +33,7 @@
     "style": "indented"
   },
   "MD048": {
-    "style": "tilde"
+    "style": "backtick"
   },
   "MD049": {
     "style": "asterisk"
@@ -37,15 +45,15 @@
     "ignored_labels": [
       "x",
       "/",
-      "-"
+      "-",
+      "?",
+      "!",
+      "~"
     ],
     "shortcut_syntax": true
   },
   "MD055": {
     "style": "consistent"
   },
-  "MD024": false,
-  "MD033": false,
-  "MD041": false,
   "default": true
 }

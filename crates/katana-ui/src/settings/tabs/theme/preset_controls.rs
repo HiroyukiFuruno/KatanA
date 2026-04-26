@@ -4,10 +4,18 @@ use katana_platform::settings::PresetSource;
 use katana_platform::settings::ThemeSettings;
 use katana_platform::theme::ThemePreset;
 
+#[cfg(test)]
+#[path = "preset_controls_tests.rs"]
+mod preset_controls_tests;
+
 pub(crate) struct ThemePresetControlsOps;
 
 impl ThemePresetControlsOps {
-    pub(crate) fn render(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
+    pub(crate) fn render(
+        ui: &mut egui::Ui,
+        state: &mut crate::app_state::AppState,
+        is_advanced_open: &mut bool,
+    ) {
         let theme_settings = state.config.settings.settings().theme.clone();
         let built_in_presets = Self::built_in_presets();
         let user_presets = Self::user_presets(&theme_settings);
@@ -29,13 +37,14 @@ impl ThemePresetControlsOps {
             &user_presets,
             labels,
         );
-        Self::handle_response(ui, state, response);
+        Self::handle_response(ui, state, response, is_advanced_open);
     }
 
     fn handle_response(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
         response: crate::settings::tabs::preset_widget::PresetWidgetResponse,
+        is_advanced_open: &mut bool,
     ) {
         let mut changed = false;
         if let Some(reference) = response.selected {
@@ -58,9 +67,7 @@ impl ThemePresetControlsOps {
             ui.data_mut(|data| data.insert_temp(egui::Id::new("show_save_theme_modal"), true));
         }
         if response.advanced_clicked {
-            ui.data_mut(|data| {
-                data.insert_temp(egui::Id::new("theme_custom_colors_force_open"), true);
-            });
+            *is_advanced_open = true;
         }
         if changed {
             let colors = state.config.settings.settings().effective_theme_colors();

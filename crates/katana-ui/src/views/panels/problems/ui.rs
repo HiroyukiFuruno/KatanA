@@ -79,6 +79,25 @@ impl<'a> ProblemsPanel<'a> {
                                     {
                                         self.state.diagnostics.is_panel_open = false;
                                     }
+                                    let batches =
+                                        super::bulk_fixes::ProblemBulkFixOps::workspace_batches(
+                                            &self.state.diagnostics.problems,
+                                        );
+                                    if !batches.is_empty()
+                                        && ui
+                                            .button(
+                                                crate::i18n::I18nOps::get()
+                                                    .status
+                                                    .fix_all_detected_problems
+                                                    .clone(),
+                                            )
+                                            .clicked()
+                                    {
+                                        *self.pending_action =
+                                            crate::app_state::AppAction::ApplyLintFixesForFiles(
+                                                batches,
+                                            );
+                                    }
                                 },
                             );
                         });

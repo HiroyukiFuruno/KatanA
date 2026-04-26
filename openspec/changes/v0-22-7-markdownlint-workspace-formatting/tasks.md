@@ -257,8 +257,14 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
 - [x] 6.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot/run.sh --request <request.json> --output scripts/screenshot/output/v0-22-7-review` で生成したスクリーンショットまたは動画を提示して確認できる状態にする。シナリオ定義は git 管理対象、生成物は `.gitignore` 対象にする
-- [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
-- [/] 6.3 確認シナリオで日本語本文を lint した際、外部 linter の MD013 が文字境界で panic する問題を検出した。KatanA 側の linter bridge で panic をアプリ全体へ伝播させず、回帰テストで固定する
+- [/] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [/] 6.3 確認シナリオで日本語本文を lint した際、外部 linter の MD013 が文字境界で panic し、`catch_unwind` 後も panic hook の標準エラー出力が残る問題を修正する。KatanA 側で危険な MD013 入力を外部 linter へ渡さず、診断とフォーマットの両方を回帰テストで固定する
+- [/] 6.4 テーマ設定画面で、共通プリセット操作ボタンが中央ペイン幅を超えてめり込まないこと、カスタム色設定のカラーパレットが画面外へ逃げず表示・操作できることを修正し、スクリーンショットで確認する
+- [/] 6.5 コードブロックボタンを押した時、何も起きない状態ではなく、アイコンからコード種別のプルダウンを開き、選択した種別の fenced code block を挿入できることを修正・確認する
+- [/] 6.6 コードモードで警告またはエラーがある行をホバーした時、対象診断の内容がポップ表示されることを修正・確認する
+- [/] 6.7 コードモードの本文右クリックメニューに、有効な Markdown ファイルでは「ファイルをフォーマットする」を表示し、現在ファイルのフォーマット action を発行できることを修正・確認する
+- [/] 6.8 エクスプローラーのフォルダ右クリックメニューに、そのディレクトリ配下の Markdown ファイルを再帰的にフォーマットする操作を表示し、フォルダパスを対象にした format action を発行できることを修正・確認する
+- [/] 6.9 問題ビューに、対象ファイル内の修正可能な診断をまとめて直す操作と、現在検知している全ての修正可能な診断をまとめて直す操作を追加し、既存の個別修正と区別できるようにする
 
 ### Definition of Done (DoD)
 
@@ -273,16 +279,30 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 このスキル内で `openspec ...` と書かれているコマンドは、リポジトリルートから `./scripts/openspec ...` として実行する。
 
-## 7. Final Verification & Release Work
+## 7. Mermaid / Drawio Rendering and Update Settings Migration
 
-- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 7.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
-- [ ] 7.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.7 Create `release/v0.22.7` branch from master
-- [ ] 7.8 Run `make release VERSION=0.22.7` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 7.9 Create PR from `release/v0.22.7` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 7.1 `mmdc` への依存を廃止し、公式 Mermaid.js を HTML ベースでレンダリングし、WebView の `background` 経由で Rust 側の SVG 化とプレビュー表示を実現する
+- [ ] 7.2 設定画面の「アップデート」配下、Drawio / Mermaid 設定更新で起きているバグを修正する
+- [ ] 7.3 起動時に Drawio.js と Mermaid.js を必ず取得し、ユーザー保存領域へキャッシュする。PlantUML と同様に、起動後の再 DL を抑えつつ、ユーザー主導で強制更新できる手段を用意する
+
+### Definition of Done (DoD)
+
+- [ ] mmdc を削除した経路で図形描画（mermaid/plantuml/drawio）プレビューが表示できること
+- [ ] 設定画面の Drawio / Mermaid 更新操作が正常に動作し、保存済み設定との整合が取れていること
+- [ ] 起動時の js 取得とキャッシュが動作し、既定では再取得を抑制しつつ、明示更新フラグで最新化できること
+- [ ] `crates/katana-renderer`、`crates/katana-ui`、関連ドキュメントの対象テストと `openspec` 自己レビューの観点で検証可能な状態であること
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+## 8. Final Verification & Release Work
+
+- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 8.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [ ] 8.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
+- [ ] 8.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 8.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 8.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 8.7 Create `release/v0.22.7` branch from master
+- [ ] 8.8 Run `make release VERSION=0.22.7` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 8.9 Create PR from `release/v0.22.7` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 8.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 8.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

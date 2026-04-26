@@ -16,6 +16,7 @@ pub struct ActionMessages {
     pub new_directory: String,
     pub format_markdown_file: String,
     pub format_workspace_markdown: String,
+    pub format_directory_markdown: String,
     pub open: String,
     pub rename: String,
     pub delete: String,
