@@ -56,18 +56,18 @@ impl DiagnosticsHoverOps {
             .collect();
 
         /* WHY: Primary diagnostic section */
-        Self::render_single_diag_section(ui, diag, meta, all_diagnostics, action);
+        Self::show_single_diagnostic_ui(ui, diag, meta, all_diagnostics, action);
 
         /* WHY: Additional same-line diagnostics — each gets its own separator + section */
         for other in same_line_others {
             if let Some(other_meta) = other.official_meta.as_ref() {
                 ui.separator();
-                Self::render_single_diag_section(ui, other, other_meta, all_diagnostics, action);
+                Self::show_single_diagnostic_ui(ui, other, other_meta, all_diagnostics, action);
             }
         }
     }
 
-    fn render_single_diag_section(
+    pub(crate) fn show_single_diagnostic_ui(
         ui: &mut egui::Ui,
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
