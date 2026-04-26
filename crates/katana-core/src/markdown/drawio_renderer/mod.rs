@@ -9,20 +9,42 @@ use headless_chrome::{Browser, LaunchOptions};
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+const DRAWIO_DOWNLOAD_URL: &str = "https://viewer.diagrams.net/js/viewer-static.min.js";
 const HEADLESS_CHROME_WINDOW_SIZE: u32 = 2000;
 const HEADLESS_CHROME_TIMEOUT_SECS: u64 = 15;
 
 impl DrawioRendererOps {
-    pub fn default_install_path() -> Option<std::path::PathBuf> {
+    pub fn default_install_path() -> Option<PathBuf> {
         dirs::home_dir().map(|h| h.join(".local").join("katana").join("drawio.min.js"))
     }
 
-    pub fn find_drawio_js() -> Option<std::path::PathBuf> {
-        Self::default_install_path().filter(|p| p.exists())
+    pub fn resolve_drawio_js() -> PathBuf {
+        #[allow(clippy::single_match)]
+        match std::env::var("DRAWIO_JS") {
+            Ok(path) => return PathBuf::from(path),
+            Err(_) => {}
+        }
+
+        Self::default_install_path().unwrap_or_else(|| PathBuf::from("drawio.min.js"))
     }
+
+    pub fn find_drawio_js() -> Option<PathBuf> {
+        let path = Self::resolve_drawio_js();
+        path.exists().then_some(path)
+    }
+
     pub fn render_drawio(block: &DiagramBlock) -> DiagramResult {
+        let Some(drawio_js) = Self::find_drawio_js() else {
+            return DiagramResult::NotInstalled {
+                kind: "Draw.io".to_string(),
+                download_url: DRAWIO_DOWNLOAD_URL.to_string(),
+                install_path: Self::resolve_drawio_js(),
+            };
+        };
+
         let mut hasher = DefaultHasher::new();
         block.source.hash(&mut hasher);
         let hash = hasher.finish();
@@ -31,20 +53,13 @@ impl DrawioRendererOps {
         let _ = fs::create_dir_all(&cache_dir);
         let cache_file = cache_dir.join(format!("{:016x}.png", hash));
 
-        #[allow(clippy::single_match)]
-        match fs::read(&cache_file) {
-            Ok(data) => return DiagramResult::OkPng(data),
-            Err(_) => {} // Cache miss, proceed to rendering
+        if let Some(data) = fs::read(&cache_file).ok() {
+            return DiagramResult::OkPng(data);
         }
 
-        match Self::render_with_headless_chrome(&block.source, &cache_file) {
-            Ok(_) => {
-                let Ok(data) = fs::read(&cache_file) else {
-                    return DiagramResult::Err {
-                        source: block.source.clone(),
-                        error: "Failed to read generated PNG file.".to_string(),
-                    };
-                };
+        match Self::render_with_headless_chrome(&block.source, &drawio_js) {
+            Ok(data) => {
+                let _ = fs::write(&cache_file, &data);
                 DiagramResult::OkPng(data)
             }
             Err(e) => {
@@ -57,18 +72,16 @@ impl DrawioRendererOps {
         }
     }
 
-    fn render_with_headless_chrome(
-        xml: &str,
-        output_path: &std::path::Path,
-    ) -> Result<(), anyhow::Error> {
+    fn render_with_headless_chrome(xml: &str, drawio_js: &Path) -> Result<Vec<u8>, anyhow::Error> {
         let escaped_json_string = serde_json::to_string(xml)?;
+        let drawio_url = format!("file://{}", drawio_js.to_string_lossy());
 
         let html = format!(
             r#"<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>
+  <script src="{drawio_url}"></script>
 </head>
 <body>
   <div id="graph-container" class="mxgraph"></div>
@@ -86,7 +99,8 @@ impl DrawioRendererOps {
   </script>
 </body>
 </html>"#,
-            escaped_json_string
+            escaped_json_string,
+            drawio_url = drawio_url
         );
 
         let temp_html = tempfile::Builder::new()
@@ -102,10 +116,7 @@ impl DrawioRendererOps {
                 HEADLESS_CHROME_WINDOW_SIZE,
             )))
             .user_data_dir(Some(
-                output_path
-                    .parent()
-                    .unwrap_or(std::path::Path::new(""))
-                    .join("chrome_profile"),
+                std::env::temp_dir().join("katana_drawio_chrome_profile"),
             ))
             .build()
             .map_err(|e| anyhow::anyhow!("Failed to build launch options: {}", e))?;
@@ -138,15 +149,11 @@ impl DrawioRendererOps {
             .find_element(".mxgraph svg")
             .map_err(|e| anyhow::anyhow!("Failed to find SVG element: {}", e))?;
 
-        let png_data = element
+        element
             .capture_screenshot(
                 headless_chrome::protocol::cdp::Page::CaptureScreenshotFormatOption::Png,
             )
-            .map_err(|e| anyhow::anyhow!("Screenshot failed: {}", e))?;
-
-        std::fs::write(output_path, png_data)?;
-
-        Ok(())
+            .map_err(|e| anyhow::anyhow!("Screenshot failed: {}", e))
     }
 }
 

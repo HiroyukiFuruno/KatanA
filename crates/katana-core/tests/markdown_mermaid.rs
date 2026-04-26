@@ -4,99 +4,56 @@ use std::sync::Mutex;
 
 static ENV_LOCK: Mutex<()> = Mutex::new(());
 
-#[test]
-fn returns_commandnotfound_when_mmdc_not_found() {
-    let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
-    let block = DiagramBlock {
+fn mermaid_block() -> DiagramBlock {
+    DiagramBlock {
         kind: DiagramKind::Mermaid,
         source: "graph TD; A-->B".to_string(),
-    };
-    let result = mermaid_renderer::MermaidRenderOps::render_mermaid(&block);
-    assert!(matches!(result, DiagramResult::CommandNotFound { .. }));
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
+    }
 }
 
 #[test]
-fn returns_its_path_when_resolve_mmdc_binary_env_var_is_set() {
-    let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::set_var("MERMAID_MMDC", "/custom/mmdc") };
-    let path = mermaid_renderer::MermaidBinaryOps::resolve_mmdc_binary();
-    assert_eq!(path, std::path::PathBuf::from("/custom/mmdc"));
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
-}
-
-#[test]
-fn searches_system_path_when_resolve_mmdc_binary_env_var_is_not_set() {
-    let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
-    let path = mermaid_renderer::MermaidBinaryOps::resolve_mmdc_binary();
-    assert!(!path.as_os_str().is_empty());
-}
-
-#[test]
-fn create_input_file_creates_a_temporary_file() {
-    let file = mermaid_renderer::MermaidRenderOps::create_input_file("graph TD; A-->B").unwrap();
-    let path = file.path().to_path_buf();
-    assert!(path.exists());
-    assert!(path.to_string_lossy().ends_with(".mmd"));
-}
-
-#[test]
-fn fake_binary_is_false_in_is_mmdc_available() {
-    let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
-    assert!(!mermaid_renderer::MermaidRenderOps::is_mmdc_available());
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
-}
-
-#[test]
-#[cfg(unix)]
-fn hung_mmdc_probe_returns_false_instead_of_blocking() {
-    use std::time::{Duration, Instant};
-    use std::{fs, os::unix::fs::PermissionsExt};
-
+fn returns_not_installed_when_mermaid_js_is_missing() {
     let _guard = ENV_LOCK.lock().unwrap();
     let dir = tempfile::tempdir().unwrap();
-    let script_path = dir.path().join("fake-mmdc.sh");
-    fs::write(&script_path, "#!/bin/sh\nsleep 5\n").unwrap();
-    let mut permissions = fs::metadata(&script_path).unwrap().permissions();
-    permissions.set_mode(0o755);
-    fs::set_permissions(&script_path, permissions).unwrap();
+    let missing_path = dir.path().join("missing-mermaid.min.js");
+    unsafe { std::env::set_var("MERMAID_JS", &missing_path) };
 
-    unsafe { std::env::set_var("MERMAID_MMDC", &script_path) };
-    let start = Instant::now();
-    assert!(!mermaid_renderer::MermaidRenderOps::is_mmdc_available());
-    assert!(start.elapsed() < Duration::from_secs(4));
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
+    let result = mermaid_renderer::MermaidRenderOps::render_mermaid(&mermaid_block());
+
+    unsafe { std::env::remove_var("MERMAID_JS") };
+    match result {
+        DiagramResult::NotInstalled {
+            kind,
+            download_url,
+            install_path,
+        } => {
+            assert_eq!(kind, "Mermaid");
+            assert!(download_url.contains("mermaid.min.js"));
+            assert_eq!(install_path, missing_path);
+        }
+        other => panic!("Expected NotInstalled when Mermaid.js is missing, got {other:?}"),
+    }
 }
 
 #[test]
-fn returns_png_correctly_if_mmdc_is_available() {
+fn resolve_mermaid_js_prefers_env_var() {
     let _guard = ENV_LOCK.lock().unwrap();
-    if std::env::var("MERMAID_MMDC").as_deref() == Ok("/nonexistent/mmdc") {
-        return;
-    }
-    if !mermaid_renderer::MermaidRenderOps::is_mmdc_available() {
-        return;
-    }
-    let block = DiagramBlock {
-        kind: DiagramKind::Mermaid,
-        source: "graph TD; A-->B".to_string(),
-    };
-    let result = mermaid_renderer::MermaidRenderOps::render_mermaid(&block);
-    assert!(
-        matches!(result, DiagramResult::OkPng(_) | DiagramResult::Err { .. }),
-        "Expected OkPng or Error from mmdc, got {:?}",
-        result
-    );
+    let custom_path = std::path::PathBuf::from("/custom/mermaid.min.js");
+    unsafe { std::env::set_var("MERMAID_JS", &custom_path) };
+
+    let path = mermaid_renderer::MermaidBinaryOps::resolve_mermaid_js();
+
+    unsafe { std::env::remove_var("MERMAID_JS") };
+    assert_eq!(path, custom_path);
 }
 
 #[test]
-fn run_mmdc_process_errors_when_mmdc_is_absent() {
+fn resolve_mermaid_js_falls_back_to_default_install_path() {
     let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
-    let result = mermaid_renderer::MermaidRenderOps::run_mmdc_process("graph TD; A-->B");
-    assert!(result.is_err());
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
+    unsafe { std::env::remove_var("MERMAID_JS") };
+
+    let path = mermaid_renderer::MermaidBinaryOps::resolve_mermaid_js();
+
+    assert!(!path.as_os_str().is_empty());
+    assert!(path.to_string_lossy().contains("mermaid.min.js"));
 }

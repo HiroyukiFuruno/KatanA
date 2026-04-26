@@ -20,7 +20,7 @@ fn cache_key_changes_when_backend_id_changes() {
     let input = input_with_options(DiagramRenderOptions::default());
     let version = DiagramBackendVersion::new("1.0.0");
     let cli = DiagramBackendCacheKey::new(
-        DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mmdc"),
+        DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mermaid-js"),
         version.clone(),
         &input,
     );
@@ -37,12 +37,12 @@ fn cache_key_changes_when_backend_id_changes() {
 fn cache_key_changes_when_backend_version_changes() {
     let input = input_with_options(DiagramRenderOptions::default());
     let old = DiagramBackendCacheKey::new(
-        DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mmdc"),
+        DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mermaid-js"),
         DiagramBackendVersion::new("1.0.0"),
         &input,
     );
     let new = DiagramBackendCacheKey::new(
-        DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mmdc"),
+        DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mermaid-js"),
         DiagramBackendVersion::new("2.0.0"),
         &input,
     );
@@ -60,7 +60,7 @@ fn cache_key_changes_when_render_options_change() {
         timeout_millis: 10_000,
         ..DiagramRenderOptions::default()
     });
-    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mmdc");
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "mermaid-js");
     let version = DiagramBackendVersion::new("1.0.0");
 
     assert_ne!(
@@ -96,8 +96,8 @@ fn backend_error_converts_to_existing_diagram_result() {
     }
 
     match (DiagramBackendError::CommandNotFound {
-        tool_name: "mmdc".to_string(),
-        install_hint: "npm install".to_string(),
+        tool_name: "renderer".to_string(),
+        install_hint: "install renderer".to_string(),
     })
     .into_diagram_result("graph TD; A-->B")
     {
@@ -106,8 +106,8 @@ fn backend_error_converts_to_existing_diagram_result() {
             install_hint,
             source,
         } => {
-            assert_eq!(tool_name, "mmdc");
-            assert_eq!(install_hint, "npm install");
+            assert_eq!(tool_name, "renderer");
+            assert_eq!(install_hint, "install renderer");
             assert_eq!(source, "graph TD; A-->B");
         }
         other => panic!("unexpected result: {other:?}"),
