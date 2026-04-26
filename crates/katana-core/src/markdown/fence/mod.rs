@@ -1,34 +1,27 @@
+mod delimiter;
 mod types;
+pub use delimiter::*;
 pub use types::*;
 
 use crate::markdown::{DiagramBlock, DiagramKind, DiagramRenderer, DiagramResult};
 
-pub const FENCE_OPEN_LEN: usize = 3;
-
-enum MarkerType {
-    Fence,
-    Drawio,
-    Plantuml,
-}
+const MIN_FENCE_MARKER_LEN: usize = 3;
 
 pub struct MarkdownFenceOps;
 
 impl MarkdownFenceOps {
     pub fn extract_fence_block(s: &str) -> Option<(FenceBlock, &str)> {
-        let body = s.strip_prefix("```")?;
+        let delimiter = MarkdownFenceDelimiter::parse_at(s)?;
+        let body = &s[delimiter.byte_len()..];
         let info_end = body.find('\n')?;
         let info = body[..info_end].trim().to_string();
         let after_info = &body[info_end + 1..];
+        let closing = delimiter.find_closing(after_info)?;
 
-        let (content_end, close_start, close_len) = after_info
-            .starts_with("```")
-            .then_some((0, 0, FENCE_OPEN_LEN))
-            .or_else(|| after_info.find("\n```").map(|p| (p, p + 1, FENCE_OPEN_LEN)))?;
-
-        let content = after_info[..content_end].to_string();
-        let raw_len = FENCE_OPEN_LEN + (info_end + 1) + close_start + close_len;
+        let content = after_info[..closing.content_end].to_string();
+        let raw_len = delimiter.byte_len() + info_end + 1 + closing.close_end;
         let raw = s[..raw_len].to_string();
-        let rest_slice = &after_info[close_start + close_len..];
+        let rest_slice = &after_info[closing.close_end..];
         let rest = rest_slice.strip_prefix('\n').unwrap_or(rest_slice);
 
         Some((FenceBlock { info, content, raw }, rest))
@@ -89,8 +82,10 @@ impl MarkdownFenceOps {
             eprintln!("FAILED TO EXTRACT: {:.20}", remaining);
         }
         let Some((block, after)) = extracted else {
-            output.push_str("```");
-            *remaining = &remaining[FENCE_OPEN_LEN..];
+            let marker_len = MarkdownFenceDelimiter::parse_at(remaining)
+                .map_or(MIN_FENCE_MARKER_LEN, |it| it.byte_len());
+            output.push_str(&remaining[..marker_len]);
+            *remaining = &remaining[marker_len..];
             return;
         };
         if let Some(html) = Self::render_diagram_block(&block, renderer) {
@@ -118,13 +113,15 @@ impl MarkdownFenceOps {
                 }
             };
             let pf = find("```", "\n```");
+            let pt = find("~~~", "\n~~~");
             let pd = find("<mxGraphModel", "\n<mxGraphModel");
             let pp = find("@startuml", "\n@startuml");
 
             let Some((offset, marker_type)) = [
-                (pf, MarkerType::Fence),
-                (pd, MarkerType::Drawio),
-                (pp, MarkerType::Plantuml),
+                (pf, MarkdownDiagramMarker::Fence),
+                (pt, MarkdownDiagramMarker::Fence),
+                (pd, MarkdownDiagramMarker::Drawio),
+                (pp, MarkdownDiagramMarker::Plantuml),
             ]
             .into_iter()
             .filter(|&(p, _)| p != usize::MAX)
@@ -136,10 +133,10 @@ impl MarkdownFenceOps {
             remaining = &remaining[offset..];
 
             match marker_type {
-                MarkerType::Fence => {
+                MarkdownDiagramMarker::Fence => {
                     Self::process_fence(&mut output, &mut remaining, renderer);
                 }
-                MarkerType::Drawio => Self::process_raw_tag_diagram(
+                MarkdownDiagramMarker::Drawio => Self::process_raw_tag_diagram(
                     &mut output,
                     &mut remaining,
                     renderer,
@@ -147,7 +144,7 @@ impl MarkdownFenceOps {
                     "</mxGraphModel>",
                     "drawio",
                 ),
-                MarkerType::Plantuml => Self::process_raw_tag_diagram(
+                MarkdownDiagramMarker::Plantuml => Self::process_raw_tag_diagram(
                     &mut output,
                     &mut remaining,
                     renderer,

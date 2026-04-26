@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::app_state::ExportFormat;
-pub use crate::markdown_authoring_op::MarkdownAuthoringOp;
+pub use crate::markdown_authoring_op::{CodeBlockKind, MarkdownAuthoringOp};
 use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
 

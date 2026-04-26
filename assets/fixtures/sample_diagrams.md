@@ -13,18 +13,18 @@ Mermaid (mmdc), PlantUML (jar), and DrawIo (pure Rust).
 
 ### 1.1 Flowchart
 
-```mermaid
+~~~mermaid
 graph TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Process A]
     B -->|No| D[Process B]
     C --> E[End]
     D --> E
-```
+~~~
 
 ### 1.2 Sequence Diagram
 
-```mermaid
+~~~mermaid
 sequenceDiagram
     participant User
     participant KatanA
@@ -34,11 +34,11 @@ sequenceDiagram
     KatanA->>FileSystem: Read
     FileSystem-->>KatanA: Markdown text
     KatanA-->>User: Render preview
-```
+~~~
 
 ### 1.3 Class Diagram
 
-```mermaid
+~~~mermaid
 classDiagram
     class PreviewPane {
         +Vec~RenderedSection~ sections
@@ -56,11 +56,11 @@ classDiagram
         Pending
     }
     PreviewPane --> RenderedSection
-```
+~~~
 
 ### 1.4 State Diagram
 
-```mermaid
+~~~mermaid
 stateDiagram-v2
     [*] --> Pending
     Pending --> Image : render success
@@ -71,11 +71,11 @@ stateDiagram-v2
     Error --> [*]
     CommandNotFound --> [*]
     NotInstalled --> [*]
-```
+~~~
 
 ### 1.5 Gantt Chart
 
-```mermaid
+~~~mermaid
 gantt
     title KatanA Development Schedule
     dateFormat  YYYY-MM-DD
@@ -88,16 +88,16 @@ gantt
     section Testing
     Unit Tests            :done, 2026-02-01, 28d
     Integration Tests     :active, 2026-03-01, 30d
-```
+~~~
 
 ### 1.6 Pie Chart
 
-```mermaid
+~~~mermaid
 pie title Rendering Engine Distribution
     "DrawIo (Rust)" : 1
     "Mermaid (mmdc)" : 1
     "PlantUML (jar)" : 1
-```
+~~~
 
 ---
 
@@ -105,7 +105,7 @@ pie title Rendering Engine Distribution
 
 ### 2.1 Sequence Diagram
 
-```plantuml
+~~~plantuml
 @startuml
 actor User
 participant "KatanA" as K
@@ -116,11 +116,11 @@ K -> FS: Read markdown
 FS --> K: Content
 K --> User: Render preview
 @enduml
-```
+~~~
 
 ### 2.2 Class Diagram
 
-```plantuml
+~~~plantuml
 @startuml
 class PreviewPane {
     +sections: Vec<RenderedSection>
@@ -137,11 +137,11 @@ enum RenderedSection {
 
 PreviewPane --> RenderedSection
 @enduml
-```
+~~~
 
 ### 2.3 Activity Diagram
 
-```plantuml
+~~~plantuml
 @startuml
 start
 :Load Markdown;
@@ -158,7 +158,7 @@ endif
 :Display in UI;
 stop
 @enduml
-```
+~~~
 
 ---
 
@@ -166,7 +166,7 @@ stop
 
 ### 3.1 Basic Shapes
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -182,11 +182,11 @@ stop
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
 ### 3.2 Multiple Shapes with Connections
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -208,7 +208,7 @@ stop
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
 ---
 
@@ -216,12 +216,12 @@ stop
 
 KatanA rendering pipeline:
 
-```mermaid
+~~~mermaid
 graph LR
     MD[Markdown Source] --> Parser
     Parser --> Sections[RenderedSections]
     Sections --> UI[egui Preview]
-```
+~~~
 
 Proper spacing between the flowchart above and this text.
 
@@ -232,7 +232,7 @@ Proper spacing between the flowchart above and this text.
 
 Proper spacing between the table above and the diagram below.
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -242,7 +242,7 @@ Proper spacing between the table above and the diagram below.
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
 ↑ All sections should render correctly without overlapping.
 
@@ -252,14 +252,14 @@ Proper spacing between the table above and the diagram below.
 
 Three diagram types in a row. One failing should not affect the others.
 
-```mermaid
+~~~mermaid
 pie title Rendering Engine Distribution
     "DrawIo (Rust)" : 1
     "Mermaid (mmdc)" : 1
     "PlantUML (jar)" : 1
-```
+~~~
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -269,14 +269,14 @@ pie title Rendering Engine Distribution
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
-```plantuml
+~~~plantuml
 @startuml
 Alice -> Bob : OK
 Bob --> Alice : Done
 @enduml
-```
+~~~
 
 ↑ All three diagrams rendered independently with proper spacing.
 

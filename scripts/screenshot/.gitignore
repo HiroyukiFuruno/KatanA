@@ -1,2 +1,12 @@
 target/
 Cargo.lock
+
+# scripts/screenshot が生成したレビュー証跡だけを除外する。
+# シナリオ request JSON は git 管理対象として残す。
+output/
+outputs/
+captures/
+recordings/
+*.png
+*.webm
+*.mp4

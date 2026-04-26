@@ -13,18 +13,18 @@ Mermaid (mmdc)、PlantUML (jar)、DrawIo (純Rust)。
 
 ### 1.1 フローチャート
 
-```mermaid
+~~~mermaid
 graph TD
     A[開始] --> B{判定}
     B -->|Yes| C[処理A]
     B -->|No| D[処理B]
     C --> E[終了]
     D --> E
-```
+~~~
 
 ### 1.2 シーケンス図
 
-```mermaid
+~~~mermaid
 sequenceDiagram
     participant ユーザー
     participant KatanA
@@ -34,11 +34,11 @@ sequenceDiagram
     KatanA->>ファイルシステム: 読み取り
     ファイルシステム-->>KatanA: Markdownテキスト
     KatanA-->>ユーザー: プレビュー表示
-```
+~~~
 
 ### 1.3 クラス図
 
-```mermaid
+~~~mermaid
 classDiagram
     class PreviewPane {
         +Vec~RenderedSection~ sections
@@ -56,11 +56,11 @@ classDiagram
         Pending
     }
     PreviewPane --> RenderedSection
-```
+~~~
 
 ### 1.4 状態遷移図
 
-```mermaid
+~~~mermaid
 stateDiagram-v2
     [*] --> Pending
     Pending --> Image : 描画成功
@@ -71,11 +71,11 @@ stateDiagram-v2
     Error --> [*]
     CommandNotFound --> [*]
     NotInstalled --> [*]
-```
+~~~
 
 ### 1.5 ガントチャート
 
-```mermaid
+~~~mermaid
 gantt
     title KatanA 開発スケジュール
     dateFormat  YYYY-MM-DD
@@ -88,16 +88,16 @@ gantt
     section テスト
     ユニットテスト           :done, 2026-02-01, 28d
     インテグレーションテスト  :active, 2026-03-01, 30d
-```
+~~~
 
 ### 1.6 円グラフ
 
-```mermaid
+~~~mermaid
 pie title 描画エンジン分布
     "DrawIo (Rust)" : 1
     "Mermaid (mmdc)" : 1
     "PlantUML (jar)" : 1
-```
+~~~
 
 ---
 
@@ -105,7 +105,7 @@ pie title 描画エンジン分布
 
 ### 2.1 シーケンス図
 
-```plantuml
+~~~plantuml
 @startuml
 actor ユーザー
 participant "KatanA" as K
@@ -116,11 +116,11 @@ K -> FS: Markdown読み込み
 FS --> K: コンテンツ
 K --> ユーザー: プレビュー描画
 @enduml
-```
+~~~
 
 ### 2.2 クラス図
 
-```plantuml
+~~~plantuml
 @startuml
 class PreviewPane {
     +sections: Vec<RenderedSection>
@@ -137,11 +137,11 @@ enum RenderedSection {
 
 PreviewPane --> RenderedSection
 @enduml
-```
+~~~
 
 ### 2.3 アクティビティ図
 
-```plantuml
+~~~plantuml
 @startuml
 start
 :Markdownを読み込む;
@@ -158,7 +158,7 @@ endif
 :UIに表示;
 stop
 @enduml
-```
+~~~
 
 ---
 
@@ -166,7 +166,7 @@ stop
 
 ### 3.1 基本図形
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -182,11 +182,11 @@ stop
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
 ### 3.2 複数の図形と接続
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -208,7 +208,7 @@ stop
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
 ---
 
@@ -216,12 +216,12 @@ stop
 
 KatanA の描画パイプライン:
 
-```mermaid
+~~~mermaid
 graph LR
     MD[Markdown ソース] --> Parser
     Parser --> Sections[RenderedSections]
     Sections --> UI[egui プレビュー]
-```
+~~~
 
 上のフローチャートとこのテキストの間にスペースがあること。
 
@@ -232,7 +232,7 @@ graph LR
 
 上のテーブルと下のダイアグラムの間にスペースがあること。
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -242,7 +242,7 @@ graph LR
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
 ↑ すべてのセクションが正しく描画され、互いに重ならないこと。
 
@@ -252,14 +252,14 @@ graph LR
 
 3種類のダイアグラムを連続で配置。1つの失敗が他に影響しないこと。
 
-```mermaid
+~~~mermaid
 pie title 描画エンジン分布
     "DrawIo (Rust)" : 1
     "Mermaid (mmdc)" : 1
     "PlantUML (jar)" : 1
-```
+~~~
 
-```drawio
+~~~drawio
 <mxGraphModel>
   <root>
     <mxCell id="0"/>
@@ -269,14 +269,14 @@ pie title 描画エンジン分布
     </mxCell>
   </root>
 </mxGraphModel>
-```
+~~~
 
-```plantuml
+~~~plantuml
 @startuml
 Alice -> Bob : OK
 Bob --> Alice : 完了
 @enduml
-```
+~~~
 
 ↑ 3つのダイアグラムがそれぞれ独立して描画され、
 テキストなしでも正しくスペーシングされること。

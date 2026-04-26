@@ -1,6 +1,6 @@
 use super::authoring_utils::AuthoringUtils;
 use super::types::AuthoringTransform;
-use crate::app_action::MarkdownAuthoringOp;
+use crate::app_action::{CodeBlockKind, MarkdownAuthoringOp};
 
 pub struct MarkdownAuthoringOps;
 
@@ -55,8 +55,8 @@ impl MarkdownAuthoringOps {
             MarkdownAuthoringOp::Blockquote => {
                 AuthoringUtils::prefix_each_line(buffer, lo, hi, selected, "> ")
             }
-            MarkdownAuthoringOp::CodeBlock => {
-                AuthoringUtils::wrap_block(buffer, lo, hi, selected, "```\n", "\n```")
+            MarkdownAuthoringOp::CodeBlock(kind) => {
+                Self::apply_code_block(buffer, lo, hi, selected, kind)
             }
             MarkdownAuthoringOp::HorizontalRule => {
                 AuthoringUtils::insert_snippet(buffer, lo, "\n---\n")
@@ -74,6 +74,17 @@ impl MarkdownAuthoringOps {
                 "| Header 1 | Header 2 | Header 3 |\n| -------- | -------- | -------- |\n| Cell 1   | Cell 2   | Cell 3   |\n",
             ),
         }
+    }
+
+    fn apply_code_block(
+        buffer: &str,
+        lo: usize,
+        hi: usize,
+        selected: &str,
+        kind: CodeBlockKind,
+    ) -> AuthoringTransform {
+        let open = format!("```{}\n", kind.info_string());
+        AuthoringUtils::wrap_block(buffer, lo, hi, selected, &open, "\n```")
     }
 }
 

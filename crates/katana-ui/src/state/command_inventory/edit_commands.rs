@@ -1,5 +1,5 @@
 use super::{CommandGroup, CommandInventoryItem};
-use crate::app_action::MarkdownAuthoringOp;
+use crate::app_action::{CodeBlockKind, MarkdownAuthoringOp};
 use crate::app_state::AppAction;
 use crate::i18n::I18nOps;
 use crate::state::shortcut_context::ShortcutContext;
@@ -111,7 +111,9 @@ impl EditCommands {
             },
             CommandInventoryItem {
                 id: "edit.code_block",
-                action: AppAction::AuthorMarkdown(MarkdownAuthoringOp::CodeBlock),
+                action: AppAction::AuthorMarkdown(MarkdownAuthoringOp::CodeBlock(
+                    CodeBlockKind::Text,
+                )),
                 group: CommandGroup::Edit,
                 context: ShortcutContext::Editor,
                 label: || I18nOps::get().search.command_author_code_block.clone(),
