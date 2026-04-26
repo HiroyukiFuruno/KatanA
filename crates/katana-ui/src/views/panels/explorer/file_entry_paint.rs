@@ -51,7 +51,7 @@ impl FileEntryPaintOps {
         name: String,
         icon: crate::Icon,
         text_color: egui::Color32,
-        _is_active: bool,
+        is_active: bool,
     ) {
         let mut child_ui = ui.new_child(
             egui::UiBuilder::new()
@@ -66,15 +66,13 @@ impl FileEntryPaintOps {
         let img = icon.ui_image(&child_ui, crate::icon::IconSize::Medium);
         child_ui.add(img);
         child_ui.add_space(TREE_ICON_LABEL_GAP);
-        let font_id = egui::FontId::proportional(TREE_FONT_SIZE);
-        let text_pos = child_ui.cursor().left_center();
-        child_ui.painter().text(
-            text_pos,
-            egui::Align2::LEFT_CENTER,
-            name,
-            font_id,
-            text_color,
-        );
+        let mut rich = egui::RichText::new(name)
+            .color(text_color)
+            .size(TREE_FONT_SIZE);
+        if is_active {
+            rich = rich.strong();
+        }
+        child_ui.add(egui::Label::new(rich).truncate().selectable(false));
     }
 
     pub(crate) fn paint_drop_target(
