@@ -22,7 +22,13 @@ impl MarkdownLinterBridgeOps {
             );
         let mut severity_map = Self::severity_map(&options);
         for (rule_id, severity) in &linter_settings.rule_severity {
-            severity_map.insert(rule_id.clone(), Self::configured_severity(severity));
+            if options
+                .rules
+                .get(rule_id)
+                .is_none_or(|rule_config| rule_config.enabled)
+            {
+                severity_map.insert(rule_id.clone(), Self::configured_severity(severity));
+            }
         }
 
         MarkdownLinterOps::evaluate_all(
@@ -184,6 +190,36 @@ mod tests {
 
         assert_eq!(diagnostic.severity, DiagnosticSeverity::Error);
         assert!(!MarkdownLinterBridgeOps::diagnostic_message(diagnostic).is_empty());
+    }
+
+    #[test]
+    fn evaluate_document_does_not_reenable_markdownlint_disabled_rule() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join(".markdownlint.json"),
+            r#"{"default": false, "MD001": false}"#,
+        )
+        .unwrap();
+        let mut state = make_workspace_state(&dir);
+        state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .rule_severity
+            .insert("MD001".to_string(), RuleSeverity::Warning);
+
+        let diagnostics = MarkdownLinterBridgeOps::evaluate_document(
+            &state,
+            &dir.path().join("doc.md"),
+            "# Title\n### Skipped\n",
+        );
+
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_id != "MD001")
+        );
     }
 
     #[test]
