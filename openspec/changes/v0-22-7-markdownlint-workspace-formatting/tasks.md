@@ -45,6 +45,9 @@
 - [ ] 統一したプリセット操作は、再利用ウィジェット（widget: 再利用できる画面部品）へ落とし込み、テーマ・アイコン・Lint で使い回す
 - [/] コードブロック生成時は、何のコードブロックかをプルダウンで選べるようにする
 - [/] コードブロック種別のプルダウンは enum と連動させ、`text`、`markdown`、`bash`、`zsh`、`mermaid`、`drawio`、`plantuml`、開発でよく使う言語を選択肢に含める
+- [/] `impl-release` 起動時の可視タスク計画は User Review Phase `6.1` まで含め、個別 Task Group 完了で停止しない
+- [/] 依存しない調査・実装・検証・ハーネス更新は、補助エージェント（subagent）へ書き込み範囲を分離して移譲する
+- [/] Task ごとの通常 PR push は `pre-push` hook を正式な品質ゲートとして通し、push 直前の重い `make check` / `make check-light` 二重実行や `--no-verify` 回避を原則禁止する
 
 ---
 
@@ -239,7 +242,7 @@
 
 - [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
 - [ ] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 7.3 Ensure `make check` passes with exit code 0
+- [ ] 7.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
 - [ ] 7.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
