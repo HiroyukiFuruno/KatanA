@@ -185,6 +185,8 @@
     "show_meta_info": "Show Meta Info",
     "new_file": "New File",
     "new_directory": "New Directory",
+    "format_markdown_file": "Format Markdown File",
+    "format_workspace_markdown": "Format Workspace Markdown",
     "open": "Open",
     "rename": "Rename",
     "delete": "Delete",

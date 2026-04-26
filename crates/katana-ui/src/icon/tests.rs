@@ -23,10 +23,22 @@ fn icon_uri_follows_bytes_scheme() {
         Icon::ChevronLeft.uri(),
         "bytes://icon/navigation/chevron_left.svg"
     );
+    assert_eq!(Icon::FilePlus.uri(), "bytes://icon/files/file_plus.svg");
+    assert_eq!(Icon::FolderPlus.uri(), "bytes://icon/files/folder_plus.svg");
 }
 
 #[test]
 fn try_from_emoji_maps_correctly() {
     assert_eq!(Icon::try_from_emoji('📄'), Some(Icon::Document));
     assert_eq!(Icon::try_from_emoji('📝'), Some(Icon::Markdown));
+}
+
+#[test]
+fn katana_pack_provides_creation_icons() {
+    use crate::icon::pack::IconPackContract;
+
+    let pack = crate::icon::pack::KatanaIconPack;
+
+    assert!(pack.get_asset(Icon::FilePlus).is_some());
+    assert!(pack.get_asset(Icon::FolderPlus).is_some());
 }

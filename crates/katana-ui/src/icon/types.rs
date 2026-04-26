@@ -73,8 +73,10 @@ define_icons! {
     /* WHY: files/ */
     Explorer        => "files/explorer",
     Document        => "files/document",
+    FilePlus        => "files/file_plus",
     FolderOpen      => "files/folder_open",
     FolderClosed    => "files/folder_closed",
+    FolderPlus      => "files/folder_plus",
     Markdown        => "files/markdown",
     Html            => "files/html",
     Pdf             => "files/pdf",

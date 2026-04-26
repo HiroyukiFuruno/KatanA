@@ -185,6 +185,8 @@
     "show_meta_info": "Mostrar metainfos",
     "new_file": "Nuevo archivo",
     "new_directory": "Nueva carpeta",
+    "format_markdown_file": "Formatear archivo Markdown",
+    "format_workspace_markdown": "Formatear Markdown del espacio de trabajo",
     "open": "Abrir",
     "rename": "Renombrar",
     "delete": "Eliminar",

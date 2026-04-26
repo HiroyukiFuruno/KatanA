@@ -185,6 +185,8 @@
     "show_meta_info": "메타 정보 표시",
     "new_file": "새 파일",
     "new_directory": "새 디렉토리",
+    "format_markdown_file": "Markdown 파일 형식 정리",
+    "format_workspace_markdown": "워크스페이스 Markdown 형식 정리",
     "open": "열기",
     "rename": "이름 바꾸기",
     "delete": "삭제",

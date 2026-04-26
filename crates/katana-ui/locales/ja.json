@@ -185,6 +185,8 @@
     "show_meta_info": "メタ情報表示",
     "new_file": "新しいファイル…",
     "new_directory": "新しいフォルダー…",
+    "format_markdown_file": "Markdown をフォーマット",
+    "format_workspace_markdown": "ワークスペース内の Markdown をフォーマット",
     "open": "開く",
     "rename": "名前の変更…",
     "delete": "削除",

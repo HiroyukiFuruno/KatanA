@@ -81,7 +81,7 @@ impl<'a> ExplorerHeader<'a> {
                         super::header_menu::ExplorerHeaderMenu {
                             workspace,
                             action,
-                            ws_root,
+                            ws_root: ws_root.clone(),
                             is_flat,
                         }
                         .show(ui);
@@ -114,6 +114,28 @@ impl<'a> ExplorerHeader<'a> {
                         });
                         if filter_resp.clicked() {
                             *action = AppAction::ToggleExplorerFilter;
+                        }
+
+                        let new_directory_resp = ui
+                            .add(crate::Icon::FolderPlus.button(ui, crate::icon::IconSize::Small))
+                            .on_hover_text(
+                                crate::i18n::I18nOps::get().action.new_directory.clone(),
+                            );
+                        new_directory_resp.widget_info(|| {
+                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "folder+")
+                        });
+                        if new_directory_resp.clicked() {
+                            *action = Self::new_directory_action(&ws_root);
+                        }
+
+                        let new_file_resp = ui
+                            .add(crate::Icon::FilePlus.button(ui, crate::icon::IconSize::Small))
+                            .on_hover_text(crate::i18n::I18nOps::get().action.new_file.clone());
+                        new_file_resp.widget_info(|| {
+                            egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "file+")
+                        });
+                        if new_file_resp.clicked() {
+                            *action = Self::new_file_action(&ws_root);
                         }
                     }
                 });
@@ -156,5 +178,13 @@ impl<'a> ExplorerHeader<'a> {
                 resp.request_focus();
             }
         }
+    }
+
+    fn new_file_action(ws_root: &std::path::Path) -> AppAction {
+        AppAction::RequestNewFile(ws_root.to_path_buf())
+    }
+
+    fn new_directory_action(ws_root: &std::path::Path) -> AppAction {
+        AppAction::RequestNewDirectory(ws_root.to_path_buf())
     }
 }

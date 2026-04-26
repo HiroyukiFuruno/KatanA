@@ -204,22 +204,22 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 4.1 ファイル行のコンテキストメニューで、有効な Markdown ファイルだけに「ファイルをフォーマットする」を表示する
-- [ ] 4.2 エクスプローラーの空き領域にコンテキストメニューを追加する
-- [ ] 4.3 空き領域メニューに「ワークスペース内の Markdown を一括フォーマット」「ファイルの新規作成」「フォルダの新規作成」を追加する
-- [ ] 4.4 空き領域からの新規作成は、既存のファイル/フォルダ作成モーダルをワークスペース root 指定で再利用する
-- [ ] 4.5 エクスプローラーのフィルター左にファイル追加・フォルダ追加アイコンボタンを配置する
-- [ ] 4.6 ヘッダーアイコンからの新規作成も、同じ既存モーダルをワークスペース root 指定で再利用する
-- [ ] 4.7 UI テストまたは integration test で、メニュー項目の表示条件と action 発行を確認する
+- [x] 4.1 ファイル行のコンテキストメニューで、有効な Markdown ファイルだけに「ファイルをフォーマットする」を表示する
+- [x] 4.2 エクスプローラーの空き領域にコンテキストメニューを追加する
+- [x] 4.3 空き領域メニューに「ワークスペース内の Markdown を一括フォーマット」「ファイルの新規作成」「フォルダの新規作成」を追加する
+- [x] 4.4 空き領域からの新規作成は、既存のファイル/フォルダ作成モーダルをワークスペース root 指定で再利用する
+- [x] 4.5 エクスプローラーのフィルター左にファイル追加・フォルダ追加アイコンボタンを配置する
+- [x] 4.6 ヘッダーアイコンからの新規作成も、同じ既存モーダルをワークスペース root 指定で再利用する
+- [x] 4.7 UI テストまたは integration test で、メニュー項目の表示条件と action 発行を確認する
 
 ### Definition of Done (DoD)
 
 - [ ] ファイル右クリック、空き領域右クリック、ヘッダーアイコンの三つの入口が画面上で確認できること
-- [ ] 非 Markdown ファイルにフォーマット操作が表示されないこと
-- [ ] 新規作成操作が既存の作成モーダルと同じ validation を使うこと
+- [x] 非 Markdown ファイルにフォーマット操作が表示されないこと
+- [x] 新規作成操作が既存の作成モーダルと同じ validation を使うこと
 - [ ] UI スナップショットでフィルター左の二つのアイコンが確認できること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
@@ -229,20 +229,20 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 5.1 `scripts/download_icon.sh` を使い、`files/file_plus` と `files/folder_plus` 相当の SVG を各 icon pack から取得する
-- [ ] 5.2 Feather、Heroicons、Lucide、Material Symbols、Tabler Icons で、それぞれ vendor native の icon name を指定する
-- [ ] 5.3 既存 SVG のコピーで代用していないことを確認する
-- [ ] 5.4 `crates/katana-ui/src/icon/types.rs` に `FilePlus` と `FolderPlus` を追加する
-- [ ] 5.5 `cargo check -p katana-ui` または `make check` で全 icon pack の include が成功することを確認する
+- [x] 5.1 `scripts/download_icon.sh` を使い、`files/file_plus` と `files/folder_plus` 相当の SVG を各 icon pack から取得する
+- [x] 5.2 Feather、Heroicons、Lucide、Material Symbols、Tabler Icons で、それぞれ vendor native の icon name を指定する
+- [x] 5.3 既存 SVG のコピーで代用していないことを確認する
+- [x] 5.4 `crates/katana-ui/src/icon/types.rs` に `FilePlus` と `FolderPlus` を追加する
+- [x] 5.5 `cargo check -p katana-ui` または `make check` で全 icon pack の include が成功することを確認する
 
 ### Definition of Done (DoD)
 
-- [ ] すべての icon pack でファイル追加・フォルダ追加アイコンが表示できること
+- [x] すべての icon pack でファイル追加・フォルダ追加アイコンが表示できること
 - [ ] 画像で示された「ファイル +」「フォルダ +」の意味が画面上で分かること
-- [ ] 追加アイコンが `katana-icon-management` の運用に従っていること
+- [x] 追加アイコンが `katana-icon-management` の運用に従っていること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
