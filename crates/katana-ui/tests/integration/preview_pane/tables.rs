@@ -473,7 +473,7 @@ fn assert_table_preview_width_shrinks_after_resize_with_table_and_code() {
 | Feature | Status | Notes |
 | --- | --- | --- |
 | Markdown | ✅ | Full support |
-| Mermaid | ✅ | Requires mmdc |
+| Mermaid | ✅ | Uses local Mermaid.js |
 
 ```rust
 fn very_long_line_for_resize_regression() { let x = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; println!("{x}"); }

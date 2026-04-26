@@ -80,45 +80,38 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
 fn mermaid_both_states_render_semantically() {
-    /* WHY: Verify Mermaid rendering transitions: 'CommandNotFound' when mmdc is missing, and 'Image' when available. */
+    /* WHY: Verify Mermaid rendering transitions after removing mmdc: local Mermaid.js missing state and renderer-backed output. */
     let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
-    let saved_mmdc = std::env::var("MERMAID_MMDC").ok();
+    let saved_mermaid_js = std::env::var("MERMAID_JS").ok();
+    let missing_dir = tempfile::tempdir().unwrap();
+    let missing_js = missing_dir.path().join("missing-mermaid.min.js");
 
-    unsafe { std::env::set_var("MERMAID_MMDC", "nonexistent_mmdc_for_idempotent_test") };
+    unsafe { std::env::set_var("MERMAID_JS", &missing_js) };
 
     let pane = render_and_wait("mermaid", MERMAID_SOURCE);
     assert!(
-        matches!(pane.sections[1], RenderedSection::CommandNotFound { .. }),
-        "With hidden mmdc, should be CommandNotFound, got: {:?}",
+        matches!(pane.sections[1], RenderedSection::NotInstalled { .. }),
+        "With hidden Mermaid.js, should be NotInstalled, got: {:?}",
         pane.sections[1]
     );
-    if let RenderedSection::CommandNotFound {
-        tool_name,
-        install_hint,
-        ..
+    if let RenderedSection::NotInstalled {
+        kind, download_url, ..
     } = &pane.sections[1]
     {
-        assert!(tool_name.contains("mmdc"), "Tool name should mention mmdc");
-        assert!(
-            install_hint.contains("npm"),
-            "Install hint should mention npm"
-        );
-        let expected = I18nOps::get()
-            .error
-            .missing_dependency
-            .replace("{tool_name}", tool_name)
-            .replace("{install_hint}", install_hint);
+        assert_eq!(kind, "Mermaid");
+        assert!(download_url.contains("mermaid.min.js"));
+        let tool_msg = I18nOps::tf(&I18nOps::get().tool.not_installed, &[("tool", kind)]);
         let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
         assert_standard_diagram_markdown_visible(&harness);
-        let _fallback = harness.get_by_label(&expected);
+        let _fallback = harness.get_by_label(&tool_msg);
     }
 
-    match &saved_mmdc {
-        Some(v) => unsafe { std::env::set_var("MERMAID_MMDC", v) },
-        None => unsafe { std::env::remove_var("MERMAID_MMDC") },
+    match &saved_mermaid_js {
+        Some(v) => unsafe { std::env::set_var("MERMAID_JS", v) },
+        None => unsafe { std::env::remove_var("MERMAID_JS") },
     }
 
-    if katana_core::markdown::mermaid_renderer::MermaidRenderOps::is_mmdc_available() {
+    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_some() {
         let pane = render_and_wait("mermaid", MERMAID_SOURCE);
         assert!(
             matches!(
@@ -137,9 +130,9 @@ fn mermaid_both_states_render_semantically() {
         assert_standard_diagram_markdown_visible(&harness);
     }
 
-    match saved_mmdc {
-        Some(v) => unsafe { std::env::set_var("MERMAID_MMDC", v) },
-        None => unsafe { std::env::remove_var("MERMAID_MMDC") },
+    match saved_mermaid_js {
+        Some(v) => unsafe { std::env::set_var("MERMAID_JS", v) },
+        None => unsafe { std::env::remove_var("MERMAID_JS") },
     }
 }
 
@@ -244,19 +237,21 @@ fn mixed_diagram_document_renders_all_independently() {
         matches!(
             pane.sections[1],
             RenderedSection::Image { .. }
-                | RenderedSection::CommandNotFound { .. }
+                | RenderedSection::NotInstalled { .. }
                 | RenderedSection::Error { .. }
         ),
-        "Mermaid should be Image or CommandNotFound, got: {:?}",
+        "Mermaid should be Image, NotInstalled, or Error, got: {:?}",
         pane.sections[1]
     );
 
     assert!(
         matches!(
             pane.sections[3],
-            RenderedSection::Image { .. } | RenderedSection::Error { .. }
+            RenderedSection::Image { .. }
+                | RenderedSection::NotInstalled { .. }
+                | RenderedSection::Error { .. }
         ),
-        "DrawIo should be Image or Error, got: {:?}",
+        "DrawIo should be Image, NotInstalled, or Error, got: {:?}",
         pane.sections[3]
     );
 
