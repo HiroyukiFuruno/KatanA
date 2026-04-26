@@ -18,37 +18,37 @@
 
 > ユーザーから受けた要求・未確定点。対応完了したフィードバックは `[/]`、通常タスクは `[x]`、未決は `[ ]` とする。
 
-- [/] 図形描画は markdownlint 正式パターンの `~~~` でも対応する
-- [/] ワークスペースの `.markdownlint.json` を見る設定をオン/オフしても、高度な設定画面へ勝手に切り替えない
-- [/] Lint の一般設定と `.markdownlint.json` の詳細設定の責務を分ける
-- [/] 一般設定の「無視」は詳細設定の履歴を消さず、再度「警告/エラー」に戻した時に復元できるようにする
-- [/] グローバル設定とワークスペース設定の概念を入れ、ワークスペース設定を優先する
-- [/] KML に effective config を渡す。API がパス非対応なら KatanA 側で構造体へ変換して渡す
-- [/] 有効な Markdown ファイルのコンテキストメニューに「ファイルをフォーマットする」を追加する
-- [/] エクスプローラー空き領域のコンテキストメニューに「ワークスペース内の Markdown を一括フォーマット」を追加する
-- [/] 同じ空き領域メニューに「ファイルの新規作成」「フォルダの新規作成」を追加する
-- [/] エクスプローラーのフィルター左にファイル追加・フォルダ追加アイコンを配置する
-- [/] 追加アイコンは `katana-icon-management` に従い、各 icon pack の native SVG を使う
-- [/] `.markdownlint.json` に KatanA namespace を保存してよいか、KML と外部 markdownlint の互換性を実装時に確認する
-- [/] KML の format API がファイルパス、文字列、設定構造体のどれを受け取るか実装時に確認する
-- [/] エディタ左端の Lint アイコンをホバーしても診断内容がポップ表示されない
-- [/] 行番号横の Lint アイコンは、多行診断でも問題 view と同じく診断の開始行だけに表示する
-- [/] Task 2 着手前に、既存の Lint 設定 UI を前提にせず、設定画面全体の情報設計と操作導線を見直す
-- [/] Lint 設定 UI は、通常の操作では設定 JSON をユーザーに意識させない設計思想を維持する
-- [ ] 詳しいユーザー向けに、KatanA 管理の共通ルールをワークスペースのルールとして展開する導線を用意する
-- [/] ワークスペースに既存の markdownlint ルールファイルがある場合は、そのワークスペースのルールとして利用する
-- [/] Lint の高度な設定は、アイコン設定の高度な設定と操作パターンを揃えつつ、内容は Lint ルール詳細として最適化する
-- [/] Lint プリセットは、テーマ/アイコンと同じく選べるが、適用後は現在のルールへコピーするテンプレートとして扱う
-- [/] 組み込みプリセットとして `KatanA`、`全て無効`、`厳格`、`すべて警告` を用意する
-- [/] 現在のルールをユーザープリセットとして保存し、他ワークスペースでもテンプレートとして利用できるようにする
-- [ ] テーマ、アイコン、Lint は異なる保存仕様のまま拡張せず、同じプリセット保存仕様と同じ UI/UX へ統一する
-- [/] 統一したプリセット操作は、再利用ウィジェット（widget: 再利用できる画面部品）へ落とし込み、テーマ・アイコン・Lint で使い回す
-- [/] コードブロック生成時は、何のコードブロックかをプルダウンで選べるようにする
-- [/] コードブロック種別のプルダウンは enum と連動させ、`text`、`markdown`、`bash`、`zsh`、`mermaid`、`drawio`、`plantuml`、開発でよく使う言語を選択肢に含める
-- [/] `impl-release` 起動時の可視タスク計画は User Review Phase `6.1` まで含め、個別 Task Group 完了で停止しない
-- [/] 依存しない調査・実装・検証・ハーネス更新は、補助エージェント（subagent）へ書き込み範囲を分離して移譲する
-- [/] Task ごとの通常 PR push は `pre-push` hook を正式な品質ゲートとして通し、push 直前の重い `make check` / `make check-light` 二重実行や `--no-verify` 回避を原則禁止する
-- [/] Task 2 のように大きすぎる Task Group は、計画段階で `2A` / `2B` / `2C` のように責務・依存関係・書き込み範囲ごとに分割する
+- [x] 図形描画は markdownlint 正式パターンの `~~~` でも対応する
+- [x] ワークスペースの `.markdownlint.json` を見る設定をオン/オフしても、高度な設定画面へ勝手に切り替えない
+- [x] Lint の一般設定と `.markdownlint.json` の詳細設定の責務を分ける
+- [x] 一般設定の「無視」は詳細設定の履歴を消さず、再度「警告/エラー」に戻した時に復元できるようにする
+- [x] グローバル設定とワークスペース設定の概念を入れ、ワークスペース設定を優先する
+- [x] KML に effective config を渡す。API がパス非対応なら KatanA 側で構造体へ変換して渡す
+- [x] 有効な Markdown ファイルのコンテキストメニューに「ファイルをフォーマットする」を追加する
+- [x] エクスプローラー空き領域のコンテキストメニューに「ワークスペース内の Markdown を一括フォーマット」を追加する
+- [x] 同じ空き領域メニューに「ファイルの新規作成」「フォルダの新規作成」を追加する
+- [x] エクスプローラーのフィルター左にファイル追加・フォルダ追加アイコンを配置する
+- [x] 追加アイコンは `katana-icon-management` に従い、各 icon pack の native SVG を使う
+- [x] `.markdownlint.json` に KatanA namespace を保存してよいか、KML と外部 markdownlint の互換性を実装時に確認する
+- [x] KML の format API がファイルパス、文字列、設定構造体のどれを受け取るか実装時に確認する
+- [x] エディタ左端の Lint アイコンをホバーしても診断内容がポップ表示されない
+- [x] 行番号横の Lint アイコンは、多行診断でも問題 view と同じく診断の開始行だけに表示する
+- [x] Task 2 着手前に、既存の Lint 設定 UI を前提にせず、設定画面全体の情報設計と操作導線を見直す
+- [x] Lint 設定 UI は、通常の操作では設定 JSON をユーザーに意識させない設計思想を維持する
+- [x] 詳しいユーザー向けに、KatanA 管理の共通ルールをワークスペースのルールとして展開する導線を用意する
+- [x] ワークスペースに既存の markdownlint ルールファイルがある場合は、そのワークスペースのルールとして利用する
+- [x] Lint の高度な設定は、アイコン設定の高度な設定と操作パターンを揃えつつ、内容は Lint ルール詳細として最適化する
+- [x] Lint プリセットは、テーマ/アイコンと同じく選べるが、適用後は現在のルールへコピーするテンプレートとして扱う
+- [x] 組み込みプリセットとして `KatanA`、`全て無効`、`厳格`、`すべて警告` を用意する
+- [x] 現在のルールをユーザープリセットとして保存し、他ワークスペースでもテンプレートとして利用できるようにする
+- [x] テーマ、アイコン、Lint は異なる保存仕様のまま拡張せず、同じプリセット保存仕様と同じ UI/UX へ統一する
+- [x] 統一したプリセット操作は、再利用ウィジェット（widget: 再利用できる画面部品）へ落とし込み、テーマ・アイコン・Lint で使い回す
+- [x] コードブロック生成時は、何のコードブロックかをプルダウンで選べるようにする
+- [x] コードブロック種別のプルダウンは enum と連動させ、`text`、`markdown`、`bash`、`zsh`、`mermaid`、`drawio`、`plantuml`、開発でよく使う言語を選択肢に含める
+- [x] `impl-release` 起動時の可視タスク計画は User Review Phase `6.1` まで含め、個別 Task Group 完了で停止しない
+- [x] 依存しない調査・実装・検証・ハーネス更新は、補助エージェント（subagent）へ書き込み範囲を分離して移譲する
+- [x] Task ごとの通常 PR push は `pre-push` hook を正式な品質ゲートとして通し、push 直前の重い `make check` / `make check-light` 二重実行や `--no-verify` 回避を原則禁止する
+- [x] Task 2 のように大きすぎる Task Group は、計画段階で `2A` / `2B` / `2C` のように責務・依存関係・書き込み範囲ごとに分割する
 
 ---
 
@@ -69,7 +69,7 @@
 - [x] コードブロック生成 UI で、コード種別をプルダウンから選択して fenced code block を挿入できること
 - [x] プルダウンの選択肢が enum の定義と一致し、表示名と挿入される fence info string がずれないこと
 - [x] `mermaid` / `drawio` / `plantuml` を選んだ場合、生成後のコードブロックが Task 1 の図形描画プレビュー対象として扱われること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -155,23 +155,23 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Done (DoD)
 
-- [ ] ワークスペース設定をオンにした場合、ワークスペース直下の `.markdownlint.json` / `.markdownlint.jsonc` が診断に反映されること
-- [ ] ワークスペース設定のオン/オフで、高度な設定画面へ勝手に切り替わらないこと
-- [ ] 一般設定の「無視 / 警告 / エラー」と `.markdownlint.json` のルール適用設定が混ざって消失しないこと
-- [ ] KML に渡される config が、診断とフォーマットで一致していること
-- [ ] Lint アイコンのホバーで、診断メッセージが画面上に確認できること
-- [ ] 多行診断で、行番号横の Lint アイコンが診断の開始行だけに表示されること
-- [ ] 通常の設定画面では JSON ファイル名を主操作対象として表示しないこと
-- [ ] ワークスペースへルールを展開した後、そのワークスペースのルールとして診断とフォーマットに反映されること
-- [ ] Lint の高度な設定が、アイコン設定と同じ操作パターンで開閉・検索・展開できること
-- [ ] プリセット適用後に個別ルールを変更しても、組み込みプリセット自体が変更されないこと
-- [ ] ユーザープリセットが他ワークスペースでもテンプレートとして選べること
-- [ ] 既存のワークスペースルールが、設定画面表示やプリセット一覧表示だけで上書きされないこと
-- [ ] テーマ、アイコン、Lint が同じプリセット保存仕様を使い、元プリセットと変更状態を画面上で確認できること
-- [ ] テーマ、アイコン、Lint のプリセット操作が同じ再利用ウィジェットで表示されること
-- [ ] 既存のテーマ・アイコン保存値が、根拠なく別プリセット扱いに移行されないこと
-- [ ] `crates/katana-ui` の対象テストが通過すること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] ワークスペース設定をオンにした場合、ワークスペース直下の `.markdownlint.json` / `.markdownlint.jsonc` が診断に反映されること
+- [x] ワークスペース設定のオン/オフで、高度な設定画面へ勝手に切り替わらないこと
+- [x] 一般設定の「無視 / 警告 / エラー」と `.markdownlint.json` のルール適用設定が混ざって消失しないこと
+- [x] KML に渡される config が、診断とフォーマットで一致していること
+- [x] Lint アイコンのホバーで、診断メッセージが画面上に確認できること
+- [x] 多行診断で、行番号横の Lint アイコンが診断の開始行だけに表示されること
+- [x] 通常の設定画面では JSON ファイル名を主操作対象として表示しないこと
+- [x] ワークスペースへルールを展開した後、そのワークスペースのルールとして診断とフォーマットに反映されること
+- [x] Lint の高度な設定が、アイコン設定と同じ操作パターンで開閉・検索・展開できること
+- [x] プリセット適用後に個別ルールを変更しても、組み込みプリセット自体が変更されないこと
+- [x] ユーザープリセットが他ワークスペースでもテンプレートとして選べること
+- [x] 既存のワークスペースルールが、設定画面表示やプリセット一覧表示だけで上書きされないこと
+- [x] テーマ、アイコン、Lint が同じプリセット保存仕様を使い、元プリセットと変更状態を画面上で確認できること
+- [x] テーマ、アイコン、Lint のプリセット操作が同じ再利用ウィジェットで表示されること
+- [x] 既存のテーマ・アイコン保存値が、根拠なく別プリセット扱いに移行されないこと
+- [x] `crates/katana-ui` の対象テストが通過すること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -196,7 +196,7 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 - [x] ワークスペース内の Markdown を一括フォーマットできること
 - [x] フォーマットは effective config を使い、`.markdownlint.json` の指定を無視しないこと
 - [x] 失敗したファイルがある場合、成功分まで隠さず、失敗件数と理由が分かること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -220,8 +220,8 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 - [ ] ファイル右クリック、空き領域右クリック、ヘッダーアイコンの三つの入口が画面上で確認できること
 - [x] 非 Markdown ファイルにフォーマット操作が表示されないこと
 - [x] 新規作成操作が既存の作成モーダルと同じ validation を使うこと
-- [ ] UI スナップショットでフィルター左の二つのアイコンが確認できること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] UI スナップショットでフィルター左の二つのアイコンが確認できること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -268,8 +268,8 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Done (DoD)
 
-- [ ] ユーザーの確認が完了し、フィードバックの修正が Base ブランチにマージされていること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] ユーザーの確認が完了し、フィードバックの修正が Base ブランチにマージされていること
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -281,16 +281,16 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ## 7. Mermaid / Drawio Rendering and Update Settings Migration
 
-- [ ] 7.1 `mmdc` への依存を廃止し、公式 Mermaid.js を HTML ベースでレンダリングし、WebView の `background` 経由で Rust 側の SVG 化とプレビュー表示を実現する
-- [ ] 7.2 設定画面の「アップデート」配下、Drawio / Mermaid 設定更新で起きているバグを修正する
-- [ ] 7.3 起動時に Drawio.js と Mermaid.js を必ず取得し、ユーザー保存領域へキャッシュする。PlantUML と同様に、起動後の再 DL を抑えつつ、ユーザー主導で強制更新できる手段を用意する
+- [x] 7.1 `mmdc` への依存を廃止し、公式 Mermaid.js を HTML ベースでレンダリングし、WebView の `background` 経由で Rust 側の SVG 化とプレビュー表示を実現する
+- [x] 7.2 設定画面の「アップデート」配下、Drawio / Mermaid 設定更新で起きているバグを修正する
+- [x] 7.3 起動時に Drawio.js と Mermaid.js を必ず取得し、ユーザー保存領域へキャッシュする。PlantUML と同様に、起動後の再 DL を抑えつつ、ユーザー主導で強制更新できる手段を用意する
 
 ### Definition of Done (DoD)
 
-- [ ] mmdc を削除した経路で図形描画（mermaid/plantuml/drawio）プレビューが表示できること
-- [ ] 設定画面の Drawio / Mermaid 更新操作が正常に動作し、保存済み設定との整合が取れていること
-- [ ] 起動時の js 取得とキャッシュが動作し、既定では再取得を抑制しつつ、明示更新フラグで最新化できること
-- [ ] `crates/katana-renderer`、`crates/katana-ui`、関連ドキュメントの対象テストと `openspec` 自己レビューの観点で検証可能な状態であること
+- [x] mmdc を削除した経路で図形描画（mermaid/plantuml/drawio）プレビューが表示できること
+- [x] 設定画面の Drawio / Mermaid 更新操作が正常に動作し、保存済み設定との整合が取れていること
+- [x] 起動時の js 取得とキャッシュが動作し、既定では再取得を抑制しつつ、明示更新フラグで最新化できること
+- [x] `crates/katana-core`、`crates/katana-ui`、関連ドキュメントの対象テストと `openspec` 自己レビューの観点で検証可能な状態であること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 8. Final Verification & Release Work

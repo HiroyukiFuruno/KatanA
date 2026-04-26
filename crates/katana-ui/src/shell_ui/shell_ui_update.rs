@@ -43,6 +43,7 @@ impl KatanaApp {
         self.handle_shortcuts(ctx);
         super::dropped_files::DroppedFileOps::queue(self, ctx);
         self.poll_download(ctx);
+        self.poll_renderer_asset_bootstrap(ctx);
         self.poll_explorer_load(ctx);
 
         if let Some(path) = self.pending_document_loads.pop_front() {
@@ -114,7 +115,7 @@ impl KatanaApp {
 
     fn tick_auto_save(&mut self) {
         let behavior = self.state.config.settings.settings().behavior.clone();
-        if behavior.auto_save && behavior.auto_save_interval_secs > 0.0 {
+        if behavior.auto_save && behavior.auto_save_interval_secs >= 0.0 {
             let now = std::time::Instant::now();
             match self.state.document.last_auto_save {
                 Some(last)
@@ -138,7 +139,7 @@ impl KatanaApp {
 
     fn tick_auto_refresh(&mut self, ctx: &egui::Context) {
         let behavior = self.state.config.settings.settings().behavior.clone();
-        if behavior.auto_refresh && behavior.auto_refresh_interval_secs > 0.0 {
+        if behavior.auto_refresh && behavior.auto_refresh_interval_secs >= 0.0 {
             let now = std::time::Instant::now();
             match self.state.document.last_auto_refresh {
                 Some(last)
