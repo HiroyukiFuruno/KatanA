@@ -241,9 +241,9 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 ### Definition of Done (DoD)
 
 - [x] すべての icon pack でファイル追加・フォルダ追加アイコンが表示できること
-- [ ] 画像で示された「ファイル +」「フォルダ +」の意味が画面上で分かること
+- [x] 画像で示された「ファイル +」「フォルダ +」の意味が画面上で分かること
 - [x] 追加アイコンが `katana-icon-management` の運用に従っていること
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -251,13 +251,14 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
-- [ ] 6.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot/run.sh --request <request.json> --output scripts/screenshot/output/v0-22-7-review` で生成したスクリーンショットまたは動画を提示して確認できる状態にする。シナリオ定義は git 管理対象、生成物は `.gitignore` 対象にする
+- [x] 6.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot/run.sh --request <request.json> --output scripts/screenshot/output/v0-22-7-review` で生成したスクリーンショットまたは動画を提示して確認できる状態にする。シナリオ定義は git 管理対象、生成物は `.gitignore` 対象にする
 - [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [/] 6.3 確認シナリオで日本語本文を lint した際、外部 linter の MD013 が文字境界で panic する問題を検出した。KatanA 側の linter bridge で panic をアプリ全体へ伝播させず、回帰テストで固定する
 
 ### Definition of Done (DoD)
 

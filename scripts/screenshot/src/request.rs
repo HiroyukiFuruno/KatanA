@@ -191,6 +191,17 @@ pub enum UiAction {
     SelectThemePresetInSettings { preset: String },
     /// Advance slideshow pages as if paging through fullscreen content.
     SlideshowNavigate { direction: String, steps: u32, wait_seconds: f64 },
+    /// Click a widget by its accessibility label.
+    ClickNode { label: String, button: ClickButton, wait_seconds: f64 },
+    /// Click a logical viewport coordinate.
+    ClickAt { x: f32, y: f32, button: ClickButton, wait_seconds: f64 },
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ClickButton {
+    Primary,
+    Secondary,
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,4 +1,8 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    panic::{AssertUnwindSafe, catch_unwind},
+    path::Path,
+};
 
 use katana_markdown_linter::{
     LintOptions,
@@ -31,13 +35,16 @@ impl MarkdownLinterBridgeOps {
             }
         }
 
-        MarkdownLinterOps::evaluate_all(
-            path,
-            content,
-            linter_settings.enabled,
-            &severity_map,
-            &options.rules,
-        )
+        catch_unwind(AssertUnwindSafe(|| {
+            MarkdownLinterOps::evaluate_all(
+                path,
+                content,
+                linter_settings.enabled,
+                &severity_map,
+                &options.rules,
+            )
+        }))
+        .unwrap_or_default()
     }
 
     pub(crate) fn has_applicable_fix(diag: &MarkdownDiagnostic) -> bool {
@@ -219,6 +226,24 @@ mod tests {
             diagnostics
                 .iter()
                 .all(|diagnostic| diagnostic.rule_id != "MD001")
+        );
+    }
+
+    #[test]
+    fn evaluate_document_contains_linter_panic_boundary() {
+        let state = make_state();
+        let multibyte_line = "\u{30f3}".repeat(30);
+
+        let diagnostics = MarkdownLinterBridgeOps::evaluate_document(
+            &state,
+            &PathBuf::from("doc.md"),
+            &multibyte_line,
+        );
+
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| !diagnostic.rule_id.is_empty())
         );
     }
 
