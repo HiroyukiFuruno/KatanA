@@ -8,6 +8,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `v0-22-7-markdownlint-workspace-formatting` またはリリース用統合ブランチ（例: `release/v0.22.7`）
 - **作業ブランチ**: 標準は `v0-22-7-markdownlint-workspace-formatting-task-x`、リリース用は `feature/v0.22.7-task-x` (xはタスク番号)
 
@@ -30,33 +31,69 @@
 - [/] 追加アイコンは `katana-icon-management` に従い、各 icon pack の native SVG を使う
 - [ ] `.markdownlint.json` に KatanA namespace を保存してよいか、KML と外部 markdownlint の互換性を実装時に確認する
 - [ ] KML の format API がファイルパス、文字列、設定構造体のどれを受け取るか実装時に確認する
+- [ ] エディタ左端の Lint アイコンをホバーしても診断内容がポップ表示されない
+- [/] 行番号横の Lint アイコンは、多行診断でも問題 view と同じく診断の開始行だけに表示する
+- [ ] Task 2 着手前に、既存の Lint 設定 UI を前提にせず、設定画面全体の情報設計と操作導線を見直す
+- [ ] Lint 設定 UI は、通常の操作では設定 JSON をユーザーに意識させない設計思想を維持する
+- [ ] 詳しいユーザー向けに、KatanA 管理の共通ルールをワークスペースのルールとして展開する導線を用意する
+- [ ] ワークスペースに既存の markdownlint ルールファイルがある場合は、そのワークスペースのルールとして利用する
+- [ ] Lint の高度な設定は、アイコン設定の高度な設定と操作パターンを揃えつつ、内容は Lint ルール詳細として最適化する
+- [ ] Lint プリセットは、テーマ/アイコンと同じく選べるが、適用後は現在のルールへコピーするテンプレートとして扱う
+- [ ] 組み込みプリセットとして `KatanA`、`全て無効`、`厳格`、`すべて警告` を用意する
+- [ ] 現在のルールをユーザープリセットとして保存し、他ワークスペースでもテンプレートとして利用できるようにする
+- [ ] テーマ、アイコン、Lint は異なる保存仕様のまま拡張せず、同じプリセット保存仕様と同じ UI/UX へ統一する
+- [ ] 統一したプリセット操作は、再利用ウィジェット（widget: 再利用できる画面部品）へ落とし込み、テーマ・アイコン・Lint で使い回す
+- [/] コードブロック生成時は、何のコードブロックかをプルダウンで選べるようにする
+- [/] コードブロック種別のプルダウンは enum と連動させ、`text`、`markdown`、`bash`、`zsh`、`mermaid`、`drawio`、`plantuml`、開発でよく使う言語を選択肢に含める
 
 ---
 
 ## 1. Diagram Fence Support
 
-- [ ] 1.1 `crates/katana-core` に、`~~~mermaid` / `~~~plantuml` / `~~~drawio` が現在は図形として抽出されないことを示す回帰テストを追加する
-- [ ] 1.2 `DiagramSectionOps::try_parse_diagram_fence` を、バッククォートとチルダの両方を扱う設計へ変更する
-- [ ] 1.3 `DiagramSectionOps::non_diagram_fence_consume_len` を、非図形フェンスのネスト回避がバッククォートとチルダの両方で成立するように変更する
-- [ ] 1.4 `MarkdownFenceOps::extract_fence_block` と `transform_diagram_blocks` を、HTML エクスポートでも `~~~` 図形ブロックを処理できるように変更する
-- [ ] 1.5 既存の ` ``` ` 図形ブロック、非図形コードブロック、未閉じフェンスの回帰テストが壊れていないことを確認する
+- [x] 1.1 `crates/katana-core` に、`~~~mermaid` / `~~~plantuml` / `~~~drawio` が現在は図形として抽出されないことを示す回帰テストを追加する
+- [x] 1.2 `DiagramSectionOps::try_parse_diagram_fence` を、バッククォートとチルダの両方を扱う設計へ変更する
+- [x] 1.3 `DiagramSectionOps::non_diagram_fence_consume_len` を、非図形フェンスのネスト回避がバッククォートとチルダの両方で成立するように変更する
+- [x] 1.4 `MarkdownFenceOps::extract_fence_block` と `transform_diagram_blocks` を、HTML エクスポートでも `~~~` 図形ブロックを処理できるように変更する
+- [x] 1.5 既存の ````` 図形ブロック、非図形コードブロック、未閉じフェンスの回帰テストが壊れていないことを確認する
+- [x] 1.6 コードブロック生成時に、enum と連動したプルダウンで `text` / `markdown` / `bash` / `zsh` / `mermaid` / `drawio` / `plantuml` / 主要な開発言語を選べるようにする
 
 ### Definition of Done (DoD)
 
-- [ ] ` ``` ` と `~~~` の `mermaid` / `plantuml` / `drawio` が、プレビューと HTML エクスポートの両方で図形として扱われること
-- [ ] `~~~markdown` などの非図形フェンス内にある diagram 例が、図形として誤抽出されないこと
-- [ ] `crates/katana-core` の対象テストが通過すること
+- [x] ````` と `~~~` の `mermaid` / `plantuml` / `drawio` が、プレビューと HTML エクスポートの両方で図形として扱われること
+- [x] `~~~markdown` などの非図形フェンス内にある diagram 例が、図形として誤抽出されないこと
+- [x] `crates/katana-core` の対象テストが通過すること
+- [x] コードブロック生成 UI で、コード種別をプルダウンから選択して fenced code block を挿入できること
+- [x] プルダウンの選択肢が enum の定義と一致し、表示名と挿入される fence info string がずれないこと
+- [x] `mermaid` / `drawio` / `plantuml` を選んだ場合、生成後のコードブロックが Task 1 の図形描画プレビュー対象として扱われること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 2. Lint Settings Ownership and Effective Config
+## 2. Settings Preset Ownership and Effective Config
 
 ### Definition of Ready (DoR)
 
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
+### AsIs / ToBe 差分
+
+> Task 2 は、現状（AsIs）とあるべき状態（ToBe）の乖離だけを実装対象にする。既に ToBe を満たしている挙動は、必要に応じて回帰テストだけを追加する。
+
+| ID | 現状（AsIs） | あるべき状態（ToBe） | 実装タスク |
+| --- | --- | --- | --- |
+| D2-1 | 通常設定で保存先 JSON が操作対象に見えやすい | 通常画面では「共通ルール」「このワークスペースのルール」「ルールの詳細」として操作する | 2.0, 2.11, 2.12 |
+| D2-2 | 一般設定の重大度と markdownlint の詳細設定が混ざり、設定消失が起き得る | 「無視 / 警告 / エラー」とルール詳細を分離し、詳細設定の履歴を保持する | 2.1, 2.4, 2.5, 2.6 |
+| D2-3 | ワークスペース設定のオン/オフで高度な設定へ勝手に切り替わる | オン/オフしても通常画面に留まり、診断だけ更新する | 2.2 |
+| D2-4 | 共通設定、ワークスペース設定、既定値の優先順位が曖昧 | `workspace > global > default` で effective config を解決する | 2.3, 2.7, 2.8 |
+| D2-5 | 既存のワークスペースルールを使うのか、KatanA 管理設定で上書きするのかが曖昧 | 既存のワークスペースルールは現在ルールとして読み込み、明示操作なしに上書きしない | 2.12, 2.21 |
+| D2-6 | プリセットがなく、共通設定や別ワークスペースへ設定を再利用しにくい | 組み込みプリセットとユーザープリセットをテンプレートとして適用できる | 2.18, 2.19, 2.20 |
+| D2-7 | Lint の高度な設定が、アイコン設定と同じ操作導線であるか整理されていない | 操作パターンはアイコン設定に揃え、内容は Lint ルール詳細として最適化する | 2.13 |
+| D2-8 | 行番号横の Lint アイコンをホバーしても診断内容が出ない | ホバー時に対象診断の内容をポップ表示する | 2.9 |
+| D2-9 | 多行診断で行番号横のアイコンが各行に出て主張が強い | アイコンは診断開始行だけに表示し、波線は対象範囲全体に残す | 2.10 |
+| D2-10 | テーマ、アイコン、Lint のプリセット保存仕様と UI/UX が対象ごとに違い、カスタム状態の由来が曖昧 | すべて同じ保存仕様と同じプリセット操作へ統一し、共通ウィジェットで扱う | 2.14, 2.15, 2.16, 2.17, 2.18, 2.22 |
+
+- [ ] 2.0 通常画面で設定 JSON を意識させない前提で、既存 UI の延長で直すべきか、Lint 設定画面全体を再設計するべきかを決める
 - [ ] 2.1 現在の `LinterSettings`、`MarkdownLinterConfigOps`、`MarkdownLinterOptionsBridgeOps` の責務を整理し、一般設定と `.markdownlint.json` 設定の境界をテストで固定する
 - [ ] 2.2 ワークスペース設定のオン/オフ切り替えで `linter_advanced_is_open` が変更されない回帰テストを追加する
 - [ ] 2.3 `workspace > global > default` の優先順位で effective config を解決するサービスを追加または整理する
@@ -65,6 +102,20 @@
 - [ ] 2.6 `.markdownlint.json` に KatanA namespace を保存できるか検証し、不可の場合は既存 workspace state に重大度だけを保存する方針へ確定する
 - [ ] 2.7 KML に渡す config を、ファイルパスまたは KML が要求する構造体として確実に渡す
 - [ ] 2.8 診断とフォーマットが同じ effective config を使うことをテストする
+- [ ] 2.9 エディタ左端の Lint アイコンをホバーした時、対象診断の内容がポップ表示されることを実装・テストする
+- [ ] 2.10 多行診断の Lint アイコンを診断の開始行だけに表示し、波線は対象範囲全体に残す
+- [ ] 2.11 KatanA 管理の共通ルールを、ワークスペースのルールとして展開する操作を設計・実装する
+- [ ] 2.12 既存のワークスペースルールがある場合に、それを優先して読み込むことをテストする
+- [ ] 2.13 Lint の高度な設定導線を、アイコン設定の高度な設定と同じ全高パネル、検索、展開/折りたたみ、閉じる操作に揃える
+- [ ] 2.14 テーマ、アイコン、Lint で共通利用するプリセット保存仕様を定義し、現在値、元プリセット、変更状態、ユーザープリセット一覧を同じ構造で扱う
+- [ ] 2.15 プリセット一覧、現在状態、保存、元へ戻す、詳細設定入口を持つ再利用ウィジェットを追加する
+- [ ] 2.16 テーマ設定を統一プリセット保存仕様と再利用ウィジェットへ移行し、既存のカスタムテーマをユーザープリセットとして扱う
+- [ ] 2.17 アイコン設定を統一プリセット保存仕様と再利用ウィジェットへ移行し、icon pack と個別上書きを一つの現在値として扱う
+- [ ] 2.18 Lint 設定を統一プリセット保存仕様と再利用ウィジェットへ接続し、プリセット適用を現在の共通ルールまたはワークスペースルールへコピーする導線として実装する
+- [ ] 2.19 `KatanA`、`全て無効`、`厳格`、`すべて警告` の Lint 組み込みプリセットを、統一プリセット保存仕様の組み込みプリセットとして定義し、適用結果をテストする
+- [ ] 2.20 現在の Lint ルールをユーザープリセットとして保存し、別ワークスペースへテンプレート適用できることを実装・テストする
+- [ ] 2.21 既存のワークスペースルールを、設定画面を開いただけでプリセットや共通ルールに上書きしないことをテストする
+- [ ] 2.22 既存保存値の移行を fixture 付きで実装し、テーマの `preset` / `custom_color_overrides` / `active_custom_theme`、`theme.icon_pack`、アイコンの `active_preset` / `active_overrides` / `custom_presets` が見た目を変えずに統一保存仕様へ移行することをテストする
 
 ### Definition of Done (DoD)
 
@@ -72,6 +123,17 @@
 - [ ] ワークスペース設定のオン/オフで、高度な設定画面へ勝手に切り替わらないこと
 - [ ] 一般設定の「無視 / 警告 / エラー」と `.markdownlint.json` のルール適用設定が混ざって消失しないこと
 - [ ] KML に渡される config が、診断とフォーマットで一致していること
+- [ ] Lint アイコンのホバーで、診断メッセージが画面上に確認できること
+- [ ] 多行診断で、行番号横の Lint アイコンが診断の開始行だけに表示されること
+- [ ] 通常の設定画面では JSON ファイル名を主操作対象として表示しないこと
+- [ ] ワークスペースへルールを展開した後、そのワークスペースのルールとして診断とフォーマットに反映されること
+- [ ] Lint の高度な設定が、アイコン設定と同じ操作パターンで開閉・検索・展開できること
+- [ ] プリセット適用後に個別ルールを変更しても、組み込みプリセット自体が変更されないこと
+- [ ] ユーザープリセットが他ワークスペースでもテンプレートとして選べること
+- [ ] 既存のワークスペースルールが、設定画面表示やプリセット一覧表示だけで上書きされないこと
+- [ ] テーマ、アイコン、Lint が同じプリセット保存仕様を使い、元プリセットと変更状態を画面上で確認できること
+- [ ] テーマ、アイコン、Lint のプリセット操作が同じ再利用ウィジェットで表示されること
+- [ ] 既存のテーマ・アイコン保存値が、根拠なく別プリセット扱いに移行されないこと
 - [ ] `crates/katana-ui` の対象テストが通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 

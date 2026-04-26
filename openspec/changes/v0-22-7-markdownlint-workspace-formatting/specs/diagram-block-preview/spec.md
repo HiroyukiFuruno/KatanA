@@ -76,3 +76,31 @@
 - **WHEN** the active Markdown document contains an outer `~~~markdown` fence that includes an inner `~~~mermaid` example
 - **THEN** the preview keeps the outer fenced block as Markdown code content
 - **THEN** the inner `~~~mermaid` example is not extracted as a diagram section
+
+### Requirement: Code block insertion uses enum-backed language selection
+
+システムは、コードブロック生成時に、何のコードブロックかをプルダウンで選択できるようにしなければならない（SHALL）。プルダウンの選択肢と挿入される fence info string は、同じ enum から解決しなければならない（SHALL）。
+
+#### Scenario: Insert a text code block from the language selector
+
+- **WHEN** user opens the code block insertion UI
+- **THEN** system shows a language selector backed by the code block kind enum
+- **WHEN** user selects `text`
+- **THEN** system inserts a fenced code block with `text` as the info string
+
+#### Scenario: Insert a shell code block from the language selector
+
+- **WHEN** user selects `bash` or `zsh` from the code block language selector
+- **THEN** system inserts a fenced code block whose info string matches the selected shell language
+
+#### Scenario: Insert a diagram code block from the language selector
+
+- **WHEN** user selects `mermaid`, `drawio`, or `plantuml` from the code block language selector
+- **THEN** system inserts a fenced code block whose info string matches the selected diagram language
+- **THEN** the inserted block is eligible for the diagram preview behavior defined in this spec
+
+#### Scenario: Offer common development languages
+
+- **WHEN** user opens the code block language selector
+- **THEN** system includes `text`, `markdown`, `bash`, `zsh`, `mermaid`, `drawio`, and `plantuml`
+- **THEN** system also includes common development languages such as `json`, `yaml`, `toml`, `rust`, `typescript`, `javascript`, `python`, `html`, `css`, and `sql`

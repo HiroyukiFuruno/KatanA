@@ -1,16 +1,38 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+resolve_with_interactive_zsh() {
+  local command_name="$1"
+  zsh -lic "whence -p ${command_name}" 2>/dev/null \
+    | awk '/^\// { resolved = $0 } END { if (resolved != "") print resolved }'
+}
+
 if command -v openspec >/dev/null 2>&1; then
   exec openspec "$@"
 fi
 
+if command -v zsh >/dev/null 2>&1; then
+  zsh_openspec="$(resolve_with_interactive_zsh openspec || true)"
+  if [ -n "$zsh_openspec" ]; then
+    exec "$zsh_openspec" "$@"
+  fi
+fi
+
 if command -v bunx >/dev/null 2>&1; then
-  exec bunx @fission-ai/openspec "$@"
+  if bunx @fission-ai/openspec --version >/dev/null 2>&1; then
+    exec bunx @fission-ai/openspec "$@"
+  fi
 fi
 
 if command -v npx >/dev/null 2>&1; then
-  exec npx @fission-ai/openspec "$@"
+  exec npx --yes @fission-ai/openspec "$@"
+fi
+
+if command -v zsh >/dev/null 2>&1; then
+  zsh_npx="$(resolve_with_interactive_zsh npx || true)"
+  if [ -n "$zsh_npx" ]; then
+    exec "$zsh_npx" --yes @fission-ai/openspec "$@"
+  fi
 fi
 
 cat >&2 <<'EOF'
@@ -21,6 +43,6 @@ Install it globally:
 
 Or install Bun / npm so this wrapper can run:
   bunx @fission-ai/openspec ...
-  npx @fission-ai/openspec ...
+  npx --yes @fission-ai/openspec ...
 EOF
 exit 127
