@@ -1,6 +1,6 @@
-use crate::request::{Fixture, ScrollDirection, Step, UiAction, VideoFormat};
+use crate::request::{ClickButton, Fixture, ScrollDirection, Step, UiAction, VideoFormat};
 use anyhow::{bail, Context, Result};
-use egui_kittest::Harness;
+use egui_kittest::{kittest::Queryable, Harness};
 use katana_core::workspace::TreeEntry;
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
 use katana_ui::shell::KatanaApp;
@@ -558,6 +558,14 @@ pub fn run(
                             .trigger_action(AppAction::SelectDocument(path));
                         step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
                     }
+                    UiAction::ClickNode { label, button, wait_seconds } => {
+                        click_node(&mut harness, label, *button);
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
+                    UiAction::ClickAt { x, y, button, wait_seconds } => {
+                        click_at(&mut harness, egui::pos2(*x, *y), *button);
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
                     other => {
                         let app_action = match other {
                             UiAction::ToggleToc => AppAction::ToggleToc,
@@ -584,7 +592,9 @@ pub fn run(
                             | UiAction::RunDocumentSearch { .. }
                             | UiAction::SelectThemePresetInSettings { .. }
                             | UiAction::SlideshowNavigate { .. }
-                            | UiAction::SelectDemoTab { .. } => unreachable!(),
+                            | UiAction::SelectDemoTab { .. }
+                            | UiAction::ClickNode { .. }
+                            | UiAction::ClickAt { .. } => unreachable!(),
                         };
                         harness.state_mut().trigger_action(app_action);
                         let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
@@ -925,6 +935,35 @@ fn navigate_slideshow(
         step_for_seconds(harness, recording.as_deref_mut(), wait_seconds)?;
     }
     Ok(())
+}
+
+fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickButton) {
+    let node = harness.get_by_label(label);
+    match button {
+        ClickButton::Primary => node.click(),
+        ClickButton::Secondary => node.click_secondary(),
+    }
+}
+
+fn click_at(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2, button: ClickButton) {
+    let pointer_button = match button {
+        ClickButton::Primary => egui::PointerButton::Primary,
+        ClickButton::Secondary => egui::PointerButton::Secondary,
+    };
+    harness.input_mut().events.push(egui::Event::PointerMoved(pos));
+    harness.input_mut().events.push(egui::Event::PointerButton {
+        pos,
+        button: pointer_button,
+        pressed: true,
+        modifiers: egui::Modifiers::NONE,
+    });
+    harness.input_mut().events.push(egui::Event::PointerButton {
+        pos,
+        button: pointer_button,
+        pressed: false,
+        modifiers: egui::Modifiers::NONE,
+    });
+    harness.step();
 }
 
 fn step_for_seconds(
