@@ -48,6 +48,7 @@
 - [/] `impl-release` 起動時の可視タスク計画は User Review Phase `6.1` まで含め、個別 Task Group 完了で停止しない
 - [/] 依存しない調査・実装・検証・ハーネス更新は、補助エージェント（subagent）へ書き込み範囲を分離して移譲する
 - [/] Task ごとの通常 PR push は `pre-push` hook を正式な品質ゲートとして通し、push 直前の重い `make check` / `make check-light` 二重実行や `--no-verify` 回避を原則禁止する
+- [/] Task 2 のように大きすぎる Task Group は、計画段階で `2A` / `2B` / `2C` のように責務・依存関係・書き込み範囲ごとに分割する
 
 ---
 
