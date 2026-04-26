@@ -145,6 +145,7 @@ impl<'a> SettingsWindow<'a> {
                                                     ui, state,
                                                     state.config.get_plantuml_jar_path_if_exists(),
                                                     state.config.get_drawio_js_path_if_exists(),
+                                                    state.config.get_mermaid_js_path_if_exists(),
                                                 );
                                             }
                                             SettingsTab::Behavior => {

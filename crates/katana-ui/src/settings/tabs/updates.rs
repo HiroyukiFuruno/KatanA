@@ -9,6 +9,7 @@ const SECTION_AFTER_SEPARATOR_SPACING: f32 = 16.0;
 const PLANTUML_DOWNLOAD_URL: &str =
     "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar";
 const DRAWIO_DOWNLOAD_URL: &str = "https://viewer.diagrams.net/js/viewer-static.min.js";
+const MERMAID_DOWNLOAD_URL: &str = "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js";
 
 impl crate::settings::tabs::UpdatesTabOps {
     pub(crate) fn render_updates_tab(
@@ -16,6 +17,7 @@ impl crate::settings::tabs::UpdatesTabOps {
         state: &mut crate::app_state::AppState,
         jar_path: Option<PathBuf>,
         drawio_path: Option<PathBuf>,
+        mermaid_path: Option<PathBuf>,
     ) -> Option<AppAction> {
         let mut pending_action = None;
         let i18n_root = crate::i18n::I18nOps::get();
@@ -83,85 +85,106 @@ impl crate::settings::tabs::UpdatesTabOps {
             ui.separator();
             ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-            /* 2. PlantUML Section */
-            ui.heading(&i18n_settings.plantuml_section_title);
-            ui.add_space(SECTION_SPACING);
-
-            if let Some(path) = jar_path {
-                let path_str = path.to_string_lossy().to_string();
-                ui.label(
-                    egui::RichText::new(crate::i18n::I18nOps::tf(
-                        &i18n_settings.plantuml_installed,
-                        &[("path", &path_str)],
-                    ))
-                    .color(ui.visuals().weak_text_color()),
-                );
-
-                ui.add_space(SECTION_SPACING);
-                if ui.button(&i18n_settings.plantuml_update_now).clicked() {
-                    pending_action = Some(AppAction::StartPlantumlDownload {
-                        url: PLANTUML_DOWNLOAD_URL.to_string(),
-                        dest: path,
-                    });
-                }
-            } else {
-                ui.label(
-                    egui::RichText::new(&i18n_settings.plantuml_not_installed)
-                        .color(ui.visuals().warn_fg_color),
-                );
-                ui.add_space(SECTION_SPACING);
-                if ui.button(&i18n_settings.plantuml_update_now).clicked()
-                    && let Some(dest) = state.config.try_get_plantuml_jar_path()
-                {
-                    pending_action = Some(AppAction::StartPlantumlDownload {
-                        url: PLANTUML_DOWNLOAD_URL.to_string(),
-                        dest,
-                    });
-                }
+            let section_action = Self::render_renderer_update_section(
+                ui,
+                &i18n_settings.plantuml_section_title,
+                jar_path,
+                state.config.try_get_plantuml_jar_path(),
+                &i18n_settings.plantuml_installed,
+                &i18n_settings.plantuml_not_installed,
+                &i18n_settings.plantuml_update_now,
+                |dest| AppAction::StartPlantumlDownload {
+                    url: PLANTUML_DOWNLOAD_URL.to_string(),
+                    dest,
+                },
+            );
+            if pending_action.is_none() {
+                pending_action = section_action;
             }
 
             ui.add_space(SECTION_SEPARATOR_SPACING);
             ui.separator();
             ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-            /* 3. Draw.io Section */
-            ui.heading(&i18n_settings.drawio_section_title);
-            ui.add_space(SECTION_SPACING);
+            let section_action = Self::render_renderer_update_section(
+                ui,
+                &i18n_settings.drawio_section_title,
+                drawio_path,
+                state.config.try_get_drawio_js_path(),
+                &i18n_settings.drawio_installed,
+                &i18n_settings.drawio_not_installed,
+                &i18n_settings.drawio_update_now,
+                |dest| AppAction::StartDrawioDownload {
+                    url: DRAWIO_DOWNLOAD_URL.to_string(),
+                    dest,
+                },
+            );
+            if pending_action.is_none() {
+                pending_action = section_action;
+            }
 
-            if let Some(path) = drawio_path {
-                let path_str = path.to_string_lossy().to_string();
-                ui.label(
-                    egui::RichText::new(crate::i18n::I18nOps::tf(
-                        &i18n_settings.drawio_installed,
-                        &[("path", &path_str)],
-                    ))
-                    .color(ui.visuals().weak_text_color()),
-                );
+            ui.add_space(SECTION_SEPARATOR_SPACING);
+            ui.separator();
+            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-                ui.add_space(SECTION_SPACING);
-                if ui.button(&i18n_settings.drawio_update_now).clicked() {
-                    pending_action = Some(AppAction::StartDrawioDownload {
-                        url: DRAWIO_DOWNLOAD_URL.to_string(),
-                        dest: path,
-                    });
-                }
-            } else {
-                ui.label(
-                    egui::RichText::new(&i18n_settings.drawio_not_installed)
-                        .color(ui.visuals().warn_fg_color),
-                );
-                ui.add_space(SECTION_SPACING);
-                if ui.button(&i18n_settings.drawio_update_now).clicked()
-                    && let Some(dest) = state.config.try_get_drawio_js_path()
-                {
-                    pending_action = Some(AppAction::StartDrawioDownload {
-                        url: DRAWIO_DOWNLOAD_URL.to_string(),
-                        dest,
-                    });
-                }
+            let section_action = Self::render_renderer_update_section(
+                ui,
+                &i18n_settings.mermaid_section_title,
+                mermaid_path,
+                state.config.try_get_mermaid_js_path(),
+                &i18n_settings.mermaid_installed,
+                &i18n_settings.mermaid_not_installed,
+                &i18n_settings.mermaid_update_now,
+                |dest| AppAction::StartMermaidDownload {
+                    url: MERMAID_DOWNLOAD_URL.to_string(),
+                    dest,
+                },
+            );
+            if pending_action.is_none() {
+                pending_action = section_action;
             }
         });
 
         pending_action
+    }
+
+    fn render_renderer_update_section(
+        ui: &mut egui::Ui,
+        title: &str,
+        installed_path: Option<PathBuf>,
+        default_path: Option<PathBuf>,
+        installed_template: &str,
+        not_installed_message: &str,
+        update_label: &str,
+        action: impl FnOnce(PathBuf) -> AppAction,
+    ) -> Option<AppAction> {
+        ui.heading(title);
+        ui.add_space(SECTION_SPACING);
+
+        let target_path = installed_path.or(default_path);
+        if let Some(path) = target_path {
+            if path.exists() {
+                let path_str = path.to_string_lossy().to_string();
+                ui.label(
+                    egui::RichText::new(crate::i18n::I18nOps::tf(
+                        installed_template,
+                        &[("path", &path_str)],
+                    ))
+                    .color(ui.visuals().weak_text_color()),
+                );
+            } else {
+                ui.label(
+                    egui::RichText::new(not_installed_message).color(ui.visuals().warn_fg_color),
+                );
+            }
+
+            ui.add_space(SECTION_SPACING);
+            if ui.button(update_label).clicked() {
+                return Some(action(path));
+            }
+        } else {
+            ui.label(egui::RichText::new(not_installed_message).color(ui.visuals().warn_fg_color));
+        }
+        None
     }
 }
