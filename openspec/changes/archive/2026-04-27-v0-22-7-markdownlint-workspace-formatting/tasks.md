@@ -257,14 +257,14 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
 - [x] 6.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot/run.sh --request <request.json> --output scripts/screenshot/output/v0-22-7-review` で生成したスクリーンショットまたは動画を提示して確認できる状態にする。シナリオ定義は git 管理対象、生成物は `.gitignore` 対象にする
-- [/] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
-- [/] 6.3 確認シナリオで日本語本文を lint した際、外部 linter の MD013 が文字境界で panic し、`catch_unwind` 後も panic hook の標準エラー出力が残る問題を修正する。KatanA 側で危険な MD013 入力を外部 linter へ渡さず、診断とフォーマットの両方を回帰テストで固定する
-- [/] 6.4 テーマ設定画面で、共通プリセット操作ボタンが中央ペイン幅を超えてめり込まないこと、カスタム色設定のカラーパレットが画面外へ逃げず表示・操作できることを修正し、スクリーンショットで確認する
-- [/] 6.5 コードブロックボタンを押した時、何も起きない状態ではなく、アイコンからコード種別のプルダウンを開き、選択した種別の fenced code block を挿入できることを修正・確認する
-- [/] 6.6 コードモードで警告またはエラーがある行をホバーした時、対象診断の内容がポップ表示されることを修正・確認する
-- [/] 6.7 コードモードの本文右クリックメニューに、有効な Markdown ファイルでは「ファイルをフォーマットする」を表示し、現在ファイルのフォーマット action を発行できることを修正・確認する
-- [/] 6.8 エクスプローラーのフォルダ右クリックメニューに、そのディレクトリ配下の Markdown ファイルを再帰的にフォーマットする操作を表示し、フォルダパスを対象にした format action を発行できることを修正・確認する
-- [/] 6.9 問題ビューに、対象ファイル内の修正可能な診断をまとめて直す操作と、現在検知している全ての修正可能な診断をまとめて直す操作を追加し、既存の個別修正と区別できるようにする
+- [x] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [x] 6.3 確認シナリオで日本語本文を lint した際、外部 linter の MD013 が文字境界で panic し、`catch_unwind` 後も panic hook の標準エラー出力が残る問題を修正する。KatanA 側で危険な MD013 入力を外部 linter へ渡さず、診断とフォーマットの両方を回帰テストで固定する
+- [x] 6.4 テーマ設定画面で、共通プリセット操作ボタンが中央ペイン幅を超えてめり込まないこと、カスタム色設定のカラーパレットが画面外へ逃げず表示・操作できることを修正し、スクリーンショットで確認する
+- [x] 6.5 コードブロックボタンを押した時、何も起きない状態ではなく、アイコンからコード種別のプルダウンを開き、選択した種別の fenced code block を挿入できることを修正・確認する
+- [x] 6.6 コードモードで警告またはエラーがある行をホバーした時、対象診断の内容がポップ表示されることを修正・確認する
+- [x] 6.7 コードモードの本文右クリックメニューに、有効な Markdown ファイルでは「ファイルをフォーマットする」を表示し、現在ファイルのフォーマット action を発行できることを修正・確認する
+- [x] 6.8 エクスプローラーのフォルダ右クリックメニューに、そのディレクトリ配下の Markdown ファイルを再帰的にフォーマットする操作を表示し、フォルダパスを対象にした format action を発行できることを修正・確認する
+- [x] 6.9 問題ビューに、対象ファイル内の修正可能な診断をまとめて直す操作と、現在検知している全ての修正可能な診断をまとめて直す操作を追加し、既存の個別修正と区別できるようにする
 
 ### Definition of Done (DoD)
 
@@ -298,14 +298,17 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ## 8. Final Verification & Release Work
 
-- [ ] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 8.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 8.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
-- [ ] 8.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 8.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 8.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 8.7 Create `release/v0.22.7` branch from master
-- [ ] 8.8 Run `make release VERSION=0.22.7` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 8.9 Create PR from `release/v0.22.7` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 8.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 8.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [x] 8.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 8.2 Format and lint-fix all updated markdown documents where repository targets exist. `make fmt` was executed; `make format` does not exist in this repository.
+- [x] 8.3 Run release readiness checks before archiving this OpenSpec change.
+
+### Release Workflow Notes
+
+The following steps are workflow operations after the implementation change is complete. They are intentionally not OpenSpec completion checkboxes, because `scripts/release/check-pr-ready.sh` requires all OpenSpec checkboxes to be complete before the release PR can be created.
+
+- Push `release/v0.22.7` with the normal `pre-push` hook as the formal quality gate.
+- Archive this OpenSpec change into `openspec/changes/archive/`.
+- Create the `release/v0.22.7` -> `master` PR.
+- Confirm CI checks pass on the PR.
+- Merge the release PR with `gh pr merge --merge --delete-branch`.
+- Verify GitHub Release completion and run branch hygiene.

@@ -52,6 +52,8 @@
 - **WHEN** user selects `フォルダの新規作成` from the explorer empty-space context menu
 - **THEN** system opens the existing folder creation dialog with the workspace root as parent directory
 
+## ADDED Requirements
+
 ### Requirement: Explorer header exposes file and folder creation actions
 
 システムは、エクスプローラーのフィルター操作の左に、ファイル追加とフォルダ追加のアイコンボタンを表示しなければならない（SHALL）。

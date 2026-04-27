@@ -67,6 +67,8 @@
 - **THEN** the preview shows the rendered diagram instead of the raw fenced source
 - **THEN** the diagram is rendered without requiring the user to install a separate viewer
 
+## ADDED Requirements
+
 ### Requirement: Diagram fences do not leak from non-diagram code blocks
 
 システムは、図形ではないコードフェンスの内側にある `mermaid` / `plantuml` / `drawio` 文字列を、図形描画ブロックとして誤抽出してはならない（MUST NOT）。
