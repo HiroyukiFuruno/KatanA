@@ -8,7 +8,7 @@ pub(crate) const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
 pub(crate) const DEFAULT_AUTO_REFRESH_INTERVAL_SECS: f64 = 2.0;
 pub const DEFAULT_MAX_DEPTH: usize = 10;
 pub const DEFAULT_CACHE_RETENTION_DAYS: u32 = 7;
-pub const DEFAULT_DIAGRAM_CONCURRENCY: usize = 4;
+pub const DEFAULT_DIAGRAM_CONCURRENCY: usize = 10;
 pub const DEFAULT_IGNORED_DIRECTORIES: &[&str] = &[
     ".git",
     ".terraform",

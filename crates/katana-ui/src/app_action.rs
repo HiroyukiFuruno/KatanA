@@ -7,6 +7,12 @@ use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct AssetDownloadRequest {
+    pub url: String,
+    pub dest: PathBuf,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum AppAction {
     InstallUpdate,
     PickOpenWorkspace,
@@ -73,15 +79,9 @@ pub enum AppAction {
     CheckForUpdates,
     StartUpdateDownload,
     InstallUpdateAndRestart,
-    StartPlantumlDownload {
-        url: String,
-        dest: std::path::PathBuf,
-    },
-    StartDrawioDownload {
-        url: String,
-        dest: std::path::PathBuf,
-    },
-
+    StartPlantumlDownload(AssetDownloadRequest),
+    StartDrawioDownload(AssetDownloadRequest),
+    StartMermaidDownload(AssetDownloadRequest),
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
     ToggleCodePreview,
@@ -186,9 +186,7 @@ pub enum AppAction {
     RefreshDiagnostics,
     FormatMarkdownFile(PathBuf),
     FormatWorkspaceMarkdown(PathBuf),
-    /* WHY: Markdown authoring — insert/transform Markdown syntax around cursor or selection. */
     AuthorMarkdown(MarkdownAuthoringOp),
-    /* WHY: Image ingest — attach a local file image or paste clipboard image into the document. */
     IngestImageFile,
     IngestClipboardImage,
     SelectNextTab,

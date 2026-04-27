@@ -39,14 +39,29 @@ impl KatanaApp {
             AppAction::ReorderActivityRail { from, to } => {
                 self.handle_action_reorder_activity_rail(from, to)
             }
-            AppAction::StartPlantumlDownload { url, dest } => {
+            AppAction::StartPlantumlDownload(request) => {
                 /* WHY: Reuse the existing DownloadOps pipeline (DownloadRequest → start_download).
                  * This forces a fresh download even when the JAR already exists, enabling
                  * users to update to the latest PlantUML release from the Settings screen. */
-                self.start_download(crate::preview_pane::DownloadRequest { url, dest });
+                self.start_download(crate::preview_pane::DownloadRequest {
+                    tool_name: "PlantUML".to_string(),
+                    url: request.url,
+                    dest: request.dest,
+                });
             }
-            AppAction::StartDrawioDownload { url, dest } => {
-                self.start_download(crate::preview_pane::DownloadRequest { url, dest });
+            AppAction::StartDrawioDownload(request) => {
+                self.start_download(crate::preview_pane::DownloadRequest {
+                    tool_name: "Draw.io".to_string(),
+                    url: request.url,
+                    dest: request.dest,
+                });
+            }
+            AppAction::StartMermaidDownload(request) => {
+                self.start_download(crate::preview_pane::DownloadRequest {
+                    tool_name: "Mermaid".to_string(),
+                    url: request.url,
+                    dest: request.dest,
+                });
             }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),

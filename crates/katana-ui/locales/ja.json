@@ -121,7 +121,9 @@
   "plantuml": {
     "downloading_plantuml": "⬇ PlantUML JAR をダウンロード中…",
     "plantuml_installed": "PlantUML のインストールが完了しました。プレビューを更新中…",
-    "download_error": "ダウンロードエラー: "
+    "download_error": "ダウンロードエラー: ",
+    "downloading_tool": "{tool} をダウンロード中…",
+    "tool_installed": "{tool} のインストールが完了しました。プレビューを更新します…"
   },
   "view_mode": {
     "preview": "プレビュー",
@@ -393,16 +395,21 @@
       "monthly": "毎月",
       "check_now": "今すぐ更新をチェックする",
       "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML は %path% にインストールされています。",
+      "plantuml_installed": "PlantUML は {path} にインストールされています。",
       "plantuml_not_installed": "PlantUML はインストールされていません。",
       "plantuml_update_now": "PlantUML を最新版に更新",
-      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_section_title": "Draw.io 更新",
       "drawio_installed": "Draw.io viewer は {path} にインストールされています",
       "drawio_not_installed": "Draw.io viewer がインストールされていません。",
-      "drawio_update_now": "Draw.io を最新版に更新"
+      "drawio_update_now": "Draw.io を最新版に更新",
+      "mermaid_section_title": "Mermaid 更新",
+      "mermaid_installed": "Mermaid.js は {path} にインストールされています",
+      "mermaid_not_installed": "Mermaid.js がインストールされていません。",
+      "mermaid_update_now": "Mermaid.js を最新版に更新"
     },
     "behavior": {
       "section_title": "動作",
+      "editor_behavior_section_title": "編集時の動作",
       "confirm_close_dirty_tab": "未保存タブを閉じる前に確認",
       "scroll_sync": "スクロール同期",
       "auto_save": "自動保存",
@@ -418,13 +425,20 @@
       "clear_http_cache": "すべてのキャッシュをクリア",
       "cache_retention_days": "キャッシュ保持日数",
       "days_suffix": " 日",
+      "startup_behavior_section_title": "起動時動作",
       "toc_default_visible": "起動時に目次を表示する",
       "explorer_default_visible": "起動時にエクスプローラーを表示する",
       "ingest_section_title": "画像の取り込み",
       "ingest_image_save_directory": "画像の保存先",
       "ingest_image_name_format": "画像ファイル名の形式",
       "ingest_create_directory": "保存先フォルダが存在しない場合は作成する",
-      "confirm_file_move": "ファイル移動前に確認する"
+      "confirm_file_move": "ファイル移動前に確認する",
+      "diagram_rendering_section_title": "図形の描画",
+      "diagram_concurrency": "図形の同時描画数",
+      "diagram_concurrency_hint": "図形の描画の多いmdを扱う場合で処理が重たい場合は、この設定の並列数を下げてください。",
+      "diagram_concurrency_unlimited": "並列数無制限（unlimited）",
+      "diagram_concurrency_unlimited_warning_title": "並列数無制限を有効にしますか？",
+      "diagram_concurrency_unlimited_warning_message": "検出した図形をすべて同時に描画します。図形が多いMarkdownでは、KatanAやシステム全体の動作が重くなる可能性があります。"
     },
     "general": "全般"
   },
@@ -627,7 +641,12 @@
     "severity_error": "エラー",
     "use_workspace_local_config": "ワークスペース用ルールセットを優先する",
     "view_on_github": "公式GitHubで確認",
-    "search_placeholder": "ルールを検索…"
+    "search_placeholder": "ルールを検索…",
+    "fix_preview": "修正のプレビュー",
+    "fix_preview_removed_line": "削除: {line}",
+    "fix_preview_added_line": "追加: {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "プレビュー対象の元の内容を取得できません。"
   },
   "use_workspace_local_config": "ワークスペース固有のLintルールを優先する",
   "editor": {

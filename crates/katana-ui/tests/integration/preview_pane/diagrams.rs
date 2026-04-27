@@ -80,66 +80,29 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
 fn mermaid_both_states_render_semantically() {
-    /* WHY: Verify Mermaid rendering transitions: 'CommandNotFound' when mmdc is missing, and 'Image' when available. */
+    /* WHY: UI integration tests must not depend on a real browser renderer. */
     let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
-    let saved_mmdc = std::env::var("MERMAID_MMDC").ok();
-
-    unsafe { std::env::set_var("MERMAID_MMDC", "nonexistent_mmdc_for_idempotent_test") };
-
-    let pane = render_and_wait("mermaid", MERMAID_SOURCE);
+    let pane = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
+        render_and_wait("mermaid", MERMAID_SOURCE)
+    });
     assert!(
-        matches!(pane.sections[1], RenderedSection::CommandNotFound { .. }),
-        "With hidden mmdc, should be CommandNotFound, got: {:?}",
+        matches!(pane.sections[1], RenderedSection::NotInstalled { .. }),
+        "With hidden Mermaid.js, should be NotInstalled, got: {:?}",
         pane.sections[1]
     );
-    if let RenderedSection::CommandNotFound {
-        tool_name,
-        install_hint,
-        ..
+    if let RenderedSection::NotInstalled {
+        kind, download_url, ..
     } = &pane.sections[1]
     {
-        assert!(tool_name.contains("mmdc"), "Tool name should mention mmdc");
-        assert!(
-            install_hint.contains("npm"),
-            "Install hint should mention npm"
+        assert_eq!(kind, "Mermaid");
+        assert!(download_url.contains("mermaid.min.js"));
+        let tool_msg = I18nOps::tf(
+            &I18nOps::get().tool.not_installed,
+            &[("tool", kind.as_str())],
         );
-        let expected = I18nOps::get()
-            .error
-            .missing_dependency
-            .replace("{tool_name}", tool_name)
-            .replace("{install_hint}", install_hint);
         let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
         assert_standard_diagram_markdown_visible(&harness);
-        let _fallback = harness.get_by_label(&expected);
-    }
-
-    match &saved_mmdc {
-        Some(v) => unsafe { std::env::set_var("MERMAID_MMDC", v) },
-        None => unsafe { std::env::remove_var("MERMAID_MMDC") },
-    }
-
-    if katana_core::markdown::mermaid_renderer::MermaidRenderOps::is_mmdc_available() {
-        let pane = render_and_wait("mermaid", MERMAID_SOURCE);
-        assert!(
-            matches!(
-                pane.sections[1],
-                RenderedSection::Image { .. } | RenderedSection::Error { .. }
-            ),
-            "[Mermaid rendered] Expected Image or Error at index 1, got: {:?}",
-            pane.sections[1]
-        );
-        if let RenderedSection::Image { svg_data, alt, .. } = &pane.sections[1] {
-            assert!(svg_data.width > 0, "Mermaid image width should be > 0");
-            assert!(svg_data.height > 0, "Mermaid image height should be > 0");
-            assert!(alt.contains("Mermaid"), "Alt should mention Mermaid");
-        }
-        let harness = build_harness(pane.sections.clone(), 600.0, 400.0);
-        assert_standard_diagram_markdown_visible(&harness);
-    }
-
-    match saved_mmdc {
-        Some(v) => unsafe { std::env::set_var("MERMAID_MMDC", v) },
-        None => unsafe { std::env::remove_var("MERMAID_MMDC") },
+        let _fallback = harness.get_by_label(&tool_msg);
     }
 }
 
@@ -207,7 +170,7 @@ fn plantuml_both_states_render_semantically() {
 
 #[test]
 fn mixed_diagram_document_renders_all_independently() {
-    /* WHY: Verify that a document containing multiple mixed diagrams (Mermaid, Draw.io, PlantUML) renders all of them correctly in parallel. */
+    /* WHY: Verify mixed diagrams resolve independently without invoking real browser renderers. */
     let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
     let source = format!(
         "# Mixed\n\n```mermaid\n{MERMAID_SOURCE}\n```\n\n\
@@ -216,13 +179,15 @@ fn mixed_diagram_document_renders_all_independently() {
          ## End\n"
     );
     let mut pane = PreviewPane::default();
-    pane.full_render(
-        &source,
-        Path::new("/tmp/test.md"),
-        std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
-        false,
-        4,
-    );
+    crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
+        pane.full_render(
+            &source,
+            Path::new("/tmp/test.md"),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+            false,
+            4,
+        );
+    });
 
     assert_eq!(
         pane.sections.len(),
@@ -230,7 +195,7 @@ fn mixed_diagram_document_renders_all_independently() {
         "Expected 7 sections for mixed document"
     );
 
-    pane.wait_for_renders();
+    crate::integration::test_helpers::MissingRendererAssetsOps::with(|| pane.wait_for_renders());
 
     assert!(
         !pane
@@ -244,19 +209,21 @@ fn mixed_diagram_document_renders_all_independently() {
         matches!(
             pane.sections[1],
             RenderedSection::Image { .. }
-                | RenderedSection::CommandNotFound { .. }
+                | RenderedSection::NotInstalled { .. }
                 | RenderedSection::Error { .. }
         ),
-        "Mermaid should be Image or CommandNotFound, got: {:?}",
+        "Mermaid should be Image, NotInstalled, or Error, got: {:?}",
         pane.sections[1]
     );
 
     assert!(
         matches!(
             pane.sections[3],
-            RenderedSection::Image { .. } | RenderedSection::Error { .. }
+            RenderedSection::Image { .. }
+                | RenderedSection::NotInstalled { .. }
+                | RenderedSection::Error { .. }
         ),
-        "DrawIo should be Image or Error, got: {:?}",
+        "DrawIo should be Image, NotInstalled, or Error, got: {:?}",
         pane.sections[3]
     );
 

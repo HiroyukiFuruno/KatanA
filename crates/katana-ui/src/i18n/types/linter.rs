@@ -34,6 +34,16 @@ pub struct LinterTranslations {
     pub use_workspace_local_config: String,
     #[serde(default)]
     pub view_on_github: String,
+    #[serde(default)]
+    pub fix_preview: String,
+    #[serde(default = "default_fix_preview_removed_line")]
+    pub fix_preview_removed_line: String,
+    #[serde(default = "default_fix_preview_added_line")]
+    pub fix_preview_added_line: String,
+    #[serde(default = "default_fix_preview_more")]
+    pub fix_preview_more: String,
+    #[serde(default = "default_fix_preview_missing_content")]
+    pub fix_preview_missing_content: String,
 }
 
 impl Default for LinterTranslations {
@@ -71,6 +81,27 @@ impl Default for LinterTranslations {
             severity_error: "Error".to_string(),
             use_workspace_local_config: "Prefer Workspace Rule Set".to_string(),
             view_on_github: "View on official GitHub".to_string(),
+            fix_preview: "Fix Preview".to_string(),
+            fix_preview_removed_line: default_fix_preview_removed_line(),
+            fix_preview_added_line: default_fix_preview_added_line(),
+            fix_preview_more: default_fix_preview_more(),
+            fix_preview_missing_content: default_fix_preview_missing_content(),
         }
     }
+}
+
+fn default_fix_preview_removed_line() -> String {
+    "- {line}".to_string()
+}
+
+fn default_fix_preview_added_line() -> String {
+    "+ {line}".to_string()
+}
+
+fn default_fix_preview_more() -> String {
+    "...".to_string()
+}
+
+fn default_fix_preview_missing_content() -> String {
+    "Original content not available for preview.".to_string()
 }

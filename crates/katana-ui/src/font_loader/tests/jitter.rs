@@ -273,7 +273,7 @@ fn test_font_jitter_8_inline_code_cross_family() {
             };
 
             job.append("\u{30a4}\u{30f3}\u{30b9}\u{30c8}\u{30fc}\u{30eb}\u{5f8c}\u{3001}", 0.0, prop_format.clone());
-            job.append("mmdc", 0.0, mono_format);
+            job.append("mermaid", 0.0, mono_format);
             job.append(" \u{306f}\u{81ea}\u{52d5}\u{7684}\u{306b}\u{691c}\u{51fa}\u{3055}\u{308c}\u{307e}\u{3059}", 0.0, prop_format);
 
             let galley = ui.fonts_mut(|f| f.layout_job(job));

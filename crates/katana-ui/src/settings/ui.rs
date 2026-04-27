@@ -145,6 +145,7 @@ impl<'a> SettingsWindow<'a> {
                                                     ui, state,
                                                     state.config.get_plantuml_jar_path_if_exists(),
                                                     state.config.get_drawio_js_path_if_exists(),
+                                                    state.config.get_mermaid_js_path_if_exists(),
                                                 );
                                             }
                                             SettingsTab::Behavior => {
@@ -176,23 +177,6 @@ impl<'a> SettingsWindow<'a> {
             });
         state.layout.show_settings = open;
         triggered_action
-    }
-}
-
-impl SettingsOps {
-    pub(crate) fn render_settings_tree(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
-        super::settings_tree::render_settings_tree(ui, state);
-    }
-
-    pub(crate) fn section_header(ui: &mut egui::Ui, text: &str) {
-        super::settings_helpers::section_header(ui, text);
-    }
-
-    pub(crate) fn add_styled_slider<'a>(
-        ui: &mut egui::Ui,
-        slider: egui::Slider<'a>,
-    ) -> egui::Response {
-        super::settings_helpers::add_styled_slider(ui, slider)
     }
 }
 

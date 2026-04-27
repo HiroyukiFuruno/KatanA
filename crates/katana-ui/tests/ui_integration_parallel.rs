@@ -24,6 +24,8 @@ pub mod integration {
     pub use super::get_serial_test_mutex;
     #[path = "harness_utils.rs"]
     pub mod harness_utils;
+    #[path = "test_helpers.rs"]
+    pub mod test_helpers;
 }
 
 #[path = "integration/overlap_checker.rs"]

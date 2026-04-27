@@ -162,7 +162,7 @@ impl KatanaApp {
             .settings
             .settings()
             .performance
-            .diagram_concurrency;
+            .resolved_diagram_concurrency();
         self.full_refresh_preview(&path, content, true, concurrency);
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(content);

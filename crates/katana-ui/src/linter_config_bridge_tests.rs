@@ -174,7 +174,7 @@ fn load_config_or_katana_default_uses_bundled_config_when_missing() {
         MarkdownLinterConfigOps::load_config_or_katana_default(&dir.path().join("missing"));
 
     assert_eq!(config.raw["MD013"], false);
-    assert_eq!(config.raw["MD048"]["style"], "backtick");
+    assert_eq!(config.raw["MD048"]["style"], "consistent");
 }
 
 #[test]

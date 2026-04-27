@@ -10,6 +10,7 @@ impl DiagnosticsRendererOps {
         path: &std::path::Path,
         diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         expand_all: Option<bool>,
+        content: Option<&str>,
     ) -> Option<crate::app_state::AppAction> {
         let active_diags: Vec<_> = diagnostics
             .iter()
@@ -52,7 +53,7 @@ impl DiagnosticsRendererOps {
                     .spacing(egui::vec2(GRID_SPACE_X, GRID_SPACE_Y))
                     .show(ui, |ui| {
                         for diag in active_diags {
-                            if let Some(act) = Self::show_diagnostic_row(ui, diag, path) {
+                            if let Some(act) = Self::show_diagnostic_row(ui, diag, path, content) {
                                 action = Some(act);
                             }
                         }
@@ -67,6 +68,7 @@ impl DiagnosticsRendererOps {
         ui: &mut egui::Ui,
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         path: &std::path::Path,
+        content: Option<&str>,
     ) -> Option<crate::app_state::AppAction> {
         /* WHY: Severity icons use #FFFFFF base SVG from system/ and are tinted here
          * with the semantic color sourced from ThemeColors (system.error_text etc.),
@@ -157,15 +159,23 @@ impl DiagnosticsRendererOps {
                     }
                 }
 
-                if let Some(fix_info) = &diag.fix_info
-                    && ui.button(&crate::i18n::I18nOps::get().linter.fix).clicked()
-                {
-                    action = Some(crate::app_state::AppAction::ApplyLintFixesForFiles(vec![
-                        crate::app_action::LintFixBatch {
-                            path: path.to_path_buf(),
-                            fixes: vec![fix_info.clone()],
-                        },
-                    ]));
+                if let Some(fix_info) = &diag.fix_info {
+                    let resp = ui
+                        .button(&crate::i18n::I18nOps::get().linter.fix)
+                        .on_hover_ui(|ui| {
+                            super::fix_preview_renderer::FixPreviewRendererOps::show(
+                                ui, fix_info, content,
+                            );
+                        });
+
+                    if resp.clicked() {
+                        action = Some(crate::app_state::AppAction::ApplyLintFixesForFiles(vec![
+                            crate::app_action::LintFixBatch {
+                                path: path.to_path_buf(),
+                                fixes: vec![fix_info.clone()],
+                            },
+                        ]));
+                    }
                 }
             },
         );

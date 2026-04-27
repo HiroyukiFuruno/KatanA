@@ -20,8 +20,6 @@ pub(crate) struct PresetWidgetResponse {
 pub(crate) struct PresetWidgetOps;
 
 impl PresetWidgetOps {
-    const ACTION_BUTTON_WIDTH: f32 = 180.0;
-
     pub(crate) fn render(
         ui: &mut egui::Ui,
         id_source: &'static str,
@@ -55,7 +53,8 @@ impl PresetWidgetOps {
         user_presets: &[PresetReference],
         response: &mut PresetWidgetResponse,
     ) {
-        crate::widgets::StyledComboBox::new(id_source, Self::selected_text(state))
+        let selected_text = Self::selected_text(state);
+        crate::widgets::StyledComboBox::new(id_source, &selected_text)
             .width(ui.available_width())
             .truncate()
             .show(ui, |ui| {
@@ -64,7 +63,8 @@ impl PresetWidgetOps {
                     ui.separator();
                     Self::render_options(ui, state, user_presets, response);
                 }
-            });
+            })
+            .on_hover_text(selected_text);
     }
 
     fn render_options(
@@ -93,14 +93,15 @@ impl PresetWidgetOps {
         labels: PresetWidgetLabels<'_>,
         response: &mut PresetWidgetResponse,
     ) {
-        let button_width = Self::ACTION_BUTTON_WIDTH.min(ui.available_width());
         let button_height = ui.spacing().interact_size.y;
         ui.horizontal_wrapped(|ui| {
             if ui
-                .add_sized(
-                    [button_width, button_height],
-                    egui::Button::new(labels.save).truncate(),
+                .add(
+                    egui::Button::new(labels.save)
+                        .min_size(egui::vec2(0.0, button_height))
+                        .wrap(),
                 )
+                .on_hover_text(labels.save)
                 .clicked()
             {
                 response.save_clicked = true;
@@ -108,10 +109,12 @@ impl PresetWidgetOps {
             let can_revert = state.modified && state.base.is_some();
             ui.add_enabled_ui(can_revert, |ui| {
                 if ui
-                    .add_sized(
-                        [button_width, button_height],
-                        egui::Button::new(labels.revert).truncate(),
+                    .add(
+                        egui::Button::new(labels.revert)
+                            .min_size(egui::vec2(0.0, button_height))
+                            .wrap(),
                     )
+                    .on_hover_text(labels.revert)
                     .clicked()
                 {
                     response.revert_clicked = true;
@@ -119,10 +122,12 @@ impl PresetWidgetOps {
             });
             if let Some(advanced) = labels.advanced
                 && ui
-                    .add_sized(
-                        [button_width, button_height],
-                        egui::Button::new(advanced).truncate(),
+                    .add(
+                        egui::Button::new(advanced)
+                            .min_size(egui::vec2(0.0, button_height))
+                            .wrap(),
                     )
+                    .on_hover_text(advanced)
                     .clicked()
             {
                 response.advanced_clicked = true;

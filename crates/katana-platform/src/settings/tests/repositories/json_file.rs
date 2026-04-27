@@ -44,6 +44,35 @@ fn test_json_file_repository_load_corrupt_file_returns_defaults() {
 }
 
 #[test]
+fn test_json_file_repository_normalizes_empty_linter_preset_state() {
+    let tmp = TempDir::new().unwrap();
+    let path = tmp.path().join("settings.json");
+    std::fs::write(
+        &path,
+        serde_json::json!({
+            "version": "0.2.3",
+            "linter": {
+                "enabled": true,
+                "preset_state": {}
+            }
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let repo = JsonFileRepository::new(path);
+
+    let settings = repo.load();
+
+    let current = settings
+        .linter
+        .preset_state
+        .current
+        .expect("current linter preset must exist");
+    assert_eq!(current.id, "katana");
+    assert_eq!(current.label, "KatanA");
+}
+
+#[test]
 fn test_json_file_repository_creates_parent_dirs() {
     let tmp = TempDir::new().unwrap();
     let path = tmp.path().join("nested").join("dir").join("settings.json");

@@ -1,38 +1,12 @@
 use crate::icon::{Icon, IconSize};
-use crate::state::search::SearchParams;
 use eframe::egui;
 
-const SEARCH_PADDING_X: f32 = 8.0;
-const SEARCH_PADDING_Y: f32 = 6.0;
-const ROUNDING_RADIUS: f32 = 6.0;
-const SEARCH_ITEM_SPACING: f32 = 4.0;
+mod layout;
+mod params;
+
+use params::SearchParamsRef;
+
 const ICON_OPACITY: f32 = 0.5;
-
-pub enum SearchParamsRef<'a> {
-    Full(&'a mut SearchParams),
-    Simple(&'a mut String),
-}
-
-impl<'a> SearchParamsRef<'a> {
-    pub fn query_mut(&mut self) -> &mut String {
-        match self {
-            Self::Full(p) => &mut p.query,
-            Self::Simple(s) => s,
-        }
-    }
-    pub fn query(&self) -> &str {
-        match self {
-            Self::Full(p) => &p.query,
-            Self::Simple(s) => s,
-        }
-    }
-    pub fn toggles(&mut self) -> Option<(&mut bool, &mut bool, &mut bool)> {
-        match self {
-            Self::Full(p) => Some((&mut p.match_case, &mut p.match_word, &mut p.use_regex)),
-            Self::Simple(_) => None,
-        }
-    }
-}
 
 pub struct SearchBar<'a> {
     params: SearchParamsRef<'a>,
@@ -45,7 +19,7 @@ pub struct SearchBar<'a> {
 }
 
 impl<'a> SearchBar<'a> {
-    pub fn new(params: &'a mut SearchParams) -> Self {
+    pub fn new(params: &'a mut crate::state::search::SearchParams) -> Self {
         Self {
             params: SearchParamsRef::Full(params),
             hint_text: None,
@@ -103,10 +77,10 @@ impl<'a> SearchBar<'a> {
         let frame = egui::Frame::none()
             .fill(ui.visuals().extreme_bg_color)
             .inner_margin(egui::Margin::symmetric(
-                SEARCH_PADDING_X as i8,
-                SEARCH_PADDING_Y as i8,
+                layout::PADDING_X as i8,
+                layout::PADDING_Y as i8,
             ))
-            .rounding(ROUNDING_RADIUS);
+            .rounding(layout::ROUNDING_RADIUS);
 
         let mut changed = false;
         /* WHY: Pre-compute row_height to constrain allocate_ui_with_layout call */
@@ -114,19 +88,56 @@ impl<'a> SearchBar<'a> {
 
         let inner_resp = frame.show(ui, |ui| {
             let mut text_response = None;
-            /* WHY: Use available_width when no explicit width is requested */
-            let content_width = self.desired_width.unwrap_or_else(|| ui.available_width());
+            let content_width = layout::content_width(ui, self.desired_width);
             ui.set_max_height(row_height);
+            ui.set_min_width(content_width);
             ui.set_max_width(content_width);
 
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                /* WHY: Determine ID FIRST, before drawing any conditional widgets that could offset next_auto_id */
-                let id_source = self.id_source.unwrap_or_else(|| ui.next_auto_id());
+            /* WHY: Determine ID FIRST, before drawing any conditional widgets that could offset next_auto_id */
+            let id_source = self.id_source.unwrap_or_else(|| ui.next_auto_id());
+            let has_toggles = self.show_toggles && matches!(self.params, SearchParamsRef::Full(_));
+            let query_empty = self.params.query().is_empty();
 
-                ui.spacing_mut().item_spacing.x = SEARCH_ITEM_SPACING;
-                let has_toggles =
-                    self.show_toggles && matches!(self.params, SearchParamsRef::Full(_));
-                let query_empty = self.params.query().is_empty();
+            crate::widgets::AlignCenter::new()
+                .spacing(layout::ITEM_SPACING)
+                .width(content_width)
+                .left(|ui| {
+                let icon_slot_width = ui.spacing().icon_width;
+                if self.show_search_icon {
+                    ui.add_sized(
+                        [icon_slot_width, row_height],
+                        Icon::Search
+                            .image(IconSize::Small)
+                            .tint(ui.visuals().text_color().gamma_multiply(ICON_OPACITY)),
+                    );
+                } else {
+                    /* WHY: Preserve text alignment when the icon is hidden. */
+                    ui.add_space(icon_slot_width);
+                }
+
+                let trailing_width = layout::trailing_width(ui, has_toggles, !query_empty);
+                let text_width =
+                    (ui.available_width() - trailing_width).max(layout::MIN_TEXT_INPUT_WIDTH);
+                let mut text_edit = egui::TextEdit::singleline(self.params.query_mut())
+                    .id_source(id_source)
+                    .desired_width(text_width)
+                    .frame(egui::Frame::none());
+                if let Some(color) = self.text_color {
+                    text_edit = text_edit.text_color(color);
+                }
+                if let Some(hint) = self.hint_text.take() {
+                    text_edit = text_edit.hint_text(hint);
+                }
+                let resp = ui.add(text_edit);
+                if resp.changed() {
+                    changed = true;
+                }
+                text_response = Some(resp);
+
+                if !query_empty && ui.add(Icon::Close.button(ui, IconSize::Small)).clicked() {
+                    self.params.query_mut().clear();
+                    changed = true;
+                }
                 if has_toggles
                     && let Some((match_case, match_word, use_regex)) = self.params.toggles()
                 {
@@ -143,40 +154,9 @@ impl<'a> SearchBar<'a> {
                     toggle_btn(ui, Icon::WholeWord, match_word);
                     toggle_btn(ui, Icon::MatchCase, match_case);
                 }
-                if !query_empty && ui.add(Icon::Close.button(ui, IconSize::Small)).clicked() {
-                    self.params.query_mut().clear();
-                    changed = true;
-                }
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    if self.show_search_icon {
-                        ui.add(
-                            Icon::Search
-                                .image(IconSize::Small)
-                                .tint(ui.visuals().text_color().gamma_multiply(ICON_OPACITY)),
-                        );
-                    } else {
-                        /* WHY: Maintain identical text starting position (indentation) even when icon is hidden */
-                        let icon_space = ui.spacing().icon_width + ui.spacing().item_spacing.x;
-                        ui.add_space(icon_space);
-                    }
-
-                    let mut text_edit = egui::TextEdit::singleline(self.params.query_mut())
-                        .id_source(id_source)
-                        .desired_width(f32::INFINITY)
-                        .frame(egui::Frame::none());
-                    if let Some(color) = self.text_color {
-                        text_edit = text_edit.text_color(color);
-                    }
-                    if let Some(hint) = self.hint_text.take() {
-                        text_edit = text_edit.hint_text(hint);
-                    }
-                    let resp = ui.add(text_edit);
-                    if resp.changed() {
-                        changed = true;
-                    }
-                    text_response = Some(resp);
-                });
-            });
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+            })
+            .show(ui);
             text_response.expect("TextEdit must be drawn")
         });
 
@@ -187,7 +167,7 @@ impl<'a> SearchBar<'a> {
             let rect = inner_resp.response.rect.shrink(stroke.width);
             ui.painter().add(egui::Shape::rect_stroke(
                 rect,
-                ROUNDING_RADIUS,
+                layout::ROUNDING_RADIUS,
                 stroke,
                 egui::StrokeKind::Inside,
             ));

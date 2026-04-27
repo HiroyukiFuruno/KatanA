@@ -57,11 +57,12 @@ fn render_with_katana_renderer_succeeds_for_plain_markdown() {
 #[test]
 fn katana_renderer_handles_mermaid_block_without_crash() {
     let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::set_var("MERMAID_MMDC", "/nonexistent/mmdc") };
+    let dir = tempfile::tempdir().unwrap();
+    unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
     let md = "\n```mermaid\ngraph TD; A-->B\n```\n";
     let out = MarkdownRenderOps::render_with_katana_renderer(md).expect("render failed");
     assert!(!out.html.is_empty());
-    unsafe { std::env::remove_var("MERMAID_MMDC") };
+    unsafe { std::env::remove_var("MERMAID_JS") };
 }
 
 #[test]
@@ -76,8 +77,12 @@ fn katana_renderer_handles_plantuml_block_without_crash() {
 
 #[test]
 fn katana_renderer_handles_drawio_block() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
     let md = "\n```drawio\n<mxGraphModel><root><mxCell id=\"0\"/></root></mxGraphModel>\n```\n";
     let out = MarkdownRenderOps::render_with_katana_renderer(md).expect("render failed");
+    unsafe { std::env::remove_var("DRAWIO_JS") };
     assert!(!out.html.is_empty());
 }
 
@@ -90,19 +95,27 @@ fn render_with_fence_at_very_start_of_document() {
 
 #[test]
 fn render_with_katana_renderer_drawio_renders_svg() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
     let xml = r#"<mxGraphModel><root>
 <mxCell id="0"/><mxCell id="1" parent="0"/>
 <mxCell id="2" value="Box" vertex="1" parent="1"><mxGeometry x="10" y="10" width="100" height="50" as="geometry"/></mxCell>
 </root></mxGraphModel>"#;
     let md = format!("\n```drawio\n{xml}\n```\n");
     let out = MarkdownRenderOps::render_with_katana_renderer(&md).expect("render failed");
+    unsafe { std::env::remove_var("DRAWIO_JS") };
     assert!(out.html.contains("svg") || out.html.contains("katana-diagram"));
 }
 
 #[test]
 fn drawio_renderer_escapes_html_in_fallback() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
     let md = "\n```drawio\nnot valid xml & <stuff>\n```\n";
     let out = MarkdownRenderOps::render_with_katana_renderer(md).expect("render failed");
+    unsafe { std::env::remove_var("DRAWIO_JS") };
     assert!(!out.html.is_empty());
 }
 

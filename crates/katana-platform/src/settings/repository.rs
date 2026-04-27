@@ -52,6 +52,7 @@ impl SettingsRepository for JsonFileRepository {
                             Ok(mut settings) => {
                                 /* WHY: Add any missing items to the rail order */
                                 settings.layout.normalize();
+                                settings.linter.normalize();
                                 settings
                             }
                             Err(e) => {

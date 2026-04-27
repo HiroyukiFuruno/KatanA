@@ -121,7 +121,9 @@
   "plantuml": {
     "downloading_plantuml": "⬇ Lade PlantUML JAR herunter…",
     "plantuml_installed": "PlantUML installiert. Vorschau wird aktualisiert…",
-    "download_error": "Download-Fehler: "
+    "download_error": "Download-Fehler: ",
+    "downloading_tool": "{tool} wird heruntergeladen…",
+    "tool_installed": "{tool} installiert. Vorschau wird aktualisiert…"
   },
   "view_mode": {
     "preview": "Vorschau",
@@ -382,16 +384,21 @@
       "monthly": "Monatlich",
       "check_now": "Jetzt prüfen",
       "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML ist unter %path% installiert.",
+      "plantuml_installed": "PlantUML ist unter {path} installiert.",
       "plantuml_not_installed": "PlantUML ist nicht installiert.",
       "plantuml_update_now": "PlantUML auf neueste Version aktualisieren",
-      "drawio_section_title": "Draw.io / Mermaid",
-      "drawio_installed": "Draw.io viewer ist installiert unter {path}",
+      "drawio_section_title": "Draw.io-Aktualisierung",
+      "drawio_installed": "Draw.io viewer ist unter {path} installiert",
       "drawio_not_installed": "Draw.io viewer ist nicht installiert.",
-      "drawio_update_now": "Draw.io auf neueste Version aktualisieren"
+      "drawio_update_now": "Draw.io auf neueste Version aktualisieren",
+      "mermaid_section_title": "Mermaid-Aktualisierung",
+      "mermaid_installed": "Mermaid.js ist unter {path} installiert",
+      "mermaid_not_installed": "Mermaid.js ist nicht installiert.",
+      "mermaid_update_now": "Mermaid.js auf neueste Version aktualisieren"
     },
     "behavior": {
       "section_title": "Verhalten",
+      "editor_behavior_section_title": "Bearbeitungsverhalten",
       "confirm_close_dirty_tab": "Bestätigen vor Schließen ungespeicherter Tabs",
       "scroll_sync": "Scroll-Sync",
       "auto_save": "Auto-Speichern",
@@ -407,13 +414,20 @@
       "clear_http_cache": "Cache leeren",
       "cache_retention_days": "Aufbewahrung (Tage)",
       "days_suffix": " Tage",
+      "startup_behavior_section_title": "Verhalten beim Start",
       "toc_default_visible": "Inhaltsverzeichnis beim Start anzeigen",
       "explorer_default_visible": "Explorer beim Start anzeigen",
       "ingest_section_title": "Bildimport",
       "ingest_image_save_directory": "Bildspeicherverzeichnis",
       "ingest_image_name_format": "Bildnamenformat",
       "ingest_create_directory": "Verzeichnis erstellen, wenn nicht vorhanden",
-      "confirm_file_move": "Vor dem Verschieben von Dateien bestätigen"
+      "confirm_file_move": "Vor dem Verschieben von Dateien bestätigen",
+      "diagram_rendering_section_title": "Diagramm-Rendering",
+      "diagram_concurrency": "Parallele Diagramm-Renderings",
+      "diagram_concurrency_hint": "Wenn Markdown-Dateien mit vielen Diagrammen langsam sind, verringern Sie diese Einstellung.",
+      "diagram_concurrency_unlimited": "Unbegrenzte Parallelität",
+      "diagram_concurrency_unlimited_warning_title": "Unbegrenzte Parallelität aktivieren?",
+      "diagram_concurrency_unlimited_warning_message": "Alle erkannten Diagramme werden gleichzeitig gerendert. Bei Markdown-Dateien mit vielen Diagrammen kann KatanA oder das gesamte System langsamer werden."
     },
     "general": "Allgemein",
     "shortcuts": {
@@ -627,7 +641,12 @@
     "severity_error": "Fehler",
     "use_workspace_local_config": "Workspace-Regelset bevorzugen",
     "view_on_github": "Auf offiziellem GitHub anzeigen",
-    "search_placeholder": "Regeln suchen…"
+    "search_placeholder": "Regeln suchen…",
+    "fix_preview": "Vorschau der Korrektur",
+    "fix_preview_removed_line": "Entfernt: {line}",
+    "fix_preview_added_line": "Hinzugefügt: {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "Der ursprüngliche Inhalt für die Vorschau ist nicht verfügbar."
   },
   "use_workspace_local_config": "Workspace-spezifische Lint-Regeln bevorzugen",
   "editor": {

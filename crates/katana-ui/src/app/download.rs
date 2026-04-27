@@ -21,12 +21,14 @@ pub(crate) trait DownloadOps {
 impl DownloadOps for KatanaApp {
     fn start_download(&mut self, req: DownloadRequest) {
         let (tx, rx) = std::sync::mpsc::channel();
+        let tool_name = req.tool_name.clone();
         self.download_rx = Some(rx);
+        self.active_download = Some(req.clone());
         self.state.layout.status_message = Some((
-            crate::i18n::I18nOps::get()
-                .plantuml
-                .downloading_plantuml
-                .clone(),
+            crate::i18n::I18nOps::tf(
+                &crate::i18n::I18nOps::get().plantuml.downloading_tool,
+                &[("tool", &tool_name)],
+            ),
             crate::app_state::StatusType::Info,
         ));
         let url = req.url;
@@ -40,11 +42,16 @@ impl DownloadOps for KatanaApp {
         let done = if let Some(rx) = &self.download_rx {
             match rx.try_recv() {
                 Ok(Ok(())) => {
+                    let tool_name = self
+                        .active_download
+                        .as_ref()
+                        .map(|it| it.tool_name.as_str())
+                        .unwrap_or("Tool");
                     self.state.layout.status_message = Some((
-                        crate::i18n::I18nOps::get()
-                            .plantuml
-                            .plantuml_installed
-                            .clone(),
+                        crate::i18n::I18nOps::tf(
+                            &crate::i18n::I18nOps::get().plantuml.tool_installed,
+                            &[("tool", tool_name)],
+                        ),
                         crate::app_state::StatusType::Success,
                     ));
                     self.pending_action = AppAction::RefreshDiagrams;
@@ -74,6 +81,7 @@ impl DownloadOps for KatanaApp {
         };
         if done {
             self.download_rx = None;
+            self.active_download = None;
         }
     }
 }

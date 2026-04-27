@@ -121,7 +121,9 @@
   "plantuml": {
     "downloading_plantuml": "⬇ Downloading PlantUML JAR…",
     "plantuml_installed": "PlantUML installed. Refreshing preview…",
-    "download_error": "Download error: "
+    "download_error": "Download error: ",
+    "downloading_tool": "Downloading {tool}…",
+    "tool_installed": "{tool} installed. Refreshing preview…"
   },
   "view_mode": {
     "preview": "Preview",
@@ -393,16 +395,21 @@
       "monthly": "Monthly",
       "check_now": "Check Now",
       "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML is installed at %path%.",
+      "plantuml_installed": "PlantUML is installed at {path}.",
       "plantuml_not_installed": "PlantUML is not installed.",
       "plantuml_update_now": "Update PlantUML to Latest",
-      "drawio_section_title": "Draw.io / Mermaid",
+      "drawio_section_title": "Draw.io",
       "drawio_installed": "Draw.io viewer is installed at {path}",
       "drawio_not_installed": "Draw.io viewer is not installed.",
-      "drawio_update_now": "Update Draw.io to Latest"
+      "drawio_update_now": "Update Draw.io to Latest",
+      "mermaid_section_title": "Mermaid",
+      "mermaid_installed": "Mermaid.js is installed at {path}",
+      "mermaid_not_installed": "Mermaid.js is not installed.",
+      "mermaid_update_now": "Update Mermaid.js to Latest"
     },
     "behavior": {
       "section_title": "Behavior",
+      "editor_behavior_section_title": "Editing Behavior",
       "confirm_close_dirty_tab": "Confirm before closing unsaved tabs",
       "scroll_sync": "Scroll Sync",
       "auto_save": "Auto Save",
@@ -418,13 +425,20 @@
       "clear_http_cache": "Clear HTTP Cache",
       "cache_retention_days": "Cache Retention (Days)",
       "days_suffix": " Days",
+      "startup_behavior_section_title": "Startup Behavior",
       "toc_default_visible": "Show Table of Contents on startup",
       "explorer_default_visible": "Show Explorer on startup",
       "ingest_section_title": "Image Ingest",
       "ingest_image_save_directory": "Image Save Directory",
       "ingest_image_name_format": "Image Name Format",
       "ingest_create_directory": "Create directory if not exists",
-      "confirm_file_move": "Confirm before moving files"
+      "confirm_file_move": "Confirm before moving files",
+      "diagram_rendering_section_title": "Diagram Rendering",
+      "diagram_concurrency": "Diagram render concurrency",
+      "diagram_concurrency_hint": "If Markdown files with many diagrams feel heavy, lower this concurrency setting.",
+      "diagram_concurrency_unlimited": "Unlimited diagram concurrency",
+      "diagram_concurrency_unlimited_warning_title": "Enable unlimited diagram concurrency?",
+      "diagram_concurrency_unlimited_warning_message": "Every detected diagram will render at the same time. Markdown files with many diagrams may make KatanA or the whole system slow."
     },
     "general": "General"
   },
@@ -627,7 +641,12 @@
     "severity_error": "Error",
     "use_workspace_local_config": "Prefer Workspace Rule Set",
     "view_on_github": "View on official GitHub",
-    "search_placeholder": "Search rules…"
+    "search_placeholder": "Search rules…",
+    "fix_preview": "Fix Preview",
+    "fix_preview_removed_line": "- {line}",
+    "fix_preview_added_line": "+ {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "Original content not available for preview."
   },
   "use_workspace_local_config": "Prefer workspace-specific lint rules",
   "editor": {

@@ -50,6 +50,7 @@ impl ImageFallbackOps {
             .clicked()
             {
                 request = Some(DownloadRequest {
+                    tool_name: kind.to_string(),
                     url: download_url.to_string(),
                     dest: install_path.to_path_buf(),
                 });
