@@ -67,7 +67,7 @@ impl MarkdownFenceDelimiter {
         let trailing = &after_marker[..trailing_end];
         trailing
             .chars()
-            .all(|character| character == ' ' || character == '\t')
+            .all(|character| character == ' ' || character == '\t' || character == '\r')
             .then_some(marker_len + trailing_end)
     }
 }

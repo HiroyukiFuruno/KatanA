@@ -27,6 +27,17 @@ fn extract_fence_block_valid() {
 }
 
 #[test]
+fn extract_fence_block_accepts_crlf_closing_line() {
+    let result =
+        MarkdownFenceOps::extract_fence_block("```mermaid\r\ngraph TD; A-->B\r\n```\r\nrest");
+    assert!(result.is_some());
+    let (block, rest) = result.unwrap();
+    assert_eq!(block.info, "mermaid");
+    assert!(block.content.contains("graph TD; A-->B"));
+    assert_eq!(rest, "rest");
+}
+
+#[test]
 fn transform_handles_fence_at_start_of_input() {
     let source = "```mermaid\ngraph TD; A-->B\n```\nAfter";
     let result = MarkdownFenceOps::transform_diagram_blocks(source, &NoOpRenderer);
