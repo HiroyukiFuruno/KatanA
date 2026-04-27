@@ -83,6 +83,7 @@ impl<'a> Modal<'a> {
         let window_controls = self.window_controls;
         let has_controls = window_controls.is_some();
         let fixed_size = self.fixed_size;
+        let content_width = fixed_size.map_or(dialog_width, |size| size.x);
 
         let mut window = egui::Window::new(self.title)
             .id(egui::Id::new(self.id))
@@ -93,56 +94,30 @@ impl<'a> Modal<'a> {
         if let Some(size) = fixed_size {
             window = window.fixed_size(size);
         }
+        if has_controls {
+            window = window.title_bar(false);
+        }
         if let Some(frame) = self.frame {
             window = window.frame(frame);
         }
 
         window.show(ctx, |ui| {
-            ui.set_max_width(dialog_width);
+            ui.set_max_width(content_width);
+
+            if has_controls {
+                let controls = window_controls.expect("modal controls are initialized");
+                if let Some(action) =
+                    Self::render_title_bar(ui, self.title, controls, &mut on_window_button)
+                {
+                    result = Some(action);
+                }
+                ui.add_space(HEADER_TO_BODY_SPACING);
+            }
 
             ui.vertical_centered(|ui| {
-                ui.set_max_width(dialog_width);
+                ui.set_max_width(content_width);
 
-                let header_result = if has_controls {
-                    let controls = window_controls.expect("modal controls are initialized");
-                    let mut left_result = None::<T>;
-                    let mut right_result = None::<T>;
-                    if cfg!(target_os = "macos") {
-                        crate::widgets::AlignCenter::new()
-                            .left(|ui| {
-                                left_result = Self::render_window_controls(
-                                    ui,
-                                    controls,
-                                    &mut on_window_button,
-                                );
-                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-                            })
-                            .right(|ui| {
-                                right_result = header(ui);
-                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-                            })
-                            .show(ui);
-                    } else {
-                        crate::widgets::AlignCenter::new()
-                            .left(|ui| {
-                                left_result = header(ui);
-                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-                            })
-                            .right(|ui| {
-                                right_result = Self::render_window_controls(
-                                    ui,
-                                    controls,
-                                    &mut on_window_button,
-                                );
-                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-                            })
-                            .show(ui);
-                    }
-                    ui.add_space(HEADER_TO_BODY_SPACING);
-                    right_result.or(left_result)
-                } else {
-                    header(ui)
-                };
+                let header_result = header(ui);
                 if header_result.is_some() {
                     result = header_result;
                 }
@@ -164,13 +139,39 @@ impl<'a> Modal<'a> {
             crate::widgets::AlignCenter::new()
                 .shrink_to_fit(true)
                 .content(|ui| {
-                    ui.set_max_width(dialog_width);
+                    ui.set_max_width(content_width);
                     footer_result = footer(ui);
                 })
                 .show(ui);
             if footer_result.is_some() {
                 result = footer_result;
             }
+        });
+
+        result
+    }
+
+    fn render_title_bar<T>(
+        ui: &mut egui::Ui,
+        title: &str,
+        controls: ModalWindowControls,
+        on_window_button: &mut impl FnMut(ModalWindowButton) -> Option<T>,
+    ) -> Option<T> {
+        let mut result = None;
+
+        ui.columns_const::<3, _>(|[left, center, right]| {
+            if cfg!(target_os = "macos") {
+                result = Self::render_window_controls(left, controls, on_window_button);
+            } else {
+                result = Self::render_window_controls(right, controls, on_window_button);
+            }
+
+            center.with_layout(
+                egui::Layout::centered_and_justified(egui::Direction::LeftToRight),
+                |ui| {
+                    ui.label(egui::RichText::new(title).strong());
+                },
+            );
         });
 
         result
@@ -188,36 +189,13 @@ impl<'a> Modal<'a> {
         };
         let mut result = None;
 
-        if cfg!(target_os = "macos") {
-            ui.horizontal(|ui| {
-                let close_btn = ui
-                    .add(
-                        crate::Icon::Close
-                            .button(ui, crate::icon::IconSize::Small)
-                            .frame(false),
-                    )
-                    .on_hover_text(controls.close_tooltip);
-                if close_btn.clicked() {
-                    result = on_window_button(ModalWindowButton::Close);
-                }
+        let controls_layout = if cfg!(target_os = "macos") {
+            egui::Layout::left_to_right(egui::Align::Center)
+        } else {
+            egui::Layout::right_to_left(egui::Align::Center)
+        };
 
-                if controls.show_fullscreen {
-                    let fullscreen_btn = ui
-                        .add(
-                            crate::Icon::Fullscreen
-                                .button(ui, crate::icon::IconSize::Small)
-                                .frame(false),
-                        )
-                        .on_hover_text(fullscreen_label);
-                    if fullscreen_btn.clicked() {
-                        result = on_window_button(ModalWindowButton::Fullscreen);
-                    }
-                }
-            });
-            return result;
-        }
-
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        ui.with_layout(controls_layout, |ui| {
             let close_btn = ui
                 .add(
                     crate::Icon::Close
