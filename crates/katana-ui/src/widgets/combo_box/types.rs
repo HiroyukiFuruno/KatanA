@@ -1,5 +1,6 @@
 pub struct StyledComboBox<'a> {
-    pub(crate) id: &'a str,
-    pub(crate) selected_text: String,
-    pub(crate) width: Option<f32>,
+    pub id: &'a str,
+    pub selected_text: String,
+    pub width: Option<f32>,
+    pub truncate: bool,
 }

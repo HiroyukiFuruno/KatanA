@@ -9,6 +9,8 @@ impl EditorContextMenu {
     pub(crate) fn render(
         response: &egui::Response,
         action: &mut AppAction,
+        path: &std::path::Path,
+        editable: bool,
         cursor_range: Option<egui::text::CCursorRange>,
     ) {
         let has_selection = cursor_range.is_some_and(|r| r.primary.index != r.secondary.index);
@@ -16,6 +18,14 @@ impl EditorContextMenu {
             let i18n = crate::i18n::I18nOps::get();
             if ui.button(i18n.action.save.as_str()).clicked() {
                 *action = AppAction::SaveDocument;
+                ui.close();
+            }
+            if Self::should_offer_markdown_format(path, editable)
+                && ui
+                    .button(i18n.action.format_markdown_file.clone())
+                    .clicked()
+            {
+                *action = AppAction::FormatMarkdownFile(path.to_path_buf());
                 ui.close();
             }
             ui.separator();
@@ -122,13 +132,9 @@ impl EditorContextMenu {
             MarkdownAuthoringOp::Blockquote,
             true,
         );
-        Self::author_button(
-            ui,
-            action,
-            &s.command_author_code_block,
-            MarkdownAuthoringOp::CodeBlock,
-            true,
-        );
+        MenuButtonOps::show(ui, &s.command_author_code_block, |ui| {
+            super::code_block_menu::CodeBlockMenuOps::show(ui, action);
+        });
         Self::author_button(
             ui,
             action,
@@ -179,5 +185,16 @@ impl EditorContextMenu {
             *action = AppAction::AuthorMarkdown(op);
             ui.close();
         }
+    }
+
+    pub(super) fn should_offer_markdown_format(path: &std::path::Path, editable: bool) -> bool {
+        editable
+            && path
+                .extension()
+                .and_then(|extension| extension.to_str())
+                .is_some_and(|extension| {
+                    extension.eq_ignore_ascii_case("md")
+                        || extension.eq_ignore_ascii_case("markdown")
+                })
     }
 }

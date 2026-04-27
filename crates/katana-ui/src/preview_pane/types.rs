@@ -111,6 +111,7 @@ pub enum RenderedSection {
 
 #[derive(Debug, Clone)]
 pub struct DownloadRequest {
+    pub tool_name: String,
     pub url: String,
     pub dest: std::path::PathBuf,
 }

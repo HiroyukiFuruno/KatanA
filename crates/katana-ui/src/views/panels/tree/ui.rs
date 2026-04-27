@@ -1,6 +1,7 @@
 use super::types::*;
 use crate::shell_ui::TreeRenderContext;
 use eframe::egui;
+use katana_core::workspace::TreeEntry;
 
 impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
     pub fn new(
@@ -40,6 +41,10 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
             }
             if ui.button(msg.new_directory.clone()).clicked() {
                 *ctx.action = crate::app_state::AppAction::RequestNewDirectory(target_dir);
+                ui.close();
+            }
+            if ui.button(msg.format_directory_markdown.clone()).clicked() {
+                *ctx.action = Self::format_directory_markdown_action(path);
                 ui.close();
             }
             ui.separator();
@@ -104,6 +109,12 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
                 *ctx.action = crate::app_state::AppAction::SelectDocument(path.to_path_buf());
                 ui.close();
             }
+            if Self::should_offer_markdown_format(entry)
+                && ui.button(msg.format_markdown_file.clone()).clicked()
+            {
+                *ctx.action = crate::app_state::AppAction::FormatMarkdownFile(path.to_path_buf());
+                ui.close();
+            }
 
             crate::widgets::MenuButtonOps::show(
                 ui,
@@ -144,5 +155,15 @@ impl<'a, 'b, 'c> TreeContextMenu<'a, 'b, 'c> {
             *ctx.action = crate::app_state::AppAction::RequestDelete(path.to_path_buf());
             ui.close();
         }
+    }
+
+    pub(super) fn should_offer_markdown_format(entry: Option<&TreeEntry>) -> bool {
+        entry.is_some_and(TreeEntry::is_markdown)
+    }
+
+    pub(super) fn format_directory_markdown_action(
+        path: &std::path::Path,
+    ) -> crate::app_state::AppAction {
+        crate::app_state::AppAction::FormatWorkspaceMarkdown(path.to_path_buf())
     }
 }

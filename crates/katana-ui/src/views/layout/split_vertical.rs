@@ -123,6 +123,11 @@ impl<'a> VerticalSplit<'a> {
             .show_inside(ui, |ui| {
                 EditorContent::new(
                     app.state.document.active_document(),
+                    app.state
+                        .workspace
+                        .data
+                        .as_ref()
+                        .map(|ws| ws.root.as_path()),
                     &mut app.state.scroll,
                     &mut app.pending_action,
                     scroll_sync,

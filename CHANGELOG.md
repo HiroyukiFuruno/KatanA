@@ -2,6 +2,31 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.7] - 2026-04-27 05:24:43 (UTC)
+
+### 🚀 Features
+
+- **Diagram Block Rendering**: Added support for Mermaid, DrawIO, and PlantUML blocks written with tilde fences, so both backtick and tilde Markdown code blocks can render diagrams.
+- **Markdown Lint Settings**: Added workspace-aware Markdown lint settings with shared rules, workspace rules, rule details, presets, and reusable user presets.
+- **Markdown Formatting Actions**: Added file, folder, workspace, and Problems panel actions for applying available Markdown lint fixes in bulk.
+
+### ✨ Improvements
+
+- **Diagram Rendering Performance**: Reworked Mermaid and DrawIO rendering to use cached local renderer assets and faster background rendering.
+- **Settings Experience**: Unified theme, icon, and linter preset controls, improved searchable dropdowns, and fixed layout issues in advanced settings.
+- **Explorer Workflows**: Added quick creation and formatting entry points from Explorer headers and context menus.
+
+### 🐛 Bug Fixes
+
+- Fixed Markdown lint diagnostic popups in code view so warning and error details appear on hover.
+- Fixed code block insertion so the button opens a type selector and inserts the selected fenced code block.
+- Fixed Mermaid and DrawIO preview regressions affecting size, centering, colors, caching, and refresh behavior.
+- Fixed a Markdown lint crash caused by multibyte Japanese text in long-line checks.
+
+### 🔧 System
+
+- Improved renderer asset caching, Markdown lint compatibility, and regression coverage for diagram previews, settings persistence, and bulk fixes.
+
 ## [0.22.6] - 2026-04-25 14:03:32 (UTC)
 
 ### 🚀 Features

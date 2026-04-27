@@ -43,4 +43,16 @@ pub struct PlantUmlMessages {
     pub downloading_plantuml: String,
     pub plantuml_installed: String,
     pub download_error: String,
+    #[serde(default = "default_downloading_tool")]
+    pub downloading_tool: String,
+    #[serde(default = "default_tool_installed")]
+    pub tool_installed: String,
+}
+
+fn default_downloading_tool() -> String {
+    "Downloading {tool}...".to_string()
+}
+
+fn default_tool_installed() -> String {
+    "{tool} installed. Refreshing preview...".to_string()
 }

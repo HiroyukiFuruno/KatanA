@@ -1,6 +1,9 @@
 /* WHY: Operations for rendering icon-related popups and the preview grid. */
 pub(crate) struct IconsPopupsOps;
 
+const ICON_SAVE_DIALOG_WIDTH: f32 = 400.0;
+const ICON_SAVE_INPUT_WIDTH: f32 = 260.0;
+
 impl IconsPopupsOps {
     /* WHY: Renders non-modal windows like the Preset Save dialog. */
     pub(crate) fn render(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
@@ -20,39 +23,26 @@ impl IconsPopupsOps {
             egui::Window::new(&i18n.settings.icons.save_preset)
                 .collapsible(false)
                 .resizable(false)
+                .min_width(ICON_SAVE_DIALOG_WIDTH)
+                .max_width(ICON_SAVE_DIALOG_WIDTH)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
                 .show(ui.ctx(), |ui| {
-                    ui.label(&i18n.settings.icons.preset_name);
-                    let response = ui.text_edit_singleline(&mut preset_name);
-                    response.request_focus();
                     crate::widgets::AlignCenter::new()
+                        .shrink_to_fit(true)
                         .content(|ui| {
-                            if ui.button(&i18n.action.save).clicked() {
-                                let mut icon_settings =
-                                    state.config.settings.settings().icon.clone();
-                                if let Some(existing) = icon_settings
-                                    .custom_presets
-                                    .iter_mut()
-                                    .find(|p| p.name == preset_name)
-                                {
-                                    existing.overrides = icon_settings.active_overrides.clone();
-                                } else {
-                                    icon_settings.custom_presets.push(
-                                        katana_platform::settings::types::icon::IconPreset {
-                                            name: preset_name.clone(),
-                                            overrides: icon_settings.active_overrides.clone(),
-                                        },
-                                    );
-                                }
-                                icon_settings.active_preset = Some(preset_name.clone());
-                                state.config.settings.settings_mut().icon = icon_settings;
-                                let _ = state.config.try_save_settings();
-
-                                close_dialog = true;
-                            }
-                            if ui.button(&i18n.action.cancel).clicked() {
-                                close_dialog = true;
-                            }
+                            ui.label(&i18n.settings.icons.preset_name);
+                            let response = ui.add(
+                                egui::TextEdit::singleline(&mut preset_name)
+                                    .desired_width(ICON_SAVE_INPUT_WIDTH),
+                            );
+                            response.request_focus();
+                        })
+                        .show(ui);
+                    ui.add_space(crate::settings::SUBSECTION_SPACING);
+                    crate::widgets::AlignCenter::new()
+                        .shrink_to_fit(true)
+                        .content(|ui| {
+                            Self::render_save_buttons(ui, state, &preset_name, &mut close_dialog);
                         })
                         .show(ui);
                 });
@@ -67,6 +57,52 @@ impl IconsPopupsOps {
                 });
             }
         }
+    }
+
+    fn render_save_buttons(
+        ui: &mut egui::Ui,
+        state: &mut crate::app_state::AppState,
+        preset_name: &str,
+        close_dialog: &mut bool,
+    ) {
+        let i18n = crate::i18n::I18nOps::get();
+        if ui.button(&i18n.action.cancel).clicked() {
+            *close_dialog = true;
+        }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if ui.button(&i18n.action.save).clicked() && !preset_name.is_empty() {
+                Self::save_preset(state, preset_name);
+                *close_dialog = true;
+            }
+        });
+    }
+
+    fn save_preset(state: &mut crate::app_state::AppState, preset_name: &str) {
+        let mut icon_settings = state.config.settings.settings().icon.clone();
+        if let Some(existing) = icon_settings
+            .custom_presets
+            .iter_mut()
+            .find(|preset| preset.name == preset_name)
+        {
+            existing.overrides = icon_settings.active_overrides.clone();
+        } else {
+            icon_settings
+                .custom_presets
+                .push(katana_platform::settings::types::icon::IconPreset {
+                    name: preset_name.to_string(),
+                    overrides: icon_settings.active_overrides.clone(),
+                });
+        }
+        icon_settings.active_preset = Some(preset_name.to_string());
+        icon_settings.preset_state.select_user(preset_name);
+        icon_settings.preset_state.sync_user_preset_names(
+            icon_settings
+                .custom_presets
+                .iter()
+                .map(|preset| &preset.name),
+        );
+        state.config.settings.settings_mut().icon = icon_settings;
+        let _ = state.config.try_save_settings();
     }
 
     /* WHY: Renders a collapsible grid of all available icons grouped by vendor. */

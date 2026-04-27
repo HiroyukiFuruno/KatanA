@@ -23,6 +23,7 @@ impl Default for PerformanceSettings {
             cache_retention_days: SettingsDefaultOps::default_cache_retention(),
             optimize_for_speed: true,
             diagram_concurrency: SettingsDefaultOps::default_diagram_concurrency(),
+            diagram_concurrency_unlimited: false,
         }
     }
 }

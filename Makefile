@@ -93,9 +93,13 @@ build-release: sweep ## Release build (optimized)
 # Quality
 ###################################
 
-.PHONY: fmt
+.PHONY: fmt locale-json-fmt
 fmt: ## Apply code formatting (rustfmt)
 	$(RTK) cargo fmt --all
+
+.PHONY: locale-json-fmt
+locale-json-fmt:
+	rtk err bunx biome format --indent-style space --indent-width 2 --write crates/katana-ui/locales/*.json
 
 .PHONY: fmt-check
 fmt-check: ## Check format differences (for CI)

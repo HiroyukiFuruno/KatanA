@@ -8,7 +8,7 @@ pub(crate) const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
 pub(crate) const DEFAULT_AUTO_REFRESH_INTERVAL_SECS: f64 = 2.0;
 pub const DEFAULT_MAX_DEPTH: usize = 10;
 pub const DEFAULT_CACHE_RETENTION_DAYS: u32 = 7;
-pub const DEFAULT_DIAGRAM_CONCURRENCY: usize = 4;
+pub const DEFAULT_DIAGRAM_CONCURRENCY: usize = 10;
 pub const DEFAULT_IGNORED_DIRECTORIES: &[&str] = &[
     ".git",
     ".terraform",
@@ -22,7 +22,7 @@ pub(crate) const DEFAULT_IMAGE_NAME_FORMAT: &str = "{uuid}";
 
 impl SettingsDefaultOps {
     pub fn default_version() -> String {
-        "0.2.2".to_string()
+        "0.2.3".to_string()
     }
     pub fn default_language() -> String {
         "en".to_string()
@@ -149,14 +149,16 @@ impl Default for AppSettings {
 
 impl Default for ThemeSettings {
     fn default() -> Self {
+        let preset = SettingsDefaultOps::select_initial_preset();
         Self {
             theme: SettingsDefaultOps::default_theme(),
             icon_pack: SettingsDefaultOps::default_icon_pack(),
             ui_contrast_offset: SettingsDefaultOps::default_ui_contrast_offset(),
-            preset: SettingsDefaultOps::select_initial_preset(),
+            preset,
             custom_color_overrides: None,
             custom_themes: Vec::new(),
             active_custom_theme: None,
+            preset_state: PresetState::built_in(format!("{preset:?}"), preset.display_name()),
         }
     }
 }

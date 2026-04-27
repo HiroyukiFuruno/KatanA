@@ -19,6 +19,7 @@ impl ToolbarPopup {
         galley: &egui::text::Galley,
         cursor_range: Option<egui::text::CCursorRange>,
         editable: bool,
+        suppress: bool,
     ) {
         let editor_focused = Self::editor_has_input_focus(ui, response);
         let was_open = ui.memory(|mem| {
@@ -26,7 +27,13 @@ impl ToolbarPopup {
                 .get_temp::<bool>(egui::Id::new(POPUP_OPEN_ID))
                 .unwrap_or(false)
         });
-        if !Self::should_show(editable, editor_focused, was_open, cursor_range.is_some()) {
+        if !Self::should_show(
+            editable,
+            editor_focused,
+            was_open,
+            cursor_range.is_some(),
+            suppress,
+        ) {
             Self::store_open(ui, false);
             return;
         }
@@ -47,9 +54,16 @@ impl ToolbarPopup {
                     .inner_margin(egui::Margin::same(POPUP_MARGIN))
                     .show(ui, |ui| {
                         super::toolbar::EditorToolbar::new(action, has_selection).show(ui);
-                    });
+                    })
+                    .response
+                    .hovered()
             });
-        Self::store_open(ui, editor_focused || area_response.response.hovered());
+        Self::store_open(
+            ui,
+            editor_focused
+                || area_response.inner
+                || super::code_block_menu::CodeBlockMenuPopupOps::is_open(ui),
+        );
     }
 
     fn editor_has_input_focus(ui: &egui::Ui, response: &egui::Response) -> bool {
@@ -71,8 +85,14 @@ impl ToolbarPopup {
         egui::pos2(desired_x.clamp(min_x, max_x), desired_y.clamp(min_y, max_y))
     }
 
-    fn should_show(editable: bool, editor_focused: bool, was_open: bool, has_cursor: bool) -> bool {
-        editable && has_cursor && (editor_focused || was_open)
+    fn should_show(
+        editable: bool,
+        editor_focused: bool,
+        was_open: bool,
+        has_cursor: bool,
+        suppress: bool,
+    ) -> bool {
+        editable && has_cursor && !suppress && (editor_focused || was_open)
     }
 
     fn store_open(ui: &egui::Ui, open: bool) {
@@ -108,11 +128,38 @@ mod tests {
 
     #[test]
     fn popup_stays_available_after_editor_focus_moves_to_toolbar() {
-        assert!(ToolbarPopup::should_show(true, false, true, true));
+        assert!(ToolbarPopup::should_show(true, false, true, true, false));
     }
 
     #[test]
     fn popup_does_not_show_without_cursor() {
-        assert!(!ToolbarPopup::should_show(true, true, false, false));
+        assert!(!ToolbarPopup::should_show(true, true, false, false, false));
+    }
+
+    #[test]
+    fn popup_does_not_show_while_diagnostic_hover_is_active() {
+        assert!(!ToolbarPopup::should_show(true, true, true, true, true));
+    }
+
+    #[test]
+    fn popup_stays_available_when_child_menu_is_open() {
+        let ctx = egui::Context::default();
+        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                super::super::code_block_menu::CodeBlockMenuPopupOps::set_open(ui, true);
+
+                ToolbarPopup::store_open(
+                    ui,
+                    super::super::code_block_menu::CodeBlockMenuPopupOps::is_open(ui),
+                );
+
+                let was_open = ui.memory(|mem| {
+                    mem.data
+                        .get_temp::<bool>(egui::Id::new(POPUP_OPEN_ID))
+                        .unwrap_or(false)
+                });
+                assert!(was_open);
+            });
+        });
     }
 }

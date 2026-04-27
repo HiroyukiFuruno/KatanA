@@ -69,13 +69,13 @@ impl ShortcutContextResolver {
     /// editor pane has keyboard focus. We use the stable egui Id associated
     /// with the editor's TextEdit widget.
     fn is_editor_focused(state: &AppState, ctx: &egui::Context) -> bool {
-        if state.document.active_doc_idx.is_none() {
+        let Some(doc) = state.active_document() else {
             return false;
-        }
-        ctx.memory(|mem| {
-            mem.focused()
-                .is_some_and(|id| id == egui::Id::new("editor_text_edit"))
-        })
+        };
+        let workspace_root = state.workspace.data.as_ref().map(|ws| ws.root.as_path());
+        let editor_id =
+            crate::editor_undo::EditorUndoIdentity::text_edit_id(workspace_root, &doc.path);
+        ctx.memory(|mem| mem.focused().is_some_and(|id| id == editor_id))
     }
 
     /// WHY: Preview / fullscreen / slideshow modes are treated as a dedicated
@@ -232,14 +232,36 @@ mod tests {
     }
 
     #[test]
-    fn resolve_returns_editor_when_text_edit_has_stable_focus_id() {
+    fn resolve_returns_editor_when_active_document_text_edit_has_focus() {
         let state = state_with_active_doc();
         let ctx = egui::Context::default();
-        ctx.memory_mut(|mem| mem.request_focus(egui::Id::new("editor_text_edit")));
+        ctx.memory_mut(|mem| {
+            mem.request_focus(egui::Id::new((
+                "editor_text_edit",
+                std::path::Path::new("/tmp/editor.md"),
+            )));
+        });
 
         assert_eq!(
             ShortcutContextResolver::resolve(&state, &ctx),
             ShortcutContext::Editor
+        );
+    }
+
+    #[test]
+    fn resolve_ignores_text_edit_focus_for_other_document() {
+        let state = state_with_active_doc();
+        let ctx = egui::Context::default();
+        ctx.memory_mut(|mem| {
+            mem.request_focus(egui::Id::new((
+                "editor_text_edit",
+                std::path::Path::new("/tmp/other.md"),
+            )));
+        });
+
+        assert_eq!(
+            ShortcutContextResolver::resolve(&state, &ctx),
+            ShortcutContext::Global
         );
     }
 

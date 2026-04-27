@@ -41,7 +41,7 @@ impl Icon {
                 if is_dark { "#FF6B6B" } else { "#DC3545" }
             }
             /* WHY: Warning / Folders */
-            Self::Warning | Self::FolderOpen | Self::FolderClosed => {
+            Self::Warning | Self::FolderOpen | Self::FolderClosed | Self::FolderPlus => {
                 if is_dark {
                     "#FFD166"
                 } else {
@@ -49,7 +49,7 @@ impl Icon {
                 }
             }
             /* WHY: Success / Add */
-            Self::Success | Self::Plus => {
+            Self::Success | Self::Plus | Self::FilePlus => {
                 if is_dark {
                     "#06D6A0"
                 } else {

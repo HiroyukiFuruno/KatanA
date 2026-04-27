@@ -12,32 +12,39 @@ impl IconsRowOps {
         current_vendor: &mut String,
         settings_changed: &mut bool,
     ) {
-        egui::ComboBox::from_id_source(format!("vendor_{}", icon_name))
-            .selected_text(current_vendor.clone())
-            .show_ui(ui, |ui| {
-                let is_selected = current_vendor == "default";
+        crate::widgets::StyledComboBox::new(
+            &format!("vendor_{}", icon_name),
+            current_vendor.clone(),
+        )
+        .show(ui, |ui| {
+            let is_selected = current_vendor == "default";
+            let default_label = crate::i18n::I18nOps::get()
+                .settings
+                .icons
+                .revert_default
+                .clone();
+            if ui
+                .add(egui::Button::selectable(is_selected, default_label).frame_when_inactive(true))
+                .clicked()
+            {
+                *current_vendor = "default".to_string();
+                *settings_changed = true;
+            }
+            for p in crate::icon::AVAILABLE_PACKS {
+                let pid = p.manifest().id.to_string();
+                let is_pack_sel = *current_vendor == pid;
                 if ui
-                    .add(egui::Button::selectable(is_selected, "Default").frame_when_inactive(true))
+                    .add(
+                        egui::Button::selectable(is_pack_sel, pid.clone())
+                            .frame_when_inactive(true),
+                    )
                     .clicked()
                 {
-                    *current_vendor = "default".to_string();
+                    *current_vendor = pid;
                     *settings_changed = true;
                 }
-                for p in crate::icon::AVAILABLE_PACKS {
-                    let pid = p.manifest().id.to_string();
-                    let is_pack_sel = *current_vendor == pid;
-                    if ui
-                        .add(
-                            egui::Button::selectable(is_pack_sel, pid.clone())
-                                .frame_when_inactive(true),
-                        )
-                        .clicked()
-                    {
-                        *current_vendor = pid;
-                        *settings_changed = true;
-                    }
-                }
-            });
+            }
+        });
     }
 
     /* WHY: Renders the color picker column for an icon. Delegate to IconsColorsOps. */

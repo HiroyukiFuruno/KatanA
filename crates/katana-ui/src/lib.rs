@@ -22,13 +22,23 @@ pub mod html_renderer;
 pub(crate) mod http_cache_loader;
 pub mod i18n;
 pub mod icon;
+pub mod lint_fix_batch;
 pub(crate) mod linter_bridge;
 pub(crate) mod linter_config_bridge;
+#[cfg(test)]
+mod linter_config_bridge_tests;
+pub(crate) mod linter_default_config;
 pub(crate) mod linter_options_bridge;
+#[cfg(test)]
+mod linter_options_bridge_tests;
 pub mod markdown_authoring_op;
+pub(crate) mod markdown_formatting_bridge;
+#[cfg(test)]
+mod markdown_formatting_bridge_tests;
 pub use icon::*;
 pub mod changelog;
 pub mod diagram_controller;
+pub(crate) mod editor_undo;
 pub mod native_menu;
 pub mod os_command;
 pub mod preview_pane;

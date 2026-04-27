@@ -44,6 +44,7 @@ impl DefaultCacheService {
             .unwrap_or(PathBuf::from("."))
             .join("KatanA");
         Self::clear_all_directories_in(&base);
+        Self::clear_temporary_diagram_images();
     }
 
     fn clear_directory(path: &std::path::Path) {
@@ -159,6 +160,20 @@ impl CacheFacade for DefaultCacheService {
         /* WHY: In-memory map must stay in sync with the on-disk KV to avoid stale reads after clear. */
         let mut map = LockOps::write_guard(&self.persistent);
         map.retain(|(k, _)| !k.starts_with("diagram:"));
+        Self::clear_temporary_diagram_images();
+    }
+}
+
+impl DefaultCacheService {
+    fn clear_temporary_diagram_images() {
+        let temp_dir = std::env::temp_dir();
+        let cache_dirs = [
+            temp_dir.join("katana_mermaid_cache"),
+            temp_dir.join("katana_drawio_cache"),
+        ];
+        for cache_dir in cache_dirs {
+            let _ = std::fs::remove_dir_all(cache_dir);
+        }
     }
 }
 
@@ -166,7 +181,10 @@ impl CacheFacade for DefaultCacheService {
 #[allow(clippy::expect_used)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
     use tempfile::TempDir;
+
+    static DIAGRAM_CACHE_CLEAR_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn test_memory_cache() {
@@ -212,6 +230,9 @@ mod tests {
 
     #[test]
     fn test_clear_diagram_cache() {
+        let _guard = DIAGRAM_CACHE_CLEAR_LOCK
+            .lock()
+            .expect("lock diagram cache clear");
         let tmp = TempDir::new().expect("Failed to create temp dir");
         let path = tmp.path().join("cache.json");
         let cache = DefaultCacheService::new(path.clone());
@@ -245,6 +266,27 @@ mod tests {
             .filter(|e| e.file_name().to_string_lossy().starts_with("diagram_"))
             .count();
         assert_eq!(remaining_diagrams, 0, "Diagram file was not deleted");
+    }
+
+    #[test]
+    fn test_clear_diagram_cache_removes_temporary_renderer_images() {
+        let _guard = DIAGRAM_CACHE_CLEAR_LOCK
+            .lock()
+            .expect("lock diagram cache clear");
+        let tmp = TempDir::new().expect("Failed to create temp dir");
+        let path = tmp.path().join("cache.json");
+        let cache = DefaultCacheService::new(path);
+        let mermaid_cache = std::env::temp_dir().join("katana_mermaid_cache");
+        let drawio_cache = std::env::temp_dir().join("katana_drawio_cache");
+        std::fs::create_dir_all(&mermaid_cache).expect("mkdir mermaid");
+        std::fs::create_dir_all(&drawio_cache).expect("mkdir drawio");
+        std::fs::write(mermaid_cache.join("diagram.png"), "png").expect("write mermaid");
+        std::fs::write(drawio_cache.join("diagram.png"), "png").expect("write drawio");
+
+        cache.clear_diagram_cache();
+
+        assert!(!mermaid_cache.exists(), "Mermaid render cache remained");
+        assert!(!drawio_cache.exists(), "Draw.io render cache remained");
     }
 
     #[test]
@@ -407,6 +449,9 @@ mod tests {
 
     #[test]
     fn test_clear_all_directories() {
+        let _guard = DIAGRAM_CACHE_CLEAR_LOCK
+            .lock()
+            .expect("lock diagram cache clear");
         DefaultCacheService::clear_all_directories();
     }
 }

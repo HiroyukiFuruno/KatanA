@@ -2,6 +2,7 @@ use super::rule_group::RuleGroupOps;
 use crate::i18n::LinterTranslations;
 use crate::settings::SETTINGS_TOGGLE_SPACING;
 use eframe::egui;
+use std::path::PathBuf;
 
 pub(crate) struct LinterAdvancedSettingsOps;
 
@@ -12,8 +13,10 @@ impl LinterAdvancedSettingsOps {
         msgs: &LinterTranslations,
         is_advanced_open: &mut bool,
     ) {
+        let config_path_id = egui::Id::new("linter_advanced_config_path");
+        let i18n_common = &crate::i18n::I18nOps::get().common;
         crate::widgets::AlignCenter::new()
-            .left(|ui| ui.heading(&crate::i18n::I18nOps::get().common.advanced_settings))
+            .left(|ui| ui.heading(&i18n_common.advanced_settings))
             .right(|ui| {
                 if ui
                     .button(&crate::i18n::I18nOps::get().common.close)
@@ -21,6 +24,9 @@ impl LinterAdvancedSettingsOps {
                     .clicked()
                 {
                     *is_advanced_open = false;
+                    ui.data_mut(|data| {
+                        data.remove_temp::<PathBuf>(config_path_id);
+                    });
                 }
                 ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
             })
@@ -38,7 +44,6 @@ impl LinterAdvancedSettingsOps {
         let mut force_open: Option<bool> = None;
         crate::widgets::AlignCenter::new()
             .left(|ui| {
-                let i18n_common = &crate::i18n::I18nOps::get().common;
                 if ui.button(&i18n_common.expand_all).clicked() {
                     force_open = Some(true);
                 }
@@ -67,24 +72,34 @@ impl LinterAdvancedSettingsOps {
 
         ui.add_space(SETTINGS_TOGGLE_SPACING);
 
-        let target_path =
-            crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(state);
+        let target_path = ui
+            .data(|data| data.get_temp::<PathBuf>(config_path_id))
+            .unwrap_or_else(|| {
+                crate::linter_config_bridge::MarkdownLinterConfigOps::target_config_path(state)
+            });
 
         /* WHY: Load the current configuration to populate the UI and save updates */
         let mut config =
-            katana_markdown_linter::MarkdownLintConfig::load(&target_path).unwrap_or_default();
-
-        for rule in
-            katana_markdown_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
-        {
-            RuleGroupOps::render_rule_group(
-                ui,
-                rule.as_ref(),
-                &mut config,
+            crate::linter_config_bridge::MarkdownLinterConfigOps::load_config_or_katana_default(
                 &target_path,
-                &search_query,
-                force_open,
             );
-        }
+
+        egui::ScrollArea::vertical()
+            .id_salt("linter_advanced_scroll")
+            .auto_shrink(false)
+            .show(ui, |ui| {
+                for rule in
+                    katana_markdown_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
+                {
+                    RuleGroupOps::render_rule_group(
+                        ui,
+                        rule.as_ref(),
+                        &mut config,
+                        &target_path,
+                        &search_query,
+                        force_open,
+                    );
+                }
+            });
     }
 }

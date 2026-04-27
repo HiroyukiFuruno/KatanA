@@ -5,6 +5,12 @@ use eframe::egui;
 
 impl KatanaApp {
     pub(crate) fn show_file_operations_modals(&mut self, ctx: &egui::Context) {
+        let ws_root = self
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .map(|workspace| workspace.root.clone());
         if let Some(mut modal_data) = self.state.layout.create_fs_node_modal.take() {
             let visible_ext = self
                 .state
@@ -45,6 +51,7 @@ impl KatanaApp {
         if let Some(modal_data) = self.state.layout.move_modal.take()
             && !crate::views::modals::file_ops::MoveModal::new(
                 &modal_data,
+                ws_root.as_deref(),
                 &mut self.pending_action,
             )
             .show(ctx)

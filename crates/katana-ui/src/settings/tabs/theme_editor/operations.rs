@@ -89,6 +89,11 @@ fn reset_custom_theme(state: &mut crate::app_state::AppState, active_custom: &Op
                 .settings_mut()
                 .theme
                 .custom_color_overrides = Some(colors);
+            let theme = &mut state.config.settings.settings_mut().theme;
+            theme.preset_state.select_user(name);
+            theme
+                .preset_state
+                .sync_user_preset_names(theme.custom_themes.iter().map(|preset| &preset.name));
         } else {
             state
                 .config
@@ -102,6 +107,7 @@ fn reset_custom_theme(state: &mut crate::app_state::AppState, active_custom: &Op
                 .settings_mut()
                 .theme
                 .active_custom_theme = None;
+            select_current_built_in_theme(state);
         }
     } else {
         state
@@ -116,5 +122,17 @@ fn reset_custom_theme(state: &mut crate::app_state::AppState, active_custom: &Op
             .settings_mut()
             .theme
             .active_custom_theme = None;
+        select_current_built_in_theme(state);
     }
+}
+
+fn select_current_built_in_theme(state: &mut crate::app_state::AppState) {
+    let theme = &mut state.config.settings.settings_mut().theme;
+    let preset = theme.preset;
+    theme
+        .preset_state
+        .select_built_in(format!("{preset:?}"), preset.display_name());
+    theme
+        .preset_state
+        .sync_user_preset_names(theme.custom_themes.iter().map(|preset| &preset.name));
 }

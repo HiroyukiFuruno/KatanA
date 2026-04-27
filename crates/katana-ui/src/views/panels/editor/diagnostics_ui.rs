@@ -11,7 +11,8 @@ impl EditorDiagnostics {
         response_rect: &egui::Rect,
         diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         action: &mut crate::app_state::AppAction,
-    ) {
+    ) -> bool {
+        let mut hovered = false;
         for diag in diagnostics {
             if diag.official_meta.is_none() {
                 continue;
@@ -50,7 +51,7 @@ impl EditorDiagnostics {
                 let start_row = galley.layout_from_cursor(match_start).row;
                 let end_row = galley.layout_from_cursor(match_end).row;
 
-                Self::paint_squiggly(
+                hovered |= Self::paint_squiggly(
                     ui,
                     galley,
                     response_rect,
@@ -65,6 +66,7 @@ impl EditorDiagnostics {
                 );
             }
         }
+        hovered
     }
 
     /* WHY: allow(nesting_depth) */
@@ -81,7 +83,8 @@ impl EditorDiagnostics {
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         action: &mut crate::app_state::AppAction,
         all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
-    ) {
+    ) -> bool {
+        let mut hovered = false;
         for row_idx in start_row..=end_row {
             let Some(placed_row) = galley.rows.get(row_idx) else {
                 continue;
@@ -133,6 +136,7 @@ impl EditorDiagnostics {
                     diag.range.start_column,
                 ));
                 let resp = ui.interact(hover_rect, id, egui::Sense::hover());
+                hovered |= resp.hovered();
 
                 resp.on_hover_ui(|ui| {
                     if let Some(meta) = diag.official_meta.as_ref() {
@@ -147,5 +151,6 @@ impl EditorDiagnostics {
                 });
             }
         }
+        hovered
     }
 }

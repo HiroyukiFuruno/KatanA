@@ -46,6 +46,12 @@ pub struct SettingsThemeMessages {
     pub ui_contrast_offset: String,
     pub show_more: String,
     pub show_less: String,
+    #[serde(default = "default_theme_search_placeholder")]
+    pub search_placeholder: String,
+}
+
+fn default_theme_search_placeholder() -> String {
+    "Search colors…".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -122,45 +128,8 @@ pub struct SettingsTabItem {
     pub name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingsUpdateMessages {
-    pub section_title: String,
-    pub interval: String,
-    pub never: String,
-    pub daily: String,
-    pub weekly: String,
-    pub monthly: String,
-    pub check_now: String,
-    pub plantuml_section_title: String,
-    pub plantuml_installed: String,
-    pub plantuml_not_installed: String,
-    pub plantuml_update_now: String,
-    #[serde(default)]
-    pub drawio_section_title: String,
-    #[serde(default)]
-    pub drawio_installed: String,
-    #[serde(default)]
-    pub drawio_not_installed: String,
-    #[serde(default)]
-    pub drawio_update_now: String,
-}
-
-#[rustfmt::skip]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingsBehaviorMessages {
-    pub section_title: String, pub confirm_close_dirty_tab: String,
-    pub confirm_file_move: String,
-    pub scroll_sync: String, pub auto_save: String,
-    pub auto_save_interval: String, pub auto_save_interval_hint: String,
-    pub auto_refresh: String, pub auto_refresh_interval: String,
-    pub seconds: String, pub close_confirm_title: String,
-    pub close_confirm_msg: String, pub close_confirm_discard: String,
-    pub close_confirm_cancel: String, pub clear_http_cache: String,
-    pub cache_retention_days: String, pub days_suffix: String,
-    pub toc_default_visible: String, pub explorer_default_visible: String,
-    pub ingest_section_title: String, pub ingest_image_save_directory: String,
-    pub ingest_image_name_format: String, pub ingest_create_directory: String,
-}
+pub use crate::i18n::types::settings_behavior::SettingsBehaviorMessages;
+pub use crate::i18n::types::settings_update::SettingsUpdateMessages;
 
 #[rustfmt::skip]
 #[derive(Debug, Clone, Serialize, Deserialize)]

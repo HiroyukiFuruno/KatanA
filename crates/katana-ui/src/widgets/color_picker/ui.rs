@@ -39,64 +39,60 @@ impl<'a> LabeledColorPicker<'a> {
     }
 
     pub fn show_rgb(self, ui: &mut egui::Ui, color: &mut egui::Color32) -> egui::Response {
-        let available_w = ui.available_width();
-        /* WHY: Standardize row height for strict table alignment */
-        let row_height = COLOR_ROW_HEIGHT;
-        let (rect, _response) =
-            ui.allocate_exact_size(egui::vec2(available_w, row_height), egui::Sense::hover());
-
-        ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.allocate_exact_size(egui::vec2(0.0, rect.height()), egui::Sense::hover());
-                ui.add_space(COLOR_LABEL_MARGIN);
-                ui.label(self.label);
-            });
-        });
-
-        let right_rect = rect.translate(egui::vec2(0.0, self.offset_y));
-        ui.scope_builder(egui::UiBuilder::new().max_rect(right_rect), |ui| {
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.spacing_mut().item_spacing.x = 0.0;
-                ui.allocate_exact_size(egui::vec2(0.0, right_rect.height()), egui::Sense::hover());
-                egui::color_picker::color_edit_button_srgba(
-                    ui,
-                    color,
-                    egui::color_picker::Alpha::Opaque,
-                )
-            })
-            .inner
-        })
-        .inner
+        self.show_color_button(ui, color, egui::color_picker::Alpha::Opaque)
     }
 
     pub fn show_rgba(self, ui: &mut egui::Ui, color: &mut egui::Color32) -> egui::Response {
-        let available_w = ui.available_width();
+        self.show_color_button(ui, color, egui::color_picker::Alpha::BlendOrAdditive)
+    }
+
+    fn show_color_button(
+        self,
+        ui: &mut egui::Ui,
+        color: &mut egui::Color32,
+        alpha: egui::color_picker::Alpha,
+    ) -> egui::Response {
         let row_height = COLOR_ROW_HEIGHT;
-        let (rect, _response) =
-            ui.allocate_exact_size(egui::vec2(available_w, row_height), egui::Sense::hover());
-
-        ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                ui.allocate_exact_size(egui::vec2(0.0, rect.height()), egui::Sense::hover());
+        ui.allocate_ui_with_layout(
+            egui::vec2(ui.available_width(), row_height),
+            egui::Layout::left_to_right(egui::Align::Center),
+            |ui| {
                 ui.add_space(COLOR_LABEL_MARGIN);
-                ui.label(self.label);
-            });
-        });
-
-        let right_rect = rect.translate(egui::vec2(0.0, self.offset_y));
-        ui.scope_builder(egui::UiBuilder::new().max_rect(right_rect), |ui| {
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.spacing_mut().item_spacing.x = 0.0;
-                ui.allocate_exact_size(egui::vec2(0.0, right_rect.height()), egui::Sense::hover());
-                egui::color_picker::color_edit_button_srgba(
-                    ui,
-                    color,
-                    egui::color_picker::Alpha::BlendOrAdditive,
+                self.show_label(ui, row_height);
+                ui.add_space(self.spacing);
+                let button_size = ui.spacing().interact_size;
+                let (button_rect, _) = ui.allocate_exact_size(button_size, egui::Sense::hover());
+                let max_rect = button_rect.translate(egui::vec2(0.0, self.offset_y));
+                ui.scope_builder(
+                    egui::UiBuilder::new()
+                        .max_rect(max_rect)
+                        .layout(egui::Layout::left_to_right(egui::Align::Center)),
+                    |ui| egui::color_picker::color_edit_button_srgba(ui, color, alpha),
                 )
-            })
-            .inner
-        })
+                .inner
+            },
+        )
         .inner
+    }
+
+    fn show_label(&self, ui: &mut egui::Ui, row_height: f32) {
+        let (rect, response) = ui.allocate_exact_size(
+            egui::vec2(self.label_width, row_height),
+            egui::Sense::hover(),
+        );
+        response
+            .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, true, self.label));
+
+        let font_id = egui::TextStyle::Body.resolve(ui.style());
+        let galley = egui::WidgetText::from(self.label).into_galley(
+            ui,
+            Some(egui::TextWrapMode::Truncate),
+            self.label_width,
+            font_id,
+        );
+        let text_pos = egui::pos2(rect.min.x, rect.center().y - galley.size().y / 2.0);
+        ui.painter()
+            .galley(text_pos, galley, ui.visuals().text_color());
     }
 }
 

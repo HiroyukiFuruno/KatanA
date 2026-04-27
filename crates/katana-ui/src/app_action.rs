@@ -1,9 +1,16 @@
 use std::path::PathBuf;
 
 use crate::app_state::ExportFormat;
-pub use crate::markdown_authoring_op::MarkdownAuthoringOp;
+pub use crate::lint_fix_batch::LintFixBatch;
+pub use crate::markdown_authoring_op::{CodeBlockKind, MarkdownAuthoringOp};
 use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct AssetDownloadRequest {
+    pub url: String,
+    pub dest: PathBuf,
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum AppAction {
@@ -40,6 +47,7 @@ pub enum AppAction {
         replacement: String,
     },
     ApplyLintFixes(Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>),
+    ApplyLintFixesForFiles(Vec<LintFixBatch>),
     OpenLinterDoc(String, String),
     ToggleTaskList {
         global_index: usize,
@@ -71,15 +79,9 @@ pub enum AppAction {
     CheckForUpdates,
     StartUpdateDownload,
     InstallUpdateAndRestart,
-    StartPlantumlDownload {
-        url: String,
-        dest: std::path::PathBuf,
-    },
-    StartDrawioDownload {
-        url: String,
-        dest: std::path::PathBuf,
-    },
-
+    StartPlantumlDownload(AssetDownloadRequest),
+    StartDrawioDownload(AssetDownloadRequest),
+    StartMermaidDownload(AssetDownloadRequest),
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
     ToggleCodePreview,
@@ -182,9 +184,9 @@ pub enum AppAction {
     DocSearchPrev,
     ToggleProblemsPanel,
     RefreshDiagnostics,
-    /* WHY: Markdown authoring — insert/transform Markdown syntax around cursor or selection. */
+    FormatMarkdownFile(PathBuf),
+    FormatWorkspaceMarkdown(PathBuf),
     AuthorMarkdown(MarkdownAuthoringOp),
-    /* WHY: Image ingest — attach a local file image or paste clipboard image into the document. */
     IngestImageFile,
     IngestClipboardImage,
     SelectNextTab,

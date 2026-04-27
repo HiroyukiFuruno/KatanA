@@ -46,6 +46,8 @@ impl KatanaApp {
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
             download_rx: None,
+            active_download: None,
+            renderer_asset_rx: None,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,
@@ -104,6 +106,9 @@ impl KatanaApp {
         app.clear_transient_workspace_restore_state();
         katana_core::update::UpdateCleanupOps::perform_background_cleanup();
         tracing::debug!("KatanaApp::new: Background cleanup done");
+        if !cfg!(test) {
+            app.start_renderer_asset_bootstrap();
+        }
         app.start_update_check(false);
         tracing::debug!("KatanaApp::new: End");
 

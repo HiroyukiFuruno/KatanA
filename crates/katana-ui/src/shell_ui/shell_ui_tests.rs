@@ -98,7 +98,7 @@ mod tests {
             .settings
             .settings()
             .performance
-            .diagram_concurrency;
+            .resolved_diagram_concurrency();
         pane.full_render(markdown, path, cache, false, concurrency);
         pane.wait_for_renders();
         app.tab_previews.push(crate::shell::TabPreviewCache {
@@ -478,10 +478,10 @@ mod tests {
         let markdown = concat!(
             "## Fixes\n\n",
             "- Dark theme DrawIO contrast fix using `drawio_label_color`\n",
-            "- Fixed `mmdc` lookup when launched from `.dmg/.app` without a standard PATH\n",
+            "- Fixed Mermaid.js asset lookup when launched from `.dmg/.app`\n",
             "- Stabilized i18n tests under parallel execution\n\n",
             "## Improvements\n\n",
-            "- Expanded `mmdc` binary resolution across Homebrew, env vars, and shell fallback\n",
+            "- Added cached Mermaid.js renderer asset updates\n",
             "- Extracted `CHANNEL_MAX`, `LUMA_R/G/B`, and `RENDER_POLL_INTERVAL_MS`\n"
         );
         let mut app = app_with_preview_doc(&active, markdown);
@@ -614,7 +614,7 @@ mod tests {
             "| Feature | Status | Notes |\n",
             "|---------|--------|-------|\n",
             "| Markdown | OK | Full support |\n",
-            "| Mermaid | OK | Requires mmdc |\n",
+            "| Mermaid | OK | Uses local Mermaid.js |\n",
             "| PlantUML | OK | Requires jar |\n",
             "| Drawio | OK | Pure Rust |\n\n",
             "## Tail\n\n",

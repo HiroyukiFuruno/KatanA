@@ -134,13 +134,7 @@ impl<'a> EditorToolbar<'a> {
     }
 
     fn block_group(ui: &mut Ui, action: &mut AppAction) {
-        if ui
-            .add(Icon::Code.button(ui, IconSize::Small))
-            .on_hover_text(I18nOps::get().editor.toolbar.code_block.clone())
-            .clicked()
-        {
-            *action = AppAction::AuthorMarkdown(MarkdownAuthoringOp::CodeBlock);
-        }
+        super::code_block_menu::CodeBlockMenuPopupOps::show(ui, action);
     }
 
     fn image_group(ui: &mut Ui, action: &mut AppAction) {

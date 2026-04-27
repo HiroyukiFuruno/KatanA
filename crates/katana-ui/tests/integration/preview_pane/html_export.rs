@@ -9,9 +9,10 @@ fn bug1_html_export_must_transform_diagram_blocks_into_html_images_or_errors() {
 
     let preset = katana_core::markdown::color_preset::DiagramColorPreset::default();
     let renderer = katana_core::markdown::KatanaRenderer;
-    let exported_html =
+    let exported_html = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
         katana_core::markdown::HtmlExporter::export(&source, &renderer, &preset, None)
-            .expect("Html exporter should succeed");
+            .expect("Html exporter should succeed")
+    });
 
     /* WHY: If transformation fails, comrak converts the remainig fence to `<code class="language-mermaid">`.
      * We must ensure no such raw blocks exist in the final output. */

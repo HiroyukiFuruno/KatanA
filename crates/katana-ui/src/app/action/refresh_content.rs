@@ -57,7 +57,7 @@ impl KatanaApp {
                 .settings
                 .settings()
                 .performance
-                .diagram_concurrency;
+                .resolved_diagram_concurrency();
             let buffer_clone = self.state.document.open_documents[idx].buffer.clone();
             self.full_refresh_preview(path, &buffer_clone, true, concurrency);
         }
@@ -78,15 +78,7 @@ impl KatanaApp {
     }
 
     pub(super) fn handle_action_refresh_diagrams(&mut self, ctx: &egui::Context) {
-        ctx.forget_all_images();
-        crate::icon::IconRegistry::install(ctx);
-        for tab in &mut self.tab_previews {
-            tab.hash = 0;
-            for viewer in tab.pane.viewer_states.iter_mut() {
-                viewer.texture = None;
-            }
-            tab.pane.fullscreen_viewer_state.texture = None;
-        }
+        self.reset_preview_caches(ctx);
         let Some(doc) = self.state.active_document_mut() else {
             return;
         };
@@ -98,7 +90,7 @@ impl KatanaApp {
             .settings
             .settings()
             .performance
-            .diagram_concurrency;
+            .resolved_diagram_concurrency();
         self.full_refresh_preview(&path, &src, true, concurrency);
     }
 

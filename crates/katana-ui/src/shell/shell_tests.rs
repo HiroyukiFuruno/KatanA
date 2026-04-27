@@ -378,6 +378,7 @@ mod tests {
     fn start_download_sets_download_state() {
         let mut app = make_app();
         app.start_download(crate::preview_pane::DownloadRequest {
+            tool_name: "PlantUML".to_string(),
             url: "http://example.com/plantuml.jar".to_string(),
             dest: PathBuf::from("/tmp/test_plantuml.jar"),
         });
@@ -1235,6 +1236,8 @@ mod tests_extra {
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
             download_rx: None,
+            active_download: None,
+            renderer_asset_rx: None,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,

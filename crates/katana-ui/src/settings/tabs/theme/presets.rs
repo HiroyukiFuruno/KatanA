@@ -9,7 +9,11 @@ impl ThemeTabOps {
     pub(crate) fn render_theme_preset_selector(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
+        is_advanced_open: &mut bool,
     ) {
+        super::preset_controls::ThemePresetControlsOps::render(ui, state, is_advanced_open);
+        ui.add_space(SUBSECTION_SPACING);
+
         SettingsOps::section_header(ui, &crate::i18n::I18nOps::get().settings.theme.preset);
         let show_more_id = ui.id().with("show_more_themes");
         let mut show_more = ui.data_mut(|d| d.get_temp::<bool>(show_more_id).unwrap_or(false));
@@ -119,6 +123,13 @@ impl ThemeTabOps {
                             .settings_mut()
                             .theme
                             .active_custom_theme = None;
+                        let theme = &mut state.config.settings.settings_mut().theme;
+                        theme
+                            .preset_state
+                            .select_built_in(format!("{preset:?}"), preset.display_name());
+                        theme.preset_state.sync_user_preset_names(
+                            theme.custom_themes.iter().map(|preset| &preset.name),
+                        );
                         let _ = state.config.try_save_settings();
                     }
                     response.context_menu(|ui| {

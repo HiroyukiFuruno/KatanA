@@ -91,6 +91,11 @@ impl<'a> CentralContent<'a> {
                 ViewMode::CodeOnly => {
                     crate::views::panels::editor::EditorContent::new(
                         app.state.document.active_document(),
+                        app.state
+                            .workspace
+                            .data
+                            .as_ref()
+                            .map(|ws| ws.root.as_path()),
                         &mut app.state.scroll,
                         &mut app.pending_action,
                         false,

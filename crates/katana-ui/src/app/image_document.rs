@@ -55,7 +55,7 @@ impl ImageDocumentOps {
             .settings
             .settings()
             .performance
-            .diagram_concurrency;
+            .resolved_diagram_concurrency();
         Some((src, concurrency))
     }
 

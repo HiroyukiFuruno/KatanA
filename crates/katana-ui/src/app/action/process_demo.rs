@@ -54,7 +54,7 @@ impl KatanaApp {
             .settings
             .settings()
             .performance
-            .diagram_concurrency;
+            .resolved_diagram_concurrency();
         let mut refresh_targets = Vec::new();
         for asset in all_assets {
             let virtual_path = PathBuf::from(&asset.virtual_path);

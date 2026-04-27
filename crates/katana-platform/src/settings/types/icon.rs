@@ -2,6 +2,8 @@ use crate::theme::Rgba;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use super::preset_state::PresetState;
+
 /* WHY: Defines overrides for specific icons. */
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct IconOverride {
@@ -101,7 +103,7 @@ pub struct IconPreset {
 }
 
 /* WHY: Global settings for Icon configuration. */
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct IconSettings {
     /* WHY: List of saved user presets. */
     #[serde(default)]
@@ -115,6 +117,8 @@ pub struct IconSettings {
     /* WHY: Whether non-Katana vendor icons should be automatically tinted with their vendor default color. */
     #[serde(default = "default_colorful_vendor_icons")]
     pub colorful_vendor_icons: bool,
+    #[serde(default)]
+    pub preset_state: PresetState,
 }
 
 fn default_colorful_vendor_icons() -> bool {
@@ -124,6 +128,18 @@ fn default_colorful_vendor_icons() -> bool {
 impl IconSettings {
     pub fn get_override(&self, icon_name: &str) -> Option<&IconOverride> {
         self.active_overrides.get(icon_name)
+    }
+}
+
+impl Default for IconSettings {
+    fn default() -> Self {
+        Self {
+            custom_presets: Vec::new(),
+            active_preset: None,
+            active_overrides: HashMap::new(),
+            colorful_vendor_icons: default_colorful_vendor_icons(),
+            preset_state: PresetState::built_in("katana", "KatanA"),
+        }
     }
 }
 
@@ -171,6 +187,7 @@ mod tests {
             active_preset: Some("My Preset".to_string()),
             active_overrides: overrides,
             colorful_vendor_icons: true,
+            preset_state: PresetState::user("My Preset"),
         };
 
         let json = serde_json::to_string(&settings).unwrap();

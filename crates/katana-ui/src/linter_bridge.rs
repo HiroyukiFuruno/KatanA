@@ -1,4 +1,8 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    panic::{AssertUnwindSafe, catch_unwind},
+    path::Path,
+};
 
 use katana_markdown_linter::{
     LintOptions,
@@ -16,29 +20,42 @@ impl MarkdownLinterBridgeOps {
         content: &str,
     ) -> Vec<MarkdownDiagnostic> {
         let linter_settings = &state.config.settings.settings().linter;
-        let options =
+        let mut options =
             crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::load_effective_options(
                 state, path,
             );
+        crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(
+            &mut options,
+            content,
+        );
         let mut severity_map = Self::severity_map(&options);
         for (rule_id, severity) in &linter_settings.rule_severity {
-            severity_map.insert(rule_id.clone(), Self::configured_severity(severity));
+            if options
+                .rules
+                .get(rule_id)
+                .is_none_or(|rule_config| rule_config.enabled)
+            {
+                severity_map.insert(rule_id.as_str(), Self::configured_severity(severity));
+            }
         }
 
-        MarkdownLinterOps::evaluate_all(
-            path,
-            content,
-            linter_settings.enabled,
-            &severity_map,
-            &options.rules,
-        )
+        catch_unwind(AssertUnwindSafe(|| {
+            MarkdownLinterOps::evaluate_all(
+                path,
+                content,
+                linter_settings.enabled,
+                &severity_map,
+                &options.rules,
+            )
+        }))
+        .unwrap_or_default()
     }
 
     pub(crate) fn has_applicable_fix(diag: &MarkdownDiagnostic) -> bool {
         diag.fix_info.is_some()
     }
 
-    fn severity_map(options: &LintOptions) -> HashMap<String, Option<DiagnosticSeverity>> {
+    fn severity_map(options: &LintOptions) -> HashMap<&str, Option<DiagnosticSeverity>> {
         options
             .rules
             .iter()
@@ -46,7 +63,7 @@ impl MarkdownLinterBridgeOps {
                 let severity = rule_config
                     .enabled
                     .then(|| Self::default_severity(options.default_severity));
-                (rule_id.clone(), severity)
+                (rule_id.as_str(), severity)
             })
             .collect()
     }
@@ -184,6 +201,54 @@ mod tests {
 
         assert_eq!(diagnostic.severity, DiagnosticSeverity::Error);
         assert!(!MarkdownLinterBridgeOps::diagnostic_message(diagnostic).is_empty());
+    }
+
+    #[test]
+    fn evaluate_document_does_not_reenable_markdownlint_disabled_rule() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join(".markdownlint.json"),
+            r#"{"default": false, "MD001": false}"#,
+        )
+        .unwrap();
+        let mut state = make_workspace_state(&dir);
+        state
+            .config
+            .settings
+            .settings_mut()
+            .linter
+            .rule_severity
+            .insert("MD001".to_string(), RuleSeverity::Warning);
+
+        let diagnostics = MarkdownLinterBridgeOps::evaluate_document(
+            &state,
+            &dir.path().join("doc.md"),
+            "# Title\n### Skipped\n",
+        );
+
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_id != "MD001")
+        );
+    }
+
+    #[test]
+    fn evaluate_document_contains_linter_panic_boundary() {
+        let state = make_state();
+        let multibyte_line = "- [ ] \u{5bfe}\u{8c61}\u{30d0}\u{30fc}\u{30b8}\u{30e7}\u{30f3} 0.22.7 \u{306e}\u{5909}\u{66f4} ID \u{3068}\u{30b9}\u{30b3}\u{30fc}\u{30d7}\u{304c}\u{78ba}\u{8a8d}\u{3055}\u{308c}\u{3066}\u{3044}\u{308b}\u{3053}\u{3068}";
+
+        let diagnostics = MarkdownLinterBridgeOps::evaluate_document(
+            &state,
+            &PathBuf::from("doc.md"),
+            &multibyte_line,
+        );
+
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_id != "MD013")
+        );
     }
 
     #[test]

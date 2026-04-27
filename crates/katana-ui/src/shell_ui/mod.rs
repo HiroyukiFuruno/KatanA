@@ -3,6 +3,7 @@ use crate::app_state::AppAction;
 use eframe::egui;
 
 mod dropped_files;
+mod shell_ui_auto;
 mod shell_ui_frame;
 mod shell_ui_shortcuts;
 mod shell_ui_update;

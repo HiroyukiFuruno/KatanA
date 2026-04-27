@@ -1,6 +1,9 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::drawio_renderer::DrawioRenderOps;
+use std::sync::Mutex;
 use std::thread;
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 const SIMPLE_DRAWIO_XML: &str = r#"<mxfile><diagram name="test"><mxGraphModel><root>
 <mxCell id="0"/>
@@ -14,40 +17,51 @@ const SIMPLE_DRAWIO_XML: &str = r#"<mxfile><diagram name="test"><mxGraphModel><r
 </root></mxGraphModel></diagram></mxfile>"#;
 
 #[test]
-fn valid_drawio_xml_is_converted_to_png() {
+fn returns_not_installed_when_drawio_js_is_missing() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let missing_path = dir.path().join("missing-drawio.min.js");
+    unsafe { std::env::set_var("DRAWIO_JS", &missing_path) };
+
     let block = DiagramBlock {
         kind: DiagramKind::DrawIo,
-        // Make the source slightly unique so it doesn't hit cache from other tests
         source: SIMPLE_DRAWIO_XML.replace("test", "test1"),
     };
     let result = DrawioRenderOps::render_drawio(&block);
+
+    unsafe { std::env::remove_var("DRAWIO_JS") };
     match result {
-        DiagramResult::OkPng(_) => {}
-        DiagramResult::Err { error, .. }
-            if error.contains("Could not auto detect a chrome executable")
-                || error.contains("Cannot find browser")
-                || error.contains("Failed to launch browser") =>
-        { /* WHY: Chrome is missing in the CI runner environment */ }
-        other => panic!("Expected OkPng or Chrome error, got {:?}", other),
+        DiagramResult::NotInstalled {
+            kind,
+            download_url,
+            install_path,
+        } => {
+            assert_eq!(kind, "Draw.io");
+            assert!(download_url.contains("viewer-static.min.js"));
+            assert_eq!(install_path, missing_path);
+        }
+        other => panic!("Expected NotInstalled when Draw.io JS is missing, got {other:?}"),
     }
 }
 
 #[test]
-fn invalid_xml_returns_error_result() {
-    let block = DiagramBlock {
-        kind: DiagramKind::DrawIo,
-        source: "not xml".to_string(),
-    };
-    let result = DrawioRenderOps::render_drawio(&block);
-    assert!(
-        matches!(result, DiagramResult::Err { .. }),
-        "Expected Err, got {:?}",
-        result
-    );
+fn resolve_drawio_js_prefers_env_var() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let custom_path = std::path::PathBuf::from("/custom/drawio.min.js");
+    unsafe { std::env::set_var("DRAWIO_JS", &custom_path) };
+
+    let path = DrawioRenderOps::resolve_drawio_js();
+
+    unsafe { std::env::remove_var("DRAWIO_JS") };
+    assert_eq!(path, custom_path);
 }
 
 #[test]
 fn concurrent_drawio_rendering_succeeds() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
+
     let mut handles = vec![];
     for i in 0..3 {
         handles.push(thread::spawn(move || {
@@ -56,18 +70,30 @@ fn concurrent_drawio_rendering_succeeds() {
                 source: SIMPLE_DRAWIO_XML.replace("test", &format!("test_concurrent_{}", i)),
             };
             let result = DrawioRenderOps::render_drawio(&block);
-            match result {
-                DiagramResult::OkPng(_) => {}
-                DiagramResult::Err { error, .. }
-                    if error.contains("Could not auto detect a chrome executable")
-                        || error.contains("Cannot find browser")
-                        || error.contains("Failed to launch browser") =>
-                { /* WHY: Chrome is missing in the CI runner environment */ }
-                other => panic!("Expected OkPng or Chrome error, got {:?}", other),
-            }
+            assert!(matches!(result, DiagramResult::NotInstalled { .. }));
         }));
     }
     for h in handles {
         h.join().unwrap();
+    }
+    unsafe { std::env::remove_var("DRAWIO_JS") };
+}
+
+#[test]
+fn renders_png_when_drawio_js_is_available() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    if DrawioRenderOps::find_drawio_js().is_none() {
+        return;
+    }
+
+    let block = DiagramBlock {
+        kind: DiagramKind::DrawIo,
+        source: SIMPLE_DRAWIO_XML.replace("test", "test_png_render"),
+    };
+    let result = DrawioRenderOps::render_drawio(&block);
+
+    match result {
+        DiagramResult::OkPng(bytes) => assert!(bytes.starts_with(&[0x89, 0x50, 0x4E, 0x47])),
+        other => panic!("Expected Draw.io PNG rendering, got {other:?}"),
     }
 }

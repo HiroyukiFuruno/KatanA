@@ -2,6 +2,11 @@ use eframe::egui;
 
 pub(crate) struct RowDiagnosticsRenderer;
 
+pub(crate) const ACTION_ICON_SIZE: f32 = 14.0;
+pub(crate) const ACTION_ICON_MARGIN: f32 = 2.0;
+pub(crate) const ACTION_ICON_GUTTER_WIDTH: f32 =
+    ACTION_ICON_SIZE + ACTION_ICON_MARGIN + ACTION_ICON_MARGIN;
+
 impl RowDiagnosticsRenderer {
     pub(crate) fn render(
         ui: &mut egui::Ui,
@@ -11,23 +16,12 @@ impl RowDiagnosticsRenderer {
         ln_rect: &egui::Rect,
         row_height: f32,
         action: &mut crate::app_state::AppAction,
-    ) {
-        let line_diagnostics: Vec<_> = diagnostics
-            .iter()
-            .filter(|d| {
-                d.official_meta.is_some()
-                    && d.range.start_line <= (p + 1)
-                    && d.range.end_line >= (p + 1)
-            })
-            .collect();
+    ) -> bool {
+        let line_number = p + 1;
+        let line_diagnostics = Self::action_icon_diagnostics(diagnostics, line_number);
 
         if line_diagnostics.is_empty() {
-            return;
-        }
-
-        let has_fixable = line_diagnostics.iter().any(|d| d.fix_info.is_some());
-        if !has_fixable {
-            return;
+            return false;
         }
 
         const WEIGHT_ERROR: u8 = 3;
@@ -57,16 +51,14 @@ impl RowDiagnosticsRenderer {
             })
             .unwrap_or(ui.visuals().warn_fg_color);
 
-        const ICON_SIZE: f32 = 14.0;
-        const ICON_MARGIN: f32 = 2.0;
         const TOOLTIP_SPACE: f32 = 4.0;
 
         let icon_rect = egui::Rect::from_min_size(
             egui::pos2(
-                ln_rect.min.x + ICON_MARGIN,
-                y + (row_height - ICON_SIZE) / 2.0,
+                ln_rect.min.x + ACTION_ICON_MARGIN,
+                y + (row_height - ACTION_ICON_SIZE) / 2.0,
             ),
-            egui::vec2(ICON_SIZE, ICON_SIZE),
+            egui::vec2(ACTION_ICON_SIZE, ACTION_ICON_SIZE),
         );
 
         let icon_resp = ui.put(
@@ -76,44 +68,112 @@ impl RowDiagnosticsRenderer {
                 .tint(icon_color)
                 .sense(egui::Sense::click()),
         );
+        let hovered = icon_resp.hovered();
 
         icon_resp.on_hover_ui(|ui| {
-            for d in &line_diagnostics {
-                let meta = d.official_meta.as_ref().unwrap();
-                let sev_text = format!("{:?}", d.severity);
-                let fmt_str = format!("[{}] {} ({})", sev_text, d.rule_id, meta.title);
-                ui.label(egui::RichText::new(fmt_str).strong());
-                ui.label(&d.message);
-
-                if crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix(d) {
-                    /* WHY: allow(horizontal_layout) - Standard egui pattern for side-by-side buttons */
-                    ui.horizontal(|ui| {
-                        let linter_msgs = &crate::i18n::I18nOps::get().linter;
-                        if ui.button(&linter_msgs.fix).clicked() {
-                            let fixes = vec![d.fix_info.clone().unwrap()];
-                            *action = crate::app_state::AppAction::ApplyLintFixes(fixes);
-                            ui.close_menu();
-                        }
-                        if ui.button(&linter_msgs.fix_all).clicked() {
-                            let all_fixes = diagnostics
-                                .iter()
-                                .filter_map(|d| d.fix_info.clone())
-                                .collect();
-                            *action = crate::app_state::AppAction::ApplyLintFixes(all_fixes);
-                            ui.close_menu();
-                        }
-                    });
+            for (index, diagnostic) in line_diagnostics.iter().enumerate() {
+                if index > 0 {
+                    ui.separator();
                 }
-                let docs_text = &crate::i18n::I18nOps::get().linter.docs;
-                if ui.link(format!("{} - {}", docs_text, meta.code)).clicked() {
-                    *action = crate::app_state::AppAction::OpenLinterDoc(
-                        meta.code.to_string(),
-                        meta.docs_url.to_string(),
+                if let Some(meta) = diagnostic.official_meta.as_ref() {
+                    super::diagnostics_hover::DiagnosticsHoverOps::show_single_diagnostic_ui(
+                        ui,
+                        diagnostic,
+                        meta,
+                        diagnostics,
+                        action,
                     );
-                    ui.close_menu();
                 }
                 ui.add_space(TOOLTIP_SPACE);
             }
         });
+        hovered
+    }
+
+    fn action_icon_diagnostics(
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+        line_number: usize,
+    ) -> Vec<&katana_markdown_linter::rules::markdown::MarkdownDiagnostic> {
+        diagnostics
+            .iter()
+            .filter(|diagnostic| {
+                diagnostic.official_meta.is_some() && diagnostic.range.start_line == line_number
+            })
+            .collect()
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+    use katana_markdown_linter::rules::markdown::{
+        DiagnosticFix, DiagnosticRange, DiagnosticSeverity, MarkdownDiagnostic, OfficialRuleMeta,
+    };
+    use std::path::PathBuf;
+
+    fn official_meta() -> OfficialRuleMeta {
+        katana_markdown_linter::rules::markdown::eval::MarkdownLinterOps::get_user_configurable_rules()
+            .into_iter()
+            .find(|rule| rule.id() == "MD001")
+            .and_then(|rule| rule.official_meta())
+            .unwrap()
+    }
+
+    fn diagnostic(start_line: usize, end_line: usize) -> MarkdownDiagnostic {
+        let meta = official_meta();
+        MarkdownDiagnostic {
+            file: PathBuf::from("doc.md"),
+            severity: DiagnosticSeverity::Warning,
+            range: DiagnosticRange {
+                start_line,
+                start_column: 1,
+                end_line,
+                end_column: 10,
+            },
+            message: "message".to_string(),
+            rule_id: meta.code.to_string(),
+            official_meta: Some(meta),
+            fix_info: Some(DiagnosticFix {
+                start_line,
+                start_column: 1,
+                end_line,
+                end_column: 10,
+                replacement: "fixed".to_string(),
+            }),
+        }
+    }
+
+    #[test]
+    fn action_icon_diagnostics_include_start_line_only_for_multiline_diagnostic() {
+        let diagnostics = vec![diagnostic(2, 4)];
+
+        assert_eq!(
+            RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 2).len(),
+            1
+        );
+        assert!(RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 3).is_empty());
+        assert!(RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 4).is_empty());
+    }
+
+    #[test]
+    fn action_icon_diagnostics_ignore_unofficial_diagnostics() {
+        let mut diagnostic = diagnostic(2, 2);
+        diagnostic.official_meta = None;
+        let diagnostics = vec![diagnostic];
+
+        assert!(RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 2).is_empty());
+    }
+
+    #[test]
+    fn action_icon_diagnostics_include_non_fixable_official_diagnostics() {
+        let mut diagnostic = diagnostic(2, 2);
+        diagnostic.fix_info = None;
+        let diagnostics = vec![diagnostic];
+
+        assert_eq!(
+            RowDiagnosticsRenderer::action_icon_diagnostics(&diagnostics, 2).len(),
+            1
+        );
     }
 }
