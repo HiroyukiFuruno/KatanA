@@ -102,7 +102,9 @@ mod tests {
         let section = RendererLogicOps::render_diagram(&DiagramKind::DrawIo, xml, 0);
         assert_variant!(
             section,
-            RenderedSection::Image { .. } | RenderedSection::Error { .. }
+            RenderedSection::Image { .. }
+                | RenderedSection::Error { .. }
+                | RenderedSection::NotInstalled { .. }
         );
     }
 
