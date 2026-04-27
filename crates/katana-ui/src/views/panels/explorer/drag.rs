@@ -170,12 +170,9 @@ mod tests {
     fn relative_display_path_uses_workspace_relative_form_for_file() {
         let root = Path::new("workspace_root");
         let source = root.join("docs").join("readme.md");
-        let expected = source
-            .strip_prefix(root)
-            .map_or_else(|_| "".into(), |v| v.display().to_string());
         assert_eq!(
             super::ExplorerDragUi::relative_display_path(&source, Some(root), false),
-            expected
+            "docs/readme.md"
         );
     }
 
