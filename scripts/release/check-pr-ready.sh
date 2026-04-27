@@ -25,6 +25,9 @@ fi
 # Helpers for checking file consistency
 is_ci() { [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; }
 
+RELEASE_BRANCH_PATTERN='^release/v([0-9]+\.[0-9]+\.[0-9]+)(-[A-Za-z0-9][A-Za-z0-9._-]*)?$'
+TASK_BRANCH_PATTERN='^release/v[0-9]+\.[0-9]+\.[0-9]+-task-[0-9]+(-fix)?$'
+
 # 1. Check for uncommitted changes (Local only)
 if ! is_ci; then
     CRITICAL_FILES=("Cargo.toml" "Cargo.lock" "crates/katana-ui/Info.plist" "CHANGELOG.md" "CHANGELOG.ja.md")
@@ -55,10 +58,9 @@ TARGET_VERSION=""
 if [[ -n "$EXPECTED_VERSION" ]]; then
     TARGET_VERSION="$EXPECTED_VERSION"
     info "Target version set by argument: v${TARGET_VERSION}"
-elif [[ "$CURRENT_BRANCH" =~ ^release/v([0-9]+\.[0-9]+\.[0-9]+)(-task-[0-9]+(-fix)?)?$ ]]; then
-    # Skip full checks for task branches because Cargo.toml version bump 
-    # happens at final release preparation.
-    if [[ -n "${match[2]}" ]]; then
+elif [[ "$CURRENT_BRANCH" =~ $RELEASE_BRANCH_PATTERN ]]; then
+    # タスク用ブランチでは最終リリース準備まで Cargo.toml の version を上げない。
+    if [[ "$CURRENT_BRANCH" =~ $TASK_BRANCH_PATTERN ]]; then
         success "Task branch detected (${CURRENT_BRANCH}). Skipping final PR readiness checks."
         exit 0
     fi
@@ -106,13 +108,12 @@ success "Cargo.lock is synced."
 
 # 5. Branch naming vs Target Version for Release branches
 if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
-    if [[ ! "$CURRENT_BRANCH" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+(-task-[0-9]+(-fix)?)?$ ]]; then
-         error "Branch name '$CURRENT_BRANCH' does not follow release/vX.Y.Z or release/vX.Y.Z-task-N format."
+    if [[ ! "$CURRENT_BRANCH" =~ $RELEASE_BRANCH_PATTERN ]]; then
+         error "Branch name '$CURRENT_BRANCH' does not follow release/vX.Y.Z or release/vX.Y.Z-name format."
          exit 1
     fi
     
-    BRANCH_VERSION="${CURRENT_BRANCH#release/v}"
-    BRANCH_VERSION="${BRANCH_VERSION%-task*}" # strip the task suffix
+    BRANCH_VERSION="${match[1]}"
     if [[ "$BRANCH_VERSION" != "$TARGET_VERSION" ]]; then
         error "Branch version (v${BRANCH_VERSION}) does not match target version (v${TARGET_VERSION})."
         exit 1
