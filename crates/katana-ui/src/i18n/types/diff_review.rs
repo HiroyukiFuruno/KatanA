@@ -30,6 +30,10 @@ pub struct DiffReviewMessages {
     pub switch_to_inline: String,
     #[serde(default = "default_content_changed")]
     pub content_changed: String,
+    #[serde(default = "default_enter_fullscreen")]
+    pub enter_fullscreen: String,
+    #[serde(default = "default_exit_fullscreen")]
+    pub exit_fullscreen: String,
 }
 
 impl Default for DiffReviewMessages {
@@ -49,6 +53,8 @@ impl Default for DiffReviewMessages {
             switch_to_split: default_switch_to_split(),
             switch_to_inline: default_switch_to_inline(),
             content_changed: default_content_changed(),
+            enter_fullscreen: default_enter_fullscreen(),
+            exit_fullscreen: default_exit_fullscreen(),
         }
     }
 }
@@ -108,4 +114,12 @@ fn default_switch_to_inline() -> String {
 fn default_content_changed() -> String {
     "The file changed after the diff was prepared. Re-run the fix to review the latest content."
         .to_string()
+}
+
+fn default_enter_fullscreen() -> String {
+    "Enter fullscreen".to_string()
+}
+
+fn default_exit_fullscreen() -> String {
+    "Exit fullscreen".to_string()
 }

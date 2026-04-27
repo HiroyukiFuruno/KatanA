@@ -47,6 +47,7 @@ pub(crate) struct DiffReviewState {
     pub(crate) files: Vec<DiffReviewFile>,
     pub(crate) current_index: usize,
     pub(crate) mode: DiffViewMode,
+    pub(crate) is_fullscreen: bool,
     pub(crate) restore_path: Option<PathBuf>,
     pub(crate) workspace_root: Option<PathBuf>,
 }
@@ -61,6 +62,7 @@ impl DiffReviewState {
             files,
             current_index: 0,
             mode,
+            is_fullscreen: false,
             restore_path,
             workspace_root: None,
         }

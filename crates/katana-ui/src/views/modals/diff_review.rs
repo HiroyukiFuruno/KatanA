@@ -5,6 +5,7 @@ use eframe::egui;
 
 const MODAL_WIDTH: f32 = 1120.0;
 const MODAL_HEIGHT: f32 = 620.0;
+const FULLSCREEN_INSET: f32 = 8.0;
 const MODAL_INNER_MARGIN: f32 = 12.0;
 const HEADER_BOTTOM_SPACING: f32 = 10.0;
 const FOOTER_TOP_SPACING: f32 = 12.0;
@@ -21,26 +22,29 @@ impl<'a> DiffReviewModal<'a> {
     pub(crate) fn show(mut self, ctx: &egui::Context) -> Option<AppAction> {
         self.review.current_file()?;
 
+        let mut is_fullscreen = self.review.is_fullscreen;
         let mut action = None;
         let title = crate::i18n::I18nOps::get().diff_review.title.clone();
+        let modal_size = Self::modal_size(ctx, is_fullscreen);
         egui::Window::new(title)
             .id(egui::Id::new("diff_review_modal"))
             .collapsible(false)
             .resizable(false)
-            .fixed_size(egui::vec2(MODAL_WIDTH, MODAL_HEIGHT))
+            .fixed_size(modal_size)
             .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .frame(egui::Frame::window(&ctx.global_style()).inner_margin(MODAL_INNER_MARGIN))
             .show(ctx, |ui| {
-                self.show_review_header(ui);
+                self.show_review_header(ui, &mut is_fullscreen);
                 ui.add_space(HEADER_BOTTOM_SPACING);
                 self.show_diff_viewer(ui);
                 ui.add_space(FOOTER_TOP_SPACING);
                 action = self.show_footer(ui);
             });
+        self.review.is_fullscreen = is_fullscreen;
         action
     }
 
-    fn show_review_header(&mut self, ui: &mut egui::Ui) {
+    fn show_review_header(&mut self, ui: &mut egui::Ui, is_fullscreen: &mut bool) {
         let file_count = self.review.files.len();
         let current_number = self.review.current_index + 1;
         let counter = Self::counter_text(current_number, file_count);
@@ -48,6 +52,7 @@ impl<'a> DiffReviewModal<'a> {
         let can_next = self.review.can_move_next();
         let mut move_previous = false;
         let mut move_next = false;
+        let mut toggle_fullscreen = false;
 
         crate::widgets::AlignCenter::new()
             .left(move |ui| {
@@ -60,6 +65,22 @@ impl<'a> DiffReviewModal<'a> {
                     .shrink_to_fit(true)
                     .content(|ui| {
                         let messages = &crate::i18n::I18nOps::get().diff_review;
+                        let fullscreen_label = if *is_fullscreen {
+                            &messages.exit_fullscreen
+                        } else {
+                            &messages.enter_fullscreen
+                        };
+                        let fullscreen_btn = ui
+                            .add(
+                                crate::Icon::Fullscreen
+                                    .button(ui, crate::icon::IconSize::Small)
+                                    .frame(false),
+                            )
+                            .on_hover_text(fullscreen_label);
+                        if fullscreen_btn.clicked() {
+                            toggle_fullscreen = true;
+                        }
+
                         let next = ui
                             .add_enabled(
                                 can_next,
@@ -83,6 +104,9 @@ impl<'a> DiffReviewModal<'a> {
             })
             .show(ui);
 
+        if toggle_fullscreen {
+            *is_fullscreen = !*is_fullscreen;
+        }
         if move_previous {
             self.review.move_previous();
         }
@@ -145,6 +169,18 @@ impl<'a> DiffReviewModal<'a> {
         crate::i18n::I18nOps::tf(
             &crate::i18n::I18nOps::get().diff_review.file_counter,
             &[("current", &current), ("total", &total)],
+        )
+    }
+
+    fn modal_size(ctx: &egui::Context, is_fullscreen: bool) -> egui::Vec2 {
+        if !is_fullscreen {
+            return egui::vec2(MODAL_WIDTH, MODAL_HEIGHT);
+        }
+
+        let available_size = ctx.content_rect().size();
+        egui::vec2(
+            (available_size.x - FULLSCREEN_INSET * 2.0).max(1.0),
+            (available_size.y - FULLSCREEN_INSET * 2.0).max(1.0),
         )
     }
 }

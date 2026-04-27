@@ -677,6 +677,8 @@
     "collapsed_lines": "未変更 {count} 行",
     "switch_to_split": "分割差分を表示",
     "switch_to_inline": "行内差分を表示",
-    "content_changed": "差分作成後にファイルが変更されています。最新の内容で修正をやり直してください。"
+    "content_changed": "差分作成後にファイルが変更されています。最新の内容で修正をやり直してください。",
+    "enter_fullscreen": "全画面表示",
+    "exit_fullscreen": "本のサイズに戻す"
   }
 }
