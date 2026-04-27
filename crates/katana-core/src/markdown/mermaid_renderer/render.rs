@@ -27,7 +27,7 @@ impl MermaidRenderOps {
         let cache_file = Self::cache_file_path(&block.source, preset);
         let _ = std::fs::create_dir_all(cache_file.parent().unwrap_or_else(|| Path::new(".")));
 
-        if let Ok(data) = std::fs::read(&cache_file) {
+        if let Some(data) = Self::read_cached_png(&cache_file) {
             return DiagramResult::OkPng(data);
         }
 
@@ -46,7 +46,7 @@ impl MermaidRenderOps {
 
     fn cache_file_path(source: &str, preset: &DiagramColorPreset) -> PathBuf {
         let mut hasher = DefaultHasher::new();
-        "mermaid-png-theme-v5".hash(&mut hasher);
+        "mermaid-png-theme-v9".hash(&mut hasher);
         source.hash(&mut hasher);
         preset.mermaid_theme.hash(&mut hasher);
         preset.background.hash(&mut hasher);
@@ -57,6 +57,10 @@ impl MermaidRenderOps {
         std::env::temp_dir()
             .join("katana_mermaid_cache")
             .join(format!("{:016x}.png", hasher.finish()))
+    }
+
+    fn read_cached_png(cache_file: &Path) -> Option<Vec<u8>> {
+        std::fs::read(cache_file).ok()
     }
 }
 

@@ -387,17 +387,18 @@
       "plantuml_installed": "PlantUML è installato in {path}.",
       "plantuml_not_installed": "PlantUML non è installato.",
       "plantuml_update_now": "Aggiorna PlantUML all'ultima versione",
-      "drawio_section_title": "Draw.io",
+      "drawio_section_title": "Aggiornamento Draw.io",
       "drawio_installed": "Draw.io viewer è installato in {path}",
       "drawio_not_installed": "Draw.io viewer non è installato.",
       "drawio_update_now": "Aggiorna Draw.io all'ultima versione",
-      "mermaid_section_title": "Mermaid",
+      "mermaid_section_title": "Aggiornamento Mermaid",
       "mermaid_installed": "Mermaid.js è installato in {path}",
       "mermaid_not_installed": "Mermaid.js non è installato.",
       "mermaid_update_now": "Aggiorna Mermaid.js all'ultima versione"
     },
     "behavior": {
       "section_title": "Comportamento",
+      "editor_behavior_section_title": "Comportamento in modifica",
       "confirm_close_dirty_tab": "Conferma prima di chiudere schede non salvate",
       "scroll_sync": "Sincronizzazione scorrimento",
       "auto_save": "Salvataggio automatico",
@@ -640,7 +641,12 @@
     "severity_error": "Errore",
     "use_workspace_local_config": "Preferisci il set di regole dell’area",
     "view_on_github": "Visualizza su GitHub ufficiale",
-    "search_placeholder": "Cerca regole…"
+    "search_placeholder": "Cerca regole…",
+    "fix_preview": "Anteprima della correzione",
+    "fix_preview_removed_line": "Rimosso: {line}",
+    "fix_preview_added_line": "Aggiunto: {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "Il contenuto originale non è disponibile per l’anteprima."
   },
   "use_workspace_local_config": "Dai priorità alle regole Lint dell’area",
   "editor": {

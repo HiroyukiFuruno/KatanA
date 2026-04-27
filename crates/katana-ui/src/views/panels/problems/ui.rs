@@ -117,8 +117,12 @@ impl<'a> ProblemsPanel<'a> {
                     } else {
                         let expand_all = self.state.diagnostics.expand_all;
                         for (path, diagnostics) in &self.state.diagnostics.problems {
+                            let content = self.state.document.open_documents.iter()
+                                .find(|d| &d.path == path)
+                                .map(|d| d.buffer.as_str());
+
                             if let Some(action) =
-                                super::diagnostics_renderer::DiagnosticsRendererOps::show_file_diagnostics(ui, path, diagnostics, expand_all)
+                                super::diagnostics_renderer::DiagnosticsRendererOps::show_file_diagnostics(ui, path, diagnostics, expand_all, content)
                             {
                                 *self.pending_action = action;
                             }

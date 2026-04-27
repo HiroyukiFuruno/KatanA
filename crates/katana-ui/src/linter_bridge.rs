@@ -35,7 +35,7 @@ impl MarkdownLinterBridgeOps {
                 .get(rule_id)
                 .is_none_or(|rule_config| rule_config.enabled)
             {
-                severity_map.insert(rule_id.clone(), Self::configured_severity(severity));
+                severity_map.insert(rule_id.as_str(), Self::configured_severity(severity));
             }
         }
 
@@ -55,7 +55,7 @@ impl MarkdownLinterBridgeOps {
         diag.fix_info.is_some()
     }
 
-    fn severity_map(options: &LintOptions) -> HashMap<String, Option<DiagnosticSeverity>> {
+    fn severity_map(options: &LintOptions) -> HashMap<&str, Option<DiagnosticSeverity>> {
         options
             .rules
             .iter()
@@ -63,7 +63,7 @@ impl MarkdownLinterBridgeOps {
                 let severity = rule_config
                     .enabled
                     .then(|| Self::default_severity(options.default_severity));
-                (rule_id.clone(), severity)
+                (rule_id.as_str(), severity)
             })
             .collect()
     }

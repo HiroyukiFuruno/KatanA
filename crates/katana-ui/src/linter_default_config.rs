@@ -26,7 +26,7 @@ mod tests {
         let config = MarkdownLinterDefaultConfigOps::load();
 
         assert_eq!(config.raw["MD013"], false);
-        assert_eq!(config.raw["MD048"]["style"], "backtick");
+        assert_eq!(config.raw["MD048"]["style"], "consistent");
         assert!(
             config.raw["MD052"]["ignored_labels"]
                 .as_array()

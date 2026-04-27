@@ -3,14 +3,14 @@ use std::sync::{Mutex, OnceLock};
 
 const HEADLESS_CHROME_WINDOW_SIZE: u32 = 2000;
 
-static MERMAID_BROWSER: OnceLock<Mutex<Option<Browser>>> = OnceLock::new();
+static DRAWIO_BROWSER: OnceLock<Mutex<Option<Browser>>> = OnceLock::new();
 
-pub(super) struct MermaidBrowserOps;
+pub(super) struct DrawioBrowserOps;
 
-impl MermaidBrowserOps {
+impl DrawioBrowserOps {
     pub(super) fn open_tab(
         temp_html: &tempfile::NamedTempFile,
-    ) -> Result<std::sync::Arc<headless_chrome::Tab>, String> {
+    ) -> Result<std::sync::Arc<headless_chrome::Tab>, anyhow::Error> {
         let browser = Self::shared_browser()?;
         match Self::open_tab_with_browser(&browser, temp_html) {
             Ok(tab) => Ok(tab),
@@ -18,18 +18,18 @@ impl MermaidBrowserOps {
                 Self::reset_browser();
                 let browser = Self::shared_browser()?;
                 Self::open_tab_with_browser(&browser, temp_html).map_err(|second_error| {
-                    format!(
-                        "Failed to open Mermaid tab: {first_error}; retry failed: {second_error}"
+                    anyhow::anyhow!(
+                        "Failed to open Draw.io tab: {first_error}; retry failed: {second_error}"
                     )
                 })
             }
         }
     }
 
-    fn shared_browser() -> Result<Browser, String> {
+    fn shared_browser() -> Result<Browser, anyhow::Error> {
         let mut lock = Self::browser_slot()
             .lock()
-            .map_err(|e| format!("Failed to lock Mermaid browser: {e}"))?;
+            .map_err(|e| anyhow::anyhow!("Failed to lock Draw.io browser: {e}"))?;
         if let Some(browser) = lock.as_ref() {
             return Ok(browser.clone());
         }
@@ -39,7 +39,7 @@ impl MermaidBrowserOps {
         Ok(browser)
     }
 
-    fn reset_browser() {
+    pub(super) fn reset_browser() {
         let Ok(mut lock) = Self::browser_slot().lock() else {
             return;
         };
@@ -47,36 +47,33 @@ impl MermaidBrowserOps {
     }
 
     fn browser_slot() -> &'static Mutex<Option<Browser>> {
-        MERMAID_BROWSER.get_or_init(|| Mutex::new(None))
+        DRAWIO_BROWSER.get_or_init(|| Mutex::new(None))
     }
 
-    fn launch_browser() -> Result<Browser, String> {
+    fn launch_browser() -> Result<Browser, anyhow::Error> {
         let launch_options = LaunchOptions::default_builder()
             .window_size(Some((
                 HEADLESS_CHROME_WINDOW_SIZE,
                 HEADLESS_CHROME_WINDOW_SIZE,
             )))
             .build()
-            .map_err(|e| format!("Failed to build launch options: {e}"))?;
+            .map_err(|e| anyhow::anyhow!("Failed to build launch options: {e}"))?;
 
-        Browser::new(launch_options).map_err(|e| format!("Failed to launch browser: {e}"))
+        Browser::new(launch_options).map_err(|e| anyhow::anyhow!("Failed to launch browser: {e}"))
     }
 
     fn open_tab_with_browser(
         browser: &Browser,
         temp_html: &tempfile::NamedTempFile,
-    ) -> Result<std::sync::Arc<headless_chrome::Tab>, String> {
+    ) -> Result<std::sync::Arc<headless_chrome::Tab>, anyhow::Error> {
         let tab = browser
             .new_tab()
-            .map_err(|e| format!("Failed to create tab: {e}"))?;
-        tab.set_transparent_background_color()
-            .map_err(|e| format!("Failed to set transparent background: {e}"))?;
-
+            .map_err(|e| anyhow::anyhow!("Failed to create tab: {e}"))?;
         let url = format!("file://{}", temp_html.path().display());
         tab.navigate_to(&url)
-            .map_err(|e| format!("Navigation failed: {e}"))?;
+            .map_err(|e| anyhow::anyhow!("Navigation failed: {e}"))?;
         tab.wait_until_navigated()
-            .map_err(|e| format!("Wait navigation failed: {e}"))?;
+            .map_err(|e| anyhow::anyhow!("Wait navigation failed: {e}"))?;
         Ok(tab)
     }
 }

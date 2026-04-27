@@ -398,17 +398,18 @@
       "plantuml_installed": "PlantUML は {path} にインストールされています。",
       "plantuml_not_installed": "PlantUML はインストールされていません。",
       "plantuml_update_now": "PlantUML を最新版に更新",
-      "drawio_section_title": "Draw.io",
+      "drawio_section_title": "Draw.io 更新",
       "drawio_installed": "Draw.io viewer は {path} にインストールされています",
       "drawio_not_installed": "Draw.io viewer がインストールされていません。",
       "drawio_update_now": "Draw.io を最新版に更新",
-      "mermaid_section_title": "Mermaid",
+      "mermaid_section_title": "Mermaid 更新",
       "mermaid_installed": "Mermaid.js は {path} にインストールされています",
       "mermaid_not_installed": "Mermaid.js がインストールされていません。",
       "mermaid_update_now": "Mermaid.js を最新版に更新"
     },
     "behavior": {
       "section_title": "動作",
+      "editor_behavior_section_title": "編集時の動作",
       "confirm_close_dirty_tab": "未保存タブを閉じる前に確認",
       "scroll_sync": "スクロール同期",
       "auto_save": "自動保存",
@@ -640,7 +641,12 @@
     "severity_error": "エラー",
     "use_workspace_local_config": "ワークスペース用ルールセットを優先する",
     "view_on_github": "公式GitHubで確認",
-    "search_placeholder": "ルールを検索…"
+    "search_placeholder": "ルールを検索…",
+    "fix_preview": "修正のプレビュー",
+    "fix_preview_removed_line": "削除: {line}",
+    "fix_preview_added_line": "追加: {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "プレビュー対象の元の内容を取得できません。"
   },
   "use_workspace_local_config": "ワークスペース固有のLintルールを優先する",
   "editor": {

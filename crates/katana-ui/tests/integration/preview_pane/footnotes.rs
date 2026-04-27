@@ -14,14 +14,16 @@ fn load_sample_sections() -> Vec<RenderedSection> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/fixtures/sample.md");
     let source = std::fs::read_to_string(&path).expect("failed to read sample.md");
     let mut pane = PreviewPane::default();
-    pane.full_render(
-        &source,
-        &path,
-        std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
-        false,
-        2,
-    );
-    pane.wait_for_renders();
+    crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
+        pane.full_render(
+            &source,
+            &path,
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+            false,
+            2,
+        );
+        pane.wait_for_renders();
+    });
     std::mem::take(&mut pane.sections)
 }
 

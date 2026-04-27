@@ -1,9 +1,9 @@
 ## Definition of Ready (DoR)
 
-- [ ] `proposal.md`、`design.md`、`specs` が揃っていること
-- [ ] 対象バージョン 0.22.7 の変更 ID とスコープが確認されていること
-- [ ] KML（katana-markdown-linter）の format API と config API の現在仕様を確認していること
-- [ ] 既存の `v0-22-7-fix-preview` 削除差分や `v0-22-8-fix-preview` 未追跡差分を混ぜずに、この変更 ID の範囲だけで作業すること
+- [x] `proposal.md`、`design.md`、`specs` が揃っていること
+- [x] 対象バージョン 0.22.7 の変更 ID とスコープが確認されていること
+- [x] KML（katana-markdown-linter）の format API と config API の現在仕様を確認していること
+- [x] 既存の `v0-22-7-fix-preview` 削除差分や `v0-22-8-fix-preview` 未追跡差分を混ぜずに、この変更 ID の範囲だけで作業すること
 
 ## Branch Rule
 
@@ -77,8 +77,8 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### AsIs / ToBe 差分
 
@@ -217,7 +217,7 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 
 ### Definition of Done (DoD)
 
-- [ ] ファイル右クリック、空き領域右クリック、ヘッダーアイコンの三つの入口が画面上で確認できること
+- [x] ファイル右クリック、空き領域右クリック、ヘッダーアイコンの三つの入口が画面上で確認できること
 - [x] 非 Markdown ファイルにフォーマット操作が表示されないこと
 - [x] 新規作成操作が既存の作成モーダルと同じ validation を使うこと
 - [x] UI スナップショットでフィルター左の二つのアイコンが確認できること
@@ -291,6 +291,9 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
 - [x] 設定画面の Drawio / Mermaid 更新操作が正常に動作し、保存済み設定との整合が取れていること
 - [x] 起動時の js 取得とキャッシュが動作し、既定では再取得を抑制しつつ、明示更新フラグで最新化できること
 - [x] `crates/katana-core`、`crates/katana-ui`、関連ドキュメントの対象テストと `openspec` 自己レビューの観点で検証可能な状態であること
+  - 対象確認: `cargo test -p katana-ui settings_window --test ui_integration_parallel -- --nocapture`
+  - 対象確認: `cargo test -p katana-ui widgets::combo_box::ui::tests::test_styled_combobox_popup_visuals_make_inactive_rows_transparent --lib -- --nocapture`
+  - 節目確認: `make check-light`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 8. Final Verification & Release Work

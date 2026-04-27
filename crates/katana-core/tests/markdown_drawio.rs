@@ -78,3 +78,22 @@ fn concurrent_drawio_rendering_succeeds() {
     }
     unsafe { std::env::remove_var("DRAWIO_JS") };
 }
+
+#[test]
+fn renders_png_when_drawio_js_is_available() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    if DrawioRenderOps::find_drawio_js().is_none() {
+        return;
+    }
+
+    let block = DiagramBlock {
+        kind: DiagramKind::DrawIo,
+        source: SIMPLE_DRAWIO_XML.replace("test", "test_png_render"),
+    };
+    let result = DrawioRenderOps::render_drawio(&block);
+
+    match result {
+        DiagramResult::OkPng(bytes) => assert!(bytes.starts_with(&[0x89, 0x50, 0x4E, 0x47])),
+        other => panic!("Expected Draw.io PNG rendering, got {other:?}"),
+    }
+}

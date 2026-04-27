@@ -11,6 +11,16 @@ impl BehaviorPerformanceOps {
         ui.label(egui::RichText::new(&msgs.diagram_rendering_section_title).strong());
         ui.add_space(SETTINGS_TOGGLE_SPACING);
 
+        ui.indent("diagram_rendering_settings_body", |ui| {
+            Self::render_body(ui, state, msgs);
+        });
+    }
+
+    fn render_body(
+        ui: &mut egui::Ui,
+        state: &mut AppState,
+        msgs: &crate::i18n::SettingsBehaviorMessages,
+    ) {
         let is_unlimited = state
             .config
             .settings
@@ -25,12 +35,10 @@ impl BehaviorPerformanceOps {
             .diagram_concurrency;
         ui.add_enabled_ui(!is_unlimited, |ui| {
             crate::widgets::AlignCenter::new()
-                .content(|ui| {
-                    ui.label(&msgs.diagram_concurrency);
-                    if ui
-                        .add(egui::DragValue::new(&mut concurrency).speed(1.0))
-                        .changed()
-                    {
+                .left(|ui| ui.label(&msgs.diagram_concurrency))
+                .right(|ui| {
+                    let response = ui.add(egui::DragValue::new(&mut concurrency).speed(1.0));
+                    if response.changed() {
                         state
                             .config
                             .settings
@@ -39,9 +47,11 @@ impl BehaviorPerformanceOps {
                             .diagram_concurrency = concurrency.max(1);
                         let _ = state.config.try_save_settings();
                     }
+                    response
                 })
                 .show(ui);
         });
+        ui.add_space(SETTINGS_TOGGLE_SPACING);
 
         let mut unlimited = is_unlimited;
         if ui

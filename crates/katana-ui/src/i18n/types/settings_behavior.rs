@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SettingsBehaviorMessages {
     pub section_title: String, pub confirm_close_dirty_tab: String,
+    #[serde(default = "default_editor_behavior_section_title")]
+    pub editor_behavior_section_title: String,
     pub confirm_file_move: String,
     pub scroll_sync: String, pub auto_save: String,
     pub auto_save_interval: String, pub auto_save_interval_hint: String,
@@ -29,6 +31,10 @@ pub struct SettingsBehaviorMessages {
     pub diagram_concurrency_unlimited_warning_title: String,
     #[serde(default = "default_diagram_concurrency_unlimited_warning_message")]
     pub diagram_concurrency_unlimited_warning_message: String,
+}
+
+fn default_editor_behavior_section_title() -> String {
+    "Editing Behavior".to_string()
 }
 
 fn default_startup_behavior_section_title() -> String {

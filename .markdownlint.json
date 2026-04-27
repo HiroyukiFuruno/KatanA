@@ -30,10 +30,10 @@
     "names": []
   },
   "MD046": {
-    "style": "indented"
+    "style": "consistent"
   },
   "MD048": {
-    "style": "backtick"
+    "style": "consistent"
   },
   "MD049": {
     "style": "asterisk"

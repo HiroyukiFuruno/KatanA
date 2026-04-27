@@ -1,3 +1,5 @@
+mod browser;
+mod html;
 pub mod types;
 
 pub use types::*;
@@ -5,16 +7,15 @@ pub use types::*;
 pub type DrawioRenderOps = DrawioRendererOps;
 
 use crate::markdown::{DiagramBlock, DiagramResult};
-use headless_chrome::{Browser, LaunchOptions};
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 const DRAWIO_DOWNLOAD_URL: &str = "https://viewer.diagrams.net/js/viewer-static.min.js";
-const HEADLESS_CHROME_WINDOW_SIZE: u32 = 2000;
 const HEADLESS_CHROME_TIMEOUT_SECS: u64 = 15;
+const DRAWIO_RENDER_POLL_INTERVAL_MS: u64 = 10;
 
 impl DrawioRendererOps {
     pub fn default_install_path() -> Option<PathBuf> {
@@ -46,6 +47,7 @@ impl DrawioRendererOps {
         };
 
         let mut hasher = DefaultHasher::new();
+        "drawio-png-v3".hash(&mut hasher);
         block.source.hash(&mut hasher);
         let hash = hasher.finish();
 
@@ -53,11 +55,11 @@ impl DrawioRendererOps {
         let _ = fs::create_dir_all(&cache_dir);
         let cache_file = cache_dir.join(format!("{:016x}.png", hash));
 
-        if let Ok(data) = fs::read(&cache_file) {
+        if let Some(data) = Self::read_cached_png(&cache_file) {
             return DiagramResult::OkPng(data);
         }
 
-        match Self::render_with_headless_chrome(&block.source, &drawio_js) {
+        match Self::render_with_retry(&block.source, &drawio_js) {
             Ok(data) => {
                 let _ = fs::write(&cache_file, &data);
                 DiagramResult::OkPng(data)
@@ -72,89 +74,117 @@ impl DrawioRendererOps {
         }
     }
 
+    fn render_with_retry(xml: &str, drawio_js: &Path) -> Result<Vec<u8>, anyhow::Error> {
+        match Self::render_with_headless_chrome(xml, drawio_js) {
+            Ok(data) => Ok(data),
+            Err(first_error) => {
+                browser::DrawioBrowserOps::reset_browser();
+                Self::render_with_headless_chrome(xml, drawio_js).map_err(|second_error| {
+                    anyhow::anyhow!(
+                        "Draw.io rendering failed: {first_error}; retry failed: {second_error}"
+                    )
+                })
+            }
+        }
+    }
+
     fn render_with_headless_chrome(xml: &str, drawio_js: &Path) -> Result<Vec<u8>, anyhow::Error> {
-        let escaped_json_string = serde_json::to_string(xml)?;
-        let drawio_url = format!("file://{}", drawio_js.to_string_lossy());
+        let temp_html = html::DrawioHtmlOps::write_temp_html(xml, drawio_js)?;
 
-        let html = format!(
-            r#"<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <script src="{drawio_url}"></script>
-</head>
-<body>
-  <div id="graph-container" class="mxgraph"></div>
-  <script>
-    window.onload = function() {{
-      var container = document.getElementById('graph-container');
-      container.setAttribute('data-mxgraph', JSON.stringify({{ xml: {} }}));
-      
-      if (typeof GraphViewer !== 'undefined') {{
-        GraphViewer.processElements();
-      }} else {{
-        document.body.innerHTML += '<div class=\"error\">GraphViewer undefined</div>';
-      }}
-    }};
-  </script>
-</body>
-</html>"#,
-            escaped_json_string,
-            drawio_url = drawio_url
-        );
+        let tab = browser::DrawioBrowserOps::open_tab(&temp_html)?;
 
-        let temp_html = tempfile::Builder::new()
-            .prefix("katana_drawio_")
-            .suffix(".html")
-            .tempfile()?;
+        Self::process_graph_elements(&tab)?;
+        Self::wait_for_svg(&tab)?;
+        Self::wait_for_next_frame(&tab)?;
+        let data = Self::capture_rendered_graph(&tab);
+        let _ = tab.close(false);
+        data
+    }
 
-        std::fs::write(temp_html.path(), &html)?;
+    fn process_graph_elements(tab: &headless_chrome::Tab) -> Result<(), anyhow::Error> {
+        let start = Instant::now();
+        loop {
+            match Self::try_process_graph_elements(tab)? {
+                DrawioProcessState::Ready => return Ok(()),
+                DrawioProcessState::Pending => {
+                    if start.elapsed() > Duration::from_secs(HEADLESS_CHROME_TIMEOUT_SECS) {
+                        return Err(anyhow::anyhow!("GraphViewer was not loaded"));
+                    }
+                    std::thread::sleep(Duration::from_millis(DRAWIO_RENDER_POLL_INTERVAL_MS));
+                }
+            }
+        }
+    }
 
-        let launch_options = LaunchOptions::default_builder()
-            .window_size(Some((
-                HEADLESS_CHROME_WINDOW_SIZE,
-                HEADLESS_CHROME_WINDOW_SIZE,
-            )))
-            .user_data_dir(Some(
-                std::env::temp_dir().join("katana_drawio_chrome_profile"),
-            ))
-            .build()
-            .map_err(|e| anyhow::anyhow!("Failed to build launch options: {}", e))?;
+    fn try_process_graph_elements(
+        tab: &headless_chrome::Tab,
+    ) -> Result<DrawioProcessState, anyhow::Error> {
+        let result = tab
+            .evaluate(
+                r#"
+                (() => {
+                    if (typeof GraphViewer === 'undefined') {
+                        return 'pending';
+                    }
+                    GraphViewer.processElements();
+                    return 'ready';
+                })()
+                "#,
+                false,
+            )
+            .map_err(|e| anyhow::anyhow!("Failed to process Draw.io graph elements: {e}"))?;
 
-        let browser = Browser::new(launch_options)
-            .map_err(|e| anyhow::anyhow!("Failed to launch browser: {}", e))?;
+        match result
+            .value
+            .and_then(|it| it.as_str().map(ToOwned::to_owned))
+        {
+            Some(value) if value == "ready" => Ok(DrawioProcessState::Ready),
+            _ => Ok(DrawioProcessState::Pending),
+        }
+    }
 
-        let tab = browser
-            .new_tab()
-            .map_err(|e| anyhow::anyhow!("Failed to create tab: {}", e))?;
-
-        let url = format!("file://{}", temp_html.path().display());
-        tab.navigate_to(&url)
-            .map_err(|e| anyhow::anyhow!("Navigation failed: {}", e))?;
-        tab.wait_until_navigated()
-            .map_err(|e| anyhow::anyhow!("Wait navigation failed: {}", e))?;
-
+    fn wait_for_svg(tab: &headless_chrome::Tab) -> Result<(), anyhow::Error> {
         tab.wait_for_element_with_custom_timeout(
-            ".mxgraph svg",
+            "#graph-container svg",
             Duration::from_secs(HEADLESS_CHROME_TIMEOUT_SECS),
         )
+        .map(|_| ())
         .map_err(|e| {
             let html = tab
                 .get_content()
                 .unwrap_or_else(|_| "Failed to get content".to_string());
-            anyhow::anyhow!("SVG rendering timeout: {}. HTML: {}", e, html)
-        })?;
+            anyhow::anyhow!("SVG rendering timeout: {e}. HTML: {html}")
+        })
+    }
 
+    fn wait_for_next_frame(tab: &headless_chrome::Tab) -> Result<(), anyhow::Error> {
+        tab.evaluate(
+            "new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))",
+            true,
+        )
+        .map(|_| ())
+        .map_err(|e| anyhow::anyhow!("Failed to wait Draw.io paint frame: {e}"))
+    }
+
+    fn capture_rendered_graph(tab: &headless_chrome::Tab) -> Result<Vec<u8>, anyhow::Error> {
         let element = tab
-            .find_element(".mxgraph svg")
-            .map_err(|e| anyhow::anyhow!("Failed to find SVG element: {}", e))?;
-
+            .find_element("#graph-container")
+            .map_err(|e| anyhow::anyhow!("Failed to find Draw.io graph element: {e}"))?;
         element
             .capture_screenshot(
                 headless_chrome::protocol::cdp::Page::CaptureScreenshotFormatOption::Png,
             )
-            .map_err(|e| anyhow::anyhow!("Screenshot failed: {}", e))
+            .map_err(|e| anyhow::anyhow!("Screenshot failed: {e}"))
     }
+
+    fn read_cached_png(cache_file: &Path) -> Option<Vec<u8>> {
+        fs::read(cache_file).ok()
+    }
+}
+
+enum DrawioProcessState {
+    Ready,
+    Pending,
 }
 
 #[cfg(test)]

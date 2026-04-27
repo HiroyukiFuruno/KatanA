@@ -101,14 +101,13 @@ impl BehaviorEditorOps {
                 .settings()
                 .behavior
                 .auto_save_interval_secs;
-            ui.label(&behavior_msgs.auto_save_interval);
             let original_width = ui.spacing().slider_width;
             const SETTINGS_SLIDER_WIDTH: f32 = 300.0;
             ui.spacing_mut().slider_width = SETTINGS_SLIDER_WIDTH;
 
             crate::widgets::AlignCenter::new()
-                .shrink_to_fit(true)
-                .content(|ui| {
+                .left(|ui| ui.label(&behavior_msgs.auto_save_interval))
+                .right(|ui| {
                     let mut display_val = interval;
 
                     let slider = egui::Slider::new(
@@ -142,6 +141,7 @@ impl BehaviorEditorOps {
                             .auto_save_interval_secs = display_val;
                         let _ = state.config.try_save_settings();
                     }
+                    slider_response.union(drag_response)
                 })
                 .show(ui);
 

@@ -29,12 +29,16 @@ pub struct LinterSettings {
     pub rule_severity: HashMap<String, RuleSeverity>,
     #[serde(default)]
     pub custom_presets: Vec<LinterPreset>,
-    #[serde(default)]
+    #[serde(default = "default_linter_preset_state")]
     pub preset_state: PresetState,
 }
 
 fn default_linter_enabled() -> bool {
     true
+}
+
+fn default_linter_preset_state() -> PresetState {
+    PresetState::built_in("katana", "KatanA")
 }
 
 impl Default for LinterSettings {
@@ -44,7 +48,15 @@ impl Default for LinterSettings {
             use_workspace_local_config: false,
             rule_severity: HashMap::new(),
             custom_presets: Vec::new(),
-            preset_state: PresetState::built_in("katana", "KatanA"),
+            preset_state: default_linter_preset_state(),
+        }
+    }
+}
+
+impl LinterSettings {
+    pub(crate) fn normalize(&mut self) {
+        if self.preset_state.current.is_none() {
+            self.preset_state = default_linter_preset_state();
         }
     }
 }
@@ -72,5 +84,36 @@ mod tests {
         let deserialized: LinterSettings = serde_json::from_str(&json).unwrap();
 
         assert_eq!(settings, deserialized);
+    }
+
+    #[test]
+    fn linter_missing_preset_state_defaults_to_katana() {
+        let settings: LinterSettings =
+            serde_json::from_value(serde_json::json!({ "enabled": true }))
+                .expect("linter settings must deserialize");
+
+        let current = settings
+            .preset_state
+            .current
+            .expect("current preset must exist");
+        assert_eq!(current.id, "katana");
+        assert_eq!(current.label, "KatanA");
+        assert!(!settings.preset_state.modified);
+    }
+
+    #[test]
+    fn linter_normalize_restores_empty_preset_state_to_katana() {
+        let mut settings: LinterSettings =
+            serde_json::from_value(serde_json::json!({ "preset_state": {} }))
+                .expect("linter settings must deserialize");
+
+        settings.normalize();
+
+        let current = settings
+            .preset_state
+            .current
+            .expect("current preset must exist");
+        assert_eq!(current.id, "katana");
+        assert_eq!(current.label, "KatanA");
     }
 }

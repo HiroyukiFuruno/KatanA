@@ -3,6 +3,7 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 
 const MERMAID_RENDER_TIMEOUT_SECS: u64 = 15;
+const MERMAID_RENDER_POLL_INTERVAL_MS: u64 = 10;
 
 pub(super) struct MermaidWebRendererOps;
 
@@ -48,14 +49,14 @@ fn wait_for_svg(tab: &headless_chrome::Tab) -> Result<Vec<u8>, String> {
             return Err("Mermaid rendering timed out".to_string());
         }
 
-        std::thread::sleep(Duration::from_millis(100));
+        std::thread::sleep(Duration::from_millis(MERMAID_RENDER_POLL_INTERVAL_MS));
     }
 }
 
 fn extract_svg(tab: &headless_chrome::Tab) -> Result<Vec<u8>, String> {
     let element = tab
-        .find_element("#diagram svg")
-        .map_err(|e| format!("Failed to find Mermaid SVG element: {e}"))?;
+        .find_element("#diagram")
+        .map_err(|e| format!("Failed to find Mermaid diagram element: {e}"))?;
     element
         .capture_screenshot(
             headless_chrome::protocol::cdp::Page::CaptureScreenshotFormatOption::Png,

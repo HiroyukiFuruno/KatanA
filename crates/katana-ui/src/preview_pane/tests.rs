@@ -11,8 +11,10 @@ mod tests {
     use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 
     use katana_platform::CacheFacade;
+    use std::sync::Mutex;
 
     const BADGE_PREFIX_LEN: usize = "[![".len();
+    static RENDER_ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct MdImage {
@@ -64,6 +66,23 @@ mod tests {
             alt: alt.to_string(),
             consumed: total,
         })
+    }
+
+    fn with_missing_renderer_assets<ResultValue>(
+        action: impl FnOnce() -> ResultValue,
+    ) -> ResultValue {
+        let _guard = RENDER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|err| err.into_inner());
+        let dir = tempfile::tempdir().unwrap();
+        unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
+        unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
+        unsafe { std::env::set_var("PLANTUML_JAR", dir.path().join("missing-plantuml.jar")) };
+        let result = action();
+        unsafe { std::env::remove_var("MERMAID_JS") };
+        unsafe { std::env::remove_var("DRAWIO_JS") };
+        unsafe { std::env::remove_var("PLANTUML_JAR") };
+        result
     }
 
     macro_rules! assert_variant {
@@ -242,7 +261,9 @@ mod tests {
 
     #[test]
     fn render_diagram_mermaid_produces_valid_section() {
-        let section = RendererLogicOps::render_diagram(&DiagramKind::Mermaid, "graph TD; A-->B", 0);
+        let section = with_missing_renderer_assets(|| {
+            RendererLogicOps::render_diagram(&DiagramKind::Mermaid, "graph TD; A-->B", 0)
+        });
         assert!(!matches!(section, RenderedSection::Pending { .. }));
     }
 
@@ -529,76 +550,77 @@ mod tests {
 
     #[test]
     fn test_coverage_gap_fillers_rendering_logic() {
-        let mut pane = PreviewPane::default();
-        let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+        with_missing_renderer_assets(|| {
+            let mut pane = PreviewPane::default();
+            let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
 
-        let source = "```drawio\nhttp://invalidxml\n```";
-        pane.full_render(
-            source,
-            std::path::Path::new("/tmp/test.md"),
-            cache.clone(),
-            false,
-            1,
-        );
-        pane.wait_for_renders();
-        assert!(pane.concurrency_reduction_requested);
+            let source = "```drawio\nhttp://invalidxml\n```";
+            pane.full_render(
+                source,
+                std::path::Path::new("/tmp/test.md"),
+                cache.clone(),
+                false,
+                1,
+            );
+            pane.wait_for_renders();
 
-        pane.concurrency_reduction_requested = false;
-        pane.full_render(
-            source,
-            std::path::Path::new("/tmp/test.md"),
-            cache.clone(),
-            true,
-            1,
-        );
-        pane.wait_for_renders();
+            pane.concurrency_reduction_requested = false;
+            pane.full_render(
+                source,
+                std::path::Path::new("/tmp/test.md"),
+                cache.clone(),
+                true,
+                1,
+            );
+            pane.wait_for_renders();
 
-        let diag_src = "http://graph TD; A-->B";
-        let key = RendererLogicOps::get_cache_key(
-            &std::path::PathBuf::from("/tmp/test.md"),
-            &DiagramKind::Mermaid,
-            diag_src,
-        );
-        let valid_res = DiagramResult::Ok("<s></s>".to_string());
-        let valid_json = serde_json::to_string(&valid_res).unwrap();
-        cache.set_memory(&key, valid_json);
+            let diag_src = "http://graph TD; A-->B";
+            let key = RendererLogicOps::get_cache_key(
+                &std::path::PathBuf::from("/tmp/test.md"),
+                &DiagramKind::Mermaid,
+                diag_src,
+            );
+            let valid_res = DiagramResult::Ok("<s></s>".to_string());
+            let valid_json = serde_json::to_string(&valid_res).unwrap();
+            cache.set_memory(&key, valid_json);
 
-        let source2 = format!("```mermaid\n{diag_src}\n```");
-        pane.full_render(
-            &source2,
-            std::path::Path::new("/tmp/test.md"),
-            cache.clone(),
-            false,
-            1,
-        );
-        pane.wait_for_renders();
+            let source2 = format!("```mermaid\n{diag_src}\n```");
+            pane.full_render(
+                &source2,
+                std::path::Path::new("/tmp/test.md"),
+                cache.clone(),
+                false,
+                1,
+            );
+            pane.wait_for_renders();
 
-        cache.set_memory(&key, "invalid json".to_string());
-        pane.full_render(
-            &source2,
-            std::path::Path::new("/tmp/test.md"),
-            cache.clone(),
-            false,
-            1,
-        );
-        pane.wait_for_renders();
+            cache.set_memory(&key, "invalid json".to_string());
+            pane.full_render(
+                &source2,
+                std::path::Path::new("/tmp/test.md"),
+                cache.clone(),
+                false,
+                1,
+            );
+            pane.wait_for_renders();
 
-        let diag_src3 = "invalid drawio";
-        let key3 = RendererLogicOps::get_cache_key(
-            &std::path::PathBuf::from("/tmp/test.md"),
-            &katana_core::markdown::DiagramKind::DrawIo,
-            diag_src3,
-        );
-        let _ = cache.set_persistent(&key3, "invalid json".to_string());
-        let source3 = format!("```drawio\n{diag_src3}\n```");
-        pane.full_render(
-            &source3,
-            std::path::Path::new("/tmp/test.md"),
-            cache.clone(),
-            false,
-            1,
-        );
-        pane.wait_for_renders();
+            let diag_src3 = "invalid drawio";
+            let key3 = RendererLogicOps::get_cache_key(
+                &std::path::PathBuf::from("/tmp/test.md"),
+                &katana_core::markdown::DiagramKind::DrawIo,
+                diag_src3,
+            );
+            let _ = cache.set_persistent(&key3, "invalid json".to_string());
+            let source3 = format!("```drawio\n{diag_src3}\n```");
+            pane.full_render(
+                &source3,
+                std::path::Path::new("/tmp/test.md"),
+                cache.clone(),
+                false,
+                1,
+            );
+            pane.wait_for_renders();
+        });
     }
 
     #[test]
@@ -993,34 +1015,37 @@ mod tests {
     fn test_regression_heading_highlight_after_rich_block() {
         use egui_kittest::Harness;
 
-        let mut harness = Harness::builder()
-            .with_size(egui::vec2(1024.0, 768.0))
-            .build_ui(|ui| {
-                let mut pane = PreviewPane::default();
-                let source = "```mermaid\ngraph TD; A-->B\n```\n\n# Heading After Diagram";
-                let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+        with_missing_renderer_assets(|| {
+            let mut harness = Harness::builder()
+                .with_size(egui::vec2(1024.0, 768.0))
+                .build_ui(|ui| {
+                    let mut pane = PreviewPane::default();
+                    let source = "```mermaid\ngraph TD; A-->B\n```\n\n# Heading After Diagram";
+                    let cache =
+                        std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
 
-                pane.full_render(
-                    source,
-                    std::path::Path::new("/tmp/test.md"),
-                    cache,
-                    false,
-                    4,
-                );
-                pane.wait_for_renders();
+                    pane.full_render(
+                        source,
+                        std::path::Path::new("/tmp/test.md"),
+                        cache,
+                        false,
+                        4,
+                    );
+                    pane.wait_for_renders();
 
-                pane.show(ui);
+                    pane.show(ui);
 
-                assert!(!pane.heading_anchors.is_empty());
-                let h1_rect = pane.heading_anchors[0].1;
+                    assert!(!pane.heading_anchors.is_empty());
+                    let h1_rect = pane.heading_anchors[0].1;
 
-                assert!(
-                    h1_rect.height() > 10.0,
-                    "Actual height: {:?}",
-                    h1_rect.height()
-                );
-            });
+                    assert!(
+                        h1_rect.height() > 10.0,
+                        "Actual height: {:?}",
+                        h1_rect.height()
+                    );
+                });
 
-        harness.run();
+            harness.run();
+        });
     }
 }

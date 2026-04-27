@@ -387,17 +387,18 @@
       "plantuml_installed": "PlantUML 已安裝在 {path}。",
       "plantuml_not_installed": "未安裝 PlantUML。",
       "plantuml_update_now": "將 PlantUML 更新到最新版本",
-      "drawio_section_title": "Draw.io",
+      "drawio_section_title": "Draw.io 更新",
       "drawio_installed": "Draw.io viewer 已安裝在 {path}",
       "drawio_not_installed": "未安裝 Draw.io viewer。",
       "drawio_update_now": "將 Draw.io 更新到最新版本",
-      "mermaid_section_title": "Mermaid",
+      "mermaid_section_title": "Mermaid 更新",
       "mermaid_installed": "Mermaid.js 已安裝在 {path}",
       "mermaid_not_installed": "未安裝 Mermaid.js。",
       "mermaid_update_now": "將 Mermaid.js 更新到最新版本"
     },
     "behavior": {
       "section_title": "行為",
+      "editor_behavior_section_title": "編輯行為",
       "confirm_close_dirty_tab": "關閉未儲存的分頁前確認",
       "scroll_sync": "捲動同步",
       "auto_save": "自動儲存",
@@ -640,7 +641,12 @@
     "severity_error": "錯誤",
     "use_workspace_local_config": "優先使用工作區規則集",
     "view_on_github": "在官方 GitHub 上查看",
-    "search_placeholder": "搜尋規則…"
+    "search_placeholder": "搜尋規則…",
+    "fix_preview": "修復預覽",
+    "fix_preview_removed_line": "刪除：{line}",
+    "fix_preview_added_line": "新增：{line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "無法取得用於預覽的原始內容。"
   },
   "use_workspace_local_config": "優先使用工作區專用 Lint 規則",
   "editor": {

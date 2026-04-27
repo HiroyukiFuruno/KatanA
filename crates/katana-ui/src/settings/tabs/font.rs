@@ -74,7 +74,7 @@ impl FontTabOps {
                                 if ui
                                     .add(
                                         egui::Button::selectable(is_current, family)
-                                            .frame_when_inactive(true),
+                                            .frame_when_inactive(false),
                                     )
                                     .clicked()
                                 {
@@ -93,7 +93,7 @@ impl FontTabOps {
                                 if ui
                                     .add(
                                         egui::Button::selectable(is_current, name.as_str())
-                                            .frame_when_inactive(true),
+                                            .frame_when_inactive(false),
                                     )
                                     .clicked()
                                 {

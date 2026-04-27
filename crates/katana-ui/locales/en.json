@@ -409,6 +409,7 @@
     },
     "behavior": {
       "section_title": "Behavior",
+      "editor_behavior_section_title": "Editing Behavior",
       "confirm_close_dirty_tab": "Confirm before closing unsaved tabs",
       "scroll_sync": "Scroll Sync",
       "auto_save": "Auto Save",
@@ -640,7 +641,12 @@
     "severity_error": "Error",
     "use_workspace_local_config": "Prefer Workspace Rule Set",
     "view_on_github": "View on official GitHub",
-    "search_placeholder": "Search rules…"
+    "search_placeholder": "Search rules…",
+    "fix_preview": "Fix Preview",
+    "fix_preview_removed_line": "- {line}",
+    "fix_preview_added_line": "+ {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "Original content not available for preview."
   },
   "use_workspace_local_config": "Prefer workspace-specific lint rules",
   "editor": {

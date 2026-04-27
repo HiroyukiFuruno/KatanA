@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use crate::app_action::AppAction;
+use crate::app_action::{AppAction, AssetDownloadRequest};
+use crate::settings::tabs::updates_renderer_section::{
+    RendererUpdateSection, RendererUpdateSectionOps,
+};
 use crate::state::update::UpdatePhase;
 
 const SECTION_SPACING: f32 = 8.0;
@@ -10,16 +13,6 @@ const PLANTUML_DOWNLOAD_URL: &str =
     "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar";
 const DRAWIO_DOWNLOAD_URL: &str = "https://viewer.diagrams.net/js/viewer-static.min.js";
 const MERMAID_DOWNLOAD_URL: &str = "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js";
-
-struct RendererUpdateSection<'a, ActionBuilder> {
-    title: &'a str,
-    installed_path: Option<PathBuf>,
-    default_path: Option<PathBuf>,
-    installed_template: &'a str,
-    not_installed_message: &'a str,
-    update_label: &'a str,
-    action: ActionBuilder,
-}
 
 impl crate::settings::tabs::UpdatesTabOps {
     pub(crate) fn render_updates_tab(
@@ -95,7 +88,7 @@ impl crate::settings::tabs::UpdatesTabOps {
             ui.separator();
             ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-            let section_action = Self::render_renderer_update_section(
+            let section_action = RendererUpdateSectionOps::render(
                 ui,
                 RendererUpdateSection {
                     title: &i18n_settings.plantuml_section_title,
@@ -104,9 +97,11 @@ impl crate::settings::tabs::UpdatesTabOps {
                     installed_template: &i18n_settings.plantuml_installed,
                     not_installed_message: &i18n_settings.plantuml_not_installed,
                     update_label: &i18n_settings.plantuml_update_now,
-                    action: |dest| AppAction::StartPlantumlDownload {
-                        url: PLANTUML_DOWNLOAD_URL.to_string(),
-                        dest,
+                    action: |dest| {
+                        AppAction::StartPlantumlDownload(AssetDownloadRequest {
+                            url: PLANTUML_DOWNLOAD_URL.to_string(),
+                            dest,
+                        })
                     },
                 },
             );
@@ -118,7 +113,7 @@ impl crate::settings::tabs::UpdatesTabOps {
             ui.separator();
             ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-            let section_action = Self::render_renderer_update_section(
+            let section_action = RendererUpdateSectionOps::render(
                 ui,
                 RendererUpdateSection {
                     title: &i18n_settings.drawio_section_title,
@@ -127,9 +122,11 @@ impl crate::settings::tabs::UpdatesTabOps {
                     installed_template: &i18n_settings.drawio_installed,
                     not_installed_message: &i18n_settings.drawio_not_installed,
                     update_label: &i18n_settings.drawio_update_now,
-                    action: |dest| AppAction::StartDrawioDownload {
-                        url: DRAWIO_DOWNLOAD_URL.to_string(),
-                        dest,
+                    action: |dest| {
+                        AppAction::StartDrawioDownload(AssetDownloadRequest {
+                            url: DRAWIO_DOWNLOAD_URL.to_string(),
+                            dest,
+                        })
                     },
                 },
             );
@@ -141,7 +138,7 @@ impl crate::settings::tabs::UpdatesTabOps {
             ui.separator();
             ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
-            let section_action = Self::render_renderer_update_section(
+            let section_action = RendererUpdateSectionOps::render(
                 ui,
                 RendererUpdateSection {
                     title: &i18n_settings.mermaid_section_title,
@@ -150,9 +147,11 @@ impl crate::settings::tabs::UpdatesTabOps {
                     installed_template: &i18n_settings.mermaid_installed,
                     not_installed_message: &i18n_settings.mermaid_not_installed,
                     update_label: &i18n_settings.mermaid_update_now,
-                    action: |dest| AppAction::StartMermaidDownload {
-                        url: MERMAID_DOWNLOAD_URL.to_string(),
-                        dest,
+                    action: |dest| {
+                        AppAction::StartMermaidDownload(AssetDownloadRequest {
+                            url: MERMAID_DOWNLOAD_URL.to_string(),
+                            dest,
+                        })
                     },
                 },
             );
@@ -162,46 +161,5 @@ impl crate::settings::tabs::UpdatesTabOps {
         });
 
         pending_action
-    }
-
-    fn render_renderer_update_section<ActionBuilder>(
-        ui: &mut egui::Ui,
-        section: RendererUpdateSection<'_, ActionBuilder>,
-    ) -> Option<AppAction>
-    where
-        ActionBuilder: FnOnce(PathBuf) -> AppAction,
-    {
-        ui.heading(section.title);
-        ui.add_space(SECTION_SPACING);
-
-        let target_path = section.installed_path.or(section.default_path);
-        if let Some(path) = target_path {
-            if path.exists() {
-                let path_str = path.to_string_lossy().to_string();
-                ui.label(
-                    egui::RichText::new(crate::i18n::I18nOps::tf(
-                        section.installed_template,
-                        &[("path", &path_str)],
-                    ))
-                    .color(ui.visuals().weak_text_color()),
-                );
-            } else {
-                ui.label(
-                    egui::RichText::new(section.not_installed_message)
-                        .color(ui.visuals().warn_fg_color),
-                );
-            }
-
-            ui.add_space(SECTION_SPACING);
-            if ui.button(section.update_label).clicked() {
-                return Some((section.action)(path));
-            }
-        } else {
-            ui.label(
-                egui::RichText::new(section.not_installed_message)
-                    .color(ui.visuals().warn_fg_color),
-            );
-        }
-        None
     }
 }

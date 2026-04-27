@@ -387,17 +387,18 @@
       "plantuml_installed": "PlantUML이 {path}에 설치되어 있습니다.",
       "plantuml_not_installed": "PlantUML이 설치되어 있지 않습니다.",
       "plantuml_update_now": "PlantUML 최신 버전으로 업데이트",
-      "drawio_section_title": "Draw.io",
+      "drawio_section_title": "Draw.io 업데이트",
       "drawio_installed": "Draw.io viewer가 {path}에 설치되어 있습니다",
       "drawio_not_installed": "Draw.io viewer가 설치되어 있지 않습니다.",
       "drawio_update_now": "Draw.io 최신 버전으로 업데이트",
-      "mermaid_section_title": "Mermaid",
+      "mermaid_section_title": "Mermaid 업데이트",
       "mermaid_installed": "Mermaid.js가 {path}에 설치되어 있습니다",
       "mermaid_not_installed": "Mermaid.js가 설치되어 있지 않습니다.",
       "mermaid_update_now": "Mermaid.js 최신 버전으로 업데이트"
     },
     "behavior": {
       "section_title": "동작",
+      "editor_behavior_section_title": "편집 동작",
       "confirm_close_dirty_tab": "저장하지 않은 탭을 닫기 전에 확인",
       "scroll_sync": "스크롤 동기화",
       "auto_save": "자동 저장",
@@ -640,7 +641,12 @@
     "severity_error": "오류",
     "use_workspace_local_config": "작업 공간 규칙 세트 우선 사용",
     "view_on_github": "공식 GitHub에서 보기",
-    "search_placeholder": "규칙 검색…"
+    "search_placeholder": "규칙 검색…",
+    "fix_preview": "수정 미리보기",
+    "fix_preview_removed_line": "삭제: {line}",
+    "fix_preview_added_line": "추가: {line}",
+    "fix_preview_more": "...",
+    "fix_preview_missing_content": "미리보기에 사용할 원본 내용을 가져올 수 없습니다."
   },
   "use_workspace_local_config": "작업 공간별 Lint 규칙 우선 사용",
   "editor": {

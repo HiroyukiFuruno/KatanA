@@ -1,4 +1,9 @@
-use katana_core::markdown::{DiagramBlock, DiagramRenderer, DiagramResult, MarkdownRenderOps};
+use katana_core::markdown::{
+    DiagramBlock, DiagramRenderer, DiagramResult, MarkdownError, MarkdownRenderOps, RenderOutput,
+};
+use std::sync::Mutex;
+
+static RENDER_ENV_LOCK: Mutex<()> = Mutex::new(());
 
 struct DummyRenderer;
 
@@ -9,6 +14,19 @@ impl DiagramRenderer for DummyRenderer {
             block.source.trim()
         ))
     }
+}
+
+fn render_with_missing_diagram_assets(source: &str) -> Result<RenderOutput, MarkdownError> {
+    let _guard = RENDER_ENV_LOCK.lock().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
+    unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
+    unsafe { std::env::set_var("PLANTUML_JAR", dir.path().join("missing-plantuml.jar")) };
+    let output = MarkdownRenderOps::render_with_katana_renderer(source);
+    unsafe { std::env::remove_var("MERMAID_JS") };
+    unsafe { std::env::remove_var("DRAWIO_JS") };
+    unsafe { std::env::remove_var("PLANTUML_JAR") };
+    output
 }
 
 #[test]
@@ -38,7 +56,7 @@ graph TD; A-->B
 
 ## After Diagram
 "#;
-    let output = MarkdownRenderOps::render_with_katana_renderer(source).unwrap();
+    let output = render_with_missing_diagram_assets(source).unwrap();
 
     // If KatanaRenderer processed the block, it should produce EITHER:
     // - A rendered image (contains "katana-diagram" or "data:image/png")
@@ -93,7 +111,7 @@ Alice -> Bob : OK
 
 End.
 "#;
-    let output = MarkdownRenderOps::render_with_katana_renderer(source).unwrap();
+    let output = render_with_missing_diagram_assets(source).unwrap();
 
     eprintln!("=== CONSECUTIVE DIAGRAMS OUTPUT ===");
     eprintln!("{}", output.html);
