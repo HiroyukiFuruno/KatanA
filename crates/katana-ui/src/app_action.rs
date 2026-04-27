@@ -48,6 +48,8 @@ pub enum AppAction {
     },
     ApplyLintFixes(Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>),
     ApplyLintFixesForFiles(Vec<LintFixBatch>),
+    ConfirmCurrentDiffReviewFile,
+    RejectCurrentDiffReviewFile,
     OpenLinterDoc(String, String),
     ToggleTaskList {
         global_index: usize,

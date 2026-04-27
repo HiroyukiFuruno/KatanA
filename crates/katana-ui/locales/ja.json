@@ -438,7 +438,10 @@
       "diagram_concurrency_hint": "図形の描画の多いmdを扱う場合で処理が重たい場合は、この設定の並列数を下げてください。",
       "diagram_concurrency_unlimited": "並列数無制限（unlimited）",
       "diagram_concurrency_unlimited_warning_title": "並列数無制限を有効にしますか？",
-      "diagram_concurrency_unlimited_warning_message": "検出した図形をすべて同時に描画します。図形が多いMarkdownでは、KatanAやシステム全体の動作が重くなる可能性があります。"
+      "diagram_concurrency_unlimited_warning_message": "検出した図形をすべて同時に描画します。図形が多いMarkdownでは、KatanAやシステム全体の動作が重くなる可能性があります。",
+      "diff_view_mode": "既定の差分表示",
+      "diff_view_mode_split": "分割",
+      "diff_view_mode_inline": "行内"
     },
     "general": "全般"
   },
@@ -659,5 +662,21 @@
       "blockquote": "ブロック引用",
       "code_block": "コードブロック"
     }
+  },
+  "diff_review": {
+    "title": "差分を確認",
+    "split": "分割差分",
+    "inline": "行内差分",
+    "before": "修正前",
+    "after": "修正後",
+    "cancel": "キャンセル",
+    "apply_fix": "修正を反映",
+    "previous_file": "前のファイル",
+    "next_file": "次のファイル",
+    "file_counter": "{current}/{total}",
+    "collapsed_lines": "未変更 {count} 行",
+    "switch_to_split": "分割差分を表示",
+    "switch_to_inline": "行内差分を表示",
+    "content_changed": "差分作成後にファイルが変更されています。最新の内容で修正をやり直してください。"
   }
 }

@@ -427,7 +427,10 @@
       "diagram_concurrency_hint": "如果包含大量图表的 Markdown 文件较慢，请降低此并行设置。",
       "diagram_concurrency_unlimited": "并行数无限制",
       "diagram_concurrency_unlimited_warning_title": "启用无限制图表并行渲染？",
-      "diagram_concurrency_unlimited_warning_message": "所有图表将同时渲染，可能会使 KatanA 或整个系统变慢。"
+      "diagram_concurrency_unlimited_warning_message": "所有图表将同时渲染，可能会使 KatanA 或整个系统变慢。",
+      "diff_view_mode": "默认差异视图",
+      "diff_view_mode_split": "分屏",
+      "diff_view_mode_inline": "内联"
     },
     "general": "通用",
     "shortcuts": {
@@ -659,5 +662,21 @@
       "blockquote": "块引用",
       "code_block": "代码块"
     }
+  },
+  "diff_review": {
+    "title": "审阅更改",
+    "split": "分屏 diff",
+    "inline": "内联 diff",
+    "before": "修改前",
+    "after": "修改后",
+    "cancel": "取消",
+    "apply_fix": "应用修复",
+    "previous_file": "上一个文件",
+    "next_file": "下一个文件",
+    "file_counter": "第 {current} / {total} 个",
+    "collapsed_lines": "{count} 行未更改",
+    "switch_to_split": "显示分屏 diff",
+    "switch_to_inline": "显示内联 diff",
+    "content_changed": "生成差异后文件已发生变化。请重新运行修复，以审阅最新内容。"
   }
 }

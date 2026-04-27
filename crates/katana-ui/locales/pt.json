@@ -427,7 +427,10 @@
       "diagram_concurrency_hint": "Se o Markdown contiver muitos diagramas e o processamento estiver lento, reduza o número de renderizações paralelas.",
       "diagram_concurrency_unlimited": "Paralelismo ilimitado",
       "diagram_concurrency_unlimited_warning_title": "Ativar paralelismo ilimitado?",
-      "diagram_concurrency_unlimited_warning_message": "Todos os diagramas detectados serão renderizados ao mesmo tempo. Em arquivos Markdown com muitos diagramas, o KatanA ou todo o sistema pode ficar lento."
+      "diagram_concurrency_unlimited_warning_message": "Todos os diagramas detectados serão renderizados ao mesmo tempo. Em arquivos Markdown com muitos diagramas, o KatanA ou todo o sistema pode ficar lento.",
+      "diff_view_mode": "Visualização padrão de diferenças",
+      "diff_view_mode_split": "Dividida",
+      "diff_view_mode_inline": "Em linha"
     },
     "general": "Geral",
     "shortcuts": {
@@ -659,5 +662,21 @@
       "blockquote": "Citação em bloco",
       "code_block": "Bloco de código"
     }
+  },
+  "diff_review": {
+    "title": "Revisar alterações",
+    "split": "Diff dividido",
+    "inline": "Diff em linha",
+    "before": "Antes",
+    "after": "Depois",
+    "cancel": "Cancelar",
+    "apply_fix": "Aplicar correção",
+    "previous_file": "Arquivo anterior",
+    "next_file": "Próximo arquivo",
+    "file_counter": "{current} de {total}",
+    "collapsed_lines": "{count} linhas sem alterações",
+    "switch_to_split": "Mostrar diff dividido",
+    "switch_to_inline": "Mostrar diff em linha",
+    "content_changed": "O arquivo mudou depois que a diferença foi preparada. Execute a correção novamente para revisar o conteúdo mais recente."
   }
 }

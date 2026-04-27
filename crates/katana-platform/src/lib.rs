@@ -31,7 +31,7 @@ pub use contract::PlatformContractOps;
 pub use filesystem::FilesystemService;
 pub use os_locale::OsLocaleOps;
 pub use settings::{
-    AppSettings, InMemoryRepository, JsonFileRepository, MAX_FONT_SIZE, MIN_FONT_SIZE, PaneOrder,
-    SettingsRepository, SettingsService, SplitDirection,
+    AppSettings, DiffViewMode, InMemoryRepository, JsonFileRepository, MAX_FONT_SIZE,
+    MIN_FONT_SIZE, PaneOrder, SettingsRepository, SettingsService, SplitDirection,
 };
 pub use theme::{ThemeColors, ThemeMode, ThemePreset};

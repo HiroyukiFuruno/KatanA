@@ -2,7 +2,6 @@ use eframe::egui;
 
 const TOOLTIP_MAX_WIDTH: f32 = 400.0;
 const TOOLTIP_LABEL_GAP: f32 = 4.0;
-const MAX_DIFF_ROWS: usize = 10;
 
 pub(crate) struct FixPreviewRendererOps;
 
@@ -34,48 +33,43 @@ impl FixPreviewRendererOps {
             return;
         };
 
-        let lines: Vec<&str> = content.lines().collect();
-        if fix.start_line == 0 || fix.start_line > lines.len() {
+        let Some(rows) = super::fix_preview_model::FixPreviewModelOps::build(fix, content) else {
             return;
-        }
-
-        let start = fix.start_line - 1;
-        let end = fix.end_line.min(lines.len());
-        let original = lines[start..end].join("\n");
+        };
 
         ui.group(|ui| {
-            Self::show_removed_lines(ui, &original);
+            Self::show_removed_lines(ui, &rows);
             ui.separator();
-            Self::show_added_lines(ui, &fix.replacement);
+            Self::show_added_lines(ui, &rows);
         });
     }
 
-    fn show_removed_lines(ui: &mut egui::Ui, original: &str) {
+    fn show_removed_lines(ui: &mut egui::Ui, rows: &super::fix_preview_model::FixPreviewRows) {
         let color = Self::removed_color(ui);
-        for line in original.lines().take(MAX_DIFF_ROWS) {
+        for line in &rows.removed {
             let text = crate::i18n::I18nOps::tf(
                 &crate::i18n::I18nOps::get().linter.fix_preview_removed_line,
                 &[("line", line)],
             );
-            ui.label(egui::RichText::new(text).color(color));
+            ui.label(egui::RichText::new(text).color(color).strikethrough());
         }
-        Self::show_overflow(ui, original.lines().count());
+        Self::show_overflow(ui, rows.removed_truncated);
     }
 
-    fn show_added_lines(ui: &mut egui::Ui, replacement: &str) {
+    fn show_added_lines(ui: &mut egui::Ui, rows: &super::fix_preview_model::FixPreviewRows) {
         let color = Self::added_color(ui);
-        for line in replacement.lines().take(MAX_DIFF_ROWS) {
+        for line in &rows.added {
             let text = crate::i18n::I18nOps::tf(
                 &crate::i18n::I18nOps::get().linter.fix_preview_added_line,
                 &[("line", line)],
             );
             ui.label(egui::RichText::new(text).color(color));
         }
-        Self::show_overflow(ui, replacement.lines().count());
+        Self::show_overflow(ui, rows.added_truncated);
     }
 
-    fn show_overflow(ui: &mut egui::Ui, line_count: usize) {
-        if line_count > MAX_DIFF_ROWS {
+    fn show_overflow(ui: &mut egui::Ui, is_truncated: bool) {
+        if is_truncated {
             ui.label(
                 egui::RichText::new(&crate::i18n::I18nOps::get().linter.fix_preview_more).weak(),
             );

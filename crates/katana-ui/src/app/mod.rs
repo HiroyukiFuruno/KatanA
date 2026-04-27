@@ -1,4 +1,6 @@
 pub mod action;
+pub(crate) mod diff_review;
+mod diff_review_apply;
 pub mod doc_close;
 pub mod doc_search;
 pub mod document;
@@ -17,6 +19,7 @@ pub mod update;
 pub mod workspace;
 
 pub(crate) use action::ActionOps;
+pub(crate) use diff_review::DiffReviewActionOps;
 pub(crate) use document::DocumentOps;
 pub(crate) use document_edit::DocumentEditOps;
 pub(crate) use download::DownloadOps;

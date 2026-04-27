@@ -1,4 +1,5 @@
 use crate::app_state::StatusType;
+use crate::diff_review::DiffReviewState;
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq, Clone, Copy, serde::Serialize, serde::Deserialize)]
@@ -16,6 +17,7 @@ pub struct LayoutState {
     pub show_settings: bool,
     pub show_toc: bool,
     pub show_search_modal: bool,
+    pub(crate) diff_review: Option<DiffReviewState>,
 
     pub show_history_panel: bool,
     pub show_export_panel: bool,
@@ -60,6 +62,7 @@ impl LayoutState {
             show_settings: false,
             show_toc: false,
             show_search_modal: false,
+            diff_review: None,
 
             show_history_panel: false,
             show_export_panel: false,

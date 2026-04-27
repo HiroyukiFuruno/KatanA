@@ -61,6 +61,10 @@ impl KatanaApp {
             AppAction::ApplyLintFixesForFiles(batches) => {
                 self.handle_apply_lint_fixes_for_files(ctx, batches)
             }
+            AppAction::ConfirmCurrentDiffReviewFile => {
+                self.handle_confirm_current_diff_review_file(ctx)
+            }
+            AppAction::RejectCurrentDiffReviewFile => self.handle_reject_current_diff_review_file(),
             AppAction::ToggleTaskList {
                 global_index,
                 new_state,

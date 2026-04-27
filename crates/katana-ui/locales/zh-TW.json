@@ -427,7 +427,10 @@
       "diagram_concurrency_hint": "如果包含大量圖表的 Markdown 檔案較慢，請降低此並行設定。",
       "diagram_concurrency_unlimited": "並行數無限制",
       "diagram_concurrency_unlimited_warning_title": "啟用無限制圖表並行渲染？",
-      "diagram_concurrency_unlimited_warning_message": "所有圖表將同時渲染，可能會使 KatanA 或整個系統變慢。"
+      "diagram_concurrency_unlimited_warning_message": "所有圖表將同時渲染，可能會使 KatanA 或整個系統變慢。",
+      "diff_view_mode": "預設差異檢視",
+      "diff_view_mode_split": "分割",
+      "diff_view_mode_inline": "行內"
     },
     "general": "一般",
     "shortcuts": {
@@ -659,5 +662,21 @@
       "blockquote": "區塊引言",
       "code_block": "程式碼區塊"
     }
+  },
+  "diff_review": {
+    "title": "檢視變更",
+    "split": "分割 diff",
+    "inline": "行內 diff",
+    "before": "修改前",
+    "after": "修改後",
+    "cancel": "取消",
+    "apply_fix": "套用修正",
+    "previous_file": "上一個檔案",
+    "next_file": "下一個檔案",
+    "file_counter": "第 {current} / {total} 個",
+    "collapsed_lines": "{count} 行未變更",
+    "switch_to_split": "顯示分割 diff",
+    "switch_to_inline": "顯示行內 diff",
+    "content_changed": "差異產生後檔案已變更。請重新執行修正，以檢視最新內容。"
   }
 }

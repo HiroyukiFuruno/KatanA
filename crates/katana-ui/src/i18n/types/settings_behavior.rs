@@ -7,6 +7,12 @@ pub struct SettingsBehaviorMessages {
     #[serde(default = "default_editor_behavior_section_title")]
     pub editor_behavior_section_title: String,
     pub confirm_file_move: String,
+    #[serde(default = "default_diff_view_mode")]
+    pub diff_view_mode: String,
+    #[serde(default = "default_diff_view_mode_split")]
+    pub diff_view_mode_split: String,
+    #[serde(default = "default_diff_view_mode_inline")]
+    pub diff_view_mode_inline: String,
     pub scroll_sync: String, pub auto_save: String,
     pub auto_save_interval: String, pub auto_save_interval_hint: String,
     pub auto_refresh: String, pub auto_refresh_interval: String,
@@ -39,6 +45,18 @@ fn default_editor_behavior_section_title() -> String {
 
 fn default_startup_behavior_section_title() -> String {
     "Startup Behavior".to_string()
+}
+
+fn default_diff_view_mode() -> String {
+    "Default diff view".to_string()
+}
+
+fn default_diff_view_mode_split() -> String {
+    "Split".to_string()
+}
+
+fn default_diff_view_mode_inline() -> String {
+    "Inline".to_string()
 }
 
 fn default_diagram_rendering_section_title() -> String {
