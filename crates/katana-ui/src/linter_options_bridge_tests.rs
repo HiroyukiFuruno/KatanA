@@ -142,3 +142,74 @@ fn safe_multibyte_md013_boundary_keeps_rule_enabled() {
 
     assert!(options.rules.get("MD013").unwrap().enabled);
 }
+
+#[test]
+fn missing_md013_rule_keeps_options_unchanged() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join(".markdownlint.json"), r#"{"MD001": true}"#).unwrap();
+    let state = make_state(&dir);
+    let mut options =
+        MarkdownLinterOptionsBridgeOps::load_effective_options(&state, &dir.path().join("doc.md"));
+    options.rules.remove("MD013");
+
+    MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(
+        &mut options,
+        "\u{3066}\u{3059}\u{3068}",
+    );
+
+    assert!(!options.rules.contains_key("MD013"));
+}
+
+#[test]
+fn unsafe_code_block_md013_boundary_disables_rule() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join(".markdownlint.json"),
+        r#"{"MD013": {"enabled": true, "code_block_line_length": 10}}"#,
+    )
+    .unwrap();
+    let state = make_state(&dir);
+    let mut options =
+        MarkdownLinterOptionsBridgeOps::load_effective_options(&state, &dir.path().join("doc.md"));
+    let content = format!("```\n{}{}\n```\n", "a".repeat(9), "\u{3066}");
+
+    MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(&mut options, &content);
+
+    assert!(!options.rules.get("MD013").unwrap().enabled);
+}
+
+#[test]
+fn unsafe_heading_md013_boundary_disables_rule() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join(".markdownlint.json"),
+        r#"{"MD013": {"enabled": true, "heading_line_length": 10}}"#,
+    )
+    .unwrap();
+    let state = make_state(&dir);
+    let mut options =
+        MarkdownLinterOptionsBridgeOps::load_effective_options(&state, &dir.path().join("doc.md"));
+    let content = format!("# {}{}\n", "a".repeat(7), "\u{3066}");
+
+    MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(&mut options, &content);
+
+    assert!(!options.rules.get("MD013").unwrap().enabled);
+}
+
+#[test]
+fn unsafe_table_md013_boundary_disables_rule() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join(".markdownlint.json"),
+        r#"{"MD013": {"enabled": true, "line_length": 10}}"#,
+    )
+    .unwrap();
+    let state = make_state(&dir);
+    let mut options =
+        MarkdownLinterOptionsBridgeOps::load_effective_options(&state, &dir.path().join("doc.md"));
+    let content = format!("| {}{} |\n| --- |\n| value |\n", "a".repeat(7), "\u{3066}");
+
+    MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(&mut options, &content);
+
+    assert!(!options.rules.get("MD013").unwrap().enabled);
+}

@@ -178,6 +178,18 @@ fn load_config_or_katana_default_uses_bundled_config_when_missing() {
 }
 
 #[test]
+fn load_config_or_katana_default_uses_bundled_config_when_invalid() {
+    let dir = tempfile::tempdir().expect("tempdir must be available");
+    let invalid_config = dir.path().join(".markdownlint.json");
+    std::fs::write(&invalid_config, "{").expect("invalid config must be writable");
+
+    let config = MarkdownLinterConfigOps::load_config_or_katana_default(&invalid_config);
+
+    assert_eq!(config.raw["MD013"], false);
+    assert_eq!(config.raw["MD048"]["style"], "consistent");
+}
+
+#[test]
 fn katana_namespace_is_not_markdownlint_compatible() {
     let config = katana_markdown_linter::MarkdownLintConfig {
         raw: serde_json::json!({

@@ -51,6 +51,27 @@ impl DiagramRenderer for PngTestRenderer {
     }
 }
 
+struct ErrorTestRenderer;
+impl DiagramRenderer for ErrorTestRenderer {
+    fn render(&self, block: &DiagramBlock) -> DiagramResult {
+        DiagramResult::Err {
+            source: block.source.clone(),
+            error: "render failed".to_string(),
+        }
+    }
+}
+
+struct CommandMissingTestRenderer;
+impl DiagramRenderer for CommandMissingTestRenderer {
+    fn render(&self, block: &DiagramBlock) -> DiagramResult {
+        DiagramResult::CommandNotFound {
+            tool_name: "tool".to_string(),
+            install_hint: "install it".to_string(),
+            source: block.source.clone(),
+        }
+    }
+}
+
 #[test]
 fn render_diagram_block_okpng_embeds_base64_img() {
     let block = FenceBlock {
@@ -62,6 +83,35 @@ fn render_diagram_block_okpng_embeds_base64_img() {
     let html = result.expect("mermaid blocks should produce Some");
     assert!(html.contains("data:image/png;base64,"));
     assert!(html.contains("<img"));
+}
+
+#[test]
+fn render_diagram_block_error_uses_fallback_html() {
+    let block = FenceBlock {
+        info: "mermaid".to_string(),
+        content: "<bad>".to_string(),
+        raw: "```mermaid\n<bad>\n```".to_string(),
+    };
+
+    let html = MarkdownFenceOps::render_diagram_block(&block, &ErrorTestRenderer)
+        .expect("mermaid blocks should produce Some");
+
+    assert!(html.contains("Diagram render failed"));
+    assert!(html.contains("&lt;bad&gt;"));
+}
+
+#[test]
+fn render_diagram_block_command_missing_uses_install_hint() {
+    let block = FenceBlock {
+        info: "mermaid".to_string(),
+        content: "graph TD; A-->B".to_string(),
+        raw: "```mermaid\ngraph TD; A-->B\n```".to_string(),
+    };
+
+    let html = MarkdownFenceOps::render_diagram_block(&block, &CommandMissingTestRenderer)
+        .expect("mermaid blocks should produce Some");
+
+    assert!(html.contains("tool not found. install it"));
 }
 
 #[test]
