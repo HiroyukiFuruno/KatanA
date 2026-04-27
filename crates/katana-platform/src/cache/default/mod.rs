@@ -230,7 +230,9 @@ mod tests {
 
     #[test]
     fn test_clear_diagram_cache() {
-        let _guard = DIAGRAM_CACHE_CLEAR_LOCK.lock().expect("lock diagram cache clear");
+        let _guard = DIAGRAM_CACHE_CLEAR_LOCK
+            .lock()
+            .expect("lock diagram cache clear");
         let tmp = TempDir::new().expect("Failed to create temp dir");
         let path = tmp.path().join("cache.json");
         let cache = DefaultCacheService::new(path.clone());
@@ -268,7 +270,9 @@ mod tests {
 
     #[test]
     fn test_clear_diagram_cache_removes_temporary_renderer_images() {
-        let _guard = DIAGRAM_CACHE_CLEAR_LOCK.lock().expect("lock diagram cache clear");
+        let _guard = DIAGRAM_CACHE_CLEAR_LOCK
+            .lock()
+            .expect("lock diagram cache clear");
         let tmp = TempDir::new().expect("Failed to create temp dir");
         let path = tmp.path().join("cache.json");
         let cache = DefaultCacheService::new(path);
@@ -445,7 +449,9 @@ mod tests {
 
     #[test]
     fn test_clear_all_directories() {
-        let _guard = DIAGRAM_CACHE_CLEAR_LOCK.lock().expect("lock diagram cache clear");
+        let _guard = DIAGRAM_CACHE_CLEAR_LOCK
+            .lock()
+            .expect("lock diagram cache clear");
         DefaultCacheService::clear_all_directories();
     }
 }
