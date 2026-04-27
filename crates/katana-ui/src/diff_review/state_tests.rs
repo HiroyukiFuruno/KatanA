@@ -68,3 +68,21 @@ fn mark_current_prefers_next_pending_file_after_current_page() {
 
     assert_eq!(state.current_index, 2);
 }
+
+#[test]
+fn reject_all_pending_marks_every_file_as_rejected() {
+    let mut state = DiffReviewState::new(
+        vec![file("a.md"), file("b.md"), file("c.md")],
+        DiffViewMode::Split,
+        None,
+    );
+    state.mark_current(DiffReviewDecision::Applied);
+    state.reject_all_pending();
+
+    let all_rejected = state
+        .files
+        .iter()
+        .all(|file| file.decision == DiffReviewDecision::Rejected);
+    assert!(all_rejected);
+    assert!(state.is_complete());
+}

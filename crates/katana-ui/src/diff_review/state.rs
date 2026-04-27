@@ -122,6 +122,14 @@ impl DiffReviewState {
             .all(|file| file.decision != DiffReviewDecision::Pending)
     }
 
+    pub(crate) fn reject_all_pending(&mut self) {
+        for file in &mut self.files {
+            if file.decision == DiffReviewDecision::Pending {
+                file.decision = DiffReviewDecision::Rejected;
+            }
+        }
+    }
+
     fn next_pending_index(&self) -> Option<usize> {
         let next_start = self.current_index.saturating_add(1);
         self.files

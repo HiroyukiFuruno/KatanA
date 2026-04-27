@@ -65,6 +65,9 @@ impl KatanaApp {
                 self.handle_confirm_current_diff_review_file(ctx)
             }
             AppAction::RejectCurrentDiffReviewFile => self.handle_reject_current_diff_review_file(),
+            AppAction::RejectAllDiffReviewFiles => {
+                self.handle_reject_all_diff_review_files(&ctx);
+            }
             AppAction::ToggleTaskList {
                 global_index,
                 new_state,

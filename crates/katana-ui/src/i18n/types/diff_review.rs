@@ -14,6 +14,8 @@ pub struct DiffReviewMessages {
     pub after: String,
     #[serde(default = "default_cancel")]
     pub cancel: String,
+    #[serde(default = "default_reject_all")]
+    pub reject_all: String,
     #[serde(default = "default_apply_fix")]
     pub apply_fix: String,
     #[serde(default = "default_previous_file")]
@@ -45,6 +47,7 @@ impl Default for DiffReviewMessages {
             before: default_before(),
             after: default_after(),
             cancel: default_cancel(),
+            reject_all: default_reject_all(),
             apply_fix: default_apply_fix(),
             previous_file: default_previous_file(),
             next_file: default_next_file(),
@@ -81,6 +84,10 @@ fn default_after() -> String {
 
 fn default_cancel() -> String {
     "Cancel".to_string()
+}
+
+fn default_reject_all() -> String {
+    "Cancel all".to_string()
 }
 
 fn default_apply_fix() -> String {

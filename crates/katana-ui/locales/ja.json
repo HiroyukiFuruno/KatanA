@@ -670,6 +670,7 @@
     "before": "修正前",
     "after": "修正後",
     "cancel": "キャンセル",
+    "reject_all": "すべてキャンセル",
     "apply_fix": "修正を反映",
     "previous_file": "前のファイル",
     "next_file": "次のファイル",

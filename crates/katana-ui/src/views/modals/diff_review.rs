@@ -1,13 +1,13 @@
 use crate::app_state::AppAction;
-use crate::diff_review::{DiffReviewDecision, DiffReviewState};
+use crate::diff_review::{DiffReviewDecision, DiffReviewFile, DiffReviewState};
 use crate::views::diff_viewer::{DiffViewer, DiffViewerAction};
 use eframe::egui;
+use katana_platform::DiffViewMode;
 
 const MODAL_WIDTH: f32 = 1120.0;
 const MODAL_HEIGHT: f32 = 620.0;
 const FULLSCREEN_INSET: f32 = 8.0;
 const MODAL_INNER_MARGIN: f32 = 12.0;
-const HEADER_BOTTOM_SPACING: f32 = 10.0;
 const FOOTER_TOP_SPACING: f32 = 12.0;
 
 pub(crate) struct DiffReviewModal<'a> {
@@ -19,123 +19,136 @@ impl<'a> DiffReviewModal<'a> {
         Self { review }
     }
 
-    pub(crate) fn show(mut self, ctx: &egui::Context) -> Option<AppAction> {
-        self.review.current_file()?;
+    pub(crate) fn show(self, ctx: &egui::Context) -> Option<AppAction> {
+        let Some(current_file) = self.review.current_file().cloned() else {
+            return None;
+        };
 
-        let mut is_fullscreen = self.review.is_fullscreen;
-        let mut action = None;
-        let title = crate::i18n::I18nOps::get().diff_review.title.clone();
+        let display_path = self.review.current_file_display_name();
+        let mut mode = self.review.mode;
+        let is_fullscreen = self.review.is_fullscreen;
+        let mut request_previous = false;
+        let mut request_next = false;
+        let messages = crate::i18n::I18nOps::get().diff_review.clone();
+        let counter = Self::counter_text(self.review.current_index + 1, self.review.files.len());
+        let can_previous = self.review.can_move_previous();
+        let can_next = self.review.can_move_next();
+        let is_pending = current_file.decision == DiffReviewDecision::Pending;
         let modal_size = Self::modal_size(ctx, is_fullscreen);
-        egui::Window::new(title)
-            .id(egui::Id::new("diff_review_modal"))
-            .collapsible(false)
-            .resizable(false)
+        let mut should_fullscreen = is_fullscreen;
+
+        let action = crate::widgets::Modal::new("diff_review_modal", &messages.title)
             .fixed_size(modal_size)
-            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .frame(egui::Frame::window(&ctx.global_style()).inner_margin(MODAL_INNER_MARGIN))
-            .show(ctx, |ui| {
-                self.show_review_header(ui, &mut is_fullscreen);
-                ui.add_space(HEADER_BOTTOM_SPACING);
-                self.show_diff_viewer(ui);
-                ui.add_space(FOOTER_TOP_SPACING);
-                action = self.show_footer(ui);
-            });
-        self.review.is_fullscreen = is_fullscreen;
+            .window_controls(crate::widgets::ModalWindowControls {
+                is_fullscreen: is_fullscreen,
+                show_fullscreen: true,
+                close_tooltip: &messages.reject_all,
+                enter_fullscreen_tooltip: &messages.enter_fullscreen,
+                exit_fullscreen_tooltip: &messages.exit_fullscreen,
+            })
+            .show_with_controls(
+                ctx,
+                |ui| {
+                    let (previous_clicked, next_clicked) =
+                        Self::show_review_header(ui, &counter, can_previous, can_next, &messages);
+                    request_previous = previous_clicked;
+                    request_next = next_clicked;
+                    None
+                },
+                |ui| {
+                    if let Some(DiffViewerAction::ChangeMode(next_mode)) =
+                        Self::show_diff_viewer(ui, &current_file, mode, display_path.clone())
+                    {
+                        mode = next_mode;
+                    }
+                    ui.add_space(FOOTER_TOP_SPACING);
+                },
+                |ui| Self::show_footer(ui, is_pending, &messages),
+                |button| match button {
+                    crate::widgets::ModalWindowButton::Close => {
+                        Some(AppAction::RejectAllDiffReviewFiles)
+                    }
+                    crate::widgets::ModalWindowButton::Fullscreen => {
+                        should_fullscreen = !should_fullscreen;
+                        None
+                    }
+                },
+            );
+
+        if request_previous {
+            self.review.move_previous();
+        }
+        if request_next {
+            self.review.move_next();
+        }
+        self.review.mode = mode;
+        self.review.is_fullscreen = should_fullscreen;
         action
     }
 
-    fn show_review_header(&mut self, ui: &mut egui::Ui, is_fullscreen: &mut bool) {
-        let file_count = self.review.files.len();
-        let current_number = self.review.current_index + 1;
-        let counter = Self::counter_text(current_number, file_count);
-        let can_previous = self.review.can_move_previous();
-        let can_next = self.review.can_move_next();
+    fn show_review_header(
+        ui: &mut egui::Ui,
+        counter: &str,
+        can_previous: bool,
+        can_next: bool,
+        messages: &crate::i18n::DiffReviewMessages,
+    ) -> (bool, bool) {
         let mut move_previous = false;
         let mut move_next = false;
-        let mut toggle_fullscreen = false;
 
         crate::widgets::AlignCenter::new()
-            .left(move |ui| {
+            .left(|ui| {
                 ui.add(egui::Label::new(
-                    egui::RichText::new(counter).monospace().weak(),
-                ))
+                    egui::RichText::new(counter.to_owned()).monospace().weak(),
+                ));
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
             })
             .right(|ui| {
-                crate::widgets::AlignCenter::new()
-                    .shrink_to_fit(true)
-                    .content(|ui| {
-                        let messages = &crate::i18n::I18nOps::get().diff_review;
-                        let fullscreen_label = if *is_fullscreen {
-                            &messages.exit_fullscreen
-                        } else {
-                            &messages.enter_fullscreen
-                        };
-                        let fullscreen_btn = ui
-                            .add(
-                                crate::Icon::Fullscreen
-                                    .button(ui, crate::icon::IconSize::Small)
-                                    .frame(false),
-                            )
-                            .on_hover_text(fullscreen_label);
-                        if fullscreen_btn.clicked() {
-                            toggle_fullscreen = true;
-                        }
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let previous = ui
+                        .add_enabled(
+                            can_previous,
+                            crate::Icon::ChevronLeft.button(ui, crate::icon::IconSize::Small),
+                        )
+                        .on_hover_text(&messages.previous_file)
+                        .on_disabled_hover_text(&messages.previous_file);
+                    if previous.clicked() {
+                        move_previous = true;
+                    }
 
-                        let next = ui
-                            .add_enabled(
-                                can_next,
-                                crate::Icon::ChevronRight.button(ui, crate::icon::IconSize::Small),
-                            )
-                            .on_hover_text(&messages.next_file);
-                        if next.clicked() {
-                            move_next = true;
-                        }
-                        let previous = ui
-                            .add_enabled(
-                                can_previous,
-                                crate::Icon::ChevronLeft.button(ui, crate::icon::IconSize::Small),
-                            )
-                            .on_hover_text(&messages.previous_file);
-                        if previous.clicked() {
-                            move_previous = true;
-                        }
-                    })
-                    .show(ui)
+                    let next = ui
+                        .add_enabled(
+                            can_next,
+                            crate::Icon::ChevronRight.button(ui, crate::icon::IconSize::Small),
+                        )
+                        .on_hover_text(&messages.next_file)
+                        .on_disabled_hover_text(&messages.next_file);
+                    if next.clicked() {
+                        move_next = true;
+                    }
+                });
+                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
             })
             .show(ui);
 
-        if toggle_fullscreen {
-            *is_fullscreen = !*is_fullscreen;
-        }
-        if move_previous {
-            self.review.move_previous();
-        }
-        if move_next {
-            self.review.move_next();
-        }
+        (move_previous, move_next)
     }
 
-    fn show_diff_viewer(&mut self, ui: &mut egui::Ui) {
-        let Some(file) = self.review.current_file() else {
-            return;
-        };
-        let display_path = self.review.current_file_display_name();
-        let Some(action) = DiffViewer::new(file, self.review.mode, display_path).show(ui) else {
-            return;
-        };
-        match action {
-            DiffViewerAction::ChangeMode(mode) => {
-                self.review.mode = mode;
-            }
-        }
+    fn show_diff_viewer(
+        ui: &mut egui::Ui,
+        file: &DiffReviewFile,
+        mode: DiffViewMode,
+        display_path: String,
+    ) -> Option<DiffViewerAction> {
+        DiffViewer::new(file, mode, display_path).show(ui)
     }
 
-    fn show_footer(&self, ui: &mut egui::Ui) -> Option<AppAction> {
-        let messages = &crate::i18n::I18nOps::get().diff_review;
-        let is_pending = self
-            .review
-            .current_file()
-            .is_some_and(|file| file.decision == DiffReviewDecision::Pending);
+    fn show_footer(
+        ui: &mut egui::Ui,
+        is_pending: bool,
+        messages: &crate::i18n::DiffReviewMessages,
+    ) -> Option<AppAction> {
         let mut action = None;
 
         crate::widgets::AlignCenter::new()

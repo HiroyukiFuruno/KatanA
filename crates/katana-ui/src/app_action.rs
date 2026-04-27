@@ -50,6 +50,7 @@ pub enum AppAction {
     ApplyLintFixesForFiles(Vec<LintFixBatch>),
     ConfirmCurrentDiffReviewFile,
     RejectCurrentDiffReviewFile,
+    RejectAllDiffReviewFiles,
     OpenLinterDoc(String, String),
     ToggleTaskList {
         global_index: usize,

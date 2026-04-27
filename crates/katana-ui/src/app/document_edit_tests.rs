@@ -176,6 +176,56 @@ fn lint_fix_review_uses_setting_without_persisting_temporary_mode() {
     );
 }
 
+#[test]
+fn lint_fix_reject_all_keeps_all_files_unchanged() {
+    let mut app = make_app();
+    let ctx = eframe::egui::Context::default();
+    let dir = tempfile::tempdir().expect("tempdir must be created");
+    let first_path = dir.path().join("first.md");
+    let second_path = dir.path().join("second.md");
+    std::fs::write(&first_path, "alpha\n").expect("first fixture must be written");
+    std::fs::write(&second_path, "gamma\n").expect("second fixture must be written");
+
+    app.handle_select_document(first_path.clone(), true);
+    app.process_action(
+        &ctx,
+        AppAction::ApplyLintFixesForFiles(vec![
+            crate::app_action::LintFixBatch {
+                path: first_path.clone(),
+                fixes: vec![katana_markdown_linter::rules::markdown::DiagnosticFix {
+                    start_line: 1,
+                    start_column: 1,
+                    end_line: 1,
+                    end_column: 6,
+                    replacement: "beta".to_string(),
+                }],
+            },
+            crate::app_action::LintFixBatch {
+                path: second_path.clone(),
+                fixes: vec![katana_markdown_linter::rules::markdown::DiagnosticFix {
+                    start_line: 1,
+                    start_column: 1,
+                    end_line: 1,
+                    end_column: 6,
+                    replacement: "delta".to_string(),
+                }],
+            },
+        ]),
+    );
+
+    app.process_action(&ctx, AppAction::RejectAllDiffReviewFiles);
+
+    let first_doc = app
+        .state
+        .active_document()
+        .expect("first document must be active");
+    assert_eq!(first_doc.buffer, "alpha\n");
+    let second_content =
+        std::fs::read_to_string(&second_path).expect("second file must be readable");
+    assert_eq!(second_content, "gamma\n");
+    assert!(app.state.layout.diff_review.is_none());
+}
+
 fn undo_text(
     ctx: &eframe::egui::Context,
     workspace_root: Option<&std::path::Path>,

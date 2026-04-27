@@ -5,6 +5,7 @@ pub(crate) trait DiffReviewActionOps {
     fn open_lint_fix_review(&mut self, batches: Vec<crate::app_action::LintFixBatch>);
     fn handle_confirm_current_diff_review_file(&mut self, ctx: &eframe::egui::Context);
     fn handle_reject_current_diff_review_file(&mut self);
+    fn handle_reject_all_diff_review_files(&mut self, ctx: &eframe::egui::Context);
 }
 
 impl DiffReviewActionOps for KatanaApp {
@@ -69,6 +70,13 @@ impl DiffReviewActionOps for KatanaApp {
     fn handle_reject_current_diff_review_file(&mut self) {
         if let Some(review) = &mut self.state.layout.diff_review {
             review.mark_current(DiffReviewDecision::Rejected);
+        }
+        self.close_diff_review_if_complete();
+    }
+
+    fn handle_reject_all_diff_review_files(&mut self, _ctx: &eframe::egui::Context) {
+        if let Some(review) = &mut self.state.layout.diff_review {
+            review.reject_all_pending();
         }
         self.close_diff_review_if_complete();
     }

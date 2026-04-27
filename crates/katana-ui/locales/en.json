@@ -670,6 +670,7 @@
     "before": "Before",
     "after": "After",
     "cancel": "Cancel",
+    "reject_all": "Cancel all",
     "apply_fix": "Apply Fix",
     "previous_file": "Previous file",
     "next_file": "Next file",

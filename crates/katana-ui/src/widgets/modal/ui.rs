@@ -3,6 +3,7 @@ use super::types::*;
 pub const DEFAULT_BAR_WIDTH: f32 = 280.0;
 pub const DEFAULT_DIALOG_WIDTH: f32 = 450.0;
 pub const BODY_TO_BAR_SPACING: f32 = 12.0;
+pub const HEADER_TO_BODY_SPACING: f32 = 10.0;
 pub const BAR_TO_FOOTER_SPACING: f32 = 16.0;
 
 impl<'a> Modal<'a> {
@@ -14,11 +15,24 @@ impl<'a> Modal<'a> {
             show_pct: false,
             bar_width: DEFAULT_BAR_WIDTH,
             width: None,
+            fixed_size: None,
+            frame: None,
+            window_controls: None,
         }
     }
 
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
+        self
+    }
+
+    pub fn fixed_size(mut self, size: egui::Vec2) -> Self {
+        self.fixed_size = Some(size);
+        self
+    }
+
+    pub fn frame(mut self, frame: egui::Frame) -> Self {
+        self.frame = Some(frame);
         self
     }
 
@@ -42,48 +56,191 @@ impl<'a> Modal<'a> {
         self
     }
 
+    pub fn window_controls(mut self, controls: ModalWindowControls<'a>) -> Self {
+        self.window_controls = Some(controls);
+        self
+    }
+
     pub fn show<T>(
         self,
         ctx: &egui::Context,
         body: impl FnOnce(&mut egui::Ui),
         footer: impl FnOnce(&mut egui::Ui) -> Option<T>,
     ) -> Option<T> {
+        self.show_with_controls(ctx, |_ui| Option::<T>::None, body, footer, |_| None)
+    }
+
+    pub fn show_with_controls<T>(
+        self,
+        ctx: &egui::Context,
+        header: impl FnOnce(&mut egui::Ui) -> Option<T>,
+        body: impl FnOnce(&mut egui::Ui),
+        footer: impl FnOnce(&mut egui::Ui) -> Option<T>,
+        mut on_window_button: impl FnMut(ModalWindowButton) -> Option<T>,
+    ) -> Option<T> {
         let mut result: Option<T> = None;
-
         let dialog_width = self.width.unwrap_or(DEFAULT_DIALOG_WIDTH);
+        let window_controls = self.window_controls;
+        let has_controls = window_controls.is_some();
+        let fixed_size = self.fixed_size;
 
-        egui::Window::new(self.title)
+        let mut window = egui::Window::new(self.title)
             .id(egui::Id::new(self.id))
             .collapsible(false)
             .resizable(false)
             .default_width(dialog_width)
-            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-            .show(ctx, |ui| {
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
+        if let Some(size) = fixed_size {
+            window = window.fixed_size(size);
+        }
+        if let Some(frame) = self.frame {
+            window = window.frame(frame);
+        }
+
+        window.show(ctx, |ui| {
+            ui.set_max_width(dialog_width);
+
+            ui.vertical_centered(|ui| {
                 ui.set_max_width(dialog_width);
 
-                ui.vertical_centered(|ui| {
-                    ui.set_max_width(dialog_width);
-                    body(ui);
-
-                    if let Some(ratio) = self.progress {
-                        ui.add_space(BODY_TO_BAR_SPACING);
-                        let mut bar = egui::ProgressBar::new(ratio).desired_width(self.bar_width);
-                        if self.show_pct {
-                            bar = bar.show_percentage();
-                        }
-                        ui.add(bar);
+                let header_result = if has_controls {
+                    let controls = window_controls.expect("modal controls are initialized");
+                    let mut left_result = None::<T>;
+                    let mut right_result = None::<T>;
+                    if cfg!(target_os = "macos") {
+                        crate::widgets::AlignCenter::new()
+                            .left(|ui| {
+                                left_result = Self::render_window_controls(
+                                    ui,
+                                    controls,
+                                    &mut on_window_button,
+                                );
+                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+                            })
+                            .right(|ui| {
+                                right_result = header(ui);
+                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+                            })
+                            .show(ui);
+                    } else {
+                        crate::widgets::AlignCenter::new()
+                            .left(|ui| {
+                                left_result = header(ui);
+                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+                            })
+                            .right(|ui| {
+                                right_result = Self::render_window_controls(
+                                    ui,
+                                    controls,
+                                    &mut on_window_button,
+                                );
+                                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
+                            })
+                            .show(ui);
                     }
-                });
+                    ui.add_space(HEADER_TO_BODY_SPACING);
+                    right_result.or(left_result)
+                } else {
+                    header(ui)
+                };
+                if header_result.is_some() {
+                    result = header_result;
+                }
 
-                ui.add_space(BAR_TO_FOOTER_SPACING);
-                crate::widgets::AlignCenter::new()
-                    .shrink_to_fit(true)
-                    .content(|ui| {
-                        ui.set_max_width(dialog_width);
-                        result = footer(ui);
-                    })
-                    .show(ui);
+                body(ui);
+
+                if let Some(ratio) = self.progress {
+                    ui.add_space(BODY_TO_BAR_SPACING);
+                    let mut bar = egui::ProgressBar::new(ratio).desired_width(self.bar_width);
+                    if self.show_pct {
+                        bar = bar.show_percentage();
+                    }
+                    ui.add(bar);
+                }
             });
+
+            ui.add_space(BAR_TO_FOOTER_SPACING);
+            let mut footer_result = None;
+            crate::widgets::AlignCenter::new()
+                .shrink_to_fit(true)
+                .content(|ui| {
+                    ui.set_max_width(dialog_width);
+                    footer_result = footer(ui);
+                })
+                .show(ui);
+            if footer_result.is_some() {
+                result = footer_result;
+            }
+        });
+
+        result
+    }
+
+    fn render_window_controls<T>(
+        ui: &mut egui::Ui,
+        controls: ModalWindowControls,
+        on_window_button: &mut impl FnMut(ModalWindowButton) -> Option<T>,
+    ) -> Option<T> {
+        let fullscreen_label = if controls.is_fullscreen {
+            controls.exit_fullscreen_tooltip
+        } else {
+            controls.enter_fullscreen_tooltip
+        };
+        let mut result = None;
+
+        if cfg!(target_os = "macos") {
+            ui.horizontal(|ui| {
+                let close_btn = ui
+                    .add(
+                        crate::Icon::Close
+                            .button(ui, crate::icon::IconSize::Small)
+                            .frame(false),
+                    )
+                    .on_hover_text(controls.close_tooltip);
+                if close_btn.clicked() {
+                    result = on_window_button(ModalWindowButton::Close);
+                }
+
+                if controls.show_fullscreen {
+                    let fullscreen_btn = ui
+                        .add(
+                            crate::Icon::Fullscreen
+                                .button(ui, crate::icon::IconSize::Small)
+                                .frame(false),
+                        )
+                        .on_hover_text(fullscreen_label);
+                    if fullscreen_btn.clicked() {
+                        result = on_window_button(ModalWindowButton::Fullscreen);
+                    }
+                }
+            });
+            return result;
+        }
+
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            let close_btn = ui
+                .add(
+                    crate::Icon::Close
+                        .button(ui, crate::icon::IconSize::Small)
+                        .frame(false),
+                )
+                .on_hover_text(controls.close_tooltip);
+            if close_btn.clicked() {
+                result = on_window_button(ModalWindowButton::Close);
+            }
+            if controls.show_fullscreen {
+                let fullscreen_btn = ui
+                    .add(
+                        crate::Icon::Fullscreen
+                            .button(ui, crate::icon::IconSize::Small)
+                            .frame(false),
+                    )
+                    .on_hover_text(fullscreen_label);
+                if fullscreen_btn.clicked() {
+                    result = on_window_button(ModalWindowButton::Fullscreen);
+                }
+            }
+        });
 
         result
     }
