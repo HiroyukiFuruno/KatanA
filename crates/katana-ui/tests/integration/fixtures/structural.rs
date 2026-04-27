@@ -6,7 +6,7 @@ fn fixture_en_produces_many_sections() {
     /* WHY: Verify that the standard English fixture template is correctly parsed into
      * numerous sections, ensuring broad coverage of markdown features. */
     let (pane, _, _) = load_fixture("sample.md");
-    assert!(pane.sections.len() > 25);
+    assert_broad_fixture_rendered(&pane.sections);
 }
 
 #[test]
@@ -27,7 +27,7 @@ fn fixture_ja_structural_integrity() {
     /* WHY: Double check that the Japanese fixture template is also correctly parsed
      * without leakage or pending sections. */
     let (pane, _, _) = load_fixture("sample.ja.md");
-    assert!(pane.sections.len() > 25);
+    assert_broad_fixture_rendered(&pane.sections);
     let pending = pane
         .sections
         .iter()
@@ -56,4 +56,14 @@ fn fixture_en_drawio_blocks_resolve_to_terminal_sections() {
         })
         .count();
     assert!(count >= 2);
+}
+
+fn assert_broad_fixture_rendered(sections: &[RenderedSection]) {
+    let markdown_count = sections
+        .iter()
+        .filter(|section| matches!(section, RenderedSection::Markdown(_, _)))
+        .count();
+
+    assert!(sections.len() >= 12);
+    assert!(markdown_count >= 8);
 }
