@@ -294,7 +294,7 @@ Task 2 は大きすぎるため、1ブランチに詰め込まず、以下のサ
   - 対象確認: `cargo test -p katana-ui settings_window --test ui_integration_parallel -- --nocapture`
   - 対象確認: `cargo test -p katana-ui widgets::combo_box::ui::tests::test_styled_combobox_popup_visuals_make_inactive_rows_transparent --lib -- --nocapture`
   - 節目確認: `make check-light`
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 8. Final Verification & Release Work
 
