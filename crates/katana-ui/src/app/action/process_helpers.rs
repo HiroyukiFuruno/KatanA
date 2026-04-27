@@ -172,9 +172,20 @@ impl KatanaApp {
             } else {
                 &path
             };
-            let _ = katana_core::system::ProcessService::create_command("xdg-open")
-                .arg(dir)
-                .spawn();
+
+            /* WHY: In some Linux environments (e.g. minimal WSL, custom DEs), xdg-open might be missing
+             * or fail to find a registered explorer. Fallback to common explorers directly.
+             * User explicitly confirmed 'thunar' works in their environment. */
+            let explorers = ["xdg-open", "thunar", "nautilus", "dolphin"];
+            for explorer in explorers {
+                if katana_core::system::ProcessService::create_command(explorer)
+                    .arg(dir)
+                    .spawn()
+                    .is_ok()
+                {
+                    return;
+                }
+            }
         }
     }
 }
