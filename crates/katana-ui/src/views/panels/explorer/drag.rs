@@ -144,6 +144,7 @@ impl ExplorerDragUi {
         is_directory: bool,
     ) -> String {
         let mut display = crate::shell_logic::ShellLogicOps::relative_full_path(path, ws_root);
+        display = display.replace(std::path::MAIN_SEPARATOR, "/");
 
         if display.is_empty() {
             display = ws_root
@@ -153,8 +154,8 @@ impl ExplorerDragUi {
                 .unwrap_or_else(|| "workspace".to_string());
         }
 
-        if is_directory && !display.ends_with(std::path::MAIN_SEPARATOR) {
-            display.push(std::path::MAIN_SEPARATOR);
+        if is_directory && !display.ends_with('/') {
+            display.push('/');
         }
 
         display
@@ -184,7 +185,7 @@ mod tests {
         let source = root.join("notes");
         assert_eq!(
             super::ExplorerDragUi::relative_display_path(&source, Some(root), true),
-            format!("notes{}", std::path::MAIN_SEPARATOR)
+            "notes/"
         );
     }
 
@@ -193,7 +194,7 @@ mod tests {
         let root = Path::new("workspace_root");
         assert_eq!(
             super::ExplorerDragUi::relative_display_path(root, Some(root), true),
-            format!("workspace_root{}", std::path::MAIN_SEPARATOR)
+            "workspace_root/"
         );
     }
 
