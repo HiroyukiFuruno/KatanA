@@ -31,6 +31,14 @@
 - [/] chat UI はアイコン操作で表示・非表示・固定表示を制御できるようにする
 - [/] MVP のチャット履歴はアプリ起動中の一時状態に限定し、履歴保存・履歴一覧・履歴管理は後続 task に分離する
 - [/] MVP では Ollama モデル選択を必須にし、細かい生成設定は後続 task に分離する
+- [ ] Task 2 として、chat UI 実装前に既存 shell / panel / modal / context menu の視認性とクリック抑止を安定化する
+- [ ] panel 系 UI の境界が分かりづらい問題を、ボーダー（border）や影（shadow）で見分けやすくする
+- [ ] 固定していない Explorer から開いたコンテキストメニュー操作中に Explorer が閉じないようにする
+- [ ] モーダル（modal）とコンテキストメニュー（context menu）が下部 UI へクリックやスクロールを伝播しないことを全箇所で保証する
+- [ ] 上記のクリック伝播抑止漏れを機械検知する AST リント（AST lint）を追加する
+- [ ] Problems view に、アクティブタブのみ / 開いているタブのみを切り替えるフィルターを追加する
+- [ ] 検索 UI の正規表現等のオプションアイコンが右寄せにならず崩れているデグレードを修正する
+- [ ] Workspace 設定の `拡張なし` をオンにした時、KatanA 標準対応の `png`、`jpg`、`svg`、`drawio` などが Explorer 表示対象から外れないようにする。標準対応拡張子は設定画面に追加対象として見せず、内部の表示対象には常に含める。標準対応拡張子の一覧は Explorer と Workspace 設定で別々に定義せず、単一の定数配列を共通利用する
 - [ ] widget 依存の追加許容範囲を egui 系 crate までとするか決める
 - [ ] Vertex AI / Bedrock / OpenAI 系 provider をどの version milestone に切るか決める
 
@@ -61,20 +69,56 @@
 
 ---
 
-## 2. Isolated Chat UI Foundation
+## 2. UI Shell Stabilization and Search Regression Repair
 
 ### Definition of Ready (DoR)
 
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 app session 内だけで保持する chat message、pending request、error state、selected model を持つ専用 state を追加する
-- [ ] 2.2 editor / preview / diagnostics と分離した VS Code 風の chat サイドパネルを `katana-ui` に追加する
-- [ ] 2.3 画面端のアイコン操作で chat サイドパネルを表示・非表示・固定表示できるようにする
-- [ ] 2.4 user message を Ollama provider に送り、assistant response を app session 内のチャット履歴へ追加する
-- [ ] 2.5 provider 未設定 / モデル未選択 / unavailable / timeout / invalid response の disabled state と recovery 導線を追加する
-- [ ] 2.6 チャット履歴の永続化、履歴一覧、履歴検索、履歴削除管理を MVP に含めないことをテストまたは仕様上で確認する
-- [ ] 2.7 chat response が user confirmation なしに document や workspace file を変更しないことをテストする
+- [ ] 2.1 既存 panel surface（Explorer、Problems、TOC、Preview side panel、Settings、DiffReview、今後の chat panel）を洗い出し、境界表現の共通方針を決める
+- [ ] 2.2 共通の panel 境界表現を実装し、背景に埋もれる panel にボーダー（border）または影（shadow）を適用する
+- [ ] 2.3 Explorer が固定表示でない状態でも、Explorer 由来のコンテキストメニュー操作中は Explorer を閉じない keep-open 判定を追加する
+- [ ] 2.4 モーダル（modal）とコンテキストメニュー（context menu）の表示箇所を全件洗い出し、既存のイベント伝播抑止機構へ統一する
+- [ ] 2.5 下部 UI へのクリック、スクロール、hover の伝播漏れを検知できる回帰テストを追加する
+- [ ] 2.6 モーダル / コンテキストメニューの描画箇所でイベント伝播抑止がない実装を検知する AST リント（AST lint）ルールを追加する
+- [ ] 2.7 Problems view に scope toggle を追加し、`アクティブタブのみ` と `開いているタブのみ` を切り替えられるようにする
+- [ ] 2.8 Problems view の scope toggle が診断一覧、ファイル単位一括修正、検知済み一括修正へ同じ対象集合を渡すことをテストする
+- [ ] 2.9 検索 UI の正規表現、大文字小文字、単語一致などのオプションアイコンを入力欄右端へ固定し、長い placeholder や日本語表示でも崩れないようにする
+- [ ] 2.10 UI スナップショットまたは screenshot scenario で、panel 境界、Explorer context menu、Problems filter、検索アイコン右寄せを確認する
+- [ ] 2.11 Workspace 設定の `拡張なし` と標準対応拡張子の扱いを分離し、`png`、`jpg`、`jpeg`、`svg`、`drawio` などの標準対応ファイルが Explorer 表示対象から外れないようにする
+- [ ] 2.12 標準対応拡張子の一覧を Explorer と Workspace 設定で共有する単一の定数配列として定義し、表示判定と設定 UI の除外判定が同じ source of truth を参照するようにする
+- [ ] 2.13 標準対応拡張子は設定 UI 上の追加候補やユーザー管理対象として表示せず、内部的な表示対象セットには常に含めることをテストする
+
+### Definition of Done (DoD)
+
+- [ ] panel の境界が背景や隣接 UI と混ざらず、見た目で領域を判別できること
+- [ ] Explorer が未固定でも、Explorer 由来の context menu 操作で Explorer が閉じないこと
+- [ ] すべての modal / context menu が下部 UI へイベントを伝播しないこと
+- [ ] AST リントで modal / context menu のイベント伝播抑止漏れを検知できること
+- [ ] Problems view が `アクティブタブのみ` / `開いているタブのみ` を明示的に切り替えられること
+- [ ] Problems view の表示件数と修正系 action に渡る対象件数が一致すること
+- [ ] 検索 UI のオプションアイコンが入力欄右側に揃い、検索語や placeholder の長さで崩れないこと
+- [ ] `拡張なし` をオンにしても、KatanA 標準対応の画像 / draw.io ファイルが Explorer 表示対象から消えないこと
+- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 3. Isolated Chat UI Foundation
+
+### Definition of Ready (DoR)
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+- [ ] 3.1 app session 内だけで保持する chat message、pending request、error state、selected model を持つ専用 state を追加する
+- [ ] 3.2 editor / preview / diagnostics と分離した VS Code 風の chat サイドパネルを `katana-ui` に追加する
+- [ ] 3.3 画面端のアイコン操作で chat サイドパネルを表示・非表示・固定表示できるようにする
+- [ ] 3.4 user message を Ollama provider に送り、assistant response を app session 内のチャット履歴へ追加する
+- [ ] 3.5 provider 未設定 / モデル未選択 / unavailable / timeout / invalid response の disabled state と recovery 導線を追加する
+- [ ] 3.6 チャット履歴の永続化、履歴一覧、履歴検索、履歴削除管理を MVP に含めないことをテストまたは仕様上で確認する
+- [ ] 3.7 chat response が user confirmation なしに document や workspace file を変更しないことをテストする
 
 ### Definition of Done (DoD)
 
@@ -87,18 +131,18 @@
 
 ---
 
-## 3. File-Level Autofix Request and Diff Preview Pipeline
+## 4. File-Level Autofix Request and Diff Preview Pipeline
 
 ### Definition of Ready (DoR)
 
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 元 content、KML 一括 fix 後 content、残存 diagnostics、file path から file-level autofix request を組み立てる
-- [ ] 3.2 Ollama からの応答を、アプリケーション内部で扱う normalized file-level fix candidate に変換する
-- [ ] 3.3 元 content と proposal content の差分を表示する reusable diff preview surface を実装する
-- [ ] 3.4 生成された file-level autofix candidate について、diff preview / confirm / apply flow を実装する
-- [ ] 3.5 apply 後に save、re-lint、error recovery が一連の動作として成立するか確認する
+- [ ] 4.1 元 content、KML 一括 fix 後 content、残存 diagnostics、file path から file-level autofix request を組み立てる
+- [ ] 4.2 Ollama からの応答を、アプリケーション内部で扱う normalized file-level fix candidate に変換する
+- [ ] 4.3 元 content と proposal content の差分を表示する reusable diff preview surface を実装する
+- [ ] 4.4 生成された file-level autofix candidate について、diff preview / confirm / apply flow を実装する
+- [ ] 4.5 apply 後に save、re-lint、error recovery が一連の動作として成立するか確認する
 
 ### Definition of Done (DoD)
 
@@ -112,18 +156,18 @@
 
 ---
 
-## 4. Settings and Diagnostics UI Integration
+## 5. Settings and Diagnostics UI Integration
 
 ### Definition of Ready (DoR)
 
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 4.1 Ollama provider 設定 UI と接続テスト導線を整える
-- [ ] 4.2 diagnostics UI 上に autofix entry point を追加する
-- [ ] 4.3 provider unavailable 時の disabled state と recovery 導線を追加する
-- [ ] 4.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
-- [ ] 4.5 ユーザーからのフィードバックに基づく UI 微調整を行う
+- [ ] 5.1 Ollama provider 設定 UI と接続テスト導線を整える
+- [ ] 5.2 diagnostics UI 上に autofix entry point を追加する
+- [ ] 5.3 provider unavailable 時の disabled state と recovery 導線を追加する
+- [ ] 5.4 ユーザーへの UI スナップショット（画像等）の提示および動作報告
+- [ ] 5.5 ユーザーからのフィードバックに基づく UI 微調整を行う
 
 ### Definition of Done (DoD)
 
@@ -134,25 +178,25 @@
 
 ---
 
-## 5. User Review (Pre-Final Phase)
+## 6. User Review (Pre-Final Phase)
 
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
-- [ ] 5.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
-- [ ] 5.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [ ] 6.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
+- [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
 ---
 
-## 6. Final Verification & Release Work
+## 7. Final Verification & Release Work
 
-- [ ] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `$self-review` skill
-- [ ] 6.2 Format and lint-fix all updated markdown documents
-- [ ] 6.3 Ensure `make check` passes with exit code 0
-- [ ] 6.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.7 Create `release/v0.23.0` branch from master
-- [ ] 6.8 Run `make release VERSION=0.23.0` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 6.9 Create PR from `release/v0.23.0` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `$self-review` skill
+- [ ] 7.2 Format and lint-fix all updated markdown documents
+- [ ] 7.3 Ensure `make check` passes with exit code 0
+- [ ] 7.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.7 Create `release/v0.23.0` branch from master
+- [ ] 7.8 Run `make release VERSION=0.23.0` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 7.9 Create PR from `release/v0.23.0` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
