@@ -4,7 +4,7 @@ use katana_platform::settings::types::icon::IconSettings;
 pub(crate) struct IconsGeneralOps;
 
 impl IconsGeneralOps {
-    /* WHY: Renders the general configuration checkboxes. */
+    /* WHY: Renders the general icon configuration toggles. */
     pub(crate) fn render(
         ui: &mut egui::Ui,
         i18n: &crate::i18n::I18nMessages,
@@ -15,9 +15,13 @@ impl IconsGeneralOps {
         ui.add_space(SPACING_SMALL);
 
         if ui
-            .checkbox(
-                &mut icon_settings.colorful_vendor_icons,
-                &i18n.settings.icons.colorful_vendor_icons_label,
+            .add(
+                crate::widgets::LabeledToggle::new(
+                    &i18n.settings.icons.colorful_vendor_icons_label,
+                    &mut icon_settings.colorful_vendor_icons,
+                )
+                .position(crate::widgets::TogglePosition::Right)
+                .alignment(crate::widgets::ToggleAlignment::SpaceBetween),
             )
             .changed()
         {

@@ -479,7 +479,7 @@ fn ast_linter_settings_alignment() {
     let all_violations = SettingsAlignmentOps::check_settings_alignment(&root);
     ViolationReporterOps::panic(
         "settings-alignment",
-        "Fix: Layout properties inside settings must use `AlignCenter` and `egui::Align::Max` to prevent alignment breakages. Do not use `LabeledToggle` or `Align::Min`.",
+        "Fix: Layout properties inside settings must use `AlignCenter` and `egui::Align::Max` to prevent alignment breakages. Do not use `LabeledToggle` in linter properties, `Align::Min`, or checkbox controls.",
         &all_violations,
     );
 }
