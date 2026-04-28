@@ -6,7 +6,9 @@ impl PreviewLogicOps {
     /// pane when viewing a LinterDocs virtual document.
     pub fn render_linter_docs_github_button(ui: &mut egui::Ui, doc_path: &std::path::Path) {
         let Some(identity) = crate::linter_docs::LinterDocIdentity::from_virtual_path(doc_path)
-        else { return };
+        else {
+            return;
+        };
 
         const GITHUB_BTN_SIZE: f32 = 28.0;
         const GITHUB_BTN_MARGIN_TOP: f32 = 6.0;
