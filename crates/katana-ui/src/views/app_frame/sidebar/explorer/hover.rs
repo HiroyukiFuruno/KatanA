@@ -91,6 +91,9 @@ impl ExplorerHoverOverlay {
             }
         }
         if !keep_open && ui.input(|i| i.pointer.hover_pos().is_some()) {
+            if ui.ctx().memory(|mem| mem.any_popup_open()) {
+                return;
+            }
             ui.ctx()
                 .data_mut(|d| d.insert_temp(egui::Id::new("explorer_hover_open"), false));
         }

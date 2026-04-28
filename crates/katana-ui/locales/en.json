@@ -160,6 +160,8 @@
     "problems_count_format": "Problems: {count}",
     "fix_file_problems": "Fix this file",
     "fix_all_detected_problems": "Fix all detected",
+    "problems_scope_open_tabs": "Open tabs",
+    "problems_scope_active_tab": "Active tab",
     "format_markdown_success": "Markdown formatted: changed {changed} / unchanged {unchanged}",
     "format_markdown_partial_failure": "Markdown formatting partially failed: changed {changed} / unchanged {unchanged} / failed {failed}. Example: {path}: {reason}",
     "format_markdown_not_markdown": "This is not a Markdown file.",

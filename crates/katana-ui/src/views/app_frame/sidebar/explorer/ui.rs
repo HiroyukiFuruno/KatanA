@@ -54,7 +54,7 @@ impl<'a> ExplorerSidebar<'a> {
 
         /* Case 1: PINNED — SidePanel pushes content aside. */
         if app.state.layout.show_explorer {
-            egui::Panel::left("explorer_tree")
+            let response = egui::Panel::left("explorer_tree")
                 .resizable(true)
                 .min_size(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
                 .default_size(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
@@ -84,6 +84,10 @@ impl<'a> ExplorerSidebar<'a> {
                     )
                     .show(ui);
                 });
+            ui.painter().line_segment(
+                [response.response.rect.right_top(), response.response.rect.right_bottom()],
+                ui.visuals().window_stroke(),
+            );
 
             /* WHY: Reset hover state while pinned so it starts clean after unpinning. */
             ui.ctx().data_mut(|d| d.insert_temp(hover_id, false));

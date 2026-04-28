@@ -24,6 +24,12 @@ fn apply_extension_toggle(
     }
 }
 
+fn is_standard_visible_extension(ext: &str) -> bool {
+    katana_core::workspace::TreeEntry::standard_visible_extensions()
+        .iter()
+        .any(|standard| standard.eq_ignore_ascii_case(ext))
+}
+
 impl WorkspaceTabOps {
     pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
         let workspace_msgs = &crate::i18n::I18nOps::get().settings.workspace;
@@ -95,6 +101,7 @@ impl WorkspaceTabOps {
             .workspace
             .visible_extensions
             .clone();
+        extensions.retain(|ext| !is_standard_visible_extension(ext));
         let mut changed_ext = false;
 
         ui.horizontal_wrapped(|ui| {

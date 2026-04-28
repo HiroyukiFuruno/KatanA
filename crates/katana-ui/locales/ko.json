@@ -160,6 +160,8 @@
     "problems_count_format": "문제 수: {count}",
     "fix_file_problems": "이 파일 일괄 수정",
     "fix_all_detected_problems": "감지된 항목 모두 수정",
+    "problems_scope_open_tabs": "열린 탭",
+    "problems_scope_active_tab": "활성 탭",
     "format_markdown_success": "Markdown 형식을 정리했습니다: 변경 {changed}개 / 변경 없음 {unchanged}개",
     "format_markdown_partial_failure": "Markdown 형식 정리가 일부 실패했습니다: 변경 {changed}개 / 변경 없음 {unchanged}개 / 실패 {failed}개. 예: {path}: {reason}",
     "format_markdown_not_markdown": "Markdown 파일이 아닙니다.",

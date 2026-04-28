@@ -151,6 +151,7 @@ impl<'a> PreviewSidePanels<'a> {
                 });
             });
         self.sidebar_rect = Some(panel_resp.response.rect);
+        ui.painter().line_segment([panel_resp.response.rect.left_top(), panel_resp.response.rect.left_bottom()], ui.visuals().window_stroke());
     }
 
     pub(super) fn render_toggle_button(

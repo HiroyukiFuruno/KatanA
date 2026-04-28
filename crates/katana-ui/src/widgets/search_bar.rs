@@ -98,10 +98,11 @@ impl<'a> SearchBar<'a> {
             let has_toggles = self.show_toggles && matches!(self.params, SearchParamsRef::Full(_));
             let query_empty = self.params.query().is_empty();
 
-            crate::widgets::AlignCenter::new()
-                .spacing(layout::ITEM_SPACING)
-                .width(content_width)
-                .left(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(content_width, row_height),
+                egui::Layout::left_to_right(egui::Align::Center),
+                |ui| {
+                    ui.spacing_mut().item_spacing.x = layout::ITEM_SPACING;
                 let icon_slot_width = ui.spacing().icon_width;
                 if self.show_search_icon {
                     ui.add_sized(
@@ -117,7 +118,8 @@ impl<'a> SearchBar<'a> {
 
                 let trailing_width = layout::trailing_width(ui, has_toggles, !query_empty);
                 let text_width =
-                    (ui.available_width() - trailing_width).max(layout::MIN_TEXT_INPUT_WIDTH);
+                    (content_width - icon_slot_width - trailing_width)
+                        .max(layout::MIN_TEXT_INPUT_WIDTH);
                 let mut text_edit = egui::TextEdit::singleline(self.params.query_mut())
                     .id_source(id_source)
                     .desired_width(text_width)
@@ -134,29 +136,25 @@ impl<'a> SearchBar<'a> {
                 }
                 text_response = Some(resp);
 
-                if !query_empty && ui.add(Icon::Close.button(ui, IconSize::Small)).clicked() {
-                    self.params.query_mut().clear();
-                    changed = true;
-                }
-                if has_toggles
-                    && let Some((match_case, match_word, use_regex)) = self.params.toggles()
-                {
-                    let mut toggle_btn = |ui: &mut egui::Ui, icon: Icon, is_active: &mut bool| {
-                        if ui
-                            .add(icon.selected_button(ui, IconSize::Small, *is_active))
-                            .clicked()
+                ui.allocate_ui_with_layout(
+                    egui::vec2(ui.available_width(), row_height),
+                    egui::Layout::right_to_left(egui::Align::Center),
+                    |ui| {
+                        if has_toggles
+                            && let Some((match_case, match_word, use_regex)) = self.params.toggles()
                         {
-                            *is_active = !*is_active;
+                            Self::toggle_button(ui, Icon::MatchCase, match_case, &mut changed);
+                            Self::toggle_button(ui, Icon::WholeWord, match_word, &mut changed);
+                            Self::toggle_button(ui, Icon::UseRegex, use_regex, &mut changed);
+                        }
+                        if !query_empty && ui.add(Icon::Close.button(ui, IconSize::Small)).clicked()
+                        {
+                            self.params.query_mut().clear();
                             changed = true;
                         }
-                    };
-                    toggle_btn(ui, Icon::UseRegex, use_regex);
-                    toggle_btn(ui, Icon::WholeWord, match_word);
-                    toggle_btn(ui, Icon::MatchCase, match_case);
-                }
-                ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
-            })
-            .show(ui);
+                    },
+                );
+            });
             text_response.expect("TextEdit must be drawn")
         });
 
@@ -176,5 +174,20 @@ impl<'a> SearchBar<'a> {
             final_resp.mark_changed();
         }
         final_resp
+    }
+
+    fn toggle_button(
+        ui: &mut egui::Ui,
+        icon: Icon,
+        is_active: &mut bool,
+        changed: &mut bool,
+    ) {
+        if ui
+            .add(icon.selected_button(ui, IconSize::Small, *is_active))
+            .clicked()
+        {
+            *is_active = !*is_active;
+            *changed = true;
+        }
     }
 }

@@ -43,7 +43,8 @@ impl SlideshowModalOps {
             .order(egui::Order::Foreground)
             .fixed_pos(screen.min)
             .show(ctx, |ui| {
-                let (blocker_rect, _) = ui.allocate_exact_size(screen.size(), egui::Sense::hover());
+                let (blocker_rect, _) =
+                    ui.allocate_exact_size(screen.size(), egui::Sense::click_and_drag());
                 ui.painter().rect_filled(blocker_rect, 0.0, bg_color);
                 let content_rect = blocker_rect.shrink(FULLSCREEN_PADDING);
 

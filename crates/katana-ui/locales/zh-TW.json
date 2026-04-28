@@ -160,6 +160,8 @@
     "problems_count_format": "問題: {count}",
     "fix_file_problems": "修正此檔案",
     "fix_all_detected_problems": "修正所有已偵測項目",
+    "problems_scope_open_tabs": "已開啟分頁",
+    "problems_scope_active_tab": "作用中分頁",
     "format_markdown_success": "Markdown 已格式化: 已變更 {changed} / 未變更 {unchanged}",
     "format_markdown_partial_failure": "Markdown 格式化部分失敗: 已變更 {changed} / 未變更 {unchanged} / 失敗 {failed}。範例: {path}: {reason}",
     "format_markdown_not_markdown": "這不是 Markdown 檔案。",
