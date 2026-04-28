@@ -79,13 +79,9 @@ impl<'a> PreviewContent<'a> {
             scroll_area = scroll_area.vertical_scroll_offset(offset);
         }
 
-        let spacing = ui.style().spacing.scroll;
-        let scroll_bar_width =
-            spacing.bar_width + spacing.bar_inner_margin + spacing.floating_allocated_width;
-        /* WHY: Mirror PreviewPane::show and cap the inner width before rendering.
-         * Without this sandbox, table/content min_rect can feed back into the
-         * surrounding resizable layout and prevent shrink after a wider frame. */
-        let inner_content_width = (ui.available_width() - scroll_bar_width).max(0.0);
+        /* WHY: Keep the scroll area itself full-width so its scrollbar touches the
+         * preview edge; width capping still happens through this fixed child rect. */
+        let inner_content_width = ui.available_width();
         let child_rect = egui::Rect::from_min_size(
             ui.next_widget_position(),
             egui::vec2(inner_content_width, ui.available_height()),

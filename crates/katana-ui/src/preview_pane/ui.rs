@@ -22,12 +22,9 @@ impl PreviewPane {
         ScrollArea::vertical()
             .auto_shrink([false; 2])
             .show(ui, |ui| {
-                let spacing = ui.style().spacing.scroll;
-                let scroll_bar_width =
-                    spacing.bar_width + spacing.bar_inner_margin + spacing.floating_allocated_width;
-                /* WHY: Preemptively subtract the scrollbar area to prevent the inner UI from
-                 * generating a min_rect that forces the ScrollArea to expand the parent. */
-                let inner_content_width = (ui.available_width() - scroll_bar_width).max(0.0);
+                /* WHY: The scroll area must occupy the full preview width so the scrollbar
+                 * stays visually attached to the right-side toolbar. */
+                let inner_content_width = ui.available_width();
                 let child_rect = egui::Rect::from_min_size(
                     ui.next_widget_position(),
                     egui::vec2(inner_content_width, 0.0),
