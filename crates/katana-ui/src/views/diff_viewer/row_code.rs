@@ -47,8 +47,8 @@ impl DiffViewerCodeCellOps {
         egui::Frame::NONE
             .inner_margin(egui::Margin::symmetric(CELL_MARGIN_X, CELL_MARGIN_Y))
             .show(ui, |ui| {
-                let (rect, _) =
-                    ui.allocate_exact_size(egui::vec2(cell_width, ROW_HEIGHT), egui::Sense::hover());
+                let (rect, _) = ui
+                    .allocate_exact_size(egui::vec2(cell_width, ROW_HEIGHT), egui::Sense::hover());
                 let visible_rect =
                     egui::Rect::from_min_size(rect.min, egui::vec2(visible_width, ROW_HEIGHT));
                 ui.painter()

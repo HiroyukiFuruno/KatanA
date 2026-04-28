@@ -123,7 +123,9 @@ impl KatanaApp {
             Some(active_idx.min(self.state.document.open_documents.len() - 1))
         };
         self.state.diagnostics.remove_file_diagnostics(&review_path);
-        self.state.diagnostics.remove_file_diagnostics(&removed_path);
+        self.state
+            .diagnostics
+            .remove_file_diagnostics(&removed_path);
         self.state.document.cleanup_empty_groups();
         self.save_workspace_state();
     }

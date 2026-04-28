@@ -38,7 +38,8 @@ impl DiagnosticsState {
     ) {
         self.content_hashes
             .insert(path.clone(), Self::content_hash(content));
-        self.content_snapshots.insert(path.clone(), content.to_string());
+        self.content_snapshots
+            .insert(path.clone(), content.to_string());
         self.update_diagnostics(path, diagnostics);
     }
 

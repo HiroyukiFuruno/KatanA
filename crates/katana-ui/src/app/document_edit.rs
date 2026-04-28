@@ -104,15 +104,11 @@ impl KatanaApp {
             return Some(active_path);
         }
 
-        self.state
-            .layout
-            .diff_review
-            .as_ref()
-            .and_then(|review| {
-                review
-                    .current_file()
-                    .map(|file| file.path.clone())
-                    .or_else(|| review.restore_path.clone())
-            })
+        self.state.layout.diff_review.as_ref().and_then(|review| {
+            review
+                .current_file()
+                .map(|file| file.path.clone())
+                .or_else(|| review.restore_path.clone())
+        })
     }
 }

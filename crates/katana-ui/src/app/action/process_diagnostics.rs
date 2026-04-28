@@ -53,8 +53,7 @@ impl KatanaApp {
                 && (path_str.ends_with("lint-fix.md") || path_str.ends_with("lint-fix.ja.md"));
         }
 
-        path
-            .extension()
+        path.extension()
             .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
             .unwrap_or(false)
     }

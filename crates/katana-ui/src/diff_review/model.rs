@@ -1,4 +1,6 @@
-use super::{DiffCompactionOps, DiffLine, DiffLineKind, FileDiffModel, InlineDiffRow, SplitDiffRow};
+use super::{
+    DiffCompactionOps, DiffLine, DiffLineKind, FileDiffModel, InlineDiffRow, SplitDiffRow,
+};
 use crate::diff_review::highlight::DiffHighlightOps;
 use crate::diff_review::split_model::DiffSplitModelOps;
 use crate::diff_review::types::FileDiffStats;

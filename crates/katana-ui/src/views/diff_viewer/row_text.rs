@@ -129,9 +129,7 @@ impl TextSegment {
     }
 }
 
-fn merge_ranges(
-    ranges: Vec<crate::diff_review::TextRange>,
-) -> Vec<crate::diff_review::TextRange> {
+fn merge_ranges(ranges: Vec<crate::diff_review::TextRange>) -> Vec<crate::diff_review::TextRange> {
     let mut merged = Vec::<crate::diff_review::TextRange>::new();
     for range in ranges {
         if let Some(last) = merged.last_mut()

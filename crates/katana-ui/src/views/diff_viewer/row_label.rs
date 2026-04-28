@@ -43,7 +43,9 @@ impl DiffViewerRowLabelOps {
         let cell_width = width.max(text_display_width(text));
         egui::Frame::NONE
             .inner_margin(egui::Margin::symmetric(CELL_MARGIN_X, CELL_MARGIN_Y))
-            .show(ui, |ui| clickable_label(ui, text, cell_width, tone, palette))
+            .show(ui, |ui| {
+                clickable_label(ui, text, cell_width, tone, palette)
+            })
             .inner
     }
 }

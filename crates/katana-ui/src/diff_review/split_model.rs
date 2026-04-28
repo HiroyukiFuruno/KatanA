@@ -82,11 +82,7 @@ impl SplitRowsBuilder {
         self.deferred_unchanged.clear();
     }
 
-    fn push_removed_and_paired_rows(
-        &mut self,
-        pairs: &[Option<usize>],
-        paired_added: &mut [bool],
-    ) {
+    fn push_removed_and_paired_rows(&mut self, pairs: &[Option<usize>], paired_added: &mut [bool]) {
         for (removed_index, removed_line) in self.removed.iter().enumerate() {
             let Some(added_index) = pairs[removed_index] else {
                 self.rows.push(removed_split_row(removed_line));

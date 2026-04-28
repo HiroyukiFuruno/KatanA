@@ -10,11 +10,7 @@ const COLLAPSE_ICON_LEFT_PADDING: f32 = 4.0;
 pub(super) struct DiffViewerRowToggleOps;
 
 impl DiffViewerRowToggleOps {
-    pub(super) fn show(
-        ui: &mut egui::Ui,
-        palette: &DiffViewerPalette,
-        expanded: bool,
-    ) -> bool {
+    pub(super) fn show(ui: &mut egui::Ui, palette: &DiffViewerPalette, expanded: bool) -> bool {
         Self::show_with_label(ui, palette, palette.collapsed_background, expanded, None)
     }
 
@@ -24,7 +20,13 @@ impl DiffViewerRowToggleOps {
         expanded: bool,
         label: &str,
     ) -> bool {
-        Self::show_with_label(ui, palette, palette.gutter_background, expanded, Some(label))
+        Self::show_with_label(
+            ui,
+            palette,
+            palette.gutter_background,
+            expanded,
+            Some(label),
+        )
     }
 
     fn show_with_label(
@@ -78,12 +80,7 @@ impl DiffViewerRowToggleOps {
         ui.put(bottom_rect, Self::image(ui, bottom_icon, icon_size));
     }
 
-    fn show_label(
-        ui: &egui::Ui,
-        rect: egui::Rect,
-        text: &str,
-        palette: &DiffViewerPalette,
-    ) {
+    fn show_label(ui: &egui::Ui, rect: egui::Rect, text: &str, palette: &DiffViewerPalette) {
         let font_id = egui::TextStyle::Monospace.resolve(ui.style());
         ui.painter().text(
             egui::pos2(rect.right(), rect.center().y),

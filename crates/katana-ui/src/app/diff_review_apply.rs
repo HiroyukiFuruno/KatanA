@@ -92,9 +92,7 @@ impl KatanaApp {
             .remove_file_diagnostics(&crate::app::LintFixReviewPath::path());
         self.state
             .diagnostics
-            .remove_file_diagnostics(std::path::Path::new(
-                "Katana://DiffReview/lint-fix.md",
-            ));
+            .remove_file_diagnostics(std::path::Path::new("Katana://DiffReview/lint-fix.md"));
         if let Some(path) = restore_path {
             self.handle_select_document(path, true);
         }

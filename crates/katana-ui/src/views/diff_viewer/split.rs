@@ -1,6 +1,8 @@
 use super::split_column::{DiffViewerSplitColumnOps, SplitColumnParams};
 use super::split_handle::DiffViewerSplitHandleOps;
-use super::split_scroll::{suppress_diagonal_horizontal_scroll, sync_offsets, SplitOffsets, SplitScrollKeys};
+use super::split_scroll::{
+    SplitOffsets, SplitScrollKeys, suppress_diagonal_horizontal_scroll, sync_offsets,
+};
 use super::style::DiffViewerPalette;
 use eframe::egui;
 

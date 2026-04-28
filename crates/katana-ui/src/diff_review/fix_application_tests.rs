@@ -39,11 +39,19 @@ fn apply_result_reports_skipped_overlapping_fixes() {
     assert_eq!(result.applied_fixes, 1);
     assert_eq!(result.details.len(), 2);
     assert_eq!(
-        result.details.iter().filter(|detail| detail.applied).count(),
+        result
+            .details
+            .iter()
+            .filter(|detail| detail.applied)
+            .count(),
         1
     );
     assert_eq!(
-        result.details.iter().filter(|detail| !detail.applied).count(),
+        result
+            .details
+            .iter()
+            .filter(|detail| !detail.applied)
+            .count(),
         1
     );
 }

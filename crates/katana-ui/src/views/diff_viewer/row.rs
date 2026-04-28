@@ -39,11 +39,8 @@ impl DiffViewerRowOps {
         palette: &DiffViewerPalette,
     ) {
         let tone = tone_for(opposite.kind);
-        let placeholder_width = DiffViewerCodeCellOps::content_width(
-            &opposite.text,
-            tone,
-            &opposite.highlight_ranges,
-        );
+        let placeholder_width =
+            DiffViewerCodeCellOps::content_width(&opposite.text, tone, &opposite.highlight_ranges);
         Self::line_number_cell(ui, None, tone, palette);
         DiffViewerCodeCellOps::show_placeholder(ui, code_width, placeholder_width, tone, palette);
     }

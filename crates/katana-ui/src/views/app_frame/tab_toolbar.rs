@@ -45,13 +45,9 @@ impl<'a> TabToolbar<'a> {
                     || p.starts_with("Katana://Guide")
                     || crate::app::LintFixReviewPath::is_review_path(&doc.path);
                 /* WHY: LinterDocs get a special "View on GitHub" button in the toolbar. */
-                let linter_rule_id = if p.starts_with("Katana://LinterDocs/") {
-                    p.strip_prefix("Katana://LinterDocs/")
-                        .and_then(|s| s.strip_suffix(".md"))
-                        .map(|s| s.to_ascii_uppercase())
-                } else {
-                    None
-                };
+                let linter_rule_id =
+                    crate::linter_docs::LinterDocIdentity::from_virtual_path(&doc.path)
+                        .map(|identity| identity.rule_id().to_string());
                 (doc.path.clone(), is_virtual, linter_rule_id)
             });
             if let Some((doc_path, is_virtual, linter_rule_id)) = doc_info {

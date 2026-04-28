@@ -12,7 +12,9 @@ pub(super) struct SplitOffsets {
 impl SplitOffsets {
     pub(super) fn load(ctx: &egui::Context, keys: &SplitScrollKeys) -> Self {
         Self {
-            left: ctx.data(|data| data.get_temp::<f32>(keys.left)).unwrap_or(0.0_f32),
+            left: ctx
+                .data(|data| data.get_temp::<f32>(keys.left))
+                .unwrap_or(0.0_f32),
             right: ctx
                 .data(|data| data.get_temp::<f32>(keys.right))
                 .unwrap_or(0.0_f32),
