@@ -1,5 +1,7 @@
 use crate::Violation;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+
+mod scans;
 
 pub struct ForegroundSurfaceOps;
 
@@ -14,6 +16,7 @@ impl ForegroundSurfaceOps {
             workspace_root.join("crates/katana-ui/src/preview_pane/slideshow/settings.rs");
         let slideshow_modal_path =
             workspace_root.join("crates/katana-ui/src/preview_pane/slideshow/modal.rs");
+        let modal_widget_path = workspace_root.join("crates/katana-ui/src/widgets/modal/ui.rs");
 
         let Ok(shell_source) = std::fs::read_to_string(&shell_path) else {
             return violations;
@@ -31,6 +34,9 @@ impl ForegroundSurfaceOps {
         else {
             return violations;
         };
+        let Ok(modal_widget_source) = std::fs::read_to_string(&modal_widget_path) else {
+            return violations;
+        };
 
         Self::require_contains(
             &shell_path,
@@ -44,6 +50,13 @@ impl ForegroundSurfaceOps {
             &shell_source,
             "any_popup_open",
             "Foreground surface detection must include egui popup/context-menu state.",
+            &mut violations,
+        );
+        Self::require_contains(
+            &shell_path,
+            &shell_source,
+            "move_modal",
+            "Foreground surface detection must include move modal state.",
             &mut violations,
         );
         Self::require_contains(
@@ -81,67 +94,16 @@ impl ForegroundSurfaceOps {
             "Slideshow content must be rendered through InteractionFacade.",
             &mut violations,
         );
-        Self::lint_foreground_area_contract(workspace_root, &mut violations);
+        Self::require_contains(
+            &modal_widget_path,
+            &modal_widget_source,
+            "InteractionFacade::register_hover_blocker",
+            "Katana Modal must register its window rect with InteractionFacade.",
+            &mut violations,
+        );
+        scans::ForegroundSurfaceScanOps::lint(workspace_root, &mut violations);
 
         violations
-    }
-
-    fn lint_foreground_area_contract(workspace_root: &Path, violations: &mut Vec<Violation>) {
-        let ui_src = workspace_root.join("crates/katana-ui/src");
-        let mut files = Vec::new();
-        Self::collect_rust_files(&ui_src, &mut files);
-
-        for file in files {
-            let Ok(source) = std::fs::read_to_string(&file) else {
-                continue;
-            };
-            if !Self::has_foreground_area(&source) || Self::is_guarded_foreground_area(&source) {
-                continue;
-            }
-
-            violations.push(Violation {
-                file,
-                line: Self::line_number_of(&source, "egui::Order::Foreground"),
-                column: 1,
-                message: "Foreground egui::Area must consume pointer and hover events through InteractionFacade or an explicit full-screen blocker.".to_string(),
-            });
-        }
-    }
-
-    fn collect_rust_files(dir: &Path, files: &mut Vec<PathBuf>) {
-        let Ok(entries) = std::fs::read_dir(dir) else {
-            return;
-        };
-
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                Self::collect_rust_files(&path, files);
-                continue;
-            }
-            if path.extension().and_then(|it| it.to_str()) == Some("rs") {
-                files.push(path);
-            }
-        }
-    }
-
-    fn has_foreground_area(source: &str) -> bool {
-        source.contains("egui::Area::new") && source.contains("egui::Order::Foreground")
-    }
-
-    fn is_guarded_foreground_area(source: &str) -> bool {
-        source.contains("InteractionFacade::consume_rect")
-            || source.contains("allocate_exact_size(screen.size(), egui::Sense::click_and_drag())")
-            || source.contains("allocate_rect(ctx.screen_rect(), egui::Sense::all())")
-            || source.contains("drag_ghost")
-            || source.contains("rail_ghost")
-    }
-
-    fn line_number_of(source: &str, token: &str) -> usize {
-        source
-            .lines()
-            .position(|line| line.contains(token))
-            .map_or(1, |index| index + 1)
     }
 
     fn require_contains(

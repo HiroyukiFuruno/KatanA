@@ -65,7 +65,7 @@ impl InteractionFacade {
         let _response = ui.interact(rect, egui::Id::new(id), egui::Sense::click_and_drag());
     }
 
-    fn register_hover_blocker(ctx: &egui::Context, rect: egui::Rect) {
+    pub fn register_hover_blocker(ctx: &egui::Context, rect: egui::Rect) {
         let pointer_inside =
             ctx.input(|it| it.pointer.hover_pos().is_some_and(|pos| rect.contains(pos)));
         let was_blocked = Self::is_hover_blocked(ctx);

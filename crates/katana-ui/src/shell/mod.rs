@@ -164,6 +164,7 @@ impl KatanaApp {
             || self.state.layout.create_fs_node_modal.is_some()
             || self.state.layout.rename_modal.is_some()
             || self.state.layout.delete_modal.is_some()
+            || self.state.layout.move_modal.is_some()
             || self.state.command_palette.is_open
             || self.show_about
             || self.show_update_dialog

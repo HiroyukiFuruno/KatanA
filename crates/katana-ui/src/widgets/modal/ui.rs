@@ -103,7 +103,7 @@ impl<'a> Modal<'a> {
             window = window.frame(frame);
         }
 
-        window.show(ctx, |ui| {
+        let response = window.show(ctx, |ui| {
             ui.set_max_width(content_width);
 
             if has_controls {
@@ -149,6 +149,9 @@ impl<'a> Modal<'a> {
                 result = footer_result;
             }
         });
+        if let Some(response) = response {
+            crate::widgets::InteractionFacade::register_hover_blocker(ctx, response.response.rect);
+        }
 
         result
     }
