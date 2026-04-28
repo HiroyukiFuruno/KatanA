@@ -33,6 +33,15 @@
 - [/] KML issue #43 で採用された `FixResult.details` を受け取り、Fix 適用結果の適用/スキップ情報をKML側の公開APIに寄せる。
 - [/] アプリ起動時に復元されたタブもlint評価対象に含め、ファイル内容ハッシュが同じ場合は再評価をスキップする。
 - [/] UI/UX が劣化しない操作はアイコンボタン化し、KatanA らしい見た目に戻す。
+- [ ] Follow-up Task 2 として、v0.22.8 の最終フェーズ前に shell / panel / modal / context menu / slideshow sidebar の視認性とイベント伝播抑止を安定化する。
+- [ ] panel 系 UI の境界が分かりづらい問題を、ボーダー（border）や影（shadow）で見分けやすくする。
+- [ ] 固定していない Explorer から開いたコンテキストメニュー操作中に Explorer が閉じないようにする。
+- [ ] モーダル（modal）とコンテキストメニュー（context menu）が下部 UI へクリックやスクロールを伝播しないことを全箇所で保証する。
+- [ ] スライドショーモード中のサイドバー（例: 目次）が背面や下部 UI のイベントを発火させないようにする。
+- [ ] 上記のイベント伝播抑止漏れを機械検知する AST リント（AST lint）を追加する。
+- [ ] Problems view に、アクティブタブのみ / 開いているタブのみを切り替えるフィルターを追加する。
+- [ ] 検索 UI の正規表現等のオプションアイコンが右寄せにならず崩れているデグレードを修正する。
+- [ ] Workspace 設定の `拡張なし` をオンにした時、KatanA 標準対応の `png`、`jpg`、`jpeg`、`svg`、`drawio` が Explorer 表示対象から外れないようにする。標準対応拡張子は設定画面に追加対象として見せず、内部の表示対象には常に含める。標準対応拡張子の一覧は Explorer と Workspace 設定で別々に定義せず、単一の定数配列を共通利用する。
 
 ---
 
@@ -102,7 +111,44 @@
 
 ---
 
-## 5. User Review (Pre-Final Phase)
+## 5. Follow-up Task 2: UI Shell Stabilization and Regression Repair
+
+### Definition of Ready (DoR)
+
+- [ ] Task 1 の差分確認改善が完了し、v0.22.8 の最終フェーズへ入る前であること。
+- [ ] 作業ブランチは `v0-22-8-fix-preview-task-2` とし、Task 1 の未整理状態と混同しないこと。
+
+- [ ] 5.1 既存 panel surface（Explorer、Problems、TOC、Preview side panel、Settings、DiffReview）を洗い出し、境界表現の共通方針を決める。
+- [ ] 5.2 共通の panel 境界表現を実装し、背景に埋もれる panel にボーダー（border）または影（shadow）を適用する。
+- [ ] 5.3 Explorer が固定表示でない状態でも、Explorer 由来のコンテキストメニュー操作中は Explorer を閉じない keep-open 判定を追加する。
+- [ ] 5.4 モーダル（modal）、コンテキストメニュー（context menu）、スライドショー中のサイドバー / 浮動パネルの表示箇所を全件洗い出し、既存のイベント伝播抑止機構へ統一する。
+- [ ] 5.5 下部 UI や背面 preview へのクリック、スクロール、hover の伝播漏れを検知できる回帰テストを追加する。
+- [ ] 5.6 モーダル / コンテキストメニュー / スライドショー中のサイドバー描画箇所で、イベント伝播抑止がない実装を検知する AST リント（AST lint）ルールを追加する。
+- [ ] 5.7 Problems view に scope toggle を追加し、`アクティブタブのみ` と `開いているタブのみ` を切り替えられるようにする。
+- [ ] 5.8 Problems view の scope toggle が診断一覧、ファイル単位一括修正、検知済み一括修正へ同じ対象集合を渡すことをテストする。
+- [ ] 5.9 検索 UI の正規表現、大文字小文字、単語一致などのオプションアイコンを入力欄右端へ固定し、長い placeholder や日本語表示でも崩れないようにする。
+- [ ] 5.10 Workspace 設定の `拡張なし` と標準対応拡張子の扱いを分離し、`png`、`jpg`、`jpeg`、`svg`、`drawio` の標準対応ファイルが Explorer 表示対象から外れないようにする。
+- [ ] 5.11 標準対応拡張子の一覧を Explorer と Workspace 設定で共有する単一の定数配列として定義し、表示判定と設定 UI の除外判定が同じ source of truth を参照するようにする。
+- [ ] 5.12 標準対応拡張子は設定 UI 上の追加候補やユーザー管理対象として表示せず、内部的な表示対象セットには常に含めることをテストする。
+- [ ] 5.13 UI スナップショットまたは screenshot scenario で、panel 境界、Explorer context menu、スライドショー中のサイドバー、Problems filter、検索アイコン右寄せを確認する。
+
+### Definition of Done (DoD)
+
+- [ ] panel の境界が背景や隣接 UI と混ざらず、見た目で領域を判別できること。
+- [ ] Explorer が未固定でも、Explorer 由来の context menu 操作で Explorer が閉じないこと。
+- [ ] すべての modal / context menu が下部 UI へイベントを伝播しないこと。
+- [ ] スライドショーモード中のサイドバー / 浮動パネル操作が背面 UI にイベントを伝播しないこと。
+- [ ] AST リントで modal / context menu / slideshow sidebar のイベント伝播抑止漏れを検知できること。
+- [ ] Problems view が `アクティブタブのみ` / `開いているタブのみ` を明示的に切り替えられること。
+- [ ] Problems view の表示件数と修正系 action に渡る対象件数が一致すること。
+- [ ] 検索 UI のオプションアイコンが入力欄右側に揃い、検索語や placeholder の長さで崩れないこと。
+- [ ] `拡張なし` をオンにしても、KatanA 標準対応の画像 / draw.io ファイルが Explorer 表示対象から消えないこと。
+- [ ] `make lint` と `make ast-lint` がエラーなし (exit code 0) で通過すること。
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 6. User Review (Pre-Final Phase)
 
 ### Definition of Ready (DoR)
 
@@ -111,8 +157,8 @@
 
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
-- [ ] 2.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
-- [ ] 2.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [ ] 6.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
+- [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
 ### Definition of Done (DoD)
 
@@ -121,16 +167,16 @@
 
 ---
 
-## 6. Final Verification & Release Work
+## 7. Final Verification & Release Work
 
-- [ ] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 6.3 Ensure `make check` passes with exit code 0
-- [ ] 6.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.7 Create `release/v0-22-8` branch from master
-- [ ] 6.8 Run `make release VERSION=0-22-8` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 6.9 Create PR from `release/v0-22-8` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [ ] 7.3 Ensure `make check` passes with exit code 0
+- [ ] 7.4 Create PR from Base Feature Branch targeting `master`
+- [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+- [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.7 Create `release/v0-22-8` branch from master
+- [ ] 7.8 Run `make release VERSION=0-22-8` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 7.9 Create PR from `release/v0-22-8` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
