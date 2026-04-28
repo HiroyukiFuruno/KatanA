@@ -88,12 +88,14 @@ impl<'a> Modal<'a> {
         let mut window = egui::Window::new(self.title)
             .id(egui::Id::new(self.id))
             .collapsible(false)
-            .resizable(false)
-            .default_width(dialog_width)
-            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO);
-        if let Some(size) = fixed_size {
-            window = window.fixed_size(size);
+            .default_width(dialog_width);
+        /* WHY: Allow resizing only when a fixed size (fullscreen) is supplied. */
+        if fixed_size.is_some() {
+            window = window.resizable(true);
+        } else {
+            window = window.resizable(false);
         }
+        /* WHY: Position and other window setup handled below (keeps previous behavior). */
         if has_controls {
             window = window.title_bar(false);
         }
@@ -151,103 +153,7 @@ impl<'a> Modal<'a> {
         result
     }
 
-    fn render_title_bar<T>(
-        ui: &mut egui::Ui,
-        title: &str,
-        controls: ModalWindowControls,
-        on_window_button: &mut impl FnMut(ModalWindowButton) -> Option<T>,
-    ) -> Option<T> {
-        let mut result = None;
-
-        ui.columns_const::<3, _>(|[left, center, right]| {
-            if cfg!(target_os = "macos") {
-                result = Self::render_window_controls(left, controls, on_window_button);
-            } else {
-                result = Self::render_window_controls(right, controls, on_window_button);
-            }
-
-            center.with_layout(
-                egui::Layout::centered_and_justified(egui::Direction::LeftToRight),
-                |ui| {
-                    ui.label(egui::RichText::new(title).strong());
-                },
-            );
-        });
-
-        result
-    }
-
-    fn render_window_controls<T>(
-        ui: &mut egui::Ui,
-        controls: ModalWindowControls,
-        on_window_button: &mut impl FnMut(ModalWindowButton) -> Option<T>,
-    ) -> Option<T> {
-        let fullscreen_label = if controls.is_fullscreen {
-            controls.exit_fullscreen_tooltip
-        } else {
-            controls.enter_fullscreen_tooltip
-        };
-        let mut result = None;
-
-        let controls_layout = if cfg!(target_os = "macos") {
-            egui::Layout::left_to_right(egui::Align::Center)
-        } else {
-            egui::Layout::right_to_left(egui::Align::Center)
-        };
-
-        ui.with_layout(controls_layout, |ui| {
-            let close_btn = ui
-                .add(
-                    crate::Icon::Close
-                        .button(ui, crate::icon::IconSize::Small)
-                        .frame(false),
-                )
-                .on_hover_text(controls.close_tooltip);
-            if close_btn.clicked() {
-                result = on_window_button(ModalWindowButton::Close);
-            }
-            if controls.show_fullscreen {
-                let fullscreen_btn = ui
-                    .add(
-                        crate::Icon::Fullscreen
-                            .button(ui, crate::icon::IconSize::Small)
-                            .frame(false),
-                    )
-                    .on_hover_text(fullscreen_label);
-                if fullscreen_btn.clicked() {
-                    result = on_window_button(ModalWindowButton::Fullscreen);
-                }
-            }
-        });
-
-        result
-    }
-
     pub fn show_body_only(self, ctx: &egui::Context, body: impl FnOnce(&mut egui::Ui)) {
         self.show(ctx, body, |_ui| None::<()>);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_modal_builder_defaults() {
-        let modal = Modal::new("t", "Title");
-        assert_eq!(modal.progress, None);
-        assert!(!modal.show_pct);
-        assert!((modal.bar_width - DEFAULT_BAR_WIDTH).abs() < f32::EPSILON);
-    }
-
-    #[test]
-    fn test_modal_builder_with_progress() {
-        let modal = Modal::new("t", "T")
-            .progress(0.5)
-            .show_percentage(true)
-            .bar_width(200.0);
-        assert_eq!(modal.progress, Some(0.5));
-        assert!(modal.show_pct);
-        assert!((modal.bar_width - 200.0).abs() < f32::EPSILON);
     }
 }

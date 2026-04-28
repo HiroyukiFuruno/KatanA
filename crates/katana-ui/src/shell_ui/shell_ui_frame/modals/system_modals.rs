@@ -30,14 +30,6 @@ impl KatanaApp {
             self.pending_action = settings_action;
         }
 
-        if let Some(review) = &mut self.state.layout.diff_review
-            && let Some(action) = crate::views::modals::diff_review::DiffReviewModal::new(review)
-                .show(ctx)
-                .filter(|_| matches!(self.pending_action, AppAction::None))
-        {
-            self.pending_action = action;
-        }
-
         if self.show_about {
             crate::views::modals::about::AboutModal::new(
                 &mut self.show_about,

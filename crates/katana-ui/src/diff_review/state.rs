@@ -124,9 +124,7 @@ impl DiffReviewState {
 
     pub(crate) fn reject_all_pending(&mut self) {
         for file in &mut self.files {
-            if file.decision == DiffReviewDecision::Pending {
-                file.decision = DiffReviewDecision::Rejected;
-            }
+            file.decision = DiffReviewDecision::Rejected;
         }
     }
 

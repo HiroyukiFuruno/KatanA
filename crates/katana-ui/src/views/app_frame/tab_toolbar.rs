@@ -38,11 +38,12 @@ impl<'a> TabToolbar<'a> {
 
             let doc_info = app.state.active_document().map(|doc| {
                 let p = doc.path.to_string_lossy();
-                /* WHY: ChangeLog/Welcome/Guide are read-only virtual docs — no editor controls.
+                /* WHY: ChangeLog/Welcome/Guide/DiffReview are read-only virtual docs — no editor controls.
                  * Katana://Demo/ docs are interactive and keep full controls. */
                 let is_virtual = p.starts_with("Katana://ChangeLog")
                     || p.starts_with("Katana://Welcome")
-                    || p.starts_with("Katana://Guide");
+                    || p.starts_with("Katana://Guide")
+                    || crate::app::LintFixReviewPath::is_review_path(&doc.path);
                 /* WHY: LinterDocs get a special "View on GitHub" button in the toolbar. */
                 let linter_rule_id = if p.starts_with("Katana://LinterDocs/") {
                     p.strip_prefix("Katana://LinterDocs/")

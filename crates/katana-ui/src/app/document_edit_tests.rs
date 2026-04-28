@@ -40,7 +40,8 @@ fn lint_fix_opens_review_before_changing_active_file() {
         .state
         .active_document()
         .expect("document must stay active");
-    assert_eq!(doc.buffer, "alpha\n");
+    assert_eq!(doc.path, crate::app::LintFixReviewPath::path());
+    assert_eq!(doc.buffer, "");
     assert!(app.state.layout.diff_review.is_some());
 
     app.process_action(&ctx, AppAction::ConfirmCurrentDiffReviewFile);

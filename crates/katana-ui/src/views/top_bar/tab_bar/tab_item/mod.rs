@@ -44,8 +44,25 @@ impl<'a> TabItem<'a> {
             .to_string_lossy()
             .starts_with("Katana://ChangeLog");
         let is_demo = self.doc.path.is_demo_path();
+        let is_lint_review = crate::app::LintFixReviewPath::is_review_path(&self.doc.path);
+        let is_lint_review = is_lint_review
+            || (self
+                .doc
+                .path
+                .to_string_lossy()
+                .starts_with("Katana://DiffReview/")
+                && self
+                    .doc
+                    .path
+                    .file_name()
+                    .is_some_and(|name| name.to_string_lossy() == "lint-fix.md"));
+        let original_filename = if is_lint_review {
+            crate::i18n::I18nOps::get().diff_review.title.clone()
+        } else {
+            self.doc.file_name().unwrap_or("untitled").to_string()
+        };
         let title = TopBarOps::tab_display_title(
-            self.doc.file_name().unwrap_or("untitled"),
+            &original_filename,
             is_changelog,
             is_demo,
             self.doc.is_dirty,

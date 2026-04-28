@@ -8,12 +8,12 @@ use katana_platform::DiffViewMode;
 use style::DiffViewerPalette;
 
 const HEADER_BOTTOM_SPACING: f32 = 8.0;
-const VIEWER_BODY_MAX_HEIGHT: f32 = 380.0;
+const MIN_VIEWER_HEIGHT: f32 = 380.0;
 
 pub(crate) struct DiffViewer<'a> {
     file: &'a crate::diff_review::DiffReviewFile,
     mode: DiffViewMode,
-    display_path: String,
+    display_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,7 +25,7 @@ impl<'a> DiffViewer<'a> {
     pub(crate) fn new(
         file: &'a crate::diff_review::DiffReviewFile,
         mode: DiffViewMode,
-        display_path: String,
+        display_path: Option<String>,
     ) -> Self {
         Self {
             file,
@@ -47,9 +47,8 @@ impl<'a> DiffViewer<'a> {
 
         crate::widgets::AlignCenter::new()
             .left(move |ui| {
-                ui.add(egui::Label::new(
-                    egui::RichText::new(path).monospace().strong(),
-                ))
+                let label = path.as_deref().unwrap_or("");
+                ui.add(egui::Label::new(egui::RichText::new(label).monospace().strong()).truncate())
             })
             .right(|ui| {
                 crate::widgets::AlignCenter::new()
@@ -84,9 +83,13 @@ impl<'a> DiffViewer<'a> {
     }
 
     fn show_body(&self, ui: &mut egui::Ui) {
+        /* WHY: Prefer to use the available height, but fall back to a sensible
+        minimum so the viewer isn't collapsed (which hides footer buttons). */
+        let max_h = ui.available_height().max(MIN_VIEWER_HEIGHT);
         egui::ScrollArea::vertical()
-            .id_salt(ui.id().with("diff_viewer_scroll"))
-            .max_height(VIEWER_BODY_MAX_HEIGHT)
+            .id_salt(ui.id().with("diff_viewer_vscroll"))
+            .max_height(max_h)
+            .auto_shrink([false; 2])
             .show(ui, |ui| match self.mode {
                 DiffViewMode::Split => split::DiffViewerSplitOps::show(ui, self.file),
                 DiffViewMode::Inline => inline::DiffViewerInlineOps::show(ui, self.file),

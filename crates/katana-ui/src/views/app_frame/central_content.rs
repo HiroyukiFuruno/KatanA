@@ -14,45 +14,42 @@ impl<'a> CentralContent<'a> {
         let app = self.app;
         let current_mode = app.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
-        let mut is_changelog_tab = false;
-        let mut is_virtual_read_only = false;
 
-        if let Some(doc) = app.state.active_document() {
-            let p = doc.path.to_string_lossy();
+        let doc_path_opt = app.state.active_document().map(|d| d.path.clone());
+        if let Some(doc_path) = doc_path_opt {
+            let p = doc_path.to_string_lossy();
             if p.starts_with("Katana://ChangeLog") {
-                is_changelog_tab = true;
-            } else if p.starts_with("Katana://Welcome") || p.starts_with("Katana://Guide") {
+                egui::CentralPanel::default().show_inside(ui, |ui| {
+                    crate::changelog::ChangelogOps::render_release_notes_tab(
+                        ui,
+                        &app.changelog_sections,
+                        app.changelog_rx.is_some(),
+                        app.state
+                            .config
+                            .settings
+                            .settings()
+                            .layout
+                            .accordion_vertical_line,
+                    );
+                });
+                return None;
+            }
+
+            if Self::handle_lint_fix_review_tab(ui, app, &doc_path) {
+                return None;
+            }
+
+            if p.starts_with("Katana://Welcome") || p.starts_with("Katana://Guide") {
                 /* WHY: Welcome / Guide are virtual read-only preview docs — no editor controls */
-                is_virtual_read_only = true;
+                let mut req = None;
+                egui::CentralPanel::default().show_inside(ui, |ui| {
+                    req = crate::views::layout::split::PreviewOnly::new(ui, app).show();
+                });
+                return req;
             }
         }
 
         Self::render_preview_side_panels(ui, app);
-
-        if is_changelog_tab {
-            egui::CentralPanel::default().show_inside(ui, |ui| {
-                crate::changelog::ChangelogOps::render_release_notes_tab(
-                    ui,
-                    &app.changelog_sections,
-                    app.changelog_rx.is_some(),
-                    app.state
-                        .config
-                        .settings
-                        .settings()
-                        .layout
-                        .accordion_vertical_line,
-                );
-            });
-            return None;
-        }
-
-        if is_virtual_read_only {
-            let mut req = None;
-            egui::CentralPanel::default().show_inside(ui, |ui| {
-                req = crate::views::layout::split::PreviewOnly::new(ui, app).show();
-            });
-            return req;
-        }
 
         if app.state.active_document().is_none() && current_mode != ViewMode::PreviewOnly {
             egui::CentralPanel::default().show_inside(ui, |ui| {
@@ -70,6 +67,27 @@ impl<'a> CentralContent<'a> {
 
     fn render_preview_side_panels(ui: &mut egui::Ui, app: &mut KatanaApp) {
         PreviewSidePanels::new(app).show(ui);
+    }
+
+    fn handle_lint_fix_review_tab(
+        ui: &mut egui::Ui,
+        app: &mut KatanaApp,
+        doc_path: &std::path::Path,
+    ) -> bool {
+        if crate::app::LintFixReviewPath::is_review_path(doc_path) {
+            if let Some(review) = app.state.layout.diff_review.as_mut() {
+                egui::CentralPanel::default().show_inside(ui, |ui| {
+                    if let Some(action) =
+                        crate::views::modals::diff_review::DiffReviewModal::new(review)
+                            .show_in_tab(ui)
+                    {
+                        app.pending_action = action;
+                    }
+                });
+            }
+            return true;
+        }
+        false
     }
 
     fn render_split_mode(ui: &mut egui::Ui, app: &mut KatanaApp) -> Option<DownloadRequest> {

@@ -108,20 +108,17 @@ fn build_split_rows(inline_rows: &[InlineDiffRow]) -> Vec<SplitDiffRow> {
 
     for row in inline_rows {
         match row {
-            InlineDiffRow::Line(line) if line.kind == DiffLineKind::Unchanged => {
-                flush_changed_rows(&mut rows, &mut removed, &mut added);
-                rows.push(SplitDiffRow::Line(SplitDiffLine {
-                    before: diff_cell(line.before_line_number, line),
-                    after: diff_cell(line.after_line_number, line),
-                }));
-            }
-            InlineDiffRow::Line(line) if line.kind == DiffLineKind::Removed => {
-                removed.push(line.clone());
-            }
-            InlineDiffRow::Line(line) if line.kind == DiffLineKind::Added => {
-                added.push(line.clone());
-            }
-            InlineDiffRow::Line(_) => {}
+            InlineDiffRow::Line(line) => match line.kind {
+                DiffLineKind::Unchanged => {
+                    flush_changed_rows(&mut rows, &mut removed, &mut added);
+                    rows.push(SplitDiffRow::Line(SplitDiffLine {
+                        before: diff_cell(line.before_line_number, line),
+                        after: diff_cell(line.after_line_number, line),
+                    }));
+                }
+                DiffLineKind::Removed => removed.push(line.clone()),
+                DiffLineKind::Added => added.push(line.clone()),
+            },
             InlineDiffRow::Collapsed(block) => {
                 flush_changed_rows(&mut rows, &mut removed, &mut added);
                 rows.push(SplitDiffRow::Collapsed(block.clone()));

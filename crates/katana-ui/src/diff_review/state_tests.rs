@@ -86,3 +86,30 @@ fn reject_all_pending_marks_every_file_as_rejected() {
     assert!(all_rejected);
     assert!(state.is_complete());
 }
+
+#[test]
+fn display_name_strips_workspace_root() {
+    let f = file("workspace/a.md");
+    let display = f.display_name(Some(std::path::Path::new("workspace")));
+    assert_eq!(display, "a.md");
+}
+
+#[test]
+fn current_file_display_name_respects_workspace_root() {
+    let state = DiffReviewState::new(vec![file("workspace/a.md")], DiffViewMode::Split, None)
+        .with_workspace_root(Some(std::path::PathBuf::from("workspace")));
+
+    assert_eq!(state.current_file_display_name(), "a.md");
+}
+
+#[test]
+fn can_move_previous_and_next_behaviour() {
+    let mut state =
+        DiffReviewState::new(vec![file("a.md"), file("b.md")], DiffViewMode::Split, None);
+    assert!(!state.can_move_previous());
+    assert!(state.can_move_next());
+
+    state.move_next();
+    assert!(state.can_move_previous());
+    assert!(!state.can_move_next());
+}

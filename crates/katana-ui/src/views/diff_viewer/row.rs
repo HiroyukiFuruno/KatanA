@@ -10,6 +10,7 @@ const MIN_SPLIT_CODE_WIDTH: f32 = 380.0;
 const MIN_INLINE_CODE_WIDTH: f32 = 760.0;
 const CELL_MARGIN_X: i8 = 6;
 const CELL_MARGIN_Y: i8 = 1;
+const TEXT_EXTRA_PADDING: f32 = 12.0;
 
 pub(super) struct DiffViewerRowOps;
 
@@ -66,19 +67,36 @@ impl DiffViewerRowOps {
         tone: DiffTone,
         palette: &DiffViewerPalette,
     ) {
+        let content_width = Self::text_display_width(text);
+        let cell_width = width.max(content_width);
+
+        /* WHY: Draw only the text-area background (not the whole cell width) so
+        that highlight regions do not extend beyond the text range. */
         egui::Frame::NONE
-            .fill(palette.background_for(tone))
             .inner_margin(egui::Margin::symmetric(CELL_MARGIN_X, CELL_MARGIN_Y))
             .show(ui, |ui| {
-                ui.set_min_width(width);
-                let rich = egui::RichText::new(text)
-                    .monospace()
-                    .color(palette.text_for(tone));
+                /* WHY: Force a fixed row height so left/right rows remain aligned. */
                 ui.allocate_ui_with_layout(
-                    egui::vec2(width, ROW_HEIGHT),
+                    egui::vec2(cell_width, ROW_HEIGHT),
                     egui::Layout::left_to_right(egui::Align::Center),
-                    |ui| {
-                        ui.add(egui::Label::new(rich).truncate());
+                    |ui_row| {
+                        egui::Frame::NONE
+                            .fill(palette.background_for(tone))
+                            .inner_margin(egui::Margin::symmetric(0, 0))
+                            .show(ui_row, |ui_bg| {
+                                ui_bg.set_min_width(content_width);
+                                ui_bg.set_max_width(content_width);
+                                let rich = egui::RichText::new(text)
+                                    .monospace()
+                                    .color(palette.text_for(tone));
+                                ui_bg.add(egui::Label::new(rich).selectable(false));
+                            });
+
+                        /* WHY: Fill remaining space to keep consistent cell width. */
+                        let rest = cell_width - content_width;
+                        if rest > 0.0 {
+                            ui_row.add_space(rest);
+                        }
                     },
                 );
             });
@@ -151,6 +169,11 @@ impl DiffViewerRowOps {
                     },
                 );
             });
+    }
+
+    fn text_display_width(text: &str) -> f32 {
+        const AVG_MONOSPACE_GLYPH_WIDTH: f32 = 7.5;
+        (text.chars().count() as f32 * AVG_MONOSPACE_GLYPH_WIDTH) + TEXT_EXTRA_PADDING
     }
 }
 

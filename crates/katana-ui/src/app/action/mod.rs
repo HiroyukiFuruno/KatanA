@@ -96,6 +96,7 @@ impl ActionOps for KatanaApp {
         if let Some(path) = inactive_but_focused_path {
             self.handle_select_document(path, true);
         }
+        self.close_diff_review_if_tab_removed();
     }
 
     fn handle_show_release_notes(&mut self) {

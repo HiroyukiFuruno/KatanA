@@ -1,6 +1,7 @@
 pub mod action;
 pub(crate) mod diff_review;
 mod diff_review_apply;
+mod diff_review_apply_helpers;
 pub mod doc_close;
 pub mod doc_search;
 pub mod document;
@@ -20,6 +21,7 @@ pub mod workspace;
 
 pub(crate) use action::ActionOps;
 pub(crate) use diff_review::DiffReviewActionOps;
+pub(crate) use diff_review::LintFixReviewPath;
 pub(crate) use document::DocumentOps;
 pub(crate) use document_edit::DocumentEditOps;
 pub(crate) use download::DownloadOps;
