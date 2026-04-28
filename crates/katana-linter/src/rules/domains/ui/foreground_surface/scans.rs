@@ -85,7 +85,7 @@ impl ForegroundSurfaceScanOps {
     }
 
     fn is_known_window_surface(file: &Path) -> bool {
-        let normalized = file.to_string_lossy();
+        let normalized = file.to_string_lossy().replace('\\', "/");
         Self::known_window_surface_suffixes()
             .iter()
             .any(|suffix| normalized.ends_with(suffix))
@@ -109,5 +109,18 @@ impl ForegroundSurfaceScanOps {
             "crates/katana-ui/src/settings/tabs/theme_editor/modal.rs",
             "crates/katana-ui/src/settings/tabs/behavior/performance.rs",
         ]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ForegroundSurfaceScanOps;
+    use std::path::Path;
+
+    #[test]
+    fn known_window_surface_accepts_windows_path_separators() {
+        let file = Path::new(r"D:\a\KatanA\KatanA\crates\katana-ui\src\views\modals\search.rs");
+
+        assert!(ForegroundSurfaceScanOps::is_known_window_surface(file));
     }
 }
