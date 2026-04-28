@@ -107,7 +107,7 @@ fn default_file_counter() -> String {
 }
 
 fn default_collapsed_lines() -> String {
-    "{count} unchanged lines".to_string()
+    "{count} hidden lines".to_string()
 }
 
 fn default_switch_to_split() -> String {

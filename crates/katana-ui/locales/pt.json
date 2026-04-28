@@ -677,7 +677,7 @@
     "exit_fullscreen": "Sair da tela cheia",
     "reject_all": "Cancelar tudo",
     "file_counter": "{current} de {total}",
-    "collapsed_lines": "{count} linhas sem alterações",
+    "collapsed_lines": "{count} linhas ocultas",
     "switch_to_split": "Mostrar diff dividido",
     "switch_to_inline": "Mostrar diff em linha",
     "content_changed": "O arquivo mudou depois que a diferença foi preparada. Execute a correção novamente para revisar o conteúdo mais recente."

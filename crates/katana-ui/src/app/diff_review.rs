@@ -3,7 +3,7 @@ use crate::diff_review::{DiagnosticFixApplicationOps, DiffReviewDecision, DiffRe
 use crate::shell::KatanaApp;
 use std::path::{Path, PathBuf};
 
-pub(crate) const LINT_FIX_REVIEW_PATH: &str = "Katana://DiffReview/lint-fix.md";
+pub(crate) const LINT_FIX_REVIEW_PATH: &str = "Katana://DiffReview/LintFixReview";
 const LINT_FIX_REVIEW_PREFIX: &str = "Katana://DiffReview/";
 
 pub(crate) struct LintFixReviewPath;
@@ -11,16 +11,27 @@ pub(crate) struct LintFixReviewPath;
 impl LintFixReviewPath {
     pub(crate) fn is_review_path(path: &Path) -> bool {
         let path_str = path.to_string_lossy();
-        let is_review_file = path
-            .file_name()
-            .is_some_and(|name| name.to_string_lossy() == "lint-fix.md");
-        let legacy_match = path_str.ends_with("lint-fix.md");
-
-        path_str.starts_with(LINT_FIX_REVIEW_PREFIX) && (is_review_file || legacy_match)
+        path_str.starts_with(LINT_FIX_REVIEW_PREFIX)
     }
 
     pub(crate) fn path() -> PathBuf {
         PathBuf::from(LINT_FIX_REVIEW_PATH)
+    }
+}
+
+impl KatanaApp {
+    fn lint_fix_review_restore_path(&self, first_target_path: Option<&Path>) -> Option<PathBuf> {
+        match self.state.active_path() {
+            Some(path) if LintFixReviewPath::is_review_path(&path) => self
+                .state
+                .layout
+                .diff_review
+                .as_ref()
+                .and_then(|review| review.restore_path.clone())
+                .or_else(|| first_target_path.map(Path::to_path_buf)),
+            Some(path) => Some(path),
+            None => first_target_path.map(Path::to_path_buf),
+        }
     }
 }
 
@@ -33,7 +44,8 @@ pub(crate) trait DiffReviewActionOps {
 
 impl DiffReviewActionOps for KatanaApp {
     fn open_lint_fix_review(&mut self, batches: Vec<crate::app_action::LintFixBatch>) {
-        let original_path = self.state.active_path();
+        let first_target_path = batches.first().map(|batch| batch.path.clone());
+        let original_path = self.lint_fix_review_restore_path(first_target_path.as_deref());
         let mut review_files = Vec::new();
 
         for batch in batches {

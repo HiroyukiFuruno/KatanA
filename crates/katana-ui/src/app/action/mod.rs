@@ -10,6 +10,7 @@ mod image_ingest;
 mod process_authoring;
 mod process_demo;
 mod process_demo_group;
+mod process_diagnostics;
 mod process_document;
 mod process_group_lifecycle;
 mod process_groups;

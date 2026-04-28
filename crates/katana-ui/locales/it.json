@@ -677,7 +677,7 @@
     "exit_fullscreen": "Esci dalla modalità a schermo intero",
     "reject_all": "Annulla tutto",
     "file_counter": "{current} di {total}",
-    "collapsed_lines": "{count} righe invariate",
+    "collapsed_lines": "{count} righe nascoste",
     "switch_to_split": "Mostra diff diviso",
     "switch_to_inline": "Mostra diff in linea",
     "content_changed": "Il file è cambiato dopo la preparazione delle differenze. Esegui di nuovo la correzione per rivedere il contenuto più recente."

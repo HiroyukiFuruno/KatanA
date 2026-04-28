@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "name": "v0-22-8-fix-preview",
+  "name": "v0-22-8-fix-preview-reopen-after-apply",
   "fixture": {
     "settings": {
       "theme": "dark",
@@ -46,22 +46,29 @@
       }
     },
     {
-      "type": "screenshot",
-      "output_name": "01-problems-panel"
-    },
-    {
       "type": "action",
       "action": {
-        "hover_at": {
+        "click_at": {
           "x": 1150.0,
           "y": 755.0,
-          "wait_seconds": 1.2
+          "button": "primary",
+          "wait_seconds": 1.0
         }
       }
     },
     {
-      "type": "screenshot",
-      "output_name": "02-fix-preview-tooltip"
+      "type": "assert_diff_review",
+      "file_count": 1,
+      "target_path_contains": "README.md",
+      "after_contains": "2. Second"
+    },
+    {
+      "type": "action",
+      "action": "confirm_current_diff_review_file"
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "README.md"
     },
     {
       "type": "action",
@@ -79,8 +86,14 @@
       "path_contains": "DiffReview"
     },
     {
+      "type": "assert_diff_review",
+      "file_count": 1,
+      "target_path_contains": "README.md",
+      "after_contains": "3. Third"
+    },
+    {
       "type": "screenshot",
-      "output_name": "03-file-diff-review"
+      "output_name": "01-reopened-after-apply-diff-review"
     }
   ]
 }

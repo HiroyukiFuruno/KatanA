@@ -1,5 +1,6 @@
 mod compaction;
 mod fix_application;
+mod highlight;
 mod model;
 mod state;
 mod types;
@@ -10,6 +11,7 @@ pub(crate) use model::DiffModelOps;
 pub(crate) use state::{DiffReviewDecision, DiffReviewFile, DiffReviewState};
 pub(crate) use types::{
     DiffCell, DiffLine, DiffLineKind, FileDiffModel, InlineDiffRow, SplitDiffLine, SplitDiffRow,
+    TextRange, UnchangedBlock,
 };
 
 #[cfg(test)]

@@ -9,9 +9,12 @@ use super::DiffReviewFile;
 pub(crate) struct DiagnosticFixApplicationOps;
 
 impl DiagnosticFixApplicationOps {
-    pub(crate) fn apply(content: &str, fixes: &[DiagnosticFix]) -> String {
+    pub(crate) fn apply_result(
+        content: &str,
+        fixes: &[DiagnosticFix],
+    ) -> katana_markdown_linter::FixResult {
         let results = fixes.iter().map(Self::to_lint_result).collect::<Vec<_>>();
-        katana_markdown_linter::fix_with_results(content, &results).content
+        katana_markdown_linter::fix_with_results(content, &results)
     }
 
     pub(crate) fn build_review_file(
@@ -19,11 +22,11 @@ impl DiagnosticFixApplicationOps {
         before: String,
         fixes: &[DiagnosticFix],
     ) -> Option<DiffReviewFile> {
-        let after = Self::apply(&before, fixes);
-        if before == after {
+        let result = Self::apply_result(&before, fixes);
+        if result.applied_fixes == 0 || before == result.content {
             return None;
         }
-        Some(DiffReviewFile::new(path, before, after))
+        Some(DiffReviewFile::new(path, before, result.content))
     }
 
     fn to_lint_result(fix: &DiagnosticFix) -> LintResult {

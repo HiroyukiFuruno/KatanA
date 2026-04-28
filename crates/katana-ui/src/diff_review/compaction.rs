@@ -2,8 +2,6 @@ use super::{DiffLine, InlineDiffRow};
 use crate::diff_review::types::UnchangedBlock;
 
 const FIRST_LINE_NUMBER: usize = 1;
-const UNCHANGED_CONTEXT_LINES: usize = 3;
-const COLLAPSE_MIN_LINES: usize = 7;
 
 pub(crate) struct DiffCompactionOps;
 
@@ -35,48 +33,22 @@ impl DiffCompactionOps {
         run_start: usize,
         run_end: usize,
     ) {
-        let run_len = run_end - run_start;
-        if run_len <= COLLAPSE_MIN_LINES {
-            for line in &lines[run_start..run_end] {
-                rows.push(InlineDiffRow::Line(line.clone()));
-            }
-            return;
-        }
-
-        let keep_front = if run_start == 0 {
-            0
-        } else {
-            UNCHANGED_CONTEXT_LINES
-        };
-        let keep_back = if run_end == lines.len() {
-            0
-        } else {
-            UNCHANGED_CONTEXT_LINES
-        };
-
-        for line in &lines[run_start..run_start + keep_front] {
-            rows.push(InlineDiffRow::Line(line.clone()));
-        }
-
-        let collapsed_start = run_start + keep_front;
-        let collapsed_end = run_end - keep_back;
-        if collapsed_start < collapsed_end {
-            rows.push(InlineDiffRow::Collapsed(Self::unchanged_block(
-                &lines[collapsed_start],
-                collapsed_end - collapsed_start,
-            )));
-        }
-
-        for line in &lines[collapsed_end..run_end] {
-            rows.push(InlineDiffRow::Line(line.clone()));
-        }
+        rows.push(InlineDiffRow::Collapsed(Self::unchanged_block(
+            &lines[run_start..run_end],
+        )));
     }
 
-    fn unchanged_block(first_line: &DiffLine, line_count: usize) -> UnchangedBlock {
+    fn unchanged_block(lines: &[DiffLine]) -> UnchangedBlock {
+        let first_line = lines.first();
         UnchangedBlock {
-            before_start_line_number: first_line.before_line_number.unwrap_or(FIRST_LINE_NUMBER),
-            after_start_line_number: first_line.after_line_number.unwrap_or(FIRST_LINE_NUMBER),
-            line_count,
+            before_start_line_number: first_line
+                .and_then(|line| line.before_line_number)
+                .unwrap_or(FIRST_LINE_NUMBER),
+            after_start_line_number: first_line
+                .and_then(|line| line.after_line_number)
+                .unwrap_or(FIRST_LINE_NUMBER),
+            line_count: lines.len(),
+            lines: lines.to_vec(),
         }
     }
 }

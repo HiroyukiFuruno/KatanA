@@ -1,6 +1,15 @@
 mod inline;
 mod row;
+mod row_code;
+mod row_label;
+mod row_text;
+mod row_toggle;
+mod row_wave;
 mod split;
+mod split_column;
+mod split_handle;
+mod split_scroll;
+mod split_state;
 mod style;
 
 use eframe::egui;

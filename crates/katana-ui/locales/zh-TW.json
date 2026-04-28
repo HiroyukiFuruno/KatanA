@@ -677,7 +677,7 @@
     "exit_fullscreen": "退出全螢幕",
     "reject_all": "全部取消",
     "file_counter": "第 {current} / {total} 個",
-    "collapsed_lines": "{count} 行未變更",
+    "collapsed_lines": "隱藏 {count} 行",
     "switch_to_split": "顯示分割 diff",
     "switch_to_inline": "顯示行內 diff",
     "content_changed": "差異產生後檔案已變更。請重新執行修正，以檢視最新內容。"

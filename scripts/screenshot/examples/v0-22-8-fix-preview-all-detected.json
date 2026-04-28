@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "name": "v0-22-8-fix-preview",
+  "name": "v0-22-8-fix-preview-all-detected",
   "fixture": {
     "settings": {
       "theme": "dark",
@@ -52,23 +52,9 @@
     {
       "type": "action",
       "action": {
-        "hover_at": {
-          "x": 1150.0,
-          "y": 755.0,
-          "wait_seconds": 1.2
-        }
-      }
-    },
-    {
-      "type": "screenshot",
-      "output_name": "02-fix-preview-tooltip"
-    },
-    {
-      "type": "action",
-      "action": {
         "click_at": {
-          "x": 1150.0,
-          "y": 755.0,
+          "x": 1070.0,
+          "y": 675.0,
           "button": "primary",
           "wait_seconds": 1.0
         }
@@ -80,7 +66,7 @@
     },
     {
       "type": "screenshot",
-      "output_name": "03-file-diff-review"
+      "output_name": "02-all-detected-diff-review"
     }
   ]
 }

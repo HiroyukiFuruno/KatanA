@@ -675,7 +675,7 @@
     "previous_file": "Previous file",
     "next_file": "Next file",
     "file_counter": "{current}/{total}",
-    "collapsed_lines": "{count} unchanged lines",
+    "collapsed_lines": "{count} hidden lines",
     "switch_to_split": "Show split diff",
     "switch_to_inline": "Show inline diff",
     "content_changed": "The file changed after the diff was prepared. Re-run the fix to review the latest content.",

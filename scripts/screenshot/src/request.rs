@@ -46,6 +46,10 @@ pub enum Step {
     ExportPng(ExportPngStep),
     /// Open a file by name from the workspace tree.
     OpenFile(OpenFileStep),
+    /// Assert that the active document matches the expected screenshot state.
+    AssertActiveDocument(AssertActiveDocumentStep),
+    /// Assert that the active diff review state matches the expected content.
+    AssertDiffReview(AssertDiffReviewStep),
     /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
     Action(ActionStep),
     /// Drag a labelled source node to a labelled target node.
@@ -125,6 +129,23 @@ pub struct OpenFileStep {
     pub file_name: String,
     #[serde(default = "default_open_file_wait")]
     pub wait_seconds: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertActiveDocumentStep {
+    pub path_contains: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertDiffReviewStep {
+    #[serde(default)]
+    pub file_count: Option<usize>,
+    #[serde(default)]
+    pub target_path_contains: Option<String>,
+    #[serde(default)]
+    pub before_contains: Option<String>,
+    #[serde(default)]
+    pub after_contains: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -225,6 +246,8 @@ pub enum UiAction {
         #[serde(default = "default_open_file_wait")]
         wait_seconds: f64,
     },
+    /// Confirm the currently open diff review file.
+    ConfirmCurrentDiffReviewFile,
 }
 
 const fn default_drag_steps() -> u32 {

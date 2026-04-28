@@ -677,7 +677,7 @@
     "exit_fullscreen": "전체 화면 종료",
     "reject_all": "모두 취소",
     "file_counter": "{total}개 중 {current}",
-    "collapsed_lines": "변경 없음 {count}줄",
+    "collapsed_lines": "숨김 {count}줄",
     "switch_to_split": "분할 diff 표시",
     "switch_to_inline": "인라인 diff 표시",
     "content_changed": "차이를 준비한 뒤 파일이 변경되었습니다. 최신 내용을 검토하려면 수정을 다시 실행하세요."

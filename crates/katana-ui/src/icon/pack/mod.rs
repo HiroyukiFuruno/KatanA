@@ -19,6 +19,7 @@ macro_rules! impl_icon_pack_match {
             crate::icon::Icon::Settings => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "ui/settings", ".svg"))),
             crate::icon::Icon::ChevronLeft => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "navigation/chevron_left", ".svg"))),
             crate::icon::Icon::ChevronRight => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "navigation/chevron_right", ".svg"))),
+            crate::icon::Icon::ChevronUp => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "navigation/chevron_up", ".svg"))),
             crate::icon::Icon::ChevronDown => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "navigation/chevron_down", ".svg"))),
             crate::icon::Icon::TriangleDown => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "navigation/triangle_down", ".svg"))),
             crate::icon::Icon::TriangleLeft => Some(include_bytes!(concat!("../../../../../assets/icons/", $dir, "/", "navigation/triangle_left", ".svg"))),

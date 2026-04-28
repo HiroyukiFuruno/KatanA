@@ -675,7 +675,7 @@
     "previous_file": "前のファイル",
     "next_file": "次のファイル",
     "file_counter": "{current}/{total}",
-    "collapsed_lines": "未変更 {count} 行",
+    "collapsed_lines": "非表示 {count} 行",
     "switch_to_split": "分割差分を表示",
     "switch_to_inline": "行内差分を表示",
     "content_changed": "差分作成後にファイルが変更されています。最新の内容で修正をやり直してください。",

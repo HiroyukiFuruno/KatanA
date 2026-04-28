@@ -1,4 +1,7 @@
-use crate::request::{ClickButton, Fixture, ScrollDirection, Step, UiAction, VideoFormat};
+use crate::request::{
+    AssertActiveDocumentStep, AssertDiffReviewStep, ClickButton, Fixture, ScrollDirection, Step,
+    UiAction, VideoFormat,
+};
 use anyhow::{bail, Context, Result};
 use egui_kittest::{kittest::Queryable, Harness};
 use katana_core::workspace::TreeEntry;
@@ -167,6 +170,8 @@ pub fn run(
             Step::Scroll(_) => "scroll",
             Step::ExportPng(_) => "export_png",
             Step::OpenFile(_) => "open_file",
+            Step::AssertActiveDocument(_) => "assert_active_document",
+            Step::AssertDiffReview(_) => "assert_diff_review",
             Step::Action(_) => "action",
             Step::Drag(_) => "drag",
             Step::Quit => "quit",
@@ -349,6 +354,12 @@ pub fn run(
                         println!("  WARNING: file {:?} not found in workspace tree", s.file_name);
                     }
                 }
+            }
+            Step::AssertActiveDocument(s) => {
+                assert_active_document(&mut harness, s)?;
+            }
+            Step::AssertDiffReview(s) => {
+                assert_diff_review(&mut harness, s)?;
             }
             Step::Action(a) => {
                 match &a.action {
@@ -602,6 +613,9 @@ pub fn run(
                             UiAction::OpenChangelog => AppAction::ShowReleaseNotes,
                             UiAction::OpenHelpDemo => AppAction::OpenHelpDemo,
                             UiAction::SelectNextTab => AppAction::SelectNextTab,
+                            UiAction::ConfirmCurrentDiffReviewFile => {
+                                AppAction::ConfirmCurrentDiffReviewFile
+                            }
                             UiAction::OpenSettingsTab { .. }
                             | UiAction::ForceOpenAccordion { .. }
                             | UiAction::OpenIconsAdvancedPanel
@@ -647,6 +661,80 @@ pub fn run(
         bail!("record_start was called but record_stop was not reached");
     }
 
+    Ok(())
+}
+
+fn assert_active_document(
+    harness: &mut Harness<'_, KatanaApp>,
+    assertion: &AssertActiveDocumentStep,
+) -> Result<()> {
+    harness.run_steps(120);
+    let path = {
+        let app_state = harness.state_mut().app_state_mut();
+        let document = app_state
+            .active_document()
+            .context("expected an active document, but no document is active")?;
+        document.path.to_string_lossy().to_string()
+    };
+    if !path.contains(&assertion.path_contains) {
+        bail!(
+            "active document assertion failed: expected path to contain {:?}, got {:?}",
+            assertion.path_contains,
+            path
+        );
+    }
+    println!("  active document matched: {path}");
+    Ok(())
+}
+
+fn assert_diff_review(
+    harness: &mut Harness<'_, KatanaApp>,
+    assertion: &AssertDiffReviewStep,
+) -> Result<()> {
+    harness.run_steps(120);
+    let snapshot = harness
+        .state_mut()
+        .app_state_mut()
+        .layout
+        .diff_review_snapshot()
+        .context("expected an active diff review, but no diff review is active")?;
+
+    if let Some(expected_count) = assertion.file_count {
+        if snapshot.file_count != expected_count {
+            bail!(
+                "diff review assertion failed: expected {expected_count} files, got {}",
+                snapshot.file_count
+            );
+        }
+    }
+
+    if let Some(expected) = &assertion.target_path_contains {
+        if !snapshot.target_path.contains(expected) {
+            bail!(
+                "diff review assertion failed: expected target path to contain {:?}, got {:?}",
+                expected,
+                snapshot.target_path
+            );
+        }
+    }
+    if let Some(expected) = &assertion.before_contains {
+        if !snapshot.before.contains(expected) {
+            bail!(
+                "diff review assertion failed: expected before content to contain {:?}",
+                expected
+            );
+        }
+    }
+    if let Some(expected) = &assertion.after_contains {
+        if !snapshot.after.contains(expected) {
+            bail!(
+                "diff review assertion failed: expected after content to contain {:?}",
+                expected
+            );
+        }
+    }
+
+    println!("  diff review matched: {}", snapshot.target_path);
     Ok(())
 }
 

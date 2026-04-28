@@ -677,7 +677,7 @@
     "exit_fullscreen": "退出全屏",
     "reject_all": "全部取消",
     "file_counter": "第 {current} / {total} 个",
-    "collapsed_lines": "{count} 行未更改",
+    "collapsed_lines": "隐藏 {count} 行",
     "switch_to_split": "显示分屏 diff",
     "switch_to_inline": "显示内联 diff",
     "content_changed": "生成差异后文件已发生变化。请重新运行修复，以审阅最新内容。"

@@ -45,6 +45,14 @@ pub struct LayoutState {
     pub toc_force_open: Option<bool>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiffReviewSnapshot {
+    pub file_count: usize,
+    pub target_path: String,
+    pub before: String,
+    pub after: String,
+}
+
 impl Default for LayoutState {
     fn default() -> Self {
         Self::new()
@@ -89,5 +97,16 @@ impl LayoutState {
             active_rail_popup: None,
             toc_force_open: None,
         }
+    }
+
+    pub fn diff_review_snapshot(&self) -> Option<DiffReviewSnapshot> {
+        let review = self.diff_review.as_ref()?;
+        let file = review.current_file()?;
+        Some(DiffReviewSnapshot {
+            file_count: review.files.len(),
+            target_path: file.path.to_string_lossy().to_string(),
+            before: file.before.clone(),
+            after: file.after.clone(),
+        })
     }
 }

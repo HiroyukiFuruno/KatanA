@@ -45,17 +45,6 @@ impl<'a> TabItem<'a> {
             .starts_with("Katana://ChangeLog");
         let is_demo = self.doc.path.is_demo_path();
         let is_lint_review = crate::app::LintFixReviewPath::is_review_path(&self.doc.path);
-        let is_lint_review = is_lint_review
-            || (self
-                .doc
-                .path
-                .to_string_lossy()
-                .starts_with("Katana://DiffReview/")
-                && self
-                    .doc
-                    .path
-                    .file_name()
-                    .is_some_and(|name| name.to_string_lossy() == "lint-fix.md"));
         let original_filename = if is_lint_review {
             crate::i18n::I18nOps::get().diff_review.title.clone()
         } else {

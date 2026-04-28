@@ -99,6 +99,7 @@ impl<'a> DiffReviewModal<'a> {
     pub(crate) fn show_in_tab(self, ui: &mut egui::Ui) -> Option<AppAction> {
         let current_file = self.review.current_file().cloned()?;
 
+        let display_path = self.review.current_file_display_name();
         let mut mode = self.review.mode;
         let mut request_previous = false;
         let mut request_next = false;
@@ -133,7 +134,7 @@ impl<'a> DiffReviewModal<'a> {
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| {
                     if let Some(DiffViewerAction::ChangeMode(next_mode)) =
-                        Self::show_diff_viewer(ui, &current_file, mode, None)
+                        Self::show_diff_viewer(ui, &current_file, mode, Some(display_path.clone()))
                     {
                         mode = next_mode;
                     }

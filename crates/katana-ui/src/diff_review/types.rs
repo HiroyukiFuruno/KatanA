@@ -6,11 +6,24 @@ pub(crate) enum DiffLineKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct TextRange {
+    pub(crate) start: usize,
+    pub(crate) end: usize,
+}
+
+impl TextRange {
+    pub(crate) const fn new(start: usize, end: usize) -> Self {
+        Self { start, end }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct DiffLine {
     pub(crate) kind: DiffLineKind,
     pub(crate) before_line_number: Option<usize>,
     pub(crate) after_line_number: Option<usize>,
     pub(crate) text: String,
+    pub(crate) highlight_ranges: Vec<TextRange>,
 }
 
 impl DiffLine {
@@ -24,6 +37,7 @@ impl DiffLine {
             before_line_number: Some(before_line_number),
             after_line_number: Some(after_line_number),
             text: text.to_string(),
+            highlight_ranges: Vec::new(),
         }
     }
 
@@ -33,6 +47,7 @@ impl DiffLine {
             before_line_number: Some(line_number),
             after_line_number: None,
             text: text.to_string(),
+            highlight_ranges: Vec::new(),
         }
     }
 
@@ -42,6 +57,7 @@ impl DiffLine {
             before_line_number: None,
             after_line_number: Some(line_number),
             text: text.to_string(),
+            highlight_ranges: Vec::new(),
         }
     }
 
@@ -55,6 +71,7 @@ pub(crate) struct DiffCell {
     pub(crate) line_number: usize,
     pub(crate) text: String,
     pub(crate) kind: DiffLineKind,
+    pub(crate) highlight_ranges: Vec<TextRange>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -68,6 +85,7 @@ pub(crate) struct UnchangedBlock {
     pub(crate) before_start_line_number: usize,
     pub(crate) after_start_line_number: usize,
     pub(crate) line_count: usize,
+    pub(crate) lines: Vec<DiffLine>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

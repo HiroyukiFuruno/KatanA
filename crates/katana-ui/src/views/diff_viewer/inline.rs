@@ -1,5 +1,5 @@
 use super::row::DiffViewerRowOps;
-use super::style::{DiffTone, DiffViewerPalette};
+use super::style::DiffViewerPalette;
 use eframe::egui;
 
 const INLINE_GRID_COLUMNS: usize = 3;
@@ -18,44 +18,108 @@ impl DiffViewerInlineOps {
             .striped(false)
             .show(ui, |ui| {
                 for row in &file.model.inline_rows {
-                    Self::show_row(ui, row, code_width, &palette);
-                    ui.end_row();
+                    Self::show_row(ui, file, row, code_width, &palette);
                 }
             });
     }
 
     fn show_row(
         ui: &mut egui::Ui,
+        file: &crate::diff_review::DiffReviewFile,
         row: &crate::diff_review::InlineDiffRow,
         code_width: f32,
         palette: &DiffViewerPalette,
     ) {
         match row {
             crate::diff_review::InlineDiffRow::Line(line) => {
-                let tone = DiffViewerRowOps::tone_for(line.kind);
-                DiffViewerRowOps::sign_cell(ui, line.kind, palette);
-                DiffViewerRowOps::line_number_cell(
-                    ui,
-                    line.before_line_number.or(line.after_line_number),
-                    tone,
-                    palette,
-                );
-                DiffViewerRowOps::code_cell(ui, &line.text, code_width, tone, palette);
+                Self::show_line(ui, line, code_width, palette);
+                ui.end_row();
             }
             crate::diff_review::InlineDiffRow::Collapsed(block) => {
-                DiffViewerRowOps::sign_cell(
-                    ui,
-                    crate::diff_review::DiffLineKind::Unchanged,
-                    palette,
-                );
-                DiffViewerRowOps::line_number_cell(
-                    ui,
-                    Some(block.before_start_line_number),
-                    DiffTone::Collapsed,
-                    palette,
-                );
-                DiffViewerRowOps::collapsed_text_cell(ui, block.line_count, code_width, palette);
+                let expanded = Self::is_expanded(ui, file, block);
+                if Self::show_collapsed_row(ui, block, code_width, palette, expanded) {
+                    Self::toggle_expanded(ui, file, block, expanded);
+                }
+                ui.end_row();
+                if expanded {
+                    for line in &block.lines {
+                        Self::show_line(ui, line, code_width, palette);
+                        ui.end_row();
+                    }
+                }
             }
         }
+    }
+
+    fn show_line(
+        ui: &mut egui::Ui,
+        line: &crate::diff_review::DiffLine,
+        code_width: f32,
+        palette: &DiffViewerPalette,
+    ) {
+        let tone = DiffViewerRowOps::tone_for(line.kind);
+        DiffViewerRowOps::sign_cell(ui, line.kind, palette);
+        DiffViewerRowOps::line_number_cell(
+            ui,
+            line.before_line_number.or(line.after_line_number),
+            tone,
+            palette,
+        );
+        DiffViewerRowOps::code_cell(
+            ui,
+            &line.text,
+            code_width,
+            tone,
+            palette,
+            &line.highlight_ranges,
+        );
+    }
+
+    fn show_collapsed_row(
+        ui: &mut egui::Ui,
+        block: &crate::diff_review::UnchangedBlock,
+        code_width: f32,
+        palette: &DiffViewerPalette,
+        expanded: bool,
+    ) -> bool {
+        DiffViewerRowOps::sign_cell(ui, crate::diff_review::DiffLineKind::Unchanged, palette);
+        let icon_clicked = DiffViewerRowOps::collapsed_toggle_cell(ui, palette, expanded);
+        let text_clicked =
+            DiffViewerRowOps::collapsed_text_cell(ui, block.line_count, code_width, palette)
+                .clicked();
+        icon_clicked || text_clicked
+    }
+
+    fn is_expanded(
+        ui: &egui::Ui,
+        file: &crate::diff_review::DiffReviewFile,
+        block: &crate::diff_review::UnchangedBlock,
+    ) -> bool {
+        ui.ctx()
+            .data(|data| data.get_temp::<bool>(Self::block_id(file, block)))
+            .unwrap_or(false)
+    }
+
+    fn toggle_expanded(
+        ui: &egui::Ui,
+        file: &crate::diff_review::DiffReviewFile,
+        block: &crate::diff_review::UnchangedBlock,
+        expanded: bool,
+    ) {
+        ui.ctx()
+            .data_mut(|data| data.insert_temp(Self::block_id(file, block), !expanded));
+    }
+
+    fn block_id(
+        file: &crate::diff_review::DiffReviewFile,
+        block: &crate::diff_review::UnchangedBlock,
+    ) -> egui::Id {
+        egui::Id::new((
+            "diff_viewer_unchanged_block",
+            file.path.as_path(),
+            block.before_start_line_number,
+            block.after_start_line_number,
+            block.line_count,
+        ))
     }
 }

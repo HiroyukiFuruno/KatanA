@@ -41,6 +41,7 @@ define_icons! {
     /* WHY: navigation/ */
     ChevronLeft     => "navigation/chevron_left",
     ChevronRight    => "navigation/chevron_right",
+    ChevronUp       => "navigation/chevron_up",
     ChevronDown     => "navigation/chevron_down",
     TriangleDown    => "navigation/triangle_down",
     TriangleLeft    => "navigation/triangle_left",

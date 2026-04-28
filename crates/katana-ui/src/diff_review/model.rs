@@ -2,6 +2,7 @@ use super::{
     DiffCell, DiffCompactionOps, DiffLine, DiffLineKind, FileDiffModel, InlineDiffRow,
     SplitDiffLine, SplitDiffRow,
 };
+use crate::diff_review::highlight::DiffHighlightOps;
 use crate::diff_review::types::FileDiffStats;
 
 const FIRST_LINE_NUMBER: usize = 1;
@@ -10,9 +11,10 @@ pub(crate) struct DiffModelOps;
 
 impl DiffModelOps {
     pub(crate) fn build(before: &str, after: &str) -> FileDiffModel {
-        let before_lines = before.lines().collect::<Vec<_>>();
-        let after_lines = after.lines().collect::<Vec<_>>();
-        let inline_lines = build_inline_lines(&before_lines, &after_lines);
+        let before_lines = split_diff_lines(before);
+        let after_lines = split_diff_lines(after);
+        let mut inline_lines = build_inline_lines(&before_lines, &after_lines);
+        DiffHighlightOps::apply(&mut inline_lines);
         let stats = build_stats(&inline_lines);
         let inline_rows = DiffCompactionOps::compact_inline_rows(&inline_lines);
         let split_rows = build_split_rows(&inline_rows);
@@ -21,6 +23,14 @@ impl DiffModelOps {
             split_rows,
             stats,
         }
+    }
+}
+
+fn split_diff_lines(text: &str) -> Vec<&str> {
+    if text.is_empty() {
+        Vec::new()
+    } else {
+        text.split('\n').collect()
     }
 }
 
@@ -154,5 +164,6 @@ fn diff_cell(line_number: Option<usize>, line: &DiffLine) -> Option<DiffCell> {
         line_number: number,
         text: line.text.clone(),
         kind: line.kind,
+        highlight_ranges: line.highlight_ranges.clone(),
     })
 }
