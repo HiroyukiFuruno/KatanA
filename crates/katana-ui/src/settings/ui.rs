@@ -214,6 +214,6 @@ mod tests {
 
         let i18n = crate::i18n::I18nOps::get();
         harness.get_by_label(&i18n.common.advanced_settings);
-        harness.get_by_label(&i18n.settings.icons.colorful_vendor_icons_label);
+        harness.get_by_label(&i18n.settings.icons.table_header_vendor);
     }
 }
