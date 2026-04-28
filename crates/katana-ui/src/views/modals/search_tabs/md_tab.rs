@@ -19,31 +19,22 @@ impl MdTabOps {
             .hint_text(crate::i18n::I18nOps::get().search.md_query_hint.clone())
             .id_source("search_tabs_md_search_bar")
             .show(ui);
+        let history_changed =
+            super::history::SearchHistoryUiOps::apply_keyboard_navigation(ui, &response, search);
+        if response.changed() && !history_changed {
+            super::history::SearchHistoryUiOps::reset_navigation(search);
+        }
         if !search.focus_requested {
             response.request_focus();
             search.focus_requested = true;
         }
 
-        if (response.changed()
+        if (history_changed
+            || response.changed()
             || response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)))
             && search.md_last_params.as_ref() != Some(&search.md_search)
         {
-            search.md_last_params = Some(search.md_search.clone());
-            if search.md_search.query.is_empty() {
-                search.md_results.clear();
-            } else if let Some(ws) = workspace {
-                search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
-                    ws,
-                    &search.md_search.query,
-                    search.md_search.match_case,
-                    search.md_search.match_word,
-                    search.md_search.use_regex,
-                    MD_SEARCH_LIMIT,
-                );
-                search
-                    .md_history
-                    .push_term(search.md_search.query.clone(), MD_SEARCH_HISTORY_LIMIT);
-            }
+            Self::refresh_results(search, workspace, true);
         }
 
         if search.md_search.query.is_empty() && !search.md_history.recent_terms.is_empty() {
@@ -62,26 +53,22 @@ impl MdTabOps {
                         .clicked()
                     {
                         search.md_history.clear();
+                        super::history::SearchHistoryUiOps::reset_navigation(search);
                     }
                 })
                 .show(ui);
-            for term in search.md_history.recent_terms.clone() {
-                if !ui.link(&term).clicked() {
-                    continue;
-                }
-                search.md_search.query = term.clone();
-                let params = search.md_search.clone();
-                search.md_last_params = Some(params);
-                if let Some(ws) = workspace {
-                    search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
-                        ws,
-                        &term,
-                        search.md_search.match_case,
-                        search.md_search.match_word,
-                        search.md_search.use_regex,
-                        MD_SEARCH_LIMIT,
-                    );
-                    search.md_history.push_term(term, MD_SEARCH_HISTORY_LIMIT);
+            let terms = search.md_history.recent_terms.clone();
+            for action in super::history::SearchHistoryUiOps::render_recent_terms(ui, &terms) {
+                match action {
+                    super::history::SearchHistoryAction::Select(term) => {
+                        search.md_search.query = term;
+                        super::history::SearchHistoryUiOps::reset_navigation(search);
+                        Self::refresh_results(search, workspace, true);
+                    }
+                    super::history::SearchHistoryAction::Remove(term) => {
+                        search.md_history.remove_term(&term);
+                        super::history::SearchHistoryUiOps::reset_navigation(search);
+                    }
                 }
             }
         }
@@ -124,5 +111,34 @@ impl MdTabOps {
                     }
                 }
             });
+    }
+
+    fn refresh_results(
+        search: &mut crate::app_state::SearchState,
+        workspace: Option<&katana_core::workspace::Workspace>,
+        remember: bool,
+    ) {
+        search.md_last_params = Some(search.md_search.clone());
+        if search.md_search.query.is_empty() {
+            search.md_results.clear();
+            return;
+        }
+
+        let Some(workspace) = workspace else {
+            return;
+        };
+        search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
+            workspace,
+            &search.md_search.query,
+            search.md_search.match_case,
+            search.md_search.match_word,
+            search.md_search.use_regex,
+            MD_SEARCH_LIMIT,
+        );
+        if remember {
+            search
+                .md_history
+                .push_term(search.md_search.query.clone(), MD_SEARCH_HISTORY_LIMIT);
+        }
     }
 }

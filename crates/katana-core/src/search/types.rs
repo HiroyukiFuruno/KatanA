@@ -23,6 +23,11 @@ impl SearchHistory {
         self.recent_terms.insert(0, term);
         self.recent_terms.truncate(max_items);
     }
+
+    pub fn remove_term(&mut self, term: &str) {
+        self.recent_terms.retain(|recent_term| recent_term != term);
+    }
+
     pub fn clear(&mut self) {
         self.recent_terms.clear();
     }
