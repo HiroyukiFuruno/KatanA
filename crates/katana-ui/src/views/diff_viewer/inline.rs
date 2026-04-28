@@ -37,17 +37,60 @@ impl DiffViewerInlineOps {
             }
             crate::diff_review::InlineDiffRow::Collapsed(block) => {
                 let expanded = Self::is_expanded(ui, file, block);
-                if Self::show_collapsed_row(ui, block, code_width, palette, expanded) {
-                    Self::toggle_expanded(ui, file, block, expanded);
-                }
-                ui.end_row();
-                if expanded {
-                    for line in &block.lines {
-                        Self::show_line(ui, line, code_width, palette);
-                        ui.end_row();
+                if !expanded {
+                    if Self::show_collapsed_row(ui, block, code_width, palette) {
+                        Self::toggle_expanded(ui, file, block, expanded);
                     }
+                    ui.end_row();
+                    return;
                 }
+
+                Self::show_expanded_block(ui, file, block, code_width, palette);
             }
+        }
+    }
+
+    fn show_expanded_block(
+        ui: &mut egui::Ui,
+        file: &crate::diff_review::DiffReviewFile,
+        block: &crate::diff_review::UnchangedBlock,
+        code_width: f32,
+        palette: &DiffViewerPalette,
+    ) {
+        for (index, line) in block.lines.iter().enumerate() {
+            Self::show_expanded_block_line(ui, file, block, index, line, code_width, palette);
+        }
+    }
+
+    fn show_expanded_block_line(
+        ui: &mut egui::Ui,
+        file: &crate::diff_review::DiffReviewFile,
+        block: &crate::diff_review::UnchangedBlock,
+        index: usize,
+        line: &crate::diff_review::DiffLine,
+        code_width: f32,
+        palette: &DiffViewerPalette,
+    ) {
+        if index == 0 {
+            Self::show_first_expanded_block_line(ui, file, block, line, code_width, palette);
+            return;
+        }
+
+        Self::show_line(ui, line, code_width, palette);
+        ui.end_row();
+    }
+
+    fn show_first_expanded_block_line(
+        ui: &mut egui::Ui,
+        file: &crate::diff_review::DiffReviewFile,
+        block: &crate::diff_review::UnchangedBlock,
+        line: &crate::diff_review::DiffLine,
+        code_width: f32,
+        palette: &DiffViewerPalette,
+    ) {
+        let expanded = true;
+        if Self::show_expanded_line(ui, line, code_width, palette) {
+            Self::toggle_expanded(ui, file, block, expanded);
         }
     }
 
@@ -80,14 +123,38 @@ impl DiffViewerInlineOps {
         block: &crate::diff_review::UnchangedBlock,
         code_width: f32,
         palette: &DiffViewerPalette,
-        expanded: bool,
     ) -> bool {
         DiffViewerRowOps::sign_cell(ui, crate::diff_review::DiffLineKind::Unchanged, palette);
-        let icon_clicked = DiffViewerRowOps::collapsed_toggle_cell(ui, palette, expanded);
+        let icon_clicked = DiffViewerRowOps::collapsed_toggle_cell(ui, palette, false);
         let text_clicked =
             DiffViewerRowOps::collapsed_text_cell(ui, block.line_count, code_width, palette)
                 .clicked();
         icon_clicked || text_clicked
+    }
+
+    fn show_expanded_line(
+        ui: &mut egui::Ui,
+        line: &crate::diff_review::DiffLine,
+        code_width: f32,
+        palette: &DiffViewerPalette,
+    ) -> bool {
+        let tone = DiffViewerRowOps::tone_for(line.kind);
+        DiffViewerRowOps::sign_cell(ui, line.kind, palette);
+        let toggle_clicked = DiffViewerRowOps::line_number_toggle_cell(
+            ui,
+            line.before_line_number.or(line.after_line_number),
+            palette,
+        );
+        DiffViewerRowOps::code_cell(
+            ui,
+            &line.text,
+            code_width,
+            tone,
+            palette,
+            &line.highlight_ranges,
+        );
+        ui.end_row();
+        toggle_clicked
     }
 
     fn is_expanded(

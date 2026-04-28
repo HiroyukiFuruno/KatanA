@@ -68,17 +68,22 @@ impl DiffViewerSplitColumnOps {
         pending_toggles: &mut Vec<egui::Id>,
     ) {
         let expanded = DiffViewerSplitStateOps::is_block_expanded(params.ctx, params.file, block);
-        if DiffViewerRowOps::show_collapsed_side(
-            ui,
-            block.line_count,
-            code_width,
-            params.palette,
-            expanded,
-        ) {
-            pending_toggles.push(DiffViewerSplitStateOps::block_id(params.file, block));
+        let block_id = DiffViewerSplitStateOps::block_id(params.file, block);
+        if !expanded {
+            if DiffViewerRowOps::show_collapsed_side(
+                ui,
+                block.line_count,
+                code_width,
+                params.palette,
+                false,
+            ) {
+                pending_toggles.push(block_id);
+            }
+            return;
         }
-        if expanded {
-            show_expanded_split_lines(ui, &block.lines, params.side, code_width, params.palette);
+
+        if show_expanded_split_lines(ui, &block.lines, params.side, code_width, params.palette) {
+            pending_toggles.push(block_id);
         }
     }
 }
@@ -98,15 +103,41 @@ fn show_expanded_split_lines(
     side: SplitSide,
     code_width: f32,
     palette: &DiffViewerPalette,
-) {
-    for line in lines {
+) -> bool {
+    let mut toggle_clicked = false;
+    for (index, line) in lines.iter().enumerate() {
         let cell = split_cell(line, side);
         crate::widgets::AlignCenter::new()
             .content(|ui_row| {
-                DiffViewerRowOps::show_split_cell(ui_row, cell.as_ref(), code_width, palette);
+                if index == 0 {
+                    toggle_clicked |=
+                        show_expanded_split_line(ui_row, cell.as_ref(), code_width, palette);
+                } else {
+                    DiffViewerRowOps::show_split_cell(ui_row, cell.as_ref(), code_width, palette);
+                }
             })
             .show(ui);
     }
+    toggle_clicked
+}
+
+fn show_expanded_split_line(
+    ui: &mut egui::Ui,
+    cell: Option<&crate::diff_review::DiffCell>,
+    code_width: f32,
+    palette: &DiffViewerPalette,
+) -> bool {
+    let tone = cell
+        .map(|it| DiffViewerRowOps::tone_for(it.kind))
+        .unwrap_or(super::style::DiffTone::Normal);
+    let line_number = cell.map(|it| it.line_number);
+    let toggle_clicked = DiffViewerRowOps::line_number_toggle_cell(ui, line_number, palette);
+    let text = cell.map(|it| it.text.as_str()).unwrap_or_default();
+    let ranges = cell
+        .map(|it| it.highlight_ranges.as_slice())
+        .unwrap_or_default();
+    DiffViewerRowOps::code_cell(ui, text, code_width, tone, palette, ranges);
+    toggle_clicked
 }
 
 fn show_split_line_side(
@@ -122,7 +153,7 @@ fn show_split_line_side(
     }
 
     if let Some(opposite) = opposite_cell {
-        DiffViewerRowOps::show_split_placeholder(ui, opposite.kind, code_width, palette);
+        DiffViewerRowOps::show_split_placeholder(ui, opposite, code_width, palette);
         return;
     }
 

@@ -18,16 +18,24 @@ impl ProblemBulkFixOps {
             std::path::PathBuf,
             Vec<katana_markdown_linter::rules::markdown::MarkdownDiagnostic>,
         >,
+        diagnostics_state: &crate::app_state::DiagnosticsState,
     ) -> Vec<crate::app_action::LintFixBatch> {
         problems
             .iter()
-            .filter_map(|(path, diagnostics)| Self::file_batch(path, diagnostics))
+            .filter_map(|(path, diagnostics)| {
+                Self::file_batch(
+                    path,
+                    diagnostics,
+                    diagnostics_state.content_snapshot(path.as_path()),
+                )
+            })
             .collect()
     }
 
     pub(crate) fn file_batch(
         path: &Path,
         diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+        source: Option<&str>,
     ) -> Option<crate::app_action::LintFixBatch> {
         let fixes = Self::file_fixes(diagnostics);
         if fixes.is_empty() {
@@ -36,6 +44,7 @@ impl ProblemBulkFixOps {
         Some(crate::app_action::LintFixBatch {
             path: path.to_path_buf(),
             fixes,
+            source: source.map(str::to_string),
         })
     }
 }
@@ -111,12 +120,18 @@ mod tests {
         problems.insert(second.clone(), vec![diagnostic("MD002", None)]);
         problems.insert(third.clone(), vec![diagnostic("MD003", Some(fix("third")))]);
 
-        let batches = ProblemBulkFixOps::workspace_batches(&problems);
+        let mut state = crate::app_state::DiagnosticsState::new();
+        state.update_diagnostics_for_content(first.clone(), "first source", Vec::new());
+        state.update_diagnostics_for_content(third.clone(), "third source", Vec::new());
+
+        let batches = ProblemBulkFixOps::workspace_batches(&problems, &state);
 
         assert_eq!(batches.len(), 2);
         assert_eq!(batches[0].path, first);
         assert_eq!(batches[0].fixes[0].replacement, "first");
+        assert_eq!(batches[0].source.as_deref(), Some("first source"));
         assert_eq!(batches[1].path, third);
         assert_eq!(batches[1].fixes[0].replacement, "third");
+        assert_eq!(batches[1].source.as_deref(), Some("third source"));
     }
 }

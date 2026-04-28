@@ -2,6 +2,8 @@ mod compaction;
 mod fix_application;
 mod highlight;
 mod model;
+mod split_model;
+mod split_pairing;
 mod state;
 mod types;
 
@@ -16,6 +18,8 @@ pub(crate) use types::{
 
 #[cfg(test)]
 mod fix_application_tests;
+#[cfg(test)]
+mod model_pairing_tests;
 #[cfg(test)]
 mod model_tests;
 #[cfg(test)]

@@ -75,12 +75,16 @@ impl DocumentEditOps for KatanaApp {
         _ctx: &eframe::egui::Context,
         fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
     ) {
-        let Some(path) = self.state.active_path() else {
+        let Some(path) = self.lint_fix_target_path() else {
             return;
         };
         self.handle_apply_lint_fixes_for_files(
             _ctx,
-            vec![crate::app_action::LintFixBatch { path, fixes }],
+            vec![crate::app_action::LintFixBatch {
+                path,
+                fixes,
+                source: None,
+            }],
         );
     }
 
@@ -90,5 +94,25 @@ impl DocumentEditOps for KatanaApp {
         batches: Vec<crate::app_action::LintFixBatch>,
     ) {
         self.open_lint_fix_review(batches);
+    }
+}
+
+impl KatanaApp {
+    fn lint_fix_target_path(&self) -> Option<std::path::PathBuf> {
+        let active_path = self.state.active_path()?;
+        if !crate::app::LintFixReviewPath::is_review_path(&active_path) {
+            return Some(active_path);
+        }
+
+        self.state
+            .layout
+            .diff_review
+            .as_ref()
+            .and_then(|review| {
+                review
+                    .current_file()
+                    .map(|file| file.path.clone())
+                    .or_else(|| review.restore_path.clone())
+            })
     }
 }

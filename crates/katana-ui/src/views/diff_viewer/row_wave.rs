@@ -11,15 +11,33 @@ const REMOVED_WAVE_ROW_GAP: f32 = 5.0;
 pub(super) struct DiffViewerWaveOps;
 
 impl DiffViewerWaveOps {
+    pub(super) fn paint(
+        ui: &mut egui::Ui,
+        rect: egui::Rect,
+        tone: DiffTone,
+        palette: &DiffViewerPalette,
+    ) {
+        if !matches!(tone, DiffTone::Removed | DiffTone::Added) {
+            return;
+        }
+
+        let base_color = palette.text_for(tone);
+        paint(ui, rect, base_color);
+    }
+
     pub(super) fn paint_removed(ui: &mut egui::Ui, rect: egui::Rect, palette: &DiffViewerPalette) {
         let base_color = palette.text_for(DiffTone::Removed);
-        let stroke = egui::Stroke::new(1.0, color_with_alpha(base_color, REMOVED_WAVE_ALPHA));
-        let mut y = rect.top() + REMOVED_WAVE_AMPLITUDE + 1.0;
+        paint(ui, rect, base_color);
+    }
+}
 
-        while y < rect.bottom() {
-            paint_wave_row(ui.painter(), rect, y, stroke);
-            y += REMOVED_WAVE_ROW_GAP;
-        }
+fn paint(ui: &mut egui::Ui, rect: egui::Rect, base_color: egui::Color32) {
+    let stroke = egui::Stroke::new(1.0, color_with_alpha(base_color, REMOVED_WAVE_ALPHA));
+    let mut y = rect.top() + REMOVED_WAVE_AMPLITUDE + 1.0;
+
+    while y < rect.bottom() {
+        paint_wave_row(ui.painter(), rect, y, stroke);
+        y += REMOVED_WAVE_ROW_GAP;
     }
 }
 

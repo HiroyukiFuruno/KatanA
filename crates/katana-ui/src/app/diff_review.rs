@@ -53,7 +53,9 @@ impl DiffReviewActionOps for KatanaApp {
                 continue;
             }
             let target_path = batch.path;
-            if let Some(before) = self.load_lint_fix_review_source(&target_path)
+            if let Some(before) = batch
+                .source
+                .or_else(|| self.load_lint_fix_review_source(&target_path))
                 && let Some(file) = DiagnosticFixApplicationOps::build_review_file(
                     target_path,
                     before,
@@ -76,7 +78,7 @@ impl DiffReviewActionOps for KatanaApp {
             .document
             .open_documents
             .iter()
-            .position(|d| d.path == review_path)
+            .position(|d| LintFixReviewPath::is_review_path(&d.path))
         {
             self.state.document.open_documents[idx] = doc;
         } else {

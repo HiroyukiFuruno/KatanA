@@ -19,6 +19,10 @@ impl DiffHighlightOps {
         }
     }
 
+    pub(super) fn changed_ranges(before: &str, after: &str) -> (Vec<TextRange>, Vec<TextRange>) {
+        changed_text_ranges(before, after)
+    }
+
     fn apply_group(lines: &mut [DiffLine]) {
         let removed_indexes = Self::line_indexes(lines, DiffLineKind::Removed);
         let added_indexes = Self::line_indexes(lines, DiffLineKind::Added);

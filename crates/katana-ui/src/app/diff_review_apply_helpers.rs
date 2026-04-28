@@ -88,15 +88,18 @@ impl KatanaApp {
             .document
             .open_documents
             .iter()
-            .position(|doc| doc.path == review_path)
+            .position(|doc| crate::app::LintFixReviewPath::is_review_path(&doc.path))
         else {
             return;
         };
 
-        self.state.document.open_documents.remove(idx);
+        let removed_path = self.state.document.open_documents.remove(idx).path;
         let path_string = review_path.to_string_lossy().to_string();
+        let removed_path_string = removed_path.to_string_lossy().to_string();
         for group in &mut self.state.document.tab_groups {
-            group.members.retain(|member| member != &path_string);
+            group
+                .members
+                .retain(|member| member != &path_string && member != &removed_path_string);
         }
         self.state
             .document
@@ -105,11 +108,11 @@ impl KatanaApp {
         self.state
             .document
             .tab_view_modes
-            .retain(|mode| mode.path != review_path);
+            .retain(|mode| !crate::app::LintFixReviewPath::is_review_path(&mode.path));
         self.state
             .document
             .tab_split_states
-            .retain(|state| state.path != review_path);
+            .retain(|state| !crate::app::LintFixReviewPath::is_review_path(&state.path));
         self.state.document.active_doc_idx = if self.state.document.open_documents.is_empty() {
             None
         } else {
@@ -120,6 +123,7 @@ impl KatanaApp {
             Some(active_idx.min(self.state.document.open_documents.len() - 1))
         };
         self.state.diagnostics.remove_file_diagnostics(&review_path);
+        self.state.diagnostics.remove_file_diagnostics(&removed_path);
         self.state.document.cleanup_empty_groups();
         self.save_workspace_state();
     }

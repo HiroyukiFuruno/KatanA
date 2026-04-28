@@ -34,13 +34,18 @@ impl DiffViewerRowOps {
 
     pub(super) fn show_split_placeholder(
         ui: &mut egui::Ui,
-        kind: crate::diff_review::DiffLineKind,
+        opposite: &crate::diff_review::DiffCell,
         code_width: f32,
         palette: &DiffViewerPalette,
     ) {
-        let tone = tone_for(kind);
+        let tone = tone_for(opposite.kind);
+        let placeholder_width = DiffViewerCodeCellOps::content_width(
+            &opposite.text,
+            tone,
+            &opposite.highlight_ranges,
+        );
         Self::line_number_cell(ui, None, tone, palette);
-        DiffViewerCodeCellOps::show(ui, "", code_width, tone, palette, &[]);
+        DiffViewerCodeCellOps::show_placeholder(ui, code_width, placeholder_width, tone, palette);
     }
 
     pub(super) fn show_collapsed_side(
@@ -76,6 +81,15 @@ impl DiffViewerRowOps {
     ) {
         let text = line_number.map(|it| it.to_string()).unwrap_or_default();
         DiffViewerRowLabelOps::fixed(ui, &text, LINE_NUMBER_WIDTH, tone, palette);
+    }
+
+    pub(super) fn line_number_toggle_cell(
+        ui: &mut egui::Ui,
+        line_number: Option<usize>,
+        palette: &DiffViewerPalette,
+    ) -> bool {
+        let text = line_number.map(|it| it.to_string()).unwrap_or_default();
+        DiffViewerRowToggleOps::show_gutter(ui, palette, true, &text)
     }
 
     pub(super) fn code_cell(
@@ -124,7 +138,6 @@ impl DiffViewerRowOps {
         );
         DiffViewerRowLabelOps::clickable(ui, &text, code_width, DiffTone::Collapsed, palette)
     }
-
 }
 
 fn tone_for(kind: crate::diff_review::DiffLineKind) -> DiffTone {

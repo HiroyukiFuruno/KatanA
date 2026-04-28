@@ -3,6 +3,8 @@ use super::row_text::DiffViewerTextOps;
 use super::style::{DiffTone, DiffViewerPalette};
 use eframe::egui;
 
+const PLACEHOLDER_MIN_WIDTH: f32 = 18.0;
+
 pub(super) struct DiffViewerCodeCellOps;
 
 impl DiffViewerCodeCellOps {
@@ -30,6 +32,38 @@ impl DiffViewerCodeCellOps {
                     },
                 );
             });
+    }
+
+    pub(super) fn show_placeholder(
+        ui: &mut egui::Ui,
+        width: f32,
+        placeholder_width: f32,
+        tone: DiffTone,
+        palette: &DiffViewerPalette,
+    ) {
+        let visible_width = placeholder_width.max(PLACEHOLDER_MIN_WIDTH);
+        let cell_width = width.max(visible_width);
+
+        egui::Frame::NONE
+            .inner_margin(egui::Margin::symmetric(CELL_MARGIN_X, CELL_MARGIN_Y))
+            .show(ui, |ui| {
+                let (rect, _) =
+                    ui.allocate_exact_size(egui::vec2(cell_width, ROW_HEIGHT), egui::Sense::hover());
+                let visible_rect =
+                    egui::Rect::from_min_size(rect.min, egui::vec2(visible_width, ROW_HEIGHT));
+                ui.painter()
+                    .rect_filled(visible_rect, 0.0, palette.background_for(tone));
+                super::row_wave::DiffViewerWaveOps::paint(ui, visible_rect, tone, palette);
+            });
+    }
+
+    pub(super) fn content_width(
+        text: &str,
+        tone: DiffTone,
+        highlight_ranges: &[crate::diff_review::TextRange],
+    ) -> f32 {
+        let segments = DiffViewerTextOps::segments(text, highlight_ranges, tone);
+        DiffViewerTextOps::display_width(&segments)
     }
 
     fn show_text_area(

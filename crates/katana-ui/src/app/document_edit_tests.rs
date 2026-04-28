@@ -107,6 +107,7 @@ fn lint_fix_for_files_applies_only_accepted_files() {
                     end_column: 6,
                     replacement: "beta".to_string(),
                 }],
+                source: None,
             },
             crate::app_action::LintFixBatch {
                 path: second_path.clone(),
@@ -117,6 +118,7 @@ fn lint_fix_for_files_applies_only_accepted_files() {
                     end_column: 6,
                     replacement: "delta".to_string(),
                 }],
+                source: None,
             },
         ]),
     );
@@ -200,6 +202,7 @@ fn lint_fix_reject_all_keeps_all_files_unchanged() {
                     end_column: 6,
                     replacement: "beta".to_string(),
                 }],
+                source: None,
             },
             crate::app_action::LintFixBatch {
                 path: second_path.clone(),
@@ -210,6 +213,7 @@ fn lint_fix_reject_all_keeps_all_files_unchanged() {
                     end_column: 6,
                     replacement: "delta".to_string(),
                 }],
+                source: None,
             },
         ]),
     );

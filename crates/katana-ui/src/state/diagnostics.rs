@@ -6,6 +6,7 @@ use std::path::PathBuf;
 pub struct DiagnosticsState {
     pub problems: BTreeMap<PathBuf, Vec<MarkdownDiagnostic>>,
     pub content_hashes: BTreeMap<PathBuf, u64>,
+    pub content_snapshots: BTreeMap<PathBuf, String>,
     pub is_panel_open: bool,
     pub expand_all: Option<bool>,
     pub last_buffer_update: Option<std::time::Instant>,
@@ -16,6 +17,7 @@ impl DiagnosticsState {
         Self {
             problems: BTreeMap::new(),
             content_hashes: BTreeMap::new(),
+            content_snapshots: BTreeMap::new(),
             is_panel_open: false,
             expand_all: None,
             last_buffer_update: None,
@@ -36,7 +38,12 @@ impl DiagnosticsState {
     ) {
         self.content_hashes
             .insert(path.clone(), Self::content_hash(content));
+        self.content_snapshots.insert(path.clone(), content.to_string());
         self.update_diagnostics(path, diagnostics);
+    }
+
+    pub fn content_snapshot(&self, path: &std::path::Path) -> Option<&str> {
+        self.content_snapshots.get(path).map(String::as_str)
     }
 
     pub fn update_diagnostics(&mut self, path: PathBuf, diagnostics: Vec<MarkdownDiagnostic>) {
@@ -65,9 +72,11 @@ impl DiagnosticsState {
         if path.is_file() || !path.exists() {
             self.problems.remove(path);
             self.content_hashes.remove(path);
+            self.content_snapshots.remove(path);
         } else {
             self.problems.retain(|k, _| !k.starts_with(path));
             self.content_hashes.retain(|k, _| !k.starts_with(path));
+            self.content_snapshots.retain(|k, _| !k.starts_with(path));
         }
     }
 

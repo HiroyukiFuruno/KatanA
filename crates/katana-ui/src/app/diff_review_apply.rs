@@ -80,7 +80,7 @@ impl KatanaApp {
             .document
             .open_documents
             .iter()
-            .any(|doc| doc.path == crate::app::LintFixReviewPath::path())
+            .any(|doc| crate::app::LintFixReviewPath::is_review_path(&doc.path))
         {
             return;
         }
@@ -90,6 +90,11 @@ impl KatanaApp {
         self.state
             .diagnostics
             .remove_file_diagnostics(&crate::app::LintFixReviewPath::path());
+        self.state
+            .diagnostics
+            .remove_file_diagnostics(std::path::Path::new(
+                "Katana://DiffReview/lint-fix.md",
+            ));
         if let Some(path) = restore_path {
             self.handle_select_document(path, true);
         }

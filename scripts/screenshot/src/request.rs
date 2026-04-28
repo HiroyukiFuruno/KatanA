@@ -179,6 +179,8 @@ pub enum UiAction {
     SelectNextTab,
     /// Select an already-open demo tab by its file name, e.g. "katana-architecture.md".
     SelectDemoTab { file_name: String },
+    /// Open the Problems panel without relying on screen coordinates.
+    OpenProblemsPanel,
     /// Open settings and navigate to a specific tab.
     /// Tab names: "theme", "icons", "font", "layout", "workspace", "updates", "behavior", "shortcuts"
     OpenSettingsTab { tab: String },
