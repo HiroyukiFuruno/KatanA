@@ -19,6 +19,8 @@ pub(crate) use types::{
 #[cfg(test)]
 mod fix_application_tests;
 #[cfg(test)]
+mod model_coverage_tests;
+#[cfg(test)]
 mod model_pairing_tests;
 #[cfg(test)]
 mod model_tests;

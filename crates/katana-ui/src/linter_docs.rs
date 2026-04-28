@@ -145,4 +145,41 @@ mod tests {
 
         assert_eq!(parsed.cache_key(), "ja:MD001");
     }
+
+    #[test]
+    fn current_language_identity_normalizes_rule_id() {
+        let identity = LinterDocIdentity::for_current_language("md013");
+
+        assert_eq!(identity.rule_id(), "MD013");
+        assert!(identity.status_label().contains("MD013"));
+    }
+
+    #[test]
+    fn cache_key_parsing_preserves_locale_and_normalizes_rule_id() {
+        let identity = LinterDocIdentity::from_cache_key("ja:md024");
+
+        assert_eq!(identity.cache_key(), "ja:MD024");
+        assert_eq!(identity.status_label(), "MD024 (ja)");
+    }
+
+    #[test]
+    fn cache_key_without_locale_falls_back_to_english() {
+        let identity = LinterDocIdentity::from_cache_key("md010");
+
+        assert_eq!(identity.cache_key(), "en:MD010");
+    }
+
+    #[test]
+    fn virtual_path_without_locale_falls_back_to_english() {
+        let parsed =
+            LinterDocIdentity::from_virtual_path(Path::new("Katana://LinterDocs/md011.md"))
+                .unwrap();
+
+        assert_eq!(parsed.cache_key(), "en:MD011");
+    }
+
+    #[test]
+    fn lower_file_name_without_slash_lowercases_entire_value() {
+        assert_eq!(lower_file_name("MD013.MD"), "md013.md");
+    }
 }
