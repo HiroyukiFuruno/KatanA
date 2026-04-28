@@ -65,7 +65,7 @@ impl TopBarOps {
         is_changelog: bool,
         is_demo: bool,
         is_dirty: bool,
-        _is_pinned: bool,
+        show_dirty_indicator: bool,
     ) -> String {
         let filename = if is_changelog {
             original_filename.to_string()
@@ -80,7 +80,11 @@ impl TopBarOps {
         } else {
             original_filename.to_string()
         };
-        let dirty_suffix = if is_dirty { " *" } else { "" };
+        let dirty_suffix = if is_dirty && show_dirty_indicator {
+            " *"
+        } else {
+            ""
+        };
         format!("{filename}{dirty_suffix}")
     }
 }
@@ -173,18 +177,18 @@ mod tests {
 
     #[test]
     fn tab_display_title_dirty() {
-        let title = TopBarOps::tab_display_title("readme.md", false, false, true, false);
+        let title = TopBarOps::tab_display_title("readme.md", false, false, true, true);
         assert_eq!(title, "readme.md *");
     }
 
     #[test]
-    fn tab_display_title_pinned() {
-        let title = TopBarOps::tab_display_title("readme.md", false, false, false, true);
+    fn tab_display_title_dirty_indicator_hidden() {
+        let title = TopBarOps::tab_display_title("readme.md", false, false, true, false);
         assert_eq!(title, "readme.md");
     }
 
     #[test]
-    fn tab_display_title_pinned_dirty() {
+    fn tab_display_title_dirty_indicator_visible() {
         let title = TopBarOps::tab_display_title("readme.md", false, false, true, true);
         assert_eq!(title, "readme.md *");
     }

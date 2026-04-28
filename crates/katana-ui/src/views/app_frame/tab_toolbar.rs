@@ -30,6 +30,7 @@ impl<'a> TabToolbar<'a> {
                 &app.state.document.recently_closed_tabs,
                 &app.state.document.tab_groups,
                 &app.state.layout.inline_rename_group,
+                Self::show_dirty_indicator(app),
             )
             .show(ui);
             if let Some(a) = tab_action {
@@ -109,5 +110,10 @@ impl<'a> TabToolbar<'a> {
         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
         let rel = ShellLogicOps::relative_full_path(doc_path, ws_root.as_deref());
         Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui)
+    }
+
+    fn show_dirty_indicator(app: &KatanaApp) -> bool {
+        let behavior = &app.state.config.settings.settings().behavior;
+        !behavior.auto_save || behavior.auto_save_interval_secs != 0.0
     }
 }

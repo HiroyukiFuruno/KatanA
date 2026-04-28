@@ -27,6 +27,7 @@ pub(crate) struct TabItem<'a> {
     pub tab_groups: &'a [TabGroup],
     pub recently_closed_tabs_empty: bool,
     pub should_scroll: bool,
+    pub show_dirty_indicator: bool,
 }
 
 impl<'a> TabItem<'a> {
@@ -55,7 +56,7 @@ impl<'a> TabItem<'a> {
             is_changelog,
             is_demo,
             self.doc.is_dirty,
-            self.doc.is_pinned,
+            self.show_dirty_indicator,
         );
         let tooltip_path =
             crate::shell_logic::ShellLogicOps::relative_full_path(&self.doc.path, self.ws_root);
