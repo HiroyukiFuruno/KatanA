@@ -8,10 +8,10 @@ use katana_linter::rules::domains::theme::{
 };
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
-    FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps, HorizontalLayoutOps, IconButtonFillOps,
-    LazyCodeOps, MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps,
-    ProcessCommandOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps,
-    ScrollAreaInnerRectLeakOps, TypeSeparationOps,
+    ForegroundSurfaceOps, FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps,
+    HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps, MagicNumberOps, MinRectSizingOps,
+    NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
+    ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -457,6 +457,17 @@ fn ast_linter_global_menu_parity() {
     ViolationReporterOps::panic(
         "global-menu-parity",
         "Fix: Windows/Linux global menu (`global_menu.rs`) and macOS native menu (`native_menu/mod.rs` & `macos_menu.m`) must have parity in their available `AppAction` variants. Ensure any action added to one is also added to the other.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_foreground_surface_blocks_lower_ui() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = ForegroundSurfaceOps::lint(root);
+    ViolationReporterOps::panic(
+        "foreground-surface",
+        "Fix: Foreground overlays such as modals, context menus, and slideshow mode must block lower UI events.",
         &all_violations,
     );
 }

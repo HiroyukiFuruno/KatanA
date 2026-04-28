@@ -149,7 +149,7 @@ impl<'a> PreviewSidePanels<'a> {
         };
         let mut clicked_line = None;
         let mut active_index_out = None;
-        panel
+        let response = panel
             .frame(frame)
             .default_width(TOC_PANEL_DEFAULT_WIDTH)
             .show_inside(ui, |ui| {
@@ -165,6 +165,18 @@ impl<'a> PreviewSidePanels<'a> {
                     active_index_out = ai;
                 }
             });
+        let edge = match position {
+            TocPosition::Left => [
+                response.response.rect.right_top(),
+                response.response.rect.right_bottom(),
+            ],
+            TocPosition::Right => [
+                response.response.rect.left_top(),
+                response.response.rect.left_bottom(),
+            ],
+        };
+        ui.painter()
+            .line_segment(edge, ui.visuals().window_stroke());
         if let Some(clicked) = clicked_line {
             self.app.state.scroll.scroll_to_line = Some(clicked);
             self.app.state.scroll.last_scroll_to_line = None;

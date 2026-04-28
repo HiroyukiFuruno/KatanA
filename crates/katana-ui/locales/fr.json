@@ -160,6 +160,8 @@
     "problems_count_format": "Problèmes : {count}",
     "fix_file_problems": "Corriger ce fichier",
     "fix_all_detected_problems": "Corriger tous les détectés",
+    "problems_scope_open_tabs": "Onglets ouverts",
+    "problems_scope_active_tab": "Onglet actif",
     "format_markdown_success": "Markdown formaté : modifiés {changed} / inchangés {unchanged}",
     "format_markdown_partial_failure": "Le formatage Markdown a partiellement échoué : modifiés {changed} / inchangés {unchanged} / échecs {failed}. Exemple : {path}: {reason}",
     "format_markdown_not_markdown": "Ce n'est pas un fichier Markdown.",

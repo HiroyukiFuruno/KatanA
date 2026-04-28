@@ -160,6 +160,8 @@
     "problems_count_format": "问题: {count}",
     "fix_file_problems": "修复此文件",
     "fix_all_detected_problems": "修复所有已检测项",
+    "problems_scope_open_tabs": "已打开标签页",
+    "problems_scope_active_tab": "活动标签页",
     "format_markdown_success": "Markdown 已格式化: 已更改 {changed} / 未更改 {unchanged}",
     "format_markdown_partial_failure": "Markdown 格式化部分失败: 已更改 {changed} / 未更改 {unchanged} / 失败 {failed}。示例: {path}: {reason}",
     "format_markdown_not_markdown": "这不是 Markdown 文件。",

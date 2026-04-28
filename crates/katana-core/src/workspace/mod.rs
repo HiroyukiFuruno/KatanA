@@ -4,6 +4,8 @@ mod types;
 pub use types::*;
 
 const IMAGE_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"];
+const STANDARD_VISIBLE_EXTENSIONS: &[&str] =
+    &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "drawio"];
 
 impl TreeEntry {
     pub fn path(&self) -> &Path {
@@ -51,6 +53,10 @@ impl TreeEntry {
 
     pub fn image_extensions() -> &'static [&'static str] {
         IMAGE_EXTENSIONS
+    }
+
+    pub fn standard_visible_extensions() -> &'static [&'static str] {
+        STANDARD_VISIBLE_EXTENSIONS
     }
 
     pub fn collect_all_directory_paths(&self, paths: &mut Vec<PathBuf>) {

@@ -18,8 +18,8 @@ pub(crate) mod manage;
 mod open;
 mod poll;
 
-fn append_system_image_extensions(extensions: &mut Vec<String>) {
-    for ext in katana_core::workspace::TreeEntry::image_extensions() {
+fn append_standard_visible_extensions(extensions: &mut Vec<String>) {
+    for ext in katana_core::workspace::TreeEntry::standard_visible_extensions() {
         if extensions
             .iter()
             .any(|existing| existing.eq_ignore_ascii_case(ext))

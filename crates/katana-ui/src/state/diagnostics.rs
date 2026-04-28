@@ -2,6 +2,13 @@ use katana_markdown_linter::rules::markdown::MarkdownDiagnostic;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ProblemsScope {
+    #[default]
+    OpenTabs,
+    ActiveTab,
+}
+
 #[derive(Debug, Default)]
 pub struct DiagnosticsState {
     pub problems: BTreeMap<PathBuf, Vec<MarkdownDiagnostic>>,
@@ -10,6 +17,7 @@ pub struct DiagnosticsState {
     pub is_panel_open: bool,
     pub expand_all: Option<bool>,
     pub last_buffer_update: Option<std::time::Instant>,
+    pub scope: ProblemsScope,
 }
 
 impl DiagnosticsState {
@@ -21,6 +29,7 @@ impl DiagnosticsState {
             is_panel_open: false,
             expand_all: None,
             last_buffer_update: None,
+            scope: ProblemsScope::OpenTabs,
         }
     }
 
@@ -63,6 +72,19 @@ impl DiagnosticsState {
         self.problems
             .values()
             .map(|v| v.iter().filter(|d| d.official_meta.is_some()).count())
+            .sum()
+    }
+
+    pub fn total_problems_for_paths(&self, paths: &[PathBuf]) -> usize {
+        paths
+            .iter()
+            .filter_map(|path| self.problems.get(path))
+            .map(|items| {
+                items
+                    .iter()
+                    .filter(|item| item.official_meta.is_some())
+                    .count()
+            })
             .sum()
     }
 
