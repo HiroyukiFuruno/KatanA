@@ -159,6 +159,11 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
                 });
             });
 
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "rail_popup_input_blocker",
+            area_resp.response.rect,
+        );
         /* WHY: Close popup when clicking outside or clicking the trigger again */
         #[allow(clippy::collapsible_if)]
         if ui.input(|i| i.pointer.any_pressed()) {

@@ -24,6 +24,15 @@ impl ExplorerHoverOverlay {
         let panel_y = rail_rect.top();
         let panel_height = rail_rect.height();
         let panel_width = crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH * anim;
+        let panel_rect = egui::Rect::from_min_size(
+            egui::pos2(panel_x, panel_y),
+            egui::vec2(panel_width, panel_height),
+        );
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "explorer_hover_overlay_input_blocker",
+            panel_rect,
+        );
 
         let area_resp = egui::Area::new(egui::Id::new("explorer_hover_overlay"))
             .order(egui::Order::Foreground)

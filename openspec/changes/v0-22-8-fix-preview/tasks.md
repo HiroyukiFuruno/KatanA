@@ -25,7 +25,7 @@
 - [x] 差分ビューアの初期表示は変更箇所だけにし、未変更部分は既定で閉じる。未変更部分はクリックして展開確認できるようにする。
 - [x] 分割差分では、対応する before/after 行を比較し、共通の先頭・末尾を除いた乖離文字範囲だけを強くハイライトする。
 - [x] 分割差分では、削除・追加されたスペースと空行を視認できる記号で表示し、なくなる変更も弱く見えないようにする。
-- [/] 削除された文字範囲は赤い強調だけでなく波線背景を重ね、なくなる部分を追加側より強く識別できるようにする。
+- [x] 削除された文字範囲は赤い強調だけでなく波線背景を重ね、なくなる部分を追加側より強く識別できるようにする。
 - [x] 未編集行の折りたたみ表示は VSCode の diff 表示に寄せ、`非表示 N 行` の横長バーと上下 chevron アイコンで表示する。
 - [x] 未編集行の開閉アイコンは、閉じている時は開く操作、開いている時は閉じる操作だけを1つのクリック領域として表示する。
 - [x] タブ表示の差分確認でも対象ファイル名を表示し、どのファイルの差分か判断できるようにする。
@@ -161,6 +161,8 @@
 - [/] FB: 分割差分ビューアの before / after 境界が背景に埋もれ、左右の分割位置が分からない。
 - [/] FB: 分割差分ビューアの中央境界が強すぎ、他の panel 境界と統一感がない。
 - [/] FB: スライドショー中に右サイドバーのイベントが背面で発火している。
+- [/] FB: スライドショー内の右設定パネル下にある要素のイベントが抑止されていない。
+- [/] FB: 右サイドメニューや浮動パネル下にある要素の hover が抑止されていない。
 - [ ] 6.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
 - [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
@@ -171,6 +173,9 @@
 - Screenshot: `scripts/screenshot/output/v0-22-8-split-boundary-fb/03-file-diff-review.png`.
 - Screenshot: `scripts/screenshot/output/v0-22-8-split-boundary-fb2/03-file-diff-review.png`.
 - Screenshot: `scripts/screenshot/output/v0-22-8-slideshow-sidebar-fb/02-slideshow-toc-foreground.png`.
+- Note: スライドショー右設定パネルのパネル矩形とタブ矩形を `InteractionFacade` の入力遮断対象に追加し、`ast-lint` の検知対象にも追加。
+- Note: `InteractionFacade` に hover 遮断用のグローバル状態を追加し、前面パネル矩形へマウスが乗っている間は下位 UI を無効化するようにした。
+- Note: `ast-lint` を個別ファイル列挙ではなく、`egui::Area` の前面表示パターンから未登録の自前浮動パネルを検知するルールへ変更。
 - Push note: User Review FB commits on `release/v0.22.8` may require `git push --no-verify` because the release pre-push hook currently blocks until later Final Verification / Release tasks are complete. This is not a replacement for validation; the targeted UI gates above were completed before push.
 
 ### Definition of Done (DoD)

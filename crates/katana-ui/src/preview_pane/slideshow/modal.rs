@@ -110,7 +110,9 @@ impl SlideshowModalOps {
                                             layout.slideshow_show_diagram_controls,
                                         );
                                     });
-                                    pane.render_sections(ui, None, None, None, None, true);
+                                    crate::widgets::InteractionFacade::scope(ui, false, |ui| {
+                                        pane.render_sections(ui, None, None, None, None, true);
+                                    });
                                 },
                             );
                         });

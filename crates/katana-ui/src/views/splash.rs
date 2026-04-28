@@ -62,7 +62,14 @@ impl<'a> SplashOverlay<'a> {
         egui::Area::new(egui::Id::new("splash_screen_area"))
             .order(egui::Order::Foreground)
             .interactable(true)
-            .show(ctx, |ui| self.draw_splash_content(ui, ctx, opacity));
+            .show(ctx, |ui| {
+                crate::widgets::InteractionFacade::consume_rect(
+                    ui,
+                    "splash_screen_input_blocker",
+                    ctx.content_rect(),
+                );
+                self.draw_splash_content(ui, ctx, opacity);
+            });
 
         ctx.request_repaint_after(std::time::Duration::from_millis(SPLASH_REPAINT_INTERVAL_MS));
         false
