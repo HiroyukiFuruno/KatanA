@@ -7,10 +7,15 @@ impl ForegroundSurfaceOps {
     pub fn lint(workspace_root: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
         let shell_path = workspace_root.join("crates/katana-ui/src/shell/mod.rs");
+        let central_content_path =
+            workspace_root.join("crates/katana-ui/src/views/app_frame/central_content.rs");
         let slideshow_modal_path =
             workspace_root.join("crates/katana-ui/src/preview_pane/slideshow/modal.rs");
 
         let Ok(shell_source) = std::fs::read_to_string(&shell_path) else {
+            return violations;
+        };
+        let Ok(central_content_source) = std::fs::read_to_string(&central_content_path) else {
             return violations;
         };
         let Ok(slideshow_source) = std::fs::read_to_string(&slideshow_modal_path) else {
@@ -29,6 +34,13 @@ impl ForegroundSurfaceOps {
             &shell_source,
             "any_popup_open",
             "Foreground surface detection must include egui popup/context-menu state.",
+            &mut violations,
+        );
+        Self::require_contains(
+            &central_content_path,
+            &central_content_source,
+            "layout.show_slideshow",
+            "Preview side panels must not render while slideshow mode is active.",
             &mut violations,
         );
         Self::require_contains(

@@ -66,6 +66,9 @@ impl<'a> CentralContent<'a> {
     }
 
     fn render_preview_side_panels(ui: &mut egui::Ui, app: &mut KatanaApp) {
+        if app.state.layout.show_slideshow {
+            return;
+        }
         PreviewSidePanels::new(app).show(ui);
     }
 

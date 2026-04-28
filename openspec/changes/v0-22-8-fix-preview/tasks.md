@@ -159,6 +159,8 @@
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
 - [/] FB: 分割差分ビューアの before / after 境界が背景に埋もれ、左右の分割位置が分からない。
+- [/] FB: 分割差分ビューアの中央境界が強すぎ、他の panel 境界と統一感がない。
+- [/] FB: スライドショー中に右サイドバーのイベントが背面で発火している。
 - [ ] 6.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
 - [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
@@ -167,6 +169,8 @@
 - `make lint`: passed.
 - `make ast-lint`: passed.
 - Screenshot: `scripts/screenshot/output/v0-22-8-split-boundary-fb/03-file-diff-review.png`.
+- Screenshot: `scripts/screenshot/output/v0-22-8-split-boundary-fb2/03-file-diff-review.png`.
+- Screenshot: `scripts/screenshot/output/v0-22-8-slideshow-sidebar-fb/02-slideshow-toc-foreground.png`.
 - Push note: User Review FB commits on `release/v0.22.8` may require `git push --no-verify` because the release pre-push hook currently blocks until later Final Verification / Release tasks are complete. This is not a replacement for validation; the targeted UI gates above were completed before push.
 
 ### Definition of Done (DoD)

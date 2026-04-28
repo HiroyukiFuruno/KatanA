@@ -3,10 +3,8 @@ use eframe::egui;
 
 const SPLIT_MIN_RATIO: f32 = 0.1_f32;
 const SPLIT_MAX_RATIO: f32 = 0.9_f32;
-const SPLITTER_WIDTH: f32 = 10.0_f32;
-const SPLITTER_EDGE_INSET: f32 = 1.0_f32;
-const SPLITTER_CENTER_WIDTH: f32 = 2.0_f32;
-const SPLITTER_STROKE_WIDTH: f32 = 1.0_f32;
+const SPLITTER_WIDTH: f32 = 8.0_f32;
+const SPLITTER_LINE_WIDTH: f32 = 1.0_f32;
 
 pub(super) struct DiffViewerSplitHandleOps;
 
@@ -38,49 +36,28 @@ impl DiffViewerSplitHandleOps {
         if response.hovered() || response.dragged() {
             ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
         }
-        let fill = if response.hovered() || response.dragged() {
-            ui.visuals().widgets.hovered.bg_fill
-        } else {
-            ui.visuals().widgets.inactive.bg_fill
-        };
-        ui.painter().rect_filled(rect, 0.0, fill);
-        Self::paint_edges(ui, rect);
+        if response.hovered() || response.dragged() {
+            ui.painter()
+                .rect_filled(rect, 0.0, ui.visuals().widgets.hovered.bg_fill);
+        }
         Self::paint_center_line(ui, rect, response);
     }
 
-    fn paint_edges(ui: &mut egui::Ui, rect: egui::Rect) {
-        let stroke = egui::Stroke::new(
-            SPLITTER_STROKE_WIDTH,
-            ui.visuals().widgets.hovered.bg_stroke.color,
-        );
-        let left_x = rect.left() + SPLITTER_EDGE_INSET;
-        let right_x = rect.right() - SPLITTER_EDGE_INSET;
-        ui.painter().line_segment(
-            [
-                egui::pos2(left_x, rect.top()),
-                egui::pos2(left_x, rect.bottom()),
-            ],
-            stroke,
-        );
-        ui.painter().line_segment(
-            [
-                egui::pos2(right_x, rect.top()),
-                egui::pos2(right_x, rect.bottom()),
-            ],
-            stroke,
-        );
-    }
-
     fn paint_center_line(ui: &mut egui::Ui, rect: egui::Rect, response: &egui::Response) {
-        let color = if response.hovered() || response.dragged() {
-            ui.visuals().selection.bg_fill
+        let stroke = if response.hovered() || response.dragged() {
+            egui::Stroke::new(
+                SPLITTER_LINE_WIDTH,
+                ui.visuals().widgets.hovered.bg_stroke.color,
+            )
         } else {
-            ui.visuals().widgets.noninteractive.fg_stroke.color
+            ui.visuals().window_stroke()
         };
-        let center_rect = egui::Rect::from_center_size(
-            rect.center(),
-            egui::vec2(SPLITTER_CENTER_WIDTH, rect.height()),
+        ui.painter().line_segment(
+            [
+                egui::pos2(rect.center().x, rect.top()),
+                egui::pos2(rect.center().x, rect.bottom()),
+            ],
+            stroke,
         );
-        ui.painter().rect_filled(center_rect, 0.0, color);
     }
 }
