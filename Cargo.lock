@@ -2752,15 +2752,16 @@ dependencies = [
 
 [[package]]
 name = "katana-markdown-linter"
-version = "0.12.20"
+version = "0.12.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac98a5edcb92adb812e0923e23a152cf03cf25893001d59dcc6e70ed6b4496d0"
+checksum = "9162761462584731b745a7a14f38d347780e13aa0279e87239c7dfc434a9ac9f"
 dependencies = [
  "glob",
  "ignore",
  "regex",
  "serde",
  "serde_json",
+ "unicode-width",
 ]
 
 [[package]]
