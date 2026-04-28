@@ -213,3 +213,4 @@
 
 ### Final Verification Notes
 - [x] `make check` passed after the additional user feedback fixes for icon settings, search history, auto-save dirty marker branching, foreground hover propagation, and preview right sidebar spacing.
+- [x] Normal `git push` after final verification failed at `pr-ready-check` because `v0-22-8-fix-preview` still contains incomplete release workflow tasks. This is recorded as a phase-appropriate exception; the implementation verification gates (`make check`, `make lint ast-lint`) passed before backup push.
