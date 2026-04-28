@@ -160,6 +160,8 @@
     "problems_count_format": "문제 수: {count}",
     "fix_file_problems": "이 파일 일괄 수정",
     "fix_all_detected_problems": "감지된 항목 모두 수정",
+    "problems_scope_open_tabs": "열린 탭",
+    "problems_scope_active_tab": "활성 탭",
     "format_markdown_success": "Markdown 형식을 정리했습니다: 변경 {changed}개 / 변경 없음 {unchanged}개",
     "format_markdown_partial_failure": "Markdown 형식 정리가 일부 실패했습니다: 변경 {changed}개 / 변경 없음 {unchanged}개 / 실패 {failed}개. 예: {path}: {reason}",
     "format_markdown_not_markdown": "Markdown 파일이 아닙니다.",
@@ -427,7 +429,10 @@
       "diagram_concurrency_hint": "다이어그램이 많은 Markdown 파일 처리 속도가 느리면 이 병렬 개수를 낮추세요.",
       "diagram_concurrency_unlimited": "병렬 개수 무제한",
       "diagram_concurrency_unlimited_warning_title": "병렬 개수 무제한을 활성화하시겠습니까?",
-      "diagram_concurrency_unlimited_warning_message": "감지된 모든 다이어그램을 동시에 렌더링합니다. 다이어그램이 많은 Markdown 파일에서는 KatanA 또는 시스템 전체가 느려질 수 있습니다."
+      "diagram_concurrency_unlimited_warning_message": "감지된 모든 다이어그램을 동시에 렌더링합니다. 다이어그램이 많은 Markdown 파일에서는 KatanA 또는 시스템 전체가 느려질 수 있습니다.",
+      "diff_view_mode": "기본 차이 보기",
+      "diff_view_mode_split": "분할",
+      "diff_view_mode_inline": "한 줄 표시"
     },
     "general": "일반",
     "shortcuts": {
@@ -659,5 +664,24 @@
       "blockquote": "블록 인용",
       "code_block": "코드 블록"
     }
+  },
+  "diff_review": {
+    "title": "변경 사항 검토",
+    "split": "분할 diff",
+    "inline": "인라인 diff",
+    "before": "수정 전",
+    "after": "수정 후",
+    "cancel": "취소",
+    "apply_fix": "수정 적용",
+    "previous_file": "이전 파일",
+    "next_file": "다음 파일",
+    "enter_fullscreen": "전체 화면으로 전환",
+    "exit_fullscreen": "전체 화면 종료",
+    "reject_all": "모두 취소",
+    "file_counter": "{total}개 중 {current}",
+    "collapsed_lines": "숨김 {count}줄",
+    "switch_to_split": "분할 diff 표시",
+    "switch_to_inline": "인라인 diff 표시",
+    "content_changed": "차이를 준비한 뒤 파일이 변경되었습니다. 최신 내용을 검토하려면 수정을 다시 실행하세요."
   }
 }

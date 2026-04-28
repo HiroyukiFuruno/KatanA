@@ -175,7 +175,9 @@ impl KatanaApp {
             &path,
             content,
         );
-        self.state.diagnostics.update_diagnostics(path, diagnostics);
+        self.state
+            .diagnostics
+            .update_diagnostics_for_content(path, content, diagnostics);
     }
 
     fn show_markdown_format_summary(&mut self, summary: MarkdownFormattingSummary) {

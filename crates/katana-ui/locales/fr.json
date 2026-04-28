@@ -160,6 +160,8 @@
     "problems_count_format": "Problèmes : {count}",
     "fix_file_problems": "Corriger ce fichier",
     "fix_all_detected_problems": "Corriger tous les détectés",
+    "problems_scope_open_tabs": "Onglets ouverts",
+    "problems_scope_active_tab": "Onglet actif",
     "format_markdown_success": "Markdown formaté : modifiés {changed} / inchangés {unchanged}",
     "format_markdown_partial_failure": "Le formatage Markdown a partiellement échoué : modifiés {changed} / inchangés {unchanged} / échecs {failed}. Exemple : {path}: {reason}",
     "format_markdown_not_markdown": "Ce n'est pas un fichier Markdown.",
@@ -427,7 +429,10 @@
       "diagram_concurrency_hint": "Si les fichiers Markdown avec de nombreux diagrammes deviennent lourds, réduisez ce nombre de rendus parallèles.",
       "diagram_concurrency_unlimited": "Parallélisme illimité",
       "diagram_concurrency_unlimited_warning_title": "Activer le parallélisme illimité ?",
-      "diagram_concurrency_unlimited_warning_message": "Tous les diagrammes détectés seront rendus en même temps. Avec des fichiers Markdown contenant de nombreux diagrammes, KatanA ou tout le système peut ralentir."
+      "diagram_concurrency_unlimited_warning_message": "Tous les diagrammes détectés seront rendus en même temps. Avec des fichiers Markdown contenant de nombreux diagrammes, KatanA ou tout le système peut ralentir.",
+      "diff_view_mode": "Vue de différences par défaut",
+      "diff_view_mode_split": "Fractionnée",
+      "diff_view_mode_inline": "En ligne"
     },
     "general": "Général",
     "shortcuts": {
@@ -659,5 +664,24 @@
       "blockquote": "Citation en bloc",
       "code_block": "Bloc de code"
     }
+  },
+  "diff_review": {
+    "title": "Vérifier les changements",
+    "split": "Diff fractionné",
+    "inline": "Diff en ligne",
+    "before": "Avant",
+    "after": "Après",
+    "cancel": "Annuler",
+    "enter_fullscreen": "Passer en plein écran",
+    "exit_fullscreen": "Quitter le plein écran",
+    "reject_all": "Tout annuler",
+    "apply_fix": "Appliquer la correction",
+    "previous_file": "Fichier précédent",
+    "next_file": "Fichier suivant",
+    "file_counter": "{current} sur {total}",
+    "collapsed_lines": "{count} lignes masquées",
+    "switch_to_split": "Afficher le diff fractionné",
+    "switch_to_inline": "Afficher le diff en ligne",
+    "content_changed": "Le fichier a changé après la préparation des différences. Relancez la correction pour vérifier le contenu le plus récent."
   }
 }

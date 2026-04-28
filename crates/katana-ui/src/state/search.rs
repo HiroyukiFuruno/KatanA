@@ -36,6 +36,8 @@ pub struct SearchState {
     pub md_last_params: Option<SearchParams>,
     pub md_results: Vec<katana_core::search::SearchResult>,
     pub md_history: katana_core::search::SearchHistory,
+    pub md_history_cursor: Option<usize>,
+    pub md_history_draft: String,
 
     /* WHY: Document search state (Command+F) */
     pub doc_search_open: bool,
@@ -75,6 +77,8 @@ impl SearchState {
             md_last_params: None,
             md_results: Vec::new(),
             md_history: katana_core::search::SearchHistory::default(),
+            md_history_cursor: None,
+            md_history_draft: String::new(),
 
             doc_search_open: false,
             doc_search: SearchParams::default(),

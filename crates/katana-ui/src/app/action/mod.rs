@@ -10,6 +10,7 @@ mod image_ingest;
 mod process_authoring;
 mod process_demo;
 mod process_demo_group;
+mod process_diagnostics;
 mod process_document;
 mod process_group_lifecycle;
 mod process_groups;
@@ -96,6 +97,7 @@ impl ActionOps for KatanaApp {
         if let Some(path) = inactive_but_focused_path {
             self.handle_select_document(path, true);
         }
+        self.close_diff_review_if_tab_removed();
     }
 
     fn handle_show_release_notes(&mut self) {

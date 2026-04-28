@@ -5,6 +5,8 @@ pub struct SettingsAlignmentOps;
 impl SettingsAlignmentOps {
     pub fn check_settings_alignment(workspace_root: &std::path::Path) -> Vec<Violation> {
         let mut errors = Vec::new();
+        let ui_root = workspace_root.join("crates/katana-ui/src");
+        Self::check_no_checkbox_calls(&ui_root, &mut errors);
 
         let properties_path =
             workspace_root.join("crates/katana-ui/src/settings/tabs/linter/properties.rs");
@@ -56,5 +58,37 @@ impl SettingsAlignmentOps {
         }
 
         errors
+    }
+
+    fn check_no_checkbox_calls(dir: &std::path::Path, errors: &mut Vec<Violation>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                Self::check_no_checkbox_calls(&path, errors);
+            } else if path.extension().and_then(|it| it.to_str()) == Some("rs") {
+                Self::check_no_checkbox_file(&path, errors);
+            }
+        }
+    }
+
+    fn check_no_checkbox_file(path: &std::path::Path, errors: &mut Vec<Violation>) {
+        let Ok(content) = std::fs::read_to_string(path) else {
+            return;
+        };
+
+        for (i, line) in content.lines().enumerate() {
+            if line.contains(".checkbox(") || line.contains("egui::Checkbox") {
+                errors.push(Violation {
+                    file: path.to_path_buf(),
+                    line: i + 1,
+                    column: 1,
+                    message: "Do not use checkbox controls in KatanA UI. Use `LabeledToggle` or `ToggleOps::switch` instead.".to_string(),
+                });
+            }
+        }
     }
 }

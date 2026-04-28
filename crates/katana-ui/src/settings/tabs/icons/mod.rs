@@ -98,6 +98,7 @@ impl IconsTabOps {
             settings_changed,
             is_advanced_open,
         );
+        general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
 
         if *current_pack != state.config.settings.settings().theme.icon_pack {
             state.config.settings.settings_mut().theme.icon_pack = current_pack.clone();

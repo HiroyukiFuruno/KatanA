@@ -61,6 +61,13 @@ impl KatanaApp {
             AppAction::ApplyLintFixesForFiles(batches) => {
                 self.handle_apply_lint_fixes_for_files(ctx, batches)
             }
+            AppAction::ConfirmCurrentDiffReviewFile => {
+                self.handle_confirm_current_diff_review_file(ctx)
+            }
+            AppAction::RejectCurrentDiffReviewFile => self.handle_reject_current_diff_review_file(),
+            AppAction::RejectAllDiffReviewFiles => {
+                self.handle_reject_all_diff_review_files(ctx);
+            }
             AppAction::ToggleTaskList {
                 global_index,
                 new_state,
@@ -143,6 +150,7 @@ impl KatanaApp {
         self.state.document.tab_view_modes.clear();
         self.state.document.tab_split_states.clear();
         self.state.document.recently_closed_tabs.clear();
+        self.state.layout.diff_review = None;
         self.state.search.filter_cache = None;
         self.state.layout.status_message = Some((
             crate::i18n::I18nOps::get().status.closed_workspace.clone(),

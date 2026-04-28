@@ -13,21 +13,31 @@ impl ProblemBulkFixOps {
             .collect()
     }
 
-    pub(crate) fn workspace_batches(
+    pub(crate) fn batches_for_paths(
         problems: &std::collections::BTreeMap<
             std::path::PathBuf,
             Vec<katana_markdown_linter::rules::markdown::MarkdownDiagnostic>,
         >,
+        diagnostics_state: &crate::app_state::DiagnosticsState,
+        paths: &[std::path::PathBuf],
     ) -> Vec<crate::app_action::LintFixBatch> {
-        problems
+        paths
             .iter()
-            .filter_map(|(path, diagnostics)| Self::file_batch(path, diagnostics))
+            .filter_map(|path| {
+                let diagnostics = problems.get(path)?;
+                Self::file_batch(
+                    path,
+                    diagnostics,
+                    diagnostics_state.content_snapshot(path.as_path()),
+                )
+            })
             .collect()
     }
 
     pub(crate) fn file_batch(
         path: &Path,
         diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+        source: Option<&str>,
     ) -> Option<crate::app_action::LintFixBatch> {
         let fixes = Self::file_fixes(diagnostics);
         if fixes.is_empty() {
@@ -36,6 +46,7 @@ impl ProblemBulkFixOps {
         Some(crate::app_action::LintFixBatch {
             path: path.to_path_buf(),
             fixes,
+            source: source.map(str::to_string),
         })
     }
 }
@@ -102,21 +113,24 @@ mod tests {
     }
 
     #[test]
-    fn workspace_batches_preserves_file_boundaries() {
+    fn batches_for_paths_uses_only_selected_open_paths() {
         let first = PathBuf::from("/tmp/first.md");
         let second = PathBuf::from("/tmp/second.md");
-        let third = PathBuf::from("/tmp/third.md");
         let mut problems = BTreeMap::new();
         problems.insert(first.clone(), vec![diagnostic("MD001", Some(fix("first")))]);
-        problems.insert(second.clone(), vec![diagnostic("MD002", None)]);
-        problems.insert(third.clone(), vec![diagnostic("MD003", Some(fix("third")))]);
+        problems.insert(
+            second.clone(),
+            vec![diagnostic("MD002", Some(fix("second")))],
+        );
 
-        let batches = ProblemBulkFixOps::workspace_batches(&problems);
+        let mut state = crate::app_state::DiagnosticsState::new();
+        state.update_diagnostics_for_content(first.clone(), "first source", Vec::new());
+        state.update_diagnostics_for_content(second.clone(), "second source", Vec::new());
 
-        assert_eq!(batches.len(), 2);
-        assert_eq!(batches[0].path, first);
-        assert_eq!(batches[0].fixes[0].replacement, "first");
-        assert_eq!(batches[1].path, third);
-        assert_eq!(batches[1].fixes[0].replacement, "third");
+        let batches = ProblemBulkFixOps::batches_for_paths(&problems, &state, &[second.clone()]);
+
+        assert_eq!(batches.len(), 1);
+        assert_eq!(batches[0].path, second);
+        assert_eq!(batches[0].source.as_deref(), Some("second source"));
     }
 }

@@ -160,7 +160,6 @@ type-check: ## cargo check (type check only, fast)
 .PHONY: test
 test: test-impacted ## Run impacted unit tests (local default)
 
-
 .PHONY: test-core
 test-core: ## Run tests for katana-core only
 	$(RTK) cargo test -p katana-core

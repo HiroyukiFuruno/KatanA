@@ -47,6 +47,7 @@ impl Default for BehaviorSettings {
             scroll_sync_enabled: true,
             confirm_close_dirty_tab: true,
             confirm_file_move: true,
+            diff_view_mode: DiffViewMode::default(),
             slideshow_hover_highlight: true,
             slideshow_show_diagram_controls: true,
         }

@@ -58,6 +58,11 @@ impl CodeBlockMenuPopupOps {
                 })
             });
 
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "editor_code_block_kind_menu_input_blocker",
+            area_response.response.rect,
+        );
         if area_response.inner.inner {
             Self::set_open(ui, false);
         }

@@ -26,6 +26,15 @@ impl<'a> PreviewSidePanels<'a> {
         let panel_x = sidebar_rect.left() - PANEL_WIDTH * anim - POPUP_GAP;
         let panel_y = sidebar_rect.top();
         let panel_height = sidebar_rect.height();
+        let panel_rect = egui::Rect::from_min_size(
+            egui::pos2(panel_x, panel_y),
+            egui::vec2(PANEL_WIDTH, panel_height),
+        );
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "preview_tools_overlay_input_blocker",
+            panel_rect,
+        );
 
         let animation_f32 = anim;
         let area_resp = egui::Area::new(egui::Id::new("preview_tools_overlay"))

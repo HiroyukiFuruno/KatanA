@@ -2,6 +2,26 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.8] - 2026-04-28 05:55:06 (UTC)
+
+### 🚀 Features
+
+- **Diff Apply Preview**: Added a new confirmation flow in the Problems panel so users can review proposed file edits before applying quick fixes.
+
+### ✨ Improvements
+
+- **Diff Viewer Usability**: Added split and inline diff modes with persistent settings, plus file-level pagination for multi-file fixes.
+- **Fix Preview Clarity**: Improved preview readability and modal navigation so users can compare original and updated code with clearer context and safer controls.
+
+### 🐛 Bug Fixes
+
+- Prevented accidental file modifications by requiring explicit confirmation for each diff before applying fix previews.
+- Fixed oversized preview layout by limiting long diff rendering and keeping tooltips visually stable.
+
+### 🔧 System
+
+- Reworked the internal diff apply state flow to support cancellable, file-by-file review with stronger consistency around user decisions.
+
 ## [0.22.7] - 2026-04-27 05:24:43 (UTC)
 
 ### 🚀 Features

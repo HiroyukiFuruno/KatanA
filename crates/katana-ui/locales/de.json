@@ -160,6 +160,8 @@
     "problems_count_format": "Probleme: {count}",
     "fix_file_problems": "Diese Datei korrigieren",
     "fix_all_detected_problems": "Alle erkannten korrigieren",
+    "problems_scope_open_tabs": "Geöffnete Tabs",
+    "problems_scope_active_tab": "Aktiver Tab",
     "format_markdown_success": "Markdown formatiert: geändert {changed} / unverändert {unchanged}",
     "format_markdown_partial_failure": "Markdown-Formatierung teilweise fehlgeschlagen: geändert {changed} / unverändert {unchanged} / fehlgeschlagen {failed}. Beispiel: {path}: {reason}",
     "format_markdown_not_markdown": "Dies ist keine Markdown-Datei.",
@@ -427,7 +429,10 @@
       "diagram_concurrency_hint": "Wenn Markdown-Dateien mit vielen Diagrammen langsam sind, verringern Sie diese Einstellung.",
       "diagram_concurrency_unlimited": "Unbegrenzte Parallelität",
       "diagram_concurrency_unlimited_warning_title": "Unbegrenzte Parallelität aktivieren?",
-      "diagram_concurrency_unlimited_warning_message": "Alle erkannten Diagramme werden gleichzeitig gerendert. Bei Markdown-Dateien mit vielen Diagrammen kann KatanA oder das gesamte System langsamer werden."
+      "diagram_concurrency_unlimited_warning_message": "Alle erkannten Diagramme werden gleichzeitig gerendert. Bei Markdown-Dateien mit vielen Diagrammen kann KatanA oder das gesamte System langsamer werden.",
+      "diff_view_mode": "Standardansicht für Unterschiede",
+      "diff_view_mode_split": "Geteilt",
+      "diff_view_mode_inline": "Zeilenweise"
     },
     "general": "Allgemein",
     "shortcuts": {
@@ -659,5 +664,24 @@
       "blockquote": "Blockzitat",
       "code_block": "Codeblock"
     }
+  },
+  "diff_review": {
+    "title": "Änderungen prüfen",
+    "split": "Geteiltes Diff",
+    "inline": "Inline-Diff",
+    "before": "Vorher",
+    "after": "Nachher",
+    "cancel": "Abbrechen",
+    "apply_fix": "Korrektur anwenden",
+    "previous_file": "Vorherige Datei",
+    "next_file": "Nächste Datei",
+    "enter_fullscreen": "In Vollbild wechseln",
+    "exit_fullscreen": "Vollbild beenden",
+    "reject_all": "Alle abbrechen",
+    "file_counter": "{current} von {total}",
+    "collapsed_lines": "{count} ausgeblendete Zeilen",
+    "switch_to_split": "Geteiltes Diff anzeigen",
+    "switch_to_inline": "Inline-Diff anzeigen",
+    "content_changed": "Die Datei wurde nach dem Erstellen der Unterschiede geändert. Führe die Korrektur erneut aus, um den neuesten Inhalt zu prüfen."
   }
 }

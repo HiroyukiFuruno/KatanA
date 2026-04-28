@@ -49,6 +49,7 @@ pub(super) struct DrawItemRenderer<'a> {
     pub tab_groups: &'a [crate::state::document::TabGroup],
     pub recently_closed_tabs_empty: bool,
     pub inline_rename_group: &'a Option<String>,
+    pub show_dirty_indicator: bool,
 }
 
 impl<'a> DrawItemRenderer<'a> {
@@ -82,6 +83,7 @@ impl<'a> DrawItemRenderer<'a> {
                     tab_groups: self.tab_groups,
                     recently_closed_tabs_empty: self.recently_closed_tabs_empty,
                     should_scroll,
+                    show_dirty_indicator: self.show_dirty_indicator,
                 }
                 .show(ui, tab_action);
                 if let Some(res) = res {

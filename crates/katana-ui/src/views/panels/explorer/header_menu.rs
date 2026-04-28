@@ -2,6 +2,8 @@ use crate::app_state::{AppAction, WorkspaceState};
 use eframe::egui;
 use std::path::PathBuf;
 
+const FLAT_VIEW_TOGGLE_MARGIN: f32 = 8.0;
+
 pub(crate) struct ExplorerHeaderMenu<'a> {
     pub workspace: &'a mut WorkspaceState,
     pub action: &'a mut AppAction,
@@ -42,12 +44,14 @@ impl<'a> ExplorerHeaderMenu<'a> {
 
         ui.separator();
         let mut is_flat_mut = self.is_flat;
+        let flat_view_label = crate::i18n::I18nOps::get().workspace.flat_view.clone();
         if ui
-            .checkbox(
-                &mut is_flat_mut,
-                crate::i18n::I18nOps::get().workspace.flat_view.clone(),
+            .add(
+                crate::widgets::LabeledToggle::new(&flat_view_label, &mut is_flat_mut).alignment(
+                    crate::widgets::ToggleAlignment::Attached(FLAT_VIEW_TOGGLE_MARGIN),
+                ),
             )
-            .clicked()
+            .changed()
         {
             self.workspace.set_flat_view(self.ws_root, is_flat_mut);
             ui.close();

@@ -1,4 +1,4 @@
-use crate::settings::tabs::icons::{general, table};
+use crate::settings::tabs::icons::table;
 use crate::widgets::AlignCenter;
 use eframe::egui;
 
@@ -42,7 +42,7 @@ impl IconsPanelsOps {
 
         ui.separator();
 
-        /* WHY: Action buttons (Expand / Collapse) and Scrollable content fills 100% of remaining height — general settings + per-icon table + action buttons. */
+        /* WHY: Action buttons (Expand / Collapse) and Scrollable content fills 100% of remaining height — per-icon table + action buttons. */
         AlignCenter::new()
             .left(|ui| {
                 let i18n_common = &crate::i18n::I18nOps::get().common;
@@ -81,10 +81,6 @@ impl IconsPanelsOps {
             .id_salt("icon_advanced_scroll")
             .auto_shrink(false)
             .show(ui, |ui| {
-                general::IconsGeneralOps::render(ui, i18n, icon_settings, settings_changed);
-
-                ui.add_space(PADDING);
-
                 table::IconsTableOps::render(
                     ui,
                     state,

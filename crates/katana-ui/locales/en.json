@@ -160,6 +160,8 @@
     "problems_count_format": "Problems: {count}",
     "fix_file_problems": "Fix this file",
     "fix_all_detected_problems": "Fix all detected",
+    "problems_scope_open_tabs": "Open tabs",
+    "problems_scope_active_tab": "Active tab",
     "format_markdown_success": "Markdown formatted: changed {changed} / unchanged {unchanged}",
     "format_markdown_partial_failure": "Markdown formatting partially failed: changed {changed} / unchanged {unchanged} / failed {failed}. Example: {path}: {reason}",
     "format_markdown_not_markdown": "This is not a Markdown file.",
@@ -438,7 +440,10 @@
       "diagram_concurrency_hint": "If Markdown files with many diagrams feel heavy, lower this concurrency setting.",
       "diagram_concurrency_unlimited": "Unlimited diagram concurrency",
       "diagram_concurrency_unlimited_warning_title": "Enable unlimited diagram concurrency?",
-      "diagram_concurrency_unlimited_warning_message": "Every detected diagram will render at the same time. Markdown files with many diagrams may make KatanA or the whole system slow."
+      "diagram_concurrency_unlimited_warning_message": "Every detected diagram will render at the same time. Markdown files with many diagrams may make KatanA or the whole system slow.",
+      "diff_view_mode": "Default diff view",
+      "diff_view_mode_split": "Split",
+      "diff_view_mode_inline": "Inline"
     },
     "general": "General"
   },
@@ -659,5 +664,24 @@
       "blockquote": "Blockquote",
       "code_block": "Code Block"
     }
+  },
+  "diff_review": {
+    "title": "Review Changes",
+    "split": "Split diff",
+    "inline": "Inline diff",
+    "before": "Before",
+    "after": "After",
+    "cancel": "Cancel",
+    "reject_all": "Cancel all",
+    "apply_fix": "Apply Fix",
+    "previous_file": "Previous file",
+    "next_file": "Next file",
+    "file_counter": "{current}/{total}",
+    "collapsed_lines": "{count} hidden lines",
+    "switch_to_split": "Show split diff",
+    "switch_to_inline": "Show inline diff",
+    "content_changed": "The file changed after the diff was prepared. Re-run the fix to review the latest content.",
+    "enter_fullscreen": "Enter fullscreen",
+    "exit_fullscreen": "Exit fullscreen"
   }
 }

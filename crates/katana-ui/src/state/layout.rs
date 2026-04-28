@@ -1,4 +1,5 @@
 use crate::app_state::StatusType;
+use crate::diff_review::DiffReviewState;
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq, Clone, Copy, serde::Serialize, serde::Deserialize)]
@@ -16,6 +17,7 @@ pub struct LayoutState {
     pub show_settings: bool,
     pub show_toc: bool,
     pub show_search_modal: bool,
+    pub(crate) diff_review: Option<DiffReviewState>,
 
     pub show_history_panel: bool,
     pub show_export_panel: bool,
@@ -43,6 +45,14 @@ pub struct LayoutState {
     pub toc_force_open: Option<bool>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiffReviewSnapshot {
+    pub file_count: usize,
+    pub target_path: String,
+    pub before: String,
+    pub after: String,
+}
+
 impl Default for LayoutState {
     fn default() -> Self {
         Self::new()
@@ -60,6 +70,7 @@ impl LayoutState {
             show_settings: false,
             show_toc: false,
             show_search_modal: false,
+            diff_review: None,
 
             show_history_panel: false,
             show_export_panel: false,
@@ -86,5 +97,16 @@ impl LayoutState {
             active_rail_popup: None,
             toc_force_open: None,
         }
+    }
+
+    pub fn diff_review_snapshot(&self) -> Option<DiffReviewSnapshot> {
+        let review = self.diff_review.as_ref()?;
+        let file = review.current_file()?;
+        Some(DiffReviewSnapshot {
+            file_count: review.files.len(),
+            target_path: file.path.to_string_lossy().to_string(),
+            before: file.before.clone(),
+            after: file.after.clone(),
+        })
     }
 }

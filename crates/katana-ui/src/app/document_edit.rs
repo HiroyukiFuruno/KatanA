@@ -72,106 +72,43 @@ impl DocumentEditOps for KatanaApp {
 
     fn handle_apply_lint_fixes(
         &mut self,
-        ctx: &eframe::egui::Context,
-        mut fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
+        _ctx: &eframe::egui::Context,
+        fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
     ) {
-        let Some(idx) = self.state.document.active_doc_idx else {
+        let Some(path) = self.lint_fix_target_path() else {
             return;
         };
-        let doc = &mut self.state.document.open_documents[idx];
-        let before = doc.buffer.clone();
-
-        /* WHY: Sort fixes descending by start_line and start_column so replacements don't invalidate subsequent offsets */
-        fixes.sort_by(|a, b| {
-            b.start_line
-                .cmp(&a.start_line)
-                .then_with(|| b.start_column.cmp(&a.start_column))
-        });
-
-        for fix in fixes {
-            /* WHY: DiagnosticFix uses 1-indexed line numbers, but
-             * line_col_to_byte_index expects 0-indexed lines.
-             * Without this conversion, the replacement targets the wrong
-             * line, causing duplicate/shifted text (FB29 root cause). */
-            let start_opt =
-                crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
-                    &doc.buffer,
-                    fix.start_line.saturating_sub(1),
-                    fix.start_column,
-                );
-            let end_opt =
-                crate::views::panels::editor::types::EditorLogicOps::line_col_to_byte_index(
-                    &doc.buffer,
-                    fix.end_line.saturating_sub(1),
-                    fix.end_column,
-                );
-            let (Some(start), Some(end)) = (start_opt, end_opt) else {
-                continue;
-            };
-
-            if start > end || end > doc.buffer.len() {
-                continue;
-            }
-
-            doc.buffer.replace_range(start..end, &fix.replacement);
-
-            use crate::state::document::VirtualPathExt as _;
-            if !doc.path.is_virtual_path() {
-                doc.is_dirty = true;
-            }
-        }
-
-        let path = doc.path.clone();
-        let content = doc.buffer.clone();
-        let workspace_root = self
-            .state
-            .workspace
-            .data
-            .as_ref()
-            .map(|ws| ws.root.as_path());
-        crate::editor_undo::EditorUndoOps::record_external_change(
-            ctx,
-            workspace_root,
-            &path,
-            &before,
-            &content,
+        self.handle_apply_lint_fixes_for_files(
+            _ctx,
+            vec![crate::app_action::LintFixBatch {
+                path,
+                fixes,
+                source: None,
+            }],
         );
-        let concurrency = self
-            .state
-            .config
-            .settings
-            .settings()
-            .performance
-            .resolved_diagram_concurrency();
-        self.full_refresh_preview(&path, &content, true, concurrency);
-
-        if self.state.search.doc_search_open {
-            self.refresh_doc_search_matches(&content);
-        }
-        self.handle_action_refresh_diagnostics();
     }
 
     fn handle_apply_lint_fixes_for_files(
         &mut self,
-        ctx: &eframe::egui::Context,
+        _ctx: &eframe::egui::Context,
         batches: Vec<crate::app_action::LintFixBatch>,
     ) {
-        let original_path = self.state.active_path();
+        self.open_lint_fix_review(batches);
+    }
+}
 
-        for batch in batches {
-            if batch.fixes.is_empty() {
-                continue;
-            }
-            let target_path = batch.path;
-            self.handle_select_document(target_path.clone(), true);
-            if self.state.active_path().as_ref() != Some(&target_path) {
-                continue;
-            }
-            self.handle_apply_lint_fixes(ctx, batch.fixes);
+impl KatanaApp {
+    fn lint_fix_target_path(&self) -> Option<std::path::PathBuf> {
+        let active_path = self.state.active_path()?;
+        if !crate::app::LintFixReviewPath::is_review_path(&active_path) {
+            return Some(active_path);
         }
 
-        if let Some(path) = original_path {
-            self.handle_select_document(path, true);
-        }
+        self.state.layout.diff_review.as_ref().and_then(|review| {
+            review
+                .current_file()
+                .map(|file| file.path.clone())
+                .or_else(|| review.restore_path.clone())
+        })
     }
 }

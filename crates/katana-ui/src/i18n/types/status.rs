@@ -21,6 +21,10 @@ pub struct StatusMessages {
     pub problems_count_format: String,
     pub fix_file_problems: String,
     pub fix_all_detected_problems: String,
+    #[serde(default = "default_problems_scope_open_tabs")]
+    pub problems_scope_open_tabs: String,
+    #[serde(default = "default_problems_scope_active_tab")]
+    pub problems_scope_active_tab: String,
     pub format_markdown_success: String,
     pub format_markdown_partial_failure: String,
     pub format_markdown_not_markdown: String,
@@ -34,4 +38,12 @@ pub struct StatusMessages {
     pub kind_markdown: String,
     pub yes: String,
     pub no: String,
+}
+
+fn default_problems_scope_open_tabs() -> String {
+    "Open tabs".to_string()
+}
+
+fn default_problems_scope_active_tab() -> String {
+    "Active tab".to_string()
 }

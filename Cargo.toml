@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.22.7"
+version = "0.22.8"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -27,7 +27,7 @@ egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonm
 
 # Markdown
 comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
-katana-markdown-linter = "0.12.13"
+katana-markdown-linter = "0.12.21"
 
 # Serialization / config
 serde = { version = "1", features = ["derive"] }

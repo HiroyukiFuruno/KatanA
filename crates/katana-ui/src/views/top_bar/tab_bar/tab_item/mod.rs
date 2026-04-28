@@ -27,6 +27,7 @@ pub(crate) struct TabItem<'a> {
     pub tab_groups: &'a [TabGroup],
     pub recently_closed_tabs_empty: bool,
     pub should_scroll: bool,
+    pub show_dirty_indicator: bool,
 }
 
 impl<'a> TabItem<'a> {
@@ -44,12 +45,18 @@ impl<'a> TabItem<'a> {
             .to_string_lossy()
             .starts_with("Katana://ChangeLog");
         let is_demo = self.doc.path.is_demo_path();
+        let is_lint_review = crate::app::LintFixReviewPath::is_review_path(&self.doc.path);
+        let original_filename = if is_lint_review {
+            crate::i18n::I18nOps::get().diff_review.title.clone()
+        } else {
+            self.doc.file_name().unwrap_or("untitled").to_string()
+        };
         let title = TopBarOps::tab_display_title(
-            self.doc.file_name().unwrap_or("untitled"),
+            &original_filename,
             is_changelog,
             is_demo,
             self.doc.is_dirty,
-            self.doc.is_pinned,
+            self.show_dirty_indicator,
         );
         let tooltip_path =
             crate::shell_logic::ShellLogicOps::relative_full_path(&self.doc.path, self.ws_root);

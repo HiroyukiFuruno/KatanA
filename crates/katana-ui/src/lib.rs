@@ -28,6 +28,7 @@ pub(crate) mod linter_config_bridge;
 #[cfg(test)]
 mod linter_config_bridge_tests;
 pub(crate) mod linter_default_config;
+pub(crate) mod linter_docs;
 pub(crate) mod linter_options_bridge;
 #[cfg(test)]
 mod linter_options_bridge_tests;
@@ -38,6 +39,7 @@ mod markdown_formatting_bridge_tests;
 pub use icon::*;
 pub mod changelog;
 pub mod diagram_controller;
+pub(crate) mod diff_review;
 pub(crate) mod editor_undo;
 pub mod native_menu;
 pub mod os_command;

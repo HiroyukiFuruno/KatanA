@@ -22,7 +22,7 @@ impl<'a> ProblemsPanel<'a> {
             return;
         }
 
-        egui::Panel::bottom("problems_panel")
+        let response = egui::Panel::bottom("problems_panel")
             .resizable(true)
             .min_size(100.0)
             .show_inside(ui, |ui| {
@@ -64,6 +64,7 @@ impl<'a> ProblemsPanel<'a> {
                                     .problems_panel_title
                                     .clone(),
                             );
+                            super::scope::ProblemScopeOps::render_toggle(ui, self.state);
 
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::Center),
@@ -79,9 +80,13 @@ impl<'a> ProblemsPanel<'a> {
                                     {
                                         self.state.diagnostics.is_panel_open = false;
                                     }
+                                    let visible_paths =
+                                        super::scope::ProblemScopeOps::visible_paths(self.state);
                                     let batches =
-                                        super::bulk_fixes::ProblemBulkFixOps::workspace_batches(
+                                        super::bulk_fixes::ProblemBulkFixOps::batches_for_paths(
                                             &self.state.diagnostics.problems,
+                                            &self.state.diagnostics,
+                                            &visible_paths,
                                         );
                                     if !batches.is_empty()
                                         && ui
@@ -106,7 +111,8 @@ impl<'a> ProblemsPanel<'a> {
                 ui.separator();
 
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    let total = self.state.diagnostics.total_problems();
+                    let visible_paths = super::scope::ProblemScopeOps::visible_paths(self.state);
+                    let total = self.state.diagnostics.total_problems_for_paths(&visible_paths);
                     if total == 0 {
                         ui.label(
                             egui::RichText::new(
@@ -116,13 +122,22 @@ impl<'a> ProblemsPanel<'a> {
                         );
                     } else {
                         let expand_all = self.state.diagnostics.expand_all;
-                        for (path, diagnostics) in &self.state.diagnostics.problems {
-                            let content = self.state.document.open_documents.iter()
-                                .find(|d| &d.path == path)
+                        for path in visible_paths {
+                            let Some(diagnostics) = self.state.diagnostics.problems.get(&path)
+                            else {
+                                continue;
+                            };
+                            let open_content = self.state.document.open_documents.iter()
+                                .find(|d| d.path == path)
                                 .map(|d| d.buffer.as_str());
+                            let content = self
+                                .state
+                                .diagnostics
+                                .content_snapshot(path.as_path())
+                                .or(open_content);
 
                             if let Some(action) =
-                                super::diagnostics_renderer::DiagnosticsRendererOps::show_file_diagnostics(ui, path, diagnostics, expand_all, content)
+                                super::diagnostics_renderer::DiagnosticsRendererOps::show_file_diagnostics(ui, &path, diagnostics, expand_all, content)
                             {
                                 *self.pending_action = action;
                             }
@@ -132,5 +147,12 @@ impl<'a> ProblemsPanel<'a> {
                     }
                 });
             });
+        ui.painter().line_segment(
+            [
+                response.response.rect.left_top(),
+                response.response.rect.right_top(),
+            ],
+            ui.visuals().window_stroke(),
+        );
     }
 }

@@ -30,6 +30,7 @@ impl<'a> TabToolbar<'a> {
                 &app.state.document.recently_closed_tabs,
                 &app.state.document.tab_groups,
                 &app.state.layout.inline_rename_group,
+                Self::show_dirty_indicator(app),
             )
             .show(ui);
             if let Some(a) = tab_action {
@@ -38,19 +39,16 @@ impl<'a> TabToolbar<'a> {
 
             let doc_info = app.state.active_document().map(|doc| {
                 let p = doc.path.to_string_lossy();
-                /* WHY: ChangeLog/Welcome/Guide are read-only virtual docs — no editor controls.
+                /* WHY: ChangeLog/Welcome/Guide/DiffReview are read-only virtual docs — no editor controls.
                  * Katana://Demo/ docs are interactive and keep full controls. */
                 let is_virtual = p.starts_with("Katana://ChangeLog")
                     || p.starts_with("Katana://Welcome")
-                    || p.starts_with("Katana://Guide");
+                    || p.starts_with("Katana://Guide")
+                    || crate::app::LintFixReviewPath::is_review_path(&doc.path);
                 /* WHY: LinterDocs get a special "View on GitHub" button in the toolbar. */
-                let linter_rule_id = if p.starts_with("Katana://LinterDocs/") {
-                    p.strip_prefix("Katana://LinterDocs/")
-                        .and_then(|s| s.strip_suffix(".md"))
-                        .map(|s| s.to_ascii_uppercase())
-                } else {
-                    None
-                };
+                let linter_rule_id =
+                    crate::linter_docs::LinterDocIdentity::from_virtual_path(&doc.path)
+                        .map(|identity| identity.rule_id().to_string());
                 (doc.path.clone(), is_virtual, linter_rule_id)
             });
             if let Some((doc_path, is_virtual, linter_rule_id)) = doc_info {
@@ -112,5 +110,10 @@ impl<'a> TabToolbar<'a> {
         let ws_root = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
         let rel = ShellLogicOps::relative_full_path(doc_path, ws_root.as_deref());
         Breadcrumbs::new(app, &rel, ws_root.as_deref()).show(ui)
+    }
+
+    fn show_dirty_indicator(app: &KatanaApp) -> bool {
+        let behavior = &app.state.config.settings.settings().behavior;
+        !behavior.auto_save || behavior.auto_save_interval_secs != 0.0
     }
 }

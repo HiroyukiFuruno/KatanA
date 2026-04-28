@@ -19,7 +19,7 @@ pub use combo_box::StyledComboBox;
 pub use interaction_facade::InteractionFacade;
 pub use markdown_hooks::MarkdownHooksOps;
 pub use menu_button::MenuButtonOps;
-pub use modal::Modal;
+pub use modal::{Modal, ModalWindowButton, ModalWindowControls};
 pub use search_bar::SearchBar;
 pub use segmented_toggle::SegmentedStringToggle;
 pub use shortcut::ShortcutWidget;

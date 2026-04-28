@@ -103,6 +103,7 @@ pub(crate) const PREVIEW_CONTENT_PADDING: i8 = 12;
 
 impl eframe::App for KatanaApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        crate::widgets::InteractionFacade::begin_frame(ctx);
         let theme_colors = self.poll_and_prepare(ctx);
 
         if !self.show_main_panels(ctx, &theme_colors) {

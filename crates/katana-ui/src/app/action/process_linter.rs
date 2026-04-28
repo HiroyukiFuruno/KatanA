@@ -1,6 +1,6 @@
 use crate::app_state::{AppAction, StatusType};
+use crate::linter_docs::LinterDocIdentity;
 use crate::shell::*;
-use std::path::PathBuf;
 
 impl KatanaApp {
     pub(super) fn handle_open_linter_doc(
@@ -9,33 +9,25 @@ impl KatanaApp {
         rule_id: String,
         docs_url: String,
     ) {
-        let content_opt = self.linter_docs_cache.get(&rule_id).cloned();
+        let identity = LinterDocIdentity::for_current_language(&rule_id);
+        let cache_key = identity.cache_key();
+        let content_opt = self.linter_docs_cache.get(&cache_key).cloned();
         if let Some(content) = content_opt {
-            self.open_virtual_linter_doc(ctx, &rule_id, &content);
+            self.open_virtual_linter_doc(ctx, &identity, &content);
             return;
         }
 
-        let raw_url = docs_url
-            .replace("github.com", "raw.githubusercontent.com")
-            .replace("/blob/", "/");
-        /* WHY: GitHub raw file paths are case-sensitive. Rule IDs like "MD038" are uppercase,
-         * but the actual doc filenames are lowercase (e.g. md038.md). Lowercase the filename. */
-        let raw_url = if let Some(pos) = raw_url.rfind('/') {
-            let (prefix, filename) = raw_url.split_at(pos + 1);
-            format!("{}{}", prefix, filename.to_lowercase())
-        } else {
-            raw_url
-        };
-
+        let raw_url = identity.raw_url(&docs_url);
         let (tx, rx) = std::sync::mpsc::channel();
         self.linter_doc_rx = Some(rx);
 
         let request = ehttp::Request::get(&raw_url);
         let ctx_clone = ctx.clone();
-        let rule_id_clone = rule_id.clone();
+        let cache_key_clone = cache_key.clone();
+        let status_label = identity.status_label();
 
         self.state.layout.status_message = Some((
-            format!("Fetching documentation for {}...", rule_id_clone),
+            format!("Fetching documentation for {status_label}..."),
             StatusType::Info,
         ));
 
@@ -49,11 +41,11 @@ impl KatanaApp {
                 } else {
                     Err(format!("HTTP error: {}", response.status))
                 };
-                let _ = tx.send((rule_id_clone, res));
+                let _ = tx.send((cache_key_clone, res));
                 ctx_clone.request_repaint();
             }
             Err(err) => {
-                let _ = tx.send((rule_id_clone, Err(err)));
+                let _ = tx.send((cache_key_clone, Err(err)));
                 ctx_clone.request_repaint();
             }
         });
@@ -62,16 +54,18 @@ impl KatanaApp {
     pub(crate) fn poll_linter_docs(&mut self, ctx: &eframe::egui::Context) {
         if let Some(rx) = &self.linter_doc_rx {
             match rx.try_recv() {
-                Ok((rule_id, Ok(content))) => {
+                Ok((cache_key, Ok(content))) => {
+                    let identity = LinterDocIdentity::from_cache_key(&cache_key);
                     self.linter_docs_cache
-                        .insert(rule_id.clone(), content.clone());
+                        .insert(cache_key.clone(), content.clone());
                     self.state.layout.status_message = None;
-                    self.open_virtual_linter_doc(ctx, &rule_id, &content);
+                    self.open_virtual_linter_doc(ctx, &identity, &content);
                     self.linter_doc_rx = None;
                 }
-                Ok((rule_id, Err(err))) => {
+                Ok((cache_key, Err(err))) => {
+                    let identity = LinterDocIdentity::from_cache_key(&cache_key);
                     self.state.layout.status_message = Some((
-                        format!("Failed to fetch {} docs: {}", rule_id, err),
+                        format!("Failed to fetch {} docs: {}", identity.status_label(), err),
                         StatusType::Error,
                     ));
                     self.linter_doc_rx = None;
@@ -87,10 +81,10 @@ impl KatanaApp {
     fn open_virtual_linter_doc(
         &mut self,
         _ctx: &eframe::egui::Context,
-        rule_id: &str,
+        identity: &LinterDocIdentity,
         content: &str,
     ) {
-        let virtual_path = PathBuf::from(format!("Katana://LinterDocs/{}.md", rule_id));
+        let virtual_path = identity.virtual_path();
         let mut doc = katana_core::document::Document::new_empty(&virtual_path);
         doc.buffer = content.to_string();
         doc.is_loaded = true;

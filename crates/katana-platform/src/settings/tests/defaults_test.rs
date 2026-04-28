@@ -36,6 +36,7 @@ fn test_app_settings_default_values() {
     assert_eq!(s.behavior.auto_save_interval_secs, 5.0);
     assert!(s.behavior.auto_refresh);
     assert_eq!(s.behavior.auto_refresh_interval_secs, 2.0);
+    assert_eq!(s.behavior.diff_view_mode, DiffViewMode::Split);
 }
 
 #[test]
@@ -47,6 +48,7 @@ fn test_behavior_settings_defaults() {
     assert_eq!(b.auto_save_interval_secs, 5.0);
     assert!(b.auto_refresh);
     assert_eq!(b.auto_refresh_interval_secs, 2.0);
+    assert_eq!(b.diff_view_mode, DiffViewMode::Split);
 }
 
 #[test]

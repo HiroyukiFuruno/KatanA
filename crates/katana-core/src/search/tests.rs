@@ -21,6 +21,9 @@ fn test_search_history() {
     history.push_term("banana".to_string(), 3);
     assert_eq!(history.recent_terms, vec!["banana", "date", "cherry"]);
 
+    history.remove_term("date");
+    assert_eq!(history.recent_terms, vec!["banana", "cherry"]);
+
     history.clear();
     assert!(history.recent_terms.is_empty());
 }

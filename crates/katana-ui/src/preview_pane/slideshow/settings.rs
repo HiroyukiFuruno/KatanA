@@ -41,6 +41,12 @@ impl SlideshowSettingsOps {
             ),
             outrigger_size,
         );
+        Self::consume_slideshow_settings_sidebar_input(
+            ui,
+            panel_rect,
+            toggle_btn_rect,
+            open_factor,
+        );
 
         let msgs = crate::i18n::I18nOps::get();
         let text_color = ctx
@@ -149,5 +155,24 @@ impl SlideshowSettingsOps {
                     }
                 });
         }
+    }
+
+    fn consume_slideshow_settings_sidebar_input(
+        ui: &mut egui::Ui,
+        panel_rect: egui::Rect,
+        toggle_btn_rect: egui::Rect,
+        open_factor: f32,
+    ) {
+        let consume_rect = if open_factor > 0.0 {
+            panel_rect.union(toggle_btn_rect)
+        } else {
+            toggle_btn_rect
+        };
+
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "slideshow_settings_sidebar_input_blocker",
+            consume_rect,
+        );
     }
 }

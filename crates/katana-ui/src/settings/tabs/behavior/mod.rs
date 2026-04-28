@@ -2,6 +2,7 @@ use super::types::*;
 use crate::app_state::AppAction;
 use crate::settings::*;
 
+mod diff_mode;
 mod editor;
 mod ingest;
 mod performance;
@@ -16,6 +17,8 @@ impl BehaviorTabOps {
         ui.add_space(SETTINGS_TOGGLE_SPACING);
         ui.indent("behavior_editor_settings_body", |ui| {
             editor::BehaviorEditorOps::render(ui, state);
+            ui.add_space(SUBSECTION_SPACING);
+            diff_mode::BehaviorDiffModeOps::render(ui, state);
         });
         ui.add_space(SUBSECTION_SPACING);
         ingest::BehaviorIngestOps::render(ui, state);

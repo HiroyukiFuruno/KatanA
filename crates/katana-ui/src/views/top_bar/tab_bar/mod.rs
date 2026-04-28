@@ -20,6 +20,7 @@ pub(crate) struct TabBar<'a> {
     pub recently_closed_tabs: &'a std::collections::VecDeque<(std::path::PathBuf, bool)>,
     pub tab_groups: &'a [crate::state::document::TabGroup],
     pub inline_rename_group: &'a Option<String>,
+    pub show_dirty_indicator: bool,
 }
 
 impl<'a> TabBar<'a> {
@@ -30,6 +31,7 @@ impl<'a> TabBar<'a> {
         recently_closed_tabs: &'a std::collections::VecDeque<(std::path::PathBuf, bool)>,
         tab_groups: &'a [crate::state::document::TabGroup],
         inline_rename_group: &'a Option<String>,
+        show_dirty_indicator: bool,
     ) -> Self {
         Self {
             workspace_root,
@@ -38,6 +40,7 @@ impl<'a> TabBar<'a> {
             recently_closed_tabs,
             tab_groups,
             inline_rename_group,
+            show_dirty_indicator,
         }
     }
 
@@ -138,6 +141,7 @@ impl<'a> TabBar<'a> {
             tab_groups: self.tab_groups,
             recently_closed_tabs_empty: self.recently_closed_tabs.is_empty(),
             inline_rename_group: self.inline_rename_group,
+            show_dirty_indicator: self.show_dirty_indicator,
         };
         let draw_items = items::DrawItemCollector {
             open_documents: self.open_documents,

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 pub mod action;
 pub mod common;
 pub mod dashboard;
+pub mod diff_review;
 pub mod error;
 pub mod linter;
 pub mod menu;
@@ -20,6 +21,7 @@ pub mod workspace;
 pub use action::*;
 pub use common::*;
 pub use dashboard::*;
+pub use diff_review::*;
 pub use error::*;
 pub use linter::*;
 pub use menu::*;
@@ -61,4 +63,6 @@ pub struct I18nMessages {
     pub dashboard: DashboardMessages,
     #[serde(default)]
     pub linter: LinterTranslations,
+    #[serde(default)]
+    pub diff_review: DiffReviewMessages,
 }

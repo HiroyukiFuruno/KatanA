@@ -69,6 +69,15 @@ impl<'a> PreviewSidePanels<'a> {
         let panel_x = sidebar_rect.left() - PANEL_WIDTH * anim - POPUP_GAP;
         let panel_y = sidebar_rect.top();
         let panel_height = sidebar_rect.height();
+        let panel_rect = egui::Rect::from_min_size(
+            egui::pos2(panel_x, panel_y),
+            egui::vec2(PANEL_WIDTH, panel_height),
+        );
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "preview_toc_hover_overlay_input_blocker",
+            panel_rect,
+        );
         let animation_f32 = anim;
         let mut clicked_line = None;
         let mut active_index_out = None;
@@ -149,7 +158,7 @@ impl<'a> PreviewSidePanels<'a> {
         };
         let mut clicked_line = None;
         let mut active_index_out = None;
-        panel
+        let response = panel
             .frame(frame)
             .default_width(TOC_PANEL_DEFAULT_WIDTH)
             .show_inside(ui, |ui| {
@@ -165,6 +174,18 @@ impl<'a> PreviewSidePanels<'a> {
                     active_index_out = ai;
                 }
             });
+        let edge = match position {
+            TocPosition::Left => [
+                response.response.rect.right_top(),
+                response.response.rect.right_bottom(),
+            ],
+            TocPosition::Right => [
+                response.response.rect.left_top(),
+                response.response.rect.left_bottom(),
+            ],
+        };
+        ui.painter()
+            .line_segment(edge, ui.visuals().window_stroke());
         if let Some(clicked) = clicked_line {
             self.app.state.scroll.scroll_to_line = Some(clicked);
             self.app.state.scroll.last_scroll_to_line = None;

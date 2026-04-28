@@ -4,7 +4,7 @@ pub use crate::state::diagnostics::DiagnosticsState;
 pub use crate::state::document::{
     DocumentState, SplitViewState, TabSplitState, TabViewMode, ViewMode,
 };
-pub use crate::state::layout::LayoutState;
+pub use crate::state::layout::{DiffReviewSnapshot, LayoutState};
 pub use crate::state::scroll::{ScrollSource, ScrollState};
 pub use crate::state::search::{SearchState, SearchTab};
 pub use crate::state::update::{UpdatePhase, UpdateState};

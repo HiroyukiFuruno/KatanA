@@ -8,10 +8,10 @@ use katana_linter::rules::domains::theme::{
 };
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
-    FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps, HorizontalLayoutOps, IconButtonFillOps,
-    LazyCodeOps, MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps,
-    ProcessCommandOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps,
-    ScrollAreaInnerRectLeakOps, TypeSeparationOps,
+    ForegroundSurfaceOps, FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps,
+    HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps, MagicNumberOps, MinRectSizingOps,
+    NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
+    ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -462,13 +462,24 @@ fn ast_linter_global_menu_parity() {
 }
 
 #[test]
+fn ast_linter_foreground_surface_blocks_lower_ui() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = ForegroundSurfaceOps::lint(root);
+    ViolationReporterOps::panic(
+        "foreground-surface",
+        "Fix: Foreground overlays such as modals, context menus, and slideshow mode must block lower UI events.",
+        &all_violations,
+    );
+}
+
+#[test]
 fn ast_linter_settings_alignment() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     use katana_linter::rules::domains::ui::settings_alignment::SettingsAlignmentOps;
     let all_violations = SettingsAlignmentOps::check_settings_alignment(&root);
     ViolationReporterOps::panic(
         "settings-alignment",
-        "Fix: Layout properties inside settings must use `AlignCenter` and `egui::Align::Max` to prevent alignment breakages. Do not use `LabeledToggle` or `Align::Min`.",
+        "Fix: Layout properties inside settings must use `AlignCenter` and `egui::Align::Max` to prevent alignment breakages. Do not use `LabeledToggle` in linter properties, `Align::Min`, or checkbox controls.",
         &all_violations,
     );
 }

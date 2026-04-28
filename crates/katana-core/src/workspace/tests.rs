@@ -50,4 +50,6 @@ fn test_image_extension_detection() {
     assert!(!markdown.is_image());
     assert!(!directory.is_image());
     assert!(TreeEntry::image_extensions().contains(&"png"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"drawio"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"svg"));
 }

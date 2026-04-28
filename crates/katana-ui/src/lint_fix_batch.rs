@@ -4,4 +4,5 @@ use std::path::PathBuf;
 pub struct LintFixBatch {
     pub path: PathBuf,
     pub fixes: Vec<katana_markdown_linter::rules::markdown::DiagnosticFix>,
+    pub source: Option<String>,
 }

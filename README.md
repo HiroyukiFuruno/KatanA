@@ -34,7 +34,7 @@ Just as a katana cuts cleanly through its target, this tool is designed to **sli
 
 KatanA Desktop is a fast, lightweight Markdown workspace for macOS, Windows, and Linux, purpose-built for developers who work with specification documents and technical writing.
 
-The trailing uppercase **A** stands for **"AI"** and **"Agent"** — KatanA is designed for the era of AI agent-assisted development, where Markdown specifications serve as the bridge between humans and AI. **Katana × AI Agent = KatanA.**
+The trailing uppercase **A** stands for **"AI"**and**"Agent"**— KatanA is designed for the era of AI agent-assisted development, where Markdown specifications serve as the bridge between humans and AI.**Katana × AI Agent = KatanA.**
 
 ---
 
@@ -63,7 +63,7 @@ However, existing Markdown tools are often either:
 - general-purpose editors not optimized for technical documentation workflows, or
 - heavy knowledge-management tools with unnecessary complexity.
 
-**KatanA Desktop was created to solve this problem.**
+# KatanA Desktop was created to solve this problem
 
 The goal of KatanA is to provide a **simple, fast, and workspace-oriented Markdown environment** where developers can easily **browse and edit documentation used in SDD workflows**.
 
@@ -144,7 +144,7 @@ brew tap HiroyukiFuruno/KatanA && brew install katana-desktop
 
 KatanA features a built-in auto-updater. Once installed (whether via Homebrew or manually), KatanA will notify you when a new release is available.
 
-- **macOS:** You can update the app directly from within the UI by clicking the **"Update & Restart"** button. If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues.
+- **macOS:**You can update the app directly from within the UI by clicking the**"Update & Restart"** button. If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues.
 - **Windows / Linux:** The update dialog will provide a direct link to download the latest asset from the release page.
 
 ---

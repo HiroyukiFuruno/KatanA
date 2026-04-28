@@ -73,41 +73,6 @@ impl KatanaApp {
         }
     }
 
-    pub(crate) fn handle_action_refresh_diagnostics(&mut self) {
-        let Some(doc) = self.state.active_document() else {
-            return;
-        };
-        let path = doc.path.clone();
-        let content = doc.buffer.clone();
-
-        /* WHY: Virtual documents (e.g. "Katana://LinterDocs/MD*.md", "Katana://Demo/...") are not real
-         * filesystem files; running the linter on them would produce spurious diagnostics
-         * shown to the user without a backing file. Skip any path starting with "Katana://".
-         * Exception: "lint-fix.md" is explicitly designed to demonstrate the linter. */
-        use crate::state::document::VirtualPathExt as _;
-        if path.is_virtual_path() {
-            let path_str = path.to_string_lossy();
-            if !path_str.ends_with("lint-fix.md") && !path_str.ends_with("lint-fix.ja.md") {
-                return;
-            }
-        }
-
-        let is_markdown = path
-            .extension()
-            .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-            .unwrap_or(false);
-        if !is_markdown {
-            return;
-        }
-
-        let diagnostics = crate::linter_bridge::MarkdownLinterBridgeOps::evaluate_document(
-            &self.state,
-            path.as_path(),
-            &content,
-        );
-        self.state.diagnostics.update_diagnostics(path, diagnostics);
-    }
-
     pub(super) fn handle_action_clear_all_caches(&mut self, ctx: &egui::Context) {
         use egui::load::BytesLoader;
         katana_platform::cache::DefaultCacheService::clear_all_directories();

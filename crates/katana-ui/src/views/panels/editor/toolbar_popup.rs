@@ -58,6 +58,11 @@ impl ToolbarPopup {
                     .response
                     .hovered()
             });
+        crate::widgets::InteractionFacade::consume_rect(
+            ui,
+            "editor_authoring_toolbar_popup_input_blocker",
+            area_response.response.rect,
+        );
         Self::store_open(
             ui,
             editor_focused

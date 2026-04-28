@@ -6,6 +6,10 @@
 - [ ] v0.22.7 のガントチャート修正とは分離し、リリース前の追加修正範囲に含めない。
 - [ ] 調査結果を後続の versioned change へ移送できる粒度で記録する。
 
+## 0. task.mdの更新
+
+- [ ] 0.1 .codex/skills/openspec-tasks-template/SKILL.mdを利用して本task.mdをtemplate通りにアップデートする。
+
 ## 1. mmdc baseline 調査
 
 - [ ] 1.1 旧 KatanA 実装が `mmdc` に渡していた引数、背景色、テーマ、出力形式を確認する。
