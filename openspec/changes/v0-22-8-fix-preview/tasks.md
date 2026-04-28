@@ -199,9 +199,9 @@
 
 ## 7. Final Verification & Release Work
 
-- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 7.3 Ensure `make check` passes with exit code 0
+- [x] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [x] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [x] 7.3 Ensure `make check` passes with exit code 0
 - [ ] 7.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
@@ -210,3 +210,6 @@
 - [ ] 7.9 Create PR from `release/v0-22-8` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 7.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 7.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+
+### Final Verification Notes
+- [x] `make check` passed after the additional user feedback fixes for icon settings, search history, auto-save dirty marker branching, foreground hover propagation, and preview right sidebar spacing.
