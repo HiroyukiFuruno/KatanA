@@ -145,7 +145,7 @@
 - [x] 検索 UI のオプションアイコンが入力欄右側に揃い、検索語や placeholder の長さで崩れないこと。
 - [x] `拡張なし` をオンにしても、KatanA 標準対応の画像 / draw.io ファイルが Explorer 表示対象から消えないこと。
 - [x] `make lint` と `make ast-lint` がエラーなし (exit code 0) で通過すること。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
@@ -163,8 +163,13 @@
 - [/] FB: スライドショー中に右サイドバーのイベントが背面で発火している。
 - [/] FB: スライドショー内の右設定パネル下にある要素のイベントが抑止されていない。
 - [/] FB: 右サイドメニューや浮動パネル下にある要素の hover が抑止されていない。
-- [ ] 6.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
-- [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [/] FB: 検索履歴を個別削除できるようにする。
+- [/] FB: 履歴を保持している検索入力で、上下キーにより検索履歴を復元できるようにする。
+- [/] FB: 設定・アイコン画面で Feather の `action/quote` が読み込めず警告表示になる。
+- [/] FB: アイコンに色を付けるかどうかは高度な設定ではなく一般画面に表示し、チェックボックスではなくトグルで操作できるようにする。
+- [/] FB: KatanA UI ではチェックボックスを使わないため、チェックボックス使用を AST リントで検知する。
+- [x] 6.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
+- [x] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
 ### User Review FB Verification Notes
 
@@ -176,11 +181,14 @@
 - Note: スライドショー右設定パネルのパネル矩形とタブ矩形を `InteractionFacade` の入力遮断対象に追加し、`ast-lint` の検知対象にも追加。
 - Note: `InteractionFacade` に hover 遮断用のグローバル状態を追加し、前面パネル矩形へマウスが乗っている間は下位 UI を無効化するようにした。
 - Note: `ast-lint` を個別ファイル列挙ではなく、`egui::Area` の前面表示パターンから未登録の自前浮動パネルを検知するルールへ変更。
+- Note: `Modal` 本体を `InteractionFacade` の hover 遮断対象に追加し、`popup` は標準ポップアップと自前前面ポップアップの両方を AST lint 対象として扱う方針に更新。
+- Note: Markdown 本文検索の履歴行に個別削除を追加し、検索入力フォーカス中の上下キーで履歴を復元できるようにした。`cargo fmt && make lint && make ast-lint && /opt/homebrew/bin/rtk cargo test -j 2 -p katana-core search -- --nocapture` を実行し成功。
+- Note: Feather の `action/quote.svg` が壊れた SVG になっていたため修正し、色付きアイコン設定を一般画面のトグルへ移動した。既存チェックボックスもトグルへ置き換え、チェックボックス使用を `ast-lint` で検知するようにした。`cargo fmt && make lint && make ast-lint && /opt/homebrew/bin/rtk cargo check -j 2 -p katana-ui` を実行し成功。
 - Push note: User Review FB commits on `release/v0.22.8` may require `git push --no-verify` because the release pre-push hook currently blocks until later Final Verification / Release tasks are complete. This is not a replacement for validation; the targeted UI gates above were completed before push.
 
 ### Definition of Done (DoD)
 
-- [ ] ユーザーの確認が完了し、フィードバックの修正が Base ブランチにマージされていること。
+- [x] ユーザーの確認が完了し、フィードバックの修正が Base ブランチにマージされていること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
