@@ -118,7 +118,10 @@ mod tests {
         let second = PathBuf::from("/tmp/second.md");
         let mut problems = BTreeMap::new();
         problems.insert(first.clone(), vec![diagnostic("MD001", Some(fix("first")))]);
-        problems.insert(second.clone(), vec![diagnostic("MD002", Some(fix("second")))]);
+        problems.insert(
+            second.clone(),
+            vec![diagnostic("MD002", Some(fix("second")))],
+        );
 
         let mut state = crate::app_state::DiagnosticsState::new();
         state.update_diagnostics_for_content(first.clone(), "first source", Vec::new());

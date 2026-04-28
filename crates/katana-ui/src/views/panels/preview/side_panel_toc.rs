@@ -175,7 +175,8 @@ impl<'a> PreviewSidePanels<'a> {
                 response.response.rect.left_bottom(),
             ],
         };
-        ui.painter().line_segment(edge, ui.visuals().window_stroke());
+        ui.painter()
+            .line_segment(edge, ui.visuals().window_stroke());
         if let Some(clicked) = clicked_line {
             self.app.state.scroll.scroll_to_line = Some(clicked);
             self.app.state.scroll.last_scroll_to_line = None;

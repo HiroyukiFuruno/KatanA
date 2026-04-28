@@ -64,7 +64,7 @@ impl<'a> ProblemsPanel<'a> {
                                     .problems_panel_title
                                     .clone(),
                             );
-                            Self::render_scope_toggle(ui, self.state);
+                            super::scope::ProblemScopeOps::render_toggle(ui, self.state);
 
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::Center),
@@ -80,7 +80,8 @@ impl<'a> ProblemsPanel<'a> {
                                     {
                                         self.state.diagnostics.is_panel_open = false;
                                     }
-                                    let visible_paths = Self::visible_problem_paths(self.state);
+                                    let visible_paths =
+                                        super::scope::ProblemScopeOps::visible_paths(self.state);
                                     let batches =
                                         super::bulk_fixes::ProblemBulkFixOps::batches_for_paths(
                                             &self.state.diagnostics.problems,
@@ -110,7 +111,7 @@ impl<'a> ProblemsPanel<'a> {
                 ui.separator();
 
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-                    let visible_paths = Self::visible_problem_paths(self.state);
+                    let visible_paths = super::scope::ProblemScopeOps::visible_paths(self.state);
                     let total = self.state.diagnostics.total_problems_for_paths(&visible_paths);
                     if total == 0 {
                         ui.label(
@@ -146,49 +147,12 @@ impl<'a> ProblemsPanel<'a> {
                     }
                 });
             });
-        ui.painter().line_segment([response.response.rect.left_top(), response.response.rect.right_top()], ui.visuals().window_stroke());
-    }
-
-    fn render_scope_toggle(ui: &mut egui::Ui, state: &mut AppState) {
-        const SCOPE_TOGGLE_LEFT_MARGIN: f32 = 8.0;
-        const SCOPE_TOGGLE_SEGMENT_WIDTH: f32 = 112.0;
-
-        let messages = &crate::i18n::I18nOps::get().status;
-        let open_tabs_label = messages.problems_scope_open_tabs.clone();
-        let active_tab_label = messages.problems_scope_active_tab.clone();
-        let choices = vec![open_tabs_label.as_str(), active_tab_label.as_str()];
-        let mut selected = match state.diagnostics.scope {
-            crate::state::diagnostics::ProblemsScope::OpenTabs => open_tabs_label.clone(),
-            crate::state::diagnostics::ProblemsScope::ActiveTab => active_tab_label.clone(),
-        };
-
-        ui.add_space(SCOPE_TOGGLE_LEFT_MARGIN);
-        let response = ui.add(
-            crate::widgets::SegmentedStringToggle::new("problems-scope-toggle", &choices, &mut selected)
-            .segment_width(SCOPE_TOGGLE_SEGMENT_WIDTH),
+        ui.painter().line_segment(
+            [
+                response.response.rect.left_top(),
+                response.response.rect.right_top(),
+            ],
+            ui.visuals().window_stroke(),
         );
-
-        if response.changed() {
-            state.diagnostics.scope = if selected == active_tab_label {
-                crate::state::diagnostics::ProblemsScope::ActiveTab
-            } else {
-                crate::state::diagnostics::ProblemsScope::OpenTabs
-            };
-        }
-    }
-
-    fn visible_problem_paths(state: &AppState) -> Vec<std::path::PathBuf> {
-        match state.diagnostics.scope {
-            crate::state::diagnostics::ProblemsScope::OpenTabs => state
-                .document
-                .open_documents
-                .iter()
-                .map(|doc| doc.path.clone())
-                .collect(),
-            crate::state::diagnostics::ProblemsScope::ActiveTab => state
-                .active_document()
-                .map(|doc| vec![doc.path.clone()])
-                .unwrap_or_default(),
-        }
     }
 }

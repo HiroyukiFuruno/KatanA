@@ -85,7 +85,10 @@ impl<'a> ExplorerSidebar<'a> {
                     .show(ui);
                 });
             ui.painter().line_segment(
-                [response.response.rect.right_top(), response.response.rect.right_bottom()],
+                [
+                    response.response.rect.right_top(),
+                    response.response.rect.right_bottom(),
+                ],
                 ui.visuals().window_stroke(),
             );
 

@@ -79,7 +79,12 @@ impl DiagnosticsState {
         paths
             .iter()
             .filter_map(|path| self.problems.get(path))
-            .map(|items| items.iter().filter(|item| item.official_meta.is_some()).count())
+            .map(|items| {
+                items
+                    .iter()
+                    .filter(|item| item.official_meta.is_some())
+                    .count()
+            })
             .sum()
     }
 

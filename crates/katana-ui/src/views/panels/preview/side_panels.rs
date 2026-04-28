@@ -1,7 +1,6 @@
+pub use super::side_panel_types::*;
 use crate::app_state::AppAction;
 use eframe::egui;
-
-pub use super::side_panel_types::*;
 
 pub(super) const PREVIEW_SIDE_BAR_WIDTH: f32 = 40.0;
 pub(super) const PREVIEW_SIDE_BAR_MARGIN: f32 = 4.0;
@@ -21,10 +20,7 @@ pub(super) const POPUP_PADDING: i8 = 0;
 pub(super) const POPUP_SHADOW_ALPHA: u8 = 48;
 pub(super) const POPUP_GAP: f32 = 2.0;
 
-/// Delay (seconds) before switching to a different popup panel on hover.
-///
-/// WHY: Prevents accidental panel switches when the user moves the mouse
-/// across toggle buttons while trying to reach the active popup content.
+/* WHY: Prevents accidental panel switches while the pointer crosses buttons. */
 pub(super) const HOVER_SWITCH_DELAY: f64 = 0.25;
 
 impl<'a> PreviewSidePanels<'a> {
@@ -151,7 +147,13 @@ impl<'a> PreviewSidePanels<'a> {
                 });
             });
         self.sidebar_rect = Some(panel_resp.response.rect);
-        ui.painter().line_segment([panel_resp.response.rect.left_top(), panel_resp.response.rect.left_bottom()], ui.visuals().window_stroke());
+        ui.painter().line_segment(
+            [
+                panel_resp.response.rect.left_top(),
+                panel_resp.response.rect.left_bottom(),
+            ],
+            ui.visuals().window_stroke(),
+        );
     }
 
     pub(super) fn render_toggle_button(

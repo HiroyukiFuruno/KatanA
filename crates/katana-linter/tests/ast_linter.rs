@@ -8,10 +8,10 @@ use katana_linter::rules::domains::theme::{
 };
 use katana_linter::rules::{
     CommentStyleOps, ConditionalFrameOps, ErrorFirstOps, FileLengthOps, FontNormalizationOps,
-    FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps, HorizontalLayoutOps, IconButtonFillOps,
-    LazyCodeOps, MagicNumberOps, MinRectSizingOps, NestingDepthOps, PerformanceOps,
-    ProcessCommandOps, ProhibitedAttributesOps, ProhibitedTypesOps, PubFreeFnOps,
-    ScrollAreaInnerRectLeakOps, TypeSeparationOps, ForegroundSurfaceOps,
+    ForegroundSurfaceOps, FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps,
+    HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps, MagicNumberOps, MinRectSizingOps,
+    NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
+    ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps, TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 

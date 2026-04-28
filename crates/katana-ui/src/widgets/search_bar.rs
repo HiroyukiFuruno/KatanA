@@ -176,12 +176,7 @@ impl<'a> SearchBar<'a> {
         final_resp
     }
 
-    fn toggle_button(
-        ui: &mut egui::Ui,
-        icon: Icon,
-        is_active: &mut bool,
-        changed: &mut bool,
-    ) {
+    fn toggle_button(ui: &mut egui::Ui, icon: Icon, is_active: &mut bool, changed: &mut bool) {
         if ui
             .add(icon.selected_button(ui, IconSize::Small, *is_active))
             .clicked()
