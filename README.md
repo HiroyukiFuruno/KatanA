@@ -166,17 +166,7 @@ The project is evolving rapidly — new features and improvements are released f
 
 ## Diagram Rendering Setup
 
-KatanA supports Mermaid, PlantUML, and Draw.io diagrams in Markdown fenced code blocks. External tools are required only for Mermaid and PlantUML rendering.
-
-### Mermaid
-
-Install the Mermaid CLI globally:
-
-```sh
-npm i -g @mermaid-js/mermaid-cli
-```
-
-Once installed, `mmdc` will be detected automatically. No additional configuration is needed.
+KatanA supports Mermaid, PlantUML, and Draw.io diagrams in Markdown fenced code blocks. Mermaid and Draw.io renderer assets are bootstrapped by KatanA. PlantUML rendering requires a Java runtime.
 
 ### PlantUML
 
@@ -280,26 +270,7 @@ Support helps cover:
 
 ## Appendix: Windows Environment Setup
 
-Installation instructions for external tools required for diagram rendering (Mermaid / PlantUML) on Windows.
-
-<details>
-<summary>Installing Node.js (Required for Mermaid CLI)</summary>
-
-Node.js is required to run the Mermaid CLI (`mmdc`).
-
-```powershell
-winget install -e --id OpenJS.NodeJS.LTS
-```
-
-After installation, open a new terminal and run:
-
-```powershell
-npm i -g @mermaid-js/mermaid-cli
-```
-
-> **If you encounter errors:** If `winget` fails, please download and install Node.js directly from the [Official Node.js Website](https://nodejs.org/).
-
-</details>
+Installation instructions for the Java runtime required for PlantUML rendering on Windows.
 
 <details>
 <summary>Installing JDK (Required for PlantUML)</summary>
