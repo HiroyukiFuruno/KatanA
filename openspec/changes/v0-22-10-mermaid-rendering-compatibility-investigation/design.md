@@ -28,6 +28,8 @@
 - Mermaid.js 以外の Draw.io / PlantUML を主対象にしない。
 - この change ではユーザー設定を増やさない。
 - ピクセル完全一致を目標にしない。
+- Mermaid renderer の汎用 interface 化、Mermaid.js の version 固定、`katana-renderer` 分離設計は v0.22.11 へ移管する。
+- Draw.io 描画と HTML / PDF / PNG / JPEG export runtime の所有境界は、v0.22.10 で混ぜ込まず、v0.22.11 の分離設計で整理する。
 
 ## Approach
 

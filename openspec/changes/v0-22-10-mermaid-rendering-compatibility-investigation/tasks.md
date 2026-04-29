@@ -58,6 +58,15 @@
 
 まず Rust 管理 JS（Rust 側が所有する JavaScript 実行環境）で公式 Mermaid.js / Drawio.js を動かせるか試す。DOM / SVG / layout API の不足で表示互換性や速度を満たせない場合、Mermaid と Draw.io は KatanA 管理下の高速な headless browser（画面なしブラウザ）/ WebView（アプリ内ブラウザ部品）/ Chromium（Chrome 系ブラウザエンジン）から単一の採用経路を選ぶ。Rust 製または Rust 管理で高速な headless browser が HTML export まで満たせるなら、置き換え候補に含める。実行時の退避経路（fallback）は持たない。
 
+重要: Task 2 の判定軸は「図形を表示できるか」だけではない。現行実装も表示はできているため、評価トピックは次の2つに絞る。
+
+- OS の環境に依存しない
+- 高速かつ正確に表示する
+
+現状は「OS 依存、遅い」。目指す状態は「OS 非依存、高速かつ正確」である。
+
+Rust 管理 JS の spike は、現行の表示品質を保ったまま、初回描画速度、連続描画速度、所有境界、配布安定性、CI 安定性、`mmdc` 由来の出力 policy 反映を改善できるかで判定する。Rust 管理 JS が表示だけできても、余白、サイズ、テーマ、特殊マーカー、HTML export 埋め込み、キャッシュ条件が崩れる場合は採用しない。
+
 ### 対象ファイル
 
 - `crates/katana-core/src/markdown/mermaid_renderer/`
@@ -72,14 +81,35 @@
 ### 完了条件（Definition of Done）
 
 - [ ] 2.1 現行実装が OS の Chrome / Chromium アプリを起動している箇所を Mermaid / Draw.io / HTML export / PDF / PNG / JPEG export ごとに棚卸しする
-- [ ] 2.2 Rust 管理 JS で公式 Mermaid.js / Drawio.js を動かす spike を先に行う
-- [ ] 2.3 Rust 管理 JS で DOM / SVG / layout API の不足、表示崩れ、速度劣化がないかを確認する
+- [ ] 2.2 Rust 管理 JS で公式 Mermaid.js / Drawio.js を動かす spike を先に行う。候補は `rquickjs`、`boa_engine` / `boa_runtime`、`deno_core` を比較し、Mermaid 専用 Rust renderer は OpenSpec 条件と衝突する代替案として別枠にする
+  - [x] 2.2.1 Rust 管理 V8 で `mermaid.min.js` を読み込み、`mermaid.render(...)` が `ReferenceError: document is not defined` で止まることを確認する
+  - [x] 2.2.2 Rust 管理 V8 に最小 DOM / SVG shim を足し、flowchart / sequence / class / state / gantt / pie の SVG 生成と label 保持に成功することを確認する
+  - [x] 2.2.3 Rust 管理 JS を本体 Mermaid renderer の既定経路へ接続し、`make run-release` から試せる状態にする
+  - [x] 2.2.4 Mermaid 描画ごとの V8 isolate を worker 上で独立実行し、全体を塞ぐ直列 lock を外す
+  - [x] 2.2.5 `assets/fixtures/sample_mermaid_all.md` に Mermaid 図形種別の確認用 fixture を追加する
+  - [x] 2.2.6 全パターン fixture を実行評価し、26 block すべてが SVG 生成と rasterize まで通ることを確認する
+  - [x] 2.2.7 不足していた DOM / SVG / layout API を追加し、異常に大きい SVG が GPU texture 上限で preview を落とさない安全弁を入れる
+  - [x] 2.2.8 ガントチャートの期間外 today marker と SVG 最大幅 policy を Rust 管理 JS 経路へ移植する
+  - [x] 2.2.9 `sample_mermaid_all.md` は維持しつつ、26 種別を個別 Markdown fixture へ分解する
+  - [x] 2.2.10 `scripts/screenshot` に26個の個別 Markdown を順に開いてスクリーンショットを取るシナリオを追加する
+  - [x] 2.2.11 26種別の描画チェックシートを作り、サイズ・余白・ラベル・配色・欠落を1件ずつ記録して修正する
+  - [x] 2.2.12 公式 Mermaid.js を実ブラウザーで描画した参照画像を26個生成し、各個別 Markdown fixture へ比較用画像として埋め込む
+  - [x] 2.2.13 `make mermaid-diagram-update` で、Mermaid.js 更新後も公式参照画像と Markdown 内の画像参照を再生成できるようにする
+  - [ ] 2.2.14 P1: 公式 Mermaid.js の実ブラウザー描画と KatanA 描画を比較する評価証跡を作成し、差分を種別ごとに記録する
+  - [ ] 2.2.15 P1: 公式描画との差分から、今回補正するものと後続へ送るものを分け、今回対象の補正を実装する
+  - [ ] 2.2.16 P1: 公式比較で見つかった表示差分を、サイズ / 余白 / 配色 / SVG 互換 / エラー表示に分類し、v0.22.10 で補正する対象を実装する
+- [ ] 2.3 Rust 管理 JS で DOM / SVG / layout API の不足、表示崩れ、速度劣化がないかを確認する。判定は「表示できるか」ではなく、「OS の環境に依存しない」「高速かつ正確に表示する」を満たすかで行う
+  - [x] 2.3.1 JavaScript engine 単体では公式 Mermaid.js の描画条件を満たせず、`document` / SVG DOM / layout API の所有可否が主論点になることを記録する
+  - [x] 2.3.2 最小 DOM / SVG shim の `getBBox()` / text measurement / selector / DOMPurify 周辺 API が、表示品質として許容できる精度か確認する
+  - [x] 2.3.3 preview cache key に Rust 管理 JS SVG profile を含め、旧 PNG キャッシュと混在させない
 - [ ] 2.4 Rust 製または Rust 管理で高速な headless browser が preview / HTML export の用途を満たすか確認する
 - [ ] 2.5 Rust 管理 JS が不採用の場合、高速な headless browser / WebView / Chromium を表示互換性、速度、配布サイズ、platform 差分、sandbox、CI 安定性で比較し、単一の採用経路を決める
-- [ ] 2.6 OS Chrome / Chromium アプリを通常 preview / HTML export の既定経路として起動しないことを実装条件にする
+- [x] 2.6 `headless_chrome` 依存を削除し、通常 preview / HTML export / PDF / PNG / JPEG export から OS Chrome アプリを起動する経路を外す
 - [ ] 2.7 採用した runtime と、不採用候補を退避経路（fallback）として残さない理由を `design.md` に記録する
 - [ ] 2.8 HTML から PDF / PNG / JPEG へ変換する export runtime も、同じ採用経路へ寄せられるか確認する
+  - [x] 2.8.1 `headless_chrome` で PDF / PNG / JPEG を出す経路は削除し、管理下 Chromium runtime 未接続の明示エラーへ変更する
 - [ ] 2.9 v0.22.10 で移行しきれない export 経路や特殊ケースは、採用経路へ混ぜず後続 versioned change として扱う
+- [ ] 2.10 runtime 採用判断の前に、spike 結果と比較表をユーザーへ提示して確認を得る
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -181,7 +211,14 @@ fixture と証跡から、今回 KatanA renderer に取り込む差分、後続 
 
 - [ ] 6.1 ユーザーへ実装完了の報告および比較証跡を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする
 - [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
-- [ ] 6.3 フィードバック: 通常 preview が OS の Chrome / Chromium アプリへ依存する状態は NG。Mermaid / Draw.io は KatanA 管理下の単一経路へ移す
+- [ ] 6.3 フィードバック: 現状は「OS 依存、遅い」。通常 preview が OS の Chrome / Chromium アプリへ依存する状態は NG。Mermaid / Draw.io は KatanA 管理下の単一経路へ移し、高速かつ正確な表示を判断基準にする
+- [ ] 6.4 フィードバック: HTML 生成時の SVG 読み込み表示文言で `{{lucide:hourglass}}` のようなテンプレート文字列が展開されずに見えている。Rust 管理 JS runtime の評価後、別バグ対応タスクとして修正する
+- [/] 6.5 フィードバック: Rust 管理 JS runtime の不足 API を追加して対応できないか。text content、append、layout size、`getComputedStyle()` 初期値を追加し、Mermaid 全パターン fixture を 26/26 に更新する
+- [/] 6.6 フィードバック: `sample_mermaid_all.md` は維持したまま、26個の個別 Markdown、スクリーンショットシナリオ、チェックシートを追加し、26個すべての正確な描画を目指す
+- [/] 6.7 フィードバック: 26種別を人間が目視で正解判定し続けるのは難しいため、公式 Mermaid.js を実ブラウザーで描画した参照画像を基準に比較できるようにする
+- [/] 6.8 P1 フィードバック: Mermaid preview 表示機構と検証機構は、HTML / PDF / PNG / JPEG export の境界も含めて `katana-renderer` として早期に別 repository 化する。KatanA は描画専門性を負わない。interface 汎用化、Mermaid.js version 固定、分離設計は v0.22.11 `v0-22-11-renderer-runtime-interface-and-versioning` へ移管し、v0.22.10 は表示最適化へ集中する
+- [ ] 6.9 最優先フィードバック: 公式 Mermaid.js の実ブラウザー描画との比較評価を行い、今回補正できる差分は補正する
+- [/] 6.10 フィードバック: Mermaid.js に渡せる値との互換性を保つ。`theme` / `themeVariables` / `securityLevel` / diagram-specific config を Mermaid.js config として扱い、KatanA 独自 policy を外側へ分離する interface 整理は v0.22.11 へ移管する。v0.22.10 では表示補正のための最小限の既存設定変更に留める
 
 ---
 
@@ -197,6 +234,7 @@ fixture と証跡から、今回 KatanA renderer に取り込む差分、後続 
 
 - [ ] Task 6（User Review）が完了している
 - [ ] `FINDINGS.md` / `COMPATIBILITY_MATRIX.md` に調査結果と後続判断が記録済みである
+  - [x] `RUST_MANAGED_JS_SPIKE.md` に V8 直接実行の結果を記録済みである
 
 ### 完了条件（Definition of Done）
 

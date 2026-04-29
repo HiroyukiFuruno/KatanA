@@ -15,6 +15,7 @@ KatanA は Mermaid の描画を `mmdc` 実行から、ローカル `mermaid.min.
 - Mermaid.js renderer の viewport、container 幅、SVG 計測、PNG capture、余白、最大幅、背景、テーマ反映を KatanA 側の責務として整理する。
 - flowchart / sequence / class / state / entity relationship / gantt / pie / journey / mindmap / timeline の fixture を使い、見た目の崩れを検出できるようにする。
 - 差分をコードで吸収するもの、後続 versioned change に分けるもの、許容差分として文書化するものに分類する。
+- Mermaid renderer の汎用 interface 化、利用する Mermaid.js の version 固定、`katana-renderer` 分離設計は v0.22.11 へ移管する。
 - `v0.22.10` のリリース対象として、実装、証跡、リリース準備まで完了させる。
 
 ## Capabilities
