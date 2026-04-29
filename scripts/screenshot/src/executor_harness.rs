@@ -574,6 +574,10 @@ pub fn run(
                         harness.state_mut().app_state_mut().diagnostics.is_panel_open = true;
                         step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
                     }
+                    UiAction::RefreshDiagnostics => {
+                        harness.state_mut().trigger_action(AppAction::RefreshDiagnostics);
+                        step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
+                    }
                     UiAction::ClickNode { label, button, wait_seconds } => {
                         click_node(&mut harness, label, *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
@@ -634,6 +638,7 @@ pub fn run(
                             | UiAction::SlideshowNavigate { .. }
                             | UiAction::SelectDemoTab { .. }
                             | UiAction::OpenProblemsPanel
+                            | UiAction::RefreshDiagnostics
                             | UiAction::ClickNode { .. }
                             | UiAction::HoverAt { .. }
                             | UiAction::ClickAt { .. }

@@ -181,6 +181,8 @@ pub enum UiAction {
     SelectDemoTab { file_name: String },
     /// Open the Problems panel without relying on screen coordinates.
     OpenProblemsPanel,
+    /// Refresh diagnostics for currently open Markdown documents.
+    RefreshDiagnostics,
     /// Open settings and navigate to a specific tab.
     /// Tab names: "theme", "icons", "font", "layout", "workspace", "updates", "behavior", "shortcuts"
     OpenSettingsTab { tab: String },
