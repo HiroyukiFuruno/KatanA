@@ -37,11 +37,11 @@
 
 ### 完了条件（Definition of Done）
 
-- [ ] 1.1 旧 KatanA が `mmdc` に渡していた引数（backgroundColor, theme, input, output, quiet）を確認する
-- [ ] 1.2 `mmdc` の既定 width / height / scale / backgroundColor を確認する
-- [ ] 1.3 `mmdc` 依存として戻さない条件を `FINDINGS.md` に明記する
-- [ ] 1.4 KatanA renderer に取り込むべき出力契約を policy として整理する
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] 1.1 旧 KatanA が `mmdc` に渡していた引数（backgroundColor, theme, input, output, quiet）を確認する
+- [x] 1.2 `mmdc` の既定 width / height / scale / backgroundColor を確認する
+- [x] 1.3 `mmdc` 依存として戻さない条件を `FINDINGS.md` に明記する
+- [x] 1.4 KatanA renderer に取り込むべき出力契約を policy として整理する
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
