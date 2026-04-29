@@ -7,7 +7,10 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(name = "katana-screenshot", about = "Generic screenshot runner for KatanA")]
+#[command(
+    name = "katana-screenshot",
+    about = "Generic screenshot runner for KatanA"
+)]
 struct Cli {
     #[arg(long, value_name = "FILE", help = "Path to request JSON file")]
     request: PathBuf,

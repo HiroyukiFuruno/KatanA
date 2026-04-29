@@ -178,26 +178,45 @@ pub enum UiAction {
     OpenHelpDemo,
     SelectNextTab,
     /// Select an already-open demo tab by its file name, e.g. "katana-architecture.md".
-    SelectDemoTab { file_name: String },
+    SelectDemoTab {
+        file_name: String,
+    },
     /// Open the Problems panel without relying on screen coordinates.
     OpenProblemsPanel,
+    /// Close the global search modal if it is open.
+    CloseSearchModal,
+    /// Close the in-document search bar if it is open.
+    CloseDocSearch,
     /// Refresh diagnostics for currently open Markdown documents.
     RefreshDiagnostics,
+    /// Apply all lint fixes for the active file and open the diff review.
+    ApplyLintFixesForActiveFile,
     /// Open settings and navigate to a specific tab.
     /// Tab names: "theme", "icons", "font", "layout", "workspace", "updates", "behavior", "shortcuts"
-    OpenSettingsTab { tab: String },
+    OpenSettingsTab {
+        tab: String,
+    },
     /// Force-open a collapsing accordion by its egui Id source string.
-    ForceOpenAccordion { id: String },
+    ForceOpenAccordion {
+        id: String,
+    },
     /// Open the icons advanced-settings panel (full-height override table view).
     OpenIconsAdvancedPanel,
     /// Scroll down in the currently visible panel by the given logical-pixel amount.
-    ScrollDown { amount: f32 },
+    ScrollDown {
+        amount: f32,
+    },
     /// Directly set the vertical scroll offset of an egui ScrollArea by its id_salt string.
-    SetScrollOffset { id: String, y: f32 },
+    SetScrollOffset {
+        id: String,
+        y: f32,
+    },
     /// Open the first (top) section in the changelog accordion.
     OpenFirstChangelogSection,
     /// Set the editor view mode. mode: "preview_only" | "code_only" | "split"
-    SetViewMode { mode: String },
+    SetViewMode {
+        mode: String,
+    },
     /// Open the command palette, type a query, and optionally execute the top result.
     RunCommandPalette {
         query: String,
@@ -230,15 +249,34 @@ pub enum UiAction {
         pause_after_seconds: Option<f64>,
     },
     /// Select a built-in theme preset from the visible Settings > Theme preset list.
-    SelectThemePresetInSettings { preset: String },
+    SelectThemePresetInSettings {
+        preset: String,
+    },
     /// Advance slideshow pages as if paging through fullscreen content.
-    SlideshowNavigate { direction: String, steps: u32, wait_seconds: f64 },
+    SlideshowNavigate {
+        direction: String,
+        steps: u32,
+        wait_seconds: f64,
+    },
     /// Click a widget by its accessibility label.
-    ClickNode { label: String, button: ClickButton, wait_seconds: f64 },
+    ClickNode {
+        label: String,
+        button: ClickButton,
+        wait_seconds: f64,
+    },
     /// Move the pointer to a logical viewport coordinate without clicking.
-    HoverAt { x: f32, y: f32, wait_seconds: f64 },
+    HoverAt {
+        x: f32,
+        y: f32,
+        wait_seconds: f64,
+    },
     /// Click a logical viewport coordinate.
-    ClickAt { x: f32, y: f32, button: ClickButton, wait_seconds: f64 },
+    ClickAt {
+        x: f32,
+        y: f32,
+        button: ClickButton,
+        wait_seconds: f64,
+    },
     /// Drag between two widgets by label.
     DragByLabel {
         from_label: String,

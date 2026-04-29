@@ -5,6 +5,7 @@ use crate::request::{
 use anyhow::{bail, Context, Result};
 use egui_kittest::{kittest::Queryable, Harness};
 use katana_core::workspace::TreeEntry;
+use katana_platform::theme::{ThemeMode, ThemePreset};
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
 use katana_ui::shell::KatanaApp;
 use katana_ui::state::command_palette::{
@@ -13,7 +14,6 @@ use katana_ui::state::command_palette::{
 use katana_ui::state::command_palette_providers::{
     AppCommandProvider, MarkdownContentProvider, WorkspaceFileProvider,
 };
-use katana_platform::theme::{ThemeMode, ThemePreset};
 use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
@@ -112,7 +112,12 @@ pub fn run(
             use katana_platform::SettingsService;
 
             let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-            katana_ui::font_loader::SystemFontLoader::setup_fonts(&cc.egui_ctx, &preset, None, None);
+            katana_ui::font_loader::SystemFontLoader::setup_fonts(
+                &cc.egui_ctx,
+                &preset,
+                None,
+                None,
+            );
             katana_ui::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
 
             let repo = katana_platform::JsonFileRepository::new(settings_path.clone());
@@ -127,23 +132,17 @@ pub fn run(
                 settings,
                 std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
             );
-            state
-                .config
-                .settings
-                .settings_mut()
-                .terms_accepted_version =
+            state.config.settings.settings_mut().terms_accepted_version =
                 Some(katana_ui::about_info::APP_VERSION.to_string());
             state
                 .config
                 .settings
                 .settings_mut()
                 .updates
-                .previous_app_version =
-                Some(katana_ui::about_info::APP_VERSION.to_string());
-            state.global_workspace =
-                katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
-                    katana_platform::workspace::InMemoryWorkspaceRepository::default(),
-                ));
+                .previous_app_version = Some(katana_ui::about_info::APP_VERSION.to_string());
+            state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(
+                Box::new(katana_platform::workspace::InMemoryWorkspaceRepository::default()),
+            );
             let _ = state.config.try_save_settings();
             let mut app = KatanaApp::new(state);
             app.skip_splash();
@@ -202,7 +201,9 @@ pub fn run(
                     .as_ref()
                     .and_then(|ws| first_file_in_tree(&ws.tree));
                 if let Some(path) = first {
-                    harness.state_mut().trigger_action(AppAction::SelectDocument(path));
+                    harness
+                        .state_mut()
+                        .trigger_action(AppAction::SelectDocument(path));
                     let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
                     for _ in 0..fps {
                         harness.step();
@@ -261,11 +262,8 @@ pub fn run(
                 if recorder.next_frame_index == 0 {
                     recorder.capture_frame(&mut harness)?;
                 }
-                let out = output_dir.join(format!(
-                    "{}.{}",
-                    recorder.output_name,
-                    recorder.extension()
-                ));
+                let out =
+                    output_dir.join(format!("{}.{}", recorder.output_name, recorder.extension()));
                 encode_video(&recorder, &out)?;
                 println!("  recorded: {}", out.display());
             }
@@ -280,7 +278,10 @@ pub fn run(
                         ScrollDirection::Down => -delta_per_frame,
                         ScrollDirection::Up => delta_per_frame,
                     };
-                    harness.input_mut().events.push(egui::Event::PointerMoved(pos));
+                    harness
+                        .input_mut()
+                        .events
+                        .push(egui::Event::PointerMoved(pos));
                     harness.input_mut().events.push(egui::Event::MouseWheel {
                         unit: egui::MouseWheelUnit::Point,
                         delta: egui::Vec2::new(0.0, signed_delta),
@@ -306,7 +307,8 @@ pub fn run(
                         continue;
                     }
                 };
-                let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
+                let preset =
+                    katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
                 let base_dir = doc_path.parent().map(|p| p.to_path_buf());
                 let tmp_html_name = format!("katana_screenshot_export_{}.html", s.output_name);
                 let html_path = katana_ui::shell_logic::ShellLogicOps::export_named_html_to_tmp(
@@ -342,7 +344,9 @@ pub fn run(
                     });
                 match path {
                     Some(p) => {
-                        harness.state_mut().trigger_action(AppAction::SelectDocument(p));
+                        harness
+                            .state_mut()
+                            .trigger_action(AppAction::SelectDocument(p));
                         let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                         let frames = ((s.wait_seconds * fps) as usize).max(30);
                         for _ in 0..frames {
@@ -351,7 +355,10 @@ pub fn run(
                         }
                     }
                     None => {
-                        println!("  WARNING: file {:?} not found in workspace tree", s.file_name);
+                        println!(
+                            "  WARNING: file {:?} not found in workspace tree",
+                            s.file_name
+                        );
                     }
                 }
             }
@@ -365,7 +372,9 @@ pub fn run(
                 match &a.action {
                     UiAction::OpenSettingsTab { tab } => {
                         if !harness.state_mut().app_state_mut().layout.show_settings {
-                            harness.state_mut().trigger_action(AppAction::ToggleSettings);
+                            harness
+                                .state_mut()
+                                .trigger_action(AppAction::ToggleSettings);
                         }
                         for _ in 0..30 {
                             harness.step();
@@ -383,11 +392,12 @@ pub fn run(
                     }
                     UiAction::ForceOpenAccordion { id } => {
                         let egui_id = egui::Id::new(id.as_str());
-                        let mut state = egui::collapsing_header::CollapsingState::load_with_default_open(
-                            &harness.ctx,
-                            egui_id,
-                            false,
-                        );
+                        let mut state =
+                            egui::collapsing_header::CollapsingState::load_with_default_open(
+                                &harness.ctx,
+                                egui_id,
+                                false,
+                            );
                         state.set_open(true);
                         state.store(&harness.ctx);
                         let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
@@ -410,7 +420,10 @@ pub fn run(
                         // Move pointer to center of settings content area, then scroll
                         let viewport = harness.ctx.viewport_rect();
                         let pos = egui::pos2(viewport.center().x, viewport.center().y);
-                        harness.input_mut().events.push(egui::Event::PointerMoved(pos));
+                        harness
+                            .input_mut()
+                            .events
+                            .push(egui::Event::PointerMoved(pos));
                         harness.input_mut().events.push(egui::Event::MouseWheel {
                             unit: egui::MouseWheelUnit::Point,
                             delta: egui::Vec2::new(0.0, *amount),
@@ -434,7 +447,10 @@ pub fn run(
                             remaining -= delta;
                             let viewport = harness.ctx.viewport_rect();
                             let pos = egui::pos2(viewport.center().x, viewport.center().y);
-                            harness.input_mut().events.push(egui::Event::PointerMoved(pos));
+                            harness
+                                .input_mut()
+                                .events
+                                .push(egui::Event::PointerMoved(pos));
                             harness.input_mut().events.push(egui::Event::MouseWheel {
                                 unit: egui::MouseWheelUnit::Point,
                                 delta: egui::Vec2::new(0.0, -delta),
@@ -452,11 +468,12 @@ pub fn run(
                         // The first (top) section matches the current app version.
                         let version = katana_ui::about_info::APP_VERSION;
                         let egui_id = egui::Id::new(version);
-                        let mut state = egui::collapsing_header::CollapsingState::load_with_default_open(
-                            &harness.ctx,
-                            egui_id,
-                            false,
-                        );
+                        let mut state =
+                            egui::collapsing_header::CollapsingState::load_with_default_open(
+                                &harness.ctx,
+                                egui_id,
+                                false,
+                            );
                         state.set_open(true);
                         state.store(&harness.ctx);
                         let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
@@ -476,7 +493,9 @@ pub fn run(
                                 ViewMode::PreviewOnly
                             }
                         };
-                        harness.state_mut().trigger_action(AppAction::SetViewMode(view_mode));
+                        harness
+                            .state_mut()
+                            .trigger_action(AppAction::SetViewMode(view_mode));
                         let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
@@ -531,11 +550,7 @@ pub fn run(
                         )?;
                     }
                     UiAction::SelectThemePresetInSettings { preset } => {
-                        select_theme_preset_in_settings(
-                            &mut harness,
-                            recording.as_mut(),
-                            preset,
-                        )?;
+                        select_theme_preset_in_settings(&mut harness, recording.as_mut(), preset)?;
                     }
                     UiAction::SlideshowNavigate {
                         direction,
@@ -571,14 +586,35 @@ pub fn run(
                         step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
                     }
                     UiAction::OpenProblemsPanel => {
-                        harness.state_mut().app_state_mut().diagnostics.is_panel_open = true;
+                        harness
+                            .state_mut()
+                            .app_state_mut()
+                            .diagnostics
+                            .is_panel_open = true;
                         step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
+                    }
+                    UiAction::CloseSearchModal => {
+                        harness.state_mut().app_state_mut().layout.show_search_modal = false;
+                        step_for_seconds(&mut harness, recording.as_mut(), 0.5)?;
+                    }
+                    UiAction::CloseDocSearch => {
+                        harness.state_mut().app_state_mut().search.doc_search_open = false;
+                        step_for_seconds(&mut harness, recording.as_mut(), 0.5)?;
                     }
                     UiAction::RefreshDiagnostics => {
-                        harness.state_mut().trigger_action(AppAction::RefreshDiagnostics);
+                        harness
+                            .state_mut()
+                            .trigger_action(AppAction::RefreshDiagnostics);
                         step_for_seconds(&mut harness, recording.as_mut(), 1.0)?;
                     }
-                    UiAction::ClickNode { label, button, wait_seconds } => {
+                    UiAction::ApplyLintFixesForActiveFile => {
+                        apply_lint_fixes_for_active_file(&mut harness, recording.as_mut())?;
+                    }
+                    UiAction::ClickNode {
+                        label,
+                        button,
+                        wait_seconds,
+                    } => {
                         click_node(&mut harness, label, *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
@@ -586,7 +622,12 @@ pub fn run(
                         harness.hover_at(egui::pos2(*x, *y));
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
-                    UiAction::ClickAt { x, y, button, wait_seconds } => {
+                    UiAction::ClickAt {
+                        x,
+                        y,
+                        button,
+                        wait_seconds,
+                    } => {
                         click_at(&mut harness, egui::pos2(*x, *y), *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
@@ -610,9 +651,9 @@ pub fn run(
                     other => {
                         let app_action = match other {
                             UiAction::ToggleToc => AppAction::ToggleToc,
-                            UiAction::ToggleSplitView => AppAction::SetViewMode(
-                                katana_ui::app_state::ViewMode::Split,
-                            ),
+                            UiAction::ToggleSplitView => {
+                                AppAction::SetViewMode(katana_ui::app_state::ViewMode::Split)
+                            }
                             UiAction::ToggleSettings => AppAction::ToggleSettings,
                             UiAction::ToggleExplorer => AppAction::ToggleExplorer,
                             UiAction::ToggleSlideshow => AppAction::ToggleSlideshow,
@@ -638,7 +679,10 @@ pub fn run(
                             | UiAction::SlideshowNavigate { .. }
                             | UiAction::SelectDemoTab { .. }
                             | UiAction::OpenProblemsPanel
+                            | UiAction::CloseSearchModal
+                            | UiAction::CloseDocSearch
                             | UiAction::RefreshDiagnostics
+                            | UiAction::ApplyLintFixesForActiveFile
                             | UiAction::ClickNode { .. }
                             | UiAction::HoverAt { .. }
                             | UiAction::ClickAt { .. }
@@ -874,7 +918,9 @@ fn refresh_command_palette_results(harness: &mut Harness<'_, KatanaApp>) {
     let app = harness.state_mut().app_state_mut();
     let is_action_mode = app.command_palette.current_query.starts_with('>');
     let actual_query = if is_action_mode {
-        app.command_palette.current_query[1..].trim_start().to_string()
+        app.command_palette.current_query[1..]
+            .trim_start()
+            .to_string()
     } else {
         app.command_palette.current_query.clone()
     };
@@ -922,7 +968,9 @@ fn run_global_search(
     keystroke_delay_seconds: f64,
     pause_after_seconds: f64,
 ) -> Result<()> {
-    harness.state_mut().trigger_action(AppAction::ToggleSearchModal);
+    harness
+        .state_mut()
+        .trigger_action(AppAction::ToggleSearchModal);
     step_for_seconds(harness, recording.as_deref_mut(), 0.3)?;
     {
         let search = &mut harness.state_mut().app_state_mut().search;
@@ -999,7 +1047,9 @@ fn run_document_search(
             let search = &mut harness.state_mut().app_state_mut().search;
             search.doc_search.query = typed.clone();
         }
-        harness.state_mut().trigger_action(AppAction::DocSearchQueryChanged);
+        harness
+            .state_mut()
+            .trigger_action(AppAction::DocSearchQueryChanged);
         step_for_seconds(harness, recording.as_deref_mut(), keystroke_delay_seconds)?;
     }
 
@@ -1078,12 +1128,52 @@ fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickBu
     }
 }
 
+fn apply_lint_fixes_for_active_file(
+    harness: &mut Harness<'_, KatanaApp>,
+    recording: Option<&mut ActiveRecording>,
+) -> Result<()> {
+    let batch = {
+        let app = harness.state_mut().app_state_mut();
+        let active_path = app
+            .active_document()
+            .context("expected an active document before applying lint fixes")?
+            .path
+            .clone();
+        let fixes: Vec<_> = app
+            .diagnostics
+            .get_file_diagnostics(&active_path)
+            .iter()
+            .filter(|diagnostic| diagnostic.official_meta.is_some())
+            .filter_map(|diagnostic| diagnostic.fix_info.clone())
+            .collect();
+        if fixes.is_empty() {
+            bail!("active document has no applicable lint fixes: {active_path:?}");
+        }
+        katana_ui::app_action::LintFixBatch {
+            source: app
+                .diagnostics
+                .content_snapshot(&active_path)
+                .map(str::to_string),
+            path: active_path,
+            fixes,
+        }
+    };
+    harness
+        .state_mut()
+        .trigger_action(AppAction::ApplyLintFixesForFiles(vec![batch]));
+    step_for_seconds(harness, recording, 1.0)?;
+    Ok(())
+}
+
 fn click_at(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2, button: ClickButton) {
     let pointer_button = match button {
         ClickButton::Primary => egui::PointerButton::Primary,
         ClickButton::Secondary => egui::PointerButton::Secondary,
     };
-    harness.input_mut().events.push(egui::Event::PointerMoved(pos));
+    harness
+        .input_mut()
+        .events
+        .push(egui::Event::PointerMoved(pos));
     harness.input_mut().events.push(egui::Event::PointerButton {
         pos,
         button: pointer_button,
@@ -1115,7 +1205,10 @@ fn perform_drag_by_labels(
     let from_pos = from_node.rect().center();
     let to_pos = to_node.rect().center();
 
-    harness.input_mut().events.push(egui::Event::PointerMoved(from_pos));
+    harness
+        .input_mut()
+        .events
+        .push(egui::Event::PointerMoved(from_pos));
     harness.step();
     maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
 
@@ -1138,7 +1231,10 @@ fn perform_drag_by_labels(
             from_pos.x + (to_pos.x - from_pos.x) * t,
             from_pos.y + (to_pos.y - from_pos.y) * t,
         );
-        harness.input_mut().events.push(egui::Event::PointerMoved(current));
+        harness
+            .input_mut()
+            .events
+            .push(egui::Event::PointerMoved(current));
         harness.step();
         maybe_capture_recording_frame(harness, recording.as_deref_mut())?;
         sleep_frame(60.0);

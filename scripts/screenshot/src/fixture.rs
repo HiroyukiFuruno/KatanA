@@ -46,12 +46,17 @@ pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
     let settings_json = build_settings_json(&fixture.settings, workspace_dir.as_deref());
     std::fs::write(cfg_dir.join("settings.json"), settings_json)?;
 
-    Ok(FixtureEnv { config_dir: cfg_dir, workspace_dir })
+    Ok(FixtureEnv {
+        config_dir: cfg_dir,
+        workspace_dir,
+    })
 }
 
 fn config_dir(home: &Path) -> PathBuf {
     if cfg!(target_os = "macos") {
-        home.join("Library").join("Application Support").join("KatanA")
+        home.join("Library")
+            .join("Application Support")
+            .join("KatanA")
     } else if cfg!(target_os = "windows") {
         home.join("AppData").join("Roaming").join("KatanA")
     } else {
@@ -62,7 +67,11 @@ fn config_dir(home: &Path) -> PathBuf {
 fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>) -> String {
     let theme_str = settings.theme.as_deref().unwrap_or("dark");
     let locale = settings.locale.as_deref().unwrap_or("en");
-    let preset = if theme_str == "light" { "KatanaLight" } else { "KatanaDark" };
+    let preset = if theme_str == "light" {
+        "KatanaLight"
+    } else {
+        "KatanaDark"
+    };
     let explorer_visible = settings.explorer_visible.unwrap_or(false);
     let linter_enabled = settings.linter_enabled.unwrap_or(true);
 
