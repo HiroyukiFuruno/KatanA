@@ -41,9 +41,9 @@ This fixture exercises HTML centering (past bug: left-aligned instead of centere
 ### 1.4 Badge Row (Multiple Link Images on Same Line)
 
 <p align="center">
-  <a href="#"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
-  <a href="#"><img src="<https://img.shields.io/badge/CI-passing-brightgreen.svg"> alt="CI"></a>
-  <a href="#"><img src="<https://img.shields.io/badge/platform-macOS-lightgrey"> alt="Platform: macOS"></a>
+  <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS"></a>
 </p>
 
 ↑ Three badges should appear on the **same line**, centered.
@@ -70,8 +70,8 @@ This fixture exercises HTML centering (past bug: left-aligned instead of centere
 </p>
 
 <p align="center">
-  <a href="#"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
-  <a href="#"><img src="<https://img.shields.io/badge/CI-passing-brightgreen.svg"> alt="CI"></a>
+  <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
 </p>
 
 <p align="center">

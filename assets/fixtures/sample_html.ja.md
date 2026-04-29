@@ -41,9 +41,9 @@
 ### 1.4 バッジ行（複数リンク画像の同一行表示）
 
 <p align="center">
-  <a href="#"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
-  <a href="#"><img src="<https://img.shields.io/badge/CI-passing-brightgreen.svg"> alt="CI"></a>
-  <a href="#"><img src="<https://img.shields.io/badge/platform-macOS-lightgrey"> alt="Platform: macOS"></a>
+  <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
+  <a href="#"><img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS"></a>
 </p>
 
 ↑ 3つのバッジが **同一行** に中央揃えで並んでいること。
@@ -70,8 +70,8 @@
 </p>
 
 <p align="center">
-  <a href="#"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
-  <a href="#"><img src="<https://img.shields.io/badge/CI-passing-brightgreen.svg"> alt="CI"></a>
+  <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="#"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
 </p>
 
 <p align="center">

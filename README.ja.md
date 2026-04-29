@@ -9,15 +9,15 @@
 </p>
 
 <p align="center">
-  <strong><a href="<https://katana-desktop.katana-projects.org/">>🌐 公式ウェブサイト</a></strong> | <strong><a href="https://katana-desktop.katana-projects.org/docs/getting-started">📚 ドキュメント</a></strong>
+  <strong><a href="https://katana-desktop.katana-projects.org/">🌐 公式ウェブサイト</a></strong> | <strong><a href="https://katana-desktop.katana-projects.org/docs/getting-started">📚 ドキュメント</a></strong>
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
-  <a href="<https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml">><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg" alt="CI"></a>
-  <a href="<https://github.com/HiroyukiFuruno/KatanA/releases/latest">><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
-  <a href="<https://github.com/HiroyukiFuruno/homebrew-katana">><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
-  <img src="<https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey"> alt="Platform: macOS | Windows | Linux">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
+  <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" alt="Platform: macOS | Windows | Linux">
 </p>
 
 <p align="center">
@@ -186,7 +186,7 @@ npm i -g @mermaid-js/mermaid-cli
 brew install openjdk@25
 ```
 
-2. PlantUML ブロックを含む Markdown ファイルを KatanA で開き、プレビューペインに表示される **⬇ ダウンロード** ボタンをクリックしてください。`plantuml.jar` が自動的にダウンロードされます。
+1. PlantUML ブロックを含む Markdown ファイルを KatanA で開き、プレビューペインに表示される **⬇ ダウンロード** ボタンをクリックしてください。`plantuml.jar` が自動的にダウンロードされます。
 
 ### Draw.io
 
@@ -261,7 +261,7 @@ KatanA Desktopはオープンソースプロジェクトです。
 
 KatanAが役に立ったと思っていただけたら、スポンサーシップで開発を支援できます。
 
-<a href="<https://github.com/sponsors/HiroyukiFuruno">><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
+<a href="https://github.com/sponsors/HiroyukiFuruno"><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
 
 支援は以下に活用されます：
 

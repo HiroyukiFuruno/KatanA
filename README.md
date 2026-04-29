@@ -9,15 +9,15 @@
 </p>
 
 <p align="center">
-  <strong><a href="<https://katana-desktop.katana-projects.org/">>🌐 Official Website</a></strong> | <strong><a href="https://katana-desktop.katana-projects.org/docs/getting-started">📚 Documentation</a></strong>
+  <strong><a href="https://katana-desktop.katana-projects.org/">🌐 Official Website</a></strong> | <strong><a href="https://katana-desktop.katana-projects.org/docs/getting-started">📚 Documentation</a></strong>
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
-  <a href="<https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml">><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg" alt="CI"></a>
-  <a href="<https://github.com/HiroyukiFuruno/KatanA/releases/latest">><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
-  <a href="<https://github.com/HiroyukiFuruno/homebrew-katana">><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
-  <img src="<https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey"> alt="Platform: macOS | Windows | Linux">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml"><img src="https://github.com/HiroyukiFuruno/KatanA/actions/workflows/test-and-build.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/HiroyukiFuruno/KatanA/releases/latest"><img src="https://img.shields.io/github/v/release/HiroyukiFuruno/KatanA" alt="Latest Release"></a>
+  <a href="https://github.com/HiroyukiFuruno/homebrew-katana"><img src="https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew" alt="Homebrew"></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey" alt="Platform: macOS | Windows | Linux">
 </p>
 
 <p align="center">
@@ -186,7 +186,7 @@ Once installed, `mmdc` will be detected automatically. No additional configurati
 brew install openjdk@25
 ```
 
-2. Open a Markdown file containing a PlantUML block in KatanA and click the **⬇ Download** button that appears in the preview pane. The `plantuml.jar` will be downloaded automatically.
+1. Open a Markdown file containing a PlantUML block in KatanA and click the **⬇ Download** button that appears in the preview pane. The `plantuml.jar` will be downloaded automatically.
 
 ### Draw.io
 
@@ -263,7 +263,7 @@ If you want to build from source, contribute, or understand the architecture:
 
 If you find KatanA useful and would like to support its development, you can do so through sponsorship.
 
-<a href="<https://github.com/sponsors/HiroyukiFuruno">><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
+<a href="https://github.com/sponsors/HiroyukiFuruno"><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=for-the-badge&logo=github-sponsors" alt="Sponsor"></a>
 
 Support helps cover:
 

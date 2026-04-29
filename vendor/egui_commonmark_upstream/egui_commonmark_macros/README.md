@@ -3,7 +3,7 @@
 [![Crate](https://img.shields.io/crates/v/egui_commonmark_macros.svg)](https://crates.io/crates/egui_commonmark_macros)
 [![Documentation](https://docs.rs/egui_commonmark_macros/badge.svg)](https://docs.rs/egui_commonmark_macros)
 
-<img src="<https://raw.githubusercontent.com/lampsitter/egui_commonmark/master/assets/example-v3.png"> alt="showcase" width=280/>
+<img src="https://raw.githubusercontent.com/lampsitter/egui_commonmark/master/assets/example-v3.png" alt="showcase" width=280/>
 
 This crate is `egui_commonmark`'s compile time variant. It is recommended to use
 this crate through `egui_commonmark` by enabling the `macros` feature.
