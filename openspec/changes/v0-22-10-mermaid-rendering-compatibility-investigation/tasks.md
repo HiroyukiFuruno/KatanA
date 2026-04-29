@@ -1,99 +1,129 @@
-## 0. Definition of Ready (DoR)
+# Tasks: v0.22.10 Mermaid Rendering Compatibility Investigation
 
-- [ ] この change は特定バージョンに割り当てない調査バックログとして扱う
-- [ ] proposal.md / design.md / spec.md が合意されている
-- [ ] v0.22.7 のガントチャート修正とは分離済みである
+## 0. 準備完了条件（Definition of Ready）
+
+- [x] `proposal.md` / `design.md` / `spec.md` が揃っている
+- [x] 本 change は `v0.22.10` のリリース対象として扱う
+- [x] v0.22.7 のガントチャート即時修正とは分離済みである
+- [x] `mmdc` は実行時依存として戻さず、出力条件の参照元として扱う
+- [x] 通常の diagram preview と HTML export は OS にインストールされた Chrome / Chromium アプリへ依存しない
+- [x] まず Rust 管理 JS で公式 Mermaid.js / Drawio.js を動かせるか試し、不採用なら高速な headless browser / WebView / Chromium から単一の採用経路を選ぶ
+- [x] Mermaid.js / Drawio.js を使わない Rust-native renderer へは切り替えない
+- [x] Rust 製または Rust 管理で高速な headless browser が用途を満たすなら、preview / export 共通の採用候補に含める
+- [x] 実行時の退避経路（fallback）はロジックを複雑化させるため採用しない
 
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-22-10-mermaid-rendering-compatibility-investigation`（チェンジディレクトリ名）
-- **作業ブランチ**: `feature/mermaid-compat-investigation-task-x`（xはタスク番号）
+- **標準（Base）ブランチ**: `release/v0.22.10`
+- **作業ブランチ**: `feature/v0.22.10-task-x`（xはタスク番号）
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 
 ---
 
-## 1. task.mdの更新
+## 1. `mmdc` 由来の出力契約を抽出する
 
-### 実装内容
+### 実施内容
 
-openspec-tasks-template を利用して tasks.md を template 形式に統一する。
-この change の第一タスク。
-
-### Definition of Done (DoD)
-
-- [x] 1.1 tasks.md の構造を DoR → Branch Rule → Task 群 → User Review → Final Verification に整理する
-- [x] 1.2 各 Task Group に DoR（Task 1除く）/ DoD（/openspec-delivery 含む）を追加する
-- [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
-
----
-
-## 2. mmdc baseline 調査
-
-### Definition of Ready (DoR)
-
-- [ ] Task 1 の完全デリバリーが完了している
-- [ ] Base ブランチが最新状態である
-
-### 実装内容
-
-旧 KatanA が使用していた `mmdc` 呼び出し方式、出力形式、出力特性を確認する。
-Mermaid.js 経路との比較基準を確立するための調査。
+旧 `mmdc` 経路が暗黙に担っていた viewport、背景、テーマ、拡大率、PNG 出力条件を確認し、KatanA renderer に移植するべき契約として整理する。
 
 ### 対象ファイル / リソース
 
-- 旧 KatanA ソースコード内 mmdc 呼び出し履歴
-- mmdc コマンドラインドキュメント（バージョン特定）
-- Mermaid CLI / Puppeteer / Mermaid.js 各バージョンの互換性記録
+- 旧 KatanA の `mmdc` 呼び出し履歴
+- `mmdc -h` / Mermaid CLI 公式ドキュメント
+- `openspec/changes/v0-22-10-mermaid-rendering-compatibility-investigation/FINDINGS.md`
 
-### Definition of Done (DoD)
+### 完了条件（Definition of Done）
 
-- [ ] 2.1 旧 KatanA が `mmdc` に渡していた引数（viewport, bg color, scale, theme）を確認する
-- [ ] 2.2 `mmdc` の既定 output size / viewport が固定値か入力依存かを実測する
-- [ ] 2.3 ガントチャートの赤い「今日」線が `mmdc` 出力でどのように扱われていたかを記録する
-- [ ] 2.4 mmdc / Puppeteer / Mermaid.js のバージョン依存性がどの程度影響するかを文書化する
-- [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
+- [ ] 1.1 旧 KatanA が `mmdc` に渡していた引数（backgroundColor, theme, input, output, quiet）を確認する
+- [ ] 1.2 `mmdc` の既定 width / height / scale / backgroundColor を確認する
+- [ ] 1.3 `mmdc` 依存として戻さない条件を `FINDINGS.md` に明記する
+- [ ] 1.4 KatanA renderer に取り込むべき出力契約を policy として整理する
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 3. Mermaid.js renderer 調査
+## 2. Browser runtime 方針を決める
 
-### Definition of Ready (DoR)
+### 準備完了条件（Definition of Ready）
 
-- [ ] Task 2 の完全デリバリーが完了している
-- [ ] Base ブランチが最新状態である
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-### 実装内容
+### 実施内容
 
-現行 Mermaid.js 描画経路の特性を確認する。viewport, container 幅, SVG 取得方法, キャッシュキー設計などを整理する。
+現在の Mermaid / Draw.io renderer と HTML export 経路は headless browser（画面を出さないブラウザ）を使うが、実体として `/Applications/Google Chrome.app` など OS 上のブラウザアプリを起動している箇所がある。通常の preview / HTML export ではこの依存を許容しない。
+
+まず Rust 管理 JS（Rust 側が所有する JavaScript 実行環境）で公式 Mermaid.js / Drawio.js を動かせるか試す。DOM / SVG / layout API の不足で表示互換性や速度を満たせない場合、Mermaid と Draw.io は KatanA 管理下の高速な headless browser（画面なしブラウザ）/ WebView（アプリ内ブラウザ部品）/ Chromium（Chrome 系ブラウザエンジン）から単一の採用経路を選ぶ。Rust 製または Rust 管理で高速な headless browser が HTML export まで満たせるなら、置き換え候補に含める。実行時の退避経路（fallback）は持たない。
 
 ### 対象ファイル
 
 - `crates/katana-core/src/markdown/mermaid_renderer/`
-- `crates/katana-core/src/system/renderer/mermaid_renderer_impl.rs` など Mermaid.js インテグレーション部分
+- `crates/katana-core/src/markdown/drawio_renderer/`
+- `crates/katana-core/src/markdown/export/`
+- `crates/katana-core/tests/markdown_mermaid.rs`
+- `crates/katana-core/tests/export_regression.rs`
+- `crates/katana-ui/src/app/export.rs`
+- `crates/katana-ui/src/app/export_poll.rs`
+- 必要に応じて `crates/katana-ui/tests/integration/preview_pane/diagrams.rs`
 
-### Definition of Done (DoD)
+### 完了条件（Definition of Done）
 
-- [ ] 3.1 ヘッドレスブラウザの viewport、render 対象 container の幅、SVG `viewBox` / `getBBox()` を確認する
-- [ ] 3.2 キャッシュキーに含めるべき描画条件（viewport, container width, theme, custom CSS）を確認する
-- [ ] 3.3 図形ごとに、親要素の幅を拾うか、内容幅で描画されるかを確認する
-- [ ] 3.4 Mermaid 初期化設定で解決できる差分（テーマ色, フォント, padding）と SVG 後処理が必要な差分を分離する
-- [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
+- [ ] 2.1 現行実装が OS の Chrome / Chromium アプリを起動している箇所を Mermaid / Draw.io / HTML export / PDF / PNG / JPEG export ごとに棚卸しする
+- [ ] 2.2 Rust 管理 JS で公式 Mermaid.js / Drawio.js を動かす spike を先に行う
+- [ ] 2.3 Rust 管理 JS で DOM / SVG / layout API の不足、表示崩れ、速度劣化がないかを確認する
+- [ ] 2.4 Rust 製または Rust 管理で高速な headless browser が preview / HTML export の用途を満たすか確認する
+- [ ] 2.5 Rust 管理 JS が不採用の場合、高速な headless browser / WebView / Chromium を表示互換性、速度、配布サイズ、platform 差分、sandbox、CI 安定性で比較し、単一の採用経路を決める
+- [ ] 2.6 OS Chrome / Chromium アプリを通常 preview / HTML export の既定経路として起動しないことを実装条件にする
+- [ ] 2.7 採用した runtime と、不採用候補を退避経路（fallback）として残さない理由を `design.md` に記録する
+- [ ] 2.8 HTML から PDF / PNG / JPEG へ変換する export runtime も、同じ採用経路へ寄せられるか確認する
+- [ ] 2.9 v0.22.10 で移行しきれない export 経路や特殊ケースは、採用経路へ混ぜず後続 versioned change として扱う
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 4. Fixture 作成と証跡生成
+## 3. 採用した単一 Mermaid renderer に出力 policy を実装する
 
-### Definition of Ready (DoR)
+### 準備完了条件（Definition of Ready）
 
-- [ ] Task 3 の完全デリバリーが完了している
-- [ ] Base ブランチが最新状態である
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-### 実装内容
+### 実施内容
 
-Mermaid 図形種類ごとの fixture を作成し、`mmdc` 出力と Mermaid.js 出力の比較証跡を生成する。
+KatanA 管理下で採用した単一 Mermaid renderer に、`mmdc` 由来のきれいな出力条件を移植する。主対象は viewport / container 幅 / SVG 計測 / PNG capture / HTML export 埋め込み / 余白 / 最大幅 / 背景 / テーマである。
+
+### 対象ファイル
+
+- `crates/katana-core/src/markdown/mermaid_renderer/`
+- `crates/katana-core/src/markdown/export/`
+- `crates/katana-core/tests/markdown_mermaid.rs`
+- `crates/katana-core/tests/export_regression.rs`
+
+### 完了条件（Definition of Done）
+
+- [ ] 3.1 採用した単一 Mermaid renderer の render width、capture width、padding、scale を明示的な policy として扱う
+- [ ] 3.2 SVG `getBBox()` / `viewBox` / screenshot 対象の扱いが、過度な横長化や余白過多を生まないことを確認する
+- [ ] 3.3 background / transparent background / theme variables が PNG 出力に反映されることを確認する
+- [ ] 3.4 HTML export に埋め込まれる Mermaid / Draw.io 出力も同じ policy で生成されることを確認する
+- [ ] 3.5 gantt の今日線など、出力サイズを壊す特殊マーカーの扱いを限定的な後処理として維持または改善する
+- [ ] 3.6 出力 policy を変えた場合は Mermaid cache key の version を更新する
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+
+---
+
+## 4. Fixture と回帰テストを追加する
+
+### 準備完了条件（Definition of Ready）
+
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+
+### 実施内容
+
+代表的な Mermaid 図形で、KatanA renderer の出力が崩れていないことを確認できる fixture と回帰テストを追加する。
 
 ### 対象図形
 
@@ -101,118 +131,80 @@ flowchart / sequence / class / state / entity relationship / gantt / pie / journ
 
 ### 対象ファイル
 
-- `crates/katana-core/tests/markdown_mermaid.rs`（テスト fixture）
-- `scripts/screenshot/`（スクリーンショット生成シナリオ）
+- `crates/katana-core/tests/markdown_mermaid.rs`
+- `scripts/screenshot/examples/`
 - `tmp/mermaid-compat-evidence/`（生成済み証跡、`.gitignore` 対象）
+- `openspec/changes/v0-22-10-mermaid-rendering-compatibility-investigation/COMPATIBILITY_MATRIX.md`
 
-### Definition of Done (DoD)
+### 完了条件（Definition of Done）
 
 - [ ] 4.1 各図形ごとの fixture を用意する（labels, edges, theme-sensitive elements を含む）
-- [ ] 4.2 各 fixture について `mmdc` baseline 出力を取得する
-- [ ] 4.3 現行 Mermaid.js で同じ fixture を render し、PNG 出力を得る
-- [ ] 4.4 出力先を `.gitignore` 対象に置き、fixture と生成手順だけを git 管理対象にする
-- [ ] 4.5 `scripts/screenshot` 環境で確認できるものは、手動操作不要なシナリオにする
-- [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
+- [ ] 4.2 採用した単一 KatanA renderer で PNG または renderer-neutral output の生成に成功することを確認する
+- [ ] 4.3 画像サイズが極端に横長・縦長・余白過多にならない最小回帰テストを追加する
+- [ ] 4.4 `scripts/screenshot` で確認できるものは、手動操作不要なシナリオにする
+- [ ] 4.5 比較結果を `COMPATIBILITY_MATRIX.md` に記録する
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
 ## 5. 差分分類と後続計画
 
-### Definition of Ready (DoR)
+### 準備完了条件（Definition of Ready）
 
-- [ ] Task 4 の完全デリバリーが完了している
-- [ ] Base ブランチが最新状態である
+- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-### 実装内容
+### 実施内容
 
-Task 4 で得られた証跡から、差分パターンを分類し、どれを即時修正し、どれを後続 versioned change 化するかを判定する。
-
-### 差分分類軸
-
-- **Layout**: 図形全体の位置・配置
-- **Size**: 出力サイズ、内容高さ・幅
-- **Theme**: 背景色、線色、文字色
-- **Typography**: フォント、文字サイズ
-- **Marker**: 特殊マーカー（gantt の今日線、alert アイコンなど）
-- **Interaction**: マウスホバーアニメーション（web 環境）
-- **Error Handling**: 不正記法のエラー表示
-- **Cache Behavior**: キャッシュ有効性
-
-### 対象ファイル
-
-- 本 change 配下に `FINDINGS.md` / `COMPATIBILITY_MATRIX.md` を新規作成
-
-### Definition of Done (DoD)
-
-- [ ] 5.1 差分を layout / size / theme / typography / marker / interaction / error handling / cache behavior に分類する
-- [ ] 5.2 各差分について、「即時修正」「versioned change 化」「許容差分（文書化）」のいずれかを判定する
-- [ ] 5.3 SVG 後処理が必要な候補は、対象図形と対象 SVG 要素を明確に限定する
-- [ ] 5.4 後続 versioned change を作成する場合は、本 change の FINDINGS.md を参照元として記録する
-- [ ] 5.5 COMPATIBILITY_MATRIX.md にまとめ、他の開発者が参照しやすくする
-- [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
-
----
-
-## 6. 調査結果完成と文書化
-
-### Definition of Ready (DoR)
-
-- [ ] Task 5 の完全デリバリーが完了している
-- [ ] Base ブランチが最新状態である
-
-### 実装内容
-
-調査結果を整理し、OpenSpec schema を確認した上で、後続対応への入力バックログとして確定する。
+fixture と証跡から、今回 KatanA renderer に取り込む差分、後続 versioned change に送る差分、許容差分を分類する。
 
 ### 対象ファイル
 
 - `openspec/changes/v0-22-10-mermaid-rendering-compatibility-investigation/FINDINGS.md`
 - `openspec/changes/v0-22-10-mermaid-rendering-compatibility-investigation/COMPATIBILITY_MATRIX.md`
-- `design.md` への補足（必要に応じて）
+- `openspec/changes/v0-22-10-mermaid-rendering-compatibility-investigation/design.md`（必要な補足がある場合のみ）
 
-### Definition of Done (DoD)
+### 完了条件（Definition of Done）
 
-- [ ] 6.1 調査結果を FINDINGS.md / COMPATIBILITY_MATRIX.md に整理し、後続 versioned change が参照しやすくする
-- [ ] 6.2 既存の proposal.md / design.md / spec.md と矛盾がないことを確認する
-- [ ] 6.3 「この change は実装完了ではなく調査バックログ入力」という前提を明記する
-- [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
+- [ ] 5.1 差分を layout / size / theme / typography / marker / interaction / error handling / cache behavior に分類する
+- [ ] 5.2 各差分について「今回実装」「後続 versioned change 化」「許容差分（文書化）」のいずれかを判定する
+- [ ] 5.3 SVG 後処理が必要な候補は、対象図形と対象 SVG 要素を明確に限定する
+- [ ] 5.4 後続 versioned change を作成する場合は、本 change の `FINDINGS.md` を参照元として記録する
+- [ ] 5.5 既存の `proposal.md` / `design.md` / `spec.md` と矛盾がないことを確認する
+- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
 
-## 7. User Review (Pre-Final Phase)
+## 6. User Review (Pre-Final Phase)
 
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
-- [ ] 7.1 ユーザーへ調査完了を報告し、FINDINGS.md / COMPATIBILITY_MATRIX.md を提示する
-- [ ] 7.2 ユーザーから受けたフィードバック（修正優先度、許容差分など）を本ドキュメントに追記する
-- [ ] 7.3 フィードバック内容を後続 versioned change へ移送する（必要に応じて）
+- [ ] 6.1 ユーザーへ実装完了の報告および比較証跡を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする
+- [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [ ] 6.3 フィードバック: 通常 preview が OS の Chrome / Chromium アプリへ依存する状態は NG。Mermaid / Draw.io は KatanA 管理下の単一経路へ移す
 
 ---
 
-## 8. Final Verification & Archive
+## KatanA CLI Entry Point
 
-### Definition of Ready (DoR)
+このリポジトリでは OpenSpec の実行入口として `./scripts/openspec` を使用すること。グローバルの `openspec` コマンドが見つからない場合でも未導入と判断してはならない。このラッパーは `bunx @fission-ai/openspec`、次に `npx @fission-ai/openspec` へフォールバックする。
 
-- [ ] Task 7（User Review）が完了している
-- [ ] 全調査結果が FINDINGS.md / COMPATIBILITY_MATRIX.md に記録済み
+このスキル内で `openspec ...` と書かれているコマンドは、リポジトリルートから `./scripts/openspec ...` として実行する。
 
-### 注意: 非 Versioned Change のため簡略版
+## 7. Final Verification & Release Work
 
-本 change はバージョン非割り当て調査バックログのため、以下を実施しない:
+### 準備完了条件（Definition of Ready）
 
-- リリースブランチ (`release/vX.Y.Z`) 作成なし
-- `make release VERSION=X.Y.Z` なし
-- GitHub Release なし
+- [ ] Task 6（User Review）が完了している
+- [ ] `FINDINGS.md` / `COMPATIBILITY_MATRIX.md` に調査結果と後続判断が記録済みである
 
-代わり、後続 versioned change での参照可能な状態で `/openspec-archive` でアーカイブする。
+### 完了条件（Definition of Done）
 
-### Definition of Done (DoD)
-
-- [ ] 8.1 `/self-review` スキルを実行し、セルフレビューを完了する
-- [ ] 8.2 Markdown / JSON schema の形式チェックを行う
-- [ ] 8.3 `git push` でpre-pushフックを正式ゲートとして通す（`--no-verify` 原則禁止）
-- [ ] 8.4 `master` へのPRを作成する（feature/mermaid-compat-investigation-taskX → master）
-- [ ] 8.5 CI確認（Lint / Type Check）
-- [ ] 8.6 `master` へマージ
-- [ ] 8.7 `/openspec-archive` で本 change をアーカイブする
-- [ ] 8.8 後続 versioned change が FINDINGS.md / COMPATIBILITY_MATRIX.md を参照できることを確認する
+- [ ] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
+- [ ] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
+- [ ] 7.3 `./scripts/openspec validate v0-22-10-mermaid-rendering-compatibility-investigation --strict` を実行し、OpenSpec の整合性を確認する
+- [ ] 7.4 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `make check` / `make check-light` を二重実行しない
+- [ ] 7.5 Create PR from `release/v0.22.10` targeting `master`
+- [ ] 7.6 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL / Release Readiness) — blocking merge if any fail
+- [ ] 7.7 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+- [ ] 7.8 Verify GitHub Release completion and archive this change using `/opsx-archive`
