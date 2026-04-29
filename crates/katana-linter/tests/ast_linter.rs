@@ -11,7 +11,8 @@ use katana_linter::rules::{
     ForegroundSurfaceOps, FrameStrokeOps, FunctionLengthOps, GlobalMenuParityOps,
     HorizontalLayoutOps, IconButtonFillOps, LazyCodeOps, MagicNumberOps, MinRectSizingOps,
     NestingDepthOps, PerformanceOps, ProcessCommandOps, ProhibitedAttributesOps,
-    ProhibitedTypesOps, PubFreeFnOps, ScrollAreaInnerRectLeakOps, TypeSeparationOps,
+    ProhibitedTypesOps, PubFreeFnOps, ReleaseScriptOps, ScrollAreaInnerRectLeakOps,
+    TypeSeparationOps,
 };
 use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
 
@@ -160,6 +161,17 @@ fn ast_linter_changelog_contains_current_workspace_version() {
     ViolationReporterOps::panic(
         "changelog-version-sync",
         "Fix: Add a `## [x.y.z]` release heading to CHANGELOG.md that matches workspace.package.version in Cargo.toml.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_windows_msi_packaging_uses_current_version() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = ReleaseScriptOps::lint(root);
+    ViolationReporterOps::panic(
+        "release-script-windows-msi-version",
+        "Fix: Windows packaging must remove stale MSI files and copy only the MSI matching the current Cargo version.",
         &all_violations,
     );
 }

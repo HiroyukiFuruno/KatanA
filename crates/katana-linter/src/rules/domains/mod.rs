@@ -5,6 +5,7 @@ pub mod i18n;
 pub mod locales;
 pub mod markdown;
 pub mod os_command;
+pub mod release_scripts;
 pub mod shortcut;
 pub mod theme;
 pub mod ui;
