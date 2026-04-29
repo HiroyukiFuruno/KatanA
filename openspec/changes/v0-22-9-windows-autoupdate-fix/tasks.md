@@ -6,6 +6,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `master`
 - **作業ブランチ**: `feature/v0.22.9-task-x`（xはタスク番号）
 
@@ -46,6 +47,7 @@
 ### 実装内容
 
 PowerShellスクリプト（`scripts.rs`のWindows向け生成部分）を改善:
+
 1. 親プロセスIDをスクリプトへ引数として渡す
 2. `Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue` で親プロセス終了を待機
 3. `Move-Item` にリトライループを追加（最大5回、1秒間隔）
