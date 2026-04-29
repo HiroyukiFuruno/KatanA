@@ -68,11 +68,13 @@ template generation は単なる文面生成ではなく、preset、destination 
 
 ## Risks / Trade-offs
 
-- **[Risk] 3 出力先を同時に入れることで UI が複雑になる**  
+- **[Risk] 3 出力先を同時に入れることで UI が複雑になる**
   -> Mitigation: 共通 job model と preview UI を使い、entry point だけ分ける
-- **[Risk] current document insert が既存内容を壊す**  
+
+- **[Risk] current document insert が既存内容を壊す**
   -> Mitigation: insert position と preview を明示し、undo 可能な apply にする
-- **[Risk] template scaffold が file collision を起こす**  
+
+- **[Risk] template scaffold が file collision を起こす**
   -> Mitigation: destination 確認と overwrite policy を追加する
 
 ## Migration Plan

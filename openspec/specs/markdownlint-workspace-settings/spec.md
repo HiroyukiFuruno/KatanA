@@ -1,8 +1,11 @@
 # markdownlint-workspace-settings Specification
 
 ## Purpose
+
 TBD - created by archiving change v0-22-7-markdownlint-workspace-formatting. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Lint general settings remain separate from markdownlint rule config
 
 システムは、一般設定で扱う Lint のオン/オフと「無視 / 警告 / エラー」の選択を、`.markdownlint.json` / `.markdownlint.jsonc` に保存されるルール有効化や詳細値と分離しなければならない（SHALL）。

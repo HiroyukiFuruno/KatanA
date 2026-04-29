@@ -61,11 +61,13 @@ workspace 未選択、active document 不在、dirty state 不在などで comma
 
 ## Risks / Trade-offs
 
-- **[Risk] command inventory の導入が `v0.20.0` を抽象化だけで終わらせる**  
+- **[Risk] command inventory の導入が `v0.20.0` を抽象化だけで終わらせる**
   -> Mitigation: File / View / Help の実際の command exposure まで Done に含める
-- **[Risk] non-macOS surface と native menu の表現差が残る**  
+
+- **[Risk] non-macOS surface と native menu の表現差が残る**
   -> Mitigation: parity は command coverage を優先し、表現差は許容する
-- **[Risk] Window / Tools 相当の menu が後から必要になる**  
+
+- **[Risk] Window / Tools 相当の menu が後から必要になる**
   -> Mitigation: inventory は grouping 拡張可能な shape にする
 
 ## Migration Plan

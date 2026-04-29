@@ -6,6 +6,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `master`
 - **作業ブランチ**: `feature/v0.22.9-task-x`（xはタスク番号）
 
@@ -29,9 +30,9 @@
 
 ### Definition of Done (DoD)
 
-- [ ] 1.1 `StartUpdateDownload` ハンドラ追加（`handle_action_install_update()` 委譲）
-- [ ] 1.2 `InstallUpdateAndRestart` ハンドラ追加（`pending_relaunch`経由でrelauncher実行）
-- [ ] 1.3 設定タブの「Download Update」「Install Update」ボタンが正常動作することを手動確認（またはテスト追加）
+- [x] 1.1 `StartUpdateDownload` ハンドラ追加（`handle_action_install_update()` 委譲）
+- [x] 1.2 `InstallUpdateAndRestart` ハンドラ追加（`pending_relaunch`経由でrelauncher実行）
+- [x] 1.3 設定タブの「Download Update」「Install Update」ボタンが正常動作することを手動確認（またはテスト追加）
 - [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
 
 ---
@@ -46,6 +47,7 @@
 ### 実装内容
 
 PowerShellスクリプト（`scripts.rs`のWindows向け生成部分）を改善:
+
 1. 親プロセスIDをスクリプトへ引数として渡す
 2. `Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue` で親プロセス終了を待機
 3. `Move-Item` にリトライループを追加（最大5回、1秒間隔）
@@ -59,12 +61,12 @@ PowerShellスクリプト（`scripts.rs`のWindows向け生成部分）を改善
 
 ### Definition of Done (DoD)
 
-- [ ] 2.1 親プロセスIDをPowerShellスクリプトに渡す仕組みを実装
-- [ ] 2.2 `Wait-Process` による親プロセス終了待機を追加
-- [ ] 2.3 `Move-Item` リトライループを実装（最大5回、1秒間隔）
-- [ ] 2.4 リトライ全失敗時のロールバック処理を追加
-- [ ] 2.5 `scripts.rs` の既存テストを更新・新規テストを追加
-- [ ] 2.6 `make check-light` がパスすることを確認
+- [x] 2.1 親プロセスIDをPowerShellスクリプトに渡す仕組みを実装
+- [x] 2.2 `Wait-Process` による親プロセス終了待機を追加
+- [x] 2.3 `Move-Item` リトライループを実装（最大5回、1秒間隔）
+- [x] 2.4 リトライ全失敗時のロールバック処理を追加
+- [x] 2.5 `scripts.rs` の既存テストを更新・新規テストを追加
+- [x] 2.6 `make check-light` がパスすることを確認
 - [ ] Execute `/openspec-delivery` workflow to run the comprehensive delivery routine.
 
 ---
@@ -73,8 +75,8 @@ PowerShellスクリプト（`scripts.rs`のWindows向け生成部分）を改善
 
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
-- [ ] 3.1 ユーザーへ実装完了の報告および動作状況を提示する（Windows環境での動作確認結果必須）
-- [ ] 3.2 ユーザーから受けたフィードバックを本ドキュメントに追記し、すべて対応・解決する
+- [x] 3.1 ユーザーへ実装完了の報告および動作状況を提示する（Windows環境での動作確認結果必須）
+- [x] 3.2 ユーザーから受けたフィードバックを本ドキュメントに追記し、すべて対応・解決する
 
 ---
 

@@ -1,6 +1,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `v0-26-0-decouple-preview` またはリリース用統合ブランチ（例: `release/v0.26.0`）
 - **作業ブランチ**: 標準は `v0-26-0-decouple-preview-task-x`、リリース用は `feature/v0.26.0-task-x` (xはタスク番号)
 
@@ -9,6 +10,7 @@
 ## 1. Setup New Crate
 
 ### Definition of Done (DoD)
+
 - [ ] Create `crates/katana-markdown-preview` with basic lib.rs
 - [ ] Add crate to workspace members in root `Cargo.toml`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
@@ -19,10 +21,12 @@
 ## 2. Implement Native Preview Component
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
+
 - [ ] Move `egui_commonmark` and diagram rendering dependencies to `katana-markdown-preview`
 - [ ] Implement color emoji support natively by injecting `egui::Image` (e.g., via `egui-twemoji` or custom parser hooks).
 - [ ] Expose public API for `katana-ui`
@@ -37,10 +41,12 @@
 ## 3. Refactor katana-ui and Clean Cargo.toml
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
+
 - [ ] Integrate new preview component into `katana-ui`
 - [ ] Remove `[patch.crates-io]` and `vendor/` entries related to preview from workspace root
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).

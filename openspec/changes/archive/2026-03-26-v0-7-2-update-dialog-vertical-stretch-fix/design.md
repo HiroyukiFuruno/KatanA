@@ -19,12 +19,13 @@
 ## Decisions
 
 - `auto_shrink([false; 2])` → `auto_shrink([true, true])` の 1 行変更で対応する
-- ScrollArea は update_available 分岐のみに存在するため「最新版」表示では ScrollArea 自体不要だが、  
+- ScrollArea は update_available 分岐のみに存在するため「最新版」表示では ScrollArea 自体不要だが、
   既存構成を最小変更で維持する観点から auto_shrink の変更のみに留める
-- テストは `katana-ui` integration test スイートに追加し、`render_update_window` が  
+
+- テストは `katana-ui` integration test スイートに追加し、`render_update_window` が
   up-to-date 状態で期待値以下の高さに収まることをアサートする
 
 ## Risks / Trade-offs
 
-- `auto_shrink([true, true])` に変更した場合、release notes が長い更新がある時には  
+- `auto_shrink([true, true])` に変更した場合、release notes が長い更新がある時には
   ScrollArea が自動縮小される可能性があるが、`max_height(250.0)` が上限として機能するため問題なし

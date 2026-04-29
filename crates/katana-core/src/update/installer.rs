@@ -121,6 +121,7 @@ impl UpdateInstallerOps {
 
         #[cfg(target_os = "windows")]
         {
+            let parent_pid = std::process::id().to_string();
             crate::system::ProcessService::create_command("powershell")
                 .args([
                     "-NoProfile",
@@ -130,6 +131,7 @@ impl UpdateInstallerOps {
                     "-File",
                 ])
                 .arg(&prep.script_path)
+                .arg(&parent_pid)
                 .spawn()?;
         }
         #[cfg(not(target_os = "windows"))]

@@ -56,9 +56,9 @@ Combined: **bold with *nested italic* inside**.
 
 1. First
 2. Second
-   1. Sub-second-A
-   2. Sub-second-B
-3. Third
+   3. Sub-second-A
+   4. Sub-second-B
+5. Third
 
 ### Task List
 
@@ -75,7 +75,7 @@ Combined: **bold with *nested italic* inside**.
 ### Basic Table
 
 | Language | Status | Since |
-|----------|--------|-------|
+| --- | --- | --- |
 | English | ✅ Stable | v0.1.0 |
 | Japanese | ✅ Stable | v0.5.0 |
 | Chinese | ✅ Stable | v0.8.0 |
@@ -84,7 +84,7 @@ Combined: **bold with *nested italic* inside**.
 ### Aligned Table
 
 | Left | Center | Right |
-|:-----|:------:|------:|
+| :--- | :---: | ---: |
 | text | text | 1 |
 | longer text | short | 12345 |
 
@@ -177,7 +177,7 @@ Einstein's famous equation: $E = mc^2$
 
 ### Display Math
 
-$$ \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} $$
+$ \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} $$
 
 ---
 

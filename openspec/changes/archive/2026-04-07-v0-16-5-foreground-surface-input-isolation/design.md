@@ -49,6 +49,7 @@ Implementation and tests will treat shell windows, context/popup menus, settings
 
 - [Risk] The blocker may be too broad and suppress valid interaction
   → Mitigation: limit the suppression to background panes and verify foreground close/scroll/form input in tests
+
 - [Risk] Some popup sources may still be missed
   → Mitigation: keep an explicit source inventory in tasks and tests
 

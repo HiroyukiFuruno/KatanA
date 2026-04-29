@@ -3,7 +3,7 @@
 [![Crate](https://img.shields.io/crates/v/egui_commonmark.svg)](https://crates.io/crates/egui_commonmark)
 [![Documentation](https://docs.rs/egui_commonmark/badge.svg)](https://docs.rs/egui_commonmark)
 
-<img src="https://raw.githubusercontent.com/lampsitter/egui_commonmark/master/assets/example-v4.png" alt="showcase" width=280/>
+<img src="<https://raw.githubusercontent.com/lampsitter/egui_commonmark/master/assets/example-v4.png"> alt="showcase" width=280/>
 
 While this crate's main focus is commonmark, it also supports a subset of
 Github's markdown syntax: tables, strikethrough, tasklists and footnotes.
@@ -31,7 +31,6 @@ let mut cache = CommonMarkCache::default();
 CommonMarkViewer::new().show(ui, &mut cache, markdown);
 ```
 
-
 ## Compile time evaluation of markdown
 
 If you want to embed markdown directly the binary then you can enable the `macros` feature.
@@ -55,16 +54,15 @@ let mut cache = CommonMarkCache::default();
 commonmark_str!(ui, &mut cache, "content.md");
 ```
 
-
 ## Features
 
 * `macros`: macros for compile time parsing of markdown
 * `better_syntax_highlighting`: Syntax highlighting inside code blocks with
   [`syntect`](https://crates.io/crates/syntect)
+
 * `svg`: Support for viewing svg images
 * `fetch`: Images with urls will be downloaded and displayed
 * `embedded_image`: Load base64 image data urls from within markdown files
-
 
 ## Examples
 
@@ -90,7 +88,7 @@ This crate uses the same MSRV as the latest released egui version.
 
 Licensed under either of
 
- * Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+* Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0)>
+* MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT)>
 
 at your option.

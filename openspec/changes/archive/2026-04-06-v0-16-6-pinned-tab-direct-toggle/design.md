@@ -41,6 +41,7 @@ The direct icon toggle supplements, rather than replaces, the context-menu path.
 
 - [Risk] The icon target may be too small or overlap activation behavior
   → Mitigation: keep a dedicated hit target and cover it with an interaction test
+
 - [Risk] Pin ordering or grouped-tab behavior may regress indirectly
   → Mitigation: verify direct toggle against existing ordering and grouping rules
 

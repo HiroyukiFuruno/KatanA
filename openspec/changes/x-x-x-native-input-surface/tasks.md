@@ -1,6 +1,7 @@
 ## Branch Rule
 
 This change is version-undecided and deferred.
+
 - **Standard Base Branch**: `x-x-x-native-input-surface` or a future versioned release branch once scheduled
 - **Working Branch**: `x-x-x-native-input-surface-task-x` before scheduling, or `feature/vX.Y.Z-task-x` after scheduling
 

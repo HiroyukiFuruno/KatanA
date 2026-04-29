@@ -114,12 +114,16 @@ It will skip binary/support assets such as images that are meant to be reference
 
 - [Risk] Japanese-localized bundles can drift from the English file set
   → Mitigation: pair files by basename, fall back to base English when a Japanese variant is missing, and cover the resolver with tests
+
 - [Risk] Reference-mode immutability may be bypassed by future mutation call sites
   → Mitigation: centralize the access-policy checks in document mutation/save helpers, not only in the editor widget
+
 - [Risk] Reopening the demo repeatedly may create duplicated tabs or stale group membership
   → Mitigation: use a stable internal group ID and reconcile membership against the resolved bundle on every invocation
+
 - [Risk] Binary files under `assets/feature` may be misclassified as openable tabs
   → Mitigation: restrict the enumerator to UTF-8 text inputs and skip unreadable/binary assets
+
 - [Risk] Reference mode could accidentally leak into normal workspace files
   → Mitigation: set the access policy only for files opened through the demo-bundle resolver
 

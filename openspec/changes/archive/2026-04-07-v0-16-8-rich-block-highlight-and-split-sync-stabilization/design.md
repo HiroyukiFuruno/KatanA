@@ -49,6 +49,7 @@ Alert/admonition blocks will participate in the same block-level mapping contrac
 
 - [Risk] Anchor updates after async render completion may still produce jumps
   → Mitigation: test pre/post diagram boundaries and post-render convergence explicitly
+
 - [Risk] Rich-block mapping may regress plain markdown sections indirectly
   → Mitigation: scope the new contract to rich-block paths and keep regression assertions focused
 

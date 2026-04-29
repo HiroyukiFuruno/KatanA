@@ -34,14 +34,14 @@ However, during the introduction investigation, the following **version compatib
 Therefore, we will introduce it in the following phases:
 
 1. **Preparation Phase (Current)**
-   * Expansion of unit tests through logic separation (Phase 1 completed)
-   * Creation of this ADR and identification of test scenarios (`docs/e2e_scenarios.md`)
-   * Surrounding infrastructure setup, such as `Makefile` and `.gitignore`
+  * Expansion of unit tests through logic separation (Phase 1 completed)
+  * Creation of this ADR and identification of test scenarios (`docs/e2e_scenarios.md`)
+  * Surrounding infrastructure setup, such as `Makefile` and `.gitignore`
 
-2. **Implementation Phase (Next Phase)**
-   * Perform a workspace upgrade to `egui 0.30`
-   * Introduce the `egui_kittest` package
-   * E2E implementation in `tests/e2e/` based on defined test scenarios and integration into CI runners
+1. **Implementation Phase (Next Phase)**
+  * Perform a workspace upgrade to `egui 0.30`
+  * Introduce the `egui_kittest` package
+  * E2E implementation in `tests/e2e/` based on defined test scenarios and integration into CI runners
 
 ## Consequences and Risks
 

@@ -1,6 +1,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `v0-27-0-decouple-editor` またはリリース用統合ブランチ（例: `release/v0.27.0`）
 - **作業ブランチ**: 標準は `v0-27-0-decouple-editor-task-x`、リリース用は `feature/v0.27.0-task-x` (xはタスク番号)
 
@@ -9,6 +10,7 @@
 ## 1. Setup New Crate
 
 ### Definition of Done (DoD)
+
 - [ ] Create `crates/katana-editor` with basic lib.rs
 - [ ] Add crate to workspace members in root `Cargo.toml`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
@@ -19,10 +21,12 @@
 ## 2. Implement Editor Component
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
+
 - [ ] Move editor state and widget logic to `katana-editor`
 - [ ] Expose public API for `katana-ui`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
@@ -35,10 +39,12 @@
 ## 3. Refactor katana-ui
 
 ### Definition of Ready (DoR)
+
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
+
 - [ ] Integrate new editor component into `katana-ui`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 

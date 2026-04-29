@@ -280,7 +280,7 @@ The convention "a defined rule without enforcement is meaningless" applies here 
 #### What This Means in Practice
 
 | Scenario | Required Action |
-|---|---|
+| --- | --- |
 | New feature (e.g., centering HTML elements) | Write a test that asserts the expected rendering position. **Verify the test FAILS** before implementing. |
 | Bugfix (e.g., elements not centered) | Write a test that reproduces the bug (assert the correct behavior). **Verify the test FAILS** to confirm the bug is captured. Then fix the code. |
 | Refactoring | Ensure all existing tests pass before and after the refactor. No test modifications unless the interface changes. |
@@ -320,7 +320,7 @@ For this verification, you MUST **programmatically and directly assert the "actu
 fn new_horizontal_split_starts_at_half_width() {
     let mut harness = Harness::new_ui(|ui| { /* ... */ });
     harness.run();
-    
+
     // Get the Panel's Rect directly and assert it exactly matches 50% of the screen width in pixels
     let panel_rect = egui::containers::panel::PanelState::load(&ctx, id).unwrap().rect;
     assert!((panel_rect.width() - 600.0).abs() <= 4.0, "must start at 50%");

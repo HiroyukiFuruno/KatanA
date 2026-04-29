@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
 
+## [0.22.9] - 2026-04-29 00:20:53 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Windows Auto-Update**: Fixed an issue on Windows where the automatic update installation could hang or fail due to file locking when restarting the application.
+- **Update Dialog**: Improved the reliability of the "Download Update" and "Install Update" actions in the settings tab.
+
 ## [0.22.8] - 2026-04-28 05:55:06 (UTC)
 
 ### 🚀 Features

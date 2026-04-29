@@ -54,20 +54,36 @@ rm -rf "{temp_dir}"
                  * Move-Item (more reliable than $? which reflects the last command's result).
                  * Bug 3 fix — Use -WindowStyle Hidden when launching the new process so the
                  * restarted KatanA does not briefly show a console window.
-                 * Start-Sleep extended to 2 s to allow the parent process to fully release
-                 * file locks before the rename attempt. */
-                r#"$ProgressPreference = 'SilentlyContinue';
-Start-Sleep -s 2;
+                 * Add retry loop to handle file lock release delays. */
+                r#"param($parentPid);
+$ProgressPreference = 'SilentlyContinue';
+if ($parentPid) {{
+    Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue;
+}}
 $target = '{target}';
 $bak = '{target}.bak';
 $extracted = '{extracted}';
 if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
 if (Test-Path $target) {{ Move-Item -Force $target $bak -ErrorAction SilentlyContinue }};
-Move-Item -Force $extracted $target -ErrorAction SilentlyContinue;
-if (Test-Path $target) {{
+
+$retryCount = 0;
+$success = $false;
+while ($retryCount -lt 5) {{
+    Move-Item -Force $extracted $target -ErrorAction SilentlyContinue;
+    if (Test-Path $target) {{
+        $success = $true;
+        break;
+    }}
+    $retryCount++;
+    Start-Sleep -s 1;
+}}
+
+if ($success) {{
     Start-Process -WindowStyle Hidden $target;
 }} else {{
     if (Test-Path $bak) {{ Move-Item -Force $bak $target -ErrorAction SilentlyContinue }};
+    Add-Type -AssemblyName PresentationFramework;
+    [System.Windows.MessageBox]::Show('Could not complete the application update. The original version has been restored.', 'Update Failed', 'OK', 'Error');
 }}
 Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
@@ -108,6 +124,40 @@ fi
                 extracted = extracted_app.display(),
                 temp_dir = temp_dir_path.display()
             )
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_generate_script_content() {
+        let content = UpdateScriptOps::generate_script_content(
+            Path::new("target_app"),
+            Path::new("extracted_app"),
+            Path::new("temp_dir"),
+        );
+
+        #[cfg(target_os = "macos")]
+        {
+            assert!(content.contains("mv \"extracted_app\" \"target_app\""));
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            assert!(content.contains("param($parentPid);"));
+            assert!(content.contains("Wait-Process -Id $parentPid"));
+            assert!(content.contains("$retryCount = 0;"));
+            assert!(content.contains("while ($retryCount -lt 5)"));
+            assert!(content.contains("Add-Type -AssemblyName PresentationFramework"));
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            assert!(content.contains("mv \"extracted_app\" \"target_app\""));
         }
     }
 }

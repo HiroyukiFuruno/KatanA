@@ -12,7 +12,7 @@ Alongside this shift, **Spec-Driven Development (SDD)** is gaining attention as 
 
 However, existing Markdown tools are often either:
 
-- general-purpose editors not optimized for technical documentation workflows, or  
+- general-purpose editors not optimized for technical documentation workflows, or
 - heavy knowledge-management tools with unnecessary complexity.
 
 **Katana Desktop was created to solve this problem.**

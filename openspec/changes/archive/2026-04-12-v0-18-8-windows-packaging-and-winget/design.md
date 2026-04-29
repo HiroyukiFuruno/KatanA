@@ -140,7 +140,7 @@ bootstrap path の推奨:
 
 ```sh
 PACKAGE_ID="HiroyukiFuruno.katana-desktop"
-MSI_URL="https://github.com/HiroyukiFuruno/KatanA/releases/download/${TAG}/KatanA-windows-x86_64.msi"
+MSI_URL="<https://github.com/HiroyukiFuruno/KatanA/releases/download/${TAG}/KatanA-windows-x86_64.msi">
 
 if [ -z "${WINGET_GH_TOKEN:-}" ]; then
   echo "⚠️ WINGET_GH_TOKEN (classic PAT with public_repo) is not set, skipping winget sync."
@@ -161,7 +161,7 @@ if komac list "${PACKAGE_ID}" --token "${WINGET_GH_TOKEN}" >/dev/null 2>&1; then
   komac update "${PACKAGE_ID}" \
     --version "${VERSION}" \
     --urls "${MSI_URL}" \
-    --release-notes-url "https://github.com/HiroyukiFuruno/KatanA/releases/tag/${TAG}" \
+    --release-notes-url "<https://github.com/HiroyukiFuruno/KatanA/releases/tag/${TAG}"> \
     --submit \
     --token "${WINGET_GH_TOKEN}"
 else
@@ -204,15 +204,19 @@ fi
 
 ### 5. 一次情報
 
-- winget PR: `https://github.com/microsoft/winget-pkgs/pull/357436`
+- winget PR: `<https://github.com/microsoft/winget-pkgs/pull/357436`>
 - Komac docs.rs (`update` は pre-existing package 向け、PR 提出には classic token が必要):
-  `https://docs.rs/crate/komac/latest`
+  `<https://docs.rs/crate/komac/latest`>
+
 - Microsoft Learn (`repository`): `Validation-VCRuntime-Dependency` は missing components を package に含めるか dependency を manifest に追加して再提出するよう案内している
-  `https://learn.microsoft.com/en-us/windows/package-manager/package/repository`
+  `<https://learn.microsoft.com/en-us/windows/package-manager/package/repository`>
+
 - Microsoft Learn (`winget settings`): user scope requirement は applicable installer を絞り、空なら install failure になる
-  `https://learn.microsoft.com/en-us/windows/package-manager/winget/settings`
+  `<https://learn.microsoft.com/en-us/windows/package-manager/winget/settings`>
+
 - FireGiant (`WixUI_FeatureTree` と branding bitmap 置換):
-  `https://docs.firegiant.com/wix3/wixui/dialog_reference/wixui_featuretree/`
-  `https://docs.firegiant.com/wix/tools/wixext/wixui/`
+  `<https://docs.firegiant.com/wix3/wixui/dialog_reference/wixui_featuretree/`>
+  `<https://docs.firegiant.com/wix/tools/wixext/wixui/`>
+
 - Rust Reference (`crt-static` target feature):
-  `https://doc.rust-lang.org/reference/conditional-compilation.html`
+  `<https://doc.rust-lang.org/reference/conditional-compilation.html`>

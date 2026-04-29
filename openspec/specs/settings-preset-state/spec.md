@@ -1,8 +1,11 @@
 # settings-preset-state Specification
 
 ## Purpose
+
 TBD - created by archiving change v0-22-7-markdownlint-workspace-formatting. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Settings presets share one storage model
 
 システムは、テーマ、アイコン、Lint のプリセット状態を、同じ保存仕様で保持しなければならない（SHALL）。保存仕様は、現在値、元プリセット、変更状態、ユーザープリセット一覧を持たなければならない（SHALL）。

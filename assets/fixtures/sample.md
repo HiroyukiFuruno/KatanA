@@ -43,9 +43,9 @@ that all elements render correctly.
 ### 1.4 Badge Row (Multiple Link Images on Same Line)
 
 <p align="center">
-  <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="#"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
-  <a href="#"><img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="Platform: macOS"></a>
+  <a href="#"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
+  <a href="#"><img src="<https://img.shields.io/badge/CI-passing-brightgreen.svg"> alt="CI"></a>
+  <a href="#"><img src="<https://img.shields.io/badge/platform-macOS-lightgrey"> alt="Platform: macOS"></a>
 </p>
 
 ↑ Three badges should appear on the **same line**, centered.
@@ -62,7 +62,7 @@ that all elements render correctly.
 ### 1.6 Full README Header Reproduction
 
 <p align="center">
-  <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22128%22 height=%22128%22%3E%3Crect width=%22128%22 height=%22128%22 fill=%22%23ddd%22/%3E%3Ctext x=%2264%22 y=%2264%22 text-anchor=%22middle%22 dominant-baseline=%22central%22 font-size=%2216%22 fill=%22%23999%22%3E128x128%3C/text%3E%3C/svg%3E" width="128" alt="icon">
+  <img src="data:image/svg+xml,%3Csvg xmlns=%22<http://www.w3.org/2000/svg%22> width=%22128%22 height=%22128%22%3E%3Crect width=%22128%22 height=%22128%22 fill=%22%23ddd%22/%3E%3Ctext x=%2264%22 y=%2264%22 text-anchor=%22middle%22 dominant-baseline=%22central%22 font-size=%2216%22 fill=%22%23999%22%3E128x128%3C/text%3E%3C/svg%3E" width="128" alt="icon">
 </p>
 
 <h1 align="center">KatanA Desktop</h1>
@@ -72,8 +72,8 @@ that all elements render correctly.
 </p>
 
 <p align="center">
-  <a href="#"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="#"><img src="https://img.shields.io/badge/CI-passing-brightgreen.svg" alt="CI"></a>
+  <a href="#"><img src="<https://img.shields.io/badge/License-MIT-blue.svg"> alt="License: MIT"></a>
+  <a href="#"><img src="<https://img.shields.io/badge/CI-passing-brightgreen.svg"> alt="CI"></a>
 </p>
 
 <p align="center">
@@ -141,9 +141,9 @@ Text below
 
 1. First item
 2. Second item
-   1. Nested 2-1
-   2. Nested 2-2
-3. Third item
+   3. Nested 2-1
+   4. Nested 2-2
+5. Third item
 
 ### 3.3 Task Lists
 
@@ -216,8 +216,8 @@ features:
    ```
 
 3. Verify:
-   - Sub-item A
-   - Sub-item B
+  - Sub-item A
+  - Sub-item B
 
 ↑ Code blocks should be correctly indented within list items.
 
@@ -242,7 +242,7 @@ features:
 ### 5.1 Basic Table
 
 | Feature | Status | Notes |
-| --------- | -------- | ------- |
+| --- | --- | --- |
 | Markdown | ✅ | Full support |
 | Mermaid | ✅ | Requires mmdc |
 | PlantUML | ✅ | Requires jar |
@@ -251,26 +251,26 @@ features:
 ### 5.2 Table with Alignment
 
 | Left | Center | Right |
-| :----- | :------: | ------: |
+| :--- | :---: | ---: |
 | text | text | text |
 | longer text | short | 12345 |
 
 ### 5.3 Single Row Table
 
 | Header |
-| -------- |
+| --- |
 | Content |
 
 ### 5.4 Long Column with Wrapping
 
 | Header |
-| --------- |
+| --- |
 | This text is a very long line to verify if horizontal scrolling and word wrapping are working correctly. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated many times over. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 |
 
 ### 5.5 Short + Long + Short Columns
 
 | Short | Long Column Test | Short |
-| ------ | ------ | ------ |
+| --- | --- | --- |
 | ID | This text is a very long line to verify if horizontal scrolling and word wrapping are working correctly. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 repeated many times over. ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 | Notes |
 
 ---
@@ -357,7 +357,7 @@ Mass-energy equivalence: $ E = mc^2 $
 
 ### 9.3 Single-line Math
 
-$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
+$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 
 ---
 
@@ -645,7 +645,7 @@ let code = "directly after quote";
 - A list item directly after code block
 
 | Header |
-| -------- |
+| --- |
 | Table after list |
 
 ↑ Proper spacing between each block element.

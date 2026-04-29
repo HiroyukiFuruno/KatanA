@@ -20,6 +20,7 @@ KatanA Desktop は設定管理、状態保持、シリアライズにおいてRu
 
 - **`BTreeMap` ではなく `Vec<DomainStruct>` を採用**:
   単純な順序付きMap (`BTreeMap`) に逃げるのではなく、ユーザー要望の「Data Classへの変換とListの利用」に忠実にするため、キー・バリューのペアを明確な構造体（例: `ExtraSetting { key: String, value: String }`）に定義し、その `Vec` として保持します。
+
 - **Linter の AST トラバーサル**:
   `syn` クレートのVisitorパターンを拡張し、型のパス (`PathSegment`) に `HashMap` が含まれるケース、および `syn::Type::Array` や `syn::Expr::Array` を使用しているケースをトラップし、`MD000` 相当のカスタムエラーを出力します。
 

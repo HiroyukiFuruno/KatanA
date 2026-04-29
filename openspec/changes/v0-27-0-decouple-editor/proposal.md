@@ -13,9 +13,11 @@ KatanAのUI (`katana-ui`) は現在、テキストエディタ機能（入力、
 ## Capabilities
 
 ### New Capabilities
+
 - `editor-component`: テキスト入力、行管理、構文ハイライトを担う独立したエディタウィジェットアーキテクチャ。
 
 ### Modified Capabilities
+
 - `ui-architecture`: Fat UI から「コンポーネントの組み立て」へ特化する UI アーキテクチャの変更（エディタ分離版）。
 
 ## Impact

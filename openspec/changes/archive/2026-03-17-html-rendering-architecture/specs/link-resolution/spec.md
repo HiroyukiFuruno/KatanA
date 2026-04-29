@@ -6,13 +6,13 @@
 
 #### Scenario: HTTP リンクの分類
 
-- **WHEN** `LinkTarget::resolve("https://github.com/org/repo", base_dir)` を呼んだ場合
-- **THEN** `LinkTarget::External("https://github.com/org/repo")` を返す
+- **WHEN** `LinkTarget::resolve("<https://github.com/org/repo">, base_dir)` を呼んだ場合
+- **THEN** `LinkTarget::External("<https://github.com/org/repo")`> を返す
 
 #### Scenario: HTTPS リンクの分類
 
-- **WHEN** `LinkTarget::resolve("http://example.com", base_dir)` を呼んだ場合
-- **THEN** `LinkTarget::External("http://example.com")` を返す
+- **WHEN** `LinkTarget::resolve("<http://example.com">, base_dir)` を呼んだ場合
+- **THEN** `LinkTarget::External("<http://example.com")`> を返す
 
 #### Scenario: 相対パスリンクの分類
 
@@ -54,8 +54,8 @@
 
 #### Scenario: HTML リンクの統一処理
 
-- **WHEN** `<a href="https://github.com">GitHub</a>` を含む HTML をパースした場合
-- **THEN** `HtmlNode::Link { target: External("https://github.com"), children: [Text("GitHub")] }` を生成する
+- **WHEN** `<a href="<https://github.com">>GitHub</a>` を含む HTML をパースした場合
+- **THEN** `HtmlNode::Link { target: External("<https://github.com")>, children: [Text("GitHub")] }` を生成する
 
 ### Requirement: LinkAction は将来のナビゲーション拡張に対応できる
 

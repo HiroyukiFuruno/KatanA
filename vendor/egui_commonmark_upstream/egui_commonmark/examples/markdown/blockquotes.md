@@ -6,7 +6,7 @@
 >
 > ```rust
 > fn main() {
->     println!("Hello, World!");
+> println!("Hello, World!");
 > }
 > ```
 
@@ -37,10 +37,10 @@ will be displayed as:
 
 <!-- The trailing whitespaces are deliberate on important and warning -->
 <!-- Case insensitivity --->
-> [!imporTant] 
+> [!imporTant]
 > important alert
 
-> [!WARNING] 
+> [!WARNING]
 > warning alert
 
 > [!CAUTION]

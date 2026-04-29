@@ -1,14 +1,16 @@
 ## Purpose
 
 This is a legacy capability specification that was automatically migrated to comply with the new OpenSpec schema validation rules. Please update this document manually if more context is required.
+
 ## Requirements
+
 ### Requirement: Supported diagram block payloads are explicitly constrained
 
-システムは、MVP のプレビュー経路で扱う図形描画 payload を次の形式に限定しなければならない（SHALL）。`mermaid` フェンス内の生 Mermaid source、`@startuml` と `@enduml` を含む `plantuml` フェンス内の生 PlantUML source、`<mxfile>` または `<mxGraphModel>` を含む `drawio` フェンス内の非圧縮 Draw.io XML を扱う。各フェンスはバッククォート（backtick）の ` ``` ` とチルダ（tilde）の `~~~` の両方を受け入れなければならない（SHALL）。
+システムは、MVP のプレビュー経路で扱う図形描画 payload を次の形式に限定しなければならない（SHALL）。`mermaid` フェンス内の生 Mermaid source、`@startuml` と `@enduml` を含む `plantuml` フェンス内の生 PlantUML source、`<mxfile>` または `<mxGraphModel>` を含む `drawio` フェンス内の非圧縮 Draw.io XML を扱う。各フェンスはバッククォート（backtick）の ````` とチルダ（tilde）の `~~~` の両方を受け入れなければならない（SHALL）。
 
 #### Scenario: Accept a supported Mermaid payload with backticks
 
-- **WHEN** the active Markdown document contains a fenced `mermaid` block opened and closed with ` ``` `
+- **WHEN** the active Markdown document contains a fenced `mermaid` block opened and closed with `````
 - **THEN** the block is treated as a supported diagram payload
 
 #### Scenario: Accept a supported Mermaid payload with tildes
@@ -39,7 +41,7 @@ This is a legacy capability specification that was automatically migrated to com
 
 #### Scenario: Render a Mermaid flowchart with backticks
 
-- **WHEN** the active Markdown document contains a valid ` ```mermaid ` block
+- **WHEN** the active Markdown document contains a valid ````mermaid` block
 - **THEN** the preview shows the rendered diagram instead of the raw fenced source
 - **THEN** changes to the block are reflected when the preview refreshes
 

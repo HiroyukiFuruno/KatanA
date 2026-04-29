@@ -71,21 +71,21 @@
 ### Settings (Task 2)
 
 1. **Save Atomic Validation Test**:
-   - `JsonFileRepository` の `save()` が一時ファイルを経由してリネームするアトミック処理であることを検証する（書き込み途中で異常終了してもファイルが壊れないことの論理的保護）。
-2. **Corrupted Settings Backup Test**:
-   - 不正なJSON `{"invalid": "json` などを `settings.json` に書き込んだ状態で `load()` を呼び出す。
-   - デフォルト設定で起動するだけでなく、元の破損ファイルが `.bak` などの別名で退避（Rename）保存されていることを検証する。
+  - `JsonFileRepository` の `save()` が一時ファイルを経由してリネームするアトミック処理であることを検証する（書き込み途中で異常終了してもファイルが壊れないことの論理的保護）。
+1. **Corrupted Settings Backup Test**:
+  - 不正なJSON `{"invalid": "json` などを `settings.json` に書き込んだ状態で `load()` を呼び出す。
+  - デフォルト設定で起動するだけでなく、元の破損ファイルが `.bak` などの別名で退避（Rename）保存されていることを検証する。
 
 ### Update Install Hardening (Task 3)
 
 1. **Staged Swap Mock Test**:
-   - `prepare_update` による一時ディレクトリ展開と入れ替え（Swap）処理が、途中の失敗時に元のバンドルを破壊しないことを検証する。
-2. **Swap Failure Handling**:
-   - スワップ処理がアクセス権等で失敗した場合、元の状態が保たれつつエラー（`Err`）が正しく呼び出し元に返ることをテストする。
+  - `prepare_update` による一時ディレクトリ展開と入れ替え（Swap）処理が、途中の失敗時に元のバンドルを破壊しないことを検証する。
+1. **Swap Failure Handling**:
+  - スワップ処理がアクセス権等で失敗した場合、元の状態が保たれつつエラー（`Err`）が正しく呼び出し元に返ることをテストする。
 
 ### Release Pipeline Consistency (Task 4)
 
 1. **Preflight Failure (Incomplete Tasks/Changelog)**:
-   - `tasks.md` 内に未完了 `- [ ]` が残っている場合や、次バージョンの CHANGELOG エントリが存在しない場合に、Preflight が失敗し異常終了（Exit 1等）することを検証する。
-2. **Preflight Success**:
-   - 全条件を満たしている場合に限り、Preflight が成功することを検証する。
+  - `tasks.md` 内に未完了 `- [ ]` が残っている場合や、次バージョンの CHANGELOG エントリが存在しない場合に、Preflight が失敗し異常終了（Exit 1等）することを検証する。
+1. **Preflight Success**:
+  - 全条件を満たしている場合に限り、Preflight が成功することを検証する。

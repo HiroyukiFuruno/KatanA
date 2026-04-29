@@ -16,6 +16,7 @@
 ## Capabilities
 
 ### New Capabilities
+
 <!-- Capabilities being introduced. -->
 
 ### Modified Capabilities

@@ -5,6 +5,7 @@
 This capability defines how KatanA imports local image assets into editable Markdown documents, stores them relative to the active document, and exposes those image files through normal workspace navigation.
 
 ## Requirements
+
 ### Requirement: User can attach an image file from the command palette
 
 The system SHALL expose image file attach as a command palette action when an editable Markdown document is active.

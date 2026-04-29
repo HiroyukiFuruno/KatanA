@@ -41,6 +41,7 @@ The title row will use slightly different top and bottom padding, and the block 
 
 - [Risk] Vendored changes may conflict with future upstream sync work
   → Mitigation: keep the patch localized to spacing constants and cover it with fixture assertions
+
 - [Risk] Normal blockquotes may regress indirectly
   → Mitigation: explicitly test nearby non-alert block types
 

@@ -9,6 +9,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `v0-23-0-local-llm-lint-autofix` またはリリース用統合ブランチ（例: `release/v0.23.0`）
 - **作業ブランチ**: 標準は `v0-23-0-local-llm-lint-autofix-task-x`、リリース用は `feature/v0.23.0-task-x` (xはタスク番号)
 

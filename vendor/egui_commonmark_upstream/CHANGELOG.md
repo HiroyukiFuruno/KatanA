@@ -18,6 +18,7 @@
 
 - Update egui to 0.33.0 ([#82](https://github.com/lampsitter/egui_commonmark/pull/82) by
   [@lucasmerlin](https://github.com/lucasmerlin))
+
 - Update msrv to 1.88
 
 ## 0.21.1 - 2025-07-13
@@ -34,7 +35,6 @@
 - Updated to pulldown-cmark 0.13
 - Updated egui to 0.32 ([#76](https://github.com/lampsitter/egui_commonmark/pull/76) by
   [@lucasmerlin](https://github.com/lucasmerlin))
-
 
 ### Fixed
 
@@ -126,6 +126,7 @@
 
 - Replace copy icon with checkmark when clicking copy button in code blocks
 ([#42](https://github.com/lampsitter/egui_commonmark/pull/42) by [@zeozeozeo](https://github.com/zeozeozeo))
+
 - Interactive tasklists with `CommonMarkViewer::show_mut`
 ([#40](https://github.com/lampsitter/egui_commonmark/pull/40) by [@crumblingstatue](https://github.com/crumblingstatue))
 
@@ -139,6 +140,7 @@
 
 - Lists align text when wrapping instead of wrapping at the beginning of the next
   line ([#46](https://github.com/lampsitter/egui_commonmark/pull/46))
+
 - Code blocks won't insert a newline when in lists
 - In certain scenarios there was no newline after lists
 - Copy button for code blocks show the correct cursor again on hover (regression
@@ -189,7 +191,6 @@
 
 - Build failure with 1.72
 
-
 ## 0.12.0 - 2024-02-05
 
 ### Changed
@@ -200,13 +201,11 @@
 
 - Missing space after tables
 
-
 ## 0.11.0 - 2024-01-08
 
 ### Changed
 
 - Update to egui 0.25 ([#27](https://github.com/lampsitter/egui_commonmark/pull/27) by [@emilk](https://github.com/emilk))
-
 
 ## 0.10.2 - 2023-12-13
 
@@ -223,7 +222,6 @@
 ### Fixed
 
 - Make code blocks non-editable ([#22](https://github.com/lampsitter/egui_commonmark/pull/22) by [@emilk](https://github.com/emilk)).
-
 
 ## 0.10.0 - 2023-11-23
 
@@ -257,6 +255,7 @@
 - Primitive syntax highlighting by default
 - Code blocks now use the syntax highlighting theme's caret and selection colors while using the
 `better_syntax_highlighting` feature.
+
 - Image loading errors are shown ([#8](https://github.com/lampsitter/egui_commonmark/pull/8) by [@emilk](https://github.com/emilk)).
 - `CommonMarkCache` implements `Debug` ([#7](https://github.com/lampsitter/egui_commonmark/pull/7) by [@ChristopherPerry6060](https://github.com/ChristopherPerry6060)).
 - `CommonMarkCache::add_syntax_themes_from_folder`
@@ -265,7 +264,7 @@
 
 ### Fixed
 
-- Links of the type ``[`fancy` _link_](..)`` is rendered correctly.
+- Links of the type ``[`fancy` *link*](..)`` is rendered correctly.
 
 ### Changed
 

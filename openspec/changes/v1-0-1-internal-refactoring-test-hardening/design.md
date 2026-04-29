@@ -153,13 +153,13 @@ Visual snapshot に頼らず、semantic assertions、state assertions、fixture 
 
 ## Migration Plan
 
-0. 実装着手時に 2026-04-25 からの差分を確認し、計画を最新化する。
-1. 現状構造の inventory を作り、機械的な移動と境界再設計を分ける。
-2. `AppAction` と dispatch を領域 action へ分割する準備を行う。
-3. document / workspace / preview / diagnostics の順に feature boundary を固める。
-4. 巨大 test file を contract 単位に分割する。
-5. release regression gate を Makefile / runner から実行できる形にする。
-6. すべての段階で `make check` と対象 contract test を通す。
+1. 実装着手時に 2026-04-25 からの差分を確認し、計画を最新化する。
+2. 現状構造の inventory を作り、機械的な移動と境界再設計を分ける。
+3. `AppAction` と dispatch を領域 action へ分割する準備を行う。
+4. document / workspace / preview / diagnostics の順に feature boundary を固める。
+5. 巨大 test file を contract 単位に分割する。
+6. release regression gate を Makefile / runner から実行できる形にする。
+7. すべての段階で `make check` と対象 contract test を通す。
 
 ## Open Questions
 

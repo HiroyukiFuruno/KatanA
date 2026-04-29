@@ -48,12 +48,12 @@ egui の SVG ローダーは URI が `.svg` で終わることを要求するた
 
 #### Scenario: shields.io URL の SVG 拡張子補正
 
-- **WHEN** `Image { src: "https://img.shields.io/github/v/release/org/repo" }` を描画する場合
-- **THEN** egui には `"https://img.shields.io/github/v/release/org/repo.svg"` として渡される
+- **WHEN** `Image { src: "<https://img.shields.io/github/v/release/org/repo"> }` を描画する場合
+- **THEN** egui には `"<https://img.shields.io/github/v/release/org/repo.svg"`> として渡される
 
 #### Scenario: 既に .svg がある URL は変更しない
 
-- **WHEN** `Image { src: "https://img.shields.io/badge/License-MIT-blue.svg" }` を描画する場合
+- **WHEN** `Image { src: "<https://img.shields.io/badge/License-MIT-blue.svg"> }` を描画する場合
 - **THEN** URL は変更されずそのまま使用される
 
 ### Requirement: リンクのクリック時に LinkAction を返す
@@ -62,7 +62,7 @@ egui の SVG ローダーは URI が `.svg` で終わることを要求するた
 
 #### Scenario: 外部リンクのクリック
 
-- **WHEN** `LinkTarget::External("https://github.com")` のリンクがクリックされた場合
+- **WHEN** `LinkTarget::External("<https://github.com")`> のリンクがクリックされた場合
 - **THEN** `LinkAction::OpenInBrowser` を返す
 
 #### Scenario: 内部リンクのクリック

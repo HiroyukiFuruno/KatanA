@@ -8,7 +8,7 @@
 
 - `Cargo.toml` は `egui_commonmark` と `egui_commonmark_backend` の両方を local path へ patch している
 - `crates/katana-ui/src/svg_loader/mod.rs` は `vendor/egui_commonmark_backend/src` から `copy.svg` と `check.svg` を直接読み込んでいる
-- 両 crate の upstream repository は同じ `https://github.com/lampsitter/egui_commonmark`
+- 両 crate の upstream repository は同じ `<https://github.com/lampsitter/egui_commonmark`>
 - upstream repository は `egui_commonmark`、`egui_commonmark_backend`、`egui_commonmark_macros` を sibling crate として持つ workspace layout である
 
 結論として、`vendor/egui_commonmark` だけを対象にした計画では不十分である。
