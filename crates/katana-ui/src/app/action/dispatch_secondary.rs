@@ -88,7 +88,17 @@ impl KatanaApp {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             }
             AppAction::None => {}
+            AppAction::StartUpdateDownload => self.handle_action_install_update(),
             AppAction::InstallUpdate => self.handle_action_install_update(),
+            AppAction::InstallUpdateAndRestart => {
+                if let Some(_prep) = self.pending_relaunch.take() {
+                    #[cfg(all(not(test), not(coverage)))]
+                    {
+                        let _ = katana_core::update::UpdateInstallerOps::execute_relauncher(_prep);
+                        std::process::exit(0);
+                    }
+                }
+            }
             AppAction::OpenDocSearch => {
                 self.state.search.doc_search_open = true;
                 ctx.memory_mut(|m| {
