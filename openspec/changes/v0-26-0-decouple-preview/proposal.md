@@ -13,9 +13,11 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `markdown-preview-component`: Markdownパース、ダイアグラム描画、テーブル対応をラップしたプレビューウィジェット。
 
 ### Modified Capabilities
+
 - `ui-architecture`: Fat UI から「コンポーネントの組み立て」へ特化する UI アーキテクチャの変更（プレビュー分離版）。
 
 ## Impact

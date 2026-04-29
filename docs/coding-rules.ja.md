@@ -280,7 +280,7 @@ crates/katana-core/
 #### 実践での意味
 
 | シナリオ | 必須アクション |
-|---|---|
+| --- | --- |
 | 新機能（例: HTML要素の中央寄せ） | 期待するレンダリング位置をアサートするテストを書く。実装前にテストが**失敗する**ことを確認する。 |
 | バグ修正（例: 要素が中央寄せにならない） | バグを再現するテストを書く（正しい挙動をアサート）。テストが**失敗する**ことを確認してバグが捕捉できていることを検証。その後コードを修正する。 |
 | リファクタリング | リファクタリングの前後で既存のテストがすべて通ることを確認する。インターフェースが変更されない限りテストの修正は不可。 |
@@ -320,7 +320,7 @@ Snapshotテストは実行が遅く、失敗しても開発者が「ただ画像
 fn new_horizontal_split_starts_at_half_width() {
     let mut harness = Harness::new_ui(|ui| { /* ... */ });
     harness.run();
-    
+
     // パネルのRectを直接取得し、画面幅全体の50%（期待値）と一致するかをピクセル単位でアサートする
     let panel_rect = egui::containers::panel::PanelState::load(&ctx, id).unwrap().rect;
     assert!((panel_rect.width() - 600.0).abs() <= 4.0, "must start at 50%");

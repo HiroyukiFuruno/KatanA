@@ -126,10 +126,12 @@ KatanA supports [CommonMark](https://commonmark.org) compliant Markdown.
 
 ````markdown
 ```rust
+
 fn main() {
     println!("Hello, KatanA!");
 }
-```
+
+```text
 ````
 
 Specifying the language name enables syntax highlighting.
@@ -137,9 +139,11 @@ Specifying the language name enables syntax highlighting.
 ### Tables
 
 ```markdown
+
 | Col 1 | Col 2 | Col 3 |
 |---|---|---|
 | A | B | C |
+
 ```
 
 ### Task Lists
@@ -157,20 +161,22 @@ Checklists can be toggled in the preview by clicking them.
 Inline: $E = mc^2$
 
 Block:
-$$
+$
 \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
-$$
+$
 ```
 
 ### Diagrams (Mermaid)
 
 ````markdown
 ```mermaid
+
 graph TD
     A[Start] --> B{Condition}
     B -->|Yes| C[Process A]
     B -->|No| D[Process B]
-```
+
+```text
 ````
 
 Diagrams can be viewed in full screen by clicking them.

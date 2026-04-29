@@ -1,6 +1,6 @@
 ## Context
 
-現在の図形描画プレビューは ` ``` ` フェンスを直接文字列で見ている。`crates/katana-core/src/preview/section/fence.rs` と `crates/katana-core/src/markdown/fence/mod.rs` の両方にバッククォート前提の処理があり、`~~~mermaid` のようなチルダフェンスは図形として抽出されない。
+現在の図形描画プレビューは ````` フェンスを直接文字列で見ている。`crates/katana-core/src/preview/section/fence.rs` と `crates/katana-core/src/markdown/fence/mod.rs` の両方にバッククォート前提の処理があり、`~~~mermaid` のようなチルダフェンスは図形として抽出されない。
 
 Lint 設定は `LinterSettings` に `enabled`、`use_workspace_local_config`、`rule_severity` がある。現在の `MarkdownLinterBridgeOps::evaluate_document` は KML の設定ファイル由来の `LintOptions` を読み込んだ後、KatanA 側の `rule_severity` を上書きする。このため「ワークスペース設定を使う」と「KatanA 側で警告/エラー/無視を選ぶ」の責務が混ざり、`.markdownlint.json` の内容が効いているように見えにくい。
 
@@ -10,7 +10,7 @@ Lint 設定は `LinterSettings` に `enabled`、`use_workspace_local_config`、`
 
 **Goals:**
 
-- 図形描画は ` ``` ` と `~~~` の両方で同じレンダリング結果になる。
+- 図形描画は ````` と `~~~` の両方で同じレンダリング結果になる。
 - コードブロック生成は、ユーザーがプルダウンでコード種別を選んでから fenced code block を挿入できる。
 - Lint の一般設定は、単純なオン/オフと「無視 / 警告 / エラー」の選択に限定する。
 - Lint の詳細設定は、通常画面では「ルールの詳細」として扱い、保存先の JSON ファイル名を前面に出さない。
@@ -63,7 +63,7 @@ Lint 設定は `LinterSettings` に `enabled`、`use_workspace_local_config`、`
 
 ### 1. 図形フェンスは fence token を抽象化して扱う
 
-` ``` ` 専用の処理を、バッククォートとチルダの両方を表す小さな値に置き換える。開始フェンスと終了フェンスは同じ文字種である必要があり、終了フェンスは開始フェンス以上の長さを許容する。これは CommonMark の fenced code block の挙動に合わせる。
+````` 専用の処理を、バッククォートとチルダの両方を表す小さな値に置き換える。開始フェンスと終了フェンスは同じ文字種である必要があり、終了フェンスは開始フェンス以上の長さを許容する。これは CommonMark の fenced code block の挙動に合わせる。
 
 コードブロックを新規生成する UI では、自由入力だけにせず、コード種別をプルダウンで選択できるようにする。プルダウンは enum と連動させ、少なくとも `text`、`markdown`、`bash`、`zsh`、`mermaid`、`drawio`、`plantuml`、および開発でよく使う `json`、`yaml`、`toml`、`rust`、`typescript`、`javascript`、`python`、`html`、`css`、`sql` を扱う。表示名と実際に挿入する fence info string は同じ enum から解決し、UI と挿入結果がずれないようにする。
 

@@ -36,7 +36,9 @@ state until versioned releases are published.
 
 - Allow maintainers time to investigate and remediate before public
   disclosure.
+
 - Avoid including secrets, tokens, or private user data unless they are
   required to reproduce the issue.
+
 - If a report depends on unsafe sample content, provide the smallest
   proof of concept that demonstrates the issue.

@@ -95,12 +95,16 @@ This change formally guarantees lifecycle continuity for image paths that are ow
 
 - [Risk] Keeping inactive-tab work alive increases memory and background CPU usage
   → Mitigation: scope retained state to open tabs only, evict on close, and reuse source-hash generations to avoid duplicate work
+
 - [Risk] Stale completions may attach to a newer source version
   → Mitigation: require generation/source-hash checks before any loaded result transitions to drawn
+
 - [Risk] `is_loaded` / `is_drawn` can become inconsistent if updated from multiple code paths
   → Mitigation: centralize all state transitions in the preview session lifecycle layer and cover them with focused tests
+
 - [Risk] Image loading may still depend partly on `egui::Context` and texture APIs that cannot run fully off-thread
   → Mitigation: keep background completion at the asset/result level and reserve only the final attach step for the active UI thread
+
 - [Risk] Another implementer may misread the image scope as "only local images" or "all HTTP images are already covered"
   → Mitigation: explicitly require validation of the CommonMark/HTTP path during Task 3.1 and enrollment into the same lifecycle if the bug reproduces there
 

@@ -8,7 +8,7 @@ Katana-specific customizations.
 
 ## Subtree Repository Information
 
-- **Upstream Repository**: `https://github.com/lampsitter/egui_commonmark`
+- **Upstream Repository**: `<https://github.com/lampsitter/egui_commonmark`>
 - **Subtree Prefix**: `vendor/egui_commonmark_upstream`
 - **Current Pinned Upstream Revision**: `v0.22.0`
 - **Related Cargo crates**: `egui_commonmark`, `egui_commonmark_backend`,
@@ -48,7 +48,7 @@ or branch:
 
 ```bash
 git subtree pull --prefix=vendor/egui_commonmark_upstream \
-https://github.com/lampsitter/egui_commonmark \
+<https://github.com/lampsitter/egui_commonmark> \
 <UPSTREAM_TAG_OR_BRANCH> --squash
 ```
 
@@ -88,9 +88,11 @@ You must follow the **Stop-and-Correct Rule**:
 2. Fall back to `/openspec-propose` or utilize an explicit workflow
    (`v0-x-y-some-migration`) to create a new, formal OpenSpec feature proposal
    (`proposal.md`, `design.md`, `tasks.md`).
-3. Document *why* the compatibility premise changed and define how the KatanA
+
+1. Document *why* the compatibility premise changed and define how the KatanA
    system must migrate before doing the raw sync.
-4. Only implement the sync as a documented step in the new OpenSpec `tasks.md`.
+
+1. Only implement the sync as a documented step in the new OpenSpec `tasks.md`.
 
 *Failure to observe the Stop-and-Correct Rule risks undocumented configuration
 drift and broken integrations taking root in `master`.*

@@ -10,7 +10,6 @@ as one of the examples depend on it.
 
 `cargo test --features macros`
 
-
 ### Debugging the proc macros
 
 To see the output of the macros enable the `dump-macro` feature.

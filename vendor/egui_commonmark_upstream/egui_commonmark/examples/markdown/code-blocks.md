@@ -23,7 +23,8 @@ image = { version = "0.24", default-features = false, features = ["png"] }
 
 - ```rs
   let x = 3.14;
-  ```
+
+  ```text
 - Code blocks can be in lists too :)
 
 

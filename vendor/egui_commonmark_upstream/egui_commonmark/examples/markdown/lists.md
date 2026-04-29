@@ -6,7 +6,7 @@
     1. b
         - [ ] tasklist
         - [X] tasklist done
-    2. c
+    1. c
 - c
     - g
         - g1
@@ -16,13 +16,16 @@
 -------------------
 
 1.
-    1. Lorem ipsum dolor sit amet, consectetur __adipiscing elit, sed__ do
-    eiusmod tempor incididunt _ut_ labore ~~et~~ dolore magna aliqua. Ut enim
+
+    1. Lorem ipsum dolor sit amet, consectetur **adipiscing elit, sed** do
+    eiusmod tempor incididunt *ut* labore ~~et~~ dolore magna aliqua. Ut enim
     ad minim veniam, quis nostrud exercitation
-    2. Lorem ipsum dolor sit amet, consectetur __adipiscing elit, sed__ do
-    eiusmod tempor incididunt _ut_ labore ~~et~~ dolore magna aliqua. Ut enim
+
+    1. Lorem ipsum dolor sit amet, consectetur **adipiscing elit, sed** do
+    eiusmod tempor incididunt *ut* labore ~~et~~ dolore magna aliqua. Ut enim
     ad minim veniam, quis nostrud exercitation
-        - Lorem ipsum dolor sit amet, consectetur __adipiscing elit, sed__ do
-        eiusmod tempor incididunt _ut_ labore ~~et~~ dolore magna aliqua. Ut enim
+
+        - Lorem ipsum dolor sit amet, consectetur **adipiscing elit, sed** do
+        eiusmod tempor incididunt *ut* labore ~~et~~ dolore magna aliqua. Ut enim
         ad minim veniam, quis nostrud exercitation
 

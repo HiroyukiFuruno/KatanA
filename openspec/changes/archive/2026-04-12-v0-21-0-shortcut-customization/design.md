@@ -45,9 +45,10 @@ display label ではなく command key で永続化する。
 
 ## Risks / Trade-offs
 
-- **[Risk] OS reserved shortcut の扱いが曖昧だと false conflict / missed conflict が起きる**  
+- **[Risk] OS reserved shortcut の扱いが曖昧だと false conflict / missed conflict が起きる**
   -> Mitigation: app-local collision を最低保証とし、OS reserved は known blocked set として段階導入する
-- **[Risk] shortcut schema migration で default 更新が壊れる**  
+
+- **[Risk] shortcut schema migration で default 更新が壊れる**
   -> Mitigation: schema versioning と restore defaults を用意する
 
 ## Migration Plan

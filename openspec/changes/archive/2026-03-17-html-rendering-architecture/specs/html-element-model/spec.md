@@ -54,4 +54,4 @@
 #### Scenario: shields.io バッジの変換
 
 - **WHEN** `[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)` を含む HTML をパースした場合
-- **THEN** Link ノードの子に Image ノードが含まれ、src が `https://img.shields.io/badge/License-MIT-blue.svg` である
+- **THEN** Link ノードの子に Image ノードが含まれ、src が `<https://img.shields.io/badge/License-MIT-blue.svg`> である

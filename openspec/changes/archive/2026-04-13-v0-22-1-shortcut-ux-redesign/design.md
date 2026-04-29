@@ -114,13 +114,13 @@ impl KatanaApp {
 
 現状（3カラムGrid）:
 
-```
+```text
 [コマンド名] [shortcut文字列] [Editボタン]
 ```
 
 新設計（2カラム + ペンアイコン）:
 
-```
+```text
 [コマンド名]  [OSアイコン付きキー表示] [🖊]
 ```
 
@@ -143,7 +143,7 @@ impl KatanaApp {
 
 ### 2.3 ShortcutCaptureModal — 録音専用モーダル
 
-```
+```text
 ╔════════════════════════════════╗
 ║  「保存」のショートカットを入力してください  ║
 ║                                ║
@@ -165,7 +165,7 @@ impl KatanaApp {
 
 ### 3.1 アーキテクチャ
 
-```
+```text
 katana-linter/src/rules/domains/shortcut/
 ├── mod.rs          → ShortcutLinterOps::lint()
 ├── discovery.rs    → CommandInventoryParser（Rustソースを静的解析）

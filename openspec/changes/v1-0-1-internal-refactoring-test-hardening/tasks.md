@@ -11,6 +11,7 @@
 ## Branch Rule
 
 本タスクでは、以下のブランチ運用を適用します：
+
 - **標準（Base）ブランチ**: `v1-0-1-internal-refactoring-test-hardening` またはリリース用統合ブランチ（例: `release/v1.0.1`）
 - **作業ブランチ**: 標準は `v1-0-1-internal-refactoring-test-hardening-task-x`、リリース用は `feature/v1.0.1-task-x` (xはタスク番号)
 

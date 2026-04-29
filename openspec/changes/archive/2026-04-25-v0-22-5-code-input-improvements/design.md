@@ -105,10 +105,13 @@ The implementation is complete only when the following user review cases are dem
 
 - **Risk: app shortcuts become unavailable while editing.**
   Mitigation: suppress only protected text-entry conflicts and keep toolbar/palette routes for authoring commands.
+
 - **Risk: clipboard APIs differ by platform.**
   Mitigation: keep image extraction behind the existing ingest action/path and report unsupported clipboard image data without changing text paste behavior.
+
 - **Risk: toolbar focus steals the editor context.**
   Mitigation: make toolbar actions explicit button clicks and avoid keyboard handling in the toolbar itself.
+
 - **Risk: scroll sync reintroduces downward pull after top recovery.**
   Mitigation: test one-shot scroll clearing and editor/preview source transitions after manual upward scroll.
 

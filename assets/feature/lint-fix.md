@@ -61,8 +61,8 @@ Two more lines.
 ## Violation Samples (Fixable) — MD029: Ordered list item prefix
 
 1. First
-1. Second (Stays as 1 — MD029 violation)
-1. Third (Stays as 1 — MD029 violation)
+2. Second (Stays as 1 — MD029 violation)
+3. Third (Stays as 1 — MD029 violation)
 
 ---
 

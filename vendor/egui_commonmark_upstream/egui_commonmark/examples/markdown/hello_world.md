@@ -1,11 +1,10 @@
 # Commonmark Viewer Example
 
-A *bunch* ~~of~~ __different__ `text` styles.
-
+A *bunch* ~~of~~ **different** `text` styles.
 
  ![Ferris](egui_commonmark/examples/cuddlyferris.png)
 
-| __A table!__ |
+| **A table!** |
 | ------------ |
 | Aa           |
 | *Bb*         |
@@ -27,10 +26,15 @@ vec.push(5);
 [^1]: A footnote
 
 # Header 1
+
 ## Header 2
+
 ### Header 3
+
 #### Header 4
+
 ##### Header 5
+
 ###### Header 6
 
 Some text.

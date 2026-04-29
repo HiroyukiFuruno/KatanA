@@ -21,36 +21,36 @@
 ## Approach
 
 1. 旧 `mmdc` 経路の出力条件を確認する。
-   - KatanA が `mmdc` に渡していた引数
-   - `mmdc` の既定 viewport / output size
-   - テーマ、背景色、フォント、スケールの扱い
-2. Mermaid.js 経路の描画条件を確認する。
-   - ヘッドレスブラウザの viewport
-   - Mermaid render 対象 container の幅
-   - SVG `viewBox` / `getBBox()` / PNG capture 対象
-   - キャッシュキーに含めるべき描画条件
-3. 代表 fixture を作る。
-   - flowchart
-   - sequence
-   - class
-   - state
-   - entity relationship
-   - gantt
-   - pie
-   - journey
-   - mindmap
-   - timeline
-4. `mmdc` 出力と Mermaid.js 出力を比較する。
-   - 画像サイズ
-   - 図形本体の位置
-   - テーマ色の一致
-   - 文字色、線色、背景色
-   - 図形固有マーカーの扱い
-5. 修正方針を分類する。
-   - Mermaid 初期化設定で解決できるもの
-   - HTML container / viewport の調整で解決できるもの
-   - SVG 後処理が必要なもの
-   - Mermaid.js 側の仕様差として許容または明示するもの
+  - KatanA が `mmdc` に渡していた引数
+  - `mmdc` の既定 viewport / output size
+  - テーマ、背景色、フォント、スケールの扱い
+1. Mermaid.js 経路の描画条件を確認する。
+  - ヘッドレスブラウザの viewport
+  - Mermaid render 対象 container の幅
+  - SVG `viewBox` / `getBBox()` / PNG capture 対象
+  - キャッシュキーに含めるべき描画条件
+1. 代表 fixture を作る。
+  - flowchart
+  - sequence
+  - class
+  - state
+  - entity relationship
+  - gantt
+  - pie
+  - journey
+  - mindmap
+  - timeline
+1. `mmdc` 出力と Mermaid.js 出力を比較する。
+  - 画像サイズ
+  - 図形本体の位置
+  - テーマ色の一致
+  - 文字色、線色、背景色
+  - 図形固有マーカーの扱い
+1. 修正方針を分類する。
+  - Mermaid 初期化設定で解決できるもの
+  - HTML container / viewport の調整で解決できるもの
+  - SVG 後処理が必要なもの
+  - Mermaid.js 側の仕様差として許容または明示するもの
 
 ## Risks
 

@@ -5,11 +5,13 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - KatanAのリポジトリ内にある `vendor/egui_commonmark_upstream` や `vendor/egui-winit` 等のプレビュー関連依存を `katana-ui` の直接の関心事から排除する。
 - プレビューを `katana-markdown-preview` クレートに分離する。
 - コンポーネントが独自にインテグレーションテストを実行できるようにする。
 
 **Non-Goals:**
+
 - エディタコンポーネントの分離（v0.27.0にて実施）。
 - アプリケーション全体のUIデザインを刷新すること。
 

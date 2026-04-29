@@ -14,6 +14,7 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `diagnostic-fix-preview`: DiagnosticFix や将来の LLM 自動修正によるファイル差分を、反映前に確認・承認できる機能
 
 ## Impact

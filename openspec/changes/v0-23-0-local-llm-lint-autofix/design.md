@@ -123,16 +123,22 @@ autofix は single diagnostic だけを直す機能ではなく、file 内の di
 
 - **[Risk] Ollama の利用可否判定が不安定だと UX が崩れる**
   -> Mitigation: explicit test connection と disabled state を用意する
+
 - **[Risk] 軽量 model が lint 修正品質を満たさない**
   -> Mitigation: recommended model guidance と preview review を組み合わせる
+
 - **[Risk] KML fix 後 content と LLM proposal の差分が広がりすぎる**
   -> Mitigation: file 単位の diff preview と explicit confirmation を必須にする
+
 - **[Risk] 差分 preview 機能が未実装だと autofix の安全境界が成立しない**
   -> Mitigation: autofix apply pipeline の前に reusable diff preview surface を実装する
+
 - **[Risk] provider ごとの差異が prompt / response shape に表れる**
   -> Mitigation: `v0.23.0` は Ollama に閉じ、remote provider は後続 milestone で credential 管理込みで扱う
+
 - **[Risk] chat UI が editor / diagnostics と結合して実装 conflict を起こす**
   -> Mitigation: chat state と UI module を専用化し、document mutation は action 境界を通す
+
 - **[Risk] autofix が広い範囲を書き換える**
   -> Mitigation: file 単位に fix scope を限定し、差分 preview と explicit confirmation を必須にする
 

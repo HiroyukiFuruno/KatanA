@@ -87,13 +87,16 @@ parity が取れていない rule を official diagnostics と同列に並べる
 
 ## Risks / Trade-offs
 
-- **[Risk] official behavior parity の検証コストが高い**  
+- **[Risk] official behavior parity の検証コストが高い**
   -> Mitigation: user-facing に出荷する rule ごとに fixture corpus と golden test を持つ
-- **[Risk] parity 未達 rule を hidden にすると見える rule 数が減る**  
+
+- **[Risk] parity 未達 rule を hidden にすると見える rule 数が減る**
   -> Mitigation: release note と docs で experimental / 後続対応予定を明示する
-- **[Risk] official docs wording 追随が保守コストになる**  
+
+- **[Risk] official docs wording 追随が保守コストになる**
   -> Mitigation: full docs copy ではなく short metadata + docs URL に留める
-- **[Risk] current `RefreshDiagnostics` 実装が rule registry 化されず増殖する**  
+
+- **[Risk] current `RefreshDiagnostics` 実装が rule registry 化されず増殖する**
   -> Mitigation: rule catalog と evaluator registry を導入する
 
 ## Migration Plan

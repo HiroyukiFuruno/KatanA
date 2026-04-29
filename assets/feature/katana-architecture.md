@@ -5,12 +5,12 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        
+
         <!-- App Core -->
         <mxCell id="core" value="Katana Core (Rust)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="310" y="220" width="200" height="80" as="geometry" />
         </mxCell>
-        
+
         <!-- UI -->
         <mxCell id="ui" value="Katana UI (egui)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=14;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="310" y="80" width="200" height="60" as="geometry" />

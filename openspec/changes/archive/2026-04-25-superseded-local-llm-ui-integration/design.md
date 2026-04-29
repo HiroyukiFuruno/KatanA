@@ -55,13 +55,13 @@ UI screenshot はユーザーレビュー用に使えるが、回帰検知は st
 
 ## Migration Plan
 
-0. `v0.23.0` MVP が `master` に merge 済みであることを確認し、未反映ならこの change の実装へ進まない。
-1. `master` 上の settings / chat / autofix 実装差分を確認し、重複実装が残らないよう task を更新する。
-2. settings の AI セクションを local LLM の起点として整理する。
-3. chat / autofix の disabled reason を統一モデルで表現する。
-4. Problems panel の autofix entry point と recovery 導線を調整する。
-5. semantic UI tests を追加する。
-6. UI snapshot または操作確認結果をユーザーに提示し、feedback を tasks に記録する。
+1. `v0.23.0` MVP が `master` に merge 済みであることを確認し、未反映ならこの change の実装へ進まない。
+2. `master` 上の settings / chat / autofix 実装差分を確認し、重複実装が残らないよう task を更新する。
+3. settings の AI セクションを local LLM の起点として整理する。
+4. chat / autofix の disabled reason を統一モデルで表現する。
+5. Problems panel の autofix entry point と recovery 導線を調整する。
+6. semantic UI tests を追加する。
+7. UI snapshot または操作確認結果をユーザーに提示し、feedback を tasks に記録する。
 
 ## Open Questions
 
