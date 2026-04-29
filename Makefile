@@ -282,7 +282,7 @@ endif
 		BOOL_FORCE="true"; \
 		echo "⚠️ Force mode enabled (clobbering existing release)"; \
 	fi; \
-	gh workflow run Release -f version=$(VERSION) -f target=all -f force=$$BOOL_FORCE
+	gh workflow run build-and-release.yml -f version=$(VERSION) -f target=all -f force=$$BOOL_FORCE
 	@echo ""
 	@echo "✅ Workflow triggered! Monitor progress with:"
 	@echo "   gh run watch --repo HiroyukiFuruno/KatanA"
