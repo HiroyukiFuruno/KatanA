@@ -1,0 +1,33 @@
+<mxfile host="app.diagrams.net" agent="Katana fixture" version="29.0.0">
+  <diagram id="edge-variants" name="Edge Variants">
+    <mxGraphModel dx="980" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="left" value="Left" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="80" y="100" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="middle" value="Middle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="300" y="100" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="right" value="Right" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="520" y="100" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="bottom" value="Bottom" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="300" y="280" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-block" value="block" style="endArrow=block;html=1;rounded=0;" parent="1" source="left" target="middle" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-open" value="open" style="endArrow=open;html=1;rounded=0;dashed=1;" parent="1" source="middle" target="right" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-orthogonal" value="orthogonal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="middle" target="bottom" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="220" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

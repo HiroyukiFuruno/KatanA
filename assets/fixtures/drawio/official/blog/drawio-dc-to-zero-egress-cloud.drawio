@@ -1,0 +1,122 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" version="28.1.1">
+  <diagram name="Page-1" id="NDM1n4kGSD_w2esr1PbB">
+    <mxGraphModel dx="1633" dy="987" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-332" value="&amp;nbsp;draw.io DC to draw.io Confluence Cloud" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;horizontal=0;startSize=20;horizontalStack=0;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="70" y="40" width="1470" height="370" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-334" value="Confluence DC" style="swimlane;startSize=20;horizontal=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="S_0fY1hwWcbeF2ZjULsv-332" vertex="1">
+          <mxGeometry x="20" width="1450" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-374" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" source="S_0fY1hwWcbeF2ZjULsv-310" target="S_0fY1hwWcbeF2ZjULsv-372" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-310" value="Check admin permissions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="40" y="40" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-358" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" source="S_0fY1hwWcbeF2ZjULsv-312" target="S_0fY1hwWcbeF2ZjULsv-353" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-312" value="Re-index draw.io diagrams" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="280" y="40" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-360" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" source="S_0fY1hwWcbeF2ZjULsv-353" target="S_0fY1hwWcbeF2ZjULsv-354" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-353" value="Export PageIDs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="410" y="40" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-363" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" source="S_0fY1hwWcbeF2ZjULsv-354" target="S_0fY1hwWcbeF2ZjULsv-362" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-354" value="Save exported PageID log" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="540" y="40" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-362" value="Migrate Confluence from DC to Cloud" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;gradientColor=#D5E8D4;gradientDirection=east;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="670" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-375" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" target="S_0fY1hwWcbeF2ZjULsv-373" edge="1">
+          <mxGeometry x="-0.3899" relative="1" as="geometry">
+            <mxPoint x="210" y="99.25" as="sourcePoint" />
+            <mxPoint x="210" y="132" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-376" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" source="S_0fY1hwWcbeF2ZjULsv-372" target="S_0fY1hwWcbeF2ZjULsv-312" edge="1">
+          <mxGeometry x="-0.3314" relative="1" as="geometry">
+            <mxPoint x="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-372" value="Migrate&amp;nbsp;&lt;div&gt;from&amp;nbsp;&lt;/div&gt;&lt;div&gt;Gliffy?&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="170" y="18.75" width="80" height="82.5" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-377" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-334" source="S_0fY1hwWcbeF2ZjULsv-373" target="S_0fY1hwWcbeF2ZjULsv-312" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-373" value="Mass import Gliffy to draw.io" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="S_0fY1hwWcbeF2ZjULsv-334" vertex="1">
+          <mxGeometry x="165" y="134" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-335" value="Confluence Cloud" style="swimlane;startSize=20;horizontal=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="S_0fY1hwWcbeF2ZjULsv-332" vertex="1">
+          <mxGeometry x="20" y="190" width="1450" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-366" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-320" target="S_0fY1hwWcbeF2ZjULsv-348" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-320" value="Check admin permissions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="S_0fY1hwWcbeF2ZjULsv-335" vertex="1">
+          <mxGeometry x="850" y="25.619999999999997" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-371" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-350" target="S_0fY1hwWcbeF2ZjULsv-356" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-350" value="Enable:&lt;div&gt;- Cache page ID mapping&lt;div&gt;- Remember imported pages&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;spacing=2;fontSize=12;align=left;spacingLeft=9;fillColor=#d5e8d4;strokeColor=#82b366;" parent="S_0fY1hwWcbeF2ZjULsv-335" vertex="1">
+          <mxGeometry x="930" y="119.99999999999999" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-367" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-348" target="S_0fY1hwWcbeF2ZjULsv-356" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-368" value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="S_0fY1hwWcbeF2ZjULsv-367" vertex="1" connectable="0">
+          <mxGeometry x="-0.6301" y="1" relative="1" as="geometry">
+            <mxPoint x="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-348" value="Short sessions?" style="rhombus;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="S_0fY1hwWcbeF2ZjULsv-335" vertex="1">
+          <mxGeometry x="980" y="4.369999999999999" width="80" height="82.5" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-351" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-348" target="S_0fY1hwWcbeF2ZjULsv-350" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-352" value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="S_0fY1hwWcbeF2ZjULsv-351" vertex="1" connectable="0">
+          <mxGeometry x="0.0873" relative="1" as="geometry">
+            <mxPoint y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-365" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-355" target="S_0fY1hwWcbeF2ZjULsv-320" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-355" value="Migrate Confluence from DC to Cloud" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;gradientColor=#D5E8D4;gradientDirection=east;" parent="S_0fY1hwWcbeF2ZjULsv-335" vertex="1">
+          <mxGeometry x="670" y="25.619999999999997" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-369" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-356" target="S_0fY1hwWcbeF2ZjULsv-357" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-356" value="Import PageIDs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="S_0fY1hwWcbeF2ZjULsv-335" vertex="1">
+          <mxGeometry x="1090" y="25.619999999999997" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="YES4wHdqQHsrhpOzE8DJ-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="S_0fY1hwWcbeF2ZjULsv-335" source="S_0fY1hwWcbeF2ZjULsv-357" target="YES4wHdqQHsrhpOzE8DJ-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-357" value="Save import log" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="S_0fY1hwWcbeF2ZjULsv-335" vertex="1">
+          <mxGeometry x="1220" y="25.619999999999997" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="YES4wHdqQHsrhpOzE8DJ-1" value="Re-index draw.io diagrams" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="S_0fY1hwWcbeF2ZjULsv-335">
+          <mxGeometry x="1344" y="25.62" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S_0fY1hwWcbeF2ZjULsv-364" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;dashed=1;" parent="S_0fY1hwWcbeF2ZjULsv-332" source="S_0fY1hwWcbeF2ZjULsv-362" target="S_0fY1hwWcbeF2ZjULsv-355" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
