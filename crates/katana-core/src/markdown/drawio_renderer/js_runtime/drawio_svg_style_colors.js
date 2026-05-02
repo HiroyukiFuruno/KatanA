@@ -85,6 +85,10 @@ const KATANA_DRAWIO_EXTRA_LIGHT_TO_DARK_COLOR_ENTRIES = [
   ["#0000ee", "#cfcfff"],
   ["rgb(0, 0, 238)", "rgb(207, 207, 255)"],
   ["#001933", "#c9def5"],
+  ["#660000", "#ffc4c4"],
+  ["rgb(102, 0, 0)", "rgb(255, 196, 196)"],
+  ["#990000", "#ffb5b5"],
+  ["rgb(153, 0, 0)", "rgb(255, 181, 181)"],
   ["#0d5b9d", "#70b3ec"],
   ["rgb(13, 91, 157)", "rgb(112, 179, 236)"],
   ["#efac43", "#a96500"],
@@ -97,7 +101,6 @@ const KATANA_DRAWIO_EXTRA_LIGHT_TO_DARK_COLOR_ENTRIES = [
   ["rgb(88, 185, 87)", "rgb(40, 127, 40)"],
   ["rgb(18, 170, 181)", "rgb(14, 145, 155)"],
   ["rgb(255, 133, 89)", "rgb(189, 84, 46)"],
-  ["rgb(153, 0, 0)", "rgb(255, 181, 181)"],
   ["rgb(240, 142, 129)", "rgb(165, 81, 70)"],
   ["rgb(245, 175, 88)", "rgb(133, 72, 0)"],
   ["rgb(100, 187, 226)", "rgb(28, 103, 136)"],
@@ -201,7 +204,11 @@ function katanaNormalizeDrawioStyleTextColor(element) {
 
 function katanaDrawioResolvedTextColor(color) {
   const value = katanaDrawioColorKey(color);
-  return katanaDrawioTextColorMapForTheme().get(value) || katanaDrawioFallbackDarkTextColor(value) || value;
+  return (
+    katanaDrawioTextColorMapForTheme().get(value) ||
+    katanaDrawioFallbackDarkTextColor(value) ||
+    value
+  );
 }
 
 function katanaDrawioTextColorMapForTheme() {
@@ -266,8 +273,15 @@ function katanaDrawioDarkThemeColor(color) {
 
 function katanaDrawioDarkScale(color) {
   const luminance = katanaDrawioRgbLuminance(color);
+  const saturation = katanaDrawioRgbSaturation(color);
+  if (luminance > 0.82 && saturation < 0.25) {
+    return 0.14;
+  }
   if (luminance > 0.82) {
     return 0.35;
+  }
+  if (luminance > 0.62 && saturation < 0.2) {
+    return 0.24;
   }
   if (luminance > 0.62) {
     return 0.45;
@@ -283,11 +297,21 @@ function katanaDrawioScaledDarkColor(color, scale) {
 }
 
 function katanaDrawioColorLuminance(value) {
-  return [katanaDrawioParsedColor(value)].filter(Boolean).map(katanaDrawioRgbLuminance).concat([1])[0];
+  return [katanaDrawioParsedColor(value)]
+    .filter(Boolean)
+    .map(katanaDrawioRgbLuminance)
+    .concat([1])[0];
 }
 
 function katanaDrawioRgbLuminance(color) {
   return (0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2]) / 255;
+}
+
+function katanaDrawioRgbSaturation(color) {
+  const channels = color.map((channel) => channel / 255);
+  const max = Math.max(...channels);
+  const min = Math.min(...channels);
+  return max === 0 ? 0 : (max - min) / max;
 }
 
 function katanaDrawioParsedColor(value) {
@@ -327,10 +351,12 @@ const KATANA_DRAWIO_DARK_TEXT_COLOR_BY_LIGHT_COLOR = new Map([
   ["default", "#ffffff"],
   ["#000000", "#ffffff"],
   ["rgb(0, 0, 0)", "rgb(255, 255, 255)"],
-  ["#ffffff", "#121212"],
-  ["rgb(255, 255, 255)", "rgb(18, 18, 18)"],
+  ["#ffffff", "#ffffff"],
+  ["rgb(255, 255, 255)", "rgb(255, 255, 255)"],
   ["#121212", "#ffffff"],
   ["rgb(18, 18, 18)", "rgb(255, 255, 255)"],
+  ["#660000", "#ffc4c4"],
+  ["rgb(102, 0, 0)", "rgb(255, 196, 196)"],
   ["#0d5b9d", "#70b3ec"],
   ["rgb(13, 91, 157)", "rgb(112, 179, 236)"],
   ["#232f3e", "#bdc7d4"],
