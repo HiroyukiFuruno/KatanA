@@ -66,7 +66,7 @@ export class PlaywrightLoader {
       return execSync("which playwright", { encoding: "utf8" }).trim();
     } catch {
       throw new Error(
-        "playwright command not found. Install it, then run `make mermaid-diagram-browser-install`.",
+        "playwright command not found. Install it, then run `just mermaid-diagram-browser-install`.",
       );
     }
   }
@@ -114,7 +114,7 @@ export class OfficialMermaidRenderer {
   private rethrowLaunchError(error: unknown): never {
     if (String(error).includes("Executable doesn't exist")) {
       throw new Error(
-        "Playwright browser is missing. Run `make mermaid-diagram-browser-install` first.",
+        "Playwright browser is missing. Run `just mermaid-diagram-browser-install` first.",
       );
     }
     throw error;

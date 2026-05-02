@@ -829,8 +829,8 @@ treeView-beta
 treeView-beta
             "docs"
                 "build"
-                "make.bat"
-                "Makefile"
+                "justfile"
+                "Justfile"
                 "out"
                 "source"
                     "build"

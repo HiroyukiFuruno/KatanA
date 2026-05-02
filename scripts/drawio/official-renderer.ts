@@ -124,7 +124,7 @@ export class OfficialDrawioRenderer {
   private rethrowLaunchError(error: Error): never {
     if (String(error).includes("Executable doesn't exist")) {
       throw new Error(
-        "Playwright browser is missing. Run `make drawio-diagram-browser-install` first.",
+        "Playwright browser is missing. Run `just drawio-diagram-browser-install` first.",
       );
     }
     throw error;

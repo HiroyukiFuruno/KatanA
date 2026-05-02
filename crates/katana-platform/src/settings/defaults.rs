@@ -65,7 +65,7 @@ impl SettingsDefaultOps {
         vec!["md".to_string(), "markdown".to_string(), "txt".to_string()]
     }
     pub fn default_extensionless_excludes() -> Vec<String> {
-        vec!["LICENSE".to_string(), "Makefile".to_string()]
+        vec!["LICENSE".to_string(), "Justfile".to_string()]
     }
     pub fn default_restore_session() -> bool {
         true

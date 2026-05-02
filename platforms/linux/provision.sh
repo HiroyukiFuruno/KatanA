@@ -136,7 +136,6 @@ sudo apt-get install -y \
   file \
   git \
   lld \
-  make \
   openjdk-25-jdk \
   dbus-x11 \
   libdbus-1-dev \

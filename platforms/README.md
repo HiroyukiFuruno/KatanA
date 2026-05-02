@@ -27,7 +27,7 @@
 
 ```bash
 cd /config/workspace/katana
-make run-release
+just run-release
 ```
 
 Cargo のホームディレクトリ（`CARGO_HOME`）とビルド成果物（`CARGO_TARGET_DIR`）は Docker の名前付きボリュームに分離されます。

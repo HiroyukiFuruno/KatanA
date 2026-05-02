@@ -73,7 +73,7 @@ fn workspace_name_none_for_filesystem_root() {
 #[test]
 fn is_markdown_returns_false_for_no_extension() {
     let entry = TreeEntry::File {
-        path: PathBuf::from("Makefile"),
+        path: PathBuf::from("Justfile"),
     };
     assert!(!entry.is_markdown());
 }
