@@ -40,11 +40,6 @@ MERMAID_PARTS_TMP_PREFIX := env_var_or_default("MERMAID_PARTS_TMP_PREFIX", "tmp/
 MERMAID_EN_SOURCE := env_var_or_default("MERMAID_EN_SOURCE", "assets/fixtures/sample_mermaid.md")
 MERMAID_JA_SOURCE := env_var_or_default("MERMAID_JA_SOURCE", "assets/fixtures/sample_mermaid_ja.md")
 MERMAID_FIXTURES := env_var_or_default("MERMAID_FIXTURES", MERMAID_PARTS_ROOT + "/en")
-MERMAID_REFERENCE_DIR := env_var_or_default("MERMAID_REFERENCE_DIR", MERMAID_PARTS_TMP_PREFIX + "-en-dark-official")
-MERMAID_KATANA_DIR := env_var_or_default("MERMAID_KATANA_DIR", MERMAID_PARTS_TMP_PREFIX + "-en-dark-katana")
-MERMAID_REFERENCE_BROWSER_DIR := env_var_or_default("MERMAID_REFERENCE_BROWSER_DIR", MERMAID_PARTS_TMP_PREFIX + "-en-dark-official-browser")
-MERMAID_KATANA_BROWSER_DIR := env_var_or_default("MERMAID_KATANA_BROWSER_DIR", MERMAID_PARTS_TMP_PREFIX + "-en-dark-katana-browser")
-MERMAID_COMPARISON_DIR := env_var_or_default("MERMAID_COMPARISON_DIR", MERMAID_PARTS_TMP_PREFIX + "-en-dark-comparison")
 MERMAID_JS := env_var_or_default("MERMAID_JS", HOME_DIR + "/.local/katana/mermaid.min.js")
 MERMAID_MIN_SCORE := env_var_or_default("MERMAID_MIN_SCORE", "99")
 

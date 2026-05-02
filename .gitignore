@@ -100,8 +100,9 @@ cov.json
 cp
 cpD
 
-# diagram offical img
+# diagram official img
 **/assets/fixtures/drawio/**/*.png
 **/assets/fixtures/drawio/**/*.svg
 **/assets/fixtures/mermaid/**/*.png
 **/assets/fixtures/mermaid/**/*.svg
+**/assets/fixtures/mermaid_parts/**/*.svg

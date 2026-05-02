@@ -2615,6 +2615,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
+ "syntect",
  "tar",
  "tempfile",
  "thiserror 2.0.18",
