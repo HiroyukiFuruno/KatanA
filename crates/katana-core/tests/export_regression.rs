@@ -1,6 +1,8 @@
 use katana_core::markdown::{
-    DiagramBlock, DiagramRenderer, DiagramResult, MarkdownError, MarkdownRenderOps, RenderOutput,
+    DiagramBlock, DiagramRenderer, DiagramResult, ImageExporter, MarkdownError, MarkdownRenderOps,
+    PdfExporter, RenderOutput,
 };
+use std::collections::HashSet;
 use std::sync::Mutex;
 
 static RENDER_ENV_LOCK: Mutex<()> = Mutex::new(());
@@ -214,4 +216,239 @@ A -> B: test
         "Bug 1: Naked <mxGraphModel> or @startuml blocks were skipped by HTML export! Output was: \n{}",
         output.html
     );
+}
+
+#[test]
+fn pdf_export_writes_native_pdf_without_chromium() {
+    assert!(PdfExporter::is_available());
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("document.pdf");
+
+    PdfExporter::export(sample_export_html(), &output).unwrap();
+
+    let bytes = std::fs::read(&output).unwrap();
+    assert!(bytes.starts_with(b"%PDF-"));
+    assert!(bytes.ends_with(b"%%EOF\n"));
+    assert!(bytes.len() > 1024);
+}
+
+#[test]
+fn pdf_export_splits_long_document_into_pages() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("document.pdf");
+
+    PdfExporter::export(&long_export_html(), &output).unwrap();
+
+    let bytes = std::fs::read(&output).unwrap();
+    let page_count = pdf_page_count(&bytes);
+    assert!(
+        page_count > 1,
+        "long native PDF export must keep paginated output instead of one tall page"
+    );
+}
+
+#[test]
+fn image_export_writes_native_png_without_chromium() {
+    assert!(ImageExporter::is_available());
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("document.png");
+
+    ImageExporter::export(sample_export_html(), &output).unwrap();
+
+    let bytes = std::fs::read(&output).unwrap();
+    assert!(bytes.starts_with(&[137, 80, 78, 71, 13, 10, 26, 10]));
+    assert!(bytes.len() > 1024);
+}
+
+#[test]
+fn image_export_keeps_inline_svg_diagram_without_chromium() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("document.png");
+
+    ImageExporter::export(inline_svg_export_html(), &output).unwrap();
+
+    let image = image::open(&output).unwrap().to_rgba8();
+    assert!(
+        image
+            .pixels()
+            .any(|pixel| pixel[2] > 180 && pixel[0] < 80 && pixel[1] < 160),
+        "native image export must keep the inline SVG diagram pixels"
+    );
+}
+
+#[test]
+fn image_export_writes_native_jpeg_without_chromium() {
+    assert!(ImageExporter::is_available());
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("document.jpeg");
+
+    ImageExporter::export(sample_export_html(), &output).unwrap();
+
+    let bytes = std::fs::read(&output).unwrap();
+    assert!(bytes.starts_with(&[0xFF, 0xD8, 0xFF]));
+    assert!(bytes.ends_with(&[0xFF, 0xD9]));
+    assert!(bytes.len() > 1024);
+}
+
+#[test]
+fn sample_mermaid_all_exports_html_pdf_png_and_jpeg_without_chromium() {
+    let _guard = RENDER_ENV_LOCK.lock().unwrap();
+    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+        return;
+    }
+    let output = MarkdownRenderOps::render_with_katana_renderer(include_str!(
+        "../../../assets/fixtures/sample_mermaid_all.md"
+    ))
+    .unwrap();
+    assert!(!output.html.contains("language-mermaid"));
+    assert!(!output.html.contains("katana-diagram-error"));
+    assert!(
+        output.html.matches("<svg").count() >= 26,
+        "sample export HTML must include the 26 Mermaid SVG diagrams"
+    );
+    let dir = tempfile::tempdir().unwrap();
+
+    PdfExporter::export(&output.html, &dir.path().join("sample.pdf")).unwrap();
+    ImageExporter::export(&output.html, &dir.path().join("sample.png")).unwrap();
+    ImageExporter::export(&output.html, &dir.path().join("sample.jpeg")).unwrap();
+
+    assert!(
+        std::fs::metadata(dir.path().join("sample.pdf"))
+            .unwrap()
+            .len()
+            > 1024
+    );
+    assert!(
+        std::fs::metadata(dir.path().join("sample.png"))
+            .unwrap()
+            .len()
+            > 1024
+    );
+    assert!(
+        std::fs::metadata(dir.path().join("sample.jpeg"))
+            .unwrap()
+            .len()
+            > 1024
+    );
+}
+
+#[test]
+fn html_export_uses_unique_mermaid_svg_ids_for_multiple_diagrams() {
+    let _guard = RENDER_ENV_LOCK.lock().unwrap();
+    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+        return;
+    }
+    let output = MarkdownRenderOps::render_with_katana_renderer(
+        r#"
+```mermaid
+graph TD; A-->B
+```
+
+```mermaid
+graph TD; C-->D
+```
+"#,
+    )
+    .unwrap();
+
+    let ids = inline_svg_ids(&output.html);
+    assert_eq!(ids.len(), 2);
+    assert_unique_inline_svg_ids(&ids);
+}
+
+#[test]
+fn mermaid_fixture_html_export_uses_unique_inline_svg_ids() {
+    let _guard = RENDER_ENV_LOCK.lock().unwrap();
+    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+        return;
+    }
+    let output = MarkdownRenderOps::render_with_katana_renderer(include_str!(
+        "../../../assets/fixtures/mermaid.md"
+    ))
+    .unwrap();
+
+    let ids = inline_svg_ids(&output.html);
+    assert!(
+        ids.len() >= 28,
+        "assets/fixtures/mermaid.md should render the supported Mermaid diagrams as inline SVG"
+    );
+    assert_unique_inline_svg_ids(&ids);
+}
+
+fn inline_svg_ids(html: &str) -> Vec<String> {
+    let mut ids = Vec::new();
+    let mut position = 0;
+    while let Some(start_offset) = html[position..].find("<svg") {
+        let start = position + start_offset;
+        let Some(open_end_offset) = html[start..].find('>') else {
+            break;
+        };
+        let open_end = start + open_end_offset;
+        if let Some(id) = inline_svg_id(&html[start..open_end]) {
+            ids.push(id);
+        }
+        position = open_end;
+    }
+    ids
+}
+
+fn inline_svg_id(open_tag: &str) -> Option<String> {
+    let marker = r#"id=""#;
+    let start = open_tag.find(marker)? + marker.len();
+    let end = start + open_tag[start..].find('"')?;
+    Some(open_tag[start..end].to_string())
+}
+
+fn assert_unique_inline_svg_ids(ids: &[String]) {
+    let mut seen = HashSet::new();
+    for id in ids {
+        assert!(
+            seen.insert(id),
+            "HTML inline SVG must not duplicate Mermaid id `{id}` because marker and style references collide"
+        );
+    }
+}
+
+fn pdf_page_count(bytes: &[u8]) -> usize {
+    String::from_utf8_lossy(bytes)
+        .matches("/Type /Page /Parent")
+        .count()
+}
+
+fn sample_export_html() -> &'static str {
+    r#"<!DOCTYPE html>
+<html>
+<body>
+<h1>Export Sample</h1>
+<p>Generated HTML is converted without Chrome or Chromium.</p>
+<div class="katana-diagram mermaid">
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120">
+<text x="20" y="40">Diagram label</text>
+</svg>
+</div>
+</body>
+</html>"#
+}
+
+fn long_export_html() -> String {
+    let mut body = String::new();
+    for index in 1..=120 {
+        body.push_str(&format!(
+            "<p>PDF pagination regression line {index}: exported content stays readable.</p>\n"
+        ));
+    }
+    format!("<!DOCTYPE html><html><body>{body}</body></html>")
+}
+
+fn inline_svg_export_html() -> &'static str {
+    r##"<!DOCTYPE html>
+<html>
+<body>
+<h1>Diagram Export</h1>
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
+<rect x="8" y="8" width="144" height="80" fill="#0044ff"/>
+<text x="24" y="54" fill="#ffffff">Diagram label</text>
+</svg>
+</body>
+</html>"##
 }
