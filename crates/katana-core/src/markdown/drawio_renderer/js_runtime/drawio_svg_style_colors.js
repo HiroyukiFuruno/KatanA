@@ -50,6 +50,7 @@ function katanaNormalizeDrawioStyleTextColor(element) {
 function katanaDrawioResolvedTextColor(color) {
   const value = katanaDrawioColorKey(color);
   return (
+    katanaDrawioLightDarkExactColor(value) ||
     katanaDrawioTextColorMapForTheme().get(value) ||
     katanaDrawioFallbackDarkTextColor(value) ||
     value

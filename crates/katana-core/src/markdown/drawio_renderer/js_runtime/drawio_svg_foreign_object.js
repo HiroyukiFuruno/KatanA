@@ -5,7 +5,7 @@ function katanaNormalizeDrawioForeignObjects(svg) {
 }
 
 function katanaNormalizeDrawioForeignObject(foreignObject) {
-  Array.from(foreignObject.children).forEach(katanaApplyDrawioXhtmlNamespace);
+  foreignObject.remove();
 }
 
 function katanaApplyDrawioXhtmlNamespace(node) {

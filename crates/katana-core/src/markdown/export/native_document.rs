@@ -7,13 +7,14 @@ const JPEG_QUALITY_PERCENT: u8 = 90;
 const RGB_CHANNELS: usize = 3;
 const ALPHA_CHANNEL_INDEX: usize = 3;
 const MAX_ALPHA: u16 = 255;
-const FONT_SIZE: u32 = 16;
 const TEXT_CAPTION_TRUNCATED: &str = "... Export truncated by native export safety limit.";
 const PAGE_WIDTH: u32 = 900;
 const MIN_PAGE_HEIGHT: u32 = 480;
 const PAGE_MARGIN: u32 = 48;
-const LINE_HEIGHT: u32 = 26;
 const BLOCK_GAP: u32 = 22;
+const HEADING_EXTRA_GAP: u32 = 10;
+const CODE_FONT_FAMILY: &str =
+    "Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace";
 const MAX_TEXT_LINES: usize = 600;
 const RGBA_BYTES: usize = 4;
 
@@ -31,7 +32,9 @@ pub(crate) struct NativeDocumentImage {
 impl NativeHtmlDocument {
     pub(crate) fn parse(html: &str) -> Result<Self, MarkdownError> {
         let style = NativeDocumentStyle::parse(html);
-        super::native_blocks::NativeDocumentBlocks::parse(html).map(|blocks| Self { blocks, style })
+        let is_dark = super::native_text::is_dark_background(style.background_color());
+        super::native_blocks::NativeDocumentBlocks::parse(html, is_dark)
+            .map(|blocks| Self { blocks, style })
     }
 
     pub(crate) fn render_image(&self) -> Result<NativeDocumentImage, MarkdownError> {
@@ -48,7 +51,10 @@ impl NativeHtmlDocument {
         for block in &blocks {
             match block {
                 super::native_blocks::NativeDocumentBlock::Text(line) => {
-                    y += LINE_HEIGHT;
+                    if line.is_heading() {
+                        y += HEADING_EXTRA_GAP;
+                    }
+                    y += line.line_height();
                     content.push_str(&self.text_element(line, y));
                 }
                 super::native_blocks::NativeDocumentBlock::Svg(svg) => {
@@ -69,7 +75,7 @@ impl NativeHtmlDocument {
     fn visible_blocks(&self) -> Vec<super::native_blocks::NativeDocumentBlock> {
         let mut blocks = if self.blocks.is_empty() {
             vec![super::native_blocks::NativeDocumentBlock::Text(
-                DOCUMENT_FALLBACK_TITLE.to_string(),
+                super::native_text::NativeTextLine::body(DOCUMENT_FALLBACK_TITLE.to_string()),
             )]
         } else {
             self.blocks.clone()
@@ -78,13 +84,33 @@ impl NativeHtmlDocument {
         blocks
     }
 
-    fn text_element(&self, line: &str, y: u32) -> String {
+    fn text_element(&self, line: &super::native_text::NativeTextLine, y: u32) -> String {
         let text_color = self.style.text_color();
-        let font_family = super::native_text_runs::NativeTextRuns::font_family();
-        let content = super::native_text_runs::NativeTextRuns::render(line);
-        format!(
-            r##"<text x="{PAGE_MARGIN}" y="{y}" font-size="{FONT_SIZE}" font-family="{font_family}" fill="{text_color}">{content}</text>"##,
-        )
+        let font_family =
+            if line.is_code { CODE_FONT_FAMILY } else { super::native_text_runs::NativeTextRuns::font_family() };
+        let font_weight = if line.bold { "bold" } else { "normal" };
+        let font_size = line.font_size;
+
+        if line.spans.is_empty() {
+            let content = super::native_text_runs::NativeTextRuns::render(&line.text);
+            format!(
+                r##"<text x="{PAGE_MARGIN}" y="{y}" font-size="{font_size}" font-weight="{font_weight}" font-family="{font_family}" fill="{text_color}">{content}</text>"##,
+            )
+        } else {
+            let spans_html: String = line
+                .spans
+                .iter()
+                .map(|span| {
+                    let [r, g, b] = span.color;
+                    let color = format!("#{r:02x}{g:02x}{b:02x}");
+                    let text = super::native_text_runs::NativeTextRuns::render(&span.text);
+                    format!(r##"<tspan fill="{color}">{text}</tspan>"##)
+                })
+                .collect();
+            format!(
+                r##"<text x="{PAGE_MARGIN}" y="{y}" font-size="{font_size}" font-weight="{font_weight}" font-family="{font_family}">{spans_html}</text>"##,
+            )
+        }
     }
 
     fn svg_element(
@@ -172,7 +198,7 @@ fn truncate_text_blocks(blocks: &mut Vec<super::native_blocks::NativeDocumentBlo
     });
     if text_count > MAX_TEXT_LINES {
         blocks.push(super::native_blocks::NativeDocumentBlock::Text(
-            TEXT_CAPTION_TRUNCATED.to_string(),
+            super::native_text::NativeTextLine::body(TEXT_CAPTION_TRUNCATED.to_string()),
         ));
     }
 }

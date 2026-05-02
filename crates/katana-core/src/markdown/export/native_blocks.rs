@@ -10,7 +10,7 @@ const MAX_SVG_DIMENSION_INDEX: usize = 3;
 
 #[derive(Clone)]
 pub(crate) enum NativeDocumentBlock {
-    Text(String),
+    Text(super::native_text::NativeTextLine),
     Svg(NativeSvgBlock),
 }
 
@@ -24,22 +24,22 @@ pub(crate) struct NativeSvgBlock {
 pub(crate) struct NativeDocumentBlocks;
 
 impl NativeDocumentBlocks {
-    pub(crate) fn parse(html: &str) -> Result<Vec<NativeDocumentBlock>, MarkdownError> {
+    pub(crate) fn parse(html: &str, is_dark: bool) -> Result<Vec<NativeDocumentBlock>, MarkdownError> {
         let mut blocks = Vec::new();
         let mut cursor = 0;
         for range in NativeSvgRanges::find(html) {
-            Self::push_text(&mut blocks, &html[cursor..range.start])?;
+            Self::push_text(&mut blocks, &html[cursor..range.start], is_dark)?;
             blocks.push(NativeDocumentBlock::Svg(NativeSvgBlock::parse(
                 &html[range.clone()],
             )?));
             cursor = range.end;
         }
-        Self::push_text(&mut blocks, &html[cursor..])?;
+        Self::push_text(&mut blocks, &html[cursor..], is_dark)?;
         Ok(blocks)
     }
 
-    fn push_text(blocks: &mut Vec<NativeDocumentBlock>, html: &str) -> Result<(), MarkdownError> {
-        for line in super::native_text::extract_lines(html)? {
+    fn push_text(blocks: &mut Vec<NativeDocumentBlock>, html: &str, is_dark: bool) -> Result<(), MarkdownError> {
+        for line in super::native_text::extract_lines(html, is_dark)? {
             blocks.push(NativeDocumentBlock::Text(line));
         }
         Ok(())
