@@ -72,6 +72,13 @@ impl DiagramRenderer for CommandMissingTestRenderer {
     }
 }
 
+struct PanicRenderer;
+impl DiagramRenderer for PanicRenderer {
+    fn render(&self, _block: &DiagramBlock) -> DiagramResult {
+        panic!("Panic is raised when an empty diagram block is passed to the renderer");
+    }
+}
+
 #[test]
 fn render_diagram_block_okpng_embeds_base64_img() {
     let block = FenceBlock {
@@ -112,6 +119,52 @@ fn render_diagram_block_command_missing_uses_install_hint() {
         .expect("mermaid blocks should produce Some");
 
     assert!(html.contains("tool not found. install it"));
+}
+
+#[test]
+fn render_diagram_block_skips_empty_mermaid_source() {
+    let block = FenceBlock {
+        info: "mermaid".to_string(),
+        content: "   \n\t".to_string(),
+        raw: "```mermaid\n   \n\t\n```".to_string(),
+    };
+
+    assert!(MarkdownFenceOps::render_diagram_block(&block, &PanicRenderer).is_none());
+}
+
+#[test]
+fn transform_keeps_empty_mermaid_fence_as_markdown() {
+    let source = "before\n```mermaid\n   \n```\nafter";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &PanicRenderer);
+
+    assert_eq!(result, source);
+}
+
+#[test]
+fn transform_keeps_empty_tilde_mermaid_fence_as_markdown() {
+    let source = "before\n~~~mermaid\n   \n~~~\nafter";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &PanicRenderer);
+
+    assert_eq!(result, source);
+}
+
+#[test]
+fn render_diagram_block_skips_zenuml_mermaid_source() {
+    let block = FenceBlock {
+        info: "mermaid".to_string(),
+        content: "zenuml\n    title Order Service".to_string(),
+        raw: "```mermaid\nzenuml\n    title Order Service\n```".to_string(),
+    };
+
+    assert!(MarkdownFenceOps::render_diagram_block(&block, &PanicRenderer).is_none());
+}
+
+#[test]
+fn transform_keeps_zenuml_mermaid_fence_as_markdown() {
+    let source = "before\n```mermaid\nzenuml\n    title Order Service\n```\nafter";
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &PanicRenderer);
+
+    assert_eq!(result, source);
 }
 
 #[test]

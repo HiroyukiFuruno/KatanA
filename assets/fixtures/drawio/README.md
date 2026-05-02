@@ -10,15 +10,20 @@
 ## 件数
 
 - `basic/`: 12 ファイル。
-- `official/diagrams/`: 8 ファイル。
+- `official/diagrams/`: 6 ファイル。
 - `official/examples/`: 73 ファイル。
 - `official/blog/`: 99 ファイル。
-- `official/training-diagrams/`: 10 ファイル。
+- `official/training-diagrams/`: なし（→ trash 参照）。
 - `official/templates/`: 420 ファイル。
 - `official/libraries/`: 図形ライブラリ（shape library）XML 3 ファイル。
 - `official/template-index/`: テンプレート一覧 XML 1 ファイル。
 
-合計: 622 個の `.drawio` ファイル。
+合計: 610 個の `.drawio` ファイル。
+
+> 以下は保持中ファイルと内容が実質重複するため `tmp/trash/drawio/` へ移動済み:
+> - `official/diagrams/sequence.drawio` → `official/templates/basic/sequence.drawio` と同一内容
+> - `official/diagrams/metadata.drawio` → `basic/10-userobject-metadata.drawio` とほぼ同等
+> - `official/training-diagrams/`（10 ファイル）→ `basic/` の各ファイルで機能がカバー済み
 
 ## 出典
 

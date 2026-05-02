@@ -1,0 +1,2898 @@
+{
+  "version": 1,
+  "resourcesRoot": "crates/katana-core/src/markdown/drawio_renderer/js_runtime/resources",
+  "resources": [
+    {
+      "logicalPath": "assets/img/drawlogo32.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 35590,
+      "sha256": "fb7ca6c56c2e809b704301ab7021e8e9a41499dc396c28b2ec15c527f083ce9c"
+    },
+    {
+      "logicalPath": "data/icons/actnia-ecommerce-delivery/24/gold-128.png",
+      "sourceKind": "data",
+      "byteSize": 1747,
+      "sha256": "683efe0dc50cf2e68169e9dbdb3b8c4a6ca97cc422959982ad42ff3f6da4ce61"
+    },
+    {
+      "logicalPath": "data/icons/aquatic-4/128/Blue-whale-large-mammal-ocean-128.png",
+      "sourceKind": "data",
+      "byteSize": 4657,
+      "sha256": "9199b7c2f44cca22c1d86323306142fcb34d112a1e29ceb294bcfbad0d686146"
+    },
+    {
+      "logicalPath": "data/icons/boxicons-solid-vol-1/24/bxs-basket-128.png",
+      "sourceKind": "data",
+      "byteSize": 1527,
+      "sha256": "4b649beaf432ccb9c455b24449766e028f086234a281e684e7bc00d04f95f924"
+    },
+    {
+      "logicalPath": "data/icons/brush-set-free/512/color_pailet_with_brush-128.png",
+      "sourceKind": "data",
+      "byteSize": 3205,
+      "sha256": "8ca5c5f2839581534c693af930085e416420b55aefc84e58907557a6f039d269"
+    },
+    {
+      "logicalPath": "data/icons/building-vol-3-3/512/14-128.png",
+      "sourceKind": "data",
+      "byteSize": 2952,
+      "sha256": "259b13374f0e8add429a81118ec4147242a5b44e3d7c1130c41bcbf098dd7a6b"
+    },
+    {
+      "logicalPath": "data/icons/business-and-education-1/512/201_Auction_gavel_hammer_judgement_law-128.png",
+      "sourceKind": "data",
+      "byteSize": 2517,
+      "sha256": "19eb49307fc22df9c8d40af34e7bcfa2a1d001730290a86ea1c77ccb44f063a9"
+    },
+    {
+      "logicalPath": "data/icons/business-collection-2027/60/cart-9-128.png",
+      "sourceKind": "data",
+      "byteSize": 2734,
+      "sha256": "cce34700276184709c28f22e0c5eb4d5d38c4a848014de05667d032b12e75ce1"
+    },
+    {
+      "logicalPath": "data/icons/competitive-strategy-and-corporate-training/512/705_Automation_factory_hand_mechanism_package-128.png",
+      "sourceKind": "data",
+      "byteSize": 3864,
+      "sha256": "5de34fab79ae795634b0cf72d0621206a97f4dd169b667c39a5b53e785ceab77"
+    },
+    {
+      "logicalPath": "data/icons/core-ui-outlined/32/outlined_trash-128.png",
+      "sourceKind": "data",
+      "byteSize": 1038,
+      "sha256": "f79addf4211c0cc1f5780ce425cebdfd322840d66ec1e209e0be74c07831a012"
+    },
+    {
+      "logicalPath": "data/icons/desktop-app-free/32/Desktop_Desktop_App_Laptop_PC_Macbook-04-128.png",
+      "sourceKind": "data",
+      "byteSize": 935,
+      "sha256": "aba4bb1e8b9b3901d23e6bf351f9a8c1790988866f4c8daee8ee19b1b24ef4dd"
+    },
+    {
+      "logicalPath": "data/icons/dompicon-glyph-fitness-diet/256/milk-healthy-drink-fitness-diet-128.png",
+      "sourceKind": "data",
+      "byteSize": 1747,
+      "sha256": "8410c11d6669a251e8286093d122afd2402bc5330a3760f2f13401cae2ffdfbc"
+    },
+    {
+      "logicalPath": "data/icons/education-1006/32/pen_design_office_vector_business_pencil_write_sign_stationery_graphic-128.png",
+      "sourceKind": "data",
+      "byteSize": 2026,
+      "sha256": "6bfae1ae558fa643c79c475f2066207e6607b264800c94fd4953e3a04c687b59"
+    },
+    {
+      "logicalPath": "data/icons/essential-app-2/16/discount-promotion-price-tag-128.png",
+      "sourceKind": "data",
+      "byteSize": 1173,
+      "sha256": "dd9f7240c86f9c102072bb9be738a4dd0136649899af7c5f4b3e9d0187ee237e"
+    },
+    {
+      "logicalPath": "data/icons/evericons-24px-vol-1/24/list-128.png",
+      "sourceKind": "data",
+      "byteSize": 877,
+      "sha256": "326c4adef51d8c0effeecbb0f20f49ac767ab80aa32e2a977c0ec7d17c00c8bf"
+    },
+    {
+      "logicalPath": "data/icons/evericons-24px-vol-2/24/discount-128.png",
+      "sourceKind": "data",
+      "byteSize": 3625,
+      "sha256": "0db48d68fa8352ff4fd602fd2306ed3ff023ae110ee4fb98f1939922863f25f8"
+    },
+    {
+      "logicalPath": "data/icons/evericons-24px-vol-2/24/question-circle-128.png",
+      "sourceKind": "data",
+      "byteSize": 3281,
+      "sha256": "65488c743a544925e42979faa71184389ca4c4a8bc203fa9c476d1e937569438"
+    },
+    {
+      "logicalPath": "data/icons/evil-icons-user-interface/64/download-128.png",
+      "sourceKind": "data",
+      "byteSize": 3138,
+      "sha256": "1a6156f4fb85c470fea1e38e5710cacf683ebcb99c0620903d7463233bff24c1"
+    },
+    {
+      "logicalPath": "data/icons/evil-icons-user-interface/64/price-128.png",
+      "sourceKind": "data",
+      "byteSize": 2657,
+      "sha256": "842ff92f3f138d03f5a8f8a7c876c55a12cb71eb9fc81cda364affb8b453a88b"
+    },
+    {
+      "logicalPath": "data/icons/fastfood-29/64/bread-croissant-dessert-food-fastfood-takeaway-fast-128.png",
+      "sourceKind": "data",
+      "byteSize": 3907,
+      "sha256": "a0e438d1dc66071cbe6028185af53a6e8f8ea2eb627e001bb90f79e73f46d57c"
+    },
+    {
+      "logicalPath": "data/icons/fastfood-29/64/cake-piece-topping-strawberry-cheese-dessert-birdthday-128.png",
+      "sourceKind": "data",
+      "byteSize": 2303,
+      "sha256": "69bb7c60479286c15b04dc8babcf76a4292ff2ec0c84e7bab21c7a1f57db4e26"
+    },
+    {
+      "logicalPath": "data/icons/fastfood-29/64/sandwich-bread-fast-food-fastfood-snack-breakfast-128.png",
+      "sourceKind": "data",
+      "byteSize": 2592,
+      "sha256": "3420553e73d37264fb7a606f07979a12b85002485e3b476deb884353c40319ec"
+    },
+    {
+      "logicalPath": "data/icons/fatcow/32x32/tree.png",
+      "sourceKind": "data",
+      "byteSize": 1979,
+      "sha256": "5d4b530a7a1488b070374dd4f1c4c54b298f5f60f9a3dd6dd900af999e79df34"
+    },
+    {
+      "logicalPath": "data/icons/font-awesome/1792/linux-128.png",
+      "sourceKind": "data",
+      "byteSize": 4388,
+      "sha256": "351efb26baebe02f765b49a7f9d1371058b5dd4f83dfa83d36940c9b4c30bb3f"
+    },
+    {
+      "logicalPath": "data/icons/food-and-equipment-outline/32/bread-128.png",
+      "sourceKind": "data",
+      "byteSize": 3023,
+      "sha256": "cba5c19c9b6d2666c31a5e286e626a986da72a1b6bbe8c67e94b698b9d5a73a4"
+    },
+    {
+      "logicalPath": "data/icons/for-your-interface-free-samples/128/Globe-128.png",
+      "sourceKind": "data",
+      "byteSize": 5268,
+      "sha256": "a4a013c3af43f08ea393e03811a641c4a1ac25b492336fec9dae712a52769894"
+    },
+    {
+      "logicalPath": "data/icons/free-line-halloween-icons/24/Toilet-Paper-128.png",
+      "sourceKind": "data",
+      "byteSize": 5526,
+      "sha256": "9c0a64d77d3304dfe03a4a8e4c53cb6e16366c2ff7efecceb1ac97e9caa01fde"
+    },
+    {
+      "logicalPath": "data/icons/free-solid-halloween-icons/24/Candy-02-128.png",
+      "sourceKind": "data",
+      "byteSize": 5139,
+      "sha256": "12a2af037674a97b94b5256e5feab49688a3cdc27eb656a26537606bfe984cb9"
+    },
+    {
+      "logicalPath": "data/icons/freecns-cumulus/32/519875-84_Thermometer_Full-128.png",
+      "sourceKind": "data",
+      "byteSize": 1963,
+      "sha256": "910666652b2eb5af974e71a27cc0288faca7c8dff8e7ead3c0ab4140490071d7"
+    },
+    {
+      "logicalPath": "data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png",
+      "sourceKind": "data",
+      "byteSize": 7599,
+      "sha256": "96a9ecfbe0d69855d64e94a8f19552bdab8b140af8f6ecccbafa39bdb9a009f6"
+    },
+    {
+      "logicalPath": "data/icons/fruits-and-veggies-2/177/fruits-and-veggies-icons_garlic-128.png",
+      "sourceKind": "data",
+      "byteSize": 8042,
+      "sha256": "6aaf555dc9c482fade7fc781442ca42542a218b5f1c9a5ef6f23e3388859c9a0"
+    },
+    {
+      "logicalPath": "data/icons/fruits-and-veggies-2/194/fruits-and-veggies-icons_strawberry-128.png",
+      "sourceKind": "data",
+      "byteSize": 9218,
+      "sha256": "87a010616d2e441e2f085610e7a2beae90e3fc8a223fdf50d2fcd36a0ce29bcb"
+    },
+    {
+      "logicalPath": "data/icons/google-material-design-3-0/48/ic_new_releases_48px-128.png",
+      "sourceKind": "data",
+      "byteSize": 2075,
+      "sha256": "1e1a16367ec1cbf7acd41235151b9454535c07b49c1859a7a6b18f459ca75e40"
+    },
+    {
+      "logicalPath": "data/icons/green-world/80/Green_World-10-128.png",
+      "sourceKind": "data",
+      "byteSize": 3869,
+      "sha256": "ee08c4223d3781330d5272cf41a12126a8c6bc2c94b603969ffbd164acbda9e5"
+    },
+    {
+      "logicalPath": "data/icons/happy-trees/100/tree-plant-forest-leaf_1-128.png",
+      "sourceKind": "data",
+      "byteSize": 3339,
+      "sha256": "c7fa147208da5c6ea7f3e9a8a5ee8abd78652a0894ded6f98f93846884164f2d"
+    },
+    {
+      "logicalPath": "data/icons/hawcons/32/699721-icon-5-neutral-face-128.png",
+      "sourceKind": "data",
+      "byteSize": 4123,
+      "sha256": "f9b0df4a5be5f5c700b62156c33b2c7ef20ad856e4a891c0d532a9c39141a4a1"
+    },
+    {
+      "logicalPath": "data/icons/hawcons/32/699734-icon-6-smiling-face-128.png",
+      "sourceKind": "data",
+      "byteSize": 4580,
+      "sha256": "dad743a2a01ffb333cb35516e69695cd2c553e76dded2b38c9658c67e380be82"
+    },
+    {
+      "logicalPath": "data/icons/hawcons/32/699741-icon-7-sad-face-128.png",
+      "sourceKind": "data",
+      "byteSize": 4624,
+      "sha256": "065ebbf62a34b198c5d9513b5318e8a560b796a7fbe3db885445f7b84d4f45c6"
+    },
+    {
+      "logicalPath": "data/icons/healthy-life-4/64/healthcare_and_medical-hygienic-tooth_paste-toothpaste-toothbrush-health_care-128.png",
+      "sourceKind": "data",
+      "byteSize": 2307,
+      "sha256": "9c72f4ee1b7ce9fc2c2c3ad8886a5aa969ad383a890c5d8e813b7d8ec8ac9c80"
+    },
+    {
+      "logicalPath": "data/icons/household-things/64/house_gasstove_n_oven-128.png",
+      "sourceKind": "data",
+      "byteSize": 1730,
+      "sha256": "a58c89990b8109efb15e58b9562508c5023c747e3e8f3525b815f08d70f9a906"
+    },
+    {
+      "logicalPath": "data/icons/ionicons-fill-vol-2/512/pizza-128.png",
+      "sourceKind": "data",
+      "byteSize": 2366,
+      "sha256": "34bf94ced5104bb7d888581cd9743e94fee70220f357279917928c195f19e199"
+    },
+    {
+      "logicalPath": "data/icons/ionicons/512/icon-ios7-folder-outline-128.png",
+      "sourceKind": "data",
+      "byteSize": 936,
+      "sha256": "2b713047e38cd4b6ac02702b9b3c7f79ca7fee303c9be6c09aef5363fafba707"
+    },
+    {
+      "logicalPath": "data/icons/logos-and-brands/512/144_Gitlab_logo_logos-128.png",
+      "sourceKind": "data",
+      "byteSize": 4848,
+      "sha256": "433b0b97052eda81a288e3b9b3e7bb0443975d6af0bb8151d784c11d8423a1e0"
+    },
+    {
+      "logicalPath": "data/icons/logotypes/32/google-drive-128.png",
+      "sourceKind": "data",
+      "byteSize": 3073,
+      "sha256": "e8eef1cc9c7fb23a4b5b99b7aef232276405f246173874abff9beb83bcc626b4"
+    },
+    {
+      "logicalPath": "data/icons/minimalisticons/28/burger-menu-1-128.png",
+      "sourceKind": "data",
+      "byteSize": 608,
+      "sha256": "c81e21ae926502be2e4cae2aef22fed64e15f83e8e65f725ab4564e949d057ab"
+    },
+    {
+      "logicalPath": "data/icons/office-time/512/21-128.png",
+      "sourceKind": "data",
+      "byteSize": 4336,
+      "sha256": "b2fba927a86bc6d19141c655f8047758b1de052a8f31aeba58e1b3fa31b5e278"
+    },
+    {
+      "logicalPath": "data/icons/outline-icons/320/Canvas-128.png",
+      "sourceKind": "data",
+      "byteSize": 2865,
+      "sha256": "8f3585674a2eef08eafa1590d0521ccc7731f5ceb8bb9f0e02d19db87a8e124f"
+    },
+    {
+      "logicalPath": "data/icons/phosphor-regular-vol-4/256/tree-128.png",
+      "sourceKind": "data",
+      "byteSize": 2737,
+      "sha256": "bf0ad70ccfae94b5c0e65aab10ff0a3ec11f7ec91cc69183ad704dbfc72f5fe0"
+    },
+    {
+      "logicalPath": "data/icons/picons-social/57/72-windows8-128.png",
+      "sourceKind": "data",
+      "byteSize": 2906,
+      "sha256": "ed8e04f908341fec6ce32fc047f4be1cdc6bb4f04d7133cb5c4b640146e6940b"
+    },
+    {
+      "logicalPath": "data/icons/social-icons-color/512/gdrive-128.png",
+      "sourceKind": "data",
+      "byteSize": 4479,
+      "sha256": "c4e4bd758c1c84780e2a54bfc56491f5e75578768e77bd00eacadf832b0c8647"
+    },
+    {
+      "logicalPath": "data/icons/social-media-vol-1/24/_flower-128.png",
+      "sourceKind": "data",
+      "byteSize": 4591,
+      "sha256": "4310e872e74471975d7127ebb3be80d4161386647678cab62fe2981247516ab7"
+    },
+    {
+      "logicalPath": "data/icons/social-network-7/50/25-128.png",
+      "sourceKind": "data",
+      "byteSize": 2312,
+      "sha256": "b3e9a9645dbed46ef19925e0e218e6554df3f36108da3586ce1fb33271d45958"
+    },
+    {
+      "logicalPath": "data/icons/software-engineering-and-video-gaming/512/511_Factory_industrial_industry_manufacturing_production_Hardware_Engineering_Internet-128.png",
+      "sourceKind": "data",
+      "byteSize": 2249,
+      "sha256": "31b4ab039b14ca4934f1013d13be8410d46ad58d348067726b8f25f5a2827b6c"
+    },
+    {
+      "logicalPath": "data/icons/software-engineering-and-video-gaming/512/59_growth_grow_hand_success-128.png",
+      "sourceKind": "data",
+      "byteSize": 3289,
+      "sha256": "ea1d3d530cf09ef7d64284ab85b89be6a6bcf450841285e8dc9fe366f3a6c999"
+    },
+    {
+      "logicalPath": "data/icons/summer-glyph-24-px/24/Bottle_drink_juice_liquid_milk_bottle-128.png",
+      "sourceKind": "data",
+      "byteSize": 1441,
+      "sha256": "b7f9c86ea1ec9b629bb0fa8ec2aaab6a4d853914a330811955667adabfe4d811"
+    },
+    {
+      "logicalPath": "data/icons/user-avatars-1/512/users-10-3-128.png",
+      "sourceKind": "data",
+      "byteSize": 7113,
+      "sha256": "86bd54168ceeb636bf38e72184d7edb29db378555a1b662fe60e771e6b6e7e2a"
+    },
+    {
+      "logicalPath": "data/icons/user-avatars-1/512/users-2-128.png",
+      "sourceKind": "data",
+      "byteSize": 7290,
+      "sha256": "6be8335b53d8319c82c2b55beb16729ba387af2a8912ddd58b96a62699006361"
+    },
+    {
+      "logicalPath": "data/icons/user-avatars-1/512/users-3-128.png",
+      "sourceKind": "data",
+      "byteSize": 6477,
+      "sha256": "fc37417e7a6ec34fa486f0c849789ce6f62a0feeb6486a59753a19b53ce0e02b"
+    },
+    {
+      "logicalPath": "data/icons/user-avatars-1/512/users-9-2-128.png",
+      "sourceKind": "data",
+      "byteSize": 6561,
+      "sha256": "ff060fe9e65903a781c59081ccaed0101ddc187b9a72d854673ef47841db5fd7"
+    },
+    {
+      "logicalPath": "data/icons/user-interface-169/32/menu-128.png",
+      "sourceKind": "data",
+      "byteSize": 643,
+      "sha256": "56fd1991dd11f51c556aa4bafaa250513462c09df867b8c89dfbe5fb8dfd9acd"
+    },
+    {
+      "logicalPath": "data/icons/valentine-2119/64/Valentine_Outline__chocolate-love-valentines-romantic-gift-128.png",
+      "sourceKind": "data",
+      "byteSize": 2029,
+      "sha256": "c56e053478faecd9009f9bfc8a62d86ac7264c3a67b64ac38ef21a3714a4ee11"
+    },
+    {
+      "logicalPath": "data/icons/valentine-2119/64/Valentine_Outline__ice_cream-love-valentines-sweetheart-romantic-128.png",
+      "sourceKind": "data",
+      "byteSize": 2398,
+      "sha256": "83395cf2fd2e02dc056e0d52ccaf60f6426e87495cd549dd913485bb2e6dda12"
+    },
+    {
+      "logicalPath": "data/icons/wanpix-construction-worker-1/64/Artboard_25-128.png",
+      "sourceKind": "data",
+      "byteSize": 2036,
+      "sha256": "5aabf2dab4209cbf39a7e5a984f2abd667d0c789099818bde206b232994a85a2"
+    },
+    {
+      "logicalPath": "data/icons/weather-free-1/32/Weather_Free_Filled_Outline_warm-termometer-weather-temperature-128.png",
+      "sourceKind": "data",
+      "byteSize": 3811,
+      "sha256": "f0b193294fa88e53e2696ec8f612c6055439fe46ea7d10e7c5043e1fa51692e6"
+    },
+    {
+      "logicalPath": "data/icons/web-development-and-studio/512/12_bank_Architecture_building_court_estate_government_house_property-128.png",
+      "sourceKind": "data",
+      "byteSize": 1575,
+      "sha256": "4bdad5206fad059841e0cf417ab35156feed9a19f8ff9e65ab69a6027d1e482e"
+    },
+    {
+      "logicalPath": "data/icons/web-development-and-studio/512/13_savings_Care_coin_economy_finance_guardar_money_save-128.png",
+      "sourceKind": "data",
+      "byteSize": 4022,
+      "sha256": "72dde3763386326e42fb192459ccbf49bf36ac1995702a3e4a7344db05c92447"
+    },
+    {
+      "logicalPath": "data/icons/web-development-and-studio/512/74_speaker_Person_presentation_professional_pudlic_seminar_speech-128.png",
+      "sourceKind": "data",
+      "byteSize": 1554,
+      "sha256": "7ef7d9813649f22a69b30cb9c763bf18c2cd11fea3a8441c5375b50d0e76d7ce"
+    },
+    {
+      "logicalPath": "data/icons/web-development-and-studio/512/77_graph_Chart_data_employee_manager_person_statistics-128.png",
+      "sourceKind": "data",
+      "byteSize": 2320,
+      "sha256": "dc4cc8c7178b235233428173d4b0f144e58bf117567b625b027ed62c7a358ae6"
+    },
+    {
+      "logicalPath": "data/icons/winter-flat-8/32/Winter_season_cold_snow_snowflake_Christmas_frost-128.png",
+      "sourceKind": "data",
+      "byteSize": 5671,
+      "sha256": "9762b5f014eae20df7e311a8a89433bc24ed4b4136d32e006edcb732df4c67a9"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7010T-48.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 846847,
+      "sha256": "10e6d7d78a631b9d312bdec089c0b06db15dabda4af4b2bd2b58e36a6f8a7421"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7050Q-16.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 304809,
+      "sha256": "c03b2615d3cf1da65304a506c1e9acc35dddbe21e821a8bbb4a38796d4bef36f"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7050QX-32.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 653149,
+      "sha256": "1508be9543438aa2c20673016cbd492f1dfe5b2d37adc7905664b09858acb562"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7050S-52.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 344884,
+      "sha256": "5caabdd1abfcbd675b417725ec7f7cb255ff492f0feb8325b90e672162981d43"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7050SX-128.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 3016689,
+      "sha256": "93cbef79c677985040ae22d24749a2aab8f9fe0061d5fbd4d3bbb5526b334f95"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7050TX-128.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 3016485,
+      "sha256": "10ee07db9737701e507739ce818a61b0023405aac4d66a344b7a216c378bd614"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7150S-24.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 619315,
+      "sha256": "93e1eeb5bcf88ff356e3060089c59692ddeed726f8cf2b5cfb9ca6c3bd950f25"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7250QX-64.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 2513368,
+      "sha256": "6c13edb3b4e98747c7a60911e9b9e7ed6e97e93617e415ef10fb887a37469ea4"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7280SE-64.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 936997,
+      "sha256": "a4acc474480c416b53b28c1b019b45dc351507c15184cda9737f35d5128fe673"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7280SE-68.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 881605,
+      "sha256": "07aa8a480c87910292c2fc25b89e0731bf84f9130060f9c9f9a0246d4855933d"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7304.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 275215,
+      "sha256": "d285d1adbfc10a53b0af0923f3dcb7a5ef74a6c9950356530349beb1ce2ca42a"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7308.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 392976,
+      "sha256": "60333d090e993f4af9f122b0745fd00097a5e32f2a0bc7a0a112995887da5d55"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7316.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 615767,
+      "sha256": "053c0130a110bc606da5952bec12873c74d0c560c703f988f1052dc97ab30659"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7500E-12CM-LC.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 82047,
+      "sha256": "149b92022c645f2027eee321dd69f4afddc323de2ad1c1859ec733a577bae9c0"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7500E-12CQ-LC.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 58995,
+      "sha256": "9fd40ef0104431418d17da8ed20497182786615049ee26b056b31c26c8dc57c8"
+    },
+    {
+      "logicalPath": "drawio-libs/libs/arista/DCS-7500E-6C2-LC.svg",
+      "sourceKind": "drawio-libs",
+      "byteSize": 60076,
+      "sha256": "77fef1958da871c76f075ebdd307ca7148906e76eefc424ee8cdc42aefefd22b"
+    },
+    {
+      "logicalPath": "icon-cache1/Boxicons_Solid_Vol_1-2638/bxs-city-680.svg",
+      "sourceKind": "icon-cache1",
+      "byteSize": 417,
+      "sha256": "1751be7a88f02dd519a3d66dcbd8f446234313145bfc1d62e25e6088cbf512ab"
+    },
+    {
+      "logicalPath": "icon-cache1/Business___Finance_glyph_V1-2601/322_hill_landscape_nature_mountain_scene-499.svg",
+      "sourceKind": "icon-cache1",
+      "byteSize": 7383,
+      "sha256": "86429bb70f515f0e5a7d4903253b5a631d5ac02f51422ce9ab132e04db602b42"
+    },
+    {
+      "logicalPath": "icon-cache1/Energy_and_Power_Glyph_24_px-2259/Beach_morning_sea_sunrise_sunset-511.svg",
+      "sourceKind": "icon-cache1",
+      "byteSize": 1041,
+      "sha256": "acd3367b9cbc5213c6e40d9416355331301dc04cc84488c6cf58b6b22c76c50a"
+    },
+    {
+      "logicalPath": "icon-cache1/Transportation-2441/london_under_underground_city_mining_underpass_parking-845.svg",
+      "sourceKind": "icon-cache1",
+      "byteSize": 1615,
+      "sha256": "caf46524ff02ff38c12b1febc49f5182b135a73b8ce8187a6310853cbcf4ea89"
+    },
+    {
+      "logicalPath": "img/clipart/Gear_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4801,
+      "sha256": "6b51e4e0ff93047a6cf65faa9d8814a2494e5140d6575d1566671e088fa78d25"
+    },
+    {
+      "logicalPath": "img/lib/active_directory/user_accounts.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3251,
+      "sha256": "6af3e497f78b0860c230bda2eeba28f8bf5863e5f80b2830f4448792d78e1c90"
+    },
+    {
+      "logicalPath": "img/lib/atlassian/Atlassian_Logo.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 822,
+      "sha256": "03c42d3890d8877d4c693c1ce3e6120566b1fa311c5b8d3a38002ec7194b31f1"
+    },
+    {
+      "logicalPath": "img/lib/azure2/analytics/Log_Analytics_Workspaces.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4017,
+      "sha256": "333f8dd95e191771656e62f7ad710734a79b2f305aebfb41eea1fd2223e32ebf"
+    },
+    {
+      "logicalPath": "img/lib/azure2/app_services/Search_Services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3343,
+      "sha256": "1567e37f4ea2d17c12cdc9f1dc9f7c858256a40f3c0f66827063ba324ed7bb26"
+    },
+    {
+      "logicalPath": "img/lib/azure2/compute/App_Services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 7665,
+      "sha256": "df5ff220b23463a3edb8a1b50def368a69d7a5dba41c4f858a86f63a07298a22"
+    },
+    {
+      "logicalPath": "img/lib/azure2/compute/Function_Apps.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4593,
+      "sha256": "2365771dd0d4cf236b4a7393a401bb5705d3b0708997eb1ea6164ceb905e036e"
+    },
+    {
+      "logicalPath": "img/lib/azure2/databases/Azure_Cosmos_DB.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5631,
+      "sha256": "f9cb9e3339295eaee49947b59f1ad780b40b9ba413ce0e85dd19d0338565a267"
+    },
+    {
+      "logicalPath": "img/lib/azure2/databases/Cache_Redis.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 6752,
+      "sha256": "f5bce354870a22bfec08f44f5b5559b3aa276af73fc4ff9c29ead0979ddb8619"
+    },
+    {
+      "logicalPath": "img/lib/azure2/databases/SQL_Database.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5470,
+      "sha256": "956c95674f7487fa66e024660387ada06546017ecd7a64d8984318392eba4e3e"
+    },
+    {
+      "logicalPath": "img/lib/azure2/general/File.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4072,
+      "sha256": "729f7edf4632a79b78685932cebfd2d2f83a50048fae4517e0cfe8da386fdf67"
+    },
+    {
+      "logicalPath": "img/lib/azure2/general/Folder_Blank.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3592,
+      "sha256": "08025e208fcfd820df78e9de2b2118fe3016b43383b8806cd3c2c363bea5fc5c"
+    },
+    {
+      "logicalPath": "img/lib/azure2/general/Resource_Groups.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4662,
+      "sha256": "de1887b03b4b39dbfa9c3d7880bedc153ed4c5db20f2749a6c80128ea221c548"
+    },
+    {
+      "logicalPath": "img/lib/azure2/identity/Azure_Active_Directory.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4188,
+      "sha256": "cbc868ea674a23a8160cd89561828f06c9d0882f1edb0fed46d9ae97fd72e307"
+    },
+    {
+      "logicalPath": "img/lib/azure2/management_governance/Monitor.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5217,
+      "sha256": "985c5d8b7d646917fbde849cd5d3d5b295a43076fb366dbeee41124682dd7904"
+    },
+    {
+      "logicalPath": "img/lib/azure2/management_governance/My_Customers.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4106,
+      "sha256": "bb63670beb8ae188f69c58dc388d15be4fc9a10328fb8984545392fb87a5251b"
+    },
+    {
+      "logicalPath": "img/lib/azure2/networking/DNS_Zones.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5473,
+      "sha256": "811d727a9bb29c4bbcd7be6bb5d3ff65bc69b84f358eedd53d5f6c1b224a4fb0"
+    },
+    {
+      "logicalPath": "img/lib/azure2/networking/Front_Doors.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3119,
+      "sha256": "8394ba7e39ab65ba372f684506da061586d0ab9d5c08e59de1834146034166ba"
+    },
+    {
+      "logicalPath": "img/lib/azure2/security/Multifactor_Authentication.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1954,
+      "sha256": "46cc99c7e664c3db70d23d6527bbf2e9f10f8fd53bd21e150e4cb8ca9d2a0154"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/iPad_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4895,
+      "sha256": "9a395e5157e0f7927727242a995ba44ce8bf70b546f15c4dac6e49c001edb1d3"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Laptop_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5133,
+      "sha256": "31f87683ed54863f9c524a8249a0e2e15a7dd0fdce16cc01c363a6ea378d0f9c"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Mainframe_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4436,
+      "sha256": "38ec7b2ee24f2325d709d1b0275c65afe1deb0ef50cbba6a332e505b4289f398"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Monitor_Tower_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4574,
+      "sha256": "e28771be7b2041f9c6e9a4f3af4bc70b3d35a8ff7cd4a4f5eefe4f7d0a54ab90"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Netbook_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5237,
+      "sha256": "dddec026649acaf58d35f1031e26c382fde4566d49215f205863a59a8b911ada"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Printer_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5330,
+      "sha256": "32f515f26780e6168d3af9415dde932cc33e13c5a9e93473b0f1d4a04764c8af"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Server_Rack_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 6486,
+      "sha256": "5e3d6b34916cf5823f89a2d18201f44a9e6b04e64517ba9cd324e667b20e808e"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Server_Tower_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 6416,
+      "sha256": "0be986b6119dfdb9feccf80a35be863bdf4cbe6a882d5a1e0af9438682011629"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/computers/Workstation_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 5773,
+      "sha256": "a48c862f36e0fa5301a7a00e04cd4eb30b6cb4c07b9494f378cfb906c50b713c"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Bridge_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3443,
+      "sha256": "efb3aeb4cc37c078c12c780ce6dfe1067b516fa2cb9b4dee44ea10e4fd6194e4"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Cloud_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 6913,
+      "sha256": "aff400ecb3c757a585819c6ef93637e4e06793c1097b55183c628569867ce820"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Concentrator_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3228,
+      "sha256": "65648ffbafa6e8e3905ea887ad1840576ac89e26efb35ba538b06e3bc21940cb"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Firewall_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4393,
+      "sha256": "de22af90e7680c516936aa6fbe6feec8c55a171a8e02710a8b95beac57c12f21"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Router_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4161,
+      "sha256": "45ae4fd5f9318997eb7d8a3ca79eedbf3163f1cfaee712b44b8cff6538dfdc4a"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Switch_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3892,
+      "sha256": "49b06717a3aa2126613ffb6d43f73f8bdc65fe5101fdc18cb970f5552cc75ae8"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/UPS_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 9149,
+      "sha256": "2b70e8f17dcbd33c3ed766ac731b8f9dc64296cd35f8667abc12f6c8ad117b14"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/networking/Wireless_Router_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4357,
+      "sha256": "7fcafdbe22b07615d286f7e02ce63e7ad95795ee3a82e54d16a33c5e78479d71"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Man_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4905,
+      "sha256": "9268500f8e2dbe9b220eef35edd9332d5cee2ee6a4bba3bdcd5be888297a70aa"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Man_Black_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4913,
+      "sha256": "4d2b48ff6d94184f6eeb849e4808d9d2b586460541afb8bde9a893a67e2a7156"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Man_Blue_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4642,
+      "sha256": "f9ec3157ed65fd0052b364614bc227635f9d047bc8a449e1611a25096c426dad"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Man_Green_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4665,
+      "sha256": "035a9d35adecdd0896357a573f33a67d441bca4e3ccea1bcfa9e6faae7e24122"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Man_Green_Black_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4842,
+      "sha256": "c659d91143a459be3e197242aea6fb3444b2b85b4a801d72305c16c1bd787481"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Woman_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4468,
+      "sha256": "d5bb227ea8372ea412061d97dc3362bdb7bcd1859940241e6ffd79c032654b41"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/people/Suit_Woman_Green_Black_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4354,
+      "sha256": "7d8f8e5da15f313f7842b55e6e23ad4c20cb1b8c91af7e29f78303334f35e99b"
+    },
+    {
+      "logicalPath": "img/lib/clip_art/telecommunication/iPhone_128x128.png",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4191,
+      "sha256": "a136f7e9dbd968a55307f40f6a8b064436d1dbadd3d9aa70b4abfe142cb64687"
+    },
+    {
+      "logicalPath": "img/lib/ibm/analytics/analytics.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1589,
+      "sha256": "b35d408e403c6065ff13f6bcaccd7fae72b335f13c35da97915574f7b0390a72"
+    },
+    {
+      "logicalPath": "img/lib/ibm/analytics/data_repositories.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1326,
+      "sha256": "39cecf58b677c824678f705de1d98c2d70442b2b59b7f7e5dc2b1aae5708e1ab"
+    },
+    {
+      "logicalPath": "img/lib/ibm/analytics/streaming_computing.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1835,
+      "sha256": "0cf160aab6281198bcbe4f08062104c862aa0ee57db218c5e5be92112d2f5144"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/app_server.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 570,
+      "sha256": "6ac45abbe6a5e45daf1229881fb67154486014f546f17ac0024a03ebcf297cc1"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/application_logic.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1721,
+      "sha256": "47e0fe5e709b833f416037461cc9da6293efcd85c9db13df11c90cbb54ef966a"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/automation_tools.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1351,
+      "sha256": "fbbb288af80d328726f1acd24e811efb486c425620f9fd604bac1d340ebc57b1"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/enterprise_applications.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 542,
+      "sha256": "3c3d581fb98a9f45a4b1df9abf504914c53d1e251e193d2d58102af1bede960d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/iot_application.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 810,
+      "sha256": "1acadd3b37ad115bec8c9818ae4d8255798af1f31d4d10118b553419db53b9b7"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/microservice.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1472,
+      "sha256": "c79dc374157e686621b344da78f2747b036d536f17b9192daf7ff292f8d520f0"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/mobile_app.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 528,
+      "sha256": "7fafbf16855c471ee46347b66c2e24a23d8c342acada35c16178f1c02afa9518"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/open_source_tools.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 430,
+      "sha256": "66021cc6f68d9bdc431b4e94faa3399c29b189963d001817d8d648d9f073366f"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/runtime_services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 2623,
+      "sha256": "d6117f509ee1a1841c9d58917e1161dbf1b9e4bd045a1d477f65aa4f11b71752"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/saas_applications.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 551,
+      "sha256": "2816155d3014f316c270f1d60bbe359fc2ab9fa4bbd9bfa951b8a0a4621db7f9"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/service_broker.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1782,
+      "sha256": "b5bc06d2e632f40d428b50364c4274e7f858083e32368e0b95a07f6690982c92"
+    },
+    {
+      "logicalPath": "img/lib/ibm/applications/visualization.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 530,
+      "sha256": "66b6cf56856aed6a16552b937aabbc996c76ff97a1c8fa595a253dd157177b27"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/blockchain_developer.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 434,
+      "sha256": "6eff070aa3d911d978edb5ab2ce97a3dd3fb958ca53c2c53cb869e02c8f3ecd5"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/blockchain.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 627,
+      "sha256": "809e9ab5e0c0f59c977b577763573ddad47031590dc50002d5afd295714fdd20"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/certificate_authority.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 493,
+      "sha256": "2faa5780a9554554a230e52f3218f1bd341a430e164b5b3fcff3289abd54daeb"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/communication.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 777,
+      "sha256": "3af3a222d8d34702b96aab810f0f0e157e2c4b5e14f3373b83e4b085b2cead0c"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/consensus.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1027,
+      "sha256": "6e9db6e6da6c92ac260ecb5dedcacedf4d2b23f370b310e9aa7490d62923e94a"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/event_listener.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 859,
+      "sha256": "528af574bf1622480a5ae07dbb5a87b2d17a4e122261535ea35d256e6ab8b9fb"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/event.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 476,
+      "sha256": "fa272983fec34f61221848691a59f69a4976debdc805da109d58fc063afb3c4f"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/existing_enterprise_systems.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1766,
+      "sha256": "2499809859d5704f99c3a2a89cb4b81a510800efb9e0922f77f34e891df30ef1"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/identity_access_manager.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 2068,
+      "sha256": "7bb3deb6c035cfdf6a8d28e716d2f871a0c3e447c9560e9b4d8a54fccd4f79bc"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/key_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 842,
+      "sha256": "2c598a17482d4cc479bed77d5fdcbaf1b8e39ffb8e96aad4ba25e837edc9269d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/ledger.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 630,
+      "sha256": "6e88e2c6903b1ffff1cf1a5b9308b8f8071cf590fe28e1fc553253960620b34e"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/membership.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 750,
+      "sha256": "7f66882f06759a497851737daf8845ea9c811df4d1b68a3fa085612627518fe9"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/message_bus.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 285,
+      "sha256": "cbadc40cef05c79813468073e97df6b78045ea065f7d46a391610a18d5b26a8f"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/node.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 2073,
+      "sha256": "625a893aa0bbd52f07b66a775ed1069022a8e9f3577f0f0cee0086a3078400b5"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 2050,
+      "sha256": "df57c8c83c0c94e0a489fe7321b1fd1ef5f13bc0adffafb1e2023a9388cebc04"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/smart_contract.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1782,
+      "sha256": "8021c3cbb080ad04097d0994ff7623a93416baf0dddbd5217f81fc009e4ba96b"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/transaction_manager.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 901,
+      "sha256": "708f42a5977f7d458343234bb05d0d8fc3c511e2dc6791fc8f918dabbd70fa80"
+    },
+    {
+      "logicalPath": "img/lib/ibm/blockchain/wallet.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1779,
+      "sha256": "77c7ee080624ec067261b91441b597e7ad1eb93a53a63c4007072e4b4b453569"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/caches.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 781,
+      "sha256": "fadeb44c28a033337e7e972f9c7ebac0019c69c382bcadb0447dad0b514be9f8"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/cloud.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1150,
+      "sha256": "d0d33277c57e9c15d02bcb1b123d5d58ea354cbbaeccb9089b0d568d0212a8aa"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/conversation_trained_deployed.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 998,
+      "sha256": "647234adec65c463aaef373fba67a46a124b77f51b839a7dafab384f85607dc8"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/data_services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 315,
+      "sha256": "8d31a65bbdf9d62527208793d5409d293551f71176f66caba57daef13f624ee2"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/data_sources.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 721,
+      "sha256": "373897d95b060a742cb0dcd6518f86f3df67e8ec984e3ccc46e5f3158ae3ee7d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/device_identity_service.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 857,
+      "sha256": "9c74d3c7498aca55516160abbee19edaf1c331b29e1549925e5b01d56e2232a8"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/device_registry.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 773,
+      "sha256": "fa06aa686a95e9c510bd8d79db6e342d7f56eb184328afee16f10401634e56c7"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/enterprise_data.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 833,
+      "sha256": "eba5f456096bed7a90a9c0a6c401836bd79b3455e531eba843ca851e94be0423"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/enterprise_user_directory.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 398,
+      "sha256": "5f0f6ba77ecc02f0635a700c758b984c351bc58585aa3fa1a0746d24e60b64e9"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/file_repository.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1020,
+      "sha256": "e5807f9eee2045344493ae22a8438cab0b7c21ebb86d97625eacf3a8d8f6a807"
+    },
+    {
+      "logicalPath": "img/lib/ibm/data/ground_truth.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 742,
+      "sha256": "eaa49ea9833e02b1ad8952bba64905b79467a5f06849cd5654b88580db16b013"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/collaborative_development.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 796,
+      "sha256": "25774fc608a2a183398fea146e3fa86fbd9036549fa07ebec63f0ec6ce0a12b2"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/configuration_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 878,
+      "sha256": "58134c978c87350950c8b393c199a6c57f3cab35cde8c26a5593a12c2e8ec604"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/continuous_deploy.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 589,
+      "sha256": "7a86781d7a0986926bc55b7e49376420380fa37acd004a5793d91bb419d2a36e"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/continuous_testing.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 404,
+      "sha256": "06413ec3afe7a505abb54bacbb973309fafa0cd4c7136ecb0a2bdd1eef05d3cf"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/devops.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 935,
+      "sha256": "604fc7d99b9802f72950975a15732a6249635ac01db7fd03e8555d7b8e7faede"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/provision.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 769,
+      "sha256": "9c4aab42ab41b9013b822fa78f70f7afb5ff9f583f87c6e66b68d56d697c8d94"
+    },
+    {
+      "logicalPath": "img/lib/ibm/devops/release_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 370,
+      "sha256": "1317019d954056655a971f27dfa759d229f8d9f09825f8feffe0c0f1436cb6f6"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/dashboard.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 393,
+      "sha256": "6f542748a9bc9a391407e0c91dba969a86c80dc2014aa83598e8954536abaeef"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/edge_services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1692,
+      "sha256": "dbbef06865adc6f256dcb43dacbd30c87e7deb9238822b7f736cd214b8f2d658"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/infrastructure_services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 551,
+      "sha256": "50f0d17846af6d77e3d1a85bf611e371d0f42d12787e640f37d29bfe0d442c57"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/interservice_communication.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 644,
+      "sha256": "8f44216df95e003f1ed80ee83f24c7ece5dd4fc1f7903694bf50d54ef0e38ddf"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/load_balancing_routing.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 603,
+      "sha256": "8621d702ee8e395e0175808b1184e9e6c286cb322284b7d50848ec37423231b6"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/microservices_mesh.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1526,
+      "sha256": "68b399ea61efa45b1c114dbb6bac2738e9d7a9e109ac055f277063c601b54c28"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/monitoring_logging.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 376,
+      "sha256": "59ee7362935a7e6b7c93ec44e0ccbdd6cc0c75ad627cedd6fa8975518c2f8573"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/monitoring.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 620,
+      "sha256": "1c64ffda7a603d27eea10a6da5304c52b39460bf077aed0844a1997a078a3a6f"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/service_discovery_configuration.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 479,
+      "sha256": "05462ff0823069863e9a3aec0531b1057f0f5974b2b786edc184fc25f4da6c69"
+    },
+    {
+      "logicalPath": "img/lib/ibm/infrastructure/transformation_connectivity.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 756,
+      "sha256": "237bb988b65c4b8a19c302a4f81312c89dd4e41b1974f775ed440b5af4ae3d77"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/api_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1059,
+      "sha256": "df650e3826d789b365cc88add1cbc394f05b254724a6b9db810059b80d2c83da"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/cloud_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1130,
+      "sha256": "82c9b6c991d55c30c50cd7412c05183c5e3919fb5ed25c5345a3ca2c22b046c6"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/cluster_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1020,
+      "sha256": "23e15101b5cb3cced186039ee64e59e334ba2b7671327bd403b1b7ce6b306e19"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/content_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 444,
+      "sha256": "a9cecee3cb0814cf5e6073b971d5a5d0c0d7de2f7a24eb72541eb3c2583a4fc4"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/device_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1382,
+      "sha256": "da59111aa1104f15e2ee31702b93b14b94052f99cd9195402285ea1f626e6e4a"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/information_governance.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 371,
+      "sha256": "c7e5c292488bf35642ad83a4f1285a56c2f984c2c171b5df430652d90c669edf"
+    },
+    {
+      "logicalPath": "img/lib/ibm/management/process_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 825,
+      "sha256": "fa41c13fd5bad8b5177ad6584d2a362d17edcc612c25db64be3a687b07130754"
+    },
+    {
+      "logicalPath": "img/lib/ibm/miscellaneous/cognitive_services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 33362,
+      "sha256": "69549ae54e39f075018c1e12e115a16594a7a81d218c34e698bbb030a2020c71"
+    },
+    {
+      "logicalPath": "img/lib/ibm/miscellaneous/ibm_public_cloud.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 661,
+      "sha256": "fd238bedda131e10bfb70286dfaad197d0c9c4a87cb9a751c5f315a1c0fe3be6"
+    },
+    {
+      "logicalPath": "img/lib/ibm/miscellaneous/scalable.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 669,
+      "sha256": "e48923c4031320153e7c61f0a1e6d1c58c090409c7e64b2593925db67f39207d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/miscellaneous/text_to_speech.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 976,
+      "sha256": "9269e14ea90230458c5e8dbbdbeefbb75893e0ba38ce77d52d01e958d526dc5c"
+    },
+    {
+      "logicalPath": "img/lib/ibm/security/gateway.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 985,
+      "sha256": "e160be8452d5cca2f568d2a5e1cac444eeef362316773066b52b53ad20e87a8e"
+    },
+    {
+      "logicalPath": "img/lib/ibm/security/identity_access_management.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 2342,
+      "sha256": "54d39ffa02158414039f505ca2ead509b7c2e44a206b3aa3a7c61ea4674b800f"
+    },
+    {
+      "logicalPath": "img/lib/ibm/security/security_services.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 424,
+      "sha256": "6aa961a60ea51f305830a089b010d2fe8d8cf2f6b105e3d5ebc9f5167e5dd753"
+    },
+    {
+      "logicalPath": "img/lib/ibm/users/browser.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 265,
+      "sha256": "4739aab72f5ae46a2164c4523f7378470f50efac0e118c9c8bd22ea4eacea825"
+    },
+    {
+      "logicalPath": "img/lib/ibm/users/device.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 467,
+      "sha256": "dd68b7f07fed512ec32d50e2399ed59cc3f80946c3d56930b92a0a5ad0b3af6d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/users/physical_entity.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1005,
+      "sha256": "d6fc428dae2d098f3079cd14efe2bd67b2f208411ebfa8e43d0a78a927d6f79a"
+    },
+    {
+      "logicalPath": "img/lib/ibm/users/user.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 445,
+      "sha256": "7b2b2270d83ebdec3a41b5fac8802a525f14c6b62f354f0d22bf7e1583a7bfed"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/BareMetalServer.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 812,
+      "sha256": "6fcd812f8f09f4926d933989485cf4a1da4eb6a66baffdd4d785c29ace4d75fc"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/CloudTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1365,
+      "sha256": "21d5fa9102d40f5f82f8d8d2146429b903ece1d46992c9394bb459440a3fde4d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/DirectLink.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 468,
+      "sha256": "0cc51bc8cc4b44c236fb2c52b3c1caeafc6d66a038fc35088fd8f48eddccda1a"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/EnterpriseTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 4129,
+      "sha256": "6eab107a756a29815a2094f178d81309fd08a422f1daf46f5937e2dbb1b4fc55"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/FloatingIP.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 76560,
+      "sha256": "ef2d659b30b3329a54dec03dc9b26edce9e7cf580275d77c7589df3bb03d3f7f"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/Instance.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 855,
+      "sha256": "be77959fc6fe06ce858624d70f745c22e4b684f982d0ed0a1cadd1cc617e765a"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/Internet.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 3521,
+      "sha256": "a95b1e465697bdd2d4363ab951dc69824357beff05585e4f9da3089e9be85225"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/LoadBalancer.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 642,
+      "sha256": "1caafd1dcb9559c597efd2b99a338652910cf57cc5f38c8e0a24deca04cf01d4"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/PublicGateway.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 625,
+      "sha256": "f6583cdfb13db3067556bcc4fcd8e59025df1466f5a5c07664472dda27d3871d"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/PublicTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1250,
+      "sha256": "8199370df6da09bbcc55f8c498b04f6c6b168d2f7697a892c06f7ebb091de386"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/RegionTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 386,
+      "sha256": "1058219599e28c8ef674d7349b92404d1ba1c5d796c70da2998a7a294e887590"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/Router.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 741,
+      "sha256": "50f0a7cae0f9da214b5d2df091391ef09cecbcbae9ce986d3c684b1851a4cbde"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/SubnetTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 837,
+      "sha256": "ef926a2507d8629c96d986be2af5e2f2283bec911c2ea0c692373e34c9baeb75"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/VPCTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1957,
+      "sha256": "255d81108ab8083881bb6d3c78a53764322cb888a33fdf3af9ae549c563b9e25"
+    },
+    {
+      "logicalPath": "img/lib/ibm/vpc/ZoneTag.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 812,
+      "sha256": "aa2974c22406cb6acbe38685c55e60a9ed97d93cd221f1031c47bd8467dd72f4"
+    },
+    {
+      "logicalPath": "img/lib/mscae/Active_Directory.svg",
+      "sourceKind": "drawio-webapp",
+      "byteSize": 1781,
+      "sha256": "9445d3caf5a0d59345037639244bb74931f11ae8127b443d267d4d153de653e4"
+    },
+    {
+      "logicalPath": "shapes/bpmn/mxBpmnShape2.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 69115,
+      "sha256": "a95f550de67cb50e775f7693ee5937458933ffd8a438d2748eb40c4ade48b3c7"
+    },
+    {
+      "logicalPath": "shapes/emoji/mxEmoji.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 54525,
+      "sha256": "8277f5ccc7ba5667ddded6451403c8b24feeb950ff108947b9b7cc3d86079565"
+    },
+    {
+      "logicalPath": "shapes/er/mxER.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 52507,
+      "sha256": "5a4515565a5399813a725244dc848bbaab77e6c58f09c1b66a605010912e0c5b"
+    },
+    {
+      "logicalPath": "shapes/ios7/mxIOS7Ui.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 50106,
+      "sha256": "f1d3c23e6b4c33bd4600333c63ab15bdd5feab5861fb9a5e9adb3699eec529ce"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupButtons.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 31670,
+      "sha256": "74590e13c5df5de96606333ddf7c221931a73b9cc84fb18369a64f112e63c08c"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupContainers.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 68442,
+      "sha256": "b7ae1f256f2a62eee0b400f9c87b43595b2fd7d8689f89ecbee83fe7330d7d71"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupForms.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 75468,
+      "sha256": "a063ad7dd00efec70300c65bdbd5a46f13b6181bca58de44c746e7c146a68fd5"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupGraphics.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 36264,
+      "sha256": "b16fe5b583603c060eb5f94c9cdf3244f8d37d2325ece1facab24d89bdc0d142"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupiOS.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 204611,
+      "sha256": "e1c73c601d52b141be67c2d3fc726bbe89359305b32ac00953377e224035c58e"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupMarkup.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 6157,
+      "sha256": "228d6a782bde240c6087c490e85b2ccd3b6961114277436848fca79a67361e10"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupMisc.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 50705,
+      "sha256": "37331925ad6aad73ce7c7ff76feafc34b26036da46593cf33c333f0d265cbd26"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupNavigation.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 25189,
+      "sha256": "a319a35bf8d00d2fbd2b1b4019c2d68e7cef805832dea91a9c6925a1a44cc7b3"
+    },
+    {
+      "logicalPath": "shapes/mockup/mxMockupText.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 28342,
+      "sha256": "d8f9c695feea06cc8d8cb71b3d1e041dbd4407bd128ebff9da20da8837fcaefe"
+    },
+    {
+      "logicalPath": "shapes/mxAndroid.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 44481,
+      "sha256": "882f6d6c861363a69fb3f48225fd3119c2d6fcd2d41687d8343ed634ce2dddbb"
+    },
+    {
+      "logicalPath": "shapes/mxArchiMate.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 35759,
+      "sha256": "796b7f7991f992f1a93ea04da570a25e9a3435ef74b6a5bdc947bb8ff3a80732"
+    },
+    {
+      "logicalPath": "shapes/mxArchiMate3.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 134343,
+      "sha256": "ae7dd681da997663b9ea8bb9292fe8693b2b997b35b54346d03e9ae439b65621"
+    },
+    {
+      "logicalPath": "shapes/mxArrows.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 130031,
+      "sha256": "51c95da1fdd75fd0aaea705ebab578a1d59fe3b127992362594d8e4ea60fbb2e"
+    },
+    {
+      "logicalPath": "shapes/mxAtlassian.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 7708,
+      "sha256": "360dfcdc0c6779bc825c67d68ad78c85056e286a9cf8e22eada505ec4ba63a7f"
+    },
+    {
+      "logicalPath": "shapes/mxAWS3D.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 287994,
+      "sha256": "bfaaeba94c75c9e46ac8de7df6e73877a7ff38073f354ee8705f0bd8524d4a62"
+    },
+    {
+      "logicalPath": "shapes/mxAWS4.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 10747,
+      "sha256": "a889e235e5e8c38abf9e35b580f5add187f410046d023db13dfcc319c7cc17f8"
+    },
+    {
+      "logicalPath": "shapes/mxBasic.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 122542,
+      "sha256": "a6aea138628764cacc38db327717f929996aa5d37d44a80b419578506e76b3b7"
+    },
+    {
+      "logicalPath": "shapes/mxBootstrap.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 43263,
+      "sha256": "872b26ca17c21c518f025c4b9cc18b1a6c1a6a9c6f27c84763aa07bd416ef4d3"
+    },
+    {
+      "logicalPath": "shapes/mxC4.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 11045,
+      "sha256": "436a510a979f6cefef297e38d4f5b21e62eccb528f3602df04d2b2c527d4208b"
+    },
+    {
+      "logicalPath": "shapes/mxCabinets.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 6419,
+      "sha256": "8f8686d628e714fb869cc4fdebfc29e8ae34e4c473e5a628bc3964ba8c236dea"
+    },
+    {
+      "logicalPath": "shapes/mxCisco19.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 5694,
+      "sha256": "f1da89f6f2de48cd009fdc65bf7b71f7816f05fed70f9903cd07d90eade12d01"
+    },
+    {
+      "logicalPath": "shapes/mxCiscoSafe.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 4490,
+      "sha256": "11c230af8c641be4852bb9db1cccfa4662fd2f3b6e303822f250334bc32c4546"
+    },
+    {
+      "logicalPath": "shapes/mxDFD.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 14193,
+      "sha256": "aa652115368b1b74a290cbb11eeda2cd20221e80190b90629f80c00e4349e299"
+    },
+    {
+      "logicalPath": "shapes/mxEip.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 16506,
+      "sha256": "82ea92eaa78cae8b55000b8286ae2010ca24d34884f1892f5c29721fcda3f468"
+    },
+    {
+      "logicalPath": "shapes/mxElectrical.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 157704,
+      "sha256": "f19d6118fb0ccc38dd3552191ea26637ea1154ee834781d8e747677583e7d5f6"
+    },
+    {
+      "logicalPath": "shapes/mxFloorplan.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 47790,
+      "sha256": "674a85277e92303533c3b5cc7f5f2f45c10fd8ab8c0e76fc8faa94816880c1ef"
+    },
+    {
+      "logicalPath": "shapes/mxFlowchart.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 2778,
+      "sha256": "d427b1de3d5ea968d06c7bbbc20decb429d69269ed09574819eb90d4ade3d3b5"
+    },
+    {
+      "logicalPath": "shapes/mxGCP2.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 16611,
+      "sha256": "c4c8137cfa0e7e4271e42a280273cc21dc3892006b476087ed3dc9646714b562"
+    },
+    {
+      "logicalPath": "shapes/mxGmdl.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 28063,
+      "sha256": "382e0b046c6212e020806cafa54726001b82c4d470ea9a692dc2298ca5cb64a2"
+    },
+    {
+      "logicalPath": "shapes/mxIBM.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 2932,
+      "sha256": "76cf3aca296305c0854acc41ece8e77e5b94645eb4d3a30796ddd041e5b1fd98"
+    },
+    {
+      "logicalPath": "shapes/mxInfographic.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 96125,
+      "sha256": "69567ffdfe4bb7b6f706bc116092ac705df28e8f72262ca63c1d76f4f5619443"
+    },
+    {
+      "logicalPath": "shapes/mxKubernetes.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 17449,
+      "sha256": "5f0c4c676b2494c6237d10bf763c2113dfecafc10eef2c6819954cd241871cc3"
+    },
+    {
+      "logicalPath": "shapes/mxLeanMap.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 79759,
+      "sha256": "28403a9cb20dbba9636f0dd624111e7cdcc2db45aea1c74bc28365676df6edb7"
+    },
+    {
+      "logicalPath": "shapes/mxNetworks.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 3350,
+      "sha256": "514adac5f4f6dc0e4537e694787fed2dc2f72ba7e040e2d393d75d01699c7675"
+    },
+    {
+      "logicalPath": "shapes/mxNetworks2.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 5439,
+      "sha256": "dc7d537dea415558f1c42935d9eb038a6aa9ae4e272637bca3041106dbb831d7"
+    },
+    {
+      "logicalPath": "shapes/mxSAP.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 2161,
+      "sha256": "751c30117e51478b1e7d31a0c460746152da563b377beb2b2048c5783d132c50"
+    },
+    {
+      "logicalPath": "shapes/mxSysML.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 100648,
+      "sha256": "6ce4f1162e0174857b557c57e934217a21eec5abc0089ec25f75dc041a7e6286"
+    },
+    {
+      "logicalPath": "shapes/mxUML25.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 7135,
+      "sha256": "3d0bad5cd128f3a3b71e6e8636df67b04e70205fb67194a713166616e9887f6a"
+    },
+    {
+      "logicalPath": "shapes/pid2/mxPidInstruments.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 20267,
+      "sha256": "0284fcd49630f81b7a4b2ab4db7e3015885feef66f623d5a997008265cbdb986"
+    },
+    {
+      "logicalPath": "shapes/pid2/mxPidMisc.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 11581,
+      "sha256": "dd4b866c99a5212fa9b9b636b22c5a090e53fdf476c961515066d8566a65172b"
+    },
+    {
+      "logicalPath": "shapes/pid2/mxPidValves.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 30669,
+      "sha256": "0425b52051931cac387483fd7d945bc1e33279feea68dbfb8df22a0ae9bff215"
+    },
+    {
+      "logicalPath": "shapes/rack/mxRack.js",
+      "sourceKind": "drawio-shapes",
+      "byteSize": 43637,
+      "sha256": "9caa6b295b6622e794a269cb682c53f65cf72aa047a6677a24d4d9814ff3c319"
+    },
+    {
+      "logicalPath": "stencils/alibaba_cloud.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1347544,
+      "sha256": "10d38d0451fd48a61c542a36a99f6a22fae588f3dad050c8224ebb0004ce03fd"
+    },
+    {
+      "logicalPath": "stencils/android/android.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 66029,
+      "sha256": "4e663a4dea5d4621bd4b58213b411c08cd58b8d8a4da26dfd42a835e29058450"
+    },
+    {
+      "logicalPath": "stencils/arrows.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 28424,
+      "sha256": "608331127c21280a3dd495f3f8bd76014b953d0d92a0df961d94ad475054779a"
+    },
+    {
+      "logicalPath": "stencils/atlassian.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 31382,
+      "sha256": "21bb81a3cfb95cb6243a964b63e26267f6bd38351499e2682fae39bdc3987f42"
+    },
+    {
+      "logicalPath": "stencils/aws/compute.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 24313,
+      "sha256": "ac645cc824069ef01d467d3b0af84e707c0f0c26b3b5a747d09f86376562c694"
+    },
+    {
+      "logicalPath": "stencils/aws/content_delivery.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 11821,
+      "sha256": "34d45851256c297f4d8fb397d8f2a74ba0bb78698cc49a7034af50b8f48e034c"
+    },
+    {
+      "logicalPath": "stencils/aws/database.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 50054,
+      "sha256": "562add9d3341b2ad2d82cfb641260bafec7cb61ae841962a0485b81a76e4ff09"
+    },
+    {
+      "logicalPath": "stencils/aws/deployment_management.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 10896,
+      "sha256": "fde48a1b06186638e4aa5d58cdef83297df79fc1cc959ddf7f497b15fbbc4ad5"
+    },
+    {
+      "logicalPath": "stencils/aws/groups.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 65036,
+      "sha256": "b44e0871f3fff499e1091c1e323873d0c14a1d3cdb265fd3e07a76b94560915d"
+    },
+    {
+      "logicalPath": "stencils/aws/messaging.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 22571,
+      "sha256": "40814d2941b3749e1c47cfc65972e34a1cdbe771d6a2d0b592451cda0fa4e448"
+    },
+    {
+      "logicalPath": "stencils/aws/misc.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 9714,
+      "sha256": "181204eebc57380d3f2bae7ceb98e301447d32dbd3c4c42c930c50097080f72e"
+    },
+    {
+      "logicalPath": "stencils/aws/networking.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 31617,
+      "sha256": "b9a0103c87e9fb8a2ad7c251ca0d65c1a2bca1bc9385b12f7b030f3c38d77ca9"
+    },
+    {
+      "logicalPath": "stencils/aws/non_service_specific.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 26517,
+      "sha256": "3024c4f320ffca7d84148664a2322170dde9fd0b39a887ef8245ed218d10b991"
+    },
+    {
+      "logicalPath": "stencils/aws/on_demand_workforce.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 13366,
+      "sha256": "f6b3ef60da6b2394a7bff24e6e9f20b36f4b8d34655ef2ac70e83c41baa277ae"
+    },
+    {
+      "logicalPath": "stencils/aws/storage.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 12380,
+      "sha256": "093ea242612d434480e9b04cbf9ac71458c4f53ba12d14757def6d0c78b66d44"
+    },
+    {
+      "logicalPath": "stencils/aws2/administration_and_security.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 10904,
+      "sha256": "ca00414486566f0abffa615a84498fbc9b568eefa59401b8b1260f0742fe0e4d"
+    },
+    {
+      "logicalPath": "stencils/aws2/analytics.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 47778,
+      "sha256": "db20afba25c96b6aedb50604f273daf894800c120b9b44262c0eecfceedcb810"
+    },
+    {
+      "logicalPath": "stencils/aws2/app_services.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 84824,
+      "sha256": "c6b6fbaa6fefc549b6d3dc4e2618c83b015a4fab1f11a835928bf9f124037a60"
+    },
+    {
+      "logicalPath": "stencils/aws2/compute_and_networking.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 253912,
+      "sha256": "8147cd7b17db7e71ce9709306ba13282f73eb7719de9f88addec70f748d047ec"
+    },
+    {
+      "logicalPath": "stencils/aws2/database.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 283453,
+      "sha256": "8d37411ece66f9c146181634e5f21e51aee3656c4421392d252e312f44a7087e"
+    },
+    {
+      "logicalPath": "stencils/aws2/deployment_and_management.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 118467,
+      "sha256": "a6434afca8ec3b284d2981737ab6b7145b096dfa7e1c4e6cfebf8873f8793427"
+    },
+    {
+      "logicalPath": "stencils/aws2/developer_tools.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 8910,
+      "sha256": "129f5bee932f49a4586eec922c15562927283519d22b90321c59d8e3c3484797"
+    },
+    {
+      "logicalPath": "stencils/aws2/enterprise_applications.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 8973,
+      "sha256": "dee1ad5b61194fe0ffb978cea263d9ea8687e040028796b24f35e45f1d8da5ca"
+    },
+    {
+      "logicalPath": "stencils/aws2/game_development.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 3590,
+      "sha256": "c446c227efb7d6e71d080bba43fdf850cbaa0d9d6e5ebb62d771411d5b3d9984"
+    },
+    {
+      "logicalPath": "stencils/aws2/internet_of_things.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 199715,
+      "sha256": "2725f27b3e8570a2b7655768424ab0d23b8d17f3e0cfe1797b4a6439d2533728"
+    },
+    {
+      "logicalPath": "stencils/aws2/management_tools.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 6209,
+      "sha256": "ba3659edfb1e63a14efbdee57908a150a8f73a809d04c0e340528b40b117fa90"
+    },
+    {
+      "logicalPath": "stencils/aws2/mobile_services.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 39214,
+      "sha256": "ec640069fe14d34f17fcf8a17907bea51b075de9ca4061708ca63cbea61b5aad"
+    },
+    {
+      "logicalPath": "stencils/aws2/networking.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 9781,
+      "sha256": "72e230f02a846d80d164b5e21091808a4c2055f7aad25ab4911e71d471cbe21b"
+    },
+    {
+      "logicalPath": "stencils/aws2/non-service_specific.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 114522,
+      "sha256": "c000e6232894d7c8056fdc2d81330f1b87cd6df5c4c24fde63f0616a306da7f6"
+    },
+    {
+      "logicalPath": "stencils/aws2/on-demand_workforce.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 35596,
+      "sha256": "bd56925a169bdc466c86dc479c9a91ff938319b2e60f9321ca45f4aef2396749"
+    },
+    {
+      "logicalPath": "stencils/aws2/sdks.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 45175,
+      "sha256": "90be3a97bc615e2b194adf1bf31187deda71d872aee9e941cf27ffbc9ca4badd"
+    },
+    {
+      "logicalPath": "stencils/aws2/security_and_identity.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 22861,
+      "sha256": "4d50601a46656cfdbf599521e50f62648436ea9ba3fc9f35d81e1a16ce6b2b1a"
+    },
+    {
+      "logicalPath": "stencils/aws2/storage_and_content_delivery.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 108208,
+      "sha256": "ca137b720b9a53930885ebc4158f6c12ab933ab75c5f4e1cc70ff08f67d41e7b"
+    },
+    {
+      "logicalPath": "stencils/aws3.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1461496,
+      "sha256": "e96c79d67bbb087a64aa94559f965c8af2707172e80e6ee36806a99456b75ede"
+    },
+    {
+      "logicalPath": "stencils/aws3d.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 31600,
+      "sha256": "dc391a06200857c42cd6a4f8a9b1f70ace906db687f0cd93d33528fe6aed0386"
+    },
+    {
+      "logicalPath": "stencils/aws4.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 6507954,
+      "sha256": "f0f4161ddaba2b10c1d49c34917a6ef8abc1288b552dade0475c5e805c98c919"
+    },
+    {
+      "logicalPath": "stencils/azure.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 284215,
+      "sha256": "c940e5ff0474dadec0d5d3436e03c99023eaca3617a74143123500eeda8d5472"
+    },
+    {
+      "logicalPath": "stencils/basic.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 43925,
+      "sha256": "674166a4b4315f78cd6739bd5eb14869cc25abc48f71109d9a157976b5a1573f"
+    },
+    {
+      "logicalPath": "stencils/bootstrap.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 5798,
+      "sha256": "520e96a126b39e947dce1a37953415f8f84562b8308a00794935325e4ddec605"
+    },
+    {
+      "logicalPath": "stencils/bpmn.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 43661,
+      "sha256": "70b7e477e8ad6b7e3844d6c38936a0f9c908f73e07f562f23d3b101109aa0f9e"
+    },
+    {
+      "logicalPath": "stencils/cabinets.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 76873,
+      "sha256": "d6e696cd452c0e89381f77ca8ace091b6b6da5115671fc812f97e19f43e76c4f"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/architecture.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 568880,
+      "sha256": "3c156a6675278a62fbf56ff5db0b20bc728882fc66f62771de8867677b433427"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/business_icons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 104705,
+      "sha256": "e3080dfba6310d3e138306b2bec240e6f23c2e5eb22bde0570536e995856796a"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/capability.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 766247,
+      "sha256": "c0de6295594fde661d99e3581a5f072957e569aaf502d0972be655267a1e1ef9"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/design.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1014711,
+      "sha256": "5c556269663b63e21d2dccde2598fa1debf2ab765b2c819d7a2374c301a8f81b"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/iot_things_icons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 199951,
+      "sha256": "95e4c6e0f8f314af4a999a251589b40435c4a59685f20d2c9e6adf6b049d9cf9"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/people_places_things_icons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 49920,
+      "sha256": "238c141c96ffa59a5264394a8669678e9c2b2c44c038bf9806a5611b91f8a16c"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/security_icons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 548750,
+      "sha256": "e21a867d63c18b5a5c24a39d8713514f342903c712776cf3a9fafda70c7448cd"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/technology_icons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 129864,
+      "sha256": "37c7cb524d2751c144c365d3a0570fc3e1cd5790f93202f3de3e721f4fed7bdf"
+    },
+    {
+      "logicalPath": "stencils/cisco_safe/threat.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 664972,
+      "sha256": "7301667c4831896024ed58dd0a4fb3253166621ea8c19187c42a459fded4b122"
+    },
+    {
+      "logicalPath": "stencils/cisco/buildings.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 35021,
+      "sha256": "de9f83b5521c779c771e9b31f454a86bcae180631cee813675ad2468d16c18fb"
+    },
+    {
+      "logicalPath": "stencils/cisco/computers_and_peripherals.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 65662,
+      "sha256": "0e3e410f0f4246db58a7a005ad9c7eadb823a86fe3c801c3b825fd42cc2bf373"
+    },
+    {
+      "logicalPath": "stencils/cisco/controllers_and_modules.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 32756,
+      "sha256": "4f68dfc6d11920a1f345584775c4425490b67a5c3047cc9dff53c50f69b6fc29"
+    },
+    {
+      "logicalPath": "stencils/cisco/directors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 14854,
+      "sha256": "52291fcff774ee070bebc3248a404d49529c1c5c94238275cfa0230476dc87e9"
+    },
+    {
+      "logicalPath": "stencils/cisco/hubs_and_gateways.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 21454,
+      "sha256": "a2d5fb9e9dbdf67fa5508b225e10d2f4f873aaf4c69f51f79aeb31fbb553829c"
+    },
+    {
+      "logicalPath": "stencils/cisco/misc.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 458142,
+      "sha256": "86880ac664aaf9c7eac0eb5665a6614f80ceec8234729fd722fa041c8e13d909"
+    },
+    {
+      "logicalPath": "stencils/cisco/modems_and_phones.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 82775,
+      "sha256": "26a6cb3f5d9ec72f4e075cdc0b1f52f123d33aea66a40e97466970c4eae4b9a0"
+    },
+    {
+      "logicalPath": "stencils/cisco/people.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 95665,
+      "sha256": "fce10a2773e89b4baa0f3f52f6a666c85df563bc6fb827eb8b2658ffca27c237"
+    },
+    {
+      "logicalPath": "stencils/cisco/routers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 86743,
+      "sha256": "9f5b84ad6db1b2e6994e433858ab9b46e4e7c505f0c4175415b29784cce29971"
+    },
+    {
+      "logicalPath": "stencils/cisco/security.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 26877,
+      "sha256": "67fd3081f085b48c79e607de2c3540dc1d8a54f43b229b62cdbb0a7aed3280b2"
+    },
+    {
+      "logicalPath": "stencils/cisco/servers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 46328,
+      "sha256": "75225655672e79637ac2881d18eaa0be87ba6b5a005b76ee35dbf8191fd1019d"
+    },
+    {
+      "logicalPath": "stencils/cisco/storage.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 52561,
+      "sha256": "d284797dffdc12e94cf66e0f2a9412a2fde12859e37041fcabb26982caf0b54c"
+    },
+    {
+      "logicalPath": "stencils/cisco/switches.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 86992,
+      "sha256": "4cba6dd097907a14abb6ec50cb17c80fb918c01e90fe3823a4383aa9439feccb"
+    },
+    {
+      "logicalPath": "stencils/cisco/wireless.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 37411,
+      "sha256": "a202ce1ba51ba745bde17e343795189ecf185b6256a2f795c104d634a7776f47"
+    },
+    {
+      "logicalPath": "stencils/cisco19.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1813219,
+      "sha256": "cba83882ca362016976e0e0220fc463fb9cbd9beda6b1c3299b2fd9bd28eb051"
+    },
+    {
+      "logicalPath": "stencils/citrix.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 949574,
+      "sha256": "236e734c3017413e33cdc4682f2a45a98ca7dbf5e05aa49ad4c01155655ca7f6"
+    },
+    {
+      "logicalPath": "stencils/citrix2.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1074494,
+      "sha256": "1b7b26110868ef28c89a4a725a5dc1b47976a605e2cfe72a41ef6bff49449658"
+    },
+    {
+      "logicalPath": "stencils/clipart/Gear_128x128.png",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 10678,
+      "sha256": "5de5998369a94f7c7d27c88d750be8fa03b58706e7b110741a50bd67bf989b65"
+    },
+    {
+      "logicalPath": "stencils/eip.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 76322,
+      "sha256": "4bd369d5bf308daa9704ace395b6ac1a4bcbb1133ea0ed937dbcbcfa7b62cae9"
+    },
+    {
+      "logicalPath": "stencils/electrical/abstract.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 19411,
+      "sha256": "5f8bd7b4b509a702c19f7fa2e231ebe6187e49027f46b61f5a2019b870b7dbf2"
+    },
+    {
+      "logicalPath": "stencils/electrical/capacitors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 12349,
+      "sha256": "01becdbb2f91011f8bc4934ad9f6a3fb2dcce9305e7c40f00446bf276a1bc079"
+    },
+    {
+      "logicalPath": "stencils/electrical/diodes.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 8572,
+      "sha256": "15ea88c1e0c4f1a05bd1b3fdad4ad16bea9edef2be09a644842c896875747c65"
+    },
+    {
+      "logicalPath": "stencils/electrical/electro-mechanical.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 60547,
+      "sha256": "1c91af8c1292d035d00fa7268c63c19c22e4137954de5c550caa05acd591e6b7"
+    },
+    {
+      "logicalPath": "stencils/electrical/iec_logic_gates.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 7257,
+      "sha256": "99047118ec84c419c615693a9a32c6d835c659ac79f2260e21c659036d31df0c"
+    },
+    {
+      "logicalPath": "stencils/electrical/iec417.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 32941,
+      "sha256": "1241b2a1394d6ad14526b511069b0fcd534e38e8f128df370887cc538c26b5f8"
+    },
+    {
+      "logicalPath": "stencils/electrical/inductors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 44934,
+      "sha256": "b951d4da18b0c6bb12db0a709d534d80f0b6f270e4f7478a2ae85b74357e4a11"
+    },
+    {
+      "logicalPath": "stencils/electrical/instruments.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 4917,
+      "sha256": "d8c653593f2a833d2febe5cd810bc3359fa9ffac6d8ae4537397588b16881fc9"
+    },
+    {
+      "logicalPath": "stencils/electrical/logic_gates.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 24793,
+      "sha256": "dfed315e083b29c4d75e8cb0c547a3da524969af07c6e6145418e72533ca9b72"
+    },
+    {
+      "logicalPath": "stencils/electrical/miscellaneous.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 62245,
+      "sha256": "46dd435fd385f4add8feccda39d50ad884bfac2b609d20de45d99e1e22731709"
+    },
+    {
+      "logicalPath": "stencils/electrical/mosfets1.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 20971,
+      "sha256": "9cae4249b4cc29f76864f0f0a6dc19aa45bc72992c17a79c75ade8108c3192a6"
+    },
+    {
+      "logicalPath": "stencils/electrical/mosfets2.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 14758,
+      "sha256": "b711c54f76d5ca09fcc9172f635a6e562fecd67f133a95aea98610d381618af8"
+    },
+    {
+      "logicalPath": "stencils/electrical/op_amps.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 11255,
+      "sha256": "8ec266043934f52c5300a7ecc127fc79395d52382c7bc315c5adc17ea6815f64"
+    },
+    {
+      "logicalPath": "stencils/electrical/opto_electronics.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 21271,
+      "sha256": "5c8d00da4313c23533834d72565a4486923c6803fc3babb5bafe7966a44155d5"
+    },
+    {
+      "logicalPath": "stencils/electrical/plc_ladder.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 3502,
+      "sha256": "f56ee51b09eb6d47f6af114c59aa9bd2cde08477c2d8ca3097f8b2b4baaf7bea"
+    },
+    {
+      "logicalPath": "stencils/electrical/power_semiconductors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 19476,
+      "sha256": "4cc87a72c4c1caf24a3f54d3bab0496dec6d99bbe159920e24bfb87c0051f835"
+    },
+    {
+      "logicalPath": "stencils/electrical/radio.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 8386,
+      "sha256": "616bccdd2f7c0eb57f5f86997165830d5e89a6fd7832c1356510a705df2cfe0e"
+    },
+    {
+      "logicalPath": "stencils/electrical/resistors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 20045,
+      "sha256": "ad77a49ad76ebdb3381d5e8ca54e251320766efec46a9a7f57bcfb45034096ec"
+    },
+    {
+      "logicalPath": "stencils/electrical/rot_mech.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 11131,
+      "sha256": "561914b38394e910b0525485bf1012674dc8e60f9ea34f910683be9ba8eca578"
+    },
+    {
+      "logicalPath": "stencils/electrical/signal_sources.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 13558,
+      "sha256": "9d68b767a35088543657830791f0f72cf641a294c6aba57dd3a503fd4cacb8d7"
+    },
+    {
+      "logicalPath": "stencils/electrical/thermionic_devices.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 8118,
+      "sha256": "afe53e5b7b5d8dffa5214948f8c68d4925df8ac01731234f82bcdd3b61dabf4a"
+    },
+    {
+      "logicalPath": "stencils/electrical/transistors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 29396,
+      "sha256": "42eeff629520fd8e646b299abc1df2d486203ff7f09b9d743c575118377cee90"
+    },
+    {
+      "logicalPath": "stencils/electrical/transmission.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 12295,
+      "sha256": "1f476a3615ab88413368eba0ec9b778dcee07b30c89861fd5c3eafd6a10f60d4"
+    },
+    {
+      "logicalPath": "stencils/electrical/waveforms.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 8300,
+      "sha256": "98b5ba704bc8a1ad12344c3d3f57e137d25f4cbf7a32bcca512d3b1b37c81793"
+    },
+    {
+      "logicalPath": "stencils/floorplan.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 88845,
+      "sha256": "7ae378c6c12632d9e4ed51c6bef8702c6324ae1d38abc930d4a6def52d30916d"
+    },
+    {
+      "logicalPath": "stencils/flowchart.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 31555,
+      "sha256": "40a9573c0e04d5eb29b5569b8eff2b4af70f48f874ffd095159a3ea24323d102"
+    },
+    {
+      "logicalPath": "stencils/fluid_power.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 722197,
+      "sha256": "3135da7440eb4c0f5418e88a98f867da6394827293d22a11b6cbd1b492beed2e"
+    },
+    {
+      "logicalPath": "stencils/gcp/big_data.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 36614,
+      "sha256": "3dd5a088ae8d66fb07de8c54da0f14817615dda2a15fb6404c76cade12b74835"
+    },
+    {
+      "logicalPath": "stencils/gcp/compute.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 33859,
+      "sha256": "b7d811a48e7cde6b4711da114a724eaa9aec84df2cbc38402ba52c56e3a638d8"
+    },
+    {
+      "logicalPath": "stencils/gcp/developer_tools.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 15393,
+      "sha256": "81b0845a36c985b3e83e72088471aed8e4c2cf9465b56fa07ed0834fb739637d"
+    },
+    {
+      "logicalPath": "stencils/gcp/extras.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 38900,
+      "sha256": "2325a6c6cb155f10207cf2c71bb44975962467a778971975e25d1a58c29127d8"
+    },
+    {
+      "logicalPath": "stencils/gcp/identity_and_security.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 38456,
+      "sha256": "fefd0d15da2b1965572864b8e3c13dc84ac102b85d5d9a8bdf0e0ff66dcc3a43"
+    },
+    {
+      "logicalPath": "stencils/gcp/machine_learning.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 26607,
+      "sha256": "7b7ffd53a6bb4b01c9f2ac430550d69f3c4e46ad121c399bd871ad9db63dc498"
+    },
+    {
+      "logicalPath": "stencils/gcp/management_tools.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 32630,
+      "sha256": "4c86c09b9315c784f29a3f6accb1afb87d28a5993641521bbe209fcb7f3c8f86"
+    },
+    {
+      "logicalPath": "stencils/gcp/networking.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 41513,
+      "sha256": "6f9a0770507c30f47aeefed13a41053feea24668dc2e54fc2e2354fed5ee8ea3"
+    },
+    {
+      "logicalPath": "stencils/gcp/product_cards.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 3944,
+      "sha256": "d1c16630304330c76651def1cab6e7b1f3acfeb7425299449180111ef1e63bf8"
+    },
+    {
+      "logicalPath": "stencils/gcp/storage_databases.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 28846,
+      "sha256": "55cc30881aa1c442e7ffac5fa3f7b9f3abd87a0c8fc4f4c077edf6b5dcc3c575"
+    },
+    {
+      "logicalPath": "stencils/gcp2.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1128372,
+      "sha256": "1d03f39557bce24c1677cc1099901a4cffe2b0c60e99976cb6956323a0643bc2"
+    },
+    {
+      "logicalPath": "stencils/gmdl.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 118554,
+      "sha256": "70395b4500e06b335ee49e9cd7b62dc7000317e94481cdd2c4eb5b84b5a4fad5"
+    },
+    {
+      "logicalPath": "stencils/ibm_cloud.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 299991,
+      "sha256": "9236ffdc972c35e727ae4cb08ec76f38e4d319279211161e3811924caa5935c0"
+    },
+    {
+      "logicalPath": "stencils/ibm.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 28469,
+      "sha256": "8e07aa218e86c3257c2b93881429452768dcd51a73ff9af62386e09a49eea758"
+    },
+    {
+      "logicalPath": "stencils/ios7/icons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 88991,
+      "sha256": "7946a097cad90c70af0720648b6d1b999e083d517c475c0c62d7ea2cbe7613ff"
+    },
+    {
+      "logicalPath": "stencils/ios7/misc.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 91305,
+      "sha256": "0155d1efe274753368ecd40bed29005ab165eeada2b50158f7f938b3939626e9"
+    },
+    {
+      "logicalPath": "stencils/kubernetes.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 180144,
+      "sha256": "c84a602dbf0b14f3d55c44f5e74a8993d0b5f0424b329f87dc65719f66e2ee40"
+    },
+    {
+      "logicalPath": "stencils/kubernetes2.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 181171,
+      "sha256": "86731dad98bc2f70a31c3435b13ba2baade1da7151d85adebb837709d56e0dec"
+    },
+    {
+      "logicalPath": "stencils/lean_mapping.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 14173,
+      "sha256": "8fbe65668b84bcd18c39ece4879c06ccac1a3908a6bd5ec784a8911ab38909db"
+    },
+    {
+      "logicalPath": "stencils/mockup/advertising.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 9346,
+      "sha256": "3d42b723d42987d2db84be2962804fd47d46f4beebe9bec90adbe4192f87e769"
+    },
+    {
+      "logicalPath": "stencils/mockup/calendars.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 70991,
+      "sha256": "483e94ec4fec9514cf4c411444d57e908d8013f6ca02e3fc06e00fbafee9814b"
+    },
+    {
+      "logicalPath": "stencils/mockup/carousel.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 23418,
+      "sha256": "55d8d65c9fddb0235eac04a60ad0eaeb6e4ba13bae751d8ff5cbc9e4f8b5c267"
+    },
+    {
+      "logicalPath": "stencils/mockup/charts_and_tables.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 25092,
+      "sha256": "52294ee1190d9384b8e2d34e84091df9eee21fab49d05e72cf250cd5fdde86d3"
+    },
+    {
+      "logicalPath": "stencils/mockup/controls.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 23516,
+      "sha256": "82fdef2c90564a388ac96069a04b8a1b1eb8b5b77a5099f8f5c86d6a2262f6d8"
+    },
+    {
+      "logicalPath": "stencils/mockup/form_elements.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 15178,
+      "sha256": "ac13a18b803e1500a8a19d4a17eaa5ca45e381c7ebf6b5a328107e243b5edee5"
+    },
+    {
+      "logicalPath": "stencils/mockup/menus_and_buttons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 33161,
+      "sha256": "7ec69cfcc0c25230c75ee8db6eaa06bbfd4b1f5026e4899de9cde15db425fc33"
+    },
+    {
+      "logicalPath": "stencils/mockup/misc.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 82062,
+      "sha256": "418d2784d2eb4da4cf44d33f7db960687801a6a3c34aa0c5252e615814720ba9"
+    },
+    {
+      "logicalPath": "stencils/mockup/tabs.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 6853,
+      "sha256": "07aa97a6e1e95a02b554cd86f28e42bf4a735fadc4eecaf483a8e8120492a0ce"
+    },
+    {
+      "logicalPath": "stencils/mscae/cloud.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 551631,
+      "sha256": "f6bbe1770d3af4f96bb57a4cc38922a4580e04cbaed089d8e21ff7b9f02a4c07"
+    },
+    {
+      "logicalPath": "stencils/mscae/deprecated.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 48754,
+      "sha256": "ca351fffbb2e1fcf69fd22eb7f1326a855b7157c841c8f371641dcc48c37931c"
+    },
+    {
+      "logicalPath": "stencils/mscae/enterprise.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 262896,
+      "sha256": "83dcfcb60db22e4999a12a14e3136e9f148a406fb28f1374156792e44162290e"
+    },
+    {
+      "logicalPath": "stencils/mscae/general_symbols.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 26183,
+      "sha256": "8754d193a387c063f743867113ca67791781c08a46e86e3691940fad7afb3d76"
+    },
+    {
+      "logicalPath": "stencils/mscae/general.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 65848,
+      "sha256": "5ebdf2dce5f9205ea2ec325a5a823260b3ba7c3838b5b6ad6ee059bc1376ba0e"
+    },
+    {
+      "logicalPath": "stencils/mscae/intune.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 191435,
+      "sha256": "5a857a18ca68872c86df3c638eead144bf9048075e92af882767762af1457cd9"
+    },
+    {
+      "logicalPath": "stencils/mscae/oms.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 65639,
+      "sha256": "ff68d23aa4c77d83df852149c0de9c2cbcfef5575dff61ef8cc643a47340b315"
+    },
+    {
+      "logicalPath": "stencils/mscae/opsmanager.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 123720,
+      "sha256": "9cf81aba70340ec5dbdb265841f51a55fd9e906daa52cdbe215496937ff4536c"
+    },
+    {
+      "logicalPath": "stencils/mscae/other.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 66757,
+      "sha256": "c9a5bf34c9e9ddc0f888625602845e027bc92a5b12652abab9356744f4420abf"
+    },
+    {
+      "logicalPath": "stencils/mscae/system_center.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 36203,
+      "sha256": "239321a69b17774990f26853b07fb99bbbae1831052137e4e48acea42487c3a5"
+    },
+    {
+      "logicalPath": "stencils/mscae/vm.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 92545,
+      "sha256": "1bd235d91a4c94684733aa98b3c19dbfbb90ecd6c413634ae5193c2e59a24528"
+    },
+    {
+      "logicalPath": "stencils/networks.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 191647,
+      "sha256": "2921086e1eec8cddcde937feec78caff85fa6b2b82670f29ded51e69b21e3711"
+    },
+    {
+      "logicalPath": "stencils/networks2.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1051484,
+      "sha256": "17c2565bff330ecf0d4da0b5acd9093a1ef820f45b1919216f8dab3daa0266b1"
+    },
+    {
+      "logicalPath": "stencils/office/clouds.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 60476,
+      "sha256": "60c5c5abacea69b6fa3f2d3f67cbcbcacbc7597c973b6c7db308cc04d47bb86f"
+    },
+    {
+      "logicalPath": "stencils/office/communications.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 402188,
+      "sha256": "48063e32f398a4c0b7c1a9662d2a29a32f5be8a7b1060d21f503c3a386d5ab44"
+    },
+    {
+      "logicalPath": "stencils/office/concepts.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 315797,
+      "sha256": "3dad9b6b67ce0457036412772c60a913b73910e2b6ca5d952f7f47739f8896cc"
+    },
+    {
+      "logicalPath": "stencils/office/databases.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 82147,
+      "sha256": "04baf1d8f7bad83c1d49709f69854d1b128ed633cc069633770aaacc6efd83e0"
+    },
+    {
+      "logicalPath": "stencils/office/devices.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 158442,
+      "sha256": "34e7c854a9a574719aec3694f106561aa0e4a716ecff0aec58bb74c239ce6840"
+    },
+    {
+      "logicalPath": "stencils/office/security.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 115432,
+      "sha256": "97dde7fdb41273ec2e5ed4fb51a7c76760d4bc38397871c0c3cbe3656c6dcedc"
+    },
+    {
+      "logicalPath": "stencils/office/servers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 411445,
+      "sha256": "7d9715096c1d34e080d148d6749d0ff663ddd97ac8c901f34244ebdebf4d772c"
+    },
+    {
+      "logicalPath": "stencils/office/services.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 177266,
+      "sha256": "c53b490d38fc52a4fcf805968856b77d6ed40feab82a59fe906406be5178e42b"
+    },
+    {
+      "logicalPath": "stencils/office/sites.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 82917,
+      "sha256": "7d9db0ffa3f8055d70ee16310ec6da17a0db450e359e1351538b520f9c527f79"
+    },
+    {
+      "logicalPath": "stencils/office/users.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 131390,
+      "sha256": "e0d4500a35f9eb4e515f3187a2c80bf72c347a410b8cfe096585e21d5544e992"
+    },
+    {
+      "logicalPath": "stencils/openstack.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 103602,
+      "sha256": "8b2255a569d79a1f0df142bd10c4d6fcaf5239313ff53e25bcc6effb0d926686"
+    },
+    {
+      "logicalPath": "stencils/pid/agitators.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 5857,
+      "sha256": "6f7be7a0b62206828753ceba38214b0bef367334f53e421e28f6af8313ca4695"
+    },
+    {
+      "logicalPath": "stencils/pid/apparatus_elements.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 2550,
+      "sha256": "67c6e3f87be5937fbd4f9ec5f09bfa69d98c0713a8d4339950d767872ac5d76f"
+    },
+    {
+      "logicalPath": "stencils/pid/centrifuges.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 7396,
+      "sha256": "b8e64954e290a16fc956eb58baf4cf6a8b0817a2db41b8276489b9c97cb6cf46"
+    },
+    {
+      "logicalPath": "stencils/pid/compressors_iso.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 9779,
+      "sha256": "dc73898d12a3e99334b27504736fe974ed29531feb197654ffaf657dfd5fb10a"
+    },
+    {
+      "logicalPath": "stencils/pid/compressors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 14166,
+      "sha256": "9acddc6dd374f2ece5fb7a9cdf0bdd3b917f9ce1a0039916a090a74cd26f34b3"
+    },
+    {
+      "logicalPath": "stencils/pid/crushers_grinding.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 12580,
+      "sha256": "de3325ce8c5dd49da67bcb4bb495b2318f343d95ae5940f88be393590744d342"
+    },
+    {
+      "logicalPath": "stencils/pid/driers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 7437,
+      "sha256": "98baa676d86de9ea460e7cc467ca4a2557f4458df1b7288e09dba60992fc9687"
+    },
+    {
+      "logicalPath": "stencils/pid/engines.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 4988,
+      "sha256": "962b32f5849475fdeb0a7e799ca725038647616d49abc51f3bd2c7fd17b6adfa"
+    },
+    {
+      "logicalPath": "stencils/pid/feeders.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 3392,
+      "sha256": "655078455262a52e8418e6df884362dd3069b0ab052d6e118347691278be9192"
+    },
+    {
+      "logicalPath": "stencils/pid/filters.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 13605,
+      "sha256": "6a52096d5b230ed1590d0288b9b6f18e3fd1691044167020042e9218d5c29d32"
+    },
+    {
+      "logicalPath": "stencils/pid/fittings.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 23747,
+      "sha256": "02c34f41e73530edb1a5bac8b343ac37e46ed4575705fae9fcb26bb44de6986f"
+    },
+    {
+      "logicalPath": "stencils/pid/flow_sensors.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 10910,
+      "sha256": "05a9c9a854e7a592360a38a9a84388f075c0279c60af7e8b6b8aebe790869a76"
+    },
+    {
+      "logicalPath": "stencils/pid/heat_exchangers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 27985,
+      "sha256": "44a7aa1b4a58c7c94275da5dee7ac4ae8994062df85364f27b93f7256e475256"
+    },
+    {
+      "logicalPath": "stencils/pid/instruments.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 19591,
+      "sha256": "e2d6dc90bcdf11c802d54c72d894fdd60694684e02ea69695ba0641db9e2bfd4"
+    },
+    {
+      "logicalPath": "stencils/pid/misc.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 75720,
+      "sha256": "c02eb8c17b3126bc086e7e3f7c896436114da79e2be838041006fa2a9ebebac0"
+    },
+    {
+      "logicalPath": "stencils/pid/mixers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 3079,
+      "sha256": "55678843bed9717c6c00175e8bc4c4a3575c87673f074eb9056595999656e6c8"
+    },
+    {
+      "logicalPath": "stencils/pid/piping.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 27353,
+      "sha256": "a731a1bf4fd0d339bcb937c383e96f0f3c53ae7d8169bc711aa9ca45b8b8a14f"
+    },
+    {
+      "logicalPath": "stencils/pid/pumps_din.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 7060,
+      "sha256": "d8dbae6083b10621ec4f24efc85b6c8d62ae72fc6feb201d94c9e89b6df8c7a6"
+    },
+    {
+      "logicalPath": "stencils/pid/pumps_iso.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 6538,
+      "sha256": "7adab054e7a442d12d885ef11edd2fb4ccffcf77804290e9cd3e46462122cdf8"
+    },
+    {
+      "logicalPath": "stencils/pid/pumps.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 23151,
+      "sha256": "0fc500774157f4cee50ff7e7ebb976f99468e31470bbc56a89a85bf8999fe098"
+    },
+    {
+      "logicalPath": "stencils/pid/separators.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 19057,
+      "sha256": "ad9084ebcc2d77825f0d766a6da54aa223e5964f8d4d528b50827e24f7dc4c55"
+    },
+    {
+      "logicalPath": "stencils/pid/shaping_machines.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 5765,
+      "sha256": "eed8375e325ec64428b76cf6dfa0f4cc642f468a62e48fc348f46a817d0a87fb"
+    },
+    {
+      "logicalPath": "stencils/pid/valves.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 28023,
+      "sha256": "c334879f3b663fe49830a850b239db9daddaecb0e63b0e08117c768ad2628e17"
+    },
+    {
+      "logicalPath": "stencils/pid/vessels.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 61723,
+      "sha256": "b4f54973e4c55fa0e859450474f39639bb6854698f9ac8d2628a8fa7ba3f2a07"
+    },
+    {
+      "logicalPath": "stencils/rack/apc.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 9876,
+      "sha256": "f24d02c5f6a25bf8157288c90ccae59bd509f09c102dfffcfad7b23397706292"
+    },
+    {
+      "logicalPath": "stencils/rack/cisco.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 546666,
+      "sha256": "92be5331ca5d7d5ba0639fe0ae94fc0ed0dbcc9ce41eb40eaa68923cad842556"
+    },
+    {
+      "logicalPath": "stencils/rack/dell.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 197076,
+      "sha256": "f1de0d96d95fce60762be844aee4dbf730fb061d6bfd35da90bb72579ac9b90d"
+    },
+    {
+      "logicalPath": "stencils/rack/f5.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 287827,
+      "sha256": "4abd8702c7ff8ed2e3fd07ca3a296222650d8553e7c9847b689e2508373f2d9a"
+    },
+    {
+      "logicalPath": "stencils/rack/general.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 137940,
+      "sha256": "8304f4fe5eec21b31c4108128479a9d36448a95b70ddcc0d6917a07fe65d4e7f"
+    },
+    {
+      "logicalPath": "stencils/rack/hp.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 64686,
+      "sha256": "4c3cb0caee2c61a28accf1e207d04fd71f1bf4e681a9f2c4a582552bc070cebc"
+    },
+    {
+      "logicalPath": "stencils/rack/hpe_aruba/gateways_controllers.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 313881,
+      "sha256": "87d615b7e29f4043d819229fe84ab03aaf61f2ce340bc3ba98b4f978a1db65a8"
+    },
+    {
+      "logicalPath": "stencils/rack/hpe_aruba/security.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 97778,
+      "sha256": "d32e462c3ee7fa3190ce20edd6a4429f1cfad68d7c55597b7d74ba4e2c831ec2"
+    },
+    {
+      "logicalPath": "stencils/rack/hpe_aruba/switches.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 3807659,
+      "sha256": "fd0620bc7f0d56084de04f62136584baeb86d3543ee3d332cc06ea1d59f4aed4"
+    },
+    {
+      "logicalPath": "stencils/rack/ibm.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 82572,
+      "sha256": "bba6454ab14d119649a2ebf43b3e50e2a3f42caa454a012c36a1bb5920bf4c03"
+    },
+    {
+      "logicalPath": "stencils/rack/oracle.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 174485,
+      "sha256": "5954d254ff2f8df8ff7ebfaccb4a87b30b8371dc36ced59be5740edbf05f0b06"
+    },
+    {
+      "logicalPath": "stencils/salesforce.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 512217,
+      "sha256": "1cfc80dbb2dfca37f22bf6143f413dec578fd74aaf296236138d5336e1a08b62"
+    },
+    {
+      "logicalPath": "stencils/signs/animals.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 75519,
+      "sha256": "5f547b4a9fb4750d233dd7b45210c9e2caa1145fce939dfa1527e3f7c497a806"
+    },
+    {
+      "logicalPath": "stencils/signs/food.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 23576,
+      "sha256": "65e2c7e632618cffdfd0feb8a87b606ec8733f4377fb0175302952e2f99969cc"
+    },
+    {
+      "logicalPath": "stencils/signs/healthcare.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 247271,
+      "sha256": "87d0d90557d2886ae329722b3f3f6255177c33ccd51b889d36ae38483880897a"
+    },
+    {
+      "logicalPath": "stencils/signs/nature.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 36078,
+      "sha256": "360d6ec2ccc3bd33504e6cfa470be35bac0bf7e9fdd9b90262f27bfda2becfb9"
+    },
+    {
+      "logicalPath": "stencils/signs/people.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 59999,
+      "sha256": "dcb0b369c68b515293e3d624bd5b5855d9de2003e4268cd07d9922129bcede9c"
+    },
+    {
+      "logicalPath": "stencils/signs/safety.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 67582,
+      "sha256": "c4064c968111dc608158ab44871e4488b5b83ece5159770979e770460a98675e"
+    },
+    {
+      "logicalPath": "stencils/signs/science.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 18648,
+      "sha256": "506dde82b57b530a69e5cd1ff6560b1adc9c6ac67d08db62fd7c9649dff337e5"
+    },
+    {
+      "logicalPath": "stencils/signs/sports.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 270168,
+      "sha256": "0d993702c4d7bdae9fbd921650857b5756e675e60a1155e87380c3861a01b141"
+    },
+    {
+      "logicalPath": "stencils/signs/tech.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 60640,
+      "sha256": "4042f342cf7e9bc38026066799892477368af8b7110cd46baf82c8c5d9577316"
+    },
+    {
+      "logicalPath": "stencils/signs/transportation.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 268244,
+      "sha256": "3c7451c5dd0169c7a00c6f217aff7a9416af3e7354104b257266a8d04a452611"
+    },
+    {
+      "logicalPath": "stencils/signs/travel.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 135471,
+      "sha256": "161a7d239c2b55e609b277259f4309be598f7acbc7425102869bb0344c90aa60"
+    },
+    {
+      "logicalPath": "stencils/sitemap.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 191218,
+      "sha256": "14bfe300abd5c35cb334285c755767cd8ae719166d72861e60595217f0f2bc7a"
+    },
+    {
+      "logicalPath": "stencils/veeam/2d.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 519774,
+      "sha256": "d3ac1f162ea130ae797b1c9f1ac58b32064844aab74807dee22204b37d08c123"
+    },
+    {
+      "logicalPath": "stencils/veeam/3d.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 447234,
+      "sha256": "a007327157ff1045277fd08f1cc219601b6ffb81a59aeb815b21724dbecadc6e"
+    },
+    {
+      "logicalPath": "stencils/veeam/veeam.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 578311,
+      "sha256": "1c50a1ab968132fddc9683b3f8cb5ebe1397869a45b4c37e6330ff5f31a5e4f2"
+    },
+    {
+      "logicalPath": "stencils/veeam/veeam2.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 1025526,
+      "sha256": "724f2924905188efa37a260671a4382074b8761a091e908feaa1b3bd91c56245"
+    },
+    {
+      "logicalPath": "stencils/vvd.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 648685,
+      "sha256": "2d10a3c90f1d1daa9f0a51d3c860595a37b1fa3e44b56139f5dfeec3754bf1f0"
+    },
+    {
+      "logicalPath": "stencils/webicons.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 852186,
+      "sha256": "597e210504915905df313be2cc786c100f7fc6010f33946e7c8e42d9e7e0237d"
+    },
+    {
+      "logicalPath": "stencils/weblogos.xml",
+      "sourceKind": "drawio-stencils",
+      "byteSize": 682627,
+      "sha256": "0bfb3f71fef8b8354d338a48158090d73dd29f7b146ebc80ce63d5720c4c4fa4"
+    },
+    {
+      "logicalPath": "ti/gratis-vektor/p3/7570850-backend-entwicklungszeilensymbol-vektor.jpg",
+      "sourceKind": "ti",
+      "byteSize": 80078,
+      "sha256": "5e2de4a6b7bee81ef777c65a04c5c17d5e6490901c0992b53db06b4212df6808"
+    },
+    {
+      "logicalPath": "wikipedia/commons/f/fd/Ghostscript_Tiger.svg",
+      "sourceKind": "wikipedia",
+      "byteSize": 68630,
+      "sha256": "5211e169283f43ab8ad7ea7998d917d5fbb3c568ac85c1a0217e86792822684d"
+    },
+    {
+      "logicalPath": "wikipedia/commons/f/ff/Horse_clipart.svg",
+      "sourceKind": "wikipedia",
+      "byteSize": 52369,
+      "sha256": "af896a042f4a8f40aa841aad95d2805b905252f97fdab720f89de921d83a2976"
+    },
+    {
+      "logicalPath": "wikipedia/commons/thumb/f/ff/Horse_clipart.svg/512px-Horse_clipart.svg.png",
+      "sourceKind": "wikipedia",
+      "byteSize": 124794,
+      "sha256": "bfffb50def70b9b2361aa256d33cb54b7573cb890f17dfca07e9448442212ab4"
+    },
+    {
+      "logicalPath": "wikipedia/de/8/89/FirefoxLogo.svg",
+      "sourceKind": "wikipedia",
+      "byteSize": 10472,
+      "sha256": "f31b10673f2e62510a18cb79c32555d88aa806ede13b128e3e7e3072bfc05cbc"
+    }
+  ]
+}
