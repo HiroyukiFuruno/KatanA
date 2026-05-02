@@ -1,0 +1,19 @@
+# 12.2. Gitグラフ（マルチブランチ）
+
+~~~mermaid
+gitGraph
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit
+    branch feature
+    checkout feature
+    commit
+    commit
+    checkout main
+    merge feature
+~~~

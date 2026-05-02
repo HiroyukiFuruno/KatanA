@@ -17,6 +17,6 @@ quadrantChart
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 17.1. Quadrant Chart (Simple)](official-light/17-01-quadrant-chart-simple.png)
+![公式Mermaid.js描画: 17.1. Quadrant Chart (Simple)](official-dark/17-01-quadrant-chart-simple.png)
 
 <!-- katana-mermaid-official:end -->

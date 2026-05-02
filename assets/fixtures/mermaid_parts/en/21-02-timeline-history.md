@@ -14,6 +14,6 @@ timeline
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 21.2. Timeline (History)](official-light/21-02-timeline-history.png)
+![公式Mermaid.js描画: 21.2. Timeline (History)](official-dark/21-02-timeline-history.png)
 
 <!-- katana-mermaid-official:end -->

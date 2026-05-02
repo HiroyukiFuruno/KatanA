@@ -11,6 +11,6 @@ graph TD
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 2. Graph](official-light/02-graph.png)
+![公式Mermaid.js描画: 2. Graph](official-dark/02-graph.png)
 
 <!-- katana-mermaid-official:end -->

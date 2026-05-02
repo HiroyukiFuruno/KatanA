@@ -27,6 +27,6 @@ ishikawa-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 13.2. Ishikawa Diagram (4 categories)](official-light/13-02-ishikawa-diagram-4-categories.png)
+![公式Mermaid.js描画: 13.2. Ishikawa Diagram (4 categories)](official-dark/13-02-ishikawa-diagram-4-categories.png)
 
 <!-- katana-mermaid-official:end -->

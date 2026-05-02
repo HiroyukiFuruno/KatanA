@@ -40,6 +40,6 @@ C4Context
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 8.2. C4 Context (Full)](official-light/08-02-c4-context-full.png)
+![公式Mermaid.js描画: 8.2. C4 Context (Full)](official-dark/08-02-c4-context-full.png)
 
 <!-- katana-mermaid-official:end -->

@@ -18,6 +18,6 @@ treeView-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 22.2. Tree View (File system)](official-light/22-02-tree-view-file-system.png)
+![公式Mermaid.js描画: 22.2. Tree View (File system)](official-dark/22-02-tree-view-file-system.png)
 
 <!-- katana-mermaid-official:end -->

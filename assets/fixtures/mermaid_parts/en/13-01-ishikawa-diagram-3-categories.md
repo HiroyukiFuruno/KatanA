@@ -18,6 +18,6 @@ ishikawa-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 13.1. Ishikawa Diagram (3 categories)](official-light/13-01-ishikawa-diagram-3-categories.png)
+![公式Mermaid.js描画: 13.1. Ishikawa Diagram (3 categories)](official-dark/13-01-ishikawa-diagram-3-categories.png)
 
 <!-- katana-mermaid-official:end -->

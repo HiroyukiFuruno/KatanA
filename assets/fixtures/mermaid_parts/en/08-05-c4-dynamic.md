@@ -12,6 +12,6 @@ C4Dynamic
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 8.5. C4 Dynamic](official-light/08-05-c4-dynamic.png)
+![公式Mermaid.js描画: 8.5. C4 Dynamic](official-dark/08-05-c4-dynamic.png)
 
 <!-- katana-mermaid-official:end -->

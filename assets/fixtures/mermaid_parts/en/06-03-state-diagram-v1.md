@@ -14,6 +14,6 @@ stateDiagram
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 6.3. State Diagram v1](official-light/06-03-state-diagram-v1.png)
+![公式Mermaid.js描画: 6.3. State Diagram v1](official-dark/06-03-state-diagram-v1.png)
 
 <!-- katana-mermaid-official:end -->

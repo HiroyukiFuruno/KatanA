@@ -16,6 +16,6 @@ C4Component
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 8.4. C4 Component](official-light/08-04-c4-component.png)
+![公式Mermaid.js描画: 8.4. C4 Component](official-dark/08-04-c4-component.png)
 
 <!-- katana-mermaid-official:end -->

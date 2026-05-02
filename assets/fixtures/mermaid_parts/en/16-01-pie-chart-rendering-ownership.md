@@ -11,6 +11,6 @@ pie title Rendering ownership
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 16.1. Pie Chart (Rendering ownership)](official-light/16-01-pie-chart-rendering-ownership.png)
+![公式Mermaid.js描画: 16.1. Pie Chart (Rendering ownership)](official-dark/16-01-pie-chart-rendering-ownership.png)
 
 <!-- katana-mermaid-official:end -->

@@ -21,6 +21,6 @@ requirementDiagram
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 19.1. Requirement Diagram (Single)](official-light/19-01-requirement-diagram-single.png)
+![公式Mermaid.js描画: 19.1. Requirement Diagram (Single)](official-dark/19-01-requirement-diagram-single.png)
 
 <!-- katana-mermaid-official:end -->

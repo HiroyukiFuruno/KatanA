@@ -21,6 +21,6 @@ quadrantChart
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 17.2. Quadrant Chart (Campaigns)](official-light/17-02-quadrant-chart-campaigns.png)
+![公式Mermaid.js描画: 17.2. Quadrant Chart (Campaigns)](official-dark/17-02-quadrant-chart-campaigns.png)
 
 <!-- katana-mermaid-official:end -->

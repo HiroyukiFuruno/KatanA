@@ -18,6 +18,6 @@ radar-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 18.2. Radar Chart (6 axes)](official-light/18-02-radar-chart-6-axes.png)
+![公式Mermaid.js描画: 18.2. Radar Chart (6 axes)](official-dark/18-02-radar-chart-6-axes.png)
 
 <!-- katana-mermaid-official:end -->

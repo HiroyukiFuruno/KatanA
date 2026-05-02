@@ -13,6 +13,6 @@ flowchart TD
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 1. Flowchart](official-light/01-flowchart.png)
+![公式Mermaid.js描画: 1. Flowchart](official-dark/01-flowchart.png)
 
 <!-- katana-mermaid-official:end -->

@@ -13,6 +13,6 @@ stateDiagram-v2
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 6.1. State Diagram v2 (Failure path)](official-light/06-01-state-diagram-v2-failure-path.png)
+![公式Mermaid.js描画: 6.1. State Diagram v2 (Failure path)](official-dark/06-01-state-diagram-v2-failure-path.png)
 
 <!-- katana-mermaid-official:end -->
