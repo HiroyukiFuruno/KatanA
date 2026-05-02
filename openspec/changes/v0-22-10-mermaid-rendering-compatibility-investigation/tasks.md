@@ -306,7 +306,7 @@ fixture と証跡から、今回 KatanA renderer に取り込む差分、後続 
 - [/] 7.51 再フィードバック: Mermaid 公式比較を目視だけに頼らず、公式画像と KatanA 画像を同一サイズへ正規化したうえで、100点満点の一致度スコアを出し、目安 99 点で機械判定できるようにする
 - [/] 7.52 再フィードバック: `assets/fixtures/sample_mermaid_all.md` の 19 Kanban と 12 Mindmap で、文字位置や余白（margin）の一部が公式 Mermaid.js 描画と一致していない。スコア評価でこのズレを検知できるようにする
 - [/] 7.53 再フィードバック: Kanban は単純な `assets/fixtures/mermaid_all/19-kanban.md` ではなく、`assets/fixtures/mermaid.md` の 15 kanban にある長文カード、チケット番号、担当者、複数列を含む複雑ケースを主対象として検証する
-- [ ] 7.54 再フィードバック: スコア評価で検知できるだけでは不十分である。評価方式は正しい前提で扱い、対象図について描画差分を修正する。v0.22.10 ではまず公式ドキュメント由来の Draw.io fixture 全体を図として認識できる 85 点以上へ寄せる。日本語版（ja）評価、99 点到達、採点ゲート化は `katana-renderer` 分離後の責務として劣後にする
+- [/] 7.54 再フィードバック: スコア評価で検知できるだけでは不十分である。評価方式は正しい前提で扱い、対象図について描画差分を修正する。v0.22.10 ではまず公式ドキュメント由来の Draw.io fixture 全体を図として認識できる 85 点以上へ寄せる。日本語版（ja）評価、99 点到達、採点ゲート化は `katana-renderer` 分離後の責務として劣後にする。2026-05-02 時点の全体再評価では、`assets/fixtures/drawio/official` 配下 24 ディレクトリすべてが 85 点以上で、最小は `templates/infographic` の `infographic_8` 86.29 点
 - [/] 7.55 再フィードバック: `assets/fixtures/mermaid.md` の preview で Mermaid 図が全体的に `not supported` と表示されるデグレードが発生している。個別 SVG 生成だけでなく Markdown preview 経由で再現・修正する
 - [/] 7.45 再フィードバック: `assets/fixtures/mermaid.md` の 15 kanban で、カード内文字列が上下中央ではなく左上寄せになっていない
 - [/] 7.46 再フィードバック: `assets/fixtures/mermaid.md` の 26 venn-beta で、円の枠線と枠内の色が公式表示と異なる

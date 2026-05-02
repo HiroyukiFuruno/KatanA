@@ -1,0 +1,29 @@
+# 7.2. マインドマップ（アイコン付き）
+
+~~~mermaid
+mindmap
+  root((マインドマップ))
+    起源
+      長い歴史
+      ::icon(fa fa-book)
+      普及
+        英国の人気心理学者トニー・ブザン
+    研究
+      効果と特徴<br/>に関する研究
+      自動生成に関する研究
+        用途
+            創造的技法
+            戦略的計画
+            論点整理
+    ツール
+      紙とペン
+      Mermaid
+~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 7.2. マインドマップ（アイコン付き）](official-dark/07-02-mindmap.png)
+
+<!-- katana-mermaid-official:end -->

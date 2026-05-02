@@ -34,7 +34,12 @@ impl MermaidRuntimeScripts {
             DiagramRuntimeScript::borrowed("svg-class-fixes.js", SVG_CLASS_FIXES),
             DiagramRuntimeScript::borrowed("svg-visual-fixes.js", SVG_VISUAL_FIXES),
             DiagramRuntimeScript::borrowed("svg-review-fixes.js", SVG_REVIEW_FIXES),
-            DiagramRuntimeScript::borrowed("svg-review-shape-fixes.js", SVG_REVIEW_SHAPE_FIXES),
+            DiagramRuntimeScript::borrowed(
+                "svg-review-ishikawa-fixes.js",
+                SVG_REVIEW_ISHIKAWA_FIXES,
+            ),
+            DiagramRuntimeScript::borrowed("svg-review-venn-fixes.js", SVG_REVIEW_VENN_FIXES),
+            DiagramRuntimeScript::borrowed("svg-review-treemap-fixes.js", SVG_REVIEW_TREEMAP_FIXES),
             DiagramRuntimeScript::borrowed("svg-kanban-text.js", SVG_KANBAN_TEXT),
             DiagramRuntimeScript::borrowed("svg-kanban-viewbox.js", SVG_KANBAN_VIEWBOX),
             DiagramRuntimeScript::borrowed("svg-kanban-label-layout.js", SVG_KANBAN_LABEL_LAYOUT),
@@ -87,7 +92,9 @@ const SVG_ER_FIXES: &str = include_str!("js_runtime/svg_er_fixes.js");
 const SVG_CLASS_FIXES: &str = include_str!("js_runtime/svg_class_fixes.js");
 const SVG_VISUAL_FIXES: &str = include_str!("js_runtime/svg_visual_fixes.js");
 const SVG_REVIEW_FIXES: &str = include_str!("js_runtime/svg_review_fixes.js");
-const SVG_REVIEW_SHAPE_FIXES: &str = include_str!("js_runtime/svg_review_shape_fixes.js");
+const SVG_REVIEW_ISHIKAWA_FIXES: &str = include_str!("js_runtime/svg_review_ishikawa_fixes.js");
+const SVG_REVIEW_VENN_FIXES: &str = include_str!("js_runtime/svg_review_venn_fixes.js");
+const SVG_REVIEW_TREEMAP_FIXES: &str = include_str!("js_runtime/svg_review_treemap_fixes.js");
 const SVG_KANBAN_TEXT: &str = include_str!("js_runtime/svg_kanban_text.js");
 const SVG_KANBAN_VIEWBOX: &str = include_str!("js_runtime/svg_kanban_viewbox.js");
 const SVG_KANBAN_LABEL_LAYOUT: &str = include_str!("js_runtime/svg_kanban_label_layout.js");

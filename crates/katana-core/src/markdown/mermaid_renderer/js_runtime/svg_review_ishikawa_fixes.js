@@ -33,17 +33,51 @@ function katanaIshikawaHeadLines(group) {
 
 function katanaIshikawaHeadWidth(lines) {
   const lineWidth = Math.max(0, ...lines.map((line) => katanaTextWidth(line)));
-  return Math.max(144, Math.ceil(lineWidth + 64));
+  return Math.max(144, Math.ceil(lineWidth + katanaIshikawaHeadHorizontalPadding(lines)));
 }
 
 function katanaIshikawaHeadHeight(lines) {
-  return Math.max(105.6, Math.max(1, lines.length) * 16.8 + 72);
+  return Math.max(
+    katanaIshikawaHeadMinimumHeight(lines),
+    Math.max(1, lines.length) * 16.8 + katanaIshikawaHeadVerticalPadding(lines),
+  );
+}
+
+function katanaIshikawaHeadHorizontalPadding(lines) {
+  return KATANA_ISHIKAWA_HEAD_HORIZONTAL_PADDING[Number(lines.length > 1)];
+}
+
+function katanaIshikawaHeadVerticalPadding(lines) {
+  return KATANA_ISHIKAWA_HEAD_VERTICAL_PADDING[Number(lines.length > 1)];
+}
+
+function katanaIshikawaHeadMinimumHeight(lines) {
+  return KATANA_ISHIKAWA_HEAD_MINIMUM_HEIGHT[Number(lines.length > 1)];
 }
 
 function katanaIshikawaHeadPath(width, height) {
   const halfHeight = katanaFormatIshikawaNumber(height / 2);
   return `M 0 -${halfHeight} L 0 ${halfHeight} Q ${katanaFormatIshikawaNumber(width)} 0 0 -${halfHeight} Z`;
 }
+
+const KATANA_ISHIKAWA_HEAD_HORIZONTAL_PADDING = [
+  // WHY: Mermaid.js keeps one-line review heads compact; widening them regresses localized labels.
+  48,
+  // WHY: Two-line review heads need extra room so long labels stay inside the fish-head shape.
+  64,
+];
+
+const KATANA_ISHIKAWA_HEAD_VERTICAL_PADDING = [
+  55.2,
+  // WHY: Mermaid.js uses a taller envelope for wrapped fish-head labels.
+  72,
+];
+
+const KATANA_ISHIKAWA_HEAD_MINIMUM_HEIGHT = [
+  72,
+  // WHY: This is the browser-measured height for the accepted two-line "Blurry Photo" case.
+  105.6,
+];
 
 function katanaIshikawaHeadTextTag(attributes) {
   const cleaned = attributes
@@ -114,94 +148,4 @@ function katanaIshikawaViewBox(viewBox, contentBox) {
     katanaFormatIshikawaNumber(right - left),
     katanaFormatIshikawaNumber(bottom - top),
   ];
-}
-
-function katanaNormalizeVennReviewSvg(svg, request) {
-  return katanaShouldNormalizeVennReviewSvg(svg)
-    ? katanaNormalizeVennReviewTheme(katanaNormalizeVennReviewPaths(svg), request)
-    : svg;
-}
-
-function katanaShouldNormalizeVennReviewSvg(svg) {
-  return [svg.includes('aria-roledescription="venn"'), katanaIsRendererScopeVenn(svg)].every(
-    Boolean,
-  );
-}
-
-function katanaIsRendererScopeVenn(svg) {
-  return [
-    svg.includes("Renderer scope"),
-    svg.includes('data-venn-sets="official"'),
-    svg.includes('data-venn-sets="rust"'),
-  ].every(Boolean);
-}
-
-function katanaNormalizeVennReviewPaths(svg) {
-  return katanaVennPath(svg, "venn-set-0", "rgb(122,122,122)", "0.1").replace(
-    /(<g class="venn-area venn-circle venn-set-1"[\s\S]*?<path\b)([^>]*)(>)/,
-    (_match, start, attributes, end) =>
-      `${start}${katanaReviewPathAttrs(attributes, "rgb(164,0,0)", "0.1")}${end}`,
-  );
-}
-
-function katanaNormalizeVennReviewTheme(svg, request) {
-  if (request.theme !== "dark") {
-    return svg;
-  }
-  return katanaInsertSvgBackground(svg, "#1e1e1e");
-}
-
-function katanaInsertSvgBackground(svg, color) {
-  return svg.replace(
-    /(<svg\b[^>]*>)/,
-    `$1${katanaSvgBackgroundRect(katanaBackgroundViewBox(svg), color)}`,
-  );
-}
-
-function katanaBackgroundViewBox(svg) {
-  if (typeof katanaReadViewBox !== "function") {
-    return null;
-  }
-  return katanaReadViewBox(svg);
-}
-
-function katanaSvgBackgroundRect(viewBox, color) {
-  if (viewBox) {
-    return `<rect x="${viewBox[0]}" y="${viewBox[1]}" width="${viewBox[2]}" height="${viewBox[3]}" fill="${color}"></rect>`;
-  }
-  return `<rect width="100%" height="100%" fill="${color}"></rect>`;
-}
-
-function katanaVennPath(svg, className, color, opacity) {
-  const pattern = new RegExp(
-    `(<g class="venn-area venn-circle ${className}"[\\s\\S]*?<path\\b)([^>]*)(>)`,
-  );
-  return svg.replace(
-    pattern,
-    (_match, start, attributes, end) =>
-      `${start}${katanaReviewPathAttrs(attributes, color, opacity)}${end}`,
-  );
-}
-
-function katanaNormalizeTreemapReviewSvg(svg) {
-  if (!svg.includes('aria-roledescription="treemap"')) {
-    return svg;
-  }
-  return svg
-    .replace(
-      /<text\b([^>]*class="treemapLabel"[^>]*)>Cache<\/text>/g,
-      katanaTreemapCacheLabelReplacement,
-    )
-    .replace(
-      /<text\b([^>]*class="treemapValue"[^>]*x="44\.5"[^>]*)>10<\/text>/g,
-      katanaTreemapCacheValueReplacement,
-    );
-}
-
-function katanaTreemapCacheLabelReplacement(_match, attributes) {
-  return `<text${attributes.replace(/font-size:\s*38px/g, "font-size: 29px")}>Cache</text>`;
-}
-
-function katanaTreemapCacheValueReplacement(_match, attributes) {
-  return `<text${attributes.replace(/font-size:\s*28px/g, "font-size: 17px")}>10</text>`;
 }

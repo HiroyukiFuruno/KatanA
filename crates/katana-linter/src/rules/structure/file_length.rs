@@ -46,7 +46,7 @@ impl FileLengthOps {
                 line: 1,
                 column: 1,
                 message: format!(
-                    "File exceeds {max_allowed}-line limit (current: {lines}, excluding tests). Split into smaller modules."
+                    "File exceeds {max_allowed}-line limit (current: {lines}, excluding tests). Treat this as a responsibility-boundary failure: split by cohesive concerns, not by moving arbitrary lines."
                 ),
             });
         }

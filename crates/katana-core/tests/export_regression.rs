@@ -291,13 +291,13 @@ fn image_export_writes_native_jpeg_without_chromium() {
 }
 
 #[test]
-fn sample_mermaid_all_exports_html_pdf_png_and_jpeg_without_chromium() {
+fn sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium() {
     let _guard = RENDER_ENV_LOCK.lock().unwrap();
     if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
         return;
     }
     let output = MarkdownRenderOps::render_with_katana_renderer(include_str!(
-        "../../../assets/fixtures/sample_mermaid_all.md"
+        "../../../assets/fixtures/sample_mermaid.md"
     ))
     .unwrap();
     assert!(!output.html.contains("language-mermaid"));
@@ -363,14 +363,14 @@ fn mermaid_fixture_html_export_uses_unique_inline_svg_ids() {
         return;
     }
     let output = MarkdownRenderOps::render_with_katana_renderer(include_str!(
-        "../../../assets/fixtures/mermaid.md"
+        "../../../assets/fixtures/sample_mermaid.md"
     ))
     .unwrap();
 
     let ids = inline_svg_ids(&output.html);
     assert!(
         ids.len() >= 28,
-        "assets/fixtures/mermaid.md should render the supported Mermaid diagrams as inline SVG"
+        "assets/fixtures/sample_mermaid.md should render the supported Mermaid diagrams as inline SVG"
     );
     assert_unique_inline_svg_ids(&ids);
 }

@@ -4,6 +4,7 @@ use crate::markdown::MarkdownError;
 
 const IMAGE_SCALE_RATIO: f32 = 0.75;
 const LETTER_PAGE_HEIGHT_RATIO: f32 = 11.0 / 8.5;
+const PDF_PAGE_TREE_OBJECT_ID: usize = 3;
 
 impl PdfExporter {
     pub fn is_available() -> bool {
@@ -133,11 +134,11 @@ impl NativePdfDocument {
     }
 
     fn page_object_id(page_index: usize) -> usize {
-        page_index + 3
+        page_index + PDF_PAGE_TREE_OBJECT_ID
     }
 
     fn image_object_id(page_count: usize) -> usize {
-        page_count + 3
+        page_count + PDF_PAGE_TREE_OBJECT_ID
     }
 
     fn content_object_id(page_count: usize, page_index: usize) -> usize {
