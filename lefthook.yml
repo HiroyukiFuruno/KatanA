@@ -7,8 +7,10 @@ pre-commit:
   parallel: false
   commands:
     formatting:
-      glob: "*.rs"
       run: make fmt
+    biome-js-lint:
+      glob: "*.{js,ts}"
+      run: make biome-js-lint
     clippy:
       glob: "crates/**/*.{rs,toml,lock}"
       run: make lint
