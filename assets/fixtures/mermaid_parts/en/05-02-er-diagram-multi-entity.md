@@ -30,6 +30,6 @@ erDiagram
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 5.2. ER Diagram (Multi-entity)](official-dark/05-02-er-diagram-multi-entity.png)
+![公式Mermaid.js描画: 5.2. ER Diagram (Multi-entity)](official-light/05-02-er-diagram-multi-entity.png)
 
 <!-- katana-mermaid-official:end -->

@@ -12,6 +12,6 @@ sequenceDiagram
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 4.2. Sequence Diagram (Activate/Deactivate)](official-dark/04-02-sequence-diagram-activate-deactivate.png)
+![公式Mermaid.js描画: 4.2. Sequence Diagram (Activate/Deactivate)](official-light/04-02-sequence-diagram-activate-deactivate.png)
 
 <!-- katana-mermaid-official:end -->

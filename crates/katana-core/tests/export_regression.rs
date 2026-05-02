@@ -300,7 +300,9 @@ fn sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium() {
         "../../../assets/fixtures/sample_mermaid.md"
     ))
     .unwrap();
-    assert!(!output.html.contains("language-mermaid"));
+    let raw_mermaid_count = output.html.matches("language-mermaid").count();
+    assert_eq!(raw_mermaid_count, 2);
+    assert!(output.html.contains("zenuml"));
     assert!(!output.html.contains("katana-diagram-error"));
     assert!(
         output.html.matches("<svg").count() >= 26,

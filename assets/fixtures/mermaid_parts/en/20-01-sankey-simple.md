@@ -13,6 +13,6 @@ SVG,Preview,4
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 20.1. Sankey (Simple)](official-dark/20-01-sankey-simple.png)
+![公式Mermaid.js描画: 20.1. Sankey (Simple)](official-light/20-01-sankey-simple.png)
 
 <!-- katana-mermaid-official:end -->

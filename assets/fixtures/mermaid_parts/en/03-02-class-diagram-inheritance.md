@@ -23,11 +23,3 @@ classDiagram
       +run()
     }
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 3.2. Class Diagram (Inheritance)](official-dark/03-02-class-diagram-inheritance.png)
-
-<!-- katana-mermaid-official:end -->

@@ -14,6 +14,6 @@ gitGraph
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 12.1. Git Graph (Simple)](official-dark/12-01-git-graph-simple.png)
+![公式Mermaid.js描画: 12.1. Git Graph (Simple)](official-light/12-01-git-graph-simple.png)
 
 <!-- katana-mermaid-official:end -->

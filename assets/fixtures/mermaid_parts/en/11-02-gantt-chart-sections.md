@@ -16,6 +16,6 @@ gantt
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 11.2. Gantt Chart (Sections)](official-dark/11-02-gantt-chart-sections.png)
+![公式Mermaid.js描画: 11.2. Gantt Chart (Sections)](official-light/11-02-gantt-chart-sections.png)
 
 <!-- katana-mermaid-official:end -->

@@ -28,6 +28,6 @@ packet
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 15.2. Packet (Full TCP)](official-dark/15-02-packet-full-tcp.png)
+![公式Mermaid.js描画: 15.2. Packet (Full TCP)](official-light/15-02-packet-full-tcp.png)
 
 <!-- katana-mermaid-official:end -->

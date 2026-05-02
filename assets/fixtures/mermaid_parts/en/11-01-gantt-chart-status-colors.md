@@ -15,6 +15,6 @@ gantt
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 11.1. Gantt Chart (Status colors)](official-dark/11-01-gantt-chart-status-colors.png)
+![公式Mermaid.js描画: 11.1. Gantt Chart (Status colors)](official-light/11-01-gantt-chart-status-colors.png)
 
 <!-- katana-mermaid-official:end -->

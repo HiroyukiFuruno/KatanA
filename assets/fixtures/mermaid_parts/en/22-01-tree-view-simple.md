@@ -15,6 +15,6 @@ treeView-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 22.1. Tree View (Simple)](official-dark/22-01-tree-view-simple.png)
+![公式Mermaid.js描画: 22.1. Tree View (Simple)](official-light/22-01-tree-view-simple.png)
 
 <!-- katana-mermaid-official:end -->

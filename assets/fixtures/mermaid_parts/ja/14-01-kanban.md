@@ -14,6 +14,6 @@ kanban
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 14.1. カンバン（シンプル）](official-dark/14-01-kanban.png)
+![公式Mermaid.js描画: 14.1. カンバン（シンプル）](official-light/14-01-kanban.png)
 
 <!-- katana-mermaid-official:end -->

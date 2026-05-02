@@ -22,6 +22,6 @@ gitGraph
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 12.2. Git Graph (Multi-branch)](official-dark/12-02-git-graph-multi-branch.png)
+![公式Mermaid.js描画: 12.2. Git Graph (Multi-branch)](official-light/12-02-git-graph-multi-branch.png)
 
 <!-- katana-mermaid-official:end -->

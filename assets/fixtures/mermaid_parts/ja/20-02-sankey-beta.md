@@ -82,6 +82,6 @@ sankey-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 20.2. サンキー図（大規模）](official-dark/20-02-sankey-beta.png)
+![公式Mermaid.js描画: 20.2. サンキー図（大規模）](official-light/20-02-sankey-beta.png)
 
 <!-- katana-mermaid-official:end -->

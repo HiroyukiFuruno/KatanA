@@ -30,6 +30,6 @@ kanban
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 14.2. Kanban (Full)](official-dark/14-02-kanban-full.png)
+![公式Mermaid.js描画: 14.2. Kanban (Full)](official-light/14-02-kanban-full.png)
 
 <!-- katana-mermaid-official:end -->

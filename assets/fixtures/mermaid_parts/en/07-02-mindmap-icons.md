@@ -19,11 +19,3 @@ mindmap
       Pen and paper
       Mermaid
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 7.2. Mindmap (Icons)](official-dark/07-02-mindmap-icons.png)
-
-<!-- katana-mermaid-official:end -->

@@ -11,6 +11,6 @@ pie title Pets adopted by volunteers
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 16.2. Pie Chart (Pets)](official-dark/16-02-pie-chart-pets.png)
+![公式Mermaid.js描画: 16.2. Pie Chart (Pets)](official-light/16-02-pie-chart-pets.png)
 
 <!-- katana-mermaid-official:end -->

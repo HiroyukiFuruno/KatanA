@@ -19,6 +19,6 @@ C4Container
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 8.3. C4 Container](official-dark/08-03-c4-container.png)
+![公式Mermaid.js描画: 8.3. C4 Container](official-light/08-03-c4-container.png)
 
 <!-- katana-mermaid-official:end -->

@@ -18,6 +18,6 @@ architecture-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 9.2. アーキテクチャ図（マルチサービス）](official-dark/09-02-architecture-beta.png)
+![公式Mermaid.js描画: 9.2. アーキテクチャ図（マルチサービス）](official-light/09-02-architecture-beta.png)
 
 <!-- katana-mermaid-official:end -->

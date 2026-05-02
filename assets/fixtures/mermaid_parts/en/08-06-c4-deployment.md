@@ -12,6 +12,6 @@ C4Deployment
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 8.6. C4 Deployment](official-dark/08-06-c4-deployment.png)
+![公式Mermaid.js描画: 8.6. C4 Deployment](official-light/08-06-c4-deployment.png)
 
 <!-- katana-mermaid-official:end -->

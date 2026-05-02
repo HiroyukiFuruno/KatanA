@@ -15,6 +15,6 @@ timeline
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 21.1. Timeline (Phases)](official-dark/21-01-timeline-phases.png)
+![公式Mermaid.js描画: 21.1. Timeline (Phases)](official-light/21-01-timeline-phases.png)
 
 <!-- katana-mermaid-official:end -->

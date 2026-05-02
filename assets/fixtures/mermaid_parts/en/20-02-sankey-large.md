@@ -82,6 +82,6 @@ Wind,Electricity grid,289.366
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 20.2. Sankey (Large)](official-dark/20-02-sankey-large.png)
+![公式Mermaid.js描画: 20.2. Sankey (Large)](official-light/20-02-sankey-large.png)
 
 <!-- katana-mermaid-official:end -->

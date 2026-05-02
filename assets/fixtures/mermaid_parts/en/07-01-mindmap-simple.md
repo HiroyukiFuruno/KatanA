@@ -13,11 +13,3 @@ mindmap
       Layout
       Color
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 7.1. Mindmap (Simple)](official-dark/07-01-mindmap-simple.png)
-
-<!-- katana-mermaid-official:end -->

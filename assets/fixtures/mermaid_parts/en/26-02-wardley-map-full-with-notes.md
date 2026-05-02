@@ -36,6 +36,6 @@ note "A generic note appeared" [0.23, 0.33]
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 26.2. Wardley Map (Full with notes)](official-dark/26-02-wardley-map-full-with-notes.png)
+![公式Mermaid.js描画: 26.2. Wardley Map (Full with notes)](official-light/26-02-wardley-map-full-with-notes.png)
 
 <!-- katana-mermaid-official:end -->

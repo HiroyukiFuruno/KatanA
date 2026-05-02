@@ -11,6 +11,6 @@ packet-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 15.1. Packet Beta (Short)](official-dark/15-01-packet-beta-short.png)
+![公式Mermaid.js描画: 15.1. Packet Beta (Short)](official-light/15-01-packet-beta-short.png)
 
 <!-- katana-mermaid-official:end -->

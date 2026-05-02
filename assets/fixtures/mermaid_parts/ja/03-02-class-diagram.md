@@ -28,6 +28,6 @@ classDiagram
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 3.2. クラス図（継承）](official-dark/03-02-class-diagram.png)
+![公式Mermaid.js描画: 3.2. クラス図（継承）](official-light/03-02-class-diagram.png)
 
 <!-- katana-mermaid-official:end -->
