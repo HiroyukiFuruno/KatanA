@@ -1,8 +1,7 @@
 # ============================================================
 # KatanA - Development Justfile
 # ============================================================
-# Local just entrypoint.
-# Makefile remains the stable CI/CD and multi-platform entrypoint for now.
+# Stable local, CI/CD, and multi-platform task entrypoint.
 # Usage:
 #   just
 #   just <recipe>

@@ -6,15 +6,16 @@
 #
 #   - Homebrew        : macOS package manager
 #   - git             : Latest Git (via Homebrew)
+#   - just            : Task runner for local development and CI/CD
 #   - rustup          : Rust toolchain manager
 #   - Rust stable     : Compiler + clippy + rustfmt + llvm-tools-preview
 #   - cargo-llvm-cov  : Code coverage (used in CI / pre-push gate)
 #   - cargo-watch     : Auto-rebuild / auto-test on file changes
 #   - cargo-outdated  : Detect stale Cargo dependencies
-#   - cargo-bloat     : Analyse binary size (make bloat)
+#   - cargo-bloat     : Analyse binary size (just bloat)
 #   - cargo-bundle    : macOS .app bundle packaging
 #   - cargo-sweep     : Clean up unused build artifacts
-#   - tokei           : Count lines of source code (make loc)
+#   - tokei           : Count lines of source code (just loc)
 #   - lefthook        : Git hooks runner (pre-commit / pre-push)
 #   - create-dmg      : macOS .dmg installer builder
 #   - rtk             : AI context-aware CLI proxy (mandatory for agents)
@@ -25,7 +26,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 CANONICAL_SKILLS_DIR="${REPO_ROOT}/.agents/skills"
 
 cd "${REPO_ROOT}"
@@ -203,22 +204,25 @@ echo ""
 echo "  ${BOLD}Version control${RESET}"
 echo "    • git (latest, via Homebrew)"
 echo ""
+echo "  ${BOLD}Task runner${RESET}"
+echo "    • just"
+echo ""
 echo "  ${BOLD}Rust toolchain${RESET}"
 echo "    • rustup"
 echo "    • Rust stable (clippy + rustfmt + llvm-tools-preview)"
 echo ""
 echo "  ${BOLD}Cargo extensions${RESET}"
 echo "    • cargo-llvm-cov  (coverage — pre-push gate: 100% line)"
-echo "    • cargo-watch     (make watch / make watch-run)"
-echo "    • cargo-outdated  (make outdated)"
-echo "    • cargo-bloat     (make bloat)"
-echo "    • cargo-bundle    (make package-mac)"
-echo "    • cargo-sweep     (make sweep)"
+echo "    • cargo-watch     (just watch / just watch-run)"
+echo "    • cargo-outdated  (just outdated)"
+echo "    • cargo-bloat     (just bloat)"
+echo "    • cargo-bundle    (just package-mac)"
+echo "    • cargo-sweep     (just sweep)"
 echo ""
 echo "  ${BOLD}Development utilities${RESET}"
-echo "    • tokei           (make loc)"
+echo "    • tokei           (just loc)"
 echo "    • lefthook        (Git hooks: pre-commit + pre-push)"
-echo "    • create-dmg      (make dmg)"
+echo "    • create-dmg      (just dmg)"
 echo ""
 echo "  ${BOLD}AI & Agent utilities${RESET}"
 echo "    • rtk             (AI context-aware CLI proxy — mandatory)"
@@ -269,6 +273,19 @@ else
   info "Installing git via Homebrew..."
   brew install git
   success "git installed ($(git --version))"
+fi
+
+# =============================================================================
+# 2b. just
+# =============================================================================
+header "just"
+
+if command -v just &>/dev/null; then
+  success "just is already installed ($(just --version))"
+else
+  info "Installing just via Homebrew..."
+  brew install just
+  success "just installed ($(just --version))"
 fi
 
 # =============================================================================
@@ -509,6 +526,7 @@ echo ""
 echo "Installed tools:"
 echo "  brew         $(brew --version | head -1)"
 echo "  git          $(git --version)"
+echo "  just         $(just --version)"
 echo "  rustc        $(rustc --version)"
 echo "  cargo        $(cargo --version)"
 echo "  clippy       $(cargo clippy --version)"
@@ -521,9 +539,9 @@ echo "  openspec     $(openspec --version)"
 echo "  rtk          $(rtk --version)"
 echo ""
 echo "Next steps:"
-echo "  make build        # Build the workspace"
-echo "  make test         # Run all tests"
-echo "  make ci           # Full CI check (fmt + clippy + test)"
+echo "  just build        # Build the workspace"
+echo "  just test         # Run the local default test selection"
+echo "  just check        # Run the fast verification gate"
 echo ""
 echo "${YELLOW}Note:${RESET} If 'cargo' commands are not found, restart your shell or run:"
 echo "  source \"\${HOME}/.cargo/env\""

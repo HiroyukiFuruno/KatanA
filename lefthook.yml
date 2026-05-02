@@ -7,16 +7,16 @@ pre-commit:
   parallel: false
   commands:
     formatting:
-      run: make fmt
+      run: just fmt
     biome-js-lint:
       glob: "*.{js,ts}"
-      run: make biome-js-lint
+      run: just biome-js-lint
     clippy:
       glob: "crates/**/*.{rs,toml,lock}"
-      run: make lint
+      run: just lint
     ast-lint:
       glob: "crates/**/*.{rs,toml,lock}"
-      run: make ast-lint
+      run: just ast-lint
 
 pre-push:
   commands:
@@ -26,14 +26,14 @@ pre-push:
         - ref: master
         - ref: release/*
     check-strict:
-      run: make -j 2 check
+      run: just check
       glob: "crates/**/*.{rs,toml,lock}"
       only:
         - ref: master
         - ref: release/*
 
     check-light:
-      run: make check-light
+      run: just check-light
       glob: "crates/**/*.{rs,toml,lock}"
       skip:
         - ref: master
