@@ -84,7 +84,9 @@ impl NativePdfDocument {
     }
 
     fn page_count(&self) -> usize {
-        (self.image_display_height / self.page_height).ceil().max(1.0) as usize
+        (self.image_display_height / self.page_height)
+            .ceil()
+            .max(1.0) as usize
     }
 
     fn pages_object(&self, page_count: usize) -> Vec<u8> {
@@ -95,12 +97,7 @@ impl NativePdfDocument {
         format!("<< /Type /Pages /Kids [{kids}] /Count {page_count} >>").into_bytes()
     }
 
-    fn page_object(
-        &self,
-        page_count: usize,
-        page_index: usize,
-        image_object_id: usize,
-    ) -> Vec<u8> {
+    fn page_object(&self, page_count: usize, page_index: usize, image_object_id: usize) -> Vec<u8> {
         let content_object_id = Self::content_object_id(page_count, page_index);
         format!(
             "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {:.2} {:.2}] /Resources << /XObject << /Im1 {} 0 R >> >> /Contents {} 0 R >>",
@@ -123,8 +120,8 @@ impl NativePdfDocument {
     }
 
     fn content_object(&self, page_index: usize) -> Vec<u8> {
-        let image_y = self.page_height - self.image_display_height
-            + self.page_height * page_index as f32;
+        let image_y =
+            self.page_height - self.image_display_height + self.page_height * page_index as f32;
         let commands = format!(
             "q\n0 0 {:.2} {:.2} re\nW\nn\n{:.2} 0 0 {:.2} 0 {:.2} cm\n/Im1 Do\nQ\n",
             self.page_width, self.page_height, self.page_width, self.image_display_height, image_y
