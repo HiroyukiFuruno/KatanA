@@ -168,7 +168,15 @@ impl EditorContextMenu {
             *action = AppAction::IngestImageFile;
             ui.close();
         }
-        if ui.button(&s.command_ingest_clipboard_image).clicked() {
+        let clipboard_image_available =
+            crate::app::action::clipboard_image::ClipboardImageOps::has_image_payload();
+        if ui
+            .add_enabled(
+                clipboard_image_available,
+                egui::Button::new(&s.command_ingest_clipboard_image),
+            )
+            .clicked()
+        {
             *action = AppAction::IngestClipboardImage;
             ui.close();
         }

@@ -3,7 +3,7 @@ use katana_core::markdown::DiagramKind;
 use katana_core::markdown::outline::OutlineItem;
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
-pub(crate) const DIAGRAM_SVG_DISPLAY_SCALE: f32 = 1.5;
+pub(crate) const DIAGRAM_SVG_DISPLAY_SCALE: f32 = 2.0;
 
 pub(crate) const RENDER_POLL_INTERVAL_MS: u64 = 50;
 

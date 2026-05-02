@@ -11,6 +11,26 @@ pub(crate) struct ClipboardImagePayload {
 pub(crate) struct ClipboardImageOps;
 
 impl ClipboardImageOps {
+    pub(crate) fn has_image_payload() -> bool {
+        if Self::read_arboard_image().is_ok() {
+            return true;
+        }
+        if Self::read_arboard_file_image().is_ok() {
+            return true;
+        }
+        if super::clipboard_file_url::ClipboardFileUrlOps::read_image_payload().is_ok() {
+            return true;
+        }
+        #[cfg(target_os = "macos")]
+        {
+            Self::read_macos_pasteboard_image().is_ok()
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            false
+        }
+    }
+
     pub(crate) fn read_image_payload() -> Result<ClipboardImagePayload, String> {
         let mut errors = Vec::new();
         let image_error = match Self::read_arboard_image() {
@@ -106,7 +126,40 @@ impl ClipboardImageOps {
 
 #[cfg(target_os = "macos")]
 impl ClipboardImageOps {
+    fn macos_pasteboard_has_image() -> bool {
+        let Ok(output) = katana_core::system::ProcessService::create_command("osascript")
+            .arg("-e")
+            .arg("clipboard info")
+            .output()
+        else {
+            return false;
+        };
+        if !output.status.success() {
+            return false;
+        }
+        let info = String::from_utf8_lossy(&output.stdout);
+        Self::macos_clipboard_info_references_supported_image(&info)
+    }
+
+    fn macos_clipboard_info_references_supported_image(info: &str) -> bool {
+        [
+            "«class PNGf»",
+            "JPEG picture",
+            "TIFF picture",
+            "«class TIFF»",
+        ]
+        .iter()
+        .any(|image_type| info.contains(image_type))
+    }
+
     fn read_macos_pasteboard_image() -> Result<ClipboardImagePayload, String> {
+        let mut errors = Vec::new();
+
+        match Self::read_macos_native_pasteboard_image() {
+            Ok(payload) => return Ok(payload),
+            Err(err) => errors.push(err),
+        }
+
         for (apple_type, extension) in [
             ("«class PNGf»", "png"),
             ("JPEG picture", "jpg"),
@@ -118,8 +171,34 @@ impl ClipboardImageOps {
             if payload.is_ok() {
                 return payload;
             }
+            if let Err(err) = payload {
+                errors.push(err);
+            }
         }
-        Err("macOS pasteboard image formats were not available".to_string())
+        errors.push("macOS pasteboard image formats were not available".to_string());
+        Err(errors.join("; "))
+    }
+
+    fn read_macos_native_pasteboard_image() -> Result<ClipboardImagePayload, String> {
+        let mut bytes_ptr = std::ptr::null_mut();
+        let mut bytes_len: std::ffi::c_ulong = 0;
+        let ok = unsafe {
+            macos_clipboard_ffi::katana_read_clipboard_image_png(&mut bytes_ptr, &mut bytes_len)
+        };
+        if !ok || bytes_ptr.is_null() || bytes_len == 0 {
+            return Err("macOS native pasteboard image data was not available".to_string());
+        }
+
+        let bytes =
+            unsafe { std::slice::from_raw_parts(bytes_ptr.cast_const(), bytes_len as usize) }
+                .to_vec();
+        unsafe {
+            macos_clipboard_ffi::katana_free_clipboard_image(bytes_ptr);
+        }
+        Ok(ClipboardImagePayload {
+            bytes,
+            extension: "png",
+        })
     }
 
     fn read_macos_pasteboard_type(apple_type: &str) -> Result<Vec<u8>, String> {
@@ -175,6 +254,17 @@ impl ClipboardImageOps {
             .replace('"', "\\\"")
     }
 }
+
+#[cfg(target_os = "macos")]
+mod macos_clipboard_ffi {
+    unsafe extern "C" {
+        pub(super) fn katana_read_clipboard_image_png(
+            out_bytes: *mut *mut u8,
+            out_len: *mut std::ffi::c_ulong,
+        ) -> bool;
+        pub(super) fn katana_free_clipboard_image(bytes: *mut u8);
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,6 +290,21 @@ mod tests {
         assert_eq!(
             ClipboardImageOps::supported_image_extension(&path),
             Some("png")
+        );
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_clipboard_info_detects_supported_image_type() {
+        assert!(
+            ClipboardImageOps::macos_clipboard_info_references_supported_image(
+                "«class PNGf», 132194, JPEG picture, 132194"
+            )
+        );
+        assert!(
+            !ClipboardImageOps::macos_clipboard_info_references_supported_image(
+                "«class HTML», 4895, «class utf8», 202"
+            )
         );
     }
 }

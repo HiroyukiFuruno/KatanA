@@ -11,46 +11,79 @@ const DECIMAL_DIGIT_BASE: u8 = 10;
 pub(super) struct EditorPasteOps;
 
 impl EditorPasteOps {
+    pub(super) fn intercept_clipboard_image_paste<F>(
+        ctx: &egui::Context,
+        response_has_focus: bool,
+        clipboard_has_image: F,
+    ) -> bool
+    where
+        F: FnOnce() -> bool,
+    {
+        if !response_has_focus {
+            return false;
+        }
+        let paste_requested = ctx.input(|input| input.events.iter().any(Self::paste_event_seen));
+        if !paste_requested || !clipboard_has_image() {
+            return false;
+        }
+        ctx.input_mut(|input| {
+            input.events.retain(|event| !Self::paste_event_seen(event));
+        });
+        true
+    }
+
     pub(super) fn should_ingest_clipboard_image_paste(
         response_has_focus: bool,
         text_changed: bool,
         events: &[egui::Event],
     ) -> bool {
-        if !response_has_focus || text_changed {
+        if !response_has_focus {
             return false;
         }
 
-        let mut paste_signal = false;
+        let mut image_file_url_paste_seen = false;
         let mut text_paste_seen = false;
         for event in events {
             match event {
-                egui::Event::Paste(text) => {
-                    if text.is_empty() || Self::paste_text_references_image_file(text) {
-                        paste_signal = true;
-                    } else {
-                        text_paste_seen = true;
-                    }
+                egui::Event::Paste(text) if Self::paste_text_references_image_file(text) => {
+                    image_file_url_paste_seen = true;
                 }
-                egui::Event::Key {
-                    key,
-                    pressed,
-                    repeat,
-                    modifiers,
-                    ..
-                } if *key == egui::Key::V
-                    && *pressed
-                    && !*repeat
-                    && modifiers.command
-                    && !modifiers.shift
-                    && !modifiers.alt =>
-                {
-                    paste_signal = true;
+                egui::Event::Paste(_) => {
+                    text_paste_seen = true;
                 }
                 _ => {}
             }
         }
 
-        paste_signal && !text_paste_seen
+        if image_file_url_paste_seen {
+            return true;
+        }
+
+        if text_changed || text_paste_seen {
+            return false;
+        }
+
+        false
+    }
+
+    fn paste_event_seen(event: &egui::Event) -> bool {
+        match event {
+            egui::Event::Paste(_) => true,
+            egui::Event::Key {
+                key,
+                pressed,
+                repeat,
+                modifiers,
+                ..
+            } => {
+                *key == egui::Key::V
+                    && *pressed
+                    && !*repeat
+                    && (modifiers.command || modifiers.mac_cmd)
+                    && !modifiers.alt
+            }
+            _ => false,
+        }
     }
 
     fn paste_text_references_image_file(text: &str) -> bool {

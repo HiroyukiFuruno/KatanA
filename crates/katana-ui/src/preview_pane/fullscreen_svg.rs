@@ -63,12 +63,14 @@ pub(super) fn show_fullscreen_svg(
                 screen.width() - FULLSCREEN_PADDING * 2.0,
                 screen.height() - FULLSCREEN_PADDING * 2.0,
             );
-            let base_scale = (avail.x / img.width as f32)
-                .min(avail.y / img.height as f32)
+            let display_width = img.display_width.max(1.0);
+            let display_height = img.display_height.max(1.0);
+            let base_scale = (avail.x / display_width)
+                .min(avail.y / display_height)
                 .min(1.0);
             let size = Vec2::new(
-                img.width as f32 * base_scale * viewer_state.zoom,
-                img.height as f32 * base_scale * viewer_state.zoom,
+                display_width * base_scale * viewer_state.zoom,
+                display_height * base_scale * viewer_state.zoom,
             );
 
             let texture_handle = viewer_state

@@ -46,16 +46,6 @@ fn resolve_cached_result(
         return res;
     };
     match serde_json::from_str::<DiagramResult>(&json) {
-        Ok(res)
-            if matches!(job.kind, katana_core::markdown::DiagramKind::Mermaid)
-                && matches!(res, DiagramResult::Ok(_)) =>
-        {
-            /* WHY: Old caches may still store Mermaid output as Ok(html) (SVG format). */
-            /* WHY: or high CPU usage. We MUST bypass the bad cache and force a re-render to PNG. */
-            let new_res = dispatch_and_reduce(job, tx);
-            cache_if_serializable_inner(&new_res, is_http, cache_key, &job.cache);
-            new_res
-        }
         Ok(res) => res,
         Err(_) => dispatch_and_reduce(job, tx),
     }

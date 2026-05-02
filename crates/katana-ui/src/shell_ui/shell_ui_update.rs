@@ -51,6 +51,7 @@ impl KatanaApp {
             ctx.request_repaint();
         }
 
+        self.tick_update_check(ctx);
         self.poll_update_install(ctx);
         self.poll_update_check(ctx);
         self.poll_changelog(ctx);
@@ -58,7 +59,11 @@ impl KatanaApp {
         self.poll_linter_docs(ctx);
         self.tick_diagnostics(ctx);
 
-        crate::native_menu::NativeMenuOps::update_availability(&self.state);
+        let editor_focused = matches!(
+            crate::state::shortcut_context::ShortcutContextResolver::resolve(&self.state, ctx),
+            crate::state::shortcut_context::ShortcutContext::Editor
+        );
+        crate::native_menu::NativeMenuOps::update_availability(&self.state, editor_focused);
         let native_action = crate::native_menu::NativeMenuOps::poll(ShellUiOps::open_folder_dialog);
         if !matches!(native_action, AppAction::None) {
             self.pending_action = native_action;

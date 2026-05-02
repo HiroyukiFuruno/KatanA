@@ -1,4 +1,7 @@
 #import <Cocoa/Cocoa.h>
+#import <stdbool.h>
+#import <stdlib.h>
+#import <string.h>
 
 /* WHY: Tag constants for identifying menu actions. */
 /* WHY: Should match the MenuAction enum in Rust. */
@@ -32,6 +35,7 @@ enum {
     TAG_REFRESH_DOCUMENT = 34,
     TAG_ZOOM_IN        = 35,
     TAG_ZOOM_OUT       = 36,
+    TAG_PASTE_CLIPBOARD_IMAGE = 37,
 };
 
 /* WHY: Global: Tag of the last selected menu action. */
@@ -73,6 +77,197 @@ static NSMenuItem *g_welcome_item = nil;
 static NSMenuItem *g_guide_item = nil;
 static NSMenuItem *g_demo_item = nil;
 static NSMenuItem *g_github_item = nil;
+static NSMenuItem *g_paste_clipboard_image_item = nil;
+static NSInteger g_pasteboard_image_change_count = -1;
+static BOOL g_pasteboard_image_available = NO;
+static BOOL g_editor_focused_for_image_paste = NO;
+static id g_clipboard_image_paste_monitor = nil;
+
+static NSArray<NSPasteboardType> *katana_supported_pasteboard_image_types(void) {
+    return @[
+        NSPasteboardTypePNG,
+        NSPasteboardTypeTIFF,
+        @"public.png",
+        @"public.jpeg",
+        @"public.tiff",
+        @"public.heic",
+        @"public.heif",
+        @"com.compuserve.gif",
+        @"org.webmproject.webp",
+        @"Apple PNG pasteboard type",
+        @"Apple TIFF pasteboard type",
+        @"NeXT TIFF v4.0 pasteboard type",
+    ];
+}
+
+static NSData *katana_png_data_from_image(NSImage *image) {
+    if (image == nil) {
+        return nil;
+    }
+
+    CGImageRef cgImage = [image CGImageForProposedRect:NULL context:nil hints:nil];
+    if (cgImage == NULL) {
+        return nil;
+    }
+
+    NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+    return [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+}
+
+static NSData *katana_png_data_from_image_data(NSData *data) {
+    if (data == nil || [data length] == 0) {
+        return nil;
+    }
+
+    NSImage *image = [[NSImage alloc] initWithData:data];
+    return katana_png_data_from_image(image);
+}
+
+static NSData *katana_png_data_from_pasteboard(void) {
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    NSData *pngData = [pasteboard dataForType:NSPasteboardTypePNG];
+    if (pngData != nil && [pngData length] > 0) {
+        return pngData;
+    }
+
+    for (NSPasteboardType type in katana_supported_pasteboard_image_types()) {
+        NSData *data = [pasteboard dataForType:type];
+        NSData *converted = katana_png_data_from_image_data(data);
+        if (converted != nil && [converted length] > 0) {
+            return converted;
+        }
+    }
+
+    NSImage *image = [[NSImage alloc] initWithPasteboard:pasteboard];
+    return katana_png_data_from_image(image);
+}
+
+static BOOL katana_pasteboard_has_image(void) {
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    NSInteger changeCount = [pasteboard changeCount];
+    if (changeCount != g_pasteboard_image_change_count) {
+        NSData *pngData = katana_png_data_from_pasteboard();
+        g_pasteboard_image_available = (pngData != nil && [pngData length] > 0) ? YES : NO;
+        g_pasteboard_image_change_count = changeCount;
+    }
+    return g_pasteboard_image_available;
+}
+
+static BOOL katana_should_intercept_clipboard_image_paste(
+    BOOL editorFocused,
+    BOOL imageAvailable,
+    NSEventModifierFlags modifierFlags,
+    NSString *characters
+) {
+    if (!editorFocused || !imageAvailable || characters == nil) {
+        return NO;
+    }
+
+    NSEventModifierFlags commandFamily =
+        NSEventModifierFlagCommand |
+        NSEventModifierFlagShift |
+        NSEventModifierFlagOption |
+        NSEventModifierFlagControl |
+        NSEventModifierFlagFunction;
+    NSEventModifierFlags activeCommandFamily = modifierFlags & commandFamily;
+    if (activeCommandFamily != NSEventModifierFlagCommand) {
+        return NO;
+    }
+
+    return [[characters lowercaseString] isEqualToString:@"v"];
+}
+
+bool katana_should_intercept_clipboard_image_paste_for_test(
+    bool editor_focused,
+    bool image_available,
+    unsigned long modifier_flags,
+    const char *characters
+) {
+    @autoreleasepool {
+        NSString *charactersString = nil;
+        if (characters != NULL) {
+            charactersString = [NSString stringWithUTF8String:characters];
+        }
+        return katana_should_intercept_clipboard_image_paste(
+            editor_focused ? YES : NO,
+            image_available ? YES : NO,
+            (NSEventModifierFlags)modifier_flags,
+            charactersString
+        );
+    }
+}
+
+int katana_clipboard_image_paste_action_for_test(
+    bool editor_focused,
+    bool image_available,
+    unsigned long modifier_flags,
+    const char *characters
+) {
+    return katana_should_intercept_clipboard_image_paste_for_test(
+        editor_focused,
+        image_available,
+        modifier_flags,
+        characters
+    ) ? TAG_PASTE_CLIPBOARD_IMAGE : 0;
+}
+
+static BOOL katana_should_intercept_clipboard_image_paste_event(NSEvent *event) {
+    if ([event type] != NSEventTypeKeyDown) {
+        return NO;
+    }
+
+    return katana_should_intercept_clipboard_image_paste(
+        g_editor_focused_for_image_paste,
+        katana_pasteboard_has_image(),
+        [event modifierFlags],
+        [event charactersIgnoringModifiers]
+    );
+}
+
+static void katana_install_clipboard_image_paste_monitor(void) {
+    if (g_clipboard_image_paste_monitor != nil) {
+        return;
+    }
+
+    g_clipboard_image_paste_monitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent *(NSEvent *event) {
+        if (katana_should_intercept_clipboard_image_paste_event(event)) {
+            g_last_action = TAG_PASTE_CLIPBOARD_IMAGE;
+            return nil;
+        }
+        return event;
+    }];
+}
+
+bool katana_read_clipboard_image_png(unsigned char **out_bytes, unsigned long *out_len) {
+    @autoreleasepool {
+        if (out_bytes == NULL || out_len == NULL) {
+            return false;
+        }
+
+        *out_bytes = NULL;
+        *out_len = 0;
+
+        NSData *pngData = katana_png_data_from_pasteboard();
+        if (pngData == nil || [pngData length] == 0) {
+            return false;
+        }
+
+        unsigned long length = (unsigned long)[pngData length];
+        unsigned char *buffer = malloc(length);
+        if (buffer == NULL) {
+            return false;
+        }
+
+        memcpy(buffer, [pngData bytes], length);
+        *out_bytes = buffer;
+        *out_len = length;
+        return true;
+    }
+}
+
+void katana_free_clipboard_image(unsigned char *bytes) {
+    free(bytes);
+}
 
 /// Called from Rust at the very start of main(), before eframe creates the window.
 /// Must be called before the window server registers the process to ensure
@@ -85,6 +280,7 @@ void katana_set_process_name(void) {
 void katana_setup_native_menu(void) {
     g_target = [[KatanaMenuTarget alloc] init];
     SEL action = @selector(menuAction:);
+    katana_install_clipboard_image_paste_monitor();
 
     /* WHY: --- Application Menu --- */
     NSMenu *appMenu = [[NSMenu alloc] initWithTitle:@"KatanA"];
@@ -253,6 +449,21 @@ void katana_setup_native_menu(void) {
     [paletteItem2 setTag:TAG_COMMAND_PALETTE];
     [paletteItem2 setHidden:YES]; /* WHY: Hide from view but keep shortcut active */
     [viewMenu addItem:paletteItem2];
+
+    /* WHY: Image-only Cmd+V is swallowed before egui emits a paste event. */
+    /* WHY: Keep this hidden shortcut disabled unless the editor is focused and */
+    /* WHY: the native pasteboard currently contains an image. */
+    NSMenuItem *pasteClipboardImageItem = [[NSMenuItem alloc]
+        initWithTitle:@"Paste Image from Clipboard"
+        action:action
+        keyEquivalent:@""];
+    [pasteClipboardImageItem setTarget:g_target];
+    [pasteClipboardImageItem setTag:TAG_PASTE_CLIPBOARD_IMAGE];
+    [pasteClipboardImageItem setHidden:YES];
+    [pasteClipboardImageItem setEnabled:NO];
+    [pasteClipboardImageItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
+    [viewMenu addItem:pasteClipboardImageItem];
+    g_paste_clipboard_image_item = pasteClipboardImageItem;
     
     g_command_palette_item = paletteItem;
 
@@ -536,7 +747,7 @@ void katana_update_menu_strings(
     }
 }
 
-void katana_update_menu_state(bool save_enabled, bool close_workspace_enabled, bool refresh_explorer_enabled, bool close_all_enabled) {
+void katana_update_menu_state(bool save_enabled, bool close_workspace_enabled, bool refresh_explorer_enabled, bool close_all_enabled, bool editor_focused) {
     @autoreleasepool {
         if (g_save_item) {
             [g_save_item setEnabled:(save_enabled ? YES : NO)];
@@ -549,6 +760,11 @@ void katana_update_menu_state(bool save_enabled, bool close_workspace_enabled, b
         }
         if (g_close_all_item) {
             [g_close_all_item setEnabled:(close_all_enabled ? YES : NO)];
+        }
+        g_editor_focused_for_image_paste = editor_focused ? YES : NO;
+        if (g_paste_clipboard_image_item) {
+            [g_paste_clipboard_image_item setEnabled:NO];
+            [g_paste_clipboard_image_item setKeyEquivalent:@""];
         }
     }
 }
