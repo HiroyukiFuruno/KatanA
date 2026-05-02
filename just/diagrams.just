@@ -23,19 +23,21 @@ mermaid-parts-katana lang theme='dark': (mermaid-parts-split lang)
     {{CARGO}} run -p katana-core --example render_mermaid_fixtures -- --fixtures "{{MERMAID_PARTS_ROOT}}/{{lang}}" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana" --theme "{{theme}}" --skip-errors
 
 # Compare official Mermaid reference images with KatanA renderer images
-mermaid-parts-compare lang theme='dark': (mermaid-parts-reference lang theme) (mermaid-parts-katana lang theme)
+mermaid-parts-compare lang theme='dark' baseline='': (mermaid-parts-reference lang theme) (mermaid-parts-katana lang theme)
     @case "{{theme}}" in light|dark) ;; *) echo "theme must be light or dark"; exit 1;; esac
     bun run scripts/mermaid/rasterize-svg-dir.ts --input "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official-browser" --theme "{{theme}}"
     bun run scripts/mermaid/rasterize-svg-dir.ts --input "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana-browser" --theme "{{theme}}"
-    bun run scripts/mermaid/reference-compare.ts --official "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official-browser" --katana "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana-browser" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-comparison" --theme "{{theme}}" --min-score "{{MERMAID_MIN_SCORE}}"
+    bun run scripts/mermaid/reference-compare.ts --official "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official-browser" --katana "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana-browser" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-comparison" --theme "{{theme}}" --min-score "{{MERMAID_MIN_SCORE}}" $(if [ -n "{{baseline}}" ]; then echo "--baseline {{baseline}}"; fi)
 
-# Compare English Mermaid parts in both light and dark themes
+# Compare Mermaid parts in both light and dark themes by language
 mermaid-parts-compare-en: (mermaid-parts-compare "en" "light") (mermaid-parts-compare "en" "dark")
+mermaid-parts-compare-ja:
+    just mermaid-parts-compare-en
+    just mermaid-parts-compare "ja" "light" "{{MERMAID_PARTS_TMP_PREFIX}}-en-light-comparison/scores.json"
+    just mermaid-parts-compare "ja" "dark" "{{MERMAID_PARTS_TMP_PREFIX}}-en-dark-comparison/scores.json"
 
 # Legacy aliases now point to the English Mermaid parts flow
 mermaid-diagram-update: (mermaid-parts-reference "en" "dark")
-
-# Alias for mermaid-diagram-update
 mermaid-diagum-update: mermaid-diagram-update
 
 # Render KatanA Mermaid fixture images without browser screenshots

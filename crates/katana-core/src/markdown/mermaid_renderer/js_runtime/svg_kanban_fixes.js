@@ -3,8 +3,9 @@ function katanaNormalizeKanbanLayoutSvg(svg, request) {
   const withNodes = katanaRewriteBalancedGroups(svg, /<g class="node undefined "[^>]*>/g, (group) =>
     katanaNormalizeKanbanNodeGroup(group, layout),
   );
+  const withLabels = katanaNormalizeKanbanClusterLabels(withNodes);
   const withViewBox = katanaNormalizeKanbanViewBox(
-    katanaNormalizeKanbanSectionGroups(withNodes, layout),
+    katanaNormalizeKanbanSectionGroups(withLabels, layout),
     layout,
   );
   return katanaNormalizeKanbanReadableTextSvg(withViewBox, request);

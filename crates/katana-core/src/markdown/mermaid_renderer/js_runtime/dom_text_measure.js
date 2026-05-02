@@ -131,15 +131,48 @@ function katanaAsciiCharacterWidth(char) {
   return [KATANA_ASCII_TEXT_WIDTHS[char]].filter(Boolean).concat([8])[0];
 }
 
-function katanaWideCharacterWidth() {
-  return KATANA_WIDE_CHARACTER_WIDTHS[Number(globalThis.__katanaMermaidDiagramType === "kanban")]();
+function katanaWideCharacterWidth(char) {
+  return KATANA_WIDE_CHARACTER_WIDTHS[Number(globalThis.__katanaMermaidDiagramType === "kanban")](
+    char,
+  );
 }
 
 const KATANA_WIDE_CHARACTER_WIDTHS = [
-  () => 15.8,
+  katanaDefaultWideCharacterWidth,
   // WHY: Official Kanban measures wide labels slightly narrower; matching total width wraps one character too early inside cards.
   () => 12.5,
 ];
+
+function katanaDefaultWideCharacterWidth(char) {
+  if (katanaIsWidePunctuation(char)) {
+    return 20;
+  }
+  return KATANA_DEFAULT_WIDE_CHARACTER_WIDTHS[Number(katanaIsCjkIdeograph(char))]();
+}
+
+function katanaIsCjkIdeograph(char) {
+  const codePoint = katanaCharacterCodePoint(char);
+  return KATANA_CJK_IDEOGRAPH_RULES.every((rule) => rule(codePoint));
+}
+
+function katanaCharacterCodePoint(char) {
+  return char.codePointAt(0) ?? 0;
+}
+
+function katanaIsCjkIdeographStart(codePoint) {
+  return codePoint >= 0x4e00;
+}
+
+function katanaIsCjkIdeographEnd(codePoint) {
+  return codePoint <= 0x9fff;
+}
+
+function katanaIsWidePunctuation(char) {
+  return ["。", "、"].includes(char);
+}
+
+const KATANA_DEFAULT_WIDE_CHARACTER_WIDTHS = [() => 15.8, () => 16.3];
+const KATANA_CJK_IDEOGRAPH_RULES = [katanaIsCjkIdeographStart, katanaIsCjkIdeographEnd];
 
 const KATANA_CHARACTER_WIDTHS = [katanaAsciiCharacterWidth, katanaWideCharacterWidth];
 

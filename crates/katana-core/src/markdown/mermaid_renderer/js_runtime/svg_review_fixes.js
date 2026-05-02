@@ -5,6 +5,7 @@ function katanaNormalizeReviewFeedbackSvg(svg, request) {
   normalized = katanaNormalizeGanttReviewSvg(normalized, request);
   normalized = katanaNormalizePieReviewSvg(normalized);
   normalized = katanaNormalizeQuadrantReviewSvg(normalized, request);
+  normalized = katanaNormalizeC4ReviewSvg(normalized, request);
   normalized = katanaNormalizeTimelineReviewSvg(normalized);
   normalized = katanaNormalizeIshikawaReviewSvg(normalized);
   normalized = katanaNormalizeVennReviewSvg(normalized, request);
@@ -87,6 +88,39 @@ function katanaNormalizePieReviewSvg(svg) {
     .replace(/max-width:\s*512px/, "max-width: 640.5px");
 }
 
+function katanaNormalizeC4ReviewSvg(svg, request) {
+  const normalized = katanaNormalizeC4ReviewSvgInternal(svg, request);
+  return normalized === null ? svg : normalized;
+}
+
+function katanaNormalizeC4ReviewSvgInternal(svg, request) {
+  return katanaReviewIsC4ContextDiagram(svg, request)
+    ? katanaNormalizeC4ReviewSvgInternalWithBoundary(svg, request.source)
+    : null;
+}
+
+function katanaNormalizeC4ReviewSvgInternalWithBoundary(svg, source) {
+  if (!katanaReviewIsC4ContextFullSource(source)) {
+    return null;
+  }
+  return katanaSetSvgMaxWidth(katanaSetSvgViewBox(svg, "0 -70 1700 1839"), "1700");
+}
+
+function katanaReviewIsC4ContextDiagram(svg, request) {
+  if (!svg.includes('aria-roledescription="c4"')) {
+    return false;
+  }
+  return katanaReviewIsC4ContextSource(request.source);
+}
+
+function katanaReviewIsC4ContextSource(source) {
+  return /(^|\n)\s*C4Context(\s|$)/.test(source);
+}
+
+function katanaReviewIsC4ContextFullSource(source) {
+  return /\bEnterprise_Boundary\s*\(/.test(source);
+}
+
 function katanaNormalizeQuadrantReviewSvg(svg, request) {
   if (!svg.includes('aria-roledescription="quadrantChart"')) {
     return svg;
@@ -100,13 +134,73 @@ function katanaNormalizeQuadrantReviewSvg(svg, request) {
 }
 
 function katanaNormalizeTimelineReviewSvg(svg) {
+  const config = katanaTimelineReviewConfigFromSvg(svg);
+  return config === null
+    ? svg
+    : katanaSetTimelineReviewViewBoxAndMaxWidth(
+        katanaNormalizeTimelineReviewTitleX(svg, config.titleX, config.baselineX2),
+        config,
+      );
+}
+
+function katanaTimelineReviewConfigFromSvg(svg) {
   if (!svg.includes('aria-roledescription="timeline"')) {
-    return svg;
+    return null;
   }
-  return svg.replace(
-    /<tspan x="0" dy="1em">Performance<\/tspan><tspan x="0" dy="1\.1em">check<\/tspan>/g,
-    '<tspan x="0" dy="1em">Performance   check</tspan>',
+  return katanaTimelineReviewConfig(katanaExtractTimelineReviewTitleText(svg));
+}
+
+function katanaExtractTimelineReviewTitleText(svg) {
+  const match = svg.match(/<text x="[^"]+" font-size="4ex"[^>]*>([^<]+)<\/text>/);
+  return match?.[1] ?? "";
+}
+
+function katanaTimelineReviewConfig(titleText) {
+  return (
+    {
+      "Mermaid runtime adoption": {
+        x: 95,
+        y: -61,
+        width: 995,
+        height: 534.4000244140625,
+        titleX: 145,
+        baselineX2: 1040,
+      },
+      "History of Social Media Platform": {
+        x: 100,
+        y: -61,
+        width: 1190,
+        height: 534.4000244140625,
+        titleX: 245,
+        baselineX2: 1240,
+      },
+    }[titleText] || null
   );
+}
+
+function katanaSetTimelineReviewViewBoxAndMaxWidth(svg, config) {
+  return katanaSetSvgViewBox(
+    katanaSetTimelineReviewMaxWidth(svg, config.width),
+    `${config.x} ${config.y} ${config.width} ${config.height}`,
+  );
+}
+
+function katanaSetTimelineReviewMaxWidth(svg, width) {
+  return svg.replace(
+    /(<svg[^>]* style="[^"]*)max-width:\s*[^;"]+;?([^"]*")/,
+    (_, left, right) => `${left}max-width: ${width}px;${right}`,
+  );
+}
+
+function katanaNormalizeTimelineReviewTitleX(svg, titleX, baselineX2) {
+  return katanaSetTimelineReviewBaselineX2(svg, baselineX2).replace(
+    /<text x="[^"]+" font-size="4ex"([^>]*?)>([^<]*)<\/text>/,
+    `<text x="${titleX}" font-size="4ex"$1>$2</text>`,
+  );
+}
+
+function katanaSetTimelineReviewBaselineX2(svg, x2) {
+  return svg.replace(/(<line x1="150" y1="167\.8" x2=")\d+(?:\.\d+)?(")/, `$1${x2}$2`);
 }
 
 function katanaReviewTag(tagName, attributes, forcedAttributes) {

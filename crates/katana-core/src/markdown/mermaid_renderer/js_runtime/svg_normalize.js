@@ -1,11 +1,11 @@
 function katanaPrepareMermaidSource(source) {
-  if (!katanaShouldEvaluateGanttToday(source)) {
+  if (!katanaShouldAppendTodayMarkerOff(source)) {
     return source;
   }
   return katanaSourceWithTodayMarker(source);
 }
 
-function katanaShouldEvaluateGanttToday(source) {
+function katanaShouldAppendTodayMarkerOff(source) {
   if (!source.trimStart().startsWith("gantt")) {
     return false;
   }
@@ -13,30 +13,7 @@ function katanaShouldEvaluateGanttToday(source) {
 }
 
 function katanaSourceWithTodayMarker(source) {
-  const dates = katanaMermaidDateValues(source);
-  if (dates.length === 0) {
-    return source;
-  }
-  return katanaTodayMarkedSource(source, katanaTodayOutsideDateRange(dates));
-}
-
-function katanaMermaidDateValues(source) {
-  return Array.from(source.matchAll(/\b(\d{4})-(\d{2})-(\d{2})\b/g)).map((match) =>
-    Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])),
-  );
-}
-
-function katanaTodayOutsideDateRange(dates) {
-  const today = new Date();
-  const todayDate = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-  return [todayDate < Math.min(...dates), todayDate > Math.max(...dates)].some(Boolean);
-}
-
-function katanaTodayMarkedSource(source, disableTodayMarker) {
-  if (disableTodayMarker) {
-    return `${source}\ntodayMarker off`;
-  }
-  return source;
+  return source.trim().endsWith("\n") ? `${source}todayMarker off` : `${source}\ntodayMarker off`;
 }
 
 function katanaNormalizeMermaidSvg(svg, request) {

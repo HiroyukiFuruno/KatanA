@@ -6,6 +6,7 @@ export interface CliParsedOptions {
   katanaDir: string;
   outputDir: string;
   katanaCrop: CropRect | null;
+  baselineScoresPath: string | null;
   minScore: number;
   theme: DiagramThemeName;
 }
@@ -23,6 +24,7 @@ export class CliOptions {
         CliOptions.get(argv, "--output", "tmp/mermaid-parts-en-dark-comparison"),
       ),
       katanaCrop: CropRect.parseOptional(CliOptions.get(argv, "--katana-crop", "none")),
+      baselineScoresPath: CliOptions.getOptionalPath(argv, "--baseline"),
       minScore: CliOptions.number(argv, "--min-score", 99),
       theme: DiagramTheme.parse(CliOptions.get(argv, "--theme", "dark")).name,
     };
@@ -30,7 +32,12 @@ export class CliOptions {
 
   private static get(argv: string[], name: string, fallback: string): string {
     const index = argv.indexOf(name);
-    return index >= 0 ? argv[index + 1] : fallback;
+    return index >= 0 && index + 1 < argv.length ? argv[index + 1] : fallback;
+  }
+
+  private static getOptionalPath(argv: string[], name: string): string | null {
+    const index = argv.indexOf(name);
+    return index >= 0 && index + 1 < argv.length ? argv[index + 1] : null;
   }
 
   private static number(argv: string[], name: string, fallback: number): number {

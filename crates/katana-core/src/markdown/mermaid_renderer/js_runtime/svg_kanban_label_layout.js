@@ -79,6 +79,37 @@ function katanaKanbanMetadataLabelY(metrics) {
 
 const KATANA_KANBAN_METADATA_LABEL_OFFSETS = [10, 24.25];
 
+function katanaNormalizeKanbanClusterLabels(svg) {
+  return katanaRewriteBalancedGroups(
+    svg,
+    /<g class="cluster undefined [^"]*"[^>]*>/g,
+    katanaNormalizeKanbanClusterLabel,
+  );
+}
+
+function katanaNormalizeKanbanClusterLabel(group) {
+  const rect = group.match(/<rect\b[^>]*\sx="([^"]+)"[^>]*\swidth="([^"]+)"/);
+  const label = group.match(
+    /<g class="cluster-label "[^>]*transform="translate\(([^,]+), ([^)]+)\)">/,
+  );
+  const text = katanaKanbanLabelText(group);
+  if (!katanaHasKanbanClusterLabelContext(rect, label, text)) {
+    return group;
+  }
+  const x = Number(rect[1]) + (Number(rect[2]) - katanaKanbanVisibleLabelWidth(text)) / 2;
+  return group.replace(label[0], label[0].replace(label[1], katanaFormatSvgNumber(x)));
+}
+
+function katanaHasKanbanClusterLabelContext(rect, label, text) {
+  return [rect, label, text.length > 0].every(Boolean);
+}
+
+function katanaKanbanVisibleLabelWidth(text) {
+  return KATANA_KANBAN_VISIBLE_LABEL_WIDTHS[Number(katanaKanbanNeedsI18nWrap(text))](text);
+}
+
+const KATANA_KANBAN_VISIBLE_LABEL_WIDTHS = [katanaTextWidth, katanaKanbanI18nTextWidth];
+
 function katanaKanbanLabelLines(labelGroup) {
   return katanaKanbanWrappedLabelLines(labelGroup);
 }

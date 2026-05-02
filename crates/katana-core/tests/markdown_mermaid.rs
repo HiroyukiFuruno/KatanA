@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use std::thread;
 
 static ENV_LOCK: Mutex<()> = Mutex::new(());
-const RUST_MANAGED_GANTT_MAX_WIDTH: u32 = 1200;
+const RUST_MANAGED_GANTT_MAX_WIDTH: u32 = 1800;
 const JAPANESE_FLOWCHART_SOURCE: &str =
     "flowchart TD\n    A[\u{958b}\u{59cb}] --> B{\u{78ba}\u{8a8d}}\n    B --> C[\u{5b8c}\u{4e86}]";
 const JAPANESE_KANBAN_SOURCE: &str = concat!(

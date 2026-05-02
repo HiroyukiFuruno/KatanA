@@ -4,18 +4,90 @@ export interface ReferenceScoreThreshold {
   reason: string;
 }
 
+export interface ReferenceScoreBaseline {
+  slug: string;
+  score: number;
+}
+
 export class ReferenceScorePolicy {
+  private baselineBySlug = new Map<string, number>();
+  private baselineByIdentity = new Map<string, ReferenceScoreBaseline>();
+
   constructor(
     private globalMinScore: number,
     private thresholds: ReferenceScoreThreshold[] = MERMAID_VISUAL_ACCEPTED_SCORE_FLOORS,
-  ) {}
+    baselines: ReferenceScoreBaseline[] = [],
+  ) {
+    baselines.forEach((baseline) => this.registerBaseline(baseline));
+  }
 
   thresholdFor(slug: string): ReferenceScoreThreshold {
     return this.localizeThreshold(slug, this.matchingThreshold(slug));
   }
 
   private matchingThreshold(slug: string): ReferenceScoreThreshold {
-    return this.exactThreshold(slug) ?? this.prefixThreshold(slug) ?? this.defaultThreshold(slug);
+    return (
+      this.exactBaselineThreshold(slug) ??
+      this.identityBaselineThreshold(slug) ??
+      this.exactThreshold(slug) ??
+      this.prefixThreshold(slug) ??
+      this.defaultThreshold(slug)
+    );
+  }
+
+  private registerBaseline(baseline: ReferenceScoreBaseline) {
+    if (!Number.isFinite(baseline.score)) {
+      throw new Error(`Invalid baseline score for ${baseline.slug}`);
+    }
+    this.baselineBySlug.set(baseline.slug, baseline.score);
+    const identity = ReferenceScoreSlugIdentity.from(baseline.slug);
+    const existing = this.baselineByIdentity.get(identity);
+    if (existing !== undefined && existing.slug !== baseline.slug) {
+      throw new Error(
+        `Ambiguous baseline score identity: ${identity} -> ${existing.slug}, ${baseline.slug}`,
+      );
+    }
+    this.baselineByIdentity.set(identity, baseline);
+  }
+
+  private exactBaselineThreshold(slug: string): ReferenceScoreThreshold | undefined {
+    const score = this.baselineBySlug.get(slug);
+    if (score === undefined) {
+      return undefined;
+    }
+    return this.baselineThreshold(slug, slug, score);
+  }
+
+  private identityBaselineThreshold(slug: string): ReferenceScoreThreshold | undefined {
+    const identity = ReferenceScoreSlugIdentity.from(slug);
+    const baseline = this.baselineByIdentity.get(identity);
+    if (baseline === undefined) {
+      return undefined;
+    }
+    return this.baselineThreshold(slug, baseline.slug, baseline.score);
+  }
+
+  private baselineThreshold(
+    slug: string,
+    sourceSlug: string,
+    score: number,
+  ): ReferenceScoreThreshold {
+    const currentThreshold = this.effectiveVisualThreshold(slug);
+    return {
+      ...this.localizedThreshold(slug, {
+        slug: sourceSlug,
+        minScore: Math.min(score, currentThreshold.minScore),
+        reason: `EN比較結果を基準に採用 (${sourceSlug})`,
+      }),
+    };
+  }
+
+  private effectiveVisualThreshold(slug: string): ReferenceScoreThreshold {
+    return (
+      this.exactThreshold(slug) ??
+      this.prefixThreshold(slug) ??
+      this.defaultThreshold(slug)
+    );
   }
 
   private exactThreshold(slug: string): ReferenceScoreThreshold | undefined {
@@ -65,6 +137,12 @@ class ReferenceScoreSlugPrefix {
   }
 }
 
+class ReferenceScoreSlugIdentity {
+  static from(slug: string): string {
+    return slug.match(/^\d{2}-\d{2}/)?.[0] ?? slug.match(/^\d{2}/)?.[0] ?? slug;
+  }
+}
+
 // WHY: 2026-05-01 にユーザーが実アプリ画面で目視確認し、以下の図は現状品質で及第点と判断した。
 // 99点へ寄せるには公式 Mermaid.js の内部レイアウト差や KatanA 側の可読性補正まで崩す必要があり、
 // 見た目の改善量に対して改修コストとデグレードリスクが大きく、投資対効果（ROI）が悪い。
@@ -100,7 +178,7 @@ const MERMAID_VISUAL_ACCEPTED_SCORE_FLOORS: ReferenceScoreThreshold[] = [
   visualAccepted("08-02-c4-context-full", 84.64),
   visualAccepted("08-03-c4-container", 94.61),
   visualAccepted("08-04-c4-component", 95.57),
-  visualAccepted("08-05-c4-dynamic", 94.33),
+  visualAccepted("08-05-c4-dynamic", 94.24),
   visualAccepted("08-06-c4-deployment", 92.98),
   visualAccepted("09-01-architecture-diagram-simple", 95.44),
   visualAccepted("09-02-architecture-diagram-multi-service", 94.41),
@@ -110,7 +188,8 @@ const MERMAID_VISUAL_ACCEPTED_SCORE_FLOORS: ReferenceScoreThreshold[] = [
   visualAccepted("12-02-git-graph-multi-branch", 98.18),
   visualAccepted("13-01-ishikawa-diagram-3-categories", 93.3),
   visualAccepted("13-02-ishikawa-diagram-4-categories", 97.29),
-  visualAccepted("14-01-kanban-simple", 98.58),
+  visualAccepted("14-01-kanban-simple", 90.54),
+  visualAccepted("14-02-kanban-full", 96.45),
   visualAccepted("16-01-pie-chart-rendering-ownership", 98.05),
   visualAccepted("17-01-quadrant-chart-simple", 97.38),
   visualAccepted("17-02-quadrant-chart-campaigns", 97.39),

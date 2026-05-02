@@ -73,6 +73,18 @@ export class DiagramTheme {
     private arrow: string,
   ) {}
 
+  getFill(): string {
+    return this.fill;
+  }
+
+  getStroke(): string {
+    return this.stroke;
+  }
+
+  getArrow(): string {
+    return this.arrow;
+  }
+
   colorScheme(): string {
     return this.name;
   }

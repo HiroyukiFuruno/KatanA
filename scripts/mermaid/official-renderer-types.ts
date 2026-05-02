@@ -68,6 +68,18 @@ export interface MermaidI18nNormalizeResult {
 export interface MermaidI18nWindow extends MermaidWindow {
   katanaNormalizeMermaidSourceI18n(source: string): MermaidI18nNormalizeResult;
   katanaRestoreMermaidI18nText(svg: string, replacements: MermaidI18nReplacement[]): string;
+  katanaNormalizeMermaidSvg(
+    svg: string,
+    request: {
+      theme: "dark" | "default";
+      text: string;
+      fill: string;
+      stroke: string;
+      arrow: string;
+      source: string;
+      background: string;
+    },
+  ): string;
 }
 
 export interface FontReadyDocument extends Document {

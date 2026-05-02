@@ -1,6 +1,8 @@
 globalThis.window = globalThis;
 globalThis.self = globalThis;
 globalThis.navigator = { userAgent: "KatanA Rust-managed Mermaid runtime" };
+const KATANA_DETERMINISTIC_NOW = Date.parse("2026-01-01T00:00:00.000Z");
+globalThis.Date.now = () => KATANA_DETERMINISTIC_NOW;
 globalThis.performance = { now: () => Date.now() };
 globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 1520;

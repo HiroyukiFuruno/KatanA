@@ -1,5 +1,5 @@
 import type { MagickOps, NormalizedPair } from "./reference_image_ops";
-import { ReferenceScorePolicy } from "./reference_score_policy";
+import { ReferenceScorePolicy, type ReferenceScoreBaseline } from "./reference_score_policy";
 
 export interface ReferenceScoreRow {
   slug: string;
@@ -25,8 +25,9 @@ export class ReferenceScorer {
   constructor(
     private magick: MagickOps,
     private minScore: number,
+    private baselines: ReferenceScoreBaseline[] = [],
   ) {
-    this.policy = new ReferenceScorePolicy(this.minScore);
+    this.policy = new ReferenceScorePolicy(this.minScore, undefined, this.baselines);
   }
 
   score(normalized: NormalizedPair[]): ReferenceScoreRow[] {
@@ -35,7 +36,7 @@ export class ReferenceScorer {
 
   private scorePair(normalized: NormalizedPair): ReferenceScoreRow {
     const scores = this.metricScores(normalized);
-    const score = Math.min(...scores);
+    const score = this.aggregateScores(scores);
     const threshold = this.policy.thresholdFor(normalized.pair.slug);
     return {
       slug: normalized.pair.slug,
@@ -57,6 +58,10 @@ export class ReferenceScorer {
       this.scoreMetric("RMSE", normalized.officialContentPath, normalized.katanaContentPath),
       this.scoreMetric("MAE", normalized.officialContentPath, normalized.katanaContentPath),
     ];
+  }
+
+  private aggregateScores(scores: number[]): number {
+    return Math.min(...scores);
   }
 
   private scoreMetric(metric: string, left: string, right: string): number {

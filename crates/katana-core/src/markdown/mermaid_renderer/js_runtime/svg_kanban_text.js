@@ -1,13 +1,11 @@
 const KATANA_KANBAN_LABEL_WIDTH = 185;
-const KATANA_KANBAN_I18N_LABEL_WIDTH = 160;
-const KATANA_KANBAN_I18N_WIDE_CHARACTER_WIDTH = 14;
+const KATANA_KANBAN_I18N_LABEL_WIDTH = 174;
+const KATANA_KANBAN_I18N_CJK_CHARACTER_WIDTH = 16.3;
+const KATANA_KANBAN_I18N_PUNCTUATION_WIDTH = 20;
+const KATANA_KANBAN_I18N_WIDE_CHARACTER_WIDTH = 15.6;
 const KATANA_KANBAN_I18N_LINE_APPENDERS = [
   katanaKanbanAppendI18nCurrentLine,
   katanaKanbanAppendI18nNextLine,
-];
-const KATANA_KANBAN_I18N_CHARACTER_WIDTHS = [
-  katanaAsciiCharacterWidth,
-  () => KATANA_KANBAN_I18N_WIDE_CHARACTER_WIDTH,
 ];
 
 function katanaKanbanWrappedLabelLines(labelGroup) {
@@ -83,12 +81,64 @@ function katanaKanbanI18nTextWidth(text) {
 }
 
 function katanaKanbanI18nCharacterWidth(char) {
-  return KATANA_KANBAN_I18N_CHARACTER_WIDTHS[Number(katanaKanbanIsWideI18nCharacter(char))](char);
+  const resolver =
+    KATANA_KANBAN_I18N_CHARACTER_WIDTH_RESOLVERS[Number(katanaKanbanIsWideI18nCharacter(char))];
+  return resolver(char);
+}
+
+function katanaKanbanWideI18nCharacterWidth(char) {
+  const override = KATANA_KANBAN_I18N_CHARACTER_WIDTH_OVERRIDES.get(char);
+  if (override) {
+    return override;
+  }
+  return katanaKanbanDefaultWideI18nCharacterWidth(char);
+}
+
+function katanaKanbanDefaultWideI18nCharacterWidth(char) {
+  if (katanaKanbanIsWidePunctuation(char)) {
+    return KATANA_KANBAN_I18N_PUNCTUATION_WIDTH;
+  }
+  return KATANA_KANBAN_I18N_WIDE_CHARACTER_WIDTHS[Number(katanaKanbanIsCjkIdeograph(char))]();
 }
 
 function katanaKanbanIsWideI18nCharacter(char) {
   return (char.codePointAt(0) ?? 0) > 0x7f;
 }
+
+function katanaKanbanIsCjkIdeograph(char) {
+  const codePoint = katanaKanbanCodePoint(char);
+  return KATANA_KANBAN_CJK_IDEOGRAPH_RULES.every((rule) => rule(codePoint));
+}
+
+function katanaKanbanCodePoint(char) {
+  return char.codePointAt(0) ?? 0;
+}
+
+function katanaKanbanIsCjkIdeographStart(codePoint) {
+  return codePoint >= 0x4e00;
+}
+
+function katanaKanbanIsCjkIdeographEnd(codePoint) {
+  return codePoint <= 0x9fff;
+}
+
+function katanaKanbanIsWidePunctuation(char) {
+  return ["。", "、"].includes(char);
+}
+
+const KATANA_KANBAN_I18N_WIDE_CHARACTER_WIDTHS = [
+  () => KATANA_KANBAN_I18N_WIDE_CHARACTER_WIDTH,
+  () => KATANA_KANBAN_I18N_CJK_CHARACTER_WIDTH,
+];
+const KATANA_KANBAN_I18N_CHARACTER_WIDTH_OVERRIDES = new Map([["も", 16.1]]);
+const KATANA_KANBAN_I18N_CHARACTER_WIDTH_RESOLVERS = [
+  katanaAsciiCharacterWidth,
+  katanaKanbanWideI18nCharacterWidth,
+];
+const KATANA_KANBAN_CJK_IDEOGRAPH_RULES = [
+  katanaKanbanIsCjkIdeographStart,
+  katanaKanbanIsCjkIdeographEnd,
+];
 
 function katanaKanbanLabelLineTspans(lines) {
   return lines.map((line, index) => katanaKanbanLabelLineTspan(line, index)).join("");
@@ -109,7 +159,21 @@ function katanaKanbanOuterLineCount(labelGroup) {
 
 function katanaKanbanMeasuredLineCount(labelGroup) {
   const text = katanaKanbanLabelText(labelGroup);
-  return text ? Math.ceil(katanaTextWidth(text) / KATANA_KANBAN_LABEL_WIDTH) : 0;
+  return katanaKanbanTextMeasuredLineCount(text);
+}
+
+function katanaKanbanTextMeasuredLineCount(text) {
+  if (!text) {
+    return 0;
+  }
+  return katanaKanbanNonEmptyTextMeasuredLineCount(text);
+}
+
+function katanaKanbanNonEmptyTextMeasuredLineCount(text) {
+  if (katanaKanbanNeedsI18nWrap(text)) {
+    return katanaKanbanWrapI18nLabel(text).length;
+  }
+  return Math.ceil(katanaTextWidth(text) / KATANA_KANBAN_LABEL_WIDTH);
 }
 
 function katanaKanbanLabelText(labelGroup) {

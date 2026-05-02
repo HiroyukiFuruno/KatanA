@@ -168,7 +168,7 @@ const KATANA_EDGE_LABEL_BACKGROUND_READERS = [
 
 function katanaPieViewBoxWidth(viewBox, contentBox) {
   const right = contentBox[0] + contentBox[2];
-  return Math.ceil(Math.max(viewBox[2], right + 40));
+  return Math.max(viewBox[2], right + 40);
 }
 
 function katanaNormalizeVennSvg(svg) {

@@ -2,8 +2,10 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { DiagramTheme, type DiagramThemeName } from "./diagram_theme";
-import { MermaidI18nRuntimeScripts } from "./official-renderer-i18n";
+import { DiagramTheme, type MermaidThemeName, type DiagramThemeName } from "./diagram_theme";
+import { OfficialSourceNormalizer } from "./official-source-normalizer";
+import { OfficialRendererDeterminism } from "./official-renderer-determinism";
+import { MermaidRuntimeScripts } from "./official-renderer-i18n";
 import type {
   BrowserHandle,
   FontReadyDocument,
@@ -42,6 +44,16 @@ export interface RenderFixture {
   slug: string;
   source: string;
   title: string;
+}
+
+interface MermaidNormalizationRequest {
+  theme: MermaidThemeName;
+  text: string;
+  fill: string;
+  stroke: string;
+  arrow: string;
+  source: string;
+  background: string;
 }
 
 export interface RendererOptions {
@@ -98,24 +110,14 @@ export class OfficialMermaidRenderer {
 
   private async renderPage(page: PageHandle, fixture: RenderFixture) {
     await page.setContent(this.baseHtml(), { waitUntil: "load" });
-    await this.installDeterministicRandom(page);
-    await this.installI18nRuntime(page);
+    await OfficialRendererDeterminism.install(page);
+    await this.installRuntime(page);
     await page.addScriptTag({ path: this.options.mermaidJs });
     await this.capture(page, fixture, await this.renderSvg(page, fixture));
   }
 
-  private installDeterministicRandom(page: PageHandle): Promise<void> {
-    return page.evaluate(() => {
-      let state = 0x12345678;
-      Math.random = () => {
-        state = (1664525 * state + 1013904223) >>> 0;
-        return state / 0x100000000;
-      };
-    });
-  }
-
-  private async installI18nRuntime(page: PageHandle) {
-    for (const scriptPath of MermaidI18nRuntimeScripts.paths()) {
+  private async installRuntime(page: PageHandle) {
+    for (const scriptPath of MermaidRuntimeScripts.paths()) {
       await page.addScriptTag({ path: scriptPath });
     }
   }
@@ -131,21 +133,48 @@ export class OfficialMermaidRenderer {
   }
 
   private renderSvg(page: PageHandle, fixture: RenderFixture): Promise<string> {
+    const input = {
+      ...fixture,
+      source: OfficialSourceNormalizer.normalize(fixture.source),
+    };
     return page.evaluate(
-      ({ config, input }) => {
+      ({ config, input, request }) => {
         const i18nWindow = window as MermaidI18nWindow;
         const normalized = i18nWindow.katanaNormalizeMermaidSourceI18n(input.source);
         const mermaidValue = i18nWindow.mermaid;
         mermaidValue.initialize(config);
         return mermaidValue.render(`official-${input.slug}`, normalized.source).then((result) => {
-          const svg = i18nWindow.katanaRestoreMermaidI18nText(result.svg, normalized.replacements);
+          const restored = i18nWindow.katanaRestoreMermaidI18nText(
+            result.svg,
+            normalized.replacements,
+          );
+          const normalizedSvg = i18nWindow.katanaNormalizeMermaidSvg(restored, {
+            ...request,
+            source: normalized.source,
+          });
           const diagramElement = document.getElementById("diagram") as HTMLElement;
-          diagramElement.innerHTML = svg;
-          return svg;
+          diagramElement.innerHTML = normalizedSvg;
+          return normalizedSvg;
         });
       },
-      { config: this.mermaidConfig(), input: fixture },
+      {
+        config: this.mermaidConfig(),
+        input,
+        request: this.normalizationRequest(),
+      },
     );
+  }
+
+  private normalizationRequest(): MermaidNormalizationRequest {
+    return {
+      theme: this.theme.mermaidTheme,
+      text: this.theme.text,
+      fill: this.theme.getFill(),
+      stroke: this.theme.getStroke(),
+      arrow: this.theme.getArrow(),
+      background: "transparent",
+      source: "",
+    };
   }
 
   private mermaidConfig(): MermaidConfig {
