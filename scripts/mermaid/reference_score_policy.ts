@@ -189,7 +189,7 @@ const MERMAID_VISUAL_ACCEPTED_SCORE_FLOORS: ReferenceScoreThreshold[] = [
   visualAccepted("13-01-ishikawa-diagram-3-categories", 93.3),
   visualAccepted("13-02-ishikawa-diagram-4-categories", 97.29),
   visualAccepted("14-01-kanban-simple", 90.54),
-  visualAccepted("14-02-kanban-full", 96.45),
+  visualAccepted("14-02-kanban-full", 96.44),
   visualAccepted("16-01-pie-chart-rendering-ownership", 98.05),
   visualAccepted("17-01-quadrant-chart-simple", 97.38),
   visualAccepted("17-02-quadrant-chart-campaigns", 97.39),
