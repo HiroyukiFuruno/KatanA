@@ -16,3 +16,11 @@ quadrantChart
     キャンペーンE: [0.40, 0.34]
     キャンペーンF: [0.35, 0.78]
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 17.2. 象限チャート（キャンペーン）](official-light/17-02-quadrant-chart.png)
+
+<!-- katana-mermaid-official:end -->

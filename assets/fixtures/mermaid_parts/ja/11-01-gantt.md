@@ -10,3 +10,11 @@ gantt
     section インテグレーション
     本番パス: active, 2026-04-08, 14d
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 11.1. ガントチャート（ステータス色）](official-light/11-01-gantt.png)
+
+<!-- katana-mermaid-official:end -->

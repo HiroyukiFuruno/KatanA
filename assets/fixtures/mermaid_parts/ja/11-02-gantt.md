@@ -11,3 +11,11 @@ gantt
     タスクC           :2014-01-12  , 12d
     タスクD           : 24d
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 11.2. ガントチャート（複数セクション）](official-light/11-02-gantt.png)
+
+<!-- katana-mermaid-official:end -->

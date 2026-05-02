@@ -12,3 +12,11 @@ quadrantChart
     Rust管理JS: [0.82, 0.86]
     OS Chrome: [0.35, 0.20]
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 17.1. 象限チャート（シンプル）](official-light/17-01-quadrant-chart.png)
+
+<!-- katana-mermaid-official:end -->

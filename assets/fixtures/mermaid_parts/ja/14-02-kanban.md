@@ -25,3 +25,11 @@ kanban
   id12[再現不可]
     id3[Firefoxでの奇妙なちらつき]
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 14.2. カンバン（フル）](official-light/14-02-kanban.png)
+
+<!-- katana-mermaid-official:end -->
