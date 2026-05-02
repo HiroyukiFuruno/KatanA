@@ -6,10 +6,13 @@ import type {
   FontReadyDocument,
   PageHandle,
 } from "../mermaid/official-renderer-types";
+import { OfficialDrawioResourceResolver } from "./official-resource-resolver";
 
 export interface DrawioRendererOptions {
   outputDir: string;
   drawioJs: string;
+  resourcesDir: string;
+  resourceManifest: string;
 }
 
 export interface DrawioRenderFixture {
@@ -35,8 +38,14 @@ interface DrawioWindow extends Window {
 
 export class OfficialDrawioRenderer {
   private browser: BrowserHandle | null = null;
+  private readonly resourceResolver: OfficialDrawioResourceResolver;
 
-  constructor(private options: DrawioRendererOptions) {}
+  constructor(private options: DrawioRendererOptions) {
+    this.resourceResolver = new OfficialDrawioResourceResolver(
+      options.resourcesDir,
+      options.resourceManifest,
+    );
+  }
 
   async start() {
     const { chromium } = await new PlaywrightLoader().load();
@@ -60,7 +69,8 @@ export class OfficialDrawioRenderer {
   private async renderPage(page: PageHandle, fixture: DrawioRenderFixture) {
     await page.setContent(this.baseHtml(), { waitUntil: "load" });
     await page.addScriptTag({ path: this.options.drawioJs });
-    await this.capture(page, fixture, await this.renderSvg(page, fixture));
+    const svg = this.resourceResolver.resolveSvg(await this.renderSvg(page, fixture));
+    await this.capture(page, fixture, svg);
     await page.close();
   }
 
@@ -98,12 +108,34 @@ export class OfficialDrawioRenderer {
 
   private async capture(page: PageHandle, fixture: DrawioRenderFixture, svg: string) {
     fs.writeFileSync(path.join(this.options.outputDir, `${fixture.slug}.svg`), svg, "utf8");
+    await page.evaluate((markup) => {
+      const diagram = document.getElementById("diagram") as HTMLElement;
+      diagram.innerHTML = markup;
+    }, svg);
+    await this.waitForSvgImages(page);
     await this.resizeCapture(page);
     await page.evaluate(() => (document as FontReadyDocument).fonts.ready);
     await page.locator("#capture").screenshot({
       path: path.join(this.options.outputDir, `${fixture.slug}.png`),
       omitBackground: false,
     });
+  }
+
+  private waitForSvgImages(page: PageHandle): Promise<void> {
+    return page.evaluate(() =>
+      Promise.all(
+        Array.from(document.querySelectorAll("#diagram image")).map(
+          (element) =>
+            new Promise<void>((resolve) => {
+              const href = element.getAttribute("href") ?? element.getAttribute("xlink:href") ?? "";
+              const image = new Image();
+              image.onload = () => resolve();
+              image.onerror = () => resolve();
+              image.src = href;
+            }),
+        ),
+      ).then(() => undefined),
+    );
   }
 
   private resizeCapture(page: PageHandle): Promise<void> {

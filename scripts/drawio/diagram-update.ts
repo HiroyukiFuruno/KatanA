@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -27,6 +28,20 @@ class CliOptions {
             "--drawio-js",
             process.env.DRAWIO_JS || "~/.local/katana/drawio.min.js",
           ),
+        ),
+      ),
+      resourcesDir: path.resolve(
+        CliOptions.get(
+          argv,
+          "--resources",
+          "crates/katana-core/src/markdown/drawio_renderer/js_runtime/resources",
+        ),
+      ),
+      resourceManifest: path.resolve(
+        CliOptions.get(
+          argv,
+          "--resource-manifest",
+          "crates/katana-core/src/markdown/drawio_renderer/js_runtime/resources/drawio-resource-manifest.json",
         ),
       ),
     };
@@ -96,9 +111,30 @@ class DrawioDiagramUpdate {
   }
 
   private validate() {
-    if (!fs.existsSync(this.options.drawioJs)) {
-      throw new Error(`drawio.min.js not found: ${this.options.drawioJs}`);
-    }
+    this.validateDrawioJs();
+    this.validateResourcesDir();
+    this.validateResourceManifest();
+  }
+
+  private validateDrawioJs() {
+    assert(
+      fs.existsSync(this.options.drawioJs),
+      `drawio.min.js not found: ${this.options.drawioJs}`,
+    );
+  }
+
+  private validateResourcesDir() {
+    assert(
+      fs.existsSync(this.options.resourcesDir),
+      `Draw.io resources directory not found: ${this.options.resourcesDir}`,
+    );
+  }
+
+  private validateResourceManifest() {
+    assert(
+      fs.existsSync(this.options.resourceManifest),
+      `Draw.io resource manifest not found: ${this.options.resourceManifest}`,
+    );
   }
 }
 

@@ -170,7 +170,7 @@ fn extract_resource_groups(source: &str) -> BTreeSet<String> {
 
 fn drawio_prefix(value: &str) -> Option<&str> {
     let prefix = value
-        .split(|character| matches!(character, '.' | ';' | '"' | '\'' | '&' | ' '))
+        .split(['.', ';', '"', '\'', '&', ' '])
         .next()
         .unwrap_or_default();
     (!prefix.is_empty()).then_some(prefix)

@@ -40,6 +40,14 @@ impl DrawioRuntimeScripts {
             DiagramRuntimeScript::borrowed("drawio-svg-colors.js", DRAWIO_SVG_COLORS),
             DiagramRuntimeScript::borrowed("drawio-svg-gcp-colors.js", DRAWIO_SVG_GCP_COLORS),
             DiagramRuntimeScript::borrowed("drawio-svg-shape-colors.js", DRAWIO_SVG_SHAPE_COLORS),
+            DiagramRuntimeScript::borrowed(
+                "drawio-svg-style-color-tables.js",
+                DRAWIO_SVG_STYLE_COLOR_TABLES,
+            ),
+            DiagramRuntimeScript::borrowed(
+                "drawio-svg-style-color-parse.js",
+                DRAWIO_SVG_STYLE_COLOR_PARSE,
+            ),
             DiagramRuntimeScript::borrowed("drawio-svg-style-colors.js", DRAWIO_SVG_STYLE_COLORS),
             DiagramRuntimeScript::borrowed("drawio-svg-shadow.js", DRAWIO_SVG_SHADOW),
             DiagramRuntimeScript::borrowed("drawio-svg-labels.js", DRAWIO_SVG_LABELS),
@@ -110,6 +118,10 @@ const DRAWIO_SVG_AZURE_COLORS: &str = include_str!("js_runtime/drawio_svg_azure_
 const DRAWIO_SVG_COLORS: &str = include_str!("js_runtime/drawio_svg_colors.js");
 const DRAWIO_SVG_GCP_COLORS: &str = include_str!("js_runtime/drawio_svg_gcp_colors.js");
 const DRAWIO_SVG_SHAPE_COLORS: &str = include_str!("js_runtime/drawio_svg_shape_colors.js");
+const DRAWIO_SVG_STYLE_COLOR_TABLES: &str =
+    include_str!("js_runtime/drawio_svg_style_color_tables.js");
+const DRAWIO_SVG_STYLE_COLOR_PARSE: &str =
+    include_str!("js_runtime/drawio_svg_style_color_parse.js");
 const DRAWIO_SVG_STYLE_COLORS: &str = include_str!("js_runtime/drawio_svg_style_colors.js");
 const DRAWIO_SVG_SHADOW: &str = include_str!("js_runtime/drawio_svg_shadow.js");
 const DRAWIO_SVG_LABELS: &str = include_str!("js_runtime/drawio_svg_labels.js");
