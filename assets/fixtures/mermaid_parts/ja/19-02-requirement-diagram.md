@@ -16,3 +16,11 @@ requirementDiagram
     }
     independent_runtime - satisfies -> accurate_rendering
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 19.2. 要件図（複数）](official-light/19-02-requirement-diagram.png)
+
+<!-- katana-mermaid-official:end -->

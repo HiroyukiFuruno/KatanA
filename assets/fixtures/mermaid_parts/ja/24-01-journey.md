@@ -9,3 +9,11 @@ journey
     section 出力
       HTMLへ書き出す: 3: KatanA
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 24.1. ユーザージャーニー（図表プレビュー）](official-light/24-01-journey.png)
+
+<!-- katana-mermaid-official:end -->

@@ -77,3 +77,11 @@ sankey-beta
 波力,電力網,19.013
 風力,電力網,289.366
 ~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 20.2. サンキー図（大規模）](official-light/20-02-sankey-beta.png)
+
+<!-- katana-mermaid-official:end -->
