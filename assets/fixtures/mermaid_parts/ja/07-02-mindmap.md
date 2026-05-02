@@ -19,11 +19,3 @@ mindmap
       紙とペン
       Mermaid
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 7.2. マインドマップ（アイコン付き）](official-light/07-02-mindmap.png)
-
-<!-- katana-mermaid-official:end -->

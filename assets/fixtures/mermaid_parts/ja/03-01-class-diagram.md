@@ -14,11 +14,3 @@ classDiagram
     }
     PreviewPane --> RenderedSection
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 3.1. クラス図（列挙型）](official-light/03-01-class-diagram.png)
-
-<!-- katana-mermaid-official:end -->

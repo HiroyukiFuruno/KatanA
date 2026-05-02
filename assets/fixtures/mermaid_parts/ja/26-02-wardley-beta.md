@@ -31,11 +31,3 @@ note "電力の標準化によりケトルの進化が加速する" [0.30, 0.49]
 note "お湯は広く知られた存在" [0.48, 0.80]
 note "汎用的なメモ" [0.23, 0.33]
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 26.2. ウォードレーマップ（ノート付き）](official-light/26-02-wardley-beta.png)
-
-<!-- katana-mermaid-official:end -->

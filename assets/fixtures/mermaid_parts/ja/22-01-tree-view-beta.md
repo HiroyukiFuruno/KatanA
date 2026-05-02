@@ -10,11 +10,3 @@ treeView-beta
             "SVG"
             "ラスタライズ"
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 22.1. ツリービュー（シンプル）](official-light/22-01-tree-view-beta.png)
-
-<!-- katana-mermaid-official:end -->

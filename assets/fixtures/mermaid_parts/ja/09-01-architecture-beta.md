@@ -9,11 +9,3 @@ architecture-beta
     markdown:R -- L:renderer
     renderer:R -- L:svg
 ~~~
-
-<!-- katana-mermaid-official:start -->
-
-## 公式Mermaid.js描画
-
-![公式Mermaid.js描画: 9.1. アーキテクチャ図（シンプル）](official-light/09-01-architecture-beta.png)
-
-<!-- katana-mermaid-official:end -->
