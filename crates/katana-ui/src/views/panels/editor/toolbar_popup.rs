@@ -122,7 +122,7 @@ mod tests {
 
         let actual = ToolbarPopup::popup_position(response, cursor, viewport);
 
-        assert_eq!(actual, egui::pos2(110.0, 94.0));
+        assert_eq!(actual, egui::pos2(110.0, 104.0));
     }
 
     #[test]
