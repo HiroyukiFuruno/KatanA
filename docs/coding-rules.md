@@ -402,11 +402,11 @@ Prerequisites for allowing a PR to be merged:
 1. **Format**: Passes `cargo fmt --all -- --check`
 2. **Clippy**: Passes `cargo clippy --workspace -- -D warnings` (Zero warnings)
 3. **Tests (Logic)**: Passes all `cargo test --workspace`
-4. **Tests (Integration)**: Passes `make test-integration` (response-based assertions only, no snapshots)
+4. **Tests (Integration)**: Passes `just test-integration` (response-based assertions only, no snapshots)
 5. **Test Placement**: New logic has accompanying UT in `src/` inline `#[cfg(test)]`; IT for cross-boundary scenarios in the `tests/` directory
 6. **Coverage**: Passes `cargo llvm-cov --workspace --fail-under-lines 100`
 
-Batch check: `make check` (equivalent to the pre-push hook)
+Batch check: `just check` (equivalent to the pre-push hook)
 
 ---
 
