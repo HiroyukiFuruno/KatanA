@@ -164,7 +164,7 @@ function katanaMeasuredTextHeight(text, childBox) {
 }
 
 function katanaTextWidthFallback(text) {
-  return text.length === 0 ? 0 : Math.max(16, text.length * 8);
+  return text.length === 0 ? 0 : Math.max(16, katanaTextWidth(text));
 }
 
 function katanaTextHeightFallback(text) {

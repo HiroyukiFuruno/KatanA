@@ -1,4 +1,4 @@
-# 01. Flowchart
+# 1. Flowchart
 
 ~~~mermaid
 flowchart TD
@@ -11,8 +11,8 @@ flowchart TD
 
 <!-- katana-mermaid-official:start -->
 
-## Official Mermaid.js Rendering
+## 公式Mermaid.js描画
 
-![Official Mermaid.js Rendering: 01. Flowchart](../official/01-flowchart.png)
+![公式Mermaid.js描画: 1. Flowchart](official-dark/01-flowchart.png)
 
 <!-- katana-mermaid-official:end -->

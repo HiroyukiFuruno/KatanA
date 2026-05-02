@@ -8,11 +8,11 @@ fn rust_managed_js_runtime_keeps_beta_diagram_geometry_visible() {
         return;
     }
 
-    let tree_view = render_fixture("22-tree-view.md");
+    let tree_view = render_fixture("22-01-tree-view-simple.md");
     assert!(tag_with_class(&tree_view, "treeView-node-label").contains("fill="));
     assert!(tag_with_class(&tree_view, "treeView-node-line").contains("stroke="));
 
-    let ishikawa = render_fixture("23-ishikawa.md");
+    let ishikawa = render_fixture("13-02-ishikawa-diagram-4-categories.md");
     let spine = tag_with_class(&ishikawa, "ishikawa-spine");
     let x1 = attr_number(spine, "x1");
     let x2 = attr_number(spine, "x2");
@@ -21,18 +21,18 @@ fn rust_managed_js_runtime_keeps_beta_diagram_geometry_visible() {
     assert!(attr_number(&ishikawa, "height") <= 480.0);
     assert!(!ishikawa.contains(r#"height="556""#));
 
-    let treemap = render_fixture("25-treemap.md");
+    let treemap = render_fixture("23-01-treemap-flat.md");
     assert!(!treemap.contains("NaN"));
     assert!(treemap.contains("Mermaid"));
     assert!(treemap.contains("Rasterize"));
 
-    let kanban = render_fixture("19-kanban.md");
+    let kanban = render_fixture("14-01-kanban-simple.md");
     assert!(!kanban.contains(r#"height="336""#));
     assert!(read_view_box(&kanban)[3] <= 110.0);
     assert!(kanban.contains(r#"height="39""#));
     assert!(!kanban.contains(r#"height="81.6""#));
 
-    let sankey = render_fixture("16-sankey.md");
+    let sankey = render_fixture("20-01-sankey-simple.md");
     assert!(
         sankey.contains("<linearGradient"),
         "Sankey gradients must preserve SVG tag casing"
@@ -42,7 +42,7 @@ fn rust_managed_js_runtime_keeps_beta_diagram_geometry_visible() {
         "Sankey links must preserve browser SVG blend styling"
     );
 
-    let gantt = render_fixture("07-gantt.md");
+    let gantt = render_fixture("11-01-gantt-chart-status-colors.md");
     assert!(gantt.contains("Mermaid renderer schedule"));
     let domain = tag_with_class(&gantt, "domain");
     assert!(
@@ -58,7 +58,11 @@ fn rust_managed_js_runtime_keeps_core_diagram_labels_in_bounds() {
         return;
     }
 
-    for fixture in ["03-class.md", "05-er.md", "09-requirement.md"] {
+    for fixture in [
+        "03-02-class-diagram-inheritance.md",
+        "05-01-er-diagram-simple.md",
+        "19-01-requirement-diagram-single.md",
+    ] {
         let svg = render_fixture(fixture);
         assert!(!svg.contains("NaN"), "{fixture} contains NaN");
         assert!(svg.contains("viewBox="), "{fixture} lost viewBox");
@@ -77,7 +81,7 @@ fn rust_managed_js_runtime_keeps_review_feedback_visual_details() {
         return;
     }
 
-    let er = render_fixture("05-er.md");
+    let er = render_fixture("05-01-er-diagram-simple.md");
     assert!(er.contains("row-rect-odd"));
     assert!(er.contains("row-rect-even"));
     assert!(er.contains(">string</tspan>"));
@@ -94,15 +98,15 @@ fn rust_managed_js_runtime_keeps_review_feedback_visual_details() {
         "ER row backgrounds must stay behind attribute labels"
     );
 
-    let gantt = render_fixture("07-gantt.md");
+    let gantt = render_fixture("11-01-gantt-chart-status-colors.md");
     assert!(gantt.contains(r##"fill="#1e1e1e"></rect>"##));
 
-    let venn = render_fixture("24-venn.md");
+    let venn = render_fixture("25-02-venn-diagram-3-sets-with-styles.md");
     assert!(venn.contains(r##"fill="#1e1e1e"></rect>"##));
     assert_eq!(venn.matches(r#"fill-opacity="0.1""#).count(), 2);
     assert!(!venn.contains(r#"fill-opacity="0.16""#));
 
-    let class = render_fixture("03-class.md");
+    let class = render_fixture("03-02-class-diagram-inheritance.md");
     assert!(attr_number(&class, "height") <= 410.0);
 }
 
@@ -129,7 +133,7 @@ fn rust_managed_js_runtime_aligns_er_attribute_rows() {
 
 fn render_fixture(name: &str) -> String {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../assets/fixtures/mermaid_all")
+        .join("../../assets/fixtures/mermaid_parts/en")
         .join(name);
     let markdown = std::fs::read_to_string(path).unwrap();
     let source = extract_mermaid_block(&markdown);

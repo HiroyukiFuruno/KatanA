@@ -23,7 +23,7 @@ class KatanaSegmenter {
   }
 }
 const katanaIntl = globalThis.Intl ?? {};
-// WHY: Mermaid の一部図形は文字折り返しで Intl.Segmenter を使うが、埋め込み V8 の native 経路がプロセスを落とす。
+// WHY: Some Mermaid diagrams call Intl.Segmenter for wrapping, but embedded V8 native dispatch can terminate the process.
 katanaIntl.Segmenter = KatanaSegmenter;
 globalThis.Intl = katanaIntl;
 globalThis.crypto = {

@@ -1,4 +1,4 @@
-# 02. Graph
+# 2. Graph
 
 ~~~mermaid
 graph TD
@@ -9,8 +9,8 @@ graph TD
 
 <!-- katana-mermaid-official:start -->
 
-## Official Mermaid.js Rendering
+## 公式Mermaid.js描画
 
-![Official Mermaid.js Rendering: 02. Graph](../official/02-graph.png)
+![公式Mermaid.js描画: 2. Graph](official-dark/02-graph.png)
 
 <!-- katana-mermaid-official:end -->

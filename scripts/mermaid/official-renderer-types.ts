@@ -1,3 +1,5 @@
+import type { MermaidThemeName, MermaidThemeVariables } from "./diagram_theme";
+
 export interface BrowserLauncher {
   launch(options: { headless: boolean }): Promise<BrowserHandle>;
 }
@@ -34,10 +36,10 @@ export interface MermaidConfig {
   startOnLoad: boolean;
   securityLevel: "loose";
   htmlLabels: boolean;
-  theme: "dark";
+  theme: MermaidThemeName;
   flowchart: { htmlLabels: boolean; useMaxWidth: boolean };
   sequence: { useMaxWidth: boolean };
-  themeVariables: Record<string, string>;
+  themeVariables: MermaidThemeVariables;
 }
 
 export interface MermaidRenderResult {
@@ -51,6 +53,21 @@ export interface MermaidGlobal {
 
 export interface MermaidWindow extends Window {
   mermaid: MermaidGlobal;
+}
+
+export interface MermaidI18nReplacement {
+  placeholder: string;
+  text: string;
+}
+
+export interface MermaidI18nNormalizeResult {
+  source: string;
+  replacements: MermaidI18nReplacement[];
+}
+
+export interface MermaidI18nWindow extends MermaidWindow {
+  katanaNormalizeMermaidSourceI18n(source: string): MermaidI18nNormalizeResult;
+  katanaRestoreMermaidI18nText(svg: string, replacements: MermaidI18nReplacement[]): string;
 }
 
 export interface FontReadyDocument extends Document {

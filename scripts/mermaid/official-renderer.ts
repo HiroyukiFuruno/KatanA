@@ -1,53 +1,19 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { DiagramTheme, type DiagramThemeName } from "./diagram_theme";
+import { MermaidI18nRuntimeScripts } from "./official-renderer-i18n";
 import type {
   BrowserHandle,
   FontReadyDocument,
-  MermaidWindow,
+  MermaidConfig,
+  MermaidI18nWindow,
   PageHandle,
   PlaywrightModule,
 } from "./official-renderer-types";
 
-const OFFICIAL_MERMAID_CONFIG = {
-  startOnLoad: false,
-  securityLevel: "loose",
-  htmlLabels: false,
-  theme: "dark",
-  flowchart: { htmlLabels: false, useMaxWidth: false },
-  sequence: { useMaxWidth: false },
-  themeVariables: {
-    background: "transparent",
-    mainBkg: "#2D2D2D",
-    primaryColor: "#2D2D2D",
-    primaryTextColor: "#E0E0E0",
-    primaryBorderColor: "#888888",
-    secondaryColor: "#2D2D2D",
-    secondaryTextColor: "#E0E0E0",
-    secondaryBorderColor: "#888888",
-    tertiaryColor: "#2D2D2D",
-    tertiaryTextColor: "#E0E0E0",
-    tertiaryBorderColor: "#888888",
-    nodeTextColor: "#E0E0E0",
-    lineColor: "#AAAAAA",
-    textColor: "#E0E0E0",
-    edgeLabelBackground: "#2D2D2D",
-    actorBkg: "#2D2D2D",
-    actorTextColor: "#E0E0E0",
-    actorBorder: "#888888",
-    signalColor: "#AAAAAA",
-    signalTextColor: "#E0E0E0",
-    labelTextColor: "#E0E0E0",
-    noteBkgColor: "#2D2D2D",
-    noteTextColor: "#E0E0E0",
-    noteBorderColor: "#888888",
-    clusterBkg: "transparent",
-    clusterBorder: "#888888",
-    titleColor: "#E0E0E0",
-  },
-} as const;
+export { expandHome } from "./official-renderer-i18n";
 
 export class PlaywrightLoader {
   async load(): Promise<PlaywrightModule> {
@@ -81,14 +47,17 @@ export interface RenderFixture {
 export interface RendererOptions {
   outputDir: string;
   mermaidJs: string;
+  theme: DiagramThemeName;
 }
 
 export class OfficialMermaidRenderer {
   private browser: BrowserHandle | null = null;
   private options: RendererOptions;
+  private theme: DiagramTheme;
 
   constructor(options: RendererOptions) {
     this.options = options;
+    this.theme = DiagramTheme.parse(options.theme);
   }
 
   async start() {
@@ -111,8 +80,8 @@ export class OfficialMermaidRenderer {
     }
   }
 
-  private rethrowLaunchError(error: unknown): never {
-    if (String(error).includes("Executable doesn't exist")) {
+  private rethrowLaunchError(error: Error): never {
+    if (error.message.includes("Executable doesn't exist")) {
       throw new Error(
         "Playwright browser is missing. Run `just mermaid-diagram-browser-install` first.",
       );
@@ -130,6 +99,7 @@ export class OfficialMermaidRenderer {
   private async renderPage(page: PageHandle, fixture: RenderFixture) {
     await page.setContent(this.baseHtml(), { waitUntil: "load" });
     await this.installDeterministicRandom(page);
+    await this.installI18nRuntime(page);
     await page.addScriptTag({ path: this.options.mermaidJs });
     await this.capture(page, fixture, await this.renderSvg(page, fixture));
   }
@@ -142,6 +112,12 @@ export class OfficialMermaidRenderer {
         return state / 0x100000000;
       };
     });
+  }
+
+  private async installI18nRuntime(page: PageHandle) {
+    for (const scriptPath of MermaidI18nRuntimeScripts.paths()) {
+      await page.addScriptTag({ path: scriptPath });
+    }
   }
 
   private async capture(page: PageHandle, fixture: RenderFixture, svg: string) {
@@ -157,16 +133,31 @@ export class OfficialMermaidRenderer {
   private renderSvg(page: PageHandle, fixture: RenderFixture): Promise<string> {
     return page.evaluate(
       ({ config, input }) => {
-        const mermaidValue = (window as MermaidWindow).mermaid;
+        const i18nWindow = window as MermaidI18nWindow;
+        const normalized = i18nWindow.katanaNormalizeMermaidSourceI18n(input.source);
+        const mermaidValue = i18nWindow.mermaid;
         mermaidValue.initialize(config);
-        return mermaidValue.render(`official-${input.slug}`, input.source).then((result) => {
+        return mermaidValue.render(`official-${input.slug}`, normalized.source).then((result) => {
+          const svg = i18nWindow.katanaRestoreMermaidI18nText(result.svg, normalized.replacements);
           const diagramElement = document.getElementById("diagram") as HTMLElement;
-          diagramElement.innerHTML = result.svg;
-          return result.svg;
+          diagramElement.innerHTML = svg;
+          return svg;
         });
       },
-      { config: OFFICIAL_MERMAID_CONFIG, input: fixture },
+      { config: this.mermaidConfig(), input: fixture },
     );
+  }
+
+  private mermaidConfig(): MermaidConfig {
+    return {
+      startOnLoad: false,
+      securityLevel: "loose",
+      htmlLabels: false,
+      theme: this.theme.mermaidTheme,
+      flowchart: { htmlLabels: false, useMaxWidth: false },
+      sequence: { useMaxWidth: false },
+      themeVariables: this.theme.variables(),
+    };
   }
 
   private writeSvg(fixture: RenderFixture, svg: string) {
@@ -199,14 +190,10 @@ export class OfficialMermaidRenderer {
 
   baseHtml() {
     return `<!doctype html><html><head><meta charset="utf-8"><style>
-html,body{margin:0;background:#1e1e1e;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-#capture{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px;box-sizing:border-box;background:#1e1e1e}
+html,body{margin:0;background:${this.theme.canvasBackground};color:${this.theme.text};color-scheme:${this.theme.colorScheme()};font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#capture{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px;box-sizing:border-box;background:${this.theme.canvasBackground}}
 #diagram{max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center}
 #diagram svg{max-width:100%;max-height:100%}
 </style></head><body><div id="capture"><div id="diagram"></div></div></body></html>`;
   }
-}
-
-export function expandHome(value: string) {
-  return value.startsWith("~/") ? path.join(os.homedir(), value.slice(2)) : value;
 }

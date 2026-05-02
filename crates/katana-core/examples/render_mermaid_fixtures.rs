@@ -1,15 +1,29 @@
-use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
-use katana_core::markdown::mermaid_renderer::MermaidRenderOps;
-use katana_core::markdown::svg_rasterize::SvgRasterizeOps;
+use katana_core::markdown::{
+    color_preset::DiagramColorPreset,
+    diagram::{DiagramBlock, DiagramKind, DiagramResult},
+    mermaid_renderer::MermaidRenderOps,
+    svg_rasterize::SvgRasterizeOps,
+};
+#[path = "render_mermaid_fixtures/skipped_report.rs"]
+mod skipped_report;
+#[path = "render_mermaid_fixtures/source_markdown.rs"]
+mod source_markdown;
+use skipped_report::SkippedFixtureReport;
+use source_markdown::extract_mermaid_block;
 use std::path::{Path, PathBuf};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+type DynError = Box<dyn std::error::Error>;
+
+fn main() -> Result<(), DynError> {
     let options = RenderOptions::parse(std::env::args().skip(1).collect());
+    DiagramColorPreset::set_dark_mode(options.dark_mode);
     std::fs::create_dir_all(&options.output_dir)?;
     let renderer = FixtureRenderer::new(&options.output_dir, options.skip_errors);
+    let mut skipped_report = SkippedFixtureReport::new();
     for fixture_path in FixtureRepository::new(options.fixtures_dir).list()? {
-        renderer.render(&fixture_path)?;
+        renderer.render(&fixture_path, &mut skipped_report)?;
     }
+    skipped_report.write(&options.output_dir)?;
     Ok(())
 }
 
@@ -17,6 +31,7 @@ struct RenderOptions {
     fixtures_dir: PathBuf,
     output_dir: PathBuf,
     skip_errors: bool,
+    dark_mode: bool,
 }
 
 impl RenderOptions {
@@ -25,7 +40,8 @@ impl RenderOptions {
             fixtures_dir: path_arg(
                 &args,
                 "--fixtures",
-                Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/fixtures/mermaid_all"),
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../assets/fixtures/mermaid_parts/en"),
             ),
             output_dir: path_arg(
                 &args,
@@ -33,7 +49,16 @@ impl RenderOptions {
                 PathBuf::from("tmp/mermaid-katana-rendered"),
             ),
             skip_errors: args.iter().any(|it| it == "--skip-errors"),
+            dark_mode: theme_arg_is_dark(string_arg(&args, "--theme", "dark").as_str()),
         }
+    }
+}
+
+fn theme_arg_is_dark(value: &str) -> bool {
+    match value {
+        "light" => false,
+        "dark" => true,
+        other => panic!("theme must be light or dark: {other}"),
     }
 }
 
@@ -46,7 +71,7 @@ impl FixtureRepository {
         Self { fixtures_dir }
     }
 
-    fn list(&self) -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
+    fn list(&self) -> Result<Vec<PathBuf>, DynError> {
         let mut fixtures = std::fs::read_dir(&self.fixtures_dir)?
             .map(|entry| entry.map(|it| it.path()))
             .collect::<Result<Vec<_>, _>>()?;
@@ -69,22 +94,22 @@ impl<'a> FixtureRenderer<'a> {
         }
     }
 
-    fn render(&self, fixture_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    fn render(
+        &self,
+        fixture_path: &Path,
+        skipped_report: &mut SkippedFixtureReport,
+    ) -> Result<(), DynError> {
         let slug = fixture_path
             .file_stem()
             .and_then(|it| it.to_str())
             .unwrap_or("fixture");
         match self.render_required(slug, fixture_path) {
             Ok(()) => Ok(()),
-            Err(error) => self.handle_render_error(slug, error),
+            Err(error) => self.handle_render_error(slug, fixture_path, error, skipped_report),
         }
     }
 
-    fn render_required(
-        &self,
-        slug: &str,
-        fixture_path: &Path,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn render_required(&self, slug: &str, fixture_path: &Path) -> Result<(), DynError> {
         let markdown = std::fs::read_to_string(fixture_path)?;
         let svg = self.render_svg(slug, &extract_mermaid_block(&markdown))?;
         std::fs::write(self.output_dir.join(format!("{slug}.svg")), &svg)?;
@@ -96,17 +121,21 @@ impl<'a> FixtureRenderer<'a> {
     fn handle_render_error(
         &self,
         slug: &str,
-        error: Box<dyn std::error::Error>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+        fixture_path: &Path,
+        error: DynError,
+        skipped_report: &mut SkippedFixtureReport,
+    ) -> Result<(), DynError> {
         if self.skip_errors {
+            let message = ErrorSummary::from(error.as_ref());
+            skipped_report.add(slug, fixture_path, &message);
             self.remove_output_files(slug)?;
-            eprintln!("skipped {slug}: {}", ErrorSummary::from(error.as_ref()));
+            eprintln!("skipped {slug}: {message}");
             return Ok(());
         }
         Err(error)
     }
 
-    fn remove_output_files(&self, slug: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn remove_output_files(&self, slug: &str) -> Result<(), DynError> {
         for extension in ["svg", "png"] {
             let path = self.output_dir.join(format!("{slug}.{extension}"));
             if path.exists() {
@@ -116,7 +145,7 @@ impl<'a> FixtureRenderer<'a> {
         Ok(())
     }
 
-    fn render_svg(&self, slug: &str, source: &str) -> Result<String, Box<dyn std::error::Error>> {
+    fn render_svg(&self, slug: &str, source: &str) -> Result<String, DynError> {
         let block = DiagramBlock {
             kind: DiagramKind::Mermaid,
             source: source.to_string(),
@@ -127,7 +156,7 @@ impl<'a> FixtureRenderer<'a> {
         }
     }
 
-    fn write_png(&self, slug: &str, svg: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_png(&self, slug: &str, svg: &str) -> Result<(), DynError> {
         let image = SvgRasterizeOps::rasterize_svg(svg, 1.0)?;
         image::save_buffer_with_format(
             self.output_dir.join(format!("{slug}.png")),
@@ -158,27 +187,13 @@ impl ErrorSummary {
 }
 
 fn path_arg(args: &[String], name: &str, fallback: PathBuf) -> PathBuf {
+    string_arg(args, name, fallback.to_string_lossy().as_ref()).into()
+}
+
+fn string_arg(args: &[String], name: &str, fallback: &str) -> String {
     args.iter()
         .position(|it| it == name)
         .and_then(|index| args.get(index + 1))
-        .map(PathBuf::from)
-        .unwrap_or(fallback)
-}
-
-fn extract_mermaid_block(markdown: &str) -> String {
-    let mut lines = Vec::new();
-    let mut in_block = false;
-    for line in markdown.lines() {
-        if matches!(line.trim(), "```mermaid" | "~~~mermaid") {
-            in_block = true;
-            continue;
-        }
-        if in_block && matches!(line.trim(), "```" | "~~~") {
-            return lines.join("\n");
-        }
-        if in_block {
-            lines.push(line);
-        }
-    }
-    panic!("Mermaid block not found");
+        .cloned()
+        .unwrap_or_else(|| fallback.to_string())
 }

@@ -11,9 +11,39 @@ export class ReferenceScorePolicy {
   ) {}
 
   thresholdFor(slug: string): ReferenceScoreThreshold {
-    return (
-      this.thresholds.find((threshold) => threshold.slug === slug) ?? this.defaultThreshold(slug)
+    return this.localizeThreshold(slug, this.matchingThreshold(slug));
+  }
+
+  private matchingThreshold(slug: string): ReferenceScoreThreshold {
+    return this.exactThreshold(slug) ?? this.prefixThreshold(slug) ?? this.defaultThreshold(slug);
+  }
+
+  private exactThreshold(slug: string): ReferenceScoreThreshold | undefined {
+    return this.thresholds.find((threshold) => threshold.slug === slug);
+  }
+
+  private prefixThreshold(slug: string): ReferenceScoreThreshold | undefined {
+    const prefix = ReferenceScoreSlugPrefix.from(slug);
+    return this.thresholds.find((threshold) =>
+      ReferenceScoreSlugPrefix.matches(threshold.slug, prefix),
     );
+  }
+
+  private localizeThreshold(
+    slug: string,
+    threshold: ReferenceScoreThreshold,
+  ): ReferenceScoreThreshold {
+    return threshold.slug === slug ? threshold : this.localizedThreshold(slug, threshold);
+  }
+
+  private localizedThreshold(
+    slug: string,
+    threshold: ReferenceScoreThreshold,
+  ): ReferenceScoreThreshold {
+    return {
+      ...threshold,
+      slug,
+    };
   }
 
   private defaultThreshold(slug: string): ReferenceScoreThreshold {
@@ -22,6 +52,16 @@ export class ReferenceScorePolicy {
       minScore: this.globalMinScore,
       reason: "",
     };
+  }
+}
+
+class ReferenceScoreSlugPrefix {
+  static from(slug: string): string {
+    return slug.match(/^\d{2}-\d{2}/)?.[0] ?? "";
+  }
+
+  static matches(slug: string, prefix: string): boolean {
+    return prefix.length > 0 && slug.startsWith(`${prefix}-`);
   }
 }
 
@@ -47,6 +87,48 @@ const MERMAID_VISUAL_ACCEPTED_SCORE_FLOORS: ReferenceScoreThreshold[] = [
   visualAccepted("24-treemap-beta", 90.72),
   visualAccepted("25-journey", 97.48),
   visualAccepted("27-wardley-beta", 91.54),
+  visualAccepted("03-01-class-diagram-enumeration", 89.06),
+  visualAccepted("03-02-class-diagram-inheritance", 87.89),
+  visualAccepted("04-01-sequence-diagram-simple", 91.51),
+  visualAccepted("04-02-sequence-diagram-activate-deactivate", 91.01),
+  visualAccepted("05-01-er-diagram-simple", 91.59),
+  visualAccepted("05-02-er-diagram-multi-entity", 90.38),
+  visualAccepted("06-01-state-diagram-v2-failure-path", 93.35),
+  visualAccepted("07-01-mindmap-simple", 86.8),
+  visualAccepted("07-02-mindmap-icons", 85.22),
+  visualAccepted("08-01-c4-context-simple", 97.31),
+  visualAccepted("08-02-c4-context-full", 84.64),
+  visualAccepted("08-03-c4-container", 94.61),
+  visualAccepted("08-04-c4-component", 95.57),
+  visualAccepted("08-05-c4-dynamic", 94.33),
+  visualAccepted("08-06-c4-deployment", 92.98),
+  visualAccepted("09-01-architecture-diagram-simple", 95.44),
+  visualAccepted("09-02-architecture-diagram-multi-service", 94.41),
+  visualAccepted("10-01-block-diagram-horizontal", 88.85),
+  visualAccepted("10-02-block-diagram-vertical", 85.96),
+  visualAccepted("12-01-git-graph-simple", 89.84),
+  visualAccepted("12-02-git-graph-multi-branch", 98.18),
+  visualAccepted("13-01-ishikawa-diagram-3-categories", 93.3),
+  visualAccepted("13-02-ishikawa-diagram-4-categories", 97.29),
+  visualAccepted("14-01-kanban-simple", 98.58),
+  visualAccepted("16-01-pie-chart-rendering-ownership", 98.05),
+  visualAccepted("17-01-quadrant-chart-simple", 97.38),
+  visualAccepted("17-02-quadrant-chart-campaigns", 97.39),
+  visualAccepted("19-01-requirement-diagram-single", 90.37),
+  visualAccepted("19-02-requirement-diagram-multi", 88.53),
+  visualAccepted("20-02-sankey-large", 90.78),
+  visualAccepted("21-01-timeline-phases", 81.8),
+  visualAccepted("21-02-timeline-history", 84.42),
+  visualAccepted("22-01-tree-view-simple", 89.76),
+  visualAccepted("22-02-tree-view-file-system", 91.39),
+  visualAccepted("23-01-treemap-flat", 91.8),
+  visualAccepted("23-02-treemap-beta-nested", 90.62),
+  visualAccepted("24-01-user-journey-diagram-preview", 96.6),
+  visualAccepted("24-02-user-journey-working-day", 97.48),
+  visualAccepted("25-01-venn-diagram-2-sets", 91.04),
+  visualAccepted("25-02-venn-diagram-3-sets-with-styles", 94.17),
+  visualAccepted("26-01-wardley-map-simple", 91.15),
+  visualAccepted("26-02-wardley-map-full-with-notes", 91.54),
 ];
 
 function visualAccepted(slug: string, minScore: number): ReferenceScoreThreshold {

@@ -6,20 +6,22 @@ use std::thread;
 
 static ENV_LOCK: Mutex<()> = Mutex::new(());
 const RUST_MANAGED_GANTT_MAX_WIDTH: u32 = 1200;
-const JAPANESE_FLOWCHART_SOURCE: &str = "flowchart TD\n    A[開始] --> B{確認}\n    B --> C[完了]";
-const JAPANESE_KANBAN_SOURCE: &str = r#"---
-config:
-  kanban:
-    ticketBaseUrl: 'https://github.com/mermaid-js/mermaid/issues/#TICKET#'
----
-kanban
-  未着手
-    [ドキュメント作成]
-  [進行中]
-    id6[すべての場合に動作するレンダラーを作成する。表示確認のため、長めのテキストも入れている。]
-  id11[完了]
-    id5[データ取得を定義]
-"#;
+const JAPANESE_FLOWCHART_SOURCE: &str =
+    "flowchart TD\n    A[\u{958b}\u{59cb}] --> B{\u{78ba}\u{8a8d}}\n    B --> C[\u{5b8c}\u{4e86}]";
+const JAPANESE_KANBAN_SOURCE: &str = concat!(
+    "---\n",
+    "config:\n",
+    "  kanban:\n",
+    "    ticketBaseUrl: 'https://github.com/mermaid-js/mermaid/issues/#TICKET#'\n",
+    "---\n",
+    "kanban\n",
+    "  \u{672a}\u{7740}\u{624b}\n",
+    "    [\u{30c9}\u{30ad}\u{30e5}\u{30e1}\u{30f3}\u{30c8}\u{4f5c}\u{6210}]\n",
+    "  [\u{9032}\u{884c}\u{4e2d}]\n",
+    "    id6[\u{3059}\u{3079}\u{3066}\u{306e}\u{5834}\u{5408}\u{306b}\u{52d5}\u{4f5c}\u{3059}\u{308b}\u{30ec}\u{30f3}\u{30c0}\u{30e9}\u{30fc}\u{3092}\u{4f5c}\u{6210}\u{3059}\u{308b}\u{3002}\u{8868}\u{793a}\u{78ba}\u{8a8d}\u{306e}\u{305f}\u{3081}\u{3001}\u{9577}\u{3081}\u{306e}\u{30c6}\u{30ad}\u{30b9}\u{30c8}\u{3082}\u{5165}\u{308c}\u{3066}\u{3044}\u{308b}\u{3002}]\n",
+    "  id11[\u{5b8c}\u{4e86}]\n",
+    "    id5[\u{30c7}\u{30fc}\u{30bf}\u{53d6}\u{5f97}\u{3092}\u{5b9a}\u{7fa9}]\n",
+);
 
 fn mermaid_block() -> DiagramBlock {
     DiagramBlock {
@@ -136,9 +138,9 @@ fn japanese_flowchart_labels_render() {
 
     let svg = render_svg(JAPANESE_FLOWCHART_SOURCE.to_string());
 
-    assert!(svg.contains("開始"));
-    assert!(svg.contains("確認"));
-    assert!(svg.contains("完了"));
+    assert!(svg.contains("\u{958b}\u{59cb}"));
+    assert!(svg.contains("\u{78ba}\u{8a8d}"));
+    assert!(svg.contains("\u{5b8c}\u{4e86}"));
 }
 
 #[test]
@@ -150,9 +152,9 @@ fn japanese_kanban_labels_render_without_native_segmenter_crash() {
 
     let svg = render_svg(JAPANESE_KANBAN_SOURCE.to_string());
 
-    assert!(svg.contains("未着手"));
-    assert!(svg.contains("進行中"));
-    assert!(svg.contains("完了"));
+    assert!(svg.contains("\u{672a}\u{7740}\u{624b}"));
+    assert!(svg.contains("\u{9032}\u{884c}\u{4e2d}"));
+    assert!(svg.contains("\u{5b8c}\u{4e86}"));
 }
 
 #[test]

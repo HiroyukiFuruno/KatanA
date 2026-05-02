@@ -69,12 +69,13 @@ function katanaIsKanbanNodeLayoutInput(position, oldHeight) {
 }
 
 function katanaNormalizeKanbanNodeGroupInput(group, layout, input) {
-  const metrics = katanaKanbanNodeMetrics(group);
+  const normalizedGroup = katanaNormalizeKanbanLabelGroups(group);
+  const metrics = katanaKanbanNodeMetrics(normalizedGroup);
   const nextHeight = metrics.height;
   const section = katanaKanbanNodeSection(layout, input.position.x);
   const top = katanaKanbanNextNodeTop(section);
   katanaUpdateKanbanSectionBounds(section, top, nextHeight);
-  return katanaKanbanNodeWithLayout(group, input.position, top, metrics);
+  return katanaKanbanNodeWithLayout(normalizedGroup, input.position, top, metrics);
 }
 
 const KATANA_KANBAN_CARD_GAP = 5;

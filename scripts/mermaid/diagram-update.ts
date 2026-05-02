@@ -1,11 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
+import { DiagramTheme, type DiagramThemeName } from "./diagram_theme";
+import { MarkdownReferenceAssets } from "./diagram_update_markdown_assets";
 import { FixtureRepository, type Fixture } from "./diagram_update_fixtures";
 import { MarkdownReferenceWriter } from "./diagram_update_markdown_reference";
+import { SkippedFixtureReport } from "./diagram_update_skipped_report";
 import { OfficialMermaidRenderer, expandHome, type RendererOptions } from "./official-renderer";
 
 interface CliParsedOptions extends RendererOptions {
   fixturesDir: string;
+  markdownOutputDir: string;
   writeMarkdown: boolean;
   skipErrors: boolean;
 }
@@ -14,11 +18,15 @@ class CliOptions {
   static parse(argv: string[]): CliParsedOptions {
     CliOptions.exitIfHelp(argv);
     const fixturesDir = path.resolve(
-      CliOptions.get(argv, "--fixtures", "assets/fixtures/mermaid_all"),
+      CliOptions.get(argv, "--fixtures", "assets/fixtures/mermaid_parts/en"),
+    );
+    const outputDir = path.resolve(
+      CliOptions.get(argv, "--output", path.join(fixturesDir, "official")),
     );
     return {
       fixturesDir,
-      outputDir: path.resolve(CliOptions.get(argv, "--output", path.join(fixturesDir, "official"))),
+      outputDir,
+      markdownOutputDir: path.resolve(CliOptions.get(argv, "--markdown-output", outputDir)),
       mermaidJs: path.resolve(
         expandHome(
           CliOptions.get(
@@ -30,7 +38,12 @@ class CliOptions {
       ),
       writeMarkdown: !argv.includes("--no-write-md"),
       skipErrors: argv.includes("--skip-errors"),
+      theme: CliOptions.theme(argv),
     };
+  }
+
+  private static theme(argv: string[]): DiagramThemeName {
+    return DiagramTheme.parse(CliOptions.get(argv, "--theme", "dark")).name;
   }
 
   private static get(argv: string[], name: string, fallback: string): string {
@@ -41,7 +54,7 @@ class CliOptions {
   private static exitIfHelp(argv: string[]) {
     if (argv.includes("--help")) {
       console.log(
-        "Usage: bun run scripts/mermaid/diagram-update.ts [--fixtures DIR] [--output DIR] [--mermaid-js FILE]",
+        "Usage: bun run scripts/mermaid/diagram-update.ts [--fixtures DIR] [--output DIR] [--markdown-output DIR] [--theme dark|light] [--mermaid-js FILE]",
       );
       process.exit(0);
     }
@@ -50,18 +63,30 @@ class CliOptions {
 
 class MermaidDiagramUpdate {
   private options: CliParsedOptions;
+  private markdownAssets: MarkdownReferenceAssets;
+  private skippedReport: SkippedFixtureReport;
 
   constructor(options: CliParsedOptions) {
     this.options = options;
+    this.markdownAssets = new MarkdownReferenceAssets(options.outputDir, options.markdownOutputDir);
+    this.skippedReport = new SkippedFixtureReport(options.outputDir);
   }
 
   async run() {
     this.validate();
-    fs.mkdirSync(this.options.outputDir, { recursive: true });
+    this.prepareOutputDirs();
     const fixtures = new FixtureRepository(this.options.fixturesDir).list();
     const renderer = new OfficialMermaidRenderer(this.options);
-    const writer = new MarkdownReferenceWriter(this.options.outputDir);
+    const writer = new MarkdownReferenceWriter(this.options.markdownOutputDir);
     await this.renderAll(renderer, writer, fixtures);
+    this.skippedReport.write();
+  }
+
+  private prepareOutputDirs() {
+    fs.mkdirSync(this.options.outputDir, { recursive: true });
+    if (this.options.writeMarkdown) {
+      this.markdownAssets.prepare();
+    }
   }
 
   private async renderAll(
@@ -107,8 +132,8 @@ class MermaidDiagramUpdate {
     try {
       await this.renderRequiredFixture(renderer, writer, fixture);
     } catch (error) {
-      this.removeOutputFiles(fixture);
-      console.warn(`skipped ${fixture.slug}: ${ErrorSummary.fromString(String(error))}`);
+      this.markdownAssets.remove(fixture);
+      this.skippedReport.add(fixture, ErrorSummary.fromString(String(error)));
     }
   }
 
@@ -118,27 +143,20 @@ class MermaidDiagramUpdate {
     fixture: Fixture,
   ) {
     await renderer.render(fixture);
+    this.syncMarkdownAssets(fixture);
     this.writeMarkdownReference(writer, fixture);
     console.log(`updated ${fixture.slug}`);
-  }
-
-  private removeOutputFiles(fixture: Fixture) {
-    this.outputPaths(fixture)
-      .filter((outputPath) => fs.existsSync(outputPath))
-      .forEach((outputPath) => {
-        fs.unlinkSync(outputPath);
-      });
-  }
-
-  private outputPaths(fixture: Fixture): string[] {
-    return [".png", ".svg"].map((extension) =>
-      path.join(this.options.outputDir, `${fixture.slug}${extension}`),
-    );
   }
 
   private writeMarkdownReference(writer: MarkdownReferenceWriter, fixture: Fixture) {
     if (this.options.writeMarkdown) {
       writer.write(fixture);
+    }
+  }
+
+  private syncMarkdownAssets(fixture: Fixture) {
+    if (this.options.writeMarkdown) {
+      this.markdownAssets.sync(fixture);
     }
   }
 

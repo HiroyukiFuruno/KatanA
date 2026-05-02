@@ -6,40 +6,43 @@
 mermaid-diagram-browser-install:
     {{PLAYWRIGHT}} install chromium
 
-# Update official Mermaid reference images and fixture image links
-mermaid-diagram-update:
-    bun run scripts/mermaid/diagram-update.ts --fixtures {{MERMAID_FIXTURES}} --output {{MERMAID_REFERENCE_DIR}} --mermaid-js {{MERMAID_JS}}
+# Split source Markdown into one-file-per-diagram Mermaid parts
+mermaid-parts-split lang:
+    @case "{{lang}}" in en|ja) ;; *) echo "lang must be en or ja"; exit 1;; esac
+    @source_path=$(case "{{lang}}" in en) printf '%s' "{{MERMAID_EN_SOURCE}}" ;; ja) printf '%s' "{{MERMAID_JA_SOURCE}}" ;; esac); \
+      bun run scripts/mermaid/split-markdown-fixtures.ts --input "$source_path" --output "{{MERMAID_PARTS_ROOT}}/{{lang}}"
+
+# Render official Mermaid reference images for Mermaid parts
+mermaid-parts-reference lang theme='dark': (mermaid-parts-split lang)
+    @case "{{theme}}" in light|dark) ;; *) echo "theme must be light or dark"; exit 1;; esac
+    bun run scripts/mermaid/diagram-update.ts --fixtures "{{MERMAID_PARTS_ROOT}}/{{lang}}" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official" --markdown-output "{{MERMAID_PARTS_ROOT}}/{{lang}}/official-{{theme}}" --theme "{{theme}}" --mermaid-js "{{MERMAID_JS}}" --skip-errors
+
+# Render KatanA Mermaid images for Mermaid parts
+mermaid-parts-katana lang theme='dark': (mermaid-parts-split lang)
+    @case "{{theme}}" in light|dark) ;; *) echo "theme must be light or dark"; exit 1;; esac
+    {{CARGO}} run -p katana-core --example render_mermaid_fixtures -- --fixtures "{{MERMAID_PARTS_ROOT}}/{{lang}}" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana" --theme "{{theme}}" --skip-errors
+
+# Compare official Mermaid reference images with KatanA renderer images
+mermaid-parts-compare lang theme='dark': (mermaid-parts-reference lang theme) (mermaid-parts-katana lang theme)
+    @case "{{theme}}" in light|dark) ;; *) echo "theme must be light or dark"; exit 1;; esac
+    bun run scripts/mermaid/rasterize-svg-dir.ts --input "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official-browser" --theme "{{theme}}"
+    bun run scripts/mermaid/rasterize-svg-dir.ts --input "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana-browser" --theme "{{theme}}"
+    bun run scripts/mermaid/reference-compare.ts --official "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-official-browser" --katana "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-katana-browser" --output "{{MERMAID_PARTS_TMP_PREFIX}}-{{lang}}-{{theme}}-comparison" --theme "{{theme}}" --min-score "{{MERMAID_MIN_SCORE}}"
+
+# Compare English Mermaid parts in both light and dark themes
+mermaid-parts-compare-en: (mermaid-parts-compare "en" "light") (mermaid-parts-compare "en" "dark")
+
+# Legacy aliases now point to the English Mermaid parts flow
+mermaid-diagram-update: (mermaid-parts-reference "en" "dark")
 
 # Alias for mermaid-diagram-update
 mermaid-diagum-update: mermaid-diagram-update
 
 # Render KatanA Mermaid fixture images without browser screenshots
-mermaid-diagram-katana-update:
-    cargo run -p katana-core --example render_mermaid_fixtures -- --fixtures {{MERMAID_FIXTURES}} --output {{MERMAID_KATANA_DIR}}
+mermaid-diagram-katana-update: (mermaid-parts-katana "en" "dark")
 
 # Compare official Mermaid reference images with KatanA renderer images
-mermaid-diagram-compare: mermaid-diagram-katana-update
-    bun run scripts/mermaid/rasterize-svg-dir.ts --input {{MERMAID_REFERENCE_DIR}} --output {{MERMAID_REFERENCE_BROWSER_DIR}}
-    bun run scripts/mermaid/rasterize-svg-dir.ts --input {{MERMAID_KATANA_DIR}} --output {{MERMAID_KATANA_BROWSER_DIR}}
-    bun run scripts/mermaid/reference-compare.ts --official {{MERMAID_REFERENCE_BROWSER_DIR}} --katana {{MERMAID_KATANA_BROWSER_DIR}} --min-score {{MERMAID_MIN_SCORE}}
-
-# Split assets/fixtures/mermaid.md into temporary single-diagram fixtures
-mermaid-sample-fixtures:
-    bun run scripts/mermaid/split-markdown-fixtures.ts --input {{MERMAID_SAMPLE}} --output {{MERMAID_SAMPLE_FIXTURES_DIR}}
-
-# Render official Mermaid reference images for assets/fixtures/mermaid.md
-mermaid-sample-reference-update: mermaid-sample-fixtures
-    bun run scripts/mermaid/diagram-update.ts --fixtures {{MERMAID_SAMPLE_FIXTURES_DIR}} --output {{MERMAID_SAMPLE_REFERENCE_DIR}} --mermaid-js {{MERMAID_JS}} --no-write-md --skip-errors
-
-# Render KatanA images for assets/fixtures/mermaid.md
-mermaid-sample-katana-update: mermaid-sample-fixtures
-    cargo run -p katana-core --example render_mermaid_fixtures -- --fixtures {{MERMAID_SAMPLE_FIXTURES_DIR}} --output {{MERMAID_SAMPLE_KATANA_DIR}} --skip-errors
-
-# Compare assets/fixtures/mermaid.md with the same scoring path
-mermaid-sample-compare: mermaid-sample-reference-update mermaid-sample-katana-update
-    bun run scripts/mermaid/rasterize-svg-dir.ts --input {{MERMAID_SAMPLE_REFERENCE_DIR}} --output {{MERMAID_SAMPLE_REFERENCE_BROWSER_DIR}}
-    bun run scripts/mermaid/rasterize-svg-dir.ts --input {{MERMAID_SAMPLE_KATANA_DIR}} --output {{MERMAID_SAMPLE_KATANA_BROWSER_DIR}}
-    bun run scripts/mermaid/reference-compare.ts --official {{MERMAID_SAMPLE_REFERENCE_BROWSER_DIR}} --katana {{MERMAID_SAMPLE_KATANA_BROWSER_DIR}} --output {{MERMAID_SAMPLE_COMPARISON_DIR}} --min-score {{MERMAID_MIN_SCORE}}
+mermaid-diagram-compare: (mermaid-parts-compare-en)
 
 # Install Playwright Chromium for official Draw.io reference rendering
 drawio-diagram-browser-install:

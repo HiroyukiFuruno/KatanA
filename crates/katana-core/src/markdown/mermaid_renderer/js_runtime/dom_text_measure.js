@@ -132,8 +132,14 @@ function katanaAsciiCharacterWidth(char) {
 }
 
 function katanaWideCharacterWidth() {
-  return 14;
+  return KATANA_WIDE_CHARACTER_WIDTHS[Number(globalThis.__katanaMermaidDiagramType === "kanban")]();
 }
+
+const KATANA_WIDE_CHARACTER_WIDTHS = [
+  () => 15.8,
+  // WHY: Official Kanban measures wide labels slightly narrower; matching total width wraps one character too early inside cards.
+  () => 12.5,
+];
 
 const KATANA_CHARACTER_WIDTHS = [katanaAsciiCharacterWidth, katanaWideCharacterWidth];
 

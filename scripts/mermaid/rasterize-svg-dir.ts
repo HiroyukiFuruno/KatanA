@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import { DiagramTheme, type DiagramThemeName } from "./diagram_theme";
 import { PlaywrightLoader } from "./official-renderer";
 import type { BrowserHandle, FontReadyDocument, PageHandle } from "./official-renderer-types";
 
 interface CliParsedOptions {
   inputDir: string;
   outputDir: string;
+  theme: DiagramThemeName;
 }
 
 class CliOptions {
@@ -14,6 +16,7 @@ class CliOptions {
     return {
       inputDir: path.resolve(CliOptions.get(argv, "--input", "tmp/mermaid-sample-official")),
       outputDir: path.resolve(CliOptions.get(argv, "--output", "tmp/mermaid-sample-browser")),
+      theme: DiagramTheme.parse(CliOptions.get(argv, "--theme", "dark")).name,
     };
   }
 
@@ -24,7 +27,9 @@ class CliOptions {
 
   private static exitIfHelp(argv: string[]) {
     if (argv.includes("--help")) {
-      console.log("Usage: bun run scripts/mermaid/rasterize-svg-dir.ts --input DIR --output DIR");
+      console.log(
+        "Usage: bun run scripts/mermaid/rasterize-svg-dir.ts --input DIR --output DIR [--theme dark|light]",
+      );
       process.exit(0);
     }
   }
@@ -47,8 +52,11 @@ class SvgFixtureRepository {
 
 class SvgBrowserRasterizer {
   private browser: BrowserHandle | null = null;
+  private theme: DiagramTheme;
 
-  constructor(private options: CliParsedOptions) {}
+  constructor(private options: CliParsedOptions) {
+    this.theme = DiagramTheme.parse(options.theme);
+  }
 
   async run() {
     this.prepareOutputDir();
@@ -86,7 +94,7 @@ class SvgBrowserRasterizer {
       deviceScaleFactor: 1,
     });
     try {
-      await page.setContent(SvgBrowserRasterizer.baseHtml(), { waitUntil: "load" });
+      await page.setContent(this.baseHtml(), { waitUntil: "load" });
       await this.capture(page, fileName, svg);
       console.log(`rasterized ${fileName}`);
     } finally {
@@ -117,10 +125,10 @@ class SvgBrowserRasterizer {
     return this.browser;
   }
 
-  private static baseHtml() {
+  private baseHtml() {
     return `<!doctype html><html><head><meta charset="utf-8"><style>
-html,body{margin:0;background:#1e1e1e;color:#e0e0e0;color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-#capture{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px;box-sizing:border-box;background:#1e1e1e}
+html,body{margin:0;background:${this.theme.canvasBackground};color:${this.theme.text};color-scheme:${this.theme.colorScheme()};font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#capture{display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px;box-sizing:border-box;background:${this.theme.canvasBackground}}
 #diagram{max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center}
 #diagram svg{max-width:100%;max-height:100%}
 </style></head><body><div id="capture"><div id="diagram"></div></div></body></html>`;

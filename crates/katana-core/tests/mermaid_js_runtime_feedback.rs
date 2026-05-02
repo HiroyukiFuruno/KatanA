@@ -16,17 +16,17 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
         return;
     }
 
-    let flowchart = render_named_block("1. flowchart TD");
+    let flowchart = render_named_block("1. Flowchart");
     let iphone_width = flowchart_node_width(&flowchart, "E");
     assert!(
         (iphone_width - 107.53125).abs() < 0.2,
         "flowchart iPhone node width drifted from browser text measurement: {iphone_width}"
     );
 
-    let er = render_named_block("5. erDiagram");
+    let er = render_named_block("5. Entity Relationship Diagram");
     assert!(er.contains(r#"class="label name" transform="translate(0,"#));
     assert!(!er.contains(r#"class="label name" transform="translate(-"#));
-    let single_node_er = render_all_fixture("05-er.md");
+    let single_node_er = render_all_fixture("05-01-er-diagram-simple.md");
     assert!(
         regex::Regex::new(
             r#"<g class="label" style="" transform="translate\(0, -9\.5\)">[\s\S]*?<text y="-10\.1" style="" text-anchor="middle">[\s\S]*?>DIAGRAM"#
@@ -38,7 +38,7 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
         !single_node_er.contains(r#"<text y="-10.1" style="" transform="translate(-32.3125, 0)">"#)
     );
 
-    let state = render_named_block("6. stateDiagram-v2");
+    let state = render_named_block("6. State Diagram");
     assert!(state.contains(r#"class="label" style="" transform="translate(0, -9.5)""#));
     assert!(state.contains(r#"<text y="-10.1" style="" text-anchor="middle">"#));
     let state_view_box = read_view_box(&state);
@@ -47,14 +47,14 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
         "state diagram viewBox keeps unexpected top padding: {state_view_box:?}"
     );
 
-    let mindmap = render_named_block("8. mindmap");
+    let mindmap = render_named_block("7. Mindmap");
     let mindmap_view_box = read_view_box(&mindmap);
     assert!(
         mindmap_view_box[2] <= 1400.0 && mindmap_view_box[3] <= 900.0,
         "mindmap viewBox is too sparse: {mindmap_view_box:?}"
     );
 
-    let block = render_named_block("11. block-beta");
+    let block = render_named_block("10. Block Diagram");
     assert!(!block.contains("&nbsp;"));
     assert!(!block.contains("&amp;nbsp;"));
     let block_view_box = read_view_box(&block);
@@ -63,7 +63,7 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
         "block diagram width collapsed: {block_view_box:?}"
     );
 
-    let gitgraph = render_named_block("13. gitGraph");
+    let gitgraph = render_named_block("12. Git Graph");
     let gitgraph_view_box = read_view_box(&gitgraph);
     assert!(
         gitgraph_view_box[3] <= 280.0,
@@ -74,7 +74,7 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
         "gitgraph commit labels should use class-based 10px text measurement"
     );
 
-    let ishikawa = render_named_block("14. ishikawa-beta");
+    let ishikawa = render_all_fixture("13-02-ishikawa-diagram-4-categories.md");
     assert!(ishikawa.contains(">Blurry"));
     assert!(ishikawa.contains(">Photo"));
     assert!(!ishikawa.contains(r#"Q 148.79999999999998 0 0 -39.2 Z"#));
@@ -93,7 +93,7 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
     );
     assert!(ishikawa_head_width(&wide_ishikawa) > ishikawa_head_width(&ishikawa));
 
-    let kanban = render_named_block("15. kanban");
+    let kanban = render_all_fixture("14-02-kanban-full.md");
     let kanban_heights = kanban_section_heights(&kanban);
     let long_card = kanban_card_metrics(&kanban, "id6");
     let short_card = kanban_card_metrics(&kanban, "id5");
@@ -110,14 +110,14 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
         "kanban card labels are not top-aligned: long={long_card:?}, short={short_card:?}"
     );
 
-    let pie = render_named_block("17. pie");
+    let pie = render_named_block("16. Pie Chart");
     let pie_view_box = read_view_box(&pie);
     assert!(
         (pie_view_box[2] - 547.0).abs() < 0.1,
         "pie viewBox should include the legend with browser-equivalent padding: {pie_view_box:?}"
     );
 
-    let venn = render_named_block("26. venn-beta");
+    let venn = render_named_block("25. Venn Diagram");
     assert!(!venn.contains(".venn-set-0 path{fill:rgb(122,122,122)"));
     assert!(
         ["skyblue", "orange", "lightgreen", "white"]
@@ -128,13 +128,13 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
     assert!(venn.contains("fill: rgb(164, 0, 0); stroke: rgb(164, 0, 0);"));
     assert!(venn.contains("fill: rgb(204, 42, 145); stroke: rgb(204, 42, 145);"));
 
-    let wardley = render_named_block("27. wardley-beta");
+    let wardley = render_named_block("26. Wardley Map");
     assert!(
         wardley
             .contains(r##"class="wardley-background" width="1100" height="800" fill="#333333""##)
     );
 
-    let xychart = render_named_block("28. xychart-beta");
+    let xychart = render_all_fixture("27-02-xy-chart-bar-line.md");
     assert!(xychart.contains(r#"transform="translate(350, 21.5) rotate(0)">Sales Revenue</text>"#));
     assert!(xychart.contains(r#"<path d="M 81.710625,43 L 81.710625,467 " fill="none""#));
     assert!(xychart.contains(r#"transform="translate(70.710625, 51) rotate(0)">11000</text>"#));
@@ -150,14 +150,14 @@ fn rust_managed_js_runtime_keeps_light_theme_feedback_diagrams_readable() {
     }
 
     let _guard = DarkModeGuard::set(false);
-    let kanban = render_all_fixture("19-kanban.md");
+    let kanban = render_all_fixture("14-01-kanban-simple.md");
     assert!(kanban.contains(".cluster-label text"));
     assert!(kanban.contains(".cluster-label tspan"));
     assert!(kanban.contains(".label tspan"));
     assert!(kanban.contains(".kanban-ticket-link tspan"));
     assert!(kanban.contains("fill:#333333!important"));
 
-    let wardley = render_named_block("27. wardley-beta");
+    let wardley = render_named_block("26. Wardley Map");
     assert!(
         wardley.contains(
             r##"class="wardley-background" width="1100" height="800" fill="transparent""##
@@ -193,7 +193,7 @@ fn render_named_block(heading: &str) -> String {
 
 fn render_all_fixture(name: &str) -> String {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../assets/fixtures/mermaid_all")
+        .join("../../assets/fixtures/mermaid_parts/en")
         .join(name);
     render_source(
         name,
@@ -214,7 +214,7 @@ fn render_source(name: &str, source: &str) -> String {
 
 fn source_after_heading(heading: &str) -> String {
     let marker = format!("## {heading}");
-    let markdown = include_str!("../../../assets/fixtures/mermaid.md");
+    let markdown = include_str!("../../../assets/fixtures/sample_mermaid.md");
     let section = markdown
         .split(&marker)
         .nth(1)

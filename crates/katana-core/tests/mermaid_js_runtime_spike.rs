@@ -37,7 +37,7 @@ fn rust_managed_js_runtime_evaluates_all_fixture_mermaid_blocks() {
         return;
     }
 
-    let fixture = include_str!("../../../assets/fixtures/sample_mermaid_all.md");
+    let fixture = include_str!("../../../assets/fixtures/sample_mermaid.md");
     let sources = extract_mermaid_blocks(fixture);
     assert!(
         sources.len() >= 20,

@@ -1,7 +1,7 @@
 KatanaNode.prototype.getBBox = function getBBox() {
   const text = katanaNodeTextForBox(this);
   const childWidth = katanaNodeChildWidth(this);
-  const width = Math.max(80, childWidth, text.length * 8);
+  const width = Math.max(80, childWidth, katanaTextWidth(text));
   const height = Math.max(24, this.children.length * 24);
   return { x: 0, y: 0, width, height };
 };
@@ -30,14 +30,14 @@ KatanaNode.prototype.getBoundingClientRect = function getBoundingClientRect() {
 };
 
 KatanaNode.prototype.getComputedTextLength = function getComputedTextLength() {
-  return Math.max(16, String(this.textContent || "").length * 8);
+  return Math.max(16, katanaTextWidth(String(this.textContent || "")));
 };
 
 KatanaNode.prototype.getContext = function getContext() {
   return {
     font: "",
     measureText(value) {
-      return { width: Math.max(16, String(value || "").length * 8) };
+      return { width: Math.max(16, katanaTextWidth(String(value || ""))) };
     },
   };
 };
