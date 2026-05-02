@@ -2,6 +2,7 @@ pub mod authoring;
 pub mod authoring_utils;
 pub mod code_block_menu;
 pub mod context_menu;
+mod context_menu_image_ingest;
 #[cfg(test)]
 mod context_menu_tests;
 pub mod decorations;

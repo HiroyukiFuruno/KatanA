@@ -76,6 +76,12 @@ impl<'a> GlobalMenuBar<'a> {
                         "save_document",
                         AppAction::SaveDocument
                     );
+                    btn!(
+                        ui,
+                        "edit.ingest_clipboard_image",
+                        &i18n.search.command_ingest_clipboard_image,
+                        AppAction::IngestClipboardImage
+                    );
                 });
 
                 crate::widgets::MenuButtonOps::show(ui, &i18n.menu.view, |ui| {

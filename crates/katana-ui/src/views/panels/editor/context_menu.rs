@@ -40,10 +40,17 @@ impl EditorContextMenu {
                 ui,
                 i18n.settings.behavior.ingest_section_title.clone(),
                 |ui| {
-                    Self::render_image_ingest(ui, action);
+                    super::context_menu_image_ingest::EditorContextMenuImageIngestOps::render(
+                        ui, action,
+                    );
                 },
             );
         });
+    }
+
+    pub(super) fn close_after_action(ui: &mut egui::Ui, action: &mut AppAction, next: AppAction) {
+        *action = next;
+        ui.close();
     }
 
     fn render_inline(ui: &mut egui::Ui, action: &mut AppAction, has_selection: bool) {
@@ -162,26 +169,6 @@ impl EditorContextMenu {
         );
     }
 
-    fn render_image_ingest(ui: &mut egui::Ui, action: &mut AppAction) {
-        let s = &crate::i18n::I18nOps::get().search;
-        if ui.button(&s.command_ingest_image_file).clicked() {
-            *action = AppAction::IngestImageFile;
-            ui.close();
-        }
-        let clipboard_image_available =
-            crate::app::action::clipboard_image::ClipboardImageOps::has_image_payload();
-        if ui
-            .add_enabled(
-                clipboard_image_available,
-                egui::Button::new(&s.command_ingest_clipboard_image),
-            )
-            .clicked()
-        {
-            *action = AppAction::IngestClipboardImage;
-            ui.close();
-        }
-    }
-
     fn author_button(
         ui: &mut egui::Ui,
         action: &mut AppAction,
@@ -190,8 +177,7 @@ impl EditorContextMenu {
         enabled: bool,
     ) {
         if ui.add_enabled(enabled, egui::Button::new(label)).clicked() {
-            *action = AppAction::AuthorMarkdown(op);
-            ui.close();
+            Self::close_after_action(ui, action, AppAction::AuthorMarkdown(op));
         }
     }
 
