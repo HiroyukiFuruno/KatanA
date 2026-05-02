@@ -12,6 +12,6 @@ xychart-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 27.1. XY Chart (Line only)](official-light/27-01-xy-chart-line-only.png)
+![公式Mermaid.js描画: 27.1. XY Chart (Line only)](official-dark/27-01-xy-chart-line-only.png)
 
 <!-- katana-mermaid-official:end -->

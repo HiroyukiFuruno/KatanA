@@ -16,6 +16,6 @@ journey
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 24.2. User Journey (Working day)](official-light/24-02-user-journey-working-day.png)
+![公式Mermaid.js描画: 24.2. User Journey (Working day)](official-dark/24-02-user-journey-working-day.png)
 
 <!-- katana-mermaid-official:end -->

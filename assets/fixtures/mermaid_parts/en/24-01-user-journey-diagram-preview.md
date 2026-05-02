@@ -14,6 +14,6 @@ journey
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 24.1. User Journey (Diagram preview)](official-light/24-01-user-journey-diagram-preview.png)
+![公式Mermaid.js描画: 24.1. User Journey (Diagram preview)](official-dark/24-01-user-journey-diagram-preview.png)
 
 <!-- katana-mermaid-official:end -->

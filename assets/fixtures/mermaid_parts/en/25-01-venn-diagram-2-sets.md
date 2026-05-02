@@ -12,6 +12,6 @@ venn-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 25.1. Venn Diagram (2 sets)](official-light/25-01-venn-diagram-2-sets.png)
+![公式Mermaid.js描画: 25.1. Venn Diagram (2 sets)](official-dark/25-01-venn-diagram-2-sets.png)
 
 <!-- katana-mermaid-official:end -->

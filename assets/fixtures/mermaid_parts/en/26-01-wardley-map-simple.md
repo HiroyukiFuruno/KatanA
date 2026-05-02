@@ -16,6 +16,6 @@ wardley-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 26.1. Wardley Map (Simple)](official-light/26-01-wardley-map-simple.png)
+![公式Mermaid.js描画: 26.1. Wardley Map (Simple)](official-dark/26-01-wardley-map-simple.png)
 
 <!-- katana-mermaid-official:end -->
