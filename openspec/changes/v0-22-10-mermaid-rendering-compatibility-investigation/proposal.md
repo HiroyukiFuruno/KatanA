@@ -6,7 +6,7 @@ KatanA は Mermaid の描画を `mmdc` 実行から、ローカル `mermaid.min.
 
 現在はガントチャートの「今日」線による大きな崩れだけを抑えている。残りの Mermaid 図形でも、`mmdc` 時代に近い安定した見た目を KatanA の renderer 内で再現できるようにする。
 
-また、Linux 版の配布確認を `make linux-up` 上でリリース後に行うだけでは、Homebrew 経由の導入体験を事前に検証できない。Homebrew 4.5 以降では一部の Linux cask がサポートされているため、KatanA も Linux 向け GUI アプリとして `brew install --cask` 経路を検討し、成立条件と release automation を v0.22.10 の配布作業に含める。
+また、Linux 版の配布確認を `just linux-up` 上でリリース後に行うだけでは、Homebrew 経由の導入体験を事前に検証できない。Homebrew 4.5 以降では一部の Linux cask がサポートされているため、KatanA も Linux 向け GUI アプリとして `brew install --cask` 経路を検討し、成立条件と release automation を v0.22.10 の配布作業に含める。
 
 ## What Changes
 

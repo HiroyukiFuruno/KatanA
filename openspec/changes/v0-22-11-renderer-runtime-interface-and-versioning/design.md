@@ -62,7 +62,7 @@ vendor/mermaid/<version>/mermaid.min.js
 vendor/mermaid/<version>/mermaid.min.js.sha256
 ```
 
-更新は `make mermaid-js-update VERSION=<version>` のような入口に集約する。更新時は埋め込み JS、checksum、公式比較画像、cache profile を同時に更新する。
+更新は `just VERSION=<version> mermaid-js-update` のような入口に集約する。更新時は埋め込み JS、checksum、公式比較画像、cache profile を同時に更新する。
 
 ## `katana-renderer` 分離境界
 
@@ -118,7 +118,7 @@ v0.22.11 では完全移行ではなく、次を決める。
 - OpenSpec validation を通す。
 - Mermaid runtime interface の単体テストを追加する。
 - cache key に Mermaid.js 版と renderer profile が含まれることを確認する。
-- `make mermaid-diagram-update` が固定版 Mermaid.js を使うことを確認する。
+- `just mermaid-diagram-update` が固定版 Mermaid.js を使うことを確認する。
 - Draw.io / export は、未接続または後続移管の扱いが文書と実装で矛盾しないことを確認する。
 - `mmdc` との初回描画 / 連続描画の比較を、少なくとも代表 fixture で記録できるようにする。
 - CLI は core API の利用者として設計し、KatanA runtime が CLI 実行に依存しないことを確認する。

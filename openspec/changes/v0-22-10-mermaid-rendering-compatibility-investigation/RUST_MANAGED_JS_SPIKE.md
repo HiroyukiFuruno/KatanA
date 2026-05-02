@@ -27,7 +27,7 @@ cargo test -p katana-core --test mermaid_js_runtime_spike -- --ignored --nocaptu
 アプリ起動:
 
 ```bash
-make run-release
+just run-release
 ```
 
 確認内容:

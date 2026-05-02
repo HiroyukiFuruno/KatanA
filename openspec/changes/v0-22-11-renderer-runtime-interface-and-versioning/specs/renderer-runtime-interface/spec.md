@@ -36,7 +36,7 @@
 #### Scenario: Update the Mermaid.js bundle reproducibly
 
 - **WHEN** Mermaid.js の版を更新する
-- **THEN** システムは更新用の make target または script で版指定を受け取る
+- **THEN** システムは更新用の just recipe または script で版指定を受け取る
 - **THEN** システムは埋め込み JS、checksum、公式比較画像、cache profile を同じ更新単位で扱う
 
 ### Requirement: `katana-renderer` extraction boundary is documented

@@ -24,7 +24,7 @@
 - `i18n-runtime-safety` Task 1 が `master` に入り、未知の runtime language code は fallback language へ解決されるようになった。v1.0.1 ではこの fallback の再実装を扱わず、settings / state / action の境界整理で既存挙動を壊さないことを検証対象にする。
 - `diagram-backend-adapter` Task 1 が `master` に入り、Mermaid / PlantUML 用の backend input、render options、theme snapshot、document context、renderer-neutral output / error、cache key contract が追加された。v1.0.1 の preview / diagram 整理ではこの契約を前提にし、同じ契約型を再定義しない。
 - 2026-04-25 の OpenSpec 整理で、無印の `preview-adapter-contract`、`diagram-backend-adapter`、`i18n-runtime-safety`、`local-llm-ui-integration` は superseded archive へ移した。今後は versioned change を正の実施単位とする。
-- `.agents` / `.codex` workflow、Makefile、`scripts/runner` には、策定後に v1.0.1 の作業順序を変える差分は確認されなかった。現時点の verification gate は引き続き `make check` を主軸にする。
+- `.agents` / `.codex` workflow、Justfile、`scripts/runner` には、策定後に v1.0.1 の作業順序を変える差分は確認されなかった。現時点の verification gate は引き続き `just check` を主軸にする。
 - `katana-ui` の再計測では、`shell_tests.rs` 1241 行、`shell_ui_tests.rs` 1091 行、`preview_pane/tests.rs` 1025 行が最大の単体テスト群として残っている。integration 側では `tests/integration/preview_pane/tables.rs` 656 行、`preview_pane/diagrams.rs` 273 行が大きい。
 - `katana-ui/src` は既に `app/action/*`、`state/*`、`shell/*`、`shell_ui/*`、`views/*`、`widgets/*` に分かれているが、`features/*` という所有境界はまだ存在しない。Task 1 ではこの現状を前提に、単純移動で済む領域と service boundary の再設計が必要な領域を分ける。
 
@@ -34,7 +34,7 @@
 2. Task 2 のディレクトリ再設計は、`features/*` 新設を確定する前に、既存 `app/action/*` と `state/*` の所有境界を表にする。
 3. Task 3 は、引き続き `AppAction`、root `AppState`、shell dispatch を優先する。preview / diagram の深い実装移行は active change との衝突を避ける。
 4. Task 4 は、巨大 unit test の分割に加え、既存 integration tests の大きい preview table / diagram 領域を release regression gate へどう接続するかを明記する。
-5. Task 5 は、現在の `make check` が macOS impacted test、Linux workspace test、Windows xwin check を含む前提で、常時 gate と release-only gate の境界を再判断する。
+5. Task 5 は、現在の `just check` が macOS impacted test、Linux workspace test、Windows xwin check を含む前提で、常時 gate と release-only gate の境界を再判断する。
 
 ## Task 1 構造棚卸し（2026-04-25 15:28 JST）
 
@@ -88,7 +88,7 @@ Task 1 では実装移動を行わず、v1.0.1 で扱う整理対象と、active
 - ディレクトリ整理だけで済む変更と、実装責務の再設計が必要な変更を分ける。
 - `katana-ui` の action / state / service / view の境界を再定義する。
 - 大きい test file を feature contract 単位へ分割する。
-- release regression gate を `make check` または専用 target の内訳として説明できる状態にする。
+- release regression gate を `just check` または専用 recipe の内訳として説明できる状態にする。
 - 挙動維持の refactor を原則にし、各段階で既存機能の回帰を検知する。
 
 **Non-Goals:**
@@ -102,7 +102,7 @@ Task 1 では実装移動を行わず、v1.0.1 で扱う整理対象と、active
 
 ### 1. 着手前に策定日からの差分を反映する
 
-2026-04-25 時点の解析結果だけを固定計画として扱わない。実装開始時に `master`、active OpenSpec、`katana-ui` の構造、test runner、Makefile を再確認し、増減した機能や移動済み module を task に反映する。
+2026-04-25 時点の解析結果だけを固定計画として扱わない。実装開始時に `master`、active OpenSpec、`katana-ui` の構造、test runner、Justfile を再確認し、増減した機能や移動済み module を task に反映する。
 
 ### 2. ディレクトリ再設計と内部実装再設計を分ける
 
@@ -158,11 +158,11 @@ Visual snapshot に頼らず、semantic assertions、state assertions、fixture 
 3. `AppAction` と dispatch を領域 action へ分割する準備を行う。
 4. document / workspace / preview / diagnostics の順に feature boundary を固める。
 5. 巨大 test file を contract 単位に分割する。
-6. release regression gate を Makefile / runner から実行できる形にする。
-7. すべての段階で `make check` と対象 contract test を通す。
+6. release regression gate を Justfile / runner から実行できる形にする。
+7. すべての段階で `just check` と対象 contract test を通す。
 
 ## Open Questions
 
 - feature module を `crates/katana-ui/src/features/*` に新設するか、既存 `app` / `state` / `views` の下で段階移行するか。
-- release gate を `make check` に常時含めるか、`make release-check` として分けるか。
+- release gate を `just check` に常時含めるか、専用の just recipe として分けるか。
 - integration test の serial / parallel 分割基準を現在の runner に合わせて再設計するか。

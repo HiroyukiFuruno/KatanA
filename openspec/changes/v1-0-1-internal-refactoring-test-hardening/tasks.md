@@ -24,9 +24,9 @@
 - [x] Base ブランチが最新の `master` または `release/v1.0.1` に追従していること
 - [x] 2026-04-25 から着手日までの差分を確認するための比較対象 commit が特定できていること
 
-実施記録: 2026-04-25 14:53 JST に、比較基準 `512f6864` から `9ffeb570` までの `master` 差分、active OpenSpec、`.agents` / `.codex` workflow、Makefile、`scripts/runner`、`katana-ui` 構造、主要 test file 行数を確認した。
+実施記録: 2026-04-25 14:53 JST に、比較基準 `512f6864` から `9ffeb570` までの `master` 差分、active OpenSpec、`.agents` / `.codex` workflow、Justfile、`scripts/runner`、`katana-ui` 構造、主要 test file 行数を確認した。
 
-- [x] 0.1 2026-04-25 から着手日までの `master`、active OpenSpec、`.agents` ワークフロー、Makefile、テスト実行基盤の差分を確認する
+- [x] 0.1 2026-04-25 から着手日までの `master`、active OpenSpec、`.agents` ワークフロー、Justfile、テスト実行基盤の差分を確認する
 - [x] 0.2 `katana-ui` のモジュール構造、大きいファイル、テスト配置を再計測し、2026-04-25 時点の解析との差分を整理する
 - [x] 0.3 既に別 change で整理済みの領域、または新しく追加された領域を `design.md` の現状分析へ反映する
 - [x] 0.4 task1 以降の対象順序、DoR、DoD、検証対象を最新状態に合わせて更新する
@@ -74,7 +74,7 @@
 
 - [ ] 目標ディレクトリ構造と import rule が architecture note または `design.md` に記録されていること
 - [ ] ファイル移動の commit と挙動変更の commit が混ざっていないこと
-- [ ] 移動対象ごとに `make check` または対象単体テスト / 統合テストが通過していること
+- [ ] 移動対象ごとに `just check` または対象単体テスト / 統合テストが通過していること
 - [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、自己レビュー、commit、PR作成、merge を含む delivery routine を完了すること
 
 ## 3. 内部実装境界の再設計
@@ -129,14 +129,14 @@
 
 - [ ] 5.1 v1.0.0 後に壊してはいけない core workflow を test manifest として定義する
 - [ ] 5.2 document open / edit / save、workspace navigation、preview render、diagnostics、settings persistence、export の gate を整える
-- [ ] 5.3 `make check` に含める範囲と、必要なら `make release-check` に分ける範囲を決める
+- [ ] 5.3 `just check` に含める範囲と、必要なら専用の just recipe に分ける範囲を決める
 - [ ] 5.4 リリース回帰ゲートの実行時間、失敗時の切り分け方法、CI での扱いを記録する
 
 ### 完了条件（DoD）
 
 - [ ] リリース回帰ゲートの対象 workflow が manifest または tasks に明記されていること
 - [ ] 正式リリース後に壊してはいけない core workflow が自動テストで検知できること
-- [ ] ゲートの実行方法が Makefile または runner から再現できること
+- [ ] ゲートの実行方法が Justfile または runner から再現できること
 - [ ] CI で gate が失敗した場合に blocking とする条件が明記されていること
 - [ ] `/openspec-delivery` ワークフロー（`.agents/workflows/openspec-delivery.md`）を実行し、自己レビュー、commit、PR作成、merge を含む delivery routine を完了すること
 
@@ -155,12 +155,12 @@
 
 - [ ] 7.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に沿って自己レビューを実行する
 - [ ] 7.2 更新した Markdown 文書（例: `tasks.md`、`CHANGELOG.md`）を format / lint-fix する
-- [ ] 7.3 `make check` が exit code 0 で通過することを確認する
+- [ ] 7.3 `just check` が exit code 0 で通過することを確認する
 - [ ] 7.4 Base Feature Branch から `master` 向け PR を作成する
 - [ ] 7.5 PR の CI（Lint / Coverage / CodeQL）が通過していることを確認し、失敗している場合は merge しない
 - [ ] 7.6 `master` へ merge する（`gh pr merge --merge --delete-branch`）
 - [ ] 7.7 `master` から `release/v1.0.1` ブランチを作成する
-- [ ] 7.8 `make release VERSION=1.0.1` を実行し、`changelog-writing` skill で CHANGELOG を更新する
+- [ ] 7.8 `just VERSION=1.0.1 release` を実行し、`changelog-writing` skill で CHANGELOG を更新する
 - [ ] 7.9 `release/v1.0.1` から `master` 向け PR を作成し、`Release Readiness` CI の通過を確認する
 - [ ] 7.10 release PR を `master` へ merge する（`gh pr merge --merge --delete-branch`）
 - [ ] 7.11 GitHub Release の完了を確認し、`/opsx-archive` でこの change を archive する

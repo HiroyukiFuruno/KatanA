@@ -80,7 +80,7 @@
    - Homebrew の Linux cask 対応範囲を確認する
    - `homebrew-katana` の macOS cask / Linux formula / Linux cask の責務を分離する
    - Linux release asset の URL、sha256、実行ファイル配置、desktop entry、icon 配置を cask で表現できるか確認する
-   - `make linux-up` 環境で tap、install、launch、uninstall を検証する
+   - `just linux-up` 環境で tap、install、launch、uninstall を検証する
    - 成立しない場合は Formula へ曖昧に戻さず、制約と後続配布方式を記録する
 
 ## Risks

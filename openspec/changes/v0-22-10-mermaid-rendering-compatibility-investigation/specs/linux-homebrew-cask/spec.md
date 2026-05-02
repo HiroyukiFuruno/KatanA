@@ -32,7 +32,7 @@
 
 #### Scenario: Verify cask installation in Linux environment
 
-- **WHEN** `make linux-up` の Ubuntu 環境で Linux cask を検証する
+- **WHEN** `just linux-up` の Ubuntu 環境で Linux cask を検証する
 - **THEN** 手順は `brew tap`、`brew install --cask`、起動確認、`brew uninstall --cask` を含む
 - **THEN** 検証は macOS の `--cask` 動作だけで成功扱いにしない
 - **THEN** cask が Homebrew 側制約で成立しない場合は、不成立理由と代替配布方式を記録する

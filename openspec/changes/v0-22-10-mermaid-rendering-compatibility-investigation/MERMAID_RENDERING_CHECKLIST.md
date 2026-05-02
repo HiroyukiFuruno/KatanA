@@ -12,13 +12,13 @@
 
 最新結果: v48 compare で 26 / 26 を表示確認済み。
 評価方法は、公式 Mermaid.js を実ブラウザーで描画した参照画像を各 Markdown fixture に埋め込み、KatanA preview 上で上下比較する方式へ切り替えた。
-さらに `make mermaid-diagram-compare` で公式参照画像と KatanA preview screenshot の左右比較画像を 26 個生成する。
+さらに `just mermaid-diagram-compare` で公式参照画像と KatanA preview screenshot の左右比較画像を 26 個生成する。
 Ishikawa / Architecture などの beta / 特殊図形は描画欠落は解消済みだが、公式参照画像との細部差分を後続の精度改善候補として残す。
 
 ## 追加FB反映メモ
 
-- 2026-05-01 追記: `assets/fixtures/mermaid.md` の 99 点基準比較を `make mermaid-sample-compare MERMAID_MIN_SCORE=99` で実行。`15 Kanban`, `26 Venn`, `28 XY Chart` は 99 点近傍または通過。`05 ER`, `14 Ishikawa`, `27 Wardley` は目視上の主要崩れは解消済みだが、公式参照との細部差分または Wardley の背景方針差で 99 点未満。
-- 2026-05-01 追記: `14 Ishikawa` の `Environment` / `User` 枠が表示範囲からはみ出して切れる問題を認識し、viewBox を描画内容の下端まで含める回帰テストを追加。通常の `Blurry Photo` 2 行ヘッドは公式と同じ高さへ戻し、`make mermaid-sample-compare MERMAID_MIN_SCORE=99` では 97.29 点まで改善。
+- 2026-05-01 追記: `assets/fixtures/mermaid.md` の 99 点基準比較を `MERMAID_MIN_SCORE=99 just mermaid-sample-compare` で実行。`15 Kanban`, `26 Venn`, `28 XY Chart` は 99 点近傍または通過。`05 ER`, `14 Ishikawa`, `27 Wardley` は目視上の主要崩れは解消済みだが、公式参照との細部差分または Wardley の背景方針差で 99 点未満。
+- 2026-05-01 追記: `14 Ishikawa` の `Environment` / `User` 枠が表示範囲からはみ出して切れる問題を認識し、viewBox を描画内容の下端まで含める回帰テストを追加。通常の `Blurry Photo` 2 行ヘッドは公式と同じ高さへ戻し、`MERMAID_MIN_SCORE=99 just mermaid-sample-compare` では 97.29 点まで改善。
 - [/] 01 Flowchart: `はい` / `いいえ` の過剰な背景（background）矩形を抑制
 - [/] 02 Sequence: 図形はOK。粗さはSVGそのものではなく、比較画像化・プレビュー内の画像化（rasterize）で発生する見え方
 - [ ] 03 Class: `Error` 下の余白を公式表示に合わせて詰める
@@ -47,7 +47,7 @@ Ishikawa / Architecture などの beta / 特殊図形は描画欠落は解消済
 - [/] `assets/fixtures/mermaid.md` の gitGraph は CSS class の `font-size` と曲線 path 境界を反映し、91.16点から98.71点へ改善
 - [/] `assets/fixtures/mermaid.md` の 99点未達図は、ユーザーが実アプリ画面で目視確認し、現状品質を及第点として承認済み
 - [/] 99点未満の承認済み図は `scripts/mermaid/reference_score_policy.ts` で現状スコアを品質下限として固定
-- [/] 例外は採点の無効化ではない。下限を下回った場合は `make mermaid-sample-compare MERMAID_MIN_SCORE=99` が失敗する
+- [/] 例外は採点の無効化ではない。下限を下回った場合は `MERMAID_MIN_SCORE=99 just mermaid-sample-compare` が失敗する
 - [/] WHY: classDiagram / sequenceDiagram / erDiagram / mindmap / architecture-beta / block-beta / c4 / gitGraph / ishikawa-beta / requirementDiagram / sankey-beta / timeline / treeView-beta / treemap-beta / journey / wardley-beta は、実アプリで読める品質に到達済み。99点化は公式 Mermaid.js の内部レイアウト差や KatanA 側の可読性補正へ踏み込む必要があり、投資対効果（ROI）が悪くデグレードリスクも高い
 
 | No | 種別 | Fixture | ラベル | サイズ | 余白 | 配色 | 状態 | メモ |
@@ -100,7 +100,7 @@ Mermaid.js を更新した場合は、次のコマンドで公式参照画像と
 
 ```bash
 cd /Users/hiroyuki_furuno/works/private/katana
-make mermaid-diagram-update
+just mermaid-diagram-update
 ```
 
 初回だけ、評価用の Playwright 管理 Chromium が必要である。
@@ -108,7 +108,7 @@ make mermaid-diagram-update
 
 ```bash
 cd /Users/hiroyuki_furuno/works/private/katana
-make mermaid-diagram-browser-install
+just mermaid-diagram-browser-install
 ```
 
 生成先:
