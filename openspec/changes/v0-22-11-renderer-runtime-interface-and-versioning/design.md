@@ -73,6 +73,8 @@ vendor/mermaid/<version>/mermaid.min.js.sha256
 - DOM / SVG / layout shim
 - SVG 正規化
 - 公式 Mermaid.js との比較画像生成
+- 公式比較画像との採点評価
+- 保存時チェック（pre-commit）と CI/CD での採点検証方針
 - runtime profile と診断情報
 
 `katana-renderer` は library と CLI の両方を持てる構造にする。KatanA は library API を使い、CLI は単体 render、公式比較画像更新、性能計測、外部ツール利用の入口として扱う。CLI は core API の薄い利用者に留め、KatanA 専用の preview 状態や UI 型を持ち込まない。
@@ -82,6 +84,7 @@ vendor/mermaid/<version>/mermaid.min.js.sha256
 ```bash
 katana-renderer mermaid render --input diagram.mmd --output diagram.svg
 katana-renderer mermaid reference-update --fixtures assets/fixtures/mermaid_all
+katana-renderer mermaid compare --fixtures assets/fixtures/mermaid_all --min-score 99
 katana-renderer mermaid bench --fixtures assets/fixtures/mermaid_all
 ```
 

@@ -1,6 +1,8 @@
 pub mod color_preset;
 pub mod diagram;
 pub mod diagram_backend;
+pub(crate) mod diagram_js_runtime;
+pub(crate) mod diagram_runtime;
 pub mod drawio_renderer;
 pub mod export;
 pub mod fence;

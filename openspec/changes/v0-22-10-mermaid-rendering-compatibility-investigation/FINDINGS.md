@@ -142,9 +142,15 @@ make build-release
 
 いずれも成功した。`mermaid_js_runtime_spike` では flowchart / sequence / class / state / gantt / pie の SVG 生成、label 保持、`resvg` による rasterize まで確認した。
 
-`headless_chrome` は Chromium そのものではなく OS 上の Chrome アプリを制御する依存だったため、workspace 依存から削除した。Draw.io と PDF / PNG / JPEG export は、管理下 Chromium runtime 未接続の明示エラーへ切り替え、OS Chrome へ戻る fallback は残していない。
+`headless_chrome` は Chromium そのものではなく OS 上の Chrome アプリを制御する依存だったため、workspace 依存から削除した。PDF / PNG / JPEG export は生成済み HTML を簡易文書として正規化し、Rust の SVG rasterize と PDF writer でファイルを書き出す native export 経路へ切り替えた。OS Chrome へ戻る fallback は残していない。
+
+ただし、v0.22.10 の native export は「ユーザー操作として PDF / PNG / JPEG ファイルが出力できる」ことを最低ラインにしている。HTML / CSS の完全な画面再現、複雑な図形の高精度なページ割り、Draw.io を含む renderer 境界の統合は、v0.22.11 以降の `katana-renderer` 分離設計で扱う。
 
 追加 fixture として、`assets/fixtures/sample_mermaid_all.md` に Mermaid 図形種別の確認用 Markdown を追加した。
+
+Draw.io 経路では、公式JSをRust管理V8で動かす方針を維持し、自前描画への退避は追加していない。標準 `.drawio` の圧縮済み `<diagram>` は公式 `Editor.extractGraphModel` / `Editor.parseDiagramNode` / `Graph.decompress` で展開する。`mxUtils.load` / `mxUtils.get` / `mxGraph.getImageFromBundles` はDraw.io専用runtime adapterでV8内リソース表へ接続し、OSブラウザーやV8内からのファイル読み込みには戻さない。
+
+現時点でV8内に同梱した公式リソースは `stencils/basic.xml` / `stencils/aws4.xml` / `shapes/mxAWS4.js` / `img/lib/ibm/miscellaneous/cognitive_services.svg` である。これは `shape=mxgraph.basic.*`、AWS4系の公式テンプレート、`image=img/lib/ibm/miscellaneous/cognitive_services.svg` の回帰テストを固定するための最小セットで、Salesforce / Office / Web Icons などは同じ仮想リソースローダーへ公式ファイルを追加登録する必要がある。
 
 全パターン fixture の Rust 管理 JS 評価では、26 block すべてが SVG 生成と `resvg` rasterize まで通った。
 
@@ -167,7 +173,22 @@ make build-release
 - DOM move semantics、`:first-child`、`compareDocumentPosition()` の不足で、一部の図形の要素順序と計測が不安定だった
 - SVG bounds normalization が横幅中心だったため、Radar / Venn / Ishikawa など縦横比が特殊な図形で初期表示が大きすぎた
 
-これらに対して、DOM tree 操作、style parsing、text measurement、element metrics、content bounds、図形別の限定的な SVG normalization を追加した。v34 screenshot では 26 / 26 の主要ラベル、サイズ、余白、配色、rasterize を確認済みである。Ishikawa / Architecture は Mermaid beta / 特殊図形のため、公式ブラウザー描画との細部差分比較は後続の精度改善候補として残す。
+これらに対して、DOM tree 操作、style parsing、text measurement、element metrics、content bounds、図形別の限定的な SVG normalization を追加した。v44 compare では 26 / 26 の主要ラベル、サイズ、余白、配色、rasterize を確認済みである。
+
+v36 で追加修正した差分は次の通り。
+
+- SVG 互換: `style` 属性内の font-family quote がそのまま出力され、`style="... "trebuchet ms" ..."` という不正 XML になっていた。最小 DOM の `outerHTML` 生成で属性値と text node を XML escape するよう修正し、並列 Mermaid render の rasterize 失敗を解消した
+- SVG 互換: Sankey が `mix-blend-mode` を設定すると `mixBlendMode` setter が `setProperty()` を再帰呼び出しして stack overflow していた。style property を prototype setter 経由で再代入しないよう修正した
+- サイズ: preview 側の SVG 表示倍率を `1.5` から `1.0` へ戻し、公式参照画像との比較時に初期表示が大きくなりすぎる状態を抑制した
+
+v44 で追加修正した差分は次の通り。
+
+- BG: Flowchart / State の edge label 背景が dark theme の CSS に上書きされて過剰表示される問題を、対象 background rect の inline style 透明化で抑制した
+- 図形内文字: ER / Journey の図形内ラベルが `foreignObject` 前提で欠落または読みにくくなる問題を、SVG fallback text と配色補正で復旧した
+- 配色: Pie の凡例 swatch がすべて light gray になる問題を、円グラフ本体の fill と同期して補正した
+- 位置: Requirement の `<<satisfies>>` ラベルと Venn の circle / label / fill を公式参照画像へ寄せた
+
+Ishikawa / Architecture は Mermaid beta / 特殊図形のため、描画欠落は解消済みだが、公式ブラウザー描画との細部差分比較は後続の精度改善候補として残す。
 
 ### 2.3 公式ブラウザー描画との比較方式
 
@@ -182,6 +203,14 @@ make mermaid-diagram-update
 このコマンドは、`~/.local/katana/mermaid.min.js` を Playwright 管理 Chromium 上で実行し、`assets/fixtures/mermaid_all/official/*.png` を再生成する。さらに、26個の個別 Markdown fixture に公式参照画像を埋め込む。これにより、KatanA preview 上で「KatanA が描画した Mermaid」と「公式ブラウザー描画の画像」を上下に並べて比較できる。
 
 Playwright 管理 Chromium は検証用の基準画像生成にだけ使う。通常 preview / HTML export の採用 runtime ではない。
+
+追加した比較経路:
+
+```bash
+make mermaid-diagram-compare
+```
+
+このコマンドは `tmp/mermaid-official-reference-screenshots/*.png` と公式参照画像を左右に並べ、`tmp/mermaid-official-comparison/README.md` に 26 個の比較画像を Markdown 画像として埋め込む。v44 の比較証跡では 26 / 26 がエラー表示なしで描画されている。
 
 ### 2.4 `katana-renderer` 切り出しの前提
 

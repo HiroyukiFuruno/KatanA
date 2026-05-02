@@ -22,7 +22,16 @@
 
 上記を実行すると、ブラウザ上で操作可能な Ubuntu デスクトップが起動します。
 アクセス先は `<http://localhost:3000/`> です。
-その後、ブラウザ内のターミナルからリリースアセット (`KatanA-linux-x86_64.tar.gz` または `deb`) をダウンロードし、動作確認を行います。
+ローカルcheckoutはコンテナ内の `/config/workspace/katana` にマウントされます。
+ブラウザ内のターミナルから次のコマンドで、未リリース版の release 実行を確認できます。
+
+```bash
+cd /config/workspace/katana
+make run-release
+```
+
+Cargo のホームディレクトリ（`CARGO_HOME`）とビルド成果物（`CARGO_TARGET_DIR`）は Docker の名前付きボリュームに分離されます。
+macOS 側の `~/.cargo` や `target/` を汚さずに Linux 版をビルドできます。
 
 ### Windows 環境の構築と検証
 

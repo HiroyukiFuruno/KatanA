@@ -11,6 +11,7 @@ Lint を KML（katana-markdown-linter）へ分けたのと同じ考え方で、M
 - 埋め込み Mermaid.js は checksum（改ざん検知用のハッシュ）と更新手順を持ち、cache key と比較証跡へ版情報を含める。
 - `katana-renderer` 分離設計を文書化し、KatanA と `katana-renderer` の責務、API 境界、更新手順、検証機構を分ける。
 - Draw.io 描画と HTML / PDF / PNG / JPEG export の所有境界を同じ設計上の懸念として整理する。
+- 公式比較画像との採点評価、保存時チェック（pre-commit）、CI/CD での検証導入は `katana-renderer` 側の計画として扱い、KatanA 本体の関心から外す。
 - 将来の preview 分離を前提に、preview は `katana-renderer` を利用できるが、`katana-renderer` は preview / egui / KatanA UI に依存しない構造にする。
 - `mmdc` より軽く速い描画体験を価値として扱い、初回描画と連続描画の性能証跡を残せるようにする。
 - 将来の `katana-renderer` CLI を想定し、単体 render、公式比較画像更新、性能計測を同じ core API から呼べる設計にする。

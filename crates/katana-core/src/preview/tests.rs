@@ -93,6 +93,59 @@ mod split_tests {
     }
 
     #[test]
+    fn empty_mermaid_backtick_fence_stays_markdown() {
+        let md = "Before\n\
+                  ```mermaid\n\
+                    \n\
+                  ```\n\
+                  After";
+        let sections = PreviewSectionOps::split_into_sections(md);
+
+        assert_eq!(sections.len(), 1);
+        assert!(matches!(sections[0], PreviewSection::Markdown(_, _)));
+        if let PreviewSection::Markdown(text, _) = &sections[0] {
+            assert!(text.contains("```mermaid"));
+            assert!(text.contains("After"));
+        }
+    }
+
+    #[test]
+    fn empty_mermaid_tilde_fence_stays_markdown() {
+        let md = "Before\n\
+                  ~~~mermaid\n\
+                    \n\
+                  ~~~\n\
+                  After";
+        let sections = PreviewSectionOps::split_into_sections(md);
+
+        assert_eq!(sections.len(), 1);
+        assert!(matches!(sections[0], PreviewSection::Markdown(_, _)));
+        if let PreviewSection::Markdown(text, _) = &sections[0] {
+            assert!(text.contains("~~~mermaid"));
+            assert!(text.contains("After"));
+        }
+    }
+
+    #[test]
+    fn zenuml_mermaid_fence_stays_markdown() {
+        let md = "Before\n\
+                  ```mermaid\n\
+                  zenuml\n\
+                      title Order Service\n\
+                  ```\n\
+                  After";
+        let sections = PreviewSectionOps::split_into_sections(md);
+
+        assert_eq!(sections.len(), 1);
+        assert!(matches!(sections[0], PreviewSection::Markdown(_, _)));
+        if let PreviewSection::Markdown(text, _) = &sections[0] {
+            assert!(text.contains("```mermaid"));
+            assert!(text.contains("zenuml"));
+            assert!(text.contains("After"));
+        }
+    }
+
+    #[test]
     fn table_followed_by_alert_stays_in_same_markdown_section() {
         /* WHY: A table immediately followed by a blockquote alert must remain in the same
          * Markdown section so that the rendering pipeline sees both elements together.

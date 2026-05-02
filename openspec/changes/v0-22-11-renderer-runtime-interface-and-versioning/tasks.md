@@ -93,10 +93,10 @@ KatanA から描画専門性を外すため、`katana-renderer` の責務、Kata
 
 ### 完了条件（Definition of Done）
 
-- [ ] 4.1 `katana-renderer` が所有する Mermaid.js 版管理、Rust 管理 JS runtime、DOM / SVG / layout shim、公式比較画像生成を明記する
+- [ ] 4.1 `katana-renderer` が所有する Mermaid.js 版管理、Rust 管理 JS runtime、DOM / SVG / layout shim、公式比較画像生成、採点評価を明記する
 - [ ] 4.2 KatanA に残す Markdown block 抽出、テーマ snapshot、preview / export UI、cache 保存先を明記する
 - [ ] 4.3 preview 分離後も `preview -> katana-renderer` の一方向依存になることを図または文章で明記する
-- [ ] 4.4 `katana-renderer` repository 側の更新、release、検証画像更新、KatanA への取り込み手順を記録する
+- [ ] 4.4 `katana-renderer` repository 側の更新、release、検証画像更新、保存時チェック（pre-commit）と CI/CD での採点検証、KatanA への取り込み手順を記録する
 - [ ] 4.5 KML と同じく、専門性を外部 component に出す設計判断として記録する
 - [ ] 4.6 `mmdc` より軽く速く、描画待ちを体感しない描画体験を価値として扱い、初回描画と連続描画の性能証跡を残す方針を記録する
 - [ ] 4.7 `katana-renderer` CLI を想定し、単体 render、公式比較画像更新、性能計測を core API の利用者として設計する
