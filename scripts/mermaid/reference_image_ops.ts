@@ -1,6 +1,8 @@
 import { execFileSync, spawnSync, type SpawnSyncReturns } from "node:child_process";
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { DiagramTheme, type DiagramThemeName } from "./diagram_theme";
 import type { CropRect } from "./reference_compare_options";
 import type { ReferencePair } from "./reference_pair_repository";
 
@@ -15,12 +17,15 @@ export interface NormalizedPair {
 
 export class MagickOps {
   private workDir: string;
+  private theme: DiagramTheme;
 
   constructor(
     private outputDir: string,
     private crop: CropRect | null,
+    themeName: DiagramThemeName,
   ) {
     this.workDir = path.join(outputDir, "work");
+    this.theme = DiagramTheme.parse(themeName);
   }
 
   prepare() {
@@ -50,7 +55,7 @@ export class MagickOps {
       rows.push(this.renderContactRow(pairImages, index, rows.length));
     }
     const output = path.join(this.outputDir, "contact-sheet.png");
-    this.magick([...rows, "-background", "#1e1e1e", "-append", output]);
+    this.magick([...rows, "-background", this.theme.canvasBackground, "-append", output]);
     return output;
   }
 
@@ -59,6 +64,13 @@ export class MagickOps {
       encoding: "utf8",
     });
     return new ImageMetricResult(result, metric).normalizedError();
+  }
+
+  imageSize(input: string): ImageSize {
+    const result = execFileSync("magick", ["identify", "-format", "%w %h", input], {
+      encoding: "utf8",
+    });
+    return ImageSize.parse(result);
   }
 
   private normalizedPair(pair: ReferencePair): NormalizedPair {
@@ -94,7 +106,7 @@ export class MagickOps {
       "-resize",
       "760x423",
       "-background",
-      "#1e1e1e",
+      this.theme.canvasBackground,
       "-gravity",
       "center",
       "-extent",
@@ -108,7 +120,7 @@ export class MagickOps {
       pairImages[index],
       this.secondImage(pairImages, index),
       "-background",
-      "#1e1e1e",
+      this.theme.canvasBackground,
       "+append",
       row,
     ]);
@@ -121,6 +133,42 @@ export class MagickOps {
 
   private magick(args: string[]) {
     execFileSync("magick", args, { stdio: "inherit" });
+  }
+}
+
+export class ImageSize {
+  static parse(value: string): ImageSize {
+    const [width, height] = value.trim().split(/\s+/).map(Number);
+    assert(Number.isFinite(width), `ImageMagick identify parse failed: ${value.trim()}`);
+    assert(Number.isFinite(height), `ImageMagick identify parse failed: ${value.trim()}`);
+    return new ImageSize(width, height);
+  }
+
+  constructor(
+    public readonly width: number,
+    public readonly height: number,
+  ) {}
+
+  similarityTo(other: ImageSize): number {
+    return Math.min(
+      ImageSize.axisSimilarity(this.width, other.width),
+      ImageSize.axisSimilarity(this.height, other.height),
+    );
+  }
+
+  coverageBy(candidate: ImageSize): number {
+    return Math.min(
+      ImageSize.coverageAxisSimilarity(this.width, candidate.width),
+      ImageSize.coverageAxisSimilarity(this.height, candidate.height),
+    );
+  }
+
+  private static axisSimilarity(left: number, right: number): number {
+    return Math.min(left, right) / Math.max(left, right);
+  }
+
+  private static coverageAxisSimilarity(expected: number, actual: number): number {
+    return Math.min(1, actual / expected);
   }
 }
 

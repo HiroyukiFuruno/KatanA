@@ -8,7 +8,7 @@ function katanaDrawioSourceGeometryEntries() {
     ...katanaDrawioSourceUserObjectGeometryEntries(),
   ]
     .filter(katanaHasDrawioSourceGeometryEntry)
-    .filter(katanaIsTopLevelDrawioSourceGeometryEntry);
+    .filter(katanaDrawioIsTopLevelSourceGeometryEntry);
 }
 
 function katanaDrawioSourceCellGeometryEntries() {
@@ -20,7 +20,7 @@ function katanaDrawioSourceCellGeometryEntries() {
 function katanaDrawioSourceUserObjectGeometryEntries() {
   return Array.from(
     katanaDrawioRequestSource().matchAll(
-      /<UserObject\b([^>]*)>\s*<mxCell\b([^>]*)>\s*<mxGeometry\b([^>]*)/g,
+      /<(?:UserObject|object)\b([^>]*)>\s*<mxCell\b([^>]*)>\s*<mxGeometry\b([^>]*)/g,
     ),
   ).map(katanaDrawioSourceUserObjectGeometryEntry);
 }
@@ -42,10 +42,10 @@ function katanaDrawioSourceGeometry(cellAttributes, geometryAttributes, fallback
   return {
     id: katanaDrawioCellAttribute(cellAttributes, "id"),
     parent: katanaDrawioSourceParentAttribute(cellAttributes, fallbackAttributes),
-    x: katanaDrawioNumberAttribute(geometryAttributes, "x"),
-    y: katanaDrawioNumberAttribute(geometryAttributes, "y"),
-    width: katanaDrawioNumberAttribute(geometryAttributes, "width"),
-    height: katanaDrawioNumberAttribute(geometryAttributes, "height"),
+    x: katanaDrawioCoordinateAttribute(geometryAttributes, "x"),
+    y: katanaDrawioCoordinateAttribute(geometryAttributes, "y"),
+    width: katanaDrawioRequiredNumberAttribute(geometryAttributes, "width"),
+    height: katanaDrawioRequiredNumberAttribute(geometryAttributes, "height"),
   };
 }
 
@@ -72,13 +72,48 @@ function katanaHasDrawioSourceGeometryEntry(entry) {
   ].every(Boolean);
 }
 
-function katanaIsTopLevelDrawioSourceGeometryEntry(entry) {
-  return ["", "1"].includes(entry.parent);
+function katanaDrawioIsTopLevelSourceGeometryEntry(entry) {
+  return [
+    katanaDrawioIsRootLevelSourceParent(entry.parent),
+    katanaDrawioSourceCellParentMap().get(entry.parent) === "0",
+  ].some(Boolean);
 }
 
-function katanaDrawioNumberAttribute(attributes, name) {
+function katanaDrawioIsRootLevelSourceParent(parent) {
+  return ["", "1"].includes(parent);
+}
+
+function katanaDrawioSourceCellParentMap() {
+  return new Map(
+    Array.from(katanaDrawioRequestSource().matchAll(/<mxCell\b([^>]*)/g))
+      .map((match) => katanaDrawioXmlAttributes(match[1]))
+      .filter(katanaDrawioHasSourceCellParent)
+      .map(katanaDrawioSourceCellParentEntry),
+  );
+}
+
+function katanaDrawioHasSourceCellParent(attributes) {
+  return [attributes.has("id"), attributes.has("parent")].every(Boolean);
+}
+
+function katanaDrawioSourceCellParentEntry(attributes) {
+  return [
+    katanaDrawioCellAttribute(attributes, "id"),
+    katanaDrawioCellAttribute(attributes, "parent"),
+  ];
+}
+
+function katanaDrawioCoordinateAttribute(attributes, name) {
+  return katanaDrawioOptionalNumberAttribute(attributes, name, 0);
+}
+
+function katanaDrawioRequiredNumberAttribute(attributes, name) {
+  return katanaDrawioOptionalNumberAttribute(attributes, name, Number.NaN);
+}
+
+function katanaDrawioOptionalNumberAttribute(attributes, name, fallback) {
   const value = katanaDrawioCellAttribute(attributes, name);
-  return value === "" ? Number.NaN : Number(value);
+  return value === "" ? fallback : Number(value);
 }
 
 function katanaDrawioSourceCropBox(svg, entries) {

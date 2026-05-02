@@ -4,10 +4,10 @@ import { MagickOps } from "../mermaid/reference_image_ops";
 import { ReferencePairRepository } from "../mermaid/reference_pair_repository";
 import { ReferenceCompareReport, ReferenceCompareReportLabels } from "../mermaid/reference_report";
 import {
-  ReferenceScorer,
-  ReferenceScores,
-  type ReferenceScoreRow,
-} from "../mermaid/reference_score";
+  DrawioReferenceScorer,
+  DrawioReferenceScores,
+  type DrawioReferenceScoreRow,
+} from "./reference-score";
 
 class CliOptions {
   static parse(argv: string[]): CliParsedOptions {
@@ -19,6 +19,7 @@ class CliOptions {
       outputDir: path.resolve(CliOptions.get(argv, "--output", "tmp/drawio-official-comparison")),
       katanaCrop: CropRect.parseOptional(CliOptions.get(argv, "--katana-crop", "none")),
       minScore: CliOptions.number(argv, "--min-score", 99),
+      theme: "dark",
     };
   }
 
@@ -41,11 +42,15 @@ class ReferenceCompare {
 
   run() {
     const pairs = new ReferencePairRepository(this.options).list();
-    const magick = new MagickOps(this.options.outputDir, this.options.katanaCrop);
+    const magick = new MagickOps(
+      this.options.outputDir,
+      this.options.katanaCrop,
+      this.options.theme,
+    );
     magick.prepare();
 
     const normalized = pairs.map((pair) => magick.renderPair(pair));
-    const scores = new ReferenceScorer(magick, this.options.minScore).score(normalized);
+    const scores = new DrawioReferenceScorer(magick, this.options.minScore).score(normalized);
     const contactSheet = magick.renderContactSheet(normalized.map((it) => it.pairImagePath));
 
     new ReferenceCompareReport(this.options.outputDir, ReferenceCompareReportLabels.drawio()).write(
@@ -57,13 +62,13 @@ class ReferenceCompare {
     process.exitCode = this.exitCode(scores);
   }
 
-  private printSummary(scores: ReferenceScoreRow[], contactSheet: string) {
+  private printSummary(scores: DrawioReferenceScoreRow[], contactSheet: string) {
     console.log(`pairs: ${scores.length}`);
-    console.log(`minimum score: ${ReferenceScores.minimum(scores).toFixed(2)}`);
+    console.log(`minimum score: ${DrawioReferenceScores.minimum(scores).toFixed(2)}`);
     console.log(`contact: ${contactSheet}`);
   }
 
-  private exitCode(scores: ReferenceScoreRow[]): number {
+  private exitCode(scores: DrawioReferenceScoreRow[]): number {
     return scores.every((score) => score.passed) ? 0 : 1;
   }
 }

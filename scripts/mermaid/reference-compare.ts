@@ -9,7 +9,11 @@ class ReferenceCompare {
 
   run() {
     const pairs = new ReferencePairRepository(this.options).list();
-    const magick = new MagickOps(this.options.outputDir, this.options.katanaCrop);
+    const magick = new MagickOps(
+      this.options.outputDir,
+      this.options.katanaCrop,
+      this.options.theme,
+    );
     magick.prepare();
 
     const normalized = pairs.map((pair) => magick.renderPair(pair));

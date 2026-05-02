@@ -1,4 +1,5 @@
 import path from "node:path";
+import { DiagramTheme, type DiagramThemeName } from "./diagram_theme";
 
 export interface CliParsedOptions {
   officialDir: string;
@@ -6,18 +7,24 @@ export interface CliParsedOptions {
   outputDir: string;
   katanaCrop: CropRect | null;
   minScore: number;
+  theme: DiagramThemeName;
 }
 
 export class CliOptions {
   static parse(argv: string[]): CliParsedOptions {
     return {
       officialDir: path.resolve(
-        CliOptions.get(argv, "--official", "assets/fixtures/mermaid_all/official"),
+        CliOptions.get(argv, "--official", "tmp/mermaid-parts-en-dark-official-browser"),
       ),
-      katanaDir: path.resolve(CliOptions.get(argv, "--katana", "tmp/mermaid-katana-rendered")),
-      outputDir: path.resolve(CliOptions.get(argv, "--output", "tmp/mermaid-official-comparison")),
+      katanaDir: path.resolve(
+        CliOptions.get(argv, "--katana", "tmp/mermaid-parts-en-dark-katana-browser"),
+      ),
+      outputDir: path.resolve(
+        CliOptions.get(argv, "--output", "tmp/mermaid-parts-en-dark-comparison"),
+      ),
       katanaCrop: CropRect.parseOptional(CliOptions.get(argv, "--katana-crop", "none")),
       minScore: CliOptions.number(argv, "--min-score", 99),
+      theme: DiagramTheme.parse(CliOptions.get(argv, "--theme", "dark")).name,
     };
   }
 
