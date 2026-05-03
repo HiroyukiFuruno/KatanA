@@ -1,0 +1,19 @@
+<mxfile host="app.diagrams.net" agent="Katana fixture" version="29.0.0">
+  <diagram id="html-labels-and-entities" name="HTML Labels And Entities">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="line-break" value="Line&lt;br&gt;Break" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="80" y="80" width="150" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="escaped" value="A &amp;amp; B &amp;lt; C" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="280" y="80" width="170" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="formatted" value="&lt;b&gt;Bold&lt;/b&gt;&lt;br&gt;&lt;i&gt;Italic&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="500" y="80" width="170" height="80" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

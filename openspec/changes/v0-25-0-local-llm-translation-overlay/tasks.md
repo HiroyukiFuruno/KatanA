@@ -45,7 +45,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 - [ ] 自動翻訳機能が、ローカルLLMプロバイダーが有効化 (enabled) されている時にのみ動作すること
 - [ ] 万が一翻訳に失敗しても、クラッシュしたり表示が消滅したりせず、オリジナルの英語テキストが安全にそのまま表示されること
 - [ ] 翻訳によってオーバーレイ化されたテキストに対し、再帰的な再翻訳が掛からないという保証があること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
@@ -65,7 +65,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 - [ ] ユーザーが、直感的な操作で自動翻訳されたビュー (translated view) と、元の英語テキストの両方を確認できるようになっていること
 - [ ] LLMの応答が遅延中 (loading) または失敗した状態でも、全体のUIレイアウトが破壊されたりエラーになったりしないこと
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
@@ -81,7 +81,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 - [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
 - [ ] 5.2 markdownのフォーマット（format）および Lint修正（lintfix）を実行し、全ドキュメントの体裁を整える
-- [ ] 5.3 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 5.3 `just check` がエラーなし (exit code 0) で通過することを確認する
 - [ ] 5.4 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
 - [ ] 5.5 `master` に向けて PR（プルリクエスト）を作成する
 - [ ] 5.6 `master` へマージする (※ `--admin` の利用は許容される)

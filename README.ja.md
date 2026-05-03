@@ -245,6 +245,15 @@ KatanA Desktopはオープンソースプロジェクトです。
 - 📐 **[コーディング規約](docs/coding-rules.ja.md)** — コードスタイル、規約、品質ゲート
 - 🏗️ **[Architecture Decisions](docs/adr/)** — 設計の根拠とADR
 
+開発タスクは `just` から実行します：
+
+```sh
+brew install just
+just init
+just run
+just check
+```
+
 ---
 
 ## プロジェクトを支援する

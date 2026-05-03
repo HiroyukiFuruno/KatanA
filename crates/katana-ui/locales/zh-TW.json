@@ -531,7 +531,7 @@
   "export": {
     "success": "{format} 匯出成功: {path}",
     "failed": "{format} 匯出失敗: {error}",
-    "tool_missing": "請安裝 Chrome 以支援 {format} 匯出。",
+    "tool_missing": "{format} 匯出所需的受管理 Chromium 執行階段尚未連接。",
     "temp_file_error": "暫存檔案錯誤: {error}",
     "write_error": "寫入錯誤: {error}",
     "persist_error": "持久化失敗。",

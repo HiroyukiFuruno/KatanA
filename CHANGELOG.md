@@ -1,6 +1,23 @@
 # Changelog
 
-All notable changes to KatanA Desktop. This file records the major changes to KatanA Desktop.
+All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
+
+## [0.22.10] - 2026-05-03 00:27:30 (UTC)
+
+### 🚀 Features
+
+- **Diagram Renderer Runtime Replacement**: Mermaid and DrawIO previews now use the in-process JavaScript renderer path with a unified policy, reducing environment dependency on external browser apps.
+- **Rendering Verification Tooling**: Added official-reference rendering comparison tooling and fixture organization to support deterministic Mermaid/DrawIO render verification across languages and styles.
+
+### ✨ Improvements
+
+- **Export Reliability**: Updated HTML / PDF / PNG / JPEG generation paths to align with the renderer policy and preserve rendered output quality without requiring OS Chrome/Chromium launch for normal export flows.
+- **Resource Coverage**: Expanded DrawIO-compatible resources and updated fixture sets so diagram rendering behavior is validated against official references before release.
+
+### 🐛 Bug Fixes
+
+- **Diagram Quality**: Fixed numerous Mermaid/DrawIO rendering mismatches (layout, color, labels, sizing, and markers) through expanded fixture-driven corrections.
+- **Locale and Normalization**: Improved handling for non-English diagram inputs in comparison and runtime paths to reduce parser/display edge cases.
 
 ## [0.22.9] - 2026-04-29 00:20:53 (UTC)
 

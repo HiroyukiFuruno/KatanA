@@ -531,7 +531,7 @@
   "export": {
     "success": "{format} 를 성공적으로 내보냈습니다: {path}",
     "failed": "{format} 내보내기 실패: {error}",
-    "tool_missing": "{format} 내보내기를 위해 Chrome 또는 Chromium이 설치되어 있는지 확인하십시오.",
+    "tool_missing": "{format} 내보내기에 필요한 관리형 Chromium 런타임이 연결되어 있지 않습니다.",
     "temp_file_error": "임시 파일 생성 실패: {error}",
     "write_error": "내용 쓰기 실패: {error}",
     "persist_error": "임시 파일 저장 실패",

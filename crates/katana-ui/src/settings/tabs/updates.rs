@@ -1,3 +1,5 @@
+mod update_interval_selector;
+
 use std::path::PathBuf;
 
 use crate::app_action::{AppAction, AssetDownloadRequest};
@@ -5,6 +7,7 @@ use crate::settings::tabs::updates_renderer_section::{
     RendererUpdateSection, RendererUpdateSectionOps,
 };
 use crate::state::update::UpdatePhase;
+use eframe::egui;
 
 const SECTION_SPACING: f32 = 8.0;
 const SECTION_SEPARATOR_SPACING: f32 = 24.0;
@@ -31,6 +34,10 @@ impl crate::settings::tabs::UpdatesTabOps {
             /* 1. App Updates Section */
             ui.heading(&i18n_settings.section_title);
             ui.add_space(SECTION_SPACING);
+            update_interval_selector::UpdateIntervalSelector::render(ui, state, i18n_settings);
+            ui.add_space(SECTION_SEPARATOR_SPACING);
+            ui.separator();
+            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
 
             let current_version = env!("CARGO_PKG_VERSION");
             crate::widgets::AlignCenter::new()

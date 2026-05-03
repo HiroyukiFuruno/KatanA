@@ -1,3 +1,4 @@
+use crate::app::image_document::ImageDocumentOps;
 use crate::app::preview::PreviewOps;
 use crate::app::workspace::WorkspaceTabSessionV2;
 use crate::app::workspace::manage;
@@ -7,6 +8,16 @@ use crate::shell::KatanaApp;
 pub struct WorkspaceOpenSessionOps;
 
 impl WorkspaceOpenSessionOps {
+    pub(super) fn load_active_session_document(
+        app: &KatanaApp,
+        path: &std::path::Path,
+        pinned: bool,
+    ) -> Result<katana_core::document::Document, katana_core::document::DocumentError> {
+        let mut doc = ImageDocumentOps::load_or_create(&app.fs, path)?;
+        doc.is_pinned = pinned;
+        Ok(doc)
+    }
+
     pub(crate) fn restore_session_tabs(
         app: &mut KatanaApp,
         path_str: &str,
@@ -142,11 +153,8 @@ impl WorkspaceOpenSessionOps {
         for (i, (p, pinned)) in to_open.iter().enumerate() {
             let path = std::path::PathBuf::from(p);
             if i == active_idx_val {
-                match app.fs.load_document(path) {
-                    Ok(mut doc) => {
-                        doc.is_pinned = *pinned;
-                        app.state.document.open_documents.push(doc);
-                    }
+                match Self::load_active_session_document(app, &path, *pinned) {
+                    Ok(doc) => app.state.document.open_documents.push(doc),
                     Err(e) => tracing::error!("Failed to load document: {}", e),
                 }
             } else {

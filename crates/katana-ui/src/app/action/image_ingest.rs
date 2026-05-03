@@ -36,6 +36,10 @@ impl KatanaApp {
 
     /// Ingest an image from the clipboard.
     pub(crate) fn handle_action_ingest_clipboard_image(&mut self) {
+        if !super::clipboard_image::ClipboardImageOps::has_image_payload() {
+            return;
+        }
+
         match super::clipboard_image::ClipboardImageOps::read_image_payload() {
             Ok(payload) => self.process_image_ingest(&payload.bytes, payload.extension),
             Err(err) => {
@@ -97,6 +101,7 @@ impl KatanaApp {
         let md_text = format!("![]({})", md_path);
 
         self.handle_action_insert_raw_markdown(&md_text);
+        self.pending_action = crate::app_state::AppAction::RefreshExplorer;
     }
 }
 
@@ -125,7 +130,23 @@ fn resolve_image_ingest_paths(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::app::document::DocumentOps;
+    use crate::app_state::AppState;
+    use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
     use std::path::PathBuf;
+
+    fn make_app() -> KatanaApp {
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
+        KatanaApp::new(state)
+    }
 
     #[test]
     fn test_resolve_image_ingest_paths() {
@@ -144,5 +165,58 @@ mod tests {
 
         assert_eq!(dest, PathBuf::from("/users/doc/assets/1234.jpg"));
         assert_eq!(md, "assets/1234.jpg");
+    }
+
+    #[test]
+    fn process_image_ingest_saves_asset_and_inserts_markdown() {
+        let mut app = make_app();
+        let temp_dir = tempfile::tempdir().unwrap();
+        let doc_path = temp_dir.path().join("note.md");
+        std::fs::write(&doc_path, "alpha").unwrap();
+        app.handle_select_document(doc_path, true);
+
+        app.process_image_ingest(b"image-bytes", "png");
+
+        let doc = app.state.active_document().unwrap();
+        assert!(
+            doc.buffer.starts_with("alpha![](./asset/img/"),
+            "image ingest should insert markdown at the active document cursor"
+        );
+        assert!(
+            doc.buffer.ends_with(".png)"),
+            "image ingest should keep the source extension in markdown"
+        );
+
+        let asset_dir = temp_dir.path().join("./asset/img");
+        let asset_paths: Vec<_> = std::fs::read_dir(asset_dir)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .collect();
+        assert_eq!(asset_paths.len(), 1);
+        assert_eq!(std::fs::read(&asset_paths[0]).unwrap(), b"image-bytes");
+        assert!(matches!(
+            app.pending_action,
+            crate::app_state::AppAction::RefreshExplorer
+        ));
+    }
+
+    #[test]
+    #[ignore = "uses the current OS clipboard; run manually while an image is copied"]
+    fn live_current_os_clipboard_image_ingest_inserts_markdown() {
+        let mut app = make_app();
+        let temp_dir = tempfile::tempdir().unwrap();
+        let doc_path = temp_dir.path().join("note.md");
+        std::fs::write(&doc_path, "alpha").unwrap();
+        app.handle_select_document(doc_path, true);
+
+        app.handle_action_ingest_clipboard_image();
+
+        let doc = app.state.active_document().unwrap();
+        assert!(
+            doc.buffer.contains("![](./asset/img/"),
+            "clipboard image ingest should insert markdown, buffer={:?}, status={:?}",
+            doc.buffer,
+            app.state.layout.status_message
+        );
     }
 }

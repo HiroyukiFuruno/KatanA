@@ -214,7 +214,7 @@ fn ast_linter_file_length() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(
         "file-length",
-        "Fix: File exceeds 200-line limit (excluding tests). Split into smaller modules.",
+        "Fix: File exceeds 200-line limit (excluding tests). Treat this as a responsibility-boundary failure and split by cohesive concerns.",
         &target_crates(root),
         FileLengthOps::lint,
     );
@@ -468,7 +468,7 @@ fn ast_linter_global_menu_parity() {
     let all_violations = GlobalMenuParityOps::lint(root);
     ViolationReporterOps::panic(
         "global-menu-parity",
-        "Fix: Windows/Linux global menu (`global_menu.rs`) and macOS native menu (`native_menu/mod.rs` & `macos_menu.m`) must have parity in their available `AppAction` variants. Ensure any action added to one is also added to the other.",
+        "Fix: Windows/Linux global menu modules (`global_menu*.rs`) and macOS native menu (`native_menu/mod.rs` & `macos_menu.m`) must have parity in their available `AppAction` variants. Ensure any action added to one is also added to the other.",
         &all_violations,
     );
 }

@@ -18,6 +18,26 @@ impl DiagramKind {
             Self::DrawIo => "Draw.io",
         }
     }
+
+    pub fn should_preserve_fenced_source(&self, source: &str) -> bool {
+        matches!(self, Self::Mermaid) && should_preserve_mermaid_fence(source)
+    }
+}
+
+fn should_preserve_mermaid_fence(source: &str) -> bool {
+    let trimmed = source.trim_start_matches('\u{feff}').trim_start();
+    if trimmed.trim().is_empty() {
+        return true;
+    }
+    mermaid_source_starts_with_keyword(trimmed, "zenuml")
+}
+
+fn mermaid_source_starts_with_keyword(source: &str, keyword: &str) -> bool {
+    let lower_source = source.to_ascii_lowercase();
+    let Some(rest) = lower_source.strip_prefix(keyword) else {
+        return false;
+    };
+    rest.chars().next().is_none_or(char::is_whitespace)
 }
 
 impl DiagramBlock {

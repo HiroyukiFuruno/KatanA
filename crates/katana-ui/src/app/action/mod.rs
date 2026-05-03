@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 mod clipboard_file_url;
-mod clipboard_image;
+pub(crate) mod clipboard_image;
+#[cfg(target_os = "macos")]
+mod clipboard_image_macos;
 mod demo_bundle;
 mod dispatch;
 mod dispatch_secondary;

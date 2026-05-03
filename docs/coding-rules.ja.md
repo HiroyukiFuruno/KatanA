@@ -402,11 +402,11 @@ PR をマージ可能とするための必須条件:
 1. **フォーマット**: `cargo fmt --all -- --check` パス
 2. **Clippy**: `cargo clippy --workspace -- -D warnings` パス（warning ゼロ）
 3. **テスト (ロジック)**: `cargo test --workspace` 全パス
-4. **テスト (統合)**: `make test-integration` パス（実レスポンス・アサーションのみ、Snapshot不使用）
+4. **テスト (統合)**: `just test-integration` パス（実レスポンス・アサーションのみ、Snapshot不使用）
 5. **テスト配置**: 新規ロジックには `src/` 内インライン UT、または境界横断シナリオ向けの `tests/` 配下 IT が付随している
 6. **カバレッジ**: `cargo llvm-cov --workspace --fail-under-lines 100` パス
 
-一括チェック: `make check`（pre-push フックと同等）
+一括チェック: `just check`（pre-push フックと同等）
 
 ---
 

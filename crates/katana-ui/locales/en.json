@@ -531,11 +531,11 @@
   "export": {
     "success": "Exported {format} successfully: {path}",
     "failed": "Export failed to {format}: {error}",
-    "tool_missing": "Export tool unavailable. Ensure Chrome or Chromium is installed for {format} export.",
+    "tool_missing": "Export tool unavailable. Managed Chromium runtime is not connected for {format} export.",
     "temp_file_error": "Failed to create temporary file: {error}",
     "write_error": "Failed to write content: {error}",
     "persist_error": "Failed to save temporary file",
-    "exporting": "{{lucide:hourglass}} Exporting {filename}…"
+    "exporting": "Exporting {filename}…"
   },
   "terms": {
     "title": "Terms of Use",

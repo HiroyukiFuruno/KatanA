@@ -247,6 +247,15 @@ If you want to build from source, contribute, or understand the architecture:
 - 📐 **[Coding Rules](docs/coding-rules.md)** — Code style, conventions, and quality gates
 - 🏗️ **[Architecture Decisions](docs/adr/)** — Design rationale and ADRs
 
+Common development tasks use `just`:
+
+```sh
+brew install just
+just init
+just run
+just check
+```
+
 ---
 
 ## Support the Project

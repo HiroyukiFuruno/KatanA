@@ -1,3 +1,6 @@
+#[path = "renderer_png.rs"]
+mod renderer_png;
+
 use super::types::*;
 use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::{
@@ -33,6 +36,9 @@ impl RendererLogicOps {
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
+        if matches!(kind, DiagramKind::Mermaid) {
+            mermaid_renderer::MermaidRenderOps::cache_profile().hash(&mut hasher);
+        }
         source.hash(&mut hasher);
         let source_hash = format!("{:x}", hasher.finish());
 
@@ -61,12 +67,9 @@ impl RendererLogicOps {
             DiagramResult::OkPng(bytes) => {
                 Self::decode_png_to_section(kind, source, bytes, source_lines)
             }
-            DiagramResult::Err { source, error } => RenderedSection::Error {
-                kind: format!("{kind:?}"),
-                _source: source,
-                message: error,
-                source_lines,
-            },
+            DiagramResult::Err { source, error } => {
+                Self::render_error_section(kind, source, error, source_lines)
+            }
             DiagramResult::CommandNotFound {
                 tool_name,
                 install_hint,
@@ -95,6 +98,42 @@ impl RendererLogicOps {
             DiagramKind::Mermaid => mermaid_renderer::MermaidRenderOps::render_mermaid(block),
             DiagramKind::PlantUml => plantuml_renderer::PlantUmlRendererOps::render_plantuml(block),
             DiagramKind::DrawIo => drawio_renderer::DrawioRendererOps::render_drawio(block),
+        }
+    }
+
+    fn render_error_section(
+        kind: &DiagramKind,
+        source: String,
+        error: String,
+        source_lines: usize,
+    ) -> RenderedSection {
+        if matches!(kind, DiagramKind::Mermaid | DiagramKind::DrawIo) {
+            return RenderedSection::Markdown(
+                Self::diagram_error_markdown(kind, &source),
+                source_lines,
+            );
+        }
+        RenderedSection::Error {
+            kind: format!("{kind:?}"),
+            _source: source,
+            message: error,
+            source_lines,
+        }
+    }
+
+    fn diagram_error_markdown(kind: &DiagramKind, source: &str) -> String {
+        format!(
+            "not supported\n\n```{}\n{}\n```",
+            Self::diagram_code_language(kind),
+            source
+        )
+    }
+
+    fn diagram_code_language(kind: &DiagramKind) -> &'static str {
+        match kind {
+            DiagramKind::Mermaid => "mermaid",
+            DiagramKind::PlantUml => "plantuml",
+            DiagramKind::DrawIo => "drawio",
         }
     }
 
@@ -139,29 +178,10 @@ impl RendererLogicOps {
         bytes: Vec<u8>,
         source_lines: usize,
     ) -> RenderedSection {
-        match Self::decode_png_rgba(&bytes) {
-            Ok(rasterized) => RenderedSection::Image {
-                svg_data: rasterized,
-                alt: format!("{kind:?} diagram"),
-                source_lines,
-            },
-            Err(e) => RenderedSection::Error {
-                kind: format!("{kind:?}"),
-                _source: source.to_string(),
-                message: format!("PNG decode failed: {e}"),
-                source_lines,
-            },
-        }
+        renderer_png::RendererPngDecoder::decode_png_to_section(kind, source, bytes, source_lines)
     }
 
     pub fn decode_png_rgba(bytes: &[u8]) -> Result<RasterizedSvg, String> {
-        let img = image::load_from_memory(bytes).map_err(|e| e.to_string())?;
-        let rgba = img.into_rgba8();
-        let (width, height) = rgba.dimensions();
-        Ok(RasterizedSvg {
-            width,
-            height,
-            rgba: rgba.into_raw(),
-        })
+        renderer_png::RendererPngDecoder::decode_png_rgba(bytes)
     }
 }

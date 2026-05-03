@@ -11,6 +11,26 @@ pub(crate) struct ClipboardImagePayload {
 pub(crate) struct ClipboardImageOps;
 
 impl ClipboardImageOps {
+    pub(crate) fn has_image_payload() -> bool {
+        if Self::read_arboard_image().is_ok() {
+            return true;
+        }
+        if Self::read_arboard_file_image().is_ok() {
+            return true;
+        }
+        if super::clipboard_file_url::ClipboardFileUrlOps::read_image_payload().is_ok() {
+            return true;
+        }
+        #[cfg(target_os = "macos")]
+        {
+            Self::read_macos_pasteboard_image().is_ok()
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            false
+        }
+    }
+
     pub(crate) fn read_image_payload() -> Result<ClipboardImagePayload, String> {
         let mut errors = Vec::new();
         let image_error = match Self::read_arboard_image() {
@@ -65,7 +85,11 @@ impl ClipboardImageOps {
         })
     }
 
-    fn rgba_to_png_bytes(width: usize, height: usize, rgba: &[u8]) -> Result<Vec<u8>, String> {
+    pub(super) fn rgba_to_png_bytes(
+        width: usize,
+        height: usize,
+        rgba: &[u8],
+    ) -> Result<Vec<u8>, String> {
         let expected_len = width
             .checked_mul(height)
             .and_then(|px| px.checked_mul(RGBA_CHANNEL_COUNT))
@@ -103,78 +127,6 @@ impl ClipboardImageOps {
         }
     }
 }
-
-#[cfg(target_os = "macos")]
-impl ClipboardImageOps {
-    fn read_macos_pasteboard_image() -> Result<ClipboardImagePayload, String> {
-        for (apple_type, extension) in [
-            ("«class PNGf»", "png"),
-            ("JPEG picture", "jpg"),
-            ("TIFF picture", "tiff"),
-            ("«class TIFF»", "tiff"),
-        ] {
-            let payload = Self::read_macos_pasteboard_type(apple_type)
-                .and_then(|bytes| Self::normalize_macos_pasteboard_bytes(bytes, extension));
-            if payload.is_ok() {
-                return payload;
-            }
-        }
-        Err("macOS pasteboard image formats were not available".to_string())
-    }
-
-    fn read_macos_pasteboard_type(apple_type: &str) -> Result<Vec<u8>, String> {
-        let path =
-            std::env::temp_dir().join(format!("katana_clipboard_image_{}", uuid::Uuid::new_v4()));
-        let path_arg = Self::apple_script_string(&path);
-        let status = katana_core::system::ProcessService::create_command("osascript")
-            .arg("-e")
-            .arg(format!("set outPath to \"{path_arg}\""))
-            .arg("-e")
-            .arg(format!("set imageData to the clipboard as {apple_type}"))
-            .arg("-e")
-            .arg("set outFile to open for access POSIX file outPath with write permission")
-            .arg("-e")
-            .arg("set eof of outFile to 0")
-            .arg("-e")
-            .arg("write imageData to outFile")
-            .arg("-e")
-            .arg("close access outFile")
-            .status()
-            .map_err(|err| err.to_string())?;
-        if !status.success() {
-            let _ = std::fs::remove_file(&path);
-            return Err(format!("osascript failed for {apple_type}"));
-        }
-        let bytes = std::fs::read(&path).map_err(|err| err.to_string())?;
-        let _ = std::fs::remove_file(path);
-        Ok(bytes)
-    }
-
-    fn normalize_macos_pasteboard_bytes(
-        bytes: Vec<u8>,
-        extension: &'static str,
-    ) -> Result<ClipboardImagePayload, String> {
-        if extension != "tiff" {
-            return Ok(ClipboardImagePayload { bytes, extension });
-        }
-
-        let image = image::load_from_memory_with_format(&bytes, image::ImageFormat::Tiff)
-            .map_err(|err| err.to_string())?
-            .into_rgba8();
-        let (width, height) = image.dimensions();
-        let bytes = Self::rgba_to_png_bytes(width as usize, height as usize, &image.into_raw())?;
-        Ok(ClipboardImagePayload {
-            bytes,
-            extension: "png",
-        })
-    }
-
-    fn apple_script_string(path: &Path) -> String {
-        path.to_string_lossy()
-            .replace('\\', "\\\\")
-            .replace('"', "\\\"")
-    }
-}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,6 +152,21 @@ mod tests {
         assert_eq!(
             ClipboardImageOps::supported_image_extension(&path),
             Some("png")
+        );
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_clipboard_info_detects_supported_image_type() {
+        assert!(
+            ClipboardImageOps::macos_clipboard_info_references_supported_image(
+                "«class PNGf», 132194, JPEG picture, 132194"
+            )
+        );
+        assert!(
+            !ClipboardImageOps::macos_clipboard_info_references_supported_image(
+                "«class HTML», 4895, «class utf8», 202"
+            )
         );
     }
 }

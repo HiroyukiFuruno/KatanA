@@ -50,12 +50,14 @@ impl MarkdownRenderOps {
         renderer: &R,
     ) -> Result<RenderOutput, MarkdownError> {
         let transformed = MarkdownFenceOps::transform_diagram_blocks(source, renderer);
-        let math_repaired = Self::repair_inline_math_spaces(&transformed);
+        let protected = DiagramHtmlProtector::protect(&transformed);
+        let math_repaired = Self::repair_inline_math_spaces(&protected.markdown);
         let html = markdown_to_html(&math_repaired, &Self::gfm_options());
-        Ok(RenderOutput { html })
+        Ok(RenderOutput {
+            html: protected.restore(&html),
+        })
     }
 
-    /// Repairs `$ lenient $` math to `$strict$` so that comrak recognizes it.
     /// Repairs `$ lenient $` math to `$strict$` so that comrak recognizes it.
     fn repair_inline_math_spaces(source: &str) -> String {
         use std::sync::LazyLock;
@@ -78,5 +80,66 @@ impl MarkdownRenderOps {
     ) -> Result<RenderOutput, MarkdownError> {
         let html = MarkdownFenceOps::transform_diagram_blocks(source, renderer);
         Ok(RenderOutput { html })
+    }
+}
+
+struct DiagramHtmlProtector {
+    markdown: String,
+    fragments: Vec<DiagramHtmlFragment>,
+}
+
+struct DiagramHtmlFragment {
+    placeholder: String,
+    html: String,
+}
+
+impl DiagramHtmlProtector {
+    fn protect(source: &str) -> Self {
+        let mut markdown = String::with_capacity(source.len());
+        let mut fragments = Vec::new();
+        let mut position = 0;
+        while let Some(range) = DiagramHtmlRange::next(source, position) {
+            markdown.push_str(&source[position..range.start]);
+            let placeholder = format!("<!--KATANA_DIAGRAM_HTML_PLACEHOLDER_{}-->", fragments.len());
+            markdown.push_str(&placeholder);
+            fragments.push(DiagramHtmlFragment {
+                placeholder,
+                html: source[range.start..range.end].to_string(),
+            });
+            position = range.end;
+        }
+        markdown.push_str(&source[position..]);
+        Self {
+            markdown,
+            fragments,
+        }
+    }
+
+    fn restore(&self, html: &str) -> String {
+        self.fragments
+            .iter()
+            .fold(html.to_string(), |current, fragment| {
+                current.replace(&fragment.placeholder, &fragment.html)
+            })
+    }
+}
+
+struct DiagramHtmlRange {
+    start: usize,
+    end: usize,
+}
+
+impl DiagramHtmlRange {
+    fn next(source: &str, offset: usize) -> Option<Self> {
+        let svg = Self::find(source, offset, "<svg", "</svg>");
+        let div = Self::find(source, offset, r#"<div class="katana-diagram"#, "</div>");
+        [svg, div].into_iter().flatten().min_by_key(|it| it.start)
+    }
+
+    fn find(source: &str, offset: usize, start_marker: &str, end_marker: &str) -> Option<Self> {
+        let start = offset + source[offset..].find(start_marker)?;
+        let after_start = start + start_marker.len();
+        let end = after_start + source[after_start..].find(end_marker)? + end_marker.len();
+        Some(Self { start, end })
     }
 }

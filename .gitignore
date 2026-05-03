@@ -57,6 +57,8 @@ Temporary Items
 /.claude/commands/opsx/
 /.claude/skills/openspec-*/
 /.codex/
+!.codex/workflows/
+!.codex/skills/
 /.codex/skills/openspec-*/
 /.github/copilot-instructions.md
 /.github/instructions/
@@ -97,3 +99,10 @@ cov.json
 /*.py
 cp
 cpD
+
+# diagram official img
+**/assets/fixtures/drawio/**/*.png
+**/assets/fixtures/drawio/**/*.svg
+**/assets/fixtures/mermaid/**/*.png
+**/assets/fixtures/mermaid/**/*.svg
+**/assets/fixtures/mermaid_parts/**/*.svg

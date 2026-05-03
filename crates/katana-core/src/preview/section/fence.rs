@@ -30,6 +30,9 @@ impl DiagramSectionOps {
         let kind = DiagramKind::from_info(info.trim())?;
         let closing = delimiter.find_closing(rest)?;
         let source = rest[..closing.content_end].to_string();
+        if kind.should_preserve_fenced_source(&source) {
+            return None;
+        }
         let after = &rest[closing.close_end..];
         let after = after.strip_prefix('\n').unwrap_or(after);
         Some((kind, source, after))

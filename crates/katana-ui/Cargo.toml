@@ -32,7 +32,7 @@ chrono = "0.4.44"
 tempfile = "3"
 pulldown-cmark = "0.13"
 base64 = "0.22.1"
-mathjax_svg = "3.2.0"
+mathjax_svg.workspace = true
 unicode-segmentation = "1.13.2"
 arboard = "3.6.1"
 uuid = { version = "1.23.1", features = ["v4"] }

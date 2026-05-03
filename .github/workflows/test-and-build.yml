@@ -11,6 +11,9 @@ on:
     paths:
       - '**.rs'
       - '!scripts/**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '.github/workflows/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -57,6 +60,17 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Install just
+        uses: taiki-e/install-action@7769b73c2ec98c38dfcf2e18c83cfd4880c038c1 # v2.75.27
+        with:
+          tool: just
+          fallback: none
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: latest
+
       - name: Cache Cargo registry & target
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -86,7 +100,7 @@ jobs:
         run: |
           rustup component add llvm-tools-preview
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
-          make coverage
+          just coverage
 
   lint:
     name: Lint
@@ -111,6 +125,17 @@ jobs:
           toolchain: stable
           components: clippy, rustfmt
 
+      - name: Install just
+        uses: taiki-e/install-action@7769b73c2ec98c38dfcf2e18c83cfd4880c038c1 # v2.75.27
+        with:
+          tool: just
+          fallback: none
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: latest
+
       - name: Cache Cargo registry & target
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -125,10 +150,10 @@ jobs:
 
       - name: Check formatting
         if: runner.os == 'Linux'
-        run: make fmt-check
+        run: just fmt-check
 
       - name: Run linter
-        run: make lint
+        run: just lint
 
   # CodeQL security scanning (Task 7.2 / 7.3).
   codeql:

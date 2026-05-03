@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net" agent="Katana fixture" version="29.0.0">
+  <diagram id="shape-style-matrix" name="Shape Style Matrix">
+    <mxGraphModel dx="980" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="rectangle" value="Rectangle" style="whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="80" y="60" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="rounded" value="Rounded" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="260" y="60" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="ellipse" value="Ellipse" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="440" y="60" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="parallelogram" value="Input" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="80" y="170" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cylinder" value="Data" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="260" y="170" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="module" value="Module" style="shape=module;jettyWidth=8;jettyHeight=4;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="440" y="170" width="140" height="70" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

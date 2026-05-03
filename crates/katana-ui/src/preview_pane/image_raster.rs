@@ -22,13 +22,12 @@ impl ImageLogicOps {
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> egui::Rect {
         let max_w = ui.available_width();
-        let base_scale = (max_w / img.width as f32).min(1.0);
+        let display_width = img.display_width.max(1.0);
+        let display_height = img.display_height.max(1.0);
+        let base_scale = (max_w / display_width).min(1.0);
         let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
         let pan = state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
-        let base_size = Vec2::new(
-            img.width as f32 * base_scale,
-            img.height as f32 * base_scale,
-        );
+        let base_size = Vec2::new(display_width * base_scale, display_height * base_scale);
         let zoomed_size = base_size * zoom;
         let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
         let (container_rect, response) =

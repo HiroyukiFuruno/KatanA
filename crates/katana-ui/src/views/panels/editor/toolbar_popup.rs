@@ -3,7 +3,7 @@ use eframe::egui;
 
 const POPUP_ID: &str = "editor_authoring_toolbar_popup";
 const POPUP_OPEN_ID: &str = "editor_authoring_toolbar_popup_open";
-const POPUP_GAP: f32 = 6.0;
+const POPUP_GAP: f32 = 16.0;
 const POPUP_EDGE_PADDING: f32 = 8.0;
 const POPUP_ESTIMATED_WIDTH: f32 = 352.0;
 const POPUP_ESTIMATED_HEIGHT: f32 = 44.0;
@@ -45,6 +45,15 @@ impl ToolbarPopup {
         let cursor_rect = galley.pos_from_cursor(cursor_range.primary);
         let popup_pos = Self::popup_position(response.rect, cursor_rect, ui.ctx().content_rect());
         let has_selection = cursor_range.primary.index != cursor_range.secondary.index;
+        if response.clicked() || (response.has_focus() && response.clicked_elsewhere()) {
+            super::code_block_menu::CodeBlockMenuPopupOps::set_open(ui, false);
+            Self::store_open(ui, false);
+            return;
+        }
+
+        if editor_focused && super::code_block_menu::CodeBlockMenuPopupOps::is_open(ui) {
+            super::code_block_menu::CodeBlockMenuPopupOps::set_open(ui, false);
+        }
 
         let area_response = egui::Area::new(egui::Id::new(POPUP_ID))
             .order(egui::Order::Foreground)
@@ -117,7 +126,7 @@ mod tests {
 
         let actual = ToolbarPopup::popup_position(response, cursor, viewport);
 
-        assert_eq!(actual, egui::pos2(110.0, 94.0));
+        assert_eq!(actual, egui::pos2(110.0, 104.0));
     }
 
     #[test]

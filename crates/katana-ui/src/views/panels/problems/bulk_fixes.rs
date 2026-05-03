@@ -89,6 +89,7 @@ mod tests {
                 title: "title",
                 description: "description",
                 docs_url: "",
+                aliases: &[],
                 parity: RuleParityStatus::Official,
                 is_fixable: true,
                 properties: &[],

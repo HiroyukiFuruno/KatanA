@@ -54,7 +54,12 @@ impl KatanaSvgLoader {
 
     pub(super) fn preprocess_svg_bytes(bytes: &[u8]) -> Result<String, String> {
         let svg = std::str::from_utf8(bytes).map_err(|err| err.to_string())?;
-        Ok(katana_core::emoji::EmojiSvgOps::prefer_apple_color_emoji_in_svg(svg))
+        let emoji_svg = katana_core::emoji::EmojiSvgOps::prefer_apple_color_emoji_in_svg(svg);
+        Ok(
+            katana_core::markdown::svg_rasterize::SvgRasterizeOps::preprocess_for_rasterizer(
+                &emoji_svg,
+            ),
+        )
     }
 
     pub(crate) fn rasterize_svg_bytes_with_size(
@@ -155,6 +160,24 @@ mod tests {
             processed,
             r#"<svg><text x="10" font-family="Verdana">Sponsor</text></svg>"#
         );
+    }
+
+    #[test]
+    fn preprocess_svg_bytes_makes_drawio_svg_rasterizer_compatible() {
+        let svg = concat!(
+            r##"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">"##,
+            r##"<switch><foreignObject>"##,
+            r##"<div xmlns="http://www.w3.org/1999/xhtml">Label</div>"##,
+            r##"</foreignObject><text x="0" y="8" fill="light-dark(#000000, #ffffff)">"##,
+            r##"Label</text></switch></svg>"##
+        )
+        .as_bytes();
+
+        let processed = KatanaSvgLoader::preprocess_svg_bytes(svg).expect("svg text");
+
+        assert!(!processed.contains("<foreignObject"));
+        assert!(!processed.contains("light-dark("));
+        assert!(processed.contains(r##"fill="#000000""##));
     }
 
     #[test]

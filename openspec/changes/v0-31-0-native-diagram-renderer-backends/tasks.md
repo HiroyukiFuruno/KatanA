@@ -93,12 +93,12 @@
 
 - [ ] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
 - [ ] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 6.3 Ensure `make check` passes with exit code 0
+- [ ] 6.3 Ensure `just check` passes with exit code 0
 - [ ] 6.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.7 Create `release/v0.31.0` branch from master
-- [ ] 6.8 Run `make release VERSION=0.31.0` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 6.8 Run `just VERSION=0.31.0 release` and update CHANGELOG (`changelog-writing` skill)
 - [ ] 6.9 Create PR from `release/v0.31.0` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

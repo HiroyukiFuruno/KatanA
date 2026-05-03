@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.22.9"
+version = "0.22.10"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -22,12 +22,11 @@ eframe = { version = "0.34", features = ["default"] }
 egui = "0.34"
 egui_extras = { version = "0.34", features = ["image", "file", "http", "svg", "svg_text"] }
 egui_commonmark = { version = "0.23", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
-headless_chrome = "1"
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
 # Markdown
 comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
-katana-markdown-linter = "0.15.1"
+katana-markdown-linter = "0.17.7"
 
 # Serialization / config
 serde = { version = "1", features = ["derive"] }
@@ -57,7 +56,10 @@ ignore = "0.4"
 resvg = "0.47"
 usvg = "0.47"
 tiny-skia = "0.12"
+v8 = "=139.0.0"
+mathjax_svg = "3.2.0"
 xmltree = "0.12"
+include_dir = "0.7.4"
 
 [patch.crates-io]
 egui_commonmark = { path = "vendor/egui_commonmark_upstream/egui_commonmark" }

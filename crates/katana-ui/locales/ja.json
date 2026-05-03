@@ -531,11 +531,11 @@
   "export": {
     "success": "{format} へのエクスポートが完了しました: {path}",
     "failed": "{format} へのエクスポートに失敗しました: {error}",
-    "tool_missing": "エクスポートツールが利用できません。{format} としてエクスポートするには、Chrome または Chromium がインストールされている必要があります。",
+    "tool_missing": "エクスポートツールが利用できません。{format} エクスポート用の管理下 Chromium 実行環境（runtime）が未接続です。",
     "temp_file_error": "一時ファイルの作成に失敗しました: {error}",
     "write_error": "内容の書き込みに失敗しました: {error}",
     "persist_error": "一時ファイルの保持に失敗しました",
-    "exporting": "{{lucide:hourglass}} {filename} を生成中…"
+    "exporting": "{filename} を生成中…"
   },
   "terms": {
     "title": "利用規約",

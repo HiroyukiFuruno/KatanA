@@ -131,6 +131,10 @@ impl ShortcutKeyOps {
             return false;
         }
 
+        if key == egui::Key::V && modifiers.shift && !modifiers.alt {
+            return false;
+        }
+
         matches!(
             key,
             egui::Key::A

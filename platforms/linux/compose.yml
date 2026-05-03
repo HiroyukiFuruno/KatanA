@@ -12,8 +12,19 @@ services:
       - PGID=1000
       - TZ=Asia/Tokyo
       - TITLE=Katana Linux Verification
+      - CARGO_HOME=/config/.cargo
+      - CARGO_TARGET_DIR=/config/workspace/katana/target
+    volumes:
+      - ../../:/config/workspace/katana
+      - katana-linux-cargo:/config/.cargo
+      # Linux release builds must not share macOS host artifacts.
+      - katana-linux-target:/config/workspace/katana/target
     ports:
       - "3000:3000"
       - "3001:3001"
     shm_size: "1gb"
     restart: unless-stopped
+
+volumes:
+  katana-linux-cargo:
+  katana-linux-target:

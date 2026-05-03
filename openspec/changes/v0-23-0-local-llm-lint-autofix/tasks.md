@@ -83,7 +83,7 @@
 - [ ] chat UI を画面端アイコンから開閉・固定表示できること
 - [ ] chat messages は app session 中だけ扱われ、再起動後に履歴復元されないこと
 - [ ] chat の request lifecycle が専用 state に閉じており、lint autofix や document generation の実装と競合しないこと
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -108,7 +108,7 @@
 - [ ] 元 content と LLM proposal content の差分を apply 前に preview できること
 - [ ] ユーザーの confirmation 無しに、勝手に Markdown が書き換わらないこと
 - [ ] 修正の適用後に再び lint が走り、エラーが解消された事実を確認できること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -130,7 +130,7 @@
 
 - [ ] provider 設定から chat、diagnostics autofix まで、UI 上で迷わずに辿り着けること
 - [ ] provider unavailable の理由と復旧導線が、ユーザーに分かること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -148,12 +148,12 @@
 
 - [ ] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `$self-review` skill
 - [ ] 6.2 Format and lint-fix all updated markdown documents
-- [ ] 6.3 Ensure `make check` passes with exit code 0
+- [ ] 6.3 Ensure `just check` passes with exit code 0
 - [ ] 6.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.7 Create `release/v0.23.0` branch from master
-- [ ] 6.8 Run `make release VERSION=0.23.0` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 6.8 Run `just VERSION=0.23.0 release` and update CHANGELOG (`changelog-writing` skill)
 - [ ] 6.9 Create PR from `release/v0.23.0` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

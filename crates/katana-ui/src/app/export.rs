@@ -114,8 +114,14 @@ impl ExportOps for KatanaApp {
         doc_path: &std::path::Path,
     ) {
         let (is_available, tool_name) = match ext {
-            "pdf" => (true, "headless_chrome"),
-            _ => (true, "headless_chrome"),
+            "pdf" => (
+                katana_core::markdown::PdfExporter::is_available(),
+                "native export runtime",
+            ),
+            _ => (
+                katana_core::markdown::ImageExporter::is_available(),
+                "native export runtime",
+            ),
         };
 
         if !is_available {

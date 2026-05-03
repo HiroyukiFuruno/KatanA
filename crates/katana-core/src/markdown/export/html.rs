@@ -49,6 +49,7 @@ impl HtmlExporter {
       {{left: '$$', right: '$$', display: true}},
       {{left: '$', right: '$', display: false}}
     ],
+    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option', 'svg'],
     throwOnError: false
   }});
   document.querySelectorAll('[data-math-style=display]').forEach(function(el) {{
