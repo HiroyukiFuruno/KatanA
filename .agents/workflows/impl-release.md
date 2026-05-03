@@ -122,10 +122,12 @@ git switch -c release/vX.Y.Z
 - これにより、仕様の「完了」と「リリース」が同一の PR に含まれることになる。
 - `opsx-archive` 時には、delta specs の main specs への同期（Sync）も同時に実施すること。
 
-1. `commit_and_push` スキルに従い、バージョン更新・CHANGELOG・アーカイブ移動を一括して**日本語メッセージ**でリリースコミットを行う。
+1. リリースPR作成前に `release/vX.Y.Z` 側のコミットを1本に圧縮（squash）してから、リリースコミットを作成する。  
+   `origin/master` との差分を1コミット化するため、作業ツリーとインデックスはこの時点でクリーンを前提にする。
 
 ```bash
-git add .
+BASE_COMMIT=$(git merge-base origin/master HEAD)
+git reset --soft "${BASE_COMMIT}"
 git commit -S -m "release: vX.Y.Z リリース準備完了 (OpenSpec アーカイブ含む)"
 git push origin release/vX.Y.Z
 ```
