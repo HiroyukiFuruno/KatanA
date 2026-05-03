@@ -49,10 +49,7 @@ class ReferenceCompare {
     return parsed.map((entry) => this.parseBaselineScore(entry, filePath));
   }
 
-  private parseBaselineScore(
-    entry: unknown,
-    filePath: string,
-  ): ReferenceScoreBaseline {
+  private parseBaselineScore(entry: unknown, filePath: string): ReferenceScoreBaseline {
     if (typeof entry !== "object" || entry === null) {
       throw new Error(`Invalid baseline score entry: not an object in ${filePath}`);
     }

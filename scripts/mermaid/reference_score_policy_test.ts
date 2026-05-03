@@ -14,9 +14,9 @@ test("言語別slugでも同じ図形番号の目視確認済み下限を使う"
 test("同じ図形番号の下限がない場合は全体下限を使う", () => {
   const policy = new ReferenceScorePolicy(99);
 
-  const threshold = policy.thresholdFor("14-02-kanban");
+  const threshold = policy.thresholdFor("99-99-no-pattern");
 
-  expect(threshold.slug).toBe("14-02-kanban");
+  expect(threshold.slug).toBe("99-99-no-pattern");
   expect(threshold.minScore).toBe(99);
   expect(threshold.reason).toBe("");
 });
@@ -32,10 +32,14 @@ test("ベースラインの同一slugを優先して閾値を採用する", () =
 });
 
 test("ベースラインslugが一致しない場合は先頭番号で対応する", () => {
-  const policy = new ReferenceScorePolicy(99, [], [
-    { slug: "20-02-sankey-large", score: 91.23 },
-    { slug: "27-02-xy-chart-bar-line", score: 98.7 },
-  ]);
+  const policy = new ReferenceScorePolicy(
+    99,
+    [],
+    [
+      { slug: "20-02-sankey-large", score: 91.23 },
+      { slug: "27-02-xy-chart-bar-line", score: 98.7 },
+    ],
+  );
 
   const thresholdA = policy.thresholdFor("20-02-sankey-beta");
   const thresholdB = policy.thresholdFor("27-02-xy");
