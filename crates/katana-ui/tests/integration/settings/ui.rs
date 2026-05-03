@@ -1,6 +1,6 @@
 use crate::integration::harness_utils::setup_harness;
 use eframe::egui;
-use egui_kittest::kittest::Queryable;
+use egui_kittest::kittest::{NodeT, Queryable};
 use katana_ui::app_state::AppAction;
 use katana_ui::i18n::I18nOps;
 
@@ -26,7 +26,11 @@ fn test_font_size_slider_has_hover_tooltip() {
 
     let font_size_label = I18nOps::get().settings.font.size.clone();
     harness.run();
-    let _slider = harness.get_by_label(&font_size_label);
+    let font_size_slider = harness
+        .query_all_by_label(&font_size_label)
+        .find(|node| node.accesskit_node().role() == egui::accesskit::Role::Slider)
+        .expect("Font Size slider should exist");
+    let _ = font_size_slider;
 }
 
 #[test]
