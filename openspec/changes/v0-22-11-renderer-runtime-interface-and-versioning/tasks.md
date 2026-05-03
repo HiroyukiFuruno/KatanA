@@ -2,11 +2,11 @@
 
 ## 0. 準備完了条件（Definition of Ready）
 
-- [x] v0.22.10 は公式 Mermaid.js 比較と表示最適化に集中する
-- [x] v0.22.11 は interface 整理、Mermaid.js 版固定、`katana-renderer` 分離設計を扱う
-- [x] 分離先の仮称は、Mermaid / Draw.io / HTML / PDF / PNG / JPEG の描画境界を含められる `katana-renderer` とする
-- [x] preview 分離を前提に、preview が `katana-renderer` を利用し、`katana-renderer` は preview / egui / KatanA UI に依存しない方針で進める
-- [x] 既存の KML v0.16.1 取り込みは戻さない
+- [ ] v0.22.10 は公式 Mermaid.js 比較と表示最適化に集中する
+- [ ] v0.22.11 は interface 整理、Mermaid.js 版固定、`katana-renderer` 分離設計を扱う
+- [ ] 分離先の仮称は、Mermaid / Draw.io / HTML / PDF / PNG / JPEG の描画境界を含められる `katana-renderer` とする
+- [ ] preview 分離を前提に、preview が `katana-renderer` を利用し、`katana-renderer` は preview / egui / KatanA UI に依存しない方針で進める
+- [ ] 既存の KML v0.16.1 取り込みは戻さない
 
 ## Branch Rule
 
