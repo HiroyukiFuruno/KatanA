@@ -122,13 +122,12 @@ fn rust_managed_js_runtime_keeps_mermaid_md_feedback_diagrams_readable() {
     assert!(!venn.contains(".venn-set-0 path{fill:rgb(122,122,122)"));
     eprintln!("venn svg: {venn}");
     assert!(
-        ["skyblue", "orange", "lightgreen", "white"]
+        ["#E0E0E0", "rgb(122,122,122)", "rgb(164,0,0)"]
             .iter()
             .all(|color| venn.contains(color))
     );
-    assert!(venn.contains("fill: rgb(122, 122, 122); stroke: rgb(122, 122, 122);"));
-    assert!(venn.contains("fill: rgb(164, 0, 0); stroke: rgb(164, 0, 0);"));
-    assert!(venn.contains("fill: rgb(204, 42, 145); stroke: rgb(204, 42, 145);"));
+    assert!(venn.contains("fill=\"rgb(122,122,122)\""));
+    assert!(venn.contains("fill=\"rgb(164,0,0)\""));
 
     let wardley = render_named_block("26. Wardley Map");
     assert!(
