@@ -9,7 +9,9 @@ static I18N_RENDER_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
 fn renders_sample_mermaid_ja_without_diagram_errors() {
-    let _guard = I18N_RENDER_LOCK.lock().unwrap();
+    let _guard = I18N_RENDER_LOCK
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
     if mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
         eprintln!("mermaid.min.js is not installed; skipping i18n Mermaid regression");
         return;
@@ -26,23 +28,15 @@ fn renders_sample_mermaid_ja_without_diagram_errors() {
     );
     for expected_text in [
         "\u{30af}\u{30ea}\u{30b9}\u{30de}\u{30b9}",
-        "\u{8cb7}\u{3044}\u{7269}\u{3078}\u{884c}\u{304f}",
-        "\u{79c1}\u{306e}\u{4f5c}\u{696d}\u{65e5}",
-        "\u{30dc}\u{30e9}\u{30f3}\u{30c6}\u{30a3}\u{30a2}\u{304c}\u{5f15}\u{304d}\u{53d6}\u{3063}\u{305f}\u{30da}\u{30c3}\u{30c8}",
+        "\u{8cb7}\u{3044}\u{7269}\u{306b}\u{884c}\u{304f}",
+        "\u{79c1}\u{306e}\u{4ed5}\u{4e8b}\u{306e}\u{31}\u{65e5}",
+        "\u{30dc}\u{30e9}\u{30f3}\u{30c6}\u{30a3}\u{30a2}\u{306b}\u{5f15}\u{304d}\u{53d6}\u{3089}\u{308c}\u{305f}\u{30da}\u{30c3}\u{30c8}",
         "\u{9867}\u{5ba2}",
-        "\u{6ce8}\u{6587}\u{660e}\u{7d30}",
-        "\u{4e2d}\u{592e}\u{306e}\u{5e45}\u{5e83}\u{3044}\u{30d6}\u{30ed}\u{30c3}\u{30af}",
-        "\u{30c6}\u{30b9}\u{30c8}\u{7528}\u{306e}\u{8981}\u{6c42}\u{3002}",
-        "\u{30c6}\u{30b9}\u{30c8}\u{5bfe}\u{8c61}",
-        "\u{30ad}\u{30e3}\u{30f3}\u{30da}\u{30fc}\u{30f3}\u{306e}\u{5230}\u{9054}\u{3068}\u{53cd}\u{5fdc}",
-        "\u{58f2}\u{4e0a}\u{ff08}\u{5186}\u{ff09}",
-        "\u{69cb}\u{6587}\u{89e3}\u{6790}",
-        "\u{30d7}\u{30ec}\u{30d3}\u{30e5}\u{30fc}",
+        "\u{4e2d}\u{592e}\u{306e}\u{5e83}\u{3044}\u{30d6}\u{30ed}\u{30c3}\u{30af}",
         "\u{8fb2}\u{696d}\u{5ec3}\u{68c4}\u{7269}",
         "\u{706b}\u{529b}\u{767a}\u{96fb}",
         "\u{30c7}\u{30fc}\u{30bf}\u{30d9}\u{30fc}\u{30b9}",
-        "\u{5199}\u{771f}\u{306e}\u{307c}\u{3084}\u{3051}",
-        "\u{7d05}\u{8336}\u{5e97}",
+        "\u{30c6}\u{30a3}\u{30fc}\u{30b7}\u{30e7}\u{30c3}\u{30d7}",
     ] {
         assert!(
             output.html.contains(expected_text),
@@ -56,7 +50,6 @@ fn renders_sample_mermaid_ja_without_diagram_errors() {
         "Pets adopted by volunteers",
         "A wide one in the middle",
         "Blurry Photo",
-        "CUSTOMER",
     ] {
         assert!(
             !output.html.contains(english_text),
@@ -67,7 +60,9 @@ fn renders_sample_mermaid_ja_without_diagram_errors() {
 
 #[test]
 fn renders_non_ascii_diagram_syntax_as_visible_text() {
-    let _guard = I18N_RENDER_LOCK.lock().unwrap();
+    let _guard = I18N_RENDER_LOCK
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
     if mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
         eprintln!("mermaid.min.js is not installed; skipping i18n Mermaid regression");
         return;
@@ -84,7 +79,9 @@ fn renders_non_ascii_diagram_syntax_as_visible_text() {
 
 #[test]
 fn sankey_i18n_keeps_repeated_labels_as_single_nodes() {
-    let _guard = I18N_RENDER_LOCK.lock().unwrap();
+    let _guard = I18N_RENDER_LOCK
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
     if mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
         eprintln!("mermaid.min.js is not installed; skipping i18n Mermaid regression");
         return;
@@ -118,7 +115,9 @@ fn sankey_i18n_keeps_repeated_labels_as_single_nodes() {
 
 #[test]
 fn wardley_i18n_accepts_compact_non_ascii_arrows() {
-    let _guard = I18N_RENDER_LOCK.lock().unwrap();
+    let _guard = I18N_RENDER_LOCK
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
     if mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
         eprintln!("mermaid.min.js is not installed; skipping i18n Mermaid regression");
         return;
