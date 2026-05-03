@@ -11,6 +11,9 @@ on:
     paths:
       - '**.rs'
       - '!scripts/**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '.github/workflows/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
