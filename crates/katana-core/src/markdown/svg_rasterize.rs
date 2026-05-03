@@ -145,3 +145,29 @@ pub enum SvgRasterizeError {
     #[error("Failed to parse SVG: {0}")]
     ParseFailed(String),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn preprocess_reuses_invalid_light_dark_syntax() {
+        let source = "<svg>fill: light-dark(red)</svg>";
+        let output = SvgRasterizeOps::preprocess_for_rasterizer(source);
+        assert_eq!(output, source);
+    }
+
+    #[test]
+    fn parse_light_dark_function_without_comma_returns_none() {
+        assert_eq!(parse_light_dark_function("red)"), None);
+        assert_eq!(parse_light_dark_function(""), None);
+    }
+
+    #[test]
+    fn parse_light_dark_function_with_nested_args() {
+        assert_eq!(
+            parse_light_dark_function("calc(1,2),ok)"),
+            Some((12, "calc(1,2)"))
+        );
+    }
+}
