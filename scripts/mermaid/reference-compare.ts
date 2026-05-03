@@ -1,10 +1,10 @@
+import fs from "node:fs";
 import { CliOptions, type CliParsedOptions } from "./reference_compare_options";
 import { MagickOps } from "./reference_image_ops";
 import { ReferencePairRepository } from "./reference_pair_repository";
 import { ReferenceCompareReport } from "./reference_report";
 import { ReferenceScorer, ReferenceScores, type ReferenceScoreRow } from "./reference_score";
-import { type ReferenceScoreBaseline } from "./reference_score_policy";
-import fs from "node:fs";
+import type { ReferenceScoreBaseline } from "./reference_score_policy";
 
 class ReferenceCompare {
   constructor(private options: CliParsedOptions) {}
@@ -50,16 +50,41 @@ class ReferenceCompare {
   }
 
   private parseBaselineScore(entry: unknown, filePath: string): ReferenceScoreBaseline {
+    const source = this.assertBaselineScoreObject(entry, filePath);
+    return {
+      slug: this.assertBaselineSlug(source.slug, filePath),
+      score: this.assertBaselineScore(source.score, filePath),
+    };
+  }
+
+  private assertBaselineScoreObject(
+    entry: unknown,
+    filePath: string,
+  ): Record<string, unknown> {
     if (typeof entry !== "object" || entry === null) {
       throw new Error(`Invalid baseline score entry: not an object in ${filePath}`);
     }
-    const source = entry as { [key: string]: unknown };
-    const slug = source.slug;
-    const score = source.score;
-    if (typeof slug !== "string" || typeof score !== "number") {
-      throw new Error(`Invalid baseline score entry in ${filePath}: ${JSON.stringify(entry)}`);
+    return entry;
+  }
+
+  private assertBaselineSlug(
+    slug: unknown,
+    filePath: string,
+  ): string {
+    if (typeof slug !== "string") {
+      throw new Error(`Invalid baseline score entry in ${filePath}: ${JSON.stringify(slug)}`);
     }
-    return { slug, score };
+    return slug;
+  }
+
+  private assertBaselineScore(
+    score: unknown,
+    filePath: string,
+  ): number {
+    if (typeof score !== "number") {
+      throw new Error(`Invalid baseline score entry in ${filePath}: ${JSON.stringify(score)}`);
+    }
+    return score;
   }
 }
 
