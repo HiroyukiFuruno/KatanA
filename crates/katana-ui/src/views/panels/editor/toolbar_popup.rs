@@ -45,9 +45,13 @@ impl ToolbarPopup {
         let cursor_rect = galley.pos_from_cursor(cursor_range.primary);
         let popup_pos = Self::popup_position(response.rect, cursor_rect, ui.ctx().content_rect());
         let has_selection = cursor_range.primary.index != cursor_range.secondary.index;
-        if response.clicked()
-            || (editor_focused && super::code_block_menu::CodeBlockMenuPopupOps::is_open(ui))
-        {
+        if response.clicked() || (response.has_focus() && response.clicked_elsewhere()) {
+            super::code_block_menu::CodeBlockMenuPopupOps::set_open(ui, false);
+            Self::store_open(ui, false);
+            return;
+        }
+
+        if editor_focused && super::code_block_menu::CodeBlockMenuPopupOps::is_open(ui) {
             super::code_block_menu::CodeBlockMenuPopupOps::set_open(ui, false);
         }
 

@@ -42,7 +42,7 @@ impl CodeBlockMenuPopupOps {
         let button_response = ui
             .add(Icon::Code.button(ui, IconSize::Small))
             .on_hover_text(label.clone());
-        if button_response.clicked() {
+        if button_response.clicked() || button_response.is_pointer_button_down_on() {
             Self::set_open(ui, true);
         }
         Self::show_menu(ui, action, &button_response);
