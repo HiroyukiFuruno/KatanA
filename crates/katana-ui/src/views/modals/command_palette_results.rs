@@ -13,6 +13,7 @@ pub(super) fn render_results(
     state: &mut CommandPaletteState,
     action: &mut AppAction,
     is_open: &mut bool,
+    suppress_hover: bool,
 ) {
     /* WHY: Capture the panel width BEFORE the ScrollArea.
     This is the authoritative width of the command palette window content area. */
@@ -86,7 +87,7 @@ pub(super) fn render_results(
 
                 let row_id = ui.id().with(&result.id);
                 let interact = ui.interact(response.rect, row_id, egui::Sense::click());
-                if interact.hovered() {
+                if !suppress_hover && interact.hovered() {
                     state.selected_index = idx;
                 }
                 if interact.clicked() {

@@ -10,18 +10,19 @@ fn handle_key_input(
     state: &mut crate::state::command_palette::CommandPaletteState,
     action: &mut AppAction,
     is_open: &mut bool,
-) {
+) -> bool {
+    let mut changed_by_keyboard = false;
     if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
         *is_open = false;
-        return;
+        return changed_by_keyboard;
     }
     if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
         state.move_down();
-        return;
+        changed_by_keyboard = true;
     }
     if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
         state.move_up();
-        return;
+        changed_by_keyboard = true;
     }
     if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
         let res = state.results.get(state.selected_index).cloned();
@@ -30,6 +31,7 @@ fn handle_key_input(
             *is_open = false;
         }
     }
+    changed_by_keyboard
 }
 
 const COMMAND_PALETTE_WIDTH: f32 = 600.0;
@@ -171,10 +173,17 @@ impl<'a> CommandPaletteModal<'a> {
                 }
 
                 /* WHY: Keyboard interactions */
-                handle_key_input(ui, self.state, self.action, &mut is_open);
+                let consumed_by_keyboard =
+                    handle_key_input(ui, self.state, self.action, &mut is_open);
 
                 ui.separator();
-                render_results(ui, self.state, self.action, &mut is_open);
+                render_results(
+                    ui,
+                    self.state,
+                    self.action,
+                    &mut is_open,
+                    consumed_by_keyboard,
+                );
             });
 
         self.state.is_open = is_open;
