@@ -24,7 +24,10 @@ pub(crate) struct NativeSvgBlock {
 pub(crate) struct NativeDocumentBlocks;
 
 impl NativeDocumentBlocks {
-    pub(crate) fn parse(html: &str, is_dark: bool) -> Result<Vec<NativeDocumentBlock>, MarkdownError> {
+    pub(crate) fn parse(
+        html: &str,
+        is_dark: bool,
+    ) -> Result<Vec<NativeDocumentBlock>, MarkdownError> {
         let mut blocks = Vec::new();
         let mut cursor = 0;
         for range in NativeSvgRanges::find(html) {
@@ -38,7 +41,11 @@ impl NativeDocumentBlocks {
         Ok(blocks)
     }
 
-    fn push_text(blocks: &mut Vec<NativeDocumentBlock>, html: &str, is_dark: bool) -> Result<(), MarkdownError> {
+    fn push_text(
+        blocks: &mut Vec<NativeDocumentBlock>,
+        html: &str,
+        is_dark: bool,
+    ) -> Result<(), MarkdownError> {
         for line in super::native_text::extract_lines(html, is_dark)? {
             blocks.push(NativeDocumentBlock::Text(line));
         }

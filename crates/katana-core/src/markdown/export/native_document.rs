@@ -86,8 +86,11 @@ impl NativeHtmlDocument {
 
     fn text_element(&self, line: &super::native_text::NativeTextLine, y: u32) -> String {
         let text_color = self.style.text_color();
-        let font_family =
-            if line.is_code { CODE_FONT_FAMILY } else { super::native_text_runs::NativeTextRuns::font_family() };
+        let font_family = if line.is_code {
+            CODE_FONT_FAMILY
+        } else {
+            super::native_text_runs::NativeTextRuns::font_family()
+        };
         let font_weight = if line.bold { "bold" } else { "normal" };
         let font_size = line.font_size;
 

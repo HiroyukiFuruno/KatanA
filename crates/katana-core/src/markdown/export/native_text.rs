@@ -28,7 +28,13 @@ pub(super) struct NativeTextSpan {
 
 impl NativeTextLine {
     pub(super) fn body(text: String) -> Self {
-        Self { text, font_size: BODY_FONT_SIZE, bold: false, is_code: false, spans: vec![] }
+        Self {
+            text,
+            font_size: BODY_FONT_SIZE,
+            bold: false,
+            is_code: false,
+            spans: vec![],
+        }
     }
 
     fn heading(text: String, level: u8) -> Self {
@@ -38,15 +44,33 @@ impl NativeTextLine {
             3 => 18,
             _ => 16,
         };
-        Self { text, font_size, bold: true, is_code: false, spans: vec![] }
+        Self {
+            text,
+            font_size,
+            bold: true,
+            is_code: false,
+            spans: vec![],
+        }
     }
 
     fn code_plain(text: String) -> Self {
-        Self { text, font_size: CODE_FONT_SIZE, bold: false, is_code: true, spans: vec![] }
+        Self {
+            text,
+            font_size: CODE_FONT_SIZE,
+            bold: false,
+            is_code: true,
+            spans: vec![],
+        }
     }
 
     fn code_highlighted(text: String, spans: Vec<NativeTextSpan>) -> Self {
-        Self { text, font_size: CODE_FONT_SIZE, bold: false, is_code: true, spans }
+        Self {
+            text,
+            font_size: CODE_FONT_SIZE,
+            bold: false,
+            is_code: true,
+            spans,
+        }
     }
 
     pub(super) fn line_height(&self) -> u32 {
@@ -58,7 +82,10 @@ impl NativeTextLine {
     }
 }
 
-pub(super) fn extract_lines(html: &str, is_dark: bool) -> Result<Vec<NativeTextLine>, MarkdownError> {
+pub(super) fn extract_lines(
+    html: &str,
+    is_dark: bool,
+) -> Result<Vec<NativeTextLine>, MarkdownError> {
     let body = body_content(html)?;
     let (body_no_code, code_blocks) = extract_code_blocks(&body, is_dark)?;
     let with_heading_marks = mark_headings(&body_no_code)?;
@@ -89,9 +116,8 @@ fn extract_code_blocks(
     html: &str,
     is_dark: bool,
 ) -> Result<(String, Vec<Vec<NativeTextLine>>), MarkdownError> {
-    let regex =
-        regex::Regex::new(r#"(?is)<pre\b[^>]*><code\b([^>]*)>(.*?)</code></pre>"#)
-            .map_err(|e| MarkdownError::ExportFailed(e.to_string()))?;
+    let regex = regex::Regex::new(r#"(?is)<pre\b[^>]*><code\b([^>]*)>(.*?)</code></pre>"#)
+        .map_err(|e| MarkdownError::ExportFailed(e.to_string()))?;
     let mut code_blocks: Vec<Vec<NativeTextLine>> = Vec::new();
     let mut result = String::new();
     let mut last_end = 0;
@@ -130,9 +156,16 @@ fn highlight_code(code: &str, language: Option<&str>, is_dark: bool) -> Vec<Nati
     static PS: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
     static TS: LazyLock<ThemeSet> = LazyLock::new(ThemeSet::load_defaults);
 
-    let theme_name = if is_dark { "base16-ocean.dark" } else { "InspiredGitHub" };
+    let theme_name = if is_dark {
+        "base16-ocean.dark"
+    } else {
+        "InspiredGitHub"
+    };
     let Some(theme) = TS.themes.get(theme_name) else {
-        return code.lines().map(|l| NativeTextLine::code_plain(l.to_string())).collect();
+        return code
+            .lines()
+            .map(|l| NativeTextLine::code_plain(l.to_string()))
+            .collect();
     };
 
     let syntax = language
@@ -164,13 +197,13 @@ fn highlight_code(code: &str, language: Option<&str>, is_dark: bool) -> Vec<Nati
 }
 
 /* Mark <h1>…</h6> with control-char markers that survive tag stripping.
-   regex crate does not support backreferences, so iterate per heading level. */
+regex crate does not support backreferences, so iterate per heading level. */
 fn mark_headings(html: &str) -> Result<String, MarkdownError> {
     let mut result = html.to_string();
     for level in 1u8..=6 {
         let pattern = format!(r"(?is)<h{level}\b[^>]*>(.*?)</h{level}>");
-        let regex = regex::Regex::new(&pattern)
-            .map_err(|e| MarkdownError::ExportFailed(e.to_string()))?;
+        let regex =
+            regex::Regex::new(&pattern).map_err(|e| MarkdownError::ExportFailed(e.to_string()))?;
         result = regex
             .replace_all(&result, |caps: &regex::Captures| {
                 let content = &caps[1];
@@ -236,11 +269,11 @@ fn parse_typed_lines(
         /* Code block placeholder: \x04N\x04 */
         if line.starts_with(CODE_FENCE) && line.ends_with(CODE_FENCE) && line.len() > 2 {
             let inner = &line[CODE_FENCE.len_utf8()..line.len() - CODE_FENCE.len_utf8()];
-            if let Ok(idx) = inner.parse::<usize>() {
-                if let Some(code_lines) = code_blocks.get(idx) {
-                    result.extend(code_lines.iter().cloned());
-                    continue;
-                }
+            if let Ok(idx) = inner.parse::<usize>()
+                && let Some(code_lines) = code_blocks.get(idx)
+            {
+                result.extend(code_lines.iter().cloned());
+                continue;
             }
         }
 
@@ -250,8 +283,7 @@ fn parse_typed_lines(
             if let Some(sep_pos) = rest.find(HEADING_SEP) {
                 let level_str = &rest[..sep_pos];
                 let after_sep = &rest[sep_pos + HEADING_SEP.len_utf8()..];
-                let content_raw =
-                    after_sep.trim_end_matches(HEADING_END).trim();
+                let content_raw = after_sep.trim_end_matches(HEADING_END).trim();
                 let level: u8 = match level_str {
                     "h1" => 1,
                     "h2" => 2,
@@ -349,7 +381,10 @@ mod tests {
     fn body_content_strips_head_when_no_closing_body() {
         let html = "<!DOCTYPE html><html><head><title>Exported Document</title></head><body><h1>Hello</h1>";
         let result = body_content(html).unwrap();
-        assert!(!result.contains("Exported Document"), "head content must not leak");
+        assert!(
+            !result.contains("Exported Document"),
+            "head content must not leak"
+        );
         assert!(result.contains("<h1>Hello</h1>"));
     }
 
@@ -401,7 +436,7 @@ mod tests {
 </body></html>"#;
         let lines = extract_lines(html, true).unwrap();
         /* HTML tags are valid source code inside code blocks. The important guarantee is
-           that they do NOT leak into body (non-code) lines as structural HTML. */
+        that they do NOT leak into body (non-code) lines as structural HTML. */
         let body_joined = lines
             .iter()
             .filter(|l| !l.is_code)
@@ -414,9 +449,12 @@ mod tests {
             body_joined
         );
         assert!(lines.iter().any(|l| l.text.contains("Title")));
-        assert!(lines
-            .iter()
-            .any(|l| l.text.contains("Hello") || l.spans.iter().any(|s| s.text.contains("Hello"))));
+        assert!(
+            lines
+                .iter()
+                .any(|l| l.text.contains("Hello")
+                    || l.spans.iter().any(|s| s.text.contains("Hello")))
+        );
         assert!(lines.iter().any(|l| l.text.contains("End")));
     }
 
@@ -424,6 +462,9 @@ mod tests {
     fn code_block_lines_are_marked_is_code() {
         let html = r#"<body><pre><code class="language-rust">fn main() {}</code></pre></body>"#;
         let lines = extract_lines(html, true).unwrap();
-        assert!(lines.iter().any(|l| l.is_code), "code block lines must have is_code=true");
+        assert!(
+            lines.iter().any(|l| l.is_code),
+            "code block lines must have is_code=true"
+        );
     }
 }

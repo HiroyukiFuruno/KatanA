@@ -310,8 +310,8 @@ fn gitgraph_commit_label_background_height(svg: &str) -> f64 {
 }
 
 fn wardley_background_fill(svg: &str) -> Option<String> {
-    let pattern = Regex::new(r#"<rect class=\"wardley-background\"[^>]* fill=\"([^\"]+)\""#)
-        .unwrap();
+    let pattern =
+        Regex::new(r#"<rect class=\"wardley-background\"[^>]* fill=\"([^\"]+)\""#).unwrap();
     pattern
         .captures(svg)
         .and_then(|capture| capture.get(1).map(|it| it.as_str().to_string()))
