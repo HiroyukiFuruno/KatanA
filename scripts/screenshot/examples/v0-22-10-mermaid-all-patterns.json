@@ -1,0 +1,206 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-10-mermaid-all-patterns",
+  "fixture": {
+    "workspace_dir": "assets/fixtures/mermaid_parts/en",
+    "settings": {
+      "theme": "dark",
+      "locale": "ja",
+      "explorer_visible": false,
+      "linter_enabled": false
+    }
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1600, "height": 1000 },
+      "wait_seconds": 2.0
+    },
+    {
+      "type": "action",
+      "action": { "set_view_mode": { "mode": "preview_only" } }
+    },
+    {
+      "type": "open_file",
+      "file_name": "01-flowchart.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "01-flowchart" },
+    {
+      "type": "open_file",
+      "file_name": "04-01-sequence-diagram-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "02-sequence" },
+    {
+      "type": "open_file",
+      "file_name": "03-02-class-diagram-inheritance.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "03-class" },
+    {
+      "type": "open_file",
+      "file_name": "06-02-state-diagram-v2.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "04-state" },
+    {
+      "type": "open_file",
+      "file_name": "05-01-er-diagram-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "05-er" },
+    {
+      "type": "open_file",
+      "file_name": "24-01-user-journey-diagram-preview.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "06-journey" },
+    {
+      "type": "open_file",
+      "file_name": "11-01-gantt-chart-status-colors.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "07-gantt" },
+    {
+      "type": "open_file",
+      "file_name": "16-01-pie-chart-rendering-ownership.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "08-pie" },
+    {
+      "type": "open_file",
+      "file_name": "19-01-requirement-diagram-single.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "09-requirement" },
+    {
+      "type": "open_file",
+      "file_name": "12-01-git-graph-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "10-git-graph" },
+    {
+      "type": "open_file",
+      "file_name": "08-01-c4-context-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "11-c4" },
+    {
+      "type": "open_file",
+      "file_name": "07-01-mindmap-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "12-mindmap" },
+    {
+      "type": "open_file",
+      "file_name": "21-01-timeline-phases.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "13-timeline" },
+    {
+      "type": "open_file",
+      "file_name": "17-01-quadrant-chart-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "14-quadrant" },
+    {
+      "type": "open_file",
+      "file_name": "27-02-xy-chart-bar-line.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "15-xy-chart" },
+    {
+      "type": "open_file",
+      "file_name": "20-01-sankey-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "16-sankey" },
+    {
+      "type": "open_file",
+      "file_name": "10-01-block-diagram-horizontal.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "17-block" },
+    {
+      "type": "open_file",
+      "file_name": "15-01-packet-beta-short.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "18-packet" },
+    {
+      "type": "open_file",
+      "file_name": "14-02-kanban-full.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "19-kanban" },
+    {
+      "type": "open_file",
+      "file_name": "09-01-architecture-diagram-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "20-architecture" },
+    {
+      "type": "open_file",
+      "file_name": "18-01-radar-chart-4-axes.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "21-radar" },
+    {
+      "type": "open_file",
+      "file_name": "22-01-tree-view-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "22-tree-view" },
+    {
+      "type": "open_file",
+      "file_name": "13-02-ishikawa-diagram-4-categories.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "23-ishikawa" },
+    {
+      "type": "open_file",
+      "file_name": "25-02-venn-diagram-3-sets-with-styles.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "24-venn" },
+    {
+      "type": "open_file",
+      "file_name": "23-01-treemap-flat.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "25-treemap" },
+    {
+      "type": "open_file",
+      "file_name": "26-01-wardley-map-simple.md",
+      "wait_seconds": 0.5
+    },
+    { "type": "wait", "seconds": 1.0 },
+    { "type": "screenshot", "output_name": "26-wardley" }
+  ]
+}

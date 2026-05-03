@@ -38,17 +38,19 @@ Pre-built binaries are not yet available. Please build from source (see below).
 - macOS 13 Ventura or later, Windows 10/11, or Linux (e.g. Ubuntu 22.04+)
 - **macOS:** [Homebrew](https://brew.sh) (the setup script will install it if missing)
 - **Windows / Linux:** Standard build tools (`build-essential` on Ubuntu, Visual Studio Build Tools on Windows)
+- **just:** Command runner used for local development and CI/CD tasks
 
 ### One-command Setup
 
-Run `make init` from the project root. It will check for and install every
+Install `just`, then run `just init` from the project root. It will check for and install every
 required tool interactively:
 
 ```sh
-make init
+brew install just
+just init
 ```
 
-`make init` is the documented entry point and currently delegates to `scripts/setup.sh`.
+`just init` is the documented entry point and currently delegates to `scripts/setup/setup.sh`.
 
 The script installs:
 
@@ -56,6 +58,7 @@ The script installs:
 | --- | --- |
 | **Homebrew** | Package manager (macOS/Linux) |
 | **git** (latest) | Version control |
+| **just** | Local and CI/CD task runner |
 | **rustup** | Rust toolchain manager |
 | **Rust stable** + clippy / rustfmt / llvm-tools | Compiler and linters |
 | **cargo-llvm-cov** | Line-coverage gate (100% enforced in CI) |
@@ -65,18 +68,18 @@ The script installs:
 | **tokei** | Source line count |
 | **lefthook** | Git hook runner (pre-commit + pre-push) |
 
-### Common `make` Commands
+### Common `just` Commands
 
 ```sh
-make init         # Bootstrap the development environment interactively
-make run          # Build and launch KatanA
-make test         # Run the full test suite
-make check-light  # Full CI check: fmt + clippy + tests
-make watch-run    # Launch with auto-reload on file changes
-make doc-open     # Build and open API docs in your browser
+just init         # Bootstrap the development environment interactively
+just run          # Build and launch KatanA
+just test         # Run the local default test selection
+just check-light  # Quick verification: format + lint + impacted tests
+just watch-run    # Launch with auto-reload on file changes
+just doc-open     # Build and open API docs in your browser
 ```
 
-Run `make help` for a complete list.
+Run `just --list` or `just help` for a complete list.
 
 ### Project Structure
 
@@ -87,10 +90,11 @@ katana/
 │   ├── katana-ui/        # egui application shell, preview pane, i18n, snapshots
 │   └── katana-platform/  # Filesystem abstraction, settings persistence
 ├── scripts/
-│   └── setup.sh          # Implementation behind `make init`
+│   └── setup/            # Implementation behind `just init`
 ├── docs/                 # Architecture decisions, coding rules
 ├── fixtures/             # Test fixtures (sample Markdown files)
-└── Makefile              # Developer task runner
+├── just/                 # Split task definitions imported by Justfile
+└── Justfile              # Developer and CI/CD task runner
 ```
 
 ### Quality Gates
@@ -117,7 +121,7 @@ KatanA is in early, active development. All contributions are welcome.
 ### Pull Request Guidelines
 
 1. Fork the repository and create a branch from `master`
-2. Ensure `make check` passes completely before opening a PR
+2. Ensure `just check` passes completely before opening a PR
 3. Write tests for new behaviour (coverage gate: 100% lines)
 4. Keep commits focused and atomic; write clear, descriptive messages
 5. Open a draft PR early if you want feedback on an approach
@@ -178,7 +182,7 @@ For detailed validation strategies and AI-agent specific instructions, refer to 
 
 Windows and Linux releases are blocked unless all of the following are satisfied:
 
-1. **Automated Tests:** The equivalent of `make check` passes completely on all CI platforms.
+1. **Automated Tests:** The equivalent of `just check` passes completely on all CI platforms.
 2. **Manual Smoke Tests:** The executable launches without crashing.
 3. **Workspace Operations:** Local folders can be opened successfully.
 4. **Rendering:** Real-time Markdown preview function operates correctly.

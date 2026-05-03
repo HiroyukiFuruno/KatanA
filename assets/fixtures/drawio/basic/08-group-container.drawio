@@ -1,0 +1,22 @@
+<mxfile host="app.diagrams.net" agent="Katana fixture" version="29.0.0">
+  <diagram id="group-container" name="Group Container">
+    <mxGraphModel dx="980" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="group" value="Group" style="group;strokeColor=#6c8ebf;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="80" y="60" width="420" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="child-a" value="Child A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="group" vertex="1">
+          <mxGeometry x="40" y="60" width="130" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="child-b" value="Child B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="group" vertex="1">
+          <mxGeometry x="240" y="60" width="130" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge-child" value="" style="endArrow=block;html=1;rounded=0;" parent="group" source="child-a" target="child-b" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

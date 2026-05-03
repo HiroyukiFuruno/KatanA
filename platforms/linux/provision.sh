@@ -4,6 +4,9 @@ set -euo pipefail
 BREW_PREFIX="/home/linuxbrew/.linuxbrew"
 BREW_BIN="${BREW_PREFIX}/bin/brew"
 JAVA_HOME_CANDIDATE="/usr/lib/jvm/java-25-openjdk-amd64"
+WORKSPACE_DIR="/config/workspace/katana"
+CARGO_HOME="${CARGO_HOME:-${HOME}/.cargo}"
+RUSTUP_HOME="${RUSTUP_HOME:-${HOME}/.rustup}"
 
 log() {
   printf '[katana-linux] %s\n' "$*"
@@ -41,7 +44,9 @@ upsert_env_block() {
   cat >> "$file" <<'EOF'
 
 # >>> katana dev env >>>
-export PATH="$HOME/.local/bin:$PATH"
+export CARGO_HOME="${HOME}/.cargo"
+export CARGO_TARGET_DIR="/config/workspace/katana/target"
+export PATH="${CARGO_HOME}/bin:$HOME/.local/bin:$PATH"
 if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
@@ -65,6 +70,42 @@ ensure_bash_profile() {
   if ! grep -qxF '[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"' "$file"; then
     printf '%s\n' '[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"' >> "$file"
   fi
+}
+
+source_cargo_env() {
+  if [ -f "${CARGO_HOME}/env" ]; then
+    # shellcheck disable=SC1091
+    . "${CARGO_HOME}/env"
+  fi
+}
+
+ensure_rustup() {
+  export CARGO_HOME
+  export RUSTUP_HOME
+  export PATH="${CARGO_HOME}/bin:${PATH}"
+
+  if ! command -v rustup >/dev/null 2>&1; then
+    log "Installing rustup..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+      | sh -s -- -y --no-modify-path
+  else
+    log "rustup already installed. Skipping install."
+  fi
+
+  source_cargo_env
+  rustup toolchain install stable --no-self-update
+  rustup default stable
+}
+
+ensure_cargo_sweep() {
+  source_cargo_env
+  if cargo sweep --version >/dev/null 2>&1; then
+    log "cargo-sweep already installed. Skipping install."
+    return
+  fi
+
+  log "Installing cargo-sweep..."
+  cargo install cargo-sweep
 }
 
 
@@ -94,15 +135,37 @@ sudo apt-get install -y \
   curl \
   file \
   git \
+  lld \
   openjdk-25-jdk \
+  dbus-x11 \
+  libdbus-1-dev \
+  libssl-dev \
+  libxcb-render0-dev \
+  libxcb-shape0-dev \
+  libxcb-xfixes0-dev \
+  libxkbcommon-dev \
+  pkg-config \
   procps \
+  python3 \
+  xdg-desktop-portal \
+  xdg-desktop-portal-gtk \
+  xdg-utils \
   xz-utils \
+  zenity \
   zip \
   unzip
 
-log "Fixing home directory ownership for user cache dirs..."
-mkdir -p "${HOME}/.cache" "${HOME}/.local" "${HOME}/.config"
-sudo chown -R "$(id -u):$(id -g)" "${HOME}/.cache" "${HOME}/.local" "${HOME}/.config"
+log "Fixing owned cache and build directories..."
+mkdir -p "${HOME}/.cache" "${HOME}/.local" "${HOME}/.config" "${CARGO_HOME}" "${RUSTUP_HOME}"
+if [ -d "${WORKSPACE_DIR}/target" ]; then
+  sudo chown -R "$(id -u):$(id -g)" "${WORKSPACE_DIR}/target"
+fi
+sudo chown -R "$(id -u):$(id -g)" \
+  "${HOME}/.cache" \
+  "${HOME}/.local" \
+  "${HOME}/.config" \
+  "${CARGO_HOME}" \
+  "${RUSTUP_HOME}"
 
 if [ ! -x "$BREW_BIN" ]; then
   log "Installing Homebrew..."
@@ -128,6 +191,9 @@ if [ -d "${JAVA_HOME_CANDIDATE}" ]; then
   link_global_command "${JAVA_HOME}/bin/javac" javac
 fi
 
+ensure_rustup
+ensure_cargo_sweep
+
 log "Provisioning complete."
 printf 'brew: '
 command -v brew || true
@@ -135,3 +201,8 @@ brew --version | head -n 1 || true
 printf 'java: '
 command -v java || true
 java -version 2>&1 | sed -n '1,2p' || true
+printf 'rustc: '
+command -v rustc || true
+rustc --version || true
+printf 'cargo-sweep: '
+cargo sweep --version || true

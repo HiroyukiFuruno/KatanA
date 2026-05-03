@@ -35,11 +35,20 @@ impl TextEditRenderer {
                 ui.allocate_exact_size(egui::vec2(LINE_NUMBER_MARGIN, 0.0), egui::Sense::hover());
 
             let editable = !doc.is_reference;
+            let editor_id =
+                crate::editor_undo::EditorUndoIdentity::text_edit_id(workspace_root, &doc.path);
+            let response_had_focus_before_edit =
+                ui.memory(|mem| mem.focused().is_some_and(|id| id == editor_id));
+            let clipboard_image_paste_intercepted =
+                super::paste::EditorPasteOps::intercept_clipboard_image_paste(
+                    ui.ctx(),
+                    response_had_focus_before_edit,
+                    crate::app::action::clipboard_image::ClipboardImageOps::has_image_payload,
+                );
+            let events_before_edit = ui.input(|input| input.events.clone());
+
             let text_edit = egui::TextEdit::multiline(buffer)
-                .id(crate::editor_undo::EditorUndoIdentity::text_edit_id(
-                    workspace_root,
-                    &doc.path,
-                ))
+                .id(editor_id)
                 .interactive(editable)
                 .font(egui::TextStyle::Monospace)
                 .desired_width(f32::INFINITY)
@@ -52,6 +61,7 @@ impl TextEditRenderer {
                 })
                 .frame(egui::Frame::NONE);
 
+            let previous_cursor_range = *cursor_range_out;
             let text_output = text_edit.show(ui);
             let response = text_output.response;
 
@@ -150,12 +160,26 @@ impl TextEditRenderer {
             );
 
             let text_changed = response.changed();
-            let should_ingest_clipboard_image =
-                EditorLogicOps::editor_clipboard_image_paste_requested(ui, &response, text_changed);
-            if text_changed {
-                *action = AppAction::UpdateBuffer(buffer.clone());
-            } else if editable && should_ingest_clipboard_image {
+            let response_has_focus_after_edit = response.has_focus()
+                || ui.memory(|mem| mem.focused().is_some_and(|id| id == response.id));
+            let should_ingest_clipboard_image = ui.input(|input| {
+                EditorLogicOps::editor_clipboard_image_paste_requested_from_event_snapshots(
+                    response_had_focus_before_edit,
+                    response_has_focus_after_edit,
+                    text_changed,
+                    &events_before_edit,
+                    &input.events,
+                )
+            });
+            if editable && clipboard_image_paste_intercepted {
                 *action = AppAction::IngestClipboardImage;
+            } else if editable && should_ingest_clipboard_image {
+                if text_changed {
+                    *cursor_range_out = previous_cursor_range;
+                }
+                *action = AppAction::IngestClipboardImage;
+            } else if text_changed {
+                *action = AppAction::UpdateBuffer(buffer.clone());
             }
             EditorLogicOps::handle_scroll_to_line(ui, scroll, buffer, &response, &galley);
             let anchors = EditorLogicOps::extract_line_anchors(&galley);

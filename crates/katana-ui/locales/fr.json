@@ -531,7 +531,7 @@
   "export": {
     "success": "{format} exporté avec succès : {path}",
     "failed": "L'exportation {format} a échoué : {error}",
-    "tool_missing": "Installez Chrome pour l'exportation {format}.",
+    "tool_missing": "Outil d'exportation indisponible. Le runtime Chromium géré n'est pas connecté pour l'export {format}.",
     "temp_file_error": "Erreur de fichier temporaire : {error}",
     "write_error": "Erreur d'écriture : {error}",
     "persist_error": "Échec de sauvegarde.",

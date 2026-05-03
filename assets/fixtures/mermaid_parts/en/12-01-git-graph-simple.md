@@ -1,0 +1,19 @@
+# 12.1. Git Graph (Simple)
+
+~~~mermaid
+gitGraph
+    commit id: "base"
+    branch feature
+    checkout feature
+    commit id: "rust-js"
+    checkout main
+    merge feature
+~~~
+
+<!-- katana-mermaid-official:start -->
+
+## 公式Mermaid.js描画
+
+![公式Mermaid.js描画: 12.1. Git Graph (Simple)](official-dark/12-01-git-graph-simple.png)
+
+<!-- katana-mermaid-official:end -->

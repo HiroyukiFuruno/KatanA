@@ -531,7 +531,7 @@
   "export": {
     "success": "{format} esportato con successo: {path}",
     "failed": "Esportazione {format} fallita: {error}",
-    "tool_missing": "Installa Chrome per l'esportazione in {format}.",
+    "tool_missing": "Strumento di esportazione non disponibile. Il runtime Chromium gestito non è connesso per l'esportazione {format}.",
     "temp_file_error": "Errore file temporaneo: {error}",
     "write_error": "Errore di scrittura: {error}",
     "persist_error": "Salvataggio fallito.",

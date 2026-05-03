@@ -46,7 +46,7 @@ impl<'a> StyledComboBox<'a> {
             .response
     }
 
-    fn apply_popup_visuals(ui: &mut egui::Ui) {
+    pub(crate) fn apply_popup_visuals(ui: &mut egui::Ui) {
         let visuals = &mut ui.style_mut().visuals;
         visuals.widgets.inactive.bg_fill = crate::theme_bridge::TRANSPARENT;
         visuals.widgets.inactive.weak_bg_fill = crate::theme_bridge::TRANSPARENT;

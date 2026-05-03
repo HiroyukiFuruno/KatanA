@@ -165,6 +165,35 @@ mod tests {
     }
 
     #[test]
+    fn try_rasterize_returns_image_for_drawio_svg_with_html_fallback() {
+        let kind = DiagramKind::DrawIo;
+        let html = concat!(
+            r#"<div class="diagram">"#,
+            r##"<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">"##,
+            r##"<switch><foreignObject>"##,
+            r##"<div xmlns="http://www.w3.org/1999/xhtml">Label</div>"##,
+            r##"</foreignObject><text x="0" y="8" fill="light-dark(#000000, #ffffff)">"##,
+            r##"Label</text></switch></svg></div>"##
+        );
+        let section = RendererLogicOps::try_rasterize(&kind, "source", html, 0);
+        assert_variant!(section, RenderedSection::Image { .. });
+    }
+
+    #[test]
+    fn try_rasterize_keeps_display_size_after_high_density_render() {
+        let kind = DiagramKind::Mermaid;
+        let html = r#"<svg width="10" height="10"><path d="M0 0 L10 10" stroke="white"/></svg>"#;
+        let section = RendererLogicOps::try_rasterize(&kind, "source", html, 0);
+        let RenderedSection::Image { svg_data, .. } = section else {
+            panic!("Expected Image section");
+        };
+        assert!(svg_data.width > 10);
+        assert!(svg_data.height > 10);
+        assert_eq!(svg_data.display_width, 10.0);
+        assert_eq!(svg_data.display_height, 10.0);
+    }
+
+    #[test]
     fn decode_png_to_section_returns_image_for_valid_png() {
         use image::{ImageBuffer, Rgba};
         let mut buf = Vec::new();
@@ -218,9 +247,30 @@ mod tests {
     }
 
     #[test]
-    fn map_diagram_result_err_maps_to_error_section() {
+    fn map_diagram_result_drawio_err_maps_to_code_block_markdown() {
         let section = RendererLogicOps::map_diagram_result(
             &DiagramKind::DrawIo,
+            "src",
+            DiagramResult::Err {
+                source: "src".to_string(),
+                error: "render failed".to_string(),
+            },
+            0,
+        );
+        match section {
+            RenderedSection::Markdown(markdown, _) => {
+                assert!(markdown.contains("not supported"));
+                assert!(markdown.contains("```drawio"));
+                assert!(markdown.contains("src"));
+            }
+            other => panic!("Expected Markdown, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn map_diagram_result_plantuml_err_maps_to_error_section() {
+        let section = RendererLogicOps::map_diagram_result(
+            &DiagramKind::PlantUml,
             "src",
             DiagramResult::Err {
                 source: "src".to_string(),
@@ -648,6 +698,24 @@ mod tests {
     }
 
     #[test]
+    fn mermaid_cache_key_ignores_legacy_renderer_env() {
+        let _guard = RENDER_ENV_LOCK.lock().unwrap();
+        let path = std::path::Path::new("/tmp/test.md");
+        let kind = DiagramKind::Mermaid;
+        let source = "graph TD; A-->B";
+
+        unsafe { std::env::remove_var("KATANA_MERMAID_RENDERER") };
+        let default_key = RendererLogicOps::get_cache_key(path, &kind, source);
+
+        unsafe { std::env::set_var("KATANA_MERMAID_RENDERER", "rust-js") };
+        let rust_js_key = RendererLogicOps::get_cache_key(path, &kind, source);
+
+        unsafe { std::env::remove_var("KATANA_MERMAID_RENDERER") };
+        assert_eq!(default_key, rust_js_key);
+        assert!(default_key.to_ascii_lowercase().contains("mermaid"));
+    }
+
+    #[test]
     fn test_coverage_gap_filler_render_message_processing() {
         let mut pane = PreviewPane::default();
         let (tx, rx) = std::sync::mpsc::channel();
@@ -779,6 +847,8 @@ mod tests {
             svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg {
                 width: 1,
                 height: 1,
+                display_width: 1.0,
+                display_height: 1.0,
                 rgba: vec![0; 4],
             },
             alt: String::new(),
@@ -818,6 +888,8 @@ mod tests {
             svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg {
                 width: 1,
                 height: 1,
+                display_width: 1.0,
+                display_height: 1.0,
                 rgba: vec![0; 4],
             },
             alt: String::new(),
@@ -910,6 +982,8 @@ mod tests {
             svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg {
                 width: 1,
                 height: 1,
+                display_width: 1.0,
+                display_height: 1.0,
                 rgba: vec![0; 4],
             },
             alt: "Diagram A".to_string(),

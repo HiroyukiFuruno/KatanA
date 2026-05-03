@@ -1,0 +1,338 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.0 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" modified="2024-09-27T17:03:51.586Z" version="24.4.0" etag="aydIY9j1A8M00WWtVXiK" type="device">
+  <diagram id="H5GXFCxOhU0KTGgIwQpM" name="lunar-habitat">
+    <mxGraphModel dx="1948" dy="837" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-102" value="Legend" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#CCCCCC;strokeColor=none;opacity=50;verticalAlign=top;fontStyle=1;fontSize=16;spacingTop=4;" parent="1" vertex="1">
+          <mxGeometry x="437" y="110" width="270" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-90" value="Lunar base &lt;br&gt;inhabited by humans" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;opacity=25;verticalAlign=top;fontStyle=1;fontSize=16;fillColor=#e3c800;strokeColor=none;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="-730" y="1255" width="1140" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-88" value="Rocketry, launch and landing systems" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#ffcc99;strokeColor=none;opacity=50;verticalAlign=top;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="-730" y="40" width="1140" height="285" as="geometry" />
+        </mxCell>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;curved=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="yJskkeEXkj9DsQzpg7nF-71" target="yJskkeEXkj9DsQzpg7nF-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-535" y="1320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-71" value="Food, water &amp;amp; equipment supply" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#6d8764;strokeColor=none;opacity=40;verticalAlign=top;fontStyle=1;fontColor=#000000;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="-730" y="335" width="390" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-9" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="yJskkeEXkj9DsQzpg7nF-72" target="yJskkeEXkj9DsQzpg7nF-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="1300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-72" value="Lunar transport" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#a0522d;strokeColor=none;opacity=40;verticalAlign=top;fontStyle=1;fontColor=#000000;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="240" y="335" width="170" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;curved=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="yJskkeEXkj9DsQzpg7nF-70" target="yJskkeEXkj9DsQzpg7nF-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="1320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-70" value="Power supply and communications" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#e51400;strokeColor=none;opacity=40;verticalAlign=top;fontStyle=1;fontColor=#000000;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="50" y="335" width="180" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-7" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;entryX=1;entryY=0.25;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="yJskkeEXkj9DsQzpg7nF-69" target="yJskkeEXkj9DsQzpg7nF-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-30" y="1290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-69" value="Lunar habitat modules" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#76608a;strokeColor=none;opacity=40;verticalAlign=top;fontStyle=1;fontColor=#000000;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="-140" y="335" width="180" height="910" as="geometry" />
+        </mxCell>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-6" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;entryX=0;entryY=0.25;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="yJskkeEXkj9DsQzpg7nF-68" target="yJskkeEXkj9DsQzpg7nF-12">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-290" y="1290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-68" value="Human health risk management" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#647687;strokeColor=none;opacity=40;verticalAlign=top;fontStyle=1;fontColor=#000000;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="-330" y="335" width="180" height="910" as="geometry" />
+        </mxCell>
+        <object label="Successful launch &amp;amp; soft landing" Note="Large payload rocket required" id="yJskkeEXkj9DsQzpg7nF-1">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="-110" y="605" width="120" height="60" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-3" value="Successful deployment" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="675" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-4" value="Materials provide adequate radiation protection" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="815" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-5" value="Successful launch, landing &amp;amp; retrieval" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;" parent="1" vertex="1">
+          <mxGeometry x="-220" y="1385" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-7" value="Habitats prototyped" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="465" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-8" value="Final habitat selected and built" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="535" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-9" value="Heavy payload rocket proposals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;strokeColor=#3A5431;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-300" y="95" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-10" value="Successful deployment and connection" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="745" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-11" value="Materials and seals are adequate in vacuum and dust" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="745" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-12" value="Human team&amp;nbsp;&lt;div&gt;selected and mission go-ahead given&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-220" y="1305" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-13" value="Lunar human vehicles prototyped" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="265" y="745" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-14" value="Lunar human vehicle built" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="265" y="815" width="120" height="60" as="geometry" />
+        </mxCell>
+        <object label="Successful launch &amp;amp; soft landing" Note="Large payload rocket required" id="yJskkeEXkj9DsQzpg7nF-15">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="265" y="885" width="120" height="60" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-16" value="Successful landing" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="265" y="955" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-17" value="Successful deployment &amp;amp; connection to power" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="265" y="1025" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-18" value="Adequate power for habitat, equipment, vehicle and suits" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="885" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-21" value="Functional in lunar environment" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;" parent="1" vertex="1">
+          <mxGeometry x="265" y="1095" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-22" value="Adequate protection against micrometeoroids" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="955" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-23" value="Lunar ice extraction" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-500" y="1165" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-24" value="Adequate water supply ensured" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-690" y="1165" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;dashed=1;" parent="1" source="yJskkeEXkj9DsQzpg7nF-23" target="yJskkeEXkj9DsQzpg7nF-24" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-25" value="Adequate food supply ensured" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-690" y="1095" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-26" value="Low gravity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;strokeColor=#3A5431;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-300" y="395" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-45" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;dashed=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="yJskkeEXkj9DsQzpg7nF-27" target="yJskkeEXkj9DsQzpg7nF-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="Heavy payload rocket prototyped" link="https://spaceflightnow.com/2020/05/01/nasa-identifies-risks-in-spacexs-starship-lunar-lander-proposal/" id="yJskkeEXkj9DsQzpg7nF-29">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+            <mxGeometry x="-300" y="165" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;dashed=1;" parent="1" source="yJskkeEXkj9DsQzpg7nF-30" target="yJskkeEXkj9DsQzpg7nF-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="Radiation exposure" link="https://www.smithsonianmag.com/science-nature/how-space-radiation-threatens-lunar-exploration-180981415/" id="yJskkeEXkj9DsQzpg7nF-30">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="-300" y="815" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-31" value="Earth-lunar communications established" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="1025" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-32" value="Habitat proposals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;strokeColor=#3A5431;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="395" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-33" value="Lunar human vehicle proposals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="265" y="675" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-34" value="Reliable heavy payload rocket achieved" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-300" y="235" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-35" value="Mobile lunar communications established" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="1095" width="120" height="60" as="geometry" />
+        </mxCell>
+        <object label="Successful launch &amp;amp; soft landing" Note="Large payload rocket required" id="yJskkeEXkj9DsQzpg7nF-37">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="80" y="605" width="120" height="60" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-39" value="Materials function adequately in lunar dust" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="815" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-40" value="Adequate protection against micrometeoroids" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="885" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-86" style="edgeStyle=none;shape=connector;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=none;endFill=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="yJskkeEXkj9DsQzpg7nF-41" target="yJskkeEXkj9DsQzpg7nF-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="Exercise equipment" link="https://www.nasa.gov/missions/station/iss-research/counteracting-bone-and-muscle-loss-in-microgravity/" id="yJskkeEXkj9DsQzpg7nF-41">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;strokeColor=#3A5431;fontColor=#ffffff;" parent="1" vertex="1">
+            <mxGeometry x="-300" y="465" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-43" value="Solar panels and batteries designed &amp;amp; built for lunar enviroment" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" parent="1" vertex="1">
+          <mxGeometry x="80" y="535" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-48" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;dashed=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="yJskkeEXkj9DsQzpg7nF-47" target="yJskkeEXkj9DsQzpg7nF-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <UserObject label="Seals against carcinogenic dust" link="https://www.nature.com/articles/s41526-022-00244-1" id="yJskkeEXkj9DsQzpg7nF-47">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="-300" y="645" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-51" value="Ice extraction equipment prototyped" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-500" y="805" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-52" value="Ice extraction equipment built" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-500" y="875" width="120" height="60" as="geometry" />
+        </mxCell>
+        <object label="Successful launch &amp;amp; soft landing" Note="Large payload rocket required" id="yJskkeEXkj9DsQzpg7nF-53">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="-500" y="945" width="120" height="60" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="yJskkeEXkj9DsQzpg7nF-55" target="yJskkeEXkj9DsQzpg7nF-23" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-55" value="Successful deployment" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-500" y="1020" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-60" value="Successful launch &amp;amp; soft landing" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;" parent="1" vertex="1">
+          <mxGeometry x="-690" y="1025" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-73" value="Human habitation on the moon achieved" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-220" y="1465" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-74" value="Psychological factors understood" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;strokeColor=#3A5431;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="-300" y="1165" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-87" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" parent="1" source="yJskkeEXkj9DsQzpg7nF-26" target="yJskkeEXkj9DsQzpg7nF-41" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-240" y="455" as="sourcePoint" />
+            <mxPoint x="-240" y="676" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-240" y="505" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <UserObject label="Constant sound, vibration, light exposure" link="https://ntrs.nasa.gov/api/citations/19870014729/downloads/19870014729.pdf" id="yJskkeEXkj9DsQzpg7nF-27">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+            <mxGeometry x="-300" y="555" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-92" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-232" y="1376" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-93" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-701" y="1015" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-94" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-512" y="935" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-95" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="70" y="595" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-96" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="254" y="876" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-97" value="" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-120" y="595" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-98" value="Event must be repeated many times.&amp;nbsp;" style="shape=image;html=1;verticalAlign=middle;verticalLabelPosition=middle;labelBackgroundColor=none;imageAspect=0;aspect=fixed;image=https://cdn4.iconfinder.com/data/icons/evil-icons-user-interface/64/download-128.png;fontFamily=Helvetica;fontSize=11;fontColor=default;labelPosition=right;align=left;" parent="1" vertex="1">
+          <mxGeometry x="460" y="276" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-99" value="Milestone achieved" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=none;fillColor=#6d8764;strokeColor=#3A5431;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="480" y="154" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-100" value="Milestone currently underway" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=none;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="480" y="194.5" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="yJskkeEXkj9DsQzpg7nF-101" value="Milestone unachieved or tested" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=none;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="481" y="235" width="180" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-2" value="Enough power for all equipment, life support and transport" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="955" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-4" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;" parent="1" vertex="1">
+          <mxGeometry x="562" y="325" width="20" height="30" as="geometry" />
+        </mxCell>
+        <UserObject label="Reusable launch and landing pad" link="https://spaceflightnow.com/2020/05/01/nasa-identifies-risks-in-spacexs-starship-lunar-lander-proposal/" id="6ZILIq4_O0HNAWrPRnLz-16">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
+            <mxGeometry x="-110" y="165" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-17" value="Built &amp;amp; deployed on lunar surface" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="-110" y="235" width="120" height="60" as="geometry" />
+        </mxCell>
+        <UserObject label="Adverse space weather event mitigation" link="https://www.sciencedirect.com/science/article/pii/S0273117724000863" id="6ZILIq4_O0HNAWrPRnLz-18">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
+            <mxGeometry x="80" y="1025" width="120" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-23" value="" style="group" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="436" y="570" width="270" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-19" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#CCCCCC;strokeColor=none;opacity=50;verticalAlign=top;fontStyle=1;fontSize=16;" parent="6ZILIq4_O0HNAWrPRnLz-23" vertex="1">
+          <mxGeometry width="270" height="290.00000000000006" as="geometry" />
+        </mxCell>
+        <UserObject label="&lt;h1 style=&quot;text-align: center; margin-top: 0px;&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;NASA Gateway - mini space station&lt;/font&gt;&lt;/h1&gt;&lt;div&gt;A space station in orbit around the moon will enhance lunar communications and reduce some of the risks of establishing a lunar surface habitat.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;It is intended to be a basecamp for on-location testing for materials to protect against lunar dust, as well as for lunar surface habitat and life support deployments and monitoring.&lt;/div&gt;&lt;div style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;It will require at least four rocket launches during its construction.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Habitats for this station are currently in the design phrase.&lt;/div&gt;" link="https://www.nasa.gov/gateway-frequently-asked-questions/" id="6ZILIq4_O0HNAWrPRnLz-22">
+          <mxCell style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;" parent="6ZILIq4_O0HNAWrPRnLz-23" vertex="1">
+            <mxGeometry x="11.5" y="10.740740740740742" width="243" height="279.2592592592593" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-24" value="" style="group" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="436" y="340" width="270" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="6ZILIq4_O0HNAWrPRnLz-6" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=1 4;fillColor=#CCCCCC;strokeColor=none;opacity=50;verticalAlign=top;fontStyle=1;fontSize=16;" parent="6ZILIq4_O0HNAWrPRnLz-24" vertex="1">
+          <mxGeometry width="270" height="215" as="geometry" />
+        </mxCell>
+        <UserObject label="95% of space rocket launches without humans are successful" link="https://www.bbc.com/future/article/20230518-what-are-the-odds-of-a-successful-space-launch" id="6ZILIq4_O0HNAWrPRnLz-12">
+          <mxCell style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;" parent="6ZILIq4_O0HNAWrPRnLz-24" vertex="1">
+            <mxGeometry x="15" y="40" width="220" height="30" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="98% of space rocket launches with humans are successful" link="https://www.bbc.com/future/article/20230518-what-are-the-odds-of-a-successful-space-launch" id="6ZILIq4_O0HNAWrPRnLz-13">
+          <mxCell style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;" parent="6ZILIq4_O0HNAWrPRnLz-24" vertex="1">
+            <mxGeometry x="15" y="72.5" width="220" height="30" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="50% of lunar landings have been successful" link="https://en.wikipedia.org/wiki/List_of_missions_to_the_Moon" id="6ZILIq4_O0HNAWrPRnLz-14">
+          <mxCell style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;" parent="6ZILIq4_O0HNAWrPRnLz-24" vertex="1">
+            <mxGeometry x="15" y="102.5" width="220" height="30" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-2" value="Notes" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1" vertex="1" parent="6ZILIq4_O0HNAWrPRnLz-24">
+          <mxGeometry x="5" y="10" width="60" height="30" as="geometry" />
+        </mxCell>
+        <UserObject label="64% (18 of 28) surface sample return missions have been successful.&amp;nbsp;" link="https://en.wikipedia.org/wiki/Sample-return_mission" id="O5e22x99jU2aH3BDuBhm-10">
+          <mxCell style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;" vertex="1" parent="6ZILIq4_O0HNAWrPRnLz-24">
+            <mxGeometry x="15" y="132.5" width="220" height="30" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-1" value="0.98 * 0.5" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;labelBackgroundColor=default;labelBorderColor=default;spacingTop=1;spacingLeft=1;spacingBottom=1;spacingRight=1;" vertex="1" parent="1">
+          <mxGeometry x="-141" y="1380" width="70" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="O5e22x99jU2aH3BDuBhm-3" value="0.98 * 0.5" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;labelBackgroundColor=default;labelBorderColor=default;spacingTop=1;spacingLeft=1;spacingBottom=1;spacingRight=1;" vertex="1" parent="1">
+          <mxGeometry x="-620" y="1015" width="70" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -18,7 +18,7 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 > **【AIエージェントへの厳重警告】**
 > 過去のリリースにおいて、AIが以下の致命的な違反を犯しました。
 >
-> 1. `make release` が失敗した際、勝手に `git tag -a` などの代替コマンドを実行し、タスクを強行完了(`[ ]`)として虚偽入力した。
+> 1. `just VERSION=x.y.z release` が失敗した際、勝手に `git tag -a` などの代替コマンドを実行し、タスクを強行完了(`[ ]`)として虚偽入力した。
 > 2. `openspec` のアーカイブ(`/opsx-archive`)を忘却し、不要なディレクトリを残したままリリースに進んだ。
 > 3. カバレッジ低下（エラーハンドリングパスのテスト漏れ）を放置した。
 > 4. `process_rules.md` で指定された「日本語での報告・コミット」を無視し英語で行った。
@@ -35,12 +35,12 @@ Tasks Grouped by ## = Adhere unconditionally to the branching standard defined i
 - [ ] 1.3 `cargo llvm-cov` などのカバレッジ計測において、**すべての追加機能・エラーパスが網羅されているか**再監査し、100%（または既存基準）をクリアしていることを確認する
 - [ ] 1.4 macOS 環境固有の挙動（メニュー、アイコン表示）に問題がないかを最終確認する
 - [ ] 1.5 **（重要）リリース・ビルドの前にアーカイブを実行:** `.agents/skills/openspec-archive-change/SKILL.md` またはそれに準ずる手法で、この `v1.0.0` ディレクトリを解放（退避・コミット）する。
-- [ ] 1.6 Run `make release VERSION=1.0.0` to prepare versions, commit with GPG signature, and create a PR to master (Release will be automated on merge)
+- [ ] 1.6 Run `just VERSION=1.0.0 release` to prepare versions, commit with GPG signature, and create a PR to master (Release will be automated on merge)
 
 ### Definition of Done (DoD)
 
 - [ ] 全機能を通した手動検証で致命的なバグがなく、利用に耐えうることが確認されている。
-- [ ] `make check-local` （フォーマット、リント、テスト、カバレッジ）が警告なし・exit 0 で完全にパスしている。
+- [ ] `just check-local` （フォーマット、リント、テスト、カバレッジ）が警告なし・exit 0 で完全にパスしている。
 - [ ] プロダクション利用可能な DMG ビルドが作成でき、GitHub Releases への登録準備が整っている。
 - [ ] （最重要）全ての先行タスクを含め、この `v1.0.0` のOpenSpecも完全に解放（`.gitignore` 解除によるGit管理下への追加）された状態になっていること。
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).

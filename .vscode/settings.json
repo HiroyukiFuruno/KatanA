@@ -1,6 +1,6 @@
 {
   "files.exclude": {
-    "target": true,
+    "target": true
   },
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
@@ -22,17 +22,7 @@
       "siblings_only": true
     },
     "MD033": {
-      "allowed_elements": [
-        "h1",
-        "h2",
-        "h3",
-        "h4",
-        "h5",
-        "h6",
-        "a",
-        "img",
-        "p"
-      ]
+      "allowed_elements": ["h1", "h2", "h3", "h4", "h5", "h6", "a", "img", "p"]
     },
     "MD041": false
   }

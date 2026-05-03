@@ -109,7 +109,6 @@ impl KatanaApp {
         if !cfg!(test) {
             app.start_renderer_asset_bootstrap();
         }
-        app.start_update_check(false);
         tracing::debug!("KatanaApp::new: End");
 
         let last_ws = app

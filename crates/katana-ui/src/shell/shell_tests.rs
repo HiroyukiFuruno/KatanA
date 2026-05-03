@@ -6,7 +6,25 @@ mod tests {
     use crate::state::ViewMode;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
     use std::path::PathBuf;
+    use std::sync::Mutex;
     use tempfile::TempDir;
+
+    static HEADLESS_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    struct HeadlessEnvGuard;
+
+    impl HeadlessEnvGuard {
+        fn new() -> Self {
+            unsafe { std::env::set_var("KATANA_HEADLESS", "1") };
+            Self
+        }
+    }
+
+    impl Drop for HeadlessEnvGuard {
+        fn drop(&mut self) {
+            unsafe { std::env::remove_var("KATANA_HEADLESS") };
+        }
+    }
 
     fn make_app() -> KatanaApp {
         let mut state = AppState::new(
@@ -223,10 +241,9 @@ mod tests {
     }
 
     #[test]
-    fn process_action_export_pdf_without_tool_shows_error() {
-        if katana_core::markdown::PdfExporter::is_available() {
-            return;
-        }
+    fn process_action_export_pdf_uses_native_export_dialog() {
+        let _env_lock = HEADLESS_ENV_LOCK.lock().unwrap();
+        let _env = HeadlessEnvGuard::new();
         let mut app = make_app();
         let dir = make_temp_workspace();
         let path = dir.path().join("test.md");
@@ -236,16 +253,16 @@ mod tests {
             &egui::Context::default(),
             AppAction::ExportDocument(crate::app_state::ExportFormat::Pdf),
         );
-        let (msg, kind) = app.state.layout.status_message.as_ref().unwrap();
-        assert_eq!(*kind, crate::app_state::StatusType::Error);
-        assert!(msg.contains("headless_chrome"), "msg = {msg}");
+        assert!(matches!(
+            app.pending_dialog_action,
+            Some(AppAction::PickExportDocument { ref ext, .. }) if ext == "pdf"
+        ));
     }
 
     #[test]
-    fn process_action_export_png_without_tool_shows_error() {
-        if true {
-            return;
-        }
+    fn process_action_export_png_uses_native_export_dialog() {
+        let _env_lock = HEADLESS_ENV_LOCK.lock().unwrap();
+        let _env = HeadlessEnvGuard::new();
         let mut app = make_app();
         let dir = make_temp_workspace();
         let path = dir.path().join("test.md");
@@ -255,9 +272,10 @@ mod tests {
             &egui::Context::default(),
             AppAction::ExportDocument(crate::app_state::ExportFormat::Png),
         );
-        let (msg, kind) = app.state.layout.status_message.as_ref().unwrap();
-        assert_eq!(*kind, crate::app_state::StatusType::Error);
-        assert!(msg.contains("headless_chrome"), "msg = {msg}");
+        assert!(matches!(
+            app.pending_dialog_action,
+            Some(AppAction::PickExportDocument { ref ext, .. }) if ext == "png"
+        ));
     }
 
     #[test]
@@ -1394,6 +1412,57 @@ mod tests_extra {
             "Output must be valid HTML"
         );
         assert!(contents.contains("Hello"), "Output must contain heading");
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_status_messages_do_not_show_raw_lucide_templates() {
+        let locales = [
+            ("en", include_str!("../../locales/en.json")),
+            ("ja", include_str!("../../locales/ja.json")),
+        ];
+
+        for (language, json) in locales {
+            let messages: crate::i18n::I18nMessages = serde_json::from_str(json)
+                .unwrap_or_else(|e| panic!("{language}.json must deserialize: {e}"));
+            let message = crate::i18n::I18nOps::tf(
+                &messages.export.exporting,
+                &[("filename", "sample.html")],
+            );
+
+            assert!(
+                !message.contains("{{lucide:"),
+                "{language} export status must not show raw icon template: {message}"
+            );
+        }
+    }
+
+    #[test]
+    fn export_html_to_tmp_does_not_leak_templates_or_raw_mermaid_code() {
+        let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
+        let source = "# Diagram\n\n```mermaid\ngraph TD\n  A[Start] --> B[Done]\n```\n";
+        let path = ShellLogicOps::export_named_html_to_tmp(
+            source,
+            "katana_template_export.html",
+            preset,
+            None,
+        )
+        .expect("generation must succeed");
+        let contents = std::fs::read_to_string(&path).unwrap();
+
+        assert!(
+            !contents.contains("{{lucide:"),
+            "HTML export must not contain raw icon templates"
+        );
+        assert!(
+            !contents.contains("language-mermaid"),
+            "HTML export must not contain raw Mermaid code block markup"
+        );
+        assert!(
+            !contents.contains("graph TD"),
+            "HTML export must not contain raw Mermaid source"
+        );
+
         let _ = std::fs::remove_file(&path);
     }
 

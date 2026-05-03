@@ -531,7 +531,7 @@
   "export": {
     "success": "{format} erfolgreich exportiert: {path}",
     "failed": "Export von {format} fehlgeschlagen: {error}",
-    "tool_missing": "Installieren Sie Chrome für den {format}-Export.",
+    "tool_missing": "Exportwerkzeug nicht verfügbar. Die verwaltete Chromium-Laufzeit ist für den {format}-Export nicht verbunden.",
     "temp_file_error": "Temporärer Dateifehler: {error}",
     "write_error": "Schreibfehler: {error}",
     "persist_error": "Speichern fehlgeschlagen.",

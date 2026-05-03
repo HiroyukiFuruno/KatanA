@@ -149,9 +149,9 @@ mod tests {
     }
 
     #[test]
-    fn empty_paste_with_focus_requests_clipboard_image_ingest() {
+    fn empty_paste_after_text_edit_does_not_request_clipboard_image_ingest() {
         let events = vec![egui::Event::Paste(String::new())];
-        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
             true, false, &events
         ));
     }
@@ -185,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn command_v_without_text_requests_clipboard_image_ingest() {
+    fn command_v_after_text_edit_does_not_request_clipboard_image_ingest() {
         let mut modifiers = egui::Modifiers::NONE;
         modifiers.command = true;
         let events = vec![egui::Event::Key {
@@ -195,8 +195,145 @@ mod tests {
             repeat: false,
             modifiers,
         }];
-        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
             true, false, &events
+        ));
+    }
+
+    #[test]
+    fn command_shift_v_after_text_edit_does_not_request_clipboard_image_ingest() {
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        modifiers.shift = true;
+        let events = vec![egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        }];
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn mac_cmd_v_after_text_edit_does_not_request_clipboard_image_ingest() {
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.mac_cmd = true;
+        let events = vec![egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        }];
+        assert!(!EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, false, &events
+        ));
+    }
+
+    #[test]
+    fn command_v_consumed_after_text_edit_does_not_request_clipboard_image_ingest() {
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        let events_before_edit = vec![egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        }];
+        let events_after_edit = Vec::new();
+
+        assert!(
+            !EditorLogicOps::editor_clipboard_image_paste_requested_from_event_snapshots(
+                true,
+                true,
+                false,
+                &events_before_edit,
+                &events_after_edit
+            )
+        );
+    }
+
+    #[test]
+    fn command_v_before_text_edit_intercepts_when_clipboard_has_image() {
+        let ctx = egui::Context::default();
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        let mut raw_input = egui::RawInput::default();
+        raw_input.events.push(egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        });
+        let mut intercepted = false;
+
+        let _ = ctx.run(raw_input, |ctx| {
+            intercepted =
+                EditorLogicOps::intercept_clipboard_image_paste_for_test(ctx, true, || true);
+        });
+
+        assert!(intercepted);
+    }
+
+    #[test]
+    fn command_v_before_text_edit_is_kept_when_clipboard_has_no_image() {
+        let ctx = egui::Context::default();
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        let mut raw_input = egui::RawInput::default();
+        raw_input.events.push(egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        });
+        let mut intercepted = true;
+
+        let _ = ctx.run(raw_input, |ctx| {
+            intercepted =
+                EditorLogicOps::intercept_clipboard_image_paste_for_test(ctx, true, || false);
+        });
+
+        assert!(!intercepted);
+    }
+
+    #[test]
+    fn command_v_consumed_after_text_edit_does_not_hijack_text_paste() {
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        let events_before_edit = vec![egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        }];
+        let events_after_edit = Vec::new();
+
+        assert!(
+            !EditorLogicOps::editor_clipboard_image_paste_requested_from_event_snapshots(
+                true,
+                true,
+                true,
+                &events_before_edit,
+                &events_after_edit
+            )
+        );
+    }
+
+    #[test]
+    fn image_file_url_paste_requests_clipboard_image_ingest_after_text_changed() {
+        let events = vec![egui::Event::Paste(
+            "file:///Users/me/Pictures/cat%20photo.PNG".to_string(),
+        )];
+        assert!(EditorLogicOps::should_ingest_clipboard_image_paste(
+            true, true, &events
         ));
     }
 
@@ -207,4 +344,4 @@ mod tests {
             true, true, &events
         ));
     }
-    }
+}

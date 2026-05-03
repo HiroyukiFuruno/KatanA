@@ -1,5 +1,8 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
+#[path = "update_helpers.rs"]
+mod update_helpers;
+
 use crate::app::*;
 use crate::shell::*;
 
@@ -15,6 +18,7 @@ use std::sync::mpsc::Receiver;
 
 pub(crate) trait UpdateOps {
     fn start_update_check(&mut self, is_manual: bool);
+    fn tick_update_check(&mut self, ctx: &egui::Context);
     fn poll_update_install(&mut self, ctx: &egui::Context);
     fn poll_update_check(&mut self, _ctx: &egui::Context);
 }
@@ -44,6 +48,49 @@ impl UpdateOps for KatanaApp {
         });
     }
 
+    fn tick_update_check(&mut self, ctx: &egui::Context) {
+        if self.state.update.checking {
+            return;
+        }
+
+        let interval = self
+            .state
+            .config
+            .settings
+            .settings()
+            .updates
+            .interval
+            .as_duration();
+
+        let Some(interval) = interval else {
+            return;
+        };
+
+        let last_checked = self
+            .state
+            .config
+            .settings
+            .settings()
+            .updates
+            .last_checked_timestamp_sec;
+        let Some(last_checked_at) = last_checked.and_then(|value| {
+            std::time::UNIX_EPOCH.checked_add(std::time::Duration::from_secs(value))
+        }) else {
+            self.start_update_check(false);
+            return;
+        };
+
+        let now = std::time::SystemTime::now();
+        match now.duration_since(last_checked_at) {
+            Ok(elapsed) if elapsed >= interval => self.start_update_check(false),
+            Ok(elapsed) => {
+                let remaining = interval - elapsed;
+                ctx.request_repaint_after(remaining);
+            }
+            Err(_) => self.start_update_check(false),
+        }
+    }
+
     fn poll_update_install(&mut self, ctx: &egui::Context) {
         let Some(rx) = &self.update_install_rx else {
             return;
@@ -51,7 +98,8 @@ impl UpdateOps for KatanaApp {
         while let Ok(event) = rx.try_recv() {
             match event {
                 UpdateInstallEvent::Progress(prog) => {
-                    self.state.update.phase = Some(compute_update_phase(prog));
+                    self.state.update.phase =
+                        Some(update_helpers::UpdateHelpers::compute_update_phase(prog));
                     ctx.request_repaint();
                 }
                 UpdateInstallEvent::Finished(Ok(prep)) => {
@@ -82,6 +130,7 @@ impl UpdateOps for KatanaApp {
             Ok(Ok(Some(release_info))) => {
                 self.state.update.checking = false;
                 self.update_rx = None;
+                update_helpers::UpdateHelpers::remember_update_check_timestamp(self);
                 let is_newer = katana_core::update::UpdateOps::is_newer_version(
                     env!("CARGO_PKG_VERSION"),
                     &release_info.tag_name,
@@ -96,54 +145,33 @@ impl UpdateOps for KatanaApp {
                         self.show_update_dialog = true;
                     }
                     self.update_notified = true;
+                } else if !is_newer {
+                    self.update_notified = false;
                 }
             }
             Ok(Ok(None)) => {
                 self.state.update.checking = false;
                 self.update_rx = None;
                 self.state.update.available = None;
-                if !self.update_notified {
-                    self.update_notified = true;
-                }
+                update_helpers::UpdateHelpers::remember_update_check_timestamp(self);
+                self.update_notified = false;
             }
             Ok(Err(err)) => {
                 self.state.update.checking = false;
                 self.state.update.check_error = Some(err);
                 self.update_rx = None;
+                update_helpers::UpdateHelpers::remember_update_check_timestamp(self);
+                self.state.update.available = None;
+                self.update_notified = false;
             }
             Err(std::sync::mpsc::TryRecvError::Empty) => {}
             Err(_) => {
                 self.state.update.checking = false;
                 self.update_rx = None;
+                update_helpers::UpdateHelpers::remember_update_check_timestamp(self);
+                self.state.update.available = None;
+                self.update_notified = false;
             }
         }
-    }
-}
-
-fn compute_update_phase(
-    prog: katana_core::update::UpdateProgress,
-) -> crate::app_state::UpdatePhase {
-    match prog {
-        katana_core::update::UpdateProgress::Downloading { downloaded, total } => {
-            let progress = compute_download_progress(downloaded, total);
-            crate::app_state::UpdatePhase::Downloading { progress }
-        }
-        katana_core::update::UpdateProgress::Extracting { current, total } => {
-            let progress = if total > 0 {
-                current as f32 / total as f32
-            } else {
-                0.0
-            };
-            crate::app_state::UpdatePhase::Installing { progress }
-        }
-    }
-}
-
-fn compute_download_progress(downloaded: u64, total: Option<u64>) -> f32 {
-    let Some(t) = total else { return 0.0 };
-    if t > 0 {
-        downloaded as f32 / t as f32
-    } else {
-        0.0
     }
 }

@@ -5,6 +5,8 @@
 mod app_state;
 #[path = "integration/search/command_palette.rs"]
 mod command_palette;
+#[path = "integration/editor/ui.rs"]
+mod editor_ui;
 #[path = "integration/settings/font_bridge.rs"]
 mod font_bridge;
 #[path = "integration/settings/font_realtime.rs"]
@@ -13,6 +15,8 @@ mod font_realtime;
 mod foreground_surface_isolation;
 #[path = "integration/settings/i18n.rs"]
 mod i18n;
+#[path = "integration/native_clipboard_paste.rs"]
+mod native_clipboard_paste;
 
 pub static SERIAL_TEST_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 

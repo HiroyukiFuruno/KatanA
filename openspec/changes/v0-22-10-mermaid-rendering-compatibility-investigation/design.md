@@ -28,6 +28,10 @@
 - Mermaid.js 以外の Draw.io / PlantUML を主対象にしない。
 - この change ではユーザー設定を増やさない。
 - ピクセル完全一致を目標にしない。
+- Mermaid renderer の汎用 interface 化、Mermaid.js の version 固定、`katana-renderer` 分離設計は v0.22.11 へ移管する。
+- Draw.io 描画 runtime の所有境界は v0.22.11 の分離設計で整理する。ただし HTML 生成不正と PDF / PNG / JPEG export の Chromium 依存除去は v0.22.10 の残課題として扱う。
+- 公式比較画像との採点評価は v0.22.10 では手動検証の補助に留める。直近の合格ラインは公式ドキュメント由来の Draw.io fixture 85 点以上とし、日本語版（ja）評価、保存時チェック（pre-commit）や CI/CD の必須検証に組み込む設計は、`katana-renderer` 分離後に扱う。
+- Linux Homebrew cask 対応は、KatanA の GUI アプリ配布経路として扱う。CLI 用または互換目的の Formula が残る場合でも、GUI アプリ導線は `brew install --cask` に寄せる。
 
 ## Approach
 
@@ -40,7 +44,7 @@
    - Rust 管理 JS が不採用の場合に高速な headless browser / WebView / Chromium から単一の採用経路を選ぶ
    - OS Chrome / Chromium アプリ起動を禁止する境界を preview / HTML export / PDF / PNG / JPEG export ごとに決める
    - platform ごとの runtime と配布方法を決める
-   - v0.22.10 で移行しきれない export 経路や特殊ケースは後続 versioned change に分離する
+   - v0.22.10 で移行しきれない Draw.io 経路や特殊ケースは後続 versioned change に分離する
 1. 採用した単一 Mermaid renderer の描画条件を確認する。
    - ヘッドレスブラウザの window size
    - HTML / body / container の幅
@@ -72,6 +76,12 @@
    - Mermaid 初期化設定で解決するもの
    - SVG 後処理が必要なもの
    - Mermaid.js 側の仕様差として許容または後続 versioned change に送るもの
+1. Linux Homebrew cask の成立条件を固定する。
+   - Homebrew の Linux cask 対応範囲を確認する
+   - `homebrew-katana` の macOS cask / Linux formula / Linux cask の責務を分離する
+   - Linux release asset の URL、sha256、実行ファイル配置、desktop entry、icon 配置を cask で表現できるか確認する
+   - `just linux-up` 環境で tap、install、launch、uninstall を検証する
+   - 成立しない場合は Formula へ曖昧に戻さず、制約と後続配布方式を記録する
 
 ## Risks
 
@@ -80,6 +90,7 @@
 - Rust 管理の JS 実行環境は、Mermaid.js / Drawio.js が期待する DOM / SVG / layout API を再現できない可能性がある。
 - 図形ごとに最適な container 幅が異なる場合、単一の固定幅では別の図形を崩す可能性がある。
 - SVG 後処理を増やしすぎると、Mermaid.js 公式更新への追従が難しくなる。
+- Linux cask は Homebrew 側の対応範囲、cask DSL の Linux artifact 表現、GUI 起動統合に制約がある。特に desktop entry や icon 配置が Homebrew の期待から外れる場合、Formula ではなく別配布方式へ切り出す判断が必要になる。
 
 ## Runtime Selection Criteria
 
@@ -100,4 +111,6 @@ Rust 管理 JS が不採用になった場合、高速な headless browser / Web
 - Rust 管理 JS で DOM / SVG / layout API をどこまで現実的に満たせるか。
 - 高速な headless browser、platform-native WebView、管理下 Chromium runtime のどれを採用するか。
 - 図形ごとの固定幅を持つべきか、全 Mermaid 図形で共通の既定幅を維持するか。
-- `mmdc` 比較を CI に入れるか、重いため手動検証・スクリーンショット証跡に限定するか。
+- 分離後の `katana-renderer` で、公式比較画像との採点評価を保存時チェック（pre-commit）や CI/CD にどの粒度で入れるか。
+- Linux cask の token は既存 macOS cask と同じ `katana-desktop` に統合するか、Linux 専用 token を分けるか。
+- Linux GUI アプリの desktop entry / icon / executable link を cask 側でどこまで管理し、どこから release asset 側の責務にするか。

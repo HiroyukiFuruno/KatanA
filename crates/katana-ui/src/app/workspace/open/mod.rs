@@ -4,4 +4,7 @@ mod handlers;
 mod registration;
 mod session;
 
+#[cfg(test)]
+mod session_tests;
+
 pub(crate) use handlers::WorkspaceOpenHandlersOps;

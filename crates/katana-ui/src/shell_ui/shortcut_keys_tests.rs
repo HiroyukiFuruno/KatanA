@@ -34,6 +34,13 @@ mod tests {
     }
 
     #[test]
+    fn editor_releases_shifted_primary_v_for_clipboard_image_command() {
+        let shortcut =
+            ShortcutKeyOps::parse_shortcut("primary+shift+V").expect("primary+shift+V must parse");
+        assert!(!ShortcutKeyOps::editor_keeps_shortcut(&shortcut));
+    }
+
+    #[test]
     fn editor_keeps_shifted_primary_b_for_native_text_entry() {
         let shortcut =
             ShortcutKeyOps::parse_shortcut("primary+shift+B").expect("primary+shift+B must parse");

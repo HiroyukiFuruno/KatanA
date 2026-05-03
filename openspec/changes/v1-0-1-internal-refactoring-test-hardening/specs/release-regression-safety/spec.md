@@ -7,7 +7,7 @@
 #### Scenario: Refresh regression plan
 
 - **WHEN** implementer が release regression gate の実装へ入る
-- **THEN** implementer は現在の test runner、Makefile、既存 integration tests、既存 regression tests を確認する
+- **THEN** implementer は現在の test runner、Justfile、既存 integration tests、既存 regression tests を確認する
 - **THEN** implementer は不足している workflow と既に十分な workflow を分けて tasks に反映する
 
 ### Requirement: Release regression gate covers core product workflows

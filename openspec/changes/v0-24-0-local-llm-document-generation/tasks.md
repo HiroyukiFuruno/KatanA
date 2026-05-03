@@ -42,7 +42,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 - [ ] 「既存ドキュメント」「新規ファイル」「テンプレート」の 3 つの方式すべてを通じて、意図した通りのファイル書き込みが成立すること
 - [ ] どの方式を利用しても、ユーザーの最終確認 (confirmation) アクションの前に勝手にファイルが書き換わったり上書きされたりしないこと
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
@@ -62,7 +62,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 - [ ] ユーザーが 3 種類の生成・出力フローを UI 上で明確に区別して使い分けられること
 - [ ] 生成されたテキストを、反映ボタンを押す前に安全にレビュー(事前確認)してから書き込むという導線が、直感的にユーザーに分かること
-- [ ] `make check` がエラーなし (exit code 0) で通過すること
+- [ ] `just check` がエラーなし (exit code 0) で通過すること
 - [ ] `/openspec-delivery` ワークフロー (`.agents/workflows/openspec-delivery.md`) を実行し、包括的なデリバリールーチン (自己レビュー、コミット、PR作成、マージ) を完了すること。
 
 ---
@@ -78,7 +78,7 @@ Tasks Grouped by ## = 各実装セッション中は、`/openspec-branching` ワ
 
 - [ ] 5.1 `docs/coding-rules.ja.md` と `.agents/skills/self-review/SKILL.md` に基づく自己レビューを実施する (各ファイルのバージョン情報更新漏れがないか確認する)
 - [ ] 5.2 markdownのフォーマット（format）および Lint修正（lintfix）を実行し、全ドキュメントの体裁を整える
-- [ ] 5.3 `make check` がエラーなし (exit code 0) で通過することを確認する
+- [ ] 5.3 `just check` がエラーなし (exit code 0) で通過することを確認する
 - [ ] 5.4 中間ベースブランチ（元々 master から派生したもの）を `master` ブランチへマージする
 - [ ] 5.5 `master` に向けて PR（プルリクエスト）を作成する
 - [ ] 5.6 `master` へマージする (※ `--admin` の利用は許容される)

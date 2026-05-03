@@ -94,3 +94,64 @@ fn command_shortcut_consumed(
     }
     ctx.input_mut(|i| i.consume_shortcut(&parsed))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app_state::{AppAction, AppState};
+    use crate::editor_undo::EditorUndoIdentity;
+    use katana_core::{ai::AiProviderRegistry, document::Document, plugin::PluginRegistry};
+    use std::path::Path;
+    use std::sync::Arc;
+
+    fn app_with_focused_editor(ctx: &egui::Context) -> KatanaApp {
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            Default::default(),
+            Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state
+            .document
+            .open_documents
+            .push(Document::new("/tmp/editor.md", ""));
+        state.document.active_doc_idx = Some(0);
+
+        let editor_id = EditorUndoIdentity::text_edit_id(None, Path::new("/tmp/editor.md"));
+        ctx.memory_mut(|mem| {
+            mem.request_focus(editor_id);
+        });
+
+        KatanaApp::new(state)
+    }
+
+    fn shifted_primary_v_input() -> egui::RawInput {
+        let mut modifiers = egui::Modifiers::NONE;
+        modifiers.command = true;
+        modifiers.shift = true;
+        let mut input = egui::RawInput::default();
+        input.events.push(egui::Event::Key {
+            key: egui::Key::V,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        });
+        input
+    }
+
+    #[test]
+    fn handle_shortcuts_queues_clipboard_image_for_shifted_primary_v_in_editor() {
+        let ctx = egui::Context::default();
+        let mut app = app_with_focused_editor(&ctx);
+
+        let _ = ctx.run(shifted_primary_v_input(), |ctx| {
+            app.handle_shortcuts(ctx);
+        });
+
+        assert!(matches!(
+            app.pending_action,
+            AppAction::IngestClipboardImage
+        ));
+    }
+}

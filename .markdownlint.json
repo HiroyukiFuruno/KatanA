@@ -5,10 +5,7 @@
   },
   "MD010": {
     "code_blocks": true,
-    "ignore_code_languages": [
-      "",
-      ""
-    ]
+    "ignore_code_languages": ["", ""]
   },
   "MD012": {
     "maximum": 1
@@ -42,14 +39,7 @@
     "style": "asterisk"
   },
   "MD052": {
-    "ignored_labels": [
-      "x",
-      "/",
-      "-",
-      "?",
-      "!",
-      "~"
-    ],
+    "ignored_labels": ["x", "/", "-", "?", "!", "~"],
     "shortcut_syntax": true
   },
   "MD055": {

@@ -47,6 +47,9 @@ impl MarkdownFenceOps {
         renderer: &R,
     ) -> Option<String> {
         let kind = DiagramKind::from_info(&block.info)?;
+        if kind.should_preserve_fenced_source(&block.content) {
+            return None;
+        }
         let diagram = DiagramBlock {
             kind,
             source: block.content.clone(),
@@ -88,6 +91,7 @@ impl MarkdownFenceOps {
             *remaining = &remaining[marker_len..];
             return;
         };
+        let block_had_trailing_newline = remaining[block.raw.len()..].starts_with('\n');
         if let Some(html) = Self::render_diagram_block(&block, renderer) {
             output.push_str("\n\n");
             output.push_str(&html);
@@ -96,6 +100,9 @@ impl MarkdownFenceOps {
             output.push_str("\n\n");
         } else {
             output.push_str(&block.raw);
+            if block_had_trailing_newline {
+                output.push('\n');
+            }
         }
         *remaining = after;
     }
