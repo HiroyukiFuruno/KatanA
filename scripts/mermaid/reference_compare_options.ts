@@ -31,13 +31,17 @@ export class CliOptions {
   }
 
   private static get(argv: string[], name: string, fallback: string): string {
-    const index = argv.indexOf(name);
-    return index >= 0 && index + 1 < argv.length ? argv[index + 1] : fallback;
+    const value = CliOptions.getValue(argv, name);
+    return value === null ? fallback : value;
   }
 
   private static getOptionalPath(argv: string[], name: string): string | null {
+    return CliOptions.getValue(argv, name);
+  }
+
+  private static getValue(argv: string[], name: string): string | null {
     const index = argv.indexOf(name);
-    return index >= 0 && index + 1 < argv.length ? argv[index + 1] : null;
+    return argv.at(index + 1) ?? null;
   }
 
   private static number(argv: string[], name: string, fallback: number): number {
