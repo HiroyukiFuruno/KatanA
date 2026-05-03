@@ -7,7 +7,7 @@ use katana_ui::i18n::I18nOps;
 #[test]
 fn test_font_size_slider_has_hover_tooltip() {
     /* WHY: Verify that the font size slider in Settings correctly identifies itself with a tooltip. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let mut harness = setup_harness();
     harness.step();
 

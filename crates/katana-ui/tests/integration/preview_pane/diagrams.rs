@@ -54,7 +54,7 @@ fn assert_standard_diagram_markdown_visible(harness: &Harness) {
 #[test]
 fn drawio_render_error_ui() {
     /* WHY: Verify that Draw.io rendering failures display a localized error message in the UI. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let sections = vec![
         RenderedSection::Markdown("# DrawIo Diagram\n".to_string(), 1),
         RenderedSection::Error {
@@ -81,7 +81,7 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 #[test]
 fn mermaid_both_states_render_semantically() {
     /* WHY: UI integration tests must not depend on a real browser renderer. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let pane = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
         render_and_wait("mermaid", MERMAID_SOURCE)
     });
@@ -111,7 +111,7 @@ const PLANTUML_SOURCE: &str = "@startuml\nAlice -> Bob : Hello\n@enduml";
 #[test]
 fn plantuml_both_states_render_semantically() {
     /* WHY: Verify PlantUML rendering transitions: 'NotInstalled' when JAR is missing, and 'Image' when available. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let saved_jar = std::env::var("PLANTUML_JAR").ok();
 
     unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/path/for/idempotent/test.jar") };
@@ -171,7 +171,7 @@ fn plantuml_both_states_render_semantically() {
 #[test]
 fn mixed_diagram_document_renders_all_independently() {
     /* WHY: Verify mixed diagrams resolve independently without invoking real browser renderers. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let source = format!(
         "# Mixed\n\n```mermaid\n{MERMAID_SOURCE}\n```\n\n\
          ## DrawIo\n\n```drawio\n{DRAWIO_SOURCE}\n```\n\n\

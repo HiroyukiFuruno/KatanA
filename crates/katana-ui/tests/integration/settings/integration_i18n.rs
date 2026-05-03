@@ -57,7 +57,7 @@ fn setup_harness_with_json_repo(settings_path: &std::path::Path) -> Harness<'sta
 #[test]
 fn test_persistence_language_roundtrip() {
     /* WHY: Verify that changing the UI language via an action is correctly flushed to the persistent JSON settings on disk. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let settings_dir = tempfile::tempdir().unwrap();
     let settings_path = settings_dir.path().join("settings.json");
 
@@ -92,7 +92,7 @@ fn test_persistence_language_roundtrip() {
 #[test]
 fn test_persistence_multiple_changes_accumulate() {
     /* WHY: Verify that both workspace selection and language changes are correctly aggregated and persisted in a single session. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let settings_dir = tempfile::tempdir().unwrap();
     let settings_path = settings_dir.path().join("settings.json");
 
@@ -131,7 +131,7 @@ fn test_persistence_multiple_changes_accumulate() {
 #[test]
 fn test_ui_all_languages_load_successfully() {
     /* WHY: UI stress test: verify that the application can hot-switch between all supported languages without crashing or leaving empty UI components. */
-    let _guard = crate::integration::get_serial_test_mutex().lock().unwrap();
+    let _guard = crate::integration::lock_serial_test_mutex();
     let settings_path = unique_temp_path("katana_test_langs").with_extension("json");
     let mut harness = setup_harness_with_json_repo(&settings_path);
     harness.step();

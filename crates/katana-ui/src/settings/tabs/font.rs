@@ -123,7 +123,9 @@ impl FontTabOps {
         state: &mut crate::app_state::AppState,
     ) {
         let mut size = state.config.settings.settings().clamped_font_size();
+        let font_size_label = crate::i18n::I18nOps::get().settings.font.size.clone();
         let slider = egui::Slider::new(&mut size, MIN_FONT_SIZE..=MAX_FONT_SIZE)
+            .text(font_size_label)
             .step_by(FONT_SIZE_STEP)
             .suffix(" px");
 
