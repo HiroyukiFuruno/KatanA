@@ -15,6 +15,6 @@ gantt
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 11.1. ガントチャート（ステータス色）](official-light/11-01-gantt.png)
+![公式Mermaid.js描画: 11.1. ガントチャート（ステータス色）](official-dark/11-01-gantt.png)
 
 <!-- katana-mermaid-official:end -->

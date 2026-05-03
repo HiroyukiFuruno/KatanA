@@ -21,6 +21,6 @@ columns 1
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 10.2. ブロック図（縦方向）](official-light/10-02-block-beta.png)
+![公式Mermaid.js描画: 10.2. ブロック図（縦方向）](official-dark/10-02-block-beta.png)
 
 <!-- katana-mermaid-official:end -->

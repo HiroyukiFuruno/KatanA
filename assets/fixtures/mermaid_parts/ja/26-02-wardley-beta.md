@@ -36,6 +36,6 @@ note "汎用的なメモ" [0.23, 0.33]
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 26.2. ウォードレーマップ（ノート付き）](official-light/26-02-wardley-beta.png)
+![公式Mermaid.js描画: 26.2. ウォードレーマップ（ノート付き）](official-dark/26-02-wardley-beta.png)
 
 <!-- katana-mermaid-official:end -->

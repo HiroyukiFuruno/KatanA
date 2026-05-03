@@ -12,6 +12,6 @@ block-beta
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 10.1. ブロック図（横方向）](official-light/10-01-block-beta.png)
+![公式Mermaid.js描画: 10.1. ブロック図（横方向）](official-dark/10-01-block-beta.png)
 
 <!-- katana-mermaid-official:end -->

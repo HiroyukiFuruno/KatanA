@@ -2,11 +2,11 @@
 M 356.0092456467943 213 
 m -198 0 
 a 198 198 0 1 0 396 0 
-a 198 198 0 1 0 -396 0" style="fill-opacity: 0.1; fill: rgb(122, 122, 122); stroke: rgb(122, 122, 122); stroke-width: 2.5; stroke-opacity: 0.95;"></path><text class="label" text-anchor="middle" dy=".35em" x="214" y="213" style="fill: rgb(198, 198, 198); font-size: 24px;"><tspan x="214" y="213" dy="0.35em">公式 Mermaid.js</tspan></text></g><g class="venn-area venn-circle venn-set-1" data-venn-sets="rust"><path d="
+a 198 198 0 1 0 -396 0" style="fill: rgb(122, 122, 122); stroke: rgb(122, 122, 122); fill-opacity: 0.1; stroke-opacity: 0.95; stroke-width: 2.5;"></path><text class="label" text-anchor="middle" dy=".35em" x="214" y="213" style="fill: rgb(198, 198, 198); font-size: 24px;"><tspan x="214" y="213" dy="0.35em">公式 Mermaid.js</tspan></text></g><g class="venn-area venn-circle venn-set-1" data-venn-sets="rust"><path d="
 M 456.7787137078956 213 
 m -185.21204064531008 0 
 a 185.21204064531008 185.21204064531008 0 1 0 370.42408129062017 0 
-a 185.21204064531008 185.21204064531008 0 1 0 -370.42408129062017 0" style="fill-opacity: 0.1; fill: rgb(164, 0, 0); stroke: rgb(164, 0, 0); stroke-width: 2.5; stroke-opacity: 0.95;"></path><text class="label" text-anchor="middle" dy=".35em" x="597" y="213" style="fill: rgb(255, 62, 62); font-size: 24px;"><tspan x="597" y="213" dy="0.35em">Rust管理ランタイム</tspan></text></g><g class="venn-area venn-intersection" data-venn-sets="official_rust"><path d="
+a 185.21204064531008 185.21204064531008 0 1 0 -370.42408129062017 0" style="fill: rgb(164, 0, 0); stroke: rgb(164, 0, 0); fill-opacity: 0.1; stroke-opacity: 0.95; stroke-width: 2.5;"></path><text class="label" text-anchor="middle" dy=".35em" x="597" y="213" style="fill: rgb(255, 62, 62); font-size: 24px;"><tspan x="597" y="213" dy="0.35em">Rust管理ランタイム</tspan></text></g><g class="venn-area venn-intersection" data-venn-sets="official_rust"><path d="
 M 430.7093804345892 396.36818116206877 
 A 185.21204064531008 185.21204064531008 0 0 1 430.7093804345892 29.631818837931235 
 A 198 198 0 0 1 430.7093804345892 396.36818116206877" style="fill-opacity: 0; fill: transparent;"></path><text class="label" text-anchor="middle" dy=".35em" x="412" y="213" style="fill: rgb(224, 224, 224); font-size: 24px;"><tspan x="412" y="213" dy="0.35em"></tspan></text></g></g></svg>

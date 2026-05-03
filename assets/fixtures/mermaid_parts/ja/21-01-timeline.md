@@ -15,6 +15,6 @@ timeline
 
 ## 公式Mermaid.js描画
 
-![公式Mermaid.js描画: 21.1. タイムライン（フェーズ）](official-light/21-01-timeline.png)
+![公式Mermaid.js描画: 21.1. タイムライン（フェーズ）](official-dark/21-01-timeline.png)
 
 <!-- katana-mermaid-official:end -->
