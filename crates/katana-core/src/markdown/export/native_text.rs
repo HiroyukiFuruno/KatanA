@@ -1,15 +1,47 @@
 use crate::markdown::MarkdownError;
 
-const BODY_FONT_SIZE: u32 = 16;
-const CODE_FONT_SIZE: u32 = 14;
-const LINE_SPACING: u32 = 10;
-const TEXT_COLUMNS: usize = 82;
+use super::native_text_parser as parser;
+
+pub(super) const BODY_FONT_SIZE: u32 = 16;
+pub(super) const CODE_FONT_SIZE: u32 = 14;
+pub(super) const LINE_SPACING: u32 = 10;
+pub(super) const TEXT_COLUMNS: usize = 82;
+pub(super) const HEADING_FONT_SIZE_H1: u32 = 28;
+pub(super) const HEADING_FONT_SIZE_H2: u32 = 22;
+pub(super) const HEADING_FONT_SIZE_H3: u32 = 18;
+pub(super) const HEADING_LEVEL_1: u8 = 1;
+pub(super) const HEADING_LEVEL_2: u8 = 2;
+pub(super) const HEADING_LEVEL_3: u8 = 3;
+pub(super) const HEADING_LEVEL_4: u8 = 4;
+pub(super) const HEADING_LEVEL_5: u8 = 5;
+pub(super) const HEADING_LEVEL_6: u8 = 6;
+pub(super) const HEADING_COLUMN_SIZE_H1: usize = 47;
+pub(super) const HEADING_COLUMN_SIZE_H2: usize = 60;
+pub(super) const HEADING_COLUMN_SIZE_H3: usize = 73;
+pub(super) const WORD_SPACING: usize = 1;
 
 /* Marker characters used to survive the tag-stripping pipeline */
-const HEADING_START: char = '\x01';
-const HEADING_SEP: char = '\x02';
-const HEADING_END: char = '\x03';
-const CODE_FENCE: char = '\x04';
+pub(super) const HEADING_START_MARKER: &str = "\u{0001}";
+pub(super) const HEADING_SEP_MARKER: &str = "\u{0002}";
+pub(super) const HEADING_END_MARKER: &str = "\u{0003}";
+pub(super) const CODE_FENCE_MARKER: &str = "\u{0004}";
+
+const RED_LUMINANCE_WEIGHT: f32 = 0.299;
+const GREEN_LUMINANCE_WEIGHT: f32 = 0.587;
+const BLUE_LUMINANCE_WEIGHT: f32 = 0.114;
+const DARK_THRESHOLD: f32 = 128.0;
+const HEX_RADIX: u32 = 16;
+const HEX_LONG_COLOR_LENGTH: usize = 6;
+const HEX_SHORT_COLOR_LENGTH: usize = 3;
+const RED_SHIFT_LONG: u32 = 16;
+const GREEN_SHIFT_LONG: u32 = 8;
+const SHORT_RED_SHIFT: u32 = 8;
+const SHORT_GREEN_SHIFT: u32 = 4;
+const SHORT_COLOR_MASK: u32 = 15;
+const SHORT_COLOR_BITS: u8 = 4;
+const COLOR_CHANNELS: usize = 3;
+
+type ColorTriplet = [u8; COLOR_CHANNELS];
 
 #[derive(Clone)]
 pub(super) struct NativeTextLine {
@@ -23,7 +55,7 @@ pub(super) struct NativeTextLine {
 #[derive(Clone)]
 pub(super) struct NativeTextSpan {
     pub(super) text: String,
-    pub(super) color: [u8; 3],
+    pub(super) color: ColorTriplet,
 }
 
 impl NativeTextLine {
@@ -37,13 +69,14 @@ impl NativeTextLine {
         }
     }
 
-    fn heading(text: String, level: u8) -> Self {
+    pub(super) fn heading(text: String, level: u8) -> Self {
         let font_size = match level {
-            1 => 28,
-            2 => 22,
-            3 => 18,
-            _ => 16,
+            HEADING_LEVEL_1 => HEADING_FONT_SIZE_H1,
+            HEADING_LEVEL_2 => HEADING_FONT_SIZE_H2,
+            HEADING_LEVEL_3 => HEADING_FONT_SIZE_H3,
+            _ => BODY_FONT_SIZE,
         };
+
         Self {
             text,
             font_size,
@@ -53,7 +86,7 @@ impl NativeTextLine {
         }
     }
 
-    fn code_plain(text: String) -> Self {
+    pub(super) fn code_plain(text: String) -> Self {
         Self {
             text,
             font_size: CODE_FONT_SIZE,
@@ -63,7 +96,7 @@ impl NativeTextLine {
         }
     }
 
-    fn code_highlighted(text: String, spans: Vec<NativeTextSpan>) -> Self {
+    pub(super) fn code_highlighted(text: String, spans: Vec<NativeTextSpan>) -> Self {
         Self {
             text,
             font_size: CODE_FONT_SIZE,
@@ -87,281 +120,51 @@ pub(super) fn extract_lines(
     is_dark: bool,
 ) -> Result<Vec<NativeTextLine>, MarkdownError> {
     let body = body_content(html)?;
-    let (body_no_code, code_blocks) = extract_code_blocks(&body, is_dark)?;
-    let with_heading_marks = mark_headings(&body_no_code)?;
-    let with_image_alt = replace_image_alt(&with_heading_marks)?;
-    let without_scripts = remove_tag_blocks(&with_image_alt, "script")?;
-    let without_style = remove_tag_blocks(&without_scripts, "style")?;
-    let with_breaks = block_tags_to_breaks(&without_style)?;
-    let without_tags = strip_tags(&with_breaks)?;
-    let decoded = decode_entities(&without_tags);
+    let (body_no_code, code_blocks) = parser::extract_code_blocks(&body, is_dark)?;
+    let with_heading_marks = parser::mark_headings(&body_no_code)?;
+    let with_image_alt = parser::replace_image_alt(&with_heading_marks)?;
+    let without_scripts = parser::remove_tag_blocks(&with_image_alt, "script")?;
+    let without_style = parser::remove_tag_blocks(&without_scripts, "style")?;
+    let with_breaks = parser::block_tags_to_breaks(&without_style)?;
+    let without_tags = parser::strip_tags(&with_breaks)?;
+    let decoded = parser::decode_entities(&without_tags);
     /* WHY: decode_entities() re-introduces < and > from HTML entities in code blocks.
     A second strip removes these decoded tag patterns. */
-    let clean = strip_tags(&decoded)?;
-    parse_typed_lines(&clean, &code_blocks)
+    let clean = parser::strip_tags(&decoded)?;
+    parser::parse_typed_lines(&clean, &code_blocks)
 }
 
 fn body_content(html: &str) -> Result<String, MarkdownError> {
-    let lower = html.to_ascii_lowercase();
-    let start = lower
-        .find("<body")
-        .and_then(|pos| lower[pos..].find('>').map(|end| pos + end + 1))
-        .unwrap_or(0);
-    let end = lower.rfind("</body>").unwrap_or(html.len());
-    Ok(html[start..end.max(start)].to_string())
-}
-
-/* Extract <pre><code> blocks before tag stripping, replace with CODE_FENCE markers */
-fn extract_code_blocks(
-    html: &str,
-    is_dark: bool,
-) -> Result<(String, Vec<Vec<NativeTextLine>>), MarkdownError> {
-    let regex = regex::Regex::new(r#"(?is)<pre\b[^>]*><code\b([^>]*)>(.*?)</code></pre>"#)
-        .map_err(|e| MarkdownError::ExportFailed(e.to_string()))?;
-    let mut code_blocks: Vec<Vec<NativeTextLine>> = Vec::new();
-    let mut result = String::new();
-    let mut last_end = 0;
-
-    for caps in regex.captures_iter(html) {
-        let full = caps.get(0).unwrap();
-        result.push_str(&html[last_end..full.start()]);
-
-        let attrs = caps.get(1).map(|m| m.as_str()).unwrap_or("");
-        let raw_code = caps.get(2).map(|m| m.as_str()).unwrap_or("");
-        let code = decode_entities(raw_code);
-        let language = extract_code_language(attrs);
-        let lines = highlight_code(&code, language.as_deref(), is_dark);
-
-        let idx = code_blocks.len();
-        result.push_str(&format!("\n{CODE_FENCE}{idx}{CODE_FENCE}\n"));
-        code_blocks.push(lines);
-        last_end = full.end();
-    }
-    result.push_str(&html[last_end..]);
-    Ok((result, code_blocks))
-}
-
-fn extract_code_language(attrs: &str) -> Option<String> {
-    let regex = regex::Regex::new(r#"(?i)class="language-([^"\s]+)""#).ok()?;
-    regex.captures(attrs).map(|c| c[1].to_lowercase())
-}
-
-fn highlight_code(code: &str, language: Option<&str>, is_dark: bool) -> Vec<NativeTextLine> {
-    use std::sync::LazyLock;
-    use syntect::easy::HighlightLines;
-    use syntect::highlighting::ThemeSet;
-    use syntect::parsing::SyntaxSet;
-    use syntect::util::LinesWithEndings;
-
-    static PS: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
-    static TS: LazyLock<ThemeSet> = LazyLock::new(ThemeSet::load_defaults);
-
-    let theme_name = if is_dark {
-        "base16-ocean.dark"
-    } else {
-        "InspiredGitHub"
-    };
-    let Some(theme) = TS.themes.get(theme_name) else {
-        return code
-            .lines()
-            .map(|l| NativeTextLine::code_plain(l.to_string()))
-            .collect();
-    };
-
-    let syntax = language
-        .and_then(|lang| PS.find_syntax_by_token(lang))
-        .unwrap_or_else(|| PS.find_syntax_plain_text());
-
-    let mut h = HighlightLines::new(syntax, theme);
-    let mut lines = Vec::new();
-
-    for line_str in LinesWithEndings::from(code) {
-        let text = line_str.trim_end_matches(['\n', '\r']).to_string();
-        match h.highlight_line(line_str, &PS) {
-            Ok(ranges) => {
-                let spans: Vec<NativeTextSpan> = ranges
-                    .iter()
-                    .filter(|(_, t)| !t.is_empty() && *t != "\n" && *t != "\r\n")
-                    .map(|(style, t)| NativeTextSpan {
-                        text: t.trim_end_matches(['\n', '\r']).to_string(),
-                        color: [style.foreground.r, style.foreground.g, style.foreground.b],
-                    })
-                    .filter(|s| !s.text.is_empty())
-                    .collect();
-                lines.push(NativeTextLine::code_highlighted(text, spans));
-            }
-            Err(_) => lines.push(NativeTextLine::code_plain(text)),
-        }
-    }
-    lines
-}
-
-/* Mark <h1>…</h6> with control-char markers that survive tag stripping.
-regex crate does not support backreferences, so iterate per heading level. */
-fn mark_headings(html: &str) -> Result<String, MarkdownError> {
-    let mut result = html.to_string();
-    for level in 1u8..=6 {
-        let pattern = format!(r"(?is)<h{level}\b[^>]*>(.*?)</h{level}>");
-        let regex =
-            regex::Regex::new(&pattern).map_err(|e| MarkdownError::ExportFailed(e.to_string()))?;
-        result = regex
-            .replace_all(&result, |caps: &regex::Captures| {
-                let content = &caps[1];
-                format!("\n{HEADING_START}h{level}{HEADING_SEP}{content}{HEADING_END}\n")
-            })
-            .to_string();
-    }
-    Ok(result)
-}
-
-fn replace_image_alt(html: &str) -> Result<String, MarkdownError> {
-    let regex = regex::Regex::new(r#"(?is)<img\b[^>]*\balt="([^"]*)"[^>]*>"#)
-        .map_err(|error| MarkdownError::ExportFailed(error.to_string()))?;
-    Ok(regex
-        .replace_all(html, |captures: &regex::Captures| {
-            format!("\n[image: {}]\n", decode_entities(&captures[1]))
-        })
-        .to_string())
-}
-
-fn remove_tag_blocks(html: &str, tag: &str) -> Result<String, MarkdownError> {
-    let pattern = format!(r"(?is)<{tag}\b[^>]*>.*?</{tag}>");
-    let regex = regex::Regex::new(&pattern)
-        .map_err(|error| MarkdownError::ExportFailed(error.to_string()))?;
-    Ok(regex.replace_all(html, "\n").to_string())
-}
-
-fn block_tags_to_breaks(html: &str) -> Result<String, MarkdownError> {
-    let regex = regex::Regex::new(
-        r"(?is)</?(p|div|section|article|header|footer|li|tr|table|pre|blockquote|br|hr)\b[^>]*>",
-    )
-    .map_err(|error| MarkdownError::ExportFailed(error.to_string()))?;
-    Ok(regex.replace_all(html, "\n").to_string())
-}
-
-fn strip_tags(html: &str) -> Result<String, MarkdownError> {
-    let regex = regex::Regex::new(r"(?is)<[^>]+>")
-        .map_err(|error| MarkdownError::ExportFailed(error.to_string()))?;
-    Ok(regex.replace_all(html, " ").to_string())
-}
-
-fn decode_entities(text: &str) -> String {
-    text.replace("&nbsp;", " ")
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-}
-
-fn parse_typed_lines(
-    text: &str,
-    code_blocks: &[Vec<NativeTextLine>],
-) -> Result<Vec<NativeTextLine>, MarkdownError> {
-    let mut result = Vec::new();
-
-    for raw_line in text.lines() {
-        let line = raw_line.trim();
-        if line.is_empty() {
-            continue;
-        }
-
-        /* Code block placeholder: \x04N\x04 */
-        if line.starts_with(CODE_FENCE) && line.ends_with(CODE_FENCE) && line.len() > 2 {
-            let inner = &line[CODE_FENCE.len_utf8()..line.len() - CODE_FENCE.len_utf8()];
-            if let Ok(idx) = inner.parse::<usize>()
-                && let Some(code_lines) = code_blocks.get(idx)
-            {
-                result.extend(code_lines.iter().cloned());
-                continue;
-            }
-        }
-
-        /* Heading marker: \x01hN\x02content\x03 */
-        if line.starts_with(HEADING_START) {
-            let rest = &line[HEADING_START.len_utf8()..];
-            if let Some(sep_pos) = rest.find(HEADING_SEP) {
-                let level_str = &rest[..sep_pos];
-                let after_sep = &rest[sep_pos + HEADING_SEP.len_utf8()..];
-                let content_raw = after_sep.trim_end_matches(HEADING_END).trim();
-                let level: u8 = match level_str {
-                    "h1" => 1,
-                    "h2" => 2,
-                    "h3" => 3,
-                    "h4" => 4,
-                    "h5" => 5,
-                    "h6" => 6,
-                    _ => 0,
-                };
-                if level > 0 {
-                    /* heading inner HTML may still have tags – strip them */
-                    let clean = strip_tags(content_raw)?;
-                    let text = decode_entities(&clean);
-                    let cols = heading_columns(level);
-                    for wrapped in wrap_line_n(&text, cols) {
-                        result.push(NativeTextLine::heading(wrapped, level));
-                    }
-                    continue;
-                }
-            }
-        }
-
-        /* Normal body text */
-        let normalized = line.split_whitespace().collect::<Vec<_>>().join(" ");
-        for wrapped in wrap_line_n(&normalized, TEXT_COLUMNS) {
-            result.push(NativeTextLine::body(wrapped));
-        }
-    }
-
-    Ok(result)
-}
-
-fn heading_columns(level: u8) -> usize {
-    match level {
-        1 => 47,
-        2 => 60,
-        3 => 73,
-        _ => TEXT_COLUMNS,
-    }
-}
-
-fn wrap_line_n(line: &str, columns: usize) -> Vec<String> {
-    let mut rows = Vec::new();
-    let mut current = String::new();
-    for word in line.split_whitespace() {
-        if current.chars().count() + word.chars().count() + 1 > columns && !current.is_empty() {
-            rows.push(std::mem::take(&mut current));
-        }
-        if !current.is_empty() {
-            current.push(' ');
-        }
-        current.push_str(word);
-    }
-    if !current.is_empty() {
-        rows.push(current);
-    }
-    rows
+    parser::body_content(html)
 }
 
 pub(super) fn is_dark_background(color: &str) -> bool {
     parse_hex_rgb(color)
         .map(|[r, g, b]| {
             /* perceptual luminance */
-            0.299 * (r as f32) + 0.587 * (g as f32) + 0.114 * (b as f32) < 128.0
+            RED_LUMINANCE_WEIGHT * (r as f32)
+                + GREEN_LUMINANCE_WEIGHT * (g as f32)
+                + BLUE_LUMINANCE_WEIGHT * (b as f32)
+                < DARK_THRESHOLD
         })
         .unwrap_or(false)
 }
 
-fn parse_hex_rgb(color: &str) -> Option<[u8; 3]> {
+fn parse_hex_rgb(color: &str) -> Option<ColorTriplet> {
     let hex = color.trim().strip_prefix('#')?;
-    let n = u32::from_str_radix(hex, 16).ok()?;
+    let n = u32::from_str_radix(hex, HEX_RADIX).ok()?;
     match hex.len() {
-        6 => Some([(n >> 16) as u8, (n >> 8) as u8, n as u8]),
-        3 => {
-            let r = ((n >> 8) & 0xf) as u8;
-            let g = ((n >> 4) & 0xf) as u8;
-            let b = (n & 0xf) as u8;
-            Some([r << 4 | r, g << 4 | g, b << 4 | b])
+        HEX_LONG_COLOR_LENGTH => Some([
+            (n >> RED_SHIFT_LONG) as u8,
+            (n >> GREEN_SHIFT_LONG) as u8,
+            n as u8,
+        ]),
+        HEX_SHORT_COLOR_LENGTH => {
+            let r = ((n >> SHORT_RED_SHIFT) & SHORT_COLOR_MASK) as u8;
+            let g = ((n >> SHORT_GREEN_SHIFT) & SHORT_COLOR_MASK) as u8;
+            let b = (n & SHORT_COLOR_MASK) as u8;
+            let expand = |nibble: u8| -> u8 { (nibble << SHORT_COLOR_BITS) | nibble };
+            Some([expand(r), expand(g), expand(b)])
         }
         _ => None,
     }

@@ -1,5 +1,5 @@
-use super::native_document::{NativeDocumentImage, NativeHtmlDocument};
 use super::types::PdfExporter;
+use super::{native_document::NativeHtmlDocument, native_document_image::NativeDocumentImage};
 use crate::markdown::MarkdownError;
 
 const IMAGE_SCALE_RATIO: f32 = 0.75;

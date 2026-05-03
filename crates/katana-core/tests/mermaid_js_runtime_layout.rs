@@ -87,7 +87,9 @@ fn rust_managed_js_runtime_keeps_review_feedback_visual_details() {
     assert!(er.contains(">string</tspan>"));
     assert!(er.contains(">path</tspan>"));
     assert!(
-        er.matches(r#"class="label name" transform="translate(0, "#).count() >= 2
+        er.matches(r#"class="label name" transform="translate(0, "#)
+            .count()
+            >= 2
     );
     assert!(er.contains(r#"<text y="-10.1" style="" text-anchor="middle">"#));
     assert!(er.contains(r#"<text y="-10.1" style="" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">DIAGRAM"#));
