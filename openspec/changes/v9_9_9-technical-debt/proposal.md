@@ -1,5 +1,9 @@
 # Proposal: Refactor Large UI Rendering Functions
 
+## Note
+
+v0.28.0（Floem Phase 2・egui 完全除去）完了後、`views/` の egui `Ui` ブロックは Floem の vello/taffy ベースのコードに置き換わる。本 change の対象ファイル・関数名はその時点で再評価する。egui 移行前に着手する場合は、Floem 移行で書き直す箇所を重複作業しないよう範囲を絞ること。
+
 ## Goal
 
 Enforce the "30 lines per function" coding standard across the `katana-ui` crate.

@@ -1,24 +1,23 @@
 ## Why
 
-v0.1.0〜v0.5.0 で実装した全機能を統合検証し、v0.1.0 のリリース判定を行う。品質ゲートを通過し、macOS 向けリリースビルドを確定させる。
+v0.28.0（Floem Phase 2・egui 完全除去）完了後、v1.0.0 として公式リリースするための品質確認・polish を行う。egui 時代の制約（IME 破損・カラー絵文字欠如・vendor パッチ）がなくなった状態で、ユーザー体験の最終仕上げを行う。
 
 ## What Changes
 
-### 最終検証
-
-- 全機能の結合テスト実行
+- 全機能の結合テスト実行・品質ゲート通過確認
+- Floem 移行後の UI polish（レイアウト調整・アニメーション・accessibility）
 - `cargo clippy --workspace -- -D warnings` と `cargo fmt --all --check` のパス確認
-- テストカバレッジ基準の維持確認
-- macOS 上でのビルド・動作確認
-- リリースビルドの作成と検証
+- macOS / Linux / Windows 各プラットフォームでのビルド・動作確認
+- リリースビルドの作成・公証・配布準備
 
 ## Capabilities
 
 ### Modified Capabilities
 
-- 全 capability の統合検証
+- 全 capability の統合検証・polish
 
 ## Impact
 
+- DoR: v0.28.0（Floem Phase 2・egui 完全除去）完了後
 - 全クレートの結合テスト
-- macOS リリースビルド
+- macOS / Linux / Windows リリースビルド
