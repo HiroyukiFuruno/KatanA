@@ -50,40 +50,67 @@ rm -rf "{temp_dir}"
         #[cfg(target_os = "windows")]
         {
             format!(
-                /* WHY: Bug 2 fix — Verify the new binary is in place with Test-Path after
-                 * Move-Item (more reliable than $? which reflects the last command's result).
-                 * Bug 3 fix — Use -WindowStyle Hidden when launching the new process so the
-                 * restarted KatanA does not briefly show a console window.
-                 * Add retry loop to handle file lock release delays. */
                 r#"param($parentPid);
+$ErrorActionPreference = 'Stop';
 $ProgressPreference = 'SilentlyContinue';
-if ($parentPid) {{
-    Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue;
-}}
 $target = '{target}';
 $bak = '{target}.bak';
 $extracted = '{extracted}';
-if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
-if (Test-Path $target) {{ Move-Item -Force $target $bak -ErrorAction SilentlyContinue }};
+$startedAt = Get-Date;
+$logDir = Join-Path $env:LOCALAPPDATA 'KatanA';
+$logPath = Join-Path $logDir 'update.log';
 
-$retryCount = 0;
-$success = $false;
-while ($retryCount -lt 5) {{
-    Move-Item -Force $extracted $target -ErrorAction SilentlyContinue;
+function Write-UpdateLog($phase, $result, $reason) {{
+    if (-not (Test-Path $logDir)) {{ New-Item -ItemType Directory -Force -Path $logDir | Out-Null }}
+    Add-Content -Path $logPath -Value ((Get-Date -Format o), $phase, $result, $target, $reason -join ' ');
+}}
+
+if ($parentPid) {{
+    Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue;
+}}
+if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
+
+$evacuated = $false;
+try {{
     if (Test-Path $target) {{
-        $success = $true;
+        Move-Item -Force $target $bak;
+    }}
+    $evacuated = $true;
+    Write-UpdateLog 'evacuate' 'ok' '';
+}} catch {{
+    Write-UpdateLog 'evacuate' 'fail' $_.Exception.Message;
+}}
+
+$replaced = $false;
+for ($retryCount = 0; $retryCount -lt 5; $retryCount++) {{
+    if (-not $evacuated) {{
+        Write-UpdateLog 'replace' 'retry' 'evacuation failed';
         break;
     }}
-    $retryCount++;
+
+    try {{
+        Move-Item -Force $extracted $target;
+        $targetInfo = Get-Item $target -ErrorAction SilentlyContinue;
+        if ($targetInfo -and $targetInfo.LastWriteTime -gt $startedAt -and -not (Test-Path $extracted)) {{
+            $replaced = $true;
+            Write-UpdateLog 'replace' 'ok' '';
+            break;
+        }}
+        Write-UpdateLog 'replace' 'retry' 'target file is not updated';
+    }} catch {{
+        Write-UpdateLog 'replace' 'retry' $_.Exception.Message;
+    }}
     Start-Sleep -s 1;
 }}
 
-if ($success) {{
+if ($evacuated -and $replaced) {{
     Start-Process -WindowStyle Hidden $target;
+    Write-UpdateLog 'launch' 'ok' '';
 }} else {{
     if (Test-Path $bak) {{ Move-Item -Force $bak $target -ErrorAction SilentlyContinue }};
+    Write-UpdateLog 'rollback' 'done' '';
     Add-Type -AssemblyName PresentationFramework;
-    [System.Windows.MessageBox]::Show('Could not complete the application update. The original version has been restored.', 'Update Failed', 'OK', 'Error');
+    [System.Windows.MessageBox]::Show('Could not complete the application update. The original version has been restored.', 'Update Failed', 'OK', 'Error') | Out-Null;
 }}
 Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
@@ -148,10 +175,19 @@ mod tests {
 
         #[cfg(target_os = "windows")]
         {
-            assert!(content.contains("param($parentPid);"));
-            assert!(content.contains("Wait-Process -Id $parentPid"));
-            assert!(content.contains("$retryCount = 0;"));
-            assert!(content.contains("while ($retryCount -lt 5)"));
+            assert!(content.contains("function Write-UpdateLog"));
+            assert!(content.contains("$startedAt = Get-Date;"));
+            assert!(content.contains("Move-Item -Force $target $bak;"));
+            assert!(content.contains("-not (Test-Path $extracted)"));
+            assert!(content.contains("update.log"));
+            assert!(content.contains("-gt $startedAt"));
+            assert!(
+                !content.contains("Move-Item -Force $target $bak -ErrorAction SilentlyContinue")
+            );
+            assert!(
+                !content
+                    .contains("Move-Item -Force $extracted $target -ErrorAction SilentlyContinue")
+            );
             assert!(content.contains("Add-Type -AssemblyName PresentationFramework"));
         }
 
