@@ -12,6 +12,7 @@ pub mod logic;
 pub mod logic_colors;
 pub mod paste;
 pub mod row_diagnostics;
+pub mod syntax;
 pub mod text_edit;
 pub mod toolbar;
 pub mod toolbar_popup;

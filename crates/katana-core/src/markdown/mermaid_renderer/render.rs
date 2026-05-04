@@ -10,7 +10,11 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
-const MERMAID_DOWNLOAD_URL: &str = "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js";
+/// Pinned Mermaid.js version used in rendering and tests.
+/// Update together with the installed binary and update snapshot assertions when bumping.
+pub const MERMAID_JS_VERSION: &str = "3.3.1";
+/// Versioned download URL matching `MERMAID_JS_VERSION`.
+const MERMAID_DOWNLOAD_URL: &str = "https://cdn.jsdelivr.net/npm/mermaid@3.3.1/dist/mermaid.min.js";
 static MERMAID_SVG_RENDER_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 
 impl MermaidRenderOps {

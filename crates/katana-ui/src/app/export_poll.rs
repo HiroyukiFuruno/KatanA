@@ -1,5 +1,6 @@
 use crate::app_state::*;
 use crate::shell::*;
+use katana_core::markdown::ExporterTrait;
 
 pub(crate) trait ExportPoll {
     fn perform_tool_export(
@@ -43,13 +44,23 @@ impl ExportPoll for KatanaApp {
                     return;
                 }
             };
-            let result = match ext.as_str() {
-                "pdf" => katana_core::markdown::PdfExporter::export(&html, &output_path),
-                _ => katana_core::markdown::ImageExporter::export(&html, &output_path),
+            let exporter: Box<dyn ExporterTrait> = match ext.as_str() {
+                "pdf" => Box::new(katana_core::markdown::PdfExporter),
+                _ => Box::new(katana_core::markdown::ImageExporter),
+            };
+            let export_input = katana_core::markdown::ExportInput {
+                format: match ext.as_str() {
+                    "pdf" => katana_core::markdown::ExportFormat::Pdf,
+                    "jpg" | "jpeg" => katana_core::markdown::ExportFormat::Jpeg,
+                    _ => katana_core::markdown::ExportFormat::Png,
+                },
+                html_source: html,
+                output_path: output_path.clone(),
             };
             let _ = tx.send(
-                result
-                    .map(|()| output_path.clone())
+                exporter
+                    .export(&export_input)
+                    .map(|o| o.output_path)
                     .map_err(|e| e.to_string()),
             );
         });

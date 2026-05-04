@@ -11,6 +11,7 @@ const DEFAULT_SCALE_PERCENT: u16 = 100;
 pub enum DiagramBackendLanguage {
     Mermaid,
     PlantUml,
+    DrawIo,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]

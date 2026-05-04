@@ -14,5 +14,8 @@ pub mod svg_rasterize;
 pub mod types;
 
 pub use diagram_backend::*;
-pub use export::{HtmlExporter, ImageExporter, PdfExporter};
+pub use export::{
+    ExportError, ExportFormat, ExportInput, ExportOutput, ExporterTrait, HtmlExporter,
+    ImageExporter, PdfExporter,
+};
 pub use types::*;

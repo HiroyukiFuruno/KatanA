@@ -12,7 +12,11 @@ use crate::markdown::{DiagramBlock, DiagramResult};
 use js_runtime::DrawioJsRuntimeOps;
 use std::path::PathBuf;
 
-const DRAWIO_DOWNLOAD_URL: &str = "https://github.com/jgraph/drawio";
+/// Pinned Draw.io version used in rendering and tests.
+/// Update together with the installed binary and update snapshot assertions when bumping.
+pub const DRAWIO_JS_VERSION: &str = "29.7.10";
+/// Versioned release page URL matching `DRAWIO_JS_VERSION`.
+const DRAWIO_DOWNLOAD_URL: &str = "https://github.com/jgraph/drawio/releases/tag/v29.7.10";
 
 impl DrawioRendererOps {
     pub fn default_install_path() -> Option<PathBuf> {

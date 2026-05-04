@@ -41,6 +41,8 @@ fn oversized_svg_is_scaled_to_gpu_safe_size() {
 
 #[test]
 fn drawio_official_light_dark_svg_is_rasterized() {
+    // Snapshot dimensions fixed against Draw.io JS v29.7.10 (DRAWIO_JS_VERSION).
+    // When bumping the version, re-run the test to obtain new values.
     let Some(svg) = render_official_drawio_svg(include_str!(
         "../../../assets/fixtures/drawio/official/templates/aws/aws_10.drawio"
     )) else {
@@ -53,14 +55,16 @@ fn drawio_official_light_dark_svg_is_rasterized() {
 
 #[test]
 fn drawio_official_svg_with_nbsp_entity_is_rasterized() {
+    // Snapshot dimensions fixed against Draw.io JS v29.7.10 (DRAWIO_JS_VERSION).
+    // When bumping the version, re-run the test to obtain new values.
     let Some(svg) = render_official_drawio_svg(include_str!(
         "../../../assets/fixtures/drawio/official/templates/azure/azure_2.drawio"
     )) else {
         return;
     };
     let result = SvgRasterizeOps::rasterize_svg(&svg, 1.0).expect("rasterize failed");
-    assert_eq!(result.width, 1065);
-    assert_eq!(result.height, 740);
+    assert_eq!(result.width, 1106);
+    assert_eq!(result.height, 791);
 }
 
 #[test]

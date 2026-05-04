@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 use crate::app::*;
 use crate::shell::*;
+use katana_core::markdown::ExporterTrait;
 
 use crate::app::export_poll::ExportPoll;
 use crate::preview_pane::{DownloadRequest, PreviewPane};
@@ -113,15 +114,12 @@ impl ExportOps for KatanaApp {
         ext: &str,
         doc_path: &std::path::Path,
     ) {
-        let (is_available, tool_name) = match ext {
-            "pdf" => (
-                katana_core::markdown::PdfExporter::is_available(),
-                "native export runtime",
-            ),
-            _ => (
-                katana_core::markdown::ImageExporter::is_available(),
-                "native export runtime",
-            ),
+        let (is_available, tool_name) = {
+            let exporter: Box<dyn ExporterTrait> = match ext {
+                "pdf" => Box::new(katana_core::markdown::PdfExporter),
+                _ => Box::new(katana_core::markdown::ImageExporter),
+            };
+            (exporter.is_available(), "native export runtime")
         };
 
         if !is_available {

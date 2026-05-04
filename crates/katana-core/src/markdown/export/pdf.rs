@@ -1,4 +1,6 @@
-use super::types::PdfExporter;
+use super::types::{
+    ExportError, ExportFormat, ExportInput, ExportOutput, ExporterTrait, PdfExporter,
+};
 use super::{native_document::NativeHtmlDocument, native_document_image::NativeDocumentImage};
 use crate::markdown::MarkdownError;
 
@@ -11,11 +13,28 @@ impl PdfExporter {
         true
     }
 
-    pub fn export(html: &str, output: &std::path::Path) -> Result<(), MarkdownError> {
+    fn export_file(html: &str, output: &std::path::Path) -> Result<(), MarkdownError> {
         let document = NativeHtmlDocument::parse(html)?;
         let image = document.render_image()?;
         let pdf = NativePdfDocument::new(&image)?.to_bytes();
         std::fs::write(output, pdf).map_err(|error| MarkdownError::ExportFailed(error.to_string()))
+    }
+}
+
+static PDF_FORMATS: &[ExportFormat] = &[ExportFormat::Pdf];
+
+impl ExporterTrait for PdfExporter {
+    fn export(&self, input: &ExportInput) -> Result<ExportOutput, ExportError> {
+        Self::export_file(&input.html_source, &input.output_path)
+            .map(|()| ExportOutput {
+                output_path: input.output_path.clone(),
+                format: ExportFormat::Pdf,
+            })
+            .map_err(|e| ExportError::RenderFailed(e.to_string()))
+    }
+
+    fn supported_formats(&self) -> &[ExportFormat] {
+        PDF_FORMATS
     }
 }
 

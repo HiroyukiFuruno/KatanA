@@ -1,9 +1,29 @@
 use katana_core::markdown::{
-    DiagramBlock, DiagramRenderer, DiagramResult, ImageExporter, MarkdownError, MarkdownRenderOps,
-    PdfExporter, RenderOutput,
+    DiagramBlock, DiagramRenderer, DiagramResult, ExportFormat, ExportInput, ExporterTrait,
+    ImageExporter, MarkdownError, MarkdownRenderOps, PdfExporter, RenderOutput,
 };
 use std::collections::HashSet;
 use std::sync::Mutex;
+
+fn do_pdf_export(html: &str, output: &std::path::Path) {
+    PdfExporter
+        .export(&ExportInput {
+            format: ExportFormat::Pdf,
+            html_source: html.to_string(),
+            output_path: output.to_path_buf(),
+        })
+        .unwrap();
+}
+
+fn do_image_export(html: &str, output: &std::path::Path) {
+    ImageExporter
+        .export(&ExportInput {
+            format: ExportFormat::Png,
+            html_source: html.to_string(),
+            output_path: output.to_path_buf(),
+        })
+        .unwrap();
+}
 
 static RENDER_ENV_LOCK: Mutex<()> = Mutex::new(());
 
@@ -220,11 +240,11 @@ A -> B: test
 
 #[test]
 fn pdf_export_writes_native_pdf_without_chromium() {
-    assert!(PdfExporter::is_available());
+    assert!(PdfExporter.is_available());
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.pdf");
 
-    PdfExporter::export(sample_export_html(), &output).unwrap();
+    do_pdf_export(sample_export_html(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     assert!(bytes.starts_with(b"%PDF-"));
@@ -237,7 +257,7 @@ fn pdf_export_splits_long_document_into_pages() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.pdf");
 
-    PdfExporter::export(&long_export_html(), &output).unwrap();
+    do_pdf_export(&long_export_html(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     let page_count = pdf_page_count(&bytes);
@@ -249,11 +269,11 @@ fn pdf_export_splits_long_document_into_pages() {
 
 #[test]
 fn image_export_writes_native_png_without_chromium() {
-    assert!(ImageExporter::is_available());
+    assert!(ImageExporter.is_available());
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.png");
 
-    ImageExporter::export(sample_export_html(), &output).unwrap();
+    do_image_export(sample_export_html(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     assert!(bytes.starts_with(&[137, 80, 78, 71, 13, 10, 26, 10]));
@@ -265,7 +285,7 @@ fn image_export_keeps_inline_svg_diagram_without_chromium() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.png");
 
-    ImageExporter::export(inline_svg_export_html(), &output).unwrap();
+    do_image_export(inline_svg_export_html(), &output);
 
     let image = image::open(&output).unwrap().to_rgba8();
     assert!(
@@ -278,11 +298,11 @@ fn image_export_keeps_inline_svg_diagram_without_chromium() {
 
 #[test]
 fn image_export_writes_native_jpeg_without_chromium() {
-    assert!(ImageExporter::is_available());
+    assert!(ImageExporter.is_available());
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.jpeg");
 
-    ImageExporter::export(sample_export_html(), &output).unwrap();
+    do_image_export(sample_export_html(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     assert!(bytes.starts_with(&[0xFF, 0xD8, 0xFF]));
@@ -310,9 +330,9 @@ fn sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium() {
     );
     let dir = tempfile::tempdir().unwrap();
 
-    PdfExporter::export(&output.html, &dir.path().join("sample.pdf")).unwrap();
-    ImageExporter::export(&output.html, &dir.path().join("sample.png")).unwrap();
-    ImageExporter::export(&output.html, &dir.path().join("sample.jpeg")).unwrap();
+    do_pdf_export(&output.html, &dir.path().join("sample.pdf"));
+    do_image_export(&output.html, &dir.path().join("sample.png"));
+    do_image_export(&output.html, &dir.path().join("sample.jpeg"));
 
     assert!(
         std::fs::metadata(dir.path().join("sample.pdf"))

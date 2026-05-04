@@ -1,22 +1,31 @@
-use katana_core::markdown::{ImageExporter, PdfExporter};
+use katana_core::markdown::{ExportFormat, ExportInput, ExporterTrait, ImageExporter, PdfExporter};
+
+fn do_image_export(html: &str, output: &std::path::Path) {
+    ImageExporter
+        .export(&ExportInput {
+            format: ExportFormat::Png,
+            html_source: html.to_string(),
+            output_path: output.to_path_buf(),
+        })
+        .unwrap();
+}
+
+fn do_pdf_export(html: &str, output: &std::path::Path) {
+    PdfExporter
+        .export(&ExportInput {
+            format: ExportFormat::Pdf,
+            html_source: html.to_string(),
+            output_path: output.to_path_buf(),
+        })
+        .unwrap();
+}
 
 #[test]
 fn image_export_preserves_html_body_background_in_png() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.png");
 
-    ImageExporter::export(dark_export_html(), &output).unwrap();
-
-    let image = image::open(output).unwrap().to_rgba8();
-    assert_dark_pixel(image.get_pixel(8, 8).0);
-}
-
-#[test]
-fn image_export_preserves_html_body_background_in_jpeg() {
-    let dir = tempfile::tempdir().unwrap();
-    let output = dir.path().join("document.jpeg");
-
-    ImageExporter::export(dark_export_html(), &output).unwrap();
+    do_image_export(dark_export_html(), &output);
 
     let image = image::open(output).unwrap().to_rgba8();
     assert_dark_pixel(image.get_pixel(8, 8).0);
@@ -27,7 +36,7 @@ fn pdf_export_preserves_html_body_background_in_embedded_image() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.pdf");
 
-    PdfExporter::export(dark_export_html(), &output).unwrap();
+    do_pdf_export(dark_export_html(), &output);
 
     let jpeg = first_pdf_stream(&std::fs::read(output).unwrap());
     let image = image::load_from_memory(&jpeg).unwrap().to_rgba8();
@@ -39,7 +48,7 @@ fn image_export_normalizes_percent_width_svg_before_embedding() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.png");
 
-    ImageExporter::export(percent_width_svg_html(), &output).unwrap();
+    do_image_export(percent_width_svg_html(), &output);
 
     let image = image::open(output).unwrap().to_rgba8();
     let far_right_pixel = image.get_pixel(850, 90).0;

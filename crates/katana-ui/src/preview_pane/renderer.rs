@@ -1,10 +1,12 @@
+#[path = "renderer_dispatch.rs"]
+mod renderer_dispatch;
 #[path = "renderer_png.rs"]
 mod renderer_png;
 
 use super::types::*;
 use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::{
-    drawio_renderer, mermaid_renderer, plantuml_renderer,
+    mermaid_renderer,
     svg_rasterize::{RasterizedSvg, SvgRasterizeOps},
 };
 
@@ -94,11 +96,7 @@ impl RendererLogicOps {
     }
 
     pub(crate) fn dispatch_renderer(block: &DiagramBlock) -> DiagramResult {
-        match block.kind {
-            DiagramKind::Mermaid => mermaid_renderer::MermaidRenderOps::render_mermaid(block),
-            DiagramKind::PlantUml => plantuml_renderer::PlantUmlRendererOps::render_plantuml(block),
-            DiagramKind::DrawIo => drawio_renderer::DrawioRendererOps::render_drawio(block),
-        }
+        renderer_dispatch::dispatch_renderer(block)
     }
 
     fn render_error_section(
