@@ -4,7 +4,9 @@ use katana_ui::app_state::{AppAction, ViewMode};
 
 use crate::integration::harness_utils::{fresh_temp_dir, setup_harness, wait_for_workspace_load};
 
-fn click_code_editor_input(harness: &mut egui_kittest::Harness<'static, katana_ui::shell::KatanaApp>) {
+fn click_code_editor_input(
+    harness: &mut egui_kittest::Harness<'static, katana_ui::shell::KatanaApp>,
+) {
     for _ in 0..30 {
         if let Some(editor) = harness.query_by(|node| {
             node.role() == Role::MultilineTextInput && node.value().as_deref() == Some("alpha")
