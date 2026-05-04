@@ -1,43 +1,91 @@
-## Context
+## 現状の interface 棚卸し
 
-KatanA は assembly host であり、実装は外部リポジトリに委譲する。しかし intake 前の段階では KatanA 内部に実装が残っている。neutral interface を先行定義することで、intake 時のコード変更を「impl 差し替え」のみに限定できる。
+### 既存 neutral interface（整備対象）
 
-## Interface 一覧
+| module | trait | 状態 |
+|--------|-------|------|
+| `markdown/diagram_backend/adapter.rs` | `DiagramBackendAdapter` | 既存。`id()` / `version()` / `render()` あり |
+| `preview/adapter/service.rs` | `PreviewAdapter` | 既存。`render()` あり |
+| `ai/mod.rs` | `AiProvider` | 既存・完成。**本 change では触らない** |
 
-### Mermaid / Draw.io renderer
+### trait が存在しない（新設対象）
+
+| module | 追加する trait / 型 |
+|--------|-------------------|
+| `markdown/export/` | `ExporterTrait`、`ExportInput`、`ExportOutput`、`ExportFormat`、`ExportError` |
+| `editor/`（新設） | `EditorWidget`、`SyntaxHighlighter`、`EditorConfig`、`HighlightedText` |
+
+---
+
+## 新設 interface 定義
+
+### ExporterTrait（`katana-core/src/markdown/export/`）
 
 ```rust
-// crates/katana-core/src/renderer/mod.rs
-pub trait RendererTrait: Send + Sync {
-    fn render(&self, input: &RenderInput) -> Result<RenderOutput, RenderDiagnostics>;
-    fn runtime_version(&self) -> &RuntimeVersion;
-    fn profile(&self) -> &RendererProfile;
+pub enum ExportFormat { Html, Pdf, Png, Jpeg }
+
+pub struct ExportInput {
+    pub format: ExportFormat,
+    pub html_source: String,      // 変換済み HTML を渡す（Markdown → HTML は呼び出し側が担う）
+    pub output_path: std::path::PathBuf,
+    pub config: ExportConfig,
+}
+
+pub struct ExportConfig {
+    pub paper_size: PaperSize,    // A4 / Letter / 任意
+    pub margin_mm: f32,
+}
+
+pub struct ExportOutput {
+    pub output_path: std::path::PathBuf,
+    pub format: ExportFormat,
+}
+
+pub enum ExportError { IoError(String), RenderFailed(String), UnsupportedFormat }
+
+pub trait ExporterTrait: Send + Sync {
+    fn export(&self, input: &ExportInput) -> Result<ExportOutput, ExportError>;
+    fn supported_formats(&self) -> &[ExportFormat];
 }
 ```
 
-### Document preview
+既存の `HtmlExporter` / `PdfExporter` / `ImageExporter` は `ExporterTrait` を impl するように変更する。呼び出し側（`katana-ui`）は `Box<dyn ExporterTrait>` を受け取るだけにする。
+
+### EditorWidget / SyntaxHighlighter（`katana-core/src/editor/`）
 
 ```rust
-// crates/katana-core/src/preview/mod.rs
-pub trait PreviewRendererTrait: Send + Sync {
-    fn render(&self, input: &PreviewInput) -> Result<PreviewOutput, PreviewError>;
+pub struct HighlightedSpan { pub range: std::ops::Range<usize>, pub token_kind: TokenKind }
+pub struct HighlightedText { pub spans: Vec<HighlightedSpan> }
+
+pub trait SyntaxHighlighter: Send + Sync {
+    fn highlight(&self, source: &str) -> HighlightedText;
+}
+
+pub struct EditorConfig {
+    pub syntax_highlighter: Box<dyn SyntaxHighlighter>,
+    pub font_size: f32,
+    pub theme_is_dark: bool,
+}
+
+pub trait EditorWidget {
+    fn apply_config(&mut self, config: EditorConfig);
 }
 ```
 
-### Language editor
+KatanA は `struct MarkdownSyntaxHighlighter` を実装し、`EditorConfig` に注入する。`katana-language-editor-egui` intake 後は同じ `EditorConfig` をそのまま渡すだけで差し替え完了になる。
 
-```rust
-// crates/katana-core/src/editor/mod.rs
-pub trait EditorTrait: Send + Sync {
-    fn apply_config(&mut self, config: &EditorConfig);
-    fn set_highlighter(&mut self, highlighter: Box<dyn SyntaxHighlighter>);
-}
-```
+---
 
-## 既存 AI interface（変更なし）
+## 既存 interface の整備方針
 
-`katana-core/src/ai/mod.rs` の `AiProvider` trait + `AiProviderRegistry` は既に neutral interface として完成している。本 change での変更対象外。
+### DiagramBackendAdapter
 
-## intake 後の差し替えパターン
+- シグネチャは変更しない
+- `pub use` のスコープを確認し、`katana-ui` が `adapter` モジュールの impl 詳細に直接触れていないことを保証する
+- kcf intake（v0.26.0）時は、kcf の `impl DiagramBackendAdapter` を `Box<dyn DiagramBackendAdapter>` として差し込むだけにする
 
-intake 時は KatanA の `Cargo.toml` に外部 git dependency を追加し、既存の内部 impl をその外部 impl に差し替える。KatanA 本体の呼び出しコードは trait 経由のままなので変更不要。
+### PreviewAdapter
+
+- シグネチャは変更しない
+- 同様に `pub use` スコープを確認する
+- kdp intake（v0.26.0 以降）時は、kdp の `impl PreviewAdapter` を差し込むだけにする
