@@ -89,4 +89,4 @@ kle intake 時に `EditorConfig` に kle の実装を差し込むだけで動く
   - `git grep "HtmlExporter::" crates/katana-ui/` → ゼロ件
   - `git grep "PdfExporter::" crates/katana-ui/` → ゼロ件
   - `git grep "ImageExporter::" crates/katana-ui/` → ゼロ件
-- [ ] 5.4 commit & push（master 直接）
+- [x] 5.4 commit & push（master 直接）
