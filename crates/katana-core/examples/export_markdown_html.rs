@@ -1,5 +1,6 @@
 use katana_core::markdown::{
-    HtmlExporter, ImageExporter, KatanaRenderer, PdfExporter, color_preset::DiagramColorPreset,
+    ExportFormat as BackendExportFormat, ExportInput, ExporterTrait, HtmlExporter, ImageExporter,
+    KatanaRenderer, PdfExporter, color_preset::DiagramColorPreset,
 };
 use std::path::{Path, PathBuf};
 
@@ -67,8 +68,39 @@ impl ExportFormat {
     fn export(&self, html: &str, output_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         match self {
             Self::Html => Ok(std::fs::write(output_path, html)?),
-            Self::Pdf => Ok(PdfExporter::export(html, output_path)?),
-            Self::Png | Self::Jpeg => Ok(ImageExporter::export(html, output_path)?),
+            Self::Pdf => {
+                PdfExporter
+                    .export(&ExportInput {
+                        format: BackendExportFormat::Pdf,
+                        html_source: html.to_string(),
+                        output_path: output_path.to_path_buf(),
+                    })
+                    .map(|_| ())
+                    .map_err(|e| std::io::Error::other(e.to_string()))?;
+                Ok(())
+            }
+            Self::Png => {
+                ImageExporter
+                    .export(&ExportInput {
+                        format: BackendExportFormat::Png,
+                        html_source: html.to_string(),
+                        output_path: output_path.to_path_buf(),
+                    })
+                    .map(|_| ())
+                    .map_err(|e| std::io::Error::other(e.to_string()))?;
+                Ok(())
+            }
+            Self::Jpeg => {
+                ImageExporter
+                    .export(&ExportInput {
+                        format: BackendExportFormat::Jpeg,
+                        html_source: html.to_string(),
+                        output_path: output_path.to_path_buf(),
+                    })
+                    .map(|_| ())
+                    .map_err(|e| std::io::Error::other(e.to_string()))?;
+                Ok(())
+            }
         }
     }
 }
