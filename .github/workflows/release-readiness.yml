@@ -37,7 +37,7 @@ jobs:
 
           if [[ -n "$version" ]]; then
             LATEST_LINUX_ASSET="https://github.com/HiroyukiFuruno/KatanA/releases/download/v${version}/KatanA-linux-x86_64.tar.gz"
-            http_status=$(curl -sI -L "$LATEST_LINUX_ASSET" | awk 'BEGIN{status=\"\"} /^HTTP/{status=$2} END{print status}')
+            http_status=$(curl -sI -L "$LATEST_LINUX_ASSET" | awk '/^HTTP/{status=$2} END{print status}')
             if [[ "$http_status" != "200" && "$http_status" != "302" ]]; then
               echo "HTTP status check failed for: $LATEST_LINUX_ASSET"
               echo "Observed status: ${http_status:-unknown}"
