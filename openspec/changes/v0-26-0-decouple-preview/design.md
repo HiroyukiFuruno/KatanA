@@ -33,7 +33,7 @@
 
 ## katana-canvas-forge (kcf) および katana-chat-ui との境界
 
-v0.22.11 で `katana-canvas-forge`（kcf）が確立され、v0.22.14 で `katana-chat-ui` が確立される。本 change との依存方向を以下に固定する。
+v0.22.11 で `katana-canvas-forge`（kcf）が確立され、v0.28.0 で `katana-chat-ui` の migration を行う。本 change との依存方向を以下に固定する。
 
 ```
 KatanA shell

@@ -1,48 +1,75 @@
 ## Context
 
-v0.26.0にて実施されたPreviewコンポーネントの分離に続き、本設計ではエディタ機能を完全に分離された別クレートとして独立させます。現在の `katana-ui` はFat UIの傾向があり、エディタウィジェットのドメイン知識（絵文字フォントのハンドリング等のマルチプラットフォーム固有の問題を含む）を抱え込んでいます。本設計でこれらを `katana-editor` にカプセル化します。
+v0.26.0 にて Preview コンポーネントの分離に続き、本設計ではエディタ機能を `katana-language-editor` として独立した外部リポジトリに切り出す。
 
-v0.27.0 は後続の preview-driven local editing と組み合わせ、KatanA を code editor 主軸から preview-first な局所修正体験へ寄せるための土台です。egui `TextEdit` を置き換える独自入力 surface は、v0.22.5 入力強化で再浮上した別論点として `x-x-x-native-input-surface` に劣後・分離します。
+`katana-language-editor` は **言語非依存の汎用テキストエディタ widget** であり、KatanA は Markdown に特化した `SyntaxHighlighter` 実装を注入して使う。将来 Markdown 以外の言語にも対応できるが、`katana-language-editor` 自体はどの言語かを知らない。
+
+現在 `katana-ui` はエディタウィジェットのドメイン知識（絵文字フォントの workaround、行番号、シンタックスハイライト）を抱え込んでいる。これらを `katana-language-editor-egui` にカプセル化することで KatanA を薄くする。
+
+egui `TextEdit` の完全置き換え（独自 input surface、IME composition、emoji-safe CoreText レンダリング）は `x-x-x-native-input-surface` に劣後する。v0.27.0 はあくまで **crate 境界の確立** を目的とする。
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- エディタ機能を `katana-editor` クレートに分離する。
-- macOSやWindowsにおける絵文字フォント問題など、マルチプラットフォーム特有の描画・フォント管理の複雑性を、将来の独自入力 surface と衝突しない設定注入 boundary として整理する。
-- 各コンポーネントが独自にインテグレーションテストを実行できるようにする。
+- エディタ機能を `katana-language-editor` 外部リポジトリに切り出し、KatanA は git dependency として consume するだけにする。
+- `SyntaxHighlighter` trait を neutral interface として定義し、KatanA が `MarkdownSyntaxHighlighter` を注入する設計にする。
+- フォント・テーマ設定を `EditorConfig` 経由で注入し、katana-ui のグローバル設定直参照を排除する。
+- 将来の独自 UI フレームワーク化（egui 脱却）時に `katana-language-editor-egui` を差し替えるだけで KatanA 側が無影響になる構造を確立する。
 
 **Non-Goals:**
 
-- アプリケーション全体のUIデザインを刷新すること。
-- Previewコンポーネントの分離（v0.26.0にて実施済み）。
-- egui `TextEdit` を完全に置き換える独自入力 surface を実装すること（`x-x-x-native-input-surface` の責務）。
+- egui `TextEdit` を完全に置き換える独自入力 surface（`x-x-x-native-input-surface` の責務）。
+- Preview コンポーネントの分離（v0.26.0 にて実施済み）。
+- `katana-language-editor` に Markdown 固有のドメイン知識を持たせること。
 
 ## Decisions
 
-- **完全な物理クレート分離**: `crates/` フォルダ配下に `katana-editor` を新規クレートとして作成し、完全に物理的な分離を行います。KatanAの肥大化によるCI/CD（UT/IT）のネック解消やマルチプラットフォーム対応の複雑性緩和のメリットを優先します。
-- **インターフェースによる設定注入とデータ駆動アーキテクチャ**: グローバル設定（テーマやフォント、特にプラットフォーム依存の絵文字フォールバックフォント等）に直接依存しないよう、`EditorConfig` のような中間構造体を定義して設定を注入します。また、`katana-ui` は単にテキストデータや設定を渡し、相互のイベント通信はコールバックや mpsc チャネルに限定して循環参照を防ぎます。
-- **独自入力 surface との境界**: 本変更は `katana-editor` の crate/component boundary を作ります。egui `TextEdit` の排除、IME composition、emoji-safe rendering、grapheme hit testing は `x-x-x-native-input-surface` で扱います。
+### 1. katana-language-editor は言語非依存
 
-## Risks / Trade-offs
+`katana-language-editor` crate は特定の言語（Markdown 等）を知らない。言語固有の振る舞いは `SyntaxHighlighter` trait として外部から注入する。
 
-- **[Trade-off]** KatanA固有の機能追加を行う際、分離したクレートと `katana-ui` の両方を同時に修正しなければならないケースが増える。
-  - **Mitigation**: このオーバーヘッドは、肥大化防止とCI/CD高速化のための「許容すべきトレードオフ」としてチームで合意済みとする。
-- **[Risk]** コンポーネント分離による入力から描画までのパフォーマンス（レイテンシ）悪化。
-  - **Mitigation**: 状態管理レイヤー（State）と描画レイヤー（View）を厳密に分離し、バッファ全体の不要なディープコピーを避ける（必要に応じてArc等での参照や差分同期の採用を検討する）。
-- **[Risk]** 絵文字フォントのレンダリング問題（macOS/Windowsのプラットフォーム差異）。
-  - **Mitigation**: `EditorConfig` を通じて正しいフォールバックフォント設定を注入する仕組みを設ける。`TextEdit` 依存を排除する根本対応は `x-x-x-native-input-surface` へ分離する。
+```rust
+// neutral interface（katana-language-editor crate）
+pub trait SyntaxHighlighter: Send + Sync {
+    fn highlight(&self, source: &str) -> HighlightedText;
+    fn language_id(&self) -> &str;
+}
+
+pub struct EditorConfig {
+    pub syntax_highlighter: Box<dyn SyntaxHighlighter>,
+    pub font_size: f32,
+    pub theme: EditorTheme,
+    // ...
+}
+```
+
+KatanA 側は `MarkdownSyntaxHighlighter` を実装して渡すだけ。将来別言語を扱う crate も同じ trait を実装すれば良い。
+
+### 2. egui 実装は -egui crate に閉じる
+
+`katana-language-editor`（neutral interface）は egui に依存しない。egui 固有の描画・TextEdit ラップ・行番号・絵文字 workaround は `katana-language-editor-egui` に閉じる。将来 egui を独自フレームワークに替える際は `katana-language-editor-egui` を差し替えるだけ。
+
+### 3. egui 絵文字制約の記録
+
+egui（epaint）は独自フォントアトラスで管理しており、OS のフォントフォールバックチェーンを無視する。Apple Color Emoji（SBIX/CBTF カラーフォント）をロードしても正しく描画できないため、エディタ上での絵文字表示は MVP 段階では制限がある。根本解決は独自 UI フレームワーク（CoreText / Metal 直接描画）導入時に行う。v0.27.0 の egui 実装ではこの制約を docs に明記するにとどめる。
 
 ## katana-canvas-forge (kcf) および katana-chat-ui との境界
 
 ```
 KatanA shell
-  -> katana-editor             (本 change で分離)
+  -> katana-language-editor    (本 change で分離)
   -> katana-document-preview   (v0.26.0 で分離済み)
   -> katana-canvas-forge       (v0.22.11 で分離済み)
-katana-editor -> kcf / katana-chat-ui へは依存しない
+katana-language-editor -> kcf / katana-chat-ui へは依存しない
 ```
 
-- **`katana-editor` は純粋なテキスト編集ウィジェット**。図形描画・export・LLM chat は関知しない。
-- Mermaid / Draw.io ブロックのシンタックスハイライトなど、図形 block の構文認識は editor 側の責務で良い。実際の**描画**は preview 側が kcf を呼ぶ。
-- `katana-chat-ui`（v0.22.14 で分離済み）とも無関係。editor は LLM agent に依存しない。
+- `katana-language-editor` は純粋なテキスト編集 widget。図形描画・export・LLM chat は関知しない。
+- Mermaid / Draw.io ブロックの**シンタックスハイライト**は editor 側の責務。実際の**描画**は preview 側が kcf を呼ぶ。
+- `katana-chat-ui`（v0.28.0 で migration）とも無関係。editor は LLM agent に依存しない。
+
+## Risks / Trade-offs
+
+- **[Trade-off]** KatanA 固有の機能追加時に外部 repo と KatanA の両方を修正する必要が増える。肥大化防止・CI 高速化のための許容コストとする。
+- **[Risk]** egui 絵文字制約により MVP 段階のエディタ品質に限界がある。独自フレームワーク化まで許容し、`EditorConfig` boundary を今から確立することで移行コストを最小化する。
+- **[Risk]** `egui` バージョン競合。ワークスペース全体で egui バージョンを統一する。

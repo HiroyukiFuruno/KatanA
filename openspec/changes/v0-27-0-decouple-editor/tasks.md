@@ -1,77 +1,63 @@
+# Tasks: v0.27.0 Language Editor 分離 — KatanA intake
+
+> editor 実装・シンタックスハイライト・フォント管理はすべて `katana-language-editor` repo 側で行う。
+> katana-language-editor 側の実装タスクは [katana-language-editor openspec](https://github.com/HiroyukiFuruno/katana-language-editor) を参照。
+> 本 tasks.md は KatanA 側の intake（git dependency 追加 + EditorWidget 呼び出しへの差し替え + SyntaxHighlighter 注入）のみを扱う。
+
 ## Branch Rule
 
-本タスクでは、以下のブランチ運用を適用します：
-
-- **標準（Base）ブランチ**: `v0-27-0-decouple-editor` またはリリース用統合ブランチ（例: `release/v0.27.0`）
-- **作業ブランチ**: 標準は `v0-27-0-decouple-editor-task-x`、リリース用は `feature/v0.27.0-task-x` (xはタスク番号)
-
-実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
-
-## 1. Setup New Crate
-
-### Definition of Done (DoD)
-
-- [ ] Create `crates/katana-editor` with basic lib.rs
-- [ ] Add crate to workspace members in root `Cargo.toml`
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
-
-- [ ] 1.1 Create `crates/katana-editor` module structure
-- [ ] 1.2 Add crate to workspace `Cargo.toml`
-
-## 2. Implement Editor Component
-
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
-### Definition of Done (DoD)
-
-- [ ] Move editor state and widget logic to `katana-editor`
-- [ ] Expose public API for `katana-ui`
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
-
-- [ ] 2.1 Design and define `EditorConfig` (for injected settings, specifically fonts/emojis fallback configurations) and communication interfaces, while keeping egui `TextEdit` replacement out of scope for `x-x-x-native-input-surface`
-- [ ] 2.2 Migrate editor state structures from `katana-ui` to `katana-editor`
-- [ ] 2.3 Migrate text editing logic and keybindings
-- [ ] 2.4 Implement and expose `EditorWidget` as the editor component boundary; do not make this task responsible for the future native input surface
-
-## 3. Refactor katana-ui
-
-### Definition of Ready (DoR)
-
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
-
-### Definition of Done (DoD)
-
-- [ ] Integrate new editor component into `katana-ui`
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
-
-- [ ] 3.1 Refactor `katana-ui` to use `EditorWidget`
-- [ ] 3.2 Inject KatanA settings via `EditorConfig`
+interface 整理リファクタリングとして `master` で直接作業する（バージョンブランチ不要）。
 
 ---
 
-## 4. User Review (Pre-Final Phase)
+## 準備完了条件（Definition of Ready）
 
-> ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
-
-- [ ] 4.1 ユーザーへ実装完了の報告および動作状況（UIの場合はスナップショット画像等）の提示を行う
-- [ ] 4.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [ ] `katana-language-editor` `v0.1.0` release tag が切られていること
+- [ ] `EditorWidget::show(ui, buffer, config)` API が確定していること
+- [ ] `EditorConfig { syntax_highlighter: Box<dyn SyntaxHighlighter>, ... }` が確定していること
+- [ ] `katana-language-editor`（neutral interface）が egui を含まないことを確認していること
 
 ---
 
-## 5. Final Verification & Release Work
+## 1. katana-language-editor を git dependency として追加する
 
-- [ ] 5.1 Execute self-review using `docs/coding-rules.ja.md` and `.agents/skills/self-review/SKILL.md`
-- [ ] 5.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 5.3 Ensure `just check` passes with exit code 0
-- [ ] 5.4 Create PR from Base Feature Branch targeting `master`
-- [ ] 5.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 5.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 5.7 Create `release/v0.27.0` branch from master
-- [ ] 5.8 Run `just VERSION=0.27.0 release` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 5.9 Create PR from `release/v0.27.0` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 5.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 5.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [ ] 1.1 root `Cargo.toml` の workspace dependencies に追加する
+  ```toml
+  katana-language-editor = { git = "https://github.com/HiroyukiFuruno/katana-language-editor", tag = "v0.1.0" }
+  katana-language-editor-egui = { git = "https://github.com/HiroyukiFuruno/katana-language-editor", tag = "v0.1.0" }
+  ```
+- [ ] 1.2 `cargo build` が通ることを確認する
+
+---
+
+## 2. KatanA 側 editor を EditorWidget 経由に切り替える
+
+### 準備完了条件
+
+- [ ] Task 1 完了
+
+- [ ] 2.1 `katana-ui` の editor view を `EditorWidget::show()` 呼び出しに差し替える
+- [ ] 2.2 `EditorConfig` に KatanA の `MarkdownSyntaxHighlighter` を注入する
+  - KatanA は Markdown に特化した `SyntaxHighlighter` 実装を `katana-language-editor` に渡すだけ
+  - `katana-language-editor` 自体はどの言語かを知らない
+- [ ] 2.3 フォント・テーマ設定を `EditorConfig` 経由で渡し、katana-ui 側のグローバル設定直参照を排除する
+- [ ] 2.4 絵文字・IME 関連の workaround が `katana-language-editor-egui` 側に閉じていることを確認する
+
+---
+
+## 3. KatanA 側の editor コードを除去する
+
+### 準備完了条件
+
+- [ ] Task 2 完了
+
+- [ ] 3.1 `katana-ui` から TextEdit ラップ・行番号・シンタックスハイライトの実装を除去する
+- [ ] 3.2 `git grep` で `syntect` / `tree-sitter` 等が KatanA 直接依存として残っていないことを確認する
+
+---
+
+## 4. 検証と commit
+
+- [ ] 4.1 `just check` がエラーなし（exit code 0）で通過すること
+- [ ] 4.2 `./scripts/openspec validate v0-27-0-decouple-editor --strict` を実行し OpenSpec の整合性を確認する
+- [ ] 4.3 commit & push（`master` 直接）
