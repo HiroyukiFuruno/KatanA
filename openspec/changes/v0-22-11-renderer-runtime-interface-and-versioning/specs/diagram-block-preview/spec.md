@@ -2,7 +2,7 @@
 
 ### Requirement: Mermaid blocks render inline in the standard preview
 
-システムは、`mermaid` とラベル付けされたバッククォートまたはチルダの Markdown フェンスを、標準プレビュー上でインライン図形として描画しなければならない（SHALL）。この描画は、版付き Mermaid runtime interface を通して行い、KatanA は Mermaid.js の描画内部処理を直接所有し続けてはならない（MUST NOT）。
+システムは、`mermaid` とラベル付けされたバッククォートまたはチルダの Markdown フェンスを、標準プレビュー上でインライン図形として描画しなければならない（SHALL）。この描画は外部 library `katana-canvas-forge`（kcf）の版付き Renderer interface を通して行い、KatanA は Mermaid.js の描画内部処理を直接所有してはならない（MUST NOT）。
 
 #### Scenario: Render a Mermaid flowchart with backticks
 
@@ -16,15 +16,15 @@
 - **THEN** the preview shows the rendered diagram instead of the raw fenced source
 - **THEN** changes to the block are reflected when the preview refreshes
 
-#### Scenario: Render Mermaid through the versioned runtime interface
+#### Scenario: Render Mermaid through kcf
 
 - **WHEN** the preview renders a Mermaid block
-- **THEN** KatanA passes the source, Mermaid.js-compatible config, KatanA policy, and theme context to the Mermaid runtime interface
-- **THEN** the preview consumes the returned SVG and diagnostics without depending on an unversioned `mermaid.min.js`
+- **THEN** KatanA passes the source, Mermaid.js-compatible `RenderConfig`, KatanA `RenderPolicy`, and theme `RenderContext` to the kcf `Renderer`
+- **THEN** the preview consumes the returned SVG and `RenderDiagnostics` without depending on an unversioned `mermaid.min.js` shipped inside KatanA
 
 ### Requirement: Draw.io blocks render inline in the standard preview
 
-システムは、`drawio` とラベル付けされたバッククォートまたはチルダの Markdown フェンスを、標準プレビュー上でインライン図形として描画しなければならない（SHALL）。Draw.io runtime の所有境界が Mermaid runtime と異なる場合、システムは OS アプリ依存へ戻さず、未接続または後続移管の扱いを明示しなければならない（MUST）。
+システムは、`drawio` とラベル付けされたバッククォートまたはチルダの Markdown フェンスを、標準プレビュー上でインライン図形として描画しなければならない（SHALL）。Draw.io 描画も kcf を経由しなければならない（MUST）。
 
 #### Scenario: Render an embedded Draw.io diagram block with tildes
 
@@ -32,8 +32,8 @@
 - **THEN** the preview shows the rendered diagram instead of the raw fenced source
 - **THEN** the diagram is rendered without requiring the user to install a separate viewer
 
-#### Scenario: Keep Draw.io ownership explicit
+#### Scenario: Render Draw.io through kcf
 
-- **WHEN** Draw.io rendering cannot use the Mermaid runtime interface
-- **THEN** the system records the separate ownership boundary
-- **THEN** the system does not silently launch the user's OS Chrome / Chromium app as a replacement path
+- **WHEN** the preview renders a Draw.io block
+- **THEN** KatanA passes the Draw.io source through the kcf `Renderer` (Mermaid と同じ trait か別 backend かは kcf 側の実装判断)
+- **THEN** KatanA does not silently launch the user's OS Chrome / Chromium app as a replacement path

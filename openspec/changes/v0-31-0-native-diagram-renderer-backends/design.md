@@ -73,3 +73,23 @@ If a Rust-native backend cannot render a supported diagram, the system should ei
 - **Risk: dependency packaging** - `plantuml-little` depends on Graphviz-related native packaging. Mitigate with a cross-platform spike before making it default.
 - **Risk: dependency churn** - Mermaid Rust renderers are young. Mitigate by hiding them behind KatanA-owned backend adapters.
 - **Trade-off: temporary dual backend support** - Keeping both Rust and external backends adds complexity, but it lets KatanA reduce runtime setup friction without risking total diagram regression.
+
+## v0.22.11 (katana-canvas-forge) との統合
+
+v0.22.11 で `katana-canvas-forge`（kcf）が確立される。本 change の責務との関係を以下に整理する。
+
+### Mermaid 範囲 → kcf に吸収
+
+- `merman` / `mermaid-rs-renderer` / `selkie-rs` の backend 候補評価、Rust 管理 JS runtime の採用判断は **kcf 側の責務**となる（v0.22.11 Task 7 で整理済み）。
+- KatanA 側には Mermaid backend 選定ロジックを持たない。kcf release の tag を bump するだけで backend が更新される。
+- 本 change で Mermaid 範囲を扱う場合は、kcf 側への PR として進める。
+
+### PlantUML 範囲 → 本 change の残存責務
+
+- `plantuml-little` の評価・採用は引き続き本 change の責務。kcf は PlantUML を Mermaid と同じ `Renderer` trait に乗せるか、別 backend として扱うかを設計する。
+- kcf での PlantUML 実装が整い次第、KatanA 側は kcf 経由で利用する。本 change の KatanA 側 tasks はその取り込みに集約する。
+
+### 判断基準
+
+- Mermaid 範囲が kcf に全吸収完了し、PlantUML も kcf に移管できた時点で本 change を archive 候補とする。
+- 移管完了前は「PlantUML kcf 移管 + KatanA 側取り込み」に絞って tasks を更新する。

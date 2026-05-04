@@ -7,7 +7,7 @@
 **Goals:**
 
 - KatanAのリポジトリ内にある `vendor/egui_commonmark_upstream` や `vendor/egui-winit` 等のプレビュー関連依存を `katana-ui` の直接の関心事から排除する。
-- プレビューを `katana-markdown-preview` クレートに分離する。
+- プレビューを `katana-document-preview` クレートに分離する。
 - コンポーネントが独自にインテグレーションテストを実行できるようにする。
 
 **Non-Goals:**
@@ -17,7 +17,7 @@
 
 ## Decisions
 
-- **完全な物理クレート分離**: `crates/` フォルダ配下に `katana-markdown-preview` を新規クレートとして作成し、完全に物理的な分離を行います。KatanAの肥大化によるCI/CD（UT/IT）のネック解消やマルチプラットフォーム対応の複雑性緩和のメリットを優先します。
+- **完全な物理クレート分離**: `crates/` フォルダ配下に `katana-document-preview` を新規クレートとして作成し、完全に物理的な分離を行います。KatanAの肥大化によるCI/CD（UT/IT）のネック解消やマルチプラットフォーム対応の複雑性緩和のメリットを優先します。
 - **純粋なRustネイティブによる絵文字ハック (脱 WebView)**: KatanAをRustで構築する意義を損なうWebView化は行わず、`egui` のネイティブ描画を徹底的に拡張（ハック）します。`egui_commonmark` のパース処理に介入し、絵文字Unicodeを検出した際に `egui::Image` (Twemoji等のアセット) に置換して描画することで、OSのフォールバックに依存せず全プラットフォームで一貫したカラー絵文字表示を実現します。
 - **`vendor/` のカプセル化とGit参照化**: KatanAのルート `Cargo.toml` の `[patch.crates-io]` からプレビュー関連の `vendor/` パッチ指定を排除します。独自パッチが必要な `egui_commonmark` 等は別リポジトリにフォークとして切り出し、`Cargo.toml` では Git 参照 (`git = "..."`) を利用することで KatanA 内のディレクトリから追放します。
 - **インターフェースによる設定注入とデータ駆動アーキテクチャ**: グローバル設定に依存しないよう、`PreviewTheme` のような中間構造体を定義して設定を注入します。また、`katana-ui` は単にテキストデータや設定を渡し、相互のイベント通信はコールバックや mpsc チャネルに限定して循環参照を防ぎます。
@@ -30,3 +30,20 @@
   - **Mitigation**: 状態管理レイヤー（State）と描画レイヤー（View）を厳密に分離し、バッファ全体の不要なディープコピーを避ける（必要に応じてArc等での参照や差分同期の採用を検討する）。
 - **[Risk]** `egui`のバージョン競合。
   - **Mitigation**: ワークスペース全体で `egui` のバージョンを厳格に統一する。
+
+## katana-canvas-forge (kcf) および katana-chat-ui との境界
+
+v0.22.11 で `katana-canvas-forge`（kcf）が確立され、v0.22.14 で `katana-chat-ui` が確立される。本 change との依存方向を以下に固定する。
+
+```
+KatanA shell
+  -> katana-document-preview   (本 change で分離)
+  -> katana-canvas-forge       (v0.22.11 で分離済み)
+katana-canvas-forge -> katana-document-preview へは依存しない
+katana-document-preview -> katana-canvas-forge へは依存しても良い（diagram 描画呼び出し）
+katana-chat-ui -> katana-document-preview へは依存しない
+```
+
+- **図形描画（Mermaid / Draw.io）**: `katana-document-preview` 内で独自 renderer を持たず、kcf の `Renderer` trait 経由で描画する。
+- **egui 依存**: `katana-document-preview` は `egui` に依存して良い（UI widget であるため）。kcf は `egui` に依存してはならない。
+- **katana-chat-ui との無関係**: `katana-document-preview` は LLM / ACP に依存しない。

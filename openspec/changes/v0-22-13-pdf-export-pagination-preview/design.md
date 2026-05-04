@@ -50,3 +50,12 @@
 - [Risk] 候補線が多すぎると操作が重くなる → 既定表示は見出しと図を優先し、段落境界はリスト上で簡潔に表示する。
 - [Risk] 長い図や長い段落はユーザー選択だけでは収まらない → ページ高さを超えるブロックは強制分割として明示し、候補線とは別扱いにする。
 - [Risk] Exportの既存操作から1クリック増える → PDFだけ保存前プレビューを挟み、HTML/PNG/JPEGの操作は変更しない。
+
+## katana-canvas-forge (kcf) との境界
+
+v0.22.11 で PDF export の実装本体は kcf へ移管される。本 change との責務分担を以下に示す。
+
+- **ページ計算・レイアウト IR** (`PdfExportOptions`、ページ区切り候補、ページ高さ計算): 当面は `katana-core` 側に置くが、将来は kcf 側の export pipeline に吸収する候補。本 change では `katana-core` に置いたまま進め、kcf への移管は後続 change（v0.22.11 Task 5 完了後）で判断する。
+- **PDF 生成呼び出し**: v0.22.11 完了後は kcf の export API を呼ぶ。本 change が v0.22.11 より先に実装される場合は、既存 PDF 生成パスを維持し、v0.22.11 完了時に kcf 経由に差し替える。
+- **PDF 出力前プレビュー UI**（仮想タブ、ページ一覧、候補線リスト、保存ボタン）: KatanA UI 側に残る。kcf への移管対象外。
+- **OS Chrome / Chromium への暗黙 fallback は持たない**。kcf が `NotImplemented` を返す場合は UI 上で明示する（v0.22.11 の方針に従う）。

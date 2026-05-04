@@ -11,11 +11,11 @@
 
 ### Definition of Done (DoD)
 
-- [ ] Create `crates/katana-markdown-preview` with basic lib.rs
+- [ ] Create `crates/katana-document-preview` with basic lib.rs
 - [ ] Add crate to workspace members in root `Cargo.toml`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
-- [ ] 1.1 Create `crates/katana-markdown-preview` module structure
+- [ ] 1.1 Create `crates/katana-document-preview` module structure
 - [ ] 1.2 Add crate to workspace `Cargo.toml`
 
 ## 2. Implement Native Preview Component
@@ -27,13 +27,13 @@
 
 ### Definition of Done (DoD)
 
-- [ ] Move `egui_commonmark` and diagram rendering dependencies to `katana-markdown-preview`
+- [ ] Move `egui_commonmark` and diagram rendering dependencies to `katana-document-preview`
 - [ ] Implement color emoji support natively by injecting `egui::Image` (e.g., via `egui-twemoji` or custom parser hooks).
 - [ ] Expose public API for `katana-ui`
 - [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 - [ ] 2.1 Design and define `PreviewTheme` (for injected settings) and communication interfaces
-- [ ] 2.2 Migrate rendering logic (`egui_commonmark` wrappers) to `katana-markdown-preview`
+- [ ] 2.2 Migrate rendering logic (`egui_commonmark` wrappers) to `katana-document-preview`
 - [ ] 2.3 Implement Native Emoji Hack (intercept emoji unicode in markdown and replace with image textures)
 - [ ] 2.4 Move diagram generation (mermaid) logic
 - [ ] 2.5 Implement and expose `PreviewWidget`

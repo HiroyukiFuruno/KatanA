@@ -2,7 +2,7 @@
 
 ### Requirement: Delegated Component Architecture
 
-The KatanA UI application (`katana-ui`) MUST NOT contain deep implementation logic for text editing or markdown rendering. It SHALL delegate these responsibilities to the dedicated `katana-editor` and `katana-markdown-preview` crates.
+The KatanA UI application (`katana-ui`) MUST NOT contain deep implementation logic for text editing or markdown rendering. It SHALL delegate these responsibilities to the dedicated `katana-editor` and `katana-document-preview` crates.
 
 #### Scenario: UI Assembly
 
