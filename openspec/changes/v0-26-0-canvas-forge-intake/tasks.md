@@ -1,61 +1,62 @@
-# Tasks: v0.26.0 Document Preview 分離 — KatanA intake
+# Tasks: v0.26.0 katana-canvas-forge intake — KatanA
 
-> preview 実装・絵文字・ダイアグラム呼び出しはすべて `katana-document-preview` repo 側で行う。
-> katana-document-preview 側の実装タスクは [katana-document-preview openspec](https://github.com/HiroyukiFuruno/katana-document-preview) を参照。
-> 本 tasks.md は KatanA 側の intake（git dependency 追加 + vendor/ 除去 + PreviewWidget 呼び出しへの差し替え）のみを扱う。
+> Mermaid / Draw.io / export 実装はすべて `katana-canvas-forge`（kcf）repo 側で行う。
+> kcf 側の実装タスクは [katana-canvas-forge openspec](https://github.com/HiroyukiFuruno/katana-canvas-forge) を参照。
+> 本 tasks.md は KatanA 側の intake（git dependency 追加 + 描画実装除去 + kcf API 呼び出しへの差し替え）のみを扱う。
 
 ## Branch Rule
 
-interface 整理リファクタリングとして `master` で直接作業する（バージョンブランチ不要）。
+`release/v0.26.0` ブランチを切って作業する。
 
 ---
 
 ## 準備完了条件（Definition of Ready）
 
-- [ ] `katana-document-preview` `v0.1.0` release tag が切られていること
-- [ ] `PreviewWidget::show(ui, source, config)` API が確定していること
-- [ ] `katana-document-preview`（neutral interface）が egui を含まないことを確認していること
+- [ ] `katana-canvas-forge` v0.1.0 release tag が切られていること
+- [ ] `Renderer` trait と DTO（`RenderInput` / `RenderOutput` / `RuntimeVersion` / `RendererProfile`）が確定していること
+- [ ] `katana-canvas-forge`（neutral interface）が egui を含まないことを確認していること
 
 ---
 
-## 1. katana-document-preview を git dependency として追加する
+## 1. katana-canvas-forge を git dependency として追加する
 
-- [ ] 1.1 root `Cargo.toml` の workspace dependencies に追加する
+- [ ] 1.1 root `Cargo.toml` に以下を追加する
   ```toml
-  katana-document-preview = { git = "https://github.com/HiroyukiFuruno/katana-document-preview", tag = "v0.1.0" }
-  katana-document-preview-egui = { git = "https://github.com/HiroyukiFuruno/katana-document-preview", tag = "v0.1.0" }
+  katana-canvas-forge = { git = "https://github.com/HiroyukiFuruno/katana-canvas-forge", tag = "v0.1.0" }
   ```
-- [ ] 1.2 `cargo build` が通ることを確認する
+- [ ] 1.2 `cargo build` が通ること
+- [ ] 1.3 `cargo tree` で `katana-canvas-forge` に `egui` が含まれないことを確認する
 
 ---
 
-## 2. KatanA 側 preview 描画を PreviewWidget 経由に切り替える
+## 2. KatanA 側描画を kcf 経由に切り替える
 
 ### 準備完了条件
 
 - [ ] Task 1 完了
 
-- [ ] 2.1 `katana-ui` の preview_pane を `PreviewWidget::show()` 呼び出しに差し替える
-- [ ] 2.2 `PreviewConfig`（テーマ・フォントサイズ等）を `katana-ui` 側の settings から組み立てて渡す
-- [ ] 2.3 絵文字描画が `katana-document-preview-egui` 側で完結していることを目視確認する
-- [ ] 2.4 ダイアグラム（Mermaid / Draw.io）が kcf 経由で描画されることを確認する
+- [ ] 2.1 Mermaid block 描画を kcf の `Renderer` trait 経由に切り替える（薄い adapter のみ残す）
+- [ ] 2.2 Draw.io 描画を kcf の `Renderer` 経由に切り替える
+- [ ] 2.3 HTML / PDF / PNG / JPEG export を kcf の `Exporter` 経由に切り替える
+- [ ] 2.4 cache key に kcf の `RuntimeVersion` と `RendererProfile` を含める
 
 ---
 
-## 3. vendor/ と [patch.crates-io] を除去する
+## 3. KatanA 側の描画実装を除去する
 
 ### 準備完了条件
 
 - [ ] Task 2 完了
 
-- [ ] 3.1 `vendor/egui_commonmark_upstream/` を KatanA から除去する
-- [ ] 3.2 root `Cargo.toml` の `[patch.crates-io]` から preview 関連エントリを除去する
-- [ ] 3.3 `git grep egui_commonmark` で KatanA 内に直接参照が残っていないことを確認する
+- [ ] 3.1 `crates/katana-core/src/markdown/mermaid_renderer/` を除去する
+- [ ] 3.2 `crates/katana-core/src/markdown/drawio_renderer/` を除去する
+- [ ] 3.3 `crates/katana-core/src/markdown/export/` 実装本体を除去する
+- [ ] 3.4 `vendor/mermaid/`、`scripts/mermaid/`、`assets/fixtures/mermaid_all/` を除去する
+- [ ] 3.5 `git grep mermaid_renderer` で KatanA 内に直接参照が残っていないことを確認する
 
 ---
 
 ## 4. 検証と commit
 
 - [ ] 4.1 `just check` がエラーなし（exit code 0）で通過すること
-- [ ] 4.2 `./scripts/openspec validate v0-26-0-decouple-preview --strict` を実行し OpenSpec の整合性を確認する
-- [ ] 4.3 commit & push（`master` 直接）
+- [ ] 4.2 `release/v0.26.0` ブランチから PR を作成し master へ merge する
