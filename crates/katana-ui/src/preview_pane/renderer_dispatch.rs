@@ -1,25 +1,23 @@
 use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_core::markdown::{
-    DiagramBackendAdapter, DiagramBackendInput, DiagramBackendLanguage, DiagramBlock,
-    DiagramDocumentContext, DiagramKind, DiagramRenderOptions, DiagramResult, DiagramThemeSnapshot,
-    KatanaDrawIoBackend, KatanaMermaidBackend, KatanaPlantUmlBackend,
+    DiagramBackendAdapter, DiagramBackendFactory, DiagramBackendInput, DiagramBackendLanguage,
+    DiagramBlock, DiagramDocumentContext, DiagramKind, DiagramRenderOptions, DiagramResult,
+    DiagramThemeSnapshot,
 };
 
 pub(super) fn dispatch_renderer(block: &DiagramBlock) -> DiagramResult {
-    let backend: Box<dyn DiagramBackendAdapter> = match block.kind {
-        DiagramKind::Mermaid => Box::new(KatanaMermaidBackend),
-        DiagramKind::PlantUml => Box::new(KatanaPlantUmlBackend),
-        DiagramKind::DrawIo => Box::new(KatanaDrawIoBackend),
+    let backend_language = match block.kind {
+        DiagramKind::Mermaid => DiagramBackendLanguage::Mermaid,
+        DiagramKind::PlantUml => DiagramBackendLanguage::PlantUml,
+        DiagramKind::DrawIo => DiagramBackendLanguage::DrawIo,
     };
+    let backend: Box<dyn DiagramBackendAdapter> =
+        DiagramBackendFactory::create(backend_language.clone());
 
     let preset = DiagramColorPreset::current();
     let is_dark = DiagramColorPreset::is_dark_mode();
     let input = DiagramBackendInput {
-        language: match block.kind {
-            DiagramKind::Mermaid => DiagramBackendLanguage::Mermaid,
-            DiagramKind::PlantUml => DiagramBackendLanguage::PlantUml,
-            DiagramKind::DrawIo => DiagramBackendLanguage::DrawIo,
-        },
+        language: backend_language,
         source: block.source.clone(),
         options: DiagramRenderOptions::default(),
         theme: DiagramThemeSnapshot::from_preset(

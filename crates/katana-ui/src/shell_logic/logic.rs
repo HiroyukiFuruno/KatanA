@@ -27,8 +27,9 @@ impl ShellLogicOps {
         source: &str,
         preset: &katana_core::markdown::color_preset::DiagramColorPreset,
     ) -> Result<std::path::PathBuf, String> {
-        let renderer = katana_core::markdown::KatanaRenderer;
-        let html = katana_core::markdown::HtmlExporter::export(source, &renderer, preset, None)
+        let exporter = katana_core::markdown::HtmlExporter;
+        let html = exporter
+            .export_markdown_to_html(source, preset, None)
             .map_err(|e| e.to_string())?;
 
         let hash = Self::hash_str(&path.to_string_lossy());
@@ -73,8 +74,9 @@ impl ShellLogicOps {
         preset: &katana_core::markdown::color_preset::DiagramColorPreset,
         base_dir: Option<&std::path::Path>,
     ) -> Result<std::path::PathBuf, String> {
-        let renderer = katana_core::markdown::KatanaRenderer;
-        let html = katana_core::markdown::HtmlExporter::export(source, &renderer, preset, base_dir)
+        let exporter = katana_core::markdown::HtmlExporter;
+        let html = exporter
+            .export_markdown_to_html(source, preset, base_dir)
             .map_err(|e| e.to_string())?;
         let output_path = std::env::temp_dir().join(filename);
         std::fs::write(&output_path, html.as_bytes()).map_err(|e| e.to_string())?;

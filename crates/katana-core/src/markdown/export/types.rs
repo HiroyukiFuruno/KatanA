@@ -2,6 +2,35 @@ pub struct HtmlExporter;
 pub struct ImageExporter;
 pub struct PdfExporter;
 
+#[derive(Clone, Default, Debug, PartialEq)]
+pub enum PaperSize {
+    A4,
+    #[default]
+    Letter,
+    Legal,
+    Custom {
+        width_mm: u32,
+        height_mm: u32,
+    },
+}
+
+const DEFAULT_EXPORT_MARGIN_MM: f32 = 12.7;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ExportConfig {
+    pub paper_size: PaperSize,
+    pub margin_mm: f32,
+}
+
+impl Default for ExportConfig {
+    fn default() -> Self {
+        Self {
+            paper_size: PaperSize::default(),
+            margin_mm: DEFAULT_EXPORT_MARGIN_MM,
+        }
+    }
+}
+
 /// Output format for file-level export (HTML is the intermediate; Pdf/Png/Jpeg are file targets).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ExportFormat {
@@ -21,6 +50,18 @@ pub struct ExportInput {
     pub format: ExportFormat,
     pub html_source: String,
     pub output_path: std::path::PathBuf,
+    pub config: ExportConfig,
+}
+
+impl Default for ExportInput {
+    fn default() -> Self {
+        Self {
+            format: ExportFormat::Png,
+            html_source: String::new(),
+            output_path: std::path::PathBuf::new(),
+            config: ExportConfig::default(),
+        }
+    }
 }
 
 /// Successful result of `ExporterTrait::export`.

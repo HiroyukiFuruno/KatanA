@@ -15,7 +15,7 @@ pub mod types;
 
 pub use diagram_backend::*;
 pub use export::{
-    ExportError, ExportFormat, ExportInput, ExportOutput, ExporterTrait, HtmlExporter,
-    ImageExporter, PdfExporter,
+    ExportConfig, ExportError, ExportFormat, ExportInput, ExportOutput, ExporterTrait,
+    HtmlExporter, ImageExporter, PdfExporter,
 };
 pub use types::*;

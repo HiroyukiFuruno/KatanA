@@ -8,9 +8,10 @@ fn bug1_html_export_must_transform_diagram_blocks_into_html_images_or_errors() {
     let source = std::fs::read_to_string(&path).expect("failed to read sample.ja.md");
 
     let preset = katana_core::markdown::color_preset::DiagramColorPreset::default();
-    let renderer = katana_core::markdown::KatanaRenderer;
     let exported_html = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
-        katana_core::markdown::HtmlExporter::export(&source, &renderer, &preset, None)
+        let exporter = katana_core::markdown::HtmlExporter;
+        exporter
+            .export_markdown_to_html(&source, &preset, None)
             .expect("Html exporter should succeed")
     });
 

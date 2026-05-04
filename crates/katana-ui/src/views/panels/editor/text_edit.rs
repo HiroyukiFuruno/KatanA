@@ -13,6 +13,7 @@ impl TextEditRenderer {
         ui: &mut egui::Ui,
         buffer: &mut String,
         doc: &katana_core::document::Document,
+        editor_font_size: f32,
         workspace_root: Option<&std::path::Path>,
         scroll: &mut crate::app_state::ScrollState,
         action: &mut AppAction,
@@ -50,7 +51,7 @@ impl TextEditRenderer {
             let text_edit = egui::TextEdit::multiline(buffer)
                 .id(editor_id)
                 .interactive(editable)
-                .font(egui::TextStyle::Monospace)
+                .font(egui::FontId::monospace(editor_font_size))
                 .desired_width(f32::INFINITY)
                 .desired_rows(EDITOR_INITIAL_VISIBLE_ROWS)
                 .margin(egui::Margin {

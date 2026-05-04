@@ -2,7 +2,10 @@ use crate::app_state::{AppAction, ScrollSource};
 use crate::shell::SCROLL_SYNC_DEAD_ZONE;
 use eframe::egui;
 
+use katana_core::editor::{EditorConfig, EditorWidget};
+
 use super::types::{EditorColors, EditorLogicOps};
+use super::{syntax, types};
 pub(crate) struct EditorContent<'a> {
     pub document: Option<&'a katana_core::document::Document>,
     pub workspace_root: Option<&'a std::path::Path>,
@@ -46,10 +49,18 @@ impl<'a> EditorContent<'a> {
         }
     }
     pub fn show(self, ui: &mut egui::Ui) {
+        let mut editor_widget = types::MarkdownEditorWidget::new();
+        editor_widget.apply_config(EditorConfig {
+            syntax_highlighter: Box::new(syntax::MarkdownSyntaxHighlighter::default()),
+            font_size: ui.style().text_styles[&egui::TextStyle::Monospace].size,
+            theme_is_dark: ui.visuals().dark_mode,
+        });
+
         let action = self.action;
         let sync_scroll = self.sync_scroll;
         let scroll = self.scroll;
         let cursor_range_out = self.cursor_range_out;
+        let editor_font_size = editor_widget.config().font_size;
         if let Some(doc) = self.document {
             let mut buffer = doc.buffer.clone();
 
@@ -90,6 +101,7 @@ impl<'a> EditorContent<'a> {
                         ui,
                         &mut buffer,
                         doc,
+                        editor_font_size,
                         self.workspace_root,
                         scroll,
                         action,

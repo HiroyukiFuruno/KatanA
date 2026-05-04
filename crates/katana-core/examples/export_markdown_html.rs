@@ -74,6 +74,7 @@ impl ExportFormat {
                         format: BackendExportFormat::Pdf,
                         html_source: html.to_string(),
                         output_path: output_path.to_path_buf(),
+                        config: Default::default(),
                     })
                     .map(|_| ())
                     .map_err(|e| std::io::Error::other(e.to_string()))?;
@@ -85,6 +86,7 @@ impl ExportFormat {
                         format: BackendExportFormat::Png,
                         html_source: html.to_string(),
                         output_path: output_path.to_path_buf(),
+                        config: Default::default(),
                     })
                     .map(|_| ())
                     .map_err(|e| std::io::Error::other(e.to_string()))?;
@@ -96,6 +98,7 @@ impl ExportFormat {
                         format: BackendExportFormat::Jpeg,
                         html_source: html.to_string(),
                         output_path: output_path.to_path_buf(),
+                        config: Default::default(),
                     })
                     .map(|_| ())
                     .map_err(|e| std::io::Error::other(e.to_string()))?;

@@ -31,13 +31,9 @@ impl ExportPoll for KatanaApp {
             .unwrap_or_else(|| "export".to_string());
         let (tx, rx) = std::sync::mpsc::channel();
         std::thread::spawn(move || {
-            let renderer = katana_core::markdown::KatanaRenderer;
-            let html = match katana_core::markdown::HtmlExporter::export(
-                &source,
-                &renderer,
-                &preset,
-                base_dir.as_deref(),
-            ) {
+            let exporter = katana_core::markdown::HtmlExporter;
+            let html = match exporter.export_markdown_to_html(&source, &preset, base_dir.as_deref())
+            {
                 Ok(h) => h,
                 Err(e) => {
                     let _ = tx.send(Err(e.to_string()));
@@ -56,6 +52,7 @@ impl ExportPoll for KatanaApp {
                 },
                 html_source: html,
                 output_path: output_path.clone(),
+                config: katana_core::markdown::ExportConfig::default(),
             };
             let _ = tx.send(
                 exporter

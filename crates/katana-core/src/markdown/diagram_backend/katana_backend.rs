@@ -44,8 +44,21 @@ fn diagram_result_to_backend(result: DiagramResult) -> DiagramBackendRenderResul
     }
 }
 
+/// Factory for KatanA-internal diagram backend adapters.
+pub struct DiagramBackendFactory;
+
+impl DiagramBackendFactory {
+    pub fn create(language: DiagramBackendLanguage) -> Box<dyn DiagramBackendAdapter> {
+        match language {
+            DiagramBackendLanguage::Mermaid => Box::new(KatanaMermaidBackend),
+            DiagramBackendLanguage::PlantUml => Box::new(KatanaPlantUmlBackend),
+            DiagramBackendLanguage::DrawIo => Box::new(KatanaDrawIoBackend),
+        }
+    }
+}
+
 /// KatanA-internal Mermaid backend.
-pub struct KatanaMermaidBackend;
+struct KatanaMermaidBackend;
 
 impl DiagramBackendAdapter for KatanaMermaidBackend {
     fn id(&self) -> &DiagramBackendId {
@@ -68,7 +81,7 @@ impl DiagramBackendAdapter for KatanaMermaidBackend {
 }
 
 /// KatanA-internal PlantUML backend.
-pub struct KatanaPlantUmlBackend;
+struct KatanaPlantUmlBackend;
 
 impl DiagramBackendAdapter for KatanaPlantUmlBackend {
     fn id(&self) -> &DiagramBackendId {
@@ -95,7 +108,7 @@ impl DiagramBackendAdapter for KatanaPlantUmlBackend {
 }
 
 /// KatanA-internal Draw.io backend.
-pub struct KatanaDrawIoBackend;
+struct KatanaDrawIoBackend;
 
 impl DiagramBackendAdapter for KatanaDrawIoBackend {
     fn id(&self) -> &DiagramBackendId {

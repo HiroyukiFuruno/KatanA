@@ -7,7 +7,7 @@ use egui_commonmark::syntect::{
     parsing::SyntaxSet,
     util::LinesWithEndings,
 };
-use katana_core::editor::{SyntaxHighlighter, TokenSpan, TokenType};
+use katana_core::editor::{HighlightedSpan, HighlightedText, SyntaxHighlighter, TokenKind};
 
 /// Syntax highlighter that uses the bundled syntect `SyntaxSet` / `ThemeSet`.
 ///
@@ -35,15 +35,14 @@ impl Default for MarkdownSyntaxHighlighter {
 }
 
 impl SyntaxHighlighter for MarkdownSyntaxHighlighter {
-    fn highlight(&self, source: &str, language: &str) -> Vec<TokenSpan> {
+    fn highlight(&self, source: &str) -> HighlightedText {
         let syntax = self
             .ss
-            .find_syntax_by_extension(language)
-            .or_else(|| self.ss.find_syntax_by_extension("md"))
+            .find_syntax_by_extension("md")
             .unwrap_or_else(|| self.ss.find_syntax_plain_text());
 
         let Some(theme) = self.ts.themes.values().next() else {
-            return vec![];
+            return HighlightedText { spans: Vec::new() };
         };
 
         let mut h = HighlightLines::new(syntax, theme);
@@ -57,30 +56,29 @@ impl SyntaxHighlighter for MarkdownSyntaxHighlighter {
             }
         }
 
-        spans
+        HighlightedText { spans }
     }
 }
 
-fn style_to_token_type(style: &egui_commonmark::syntect::highlighting::Style) -> TokenType {
+fn style_to_token_kind(style: &egui_commonmark::syntect::highlighting::Style) -> TokenKind {
     if style.font_style.contains(FontStyle::BOLD) {
-        TokenType::Heading
+        TokenKind::Heading
     } else if style.font_style.contains(FontStyle::ITALIC) {
-        TokenType::Comment
+        TokenKind::Comment
     } else {
-        TokenType::Default
+        TokenKind::Default
     }
 }
 
 fn append_ranges(
     ranges: &[(egui_commonmark::syntect::highlighting::Style, &str)],
-    spans: &mut Vec<TokenSpan>,
+    spans: &mut Vec<HighlightedSpan>,
     offset: &mut usize,
 ) {
     for (style, text) in ranges {
-        spans.push(TokenSpan {
-            start: *offset,
-            end: *offset + text.len(),
-            token_type: style_to_token_type(style),
+        spans.push(HighlightedSpan {
+            range: (*offset)..(*offset + text.len()),
+            token_kind: style_to_token_kind(style),
         });
         *offset += text.len();
     }

@@ -6,6 +6,7 @@ fn do_image_export(html: &str, output: &std::path::Path) {
             format: ExportFormat::Png,
             html_source: html.to_string(),
             output_path: output.to_path_buf(),
+            config: Default::default(),
         })
         .unwrap();
 }
@@ -16,6 +17,7 @@ fn do_pdf_export(html: &str, output: &std::path::Path) {
             format: ExportFormat::Pdf,
             html_source: html.to_string(),
             output_path: output.to_path_buf(),
+            config: Default::default(),
         })
         .unwrap();
 }
