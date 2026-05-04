@@ -1,5 +1,6 @@
 use crate::preview_pane::ViewerState;
 use eframe::egui::{self, Vec2};
+use image::{ImageBuffer, Rgba};
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
 use super::types::ImageLogicOps;
@@ -10,6 +11,39 @@ pub(super) const MAX_ZOOM: f32 = 10.0;
 /// WHY: Minimum container height to prevent the 3×3 control grid and fullscreen
 /// button from overlapping on diagrams with a small rendered height.
 const MIN_CONTAINER_HEIGHT: f32 = 145.0;
+const MAX_TEXTURE_SIDE: usize = 2048;
+
+fn color_image_for_texture(img: &RasterizedSvg) -> egui::ColorImage {
+    let width = img.width as usize;
+    let height = img.height as usize;
+    let max_side = width.max(height);
+
+    if max_side <= MAX_TEXTURE_SIDE {
+        return egui::ColorImage::from_rgba_unmultiplied([width, height], &img.rgba);
+    }
+
+    let scale = MAX_TEXTURE_SIDE as f32 / max_side as f32;
+    let resized_width = (width as f32 * scale).max(1.0).round() as u32;
+    let resized_height = (height as f32 * scale).max(1.0).round() as u32;
+
+    let Some(src) =
+        ImageBuffer::<Rgba<u8>, Vec<u8>>::from_raw(width as u32, height as u32, img.rgba.clone())
+    else {
+        return egui::ColorImage::from_rgba_unmultiplied([width, height], &img.rgba);
+    };
+
+    let resized = image::imageops::resize(
+        &src,
+        resized_width,
+        resized_height,
+        image::imageops::FilterType::Triangle,
+    );
+    let pixels = resized.into_raw();
+    egui::ColorImage::from_rgba_unmultiplied(
+        [resized_width as usize, resized_height as usize],
+        &pixels,
+    )
+}
 
 impl ImageLogicOps {
     pub(crate) fn show_rasterized(
@@ -47,16 +81,7 @@ impl ImageLogicOps {
 
         let texture_handle = if let Some(state) = state.as_mut() {
             if state.texture.is_none() {
-                let color_img = egui::ColorImage::from_rgba_unmultiplied(
-                    std::array::from_fn(|i| {
-                        if i == 0 {
-                            img.width as usize
-                        } else {
-                            img.height as usize
-                        }
-                    }),
-                    &img.rgba,
-                );
+                let color_img = color_image_for_texture(img);
                 state.texture = Some(ui.ctx().load_texture(
                     format!("diagram_{idx}"),
                     color_img,
@@ -65,16 +90,7 @@ impl ImageLogicOps {
             }
             state.texture.clone().unwrap()
         } else {
-            let color_img = egui::ColorImage::from_rgba_unmultiplied(
-                std::array::from_fn(|i| {
-                    if i == 0 {
-                        img.width as usize
-                    } else {
-                        img.height as usize
-                    }
-                }),
-                &img.rgba,
-            );
+            let color_img = color_image_for_texture(img);
             ui.ctx().load_texture(
                 format!("diagram_{idx}"),
                 color_img,
