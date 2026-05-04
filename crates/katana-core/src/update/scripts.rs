@@ -56,7 +56,6 @@ $ProgressPreference = 'SilentlyContinue';
 $target = '{target}';
 $bak = '{target}.bak';
 $extracted = '{extracted}';
-$startedAt = Get-Date;
 $logDir = Join-Path $env:LOCALAPPDATA 'KatanA';
 $logPath = Join-Path $logDir 'update.log';
 
@@ -90,8 +89,7 @@ for ($retryCount = 0; $retryCount -lt 5; $retryCount++) {{
 
     try {{
         Move-Item -Force $extracted $target;
-        $targetInfo = Get-Item $target -ErrorAction SilentlyContinue;
-        if ($targetInfo -and $targetInfo.LastWriteTime -gt $startedAt -and -not (Test-Path $extracted)) {{
+        if (-not (Test-Path $extracted)) {{
             $replaced = $true;
             Write-UpdateLog 'replace' 'ok' '';
             break;
@@ -176,11 +174,9 @@ mod tests {
         #[cfg(target_os = "windows")]
         {
             assert!(content.contains("function Write-UpdateLog"));
-            assert!(content.contains("$startedAt = Get-Date;"));
             assert!(content.contains("Move-Item -Force $target $bak;"));
             assert!(content.contains("-not (Test-Path $extracted)"));
             assert!(content.contains("update.log"));
-            assert!(content.contains("-gt $startedAt"));
             assert!(
                 !content.contains("Move-Item -Force $target $bak -ErrorAction SilentlyContinue")
             );

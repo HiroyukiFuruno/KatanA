@@ -140,19 +140,44 @@ impl UpdateOps {
 #[cfg(test)]
 mod tests {
     #[test]
+    #[cfg(target_os = "linux")]
     fn test_linux_update_asset_is_tar_gz() {
-        #[cfg(target_os = "linux")]
-        {
-            let tag = "v0.22.11";
-            assert_eq!(
-                super::UpdateOps::platform_asset_name(),
-                "KatanA-linux-x86_64.tar.gz"
-            );
-            assert_eq!(
-                super::UpdateOps::build_download_url(tag),
-                "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-linux-x86_64.tar.gz"
-            );
-            assert!(super::UpdateOps::build_download_url(tag).ends_with(".tar.gz"));
-        }
+        let tag = "v0.22.11";
+        assert_eq!(
+            super::UpdateOps::platform_asset_name(),
+            "KatanA-linux-x86_64.tar.gz"
+        );
+        assert_eq!(
+            super::UpdateOps::build_download_url(tag),
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-linux-x86_64.tar.gz"
+        );
+        assert!(super::UpdateOps::build_download_url(tag).ends_with(".tar.gz"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_macos_update_asset_is_zip() {
+        let tag = "v0.22.11";
+        assert_eq!(super::UpdateOps::platform_asset_name(), "KatanA-macOS.zip");
+        assert_eq!(
+            super::UpdateOps::build_download_url(tag),
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-macOS.zip"
+        );
+        assert!(super::UpdateOps::build_download_url(tag).ends_with(".zip"));
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn test_windows_update_asset_is_zip() {
+        let tag = "v0.22.11";
+        assert_eq!(
+            super::UpdateOps::platform_asset_name(),
+            "KatanA-windows-x86_64.zip"
+        );
+        assert_eq!(
+            super::UpdateOps::build_download_url(tag),
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-windows-x86_64.zip"
+        );
+        assert!(super::UpdateOps::build_download_url(tag).ends_with(".zip"));
     }
 }
