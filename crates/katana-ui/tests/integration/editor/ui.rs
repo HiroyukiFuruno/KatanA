@@ -4,6 +4,20 @@ use katana_ui::app_state::{AppAction, ViewMode};
 
 use crate::integration::harness_utils::{fresh_temp_dir, setup_harness, wait_for_workspace_load};
 
+fn click_code_editor_input(harness: &mut egui_kittest::Harness<'static, katana_ui::shell::KatanaApp>) {
+    for _ in 0..30 {
+        if let Some(editor) = harness.query_by(|node| {
+            node.role() == Role::MultilineTextInput && node.value().as_deref() == Some("alpha")
+        }) {
+            editor.click();
+            return;
+        }
+        harness.step();
+    }
+
+    panic!("code editor input with expected text did not appear in time");
+}
+
 fn open_code_only_document(
     harness: &mut egui_kittest::Harness<'static, katana_ui::shell::KatanaApp>,
     prefix: &str,
@@ -92,11 +106,7 @@ fn input_assist_code_block_button_updates_editor_buffer() {
         "alpha",
     );
 
-    harness
-        .get_by(|node| {
-            node.role() == Role::MultilineTextInput && node.value().as_deref() == Some("alpha")
-        })
-        .click();
+    click_code_editor_input(&mut harness);
     harness.run_steps(5);
 
     let code_block_buttons: Vec<_> = harness
@@ -141,11 +151,7 @@ fn clipboard_image_file_url_paste_queues_image_ingest_action() {
         "alpha",
     );
 
-    harness
-        .get_by(|node| {
-            node.role() == Role::MultilineTextInput && node.value().as_deref() == Some("alpha")
-        })
-        .click();
+    click_code_editor_input(&mut harness);
     harness.run_steps(5);
 
     harness.event(egui::Event::Paste(
@@ -173,11 +179,7 @@ fn code_block_kind_menu_closes_when_editor_is_clicked() {
         "alpha",
     );
 
-    harness
-        .get_by(|node| {
-            node.role() == Role::MultilineTextInput && node.value().as_deref() == Some("alpha")
-        })
-        .click();
+    click_code_editor_input(&mut harness);
     harness.run_steps(5);
 
     harness
