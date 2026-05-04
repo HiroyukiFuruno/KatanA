@@ -83,7 +83,7 @@ kle intake 時に `EditorConfig` に kle の実装を差し込むだけで動く
 
 ## 5. 最終確認と commit
 
-- [ ] 5.1 `just check` がエラーなし（exit code 0）で通過すること
+- [ ] 5.1 `just check-local` がエラーなし（exit code 0）で通過すること
 - [ ] 5.2 `git diff crates/katana-core/src/ai/` で ai module が変更されていないことを確認する
 - [ ] 5.3 各 task で洗い出した `katana-ui` の直接参照がすべて trait 経由に切り替わっていることを `git grep` で確認する
   - `git grep "HtmlExporter::" crates/katana-ui/` → ゼロ件

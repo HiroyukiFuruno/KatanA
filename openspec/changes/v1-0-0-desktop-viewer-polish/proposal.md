@@ -1,6 +1,6 @@
 ## Why
 
-v0.28.0（Floem Phase 2・egui 完全除去）完了後、v1.0.0 として公式リリースするための品質確認・polish を行う。egui 時代の制約（IME 破損・カラー絵文字欠如・vendor パッチ）がなくなった状態で、ユーザー体験の最終仕上げを行う。
+v0.29.0（Floem Phase 3・chrome 完全除去 = egui / eframe ゼロ）完了後、v1.0.0 として公式リリースするための品質確認・polish を行う。egui 時代の制約（IME 破損・カラー絵文字欠如・vendor パッチ）がなくなった状態で、ユーザー体験の最終仕上げを行う。
 
 ## What Changes
 
@@ -18,6 +18,6 @@ v0.28.0（Floem Phase 2・egui 完全除去）完了後、v1.0.0 として公式
 
 ## Impact
 
-- DoR: v0.28.0（Floem Phase 2・egui 完全除去）完了後
+- DoR: v0.29.0（Floem Phase 3・chrome 完全除去 = egui / eframe ゼロ）完了後
 - 全クレートの結合テスト
 - macOS / Linux / Windows リリースビルド

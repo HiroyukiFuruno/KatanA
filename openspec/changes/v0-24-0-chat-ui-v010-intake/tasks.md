@@ -18,15 +18,16 @@
 
 ---
 
-## 1. git dependency を追加する
+## 1. git dependency を追加・bump する
 
-- [ ] 1.1 root `Cargo.toml` に以下を追加する
+- [ ] 1.1 root `Cargo.toml` の `katana-acp-client` の tag を v0.0.1 → v0.1.0 に bump する
+- [ ] 1.2 root `Cargo.toml` に以下を追加する
   ```toml
   katana-chat-ui = { git = "https://github.com/HiroyukiFuruno/katana-chat-ui", tag = "v0.1.0" }
   katana-chat-ui-egui = { git = "https://github.com/HiroyukiFuruno/katana-chat-ui", tag = "v0.1.0" }
   ```
-- [ ] 1.2 `cargo build` が通ること
-- [ ] 1.3 `cargo tree` で `katana-chat-ui`（neutral）に `egui` が含まれないことを確認する
+- [ ] 1.3 `cargo build` が通ること
+- [ ] 1.4 `cargo tree` で `katana-chat-ui`（neutral）に `egui` が含まれないことを確認する
 
 ---
 
@@ -43,7 +44,22 @@
 
 ---
 
-## 3. 検証と commit
+## 3. KatanA 側 ai/ 実装本体を削除する
 
-- [ ] 3.1 `just check` がエラーなし（exit code 0）で通過すること
-- [ ] 3.2 `release/v0.24.0` ブランチから PR を作成し master へ merge する
+### 準備完了条件
+
+- [ ] Task 2 完了
+
+- [ ] 3.1 `crates/katana-core/src/ai/` 配下の Ollama 実装本体を削除する
+- [ ] 3.2 `crates/katana-core/src/ai/` 配下の provider registry 独自実装を削除する
+- [ ] 3.3 `crates/katana-core/src/ai/` 配下の chat service 独自実装を削除する
+- [ ] 3.4 `crates/katana-core/src/ai/mod.rs` には `katana-chat-ui` / `katana-acp-client` の re-export のみが残ることを確認する
+- [ ] 3.5 `git grep` で KatanA 内に Ollama / vendor SDK の直接 import が残っていないことを確認する
+- [ ] 3.6 `cargo test` が通過すること
+
+---
+
+## 4. 検証と commit
+
+- [ ] 4.1 `just check` がエラーなし（exit code 0）で通過すること
+- [ ] 4.2 `release/v0.24.0` ブランチから PR を作成し master へ merge する

@@ -2,7 +2,7 @@
 
 KatanA は review-first のデスクトップアプリであり、Markdown を「書く」よりも「見る」時間が長い前提で設計する。日常の編集は source editor を全部書き換えるより、preview 上の該当箇所だけを局所的に直す体験が重要。
 
-v0.27.0（Floem Phase 1 intake）で editor と preview が Floem impl に切り替わった後、preview の rendered node から直接ローカル編集 UI を開けるようにする。raw source は read-only source inspector または明示的な fallback として扱う。
+v0.27.0〜v0.29.0（Floem Phase 1〜3）で KatanA が Floem に完全移行した後、preview の rendered node から直接ローカル編集 UI を開けるようにする。raw source は read-only source inspector または明示的な fallback として扱う。
 
 ## What Changes
 
@@ -25,7 +25,7 @@ v0.27.0（Floem Phase 1 intake）で editor と preview が Floem impl に切り
 
 ## Impact
 
-- DoR: v0.27.0（Floem Phase 1 intake）完了後
+- DoR: v0.29.0（Floem Phase 3: chrome 完全除去）完了後
 - `crates/katana-ui`: preview selection、local edit surfaces、source inspector の state/action flow を追加または更新する
 - Markdown buffer management: source range patch、staleness validation、dirty state、cancel/rollback handling を追加する
 - Diagram/math/table handling: block-specific editor を追加し、preview fallback と patch commit を検証する
