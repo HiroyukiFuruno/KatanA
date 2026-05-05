@@ -4,10 +4,10 @@
 
 システムは、`mermaid` および `drawio` Markdown フェンスの描画を、KatanA 内部実装ではなく外部 library `katana-canvas-forge`（kcf）v0.1.0 の `Renderer` trait 経由で行わなければならない（MUST）。
 
-#### Scenario: kcf を git dependency として参照する
+#### Scenario: kcf を crates.io dependency として参照する
 
 - **WHEN** KatanA workspace を build する
-- **THEN** `Cargo.toml` の workspace dependencies に `katana-canvas-forge = { git = "...", tag = "v0.1.0" }` が含まれる
+- **THEN** `Cargo.toml` の workspace dependencies に `katana-canvas-forge = "0.1.0"` が含まれる
 - **THEN** `katana-canvas-forge` の `cargo tree` に `egui` が含まれない
 
 #### Scenario: Mermaid 描画を kcf 経由に切り替える

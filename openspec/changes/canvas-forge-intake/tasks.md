@@ -12,20 +12,20 @@
 
 ## 準備完了条件（Definition of Ready）
 
-- [ ] `katana-canvas-forge` v0.1.0 release tag が切られていること
-- [ ] `Renderer` trait と DTO（`RenderInput` / `RenderOutput` / `RuntimeVersion` / `RendererProfile`）が確定していること
-- [ ] `katana-canvas-forge`（neutral interface）が egui を含まないことを確認していること
+- [x] `katana-canvas-forge` v0.1.0 が crates.io に公開されていること
+- [x] `Renderer` trait と DTO（`RenderInput` / `RenderOutput` / `RuntimeVersion` / `RendererProfile`）が確定していること
+- [x] `katana-canvas-forge`（neutral interface）が egui を含まないことを確認していること
 
 ---
 
-## 1. katana-canvas-forge を git dependency として追加する
+## 1. katana-canvas-forge を crates.io dependency として追加する
 
-- [ ] 1.1 root `Cargo.toml` に以下を追加する
+- [x] 1.1 root `Cargo.toml` に以下を追加する
   ```toml
-  katana-canvas-forge = { git = "https://github.com/HiroyukiFuruno/katana-canvas-forge", tag = "v0.1.0" }
+  katana-canvas-forge = "0.1.0"
   ```
-- [ ] 1.2 `cargo build` が通ること
-- [ ] 1.3 `cargo tree` で `katana-canvas-forge` に `egui` が含まれないことを確認する
+- [x] 1.2 `cargo build` が通ること
+- [x] 1.3 `cargo tree` で `katana-canvas-forge` に `egui` が含まれないことを確認する
 
 ---
 
@@ -33,7 +33,7 @@
 
 ### 準備完了条件
 
-- [ ] Task 1 完了
+- [x] Task 1 完了
 
 - [ ] 2.1 Mermaid block 描画を kcf の `Renderer` trait 経由に切り替える（薄い adapter のみ残す）
 - [ ] 2.2 Draw.io 描画を kcf の `Renderer` 経由に切り替える

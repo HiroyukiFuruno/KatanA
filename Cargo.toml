@@ -26,6 +26,7 @@ egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonm
 
 # Markdown
 comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
+katana-canvas-forge = "0.1.0"
 katana-markdown-linter = "0.17.7"
 
 # Serialization / config

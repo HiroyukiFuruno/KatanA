@@ -2597,6 +2597,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "katana-canvas-forge"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0459a273dc16654263cbcc2a10b590be6fce0d07a1f1232ac0305384d8763208"
+dependencies = [
+ "base64",
+ "dirs",
+ "image",
+ "include_dir",
+ "mathjax_svg",
+ "regex",
+ "resvg 0.47.0",
+ "serde",
+ "serde_json",
+ "syntect",
+ "thiserror 2.0.18",
+ "tiny-skia 0.12.0",
+ "tracing",
+ "v8",
+ "xmltree",
+]
+
+[[package]]
 name = "katana-core"
 version = "0.22.11"
 dependencies = [
@@ -2608,6 +2631,7 @@ dependencies = [
  "flate2",
  "image",
  "include_dir",
+ "katana-canvas-forge",
  "mathjax_svg",
  "pulldown-cmark",
  "regex",
