@@ -5,8 +5,7 @@ use std::sync::Mutex;
 static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 const MINIMAL_SVG: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>"#;
-const NBSP_SVG: &str =
-    r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40"><text x="10" y="24">A&nbsp;B</text></svg>"#;
+const NBSP_SVG: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40"><text x="10" y="24">A&nbsp;B</text></svg>"#;
 const BASIC_DRAWIO_XML: &str = r#"<mxfile><diagram name="test"><mxGraphModel><root>
 <mxCell id="0"/>
 <mxCell id="1" parent="0"/>
