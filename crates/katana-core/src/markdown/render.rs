@@ -1,18 +1,11 @@
 use comrak::{Options, markdown_to_html};
 
-use super::drawio_renderer;
 use super::fence::MarkdownFenceOps;
-use super::mermaid_renderer;
-use super::plantuml_renderer;
 use super::types::*;
 
 impl DiagramRenderer for KatanaRenderer {
     fn render(&self, block: &DiagramBlock) -> DiagramResult {
-        match block.kind {
-            DiagramKind::Mermaid => mermaid_renderer::MermaidRenderOps::render_mermaid(block),
-            DiagramKind::PlantUml => plantuml_renderer::PlantUmlRendererOps::render_plantuml(block),
-            DiagramKind::DrawIo => drawio_renderer::DrawioRendererOps::render_drawio(block),
-        }
+        block.render()
     }
 }
 

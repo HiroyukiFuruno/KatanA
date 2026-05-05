@@ -677,6 +677,7 @@ mod tests {
 
     #[test]
     fn cache_key_differs_by_theme() {
+        let _guard = RENDER_ENV_LOCK.lock().unwrap();
         use katana_core::markdown::color_preset::DiagramColorPreset;
 
         let path = std::path::Path::new("/tmp/test.md");

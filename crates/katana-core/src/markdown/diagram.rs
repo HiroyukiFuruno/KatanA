@@ -73,12 +73,30 @@ impl DiagramBlock {
     }
 
     pub fn render(&self) -> DiagramResult {
-        match self.kind {
-            DiagramKind::Mermaid => super::mermaid_renderer::MermaidRenderOps::render_mermaid(self),
-            DiagramKind::PlantUml => {
-                super::plantuml_renderer::PlantUmlRendererOps::render_plantuml(self)
-            }
-            DiagramKind::DrawIo => super::drawio_renderer::DrawioRendererOps::render_drawio(self),
+        let language = match self.kind {
+            DiagramKind::Mermaid => super::diagram_backend::DiagramBackendLanguage::Mermaid,
+            DiagramKind::PlantUml => super::diagram_backend::DiagramBackendLanguage::PlantUml,
+            DiagramKind::DrawIo => super::diagram_backend::DiagramBackendLanguage::DrawIo,
+        };
+        let backend = super::diagram_backend::DiagramBackendFactory::create(language.clone());
+        let preset = super::color_preset::DiagramColorPreset::current();
+        let is_dark = super::color_preset::DiagramColorPreset::is_dark_mode();
+        let input = super::diagram_backend::DiagramBackendInput {
+            language,
+            source: self.source.clone(),
+            options: super::diagram_backend::DiagramRenderOptions::default(),
+            theme: super::diagram_backend::DiagramThemeSnapshot::from_preset(
+                if is_dark { "dark" } else { "light" },
+                is_dark,
+                preset,
+            ),
+            document: super::diagram_backend::DiagramDocumentContext::Detached {
+                display_name: String::new(),
+            },
+        };
+        match backend.render(&input) {
+            Ok(output) => output.into_diagram_result(),
+            Err(error) => error.into_diagram_result(&self.source),
         }
     }
 }

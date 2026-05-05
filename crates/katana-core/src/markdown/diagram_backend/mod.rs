@@ -1,4 +1,5 @@
 pub mod adapter;
+pub mod factory;
 pub mod katana_backend;
 pub mod result;
 pub mod types;
@@ -7,6 +8,6 @@ pub mod types;
 mod tests;
 
 pub use adapter::*;
-pub use katana_backend::DiagramBackendFactory;
+pub use factory::DiagramBackendFactory;
 pub use result::*;
 pub use types::*;

@@ -71,9 +71,13 @@ impl RendererAssetOps for KatanaApp {
 fn missing_renderer_assets() -> Vec<RendererAsset> {
     let mut assets = Vec::new();
 
-    if katana_core::markdown::drawio_renderer::DrawioRendererOps::find_drawio_js().is_none()
-        && let Some(dest) =
-            katana_core::markdown::drawio_renderer::DrawioRendererOps::default_install_path()
+    if katana_core::markdown::DiagramRuntimeAssetOps::find_path(
+        katana_core::markdown::DiagramRuntimeAssetKind::DrawIo,
+    )
+    .is_none()
+        && let Some(dest) = katana_core::markdown::DiagramRuntimeAssetOps::resolve_path(
+            katana_core::markdown::DiagramRuntimeAssetKind::DrawIo,
+        )
     {
         assets.push(RendererAsset {
             tool_name: "Draw.io",
@@ -82,9 +86,13 @@ fn missing_renderer_assets() -> Vec<RendererAsset> {
         });
     }
 
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none()
-        && let Some(dest) =
-            katana_core::markdown::mermaid_renderer::MermaidBinaryOps::default_install_path()
+    if katana_core::markdown::DiagramRuntimeAssetOps::find_path(
+        katana_core::markdown::DiagramRuntimeAssetKind::Mermaid,
+    )
+    .is_none()
+        && let Some(dest) = katana_core::markdown::DiagramRuntimeAssetOps::resolve_path(
+            katana_core::markdown::DiagramRuntimeAssetKind::Mermaid,
+        )
     {
         assets.push(RendererAsset {
             tool_name: "Mermaid",

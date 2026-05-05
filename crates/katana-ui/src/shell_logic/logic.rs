@@ -35,8 +35,14 @@ impl ShellLogicOps {
         let hash = Self::hash_str(&path.to_string_lossy());
         let filename = format!("katana_export_{hash}.html");
         let output_path = std::env::temp_dir().join(filename);
-
-        std::fs::write(&output_path, html.as_bytes()).map_err(|e| e.to_string())?;
+        let input = katana_core::markdown::ExportInput {
+            format: katana_core::markdown::ExportFormat::Html,
+            html_source: html,
+            output_path: output_path.clone(),
+            config: katana_core::markdown::ExportConfig::default(),
+        };
+        katana_core::markdown::ExporterTrait::export(&exporter, &input)
+            .map_err(|e| e.to_string())?;
         Ok(output_path)
     }
 
@@ -79,7 +85,14 @@ impl ShellLogicOps {
             .export_markdown_to_html(source, preset, base_dir)
             .map_err(|e| e.to_string())?;
         let output_path = std::env::temp_dir().join(filename);
-        std::fs::write(&output_path, html.as_bytes()).map_err(|e| e.to_string())?;
+        let input = katana_core::markdown::ExportInput {
+            format: katana_core::markdown::ExportFormat::Html,
+            html_source: html,
+            output_path: output_path.clone(),
+            config: katana_core::markdown::ExportConfig::default(),
+        };
+        katana_core::markdown::ExporterTrait::export(&exporter, &input)
+            .map_err(|e| e.to_string())?;
         Ok(output_path)
     }
 

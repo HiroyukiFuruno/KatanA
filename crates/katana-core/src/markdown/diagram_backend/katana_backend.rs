@@ -1,9 +1,4 @@
-//! KatanA-internal `DiagramBackendAdapter` implementations.
-//!
-//! These thin wrappers delegate to the existing `mermaid_renderer`,
-//! `plantuml_renderer`, and `drawio_renderer` modules.  At kcf intake
-//! (v0.26.0) the call sites in `katana-ui` can simply swap in kcf's
-//! `impl DiagramBackendAdapter` without touching any other code.
+//! KatanA diagram backend adapter implementations.
 
 use std::sync::OnceLock;
 
@@ -12,10 +7,17 @@ use super::result::{DiagramBackendError, DiagramBackendOutput, DiagramBackendRen
 use super::types::{
     DiagramBackendId, DiagramBackendInput, DiagramBackendLanguage, DiagramBackendVersion,
 };
-use crate::markdown::{DiagramBlock, DiagramKind, DiagramResult};
-use crate::markdown::{drawio_renderer, mermaid_renderer, plantuml_renderer};
+use crate::markdown::{DiagramBlock, DiagramKind, DiagramResult, plantuml_renderer};
+use katana_canvas_forge::{
+    DrawioRenderer, MermaidRenderer, RenderConfig, RenderContext, RenderError, RenderInput,
+    RenderPolicy, Renderer, RuntimePathResolver,
+};
 
 const KATANA_BACKEND_VERSION: &str = env!("CARGO_PKG_VERSION");
+const KCF_MERMAID_BACKEND_VERSION: &str =
+    "crate=katana-canvas-forge:0.1.0;runtime=Mermaid.js:3.3.1;profile=kcf-mermaid";
+const KCF_DRAWIO_BACKEND_VERSION: &str =
+    "crate=katana-canvas-forge:0.1.0;runtime=Draw.io:29.7.10;profile=kcf-drawio";
 
 fn diagram_result_to_backend(result: DiagramResult) -> DiagramBackendRenderResult {
     match result {
@@ -44,16 +46,31 @@ fn diagram_result_to_backend(result: DiagramResult) -> DiagramBackendRenderResul
     }
 }
 
-/// Factory for KatanA-internal diagram backend adapters.
-pub struct DiagramBackendFactory;
+fn kcf_error_to_backend(error: RenderError) -> DiagramBackendError {
+    match error {
+        RenderError::NotInstalled {
+            kind,
+            download_url,
+            install_path,
+        } => DiagramBackendError::NotInstalled {
+            kind,
+            download_url,
+            install_path,
+        },
+        RenderError::InvalidInput(message)
+        | RenderError::Runtime(message)
+        | RenderError::RuntimeResolution(message) => DiagramBackendError::RenderFailed { message },
+        RenderError::UnsupportedKind => DiagramBackendError::RenderFailed {
+            message: "unsupported diagram kind".to_string(),
+        },
+    }
+}
 
-impl DiagramBackendFactory {
-    pub fn create(language: DiagramBackendLanguage) -> Box<dyn DiagramBackendAdapter> {
-        match language {
-            DiagramBackendLanguage::Mermaid => Box::new(KatanaMermaidBackend),
-            DiagramBackendLanguage::PlantUml => Box::new(KatanaPlantUmlBackend),
-            DiagramBackendLanguage::DrawIo => Box::new(KatanaDrawIoBackend),
-        }
+pub(super) fn create_backend(language: DiagramBackendLanguage) -> Box<dyn DiagramBackendAdapter> {
+    match language {
+        DiagramBackendLanguage::Mermaid => Box::new(KatanaMermaidBackend),
+        DiagramBackendLanguage::PlantUml => Box::new(KatanaPlantUmlBackend),
+        DiagramBackendLanguage::DrawIo => Box::new(KatanaDrawIoBackend),
     }
 }
 
@@ -63,20 +80,23 @@ struct KatanaMermaidBackend;
 impl DiagramBackendAdapter for KatanaMermaidBackend {
     fn id(&self) -> &DiagramBackendId {
         static ID: OnceLock<DiagramBackendId> = OnceLock::new();
-        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "katana-mermaid"))
+        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kcf-mermaid"))
     }
 
     fn version(&self) -> &DiagramBackendVersion {
         static VER: OnceLock<DiagramBackendVersion> = OnceLock::new();
-        VER.get_or_init(|| DiagramBackendVersion::new(KATANA_BACKEND_VERSION))
+        VER.get_or_init(|| DiagramBackendVersion::new(KCF_MERMAID_BACKEND_VERSION))
     }
 
     fn render(&self, input: &DiagramBackendInput) -> DiagramBackendRenderResult {
-        let block = DiagramBlock {
-            kind: DiagramKind::Mermaid,
-            source: input.source.clone(),
-        };
-        diagram_result_to_backend(mermaid_renderer::MermaidRenderOps::render_mermaid(&block))
+        let runtime_path =
+            RuntimePathResolver::resolve(katana_canvas_forge::DiagramKind::Mermaid, None)
+                .map_err(kcf_error_to_backend)?;
+        let renderer = MermaidRenderer::with_runtime_path(runtime_path);
+        let output = renderer
+            .render(&kcf_input(katana_canvas_forge::DiagramKind::Mermaid, input))
+            .map_err(kcf_error_to_backend)?;
+        Ok(DiagramBackendOutput::HtmlFragment(output.svg))
     }
 }
 
@@ -113,20 +133,46 @@ struct KatanaDrawIoBackend;
 impl DiagramBackendAdapter for KatanaDrawIoBackend {
     fn id(&self) -> &DiagramBackendId {
         static ID: OnceLock<DiagramBackendId> = OnceLock::new();
-        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::DrawIo, "katana-drawio"))
+        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::DrawIo, "kcf-drawio"))
     }
 
     fn version(&self) -> &DiagramBackendVersion {
         static VER: OnceLock<DiagramBackendVersion> = OnceLock::new();
-        VER.get_or_init(|| DiagramBackendVersion::new(KATANA_BACKEND_VERSION))
+        VER.get_or_init(|| DiagramBackendVersion::new(KCF_DRAWIO_BACKEND_VERSION))
     }
 
     fn render(&self, input: &DiagramBackendInput) -> DiagramBackendRenderResult {
-        let block = DiagramBlock {
-            kind: DiagramKind::DrawIo,
-            source: input.source.clone(),
-        };
-        diagram_result_to_backend(drawio_renderer::DrawioRendererOps::render_drawio(&block))
+        let runtime_path =
+            RuntimePathResolver::resolve(katana_canvas_forge::DiagramKind::Drawio, None)
+                .map_err(kcf_error_to_backend)?;
+        let renderer = DrawioRenderer::with_runtime_path(runtime_path);
+        let output = renderer
+            .render(&kcf_input(katana_canvas_forge::DiagramKind::Drawio, input))
+            .map_err(kcf_error_to_backend)?;
+        Ok(DiagramBackendOutput::HtmlFragment(output.svg))
+    }
+}
+
+fn kcf_input(kind: katana_canvas_forge::DiagramKind, input: &DiagramBackendInput) -> RenderInput {
+    RenderInput {
+        kind,
+        source: input.source.clone(),
+        config: RenderConfig {
+            vendor_config: serde_json::json!({
+                "outputFormat": format!("{:?}", input.options.output_format),
+                "timeoutMillis": input.options.timeout_millis,
+                "scalePercent": input.options.scale_percent,
+            }),
+        },
+        policy: RenderPolicy {
+            background: Some(input.theme.background.clone()),
+            cache_profile: Some(input.theme.name.clone()),
+            ..RenderPolicy::default()
+        },
+        context: RenderContext {
+            theme_fingerprint: Some(input.theme.fingerprint()),
+            document_id: Some(input.document.cache_id()),
+        },
     }
 }
 
@@ -176,7 +222,7 @@ mod tests {
         let backend = KatanaMermaidBackend;
         let id = backend.id();
         assert_eq!(id.language, DiagramBackendLanguage::Mermaid);
-        assert_eq!(id.implementation, "katana-mermaid");
+        assert_eq!(id.implementation, "kcf-mermaid");
     }
 
     #[test]
@@ -202,7 +248,7 @@ mod tests {
         let backend = KatanaDrawIoBackend;
         let id = backend.id();
         assert_eq!(id.language, DiagramBackendLanguage::DrawIo);
-        assert_eq!(id.implementation, "katana-drawio");
+        assert_eq!(id.implementation, "kcf-drawio");
     }
 
     #[test]

@@ -101,6 +101,17 @@ impl DiagramThemeSnapshot {
             plantuml_note_text: preset.plantuml_note_text.to_string(),
         }
     }
+
+    pub fn fingerprint(&self) -> String {
+        serde_json::to_string(self).unwrap_or_else(|_| self.name.clone())
+    }
+
+    pub fn render_policy_fingerprint(&self) -> String {
+        format!(
+            "background={};cacheProfile={};dark={}",
+            self.background, self.name, self.is_dark
+        )
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -112,6 +123,22 @@ pub enum DiagramDocumentContext {
     Detached {
         display_name: String,
     },
+}
+
+impl DiagramDocumentContext {
+    pub fn cache_id(&self) -> String {
+        match self {
+            Self::WorkspaceFile {
+                workspace_root,
+                document_path,
+            } => format!(
+                "{}:{}",
+                workspace_root.to_string_lossy(),
+                document_path.to_string_lossy()
+            ),
+            Self::Detached { display_name } => display_name.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -127,9 +154,14 @@ pub struct DiagramBackendInput {
 pub struct DiagramBackendCacheKey {
     pub backend_id: DiagramBackendId,
     pub backend_version: DiagramBackendVersion,
+    pub runtime_version: String,
+    pub renderer_profile: String,
     pub language: DiagramBackendLanguage,
     pub source: String,
     pub options: DiagramRenderOptions,
+    pub render_config: String,
+    pub render_policy: String,
+    pub theme_fingerprint: String,
     pub theme: DiagramThemeSnapshot,
 }
 
@@ -140,12 +172,23 @@ impl DiagramBackendCacheKey {
         input: &DiagramBackendInput,
     ) -> Self {
         Self {
+            runtime_version: backend_version.value.clone(),
+            renderer_profile: backend_id.implementation.clone(),
             backend_id,
             backend_version,
             language: input.language.clone(),
             source: input.source.clone(),
             options: input.options.clone(),
+            render_config: input.options.fingerprint(),
+            render_policy: input.theme.render_policy_fingerprint(),
+            theme_fingerprint: input.theme.fingerprint(),
             theme: input.theme.clone(),
         }
+    }
+}
+
+impl DiagramRenderOptions {
+    fn fingerprint(&self) -> String {
+        serde_json::to_string(self).unwrap_or_default()
     }
 }

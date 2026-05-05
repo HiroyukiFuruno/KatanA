@@ -35,10 +35,10 @@
 
 - [x] Task 1 完了
 
-- [ ] 2.1 Mermaid block 描画を kcf の `Renderer` trait 経由に切り替える（薄い adapter のみ残す）
-- [ ] 2.2 Draw.io 描画を kcf の `Renderer` 経由に切り替える
-- [ ] 2.3 HTML / PDF / PNG / JPEG export を kcf の `Exporter` 経由に切り替える
-- [ ] 2.4 cache key に kcf の `RuntimeVersion` と `RendererProfile` を含める
+- [x] 2.1 Mermaid block 描画を kcf の `Renderer` trait 経由に切り替える（薄い adapter のみ残す）
+- [x] 2.2 Draw.io 描画を kcf の `Renderer` 経由に切り替える
+- [x] 2.3 HTML / PDF / PNG / JPEG export を kcf の `Exporter` 経由に切り替える
+- [x] 2.4 cache key に kcf の `RuntimeVersion` と `RendererProfile` を含める
 
 ---
 
@@ -46,7 +46,7 @@
 
 ### 準備完了条件
 
-- [ ] Task 2 完了
+- [x] Task 2 完了
 
 - [ ] 3.1 `crates/katana-core/src/markdown/mermaid_renderer/` を除去する
 - [ ] 3.2 `crates/katana-core/src/markdown/drawio_renderer/` を除去する

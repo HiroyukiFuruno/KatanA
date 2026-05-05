@@ -1,12 +1,13 @@
+#[path = "renderer_cache.rs"]
+mod renderer_cache;
 #[path = "renderer_dispatch.rs"]
 mod renderer_dispatch;
 #[path = "renderer_png.rs"]
 mod renderer_png;
 
 use super::types::*;
-use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 use katana_core::markdown::{
-    mermaid_renderer,
+    DiagramBlock, DiagramKind, DiagramResult,
     svg_rasterize::{RasterizedSvg, SvgRasterizeOps},
 };
 
@@ -25,37 +26,6 @@ impl RendererLogicOps {
         };
         let result = Self::dispatch_renderer(&block);
         Self::map_diagram_result(kind, source, result, source_lines)
-    }
-
-    pub fn get_cache_key(
-        md_file_path: &std::path::Path,
-        kind: &DiagramKind,
-        source: &str,
-    ) -> String {
-        use katana_core::markdown::color_preset::DiagramColorPreset;
-        use katana_platform::cache::PersistentKey;
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-
-        let mut hasher = DefaultHasher::new();
-        if matches!(kind, DiagramKind::Mermaid) {
-            mermaid_renderer::MermaidRenderOps::cache_profile().hash(&mut hasher);
-        }
-        source.hash(&mut hasher);
-        let source_hash = format!("{:x}", hasher.finish());
-
-        PersistentKey::Diagram {
-            document_path: md_file_path.to_path_buf(),
-            diagram_kind: kind.display_name().to_string(),
-            theme: if DiagramColorPreset::is_dark_mode() {
-                "dark".to_string()
-            } else {
-                "light".to_string()
-            },
-            source_hash,
-        }
-        .to_raw_key()
-        .unwrap_or_default()
     }
 
     pub fn map_diagram_result(
