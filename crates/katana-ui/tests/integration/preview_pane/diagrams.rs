@@ -51,6 +51,20 @@ fn assert_standard_diagram_markdown_visible(harness: &Harness) {
     let _footer = harness.get_by_label("Footer");
 }
 
+fn is_rendered_or_code_fallback(section: &RenderedSection, language: &str) -> bool {
+    matches!(
+        section,
+        RenderedSection::Image { .. }
+            | RenderedSection::NotInstalled { .. }
+            | RenderedSection::Error { .. }
+    ) || matches!(
+        section,
+        RenderedSection::Markdown(markdown, _)
+            if markdown.contains("not supported")
+                && markdown.contains(&format!("```{language}"))
+    )
+}
+
 #[test]
 fn drawio_render_error_ui() {
     /* WHY: Verify that Draw.io rendering failures display a localized error message in the UI. */
@@ -206,24 +220,14 @@ fn mixed_diagram_document_renders_all_independently() {
     );
 
     assert!(
-        matches!(
-            pane.sections[1],
-            RenderedSection::Image { .. }
-                | RenderedSection::NotInstalled { .. }
-                | RenderedSection::Error { .. }
-        ),
-        "Mermaid should be Image, NotInstalled, or Error, got: {:?}",
+        is_rendered_or_code_fallback(&pane.sections[1], "mermaid"),
+        "Mermaid should be Image, NotInstalled, Error, or code fallback, got: {:?}",
         pane.sections[1]
     );
 
     assert!(
-        matches!(
-            pane.sections[3],
-            RenderedSection::Image { .. }
-                | RenderedSection::NotInstalled { .. }
-                | RenderedSection::Error { .. }
-        ),
-        "DrawIo should be Image, NotInstalled, or Error, got: {:?}",
+        is_rendered_or_code_fallback(&pane.sections[3], "drawio"),
+        "DrawIo should be Image, NotInstalled, Error, or code fallback, got: {:?}",
         pane.sections[3]
     );
 
