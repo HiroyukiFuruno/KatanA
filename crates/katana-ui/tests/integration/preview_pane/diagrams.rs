@@ -94,29 +94,33 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
 fn mermaid_both_states_render_semantically() {
-    /* WHY: UI integration tests must not depend on a real browser renderer. */
+    /* WHY: kcf owns Mermaid runtime assets now. Hiding legacy assets may still render successfully. */
     let _guard = crate::integration::lock_serial_test_mutex();
     let pane = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
         render_and_wait("mermaid", MERMAID_SOURCE)
     });
-    assert!(
-        matches!(pane.sections[1], RenderedSection::NotInstalled { .. }),
-        "With hidden Mermaid.js, should be NotInstalled, got: {:?}",
-        pane.sections[1]
-    );
-    if let RenderedSection::NotInstalled {
-        kind, download_url, ..
-    } = &pane.sections[1]
-    {
-        assert_eq!(kind, "Mermaid");
-        assert!(download_url.contains("mermaid.min.js"));
-        let tool_msg = I18nOps::tf(
-            &I18nOps::get().tool.not_installed,
-            &[("tool", kind.as_str())],
-        );
-        let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
-        assert_standard_diagram_markdown_visible(&harness);
-        let _fallback = harness.get_by_label(&tool_msg);
+    match &pane.sections[1] {
+        RenderedSection::Image { svg_data, alt, .. } => {
+            assert!(svg_data.width > 0, "Mermaid image width should be > 0");
+            assert!(svg_data.height > 0, "Mermaid image height should be > 0");
+            assert!(alt.contains("Mermaid"), "Alt should mention Mermaid");
+            let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
+            assert_standard_diagram_markdown_visible(&harness);
+        }
+        RenderedSection::NotInstalled {
+            kind, download_url, ..
+        } => {
+            assert_eq!(kind, "Mermaid");
+            assert!(download_url.contains("mermaid.min.js"));
+            let tool_msg = I18nOps::tf(
+                &I18nOps::get().tool.not_installed,
+                &[("tool", kind.as_str())],
+            );
+            let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
+            assert_standard_diagram_markdown_visible(&harness);
+            let _fallback = harness.get_by_label(&tool_msg);
+        }
+        _ => panic!("Expected Mermaid image or missing-runtime UI"),
     }
 }
 
