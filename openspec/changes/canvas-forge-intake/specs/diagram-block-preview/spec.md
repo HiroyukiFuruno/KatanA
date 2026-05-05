@@ -15,7 +15,7 @@
 - **WHEN** preview が Mermaid block を描画する
 - **THEN** KatanA は kcf の `Renderer` trait に `RenderInput`（source / config / policy / context）を渡し、`RenderOutput`（SVG / 診断情報 / `RuntimeVersion` / `RendererProfile`）を受け取る
 - **THEN** KatanA repository 内に Mermaid 描画の実装本体（`crates/katana-core/src/markdown/mermaid_renderer/`）は残らない
-- **THEN** `vendor/mermaid/`、`scripts/mermaid/`、`assets/fixtures/mermaid_all/` も KatanA から除去されている
+- **THEN** `vendor/mermaid/`、`scripts/mermaid/`、`assets/fixtures/mermaid_all/`、`assets/fixtures/mermaid_parts/`、`assets/fixtures/drawio/official/` も KatanA から除去されている
 
 #### Scenario: Draw.io 描画を kcf 経由に切り替える
 

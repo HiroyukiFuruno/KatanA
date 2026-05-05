@@ -53,10 +53,11 @@
 - [x] 3.3 `crates/katana-core/src/markdown/export/` 実装本体を除去する
 - [x] 3.4 `vendor/mermaid/`、`scripts/mermaid/`、`assets/fixtures/mermaid_all/` を除去する
 - [x] 3.5 `rg -n "mermaid_renderer|drawio_renderer" crates scripts just Justfile biome.jsonc .github` で KatanA のコード・運用定義に直接参照が残っていないことを確認する
+- [x] 3.6 kcf 側へ移管済みの大量描画 fixture（`assets/fixtures/mermaid_parts/`、`assets/fixtures/drawio/official/`）と関連 screenshot request を除去し、KatanA 側には結合確認用の小さい fixture だけを残す
 
 ---
 
 ## 4. 検証
 
 - [ ] 4.1 `just check` がエラーなし（exit code 0）で通過すること
-- [ ] 4.2 `./scripts/openspec validate canvas-forge-intake --strict` がエラーなし（exit code 0）で通過すること
+- [x] 4.2 `./scripts/openspec validate canvas-forge-intake --strict` がエラーなし（exit code 0）で通過すること
