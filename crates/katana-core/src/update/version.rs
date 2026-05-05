@@ -5,6 +5,25 @@ use ureq::ResponseExt;
 const HTTP_OK: u16 = 200;
 
 impl UpdateOps {
+    fn platform_asset_name() -> &'static str {
+        #[cfg(target_os = "macos")]
+        return "KatanA-macOS.zip";
+        #[cfg(target_os = "windows")]
+        return "KatanA-windows-x86_64.zip";
+        #[cfg(target_os = "linux")]
+        return "KatanA-linux-x86_64.tar.gz";
+        #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+        return "KatanA-macOS.zip";
+    }
+
+    fn build_download_url(tag_name: &str) -> String {
+        format!(
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/{}",
+            tag_name,
+            Self::platform_asset_name()
+        )
+    }
+
     pub fn check_for_updates(&self, manager: &UpdateManager) -> Result<Option<ReleaseInfo>> {
         let url = manager
             .api_url_override
@@ -30,23 +49,11 @@ impl UpdateOps {
         let tag_version = tag_name.trim_start_matches('v');
         let curr_version = manager.current_version.trim_start_matches('v');
 
-        #[cfg(target_os = "macos")]
-        const ASSET_NAME: &str = "KatanA-macOS.zip";
-
-        #[cfg(target_os = "windows")]
-        const ASSET_NAME: &str = "KatanA-windows-x86_64.zip";
-
-        #[cfg(target_os = "linux")]
-        const ASSET_NAME: &str = "KatanA-linux-x86_64.zip";
-
         if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)
         } else {
             let html_url = final_url.to_string();
-            let download_url = format!(
-                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/{}",
-                tag_name, ASSET_NAME
-            );
+            let download_url = Self::build_download_url(&tag_name);
             Ok(Some(ReleaseInfo {
                 tag_name,
                 html_url,
@@ -115,23 +122,11 @@ impl UpdateOps {
         let tag_version = tag_name.trim_start_matches('v');
         let curr_version = current_version.trim_start_matches('v');
 
-        #[cfg(target_os = "macos")]
-        const ASSET_NAME: &str = "KatanA-macOS.zip";
-
-        #[cfg(target_os = "windows")]
-        const ASSET_NAME: &str = "KatanA-windows-x86_64.zip";
-
-        #[cfg(target_os = "linux")]
-        const ASSET_NAME: &str = "KatanA-linux-x86_64.zip";
-
         if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)
         } else {
             let html_url = final_url.to_string();
-            let download_url = format!(
-                "https://github.com/HiroyukiFuruno/KatanA/releases/download/{}/{}",
-                tag_name, ASSET_NAME
-            );
+            let download_url = Self::build_download_url(&tag_name);
             Ok(Some(ReleaseInfo {
                 tag_name,
                 html_url,
@@ -139,5 +134,50 @@ impl UpdateOps {
                 download_url,
             }))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_linux_update_asset_is_tar_gz() {
+        let tag = "v0.22.11";
+        assert_eq!(
+            super::UpdateOps::platform_asset_name(),
+            "KatanA-linux-x86_64.tar.gz"
+        );
+        assert_eq!(
+            super::UpdateOps::build_download_url(tag),
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-linux-x86_64.tar.gz"
+        );
+        assert!(super::UpdateOps::build_download_url(tag).ends_with(".tar.gz"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_macos_update_asset_is_zip() {
+        let tag = "v0.22.11";
+        assert_eq!(super::UpdateOps::platform_asset_name(), "KatanA-macOS.zip");
+        assert_eq!(
+            super::UpdateOps::build_download_url(tag),
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-macOS.zip"
+        );
+        assert!(super::UpdateOps::build_download_url(tag).ends_with(".zip"));
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn test_windows_update_asset_is_zip() {
+        let tag = "v0.22.11";
+        assert_eq!(
+            super::UpdateOps::platform_asset_name(),
+            "KatanA-windows-x86_64.zip"
+        );
+        assert_eq!(
+            super::UpdateOps::build_download_url(tag),
+            "https://github.com/HiroyukiFuruno/KatanA/releases/download/v0.22.11/KatanA-windows-x86_64.zip"
+        );
+        assert!(super::UpdateOps::build_download_url(tag).ends_with(".zip"));
     }
 }

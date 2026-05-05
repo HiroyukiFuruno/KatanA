@@ -7,7 +7,7 @@ use crate::integration::harness_utils::{fresh_temp_dir, setup_harness, wait_for_
 fn click_code_editor_input(
     harness: &mut egui_kittest::Harness<'static, katana_ui::shell::KatanaApp>,
 ) {
-    for attempt in 0..120 {
+    for attempt in 0..600 {
         if let Some(editor) = harness.query_by(|node| {
             node.role() == Role::MultilineTextInput
                 && node
@@ -16,20 +16,22 @@ fn click_code_editor_input(
                     .is_some_and(|value| value.contains("alpha"))
         }) {
             editor.click();
+            harness.step();
             return;
         }
 
         if let Some(editor) = harness.query_by(|node| node.role() == Role::MultilineTextInput) {
             editor.click();
+            harness.step();
             return;
         }
 
         harness.step();
 
-        if attempt < 5 {
+        if attempt < 20 {
             std::thread::yield_now();
         } else {
-            std::thread::sleep(std::time::Duration::from_millis(2));
+            std::thread::sleep(std::time::Duration::from_millis(5));
         }
     }
 

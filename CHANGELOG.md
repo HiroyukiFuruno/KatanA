@@ -2,6 +2,15 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.11] - 2026-05-04 13:29:09 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Auto-Update Linux Asset**: Fixed Linux auto-update asset selection to use `KatanA-linux-x86_64.tar.gz`, which matches the release pipeline output.
+- **Windows Relauncher Robustness**: Updated the Windows relauncher to confirm evacuation and replacement before launch, rollback on failure, and avoid forcing start of the old binary.
+- **Update Logging**: Added local update diagnostics in `%LOCALAPPDATA%\KatanA\update.log` for `evacuate`, `replace`, `launch`, and `rollback` phases.
+- **Release Note Guidance**: Added manual upgrade guidance for v0.22.10 users that can be affected by Linux 404 and Windows relauncher path issues.
+
 ## [0.22.10] - 2026-05-03 00:27:30 (UTC)
 
 ### 🚀 Features
