@@ -2,6 +2,8 @@
 
 `katana-canvas-forge`（kcf）v0.1.0 で Mermaid 描画・Draw.io 描画・HTML/PDF/PNG/JPEG export の実装が完成した段階で KatanA に取り込む。現在 `katana-core` に残存する描画実装を除去し、KatanA を純粋な assembly host に近づける。
 
+これは利用者に見える新機能ではなく、描画 backend の責務整理である。そのため version 付き release 計画には含めず、`master` 上の内部リファクタリングとして扱う。
+
 ## What Changes
 
 - `Cargo.toml` に `katana-canvas-forge` v0.1.0 を git dependency として追加する

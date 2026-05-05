@@ -1,12 +1,12 @@
-# Tasks: v0.26.0 katana-canvas-forge intake — KatanA
+# Tasks: katana-canvas-forge intake — KatanA
 
 > Mermaid / Draw.io / export 実装はすべて `katana-canvas-forge`（kcf）repo 側で行う。
 > kcf 側の実装タスクは [katana-canvas-forge openspec](https://github.com/HiroyukiFuruno/katana-canvas-forge) を参照。
-> 本 tasks.md は KatanA 側の intake（git dependency 追加 + 描画実装除去 + kcf API 呼び出しへの差し替え）のみを扱う。
+> 本 tasks.md は KatanA 側の refactoring intake（git dependency 追加 + 描画実装除去 + kcf API 呼び出しへの差し替え）のみを扱う。
 
 ## Branch Rule
 
-`release/v0.26.0` ブランチを切って作業する。
+利用者向けの機能差分を持たない内部リファクタリングとして、`master` で直接作業する。
 
 ---
 
@@ -56,7 +56,7 @@
 
 ---
 
-## 4. 検証と commit
+## 4. 検証
 
 - [ ] 4.1 `just check` がエラーなし（exit code 0）で通過すること
-- [ ] 4.2 `release/v0.26.0` ブランチから PR を作成し master へ merge する
+- [ ] 4.2 `./scripts/openspec validate canvas-forge-intake --strict` がエラーなし（exit code 0）で通過すること

@@ -11,7 +11,7 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] v0.27.0（Floem Phase 1 intake）が完了していること.
+- [ ] v0.28.0（Floem Phase 3 intake）が完了していること.
 
 ### Definition of Done (DoD)
 

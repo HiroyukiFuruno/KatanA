@@ -1,6 +1,6 @@
 ## Context
 
-v0.29.0 は v0.28.0 の preview adapter migration を前提にします。KatanA の主面は preview であり、source editor は「常に書く場所」ではなく、source を確認する inspector または fallback です。Typora 風の滑らかな入力感は参考にしますが、KatanA では full-document WYSIWYG ではなく、preview node から必要箇所だけを修正する体験を優先します。
+v0.29.0 は v0.28.0 の Floem Phase 3 完了を前提にします。KatanA の主面は preview であり、source editor は「常に書く場所」ではなく、source を確認する inspector または fallback です。Typora 風の滑らかな入力感は参考にしますが、KatanA では full-document WYSIWYG ではなく、preview node から必要箇所だけを修正する体験を優先します。
 
 この approach は、egui source input の制約を正面から全面置換するのではなく、そもそも code を主軸にしないことで入力負荷を下げる方向です。egui `TextEdit` を置き換える独自入力 surface は `x-x-x-native-input-surface` に劣後・分離し、本変更は preview からの局所修正に集中します。
 
@@ -18,7 +18,7 @@ v0.29.0 は v0.28.0 の preview adapter migration を前提にします。KatanA
 - 全 Markdown 文法を inline で常時編集可能にすること。
 - egui `TextEdit` を完全に置き換える独自入力 surface を実装すること（`x-x-x-native-input-surface` の責務）。
 - WebView、React、DOM runtime を導入すること。
-- v0.28.0 の adapter migration を飛ばして renderer internals へ直接依存すること。
+- v0.27.0 の preview 移行や v0.28.0 の chrome 移行を飛ばして renderer internals へ直接依存すること。
 - Linter、AI provider、workspace shell の contract を変更すること。
 
 ## Decisions
