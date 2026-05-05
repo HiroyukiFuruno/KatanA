@@ -75,22 +75,5 @@
         "organizeImports": "on"
       }
     }
-  },
-  "overrides": [
-    {
-      "includes": [
-        "crates/katana-core/src/markdown/mermaid_renderer/js_runtime/*.js",
-        "crates/katana-core/src/markdown/drawio_renderer/js_runtime/*.js"
-      ],
-      "linter": {
-        "rules": {
-          "correctness": {
-            // Rust側で順序を固定して連結実行するruntime断片のため、単一ファイル単位では誤検知になる。
-            "noUnusedVariables": "off",
-            "noUndeclaredVariables": "off"
-          }
-        }
-      }
-    }
-  ]
+  }
 }

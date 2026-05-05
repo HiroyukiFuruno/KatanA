@@ -48,11 +48,11 @@
 
 - [x] Task 2 完了
 
-- [ ] 3.1 `crates/katana-core/src/markdown/mermaid_renderer/` を除去する
-- [ ] 3.2 `crates/katana-core/src/markdown/drawio_renderer/` を除去する
-- [ ] 3.3 `crates/katana-core/src/markdown/export/` 実装本体を除去する
-- [ ] 3.4 `vendor/mermaid/`、`scripts/mermaid/`、`assets/fixtures/mermaid_all/` を除去する
-- [ ] 3.5 `git grep mermaid_renderer` で KatanA 内に直接参照が残っていないことを確認する
+- [x] 3.1 `crates/katana-core/src/markdown/mermaid_renderer/` を除去する
+- [x] 3.2 `crates/katana-core/src/markdown/drawio_renderer/` を除去する
+- [x] 3.3 `crates/katana-core/src/markdown/export/` 実装本体を除去する
+- [x] 3.4 `vendor/mermaid/`、`scripts/mermaid/`、`assets/fixtures/mermaid_all/` を除去する
+- [x] 3.5 `rg -n "mermaid_renderer|drawio_renderer" crates scripts just Justfile biome.jsonc .github` で KatanA のコード・運用定義に直接参照が残っていないことを確認する
 
 ---
 

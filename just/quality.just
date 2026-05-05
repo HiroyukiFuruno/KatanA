@@ -9,9 +9,9 @@ fmt: biome-js-fmt biome-json-fmt
 locale-json-fmt:
     rtk err {{BIOME}} format --indent-style space --indent-width 2 --write crates/katana-ui/locales/*.json
 
-# Apply Biome formatting to renderer JavaScript/TypeScript and Mermaid scripts
+# Apply Biome formatting to JavaScript/TypeScript files when configured
 biome-js-fmt:
-    {{BIOME}} format --write {{BIOME_JS_TS_FILES}}
+    @if [ -n "{{BIOME_JS_TS_FILES}}" ]; then {{BIOME}} format --write {{BIOME_JS_TS_FILES}}; fi
 
 # Apply Biome formatting to repository JSON/JSONC files
 biome-json-fmt:
@@ -21,9 +21,9 @@ biome-json-fmt:
 fmt-check: biome-js-fmt-check biome-json-fmt-check
     {{CARGO}} fmt --all -- --check
 
-# Check Biome formatting for renderer JavaScript/TypeScript and Mermaid scripts
+# Check Biome formatting for JavaScript/TypeScript files when configured
 biome-js-fmt-check:
-    {{BIOME}} format {{BIOME_JS_TS_FILES}}
+    @if [ -n "{{BIOME_JS_TS_FILES}}" ]; then {{BIOME}} format {{BIOME_JS_TS_FILES}}; fi
 
 # Check Biome formatting for repository JSON/JSONC files
 biome-json-fmt-check:
@@ -33,9 +33,9 @@ biome-json-fmt-check:
 lint: biome-js-lint
     {{CARGO}} clippy -j {{JOBS}} --workspace -- -D warnings
 
-# Run Biome lint for renderer JavaScript and Mermaid scripts
+# Run Biome lint for JavaScript/TypeScript files when configured
 biome-js-lint:
-    {{BIOME}} lint --error-on-warnings {{BIOME_JS_TS_FILES}}
+    @if [ -n "{{BIOME_JS_TS_FILES}}" ]; then {{BIOME}} lint --error-on-warnings {{BIOME_JS_TS_FILES}}; fi
 
 # Run Clippy and apply automatic fixes
 lint-fix:

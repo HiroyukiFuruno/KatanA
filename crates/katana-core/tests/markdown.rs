@@ -109,7 +109,7 @@ fn render_with_katana_renderer_drawio_renders_svg() {
 }
 
 #[test]
-fn drawio_renderer_escapes_html_in_fallback() {
+fn drawio_fallback_escapes_html() {
     let _guard = ENV_LOCK.lock().unwrap();
     let dir = tempfile::tempdir().unwrap();
     unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };

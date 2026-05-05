@@ -1,8 +1,13 @@
 use katana_core::markdown::{
-    DiagramBlock, DiagramRenderer, DiagramResult, HtmlExporter, KatanaRenderer, MarkdownError,
-    MarkdownRenderOps, color_preset::DiagramColorPreset,
+    DiagramBlock, DiagramRenderer, DiagramResult, DiagramRuntimeAssetKind, DiagramRuntimeAssetOps,
+    HtmlExporter, KatanaRenderer, MarkdownError, MarkdownRenderOps,
+    color_preset::DiagramColorPreset,
 };
 use std::collections::HashSet;
+
+fn mermaid_runtime_is_missing() -> bool {
+    DiagramRuntimeAssetOps::find_path(DiagramRuntimeAssetKind::Mermaid).is_none()
+}
 
 struct SvgWithCssRenderer;
 
@@ -53,7 +58,7 @@ sequenceDiagram
 
 #[test]
 fn repeated_same_mermaid_diagram_must_use_distinct_inline_svg_ids() -> Result<(), MarkdownError> {
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+    if mermaid_runtime_is_missing() {
         eprintln!("mermaid.min.js is not installed; skipping repeated-id regression");
         return Ok(());
     }
@@ -89,7 +94,7 @@ graph TD; A-->B
 
 #[test]
 fn mermaid_sequence_svg_css_must_not_be_parsed_as_math() -> Result<(), MarkdownError> {
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+    if mermaid_runtime_is_missing() {
         eprintln!("mermaid.min.js is not installed; skipping sequence CSS regression");
         return Ok(());
     }
@@ -123,7 +128,7 @@ sequenceDiagram
 
 #[test]
 fn sample_diagrams_html_export_must_not_leak_svg_css_as_math() -> Result<(), MarkdownError> {
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+    if mermaid_runtime_is_missing() {
         eprintln!("mermaid.min.js is not installed; skipping sample HTML export regression");
         return Ok(());
     }

@@ -1,6 +1,7 @@
 use katana_core::markdown::{
-    DiagramBlock, DiagramRenderer, DiagramResult, ExportFormat, ExportInput, ExporterTrait,
-    ImageExporter, MarkdownError, MarkdownRenderOps, PdfExporter, RenderOutput,
+    DiagramBlock, DiagramRenderer, DiagramResult, DiagramRuntimeAssetKind, DiagramRuntimeAssetOps,
+    ExportFormat, ExportInput, ExporterTrait, ImageExporter, MarkdownError, MarkdownRenderOps,
+    PdfExporter, RenderOutput,
 };
 use std::collections::HashSet;
 use std::sync::Mutex;
@@ -19,7 +20,7 @@ fn do_pdf_export(html: &str, output: &std::path::Path) {
 fn do_image_export(html: &str, output: &std::path::Path) {
     ImageExporter
         .export(&ExportInput {
-            format: ExportFormat::Png,
+            format: image_export_format(output),
             html_source: html.to_string(),
             output_path: output.to_path_buf(),
             config: Default::default(),
@@ -27,7 +28,24 @@ fn do_image_export(html: &str, output: &std::path::Path) {
         .unwrap();
 }
 
+fn image_export_format(output: &std::path::Path) -> ExportFormat {
+    match output
+        .extension()
+        .and_then(|it| it.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "jpg" | "jpeg" => ExportFormat::Jpeg,
+        _ => ExportFormat::Png,
+    }
+}
+
 static RENDER_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+fn mermaid_runtime_is_missing() -> bool {
+    DiagramRuntimeAssetOps::find_path(DiagramRuntimeAssetKind::Mermaid).is_none()
+}
 
 struct DummyRenderer;
 
@@ -315,7 +333,7 @@ fn image_export_writes_native_jpeg_without_chromium() {
 #[test]
 fn sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium() {
     let _guard = RENDER_ENV_LOCK.lock().unwrap();
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+    if mermaid_runtime_is_missing() {
         return;
     }
     let output = MarkdownRenderOps::render_with_katana_renderer(include_str!(
@@ -359,7 +377,7 @@ fn sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium() {
 #[test]
 fn html_export_uses_unique_mermaid_svg_ids_for_multiple_diagrams() {
     let _guard = RENDER_ENV_LOCK.lock().unwrap();
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+    if mermaid_runtime_is_missing() {
         return;
     }
     let output = MarkdownRenderOps::render_with_katana_renderer(
@@ -383,7 +401,7 @@ graph TD; C-->D
 #[test]
 fn mermaid_fixture_html_export_uses_unique_inline_svg_ids() {
     let _guard = RENDER_ENV_LOCK.lock().unwrap();
-    if katana_core::markdown::mermaid_renderer::MermaidBinaryOps::find_mermaid_js().is_none() {
+    if mermaid_runtime_is_missing() {
         return;
     }
     let output = MarkdownRenderOps::render_with_katana_renderer(include_str!(

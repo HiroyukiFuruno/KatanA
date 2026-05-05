@@ -1,5 +1,4 @@
 use katana_core::markdown::diagram::{DiagramBlock, DiagramKind, DiagramResult};
-use katana_core::markdown::drawio_renderer::DrawioRenderOps;
 use katana_core::markdown::svg_rasterize::*;
 use std::sync::Mutex;
 
@@ -80,7 +79,7 @@ fn render_official_drawio_svg(source: &str) -> Option<String> {
         source: source.to_string(),
     };
 
-    match DrawioRenderOps::render_drawio(&block) {
+    match block.render() {
         DiagramResult::Ok(svg) => Some(svg),
         DiagramResult::NotInstalled { .. } => None,
         other => panic!("Draw.io SVG rendering failed: {other:?}"),
