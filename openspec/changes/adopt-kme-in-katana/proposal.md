@@ -1,0 +1,28 @@
+## Why
+
+KME、katana-language-editor、katana-document-preview、katana-canvas-forge、katana-ui-widgetの責務が分かれても、KatanA本体の統合順序が曖昧だとpreview、editor、exportが別々の仕様へ戻る。さらにAST lintの統制が先に揃っていないと、repositoryごとに品質ゲートが割れる。
+
+このchangeは、KatanAが各libraryをどの順序で取り込み、現行Markdown UXを落とさずKMEへ移行するかを固定する。
+
+## What Changes
+
+- KatanAはKMEをMarkdown文書仕様の正本として参照する
+- KatanA統合前にP0 `katana-ast-lint` の共通品質ゲートを参照する
+- previewは `katana-document-preview` のFloem実装経由でKMEモデルを表示する
+- editorは `katana-language-editor` の保存時metadata同期を使う
+- exportはkcfの品質ゲートを通したうえでKMEモデルへ段階移行する
+- 共通UI部品は `katana-ui-widget` 分離計画へ逃がし、KatanA本体へ新しい汎用widgetを増やしすぎない
+
+## Capabilities
+
+### New Capabilities
+
+- `kme-katana-integration`: KME ecosystemをKatanAへ段階的に接続する
+
+## Impact
+
+- `Cargo.toml`: git dependencyの追加または差し替え
+- `katana-ui`: preview/editor/export接続部のadapter更新
+- `katana-ast-lint`: 統合前の共通AST lint品質ゲート
+- `openspec/changes/v0-29-0-preview-driven-local-editing`: KME metadataとeditable node contractへ接続
+- `assets/fixtures`: description list fixture追加
