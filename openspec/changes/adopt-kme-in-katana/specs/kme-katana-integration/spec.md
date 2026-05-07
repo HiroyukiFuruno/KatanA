@@ -2,7 +2,7 @@
 
 ### Requirement: KatanA integrates KME through public contracts
 
-KatanA SHALL consume KME, preview, editor, export, and widget functionality through public contracts without storing parser or renderer internals in application state.
+KatanA SHALL consume KME, viewer, editor, export, and widget functionality through public contracts without storing parser or renderer internals in application state.
 
 #### Scenario: KatanA stores selected metadata
 
@@ -16,7 +16,7 @@ KatanA SHALL use the shared AST lint governance before integrating separated KME
 
 #### Scenario: Validate integration readiness
 
-- **WHEN** KatanA starts integrating KME, preview, editor, export, or widget repositories
+- **WHEN** KatanA starts integrating KME, viewer, editor, export, or widget repositories
 - **THEN** the P0 `katana-ast-lint` quality gate is available
 - **THEN** KatanA does not accept repository-specific lint drift as the integration baseline
 
@@ -37,6 +37,17 @@ KatanA SHALL use the canonical fixture set before replacing current Markdown beh
 
 #### Scenario: Validate migration readiness
 
-- **WHEN** KME-backed preview or export is enabled
+- **WHEN** KME-backed viewer or export is enabled
 - **THEN** `sample.md`, README badge, alert, and description list fixtures are checked
 - **THEN** current KatanA behavior is not silently dropped
+
+### Requirement: KatanA owns editor-viewer synchronization control
+
+KatanA SHALL coordinate editor and viewer synchronization itself.
+
+#### Scenario: KatanA synchronizes editor and viewer
+
+- **WHEN** KatanA aligns editor and viewer positions
+- **THEN** KatanA uses KME node id, source range, line-column, raw snippet, and fingerprint
+- **THEN** KatanA sends scroll, selection, or highlight commands to the viewer or editor
+- **THEN** KME, KLE, and KDV do not coordinate synchronization with each other
