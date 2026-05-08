@@ -31,3 +31,14 @@ Shared AST lint rules MUST NOT hard-code KatanA repository-local paths.
 - **WHEN** AST lint runs in `katana-markdown-engine`
 - **THEN** repository-specific file discovery is handled by an adapter
 - **THEN** shared rules remain reusable across KME, kdp, kle, kcf, and kuw
+
+### Requirement: KatanA consumes the shared AST lint crate
+
+KatanA SHALL consume `katana-ast-lint` through workspace dependency and test/CI entrypoints instead of preserving duplicated shared rules in `crates/katana-linter`.
+
+#### Scenario: Run KatanA AST lint after extraction
+
+- **WHEN** a developer runs KatanA `just ast-lint`
+- **THEN** the gate invokes `katana_ast_lint` rule APIs through KatanA's repository adapter or test runner
+- **THEN** shared rules are not reimplemented in KatanA-local linter code
+- **THEN** any remaining KatanA-local linter code is limited to repository-specific adapter or runner responsibilities
