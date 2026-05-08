@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.12] - 2026-05-08 15:04:10 (UTC)
+
+### 🔧 System
+
+- Improved the internal quality gate so shared code-quality checks stay consistent across KatanA ecosystem projects.
+
 ## [0.22.11] - 2026-05-04 13:29:09 (UTC)
 
 ### 🐛 Bug Fixes

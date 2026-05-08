@@ -6,6 +6,7 @@ license.workspace = true
 description = "KatanA AST Linter: workspace-wide static analysis for coding standards enforcement"
 
 [dependencies]
+katana-ast-lint.workspace = true
 syn.workspace = true
 ignore.workspace = true
 serde.workspace = true
