@@ -46,6 +46,8 @@ pub enum Step {
     ExportPng(ExportPngStep),
     /// Open a file by name from the workspace tree.
     OpenFile(OpenFileStep),
+    /// Open an absolute workspace path.
+    OpenWorkspace(OpenWorkspaceStep),
     /// Assert that the active document matches the expected screenshot state.
     AssertActiveDocument(AssertActiveDocumentStep),
     /// Assert that the active diff review state matches the expected content.
@@ -127,6 +129,13 @@ pub struct CropRect {
 #[derive(Debug, Deserialize)]
 pub struct OpenFileStep {
     pub file_name: String,
+    #[serde(default = "default_open_file_wait")]
+    pub wait_seconds: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct OpenWorkspaceStep {
+    pub path: String,
     #[serde(default = "default_open_file_wait")]
     pub wait_seconds: f64,
 }

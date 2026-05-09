@@ -29,6 +29,10 @@ pub(crate) struct TabToolbar<'a> {
     pub(crate) app: &'a mut KatanaApp,
 }
 
+pub(crate) struct WorkspaceToolbar<'a> {
+    pub(crate) app: &'a mut KatanaApp,
+}
+
 pub(crate) struct Breadcrumbs<'a> {
     pub(crate) app: &'a KatanaApp,
     pub(crate) rel: &'a str,

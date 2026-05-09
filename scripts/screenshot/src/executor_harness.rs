@@ -4,6 +4,7 @@ use crate::request::{
 };
 use anyhow::{bail, Context, Result};
 use egui_kittest::{kittest::Queryable, Harness};
+use katana_core::markdown::ExporterTrait;
 use katana_core::workspace::TreeEntry;
 use katana_platform::theme::{ThemeMode, ThemePreset};
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
@@ -169,6 +170,7 @@ pub fn run(
             Step::Scroll(_) => "scroll",
             Step::ExportPng(_) => "export_png",
             Step::OpenFile(_) => "open_file",
+            Step::OpenWorkspace(_) => "open_workspace",
             Step::AssertActiveDocument(_) => "assert_active_document",
             Step::AssertDiffReview(_) => "assert_diff_review",
             Step::Action(_) => "action",
@@ -319,11 +321,16 @@ pub fn run(
                 )
                 .map_err(|e| anyhow::anyhow!("html export failed: {e}"))?;
                 let out = output_dir.join(format!("{}.png", s.output_name));
-                katana_core::markdown::export::ImageExporter::export(
-                    &std::fs::read_to_string(&html_path)
-                        .map_err(|e| anyhow::anyhow!("read html failed: {e}"))?,
-                    &out,
-                )
+                let html_source = std::fs::read_to_string(&html_path)
+                    .map_err(|e| anyhow::anyhow!("read html failed: {e}"))?;
+                let export_input = katana_core::markdown::export::ExportInput {
+                    format: katana_core::markdown::export::ExportFormat::Png,
+                    html_source,
+                    output_path: out.clone(),
+                    config: katana_core::markdown::export::ExportConfig::default(),
+                };
+                katana_core::markdown::export::ImageExporter
+                    .export(&export_input)
                 .map_err(|e| anyhow::anyhow!("png export failed: {e}"))?;
                 let _ = std::fs::remove_file(&html_path);
                 println!("  exported: {}", out.display());
@@ -359,6 +366,25 @@ pub fn run(
                             "  WARNING: file {:?} not found in workspace tree",
                             s.file_name
                         );
+                    }
+                }
+            }
+            Step::OpenWorkspace(s) => {
+                let path = PathBuf::from(&s.path)
+                    .canonicalize()
+                    .with_context(|| format!("workspace path not found: {}", s.path))?;
+                harness.state_mut().trigger_action(AppAction::OpenWorkspace(path));
+                let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
+                let frames = ((s.wait_seconds * fps) as usize).max(30);
+                for _ in 0..frames {
+                    harness.step();
+                    maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
+                }
+                for _ in 0..200 {
+                    harness.step();
+                    maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
+                    if !harness.state_mut().app_state_mut().workspace.is_loading {
+                        break;
                     }
                 }
             }
@@ -998,7 +1024,8 @@ fn apply_global_search_query(harness: &mut Harness<'_, KatanaApp>, tab: &str, qu
     let app = harness.state_mut().app_state_mut();
     if tab == "markdown_content" {
         app.search.md_search.query = query.to_string();
-        app.search.md_last_params = Some(app.search.md_search.clone());
+        let workspace_root = app.workspace.data.as_ref().map(|ws| ws.root.clone());
+        app.search.md_last_params = Some((app.search.md_search.clone(), workspace_root));
         if let Some(ws) = app.workspace.data.as_ref() {
             app.search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
                 ws,

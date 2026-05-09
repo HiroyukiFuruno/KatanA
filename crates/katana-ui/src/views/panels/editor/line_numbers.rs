@@ -5,6 +5,7 @@ pub(crate) struct EditorLineNumbers;
 pub(crate) struct LineNumberParams<'a> {
     pub galley: &'a std::sync::Arc<egui::Galley>,
     pub response_rect: &'a egui::Rect,
+    pub content: &'a str,
     pub ln_rect: &'a egui::Rect,
     pub scroll: &'a mut crate::app_state::ScrollState,
     pub current_cursor_y: Option<f32>,
@@ -28,6 +29,7 @@ impl EditorLineNumbers {
         let LineNumberParams {
             galley,
             response_rect,
+            content,
             ln_rect,
             scroll,
             current_cursor_y,
@@ -60,12 +62,15 @@ impl EditorLineNumbers {
                 };
                 diagnostic_hovered |= super::row_diagnostics::RowDiagnosticsRenderer::render(
                     ui,
-                    diagnostics,
-                    p,
-                    y,
-                    ln_rect,
-                    row_rect.height(),
-                    &mut *action,
+                    super::row_diagnostics::RowDiagnosticsParams {
+                        diagnostics,
+                        line_index: p,
+                        y,
+                        ln_rect,
+                        row_height: row_rect.height(),
+                        content,
+                        action: &mut *action,
+                    },
                 );
                 Self::render_row_number(
                     ui,

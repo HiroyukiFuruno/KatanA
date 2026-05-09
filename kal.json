@@ -1,0 +1,26 @@
+{
+  "source_roots": [
+    "crates/katana-linter/src",
+    "crates/katana-linter/tests",
+    "crates/katana-core/src",
+    "crates/katana-core/tests",
+    "crates/katana-platform/src",
+    "crates/katana-platform/tests",
+    "crates/katana-ui/src",
+    "crates/katana-ui/tests"
+  ],
+  "rules": {
+    "i18n": {
+      "enabled": true
+    },
+    "icon": {
+      "enabled": true
+    },
+    "locales": {
+      "enabled": true,
+      "inputs": [
+        "crates/katana-ui/locales"
+      ]
+    }
+  }
+}

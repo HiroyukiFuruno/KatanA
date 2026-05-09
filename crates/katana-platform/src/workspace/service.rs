@@ -45,6 +45,7 @@ mod tests {
         let initial = GlobalWorkspaceState {
             persisted: vec!["/initial".to_string()],
             histories: vec![],
+            ..GlobalWorkspaceState::default()
         };
         let repo = InMemoryWorkspaceRepository::new(initial);
         let mut svc = GlobalWorkspaceService::new(Box::new(repo));

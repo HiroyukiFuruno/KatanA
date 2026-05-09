@@ -64,6 +64,7 @@ impl FilenameTabOps {
             search.file_search.clone(),
             search.include_pattern.clone(),
             search.exclude_pattern.clone(),
+            workspace.map(|ws| ws.root.clone()),
         );
         if search.last_params.as_ref() != Some(&current_params) {
             search.last_params = Some(current_params);

@@ -6,14 +6,28 @@ impl KatanaApp {
             let global_state = self.state.global_workspace.state_mut();
             let persisted_len = global_state.persisted.len();
             let histories_len = global_state.histories.len();
+            let open_workspace_tabs_len = global_state.open_workspace_tabs.len();
+            let active_workspace_before = global_state.active_workspace.clone();
             global_state
                 .persisted
                 .retain(|path| !Self::is_transient_workspace_path(path));
             global_state
                 .histories
                 .retain(|path| !Self::is_transient_workspace_path(path));
+            global_state
+                .open_workspace_tabs
+                .retain(|path| !Self::is_transient_workspace_path(path));
+            if global_state
+                .active_workspace
+                .as_ref()
+                .is_some_and(|path| Self::is_transient_workspace_path(path))
+            {
+                global_state.active_workspace = None;
+            }
             persisted_len != global_state.persisted.len()
                 || histories_len != global_state.histories.len()
+                || open_workspace_tabs_len != global_state.open_workspace_tabs.len()
+                || active_workspace_before != global_state.active_workspace
         };
         if changed_global {
             let _ = self.state.global_workspace.save();

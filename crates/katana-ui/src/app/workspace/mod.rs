@@ -17,6 +17,7 @@ use std::sync::mpsc::Receiver;
 pub(crate) mod manage;
 mod open;
 mod poll;
+pub(crate) mod tabs;
 
 fn append_standard_visible_extensions(extensions: &mut Vec<String>) {
     for ext in katana_core::workspace::TreeEntry::standard_visible_extensions() {
@@ -41,6 +42,9 @@ pub(crate) trait WorkspaceOps {
     fn poll_explorer_load(&mut self, ctx: &egui::Context);
     fn handle_remove_explorer(&mut self, path: String);
     fn handle_remove_workspace_history(&mut self, path: String);
+    fn handle_select_workspace_tab(&mut self, path: std::path::PathBuf);
+    fn handle_close_workspace_tab(&mut self, path: std::path::PathBuf);
+    fn handle_reorder_workspace_tab(&mut self, from: usize, to: usize);
     fn save_workspace_state(&mut self);
 }
 
@@ -66,6 +70,15 @@ impl WorkspaceOps for KatanaApp {
     }
     fn handle_remove_workspace_history(&mut self, path: String) {
         manage::handle_remove_workspace_history(self, path);
+    }
+    fn handle_select_workspace_tab(&mut self, path: std::path::PathBuf) {
+        tabs::handle_select_workspace_tab(self, path);
+    }
+    fn handle_close_workspace_tab(&mut self, path: std::path::PathBuf) {
+        tabs::handle_close_workspace_tab(self, path);
+    }
+    fn handle_reorder_workspace_tab(&mut self, from: usize, to: usize) {
+        tabs::handle_reorder_workspace_tab(self, from, to);
     }
     fn save_workspace_state(&mut self) {
         manage::save_workspace_state(self);

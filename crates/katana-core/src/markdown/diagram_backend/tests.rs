@@ -70,6 +70,16 @@ fn cache_key_changes_when_render_options_change() {
 }
 
 #[test]
+fn workspace_file_document_cache_id_includes_root_and_path() {
+    let context = DiagramDocumentContext::WorkspaceFile {
+        workspace_root: PathBuf::from("/workspace"),
+        document_path: PathBuf::from("docs/diagram.md"),
+    };
+
+    assert_eq!(context.cache_id(), "/workspace:docs/diagram.md");
+}
+
+#[test]
 fn backend_output_converts_to_existing_diagram_result() {
     match DiagramBackendOutput::HtmlFragment("<svg></svg>".to_string()).into_diagram_result() {
         DiagramResult::Ok(html) => assert_eq!(html, "<svg></svg>"),

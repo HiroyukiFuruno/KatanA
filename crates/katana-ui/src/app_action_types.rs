@@ -4,11 +4,9 @@ use crate::app_state::ExportFormat;
 use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct AssetDownloadRequest {
-    pub url: String,
-    pub dest: PathBuf,
-}
+#[path = "app_action_types/asset_download_request.rs"]
+mod asset_download_request;
+pub use asset_download_request::AssetDownloadRequest;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum AppAction {
@@ -25,6 +23,9 @@ pub enum AppAction {
     OpenFileInCurrentWorkspace(PathBuf),
     OpenFileInNewWorkspace(PathBuf),
     OpenDroppedFiles(Vec<PathBuf>),
+    SelectWorkspaceTab(PathBuf),
+    CloseWorkspaceTab(PathBuf),
+    ReorderWorkspaceTab { from: usize, to: usize },
     SelectDocument(PathBuf),
     SelectDocumentAndJump {
         path: PathBuf,

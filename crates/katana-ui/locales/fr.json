@@ -314,7 +314,8 @@
       "no_extension_warning": "Rendu Markdown non garanti sans extension. Continuer ?",
       "extensionless_excludes": "Exclus (sans extension)",
       "extensionless_excludes_hint": "Séparés par virgules",
-      "enable_drawio_mount": "Activer le chargement direct de Draw.io (*.drawio, *.drowio)"
+      "enable_drawio_mount": "Activer le chargement direct de Draw.io (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "Ouvrir les espaces de travail dans des onglets"
     },
     "icons": {
       "preset_label": "Preset :",

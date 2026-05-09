@@ -32,18 +32,7 @@ impl ProblemScopeOps {
     }
 
     pub(super) fn visible_paths(state: &AppState) -> Vec<std::path::PathBuf> {
-        match state.diagnostics.scope {
-            ProblemsScope::OpenTabs => state
-                .document
-                .open_documents
-                .iter()
-                .map(|doc| doc.path.clone())
-                .collect(),
-            ProblemsScope::ActiveTab => state
-                .active_document()
-                .map(|doc| vec![doc.path.clone()])
-                .unwrap_or_default(),
-        }
+        state.paths_for_problem_scope(state.diagnostics.scope)
     }
 
     fn selected_label(

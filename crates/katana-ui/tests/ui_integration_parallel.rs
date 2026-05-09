@@ -41,6 +41,8 @@ pub mod integration {
     pub mod test_helpers;
 }
 
+#[path = "integration/editor/lint_fix_review_button.rs"]
+mod editor_lint_fix_review_button;
 #[path = "integration/overlap_checker.rs"]
 mod overlap_checker;
 #[path = "integration/preview_pane/mod.rs"]
@@ -51,6 +53,10 @@ mod search_bar_test;
 mod settings_window;
 #[path = "integration/shell_logic.rs"]
 mod shell_logic;
+#[path = "integration/tabs/tab_bar_visual_contract.rs"]
+mod tab_bar_visual_contract;
+#[path = "integration/tabs/tab_bar_visual_helpers.rs"]
+mod tab_bar_visual_helpers;
 #[path = "integration/settings/theme.rs"]
 mod theme;
 #[path = "integration/settings/theme_bridge.rs"]

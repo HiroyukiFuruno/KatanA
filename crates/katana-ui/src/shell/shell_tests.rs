@@ -439,7 +439,9 @@ mod tests {
 mod tests_extra {
     use super::*;
     use crate::shell_logic::ShellLogicOps;
+    use crate::state::SearchParams;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
+    use std::path::PathBuf;
 
     fn make_app() -> KatanaApp {
         let mut state = AppState::new(
@@ -460,6 +462,15 @@ mod tests_extra {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("test.md"), "# Test").unwrap();
         dir
+    }
+
+    fn make_non_transient_tempdir() -> tempfile::TempDir {
+        let parent = std::env::current_dir()
+            .unwrap()
+            .join("target")
+            .join("test-workspaces");
+        std::fs::create_dir_all(&parent).unwrap();
+        tempfile::Builder::new().tempdir_in(parent).unwrap()
     }
 
     #[test]
@@ -1022,6 +1033,12 @@ mod tests_extra {
         let mut app = make_app();
         let dir = make_temp_workspace();
         let file_path = dir.path().join("test.md");
+        let path_text = dir.path().display().to_string();
+        {
+            let global_state = app.state.global_workspace.state_mut();
+            global_state.open_workspace_tabs = vec![path_text.clone()];
+            global_state.active_workspace = Some(path_text.clone());
+        }
 
         app.process_action(
             &egui::Context::default(),
@@ -1030,7 +1047,6 @@ mod tests_extra {
         wait_for_explorer(&mut app);
         app.save_workspace_state();
 
-        let path_text = dir.path().display().to_string();
         assert!(!app
             .state
             .global_workspace
@@ -1053,11 +1069,59 @@ mod tests_extra {
                 .as_deref(),
             Some(path_text.as_str())
         );
+        assert!(!app
+            .state
+            .global_workspace
+            .state()
+            .open_workspace_tabs
+            .contains(&path_text));
+        assert_ne!(
+            app.state.global_workspace.state().active_workspace.as_deref(),
+            Some(path_text.as_str())
+        );
+    }
+
+    #[test]
+    fn opening_workspace_clears_workspace_scoped_search_results() {
+        let mut app = make_app();
+        app.state.search.filter_cache = Some((
+            SearchParams::default(),
+            std::collections::HashSet::from([PathBuf::from("/workspace-a/file.md")]),
+        ));
+        app.state.search.last_params = Some((
+            SearchParams::default(),
+            String::new(),
+            String::new(),
+            Some(PathBuf::from("/workspace-a")),
+        ));
+        app.state.search.results = vec![PathBuf::from("/workspace-a/file.md")];
+        app.state.search.md_last_params = Some((
+            SearchParams::default(),
+            Some(PathBuf::from("/workspace-a")),
+        ));
+        app.state.search.md_results = vec![katana_core::search::SearchResult {
+            file_path: PathBuf::from("/workspace-a/file.md"),
+            line_number: 0,
+            start_col: 0,
+            end_col: 1,
+            snippet: "x".to_string(),
+        }];
+        let dir = make_temp_workspace();
+
+        app.handle_open_explorer(dir.path().to_path_buf());
+
+        assert!(app.state.search.filter_cache.is_none());
+        assert!(app.state.search.last_params.is_none());
+        assert!(app.state.search.results.is_empty());
+        assert!(app.state.search.md_last_params.is_none());
+        assert!(app.state.search.md_results.is_empty());
     }
 
     #[test]
     fn app_startup_clears_transient_workspace_restore_state() {
-        let temp_path = std::env::temp_dir().join("katana-transient-workspace-test");
+        let dir = tempfile::tempdir().unwrap();
+        let temp_path = dir.path().join("katana-transient-workspace-test");
+        std::fs::create_dir_all(&temp_path).unwrap();
         let temp_text = temp_path.display().to_string();
         let mut state = AppState::new(
             AiProviderRegistry::new(),
@@ -1070,6 +1134,9 @@ mod tests_extra {
                 katana_platform::workspace::GlobalWorkspaceState {
                     persisted: vec![temp_text.clone(), "/workspace/real".to_string()],
                     histories: vec![temp_text.clone(), "/workspace/real".to_string()],
+                    open_workspace_tabs: vec![temp_text.clone()],
+                    active_workspace: Some(temp_text.clone()),
+                    ..katana_platform::workspace::GlobalWorkspaceState::default()
                 },
             ),
         ));
@@ -1106,6 +1173,98 @@ mod tests_extra {
             .workspace
             .open_tabs
             .is_empty());
+        assert!(app
+            .state
+            .global_workspace
+            .state()
+            .open_workspace_tabs
+            .is_empty());
+        assert!(app
+            .state
+            .global_workspace
+            .state()
+            .active_workspace
+            .is_none());
+        assert!(matches!(app.pending_action, AppAction::None));
+    }
+
+    #[test]
+    fn app_startup_restores_active_workspace_tab_from_workspace_json() {
+        let dir = make_non_transient_tempdir();
+        let workspace_a = dir.path().join("workspace-a");
+        let workspace_b = dir.path().join("workspace-b");
+        std::fs::create_dir_all(&workspace_a).unwrap();
+        std::fs::create_dir_all(&workspace_b).unwrap();
+        let workspace_a_text = workspace_a.display().to_string();
+        let workspace_b_text = workspace_b.display().to_string();
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::new(
+                katana_platform::workspace::GlobalWorkspaceState {
+                    open_workspace_tabs: vec![workspace_a_text, workspace_b_text.clone()],
+                    active_workspace: Some(workspace_b_text.clone()),
+                    ..katana_platform::workspace::GlobalWorkspaceState::default()
+                },
+            ),
+        ));
+
+        let app = KatanaApp::new(state);
+
+        assert!(matches!(
+            app.pending_action,
+            AppAction::OpenWorkspace(ref path) if path == &std::path::PathBuf::from(workspace_b_text)
+        ));
+    }
+
+    #[test]
+    fn app_startup_prunes_missing_workspace_tabs() {
+        let dir = make_non_transient_tempdir();
+        let existing_workspace = dir.path().join("workspace-a");
+        let missing_workspace = dir.path().join("workspace-missing");
+        std::fs::create_dir_all(&existing_workspace).unwrap();
+        let existing_workspace_text = existing_workspace.display().to_string();
+        let missing_workspace_text = missing_workspace.display().to_string();
+        let mut state = AppState::new(
+            AiProviderRegistry::new(),
+            PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::new(
+                katana_platform::workspace::GlobalWorkspaceState {
+                    open_workspace_tabs: vec![
+                        existing_workspace_text.clone(),
+                        missing_workspace_text.clone(),
+                    ],
+                    active_workspace: Some(missing_workspace_text),
+                    ..katana_platform::workspace::GlobalWorkspaceState::default()
+                },
+            ),
+        ));
+
+        let app = KatanaApp::new(state);
+
+        assert_eq!(
+            app.state.global_workspace.state().open_workspace_tabs,
+            vec![existing_workspace_text.clone()]
+        );
+        assert!(app
+            .state
+            .global_workspace
+            .state()
+            .active_workspace
+            .is_none());
+        assert!(matches!(
+            app.pending_action,
+            AppAction::OpenWorkspace(ref path)
+                if path == &std::path::PathBuf::from(existing_workspace_text)
+        ));
     }
 
     #[test]

@@ -7,6 +7,7 @@ use crate::markdown_formatting_bridge::{
 };
 use crate::shell::*;
 
+use super::process_markdown_formatting_diagnostics::MarkdownFormattingDiagnosticsOps;
 use super::process_markdown_formatting_paths::{
     MarkdownFormattingPathFailureOps, MarkdownFormattingPathOps,
 };
@@ -170,14 +171,7 @@ impl KatanaApp {
     }
 
     fn refresh_formatted_diagnostics(&mut self, path: PathBuf, content: &str) {
-        let diagnostics = crate::linter_bridge::MarkdownLinterBridgeOps::evaluate_document(
-            &self.state,
-            &path,
-            content,
-        );
-        self.state
-            .diagnostics
-            .update_diagnostics_for_content(path, content, diagnostics);
+        MarkdownFormattingDiagnosticsOps::refresh(&mut self.state, path, content);
     }
 
     fn show_markdown_format_summary(&mut self, summary: MarkdownFormattingSummary) {

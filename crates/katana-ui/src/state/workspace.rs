@@ -13,6 +13,7 @@ pub struct WorkspaceState {
     pub temporary_roots: HashSet<PathBuf>,
     pub force_tree_open: Option<bool>,
     pub flat_views: Vec<(PathBuf, bool)>,
+    pub scroll_to_workspace_tab: Option<PathBuf>,
 }
 
 impl Default for WorkspaceState {
@@ -32,6 +33,7 @@ impl WorkspaceState {
             temporary_roots: HashSet::new(),
             force_tree_open: None,
             flat_views: Vec::new(),
+            scroll_to_workspace_tab: None,
         }
     }
 

@@ -188,6 +188,17 @@ mod tests {
     }
 
     #[test]
+    fn ok_html_result_maps_to_html_fragment_output() {
+        let result = diagram_result_to_backend(DiagramResult::Ok("<svg></svg>".to_string()));
+        assert_eq!(
+            result,
+            Ok(DiagramBackendOutput::HtmlFragment(
+                "<svg></svg>".to_string()
+            ))
+        );
+    }
+
+    #[test]
     fn err_result_maps_to_render_failed() {
         let result = diagram_result_to_backend(DiagramResult::Err {
             source: "src".to_string(),
@@ -214,6 +225,86 @@ mod tests {
                 tool_name: "plantuml".to_string(),
                 install_hint: "brew install plantuml".to_string(),
             })
+        );
+    }
+
+    #[test]
+    fn not_installed_result_maps_to_backend_not_installed() {
+        let result = diagram_result_to_backend(DiagramResult::NotInstalled {
+            kind: "PlantUML".to_string(),
+            download_url: "https://example.com/plantuml.jar".to_string(),
+            install_path: std::path::PathBuf::from("plantuml.jar"),
+        });
+        assert_eq!(
+            result,
+            Err(DiagramBackendError::NotInstalled {
+                kind: "PlantUML".to_string(),
+                download_url: "https://example.com/plantuml.jar".to_string(),
+                install_path: std::path::PathBuf::from("plantuml.jar"),
+            })
+        );
+    }
+
+    #[test]
+    fn kcf_not_installed_error_maps_to_backend_not_installed() {
+        let result = kcf_error_to_backend(RenderError::NotInstalled {
+            kind: "Draw.io".to_string(),
+            download_url: "https://example.com/drawio.zip".to_string(),
+            install_path: std::path::PathBuf::from("drawio.zip"),
+        });
+        assert_eq!(
+            result,
+            DiagramBackendError::NotInstalled {
+                kind: "Draw.io".to_string(),
+                download_url: "https://example.com/drawio.zip".to_string(),
+                install_path: std::path::PathBuf::from("drawio.zip"),
+            }
+        );
+    }
+
+    #[test]
+    fn kcf_invalid_input_error_maps_to_render_failed() {
+        let result = kcf_error_to_backend(RenderError::InvalidInput("bad diagram".to_string()));
+        assert_eq!(
+            result,
+            DiagramBackendError::RenderFailed {
+                message: "bad diagram".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn kcf_runtime_error_maps_to_render_failed() {
+        let result = kcf_error_to_backend(RenderError::Runtime("runtime failed".to_string()));
+        assert_eq!(
+            result,
+            DiagramBackendError::RenderFailed {
+                message: "runtime failed".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn kcf_runtime_resolution_error_maps_to_render_failed() {
+        let result = kcf_error_to_backend(RenderError::RuntimeResolution(
+            "runtime missing".to_string(),
+        ));
+        assert_eq!(
+            result,
+            DiagramBackendError::RenderFailed {
+                message: "runtime missing".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn kcf_unsupported_kind_error_maps_to_render_failed() {
+        let result = kcf_error_to_backend(RenderError::UnsupportedKind);
+        assert_eq!(
+            result,
+            DiagramBackendError::RenderFailed {
+                message: "unsupported diagram kind".to_string(),
+            }
         );
     }
 

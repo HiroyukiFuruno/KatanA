@@ -314,7 +314,8 @@
       "no_extension_warning": "확장자가 없는 경우 올바르게 표시되지 않을 수 있습니다. 계속하시겠습니까?",
       "extensionless_excludes": "제외 (확장자 없음)",
       "extensionless_excludes_hint": "쉼표로 구분",
-      "enable_drawio_mount": "Draw.io 직접 로드 활성화 (*.drawio, *.drowio)"
+      "enable_drawio_mount": "Draw.io 직접 로드 활성화 (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "워크스페이스를 탭으로 열기"
     },
     "icons": {
       "preset_label": "프리셋:",

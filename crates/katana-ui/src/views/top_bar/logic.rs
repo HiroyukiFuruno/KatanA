@@ -132,6 +132,13 @@ mod tests {
     }
 
     #[test]
+    fn compute_drop_points_adjacent_tabs() {
+        let rects = make_rects(&[(10.0, 100.0), (100.0, 200.0)]);
+        let points = TopBarOps::compute_drop_points(&rects);
+        assert_eq!(points, vec![(0, 10.0), (1, 100.0), (2, 200.0)]);
+    }
+
+    #[test]
     fn find_best_drop_index_nearest() {
         let points = vec![(0, 10.0), (1, 105.0), (2, 200.0)];
         assert_eq!(TopBarOps::find_best_drop_index(&points, 50.0), Some(0));

@@ -35,8 +35,7 @@ impl<'a> Breadcrumbs<'a> {
                 return;
             }
 
-            /* WHY: Filter empty segments that arise from double-slash prefixes or trailing slashes. */
-            let segments: Vec<&str> = rel.split('/').filter(|s| !s.is_empty()).collect();
+            let segments = Self::path_segments(rel);
             let mut current_path = ws_root.map(std::path::PathBuf::from).unwrap_or_default();
 
             for (i, seg) in segments.iter().enumerate() {
@@ -83,7 +82,7 @@ impl<'a> Breadcrumbs<'a> {
         current_path: &std::path::Path,
         breadcrumb_action: &mut Option<AppAction>,
     ) {
-        crate::widgets::MenuButtonOps::show(ui, egui::RichText::new(seg).small(), |ui| {
+        crate::widgets::MenuButtonOps::show_unframed(ui, egui::RichText::new(seg).small(), |ui| {
             let mut ctx_action = crate::app_state::AppAction::None;
 
             if let Some(ws) = &app.state.workspace.data
@@ -102,5 +101,26 @@ impl<'a> Breadcrumbs<'a> {
                 ui.close();
             }
         });
+    }
+
+    fn path_segments(rel: &str) -> Vec<&str> {
+        /* WHY: `Path::display()` uses backslashes on Windows, but breadcrumbs are
+         * rendered from a string so both platform separators must be accepted. */
+        rel.split(['/', '\\'])
+            .filter(|segment| !segment.is_empty())
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Breadcrumbs;
+
+    #[test]
+    fn path_segments_accept_windows_separators() {
+        assert_eq!(
+            Breadcrumbs::path_segments(r"docs\nested\README.md"),
+            vec!["docs", "nested", "README.md"]
+        );
     }
 }

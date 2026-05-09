@@ -13,6 +13,7 @@ pub enum ProblemsScope {
 pub struct DiagnosticsState {
     pub problems: BTreeMap<PathBuf, Vec<MarkdownDiagnostic>>,
     pub content_hashes: BTreeMap<PathBuf, u64>,
+    pub diagnostic_context_hashes: BTreeMap<PathBuf, u64>,
     pub content_snapshots: BTreeMap<PathBuf, String>,
     pub is_panel_open: bool,
     pub expand_all: Option<bool>,
@@ -25,6 +26,7 @@ impl DiagnosticsState {
         Self {
             problems: BTreeMap::new(),
             content_hashes: BTreeMap::new(),
+            diagnostic_context_hashes: BTreeMap::new(),
             content_snapshots: BTreeMap::new(),
             is_panel_open: false,
             expand_all: None,
@@ -39,14 +41,39 @@ impl DiagnosticsState {
             .is_some_and(|hash| *hash == Self::content_hash(content))
     }
 
+    pub fn is_current_for_context(
+        &self,
+        path: &std::path::Path,
+        content: &str,
+        diagnostic_context_hash: u64,
+    ) -> bool {
+        self.is_current(path, content)
+            && self
+                .diagnostic_context_hashes
+                .get(path)
+                .is_some_and(|hash| *hash == 0 || *hash == diagnostic_context_hash)
+    }
+
     pub fn update_diagnostics_for_content(
         &mut self,
         path: PathBuf,
         content: &str,
         diagnostics: Vec<MarkdownDiagnostic>,
     ) {
+        self.update_diagnostics_for_context(path, content, 0, diagnostics);
+    }
+
+    pub fn update_diagnostics_for_context(
+        &mut self,
+        path: PathBuf,
+        content: &str,
+        diagnostic_context_hash: u64,
+        diagnostics: Vec<MarkdownDiagnostic>,
+    ) {
         self.content_hashes
             .insert(path.clone(), Self::content_hash(content));
+        self.diagnostic_context_hashes
+            .insert(path.clone(), diagnostic_context_hash);
         self.content_snapshots
             .insert(path.clone(), content.to_string());
         self.update_diagnostics(path, diagnostics);
@@ -95,10 +122,13 @@ impl DiagnosticsState {
         if path.is_file() || !path.exists() {
             self.problems.remove(path);
             self.content_hashes.remove(path);
+            self.diagnostic_context_hashes.remove(path);
             self.content_snapshots.remove(path);
         } else {
             self.problems.retain(|k, _| !k.starts_with(path));
             self.content_hashes.retain(|k, _| !k.starts_with(path));
+            self.diagnostic_context_hashes
+                .retain(|k, _| !k.starts_with(path));
             self.content_snapshots.retain(|k, _| !k.starts_with(path));
         }
     }

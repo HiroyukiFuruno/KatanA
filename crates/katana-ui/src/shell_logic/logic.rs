@@ -170,13 +170,6 @@ impl ShellLogicOps {
         }
     }
 
-    pub fn format_window_title(fname: &str, rel: &str, release_notes: &str) -> String {
-        if fname == release_notes {
-            return format!("{} - KatanA", release_notes);
-        }
-        format!("{} ({}) - KatanA", fname, rel)
-    }
-
     pub fn format_tree_tooltip(name: &str, path: &Path) -> String {
         let mut tooltip = format!("{name}\n{}", path.display());
         let Ok(metadata) = path.metadata() else {

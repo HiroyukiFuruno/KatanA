@@ -12,6 +12,7 @@ impl Default for WorkspaceSettings {
             visible_extensions: SettingsDefaultOps::default_visible_extensions(),
             extensionless_excludes: SettingsDefaultOps::default_extensionless_excludes(),
             restore_session: SettingsDefaultOps::default_restore_session(),
+            open_workspace_in_tabs: SettingsDefaultOps::true_default(),
             enable_drawio_mount: SettingsDefaultOps::true_default(),
         }
     }

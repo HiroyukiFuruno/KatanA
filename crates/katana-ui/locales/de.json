@@ -314,7 +314,8 @@
       "no_extension_warning": "Keine Garantie für korrekte Markdown-Anzeige ohne Endung. Fortfahren?",
       "extensionless_excludes": "Ausgeschlossen (ohne Endung)",
       "extensionless_excludes_hint": "Komma-getrennt",
-      "enable_drawio_mount": "Direktes Laden von Draw.io aktivieren (*.drawio, *.drowio)"
+      "enable_drawio_mount": "Direktes Laden von Draw.io aktivieren (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "Arbeitsbereiche in Tabs öffnen"
     },
     "icons": {
       "preset_label": "Preset..:",

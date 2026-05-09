@@ -220,36 +220,3 @@ fn lint_fix_replaces_legacy_review_tab_path() {
         .expect("diff review must open");
     assert_eq!(review.target_path, path.to_string_lossy());
 }
-
-#[test]
-fn lint_fix_batch_source_is_used_for_review_content() {
-    let mut app = make_app();
-    let ctx = eframe::egui::Context::default();
-    let dir = tempfile::tempdir().expect("tempdir must be created");
-    let path = dir.path().join("doc.md");
-    std::fs::write(&path, "disk\n").expect("fixture must be written");
-
-    app.process_action(
-        &ctx,
-        AppAction::ApplyLintFixesForFiles(vec![crate::app_action::LintFixBatch {
-            path: path.clone(),
-            fixes: vec![DiagnosticFix {
-                start_line: 1,
-                start_column: 1,
-                end_line: 1,
-                end_column: 7,
-                replacement: "fixed".to_string(),
-            }],
-            source: Some("source\n".to_string()),
-        }]),
-    );
-
-    let review = app
-        .state
-        .layout
-        .diff_review_snapshot()
-        .expect("diff review must open from batch source");
-    assert_eq!(review.target_path, path.to_string_lossy());
-    assert_eq!(review.before, "source\n");
-    assert_eq!(review.after, "fixed\n");
-}

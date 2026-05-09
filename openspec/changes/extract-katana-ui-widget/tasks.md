@@ -31,7 +31,7 @@
 
 ### Tasks
 
-- [ ] 2.1 `katana-ui-widget` repositoryを作成する
+- [x] 2.1 `katana-ui-widget` repositoryを作成する
 - [ ] 2.2 Floem前提のcrate構成を定義する
 - [ ] 2.3 metadata/unresolved表示の最小DTOを定義する
 - [ ] 2.4 P0 AST lintの実行入口を接続する

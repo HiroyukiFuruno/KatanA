@@ -40,6 +40,7 @@ impl DiagnosticsHoverOps {
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
         all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+        content: &str,
         action: &mut crate::app_state::AppAction,
     ) {
         /* WHY: Collect all diagnostics on the same line (including the hovered one) so
@@ -56,13 +57,20 @@ impl DiagnosticsHoverOps {
             .collect();
 
         /* WHY: Primary diagnostic section */
-        Self::show_single_diagnostic_ui(ui, diag, meta, all_diagnostics, action);
+        Self::show_single_diagnostic_ui(ui, diag, meta, all_diagnostics, content, action);
 
         /* WHY: Additional same-line diagnostics — each gets its own separator + section */
         for other in same_line_others {
             if let Some(other_meta) = other.official_meta.as_ref() {
                 ui.separator();
-                Self::show_single_diagnostic_ui(ui, other, other_meta, all_diagnostics, action);
+                Self::show_single_diagnostic_ui(
+                    ui,
+                    other,
+                    other_meta,
+                    all_diagnostics,
+                    content,
+                    action,
+                );
             }
         }
     }
@@ -72,6 +80,7 @@ impl DiagnosticsHoverOps {
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
         meta: &katana_markdown_linter::rules::markdown::OfficialRuleMeta,
         all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+        content: &str,
         action: &mut crate::app_state::AppAction,
     ) {
         let sev_text = format!("{:?}", diag.severity);
@@ -79,7 +88,10 @@ impl DiagnosticsHoverOps {
         ui.label(egui::RichText::new(label_text).strong());
         ui.label(crate::linter_bridge::MarkdownLinterBridgeOps::diagnostic_message(diag));
 
-        if crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix(diag) {
+        if crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix_for_content(
+            diag,
+            Some(content),
+        ) {
             /* WHY: allow(horizontal_layout) */
             ui.horizontal(|ui| {
                 let linter_msgs = &crate::i18n::I18nOps::get().linter;
@@ -92,7 +104,14 @@ impl DiagnosticsHoverOps {
                 if ui.button(&linter_msgs.fix_all).clicked() {
                     let all_fixes = all_diagnostics
                         .iter()
-                        .filter_map(|d| d.fix_info.clone())
+                        .filter_map(|diagnostic| {
+                            crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix_for_content(
+                                diagnostic,
+                                Some(content),
+                            )
+                            .then(|| diagnostic.fix_info.clone())
+                            .flatten()
+                        })
                         .collect();
                     *action = crate::app_state::AppAction::ApplyLintFixes(all_fixes);
                     ui.close_menu();

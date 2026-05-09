@@ -314,7 +314,8 @@
       "no_extension_warning": "不带扩展名可能无法正确显示。是否继续？",
       "extensionless_excludes": "排除项 (无扩展名)",
       "extensionless_excludes_hint": "以逗号分隔",
-      "enable_drawio_mount": "启用直接加载 Draw.io (*.drawio, *.drowio)"
+      "enable_drawio_mount": "启用直接加载 Draw.io (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "在标签页中打开工作区"
     },
     "icons": {
       "preset_label": "预设:",

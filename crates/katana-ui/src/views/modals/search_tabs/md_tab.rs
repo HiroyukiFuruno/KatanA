@@ -1,6 +1,7 @@
 /* WHY: Specialized logic for Markdown search tab rendering to keep the codebase modular and organized. */
 
 use crate::app_state::AppAction;
+use crate::state::SearchParams;
 use eframe::egui;
 
 const MD_SEARCH_LIMIT: usize = 50;
@@ -29,12 +30,16 @@ impl MdTabOps {
             search.focus_requested = true;
         }
 
+        let workspace_root = workspace.map(|workspace| workspace.root.clone());
+        let current_params = (search.md_search.clone(), workspace_root);
         if (history_changed
             || response.changed()
-            || response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)))
-            && search.md_last_params.as_ref() != Some(&search.md_search)
+            || response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))
+            || !search.md_search.query.is_empty()
+                && search.md_last_params.as_ref() != Some(&current_params))
+            && search.md_last_params.as_ref() != Some(&current_params)
         {
-            Self::refresh_results(search, workspace, true);
+            Self::refresh_results(search, workspace, current_params, true);
         }
 
         if search.md_search.query.is_empty() && !search.md_history.recent_terms.is_empty() {
@@ -63,7 +68,9 @@ impl MdTabOps {
                     super::history::SearchHistoryAction::Select(term) => {
                         search.md_search.query = term;
                         super::history::SearchHistoryUiOps::reset_navigation(search);
-                        Self::refresh_results(search, workspace, true);
+                        let workspace_root = workspace.map(|workspace| workspace.root.clone());
+                        let current_params = (search.md_search.clone(), workspace_root);
+                        Self::refresh_results(search, workspace, current_params, true);
                     }
                     super::history::SearchHistoryAction::Remove(term) => {
                         search.md_history.remove_term(&term);
@@ -116,17 +123,21 @@ impl MdTabOps {
     fn refresh_results(
         search: &mut crate::app_state::SearchState,
         workspace: Option<&katana_core::workspace::Workspace>,
+        current_params: (SearchParams, Option<std::path::PathBuf>),
         remember: bool,
     ) {
-        search.md_last_params = Some(search.md_search.clone());
         if search.md_search.query.is_empty() {
+            search.md_last_params = Some(current_params);
             search.md_results.clear();
             return;
         }
 
         let Some(workspace) = workspace else {
+            search.md_last_params = None;
+            search.md_results.clear();
             return;
         };
+        search.md_last_params = Some(current_params);
         search.md_results = katana_core::search::WorkspaceSearchOps::search_workspace(
             workspace,
             &search.md_search.query,

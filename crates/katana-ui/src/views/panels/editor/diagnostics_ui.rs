@@ -61,6 +61,7 @@ impl EditorDiagnostics {
                     end_row,
                     color,
                     diag,
+                    buffer,
                     action,
                     diagnostics,
                 );
@@ -81,6 +82,7 @@ impl EditorDiagnostics {
         end_row: usize,
         color: egui::Color32,
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
+        content: &str,
         action: &mut crate::app_state::AppAction,
         all_diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
     ) -> bool {
@@ -145,6 +147,7 @@ impl EditorDiagnostics {
                             diag,
                             meta,
                             all_diagnostics,
+                            content,
                             action,
                         );
                     }
