@@ -39,7 +39,7 @@ impl ProblemBulkFixOps {
         diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
         source: Option<&str>,
     ) -> Option<crate::app_action::LintFixBatch> {
-        let fixes = Self::file_fixes(diagnostics);
+        let fixes = Self::applicable_file_fixes(diagnostics, source);
         if fixes.is_empty() {
             return None;
         }
@@ -48,6 +48,24 @@ impl ProblemBulkFixOps {
             fixes,
             source: source.map(str::to_string),
         })
+    }
+
+    fn applicable_file_fixes(
+        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+        source: Option<&str>,
+    ) -> Vec<katana_markdown_linter::rules::markdown::DiagnosticFix> {
+        let fixes = Self::file_fixes(diagnostics);
+        let Some(source) = source else {
+            return fixes;
+        };
+        fixes
+            .into_iter()
+            .filter(|fix| {
+                crate::linter_bridge::MarkdownLinterBridgeOps::diagnostic_fix_changes_content(
+                    source, fix,
+                )
+            })
+            .collect()
     }
 }
 
@@ -64,9 +82,9 @@ mod tests {
     fn fix(replacement: &str) -> DiagnosticFix {
         DiagnosticFix {
             start_line: 1,
-            start_column: 0,
+            start_column: 1,
             end_line: 1,
-            end_column: 1,
+            end_column: 2,
             replacement: replacement.to_string(),
         }
     }
@@ -133,5 +151,24 @@ mod tests {
         assert_eq!(batches.len(), 1);
         assert_eq!(batches[0].path, second);
         assert_eq!(batches[0].source.as_deref(), Some("second source"));
+    }
+
+    #[test]
+    fn file_batch_omits_noop_fix_when_source_is_available() {
+        let path = PathBuf::from("/tmp/test.md");
+        let diagnostics = vec![diagnostic(
+            "MD060",
+            Some(DiagnosticFix {
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 6,
+                replacement: "alpha".to_string(),
+            }),
+        )];
+
+        let batch = ProblemBulkFixOps::file_batch(&path, &diagnostics, Some("alpha\n"));
+
+        assert!(batch.is_none());
     }
 }

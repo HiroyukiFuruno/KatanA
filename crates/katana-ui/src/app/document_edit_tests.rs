@@ -180,6 +180,36 @@ fn lint_fix_review_uses_setting_without_persisting_temporary_mode() {
 }
 
 #[test]
+fn lint_fix_review_uses_convergent_linter_fix_for_md022_batch() {
+    let mut app = make_app();
+    let ctx = eframe::egui::Context::default();
+    let dir = tempfile::tempdir().expect("tempdir must be created");
+    let path = dir.path().join("doc.md");
+    let source = "Text\n# A\n# B\nText\n";
+    std::fs::write(&path, source).expect("fixture must be written");
+    app.handle_select_document(path.clone(), true);
+
+    let fixes =
+        crate::linter_bridge::MarkdownLinterBridgeOps::evaluate_document(&app.state, &path, source)
+            .into_iter()
+            .filter(|diagnostic| diagnostic.rule_id == "MD022")
+            .filter_map(|diagnostic| diagnostic.fix_info)
+            .collect::<Vec<_>>();
+    assert_eq!(fixes.len(), 2);
+
+    app.process_action(&ctx, AppAction::ApplyLintFixes(fixes));
+
+    let reviewed_file = app
+        .state
+        .layout
+        .diff_review
+        .as_ref()
+        .and_then(|review| review.current_file())
+        .expect("diff review must open");
+    assert_eq!(reviewed_file.after, "Text\n\n# A\n\n# B\n\nText\n");
+}
+
+#[test]
 fn lint_fix_reject_all_keeps_all_files_unchanged() {
     let mut app = make_app();
     let ctx = eframe::egui::Context::default();

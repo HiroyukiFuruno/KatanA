@@ -6,6 +6,7 @@ mod context_menu_image_ingest;
 #[cfg(test)]
 mod context_menu_tests;
 pub mod decorations;
+mod diagnostics_popup;
 pub mod diagnostics_ui;
 pub mod line_numbers;
 pub mod logic;

@@ -59,7 +59,6 @@ fn main() -> eframe::Result<()> {
 
     let saved_language = settings.settings().language.clone();
     let saved_icon_pack = settings.settings().theme.icon_pack.clone();
-    let saved_workspace = settings.settings().workspace.last_workspace.clone();
     let saved_icon_settings = settings.settings().icon.clone();
 
     let cache = std::sync::Arc::new(katana_platform::DefaultCacheService::default());
@@ -119,14 +118,6 @@ fn main() -> eframe::Result<()> {
                     app.about_icon = Some(texture);
                 }
                 Err(e) => tracing::warn!("Failed to load about icon from memory: {}", e),
-            }
-
-            if let Some(ws_path) = saved_workspace {
-                let path = std::path::PathBuf::from(&ws_path);
-                if path.is_dir() {
-                    app.trigger_action(katana_ui::app_state::AppAction::OpenWorkspace(path));
-                    tracing::info!("Restored workspace: {ws_path}");
-                }
             }
 
             Ok(Box::new(app))

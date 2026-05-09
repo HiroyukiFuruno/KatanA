@@ -16,13 +16,31 @@ impl KatanaApp {
             .iter()
             .position(|doc| doc.path == path)
         {
-            return Some(idx);
+            if self.state.document.open_documents[idx].is_loaded
+                || self.state.document.open_documents[idx].is_dirty
+            {
+                return Some(idx);
+            }
+            return self.load_existing_diff_review_target_document(idx, path);
         }
 
         let doc = self.fs.load_document(path.to_path_buf()).ok()?;
         self.state.document.open_documents.push(doc);
         self.state.initialize_tab_split_state(path);
         self.state.document.open_documents.len().checked_sub(1)
+    }
+
+    fn load_existing_diff_review_target_document(
+        &mut self,
+        idx: usize,
+        path: &Path,
+    ) -> Option<usize> {
+        let mut loaded = self.fs.load_document(path.to_path_buf()).ok()?;
+        let existing = &self.state.document.open_documents[idx];
+        loaded.is_pinned = existing.is_pinned;
+        loaded.is_reference = existing.is_reference;
+        self.state.document.open_documents[idx] = loaded;
+        Some(idx)
     }
 
     pub(crate) fn write_diff_review_content(

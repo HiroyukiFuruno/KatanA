@@ -7,19 +7,32 @@ use crate::shell::KatanaApp;
 
 impl KatanaApp {
     pub(crate) fn load_lint_fix_review_source(&self, path: &Path) -> Option<String> {
-        if let Some(doc) = self
-            .state
-            .document
-            .open_documents
-            .iter()
-            .find(|doc| doc.path == path)
-        {
+        if let Some(doc) = self.loaded_open_document(path) {
             return Some(doc.buffer.clone());
         }
         self.fs
             .load_document(path.to_path_buf())
             .ok()
             .map(|doc| doc.buffer)
+    }
+
+    pub(crate) fn resolve_lint_fix_review_source(
+        &self,
+        path: &Path,
+        batch_source: Option<String>,
+    ) -> Option<String> {
+        if let Some(doc) = self.loaded_open_document(path) {
+            return Some(doc.buffer.clone());
+        }
+        batch_source.or_else(|| self.load_lint_fix_review_source(path))
+    }
+
+    fn loaded_open_document(&self, path: &Path) -> Option<&katana_core::document::Document> {
+        self.state
+            .document
+            .open_documents
+            .iter()
+            .find(|doc| doc.path == path && (doc.is_loaded || doc.is_dirty))
     }
 
     pub(crate) fn apply_diff_review_file_content(

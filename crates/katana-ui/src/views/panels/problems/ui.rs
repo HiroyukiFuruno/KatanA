@@ -127,8 +127,12 @@ impl<'a> ProblemsPanel<'a> {
                             else {
                                 continue;
                             };
-                            let open_content = self.state.document.open_documents.iter()
-                                .find(|d| d.path == path)
+                            let open_content = self
+                                .state
+                                .document
+                                .open_documents
+                                .iter()
+                                .find(|d| d.path == path && (d.is_loaded || d.is_dirty))
                                 .map(|d| d.buffer.as_str());
                             let content = self
                                 .state

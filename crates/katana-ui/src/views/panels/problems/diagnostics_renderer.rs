@@ -160,7 +160,10 @@ impl DiagnosticsRendererOps {
                     }
                 }
 
-                if let Some(fix_info) = &diag.fix_info {
+                if crate::linter_bridge::MarkdownLinterBridgeOps::has_applicable_fix_for_content(
+                    diag, content,
+                ) && let Some(fix_info) = &diag.fix_info
+                {
                     let resp = ui
                         .button(&crate::i18n::I18nOps::get().linter.fix)
                         .on_hover_ui(|ui| {

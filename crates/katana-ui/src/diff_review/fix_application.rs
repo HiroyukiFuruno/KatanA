@@ -23,6 +23,14 @@ impl DiagnosticFixApplicationOps {
         fixes: &[DiagnosticFix],
     ) -> Option<DiffReviewFile> {
         let result = Self::apply_result(&before, fixes);
+        Self::build_review_file_from_result(path, before, result)
+    }
+
+    pub(crate) fn build_review_file_from_result(
+        path: PathBuf,
+        before: String,
+        result: katana_markdown_linter::FixResult,
+    ) -> Option<DiffReviewFile> {
         if result.applied_fixes == 0 || before == result.content {
             return None;
         }

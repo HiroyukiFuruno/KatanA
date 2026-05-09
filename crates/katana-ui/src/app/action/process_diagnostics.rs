@@ -3,18 +3,38 @@ use crate::shell::*;
 impl KatanaApp {
     pub(crate) fn handle_action_refresh_diagnostics(&mut self) {
         for (path, content) in self.lintable_open_document_sources() {
-            if self.state.diagnostics.is_current(&path, &content) {
+            let options =
+                crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::load_effective_options_for_content(
+                    &self.state,
+                    path.as_path(),
+                    &content,
+                );
+            let diagnostic_context_hash =
+                crate::linter_diagnostic_context::LinterDiagnosticContextOps::hash(
+                    &self.state,
+                    &options,
+                );
+            if self.state.diagnostics.is_current_for_context(
+                &path,
+                &content,
+                diagnostic_context_hash,
+            ) {
                 continue;
             }
 
-            let diagnostics = crate::linter_bridge::MarkdownLinterBridgeOps::evaluate_document(
-                &self.state,
-                path.as_path(),
+            let diagnostics =
+                crate::linter_bridge::MarkdownLinterBridgeOps::evaluate_document_with_options(
+                    &self.state,
+                    path.as_path(),
+                    &content,
+                    options,
+                );
+            self.state.diagnostics.update_diagnostics_for_context(
+                path,
                 &content,
+                diagnostic_context_hash,
+                diagnostics,
             );
-            self.state
-                .diagnostics
-                .update_diagnostics_for_content(path, &content, diagnostics);
         }
     }
 

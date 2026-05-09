@@ -58,6 +58,7 @@ impl DiffReviewUi {
     pub(crate) fn show_footer(
         ui: &mut egui::Ui,
         is_pending: bool,
+        can_reject_all: bool,
         messages: &DiffReviewMessages,
     ) -> Option<crate::app_state::AppAction> {
         let mut action = None;
@@ -67,6 +68,12 @@ impl DiffReviewUi {
                 crate::widgets::AlignCenter::new()
                     .shrink_to_fit(true)
                     .content(|ui| {
+                        if ui
+                            .add_enabled(can_reject_all, egui::Button::new(&messages.reject_all))
+                            .clicked()
+                        {
+                            action = Some(crate::app_state::AppAction::RejectAllDiffReviewFiles);
+                        }
                         if ui
                             .add_enabled(is_pending, egui::Button::new(&messages.cancel))
                             .clicked()

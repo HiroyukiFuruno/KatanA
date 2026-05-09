@@ -4,6 +4,8 @@ mod diff_review_apply;
 mod diff_review_apply_helpers;
 #[cfg(test)]
 mod diff_review_reopen_tests;
+#[cfg(test)]
+mod diff_review_source_tests;
 pub mod doc_close;
 pub mod doc_search;
 pub mod document;

@@ -7,17 +7,20 @@ pub(crate) const ACTION_ICON_MARGIN: f32 = 2.0;
 pub(crate) const ACTION_ICON_GUTTER_WIDTH: f32 =
     ACTION_ICON_SIZE + ACTION_ICON_MARGIN + ACTION_ICON_MARGIN;
 
+pub(crate) struct RowDiagnosticsParams<'a> {
+    pub diagnostics: &'a [katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
+    pub line_index: usize,
+    pub y: f32,
+    pub ln_rect: &'a egui::Rect,
+    pub row_height: f32,
+    pub content: &'a str,
+    pub action: &'a mut crate::app_state::AppAction,
+}
+
 impl RowDiagnosticsRenderer {
-    pub(crate) fn render(
-        ui: &mut egui::Ui,
-        diagnostics: &[katana_markdown_linter::rules::markdown::MarkdownDiagnostic],
-        p: usize,
-        y: f32,
-        ln_rect: &egui::Rect,
-        row_height: f32,
-        action: &mut crate::app_state::AppAction,
-    ) -> bool {
-        let line_number = p + 1;
+    pub(crate) fn render(ui: &mut egui::Ui, params: RowDiagnosticsParams<'_>) -> bool {
+        let line_number = params.line_index + 1;
+        let diagnostics = params.diagnostics;
         let line_diagnostics = Self::action_icon_diagnostics(diagnostics, line_number);
 
         if line_diagnostics.is_empty() {
@@ -51,12 +54,10 @@ impl RowDiagnosticsRenderer {
             })
             .unwrap_or(ui.visuals().warn_fg_color);
 
-        const TOOLTIP_SPACE: f32 = 4.0;
-
         let icon_rect = egui::Rect::from_min_size(
             egui::pos2(
-                ln_rect.min.x + ACTION_ICON_MARGIN,
-                y + (row_height - ACTION_ICON_SIZE) / 2.0,
+                params.ln_rect.min.x + ACTION_ICON_MARGIN,
+                params.y + (params.row_height - ACTION_ICON_SIZE) / 2.0,
             ),
             egui::vec2(ACTION_ICON_SIZE, ACTION_ICON_SIZE),
         );
@@ -68,26 +69,15 @@ impl RowDiagnosticsRenderer {
                 .tint(icon_color)
                 .sense(egui::Sense::click()),
         );
-        let hovered = icon_resp.hovered();
-
-        icon_resp.on_hover_ui(|ui| {
-            for (index, diagnostic) in line_diagnostics.iter().enumerate() {
-                if index > 0 {
-                    ui.separator();
-                }
-                if let Some(meta) = diagnostic.official_meta.as_ref() {
-                    super::diagnostics_hover::DiagnosticsHoverOps::show_single_diagnostic_ui(
-                        ui,
-                        diagnostic,
-                        meta,
-                        diagnostics,
-                        action,
-                    );
-                }
-                ui.add_space(TOOLTIP_SPACE);
-            }
-        });
-        hovered
+        super::diagnostics_popup::DiagnosticsPopupOps::show(
+            ui,
+            &icon_resp,
+            line_number,
+            &line_diagnostics,
+            diagnostics,
+            params.content,
+            params.action,
+        )
     }
 
     fn action_icon_diagnostics(

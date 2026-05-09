@@ -14,20 +14,26 @@ use katana_markdown_linter::{
 pub(crate) struct MarkdownLinterBridgeOps;
 
 impl MarkdownLinterBridgeOps {
+    #[cfg(test)]
     pub(crate) fn evaluate_document(
         state: &crate::app_state::AppState,
         path: &Path,
         content: &str,
     ) -> Vec<MarkdownDiagnostic> {
-        let linter_settings = &state.config.settings.settings().linter;
-        let mut options =
-            crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::load_effective_options(
-                state, path,
+        let options =
+            crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::load_effective_options_for_content(
+                state, path, content,
             );
-        crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::disable_unsafe_multibyte_md013(
-            &mut options,
-            content,
-        );
+        Self::evaluate_document_with_options(state, path, content, options)
+    }
+
+    pub(crate) fn evaluate_document_with_options(
+        state: &crate::app_state::AppState,
+        path: &Path,
+        content: &str,
+        options: LintOptions,
+    ) -> Vec<MarkdownDiagnostic> {
+        let linter_settings = &state.config.settings.settings().linter;
         let mut severity_map = Self::severity_map(&options);
         for (rule_id, severity) in &linter_settings.rule_severity {
             if options
@@ -51,8 +57,56 @@ impl MarkdownLinterBridgeOps {
         .unwrap_or_default()
     }
 
+    #[cfg(test)]
     pub(crate) fn has_applicable_fix(diag: &MarkdownDiagnostic) -> bool {
         diag.fix_info.is_some()
+    }
+
+    pub(crate) fn diagnostic_fix_changes_content(
+        content: &str,
+        fix: &katana_markdown_linter::rules::markdown::DiagnosticFix,
+    ) -> bool {
+        let result = crate::diff_review::DiagnosticFixApplicationOps::apply_result(
+            content,
+            std::slice::from_ref(fix),
+        );
+        result.applied_fixes > 0 && result.content != content
+    }
+
+    pub(crate) fn has_applicable_fix_for_content(
+        diag: &MarkdownDiagnostic,
+        content: Option<&str>,
+    ) -> bool {
+        let Some(fix) = diag.fix_info.as_ref() else {
+            return false;
+        };
+        content
+            .map(|source| Self::diagnostic_fix_changes_content(source, fix))
+            .unwrap_or(true)
+    }
+
+    pub(crate) fn fix_document(
+        state: &crate::app_state::AppState,
+        path: &Path,
+        content: &str,
+    ) -> Result<katana_markdown_linter::FixResult, String> {
+        if !state.config.settings.settings().linter.enabled {
+            return Ok(katana_markdown_linter::FixResult {
+                content: content.to_string(),
+                applied_fixes: 0,
+                details: Vec::new(),
+            });
+        }
+
+        let options =
+            crate::linter_options_bridge::MarkdownLinterOptionsBridgeOps::load_effective_options_for_content(
+                state, path, content,
+            );
+        catch_unwind(AssertUnwindSafe(|| {
+            katana_markdown_linter::fix(content, &options)
+        }))
+        .map_err(|_| "markdown linter fix panicked".to_string())?
+        .map_err(|err| err.to_string())
     }
 
     fn severity_map(options: &LintOptions) -> HashMap<&str, Option<DiagnosticSeverity>> {
@@ -252,6 +306,19 @@ mod tests {
     }
 
     #[test]
+    fn fix_document_returns_unchanged_content_when_linter_is_disabled() {
+        let mut state = make_state();
+        state.config.settings.settings_mut().linter.enabled = false;
+        let content = "Text\n# Heading\nText\n";
+
+        let result =
+            MarkdownLinterBridgeOps::fix_document(&state, Path::new("doc.md"), content).unwrap();
+
+        assert_eq!(result.applied_fixes, 0);
+        assert_eq!(result.content, content);
+    }
+
+    #[test]
     fn has_applicable_fix_depends_on_fix_info_not_metadata_flag() {
         let fix = katana_markdown_linter::rules::markdown::DiagnosticFix {
             start_line: 1,
@@ -266,6 +333,32 @@ mod tests {
         ));
         assert!(!MarkdownLinterBridgeOps::has_applicable_fix(
             &diagnostic_with_fix(None)
+        ));
+    }
+
+    #[test]
+    fn has_applicable_fix_for_content_rejects_noop_fix() {
+        let diagnostic = diagnostic_with_fix(Some(
+            katana_markdown_linter::rules::markdown::DiagnosticFix {
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 6,
+                replacement: "alpha".to_string(),
+            },
+        ));
+
+        assert!(!MarkdownLinterBridgeOps::has_applicable_fix_for_content(
+            &diagnostic,
+            Some("alpha\n")
+        ));
+    }
+
+    #[test]
+    fn has_applicable_fix_for_content_rejects_missing_fix() {
+        assert!(!MarkdownLinterBridgeOps::has_applicable_fix_for_content(
+            &diagnostic_with_fix(None),
+            Some("alpha\n")
         ));
     }
 

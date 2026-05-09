@@ -138,6 +138,7 @@ impl TextEditRenderer {
                 super::line_numbers::LineNumberParams {
                     galley: &galley,
                     response_rect: &response.rect,
+                    content: buffer,
                     ln_rect: &ln_rect,
                     scroll,
                     current_cursor_y,

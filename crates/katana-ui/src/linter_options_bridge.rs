@@ -20,6 +20,16 @@ impl MarkdownLinterOptionsBridgeOps {
         options
     }
 
+    pub(crate) fn load_effective_options_for_content(
+        state: &crate::app_state::AppState,
+        path: &Path,
+        content: &str,
+    ) -> LintOptions {
+        let mut options = Self::load_effective_options(state, path);
+        Self::disable_unsafe_multibyte_md013(&mut options, content);
+        options
+    }
+
     pub(crate) fn disable_unsafe_multibyte_md013(options: &mut LintOptions, content: &str) {
         if !Self::md013_has_unsafe_boundary(options, content) {
             return;

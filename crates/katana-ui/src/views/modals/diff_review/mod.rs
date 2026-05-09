@@ -38,6 +38,7 @@ impl<'a> DiffReviewModal<'a> {
         let can_previous = self.review.can_move_previous();
         let can_next = self.review.can_move_next();
         let is_pending = current_file.decision == DiffReviewDecision::Pending;
+        let can_reject_all = is_pending && self.review.files.len() > 1;
         let modal_size = DiffReviewUi::modal_size(ctx, is_fullscreen);
         let mut should_fullscreen = is_fullscreen;
 
@@ -73,7 +74,7 @@ impl<'a> DiffReviewModal<'a> {
                     }
                     ui.add_space(FOOTER_TOP_SPACING);
                 },
-                |ui| DiffReviewUi::show_footer(ui, is_pending, &messages),
+                |ui| DiffReviewUi::show_footer(ui, is_pending, can_reject_all, &messages),
                 |button| match button {
                     crate::widgets::ModalWindowButton::Close => {
                         Some(AppAction::RejectAllDiffReviewFiles)
@@ -109,6 +110,7 @@ impl<'a> DiffReviewModal<'a> {
         let can_previous = self.review.can_move_previous();
         let can_next = self.review.can_move_next();
         let is_pending = current_file.decision == DiffReviewDecision::Pending;
+        let can_reject_all = is_pending && self.review.files.len() > 1;
         let mut action = None;
 
         egui::Frame::none().inner_margin(egui::Margin {
@@ -142,7 +144,9 @@ impl<'a> DiffReviewModal<'a> {
             );
 
             ui.add_space(FOOTER_TOP_SPACING);
-            if let Some(footer_action) = DiffReviewUi::show_footer(ui, is_pending, &messages) {
+            if let Some(footer_action) =
+                DiffReviewUi::show_footer(ui, is_pending, can_reject_all, &messages)
+            {
                 action = Some(footer_action);
             }
         });

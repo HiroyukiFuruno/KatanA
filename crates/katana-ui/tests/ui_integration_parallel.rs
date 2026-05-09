@@ -41,6 +41,8 @@ pub mod integration {
     pub mod test_helpers;
 }
 
+#[path = "integration/editor/lint_fix_review_button.rs"]
+mod editor_lint_fix_review_button;
 #[path = "integration/overlap_checker.rs"]
 mod overlap_checker;
 #[path = "integration/preview_pane/mod.rs"]

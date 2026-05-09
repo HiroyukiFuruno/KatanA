@@ -31,7 +31,7 @@ impl<'a> MainPanels<'a> {
         }
 
         let is_dirty = app.state.is_dirty();
-        let total_problems = app.state.diagnostics.total_problems();
+        let total_problems = app.state.status_bar_problem_count();
 
         let action = Self::render_status_bar(
             ui,

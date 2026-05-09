@@ -1,6 +1,6 @@
 pub use crate::state::command_palette::CommandPaletteState;
 pub use crate::state::config::{ConfigState, SettingsSection, SettingsTab};
-pub use crate::state::diagnostics::DiagnosticsState;
+pub use crate::state::diagnostics::{DiagnosticsState, ProblemsScope};
 pub use crate::state::document::{
     DocumentState, SplitViewState, TabSplitState, TabViewMode, ViewMode,
 };
@@ -101,6 +101,31 @@ impl AppState {
 
     pub fn active_path(&self) -> Option<std::path::PathBuf> {
         self.active_document().map(|d| d.path.clone())
+    }
+
+    pub fn paths_for_problem_scope(&self, scope: ProblemsScope) -> Vec<std::path::PathBuf> {
+        match scope {
+            ProblemsScope::OpenTabs => self
+                .document
+                .open_documents
+                .iter()
+                .map(|doc| doc.path.clone())
+                .collect(),
+            ProblemsScope::ActiveTab => self
+                .active_document()
+                .map(|doc| vec![doc.path.clone()])
+                .unwrap_or_default(),
+        }
+    }
+
+    pub fn status_bar_problem_count(&self) -> usize {
+        let scope = if self.diagnostics.is_panel_open {
+            self.diagnostics.scope
+        } else {
+            ProblemsScope::OpenTabs
+        };
+        let paths = self.paths_for_problem_scope(scope);
+        self.diagnostics.total_problems_for_paths(&paths)
     }
 
     pub fn active_view_mode(&self) -> ViewMode {

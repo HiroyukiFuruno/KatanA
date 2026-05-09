@@ -1057,7 +1057,9 @@ mod tests_extra {
 
     #[test]
     fn app_startup_clears_transient_workspace_restore_state() {
-        let temp_path = std::env::temp_dir().join("katana-transient-workspace-test");
+        let dir = tempfile::tempdir().unwrap();
+        let temp_path = dir.path().join("katana-transient-workspace-test");
+        std::fs::create_dir_all(&temp_path).unwrap();
         let temp_text = temp_path.display().to_string();
         let mut state = AppState::new(
             AiProviderRegistry::new(),
@@ -1106,6 +1108,7 @@ mod tests_extra {
             .workspace
             .open_tabs
             .is_empty());
+        assert!(matches!(app.pending_action, AppAction::None));
     }
 
     #[test]

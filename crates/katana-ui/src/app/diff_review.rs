@@ -33,6 +33,30 @@ impl KatanaApp {
             None => first_target_path.map(Path::to_path_buf),
         }
     }
+
+    fn build_lint_fix_review_file(
+        &self,
+        target_path: PathBuf,
+        before: String,
+        fixes: &[katana_markdown_linter::rules::markdown::DiagnosticFix],
+    ) -> Option<crate::diff_review::DiffReviewFile> {
+        if fixes.len() > 1
+            && let Ok(result) = crate::linter_bridge::MarkdownLinterBridgeOps::fix_document(
+                &self.state,
+                &target_path,
+                &before,
+            )
+            && let Some(file) = DiagnosticFixApplicationOps::build_review_file_from_result(
+                target_path.clone(),
+                before.clone(),
+                result,
+            )
+        {
+            return Some(file);
+        }
+
+        DiagnosticFixApplicationOps::build_review_file(target_path, before, fixes)
+    }
 }
 
 pub(crate) trait DiffReviewActionOps {
@@ -53,14 +77,9 @@ impl DiffReviewActionOps for KatanaApp {
                 continue;
             }
             let target_path = batch.path;
-            if let Some(before) = batch
-                .source
-                .or_else(|| self.load_lint_fix_review_source(&target_path))
-                && let Some(file) = DiagnosticFixApplicationOps::build_review_file(
-                    target_path,
-                    before,
-                    &batch.fixes,
-                )
+            if let Some(before) = self.resolve_lint_fix_review_source(&target_path, batch.source)
+                && let Some(file) =
+                    self.build_lint_fix_review_file(target_path, before, &batch.fixes)
             {
                 review_files.push(file);
             }
