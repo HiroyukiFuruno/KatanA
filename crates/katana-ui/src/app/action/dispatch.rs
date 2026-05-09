@@ -17,6 +17,8 @@ impl KatanaApp {
                 }
             }
             AppAction::OpenWorkspace(p) => self.handle_open_explorer(p),
+            AppAction::SelectWorkspaceTab(p) => self.handle_select_workspace_tab(p),
+            AppAction::CloseWorkspaceTab(p) => self.handle_close_workspace_tab(p),
             AppAction::RefreshExplorer => self.handle_refresh_explorer(),
             AppAction::CreateFsNode {
                 parent_dir,
@@ -151,7 +153,7 @@ impl KatanaApp {
         self.state.document.tab_split_states.clear();
         self.state.document.recently_closed_tabs.clear();
         self.state.layout.diff_review = None;
-        self.state.search.filter_cache = None;
+        self.state.search.clear_workspace_scoped_results();
         self.state.layout.status_message = Some((
             crate::i18n::I18nOps::get().status.closed_workspace.clone(),
             crate::app_state::StatusType::Success,

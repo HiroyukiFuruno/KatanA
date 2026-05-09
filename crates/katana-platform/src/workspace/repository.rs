@@ -181,6 +181,7 @@ mod tests {
         let state = GlobalWorkspaceState {
             persisted: vec!["/test/p1".to_string()],
             histories: vec!["/test/h1".to_string()],
+            ..GlobalWorkspaceState::default()
         };
 
         repo.save(&state).unwrap();
@@ -189,6 +190,26 @@ mod tests {
         let loaded = repo.load();
         assert_eq!(loaded.persisted, state.persisted);
         assert_eq!(loaded.histories, state.histories);
+    }
+
+    #[test]
+    fn workspace_json_preserves_open_workspace_tabs() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("workspace.json");
+        let repo = JsonWorkspaceRepository::new(path);
+
+        let state = GlobalWorkspaceState {
+            persisted: vec!["/work/a".to_string(), "/work/b".to_string()],
+            histories: vec!["/work/b".to_string()],
+            open_workspace_tabs: vec!["/work/a".to_string(), "/work/b".to_string()],
+            active_workspace: Some("/work/b".to_string()),
+        };
+
+        repo.save(&state).unwrap();
+        let loaded = repo.load();
+
+        assert_eq!(loaded.open_workspace_tabs, state.open_workspace_tabs);
+        assert_eq!(loaded.active_workspace, state.active_workspace);
     }
 
     #[test]

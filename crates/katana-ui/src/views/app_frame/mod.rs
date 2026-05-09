@@ -12,5 +12,6 @@ mod tab_toolbar;
 mod title_bar;
 pub mod types;
 mod ui;
+mod workspace_toolbar;
 
 pub use types::*;

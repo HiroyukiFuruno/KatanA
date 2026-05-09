@@ -8,6 +8,7 @@ use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
 };
+mod startup_workspace;
 mod test_hooks;
 mod transient_workspace;
 mod types;
@@ -111,24 +112,7 @@ impl KatanaApp {
         }
         tracing::debug!("KatanaApp::new: End");
 
-        let last_ws = app
-            .state
-            .config
-            .settings
-            .settings()
-            .workspace
-            .last_workspace
-            .clone();
-        if let Some(ws_path) = last_ws {
-            if std::path::Path::new(&ws_path).exists() {
-                app.pending_action = AppAction::OpenWorkspace(std::path::PathBuf::from(ws_path));
-            } else {
-                tracing::warn!(
-                    "Saved workspace path no longer exists, skipping restore: {}",
-                    ws_path
-                );
-            }
-        }
+        startup_workspace::WorkspaceStartupOps::restore_workspace(&mut app);
 
         app
     }

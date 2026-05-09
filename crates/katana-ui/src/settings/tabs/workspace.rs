@@ -1,34 +1,8 @@
 use super::types::*;
 use crate::settings::*;
 
-fn apply_extension_toggle(
-    ui: &mut egui::Ui,
-    ext: &str,
-    is_enabled: bool,
-    extensions: &mut Vec<String>,
-) -> bool {
-    if is_enabled {
-        if ext.is_empty() {
-            ui.data_mut(|d| d.insert_temp(egui::Id::new("show_no_extension_warning"), true));
-            false
-        } else if !extensions.contains(&ext.to_string()) {
-            extensions.push(ext.to_string());
-            true
-        } else {
-            false
-        }
-    } else {
-        let before = extensions.len();
-        extensions.retain(|e| e != ext);
-        extensions.len() != before
-    }
-}
-
-fn is_standard_visible_extension(ext: &str) -> bool {
-    katana_core::workspace::TreeEntry::standard_visible_extensions()
-        .iter()
-        .any(|standard| standard.eq_ignore_ascii_case(ext))
-}
+mod visible_extensions;
+use visible_extensions::{apply_extension_toggle, is_standard_visible_extension};
 
 impl WorkspaceTabOps {
     pub(crate) fn render_workspace_tab(ui: &mut egui::Ui, state: &mut crate::app_state::AppState) {
@@ -88,6 +62,30 @@ impl WorkspaceTabOps {
                 .settings_mut()
                 .workspace
                 .enable_drawio_mount = drawio;
+            let _ = state.config.try_save_settings();
+        }
+
+        ui.add_space(SECTION_SPACING);
+
+        let mut open_workspace_in_tabs = state
+            .config
+            .settings
+            .settings()
+            .workspace
+            .open_workspace_in_tabs;
+        if ui
+            .add(crate::widgets::LabeledToggle::new(
+                &workspace_msgs.open_workspace_in_tabs,
+                &mut open_workspace_in_tabs,
+            ))
+            .changed()
+        {
+            state
+                .config
+                .settings
+                .settings_mut()
+                .workspace
+                .open_workspace_in_tabs = open_workspace_in_tabs;
             let _ = state.config.try_save_settings();
         }
 

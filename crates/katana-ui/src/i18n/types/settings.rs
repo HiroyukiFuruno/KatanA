@@ -99,6 +99,12 @@ pub struct SettingsWorkspaceMessages {
     pub extensionless_excludes: String,
     pub extensionless_excludes_hint: String,
     pub enable_drawio_mount: String,
+    #[serde(default = "default_open_workspace_in_tabs_label")]
+    pub open_workspace_in_tabs: String,
+}
+
+fn default_open_workspace_in_tabs_label() -> String {
+    "Open workspaces in tabs".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

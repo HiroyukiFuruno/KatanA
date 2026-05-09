@@ -314,7 +314,8 @@
       "no_extension_warning": "Nessuna garanzia di corretta visualizzazione senza estensione. Continuare?",
       "extensionless_excludes": "Esclusi (senza estensione)",
       "extensionless_excludes_hint": "Separa con virgole",
-      "enable_drawio_mount": "Abilita caricamento diretto di Draw.io (*.drawio, *.drowio)"
+      "enable_drawio_mount": "Abilita caricamento diretto di Draw.io (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "Apri workspace in schede"
     },
     "icons": {
       "preset_label": "Preselezione:",

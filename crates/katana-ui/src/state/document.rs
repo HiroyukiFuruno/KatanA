@@ -87,6 +87,7 @@ pub struct DocumentState {
     pub tab_split_states: Vec<TabSplitState>,
     pub tab_groups: Vec<TabGroup>,
     pub recently_closed_tabs: VecDeque<(PathBuf, bool)>,
+    pub scroll_to_active_tab: bool,
     pub last_auto_save: Option<Instant>,
     pub last_auto_refresh: Option<Instant>,
 }
@@ -108,6 +109,7 @@ impl DocumentState {
             tab_split_states: Vec::new(),
             tab_groups: Vec::new(),
             recently_closed_tabs: VecDeque::with_capacity(Self::MAX_RECENTLY_CLOSED_TABS),
+            scroll_to_active_tab: false,
             last_auto_save: None,
             last_auto_refresh: None,
         }

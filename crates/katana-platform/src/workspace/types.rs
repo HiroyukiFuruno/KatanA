@@ -10,4 +10,12 @@ pub struct GlobalWorkspaceState {
     /// Recently opened workspaces (history).
     #[serde(default)]
     pub histories: Vec<String>,
+
+    /// Workspaces currently opened as workspace tabs.
+    #[serde(default)]
+    pub open_workspace_tabs: Vec<String>,
+
+    /// Active workspace tab path.
+    #[serde(default)]
+    pub active_workspace: Option<String>,
 }

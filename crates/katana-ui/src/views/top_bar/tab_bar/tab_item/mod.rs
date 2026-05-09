@@ -2,10 +2,12 @@
 
 use crate::app_state::AppAction;
 use crate::state::document::{TabGroup, VirtualPathExt};
+use crate::views::top_bar::tab_border::TabBorderOps;
 use crate::views::top_bar::types::TopBarOps;
 use eframe::egui;
 use katana_core::document::Document;
 
+mod close;
 mod drag;
 mod render;
 
@@ -28,6 +30,7 @@ pub(crate) struct TabItem<'a> {
     pub recently_closed_tabs_empty: bool,
     pub should_scroll: bool,
     pub show_dirty_indicator: bool,
+    pub row_top: f32,
 }
 
 impl<'a> TabItem<'a> {
@@ -61,30 +64,13 @@ impl<'a> TabItem<'a> {
         let tooltip_path =
             crate::shell_logic::ShellLogicOps::relative_full_path(&self.doc.path, self.ws_root);
 
-        let (title_resp, close_resp) = ui
-            .push_id(format!("tab_{}", self.idx), |ui| {
-                ui.set_max_width(TAB_MAX_WIDTH);
-                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-                let t = self.render_title_button(ui, &title, is_changelog);
-                let c = self.render_close_button(ui);
-                (t, c)
-            })
-            .inner;
+        let (tab_rect, close_resp, tab_interact) =
+            self.render_parent_tab(ui, &title, is_changelog, is_demo);
+        let tab_hovered = TabBorderOps::rect_contains_pointer(ui, tab_rect);
+        self.set_close_visible(ui, tab_hovered);
+        TabBorderOps::paint(ui, tab_rect, tab_hovered);
+        self.draw_group_underline(ui, tab_rect);
 
-        let full_rect = close_resp
-            .as_ref()
-            .map_or(title_resp.rect, |c| title_resp.rect.union(c.rect));
-        self.draw_group_underline(ui, full_rect);
-
-        let tab_interact = ui.interact(
-            title_resp.rect,
-            egui::Id::new("tab_interact").with(self.idx),
-            if is_demo {
-                egui::Sense::click()
-            } else {
-                egui::Sense::click_and_drag()
-            },
-        );
         let mut clicked_tab = tab_interact.clicked();
         let mut close_ret = None;
         if let Some(c) = &close_resp
@@ -98,7 +84,7 @@ impl<'a> TabItem<'a> {
             clicked_tab = false;
         }
 
-        let ghost_info = self.handle_drag(ui, &tab_interact, full_rect, &title, is_changelog);
+        let ghost_info = self.handle_drag(ui, &tab_interact, tab_rect, &title, is_changelog);
         if self.is_active && self.should_scroll {
             tab_interact.scroll_to_me(Some(egui::Align::Center));
         }
@@ -124,10 +110,83 @@ impl<'a> TabItem<'a> {
             *tab_action = Some(AppAction::SelectDocument(self.doc.path.clone()));
         }
         Some(TabItemResult {
-            rect: full_rect,
+            rect: tab_rect,
             close_idx: close_ret,
             ghost_info,
             dragged_source,
         })
+    }
+
+    fn render_parent_tab(
+        &self,
+        ui: &mut egui::Ui,
+        title: &str,
+        is_changelog: bool,
+        is_demo: bool,
+    ) -> (egui::Rect, Option<egui::Response>, egui::Response) {
+        let mut title_response = None;
+        let mut close_response = None;
+        let mut tab_interact = None;
+        let parent_response = ui
+            .push_id(format!("tab_{}", self.idx), |ui| {
+                ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+                let close_visible = self.is_close_visible(ui);
+                let tab_width = self.parent_tab_width(ui, title, is_changelog, close_visible);
+                let row_height = self.parent_tab_height(ui);
+                let (parent_rect, parent_response) =
+                    ui.allocate_exact_size(egui::vec2(tab_width, row_height), egui::Sense::hover());
+                let parent_rect = self.normalize_parent_tab_rect(parent_rect);
+                let close_width = Self::close_width(ui);
+                let close_rect = Self::close_rect(parent_rect, close_width);
+                let title_rect = if close_visible {
+                    egui::Rect::from_min_max(
+                        parent_rect.min,
+                        egui::pos2(
+                            close_rect.left() - Self::title_close_gap(),
+                            parent_rect.bottom(),
+                        ),
+                    )
+                } else {
+                    parent_rect
+                };
+                tab_interact = Some(ui.interact(
+                    parent_rect,
+                    egui::Id::new("tab_interact").with(self.idx),
+                    if is_demo {
+                        egui::Sense::click()
+                    } else {
+                        egui::Sense::click_and_drag()
+                    },
+                ));
+                title_response =
+                    Some(self.render_title_button_at(ui, title_rect, title, is_changelog));
+                close_response = close_visible
+                    .then(|| self.render_close_button_at(ui, close_rect))
+                    .flatten();
+                parent_response
+            })
+            .inner;
+        let _ = title_response.expect("document tab title response");
+        let tab_interact = tab_interact.expect("document tab interaction response");
+        let tab_rect = Self::resolved_parent_tab_rect(
+            parent_response.rect,
+            close_response.as_ref().map(|response| response.rect),
+        );
+        let tab_rect = self.normalize_parent_tab_rect(tab_rect);
+        (tab_rect, close_response, tab_interact)
+    }
+
+    pub(crate) fn resolved_parent_tab_rect(
+        parent_rect: egui::Rect,
+        _close_response_rect: Option<egui::Rect>,
+    ) -> egui::Rect {
+        parent_rect
+    }
+
+    fn normalize_parent_tab_rect(&self, rect: egui::Rect) -> egui::Rect {
+        egui::Rect::from_min_size(
+            egui::pos2(rect.left(), self.row_top),
+            egui::vec2(rect.width(), rect.height()),
+        )
     }
 }

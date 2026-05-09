@@ -314,7 +314,8 @@
       "no_extension_warning": "不帶副檔名可能無法正確顯示。是否繼續？",
       "extensionless_excludes": "排除項 (無副檔名)",
       "extensionless_excludes_hint": "以逗號分隔",
-      "enable_drawio_mount": "啟用直接載入 Draw.io (*.drawio, *.drowio)"
+      "enable_drawio_mount": "啟用直接載入 Draw.io (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "以分頁開啟工作區"
     },
     "icons": {
       "preset_label": "預設:",

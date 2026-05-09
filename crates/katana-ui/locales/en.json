@@ -314,7 +314,8 @@
       "no_extension_warning": "There is no guarantee that files without extensions will display correctly as Markdown. Also, unexpected behavior might crash the app. Are you sure you want to enable this?",
       "extensionless_excludes": "Excluded Extensionless Files",
       "extensionless_excludes_hint": "Comma-separated",
-      "enable_drawio_mount": "Enable Direct Draw.io Loading (*.drawio, *.drowio)"
+      "enable_drawio_mount": "Enable Direct Draw.io Loading (*.drawio, *.drowio)",
+      "open_workspace_in_tabs": "Open workspaces in tabs"
     },
     "icons": {
       "preset_label": "Preset:",

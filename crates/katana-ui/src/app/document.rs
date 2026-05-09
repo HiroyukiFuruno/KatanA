@@ -47,6 +47,7 @@ impl DocumentOps for KatanaApp {
         {
             if activate {
                 self.state.document.active_doc_idx = Some(idx);
+                self.state.document.scroll_to_active_tab = true;
                 self.reset_scroll_for_new_active_path(&previous_active_path, &path);
 
                 if let Some(loaded_doc) =
@@ -102,6 +103,7 @@ impl DocumentOps for KatanaApp {
         self.state.document.open_documents.push(doc);
         if activate {
             self.state.document.active_doc_idx = Some(self.state.document.open_documents.len() - 1);
+            self.state.document.scroll_to_active_tab = true;
             self.reset_scroll_for_new_active_path(&previous_active_path, &path);
             if search_open {
                 /* WHY: Refresh search matches only when activating a document.

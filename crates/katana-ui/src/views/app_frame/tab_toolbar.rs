@@ -6,6 +6,7 @@ use eframe::egui;
 
 /* WHY: Fixed height for Row 2 (breadcrumbs + meta) and Row 3 (controls). */
 const TOOLBAR_ROW_HEIGHT: f32 = 28.0;
+const BREADCRUMB_LEFT_PADDING: f32 = 8.0;
 
 impl<'a> TabToolbar<'a> {
     pub(crate) fn new(app: &'a mut KatanaApp) -> Self {
@@ -14,24 +15,24 @@ impl<'a> TabToolbar<'a> {
 
     pub(crate) fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
-        egui::Panel::top("tab_toolbar").show_inside(ui, |ui| {
+        ui.vertical(|ui| {
             let ws_root = app
                 .state
                 .workspace
                 .data
                 .as_ref()
                 .map(|ws| ws.root.as_path());
-
             /* Row 1: Tab bar */
-            let tab_action = crate::views::top_bar::TabBar::new(
-                ws_root,
-                &app.state.document.open_documents,
-                app.state.document.active_doc_idx,
-                &app.state.document.recently_closed_tabs,
-                &app.state.document.tab_groups,
-                &app.state.layout.inline_rename_group,
-                Self::show_dirty_indicator(app),
-            )
+            let tab_action = crate::views::top_bar::TabBar {
+                workspace_root: ws_root,
+                open_documents: &app.state.document.open_documents,
+                active_doc_idx: app.state.document.active_doc_idx,
+                recently_closed_tabs: &app.state.document.recently_closed_tabs,
+                tab_groups: &app.state.document.tab_groups,
+                inline_rename_group: &app.state.layout.inline_rename_group,
+                show_dirty_indicator: Self::show_dirty_indicator(app),
+                scroll_to_active_tab: &mut app.state.document.scroll_to_active_tab,
+            }
             .show(ui);
             if let Some(a) = tab_action {
                 app.pending_action = a;
@@ -80,6 +81,7 @@ impl<'a> TabToolbar<'a> {
                     if is_virtual {
                         return;
                     }
+                    ui.add_space(BREADCRUMB_LEFT_PADDING);
                     if let Some(a) = Self::render_breadcrumbs(ui, app, &doc_path) {
                         out_action = Some(a);
                     }

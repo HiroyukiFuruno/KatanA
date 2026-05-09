@@ -50,6 +50,7 @@ impl<'a> MainPanels<'a> {
         WindowTitle::new(app).show(ui);
         GlobalMenuBar::new(app).show(ui);
         TitleBar::new(app, theme_colors).show(ui);
+        WorkspaceToolbar::new(app).show(ui);
         ExplorerSidebar::new(app).show(ui);
         TabToolbar::new(app).show(ui);
         CentralContent::new(app).show(ui)

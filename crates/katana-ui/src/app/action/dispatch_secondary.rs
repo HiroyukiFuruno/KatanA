@@ -1,4 +1,5 @@
 use crate::app::download::DownloadOps;
+use crate::app::workspace::WorkspaceOps;
 use crate::app_state::*;
 use crate::shell::*;
 
@@ -38,6 +39,9 @@ impl KatanaApp {
             } => self.handle_action_reorder_document(from, to, new_group_id),
             AppAction::ReorderActivityRail { from, to } => {
                 self.handle_action_reorder_activity_rail(from, to)
+            }
+            AppAction::ReorderWorkspaceTab { from, to } => {
+                self.handle_reorder_workspace_tab(from, to)
             }
             AppAction::StartPlantumlDownload(request) => {
                 /* WHY: Reuse the existing DownloadOps pipeline (DownloadRequest → start_download).

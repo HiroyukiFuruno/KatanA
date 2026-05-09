@@ -19,6 +19,7 @@ tempfile = "3"
 katana-ui = { path = "../../crates/katana-ui" }
 katana-platform = { path = "../../crates/katana-platform" }
 katana-core = { path = "../../crates/katana-core" }
+katana-markdown-linter = "=0.19.0"
 egui_kittest = { version = "0.34", features = ["wgpu", "eframe"] }
 egui = "0.34"
 image = { version = "0.25", default-features = false, features = ["png"] }

@@ -83,7 +83,7 @@ impl<'a> Breadcrumbs<'a> {
         current_path: &std::path::Path,
         breadcrumb_action: &mut Option<AppAction>,
     ) {
-        crate::widgets::MenuButtonOps::show(ui, egui::RichText::new(seg).small(), |ui| {
+        crate::widgets::MenuButtonOps::show_unframed(ui, egui::RichText::new(seg).small(), |ui| {
             let mut ctx_action = crate::app_state::AppAction::None;
 
             if let Some(ws) = &app.state.workspace.data

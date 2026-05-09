@@ -13,6 +13,7 @@ impl WorkspaceOpenHandlersOps {
         if app.state.workspace.data.is_some() {
             manage::save_workspace_state(app);
         }
+        app.state.search.clear_workspace_scoped_results();
         app.state.workspace.is_loading = true;
         app.state.layout.status_message = Some((
             crate::i18n::I18nOps::tf(
@@ -72,7 +73,7 @@ impl WorkspaceOpenHandlersOps {
         app.state.document.tab_view_modes.clear();
         app.state.document.tab_split_states.clear();
         app.state.document.recently_closed_tabs.clear();
-        app.state.search.filter_cache = None;
+        app.state.search.clear_workspace_scoped_results();
         let path_str = app
             .state
             .workspace

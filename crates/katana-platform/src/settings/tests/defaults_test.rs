@@ -17,6 +17,7 @@ fn test_workspace_settings_default_deserialization() {
     assert!(!ws.visible_extensions.is_empty());
     assert!(!ws.extensionless_excludes.is_empty());
     assert!(!ws.ignored_directories.is_empty());
+    assert!(ws.open_workspace_in_tabs);
 }
 
 #[test]

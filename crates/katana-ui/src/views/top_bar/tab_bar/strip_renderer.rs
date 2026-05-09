@@ -1,46 +1,9 @@
 use crate::app_state::AppAction;
-use crate::shell::TAB_DROP_ANIMATION_TIME;
-use crate::shell::TAB_DROP_INDICATOR_WIDTH;
-use crate::shell::TAB_INTER_ITEM_SPACING;
-use crate::views::top_bar::types::TopBarOps;
 use eframe::egui;
 
 use super::group_header;
 use super::items;
 use super::tab_item;
-
-pub(super) struct DropIndicator<'a> {
-    pub tab_rects: &'a [(usize, egui::Rect)],
-    pub ghost_info: Option<(egui::Rect, egui::Rangef)>,
-}
-
-impl<'a> DropIndicator<'a> {
-    pub fn render(self, ui: &mut egui::Ui) {
-        let Some((ghost_rect, y_range)) = self.ghost_info else {
-            return;
-        };
-        let drop_points = TopBarOps::compute_drop_points(self.tab_rects);
-        let best_x = drop_points
-            .iter()
-            .min_by(|(_, a), (_, b)| {
-                let da = (ghost_rect.center().x - a).abs();
-                let db = (ghost_rect.center().x - b).abs();
-                da.partial_cmp(&db).unwrap_or(std::cmp::Ordering::Equal)
-            })
-            .map(|(_, x)| *x);
-        let Some(target_x) = best_x else { return };
-        let animated_x = ui.ctx().animate_value_with_time(
-            egui::Id::new("tab_drop_indicator"),
-            target_x,
-            TAB_DROP_ANIMATION_TIME,
-        );
-        ui.painter().vline(
-            animated_x,
-            y_range,
-            egui::Stroke::new(TAB_DROP_INDICATOR_WIDTH, ui.visuals().selection.bg_fill),
-        );
-    }
-}
 
 pub(super) struct DrawItemRenderer<'a> {
     pub open_documents: &'a [katana_core::document::Document],
@@ -74,6 +37,7 @@ impl<'a> DrawItemRenderer<'a> {
                 .show(ui, tab_action);
             }
             items::DrawItem::Tab { idx, group } => {
+                let row_top = ui.cursor().min.y;
                 let res = tab_item::TabItem {
                     idx,
                     doc: &self.open_documents[idx],
@@ -84,6 +48,7 @@ impl<'a> DrawItemRenderer<'a> {
                     recently_closed_tabs_empty: self.recently_closed_tabs_empty,
                     should_scroll,
                     show_dirty_indicator: self.show_dirty_indicator,
+                    row_top,
                 }
                 .show(ui, tab_action);
                 if let Some(res) = res {
@@ -97,7 +62,6 @@ impl<'a> DrawItemRenderer<'a> {
                     if let Some(s) = res.dragged_source {
                         *dragged_source = Some(s);
                     }
-                    ui.add_space(TAB_INTER_ITEM_SPACING);
                 }
             }
         }

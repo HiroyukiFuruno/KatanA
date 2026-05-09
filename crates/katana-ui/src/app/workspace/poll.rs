@@ -49,7 +49,7 @@ pub(super) fn poll_explorer_load(app: &mut KatanaApp, ctx: &egui::Context) {
             Ok((ExplorerLoadType::Refresh, _path, Ok(ws))) => {
                 app.state.workspace.is_loading = false;
                 app.state.workspace.data = Some(ws);
-                app.state.search.filter_cache = None;
+                app.state.search.clear_workspace_scoped_results();
                 true
             }
             Ok((_load_type, _path, Err(e))) => {

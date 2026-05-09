@@ -20,6 +20,10 @@ pub(super) fn remove_workspace(app: &mut KatanaApp, path: &str) {
     let global_state = app.state.global_workspace.state_mut();
     global_state.persisted.retain(|p| p != path);
     global_state.histories.retain(|p| p != path);
+    global_state.open_workspace_tabs.retain(|p| p != path);
+    if global_state.active_workspace.as_deref() == Some(path) {
+        global_state.active_workspace = global_state.open_workspace_tabs.first().cloned();
+    }
     let _ = app.state.global_workspace.save();
 
     let settings = app.state.config.settings.settings_mut();
@@ -45,6 +49,10 @@ pub(super) fn handle_remove_explorer(app: &mut KatanaApp, path: String) {
         /* WHY: Only deregister from `persisted`. `histories` is independent and
          * stays intact so the user can still re-open from Recent Workspaces. */
         global_state.persisted.retain(|p| p != &path);
+        global_state.open_workspace_tabs.retain(|p| p != &path);
+        if global_state.active_workspace.as_deref() == Some(path.as_str()) {
+            global_state.active_workspace = global_state.open_workspace_tabs.first().cloned();
+        }
         global_state.persisted.is_empty()
     };
     let _ = app.state.global_workspace.save();
@@ -119,6 +127,20 @@ pub(super) fn save_workspace_state(app: &mut KatanaApp) {
     };
     if app.state.workspace.is_temporary_root(&ws.root) {
         return;
+    }
+    {
+        let root = ws.root.display().to_string();
+        let global_state = app.state.global_workspace.state_mut();
+        if global_state
+            .open_workspace_tabs
+            .iter()
+            .any(|path| path == &root)
+        {
+            global_state.active_workspace = Some(root);
+            if let Err(e) = app.state.global_workspace.save() {
+                tracing::warn!("Failed to save workspace tab state: {}", e);
+            }
+        }
     }
     let state_key = compute_workspace_hash(&ws.root.to_string_lossy());
     let expanded: std::collections::HashSet<String> = app

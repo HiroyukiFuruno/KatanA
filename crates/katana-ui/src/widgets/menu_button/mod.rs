@@ -15,4 +15,15 @@ impl MenuButtonOps {
     ) -> egui::InnerResponse<Option<R>> {
         ui.menu_button(label, add_contents)
     }
+
+    pub fn show_unframed<'a, R>(
+        ui: &mut egui::Ui,
+        label: impl egui::IntoAtoms<'a>,
+        add_contents: impl FnOnce(&mut egui::Ui) -> R,
+    ) -> egui::InnerResponse<Option<R>> {
+        let button = egui::Button::new(label).small().frame(false);
+        let (response, inner) =
+            egui::containers::menu::MenuButton::from_button(button).ui(ui, add_contents);
+        egui::InnerResponse::new(inner.map(|r| r.inner), response)
+    }
 }

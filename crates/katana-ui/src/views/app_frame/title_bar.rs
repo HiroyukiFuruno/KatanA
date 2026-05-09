@@ -11,21 +11,13 @@ impl<'a> WindowTitle<'a> {
 
     pub(crate) fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
-        let ws_root_for_title = app.state.workspace.data.as_ref().map(|ws| ws.root.clone());
-
-        let title_text = match app.state.active_document() {
-            Some(doc) => {
-                let fname = doc.file_name().unwrap_or("");
-                let rel =
-                    ShellLogicOps::relative_full_path(&doc.path, ws_root_for_title.as_deref());
-                crate::shell_logic::ShellLogicOps::format_window_title(
-                    fname,
-                    &rel,
-                    &crate::i18n::I18nOps::get().menu.release_notes,
-                )
-            }
-            None => "KatanA".to_string(),
-        };
+        let ws_root = app
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .map(|ws| ws.root.as_path());
+        let title_text = ShellLogicOps::format_workspace_window_title(ws_root);
 
         if app.state.layout.last_window_title != title_text {
             ui.ctx()
@@ -46,7 +38,24 @@ impl<'a> TitleBar<'a> {
     pub(crate) fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let theme_colors = self.theme_colors;
-        let title_text = &app.state.layout.last_window_title;
+        let ws_root = app
+            .state
+            .workspace
+            .data
+            .as_ref()
+            .map(|ws| ws.root.as_path());
+        let title_text = match app.state.active_document() {
+            Some(doc) => {
+                let fname = doc.file_name().unwrap_or("");
+                let rel = ShellLogicOps::relative_full_path(&doc.path, ws_root);
+                ShellLogicOps::format_document_title(
+                    fname,
+                    &rel,
+                    &crate::i18n::I18nOps::get().menu.release_notes,
+                )
+            }
+            None => app.state.layout.last_window_title.clone(),
+        };
 
         egui::Panel::top("app_title_bar").show_inside(ui, |ui| {
             crate::widgets::AlignCenter::new()
@@ -56,7 +65,7 @@ impl<'a> TitleBar<'a> {
                         let title_color = theme_bridge::ThemeBridgeOps::rgb_to_color32(
                             theme_colors.system.title_bar_text,
                         );
-                        ui.label(egui::RichText::new(title_text).small().color(title_color));
+                        ui.label(egui::RichText::new(&title_text).small().color(title_color));
                     });
                 })
                 .show(ui);

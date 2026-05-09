@@ -110,12 +110,15 @@ mod tests {
     }
 
     fn app_for_drop_tests() -> KatanaApp {
-        let state = AppState::new(
+        let mut state = AppState::new(
             Default::default(),
             Default::default(),
             Default::default(),
             std::sync::Arc::new(katana_platform::InMemoryCacheService::default()),
         );
+        state.global_workspace = katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
+            katana_platform::workspace::InMemoryWorkspaceRepository::default(),
+        ));
         KatanaApp::new(state)
     }
 
