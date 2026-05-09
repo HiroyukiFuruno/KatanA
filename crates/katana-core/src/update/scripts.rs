@@ -51,7 +51,7 @@ rm -rf "{temp_dir}"
         {
             format!(
                 r#"param($parentPid);
-$ErrorActionPreference = 'Stop';
+$ErrorActionPreference = 'SilentlyContinue';
 $ProgressPreference = 'SilentlyContinue';
 $target = '{target}';
 $bak = '{target}.bak';
@@ -67,49 +67,39 @@ function Write-UpdateLog($phase, $result, $reason) {{
 if ($parentPid) {{
     Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue;
 }}
+
 if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
 
-$evacuated = $false;
-try {{
-    if (Test-Path $target) {{
-        Move-Item -Force $target $bak;
-    }}
-    $evacuated = $true;
-    Write-UpdateLog 'evacuate' 'ok' '';
-}} catch {{
-    Write-UpdateLog 'evacuate' 'fail' $_.Exception.Message;
-}}
-
-$replaced = $false;
-for ($retryCount = 0; $retryCount -lt 5; $retryCount++) {{
-    if (-not $evacuated) {{
-        Write-UpdateLog 'replace' 'retry' 'evacuation failed';
-        break;
-    }}
-
+$success = $false;
+for ($retryCount = 0; $retryCount -lt 10; $retryCount++) {{
     try {{
-        Move-Item -Force $extracted $target;
-        if (-not (Test-Path $extracted)) {{
-            $replaced = $true;
-            Write-UpdateLog 'replace' 'ok' '';
-            break;
+        if (Test-Path $target) {{
+            Move-Item -Force $target $bak -ErrorAction Stop;
         }}
-        Write-UpdateLog 'replace' 'retry' 'target file is not updated';
+        Move-Item -Force $extracted $target -ErrorAction Stop;
+        $success = $true;
+        Write-UpdateLog 'update' 'ok' "retry=$retryCount";
+        break;
     }} catch {{
-        Write-UpdateLog 'replace' 'retry' $_.Exception.Message;
+        Write-UpdateLog 'update' 'retry' "retry=$retryCount error=$($_.Exception.Message)";
     }}
     Start-Sleep -s 1;
 }}
 
-if ($evacuated -and $replaced) {{
-    Start-Process -WindowStyle Hidden $target;
+if ($success) {{
+    Start-Process $target;
     Write-UpdateLog 'launch' 'ok' '';
 }} else {{
-    if (Test-Path $bak) {{ Move-Item -Force $bak $target -ErrorAction SilentlyContinue }};
+    if (Test-Path $bak) {{
+        Move-Item -Force $bak $target -ErrorAction SilentlyContinue;
+    }}
     Write-UpdateLog 'rollback' 'done' '';
     Add-Type -AssemblyName PresentationFramework;
     [System.Windows.MessageBox]::Show('Could not complete the application update. The original version has been restored.', 'Update Failed', 'OK', 'Error') | Out-Null;
 }}
+
+# Best effort cleanup
+Start-Sleep -s 2;
 Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
                 target = target_app.display(),
@@ -174,16 +164,8 @@ mod tests {
         #[cfg(target_os = "windows")]
         {
             assert!(content.contains("function Write-UpdateLog"));
-            assert!(content.contains("Move-Item -Force $target $bak;"));
-            assert!(content.contains("-not (Test-Path $extracted)"));
+            assert!(content.contains("Move-Item -Force $target $bak -ErrorAction Stop;"));
             assert!(content.contains("update.log"));
-            assert!(
-                !content.contains("Move-Item -Force $target $bak -ErrorAction SilentlyContinue")
-            );
-            assert!(
-                !content
-                    .contains("Move-Item -Force $extracted $target -ErrorAction SilentlyContinue")
-            );
             assert!(content.contains("Add-Type -AssemblyName PresentationFramework"));
         }
 

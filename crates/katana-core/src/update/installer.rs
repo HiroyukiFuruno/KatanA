@@ -66,7 +66,7 @@ impl UpdateInstallerOps {
                 anyhow::bail!("Extracted update does not contain a valid executable");
             }
 
-            let script_path = temp_dir.path().join("relauncher.bat");
+            let script_path = temp_dir.path().join("relauncher.ps1");
             Self::generate_relauncher_script(
                 &extracted_app_path,
                 target_app_path,
