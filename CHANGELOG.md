@@ -4,6 +4,20 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ## [0.22.12] - 2026-05-08 15:04:10 (UTC)
 
+### ✨ Improvements
+
+- **Markdown Fix Review**: Added a "Cancel All" action for multi-file Markdown fix previews, making it easier to discard an entire batch at once.
+- **Problems Panel Count**: Updated the status-bar problem count to follow the selected Problems panel scope while the panel is open, and return to all open tabs when closed.
+
+### 🐛 Bug Fixes
+
+- **Markdown Bulk Fixes**: Fixed bulk Markdown fixes so every eligible open tab is included and can be applied from the review, including tabs whose contents have not been loaded yet.
+- **Markdown Fix Loop**: Fixed repeated MD022 / MD012 quick-fix previews by using the same convergent fix result as the Markdown formatter.
+- **Linter Settings Refresh**: Fixed Markdown diagnostics so Linter setting changes are reflected even when the document text has not changed.
+- **Unavailable Fix Buttons**: Hid fix actions when the suggested fix would not change the current content, preventing buttons that cannot apply a real fix.
+- **Quick Fix Preview**: Fixed editor diagnostic quick-fix buttons so they reliably open the review tab.
+- **Workspace Restore**: Prevented temporary workspaces from being restored on the next launch after opening standalone files.
+
 ### 🔧 System
 
 - Improved the internal quality gate so shared code-quality checks stay consistent across KatanA ecosystem projects.
