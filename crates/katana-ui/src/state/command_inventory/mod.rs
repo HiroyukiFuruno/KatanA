@@ -97,3 +97,21 @@ impl CommandInventory {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app_state::AppAction;
+
+    #[test]
+    fn repair_diagram_renderers_command_uses_renderer_repair_action() {
+        let commands = CommandInventory::all();
+        let command = commands
+            .iter()
+            .find(|it| it.id == "help.repair_diagram_renderers")
+            .expect("repair diagram renderers command must exist");
+
+        assert!(matches!(command.action, AppAction::RepairRendererAssets));
+        assert_eq!(command.group, CommandGroup::Help);
+    }
+}

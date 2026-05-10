@@ -18,6 +18,7 @@
     "quit": "Quit KatanA",
     "help": "Help",
     "check_updates": "Check for Updates…",
+    "repair_diagram_renderers": "Repair Diagram Renderers",
     "release_notes": "Changelog",
     "view": "View",
     "command_palette": "Command Palette…",

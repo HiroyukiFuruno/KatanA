@@ -49,8 +49,9 @@ rm -rf "{temp_dir}"
 
         #[cfg(target_os = "windows")]
         {
-            let target_esc = target_app.display().to_string().replace("'", "''");
-            let extracted_esc = extracted_app.display().to_string().replace("'", "''");
+            let target_esc = escape_powershell_single_quoted_path(target_app);
+            let extracted_esc = escape_powershell_single_quoted_path(extracted_app);
+            let temp_dir_esc = escape_powershell_single_quoted_path(temp_dir_path);
 
             format!(
                 r#"param($parentPid);
@@ -108,7 +109,7 @@ Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
                 target = target_esc,
                 extracted = extracted_esc,
-                temp_dir = temp_dir_path.display()
+                temp_dir = temp_dir_esc
             )
         }
 
@@ -147,6 +148,11 @@ fi
     }
 }
 
+#[cfg(any(target_os = "windows", test))]
+fn escape_powershell_single_quoted_path(path: &Path) -> String {
+    path.display().to_string().replace("'", "''")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -177,5 +183,13 @@ mod tests {
         {
             assert!(content.contains("mv \"extracted_app\" \"target_app\""));
         }
+    }
+
+    #[test]
+    fn escape_powershell_single_quoted_path_doubles_single_quotes() {
+        let escaped =
+            escape_powershell_single_quoted_path(Path::new(r"C:\Users\O'Connor\AppData\Temp"));
+
+        assert_eq!(escaped, r"C:\Users\O''Connor\AppData\Temp");
     }
 }
