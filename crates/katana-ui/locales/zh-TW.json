@@ -18,6 +18,7 @@
     "quit": "結束 KatanA",
     "help": "說明",
     "check_updates": "檢查更新…",
+    "repair_diagram_renderers": "修復圖表渲染器",
     "release_notes": "版本說明",
     "view": "視圖",
     "command_palette": "指令面板…",
@@ -389,15 +390,7 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML 已安裝在 {path}。",
       "plantuml_not_installed": "未安裝 PlantUML。",
-      "plantuml_update_now": "將 PlantUML 更新到最新版本",
-      "drawio_section_title": "Draw.io 更新",
-      "drawio_installed": "Draw.io viewer 已安裝在 {path}",
-      "drawio_not_installed": "未安裝 Draw.io viewer。",
-      "drawio_update_now": "將 Draw.io 更新到最新版本",
-      "mermaid_section_title": "Mermaid 更新",
-      "mermaid_installed": "Mermaid.js 已安裝在 {path}",
-      "mermaid_not_installed": "未安裝 Mermaid.js。",
-      "mermaid_update_now": "將 Mermaid.js 更新到最新版本"
+      "plantuml_update_now": "將 PlantUML 更新到最新版本"
     },
     "behavior": {
       "section_title": "行為",

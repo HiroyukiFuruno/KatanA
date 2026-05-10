@@ -14,7 +14,7 @@ impl DiagnosticFixApplicationOps {
         fixes: &[DiagnosticFix],
     ) -> katana_markdown_linter::FixResult {
         let results = fixes.iter().map(Self::to_lint_result).collect::<Vec<_>>();
-        katana_markdown_linter::fix_with_results(content, &results)
+        katana_markdown_linter::MarkdownLinter::fix_with_results(content, &results)
     }
 
     pub(crate) fn build_review_file(

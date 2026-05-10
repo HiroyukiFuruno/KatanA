@@ -18,6 +18,8 @@ pub struct MenuMessages {
     pub quit: String,
     pub help: String,
     pub check_updates: String,
+    #[serde(default = "default_menu_repair_diagram_renderers")]
+    pub repair_diagram_renderers: String,
     pub release_notes: String,
     pub view: String,
     pub command_palette: String,
@@ -57,6 +59,10 @@ fn default_menu_zoom_in() -> String {
 
 fn default_menu_zoom_out() -> String {
     "Zoom Out".to_string()
+}
+
+fn default_menu_repair_diagram_renderers() -> String {
+    "Repair Diagram Renderers".to_string()
 }
 
 fn default_menu_demo() -> String {

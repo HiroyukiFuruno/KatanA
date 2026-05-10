@@ -8,8 +8,8 @@
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-22-13-kcf-theme-propagation` またはリリース用統合ブランチ（例: `release/vX.Y.Z`）
-- **作業ブランチ**: 標準は `v0-22-13-kcf-theme-propagation-task-x`、リリース用は `feature/v0.22.13-task-x` (xはタスク番号)
+- **標準（Base）ブランチ**: `v0-22-14-kcf-theme-propagation` またはリリース用統合ブランチ（例: `release/vX.Y.Z`）
+- **作業ブランチ**: 標準は `v0-22-14-kcf-theme-propagation-task-x`、リリース用は `feature/v0.22.14-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 
@@ -77,7 +77,7 @@
 - [ ] 4.3 HTML export の Mermaid / Draw.io が current theme と一致する回帰テストを追加する
 - [ ] 4.4 PDF / PNG / JPEG export の入力 HTML が light テーマの SVG を含むことを確認する対象テストを追加する
 - [ ] 4.5 `scripts/screenshot` に light テーマで Mermaid / Draw.io を表示する review 用 request を追加する
-- [ ] 4.6 `./scripts/openspec validate v0-22-13-kcf-theme-propagation --strict` を通す
+- [ ] 4.6 `./scripts/openspec validate v0-22-14-kcf-theme-propagation --strict` を通す
 - [ ] 4.7 対象テストと `just check-local` を通す
 
 ### Definition of Done (DoD)
@@ -111,8 +111,8 @@
 - [ ] 6.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.7 Create `release/v0.22.13` branch from master
-- [ ] 6.8 Run `just VERSION=0.22.13 release` and update CHANGELOG (`changelog-writing` skill)
-- [ ] 6.9 Create PR from `release/v0.22.13` targeting `master` — Ensure `Release Readiness` CI passes
+- [ ] 6.7 Create `release/v0.22.14` branch from master
+- [ ] 6.8 Run `just VERSION=0.22.14 release` and update CHANGELOG (`changelog-writing` skill)
+- [ ] 6.9 Create PR from `release/v0.22.14` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`

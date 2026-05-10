@@ -48,7 +48,7 @@ fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
 fn ast_linter_shared_kal_rules() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     let _lock = KAL_CURRENT_DIR_LOCK.lock().expect("Test requirement");
-    let _guard = CurrentDirGuard::enter(&root);
+    let _guard = CurrentDirGuard::enter(root);
     katana_ast_lint::KatanaAstLint::from_workspace().assert_clean();
 }
 
@@ -253,7 +253,7 @@ fn ast_linter_foreground_surface_blocks_lower_ui() {
 fn ast_linter_settings_alignment() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     use katana_linter::rules::domains::ui::settings_alignment::SettingsAlignmentOps;
-    let all_violations = SettingsAlignmentOps::check_settings_alignment(&root);
+    let all_violations = SettingsAlignmentOps::check_settings_alignment(root);
     ViolationReporterOps::panic(
         "settings-alignment",
         "Fix: Layout properties inside settings must use `AlignCenter` and `egui::Align::Max` to prevent alignment breakages. Do not use `LabeledToggle` in linter properties, `Align::Min`, or checkbox controls.",
@@ -276,7 +276,7 @@ fn ast_linter_shortcut_duplicates() {
 fn ast_linter_i18n_no_unused_keys() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     let locale_dir = root.join("crates/katana-ui/locales");
-    let all_violations = LocaleAudit::lint_unused_keys(&root, &locale_dir);
+    let all_violations = LocaleAudit::lint_unused_keys(root, &locale_dir);
     ViolationReporterOps::panic(
         "i18n-unused-keys",
         "Fix: The locale key is not referenced in any Rust source file. \

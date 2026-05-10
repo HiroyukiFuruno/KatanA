@@ -2,6 +2,14 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.13] - 2026-05-10 09:30:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Windows In-App Update**: Fixed an issue where the in-app updater detected new versions and showed the "Update & Restart" button, but neither the update nor the relaunch actually completed. The relauncher script extension is now `.ps1` (executed as PowerShell), the evacuate/replace flow runs inside a single retry loop with up to 30 attempts to absorb antivirus / Defender file locking, and the running window is no longer hidden after restart.
+- **Windows Update Diagnostics**: The "Update Failed" dialog now points at `%LOCALAPPDATA%\KatanA\update.log` so failed self-updates can be triaged from the message itself.
+- **Windows Path Robustness**: Single quotes in the install path are now safely escaped, and the relauncher restores the working directory of the new process after launch.
+
 ## [0.22.12] - 2026-05-08 15:04:10 (UTC)
 
 ### 🚀 Features

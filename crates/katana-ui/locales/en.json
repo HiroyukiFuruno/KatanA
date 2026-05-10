@@ -18,6 +18,7 @@
     "quit": "Quit KatanA",
     "help": "Help",
     "check_updates": "Check for Updates…",
+    "repair_diagram_renderers": "Repair Diagram Renderers",
     "release_notes": "Changelog",
     "view": "View",
     "command_palette": "Command Palette…",
@@ -400,15 +401,7 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML is installed at {path}.",
       "plantuml_not_installed": "PlantUML is not installed.",
-      "plantuml_update_now": "Update PlantUML to Latest",
-      "drawio_section_title": "Draw.io",
-      "drawio_installed": "Draw.io viewer is installed at {path}",
-      "drawio_not_installed": "Draw.io viewer is not installed.",
-      "drawio_update_now": "Update Draw.io to Latest",
-      "mermaid_section_title": "Mermaid",
-      "mermaid_installed": "Mermaid.js is installed at {path}",
-      "mermaid_not_installed": "Mermaid.js is not installed.",
-      "mermaid_update_now": "Update Mermaid.js to Latest"
+      "plantuml_update_now": "Update PlantUML to Latest"
     },
     "behavior": {
       "section_title": "Behavior",

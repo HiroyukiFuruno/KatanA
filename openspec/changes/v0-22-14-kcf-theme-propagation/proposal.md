@@ -1,6 +1,6 @@
 ## Why
 
-KatanA が light テーマで動作していても、kcf 経由の Mermaid / Draw.io 描画が dark 的な色で返る経路がある。調査の結果、KatanA はテーマ情報を `RenderInput` に入れているが、kcf 側の実描画がその情報を使わず内部の既定テーマに依存しているため、v0.22.13 で kcf 修正の取り込みと KatanA 側の再発防止を行う。
+KatanA が light テーマで動作していても、kcf 経由の Mermaid / Draw.io 描画が dark 的な色で返る経路がある。調査の結果、KatanA はテーマ情報を `RenderInput` に入れているが、kcf 側の実描画がその情報を使わず内部の既定テーマに依存しているため、v0.22.14 で kcf 修正の取り込みと KatanA 側の再発防止を行う。
 
 ## What Changes
 

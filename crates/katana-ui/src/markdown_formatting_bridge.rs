@@ -94,7 +94,7 @@ impl MarkdownFormattingBridgeOps {
             &mut options,
             content,
         );
-        let fixed = katana_markdown_linter::fix(content, &options)
+        let fixed = katana_markdown_linter::MarkdownLinter::fix(content, &options)
             .map_err(|err| MarkdownFormatFailure::new(path, err.to_string()))?;
         Ok(MarkdownFormatOutcome {
             content: fixed.content,
@@ -103,7 +103,7 @@ impl MarkdownFormattingBridgeOps {
     }
 
     fn disable_non_layout_rules(options: &mut katana_markdown_linter::LintOptions) {
-        let layout_options = katana_markdown_linter::layout_lint_options();
+        let layout_options = katana_markdown_linter::MarkdownFormatter::layout_lint_options();
         for (rule_id, rule_config) in &mut options.rules {
             if layout_options
                 .rules

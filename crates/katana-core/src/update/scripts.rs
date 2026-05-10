@@ -49,9 +49,13 @@ rm -rf "{temp_dir}"
 
         #[cfg(target_os = "windows")]
         {
+            let target_esc = escape_powershell_single_quoted_path(target_app);
+            let extracted_esc = escape_powershell_single_quoted_path(extracted_app);
+            let temp_dir_esc = escape_powershell_single_quoted_path(temp_dir_path);
+
             format!(
                 r#"param($parentPid);
-$ErrorActionPreference = 'Stop';
+$ErrorActionPreference = 'SilentlyContinue';
 $ProgressPreference = 'SilentlyContinue';
 $target = '{target}';
 $bak = '{target}.bak';
@@ -64,57 +68,48 @@ function Write-UpdateLog($phase, $result, $reason) {{
     Add-Content -Path $logPath -Value ((Get-Date -Format o), $phase, $result, $target, $reason -join ' ');
 }}
 
-if ($parentPid) {{
-    Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue;
+if ($parentPid -as [int]) {{
+    Wait-Process -Id ([int]$parentPid) -Timeout 30 -ErrorAction SilentlyContinue;
 }}
+
 if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
 
-$evacuated = $false;
-try {{
-    if (Test-Path $target) {{
-        Move-Item -Force $target $bak;
-    }}
-    $evacuated = $true;
-    Write-UpdateLog 'evacuate' 'ok' '';
-}} catch {{
-    Write-UpdateLog 'evacuate' 'fail' $_.Exception.Message;
-}}
-
-$replaced = $false;
-for ($retryCount = 0; $retryCount -lt 5; $retryCount++) {{
-    if (-not $evacuated) {{
-        Write-UpdateLog 'replace' 'retry' 'evacuation failed';
-        break;
-    }}
-
+$success = $false;
+for ($retryCount = 0; $retryCount -lt 30; $retryCount++) {{
     try {{
-        Move-Item -Force $extracted $target;
-        if (-not (Test-Path $extracted)) {{
-            $replaced = $true;
-            Write-UpdateLog 'replace' 'ok' '';
-            break;
+        if ((Test-Path $target) -and (-not (Test-Path $bak))) {{
+            Move-Item -Force $target $bak -ErrorAction Stop;
         }}
-        Write-UpdateLog 'replace' 'retry' 'target file is not updated';
+        Move-Item -Force $extracted $target -ErrorAction Stop;
+        $success = $true;
+        Write-UpdateLog 'update' 'ok' "retry=$retryCount";
+        break;
     }} catch {{
-        Write-UpdateLog 'replace' 'retry' $_.Exception.Message;
+        Write-UpdateLog 'update' 'retry' "retry=$retryCount error=$($_.Exception.Message)";
     }}
     Start-Sleep -s 1;
 }}
 
-if ($evacuated -and $replaced) {{
-    Start-Process -WindowStyle Hidden $target;
+if ($success) {{
+    Start-Process $target -WorkingDirectory (Split-Path $target);
     Write-UpdateLog 'launch' 'ok' '';
 }} else {{
-    if (Test-Path $bak) {{ Move-Item -Force $bak $target -ErrorAction SilentlyContinue }};
+    if (Test-Path $bak) {{
+        Move-Item -Force $bak $target -ErrorAction SilentlyContinue;
+    }}
     Write-UpdateLog 'rollback' 'done' '';
     Add-Type -AssemblyName PresentationFramework;
-    [System.Windows.MessageBox]::Show('Could not complete the application update. The original version has been restored.', 'Update Failed', 'OK', 'Error') | Out-Null;
+    $msg = "Could not complete the application update. The original version has been restored.`n`nDetails: $logPath";
+    [System.Windows.MessageBox]::Show($msg, 'Update Failed', 'OK', 'Error') | Out-Null;
 }}
+
+# Best effort cleanup
+Start-Sleep -s 2;
 Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
-                target = target_app.display(),
-                extracted = extracted_app.display(),
-                temp_dir = temp_dir_path.display()
+                target = target_esc,
+                extracted = extracted_esc,
+                temp_dir = temp_dir_esc
             )
         }
 
@@ -153,6 +148,11 @@ fi
     }
 }
 
+#[cfg(any(target_os = "windows", test))]
+fn escape_powershell_single_quoted_path(path: &Path) -> String {
+    path.display().to_string().replace("'", "''")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -174,16 +174,8 @@ mod tests {
         #[cfg(target_os = "windows")]
         {
             assert!(content.contains("function Write-UpdateLog"));
-            assert!(content.contains("Move-Item -Force $target $bak;"));
-            assert!(content.contains("-not (Test-Path $extracted)"));
+            assert!(content.contains("Move-Item -Force $target $bak -ErrorAction Stop;"));
             assert!(content.contains("update.log"));
-            assert!(
-                !content.contains("Move-Item -Force $target $bak -ErrorAction SilentlyContinue")
-            );
-            assert!(
-                !content
-                    .contains("Move-Item -Force $extracted $target -ErrorAction SilentlyContinue")
-            );
             assert!(content.contains("Add-Type -AssemblyName PresentationFramework"));
         }
 
@@ -191,5 +183,13 @@ mod tests {
         {
             assert!(content.contains("mv \"extracted_app\" \"target_app\""));
         }
+    }
+
+    #[test]
+    fn escape_powershell_single_quoted_path_doubles_single_quotes() {
+        let escaped =
+            escape_powershell_single_quoted_path(Path::new(r"C:\Users\O'Connor\AppData\Temp"));
+
+        assert_eq!(escaped, r"C:\Users\O''Connor\AppData\Temp");
     }
 }

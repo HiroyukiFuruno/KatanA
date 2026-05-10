@@ -144,8 +144,6 @@ impl<'a> SettingsWindow<'a> {
                                                 triggered_action = crate::settings::tabs::UpdatesTabOps::render_updates_tab(
                                                     ui, state,
                                                     state.config.get_plantuml_jar_path_if_exists(),
-                                                    state.config.get_drawio_js_path_if_exists(),
-                                                    state.config.get_mermaid_js_path_if_exists(),
                                                 );
                                             }
                                             SettingsTab::Behavior => {
