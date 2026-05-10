@@ -92,12 +92,7 @@ impl UpdateInstallerOps {
                 anyhow::bail!("Extracted update does not contain a valid executable");
             }
 
-            #[cfg(target_os = "windows")]
-            let script_name = "relauncher.ps1";
-            #[cfg(not(target_os = "windows"))]
-            let script_name = "relauncher.sh";
-
-            let script_path = temp_dir.path().join(script_name);
+            let script_path = temp_dir.path().join("relauncher.sh");
             Self::generate_relauncher_script(
                 &extracted_app_path,
                 target_app_path,
@@ -129,9 +124,9 @@ impl UpdateInstallerOps {
                     "-ExecutionPolicy",
                     "Bypass",
                     "-File",
+                    prep.script_path.to_str().unwrap_or(""),
+                    &parent_pid,
                 ])
-                .arg(&prep.script_path)
-                .arg(&parent_pid)
                 .spawn()?;
         }
         #[cfg(not(target_os = "windows"))]

@@ -49,6 +49,9 @@ rm -rf "{temp_dir}"
 
         #[cfg(target_os = "windows")]
         {
+            let target_esc = target_app.display().to_string().replace("'", "''");
+            let extracted_esc = extracted_app.display().to_string().replace("'", "''");
+
             format!(
                 r#"param($parentPid);
 $ErrorActionPreference = 'SilentlyContinue';
@@ -64,16 +67,16 @@ function Write-UpdateLog($phase, $result, $reason) {{
     Add-Content -Path $logPath -Value ((Get-Date -Format o), $phase, $result, $target, $reason -join ' ');
 }}
 
-if ($parentPid) {{
-    Wait-Process -Id $parentPid -Timeout 30 -ErrorAction SilentlyContinue;
+if ($parentPid -as [int]) {{
+    Wait-Process -Id ([int]$parentPid) -Timeout 30 -ErrorAction SilentlyContinue;
 }}
 
 if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
 
 $success = $false;
-for ($retryCount = 0; $retryCount -lt 10; $retryCount++) {{
+for ($retryCount = 0; $retryCount -lt 30; $retryCount++) {{
     try {{
-        if (Test-Path $target) {{
+        if (Test-Path $target -and -not (Test-Path $bak)) {{
             Move-Item -Force $target $bak -ErrorAction Stop;
         }}
         Move-Item -Force $extracted $target -ErrorAction Stop;
@@ -87,7 +90,7 @@ for ($retryCount = 0; $retryCount -lt 10; $retryCount++) {{
 }}
 
 if ($success) {{
-    Start-Process $target;
+    Start-Process $target -WorkingDirectory (Split-Path $target);
     Write-UpdateLog 'launch' 'ok' '';
 }} else {{
     if (Test-Path $bak) {{
@@ -95,15 +98,16 @@ if ($success) {{
     }}
     Write-UpdateLog 'rollback' 'done' '';
     Add-Type -AssemblyName PresentationFramework;
-    [System.Windows.MessageBox]::Show('Could not complete the application update. The original version has been restored.', 'Update Failed', 'OK', 'Error') | Out-Null;
+    $msg = "Could not complete the application update. The original version has been restored.`n`nDetails: $logPath";
+    [System.Windows.MessageBox]::Show($msg, 'Update Failed', 'OK', 'Error') | Out-Null;
 }}
 
 # Best effort cleanup
 Start-Sleep -s 2;
 Remove-Item -Recurse -Force '{temp_dir}' -ErrorAction SilentlyContinue;
 "#,
-                target = target_app.display(),
-                extracted = extracted_app.display(),
+                target = target_esc,
+                extracted = extracted_esc,
                 temp_dir = temp_dir_path.display()
             )
         }
