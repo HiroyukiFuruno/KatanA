@@ -19,7 +19,7 @@ impl LinterDocIdentity {
     }
 
     pub(crate) fn for_language(rule_id: &str, language_code: &str) -> Self {
-        let locale = katana_markdown_linter::resolve_locale_code(language_code);
+        let locale = katana_markdown_linter::LocaleService::resolve_code(language_code);
         Self {
             rule_id: normalized_rule_id(rule_id),
             locale_code: locale.code().to_string(),

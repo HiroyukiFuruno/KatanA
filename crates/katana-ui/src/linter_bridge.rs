@@ -103,7 +103,7 @@ impl MarkdownLinterBridgeOps {
                 state, path, content,
             );
         catch_unwind(AssertUnwindSafe(|| {
-            katana_markdown_linter::fix(content, &options)
+            katana_markdown_linter::MarkdownLinter::fix(content, &options)
         }))
         .map_err(|_| "markdown linter fix panicked".to_string())?
         .map_err(|err| err.to_string())
@@ -147,8 +147,9 @@ impl MarkdownLinterBridgeOps {
     pub(crate) fn diagnostic_message(
         diag: &katana_markdown_linter::rules::markdown::MarkdownDiagnostic,
     ) -> String {
-        let locale =
-            katana_markdown_linter::resolve_locale_code(&crate::i18n::I18nOps::get_language());
+        let locale = katana_markdown_linter::LocaleService::resolve_code(
+            &crate::i18n::I18nOps::get_language(),
+        );
         let result: katana_markdown_linter::LintResult = diag.clone().into();
         katana_markdown_linter::LocalizedDiagnostic::from_result(&result, locale).message
     }
@@ -158,7 +159,7 @@ impl MarkdownLinterBridgeOps {
     }
 
     fn rule_description_for_language(meta: &OfficialRuleMeta, language_code: &str) -> String {
-        katana_markdown_linter::localized_rule_description(
+        katana_markdown_linter::I18nRuleDescriptionService::localized_rule_description(
             meta.code,
             meta.description,
             language_code,
