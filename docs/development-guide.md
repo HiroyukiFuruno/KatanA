@@ -38,6 +38,7 @@ Pre-built binaries are not yet available. Please build from source (see below).
 - macOS 13 Ventura or later, Windows 10/11, or Linux (e.g. Ubuntu 22.04+)
 - **macOS:** [Homebrew](https://brew.sh) (the setup script will install it if missing)
 - **Windows / Linux:** Standard build tools (`build-essential` on Ubuntu, Visual Studio Build Tools on Windows)
+- **Rust:** 1.95.0 or later (see `rust-version` in `Cargo.toml`)
 - **just:** Command runner used for local development and CI/CD tasks
 
 ### One-command Setup
