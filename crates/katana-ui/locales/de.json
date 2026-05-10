@@ -389,15 +389,7 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML ist unter {path} installiert.",
       "plantuml_not_installed": "PlantUML ist nicht installiert.",
-      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren",
-      "drawio_section_title": "Draw.io-Aktualisierung",
-      "drawio_installed": "Draw.io viewer ist unter {path} installiert",
-      "drawio_not_installed": "Draw.io viewer ist nicht installiert.",
-      "drawio_update_now": "Draw.io auf neueste Version aktualisieren",
-      "mermaid_section_title": "Mermaid-Aktualisierung",
-      "mermaid_installed": "Mermaid.js ist unter {path} installiert",
-      "mermaid_not_installed": "Mermaid.js ist nicht installiert.",
-      "mermaid_update_now": "Mermaid.js auf neueste Version aktualisieren"
+      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren"
     },
     "behavior": {
       "section_title": "Verhalten",

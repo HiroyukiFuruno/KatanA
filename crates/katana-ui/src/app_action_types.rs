@@ -82,8 +82,6 @@ pub enum AppAction {
     StartUpdateDownload,
     InstallUpdateAndRestart,
     StartPlantumlDownload(AssetDownloadRequest),
-    StartDrawioDownload(AssetDownloadRequest),
-    StartMermaidDownload(AssetDownloadRequest),
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
     ToggleCodePreview,

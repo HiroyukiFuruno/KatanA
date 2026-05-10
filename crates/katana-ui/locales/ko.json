@@ -389,15 +389,7 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML이 {path}에 설치되어 있습니다.",
       "plantuml_not_installed": "PlantUML이 설치되어 있지 않습니다.",
-      "plantuml_update_now": "PlantUML 최신 버전으로 업데이트",
-      "drawio_section_title": "Draw.io 업데이트",
-      "drawio_installed": "Draw.io viewer가 {path}에 설치되어 있습니다",
-      "drawio_not_installed": "Draw.io viewer가 설치되어 있지 않습니다.",
-      "drawio_update_now": "Draw.io 최신 버전으로 업데이트",
-      "mermaid_section_title": "Mermaid 업데이트",
-      "mermaid_installed": "Mermaid.js가 {path}에 설치되어 있습니다",
-      "mermaid_not_installed": "Mermaid.js가 설치되어 있지 않습니다.",
-      "mermaid_update_now": "Mermaid.js 최신 버전으로 업데이트"
+      "plantuml_update_now": "PlantUML 최신 버전으로 업데이트"
     },
     "behavior": {
       "section_title": "동작",

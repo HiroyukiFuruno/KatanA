@@ -389,15 +389,7 @@
       "plantuml_section_title": "PlantUML",
       "plantuml_installed": "PlantUML 已安装在 {path}。",
       "plantuml_not_installed": "未安装 PlantUML。",
-      "plantuml_update_now": "将 PlantUML 更新到最新版本",
-      "drawio_section_title": "Draw.io 更新",
-      "drawio_installed": "Draw.io viewer 已安装在 {path}",
-      "drawio_not_installed": "未安装 Draw.io viewer。",
-      "drawio_update_now": "将 Draw.io 更新到最新版本",
-      "mermaid_section_title": "Mermaid 更新",
-      "mermaid_installed": "Mermaid.js 已安装在 {path}",
-      "mermaid_not_installed": "未安装 Mermaid.js。",
-      "mermaid_update_now": "将 Mermaid.js 更新到最新版本"
+      "plantuml_update_now": "将 PlantUML 更新到最新版本"
     },
     "behavior": {
       "section_title": "行为",

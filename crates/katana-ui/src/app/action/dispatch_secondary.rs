@@ -53,20 +53,6 @@ impl KatanaApp {
                     dest: request.dest,
                 });
             }
-            AppAction::StartDrawioDownload(request) => {
-                self.start_download(crate::preview_pane::DownloadRequest {
-                    tool_name: "Draw.io".to_string(),
-                    url: request.url,
-                    dest: request.dest,
-                });
-            }
-            AppAction::StartMermaidDownload(request) => {
-                self.start_download(crate::preview_pane::DownloadRequest {
-                    tool_name: "Mermaid".to_string(),
-                    url: request.url,
-                    dest: request.dest,
-                });
-            }
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
             AppAction::OpenUserGuide => self.handle_action_open_user_guide(),

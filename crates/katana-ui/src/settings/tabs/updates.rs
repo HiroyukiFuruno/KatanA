@@ -14,16 +14,12 @@ const SECTION_SEPARATOR_SPACING: f32 = 24.0;
 const SECTION_AFTER_SEPARATOR_SPACING: f32 = 16.0;
 const PLANTUML_DOWNLOAD_URL: &str =
     "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar";
-const DRAWIO_DOWNLOAD_URL: &str = "https://viewer.diagrams.net/js/viewer-static.min.js";
-const MERMAID_DOWNLOAD_URL: &str = "https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js";
 
 impl crate::settings::tabs::UpdatesTabOps {
     pub(crate) fn render_updates_tab(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
         jar_path: Option<PathBuf>,
-        drawio_path: Option<PathBuf>,
-        mermaid_path: Option<PathBuf>,
     ) -> Option<AppAction> {
         let mut pending_action = None;
         let i18n_root = crate::i18n::I18nOps::get();
@@ -107,56 +103,6 @@ impl crate::settings::tabs::UpdatesTabOps {
                     action: |dest| {
                         AppAction::StartPlantumlDownload(AssetDownloadRequest {
                             url: PLANTUML_DOWNLOAD_URL.to_string(),
-                            dest,
-                        })
-                    },
-                },
-            );
-            if pending_action.is_none() {
-                pending_action = section_action;
-            }
-
-            ui.add_space(SECTION_SEPARATOR_SPACING);
-            ui.separator();
-            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
-
-            let section_action = RendererUpdateSectionOps::render(
-                ui,
-                RendererUpdateSection {
-                    title: &i18n_settings.drawio_section_title,
-                    installed_path: drawio_path,
-                    default_path: state.config.try_get_drawio_js_path(),
-                    installed_template: &i18n_settings.drawio_installed,
-                    not_installed_message: &i18n_settings.drawio_not_installed,
-                    update_label: &i18n_settings.drawio_update_now,
-                    action: |dest| {
-                        AppAction::StartDrawioDownload(AssetDownloadRequest {
-                            url: DRAWIO_DOWNLOAD_URL.to_string(),
-                            dest,
-                        })
-                    },
-                },
-            );
-            if pending_action.is_none() {
-                pending_action = section_action;
-            }
-
-            ui.add_space(SECTION_SEPARATOR_SPACING);
-            ui.separator();
-            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
-
-            let section_action = RendererUpdateSectionOps::render(
-                ui,
-                RendererUpdateSection {
-                    title: &i18n_settings.mermaid_section_title,
-                    installed_path: mermaid_path,
-                    default_path: state.config.try_get_mermaid_js_path(),
-                    installed_template: &i18n_settings.mermaid_installed,
-                    not_installed_message: &i18n_settings.mermaid_not_installed,
-                    update_label: &i18n_settings.mermaid_update_now,
-                    action: |dest| {
-                        AppAction::StartMermaidDownload(AssetDownloadRequest {
-                            url: MERMAID_DOWNLOAD_URL.to_string(),
                             dest,
                         })
                     },

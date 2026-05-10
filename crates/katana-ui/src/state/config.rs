@@ -104,26 +104,6 @@ impl ConfigState {
         use katana_core::markdown::plantuml_renderer::PlantUmlRendererOps;
         PlantUmlRendererOps::find_plantuml_jar()
     }
-
-    pub fn try_get_drawio_js_path(&self) -> Option<std::path::PathBuf> {
-        katana_core::markdown::DiagramRuntimeAssetOps::resolve_path(
-            katana_core::markdown::DiagramRuntimeAssetKind::DrawIo,
-        )
-    }
-
-    pub fn get_drawio_js_path_if_exists(&self) -> Option<std::path::PathBuf> {
-        self.try_get_drawio_js_path().filter(|path| path.exists())
-    }
-
-    pub fn try_get_mermaid_js_path(&self) -> Option<std::path::PathBuf> {
-        katana_core::markdown::DiagramRuntimeAssetOps::resolve_path(
-            katana_core::markdown::DiagramRuntimeAssetKind::Mermaid,
-        )
-    }
-
-    pub fn get_mermaid_js_path_if_exists(&self) -> Option<std::path::PathBuf> {
-        self.try_get_mermaid_js_path().filter(|path| path.exists())
-    }
 }
 
 #[cfg(test)]
