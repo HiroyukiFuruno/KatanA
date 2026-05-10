@@ -28,7 +28,7 @@ egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonm
 comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
 katana-canvas-forge = "0.1.1"
 katana-ast-lint = "0.5.1"
-katana-markdown-linter = "0.19.0"
+katana-markdown-linter = "0.19.1"
 
 # Serialization / config
 serde = { version = "1", features = ["derive"] }
