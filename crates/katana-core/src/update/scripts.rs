@@ -76,7 +76,7 @@ if (Test-Path $bak) {{ Remove-Item -Force $bak -ErrorAction SilentlyContinue }};
 $success = $false;
 for ($retryCount = 0; $retryCount -lt 30; $retryCount++) {{
     try {{
-        if (Test-Path $target -and -not (Test-Path $bak)) {{
+        if ((Test-Path $target) -and (-not (Test-Path $bak))) {{
             Move-Item -Force $target $bak -ErrorAction Stop;
         }}
         Move-Item -Force $extracted $target -ErrorAction Stop;
