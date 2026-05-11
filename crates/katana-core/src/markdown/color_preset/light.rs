@@ -7,6 +7,7 @@ impl LightOps {
     pub fn get() -> &'static DiagramColorPreset {
         static LIGHT: OnceLock<DiagramColorPreset> = OnceLock::new();
         LIGHT.get_or_init(|| DiagramColorPreset {
+            dark_mode: false,
             background: "transparent",
             text: "#333333",
             fill: "#fff2cc",

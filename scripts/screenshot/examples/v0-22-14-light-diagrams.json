@@ -1,0 +1,49 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-14-light-diagrams",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "preset": "SolarizedLight",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": false
+    },
+    "workspace_files": [
+      {
+        "name": "light-diagrams.md",
+        "content": "# v0.22.14 light diagram check\n\n## Embedded PNG\n\n![Transparent PNG](transparent-preview.png)\n\n## ZenUML\n\n```mermaid\nzenuml\n    title Order Service\n    @Actor Client #FFEBE6\n    @Boundary OrderController #0747A6\n    @EC2 <<BFF>> OrderService #E3FCEF\n    group BusinessService {\n      @Lambda PurchaseService\n      @AzureFunction InvoiceService\n    }\n\n    @Starter(Client)\n    // `POST /orders`\n    OrderController.post(payload) {\n      OrderService.create(payload) {\n        order = new Order(payload)\n        if(order != null) {\n          par {\n            PurchaseService.createPO(order)\n            InvoiceService.createInvoice(order)\n          }\n        }\n      }\n    }\n```\n\n## Mermaid\n\n```mermaid\ngraph TD\n    A[Write Markdown] --> B[Preview]\n    B --> C[Export]\n```\n\n## Draw.io\n\n```drawio\n<mxGraphModel><root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/><mxCell id=\"2\" value=\"Light Theme\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontColor=#333333;\" vertex=\"1\" parent=\"1\"><mxGeometry x=\"40\" y=\"40\" width=\"160\" height=\"70\" as=\"geometry\"/></mxCell></root></mxGraphModel>\n```\n"
+      },
+      {
+        "name": "transparent-preview.png",
+        "source": "vendor/egui_commonmark_upstream/egui_commonmark/examples/cuddlyferris.png"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1600, "height": 1100 },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "preview_only"
+        }
+      }
+    },
+    {
+      "type": "wait",
+      "seconds": 5.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-light-diagram-preview"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

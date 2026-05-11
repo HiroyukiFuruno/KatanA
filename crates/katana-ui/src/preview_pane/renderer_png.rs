@@ -14,7 +14,7 @@ impl RendererPngDecoder {
         match Self::decode_png_rgba(&bytes) {
             Ok(rasterized) => RenderedSection::Image {
                 svg_data: rasterized,
-                alt: format!("{kind:?} diagram"),
+                alt: diagram_alt_text(kind, source),
                 source_lines,
             },
             Err(e) => RenderedSection::Error {
@@ -38,4 +38,11 @@ impl RendererPngDecoder {
             rgba: rgba.into_raw(),
         })
     }
+}
+
+fn diagram_alt_text(kind: &DiagramKind, source: &str) -> String {
+    if kind.is_zenuml_source(source) {
+        return "ZenUML diagram".to_string();
+    }
+    format!("{kind:?} diagram")
 }

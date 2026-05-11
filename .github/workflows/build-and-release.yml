@@ -202,6 +202,8 @@ jobs:
           else
             exit 1
           fi
+      - name: Verify macOS asset contract
+        run: scripts/release/check-release-asset-contract.sh macos
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -242,6 +244,8 @@ jobs:
         run: cargo build --workspace --release
       - name: Package Linux Artifact
         run: scripts/build/package-linux.sh
+      - name: Verify Linux asset contract
+        run: scripts/release/check-release-asset-contract.sh linux
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -281,6 +285,10 @@ jobs:
       - name: Package Windows Artifacts
         shell: bash
         run: scripts/build/package-windows.sh
+
+      - name: Verify Windows asset contract
+        shell: bash
+        run: scripts/release/check-release-asset-contract.sh windows
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

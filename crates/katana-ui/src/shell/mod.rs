@@ -2,8 +2,6 @@
 
 use katana_platform::FilesystemService;
 
-use crate::app::*;
-
 use crate::{
     app_state::{AppAction, AppState},
     preview_pane::PreviewPane,
@@ -48,7 +46,6 @@ impl KatanaApp {
             tab_previews: Vec::new(),
             download_rx: None,
             active_download: None,
-            renderer_asset_rx: None,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,
@@ -107,9 +104,6 @@ impl KatanaApp {
         app.clear_transient_workspace_restore_state();
         katana_core::update::UpdateCleanupOps::perform_background_cleanup();
         tracing::debug!("KatanaApp::new: Background cleanup done");
-        if !cfg!(test) {
-            app.start_renderer_asset_bootstrap();
-        }
         tracing::debug!("KatanaApp::new: End");
 
         startup_workspace::WorkspaceStartupOps::restore_workspace(&mut app);

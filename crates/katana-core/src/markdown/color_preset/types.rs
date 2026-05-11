@@ -2,6 +2,7 @@ use std::sync::atomic::AtomicBool;
 
 #[derive(Debug, Clone, Default)]
 pub struct DiagramColorPreset {
+    pub dark_mode: bool,
     pub background: &'static str,
     pub text: &'static str,
     pub fill: &'static str,

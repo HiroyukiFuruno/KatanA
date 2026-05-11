@@ -22,18 +22,22 @@ impl DiagramKind {
     pub fn should_preserve_fenced_source(&self, source: &str) -> bool {
         matches!(self, Self::Mermaid) && should_preserve_mermaid_fence(source)
     }
+
+    pub fn is_zenuml_source(&self, source: &str) -> bool {
+        matches!(self, Self::Mermaid) && mermaid_source_starts_with_keyword(source, "zenuml")
+    }
 }
 
 fn should_preserve_mermaid_fence(source: &str) -> bool {
     let trimmed = source.trim_start_matches('\u{feff}').trim_start();
-    if trimmed.trim().is_empty() {
-        return true;
-    }
-    mermaid_source_starts_with_keyword(trimmed, "zenuml")
+    trimmed.trim().is_empty()
 }
 
 fn mermaid_source_starts_with_keyword(source: &str, keyword: &str) -> bool {
-    let lower_source = source.to_ascii_lowercase();
+    let lower_source = source
+        .trim_start_matches('\u{feff}')
+        .trim_start()
+        .to_ascii_lowercase();
     let Some(rest) = lower_source.strip_prefix(keyword) else {
         return false;
     };
@@ -73,23 +77,24 @@ impl DiagramBlock {
     }
 
     pub fn render(&self) -> DiagramResult {
+        self.render_with_theme(super::diagram_backend::DiagramThemeSnapshot::current())
+    }
+
+    pub fn render_with_theme(
+        &self,
+        theme: super::diagram_backend::DiagramThemeSnapshot,
+    ) -> DiagramResult {
         let language = match self.kind {
             DiagramKind::Mermaid => super::diagram_backend::DiagramBackendLanguage::Mermaid,
             DiagramKind::PlantUml => super::diagram_backend::DiagramBackendLanguage::PlantUml,
             DiagramKind::DrawIo => super::diagram_backend::DiagramBackendLanguage::DrawIo,
         };
         let backend = super::diagram_backend::DiagramBackendFactory::create(language.clone());
-        let preset = super::color_preset::DiagramColorPreset::current();
-        let is_dark = super::color_preset::DiagramColorPreset::is_dark_mode();
         let input = super::diagram_backend::DiagramBackendInput {
             language,
             source: self.source.clone(),
             options: super::diagram_backend::DiagramRenderOptions::default(),
-            theme: super::diagram_backend::DiagramThemeSnapshot::from_preset(
-                if is_dark { "dark" } else { "light" },
-                is_dark,
-                preset,
-            ),
+            theme,
             document: super::diagram_backend::DiagramDocumentContext::Detached {
                 display_name: String::new(),
             },

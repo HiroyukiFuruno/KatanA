@@ -123,7 +123,7 @@ winget install HiroyukiFuruno.katana-desktop
 
 You can also download the files manually from the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest).
 
-- **Portable ZIP**: Extract the archive to your preferred location and run `katana-desktop.exe`.
+- **Portable ZIP**: Extract the archive to your preferred location and run `KatanA.exe`.
 - **MSI Installer**: Automatically creates Start Menu and Desktop shortcuts. (Note: Since the MSI is not code-signed, Windows SmartScreen may display a warning. Select "More info" -> "Run anyway" to proceed).
 
 ### Linux
@@ -138,14 +138,14 @@ brew tap HiroyukiFuruno/KatanA && brew install katana-desktop
 
 1. Go to the [Releases page](https://github.com/HiroyukiFuruno/KatanA/releases/latest)
 2. Download the `KatanA-linux-x86_64.tar.gz`
-3. Extract the archive and run the executable directly
+3. Extract the archive and run `./KatanA`
 
 ### Updating KatanA
 
 KatanA features a built-in auto-updater. Once installed (whether via Homebrew or manually), KatanA will notify you when a new release is available.
 
-- **macOS:**You can update the app directly from within the UI by clicking the**"Update & Restart"** button. If you initially installed KatanA via Homebrew, the first time you update from within the app, KatanA will automatically untap itself from Homebrew to prevent double-management issues.
-- **Windows / Linux:** The update dialog will provide a direct link to download the latest asset from the release page.
+- **macOS / Windows / Linux:** You can update the app directly from within the UI by clicking the "Install and Restart" button.
+- **macOS Homebrew installs:** The first in-app update automatically untaps KatanA from Homebrew to prevent double-management issues.
 
 ---
 

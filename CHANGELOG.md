@@ -2,6 +2,19 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.14] - 2026-05-11 05:24:36 (UTC)
+
+### ✨ Improvements
+
+- **Diagram Theme Consistency**: Mermaid and DrawIO diagrams now follow the active light or dark theme in previews and exports, preventing dark diagram colors from appearing in light workspaces.
+- **Diagram Renderer Availability**: Diagram rendering no longer depends on a separate startup download or manual renderer repair action, reducing first-run and offline failure cases.
+
+### 🐛 Bug Fixes
+
+- **ZenUML Diagram Rendering**: Fixed ZenUML content inside `mermaid` fences so it is passed to the diagram renderer instead of staying visible as raw Markdown.
+- **Linux In-App Update**: Fixed Linux in-app updates for installs whose executable was named `katana-desktop`; the next update can repair itself through the normal restart flow without manual reinstall or file renaming.
+- **Windows In-App Update**: Improved update asset selection so Windows portable or renamed installs still use the correct application executable during automatic update.
+
 ## [0.22.13] - 2026-05-10 09:30:00 (UTC)
 
 ### 🐛 Bug Fixes

@@ -7,6 +7,7 @@ impl DarkOps {
     pub fn get() -> &'static DiagramColorPreset {
         static DARK: OnceLock<DiagramColorPreset> = OnceLock::new();
         DARK.get_or_init(|| DiagramColorPreset {
+            dark_mode: true,
             background: "transparent",
             text: "#E0E0E0",
             fill: "#2D2D2D",

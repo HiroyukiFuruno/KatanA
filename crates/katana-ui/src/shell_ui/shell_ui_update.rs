@@ -43,7 +43,6 @@ impl KatanaApp {
         self.handle_shortcuts(ctx);
         super::dropped_files::DroppedFileOps::queue(self, ctx);
         self.poll_download(ctx);
-        self.poll_renderer_asset_bootstrap(ctx);
         self.poll_explorer_load(ctx);
 
         if let Some(path) = self.pending_document_loads.pop_front() {
@@ -130,6 +129,15 @@ impl KatanaApp {
         ctx.data_mut(|d| d.insert_temp(egui::Id::new("katana_theme_colors"), theme_colors.clone()));
         ctx.global_style_mut(|s| s.spacing.scroll.floating = false);
         katana_core::markdown::color_preset::DiagramColorPreset::set_dark_mode(dark);
+        katana_core::markdown::DiagramThemeSnapshot::set_current_override(
+            katana_core::markdown::DiagramThemeOverride {
+                name: theme_colors.name.clone(),
+                is_dark: dark,
+                background: rgb_hex(theme_colors.preview.background),
+                text: rgb_hex(theme_colors.preview.text),
+                preview_text: rgb_hex(theme_colors.preview.text),
+            },
+        );
         self.cached_theme = Some(theme_colors.clone());
         if matches!(self.pending_action, AppAction::None) {
             self.pending_action = AppAction::RefreshDiagrams;
@@ -151,4 +159,8 @@ impl KatanaApp {
             }
         }
     }
+}
+
+fn rgb_hex(color: katana_platform::theme::Rgb) -> String {
+    format!("#{:02x}{:02x}{:02x}", color.r, color.g, color.b)
 }

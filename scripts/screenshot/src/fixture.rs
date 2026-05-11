@@ -1,4 +1,4 @@
-use crate::request::{Fixture, FixtureSettings};
+use crate::request::{Fixture, FixtureSettings, WorkspaceFile};
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 
@@ -27,13 +27,7 @@ pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
             }
             None => {
                 for wf in &fixture.workspace_files {
-                    let dest = dir.join(&wf.name);
-                    if let Some(parent) = dest.parent() {
-                        std::fs::create_dir_all(parent)
-                            .with_context(|| format!("creating fixture dir for {}", wf.name))?;
-                    }
-                    std::fs::write(&dest, &wf.content)
-                        .with_context(|| format!("writing fixture file {}", wf.name))?;
+                    write_workspace_file(wf, &dir)?;
                 }
                 dir
             }
@@ -52,6 +46,28 @@ pub fn setup(fixture: &Fixture, tmp_root: &Path) -> Result<FixtureEnv> {
     })
 }
 
+fn write_workspace_file(file: &WorkspaceFile, workspace_dir: &Path) -> Result<()> {
+    let dest = workspace_dir.join(file.name());
+    if let Some(parent) = dest.parent() {
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("creating fixture dir for {}", file.name()))?;
+    }
+
+    match file {
+        WorkspaceFile::Text { name, content } => std::fs::write(&dest, content)
+            .with_context(|| format!("writing fixture file {name}"))?,
+        WorkspaceFile::Copy { name, source } => {
+            let source = PathBuf::from(source)
+                .canonicalize()
+                .with_context(|| format!("copy source not found for fixture file {name}"))?;
+            std::fs::copy(source, &dest)
+                .with_context(|| format!("copying fixture file {name}"))?;
+        }
+    }
+
+    Ok(())
+}
+
 fn config_dir(home: &Path) -> PathBuf {
     if cfg!(target_os = "macos") {
         home.join("Library")
@@ -67,11 +83,13 @@ fn config_dir(home: &Path) -> PathBuf {
 fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>) -> String {
     let theme_str = settings.theme.as_deref().unwrap_or("dark");
     let locale = settings.locale.as_deref().unwrap_or("en");
-    let preset = if theme_str == "light" {
-        "KatanaLight"
-    } else {
-        "KatanaDark"
-    };
+    let preset = settings.preset.as_deref().unwrap_or_else(|| {
+        if theme_str == "light" {
+            "KatanaLight"
+        } else {
+            "KatanaDark"
+        }
+    });
     let explorer_visible = settings.explorer_visible.unwrap_or(false);
     let linter_enabled = settings.linter_enabled.unwrap_or(true);
 

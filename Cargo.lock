@@ -1512,9 +1512,9 @@ dependencies = [
 
 [[package]]
 name = "emojis"
-version = "0.8.1"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afd562179989ec12b5c82f63a9423be4d4f0c5651930837074488ef4d07f2886"
+checksum = "0a4d5d50b0b58df5173d8ff1192b4d1422ceae5d981b30d4b6f8ed1d673a2bc4"
 dependencies = [
  "phf 0.13.1",
 ]
@@ -2613,9 +2613,9 @@ dependencies = [
 
 [[package]]
 name = "katana-canvas-forge"
-version = "0.1.1"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "930473ca01b669c296b92072d370ec9710e17b0721f8e59bea31738dc9459e0a"
+checksum = "5cbe698ee717c14094038d8b05866be52e420d1b79373959489b47a294d8042a"
 dependencies = [
  "base64",
  "image",
@@ -2635,7 +2635,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.13"
+version = "0.22.14"
 dependencies = [
  "anyhow",
  "base64",
@@ -2669,7 +2669,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.13"
+version = "0.22.14"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -2699,7 +2699,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.13"
+version = "0.22.14"
 dependencies = [
  "anyhow",
  "cc",
@@ -2718,7 +2718,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.13"
+version = "0.22.14"
 dependencies = [
  "accesskit",
  "anyhow",

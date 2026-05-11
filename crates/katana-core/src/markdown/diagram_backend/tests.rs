@@ -15,6 +15,13 @@ fn input_with_options(options: DiagramRenderOptions) -> DiagramBackendInput {
     }
 }
 
+fn input_with_theme(theme: DiagramThemeSnapshot) -> DiagramBackendInput {
+    DiagramBackendInput {
+        theme,
+        ..input_with_options(DiagramRenderOptions::default())
+    }
+}
+
 #[test]
 fn cache_key_changes_when_backend_id_changes() {
     let input = input_with_options(DiagramRenderOptions::default());
@@ -67,6 +74,72 @@ fn cache_key_changes_when_render_options_change() {
         DiagramBackendCacheKey::new(backend_id.clone(), version.clone(), &fast),
         DiagramBackendCacheKey::new(backend_id, version, &slow)
     );
+}
+
+#[test]
+fn cache_key_changes_when_theme_changes() {
+    let dark = input_with_theme(DiagramThemeSnapshot::from_preset(
+        "dark",
+        true,
+        DiagramColorPreset::dark(),
+    ));
+    let light = input_with_theme(DiagramThemeSnapshot::from_preset(
+        "light",
+        false,
+        DiagramColorPreset::light(),
+    ));
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kcf-mermaid");
+    let version = DiagramBackendVersion::new("runtime");
+
+    assert_ne!(
+        DiagramBackendCacheKey::new(backend_id.clone(), version.clone(), &dark),
+        DiagramBackendCacheKey::new(backend_id, version, &light)
+    );
+}
+
+#[test]
+fn cache_key_changes_when_runtime_profile_changes() {
+    let input = input_with_options(DiagramRenderOptions::default());
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kcf-mermaid");
+    let old = DiagramBackendVersion::from_kcf(
+        "0.1.3",
+        "Mermaid",
+        "11.10.0",
+        "old-checksum",
+        "katana-mermaid",
+    );
+    let new = DiagramBackendVersion::from_kcf(
+        "0.1.3",
+        "Mermaid",
+        "11.10.0",
+        "new-checksum",
+        "katana-mermaid",
+    );
+
+    assert_ne!(
+        DiagramBackendCacheKey::new(backend_id.clone(), old, &input),
+        DiagramBackendCacheKey::new(backend_id, new, &input)
+    );
+}
+
+#[test]
+fn current_theme_snapshot_uses_ui_theme_override() {
+    DiagramThemeSnapshot::set_current_override(DiagramThemeOverride {
+        name: "custom-light".to_string(),
+        is_dark: false,
+        background: "#fff4c2".to_string(),
+        text: "#332900".to_string(),
+        preview_text: "#332900".to_string(),
+    });
+
+    let snapshot = DiagramThemeSnapshot::current();
+
+    assert_eq!(snapshot.name, "custom-light");
+    assert_eq!(snapshot.background, "#fff4c2");
+    assert_eq!(snapshot.text, "#332900");
+    assert_eq!(snapshot.preview_text, "#332900");
+
+    DiagramThemeSnapshot::clear_current_override();
 }
 
 #[test]

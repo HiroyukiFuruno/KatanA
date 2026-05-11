@@ -186,6 +186,22 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_os = "linux")]
+    fn linux_script_replaces_target_even_when_asset_name_differs() {
+        let content = UpdateScriptOps::generate_script_content(
+            Path::new("/home/linuxbrew/.linuxbrew/bin/katana-desktop"),
+            Path::new("/tmp/katana-update/extracted/KatanA"),
+            Path::new("/tmp/katana-update"),
+        );
+
+        assert!(content.contains(
+            "if mv \"/tmp/katana-update/extracted/KatanA\" \"/home/linuxbrew/.linuxbrew/bin/katana-desktop\""
+        ));
+        assert!(content.contains("chmod +x \"/home/linuxbrew/.linuxbrew/bin/katana-desktop\""));
+        assert!(content.contains("\"/home/linuxbrew/.linuxbrew/bin/katana-desktop\" &"));
+    }
+
+    #[test]
     fn escape_powershell_single_quoted_path_doubles_single_quotes() {
         let escaped =
             escape_powershell_single_quoted_path(Path::new(r"C:\Users\O'Connor\AppData\Temp"));

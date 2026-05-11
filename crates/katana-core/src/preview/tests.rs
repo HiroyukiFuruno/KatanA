@@ -127,7 +127,7 @@ mod split_tests {
     }
 
     #[test]
-    fn zenuml_mermaid_fence_stays_markdown() {
+    fn zenuml_mermaid_fence_renders_as_diagram() {
         let md = "Before\n\
                   ```mermaid\n\
                   zenuml\n\
@@ -136,13 +136,16 @@ mod split_tests {
                   After";
         let sections = PreviewSectionOps::split_into_sections(md);
 
-        assert_eq!(sections.len(), 1);
+        assert_eq!(sections.len(), 3);
         assert!(matches!(sections[0], PreviewSection::Markdown(_, _)));
-        if let PreviewSection::Markdown(text, _) = &sections[0] {
-            assert!(text.contains("```mermaid"));
-            assert!(text.contains("zenuml"));
-            assert!(text.contains("After"));
-        }
+        assert!(matches!(
+            sections[1],
+            PreviewSection::Diagram {
+                kind: crate::markdown::diagram::DiagramKind::Mermaid,
+                ..
+            }
+        ));
+        assert!(matches!(sections[2], PreviewSection::Markdown(_, _)));
     }
 
     #[test]

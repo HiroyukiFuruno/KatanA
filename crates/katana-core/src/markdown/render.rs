@@ -1,11 +1,28 @@
 use comrak::{Options, markdown_to_html};
 
+use super::diagram_backend::DiagramThemeSnapshot;
 use super::fence::MarkdownFenceOps;
 use super::types::*;
 
 impl DiagramRenderer for KatanaRenderer {
     fn render(&self, block: &DiagramBlock) -> DiagramResult {
         block.render()
+    }
+}
+
+pub struct ThemedKatanaRenderer {
+    theme: DiagramThemeSnapshot,
+}
+
+impl ThemedKatanaRenderer {
+    pub fn new(theme: DiagramThemeSnapshot) -> Self {
+        Self { theme }
+    }
+}
+
+impl DiagramRenderer for ThemedKatanaRenderer {
+    fn render(&self, block: &DiagramBlock) -> DiagramResult {
+        block.render_with_theme(self.theme.clone())
     }
 }
 

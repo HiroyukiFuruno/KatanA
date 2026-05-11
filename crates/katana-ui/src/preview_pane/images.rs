@@ -8,6 +8,7 @@ fn load_local_image_texture(
     ui: &mut egui::Ui,
     path: &std::path::Path,
     id: usize,
+    preview_background: egui::Color32,
 ) -> Option<TextureHandle> {
     let bytes = std::fs::read(path).ok()?;
     let color_img = if path
@@ -18,6 +19,11 @@ fn load_local_image_texture(
         let svg = std::str::from_utf8(&bytes).ok()?;
         let rasterized =
             katana_core::markdown::svg_rasterize::SvgRasterizeOps::rasterize_svg(svg, 1.0).ok()?;
+        let mut pixels = rasterized.rgba;
+        super::image_background::ImageBackgroundOps::composite_rgba_over_background(
+            &mut pixels,
+            preview_background,
+        );
         egui::ColorImage::from_rgba_unmultiplied(
             std::array::from_fn(|i| {
                 if i == 0 {
@@ -26,7 +32,7 @@ fn load_local_image_texture(
                     rasterized.height as usize
                 }
             }),
-            &rasterized.rgba,
+            &pixels,
         )
     } else {
         let rgba = image::load_from_memory(&bytes).ok()?.into_rgba8();
@@ -37,7 +43,12 @@ fn load_local_image_texture(
                 rgba.height() as usize
             }
         });
-        egui::ColorImage::from_rgba_unmultiplied(size, &rgba)
+        let mut pixels = rgba.into_raw();
+        super::image_background::ImageBackgroundOps::composite_rgba_over_background(
+            &mut pixels,
+            preview_background,
+        );
+        egui::ColorImage::from_rgba_unmultiplied(size, &pixels)
     };
 
     Some(ui.ctx().load_texture(
@@ -57,9 +68,14 @@ impl ImageLogicOps {
         fullscreen_request: Option<&mut Option<usize>>,
         draw_background: impl FnOnce(&mut egui::Ui, egui::Rect, bool),
     ) -> Option<egui::Rect> {
+        let preview_background = super::image_background::ImageBackgroundOps::preview_background(
+            ui.ctx(),
+            ui.visuals().window_fill(),
+        );
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
-            if state.texture.is_none() {
-                state.texture = load_local_image_texture(ui, path, id);
+            if state.texture.is_none() || state.texture_background != Some(preview_background) {
+                state.texture = load_local_image_texture(ui, path, id, preview_background);
+                state.texture_background = Some(preview_background);
             }
             state.texture.clone()
         } else {
@@ -87,6 +103,7 @@ impl ImageLogicOps {
 
         let (container_rect, response) =
             ui.allocate_exact_size(Vec2::new(max_w, base_size.y), egui::Sense::click_and_drag());
+        super::image_background::ImageBackgroundOps::paint(ui, container_rect);
 
         response.context_menu(|ui| {
             if ui

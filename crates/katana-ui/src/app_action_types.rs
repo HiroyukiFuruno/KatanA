@@ -82,7 +82,6 @@ pub enum AppAction {
     StartUpdateDownload,
     InstallUpdateAndRestart,
     StartPlantumlDownload(AssetDownloadRequest),
-    RepairRendererAssets,
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
     ToggleCodePreview,

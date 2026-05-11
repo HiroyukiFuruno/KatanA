@@ -1,5 +1,4 @@
 use super::super::types::RendererLogicOps;
-use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_core::markdown::{
     DiagramBackendCacheKey, DiagramBackendFactory, DiagramBackendInput, DiagramBackendLanguage,
     DiagramDocumentContext, DiagramKind, DiagramRenderOptions, DiagramThemeSnapshot,
@@ -35,16 +34,11 @@ impl RendererLogicOps {
         language: DiagramBackendLanguage,
         source: &str,
     ) -> DiagramBackendInput {
-        let is_dark = DiagramColorPreset::is_dark_mode();
         DiagramBackendInput {
             language,
             source: source.to_string(),
             options: DiagramRenderOptions::default(),
-            theme: DiagramThemeSnapshot::from_preset(
-                if is_dark { "dark" } else { "light" },
-                is_dark,
-                DiagramColorPreset::current(),
-            ),
+            theme: DiagramThemeSnapshot::current(),
             document: DiagramDocumentContext::Detached {
                 display_name: md_file_path.to_string_lossy().to_string(),
             },
@@ -59,11 +53,7 @@ impl RendererLogicOps {
         PersistentKey::Diagram {
             document_path: md_file_path.to_path_buf(),
             diagram_kind: kind.display_name().to_string(),
-            theme: if DiagramColorPreset::is_dark_mode() {
-                "dark".to_string()
-            } else {
-                "light".to_string()
-            },
+            theme: DiagramThemeSnapshot::current().name,
             source_hash,
         }
         .to_raw_key()

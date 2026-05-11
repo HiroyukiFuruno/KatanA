@@ -22,14 +22,19 @@ fn test_diagram_kind_display_name() {
 }
 
 #[test]
-fn mermaid_should_preserve_empty_and_zenuml_fences() {
+fn mermaid_should_preserve_only_empty_fences() {
     assert!(DiagramKind::Mermaid.should_preserve_fenced_source("  \n\t"));
-    assert!(DiagramKind::Mermaid.should_preserve_fenced_source("zenuml\n    title Order Service"));
-    assert!(
-        DiagramKind::Mermaid
-            .should_preserve_fenced_source("\u{feff}  ZenUML\n    title Order Service")
-    );
+    assert!(!DiagramKind::Mermaid.should_preserve_fenced_source("zenuml\n    title Order Service"));
     assert!(!DiagramKind::Mermaid.should_preserve_fenced_source("zenumlGraph\nA --> B"));
     assert!(!DiagramKind::Mermaid.should_preserve_fenced_source("graph TD\nA --> B"));
     assert!(!DiagramKind::DrawIo.should_preserve_fenced_source("zenuml\nA"));
+}
+
+#[test]
+fn mermaid_detects_zenuml_source() {
+    assert!(DiagramKind::Mermaid.is_zenuml_source("zenuml\n    title Order Service"));
+    assert!(DiagramKind::Mermaid.is_zenuml_source("  zenuml\nA.method()"));
+    assert!(!DiagramKind::Mermaid.is_zenuml_source("zenumlGraph\nA --> B"));
+    assert!(!DiagramKind::Mermaid.is_zenuml_source("graph TD\nA --> B"));
+    assert!(!DiagramKind::DrawIo.is_zenuml_source("zenuml\nA"));
 }

@@ -123,7 +123,7 @@ winget install HiroyukiFuruno.katana-desktop
 
 [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) からファイルを手動でダウンロードすることも可能です。
 
-- **ポータブル ZIP**: アーカイブを任意の場所に展開し、中の `katana-desktop.exe` を実行します。
+- **ポータブル ZIP**: アーカイブを任意の場所に展開し、中の `KatanA.exe` を実行します。
 - **MSI インストーラー**: スタートメニューとデスクトップショートカットを自動作成します。※現在コード署名されていないため、ダウンロード・実行時に Windows SmartScreen の警告が表示される場合があります。その場合は「詳細表示」→「実行」を選択してください。
 
 ### Linux
@@ -138,14 +138,14 @@ brew tap HiroyukiFuruno/KatanA && brew install katana-desktop
 
 1. [Releasesページ](https://github.com/HiroyukiFuruno/KatanA/releases/latest) にアクセス
 2. `KatanA-linux-x86_64.tar.gz` をダウンロード
-3. アーカイブを展開し、実行ファイルを起動
+3. アーカイブを展開し、`./KatanA` を実行
 
 ### アプリのアップデート
 
 KatanA Desktop には自動アップデータが内蔵されています。一度インストールすれば（Homebrew経由でも手動でも）、新しいリリースが利用可能になった際に通知されます。
 
-- **macOS:**アプリ内の**Restart"** ボタンをクリックするだけで自動的に更新されます。Homebrew経由で初回インストールした場合、アプリ内から初めてアップデートを行った際に、二重管理を防ぐため自動的に `brew untap` されます。
-- **Windows / Linux:** アップデート時のダイアログから、最新のアセットをダウンロードするための Release ページリンクが表示されます。
+- **macOS / Windows / Linux:** アプリ内の「アップデート＆再起動」ボタンをクリックすると、自動的に更新されます。
+- **macOS の Homebrew インストール:** アプリ内から初めてアップデートしたとき、二重管理を防ぐため KatanA が自動的に `brew untap` します。
 
 ---
 
