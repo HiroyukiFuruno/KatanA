@@ -30,8 +30,6 @@ pub enum UpdateInstallEvent {
     Finished(Result<katana_core::update::UpdatePreparation, String>),
 }
 
-pub(crate) type RendererAssetBootstrapResult = Result<Vec<String>, String>;
-
 pub struct KatanaApp {
     pub(crate) state: AppState,
     pub(crate) fs: FilesystemService,
@@ -39,7 +37,6 @@ pub struct KatanaApp {
     pub(crate) tab_previews: Vec<TabPreviewCache>,
     pub(crate) download_rx: Option<std::sync::mpsc::Receiver<Result<(), String>>>,
     pub(crate) active_download: Option<crate::preview_pane::DownloadRequest>,
-    pub(crate) renderer_asset_rx: Option<std::sync::mpsc::Receiver<RendererAssetBootstrapResult>>,
     pub(crate) explorer_rx: Option<std::sync::mpsc::Receiver<ExplorerLoadMessage>>,
     pub(crate) update_rx:
         Option<std::sync::mpsc::Receiver<Result<Option<katana_core::update::ReleaseInfo>, String>>>,

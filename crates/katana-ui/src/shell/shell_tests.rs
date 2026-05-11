@@ -2,6 +2,10 @@
 #[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
+    use crate::app::action::ActionOps;
+    use crate::app::document::DocumentOps;
+    use crate::app::download::DownloadOps;
+    use crate::app::workspace::WorkspaceOps;
     use crate::shell_logic::ShellLogicOps;
     use crate::state::ViewMode;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
@@ -438,6 +442,13 @@ mod tests {
 #[allow(clippy::unwrap_used)]
 mod tests_extra {
     use super::*;
+    use crate::app::action::ActionOps;
+    use crate::app::document::DocumentOps;
+    use crate::app::download::DownloadOps;
+    use crate::app::export::ExportOps;
+    use crate::app::preview::PreviewOps;
+    use crate::app::update::UpdateOps;
+    use crate::app::workspace::WorkspaceOps;
     use crate::shell_logic::ShellLogicOps;
     use crate::state::SearchParams;
     use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
@@ -1414,7 +1425,6 @@ mod tests_extra {
             tab_previews: Vec::new(),
             download_rx: None,
             active_download: None,
-            renderer_asset_rx: None,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,

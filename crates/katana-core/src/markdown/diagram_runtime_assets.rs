@@ -23,3 +23,20 @@ impl DiagramRuntimeAssetOps {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn kcf_kind_maps_all_runtime_asset_kinds() {
+        assert!(matches!(
+            DiagramRuntimeAssetOps::kcf_kind(DiagramRuntimeAssetKind::Mermaid),
+            katana_canvas_forge::DiagramKind::Mermaid
+        ));
+        assert!(matches!(
+            DiagramRuntimeAssetOps::kcf_kind(DiagramRuntimeAssetKind::DrawIo),
+            katana_canvas_forge::DiagramKind::Drawio
+        ));
+    }
+}

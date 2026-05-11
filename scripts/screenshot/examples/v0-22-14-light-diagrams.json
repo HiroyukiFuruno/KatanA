@@ -1,0 +1,44 @@
+{
+  "schema_version": "1",
+  "name": "v0-22-14-light-diagrams",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "locale": "ja",
+      "explorer_visible": true,
+      "linter_enabled": false
+    },
+    "workspace_files": [
+      {
+        "name": "light-diagrams.md",
+        "content": "# v0.22.14 light diagram check\n\n```mermaid\ngraph TD\n    A[Write Markdown] --> B[Preview]\n    B --> C[Export]\n```\n\n```drawio\n<mxGraphModel><root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/><mxCell id=\"2\" value=\"Light Theme\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontColor=#333333;\" vertex=\"1\" parent=\"1\"><mxGeometry x=\"40\" y=\"40\" width=\"160\" height=\"70\" as=\"geometry\"/></mxCell></root></mxGraphModel>\n```\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1440, "height": 900 },
+      "wait_seconds": 3.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "preview_only"
+        }
+      }
+    },
+    {
+      "type": "wait",
+      "seconds": 1.0
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-light-diagram-preview"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

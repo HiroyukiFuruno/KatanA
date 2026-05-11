@@ -3,6 +3,8 @@ pub use katana_canvas_forge::exporter::{
 };
 
 use crate::markdown::color_preset::DiagramColorPreset;
+use crate::markdown::diagram_backend::DiagramThemeSnapshot;
+use crate::markdown::render::ThemedKatanaRenderer;
 use crate::markdown::{DiagramRenderer, MarkdownError, MarkdownRenderOps};
 
 pub struct HtmlExporter;
@@ -16,7 +18,11 @@ impl HtmlExporter {
         preset: &DiagramColorPreset,
         base_dir: Option<&std::path::Path>,
     ) -> Result<String, MarkdownError> {
-        let renderer = crate::markdown::KatanaRenderer;
+        let renderer = ThemedKatanaRenderer::new(DiagramThemeSnapshot::from_preset(
+            if preset.dark_mode { "dark" } else { "light" },
+            preset.dark_mode,
+            preset,
+        ));
         Self::export(source, &renderer, preset, base_dir)
     }
 
@@ -110,19 +116,20 @@ fn kcf_preset(
     preset: &DiagramColorPreset,
 ) -> katana_canvas_forge::markdown::color_preset::DiagramColorPreset {
     katana_canvas_forge::markdown::color_preset::DiagramColorPreset {
-        background: preset.background,
-        text: preset.text,
-        fill: preset.fill,
-        stroke: preset.stroke,
-        arrow: preset.arrow,
-        drawio_label_color: preset.drawio_label_color,
-        mermaid_theme: preset.mermaid_theme,
-        plantuml_class_bg: preset.plantuml_class_bg,
-        plantuml_note_bg: preset.plantuml_note_bg,
-        plantuml_note_text: preset.plantuml_note_text,
-        syntax_theme_dark: preset.syntax_theme_dark,
-        syntax_theme_light: preset.syntax_theme_light,
-        preview_text: preset.preview_text,
+        dark_mode: preset.dark_mode,
+        background: preset.background.into(),
+        text: preset.text.into(),
+        fill: preset.fill.into(),
+        stroke: preset.stroke.into(),
+        arrow: preset.arrow.into(),
+        drawio_label_color: preset.drawio_label_color.into(),
+        mermaid_theme: preset.mermaid_theme.into(),
+        plantuml_class_bg: preset.plantuml_class_bg.into(),
+        plantuml_note_bg: preset.plantuml_note_bg.into(),
+        plantuml_note_text: preset.plantuml_note_text.into(),
+        syntax_theme_dark: preset.syntax_theme_dark.into(),
+        syntax_theme_light: preset.syntax_theme_light.into(),
+        preview_text: preset.preview_text.into(),
         proportional_font_candidates: preset.proportional_font_candidates.clone(),
         monospace_font_candidates: preset.monospace_font_candidates.clone(),
         emoji_font_candidates: preset.emoji_font_candidates.clone(),

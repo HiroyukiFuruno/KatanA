@@ -3,6 +3,7 @@
 use std::sync::OnceLock;
 
 use super::adapter::DiagramBackendAdapter;
+use super::kcf_theme_adapter::KcfThemeAdapter;
 use super::result::{DiagramBackendError, DiagramBackendOutput, DiagramBackendRenderResult};
 use super::types::{
     DiagramBackendId, DiagramBackendInput, DiagramBackendLanguage, DiagramBackendVersion,
@@ -14,10 +15,9 @@ use katana_canvas_forge::{
 };
 
 const KATANA_BACKEND_VERSION: &str = env!("CARGO_PKG_VERSION");
-const KCF_MERMAID_BACKEND_VERSION: &str =
-    "crate=katana-canvas-forge:0.1.0;runtime=Mermaid.js:3.3.1;profile=kcf-mermaid";
-const KCF_DRAWIO_BACKEND_VERSION: &str =
-    "crate=katana-canvas-forge:0.1.0;runtime=Draw.io:29.7.10;profile=kcf-drawio";
+const KCF_CRATE_VERSION: &str = env!("KATANA_CANVAS_FORGE_VERSION");
+const KCF_MERMAID_PROFILE: &str = "katana-mermaid";
+const KCF_DRAWIO_PROFILE: &str = "katana-drawio";
 
 fn diagram_result_to_backend(result: DiagramResult) -> DiagramBackendRenderResult {
     match result {
@@ -85,7 +85,7 @@ impl DiagramBackendAdapter for KatanaMermaidBackend {
 
     fn version(&self) -> &DiagramBackendVersion {
         static VER: OnceLock<DiagramBackendVersion> = OnceLock::new();
-        VER.get_or_init(|| DiagramBackendVersion::new(KCF_MERMAID_BACKEND_VERSION))
+        VER.get_or_init(mermaid_backend_version)
     }
 
     fn render(&self, input: &DiagramBackendInput) -> DiagramBackendRenderResult {
@@ -138,7 +138,7 @@ impl DiagramBackendAdapter for KatanaDrawIoBackend {
 
     fn version(&self) -> &DiagramBackendVersion {
         static VER: OnceLock<DiagramBackendVersion> = OnceLock::new();
-        VER.get_or_init(|| DiagramBackendVersion::new(KCF_DRAWIO_BACKEND_VERSION))
+        VER.get_or_init(drawio_backend_version)
     }
 
     fn render(&self, input: &DiagramBackendInput) -> DiagramBackendRenderResult {
@@ -172,8 +172,29 @@ fn kcf_input(kind: katana_canvas_forge::DiagramKind, input: &DiagramBackendInput
         context: RenderContext {
             theme_fingerprint: Some(input.theme.fingerprint()),
             document_id: Some(input.document.cache_id()),
+            theme: Some(KcfThemeAdapter::convert(&input.theme)),
         },
     }
+}
+
+fn mermaid_backend_version() -> DiagramBackendVersion {
+    DiagramBackendVersion::from_kcf(
+        KCF_CRATE_VERSION,
+        "Mermaid.js",
+        katana_canvas_forge::markdown::mermaid_renderer::MERMAID_JS_VERSION,
+        katana_canvas_forge::markdown::mermaid_renderer::MERMAID_JS_CHECKSUM,
+        KCF_MERMAID_PROFILE,
+    )
+}
+
+fn drawio_backend_version() -> DiagramBackendVersion {
+    DiagramBackendVersion::from_kcf(
+        KCF_CRATE_VERSION,
+        "Draw.io",
+        katana_canvas_forge::markdown::drawio_renderer::DRAWIO_JS_VERSION,
+        katana_canvas_forge::markdown::drawio_renderer::DRAWIO_JS_CHECKSUM,
+        KCF_DRAWIO_PROFILE,
+    )
 }
 
 #[cfg(test)]
@@ -318,7 +339,9 @@ mod tests {
 
     #[test]
     fn mermaid_backend_version_is_non_empty() {
-        assert!(!KatanaMermaidBackend.version().value.is_empty());
+        let version = KatanaMermaidBackend.version();
+        assert!(version.value.contains("katana-canvas-forge"));
+        assert!(version.renderer_profile.contains("mermaid"));
     }
 
     #[test]
@@ -344,6 +367,34 @@ mod tests {
 
     #[test]
     fn drawio_backend_version_is_non_empty() {
-        assert!(!KatanaDrawIoBackend.version().value.is_empty());
+        let version = KatanaDrawIoBackend.version();
+        assert!(version.value.contains("katana-canvas-forge"));
+        assert!(version.renderer_profile.contains("drawio"));
+    }
+
+    #[test]
+    fn kcf_input_passes_full_light_theme_snapshot() {
+        let input = DiagramBackendInput {
+            language: DiagramBackendLanguage::Mermaid,
+            source: "graph TD; A-->B".to_string(),
+            options: Default::default(),
+            theme: super::super::types::DiagramThemeSnapshot::from_preset(
+                "light",
+                false,
+                crate::markdown::color_preset::DiagramColorPreset::light(),
+            ),
+            document: super::super::types::DiagramDocumentContext::Detached {
+                display_name: "doc.md".to_string(),
+            },
+        };
+
+        let kcf = kcf_input(katana_canvas_forge::DiagramKind::Mermaid, &input);
+        let theme = kcf.context.theme.expect("theme must be passed to kcf");
+
+        assert_eq!(theme.mode, katana_canvas_forge::RenderThemeMode::Light);
+        assert_eq!(theme.text, "#333333");
+        assert_eq!(theme.drawio_label_color, "#333333");
+        assert_eq!(theme.mermaid_theme, "default");
+        assert!(kcf.context.theme_fingerprint.is_some());
     }
 }

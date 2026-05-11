@@ -1,5 +1,4 @@
 use crate::app::download::DownloadOps;
-use crate::app::renderer_assets::RendererAssetOps;
 use crate::app::workspace::WorkspaceOps;
 use crate::app_state::*;
 use crate::shell::*;
@@ -54,7 +53,6 @@ impl KatanaApp {
                     dest: request.dest,
                 });
             }
-            AppAction::RepairRendererAssets => self.start_renderer_asset_repair(),
             AppAction::OpenHelpDemo => self.handle_action_open_help_demo(),
             AppAction::OpenWelcomeScreen => self.handle_action_open_welcome_screen(),
             AppAction::OpenUserGuide => self.handle_action_open_user_guide(),

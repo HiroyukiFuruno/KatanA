@@ -1,6 +1,17 @@
 use super::types::{UpdateDownloadOps, UpdateInstallerOps, UpdatePreparation};
 use crate::update::UpdateProgress;
+#[cfg(target_os = "macos")]
+use std::ffi::OsStr;
 use std::path::Path;
+
+#[cfg(any(target_os = "windows", target_os = "linux", test))]
+mod extracted_file;
+#[cfg(test)]
+#[cfg(unix)]
+mod tests;
+
+#[cfg(target_os = "macos")]
+const MACOS_APP_BUNDLE_NAME: &str = "KatanA Desktop.app";
 
 impl UpdateInstallerOps {
     pub fn prepare_update<F>(
@@ -30,7 +41,7 @@ impl UpdateInstallerOps {
         {
             let app_name = target_app_path
                 .file_name()
-                .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.app"));
+                .unwrap_or_else(|| OsStr::new(MACOS_APP_BUNDLE_NAME));
             let extracted_app_path = extract_dir.join(app_name);
 
             /* WHY: Verify the extracted bundle contains Info.plist to guard against corrupted or incomplete downloads. */
@@ -57,14 +68,11 @@ impl UpdateInstallerOps {
 
         #[cfg(target_os = "windows")]
         {
-            let app_name = target_app_path
-                .file_name()
-                .unwrap_or_else(|| std::ffi::OsStr::new("KatanA.exe"));
-            let extracted_app_path = extract_dir.join(app_name);
-
-            if !extracted_app_path.exists() {
-                anyhow::bail!("Extracted update does not contain a valid executable");
-            }
+            let extracted_app_path = extracted_file::resolve_extracted_file(
+                &extract_dir,
+                extracted_file::WINDOWS_EXECUTABLE_NAME,
+                extracted_file::ExtractedFileFallback::RegularFile,
+            )?;
 
             let script_path = temp_dir.path().join("relauncher.ps1");
             Self::generate_relauncher_script(
@@ -83,14 +91,11 @@ impl UpdateInstallerOps {
 
         #[cfg(target_os = "linux")]
         {
-            let app_name = target_app_path
-                .file_name()
-                .unwrap_or_else(|| std::ffi::OsStr::new("KatanA"));
-            let extracted_app_path = extract_dir.join(app_name);
-
-            if !extracted_app_path.exists() {
-                anyhow::bail!("Extracted update does not contain a valid executable");
-            }
+            let extracted_app_path = extracted_file::resolve_extracted_file(
+                &extract_dir,
+                extracted_file::LINUX_EXECUTABLE_NAME,
+                extracted_file::ExtractedFileFallback::ExecutableRegularFile,
+            )?;
 
             let script_path = temp_dir.path().join("relauncher.sh");
             Self::generate_relauncher_script(
@@ -161,67 +166,5 @@ impl UpdateInstallerOps {
         }
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-#[cfg(unix)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_generate_relauncher_script() {
-        use std::os::unix::fs::PermissionsExt;
-
-        let temp_dir = tempfile::tempdir().unwrap();
-        let extracted_path = temp_dir.path().join("KatanA-extract.app");
-        let target_path = temp_dir.path().join("KatanA.app");
-        let script_path = temp_dir.path().join("relauncher.sh");
-
-        UpdateInstallerOps::generate_relauncher_script(
-            &extracted_path,
-            &target_path,
-            &script_path,
-            temp_dir.path(),
-        )
-        .unwrap();
-
-        assert!(script_path.exists());
-
-        let content = std::fs::read_to_string(&script_path).unwrap();
-
-        #[cfg(target_os = "macos")]
-        {
-            assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
-            assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
-            assert!(content.contains(&format!(
-                "if ! mv \"{}\" \"{}\"; then",
-                extracted_path.display(),
-                target_path.display()
-            )));
-            assert!(content.contains("display alert \"Update Failed\""));
-            assert!(content.contains("Swap failed! Rolling back..."));
-            assert!(content.contains(&format!("xattr -cr \"{}\"", target_path.display())));
-            assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
-        }
-
-        #[cfg(target_os = "linux")]
-        {
-            assert!(content.contains(&format!("TARGET_BAK=\"{}.bak\"", target_path.display())));
-            assert!(content.contains(&format!("mv \"{}\" \"$TARGET_BAK\"", target_path.display())));
-            /* WHY: New script uses `if mv ... then` (success branch) instead of `if ! mv ... then`
-             * (failure branch) to correctly place chmod +x before launching. */
-            assert!(content.contains(&format!(
-                "if mv \"{}\" \"{}\"",
-                extracted_path.display(),
-                target_path.display()
-            )));
-            assert!(content.contains(&format!("chmod +x \"{}\"", target_path.display())));
-            assert!(content.contains(&format!("\"{}\" &", target_path.display())));
-            assert!(content.contains(&format!("rm -rf \"{}\"", temp_dir.path().display())));
-        }
-
-        let perms = std::fs::metadata(&script_path).unwrap().permissions();
-        assert_eq!(perms.mode() & 0o111, 0o111, "Script must be executable");
     }
 }

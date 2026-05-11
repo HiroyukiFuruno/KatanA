@@ -2,8 +2,6 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::markdown::color_preset::DiagramColorPreset;
-
 const DEFAULT_RENDER_TIMEOUT_MILLIS: u64 = 10_000;
 const DEFAULT_SCALE_PERCENT: u16 = 100;
 
@@ -20,26 +18,11 @@ pub struct DiagramBackendId {
     pub implementation: String,
 }
 
-impl DiagramBackendId {
-    pub fn new(language: DiagramBackendLanguage, implementation: impl Into<String>) -> Self {
-        Self {
-            language,
-            implementation: implementation.into(),
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct DiagramBackendVersion {
     pub value: String,
-}
-
-impl DiagramBackendVersion {
-    pub fn new(value: impl Into<String>) -> Self {
-        Self {
-            value: value.into(),
-        }
-    }
+    pub runtime_version: String,
+    pub renderer_profile: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -75,43 +58,14 @@ pub struct DiagramThemeSnapshot {
     pub fill: String,
     pub stroke: String,
     pub arrow: String,
+    pub drawio_label_color: String,
     pub mermaid_theme: String,
     pub plantuml_class_background: String,
     pub plantuml_note_background: String,
     pub plantuml_note_text: String,
-}
-
-impl DiagramThemeSnapshot {
-    pub fn from_preset(
-        name: impl Into<String>,
-        is_dark: bool,
-        preset: &DiagramColorPreset,
-    ) -> Self {
-        Self {
-            name: name.into(),
-            is_dark,
-            background: preset.background.to_string(),
-            text: preset.text.to_string(),
-            fill: preset.fill.to_string(),
-            stroke: preset.stroke.to_string(),
-            arrow: preset.arrow.to_string(),
-            mermaid_theme: preset.mermaid_theme.to_string(),
-            plantuml_class_background: preset.plantuml_class_bg.to_string(),
-            plantuml_note_background: preset.plantuml_note_bg.to_string(),
-            plantuml_note_text: preset.plantuml_note_text.to_string(),
-        }
-    }
-
-    pub fn fingerprint(&self) -> String {
-        serde_json::to_string(self).unwrap_or_else(|_| self.name.clone())
-    }
-
-    pub fn render_policy_fingerprint(&self) -> String {
-        format!(
-            "background={};cacheProfile={};dark={}",
-            self.background, self.name, self.is_dark
-        )
-    }
+    pub syntax_theme_dark: String,
+    pub syntax_theme_light: String,
+    pub preview_text: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -123,22 +77,6 @@ pub enum DiagramDocumentContext {
     Detached {
         display_name: String,
     },
-}
-
-impl DiagramDocumentContext {
-    pub fn cache_id(&self) -> String {
-        match self {
-            Self::WorkspaceFile {
-                workspace_root,
-                document_path,
-            } => format!(
-                "{}:{}",
-                workspace_root.to_string_lossy(),
-                document_path.to_string_lossy()
-            ),
-            Self::Detached { display_name } => display_name.clone(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -163,32 +101,4 @@ pub struct DiagramBackendCacheKey {
     pub render_policy: String,
     pub theme_fingerprint: String,
     pub theme: DiagramThemeSnapshot,
-}
-
-impl DiagramBackendCacheKey {
-    pub fn new(
-        backend_id: DiagramBackendId,
-        backend_version: DiagramBackendVersion,
-        input: &DiagramBackendInput,
-    ) -> Self {
-        Self {
-            runtime_version: backend_version.value.clone(),
-            renderer_profile: backend_id.implementation.clone(),
-            backend_id,
-            backend_version,
-            language: input.language.clone(),
-            source: input.source.clone(),
-            options: input.options.clone(),
-            render_config: input.options.fingerprint(),
-            render_policy: input.theme.render_policy_fingerprint(),
-            theme_fingerprint: input.theme.fingerprint(),
-            theme: input.theme.clone(),
-        }
-    }
-}
-
-impl DiagramRenderOptions {
-    fn fingerprint(&self) -> String {
-        serde_json::to_string(self).unwrap_or_default()
-    }
 }

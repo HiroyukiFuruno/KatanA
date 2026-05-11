@@ -28,15 +28,6 @@ impl HelpCommands {
                 default_shortcuts: &[],
             },
             CommandInventoryItem {
-                id: "help.repair_diagram_renderers",
-                action: AppAction::RepairRendererAssets,
-                group: CommandGroup::Help,
-                context: ShortcutContext::Global,
-                label: || I18nOps::get().menu.repair_diagram_renderers.clone(),
-                is_available: |_| true,
-                default_shortcuts: &[],
-            },
-            CommandInventoryItem {
                 id: "help.release_notes",
                 action: AppAction::ShowReleaseNotes,
                 group: CommandGroup::Help,

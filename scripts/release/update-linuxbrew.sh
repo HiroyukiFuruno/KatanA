@@ -58,7 +58,7 @@ function upload_formula() {
     FORMULA_CONTENT+="  sha256 \"${SHA256}\"\n\n"
     FORMULA_CONTENT+="  depends_on :linux\n\n"
     FORMULA_CONTENT+="  def install\n"
-    FORMULA_CONTENT+="    bin.install \"KatanA\" => \"katana-desktop\"\n"
+    FORMULA_CONTENT+="    bin.install \"KatanA\"\n"
     FORMULA_CONTENT+="  end\n"
     FORMULA_CONTENT+="end\n"
 
@@ -107,4 +107,3 @@ upload_formula "Formula/katana-desktop@${VERSION_NUM}.rb" "katana-desktop@${VERS
 if [[ "$VERSION_ONLY" == "0" ]]; then
     upload_formula "Formula/katana-desktop.rb" "katana-desktop" "KatanaDesktop"
 fi
-

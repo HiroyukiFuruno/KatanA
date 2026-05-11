@@ -1,4 +1,3 @@
-use katana_core::markdown::color_preset::DiagramColorPreset;
 use katana_core::markdown::{
     DiagramBackendAdapter, DiagramBackendFactory, DiagramBackendInput, DiagramBackendLanguage,
     DiagramBlock, DiagramDocumentContext, DiagramKind, DiagramRenderOptions, DiagramResult,
@@ -14,17 +13,11 @@ pub(super) fn dispatch_renderer(block: &DiagramBlock) -> DiagramResult {
     let backend: Box<dyn DiagramBackendAdapter> =
         DiagramBackendFactory::create(backend_language.clone());
 
-    let preset = DiagramColorPreset::current();
-    let is_dark = DiagramColorPreset::is_dark_mode();
     let input = DiagramBackendInput {
         language: backend_language,
         source: block.source.clone(),
         options: DiagramRenderOptions::default(),
-        theme: DiagramThemeSnapshot::from_preset(
-            if is_dark { "dark" } else { "light" },
-            is_dark,
-            preset,
-        ),
+        theme: DiagramThemeSnapshot::current(),
         document: DiagramDocumentContext::Detached {
             display_name: String::new(),
         },
