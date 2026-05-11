@@ -176,7 +176,7 @@
 - [/] 6.5 kcf 側 issue [#8](https://github.com/HiroyukiFuruno/katana-canvas-forge/issues/8) を起票する。KatanA 側へ ZenUML 専用の WebView（アプリ内ブラウザ部品）/ Chromium（Chrome 系ブラウザエンジン）/ Playwright（ブラウザ自動操作ランタイム）経路は追加しない。
 - [/] 6.6 kcf 側で ZenUML 出力契約が修正された後、`scripts/screenshot` で ZenUML 表示を含むスクリーンショットを生成し、白表示ではなく視認できる図になっていることを確認する。
 - [/] 6.7 ZenUML のスクリーンショット確認後に `just check-local` を実行し、all pass まで修正する。
-- [ ] 6.8 `just check-local` all pass を担保した後、`git commit --no-verify` / `git push --no-verify` の使用を許可済みとして commit & push を実行する。
+- [/] 6.8 `just check-local` all pass を担保した後、`git commit --no-verify` / `git push --no-verify` の使用を許可済みとして commit & push を実行する。
 - [/] 6.9 Markdown に埋め込んだ PNG 等の画像を preview 表示するとき、背景が黒固定になり light 系テーマで不正表示になる問題を修正する。
 - [/] 6.10 `mermaid` フェンス内の ZenUML を描画するとき、背景が白固定にならず、選択中テーマに追従するようにする。
 - [/] 6.11 `just check-local` の `sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium` 失敗を修正する。ZenUML を renderer に渡す仕様変更後の raw Mermaid 数を正しく検証し、Linux コンテナのように ZenUML の Node / Playwright 依存が無い環境ではエラーHTMLではなく元のコードブロックを維持する。
@@ -193,7 +193,7 @@
 
 - [x] 7.1 Execute self-review using `docs/coding-rules.ja.md` and `$self-review` skill
 - [x] 7.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-- [ ] 7.3 今回の PR 作成では、ユーザー許可により `git commit --no-verify` / `git push --no-verify` を使用する。品質ゲートはユーザー実行の `just check-local` all pass を採用し、例外理由を PR 本文に記録する
+- [/] 7.3 今回の PR 作成では、ユーザー許可により `git commit --no-verify` / `git push --no-verify` を使用する。品質ゲートは `just check-local` all pass を採用し、例外理由を PR 本文に記録する
 - [ ] 7.4 Create PR from Base Feature Branch targeting `master`
 - [ ] 7.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 7.6 Merge into master (`gh pr merge --merge --delete-branch`)
