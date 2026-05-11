@@ -2,7 +2,7 @@
 
 - [x] proposal.md、design.md、specs が揃っていること
 - [x] kcf 側 issue [#4](https://github.com/HiroyukiFuruno/katana-canvas-forge/issues/4) が KatanA 側の前提として記録されていること
-- [x] KatanA 側の対応範囲が「kcf 修正版の取り込み」「adapter と回帰テスト」「証跡生成」に限定されていること
+- [x] KatanA 側の対応範囲が「kcf 修正版の取り込み」「adapter と回帰テスト」「不要な renderer asset 取得経路の削除」「証跡生成」に限定されていること
 
 ## Branch Rule
 
@@ -20,11 +20,13 @@
 - [ ] 1.3 `Cargo.toml` / `Cargo.lock` を kcf 修正版へ更新する
 - [ ] 1.4 `cargo tree -p katana-canvas-forge --no-dedupe` で `egui` が含まれないことを確認する
 - [ ] 1.5 kcf issue #4 の修正版が未公開の場合は、KatanA 側で一時的なグローバル同期回避策を入れず、作業を止めて release 待ちまたは kcf 側対応へ切り替える
+- [ ] 1.6 kcf が Draw.io / Mermaid の min.js を組み込み済みであることを前提に、KatanA 側の `renderer_assets`、起動時取得、再取得用コマンドパレット（Command Palette）項目、多言語文言、関連 action / state を削除する
 
 ### Definition of Done (DoD)
 
 - [ ] KatanA が kcf のテーマ伝播対応版を参照していること
 - [ ] kcf 側で `RenderInput` の light / dark 差分が実描画へ反映されることを確認していること
+- [ ] KatanA 側に Draw.io / Mermaid の min.js ダウンロード URL、起動時取得、手動修復・再取得導線が残っていないこと
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. KatanA adapter のテーマ伝播
