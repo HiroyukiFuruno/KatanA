@@ -1,9 +1,10 @@
 mod delimiter;
+mod render;
 mod types;
 pub use delimiter::*;
 pub use types::*;
 
-use crate::markdown::{DiagramBlock, DiagramKind, DiagramRenderer, DiagramResult};
+use crate::markdown::DiagramRenderer;
 
 const MIN_FENCE_MARKER_LEN: usize = 3;
 
@@ -25,54 +26,6 @@ impl MarkdownFenceOps {
         let rest = rest_slice.strip_prefix('\n').unwrap_or(rest_slice);
 
         Some((FenceBlock { info, content, raw }, rest))
-    }
-
-    pub fn html_escape(s: &str) -> String {
-        s.replace('&', "&amp;")
-            .replace('<', "&lt;")
-            .replace('>', "&gt;")
-            .replace('"', "&quot;")
-    }
-
-    pub fn fallback_html(source: &str, error: &str) -> String {
-        format!(
-            r#"<div class="katana-diagram-error"><p class="katana-diagram-error-label">⚠ Diagram render failed: {e}</p><pre><code>{s}</code></pre></div>"#,
-            e = Self::html_escape(error),
-            s = Self::html_escape(source),
-        )
-    }
-
-    pub fn render_diagram_block<R: DiagramRenderer>(
-        block: &FenceBlock,
-        renderer: &R,
-    ) -> Option<String> {
-        let kind = DiagramKind::from_info(&block.info)?;
-        if kind.should_preserve_fenced_source(&block.content) {
-            return None;
-        }
-        let diagram = DiagramBlock {
-            kind,
-            source: block.content.clone(),
-        };
-        Some(match renderer.render(&diagram) {
-            DiagramResult::Ok(html) => html,
-            DiagramResult::OkPng(bytes) => {
-                use base64::Engine;
-                let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
-                format!(
-                    r#"<div class="katana-diagram mermaid"><img src="data:image/png;base64,{b64}" style="max-width:100%" /></div>"#
-                )
-            }
-            DiagramResult::Err { source, error } => Self::fallback_html(&source, &error),
-            DiagramResult::CommandNotFound {
-                tool_name,
-                install_hint,
-                ..
-            } => Self::fallback_html("", &format!("{tool_name} not found. {install_hint}")),
-            DiagramResult::NotInstalled { kind, .. } => {
-                Self::fallback_html("", &format!("{kind} is not installed"))
-            }
-        })
     }
 
     pub fn process_fence<R: DiagramRenderer>(

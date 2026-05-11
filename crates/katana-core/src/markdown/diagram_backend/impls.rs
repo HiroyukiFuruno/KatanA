@@ -1,5 +1,6 @@
 use super::types::*;
 use crate::markdown::color_preset::DiagramColorPreset;
+use std::sync::{OnceLock, RwLock};
 
 impl DiagramBackendId {
     pub fn new(language: DiagramBackendLanguage, implementation: impl Into<String>) -> Self {
@@ -41,11 +42,33 @@ impl DiagramBackendVersion {
 impl DiagramThemeSnapshot {
     pub fn current() -> Self {
         let is_dark = DiagramColorPreset::is_dark_mode();
-        Self::from_preset(
+        let mut snapshot = Self::from_preset(
             if is_dark { "dark" } else { "light" },
             is_dark,
             DiagramColorPreset::current(),
-        )
+        );
+        if let Some(current) = current_theme_override() {
+            snapshot.name = current.name;
+            snapshot.is_dark = current.is_dark;
+            snapshot.background = current.background;
+            snapshot.text = current.text;
+            snapshot.preview_text = current.preview_text;
+        }
+        snapshot
+    }
+
+    pub fn set_current_override(theme: DiagramThemeOverride) {
+        let Ok(mut guard) = theme_override_store().write() else {
+            return;
+        };
+        *guard = Some(theme);
+    }
+
+    pub fn clear_current_override() {
+        let Ok(mut guard) = theme_override_store().write() else {
+            return;
+        };
+        *guard = None;
     }
 
     pub fn from_preset(
@@ -82,6 +105,18 @@ impl DiagramThemeSnapshot {
             self.background, self.name, self.is_dark
         )
     }
+}
+
+fn current_theme_override() -> Option<DiagramThemeOverride> {
+    theme_override_store()
+        .read()
+        .ok()
+        .and_then(|guard| guard.clone())
+}
+
+fn theme_override_store() -> &'static RwLock<Option<DiagramThemeOverride>> {
+    static CURRENT_THEME: OnceLock<RwLock<Option<DiagramThemeOverride>>> = OnceLock::new();
+    CURRENT_THEME.get_or_init(|| RwLock::new(None))
 }
 
 impl DiagramDocumentContext {

@@ -13,21 +13,33 @@ pub(super) const MAX_ZOOM: f32 = 10.0;
 const MIN_CONTAINER_HEIGHT: f32 = 145.0;
 const MAX_TEXTURE_SIDE: usize = 2048;
 
-fn color_image_for_texture(img: &RasterizedSvg) -> egui::ColorImage {
+fn color_image_for_texture(
+    img: &RasterizedSvg,
+    background: egui::Color32,
+    should_replace_light_background: bool,
+) -> egui::ColorImage {
     let width = img.width as usize;
     let height = img.height as usize;
     let max_side = width.max(height);
+    let mut rgba = img.rgba.clone();
+    super::image_background::ImageBackgroundOps::composite_rgba_over_background(
+        &mut rgba, background,
+    );
+    if should_replace_light_background {
+        super::image_background_region::ImageBackgroundRegionOps::replace_large_light_regions(
+            &mut rgba, width, height, background,
+        );
+    }
 
     if max_side <= MAX_TEXTURE_SIDE {
-        return egui::ColorImage::from_rgba_unmultiplied([width, height], &img.rgba);
+        return egui::ColorImage::from_rgba_unmultiplied([width, height], &rgba);
     }
 
     let scale = MAX_TEXTURE_SIDE as f32 / max_side as f32;
     let resized_width = (width as f32 * scale).max(1.0).round() as u32;
     let resized_height = (height as f32 * scale).max(1.0).round() as u32;
 
-    let Some(src) =
-        ImageBuffer::<Rgba<u8>, Vec<u8>>::from_raw(width as u32, height as u32, img.rgba.clone())
+    let Some(src) = ImageBuffer::<Rgba<u8>, Vec<u8>>::from_raw(width as u32, height as u32, rgba)
     else {
         return egui::ColorImage::from_rgba_unmultiplied([width, height], &img.rgba);
     };
@@ -49,7 +61,7 @@ impl ImageLogicOps {
     pub(crate) fn show_rasterized(
         ui: &mut egui::Ui,
         img: &RasterizedSvg,
-        _alt_text: &str,
+        alt_text: &str,
         idx: usize,
         mut state: Option<&mut ViewerState>,
         fullscreen_request: Option<&mut Option<usize>>,
@@ -66,6 +78,11 @@ impl ImageLogicOps {
         let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
         let (container_rect, response) =
             ui.allocate_exact_size(Vec2::new(max_w, container_h), egui::Sense::click_and_drag());
+        super::image_background::ImageBackgroundOps::paint(ui, container_rect);
+        let preview_background = super::image_background::ImageBackgroundOps::preview_background(
+            ui.ctx(),
+            ui.visuals().window_fill(),
+        );
 
         if let Some(state) = state.as_mut()
             && response.hovered()
@@ -80,17 +97,26 @@ impl ImageLogicOps {
         }
 
         let texture_handle = if let Some(state) = state.as_mut() {
-            if state.texture.is_none() {
-                let color_img = color_image_for_texture(img);
+            if state.texture.is_none() || state.texture_background != Some(preview_background) {
+                let color_img = color_image_for_texture(
+                    img,
+                    preview_background,
+                    should_replace_light_background(alt_text),
+                );
                 state.texture = Some(ui.ctx().load_texture(
                     format!("diagram_{idx}"),
                     color_img,
                     egui::TextureOptions::LINEAR,
                 ));
+                state.texture_background = Some(preview_background);
             }
             state.texture.clone().unwrap()
         } else {
-            let color_img = color_image_for_texture(img);
+            let color_img = color_image_for_texture(
+                img,
+                preview_background,
+                should_replace_light_background(alt_text),
+            );
             ui.ctx().load_texture(
                 format!("diagram_{idx}"),
                 color_img,
@@ -128,4 +154,8 @@ impl ImageLogicOps {
 
         container_rect
     }
+}
+
+fn should_replace_light_background(alt_text: &str) -> bool {
+    alt_text == "ZenUML diagram"
 }

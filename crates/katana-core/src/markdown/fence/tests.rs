@@ -61,6 +61,18 @@ impl DiagramRenderer for ErrorTestRenderer {
     }
 }
 
+struct ZenumlDependencyMissingRenderer;
+impl DiagramRenderer for ZenumlDependencyMissingRenderer {
+    fn render(&self, block: &DiagramBlock) -> DiagramResult {
+        DiagramResult::Err {
+            source: block.source.clone(),
+            error:
+                "Failed to start ZenUML browser renderer: No such file or directory (os error 2)"
+                    .to_string(),
+        }
+    }
+}
+
 struct CommandMissingTestRenderer;
 impl DiagramRenderer for CommandMissingTestRenderer {
     fn render(&self, block: &DiagramBlock) -> DiagramResult {
@@ -149,20 +161,34 @@ fn transform_keeps_empty_tilde_mermaid_fence_as_markdown() {
 }
 
 #[test]
-fn render_diagram_block_skips_zenuml_mermaid_source() {
+fn render_diagram_block_passes_zenuml_mermaid_source_to_renderer() {
     let block = FenceBlock {
         info: "mermaid".to_string(),
         content: "zenuml\n    title Order Service".to_string(),
         raw: "```mermaid\nzenuml\n    title Order Service\n```".to_string(),
     };
 
-    assert!(MarkdownFenceOps::render_diagram_block(&block, &PanicRenderer).is_none());
+    let html = MarkdownFenceOps::render_diagram_block(&block, &PngTestRenderer)
+        .expect("ZenUML Mermaid blocks should be rendered by the Mermaid renderer");
+    assert!(html.contains("data:image/png;base64,"));
 }
 
 #[test]
-fn transform_keeps_zenuml_mermaid_fence_as_markdown() {
+fn transform_renders_zenuml_mermaid_fence() {
     let source = "before\n```mermaid\nzenuml\n    title Order Service\n```\nafter";
-    let result = MarkdownFenceOps::transform_diagram_blocks(source, &PanicRenderer);
+    let result = MarkdownFenceOps::transform_diagram_blocks(source, &PngTestRenderer);
+
+    assert!(result.contains("before"));
+    assert!(result.contains("after"));
+    assert!(result.contains("data:image/png;base64,"));
+    assert!(!result.contains("```mermaid"));
+}
+
+#[test]
+fn transform_preserves_zenuml_mermaid_fence_when_dependency_is_missing() {
+    let source = "before\n```mermaid\nzenuml\n    title Order Service\n```\nafter";
+    let result =
+        MarkdownFenceOps::transform_diagram_blocks(source, &ZenumlDependencyMissingRenderer);
 
     assert_eq!(result, source);
 }

@@ -122,7 +122,7 @@ impl RendererLogicOps {
         match SvgRasterizeOps::rasterize_svg(svg, DIAGRAM_SVG_DISPLAY_SCALE) {
             Ok(img) => RenderedSection::Image {
                 svg_data: img,
-                alt: format!("{kind:?} diagram"),
+                alt: diagram_alt_text(kind, source),
                 source_lines,
             },
             Err(e) => RenderedSection::Error {
@@ -152,4 +152,11 @@ impl RendererLogicOps {
     pub fn decode_png_rgba(bytes: &[u8]) -> Result<RasterizedSvg, String> {
         renderer_png::RendererPngDecoder::decode_png_rgba(bytes)
     }
+}
+
+fn diagram_alt_text(kind: &DiagramKind, source: &str) -> String {
+    if kind.is_zenuml_source(source) {
+        return "ZenUML diagram".to_string();
+    }
+    format!("{kind:?} diagram")
 }

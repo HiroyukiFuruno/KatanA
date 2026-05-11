@@ -19,14 +19,24 @@ pub struct Fixture {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct WorkspaceFile {
-    pub name: String,
-    pub content: String,
+#[serde(untagged)]
+pub enum WorkspaceFile {
+    Text { name: String, content: String },
+    Copy { name: String, source: String },
+}
+
+impl WorkspaceFile {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Text { name, .. } | Self::Copy { name, .. } => name,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Default)]
 pub struct FixtureSettings {
     pub theme: Option<String>,
+    pub preset: Option<String>,
     pub locale: Option<String>,
     pub explorer_visible: Option<bool>,
     pub no_extension: Option<bool>,

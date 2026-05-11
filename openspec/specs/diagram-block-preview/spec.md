@@ -49,6 +49,29 @@ This is a legacy capability specification that was automatically migrated to com
 - **THEN** the preview shows the rendered diagram instead of the raw fenced source
 - **THEN** changes to the block are reflected when the preview refreshes
 
+#### Scenario: Render a ZenUML payload through Mermaid renderer
+
+- **WHEN** the active Markdown document contains a `mermaid` fenced block whose source starts with `zenuml`
+- **THEN** the block is treated as a Mermaid diagram payload
+- **THEN** the preview passes the source to the renderer instead of preserving it as raw Markdown
+
+### Requirement: Preview image backgrounds follow the current theme
+
+システムは、Markdown に埋め込まれた画像とダイアグラム画像を、固定の黒背景または白背景ではなく、現在の preview 背景色の上に表示しなければならない（SHALL）。
+
+#### Scenario: Render an embedded PNG on a light theme preview background
+
+- **WHEN** the active Markdown document contains an embedded PNG image
+- **AND** the active theme uses a light preview background
+- **THEN** the preview paints the image container with the active preview background
+- **THEN** transparent image pixels are composited onto that preview background instead of black
+
+#### Scenario: Render ZenUML on the active preview background
+
+- **WHEN** the active Markdown document contains a ZenUML payload inside a `mermaid` fenced block
+- **THEN** the preview passes the active preview background through the diagram theme snapshot
+- **THEN** transparent diagram pixels are composited onto that preview background instead of fixed white
+
 ### Requirement: PlantUML blocks render inline in the standard preview
 
 システムは、`plantuml` とラベル付けされたバッククォートまたはチルダの Markdown フェンスを、標準プレビュー上でインライン図形として描画しなければならない（SHALL）。
@@ -168,4 +191,3 @@ The system MUST preserve the preview workflow when a supported diagram block can
 - **WHEN** user opens the code block language selector
 - **THEN** system includes `text`, `markdown`, `bash`, `zsh`, `mermaid`, `drawio`, and `plantuml`
 - **THEN** system also includes common development languages such as `json`, `yaml`, `toml`, `rust`, `typescript`, `javascript`, `python`, `html`, `css`, and `sql`
-

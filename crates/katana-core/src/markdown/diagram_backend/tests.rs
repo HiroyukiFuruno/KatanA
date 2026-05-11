@@ -123,6 +123,26 @@ fn cache_key_changes_when_runtime_profile_changes() {
 }
 
 #[test]
+fn current_theme_snapshot_uses_ui_theme_override() {
+    DiagramThemeSnapshot::set_current_override(DiagramThemeOverride {
+        name: "custom-light".to_string(),
+        is_dark: false,
+        background: "#fff4c2".to_string(),
+        text: "#332900".to_string(),
+        preview_text: "#332900".to_string(),
+    });
+
+    let snapshot = DiagramThemeSnapshot::current();
+
+    assert_eq!(snapshot.name, "custom-light");
+    assert_eq!(snapshot.background, "#fff4c2");
+    assert_eq!(snapshot.text, "#332900");
+    assert_eq!(snapshot.preview_text, "#332900");
+
+    DiagramThemeSnapshot::clear_current_override();
+}
+
+#[test]
 fn workspace_file_document_cache_id_includes_root_and_path() {
     let context = DiagramDocumentContext::WorkspaceFile {
         workspace_root: PathBuf::from("/workspace"),

@@ -170,7 +170,16 @@
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
 - [/] 6.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする
-- [ ] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [/] 6.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [/] 6.3 `mermaid` フェンス内の ZenUML が raw Markdown として残る問題を修正する。KatanA 側では `zenuml` ソースを描画対象から除外しない最小修正に限定する。
+- [/] 6.4 ZenUML が白表示になる根本原因を特定する。kcf v0.1.3 では出力 SVG の見た目本体が `foreignObject` 依存で、KatanA の既存ネイティブ画像化では描けなかった。kcf v0.1.4 取り込み後は PNG wrapper として描画されるが、背景が不透明な白で返るため、KatanA 側でテーマ背景へ合成する必要がある。
+- [/] 6.5 kcf 側 issue [#8](https://github.com/HiroyukiFuruno/katana-canvas-forge/issues/8) を起票する。KatanA 側へ ZenUML 専用の WebView（アプリ内ブラウザ部品）/ Chromium（Chrome 系ブラウザエンジン）/ Playwright（ブラウザ自動操作ランタイム）経路は追加しない。
+- [/] 6.6 kcf 側で ZenUML 出力契約が修正された後、`scripts/screenshot` で ZenUML 表示を含むスクリーンショットを生成し、白表示ではなく視認できる図になっていることを確認する。
+- [/] 6.7 ZenUML のスクリーンショット確認後に `just check-local` を実行し、all pass まで修正する。
+- [ ] 6.8 `just check-local` all pass を担保した後、`git commit --no-verify` / `git push --no-verify` の使用を許可済みとして commit & push を実行する。
+- [/] 6.9 Markdown に埋め込んだ PNG 等の画像を preview 表示するとき、背景が黒固定になり light 系テーマで不正表示になる問題を修正する。
+- [/] 6.10 `mermaid` フェンス内の ZenUML を描画するとき、背景が白固定にならず、選択中テーマに追従するようにする。
+- [/] 6.11 `just check-local` の `sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium` 失敗を修正する。ZenUML を renderer に渡す仕様変更後の raw Mermaid 数を正しく検証し、Linux コンテナのように ZenUML の Node / Playwright 依存が無い環境ではエラーHTMLではなく元のコードブロックを維持する。
 
 ---
 

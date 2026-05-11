@@ -11,6 +11,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
+- **ZenUML Diagram Rendering**: Fixed ZenUML content inside `mermaid` fences so it is passed to the diagram renderer instead of staying visible as raw Markdown.
 - **Linux In-App Update**: Fixed Linux in-app updates for installs whose executable was named `katana-desktop`; the next update can repair itself through the normal restart flow without manual reinstall or file renaming.
 - **Windows In-App Update**: Improved update asset selection so Windows portable or renamed installs still use the correct application executable during automatic update.
 

@@ -22,18 +22,22 @@ impl DiagramKind {
     pub fn should_preserve_fenced_source(&self, source: &str) -> bool {
         matches!(self, Self::Mermaid) && should_preserve_mermaid_fence(source)
     }
+
+    pub fn is_zenuml_source(&self, source: &str) -> bool {
+        matches!(self, Self::Mermaid) && mermaid_source_starts_with_keyword(source, "zenuml")
+    }
 }
 
 fn should_preserve_mermaid_fence(source: &str) -> bool {
     let trimmed = source.trim_start_matches('\u{feff}').trim_start();
-    if trimmed.trim().is_empty() {
-        return true;
-    }
-    mermaid_source_starts_with_keyword(trimmed, "zenuml")
+    trimmed.trim().is_empty()
 }
 
 fn mermaid_source_starts_with_keyword(source: &str, keyword: &str) -> bool {
-    let lower_source = source.to_ascii_lowercase();
+    let lower_source = source
+        .trim_start_matches('\u{feff}')
+        .trim_start()
+        .to_ascii_lowercase();
     let Some(rest) = lower_source.strip_prefix(keyword) else {
         return false;
     };

@@ -7,6 +7,7 @@ impl std::fmt::Debug for ViewerState {
             .field("zoom", &self.zoom)
             .field("pan", &self.pan)
             .field("texture", &self.texture.as_ref().map(|t| t.id()))
+            .field("texture_background", &self.texture_background)
             .field("closing_since", &self.closing_since)
             .finish()
     }
@@ -18,6 +19,7 @@ impl Default for ViewerState {
             zoom: 1.0,
             pan: egui::Vec2::ZERO,
             texture: None,
+            texture_background: None,
             closing_since: None,
         }
     }

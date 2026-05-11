@@ -68,6 +68,15 @@ pub struct DiagramThemeSnapshot {
     pub preview_text: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiagramThemeOverride {
+    pub name: String,
+    pub is_dark: bool,
+    pub background: String,
+    pub text: String,
+    pub preview_text: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DiagramDocumentContext {
     WorkspaceFile {
