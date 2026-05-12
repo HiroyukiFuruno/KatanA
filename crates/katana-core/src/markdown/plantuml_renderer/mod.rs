@@ -72,8 +72,9 @@ impl PlantUmlRendererOps {
         let themed_source = inject_theme(source, preset);
         let args = build_plantuml_args(jar);
 
-        /* WHY: Setting no_window=true can cause Java to crash on some Windows environments */
-        let mut child = crate::system::ProcessService::create_command("java")
+        /* WHY: Some JREs crash on AWT/Swing init when spawned from a CREATE_NO_WINDOW parent.
+         * With all stdio piped, no console window appears even without the flag. */
+        let mut child = crate::system::ProcessService::create_command_visible("java")
             .args(&args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

@@ -1,5 +1,3 @@
-use katana_core::plugin::{ExtensionPoint, PLUGIN_API_VERSION, PluginMeta, PluginRegistry};
-
 pub struct GuiSetupOps;
 
 impl GuiSetupOps {
@@ -55,38 +53,5 @@ impl GuiSetupOps {
             return Some((name, data));
         }
         None
-    }
-
-    pub fn register_builtin_plugins(registry: &mut PluginRegistry) {
-        registry.register(
-            PluginMeta {
-                id: "builtin-mermaid-renderer".to_string(),
-                name: "Built-in Mermaid Renderer".to_string(),
-                api_version: PLUGIN_API_VERSION,
-                extension_points: vec![ExtensionPoint::RendererEnhancement],
-            },
-            /* WHY: Renderer logic is wired directly in the markdown pipeline. */
-            || Ok(()),
-        );
-
-        registry.register(
-            PluginMeta {
-                id: "builtin-plantuml-renderer".to_string(),
-                name: "Built-in PlantUML Renderer".to_string(),
-                api_version: PLUGIN_API_VERSION,
-                extension_points: vec![ExtensionPoint::RendererEnhancement],
-            },
-            || Ok(()),
-        );
-
-        registry.register(
-            PluginMeta {
-                id: "builtin-drawio-renderer".to_string(),
-                name: "Built-in Draw.io Renderer".to_string(),
-                api_version: PLUGIN_API_VERSION,
-                extension_points: vec![ExtensionPoint::RendererEnhancement],
-            },
-            || Ok(()),
-        );
     }
 }
