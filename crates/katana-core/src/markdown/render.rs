@@ -141,9 +141,38 @@ struct DiagramHtmlRange {
 
 impl DiagramHtmlRange {
     fn next(source: &str, offset: usize) -> Option<Self> {
-        let svg = Self::find(source, offset, "<svg", "</svg>");
+        let svg = Self::find_nested(source, offset, "<svg", "</svg>");
         let div = Self::find(source, offset, r#"<div class="katana-diagram"#, "</div>");
         [svg, div].into_iter().flatten().min_by_key(|it| it.start)
+    }
+
+    /// Finds a balanced open/close tag pair, tracking nesting depth so that
+    /// diagrams containing nested `<svg>` elements (e.g. ZenUML arrow-head
+    /// SVGs) are protected as a whole rather than stopping at the first
+    /// inner `</svg>`.
+    fn find_nested(source: &str, offset: usize, open_tag: &str, close_tag: &str) -> Option<Self> {
+        let lower = source.to_ascii_lowercase();
+        let start = offset + lower[offset..].find(open_tag)?;
+        let mut depth: usize = 1;
+        let mut pos = start + open_tag.len();
+        loop {
+            let next_open = lower[pos..].find(open_tag).map(|i| pos + i);
+            let next_close = lower[pos..].find(close_tag).map(|i| pos + i);
+            match (next_open, next_close) {
+                (Some(o), Some(c)) if o < c => {
+                    depth += 1;
+                    pos = o + open_tag.len();
+                }
+                (_, Some(c)) => {
+                    depth -= 1;
+                    pos = c + close_tag.len();
+                    if depth == 0 {
+                        return Some(Self { start, end: pos });
+                    }
+                }
+                _ => return None,
+            }
+        }
     }
 
     fn find(source: &str, offset: usize, start_marker: &str, end_marker: &str) -> Option<Self> {
