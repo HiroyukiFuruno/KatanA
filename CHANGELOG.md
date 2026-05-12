@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.15] - 2026-05-12 09:46:00 (UTC)
+
+### 🐛 Bug Fixes
+
+- **ZenUML Diagram Colors**: Fixed ZenUML diagrams rendering with incorrect colors. The diagram background and internal colors (lifelines, fragment boxes) now correctly follow the active light or dark theme.
+
 ## [0.22.14] - 2026-05-11 05:24:36 (UTC)
 
 ### ✨ Improvements
