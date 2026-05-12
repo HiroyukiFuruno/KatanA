@@ -108,7 +108,7 @@ impl InlineColorPicker {
 
     pub fn show(self, ui: &mut egui::Ui, color: &mut egui::Color32) -> egui::Response {
         let alpha = if self.is_rgba {
-            egui::color_picker::Alpha::BlendOrAdditive
+            egui::color_picker::Alpha::OnlyBlend
         } else {
             egui::color_picker::Alpha::Opaque
         };

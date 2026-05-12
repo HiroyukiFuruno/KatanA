@@ -57,8 +57,9 @@ function upload_formula() {
     FORMULA_CONTENT+="  url \"https://github.com/HiroyukiFuruno/KatanA/releases/download/${VERSION}/${TAR_NAME}\"\n"
     FORMULA_CONTENT+="  sha256 \"${SHA256}\"\n\n"
     FORMULA_CONTENT+="  depends_on :linux\n\n"
+    FORMULA_CONTENT+="  link_overwrite \"bin/katana-desktop\"\n\n"
     FORMULA_CONTENT+="  def install\n"
-    FORMULA_CONTENT+="    bin.install \"KatanA\"\n"
+    FORMULA_CONTENT+="    bin.install \"KatanA\" => \"katana-desktop\"\n"
     FORMULA_CONTENT+="  end\n"
     FORMULA_CONTENT+="end\n"
 

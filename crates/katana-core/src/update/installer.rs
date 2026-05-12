@@ -132,11 +132,19 @@ impl UpdateInstallerOps {
                     prep.script_path.to_str().unwrap_or(""),
                     &parent_pid,
                 ])
+                /* WHY: The GUI parent has no console; inheriting stdio would give PowerShell
+                 * INVALID_HANDLE values.  Explicitly detach to null for stable behaviour. */
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
                 .spawn()?;
         }
         #[cfg(not(target_os = "windows"))]
         {
             crate::system::ProcessService::create_command(prep.script_path.to_str().unwrap_or(""))
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
                 .spawn()?;
         }
         std::process::exit(0);

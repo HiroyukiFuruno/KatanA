@@ -25,7 +25,7 @@ VERSION="${VERSION#v}"
 header "Preflight checks for v${VERSION}"
 
 # 1. Artifact Naming Validation
-info "1/4 Verifying Cargo.toml version..."
+info "1/5 Verifying Cargo.toml version..."
 CARGO_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
     error "Cargo.toml version ($CARGO_VERSION) does not match target release version ($VERSION)."
@@ -33,7 +33,7 @@ if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
 fi
 success "Cargo.toml version matches."
 
-info "2/4 Verifying Info.plist version..."
+info "2/5 Verifying Info.plist version..."
 PLIST_VERSION=$(awk '/CFBundleShortVersionString/{getline; gsub(/.*<string>v?|<\/string>.*/, ""); print}' crates/katana-ui/Info.plist | xargs)
 if [[ "$PLIST_VERSION" != "$VERSION" ]]; then
     error "Info.plist CFBundleShortVersionString ($PLIST_VERSION) does not match target release version ($VERSION)."
@@ -42,7 +42,7 @@ fi
 success "Info.plist version matches."
 
 # 2. CHANGELOG Validation
-info "3/4 Validating CHANGELOG via AST Linter..."
+info "3/5 Validating CHANGELOG via AST Linter..."
 if ! cargo test -p katana-linter --test ast_linter ast_linter_changelog_contains_current_workspace_version -q >/dev/null 2>&1; then
     error "AST Linter failed: Version v${VERSION} not found in CHANGELOG.md."
     exit 1
@@ -55,8 +55,12 @@ if ! grep -q "^## \[${VERSION}\]" CHANGELOG.ja.md; then
 fi
 success "CHANGELOG.ja.md contains notes for v${VERSION}."
 
-# 3. OpenSpec Validation
-info "4/4 Validating OpenSpec task completion..."
+# 3. Linuxbrew Formula Validation
+info "4/5 Verifying Linuxbrew formula contract..."
+scripts/release/check-linuxbrew-formula-contract.sh
+
+# 4. OpenSpec Validation
+info "5/5 Validating OpenSpec task completion..."
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
 for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
     if [[ -d "$CHANGE_DIR" ]]; then

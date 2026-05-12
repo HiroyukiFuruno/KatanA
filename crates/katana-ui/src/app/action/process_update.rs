@@ -6,6 +6,12 @@ impl KatanaApp {
             return;
         };
 
+        /* WHY: Guard against double-execution. If the receiver channel already exists, an install
+         * is already in flight — do not spawn another thread/relauncher on duplicate dispatches. */
+        if self.update_install_rx.is_some() {
+            return;
+        }
+
         self.state.update.checking = true;
         self.state.update.phase =
             Some(crate::app_state::UpdatePhase::Downloading { progress: 0.0 });

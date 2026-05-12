@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.16] - 2026-05-12 15:20:29 (UTC)
+
+### ✨ Improvements
+
+- **Linuxbrew Installation**: Linuxbrew installs now publish the expected `katana-desktop` command and replace stale command links during formula updates, reducing manual cleanup after upgrades.
+- **Icon Alpha Editing**: The icon color advanced settings now always show the opacity slider, making transparent icon colors easier to adjust.
+
+### 🐛 Bug Fixes
+
+- **Windows In-App Update**: Fixed the Windows update and restart flow so repeated update actions do not spawn duplicate installers, and relauncher processes start reliably from a desktop app without a console.
+- **PlantUML on Windows**: Fixed PlantUML rendering on Windows so Java-based diagrams can open without being hidden by the app's background-process mode.
+
+### 🔧 System
+
+- Removed obsolete built-in renderer plugin placeholders now that diagram handling is wired through the current rendering pipeline.
+
 ## [0.22.15] - 2026-05-12 09:46:00 (UTC)
 
 ### 🐛 Bug Fixes

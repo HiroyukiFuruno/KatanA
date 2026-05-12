@@ -19,6 +19,15 @@ impl ProcessService {
         command
     }
 
+    /// Like `create_command` but does NOT apply `CREATE_NO_WINDOW` on Windows.
+    ///
+    /// Some JREs (Java) crash during AWT/Swing initialisation when launched from a
+    /// `CREATE_NO_WINDOW` parent process.  Use this variant for such processes only.
+    /// Piping all stdio handles already suppresses any console window, so this is safe.
+    pub fn create_command_visible(program: &str) -> Command {
+        Command::new(program)
+    }
+
     /// Spawns the command as a child process.
     pub fn spawn(mut command: Command) -> std::io::Result<Child> {
         command.spawn()

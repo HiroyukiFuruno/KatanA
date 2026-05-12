@@ -17,6 +17,7 @@
 
 #[cfg(not(test))]
 use katana_core::ai::AiProviderRegistry;
+#[cfg(not(test))]
 use katana_core::plugin::PluginRegistry;
 #[cfg(not(test))]
 use katana_platform::{JsonFileRepository, SettingsService};
@@ -48,8 +49,7 @@ fn main() -> eframe::Result<()> {
 
     let ai_registry = AiProviderRegistry::new();
 
-    let mut plugin_registry = PluginRegistry::new();
-    GuiSetupOps::register_builtin_plugins(&mut plugin_registry);
+    let plugin_registry = PluginRegistry::new();
 
     let repo = JsonFileRepository::with_default_path();
     let mut settings = SettingsService::new(Box::new(repo));
@@ -168,14 +168,6 @@ mod tests {
         init_tracing();
         let ctx = egui::Context::default();
         GuiSetupOps::setup_fonts_with_candidates(&ctx, &["/nonexistent/font.ttc"]);
-    }
-
-    #[test]
-    fn test_register_builtin_plugins() {
-        init_tracing();
-        let mut registry = PluginRegistry::new();
-        GuiSetupOps::register_builtin_plugins(&mut registry);
-        assert_eq!(registry.active_count(), 3);
     }
 
     #[test]
