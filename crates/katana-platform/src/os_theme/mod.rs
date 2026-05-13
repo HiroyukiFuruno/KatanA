@@ -38,8 +38,8 @@ fn detect_dark_mode_impl() -> Option<bool> {
 fn detect_dark_mode_impl() -> Option<bool> {
     /* WHY: On Windows, use direct registry access to avoid spawning PowerShell or other
     processes that might cause a visible console window. */
-    use winreg::enums::{HKEY_CURRENT_USER, KEY_READ};
     use winreg::RegKey;
+    use winreg::enums::{HKEY_CURRENT_USER, KEY_READ};
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let path = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";

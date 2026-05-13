@@ -93,10 +93,13 @@ impl<'a> SplashOverlay<'a> {
 
         /* WHY: Perfectly center the content by using a vertical layout that fills the screen. */
         let layout = egui::Layout::top_down(egui::Align::Center);
-        ui.allocate_new_ui(egui::UiBuilder::new().max_rect(screen_rect).layout(layout), |ui| {
-            ui.add_space((screen_rect.height() - SPLASH_CONTENT_HEIGHT) / 2.0);
-            self.draw_inner_elements(ui, is_dark, opacity);
-        });
+        ui.allocate_new_ui(
+            egui::UiBuilder::new().max_rect(screen_rect).layout(layout),
+            |ui| {
+                ui.add_space((screen_rect.height() - SPLASH_CONTENT_HEIGHT) / 2.0);
+                self.draw_inner_elements(ui, is_dark, opacity);
+            },
+        );
     }
 
     fn draw_inner_elements(&self, ui: &mut egui::Ui, is_dark: bool, opacity: f32) {
