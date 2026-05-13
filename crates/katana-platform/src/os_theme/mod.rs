@@ -34,9 +34,26 @@ fn detect_dark_mode_impl() -> Option<bool> {
     Some(appearance.contains("Dark"))
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
 fn detect_dark_mode_impl() -> Option<bool> {
-    /* WHY: Use `dark-light` crate to detect system theme on Windows and Linux.
+    /* WHY: On Windows, use direct registry access to avoid spawning PowerShell or other
+    processes that might cause a visible console window. */
+    use winreg::enums::{HKEY_CURRENT_USER, KEY_READ};
+    use winreg::RegKey;
+
+    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+    let path = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+
+    let key = hkcu.open_subkey_with_flags(path, KEY_READ).ok()?;
+    let val: u32 = key.get_value("AppsUseLightTheme").ok()?;
+
+    /* 0 means dark mode, 1 means light mode */
+    Some(val == 0)
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+fn detect_dark_mode_impl() -> Option<bool> {
+    /* WHY: Use `dark-light` crate to detect system theme on Linux and other platforms.
     Returns `None` if the platform lacks dark mode detection capabilities or fails. */
     match dark_light::detect() {
         Ok(dark_light::Mode::Dark) => Some(true),
