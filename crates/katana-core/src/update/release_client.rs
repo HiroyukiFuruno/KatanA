@@ -170,7 +170,10 @@ mod tests {
         spawn_release_server_with_status("HTTP/1.1 200 OK", payload)
     }
 
-    fn spawn_release_server_with_status(status_line: &'static str, payload: &'static str) -> String {
+    fn spawn_release_server_with_status(
+        status_line: &'static str,
+        payload: &'static str,
+    ) -> String {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
         std::thread::spawn(move || {
@@ -204,8 +207,7 @@ mod tests {
         let _guard = PROXY_ENV_MUTEX.lock().unwrap();
         let _snapshot = EnvSnapshot::capture();
         EnvSnapshot::clear_proxy_env();
-        let error =
-            ureq::Error::Io(std::io::Error::new(ErrorKind::ConnectionRefused, "refused"));
+        let error = ureq::Error::Io(std::io::Error::new(ErrorKind::ConnectionRefused, "refused"));
 
         assert!(!ReleaseClient::should_retry_without_proxy(&error));
     }
