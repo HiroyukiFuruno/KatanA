@@ -2,6 +2,14 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.18] - 2026-05-14 16:02:42 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Linux Diagram Labels**: Fixed Mermaid and Draw.io diagram labels disappearing in the preview on Linux.
+- **Linux PlantUML Preview**: Fixed PlantUML diagrams rendering as blank space in the preview on Linux.
+- **Windows Update Check**: Fixed update checks failing with `io: Connection refused` when Windows environments have a broken local proxy setting.
+
 ## [0.22.17] - 2026-05-13 14:30:56 (UTC)
 
 ### 🐛 Bug Fixes
