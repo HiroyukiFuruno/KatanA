@@ -73,7 +73,9 @@ impl UpdateOps {
     }
 
     fn check_for_updates_from_url(current_version: &str, url: &str) -> Result<Option<ReleaseInfo>> {
-        let release = ReleaseClient::fetch_latest_release(url)?;
+        let Some(release) = ReleaseClient::fetch_latest_release(url)? else {
+            return Ok(None);
+        };
         let tag_version = release.tag_name.trim_start_matches('v');
         let curr_version = current_version.trim_start_matches('v');
 

@@ -32,6 +32,9 @@ fn has_svg_text_fallback_after(
     foreign_object_start: usize,
     foreign_object_end: usize,
 ) -> bool {
+    /* WHY: Plain substring search for `<switch` is safe because SVG 1.1 / 2 has no other
+    element name starting with `switch` (only `<switch>` exists), so any hit always opens
+    the `<switch>` container we care about. */
     let before = &svg_text[..foreign_object_start];
     let Some(switch_start) = before.rfind("<switch") else {
         return false;

@@ -14,12 +14,20 @@ pub(super) struct LatestRelease {
 pub(super) struct ReleaseClient;
 
 impl ReleaseClient {
-    pub(super) fn fetch_latest_release(url: &str) -> Result<LatestRelease> {
-        match Self::fetch_with_agent(url, &ureq::Agent::new_with_defaults()) {
-            Ok(release) => Ok(release),
+    pub(super) fn fetch_latest_release(url: &str) -> Result<Option<LatestRelease>> {
+        let attempt = match Self::fetch_with_agent(url, &ureq::Agent::new_with_defaults()) {
+            Ok(release) => return Ok(Some(release)),
             Err(error) if Self::should_retry_without_proxy(&error) => {
-                Self::fetch_with_agent(url, &Self::direct_agent()).map_err(Into::into)
+                Self::fetch_with_agent(url, &Self::direct_agent())
             }
+            Err(error) => Err(error),
+        };
+        match attempt {
+            Ok(release) => Ok(Some(release)),
+            /* WHY: GitHub API rate limiting (403/429) or transient upstream denials should
+            be treated as "no update available" so the user does not see a confusing
+            failure dialog, matching the previous HTML-redirect implementation. */
+            Err(ureq::Error::StatusCode(_)) => Ok(None),
             Err(error) => Err(error.into()),
         }
     }
@@ -121,6 +129,12 @@ mod tests {
                 unsafe { std::env::remove_var(key) };
             }
         }
+
+        fn clear_proxy_env() {
+            for key in PROXY_ENV_KEYS {
+                unsafe { std::env::remove_var(key) };
+            }
+        }
     }
 
     impl Drop for EnvSnapshot {
@@ -143,7 +157,9 @@ mod tests {
             r#"{"tag_name":"v9.9.9","html_url":"https://example.test/release","body":"notes"}"#,
         );
 
-        let release = ReleaseClient::fetch_latest_release(&url).unwrap();
+        let release = ReleaseClient::fetch_latest_release(&url)
+            .unwrap()
+            .expect("release payload returned");
 
         assert_eq!(release.tag_name, "v9.9.9");
         assert_eq!(release.html_url, "https://example.test/release");
@@ -151,6 +167,10 @@ mod tests {
     }
 
     fn spawn_release_server(payload: &'static str) -> String {
+        spawn_release_server_with_status("HTTP/1.1 200 OK", payload)
+    }
+
+    fn spawn_release_server_with_status(status_line: &'static str, payload: &'static str) -> String {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let address = listener.local_addr().unwrap();
         std::thread::spawn(move || {
@@ -158,12 +178,56 @@ mod tests {
             let mut request = [0; 1024];
             let _ = stream.read(&mut request);
             let response = format!(
-                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                "{status_line}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
                 payload.len(),
                 payload
             );
             stream.write_all(response.as_bytes()).unwrap();
         });
         format!("http://{address}/latest")
+    }
+
+    #[test]
+    fn fetch_latest_release_returns_none_on_non_2xx_status() {
+        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
+        let _snapshot = EnvSnapshot::capture();
+        EnvSnapshot::clear_proxy_env();
+        let url = spawn_release_server_with_status("HTTP/1.1 403 Forbidden", "{}");
+
+        let result = ReleaseClient::fetch_latest_release(&url).unwrap();
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn should_retry_returns_false_without_proxy_env() {
+        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
+        let _snapshot = EnvSnapshot::capture();
+        EnvSnapshot::clear_proxy_env();
+        let error =
+            ureq::Error::Io(std::io::Error::new(ErrorKind::ConnectionRefused, "refused"));
+
+        assert!(!ReleaseClient::should_retry_without_proxy(&error));
+    }
+
+    #[test]
+    fn should_retry_returns_false_for_non_refused_io_error() {
+        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
+        let _snapshot = EnvSnapshot::capture();
+        EnvSnapshot::set_refusing_proxy();
+        let error = ureq::Error::Io(std::io::Error::new(ErrorKind::TimedOut, "timeout"));
+
+        assert!(!ReleaseClient::should_retry_without_proxy(&error));
+    }
+
+    #[test]
+    fn should_retry_returns_true_for_connect_proxy_refused() {
+        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
+        let _snapshot = EnvSnapshot::capture();
+        EnvSnapshot::set_refusing_proxy();
+        let error =
+            ureq::Error::ConnectProxyFailed("CONNECT failed: Connection refused".to_string());
+
+        assert!(ReleaseClient::should_retry_without_proxy(&error));
     }
 }
