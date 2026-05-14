@@ -30,7 +30,7 @@ const SPLASH_CONTENT_HEIGHT: f32 = SPLASH_ICON_SIZE
     + SPLASH_PROGRESS_BAR_MARGIN
     + SPLASH_PROGRESS_SPACING;
 
-pub struct SplashOverlay<'a> {
+pub(crate) struct SplashOverlay<'a> {
     pub elapsed: f32,
     pub about_icon: Option<&'a egui::TextureHandle>,
     pub is_loading: bool,
