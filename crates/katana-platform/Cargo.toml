@@ -17,7 +17,12 @@ dirs = "6.0.0"
 tempfile.workspace = true
 parking_lot = "0.12"
 sys-locale = "0.3.2"
+
+[target.'cfg(not(any(target_os = "macos", target_os = "windows")))'.dependencies]
 dark-light = "2.0.0"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.52.0"
 
 [dev-dependencies]
 tempfile.workspace = true

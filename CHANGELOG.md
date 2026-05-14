@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.17] - 2026-05-13 14:30:56 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Windows Startup**: Suppressed a visible PowerShell console window that appeared briefly during theme detection.
+- **Splash Screen**: Fixed the splash screen layout to remain perfectly centered across all screen resolutions.
+
 ## [0.22.16] - 2026-05-12 15:20:29 (UTC)
 
 ### ✨ Improvements

@@ -61,12 +61,15 @@ impl<'a> SplashOverlay<'a> {
 
         egui::Area::new(egui::Id::new("splash_screen_area"))
             .order(egui::Order::Foreground)
+            .fixed_pos(egui::pos2(0.0, 0.0))
             .interactable(true)
             .show(ctx, |ui| {
+                let full_rect = ctx.content_rect();
+                ui.allocate_rect(full_rect, egui::Sense::all());
                 crate::widgets::InteractionFacade::consume_rect(
                     ui,
                     "splash_screen_input_blocker",
-                    ctx.content_rect(),
+                    full_rect,
                 );
                 self.draw_splash_content(ui, ctx, opacity);
             });
@@ -77,8 +80,7 @@ impl<'a> SplashOverlay<'a> {
 
     fn draw_splash_content(&self, ui: &mut egui::Ui, ctx: &egui::Context, opacity: f32) {
         let is_dark = ctx.global_style().visuals.dark_mode;
-        #[allow(deprecated)]
-        let content_rect = ctx.screen_rect();
+        let content_rect = ctx.content_rect();
 
         let bg = if is_dark {
             SPLASH_BG_DARK
@@ -87,17 +89,17 @@ impl<'a> SplashOverlay<'a> {
         };
         let fill =
             crate::theme_bridge::ThemeBridgeOps::from_rgb(bg, bg, bg).gamma_multiply(opacity);
-        ui.painter().rect_filled(content_rect, 1.0, fill);
+        ui.painter().rect_filled(content_rect, 0.0, fill);
 
-        let center = content_rect.center();
-        let rect = egui::Rect::from_center_size(
-            center,
-            egui::vec2(content_rect.width(), SPLASH_CONTENT_HEIGHT),
+        /* WHY: Perfectly center the content by using a vertical layout that fills the screen. */
+        let layout = egui::Layout::top_down(egui::Align::Center);
+        ui.allocate_new_ui(
+            egui::UiBuilder::new().max_rect(content_rect).layout(layout),
+            |ui| {
+                ui.add_space((content_rect.height() - SPLASH_CONTENT_HEIGHT) / 2.0);
+                self.draw_inner_elements(ui, is_dark, opacity);
+            },
         );
-
-        ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-            ui.vertical_centered(|ui| self.draw_inner_elements(ui, is_dark, opacity));
-        });
     }
 
     fn draw_inner_elements(&self, ui: &mut egui::Ui, is_dark: bool, opacity: f32) {

@@ -2645,7 +2645,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.16"
+version = "0.22.17"
 dependencies = [
  "anyhow",
  "base64",
@@ -2679,7 +2679,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.16"
+version = "0.22.17"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -2709,7 +2709,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.16"
+version = "0.22.17"
 dependencies = [
  "anyhow",
  "cc",
@@ -2724,11 +2724,12 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "tracing",
+ "winreg",
 ]
 
 [[package]]
 name = "katana-ui"
-version = "0.22.16"
+version = "0.22.17"
 dependencies = [
  "accesskit",
  "anyhow",
