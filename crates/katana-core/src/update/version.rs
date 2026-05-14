@@ -1,8 +1,6 @@
+use super::release_client::{LATEST_RELEASE_API_URL, ReleaseClient};
 use super::types::{ReleaseInfo, UpdateManager, UpdateOps};
 use anyhow::Result;
-use ureq::ResponseExt;
-
-const HTTP_OK: u16 = 200;
 
 impl UpdateOps {
     fn platform_asset_name() -> &'static str {
@@ -28,39 +26,9 @@ impl UpdateOps {
         let url = manager
             .api_url_override
             .as_deref()
-            .unwrap_or("https://github.com/HiroyukiFuruno/KatanA/releases/latest");
+            .unwrap_or(LATEST_RELEASE_API_URL);
 
-        let resp = ureq::get(url)
-            .header("User-Agent", "KatanA-Update-Manager")
-            .header("Accept", "text/html")
-            .call()?;
-
-        if resp.status() != HTTP_OK {
-            return Ok(None);
-        }
-
-        let final_url = resp.get_uri().to_string();
-        let tag_name = if let Some(idx) = final_url.rfind("releases/tag/") {
-            final_url[idx + "releases/tag/".len()..].to_string()
-        } else {
-            return Ok(None);
-        };
-
-        let tag_version = tag_name.trim_start_matches('v');
-        let curr_version = manager.current_version.trim_start_matches('v');
-
-        if !Self::is_newer_version(curr_version, tag_version) {
-            Ok(None)
-        } else {
-            let html_url = final_url.to_string();
-            let download_url = Self::build_download_url(&tag_name);
-            Ok(Some(ReleaseInfo {
-                tag_name,
-                html_url,
-                body: String::new(),
-                download_url,
-            }))
-        }
+        Self::check_for_updates_from_url(&manager.current_version, url)
     }
 
     pub fn is_newer_version(current: &str, latest: &str) -> bool {
@@ -101,36 +69,24 @@ impl UpdateOps {
     }
 
     pub fn check_for_updates_simple(current_version: &str) -> Result<Option<ReleaseInfo>> {
-        let url = "https://github.com/HiroyukiFuruno/KatanA/releases/latest";
+        Self::check_for_updates_from_url(current_version, LATEST_RELEASE_API_URL)
+    }
 
-        let resp = ureq::get(url)
-            .header("User-Agent", "KatanA-Update-Manager")
-            .header("Accept", "text/html")
-            .call()?;
-
-        if resp.status() != HTTP_OK {
-            return Ok(None);
-        }
-
-        let final_url = resp.get_uri().to_string();
-        let tag_name = if let Some(idx) = final_url.rfind("releases/tag/") {
-            final_url[idx + "releases/tag/".len()..].to_string()
-        } else {
+    fn check_for_updates_from_url(current_version: &str, url: &str) -> Result<Option<ReleaseInfo>> {
+        let Some(release) = ReleaseClient::fetch_latest_release(url)? else {
             return Ok(None);
         };
-
-        let tag_version = tag_name.trim_start_matches('v');
+        let tag_version = release.tag_name.trim_start_matches('v');
         let curr_version = current_version.trim_start_matches('v');
 
         if !Self::is_newer_version(curr_version, tag_version) {
             Ok(None)
         } else {
-            let html_url = final_url.to_string();
-            let download_url = Self::build_download_url(&tag_name);
+            let download_url = Self::build_download_url(&release.tag_name);
             Ok(Some(ReleaseInfo {
-                tag_name,
-                html_url,
-                body: String::new(),
+                tag_name: release.tag_name,
+                html_url: release.html_url,
+                body: release.body,
                 download_url,
             }))
         }

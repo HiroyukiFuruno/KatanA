@@ -2,6 +2,14 @@
 
 KatanA Desktop における重要な変更点（アップデート）を記録します。
 
+## [0.22.18] - 2026-05-15 01:02:42 (JST)
+
+### 🐛 不具合修正
+
+- **Linux の図形内テキスト**: Linux 環境のプレビュー（preview）で Mermaid / Draw.io の図形内テキストが消える問題を修正しました。
+- **Linux の PlantUML 表示**: Linux 環境のプレビュー（preview）で PlantUML 図形が空白になる問題を修正しました。
+- **Windows の更新確認**: 壊れたローカル中継設定（local proxy）がある環境で、更新確認が `io: Connection refused` で失敗する問題を修正しました。
+
 ## [0.22.17] - 2026-05-13 23:30:56 (JST)
 
 ### 🐛 修正
