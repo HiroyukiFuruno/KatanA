@@ -64,7 +64,7 @@ impl<'a> SplashOverlay<'a> {
             .fixed_pos(egui::pos2(0.0, 0.0))
             .interactable(true)
             .show(ctx, |ui| {
-                let full_rect = ctx.screen_rect();
+                let full_rect = ctx.content_rect();
                 ui.allocate_rect(full_rect, egui::Sense::all());
                 crate::widgets::InteractionFacade::consume_rect(
                     ui,
@@ -80,7 +80,7 @@ impl<'a> SplashOverlay<'a> {
 
     fn draw_splash_content(&self, ui: &mut egui::Ui, ctx: &egui::Context, opacity: f32) {
         let is_dark = ctx.global_style().visuals.dark_mode;
-        let screen_rect = ctx.screen_rect();
+        let content_rect = ctx.content_rect();
 
         let bg = if is_dark {
             SPLASH_BG_DARK
@@ -89,14 +89,14 @@ impl<'a> SplashOverlay<'a> {
         };
         let fill =
             crate::theme_bridge::ThemeBridgeOps::from_rgb(bg, bg, bg).gamma_multiply(opacity);
-        ui.painter().rect_filled(screen_rect, 0.0, fill);
+        ui.painter().rect_filled(content_rect, 0.0, fill);
 
         /* WHY: Perfectly center the content by using a vertical layout that fills the screen. */
         let layout = egui::Layout::top_down(egui::Align::Center);
         ui.allocate_new_ui(
-            egui::UiBuilder::new().max_rect(screen_rect).layout(layout),
+            egui::UiBuilder::new().max_rect(content_rect).layout(layout),
             |ui| {
-                ui.add_space((screen_rect.height() - SPLASH_CONTENT_HEIGHT) / 2.0);
+                ui.add_space((content_rect.height() - SPLASH_CONTENT_HEIGHT) / 2.0);
                 self.draw_inner_elements(ui, is_dark, opacity);
             },
         );
