@@ -4,12 +4,12 @@ on:
   push:
     branches: [master]
     paths:
-      - '**.rs'
+      - '**/*.rs'
       - '!scripts/**/*.rs'
   pull_request:
     branches: [master]
     paths:
-      - '**.rs'
+      - '**/*.rs'
       - '!scripts/**/*.rs'
       - '**/Cargo.toml'
       - '**/Cargo.lock'
