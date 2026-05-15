@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.20] - 2026-05-15 11:04:17 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Linux Diagram Text**: Fixed Mermaid, PlantUML, and ZenUML diagram labels disappearing in previews on Linux environments without system fonts.
+
 ## [0.22.19] - 2026-05-15 06:14:19 (UTC)
 
 ### 🐛 Bug Fixes

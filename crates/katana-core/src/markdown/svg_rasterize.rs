@@ -11,6 +11,8 @@ use resvg::{render, usvg};
 use tiny_skia::Pixmap;
 
 const MAX_RASTERIZED_SVG_EDGE: f32 = 8192.0;
+const FALLBACK_PROPORTIONAL_FONT_FAMILY: &str = "Ubuntu";
+const FALLBACK_MONOSPACE_FONT_FAMILY: &str = "Hack";
 
 impl SvgRasterizeOps {
     pub fn preprocess_for_rasterizer(svg_text: &str) -> String {
@@ -21,6 +23,7 @@ impl SvgRasterizeOps {
         let opts = usvg::Options {
             /* WHY: Text inside SVG becomes invisible if system fonts are not provided. */
             fontdb: font_db(),
+            font_family: FALLBACK_PROPORTIONAL_FONT_FAMILY.to_string(),
             ..usvg::Options::default()
         };
         let compatible_svg = Self::preprocess_for_rasterizer(svg_text);
@@ -60,8 +63,25 @@ fn font_db() -> std::sync::Arc<usvg::fontdb::Database> {
     std::sync::Arc::clone(FONT_DB.get_or_init(|| {
         let mut db = usvg::fontdb::Database::new();
         db.load_system_fonts();
+        load_embedded_fonts(&mut db);
+        set_generic_font_families(&mut db);
         std::sync::Arc::new(db)
     }))
+}
+
+fn load_embedded_fonts(db: &mut usvg::fontdb::Database) {
+    db.load_font_data(epaint_default_fonts::UBUNTU_LIGHT.to_vec());
+    db.load_font_data(epaint_default_fonts::HACK_REGULAR.to_vec());
+    db.load_font_data(epaint_default_fonts::NOTO_EMOJI_REGULAR.to_vec());
+    db.load_font_data(epaint_default_fonts::EMOJI_ICON.to_vec());
+}
+
+fn set_generic_font_families(db: &mut usvg::fontdb::Database) {
+    db.set_serif_family(FALLBACK_PROPORTIONAL_FONT_FAMILY);
+    db.set_sans_serif_family(FALLBACK_PROPORTIONAL_FONT_FAMILY);
+    db.set_cursive_family(FALLBACK_PROPORTIONAL_FONT_FAMILY);
+    db.set_fantasy_family(FALLBACK_PROPORTIONAL_FONT_FAMILY);
+    db.set_monospace_family(FALLBACK_MONOSPACE_FONT_FAMILY);
 }
 
 fn effective_scale(width: f32, height: f32, requested_scale: f32) -> f32 {
