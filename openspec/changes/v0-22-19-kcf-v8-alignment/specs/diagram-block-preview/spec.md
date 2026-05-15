@@ -2,7 +2,7 @@
 
 ### Requirement: V8 を使う図形プレビュー依存関係はバージョン整合している
 
-システムは、Mermaid / Draw.io プレビュー（preview）で利用する V8 を使う描画依存関係（V8-backed renderer dependencies）を、作業領域（workspace）内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。対応済み図形ブロック（diagram block）は、`katana-canvas-forge` と `katana-diagram-renderer` の `v8` 固定指定（pin）不整合によりワーカー（worker）起動前に失敗してはならない（MUST NOT）。
+システムは、Mermaid / Draw.io プレビュー（preview）で利用する V8 を使う描画依存関係（V8-backed renderer dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。対応済み図形ブロック（diagram block）は、`katana-canvas-forge`、`katana-diagram-renderer`、または数式描画依存の不整合によりワーカー（worker）起動前に失敗してはならない（MUST NOT）。
 
 #### Scenario: 作業領域の依存関係が同じ V8 固定指定を使う
 
@@ -10,6 +10,8 @@
 - **THEN** `katana-canvas-forge` は `0.1.7` として解決される
 - **THEN** 作業領域の `v8` は `=147.4.0` として解決される
 - **THEN** `katana-canvas-forge` と `katana-diagram-renderer` は競合する `v8` バージョンを要求しない
+- **THEN** 数式描画依存は `v8` を要求しない
+- **THEN** `scripts/screenshot` manifest は非 V8 `mathjax_svg` patch を使う
 
 #### Scenario: Mermaid プレビューのワーカーは描画前に切断されない
 

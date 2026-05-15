@@ -94,7 +94,7 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
 fn mermaid_both_states_render_semantically() {
-    /* WHY: kcf owns Mermaid runtime assets now. Hiding legacy assets may still render successfully. */
+    /* WHY: kdr owns Mermaid runtime assets now. Hiding legacy assets may still render successfully. */
     let _guard = crate::integration::lock_serial_test_mutex();
     let pane = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
         render_and_wait("mermaid", MERMAID_SOURCE)

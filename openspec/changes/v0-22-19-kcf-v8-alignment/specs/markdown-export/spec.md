@@ -2,13 +2,14 @@
 
 ### Requirement: V8 を使う Markdown 出力依存関係はバージョン整合している
 
-システムは、HTML / PDF / PNG / JPEG 出力（export）で kcf が利用する V8 を使う依存関係（V8-backed dependencies）を、作業領域（workspace）内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。出力は、`katana-canvas-forge` と `katana-diagram-renderer` の `v8` 固定指定（pin）不整合により停止してはならない（MUST NOT）。
+システムは、HTML / PDF / PNG / JPEG 出力（export）で kcf が利用する V8 を使う依存関係（V8-backed dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。出力は、`katana-canvas-forge`、`katana-diagram-renderer`、または数式描画依存の不整合により停止してはならない（MUST NOT）。
 
 #### Scenario: HTML 出力は整合した依存関係で図形ブロックを描画する
 
 - **WHEN** Mermaid または Draw.io ブロックを含む Markdown 文書を HTML へ出力する
 - **THEN** kcf は `katana-canvas-forge = "0.1.7"` として解決される
 - **THEN** kcf と kdr が異なる `v8` バージョンを要求することにより、出力経路が失敗しない
+- **THEN** 数式描画依存は `v8` を要求しない
 
 #### Scenario: ネイティブ出力でも図形描画を利用できる
 

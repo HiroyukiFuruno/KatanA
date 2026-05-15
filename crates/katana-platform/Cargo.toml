@@ -22,7 +22,7 @@ sys-locale = "0.3.2"
 dark-light = "2.0.0"
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.52.0"
+winreg = "0.56.0"
 
 [dev-dependencies]
 tempfile.workspace = true

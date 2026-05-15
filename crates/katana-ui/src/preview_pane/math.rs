@@ -48,11 +48,7 @@ impl MathLogicOps {
 
                 let svg_result = {
                     let _lock = MATHJAX_LOCK.lock().unwrap();
-                    if is_inline {
-                        mathjax_svg::convert_to_svg_inline(tex)
-                    } else {
-                        mathjax_svg::convert_to_svg(tex)
-                    }
+                    render_math_svg(tex, is_inline)
                 };
 
                 let data_uri = match svg_result {
@@ -162,5 +158,29 @@ impl MathLogicOps {
                     .color(crate::theme_bridge::TRANSPARENT),
             ),
         );
+    }
+}
+
+fn render_math_svg(tex: &str, is_inline: bool) -> Result<String, String> {
+    let result = if is_inline {
+        mathjax_svg::convert_to_svg_inline(tex)
+    } else {
+        mathjax_svg::convert_to_svg(tex)
+    };
+    result.map_err(|error| error.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::render_math_svg;
+
+    #[test]
+    fn mathjax_backend_renders_svg_for_inline_and_block_math() {
+        let inline_svg = render_math_svg("x^2", true).expect("inline MathJax SVG should render");
+        let block_svg =
+            render_math_svg("\\frac{1}{2}", false).expect("block MathJax SVG should render");
+
+        assert!(inline_svg.contains("<svg"));
+        assert!(block_svg.contains("<svg"));
     }
 }

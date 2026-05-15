@@ -88,7 +88,7 @@ fn cache_key_changes_when_theme_changes() {
         false,
         DiagramColorPreset::light(),
     ));
-    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kcf-mermaid");
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdr-mermaid");
     let version = DiagramBackendVersion::new("runtime");
 
     assert_ne!(
@@ -100,15 +100,15 @@ fn cache_key_changes_when_theme_changes() {
 #[test]
 fn cache_key_changes_when_runtime_profile_changes() {
     let input = input_with_options(DiagramRenderOptions::default());
-    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kcf-mermaid");
-    let old = DiagramBackendVersion::from_kcf(
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdr-mermaid");
+    let old = DiagramBackendVersion::from_kdr(
         "0.1.3",
         "Mermaid",
         "11.10.0",
         "old-checksum",
         "katana-mermaid",
     );
-    let new = DiagramBackendVersion::from_kcf(
+    let new = DiagramBackendVersion::from_kdr(
         "0.1.3",
         "Mermaid",
         "11.10.0",
