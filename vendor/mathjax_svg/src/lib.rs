@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use anyhow::{Context as _, anyhow};
-use rquickjs::{Context, Function, Object, Runtime};
+use rquickjs::{CatchResultExt, Context, Ctx, Function, Object, Runtime};
 use thiserror::Error;
 
 /// Exceptions related to this crate
@@ -23,6 +23,7 @@ type Result<T> = std::result::Result<T, Error>;
 
 const EXPORT_SUFFIX: &str = "export{Nj as default};";
 const FUNC_ID: &str = "__katana_mathjax_render";
+const QUICKJS_STACK_LIMIT_BYTES: usize = 8 * 1024 * 1024;
 
 thread_local! {
     static MATHJAX_CONTEXT: RefCell<Option<MathJaxContext>> = const { RefCell::new(None) };
@@ -53,33 +54,31 @@ fn convert_to_svg_inner(latex: impl AsRef<str>, display: bool) -> Result<String>
             .as_ref()
             .context("MathJax JavaScript context was not initialized")?;
         context.context.with(|ctx| {
-            let config =
-                Object::new(ctx.clone()).map_err(|error| Error::JavaScriptException(error.to_string()))?;
-            config
-                .set("display", display)
-                .map_err(|error| Error::JavaScriptException(error.to_string()))?;
-            let render: Function = ctx
-                .globals()
-                .get(FUNC_ID)
-                .map_err(|error| Error::JavaScriptException(error.to_string()))?;
-            render
-                .call((latex.as_ref(), config))
-                .map_err(|error| Error::JavaScriptException(error.to_string()))
+            let config = catch_js(&ctx, Object::new(ctx.clone()))?;
+            catch_js(&ctx, config.set("display", display))?;
+            let render: Function = catch_js(&ctx, ctx.globals().get(FUNC_ID))?;
+            catch_js(&ctx, render.call((latex.as_ref(), config)))
         })
     })
 }
 
 fn initialize() -> Result<MathJaxContext> {
     let runtime = Runtime::new().context("failed to create QuickJS runtime")?;
+    runtime.set_max_stack_size(QUICKJS_STACK_LIMIT_BYTES);
     let context = Context::full(&runtime).context("failed to create QuickJS context")?;
     context.with(|ctx| {
-        ctx.eval::<(), _>(patched_bundle()?.as_str())
-            .map_err(|error| Error::JavaScriptException(error.to_string()))
+        catch_js(&ctx, ctx.eval::<(), _>(patched_bundle()?.as_str()))
     })?;
     Ok(MathJaxContext {
         _runtime: runtime,
         context,
     })
+}
+
+fn catch_js<'js, T>(ctx: &Ctx<'js>, result: rquickjs::Result<T>) -> Result<T> {
+    result
+        .catch(ctx)
+        .map_err(|error| Error::JavaScriptException(error.to_string()))
 }
 
 fn patched_bundle() -> Result<String> {
