@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.22.19"
+version = "0.22.20"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -59,6 +59,7 @@ ignore = "0.4"
 resvg = "0.47"
 usvg = "0.47"
 tiny-skia = "0.12"
+epaint_default_fonts = "0.34"
 v8 = "=147.4.0"
 mathjax_svg = "3.2.0"
 xmltree = "0.12"

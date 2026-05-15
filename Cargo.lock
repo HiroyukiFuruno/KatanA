@@ -2738,13 +2738,14 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.19"
+version = "0.22.20"
 dependencies = [
  "anyhow",
  "base64",
  "comrak",
  "dirs",
  "emojis",
+ "epaint_default_fonts",
  "flate2",
  "image",
  "include_dir",
@@ -2790,7 +2791,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.19"
+version = "0.22.20"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -2820,7 +2821,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.19"
+version = "0.22.20"
 dependencies = [
  "anyhow",
  "cc",
@@ -2840,7 +2841,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.19"
+version = "0.22.20"
 dependencies = [
  "accesskit",
  "anyhow",

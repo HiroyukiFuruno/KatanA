@@ -6,6 +6,7 @@ static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 const MINIMAL_SVG: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="red"/></svg>"#;
 const NBSP_SVG: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40"><text x="10" y="24">A&nbsp;B</text></svg>"#;
+const TEXT_ONLY_SVG: &str = r##"<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40"><text x="8" y="28" font-family="Arial, sans-serif" font-size="24" fill="#111111">Text</text></svg>"##;
 const BASIC_DRAWIO_XML: &str = r#"<mxfile><diagram name="test"><mxGraphModel><root>
 <mxCell id="0"/>
 <mxCell id="1" parent="0"/>
@@ -67,9 +68,23 @@ fn html_nbsp_entity_is_rasterized_as_xml_entity() {
 }
 
 #[test]
+fn text_only_svg_is_visible_without_system_fonts() {
+    let result = SvgRasterizeOps::rasterize_svg(TEXT_ONLY_SVG, 1.0).expect("rasterize failed");
+
+    assert!(
+        has_visible_pixel(&result.rgba),
+        "SVG text must remain visible even when the OS has no fonts installed"
+    );
+}
+
+#[test]
 fn invalid_svg_returns_error() {
     let result = SvgRasterizeOps::rasterize_svg("not valid svg", 1.0);
     assert!(matches!(result, Err(SvgRasterizeError::ParseFailed(_))));
+}
+
+fn has_visible_pixel(rgba: &[u8]) -> bool {
+    rgba.chunks_exact(4).any(|pixel| pixel[3] > 0)
 }
 
 fn render_drawio_svg(source: &str) -> Option<String> {
