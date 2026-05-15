@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.19] - 2026-05-15 06:14:19 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Diagram Preview Stability**: Fixed Mermaid and Draw.io previews failing with a worker disconnect after the renderer update.
+
+### 🔧 System
+
+- Aligned the internal diagram rendering runtime used by preview and export paths to improve update stability.
+
 ## [0.22.18] - 2026-05-14 16:02:42 (UTC)
 
 ### 🐛 Bug Fixes

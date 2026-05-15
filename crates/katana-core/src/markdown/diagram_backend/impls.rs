@@ -21,7 +21,7 @@ impl DiagramBackendVersion {
         }
     }
 
-    pub fn from_kcf(
+    pub fn from_kdr(
         crate_version: &str,
         runtime_name: &str,
         runtime_version: &str,
@@ -31,7 +31,7 @@ impl DiagramBackendVersion {
         let runtime = format!("{runtime_name}:{runtime_version};checksum={runtime_checksum}");
         Self {
             value: format!(
-                "crate=katana-canvas-forge:{crate_version};runtime={runtime};profile={renderer_profile}"
+                "crate=katana-diagram-renderer:{crate_version};runtime={runtime};profile={renderer_profile}"
             ),
             runtime_version: runtime,
             renderer_profile: renderer_profile.to_string(),

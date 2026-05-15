@@ -1,0 +1,18 @@
+{
+  "name": "math2svg",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "prepare": "bun build --outfile=out/index.mjs --minify --target=browser src/index.ts",
+    "build": "npm run prepare"
+  },
+  "devDependencies": {
+    "bun": "^1.0.7",
+    "bun-types": "latest",
+    "mathjax-full": "^3.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

@@ -7,6 +7,9 @@ use crate::markdown::diagram_backend::DiagramThemeSnapshot;
 use crate::markdown::render::ThemedKatanaRenderer;
 use crate::markdown::{DiagramRenderer, MarkdownError, MarkdownRenderOps};
 
+#[cfg(test)]
+mod tests;
+
 pub struct HtmlExporter;
 pub struct ImageExporter;
 pub struct PdfExporter;

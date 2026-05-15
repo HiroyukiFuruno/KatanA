@@ -8,9 +8,9 @@ fn main() {
     println!("cargo:rerun-if-changed={}", lock_path.display());
 
     let lock = fs::read_to_string(&lock_path).expect("Cargo.lock should be readable");
-    let version = lock_package_version(&lock, "katana-canvas-forge")
-        .expect("katana-canvas-forge should exist in Cargo.lock");
-    println!("cargo:rustc-env=KATANA_CANVAS_FORGE_VERSION={version}");
+    let version = lock_package_version(&lock, "katana-diagram-renderer")
+        .expect("katana-diagram-renderer should exist in Cargo.lock");
+    println!("cargo:rustc-env=KATANA_DIAGRAM_RENDERER_VERSION={version}");
 }
 
 fn lock_package_version(lock: &str, package_name: &str) -> Option<String> {
@@ -51,13 +51,13 @@ name = "other"
 version = "1.0.0"
 
 [[package]]
-name = "katana-canvas-forge"
-version = "0.1.3"
+name = "katana-diagram-renderer"
+version = "0.1.0"
 "#;
 
         assert_eq!(
-            lock_package_version(lock, "katana-canvas-forge"),
-            Some("0.1.3".to_string())
+            lock_package_version(lock, "katana-diagram-renderer"),
+            Some("0.1.0".to_string())
         );
     }
 }

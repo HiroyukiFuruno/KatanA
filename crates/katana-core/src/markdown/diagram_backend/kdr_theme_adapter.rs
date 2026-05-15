@@ -1,9 +1,9 @@
 use super::types::DiagramThemeSnapshot;
-use katana_canvas_forge::{RenderThemeMode, RenderThemeSnapshot};
+use katana_diagram_renderer::{RenderThemeMode, RenderThemeSnapshot};
 
-pub(super) struct KcfThemeAdapter;
+pub(super) struct KdrThemeAdapter;
 
-impl KcfThemeAdapter {
+impl KdrThemeAdapter {
     pub(super) fn convert(theme: &DiagramThemeSnapshot) -> RenderThemeSnapshot {
         RenderThemeSnapshot {
             mode: if theme.is_dark {

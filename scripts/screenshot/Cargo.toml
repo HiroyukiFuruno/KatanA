@@ -27,3 +27,4 @@ image = { version = "0.25", default-features = false, features = ["png"] }
 [patch.crates-io]
 egui_commonmark = { path = "../../vendor/egui_commonmark_upstream/egui_commonmark" }
 egui_commonmark_backend = { path = "../../vendor/egui_commonmark_upstream/egui_commonmark_backend" }
+mathjax_svg = { path = "../../vendor/mathjax_svg" }

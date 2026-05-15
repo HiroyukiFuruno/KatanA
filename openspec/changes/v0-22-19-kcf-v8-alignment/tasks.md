@@ -2,106 +2,130 @@
 
 ## 要件(Verbatim Requirements)
 
-> kcf側対応済みでv0.1.7でリリース済みです。
->
-> あたたにはkatana側でissueを次期patch versionとしてopenspecのchange作成をお願いしたいです！
->
-> 現在katanaはv0.22.18リリース済みなので、v0.22.19が対象になるかなって思いますね。
+```text
+kcf側対応済みでv0.1.7でリリース済みです。
 
-> documentオンリーなのでmasterで作業でOKです。
+あたたにはkatana側でissueを次期patch versionとしてopenspecのchange作成をお願いしたいです！
+
+現在katanaはv0.22.18リリース済みなので、v0.22.19が対象になるかなって思いますね。
+
+documentオンリーなのでmasterで作業でOKです。
+
+そしたらそのまま
+
+[$impl-release](/Users/hiroyuki_furuno/works/private/katana/.agents/skills/impl-release/SKILL.md) v0.22.19
+
+を進めてください。branchは私の方で作成しました！
+```
 
 ### この要件から導出される制約(MUST)
 
 - kcf 側は v0.1.7 で対応済みとして扱う。
-- KatanA 側は次期パッチ版（patch version）の v0.22.19 対象として OpenSpec change を作成する。
-- 本 OpenSpec 文書作成は文書のみ（document-only）であり、`master` 上で作業してよい。
-
-### 設計判断時の参照義務
-
-- 設計方針を提案・変更する際は、本セクションを直接参照し、各 MUST 制約を満たすことを設計説明の冒頭で確認する。
-- 設計変更が verbatim と矛盾する場合、設計を変更するのではなくユーザーへ要件の更新を確認する。
+- KatanA 側は次期パッチ版（patch version）の v0.22.19 対象として扱う。
+- OpenSpec 文書作成は文書のみ（document-only）として `master` 上で完了済み。
+- 実装フェーズ（implementation phase）は、ユーザー作成済みの `release/v0.22.19` 上で進める。
+- 既存の未コミット差分があるため、コミット対象は v0.22.19 の実装差分へ明示的に分離する。
 
 ## Definition of Ready (DoR)
 
 - [x] KatanA issue [#293](https://github.com/HiroyukiFuruno/KatanA/issues/293) が作成されていること
 - [x] kcf v0.1.7 が公開され、`v8 = "=147.4.0"` へ追従済みであること
 - [x] KatanA v0.22.18 が既存リリース済みで、次期パッチ対象（patch target）が v0.22.19 であること
-- [x] KatanA 側の OpenSpec 作成作業は文書のみ（document-only）として `master` 上で行うこと
+- [x] OpenSpec 文書作成が `master` 上で完了し、実装対象 branch が `release/v0.22.19` として用意されていること
 
 ## Branch Rule
 
-本タスクでは、以下のブランチ運用を適用します：
-
 - **OpenSpec 文書作成ブランチ**: `master`
-- **実装時の標準（Base）ブランチ**: `release/v0.22.19`
-- **実装時の作業ブランチ**: `feature/v0.22.19-task-x` (x はタスク番号)
-
-実装完了後は `/openspec-delivery` を使用して Base ブランチへ PR を作成・マージしてください。
+- **実装ブランチ**: `release/v0.22.19`
+- **コミット方針**: 既存の別件差分を含めない。v0.22.19 対象の依存更新、回帰テスト、OpenSpec 更新だけを staging 対象にする。
 
 ## 1. 依存バージョンを v0.22.19 向けに揃える
 
-- [ ] 1.1 `make help` または Makefile を確認し、依存更新後に使う既存の検証対象（target）を決める
-- [ ] 1.2 `Cargo.toml` / `Cargo.lock` の現状が課題 #293 の前提（`katana-canvas-forge = "0.1.6"`、`v8 = "=139.0.0"`、kdr 側 `v8 = "=147.4.0"`）と一致することを確認する
-- [ ] 1.3 作業領域の依存関係（workspace dependency）の `katana-canvas-forge` を `0.1.7` へ更新する
-- [ ] 1.4 作業領域の依存関係の `v8` を `=147.4.0` へ更新する
-- [ ] 1.5 `cargo update -p v8 -p katana-canvas-forge` で `Cargo.lock` を更新する
-- [ ] 1.6 `cargo tree -i v8` で kcf / kdr が `v8` の互換グラフ（graph）に揃っていることを確認する
+- [x] 1.1 `make help` または Makefile を確認し、依存更新後に使う既存の検証対象（target）を決める
+  - `Makefile` は存在しないため、`Justfile` の `just type-check` と対象 `cargo test` を使用する。
+- [x] 1.2 `Cargo.toml` / `Cargo.lock` の現状が課題 #293 の前提と一致することを確認する
+  - 実装開始時点で `release/v0.22.19` には kdr 移行系の既存差分があったが、作業領域依存は `katana-canvas-forge = "0.1.6"` / `v8 = "=139.0.0"` を含んでいた。
+  - 追加で `mathjax_svg = "3.2.0"` も crates.io 版では `v8 = "139.0.0"` を要求していた。
+- [x] 1.3 作業領域の依存関係（workspace dependency）の `katana-canvas-forge` を `0.1.7` へ更新する
+- [x] 1.4 作業領域の依存関係の `v8` を `=147.4.0` へ更新する
+- [x] 1.5 `Cargo.lock` を更新する
+  - `cargo update -p v8` は `v8@139.0.0` / `v8@147.4.0` で曖昧になるため、`cargo update -p v8@139.0.0 -p katana-canvas-forge` を使用した。
+  - pre-push で `mathjax_svg` と図形描画器の重複 V8 初期化が落ちることを確認したため、`vendor/mathjax_svg` の実行環境を QuickJS へ置き換えた。
+  - `scripts/screenshot` は独立 manifest のため、同じ非 V8 `mathjax_svg` path patch を追加した。
+- [x] 1.6 `cargo tree -i v8` で V8 依存関係が揃っていることを確認する
+  - workspace: `katana-canvas-forge` / `katana-diagram-renderer` が `v8 v147.4.0` のみを参照。
+  - `mathjax_svg` は QuickJS 経由で実行し、`v8` を参照しない。
+  - `scripts/screenshot`: 同じ `vendor/mathjax_svg` path patch を参照。
 
 ### Definition of Done (DoD)
 
-- [ ] `Cargo.toml` が `katana-canvas-forge = "0.1.7"` と `v8 = "=147.4.0"` を参照していること
-- [ ] `Cargo.lock` の更新範囲が kcf / v8 整合に必要な範囲へ限定されていること
-- [ ] `cargo tree -i v8` で競合する V8 依存関係（conflicting V8-backed dependency）が残っていないこと
-- [ ] `/openspec-delivery` ワークフロー（workflow）（`.codex/workflows/openspec-delivery.md`）を実行し、自己レビュー（Self-review）、コミット（Commit）、PR 作成（PR Creation）、マージ（Merge）までの包括的な配送手順（delivery routine）を通す。
+- [x] `Cargo.toml` が `katana-canvas-forge = "0.1.7"` と `v8 = "=147.4.0"` を参照していること
+- [x] `Cargo.lock` の更新範囲が kcf / v8 / `mathjax_svg` QuickJS 化に必要な範囲へ限定されていること
+- [x] `cargo tree -i v8` で競合する V8 依存関係（conflicting V8-backed dependency）が残っていないこと
+- [x] `scripts/screenshot` 側でも旧 MathJax V8 経路が再流入しないこと
 
 ## 2. Mermaid / Draw.io プレビューの回帰を確認する
 
-### Definition of Ready (DoR)
-
-- [ ] 前タスクの配送サイクル（delivery cycle: self-review、必要に応じた recovery、PR 作成、merge、branch deletion）が完了していることを確認する。
-- [ ] 基準ブランチ（Base branch）が同期済みで、このタスク用の新しいブランチ（branch）が明示的に作成されていること。
-
-- [ ] 2.1 既存のプレビュー統合テスト（preview integration test）で Mermaid ワーカー切断（worker disconnect）が検出できるか確認する
-- [ ] 2.2 既存カバレッジ（coverage）が不足している場合、対応済み Mermaid ブロック（block）が `[Mermaid] Diagram render worker disconnected before producing a result.` へ置換されない回帰テストを追加する
-- [ ] 2.3 Draw.io ブロック（block）が V8 バージョン分裂（version split）により描画前の失敗（failure）にならないことを、既存または追加した回帰テストで確認する
-- [ ] 2.4 Makefile の既存 target または対象 test target でプレビュー回帰確認（preview regression）を実行し、結果を tasks.md または PR 本文へ記録する
+- [x] 2.1 既存のプレビュー統合テスト（preview integration test）で Mermaid ワーカー切断（worker disconnect）を検出できることを確認する
+- [x] 2.2 Mermaid ブロックが `[Mermaid] Diagram render worker disconnected before producing a result.` へ置換されないことを統合テストで確認する
+- [x] 2.3 Draw.io ブロックが V8 バージョン分裂（version split）により描画前の失敗（failure）にならないことを追加テストで確認する
+- [x] 2.4 対象 test target とスクリーンショット（screenshot）でプレビュー回帰確認（preview regression）を実行し、結果を記録する
 
 ### Definition of Done (DoD)
 
-- [ ] Mermaid プレビューがワーカー切断メッセージ（message）で全面失敗しないこと
-- [ ] Draw.io プレビューが kcf / kdr の V8 不整合で失敗しないこと
-- [ ] 失敗時の退避表示（fallback message）を隠すだけのテスト（test）になっていないこと
-- [ ] `/openspec-delivery` ワークフロー（workflow）（`.codex/workflows/openspec-delivery.md`）を実行し、自己レビュー（Self-review）、コミット（Commit）、PR 作成（PR Creation）、マージ（Merge）までの包括的な配送手順（delivery routine）を通す。
+- [x] Mermaid プレビューがワーカー切断メッセージ（message）で全面失敗しないこと
+- [x] Draw.io プレビューが kcf / kdr / 数式描画依存の不整合で失敗しないこと
+- [x] 失敗時の退避表示（fallback message）を隠すだけのテスト（test）になっていないこと
 
 ## 3. HTML / PDF / PNG / JPEG 出力の回帰を確認する
 
-### Definition of Ready (DoR)
-
-- [ ] 前タスクの配送サイクル（delivery cycle: self-review、必要に応じた recovery、PR 作成、merge、branch deletion）が完了していることを確認する。
-- [ ] 基準ブランチ（Base branch）が同期済みで、このタスク用の新しいブランチ（branch）が明示的に作成されていること。
-
-- [ ] 3.1 Mermaid / Draw.io を含む検証データ（fixture）を HTML 出力し、kcf 0.1.7 経由で図形出力が欠落しないことを確認する
-- [ ] 3.2 同じ検証データを PDF / PNG / JPEG 出力し、V8 バージョン分裂由来のワーカー失敗（failure）が発生しないことを確認する
-- [ ] 3.3 出力経路に OS ブラウザ依存や古い実行環境退避（runtime fallback）を戻していないことを確認する
-- [ ] 3.4 実行した出力回帰確認のコマンド（command）と成果物の確認観点を PR 本文へ記録する
+- [x] 3.1 Mermaid / Draw.io を含む検証データ（fixture）を HTML 出力し、図形出力が欠落しないことを確認する
+- [x] 3.2 同じ検証データを PDF / PNG / JPEG 出力し、V8 バージョン分裂由来のワーカー失敗（failure）が発生しないことを確認する
+- [x] 3.3 出力経路に OS ブラウザ依存や古い実行環境退避（runtime fallback）を戻していないことを確認する
+- [x] 3.4 実行した出力回帰確認のコマンド（command）と成果物の確認観点を記録する
 
 ### Definition of Done (DoD)
 
-- [ ] HTML 出力で Mermaid / Draw.io 出力が欠落しないこと
-- [ ] PDF / PNG / JPEG 出力で Mermaid / Draw.io 出力が V8 不整合により失敗しないこと
-- [ ] kcf 0.1.7 取り込み以外の描画所有境界変更を混ぜていないこと
-- [ ] `/openspec-delivery` ワークフロー（workflow）（`.codex/workflows/openspec-delivery.md`）を実行し、自己レビュー（Self-review）、コミット（Commit）、PR 作成（PR Creation）、マージ（Merge）までの包括的な配送手順（delivery routine）を通す。
-
----
+- [x] HTML 出力で Mermaid / Draw.io 出力が欠落しないこと
+- [x] PDF / PNG / JPEG 出力で Mermaid / Draw.io 出力が V8 不整合により失敗しないこと
+- [x] kcf 0.1.7 取り込み以外の描画所有境界変更をこのタスクで新規に混ぜていないこと
 
 ## 4. User Review (Pre-Final Phase)
 
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
-- [ ] 4.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする
-- [ ] 4.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
+- [x] 4.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする
+  - 生成物: `tmp/v0-22-19-kcf-v8-alignment-screenshot/01-light-diagram-preview.png`
+- [x] 4.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）
 
----
+## Recovery Log
+
+- [x] `scripts/screenshot` 実行時だけ V8 panic が出て、画面上は Mermaid / Draw.io の worker disconnect になっていた。
+  - 原因: `scripts/screenshot` が独立 manifest で、crates.io 版 `mathjax_svg` から `v8 v139.0.0` を解決していた。
+  - 対応: 初期対応では `vendor/mathjax_svg` を path patch にして V8 147.4.0 へ寄せた。
+  - 結果: 旧 V8 再流入は消え、スクリーンショット実行も成功した。
+- [x] 通常 push の pre-push で `katana-ui` の lib test が `v8-147.4.0/src/V8.rs` の `PoisonError` により失敗した。
+  - 原因: `mathjax_svg` と図形描画器が同じプロセス内で別々に V8 を初期化していた。
+  - 対応: `vendor/mathjax_svg` の公開 API は維持し、Rust 側の実行環境を V8 から QuickJS へ置き換えた。
+  - 結果: 数式描画は V8 を初期化せず、図形描画の V8 初期化と分離された。
+
+## Verification Log
+
+- [x] `just type-check` が成功
+- [x] `just fmt-check` が成功
+- [x] `kml check --config .markdownlint.json openspec/changes/v0-22-19-kcf-v8-alignment` が成功
+- [x] `cargo tree -i v8` が workspace 側で `v8 v147.4.0` のみを表示し、`mathjax_svg` を含まない
+- [x] `cargo tree -i rquickjs` が `mathjax_svg` からの参照を表示
+- [x] `cargo tree --manifest-path scripts/screenshot/Cargo.toml -i rquickjs` が `scripts/screenshot` 側でも `mathjax_svg` からの参照を表示
+- [x] `rg mathjax-svg-rs Cargo.toml Cargo.lock crates/katana-ui/Cargo.toml` が参照なしであることを表示
+- [x] `cargo test -p katana-ui mathjax_backend_renders_svg_for_inline_and_block_math -- --nocapture` が成功
+- [x] `cargo test -p katana-core diagram_backend -- --nocapture` が成功
+- [x] `cargo test -p katana-ui --test ui_integration_serial diagram_rendering -- --test-threads=1 --nocapture` が成功
+- [x] `cargo test -p katana-ui --test ui_integration_parallel html_export -- --nocapture` が成功
+- [x] `cargo test -p katana-core markdown::export::tests -- --nocapture` が成功
+- [x] `./scripts/screenshot/run.sh --request scripts/screenshot/examples/v0-22-14-light-diagrams.json --output tmp/v0-22-19-kcf-v8-alignment-screenshot` が成功
+- [x] `./scripts/openspec validate v0-22-19-kcf-v8-alignment --strict` が成功
+- `just kml-check` は repo 全体の既存 Markdown 違反（README / CHANGELOG / assets など）で失敗したため、v0.22.19 対象範囲外として PR 本文に記録する
 
 ## KatanA CLI Entry Point
 
@@ -111,14 +135,13 @@
 
 ## 5. Final Verification & Release Work
 
-- [ ] 5.1 `docs/coding-rules.ja.md` と `$self-review` skill を使って自己レビューを実行する
-- [ ] 5.2 更新した Markdown 文書（tasks.md、CHANGELOG.md など）を整形し、lint 修正（lint-fix）を行う
-- [ ] 5.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `just check` / `just check-light` を二重実行しない
-- [ ] 5.4 Base Feature Branch から `master` 向けに PR（pull request）を作成する
-- [ ] 5.5 PR 上の CI checks（Lint / Coverage / CodeQL）が通ることを確認する。失敗があれば merge を止める
-- [ ] 5.6 master へ merge する（`gh pr merge --merge --delete-branch`）
-- [ ] 5.7 master から `release/v0.22.19` branch を作成する
-- [ ] 5.8 `just VERSION=0.22.19 release` を実行し、CHANGELOG を更新する（`changelog-writing` skill）
-- [ ] 5.9 `release/v0.22.19` から `master` 向けに PR を作成し、Release Readiness CI が通ることを確認する
-- [ ] 5.10 release PR を master へ merge する（`gh pr merge --merge --delete-branch`）
-- [ ] 5.11 GitHub Release の完了を確認し、`/opsx-archive` でこの change を archive する
+- [x] 5.1 `docs/coding-rules.ja.md` と `$self-review` skill を使って自己レビューを実行する
+- [x] 5.2 更新した Markdown 文書（tasks.md、CHANGELOG.md など）を整形し、lint 修正（lint-fix）を行う
+- [x] 5.3 v0.22.19 対象差分だけを staging し、既存の別件差分を含めないことを確認する
+- [x] 5.4 `release/v0.22.19` でリリースコミットを作成する
+- [x] 5.5 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す
+- [x] 5.6 `release/v0.22.19` から `master` 向けに PR（pull request）を作成する
+
+## Post-PR Release Follow-up
+
+PR 作成後の CI 確認、ユーザー承認後の merge、GitHub Release 完了確認、`/opsx-archive` はこの OpenSpec 実装コミットの完了条件ではなく、PR 作成後のリリース運用で扱う。

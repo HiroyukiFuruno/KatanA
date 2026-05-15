@@ -8,6 +8,7 @@ description = "KatanA core: document model, workspace model, markdown pipeline, 
 [dependencies]
 comrak.workspace = true
 katana-canvas-forge.workspace = true
+katana-diagram-renderer.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -21,7 +22,6 @@ tempfile.workspace = true
 regex = "1.12.3"
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 v8.workspace = true
-mathjax_svg.workspace = true
 include_dir.workspace = true
 base64 = "0.22"
 ureq.workspace = true
