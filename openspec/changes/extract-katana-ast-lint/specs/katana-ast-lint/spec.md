@@ -2,13 +2,13 @@
 
 ### Requirement: AST lint separation is the first repository split
 
-The system SHALL separate shared AST lint governance before KME implementation work begins.
+The system SHALL separate shared AST lint governance before KMM implementation work begins.
 
 #### Scenario: Prioritize repository separation
 
 - **WHEN** KatanA ecosystem repository separation is planned
 - **THEN** `katana-ast-lint` is treated as P0
-- **THEN** `katana-markdown-engine` is treated as P1
+- **THEN** `katana-markdown-model` is treated as P1
 - **THEN** `katana-ui-widget` is treated as P2
 - **THEN** other integrations are treated as P3
 
@@ -28,9 +28,9 @@ Shared AST lint rules MUST NOT hard-code KatanA repository-local paths.
 
 #### Scenario: Run lint in a separated repository
 
-- **WHEN** AST lint runs in `katana-markdown-engine`
+- **WHEN** AST lint runs in `katana-markdown-model`
 - **THEN** repository-specific file discovery is handled by an adapter
-- **THEN** shared rules remain reusable across KME, kdp, kle, kcf, and kuw
+- **THEN** shared rules remain reusable across KMM, kdp, kle, kcf, and kuw
 
 ### Requirement: KatanA consumes the shared AST lint crate
 

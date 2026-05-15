@@ -1,39 +1,40 @@
 ## ADDED Requirements
 
-### Requirement: KME platform responsibilities are explicit
+### Requirement: KMM platform responsibilities are explicit
 
-The system SHALL define KME, editor, viewer, export, KatanA integration, and UI widget responsibilities before implementation begins.
+The system SHALL define KMM, editor, viewer, export, KatanA integration, and UI widget responsibilities before implementation begins.
 
 #### Scenario: Repository responsibilities are split
 
-- **WHEN** KME platform work is planned
-- **THEN** `katana-markdown-engine` owns the document model, metadata schema, and target resolution
+- **WHEN** KMM platform work is planned
+- **THEN** `katana-markdown-model` owns the document model, metadata schema, and target resolution
 - **THEN** `katana-language-editor` owns metadata updates on save
-- **THEN** `katana-document-viewer` owns Floem viewer rendering and HTML/PDF/PNG/JPG export of KME models
-- **THEN** `katana-canvas-forge` owns external rendering for Mermaid, Draw.io, PlantUML, and math
+- **THEN** `katana-document-viewer` owns Floem viewer rendering and HTML/PDF/PNG/JPG export of KMM models
+- **THEN** `katana-diagram-renderer` owns external rendering for Mermaid, Draw.io, PlantUML, and math
+- **THEN** `katana-canvas-forge` owns document export (HTML / PDF / PNG / JPEG)
 - **THEN** `katana` owns integration and fixture authority
 - **THEN** `katana` owns editor-viewer synchronization control and commands viewer or editor
 
-### Requirement: AST lint is separated before KME implementation
+### Requirement: AST lint is separated before KMM implementation
 
-The system SHALL prioritize shared AST lint separation before KME implementation work.
+The system SHALL prioritize shared AST lint separation before KMM implementation work.
 
 #### Scenario: Plan repository separation
 
 - **WHEN** KatanA ecosystem repository separation is planned
 - **THEN** P0 is `katana-ast-lint`
-- **THEN** P1 is `katana-markdown-engine`
+- **THEN** P1 is `katana-markdown-model`
 - **THEN** P2 is `katana-ui-widget`
 - **THEN** P3 is remaining integration work
 - **THEN** each separated repository can use the same AST lint quality gate
 
-### Requirement: KME v0 follows current KatanA behavior
+### Requirement: KMM v0 follows current KatanA behavior
 
-The system SHALL treat current KatanA Markdown behavior as the KME v0 compatibility line.
+The system SHALL treat current KatanA Markdown behavior as the KMM v0 compatibility line.
 
 #### Scenario: Canonical fixtures are used
 
-- **WHEN** KME v0 fixture coverage is defined
+- **WHEN** KMM v0 fixture coverage is defined
 - **THEN** `assets/fixtures/sample.md` is the primary fixture
 - **THEN** the README badge header is a required operational fixture
 - **THEN** alert syntax from `sample_basic.md` is included
@@ -54,9 +55,9 @@ The system MUST NOT require KatanA-specific pagination or LLM annotation syntax 
 
 The system SHALL treat Floem as the target UI framework for editor, viewer, and shared widgets.
 
-#### Scenario: KME model is displayed
+#### Scenario: KMM model is displayed
 
-- **WHEN** the KME model is displayed in KatanA viewer
+- **WHEN** the KMM model is displayed in KatanA viewer
 - **THEN** the target implementation is Floem native rendering
 - **THEN** egui-specific parser or widget internals are not exposed as the contract
 
@@ -67,20 +68,20 @@ The system SHALL keep editor-viewer synchronization control in KatanA.
 #### Scenario: Editor and viewer are synchronized
 
 - **WHEN** KatanA synchronizes editor and viewer positions
-- **THEN** KatanA uses KME node id, source range, line-column, raw snippet, or fingerprint as matching material
+- **THEN** KatanA uses KMM node id, source range, line-column, raw snippet, or fingerprint as matching material
 - **THEN** KatanA sends scroll, selection, or highlight commands to viewer or editor
-- **THEN** KME, KLE, and KDV do not know each other's state or issue synchronization commands
+- **THEN** KMM, KLE, and KDV do not know each other's state or issue synchronization commands
 
-### Requirement: Downstream work waits for KME contracts
+### Requirement: Downstream work waits for KMM contracts
 
-The system SHALL prevent downstream repositories from defining their own Markdown document model or metadata schema before KME contracts are available.
+The system SHALL prevent downstream repositories from defining their own Markdown document model or metadata schema before KMM contracts are available.
 
-#### Scenario: A downstream repository starts work before KME is complete
+#### Scenario: A downstream repository starts work before KMM is complete
 
-- **WHEN** KDV, KLE, KCF, KUW, or KatanA integration work starts before KME public DTOs are stable
+- **WHEN** KDV, KLE, KCF, KUW, or KatanA integration work starts before KMM public DTOs are stable
 - **THEN** the work may prepare adapters, OpenSpec, repository baseline, or quality gates
 - **THEN** the work MUST NOT define a replacement Markdown document model
-- **THEN** the work MUST NOT define a repository-local metadata schema as a substitute for KME
+- **THEN** the work MUST NOT define a repository-local metadata schema as a substitute for KMM
 
 ### Requirement: KCF export moves to KDV after viewer export is ready
 

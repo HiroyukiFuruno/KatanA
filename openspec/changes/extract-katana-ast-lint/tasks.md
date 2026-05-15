@@ -11,7 +11,7 @@
 
 - [ ] 1.1 既存AST lint相当の検査、対象file、違反形式を棚卸しする
 - [ ] 1.2 共通化するruleとrepository固有adapterへ残す処理を分ける
-- [ ] 1.3 KME、kdp、kle、kcf、kuwで必要になる最低ruleを整理する
+- [ ] 1.3 KMM、kdp、kle、kdr、kcf、kuwで必要になる最低ruleを整理する
 
 ### Definition of Done
 
@@ -44,9 +44,9 @@
 
 ### Tasks
 
-- [ ] 3.1 `katana-markdown-engine` の着手条件へP0完了を入れる
+- [ ] 3.1 `katana-markdown-model` の着手条件へP0完了を入れる
 - [ ] 3.2 `katana-ui-widget` の着手条件へP0完了を入れる
-- [ ] 3.3 `katana-document-preview`、`katana-language-editor`、`katana-canvas-forge` の後続計画へP0利用を入れる
+- [ ] 3.3 `katana-document-preview`、`katana-language-editor`、`katana-diagram-renderer`、`katana-canvas-forge` の後続計画へP0利用を入れる
 - [ ] 3.4 KatanA本体の `crates/katana-linter` と `katana-ast-lint` の重複ruleを照合する
 - [ ] 3.5 KatanA本体の `Cargo.toml` workspace dependencyへ `katana-ast-lint` を追加し、`just ast-lint` の実行入口を外部crate利用へ移す
 - [ ] 3.6 KatanA本体に残すべきrepository adapter責務と、削除または縮小する内部linter責務を分ける
@@ -54,11 +54,11 @@
 
 ### Definition of Done
 
-- [ ] KME以降の分離repositoryが共通AST lintを前提にしている
+- [ ] KMM以降の分離repositoryが共通AST lintを前提にしている
 - [ ] KatanA本体が内部 `katana-linter` のコピー実装へ戻っていない
 
 ## 4. Final Verification
 
 - [ ] 4.1 `scripts/openspec validate "extract-katana-ast-lint" --strict` を実行する
 - [ ] 4.2 親OpenSpecとP1/P2計画にP0依存が反映されていることを確認する
-- [ ] 4.3 KME、kdp、kle、kcf、kuw、KatanA本体の各repositoryで、test/CIから `katana_ast_lint` APIを呼べる計画になっていることを確認する
+- [ ] 4.3 KMM、kdp、kle、kdr、kcf、kuw、KatanA本体の各repositoryで、test/CIから `katana_ast_lint` APIを呼べる計画になっていることを確認する

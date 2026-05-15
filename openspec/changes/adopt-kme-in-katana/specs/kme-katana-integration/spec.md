@@ -1,8 +1,8 @@
 ## ADDED Requirements
 
-### Requirement: KatanA integrates KME through public contracts
+### Requirement: KatanA integrates KMM through public contracts
 
-KatanA SHALL consume KME, viewer, editor, export, and widget functionality through public contracts without storing parser or renderer internals in application state.
+KatanA SHALL consume KMM, viewer, editor, export, and widget functionality through public contracts without storing parser or renderer internals in application state.
 
 #### Scenario: KatanA stores selected metadata
 
@@ -12,32 +12,32 @@ KatanA SHALL consume KME, viewer, editor, export, and widget functionality throu
 
 ### Requirement: KatanA integration uses shared AST lint gate
 
-KatanA SHALL use the shared AST lint governance before integrating separated KME ecosystem repositories.
+KatanA SHALL use the shared AST lint governance before integrating separated KMM ecosystem repositories.
 
 #### Scenario: Validate integration readiness
 
-- **WHEN** KatanA starts integrating KME, viewer, editor, export, or widget repositories
+- **WHEN** KatanA starts integrating KMM, viewer, editor, export, or widget repositories
 - **THEN** the P0 `katana-ast-lint` quality gate is available
 - **THEN** KatanA does not accept repository-specific lint drift as the integration baseline
 
 ### Requirement: KatanA keeps metadata synchronized on save
 
-KatanA SHALL connect editor save flow to KME metadata target resolution.
+KatanA SHALL connect editor save flow to KMM metadata target resolution.
 
 #### Scenario: Save a document with metadata
 
 - **WHEN** the active Markdown document is saved after edits
-- **THEN** the editor invokes KME target resolution with old source, new source, and metadata
+- **THEN** the editor invokes KMM target resolution with old source, new source, and metadata
 - **THEN** resolved targets are updated
 - **THEN** unresolved targets are preserved for UI review
 
-### Requirement: KatanA validates KME migration with canonical fixtures
+### Requirement: KatanA validates KMM migration with canonical fixtures
 
-KatanA SHALL use the canonical fixture set before replacing current Markdown behavior with KME-backed behavior.
+KatanA SHALL use the canonical fixture set before replacing current Markdown behavior with KMM-backed behavior.
 
 #### Scenario: Validate migration readiness
 
-- **WHEN** KME-backed viewer or export is enabled
+- **WHEN** KMM-backed viewer or export is enabled
 - **THEN** `sample.md`, README badge, alert, and description list fixtures are checked
 - **THEN** current KatanA behavior is not silently dropped
 
@@ -48,6 +48,6 @@ KatanA SHALL coordinate editor and viewer synchronization itself.
 #### Scenario: KatanA synchronizes editor and viewer
 
 - **WHEN** KatanA aligns editor and viewer positions
-- **THEN** KatanA uses KME node id, source range, line-column, raw snippet, and fingerprint
+- **THEN** KatanA uses KMM node id, source range, line-column, raw snippet, and fingerprint
 - **THEN** KatanA sends scroll, selection, or highlight commands to the viewer or editor
-- **THEN** KME, KLE, and KDV do not coordinate synchronization with each other
+- **THEN** KMM, KLE, and KDV do not coordinate synchronization with each other
