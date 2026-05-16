@@ -1,6 +1,9 @@
 pub mod anchor_map;
 pub mod background;
 pub mod core_render;
+mod core_render_diagram;
+mod core_render_lifecycle;
+pub(crate) mod diagram_cache;
 pub mod extension_table;
 mod render_workers;
 pub mod renderer;

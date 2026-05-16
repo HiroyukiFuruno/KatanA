@@ -1,4 +1,4 @@
-use crate::preview_pane::ViewerState;
+use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
 use eframe::egui::{self, Vec2};
 use image::{ImageBuffer, Rgba};
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
@@ -71,10 +71,7 @@ impl ImageLogicOps {
         let display_width = img.display_width.max(1.0);
         let display_height = img.display_height.max(1.0);
         let base_scale = (max_w / display_width).min(1.0);
-        let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
-        let pan = state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
         let base_size = Vec2::new(display_width * base_scale, display_height * base_scale);
-        let zoomed_size = base_size * zoom;
         let container_h = base_size.y.max(MIN_CONTAINER_HEIGHT);
         let (container_rect, response) =
             ui.allocate_exact_size(Vec2::new(max_w, container_h), egui::Sense::click_and_drag());
@@ -83,6 +80,10 @@ impl ImageLogicOps {
             ui.ctx(),
             ui.visuals().window_fill(),
         );
+
+        if let Some(state) = state.as_mut() {
+            state.prepare_texture(ViewerTextureIdentity::rasterized(img), preview_background);
+        }
 
         if let Some(state) = state.as_mut()
             && response.hovered()
@@ -95,6 +96,10 @@ impl ImageLogicOps {
                 state.pan += response.drag_delta();
             }
         }
+
+        let zoom = state.as_ref().map_or(1.0, |s| s.zoom);
+        let pan = state.as_ref().map_or(egui::Vec2::ZERO, |s| s.pan);
+        let zoomed_size = base_size * zoom;
 
         let texture_handle = if let Some(state) = state.as_mut() {
             if state.texture.is_none() || state.texture_background != Some(preview_background) {

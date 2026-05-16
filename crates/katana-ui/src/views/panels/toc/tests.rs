@@ -2,6 +2,9 @@ use super::types::*;
 use crate::shell_ui::TOC_HEADING_VISIBILITY_THRESHOLD;
 use eframe::egui;
 
+mod anchor_state_tests;
+mod render_tests;
+
 /// Helper: build anchor_map items for preview mode testing (includes rects)
 fn make_anchor_map_with_rects(
     entries: &[(usize, f32)],
@@ -17,6 +20,8 @@ fn make_anchor_map_with_rects(
                 egui::vec2(MOCK_ROW_WIDTH, MOCK_ROW_HEIGHT),
             );
             crate::preview_pane::types::DocumentAnchorMapItem {
+                anchor_index: idx,
+                toc_index: Some(idx),
                 kind: katana_core::markdown::outline::AnchorKind::Heading,
                 index: Some(idx),
                 line_span: *line..*line + 1,
@@ -35,6 +40,8 @@ fn make_anchor_map(
         .enumerate()
         .map(
             |(idx, (line_start, line_end))| crate::preview_pane::types::DocumentAnchorMapItem {
+                anchor_index: idx,
+                toc_index: Some(idx),
                 kind: katana_core::markdown::outline::AnchorKind::Heading,
                 index: Some(idx),
                 line_span: *line_start..*line_end,
@@ -115,59 +122,54 @@ fn editor_at_top_highlights_first_heading() {
 }
 
 #[test]
-fn split_mode_preview_and_editor_agree_on_click_target() {
-    let heading_positions = &[
-        (0, 0.0, 0usize, 1usize),
-        (10, 150.0, 10, 11),
-        (30, 400.0, 30, 31),
-        (60, 700.0, 60, 61),
-        (100, 1200.0, 100, 101),
-    ];
+fn editor_threshold_prefers_pending_scroll_target() {
+    let scroll = crate::app_state::ScrollState {
+        editor_y: 0.0,
+        scroll_to_line: Some(52),
+        ..Default::default()
+    };
 
-    let clicked_index = 3;
-    let clicked_y = heading_positions[clicked_index].1;
-    let clicked_line = heading_positions[clicked_index].0;
+    let threshold = TocPanel::editor_logical_threshold(&scroll, 16.0);
 
-    let outline_items = make_outline_items(heading_positions.len());
+    assert_eq!(threshold, 53.0);
+}
 
-    let anchors: Vec<_> = heading_positions
-        .iter()
-        .enumerate()
-        .map(|(idx, (line, y, _, _))| {
-            let rect = egui::Rect::from_min_size(egui::pos2(0.0, *y), egui::vec2(100.0, 20.0));
-            crate::preview_pane::types::DocumentAnchorMapItem {
-                kind: katana_core::markdown::outline::AnchorKind::Heading,
-                index: Some(idx),
-                line_span: *line..*line + 1,
-                rect: Some(rect),
-            }
-        })
-        .collect();
-    let preview_threshold = clicked_y + TOC_HEADING_VISIBILITY_THRESHOLD;
-    let preview_active =
-        TocPanel::find_active_toc_index_preview(&outline_items, &anchors, preview_threshold);
+#[test]
+fn editor_threshold_prefers_pending_toc_scroll_target() {
+    let scroll = crate::app_state::ScrollState {
+        editor_y: 0.0,
+        toc_scroll_to_line: Some(52),
+        ..Default::default()
+    };
 
-    let anchor_map: Vec<_> = heading_positions
-        .iter()
-        .enumerate()
-        .map(
-            |(idx, (_, _, start, end))| crate::preview_pane::types::DocumentAnchorMapItem {
-                kind: katana_core::markdown::outline::AnchorKind::Heading,
-                index: Some(idx),
-                line_span: *start..*end,
-                rect: None,
-            },
-        )
-        .collect();
-    const ROW_HEIGHT: f32 = 16.0;
-    let current_line = clicked_line as f32;
-    let threshold_lines = TOC_HEADING_VISIBILITY_THRESHOLD / ROW_HEIGHT;
-    let editor_active = TocPanel::find_active_toc_index_editor(
-        &outline_items,
-        &anchor_map,
-        current_line + threshold_lines,
-    );
+    let threshold = TocPanel::editor_logical_threshold(&scroll, 16.0);
 
-    assert_eq!(preview_active, clicked_index);
-    assert_eq!(editor_active, clicked_index);
+    assert_eq!(threshold, 53.0);
+}
+
+#[test]
+fn editor_threshold_uses_line_anchors_when_soft_wrap_pushes_heading_down() {
+    let scroll = crate::app_state::ScrollState {
+        editor_y: 60.0,
+        editor_line_anchors: vec![0.0, 16.0, 32.0, 80.0, 96.0],
+        ..Default::default()
+    };
+    let outline_items = make_outline_items(2);
+    let anchor_map = make_anchor_map(&[(0, 1), (4, 5)]);
+
+    let threshold = TocPanel::editor_logical_threshold(&scroll, 16.0);
+    let active = TocPanel::find_active_toc_index_editor(&outline_items, &anchor_map, threshold);
+
+    assert_eq!(active, 0);
+}
+
+#[test]
+fn unchanged_active_item_does_not_request_toc_auto_scroll() {
+    assert!(!TocPanel::should_auto_scroll_active_item(Some(1), 1));
+}
+
+#[test]
+fn changed_active_item_requests_toc_auto_scroll() {
+    assert!(TocPanel::should_auto_scroll_active_item(Some(1), 15));
+    assert!(TocPanel::should_auto_scroll_active_item(None, 1));
 }

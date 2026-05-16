@@ -67,7 +67,10 @@ impl<'a> TabItem<'a> {
         let (tab_rect, close_resp, tab_interact) =
             self.render_parent_tab(ui, &title, is_changelog, is_demo);
         let tab_hovered = TabBorderOps::rect_contains_pointer(ui, tab_rect);
-        self.set_close_visible(ui, tab_hovered);
+        self.set_close_visible(
+            ui,
+            Self::close_area_visible(self.doc.is_pinned, tab_hovered),
+        );
         TabBorderOps::paint(ui, tab_rect, tab_hovered);
         self.draw_group_underline(ui, tab_rect);
 

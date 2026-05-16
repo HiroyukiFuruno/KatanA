@@ -30,13 +30,13 @@ impl RendererPngDecoder {
         let img = image::load_from_memory(bytes).map_err(|e| e.to_string())?;
         let rgba = img.into_rgba8();
         let (width, height) = rgba.dimensions();
-        Ok(RasterizedSvg {
+        Ok(RasterizedSvg::new(
             width,
             height,
-            display_width: width as f32,
-            display_height: height as f32,
-            rgba: rgba.into_raw(),
-        })
+            width as f32,
+            height as f32,
+            rgba.into_raw(),
+        ))
     }
 }
 

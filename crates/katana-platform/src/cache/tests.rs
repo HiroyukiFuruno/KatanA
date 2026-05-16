@@ -63,6 +63,7 @@ fn list_uncovered_lines_test() {
 
     assert_eq!(PersistentKey::Unknown.to_raw_key(), None);
     assert_eq!(PersistentKey::Unknown.target_filename(), None);
+    assert!(PersistentKey::from_raw_key("diagram_render:x:Mermaid:dark:abcd").is_none());
     assert!(PersistentKey::from_raw_key("invalid:format:string").is_none());
     assert!(PersistentKey::from_raw_key("invalid").is_none());
 

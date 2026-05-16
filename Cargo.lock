@@ -2751,6 +2751,7 @@ dependencies = [
  "include_dir",
  "katana-canvas-forge",
  "katana-diagram-renderer",
+ "katana-markdown-model",
  "pulldown-cmark",
  "regex",
  "resvg 0.47.0",
@@ -2773,9 +2774,9 @@ dependencies = [
 
 [[package]]
 name = "katana-diagram-renderer"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07b786ef8309708d7dd609183e0ada6d596a06c47f8bb52b59aa97307b6b6ac5"
+checksum = "695c8add9a63389db5c846b1b613968d03fe606c86d325bd867ddce7df2882a2"
 dependencies = [
  "base64",
  "include_dir",
@@ -2817,6 +2818,18 @@ dependencies = [
  "serde",
  "serde_json",
  "unicode-width",
+]
+
+[[package]]
+name = "katana-markdown-model"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77e7d254a935cda7fe4b9ba86fcb02c1a5d13211d71ffb252a5da101c632ffe9"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2954,9 +2967,9 @@ checksum = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
 
 [[package]]
 name = "libbz2-rs-sys"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8fc329e1457d97a9d58a4e2ca49e3be572431a7e096008efc2e3a3c19d428f4"
+checksum = "34b357333733e8260735ba5894eb928c02ecc69c78715f01a8019e7fa7f2db4c"
 
 [[package]]
 name = "libc"

@@ -15,6 +15,7 @@ impl KatanaApp {
         } else if from == to {
             self.reorder_documents_same_pos(from, new_group_id);
         }
+        crate::preview_pane::diagram_cache::DiagramRenderCacheCoordinator::record_checksum_skipped_by_tab_move();
         self.state.document.cleanup_empty_groups();
         self.save_workspace_state();
     }

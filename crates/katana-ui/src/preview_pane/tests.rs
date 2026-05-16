@@ -10,7 +10,6 @@ mod tests {
     use super::*;
     use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 
-    use katana_platform::CacheFacade;
     use std::sync::Mutex;
 
     const BADGE_PREFIX_LEN: usize = "[![".len();
@@ -21,6 +20,77 @@ mod tests {
         src: String,
         alt: String,
         consumed: usize,
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    struct PixelBounds {
+        min_x: usize,
+        max_x: usize,
+        min_y: usize,
+        max_y: usize,
+    }
+
+    fn nontransparent_pixel_bounds(
+        svg_data: &katana_core::markdown::svg_rasterize::RasterizedSvg,
+    ) -> Option<PixelBounds> {
+        let width = svg_data.width as usize;
+        let mut bounds: Option<PixelBounds> = None;
+        for (index, pixel) in svg_data.rgba.chunks_exact(4).enumerate() {
+            if pixel[3] == 0 {
+                continue;
+            }
+            let x = index % width;
+            let y = index / width;
+            bounds = Some(match bounds {
+                Some(mut current) => {
+                    current.min_x = current.min_x.min(x);
+                    current.max_x = current.max_x.max(x);
+                    current.min_y = current.min_y.min(y);
+                    current.max_y = current.max_y.max(y);
+                    current
+                }
+                None => PixelBounds {
+                    min_x: x,
+                    max_x: x,
+                    min_y: y,
+                    max_y: y,
+                },
+            });
+        }
+        bounds
+    }
+
+    fn rasterized_test_image(rgba: Vec<u8>) -> katana_core::markdown::svg_rasterize::RasterizedSvg {
+        katana_core::markdown::svg_rasterize::RasterizedSvg::new(1, 1, 1.0, 1.0, rgba)
+    }
+
+    fn render_test_rasterized_image(
+        ctx: &egui::Context,
+        state: &mut ViewerState,
+        image: &katana_core::markdown::svg_rasterize::RasterizedSvg,
+    ) {
+        let _ = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::pos2(0.0, 0.0),
+                    egui::vec2(800.0, 600.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ImageLogicOps::show_rasterized(
+                        ui,
+                        image,
+                        "Mermaid diagram",
+                        0,
+                        Some(state),
+                        None,
+                        |_, _, _| {},
+                    );
+                });
+            },
+        );
     }
 
     fn find_next_image(s: &str) -> Option<usize> {
@@ -71,18 +141,24 @@ mod tests {
     fn with_missing_renderer_assets<ResultValue>(
         action: impl FnOnce() -> ResultValue,
     ) -> ResultValue {
+        with_render_env_lock(|| {
+            let dir = tempfile::tempdir().unwrap();
+            unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
+            unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
+            unsafe { std::env::set_var("PLANTUML_JAR", dir.path().join("missing-plantuml.jar")) };
+            let result = action();
+            unsafe { std::env::remove_var("MERMAID_JS") };
+            unsafe { std::env::remove_var("DRAWIO_JS") };
+            unsafe { std::env::remove_var("PLANTUML_JAR") };
+            result
+        })
+    }
+
+    fn with_render_env_lock<ResultValue>(action: impl FnOnce() -> ResultValue) -> ResultValue {
         let _guard = RENDER_ENV_LOCK
             .lock()
             .unwrap_or_else(|err| err.into_inner());
-        let dir = tempfile::tempdir().unwrap();
-        unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
-        unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
-        unsafe { std::env::set_var("PLANTUML_JAR", dir.path().join("missing-plantuml.jar")) };
-        let result = action();
-        unsafe { std::env::remove_var("MERMAID_JS") };
-        unsafe { std::env::remove_var("DRAWIO_JS") };
-        unsafe { std::env::remove_var("PLANTUML_JAR") };
-        result
+        action()
     }
 
     macro_rules! assert_variant {
@@ -110,39 +186,48 @@ mod tests {
 
     #[test]
     fn dispatch_renderer_drawio_returns_result() {
-        let dir = tempfile::tempdir().unwrap();
-        unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
-        let block = DiagramBlock {
-            kind: DiagramKind::DrawIo,
-            source: r#"<mxGraphModel><root><mxCell id="0"/></root></mxGraphModel>"#.to_string(),
-        };
-        let result = RendererLogicOps::dispatch_renderer(&block);
-        unsafe { std::env::remove_var("DRAWIO_JS") };
+        let result = with_render_env_lock(|| {
+            let dir = tempfile::tempdir().unwrap();
+            unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
+            let block = DiagramBlock {
+                kind: DiagramKind::DrawIo,
+                source: r#"<mxGraphModel><root><mxCell id="0"/></root></mxGraphModel>"#.to_string(),
+            };
+            let result = RendererLogicOps::dispatch_renderer(&block);
+            unsafe { std::env::remove_var("DRAWIO_JS") };
+            result
+        });
         assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
 
     #[test]
     fn dispatch_renderer_mermaid_when_no_js_returns_not_installed() {
-        let dir = tempfile::tempdir().unwrap();
-        unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
-        let block = DiagramBlock {
-            kind: DiagramKind::Mermaid,
-            source: "graph TD; A-->B".to_string(),
-        };
-        let result = RendererLogicOps::dispatch_renderer(&block);
-        unsafe { std::env::remove_var("MERMAID_JS") };
+        let result = with_render_env_lock(|| {
+            let dir = tempfile::tempdir().unwrap();
+            unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
+            let block = DiagramBlock {
+                kind: DiagramKind::Mermaid,
+                source: "graph TD; A-->B".to_string(),
+            };
+            let result = RendererLogicOps::dispatch_renderer(&block);
+            unsafe { std::env::remove_var("MERMAID_JS") };
+            result
+        });
         assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
 
     #[test]
     fn dispatch_renderer_plantuml_when_no_jar_returns_not_installed() {
-        unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
-        let block = DiagramBlock {
-            kind: DiagramKind::PlantUml,
-            source: "@startuml\nA->B\n@enduml".to_string(),
-        };
-        let result = RendererLogicOps::dispatch_renderer(&block);
-        unsafe { std::env::remove_var("PLANTUML_JAR") };
+        let result = with_render_env_lock(|| {
+            unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
+            let block = DiagramBlock {
+                kind: DiagramKind::PlantUml,
+                source: "@startuml\nA->B\n@enduml".to_string(),
+            };
+            let result = RendererLogicOps::dispatch_renderer(&block);
+            unsafe { std::env::remove_var("PLANTUML_JAR") };
+            result
+        });
         assert_variant!(result, DiagramResult::NotInstalled { .. });
     }
 
@@ -317,6 +402,73 @@ mod tests {
             RendererLogicOps::render_diagram(&DiagramKind::Mermaid, "graph TD; A-->B", 0)
         });
         assert!(!matches!(section, RenderedSection::Pending { .. }));
+    }
+
+    #[test]
+    fn mermaid_class_diagram_keeps_content_within_raster_bounds() {
+        let source = concat!(
+            "classDiagram\n",
+            "    class PreviewPane {\n",
+            "        +Vec~RenderedSection~ sections\n",
+            "        +full_render(source, path)\n",
+            "        +wait_for_renders()\n",
+            "        +show_content(ui)\n",
+            "    }\n",
+            "    class RenderedSection {\n",
+            "        <<enumeration>>\n",
+            "        Markdown\n",
+            "        Image\n",
+            "        Error\n",
+            "        CommandNotFound\n",
+            "        NotInstalled\n",
+            "        Pending\n",
+            "    }\n",
+            "    PreviewPane --> RenderedSection\n",
+        );
+        let section = with_render_env_lock(|| {
+            RendererLogicOps::render_diagram(&DiagramKind::Mermaid, source, 0)
+        });
+        let RenderedSection::Image { svg_data, .. } = section else {
+            panic!("Expected Mermaid image section");
+        };
+        let bounds = nontransparent_pixel_bounds(&svg_data).expect("diagram has visible pixels");
+        let width = svg_data.width as usize;
+        let height = svg_data.height as usize;
+        let max_display_height = svg_data.display_width * 1.75;
+
+        assert!(
+            svg_data.display_width < 400.0,
+            "diagram display width is unexpectedly large: display={} raster={}x{} bounds={:?}",
+            svg_data.display_width,
+            width,
+            height,
+            bounds
+        );
+        assert!(
+            svg_data.display_height < max_display_height,
+            "diagram display height is unexpectedly large: display={} max={} raster={}x{} bounds={:?}",
+            svg_data.display_height,
+            max_display_height,
+            width,
+            height,
+            bounds
+        );
+        assert!(
+            bounds.min_x < width / 5,
+            "diagram content starts too far right: bounds={bounds:?}, image={width}x{height}",
+        );
+        assert!(
+            bounds.min_y < height / 5,
+            "diagram content starts too low: bounds={bounds:?}, image={width}x{height}",
+        );
+        assert!(
+            width - bounds.max_x < width / 5,
+            "diagram content ends too far left: bounds={bounds:?}, image={width}x{height}",
+        );
+        assert!(
+            height - bounds.max_y < height / 5,
+            "diagram content ends too high: bounds={bounds:?}, image={width}x{height}",
+        );
     }
 
     #[test]
@@ -625,52 +777,73 @@ mod tests {
                 1,
             );
             pane.wait_for_renders();
+        });
+    }
 
-            let diag_src = "http://graph TD; A-->B";
-            let key = RendererLogicOps::get_cache_key(
-                &std::path::PathBuf::from("/tmp/test.md"),
+    #[test]
+    fn full_render_uses_cache_hit_without_dispatching_renderer() {
+        with_missing_renderer_assets(|| {
+            let tmp = tempfile::TempDir::new().unwrap();
+            let mut pane = PreviewPane::default();
+            let cache: std::sync::Arc<dyn katana_platform::CacheFacade> = std::sync::Arc::new(
+                katana_platform::DefaultCacheService::new(tmp.path().join("cache.json")),
+            );
+            let document_path = std::path::Path::new("/tmp/test.md");
+            let diagram_source = "graph TD; A-->B";
+            crate::preview_pane::diagram_cache::DiagramRenderCacheCoordinator::store_svg(
+                &cache,
+                document_path,
                 &DiagramKind::Mermaid,
-                diag_src,
+                diagram_source,
+                "<svg width=\"10\" height=\"10\"><rect width=\"10\" height=\"10\"/></svg>",
             );
-            let valid_res = DiagramResult::Ok("<s></s>".to_string());
-            let valid_json = serde_json::to_string(&valid_res).unwrap();
-            cache.set_memory(&key, valid_json);
 
-            let source2 = format!("```mermaid\n{diag_src}\n```");
             pane.full_render(
-                &source2,
-                std::path::Path::new("/tmp/test.md"),
-                cache.clone(),
+                &format!("```mermaid\n{diagram_source}\n```"),
+                document_path,
+                cache,
                 false,
                 1,
             );
             pane.wait_for_renders();
 
-            cache.set_memory(&key, "invalid json".to_string());
-            pane.full_render(
-                &source2,
-                std::path::Path::new("/tmp/test.md"),
-                cache.clone(),
-                false,
-                1,
-            );
-            pane.wait_for_renders();
+            match pane.sections.first() {
+                Some(RenderedSection::Image { .. }) => {}
+                other => panic!("expected cached SVG image, got {other:?}"),
+            }
+        });
+    }
 
-            let diag_src3 = "invalid drawio";
-            let key3 = RendererLogicOps::get_cache_key(
-                &std::path::PathBuf::from("/tmp/test.md"),
-                &katana_core::markdown::DiagramKind::DrawIo,
-                diag_src3,
+    #[test]
+    fn force_full_render_bypasses_cached_diagram_section() {
+        with_missing_renderer_assets(|| {
+            let tmp = tempfile::TempDir::new().unwrap();
+            let mut pane = PreviewPane::default();
+            let cache: std::sync::Arc<dyn katana_platform::CacheFacade> = std::sync::Arc::new(
+                katana_platform::DefaultCacheService::new(tmp.path().join("cache.json")),
             );
-            let _ = cache.set_persistent(&key3, "invalid json".to_string());
-            let source3 = format!("```drawio\n{diag_src3}\n```");
+            let document_path = std::path::Path::new("/tmp/test.md");
+            let diagram_source = "graph TD; A-->B";
+            crate::preview_pane::diagram_cache::DiagramRenderCacheCoordinator::store_svg(
+                &cache,
+                document_path,
+                &DiagramKind::Mermaid,
+                diagram_source,
+                "<svg width=\"10\" height=\"10\"><rect width=\"10\" height=\"10\"/></svg>",
+            );
+
             pane.full_render(
-                &source3,
-                std::path::Path::new("/tmp/test.md"),
-                cache.clone(),
-                false,
+                &format!("```mermaid\n{diagram_source}\n```"),
+                document_path,
+                cache,
+                true,
                 1,
             );
+
+            match pane.sections.first() {
+                Some(RenderedSection::Pending { .. }) => {}
+                other => panic!("force render should bypass cached SVG, got {other:?}"),
+            }
             pane.wait_for_renders();
         });
     }
@@ -699,6 +872,31 @@ mod tests {
     }
 
     #[test]
+    fn diagram_cache_key_includes_document_path_partition() {
+        let first_path = std::path::Path::new("/tmp/first.md");
+        let second_path = std::path::Path::new("/tmp/second.md");
+        let kind = DiagramKind::Mermaid;
+        let source = "graph TD; A-->B";
+
+        let first_key = RendererLogicOps::get_cache_key(first_path, &kind, source);
+        let second_key = RendererLogicOps::get_cache_key(second_path, &kind, source);
+
+        assert_ne!(first_key, second_key);
+        assert!(first_key.contains("/mermaid/"));
+    }
+
+    #[test]
+    fn diagram_cache_key_changes_when_diagram_content_changes() {
+        let path = std::path::Path::new("/tmp/test.md");
+        let kind = DiagramKind::Mermaid;
+
+        let first_key = RendererLogicOps::get_cache_key(path, &kind, "graph TD; A-->B");
+        let second_key = RendererLogicOps::get_cache_key(path, &kind, "graph TD; A-->C");
+
+        assert_ne!(first_key, second_key);
+    }
+
+    #[test]
     fn mermaid_cache_key_ignores_legacy_renderer_env() {
         let _guard = RENDER_ENV_LOCK.lock().unwrap();
         let path = std::path::Path::new("/tmp/test.md");
@@ -713,7 +911,7 @@ mod tests {
 
         unsafe { std::env::remove_var("KATANA_MERMAID_RENDERER") };
         assert_eq!(default_key, rust_js_key);
-        assert!(default_key.to_ascii_lowercase().contains("mermaid"));
+        assert!(default_key.contains("/mermaid/"));
     }
 
     #[test]
@@ -835,6 +1033,78 @@ mod tests {
     }
 
     #[test]
+    fn viewer_state_preserves_view_when_texture_identity_is_same() {
+        let ctx = egui::Context::default();
+        let image = rasterized_test_image(vec![0, 0, 0, 255]);
+        let identity = ViewerTextureIdentity::rasterized(&image);
+        let background = crate::theme_bridge::BLACK;
+        let mut state = ViewerState::default();
+        state.prepare_texture(identity, background);
+        state.texture = Some(ctx.load_texture(
+            "same_identity",
+            egui::ColorImage::from_rgba_unmultiplied([1, 1], &image.rgba),
+            egui::TextureOptions::LINEAR,
+        ));
+        state.texture_background = Some(background);
+        state.zoom_in();
+        state.pan_right();
+
+        state.prepare_texture(identity, background);
+
+        assert!(state.texture.is_some());
+        assert_eq!(state.zoom, 1.25);
+        assert_eq!(state.pan, egui::vec2(50.0, 0.0));
+    }
+
+    #[test]
+    fn viewer_state_resets_view_when_rasterized_texture_identity_changes() {
+        let ctx = egui::Context::default();
+        let first = rasterized_test_image(vec![0, 0, 0, 255]);
+        let second = rasterized_test_image(vec![255, 0, 0, 255]);
+        let background = crate::theme_bridge::BLACK;
+        let mut state = ViewerState::default();
+        state.prepare_texture(ViewerTextureIdentity::rasterized(&first), background);
+        state.texture = Some(ctx.load_texture(
+            "first_identity",
+            egui::ColorImage::from_rgba_unmultiplied([1, 1], &first.rgba),
+            egui::TextureOptions::LINEAR,
+        ));
+        state.texture_background = Some(background);
+        state.zoom_in();
+        state.pan_right();
+
+        state.prepare_texture(ViewerTextureIdentity::rasterized(&second), background);
+
+        assert!(state.texture.is_none());
+        assert_eq!(state.zoom, 1.0);
+        assert_eq!(state.pan, egui::Vec2::ZERO);
+        assert_eq!(
+            state.texture_identity,
+            Some(ViewerTextureIdentity::rasterized(&second))
+        );
+    }
+
+    #[test]
+    fn show_rasterized_resets_state_when_image_content_changes() {
+        let ctx = egui::Context::default();
+        let first = rasterized_test_image(vec![0, 0, 0, 255]);
+        let second = rasterized_test_image(vec![255, 0, 0, 255]);
+        let mut state = ViewerState::default();
+        render_test_rasterized_image(&ctx, &mut state, &first);
+        let first_identity = state.texture_identity;
+        assert!(state.texture.is_some());
+        state.zoom_in();
+        state.pan_right();
+
+        render_test_rasterized_image(&ctx, &mut state, &second);
+
+        assert_ne!(state.texture_identity, first_identity);
+        assert!(state.texture.is_some());
+        assert_eq!(state.zoom, 1.0);
+        assert_eq!(state.pan, egui::Vec2::ZERO);
+    }
+
+    #[test]
     fn preview_pane_viewer_states_default_empty() {
         let pane = PreviewPane::default();
         assert!(pane.viewer_states.is_empty());
@@ -845,13 +1115,13 @@ mod tests {
     fn handle_fullscreen_request_sets_index_for_valid_image() {
         let mut pane = PreviewPane::default();
         pane.sections.push(RenderedSection::Image {
-            svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg {
-                width: 1,
-                height: 1,
-                display_width: 1.0,
-                display_height: 1.0,
-                rgba: vec![0; 4],
-            },
+            svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg::new(
+                1,
+                1,
+                1.0,
+                1.0,
+                vec![0; 4],
+            ),
             alt: String::new(),
             source_lines: 0,
         });
@@ -886,13 +1156,13 @@ mod tests {
     fn handle_fullscreen_request_clears_stale_index() {
         let mut pane = PreviewPane::default();
         pane.sections.push(RenderedSection::Image {
-            svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg {
-                width: 1,
-                height: 1,
-                display_width: 1.0,
-                display_height: 1.0,
-                rgba: vec![0; 4],
-            },
+            svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg::new(
+                1,
+                1,
+                1.0,
+                1.0,
+                vec![0; 4],
+            ),
             alt: String::new(),
             source_lines: 0,
         });
@@ -980,13 +1250,13 @@ mod tests {
         let ctx = egui::Context::default();
 
         pane.sections.push(RenderedSection::Image {
-            svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg {
-                width: 1,
-                height: 1,
-                display_width: 1.0,
-                display_height: 1.0,
-                rgba: vec![0; 4],
-            },
+            svg_data: katana_core::markdown::svg_rasterize::RasterizedSvg::new(
+                1,
+                1,
+                1.0,
+                1.0,
+                vec![0; 4],
+            ),
             alt: "Diagram A".to_string(),
             source_lines: 0,
         });

@@ -7,6 +7,7 @@ pub mod empty;
 pub mod file_entry;
 pub mod file_entry_paint;
 pub mod header;
+mod header_filter;
 pub mod header_menu;
 pub mod logic;
 pub mod panel;

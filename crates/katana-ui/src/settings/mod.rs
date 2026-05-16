@@ -5,4 +5,7 @@ pub mod tabs;
 pub mod types;
 mod ui;
 
+#[cfg(test)]
+mod ui_tests;
+
 pub use types::*;

@@ -5,6 +5,7 @@ mod side_panel_export;
 mod side_panel_hover;
 mod side_panel_story;
 mod side_panel_toc;
+mod side_panel_toc_ops;
 mod side_panel_tools;
 mod side_panel_tools_inner;
 mod side_panel_types;

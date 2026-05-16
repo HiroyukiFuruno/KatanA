@@ -4,9 +4,14 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ## [0.22.21] - 2026-05-16 09:31:46 (UTC)
 
+### ✨ Improvements
+
+- **Diagram Preview Cache**: Reuses generated diagram SVGs per Markdown file, reducing unnecessary redraws when reopening or restoring tabs.
+
 ### 🔧 System
 
 - Improved diagram rendering quality verification so Mermaid and Draw.io visual regressions can be caught more accurately before release.
+- Improved diagram cache compatibility handling so cached diagrams are refreshed when rendering output changes.
 
 ## [0.22.20] - 2026-05-15 11:04:17 (UTC)
 

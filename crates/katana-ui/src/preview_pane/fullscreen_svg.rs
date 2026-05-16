@@ -1,5 +1,5 @@
 use crate::icon::Icon;
-use crate::preview_pane::ViewerState;
+use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
 use eframe::egui::{self, Vec2};
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
@@ -17,6 +17,10 @@ pub(super) fn show_fullscreen_svg(
 ) -> bool {
     let screen = ctx.content_rect();
     let mut keep_open = true;
+    viewer_state.prepare_texture(
+        ViewerTextureIdentity::rasterized(img),
+        crate::theme_bridge::TRANSPARENT,
+    );
 
     egui::Area::new(egui::Id::new("fs_input_blocker"))
         .order(egui::Order::Foreground)

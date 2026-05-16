@@ -10,14 +10,19 @@ pub mod scroll;
 pub mod scroll_sync;
 pub mod search;
 pub mod shortcut_context;
+pub mod toc;
 pub mod update;
 pub mod workspace;
+
+#[cfg(test)]
+mod toc_tests;
 
 pub use config::*;
 pub use document::*;
 pub use layout::*;
 pub use scroll::*;
 pub use search::*;
+pub use toc::*;
 pub use update::*;
 pub use workspace::*;
 

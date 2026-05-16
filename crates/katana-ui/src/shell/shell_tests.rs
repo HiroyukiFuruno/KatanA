@@ -308,6 +308,7 @@ mod tests {
                     pan: egui::Vec2::ZERO,
                     texture: Some(texture.clone()),
                     texture_background: None,
+                    texture_identity: None,
                     closing_since: None,
                 });
             tab.pane.fullscreen_viewer_state.texture = Some(texture.clone());
@@ -319,8 +320,11 @@ mod tests {
 
         let tab = app.tab_previews.iter().find(|p| p.path == path).unwrap();
         assert!(
-            tab.pane.viewer_states[0].texture.is_none(),
-            "Texture cache inside viewer state must be cleared!"
+            tab.pane
+                .viewer_states
+                .iter()
+                .all(|viewer| viewer.texture.is_none()),
+            "Texture cache inside viewer states must be cleared!"
         );
         assert!(
             tab.pane.fullscreen_viewer_state.texture.is_none(),

@@ -73,13 +73,6 @@ impl PreviewPane {
             .resize(self.sections.len(), SectionLifecycle::default());
     }
 
-    pub fn abort_renders(&mut self) {
-        self.cancel_token
-            .store(true, std::sync::atomic::Ordering::Relaxed);
-        self.is_loading = false;
-        self.render_rx = None;
-    }
-
     pub fn full_render(
         &mut self,
         source: &str,
@@ -90,6 +83,9 @@ impl PreviewPane {
     ) {
         if force {
             self.commonmark_cache = CommonMarkCache::default();
+            self.viewer_states.clear();
+            self.fullscreen_viewer_state.reset();
+            self.fullscreen_image = None;
         }
 
         self.md_file_path = md_file_path.to_path_buf();
@@ -113,6 +109,8 @@ impl PreviewPane {
         let mut sections = Vec::with_capacity(raw.len());
         let mut lifecycle = Vec::with_capacity(raw.len());
         let mut jobs: Vec<RenderJob> = Vec::new();
+        let mut active_diagrams =
+            super::core_render_diagram::CoreRenderDiagramOps::active_diagrams(&resolved);
 
         self.session_generation += 1;
         let current_generation = self.session_generation;
@@ -134,25 +132,20 @@ impl PreviewPane {
                     source,
                     lines,
                 } => {
-                    sections.push(RenderedSection::Pending {
-                        kind: format!("{kind:?}"),
-                        source: source.clone(),
-                        source_lines: *lines,
-                    });
-                    jobs.push(RenderJob {
-                        kind: kind.clone(),
-                        src: source.clone(),
-                        path: self.md_file_path.clone(),
-                        cache: cache.clone(),
-                        force,
-                        source_lines: *lines,
-                        generation: current_generation,
+                    super::core_render_diagram::CoreRenderDiagramOps::handle_diagram_section(
+                        &mut active_diagrams,
+                        kind,
+                        source,
+                        *lines,
+                        md_file_path,
+                        &cache,
+                        current_generation,
                         ordinal,
-                    });
-                    lifecycle.push(SectionLifecycle {
-                        is_loaded: false,
-                        is_drawn: false,
-                    });
+                        force,
+                        &mut sections,
+                        &mut jobs,
+                        &mut lifecycle,
+                    );
                 }
                 PreviewSection::LocalImage { path, alt, lines } => {
                     crate::preview_pane::types::PreviewPaneUtilsOps::handle_local_image_section(
@@ -164,6 +157,7 @@ impl PreviewPane {
                         force,
                         current_generation,
                         ordinal,
+                        &mut active_diagrams,
                         &mut sections,
                         &mut jobs,
                         &mut lifecycle,
@@ -173,6 +167,11 @@ impl PreviewPane {
         }
         self.sections = sections;
         self.section_lifecycle = lifecycle;
+        super::diagram_cache::DiagramRenderCacheCoordinator::prune_document(
+            &cache,
+            md_file_path,
+            &active_diagrams,
+        );
 
         if jobs.is_empty() {
             self.is_loading = false;

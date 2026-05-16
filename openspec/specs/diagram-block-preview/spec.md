@@ -1,9 +1,7 @@
 ## Purpose
 
 This is a legacy capability specification that was automatically migrated to comply with the new OpenSpec schema validation rules. Please update this document manually if more context is required.
-
 ## Requirements
-
 ### Requirement: Supported diagram block payloads are explicitly constrained
 
 システムは、MVP のプレビュー経路で扱う図形描画 payload を次の形式に限定しなければならない（SHALL）。`mermaid` フェンス内の生 Mermaid source、`@startuml` と `@enduml` を含む `plantuml` フェンス内の生 PlantUML source、`<mxfile>` または `<mxGraphModel>` を含む `drawio` フェンス内の非圧縮 Draw.io XML を扱う。各フェンスはバッククォート（backtick）の ````` とチルダ（tilde）の `~~~` の両方を受け入れなければならない（SHALL）。
@@ -193,3 +191,29 @@ The system MUST preserve the preview workflow when a supported diagram block can
 - **WHEN** user opens the code block language selector
 - **THEN** system includes `text`, `markdown`, `bash`, `zsh`, `mermaid`, `drawio`, and `plantuml`
 - **THEN** system also includes common development languages such as `json`, `yaml`, `toml`, `rust`, `typescript`, `javascript`, `python`, `html`, `css`, and `sql`
+
+### Requirement: V8 を使う図形プレビュー依存関係はバージョン整合している
+
+システムは、Mermaid / Draw.io プレビュー（preview）で利用する V8 を使う描画依存関係（V8-backed renderer dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。対応済み図形ブロック（diagram block）は、`katana-canvas-forge`、`katana-diagram-renderer`、または数式描画依存の不整合によりワーカー（worker）起動前に失敗してはならない（MUST NOT）。
+
+#### Scenario: 作業領域の依存関係が同じ V8 固定指定を使う
+
+- **WHEN** KatanA v0.22.19 向けに作業領域の依存関係（workspace dependencies）を解決する
+- **THEN** `katana-canvas-forge` は `0.1.7` として解決される
+- **THEN** 作業領域の `v8` は `=147.4.0` として解決される
+- **THEN** `katana-canvas-forge` と `katana-diagram-renderer` は競合する `v8` バージョンを要求しない
+- **THEN** 数式描画依存は `v8` を要求しない
+- **THEN** `scripts/screenshot` manifest は非 V8 `mathjax_svg` patch を使う
+
+#### Scenario: Mermaid プレビューのワーカーは描画前に切断されない
+
+- **WHEN** 開いている Markdown 文書に対応済み Mermaid ブロックが含まれる
+- **THEN** プレビューは V8 を使う描画ワーカーをバージョン競合による panic なしで起動する
+- **THEN** 描画を試みる前に、ブロックが `[Mermaid] Diagram render worker disconnected before producing a result.` へ置換されない
+
+#### Scenario: Draw.io プレビューは整合した実行環境を使う
+
+- **WHEN** 開いている Markdown 文書に対応済み Draw.io ブロックが含まれる
+- **THEN** プレビューは Mermaid 描画と同じ、作業領域で整合した V8 実行環境（runtime）を使う
+- **THEN** kcf と kdr の `v8` バージョン分裂によりブロックが失敗しない
+

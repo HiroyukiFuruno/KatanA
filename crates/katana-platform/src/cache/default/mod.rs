@@ -8,7 +8,7 @@ SAFETY: Implements thread-safe locking mechanisms via RwLock and gracefully hand
 mod migration;
 mod types;
 
-pub use types::DefaultCacheService;
+pub use types::{DefaultCacheService, PlatformCachePathResolver};
 
 impl DefaultCacheService {
     /* WHY: Creates a new `DefaultCacheService` with the specified persistent root path. */
@@ -33,16 +33,13 @@ impl DefaultCacheService {
     }
 
     pub fn with_default_path() -> Self {
-        let base = dirs::cache_dir().unwrap_or(PathBuf::from("."));
-        Self::new(base.join("KatanA").join("cache.json"))
+        Self::new(PlatformCachePathResolver::cache_json_path())
     }
 
     /* WHY: Clears all subdirectories in the Katana cache directory (e.g., http-image-cache, plantuml, tmp)
     while preserving files in the root like `cache.json`. */
     pub fn clear_all_directories() {
-        let base = dirs::cache_dir()
-            .unwrap_or(PathBuf::from("."))
-            .join("KatanA");
+        let base = PlatformCachePathResolver::cache_root();
         Self::clear_all_directories_in(&base);
         Self::clear_temporary_diagram_images();
     }
@@ -145,6 +142,7 @@ impl CacheFacade for DefaultCacheService {
 
     fn clear_diagram_cache(&self) {
         let Ok(entries) = std::fs::read_dir(&self.persistent_base_path) else {
+            let _ = std::fs::remove_dir_all(self.diagram_cache_root_for_service());
             return;
         };
 
@@ -159,12 +157,21 @@ impl CacheFacade for DefaultCacheService {
 
         /* WHY: In-memory map must stay in sync with the on-disk KV to avoid stale reads after clear. */
         let mut map = LockOps::write_guard(&self.persistent);
-        map.retain(|(k, _)| !k.starts_with("diagram:"));
+        map.retain(|(k, _)| !Self::is_diagram_cache_raw_key(k));
+        let _ = std::fs::remove_dir_all(self.diagram_cache_root_for_service());
         Self::clear_temporary_diagram_images();
+    }
+
+    fn diagram_cache_root(&self) -> Option<PathBuf> {
+        Some(self.diagram_cache_root_for_service())
     }
 }
 
 impl DefaultCacheService {
+    fn is_diagram_cache_raw_key(key: &str) -> bool {
+        key.starts_with("diagram:") || key.starts_with("diagram_render:")
+    }
+
     fn clear_temporary_diagram_images() {
         let temp_dir = std::env::temp_dir();
         let cache_dirs = [
@@ -174,6 +181,19 @@ impl DefaultCacheService {
         for cache_dir in cache_dirs {
             let _ = std::fs::remove_dir_all(cache_dir);
         }
+    }
+
+    fn cache_root_for_service(&self) -> PathBuf {
+        self.persistent_base_path.parent().map_or_else(
+            PlatformCachePathResolver::cache_root,
+            std::path::Path::to_path_buf,
+        )
+    }
+
+    fn diagram_cache_root_for_service(&self) -> PathBuf {
+        self.cache_root_for_service()
+            .join(".cache")
+            .join("diagrams")
     }
 }
 
@@ -311,6 +331,7 @@ mod tests {
         let svc = DefaultCacheService::default();
         let path = svc.persistent_base_path.to_string_lossy();
         assert!(path.contains(".cache") || path.contains("KatanA"));
+        assert!(PlatformCachePathResolver::cache_json_path().ends_with("cache.json"));
 
         let tmp = TempDir::new().unwrap();
         let svc = DefaultCacheService::new(tmp.path().join("cache.json"));

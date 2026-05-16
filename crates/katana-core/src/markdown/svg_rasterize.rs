@@ -47,13 +47,13 @@ impl SvgRasterizeOps {
         host application's dark/light theme. */
         let transform = tiny_skia::Transform::from_scale(effective_scale, effective_scale);
         render(&tree, transform, &mut pixmap.as_mut());
-        Ok(RasterizedSvg {
+        Ok(RasterizedSvg::new(
             width,
             height,
             display_width,
             display_height,
-            rgba: pixmap.take(),
-        })
+            pixmap.take(),
+        ))
     }
 }
 

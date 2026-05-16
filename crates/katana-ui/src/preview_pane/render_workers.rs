@@ -1,22 +1,7 @@
 use katana_core::markdown::DiagramResult;
 
+use super::diagram_cache::DiagramRenderCacheCoordinator;
 use super::types::{RenderJob, RenderMessage, RendererLogicOps};
-
-fn cache_if_serializable_inner(
-    result: &DiagramResult,
-    is_http: bool,
-    key: &str,
-    cache: &std::sync::Arc<dyn katana_platform::CacheFacade>,
-) {
-    let Ok(json) = serde_json::to_string(result) else {
-        return;
-    };
-    if is_http {
-        cache.set_memory(key, json);
-    } else {
-        let _ = cache.set_persistent(key, json);
-    }
-}
 
 fn dispatch_and_reduce(
     job: &RenderJob,
@@ -33,22 +18,30 @@ fn dispatch_and_reduce(
     res
 }
 
-fn resolve_cached_result(
-    cached_result: Option<String>,
+fn resolve_diagram_result(
     job: &RenderJob,
-    is_http: bool,
-    cache_key: &str,
     tx: &std::sync::mpsc::Sender<RenderMessage>,
 ) -> DiagramResult {
-    let Some(json) = cached_result else {
-        let res = dispatch_and_reduce(job, tx);
-        cache_if_serializable_inner(&res, is_http, cache_key, &job.cache);
-        return res;
-    };
-    match serde_json::from_str::<DiagramResult>(&json) {
-        Ok(res) => res,
-        Err(_) => dispatch_and_reduce(job, tx),
+    if !job.force
+        && let Some(result) = DiagramRenderCacheCoordinator::cached_result(
+            &job.cache,
+            &job.document_path,
+            &job.kind,
+            &job.src,
+        )
+    {
+        return result;
     }
+    DiagramRenderCacheCoordinator::record_redraw(&job.kind, &job.document_path, &job.src);
+    let result = dispatch_and_reduce(job, tx);
+    DiagramRenderCacheCoordinator::store_result(
+        &job.cache,
+        &job.document_path,
+        &job.kind,
+        &job.src,
+        &result,
+    );
+    result
 }
 
 pub(super) fn spawn_render_workers(
@@ -79,20 +72,7 @@ pub(super) fn spawn_render_workers(
                     break;
                 }
 
-                let cache_key = RendererLogicOps::get_cache_key(&job.path, &job.kind, &job.src);
-                let is_http = job.src.contains("http://") || job.src.contains("https://");
-
-                let cached_result: Option<String> = if !job.force {
-                    if is_http {
-                        job.cache.get_memory(&cache_key)
-                    } else {
-                        job.cache.get_persistent(&cache_key)
-                    }
-                } else {
-                    None
-                };
-
-                let result = resolve_cached_result(cached_result, &job, is_http, &cache_key, &tx);
+                let result = resolve_diagram_result(&job, &tx);
 
                 let section = RendererLogicOps::map_diagram_result(
                     &job.kind,
