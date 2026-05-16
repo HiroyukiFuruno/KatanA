@@ -2738,7 +2738,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.20"
+version = "0.22.21"
 dependencies = [
  "anyhow",
  "base64",
@@ -2773,9 +2773,9 @@ dependencies = [
 
 [[package]]
 name = "katana-diagram-renderer"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de43129546d8e16fe3ecbf6832a9d1d95f0a28e6ef9ead64290c79600413478a"
+checksum = "07b786ef8309708d7dd609183e0ada6d596a06c47f8bb52b59aa97307b6b6ac5"
 dependencies = [
  "base64",
  "include_dir",
@@ -2791,7 +2791,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.20"
+version = "0.22.21"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -2821,7 +2821,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.20"
+version = "0.22.21"
 dependencies = [
  "anyhow",
  "cc",
@@ -2841,7 +2841,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.20"
+version = "0.22.21"
 dependencies = [
  "accesskit",
  "anyhow",

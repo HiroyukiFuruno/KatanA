@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.21] - 2026-05-16 09:31:46 (UTC)
+
+### 🔧 System
+
+- Improved diagram rendering quality verification so Mermaid and Draw.io visual regressions can be caught more accurately before release.
+
 ## [0.22.20] - 2026-05-15 11:04:17 (UTC)
 
 ### 🐛 Bug Fixes
