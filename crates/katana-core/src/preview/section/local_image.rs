@@ -4,15 +4,31 @@ impl ImageSectionOps {
     pub fn extract_standalone_images(secs: Vec<PreviewSection>) -> Vec<PreviewSection> {
         let mut result = Vec::with_capacity(secs.len());
         for sec in secs {
-            if let PreviewSection::Markdown(ref md, _) = sec {
-                /* WHY: Split into paragraphs so standalone images can be extracted
-                even when embedded within larger markdown sections. */
-                Self::split_paragraphs_extracting_images(md, &mut result);
-            } else {
-                result.push(sec);
+            match sec {
+                PreviewSection::Markdown(md, source_lines) => {
+                    Self::push_markdown_section(md, source_lines, &mut result);
+                }
+                other => result.push(other),
             }
         }
         result
+    }
+
+    fn push_markdown_section(md: String, source_lines: usize, result: &mut Vec<PreviewSection>) {
+        if !Self::has_standalone_image(&md) {
+            if !md.is_empty() {
+                result.push(PreviewSection::Markdown(md, source_lines));
+            }
+            return;
+        }
+        /* WHY: Split into paragraphs so standalone images can be extracted
+        even when embedded within larger markdown sections. */
+        Self::split_paragraphs_extracting_images(&md, result);
+    }
+
+    fn has_standalone_image(md: &str) -> bool {
+        md.split("\n\n")
+            .any(|paragraph| Self::try_parse_standalone_image(paragraph).is_some())
     }
 
     fn count_lines(text: &str) -> usize {

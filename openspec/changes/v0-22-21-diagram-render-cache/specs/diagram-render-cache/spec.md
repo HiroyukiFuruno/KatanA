@@ -1,147 +1,122 @@
 ## ADDED Requirements
 
-### Requirement: Content-based Diagram Checksum
+### Requirement: AST Diagram Block Cache Unit
 
-システムは、図形（diagram）の content checksum を、正規化済みの図形内容のみから生成しなければならない（SHALL）。タブ状態、viewport 状態、選択状態、OS 名、cache 保存先、ファイルパス、タイムスタンプは checksum 計算に含めてはならない（MUST NOT）。
+システムは、図形（diagram）cache の単位を Markdown AST から抽出した図形系コードブロックにしなければならない（SHALL）。
 
-#### Scenario: Generate checksum from diagram content
+#### Scenario: Extract diagram code blocks from AST
 
-- **GIVEN** a document contains one or more diagrams
-- **WHEN** the system evaluates render cache validity
-- **THEN** it SHALL canonicalize the diagram content
-- **AND** it SHALL generate `contentChecksum` from the canonicalized content only
-- **AND** it SHALL exclude tab state, viewport state, selection state, OS name, cache path, file path, and timestamps
+- **GIVEN** a Markdown document contains Mermaid, Draw.io, or PlantUML code blocks
+- **WHEN** the preview evaluates diagram cache entries
+- **THEN** the system SHALL enumerate diagram code blocks from the Markdown AST
+- **AND** it SHALL treat non-diagram code blocks as outside the persistent diagram cache
 
-#### Scenario: Same diagram content produces same checksum
+#### Scenario: Do not use block order as persistent key
 
-- **GIVEN** two tabs reference the same document diagram content
-- **AND** their tab IDs, viewport states, or selection states differ
-- **WHEN** the system generates `contentChecksum`
-- **THEN** both tabs SHALL produce the same checksum
+- **GIVEN** a document contains multiple diagram code blocks
+- **WHEN** a diagram code block is inserted, removed, or reordered
+- **THEN** the system SHALL NOT use the AST order or source position as the persistent cache key
+- **AND** it SHALL continue to identify reusable SVG files by diagram kind and content checksum
 
-#### Scenario: Changed diagram content produces different checksum
+### Requirement: Document Path Separated SVG Storage
 
-- **GIVEN** a diagram has been changed in a way that affects rendered output
-- **WHEN** the system generates `contentChecksum`
-- **THEN** the checksum SHALL differ from the previously cached checksum
+システムは、Markdown ファイルの絶対パスから生成した安定ハッシュごとに、SVG cache 保存領域を分離しなければならない（SHALL）。
 
-### Requirement: Checksum-driven Redraw
+#### Scenario: Resolve document-specific cache directory
 
-システムは、現在の content checksum と cached content checksum が不一致の場合、または cache を安全に利用できない場合に限り、図形描画ロジックを実行しなければならない（SHALL）。
+- **GIVEN** a Markdown file has an absolute path
+- **WHEN** the diagram cache store resolves a persistence directory
+- **THEN** it SHALL generate a stable hash from that absolute path
+- **AND** it SHALL store diagram SVG files under `${os_cache_dir}/KatanA/.cache/diagrams/doc_<absolute_path_hash>/`
 
-#### Scenario: Cache hit avoids redraw
+#### Scenario: Same diagram content in different files is not shared
 
-- **GIVEN** a valid cache manifest exists for a document
-- **AND** the manifest `contentChecksum` matches the current content checksum
-- **AND** the cache schema version and renderer version are compatible
-- **WHEN** the user opens a new tab for the document
-- **THEN** the system SHALL load the rendered diagram payload from cache
-- **AND** it SHALL NOT execute the diagram redraw logic
+- **GIVEN** two Markdown files have different absolute paths
+- **AND** both files contain the same diagram code block content
+- **WHEN** the system stores diagram SVG cache entries
+- **THEN** the files SHALL use different document cache directories
+- **AND** the SVG files SHALL NOT be shared across those Markdown files
 
-#### Scenario: Checksum mismatch triggers redraw
+### Requirement: Content Checksum SVG File Naming
 
-- **GIVEN** a valid cache manifest exists for a document
-- **AND** the manifest `contentChecksum` does not match the current content checksum
-- **WHEN** the system evaluates render cache validity
-- **THEN** the system SHALL execute the diagram redraw logic
-- **AND** it SHALL update the rendered payload and cache manifest
+システムは、図形種別と図形コードブロック本文から content checksum を生成し、SVG ファイル名に含めなければならない（SHALL）。
 
-#### Scenario: Invalid cache triggers redraw fallback
+#### Scenario: Generate checksum from diagram block content
 
-- **GIVEN** the cache manifest or rendered payload is missing, corrupted, or incompatible
-- **WHEN** the system attempts to use the render cache
-- **THEN** the system SHALL treat the result as a cache miss
-- **AND** it SHALL execute the diagram redraw logic
-- **AND** it SHALL avoid surfacing the cache failure as a user-facing error
+- **GIVEN** a diagram code block has a kind and body
+- **WHEN** the system evaluates cache validity
+- **THEN** it SHALL generate `content_checksum` from the diagram kind and code block body
+- **AND** it SHALL exclude tab state, viewport state, selection state, OS name, cache path, timestamps, AST order, and source position
 
-### Requirement: OS-specific Katana Cache Storage
+#### Scenario: Cache hit reads SVG file
 
-システムは、図形描画 cache を OS ごとに解決される Katana app 用一時保存領域に保存しなければならない（SHALL）。アプリ側の描画ロジックは OS 固有のパスに直接分岐してはならない（MUST NOT）。
+- **GIVEN** the expected `<content_checksum>_<renderer_version>_<theme_hash>.svg` file exists
+- **AND** the SVG file can be read as valid cache payload
+- **WHEN** the preview needs the diagram
+- **THEN** the system SHALL use the cached SVG
+- **AND** it SHALL NOT execute the diagram renderer for that diagram block
 
-#### Scenario: Resolve platform cache area
+#### Scenario: Cache miss writes SVG file
 
-- **GIVEN** Katana is running on macOS, Windows, or Linux
-- **WHEN** the render cache store needs a persistence path
-- **THEN** the system SHALL resolve the Katana app temporary cache area for the current OS
-- **AND** application render logic SHALL NOT directly branch on OS-specific paths
+- **GIVEN** the expected SVG cache file is missing or unreadable
+- **WHEN** the preview needs the diagram
+- **THEN** the system SHALL execute the diagram renderer for that diagram block
+- **AND** it SHALL write the generated SVG file atomically
 
-#### Scenario: Store manifest and payload
+### Requirement: No Manifest Or JSON Payload
 
-- **GIVEN** diagram redraw logic has produced a rendered payload
-- **WHEN** the system writes render cache data
-- **THEN** it SHALL write a cache manifest containing `documentId`, `contentChecksum`, `cacheSchemaVersion`, `rendererVersion`, and `payloadPath`
-- **AND** it SHALL write the rendered payload to the resolved Katana app temporary cache area
-- **AND** it SHALL write manifest and payload atomically or recover safely from partial writes
+システムは、図形 SVG cache のヒット判定に `manifest.json` や `cache.json` を必須としてはならない（MUST NOT）。
 
-#### Scenario: Load without full render load logic
+#### Scenario: Store SVG as the cache payload
 
-- **GIVEN** a cache manifest and payload are valid
-- **WHEN** the system needs to restore rendered diagrams
-- **THEN** it SHALL hydrate the rendered diagram state from cache
-- **AND** it SHALL avoid executing the normal diagram rendering load path
+- **GIVEN** diagram redraw logic has produced SVG
+- **WHEN** the system persists the cache payload
+- **THEN** it SHALL store the SVG itself as the cache file
+- **AND** it SHALL NOT require a separate JSON manifest to validate the cache hit
 
-#### Scenario: Fallback when cache path is unavailable
+### Requirement: Prune Removed Diagram Blocks
 
-- **GIVEN** the OS cache path cannot be resolved or cannot be written to
-- **WHEN** the system attempts to persist render cache data
-- **THEN** it SHALL fall back to an in-memory cache for the current session
-- **AND** it SHALL NOT surface the failure as a user-facing error
+システムは、ドキュメント更新時に現在の AST に存在しない図形 checksum の SVG を削除しなければならない（SHALL）。
 
-### Requirement: Limited Checksum Evaluation Timing
+#### Scenario: Remove deleted middle diagram
 
-システムは、図形 cache の checksum 判定を、新規タブ作成時、ドキュメント更新時、アプリ起動時の既存タブ復元時のみに実行しなければならない（SHALL）。タブ移動、タブ切替、選択状態のみの変更、viewport 操作のみを理由として checksum 判定や再描画を実行してはならない（MUST NOT）。
+- **GIVEN** a Markdown file had seven diagram code blocks
+- **AND** the middle diagram code block was deleted so the file now has six diagram code blocks
+- **WHEN** the document update cache pass completes
+- **THEN** the system SHALL keep SVG files whose checksums still exist in the current AST
+- **AND** it SHALL delete SVG files whose checksums no longer exist in the current AST
 
-#### Scenario: Evaluate on new tab creation
+#### Scenario: Reordered diagrams reuse cache
 
-- **GIVEN** a user opens a new tab for a document
-- **WHEN** the tab is created
-- **THEN** the system SHALL evaluate the current content checksum against the cached checksum
+- **GIVEN** a Markdown file contains diagram code blocks A, B, and C
+- **AND** the user reorders them to C, A, and B without changing their content
+- **WHEN** the document update cache pass evaluates the diagrams
+- **THEN** the system SHALL reuse the existing SVG files by checksum
+- **AND** it SHALL NOT redraw solely because the diagram order changed
 
-#### Scenario: Evaluate on document update
+### Requirement: Limited Evaluation Timing
 
-- **GIVEN** a document update is executed
-- **WHEN** the updated diagram content is available
-- **THEN** the system SHALL evaluate the current content checksum against the cached checksum
-- **AND** it SHALL redraw only when the checksums differ
+システムは、図形 cache 判定を新規タブ作成時、ドキュメント更新時、アプリ起動時の既存タブ復元時に限定しなければならない（SHALL）。
 
-#### Scenario: Evaluate on startup restored tabs
+#### Scenario: Evaluate on supported events
 
-- **GIVEN** Katana starts with tabs that were already open in the previous session
-- **WHEN** the app restores those tabs
-- **THEN** the system SHALL evaluate the current content checksum against the cached checksum for each restored tab
+- **GIVEN** a new tab opens, a document updates, or Katana restores existing tabs at startup
+- **WHEN** the preview needs diagram content
+- **THEN** the system SHALL evaluate the SVG cache for each current diagram code block
 
-#### Scenario: Do not evaluate on tab movement
+#### Scenario: Do not evaluate on tab-only events
 
-- **GIVEN** a user moves a tab or changes tab order
-- **WHEN** the tab movement completes
-- **THEN** the system SHALL NOT evaluate diagram cache checksum
-- **AND** it SHALL NOT execute diagram redraw logic solely because of tab movement
-
-#### Scenario: Do not evaluate on selection or viewport change
-
-- **GIVEN** a user changes selection state, scroll position, or zoom level only
+- **GIVEN** a user switches tabs, moves tabs, changes selection, scrolls, or zooms only
 - **WHEN** the UI state change completes
-- **THEN** the system SHALL NOT evaluate diagram cache checksum
-- **AND** it SHALL NOT execute diagram redraw logic solely because of the UI state change
+- **THEN** the system SHALL NOT evaluate diagram cache checksums
+- **AND** it SHALL NOT execute diagram redraw logic solely because of that UI state change
 
 ### Requirement: Diagram Cache Observability
 
 システムは、cache 判定結果を診断（diagnostics）用に metric / log として記録しなければならない（SHALL）。metric 名は `diagram_cache_*` の snake_case で統一する。
 
-#### Scenario: Record cache hit and miss
+#### Scenario: Record cache lifecycle
 
-- **GIVEN** the system evaluates diagram render cache validity
+- **GIVEN** the system evaluates diagram SVG cache validity
 - **WHEN** the evaluation completes
-- **THEN** it SHALL record one of `diagram_cache_hit`, `diagram_cache_miss`, `diagram_cache_mismatch`, `diagram_cache_corrupt_payload`, or `diagram_cache_redraw_executed`
-
-#### Scenario: Record checksum evaluation lifecycle
-
-- **GIVEN** the system performs checksum evaluation on a supported event
-- **WHEN** the evaluation completes
-- **THEN** it SHALL record `diagram_cache_checksum_evaluated`
-
-#### Scenario: Record skipped tab movement evaluation
-
-- **GIVEN** a tab movement event occurs
-- **WHEN** checksum evaluation is intentionally skipped
-- **THEN** the system SHALL record `diagram_cache_checksum_skipped_by_tab_move`
+- **THEN** it SHALL record cache hit, miss, prune, corrupt SVG, or redraw execution as `diagram_cache_*` diagnostics

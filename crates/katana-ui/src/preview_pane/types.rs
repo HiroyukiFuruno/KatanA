@@ -15,6 +15,8 @@ pub struct SectionLifecycle {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DocumentAnchorMapItem {
+    pub anchor_index: usize,
+    pub toc_index: Option<usize>,
     pub kind: katana_core::markdown::outline::AnchorKind,
     pub index: Option<usize>,
     pub line_span: std::ops::Range<usize>,
@@ -52,12 +54,12 @@ pub struct PreviewPane {
 pub(crate) struct RenderJob {
     pub(crate) kind: DiagramKind,
     pub(crate) src: String,
-    pub(crate) path: std::path::PathBuf,
     pub(crate) cache: std::sync::Arc<dyn katana_platform::CacheFacade>,
-    pub(crate) force: bool,
+    pub(crate) document_path: std::path::PathBuf,
     pub(crate) source_lines: usize,
     pub(crate) generation: u64,
     pub(crate) ordinal: usize,
+    pub(crate) force: bool,
 }
 
 pub enum RenderMessage {
@@ -141,7 +143,24 @@ pub struct ViewerState {
     pub pan: egui::Vec2,
     pub texture: Option<egui::TextureHandle>,
     pub texture_background: Option<egui::Color32>,
+    pub texture_identity: Option<ViewerTextureIdentity>,
     pub closing_since: Option<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ViewerTextureIdentity {
+    pub source: ViewerTextureSource,
+    pub width: u32,
+    pub height: u32,
+    pub display_width_bits: u32,
+    pub display_height_bits: u32,
+    pub content_hash: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewerTextureSource {
+    Rasterized,
+    LocalFile,
 }
 
 pub struct ImageLogicOps;

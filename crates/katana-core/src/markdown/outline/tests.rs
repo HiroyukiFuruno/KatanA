@@ -1,4 +1,6 @@
 use super::*;
+use comrak::nodes::NodeValue;
+use comrak::{Arena, Options, parse_document};
 
 #[test]
 fn test_extract_outline_with_line_breaks() {
@@ -23,6 +25,30 @@ More text
     assert_eq!(outline[0].text, "Heading with code");
     assert_eq!(outline[1].text, "Heading with link");
     assert_eq!(outline[2].text, "Bold and italic");
+}
+
+#[test]
+fn extract_text_collects_nested_code_text() {
+    let arena = Arena::new();
+    let root = parse_document(&arena, "## **Bold `code`**\n", &Options::default());
+    let heading = root
+        .descendants()
+        .find(|node| matches!(node.data.borrow().value, NodeValue::Heading(_)))
+        .expect("heading exists");
+
+    assert_eq!(extract_text(heading), "Bold code");
+}
+
+#[test]
+fn replace_markdown_links_keeps_unclosed_link_text() {
+    assert_eq!(
+        MarkdownOutlineOps::replace_markdown_links("Heading [broken"),
+        "Heading [broken"
+    );
+    assert_eq!(
+        MarkdownOutlineOps::replace_markdown_links("Heading [label](broken"),
+        "Heading [label](broken"
+    );
 }
 
 #[test]

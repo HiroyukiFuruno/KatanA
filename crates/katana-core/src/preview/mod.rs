@@ -1,9 +1,11 @@
 pub mod adapter;
+pub mod diagram_ast;
 pub mod image;
 pub mod section;
 pub mod types;
 
 pub use adapter::*;
+pub use diagram_ast::*;
 pub use section::*;
 pub use types::*;
 

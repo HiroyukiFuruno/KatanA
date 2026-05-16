@@ -51,7 +51,11 @@ impl<'a> ExplorerHeader<'a> {
                     }
                     ui.add_enabled_ui(!is_flat, |ui| {
                         let btn_resp = ui
-                            .add(crate::Icon::ExpandAll.button(ui, crate::icon::IconSize::Small))
+                            .add(Self::panel_icon_button(
+                                ui,
+                                crate::Icon::ExpandAll,
+                                crate::icon::IconSize::Small,
+                            ))
                             .on_hover_text(crate::i18n::I18nOps::get().action.expand_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "+")
@@ -65,7 +69,11 @@ impl<'a> ExplorerHeader<'a> {
                         }
 
                         let btn_resp = ui
-                            .add(crate::Icon::CollapseAll.button(ui, crate::icon::IconSize::Small))
+                            .add(Self::panel_icon_button(
+                                ui,
+                                crate::Icon::CollapseAll,
+                                crate::icon::IconSize::Small,
+                            ))
                             .on_hover_text(crate::i18n::I18nOps::get().action.collapse_all.clone());
                         btn_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "-")
@@ -89,7 +97,11 @@ impl<'a> ExplorerHeader<'a> {
 
                     if workspace.data.is_some() {
                         let refresh_resp = ui
-                            .add(crate::Icon::Refresh.button(ui, crate::icon::IconSize::Small))
+                            .add(Self::panel_icon_button(
+                                ui,
+                                crate::Icon::Refresh,
+                                crate::icon::IconSize::Small,
+                            ))
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.refresh_explorer.clone(),
                             );
@@ -102,9 +114,12 @@ impl<'a> ExplorerHeader<'a> {
 
                         let filter_resp = ui
                             .add(
-                                crate::Icon::Filter
-                                    .button(ui, crate::icon::IconSize::Small)
-                                    .selected(search.filter_enabled),
+                                Self::panel_icon_button(
+                                    ui,
+                                    crate::Icon::Filter,
+                                    crate::icon::IconSize::Small,
+                                )
+                                .selected(search.filter_enabled),
                             )
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.toggle_filter.clone(),
@@ -117,7 +132,11 @@ impl<'a> ExplorerHeader<'a> {
                         }
 
                         let new_directory_resp = ui
-                            .add(crate::Icon::FolderPlus.button(ui, crate::icon::IconSize::Small))
+                            .add(Self::panel_icon_button(
+                                ui,
+                                crate::Icon::FolderPlus,
+                                crate::icon::IconSize::Small,
+                            ))
                             .on_hover_text(
                                 crate::i18n::I18nOps::get().action.new_directory.clone(),
                             );
@@ -129,7 +148,11 @@ impl<'a> ExplorerHeader<'a> {
                         }
 
                         let new_file_resp = ui
-                            .add(crate::Icon::FilePlus.button(ui, crate::icon::IconSize::Small))
+                            .add(Self::panel_icon_button(
+                                ui,
+                                crate::Icon::FilePlus,
+                                crate::icon::IconSize::Small,
+                            ))
                             .on_hover_text(crate::i18n::I18nOps::get().action.new_file.clone());
                         new_file_resp.widget_info(|| {
                             egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "file+")
@@ -142,42 +165,7 @@ impl<'a> ExplorerHeader<'a> {
             },
         );
 
-        if workspace.data.is_some() && search.filter_enabled {
-            let mut is_valid_regex = true;
-            if !search.filter.query.is_empty() {
-                is_valid_regex = regex::RegexBuilder::new(&search.filter.query)
-                    .case_insensitive(true)
-                    .build()
-                    .is_ok();
-            }
-            let text_color = if is_valid_regex {
-                ui.visuals().text_color()
-            } else {
-                ui.ctx()
-                    .data(|d| {
-                        d.get_temp::<katana_platform::theme::ThemeColors>(egui::Id::new(
-                            "katana_theme_colors",
-                        ))
-                    })
-                    .map_or(crate::theme_bridge::WHITE, |tc| {
-                        crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(tc.system.error_text)
-                    })
-            };
-            /* WHY: filter bar does not show the search icon – icon is only for the file-name tab. Use explicit id_source to avoid collisions. */
-            let resp = crate::widgets::SearchBar::new(&mut search.filter)
-                .text_color(text_color)
-                .hint_text(crate::i18n::I18nOps::get().workspace.filter_hint.clone())
-                .show_search_icon(false)
-                .id_source("workspace_filter_bar")
-                .show(ui);
-            let focus_requested = ui.ctx().data_mut(|d| {
-                d.remove_temp::<bool>(egui::Id::new("filter_newly_enabled"))
-                    .unwrap_or(false)
-            });
-            if focus_requested {
-                resp.request_focus();
-            }
-        }
+        super::header_filter::ExplorerHeaderFilter::show(ui, workspace, search);
     }
 
     fn new_file_action(ws_root: &std::path::Path) -> AppAction {
@@ -186,5 +174,13 @@ impl<'a> ExplorerHeader<'a> {
 
     fn new_directory_action(ws_root: &std::path::Path) -> AppAction {
         AppAction::RequestNewDirectory(ws_root.to_path_buf())
+    }
+
+    fn panel_icon_button(
+        ui: &egui::Ui,
+        icon: crate::Icon,
+        size: crate::icon::IconSize,
+    ) -> egui::Button<'static> {
+        icon.button_on_fill(ui, size, ui.visuals().window_fill())
     }
 }

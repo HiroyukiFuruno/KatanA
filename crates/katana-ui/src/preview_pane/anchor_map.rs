@@ -5,10 +5,11 @@ impl DocumentAnchorMapItem {
     pub fn from_document_anchors(
         document_anchors: &[katana_core::markdown::outline::DocumentAnchor],
     ) -> Vec<Self> {
-        let mut current_heading_index = 0;
+        let mut current_heading_index: usize = 0;
         document_anchors
             .iter()
-            .map(|a| {
+            .enumerate()
+            .map(|(anchor_index, a)| {
                 let index = if matches!(a.kind, katana_core::markdown::outline::AnchorKind::Heading)
                 {
                     let idx = current_heading_index;
@@ -17,7 +18,10 @@ impl DocumentAnchorMapItem {
                 } else {
                     None
                 };
+                let toc_index = index.or_else(|| current_heading_index.checked_sub(1));
                 Self {
+                    anchor_index,
+                    toc_index,
                     kind: a.kind.clone(),
                     index,
                     line_span: a.line_start..a.line_end,

@@ -1,166 +1,172 @@
 ## Context
 
-KatanA は Mermaid / Draw.io / PlantUML 等の図形（diagram）プレビューを `katana-diagram-renderer (kdr)` 経由で描画する。現状の描画キャッシュは、判定ロジック・保存先・再描画トリガーが UI 層と強く結合しており、以下の挙動が観測されている。
+KatanA は Mermaid / Draw.io / PlantUML 等の図形（diagram）プレビューを `katana-diagram-renderer (kdr)` 経由で SVG へ変換し、プレビュー画面に表示する。
 
-- macOS 以外では、同一ドキュメントを再オープンしても描画ロジックが再実行され、cache hit にならない。
-- タブ移動・タブ切替・viewport 操作など、図形内容が変わらないイベントでも cache invalidation が発生し得る。
-- アプリ起動時の既存タブ復元（startup restore）で、図形内容が変わっていなくても描画が走るケースがある。
+ユーザー検証では `just run-release` を繰り返した際、タブを切り替えるたびに図形が再描画されているように見えた。これは、生成済み SVG を「図形コードブロック単位」で再利用できていないことが主因である。
 
-KatanA v0.22.21 では、`diagram-render-cache` capability として、図形内容のみから生成する content checksum と OS 非依存の cache 保存領域を導入し、上記を解消する。
+KatanA v0.22.21 では、Markdown ファイルの絶対パスで cache 領域を分離し、その中で AST から抽出した図形コードブロック本文の checksum ごとに SVG ファイルを保存する。
 
 ### Assumptions（前提）
 
 - 既存 OpenSpec に `diagram-render-cache` capability は存在しないため `ADDED Requirements` として記述する。
-- 「現在の状態の checksum」は、UI 状態ではなく、最新ドキュメント状態から得られる図形内容（diagram content）の checksum を指す。
-- `katana-diagram-renderer (kdr)` の公開 API（neutral interface）は変更せず、KatanA 側で cache coordinator を新設して呼び出し関係だけを更新する。
-- 既存ドキュメント永続化フォーマット（document persistence format）は変更しない。
+- 図形 cache の永続 payload は SVG ファイルそのものとする。
+- `manifest.json` / `cache.json` は今回導入しない。
+- PNG / JPEG 等の通常画像は永続 cache 対象外とし、表示時のメモリ上（in-memory）扱いに留める。
+- `katana-diagram-renderer (kdr)` の公開 API（neutral interface）は変更しない。
+- kmm の AST 解析を使う場合でも、依存はプレビュー側の局所 adapter に閉じる。将来の `katana-document-viewer` / `katana-ui` 分離を邪魔しない。
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- 図形内容のみから生成する content checksum を導入する。
-- macOS / Windows / Linux で同等の cache hit を実現する。
-- 新規タブ作成、ドキュメント更新、アプリ起動時の既存タブ復元に限定して checksum 判定を行う。
-- cache miss / checksum mismatch / payload 破損 / OS cache path 解決失敗時の fallback 経路を一本化する。
-- cache 判定結果を診断用に metric / log として可視化する。
+- cache 単位を AST で抽出した図形コードブロックに合わせる。
+- Markdown ファイルの絶対パスごとに cache 領域を分離する。
+- 図形コードブロック本文と図形種別から content checksum を生成する。
+- cache hit 時は kdr を呼ばず、保存済み SVG を使用する。
+- ドキュメント更新時に、現在の AST に存在しない checksum の SVG を削除する。
+- タブ切り替えやタブ移動だけでは checksum 判定も再描画も実行しない。
 
 **Non-Goals:**
 
 - 図形そのものの描画アルゴリズム変更。
-- ドキュメント永続化フォーマットの大幅変更。
-- ネットワーク共有キャッシュ（network-shared cache）の導入。
-- ユーザー操作履歴（user operation history）のキャッシュ。
-- タブ移動、選択状態変更、viewport 変更のみを理由とした checksum 再評価。
+- kdr の公開 API 変更。
+- ドキュメント永続化フォーマットの変更。
+- PNG / JPEG の永続 cache 化。
+- ネットワーク共有 cache の導入。
+- preview / editor / `katana-ui` 分離作業そのもの。
 
 ## Architecture
 
-図形描画キャッシュを、次の 4 つの責務に分離する。
+図形描画 cache を、次の責務に分離する。
 
-1. `DiagramContentCanonicalizer`: 図形内容のみを安定した順序・形式に正規化する。
-2. `DiagramChecksumService`: 正規化済み図形内容から checksum を生成する。
-3. `DiagramRenderCacheStore`: OS ごとの Katana app 一時保存領域に cache manifest と描画 payload を保存・取得する。
-4. `DiagramRenderCacheCoordinator`: タブ作成、ドキュメント更新、アプリ起動時復元のタイミングで checksum を比較し、cache hit / redraw を決定する。
+1. `DiagramAstBlockExtractor`: Markdown AST から図形系コードブロックを列挙する。
+2. `DiagramContentChecksum`: 図形種別とコードブロック本文から checksum を生成する。
+3. `DiagramDocumentCachePath`: Markdown 絶対パスから文書別 cache ディレクトリを解決する。
+4. `DiagramSvgCacheStore`: SVG ファイルを読み書きし、現在の AST に存在しない SVG を削除する。
+5. `DiagramRenderCacheCoordinator`: cache hit / miss / prune / redraw の判断をまとめる。
 
 ```text
-Tab Open / Document Update / App Startup Restore
+Markdown document path + Markdown source
         |
         v
-DiagramRenderCacheCoordinator
+DiagramAstBlockExtractor
         |
-        +--> DiagramContentCanonicalizer
+        v
+current diagram blocks
+        |
+        +--> DiagramContentChecksum
+        |
+        +--> DiagramDocumentCachePath
         |        |
         |        v
-        |   DiagramChecksumService
-        |
-        +--> DiagramRenderCacheStore
-        |        |
-        |        +--> PlatformCachePathResolver
-        |        +--> CacheManifest
-        |        +--> RenderPayload
+        |   ${os_cache_dir}/KatanA/.cache/diagrams/doc_<absolute_path_hash>/
         |
         v
-cache hit -> hydrate from payload
-cache miss / mismatch / corrupt -> run render logic -> write cache atomically
+DiagramSvgCacheStore
+        |
+        +--> cache hit: read <checksum>_<renderer_version>_<theme_hash>.svg
+        +--> cache miss: run kdr -> write svg atomically
+        +--> prune: delete SVG files whose checksum is absent from current AST
 ```
+
+## Cache Layout
+
+```text
+${os_cache_dir}/KatanA/.cache/diagrams/
+  doc_<absolute_path_hash>/
+    mermaid/
+      <content_checksum>_<renderer_version>_<theme_hash>.svg
+    drawio/
+      <content_checksum>_<renderer_version>_<theme_hash>.svg
+    plantuml/
+      <content_checksum>_<renderer_version>_<theme_hash>.svg
+```
+
+- `absolute_path_hash`: Markdown ファイルの絶対パスから生成する安定ハッシュ。同じ絶対パスなら毎回同じ値になる。
+- `content_checksum`: 図形種別とコードブロック本文から生成する。
+- `renderer_version`: kdr または KatanA 側 SVG 生成互換性のバージョン。
+- `theme_hash`: dark / light 等、SVG 出力に影響するテーマ情報のハッシュ。
+
+同じ Markdown ファイル内に完全に同じ図形コードブロックが複数ある場合、同じ SVG ファイルを共有する。これは表示結果が同じであり、物理ファイルを重複保存する意味がないためである。
 
 ## Decisions
 
-1. content checksum は図形内容のみから生成する。
+1. Markdown 絶対パスは checksum ではなく cache 領域の分離に使う。
 
-   - **Included**: 図形 ID、図形種別、座標、サイズ、回転、変形、stroke / fill / opacity 等の描画結果に影響する style、z-order、テキスト図形の文字列・フォント指定・文字装飾、グループ階層、図形間参照。
-   - **Excluded**: タブ ID、選択状態、hover / focus、viewport / scroll / zoom、OS 名、cache 保存先、ファイルパス、最終閲覧時刻、一時的な renderer runtime state。
-   - 理由: viewport・選択状態・タブ状態・OS 差分による不要な cache invalidation を避ける。
+   - 別 Markdown ファイルに同じ図形本文があっても、cache は共有しない。
+   - 既存 OS の検索や cache 管理を壊さないため、OS 標準 cache root 配下の `KatanA/.cache/diagrams` に閉じる。
 
-2. cache manifest と描画 payload は分離し、manifest だけで checksum 判定する。
+2. AST 上の順番や位置は永続キーに使わない。
 
-   ```text
-   CacheManifest
-   - documentId
-   - contentChecksum
-   - cacheSchemaVersion
-   - rendererVersion
-   - payloadPath
-   - createdAt
-   - updatedAt
-   ```
+   - 図形が 7 個から 6 個になり、真ん中が削除されると後続の順番はずれる。
+   - 順番を保存先に使うと、同じ図形を再利用できず、削除済み図形のゴミも判定しづらい。
+   - 現在の AST に存在する checksum 集合を正とし、それ以外の SVG を prune 対象にする。
 
-   - 理由: payload を読まずに高速判定するため。`rendererVersion` または `cacheSchemaVersion` が変わった場合は checksum 一致でも cache miss として扱う。
+3. cache payload は SVG ファイルそのものにする。
 
-3. cache 保存先は OS ごとに `PlatformCachePathResolver` 経由で解決する。
+   - `manifest.json` / `cache.json` は導入しない。
+   - cache hit 判定は、期待される SVG ファイルが存在し、読み込めるかで行う。
+   - renderer version や theme はファイル名に含める。
 
-   - macOS: Katana app の macOS 用 cache/temp 領域
-   - Windows: Katana app の Windows 用 cache/temp 領域
-   - Linux: Katana app の Linux 用 cache/temp 領域
-   - 理由: アプリロジックから OS 名を直接見ない構造にする。manifest と payload は atomic write とし、部分書き込み（partial write）時の不整合を防ぐ。
+4. SVG 書き込みは atomic write にする。
 
-4. checksum 判定は次のタイミングに限定する。
+   - 一時ファイルへ書き込み、成功後に正式ファイル名へ置き換える。
+   - 途中書き込みや破損 SVG を読んだ場合は cache miss として扱い、再描画する。
 
-   - 新規タブを開いたとき
-   - ドキュメント更新が実行されたとき
-   - app を開いたときに既に開かれているタブを復元するとき
+5. prune はドキュメント更新時に実行する。
 
-   次のタイミングでは判定しない。
+   - 現在の AST から `kind + content_checksum` の集合を作る。
+   - 文書別 cache ディレクトリ内で、この集合に存在しない SVG を削除する。
+   - テーマ違いは同じ checksum に属するため、現在存在する図形なら削除しない。
 
-   - タブ移動
-   - タブ切り替え
-   - 同一内容の viewport 操作
-   - 選択状態のみの変更
+6. タブ操作だけでは checksum 判定しない。
 
-5. cache 取得失敗・破損は例外をユーザーに露出させず、必ず再描画 fallback する。
+   - タブ移動、タブ切り替え、選択状態、scroll / zoom 等は SVG 内容を変えない。
+   - これらを理由に kdr 呼び出しや SVG cache 判定を実行しない。
 
-   - manifest が存在しない: cache miss として描画する。
-   - payload が存在しない: cache miss として描画する。
-   - payload が破損している: payload と manifest を破棄し、再描画する。
-   - OS cache path が取得できない: 現セッションの in-memory cache に fallback する。
-   - checksum 生成に失敗する: cache を使わず従来描画を実行する。
+## Implementation Guardrails
 
-6. 観測性（observability）は metric / log で記録する。命名は snake_case で統一する。
+実装時は、既存の失敗実装や便利な既存 KV cache 経路に引っ張られないよう、次の逸脱検出を必須にする。
 
-   - `diagram_cache_hit`
-   - `diagram_cache_miss`
-   - `diagram_cache_mismatch`
-   - `diagram_cache_corrupt_payload`
-   - `diagram_cache_redraw_executed`
-   - `diagram_cache_checksum_evaluated`
-   - `diagram_cache_checksum_skipped_by_tab_move`
+- 実装前に、仕様を守るための failing test を先に追加する。
+- `manifest.json` / `cache.json` / 既存 KV cache を使う実装に戻してはならない。
+- `block_0001` のような AST 順番ベースの永続 key を使ってはならない。
+- `diagram_cache_key_ignores_document_path` のように、Markdown 絶対パスを無視する期待値を残してはならない。
+- 実装完了前に `rg "DiagramCacheManifest|PersistentKey::DiagramRender|diagram_cache_key_ignores_document_path|block_[0-9]+" crates scripts Cargo.toml -S` を実行し、古い図形 cache 設計の残存を確認する。
+- DoD はテスト通過だけではなく、上記 grep 確認とユーザー動作確認 OK を含める。
 
 ## Flows
 
-### Update Flow
+### Tab Open / Startup Restore Flow
 
-1. ドキュメント更新イベントを受ける。
-2. 最新の図形内容を canonicalize する。
-3. `currentContentChecksum` を生成する。
-4. 保存済み `contentChecksum` と比較する。
-5. 不一致の場合のみ描画ロジックを実行する。
-6. 新しい payload と manifest を atomic write する。
+1. Markdown ファイルの絶対パスから `doc_<absolute_path_hash>` を解決する。
+2. Markdown を AST 解析し、図形コードブロックを列挙する。
+3. 各図形コードブロックから `content_checksum` を生成する。
+4. 対応する SVG ファイルが存在し、読める場合はそれを使用する。
+5. 存在しない、または破損している場合のみ kdr で SVG を生成し、cache へ保存する。
 
-### Tab Open Flow
+### Document Update Flow
 
-1. タブ作成時に `documentId` を解決する。
-2. manifest を読み込む。
-3. current content checksum と manifest checksum を比較する。
-4. 一致し、`cacheSchemaVersion` / `rendererVersion` も一致する場合は payload から復元する。
-5. 不一致または cache miss の場合は描画ロジックを実行し、cache を更新する。
+1. 更新後の Markdown を AST 解析し、現在存在する図形 checksum 集合を作る。
+2. cache hit / miss を各図形コードブロックごとに判定する。
+3. miss した図形だけ kdr で SVG を生成する。
+4. 文書別 cache ディレクトリ内で、現在の checksum 集合に存在しない SVG を削除する。
 
-### Startup Restore Flow
+### Tab Switch / Tab Move Flow
 
-1. app 起動時に復元対象タブを列挙する。
-2. 各タブについて manifest を読み込む。
-3. checksum が一致する場合は payload から復元する。
-4. 不一致の場合のみ描画ロジックを実行する。
+1. 既に保持しているプレビュー状態を表示する。
+2. Markdown AST の再解析、checksum 判定、kdr 呼び出し、SVG prune は実行しない。
 
 ## Risks / Trade-offs
 
-- **Risk**: content canonicalization の対象漏れにより、視覚的に変わったのに checksum が同じになる
-  -> Included / Excluded を spec の Scenario で固定し、図形種別ごとの canonicalize テストを追加する。
+- **Risk**: renderer version の更新漏れで古い SVG を使う
+  -> SVG 出力互換性に影響する変更では `renderer_version` を変更することを DoD に含める。
 
-- **Risk**: OS cache path の権限不足や容量不足で write が失敗する
-  -> in-memory cache へ fallback する経路を Decision 5 で定義し、ユーザーに露出させない。
+- **Risk**: 同じ Markdown 内の同一図形コードブロックが SVG を共有する
+  -> 出力が同一なので許容する。コードブロックごとに別ファイルを作る設計より、削除と再利用が安定する。
 
-- **Risk**: `rendererVersion` のバンプ忘れにより古い payload を hydrate してしまう
-  -> renderer 側の semantic-affecting change で `rendererVersion` を必ず変更するレビュー観点を tasks.md の DoD に含める。
+- **Risk**: kmm 依存が将来の分離を阻害する
+  -> kmm を使う場合は抽出 adapter をプレビュー配下に閉じ、cache store / path resolver へ kmm 型を漏らさない。
 
-- **Risk**: タブ移動を契機とした再描画抑止が、選択状態と連動した hover overlay 等の UI 更新まで止めてしまう
-  -> 「描画 payload の cache 判定をスキップする」のみで、UI overlay の再描画は別経路として扱う。Scenario でも tab movement の影響範囲を限定する。
+- **Risk**: SVG rasterize が遅い場合、SVG cache だけでは体感改善が不足する
+  -> 今回の対象は kdr による SVG 生成の抑止。必要なら次の change で rasterized payload の in-memory cache を扱う。

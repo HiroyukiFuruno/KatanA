@@ -67,6 +67,7 @@ impl PreviewPaneUtilsOps {
         force: bool,
         current_generation: u64,
         ordinal: usize,
+        active_diagrams: &mut Vec<(katana_core::markdown::DiagramKind, String)>,
         sections: &mut Vec<RenderedSection>,
         jobs: &mut Vec<RenderJob>,
         lifecycle: &mut Vec<SectionLifecycle>,
@@ -77,6 +78,28 @@ impl PreviewPaneUtilsOps {
             let Ok(xml) = std::fs::read_to_string(&path_buf) else {
                 return Self::push_normal_image(&path_buf, alt, lines, sections, lifecycle);
             };
+            active_diagrams.push((katana_core::markdown::DiagramKind::DrawIo, xml.clone()));
+            if !force
+                && let Some(result) =
+                    crate::preview_pane::diagram_cache::DiagramRenderCacheCoordinator::cached_result(
+                        &cache,
+                        md_file_path,
+                        &katana_core::markdown::DiagramKind::DrawIo,
+                        &xml,
+                    )
+            {
+                sections.push(RendererLogicOps::map_diagram_result(
+                    &katana_core::markdown::DiagramKind::DrawIo,
+                    &xml,
+                    result,
+                    lines,
+                ));
+                lifecycle.push(SectionLifecycle {
+                    is_loaded: true,
+                    is_drawn: false,
+                });
+                return;
+            }
             sections.push(RenderedSection::Pending {
                 kind: "Drawio".to_string(),
                 source: xml.clone(),
@@ -85,12 +108,12 @@ impl PreviewPaneUtilsOps {
             jobs.push(RenderJob {
                 kind: katana_core::markdown::DiagramKind::DrawIo,
                 src: xml,
-                path: md_file_path.to_path_buf(),
                 cache,
-                force,
+                document_path: md_file_path.to_path_buf(),
                 source_lines: lines,
                 generation: current_generation,
                 ordinal,
+                force,
             });
             lifecycle.push(SectionLifecycle {
                 is_loaded: false,

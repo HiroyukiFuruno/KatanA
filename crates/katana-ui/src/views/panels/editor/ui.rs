@@ -76,7 +76,7 @@ impl<'a> EditorContent<'a> {
             ) = colors;
 
             let mut scroll_area = egui::ScrollArea::vertical().id_salt("editor_scroll");
-            if scroll.scroll_to_line.is_some() {
+            if scroll.scroll_to_line.is_some() || scroll.toc_scroll_to_line.is_some() {
                 scroll_area = scroll_area.animated(false);
             }
 

@@ -9,6 +9,7 @@ description = "KatanA core: document model, workspace model, markdown pipeline, 
 comrak.workspace = true
 katana-canvas-forge.workspace = true
 katana-diagram-renderer.workspace = true
+katana-markdown-model.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

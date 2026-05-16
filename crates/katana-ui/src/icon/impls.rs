@@ -111,6 +111,16 @@ impl Icon {
         egui::Button::image(self.ui_image(ui, size)).fill(icon_bg)
     }
 
+    /* WHY: Panel header icons should visually merge with the panel surface until hovered. */
+    pub fn button_on_fill(
+        &self,
+        ui: &egui::Ui,
+        size: IconSize,
+        fill: egui::Color32,
+    ) -> egui::Button<'static> {
+        egui::Button::image(self.ui_image(ui, size)).fill(fill)
+    }
+
     /* WHY: Like button, but applies selection_bg fill when selected is true. */
     pub fn selected_button(
         &self,

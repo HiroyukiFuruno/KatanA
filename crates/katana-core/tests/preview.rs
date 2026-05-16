@@ -679,3 +679,39 @@ fn global_line_offset_with_multiple_diagrams() {
         "Line offset drift detected: sum={total_lines}, expected={expected}"
     );
 }
+
+#[test]
+fn sample_diagram_sections_keep_source_line_offsets() {
+    let fixture_path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/fixtures/sample.md");
+    let source = std::fs::read_to_string(fixture_path).unwrap();
+    let sections = PreviewSectionOps::split_into_sections(&source);
+    let mut line_start = 0usize;
+    let mut class_diagram = None;
+    let mut state_diagram = None;
+
+    for section in sections {
+        match section {
+            PreviewSection::Markdown(_, lines) | PreviewSection::LocalImage { lines, .. } => {
+                line_start += lines;
+            }
+            PreviewSection::Diagram {
+                kind,
+                source,
+                lines,
+            } => {
+                let line_end = line_start + lines;
+                if kind == DiagramKind::Mermaid && source.contains("class PreviewPane") {
+                    class_diagram = Some(line_start..line_end);
+                }
+                if kind == DiagramKind::Mermaid && source.contains("stateDiagram-v2") {
+                    state_diagram = Some(line_start..line_end);
+                }
+                line_start = line_end;
+            }
+        }
+    }
+
+    assert_eq!(class_diagram, Some(392..411));
+    assert_eq!(state_diagram, Some(414..426));
+}

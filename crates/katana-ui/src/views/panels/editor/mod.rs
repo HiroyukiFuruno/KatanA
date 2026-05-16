@@ -11,6 +11,7 @@ pub mod diagnostics_ui;
 pub mod line_numbers;
 pub mod logic;
 pub mod logic_colors;
+mod logic_scroll;
 pub mod paste;
 pub mod row_diagnostics;
 pub mod syntax;

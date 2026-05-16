@@ -26,6 +26,11 @@ pub trait CacheFacade: Send + Sync {
 
     /* WHY: Clears diagram cache entries from persistent storage */
     fn clear_diagram_cache(&self) {}
+
+    /* WHY: SVG diagram cache is file-based and separate from the generic KV cache. */
+    fn diagram_cache_root(&self) -> Option<std::path::PathBuf> {
+        None
+    }
 }
 
 #[derive(Serialize, Deserialize, Default)]

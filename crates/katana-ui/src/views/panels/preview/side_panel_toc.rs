@@ -2,7 +2,7 @@ use super::side_panels::{
     PANEL_ANIM_SPEED, PANEL_HOVER_MARGIN, PANEL_WIDTH, POPUP_GAP, POPUP_PADDING, POPUP_ROUNDING,
     POPUP_SHADOW_ALPHA, PreviewSidePanels,
 };
-use crate::shell_ui::{TOC_PANEL_DEFAULT_WIDTH, TOC_PANEL_MARGIN};
+use crate::shell_ui::TOC_PANEL_DEFAULT_WIDTH;
 use eframe::egui;
 
 #[inline]
@@ -80,7 +80,6 @@ impl<'a> PreviewSidePanels<'a> {
         );
         let animation_f32 = anim;
         let mut clicked_line = None;
-        let mut active_index_out = None;
         let doc_path = self.app.state.active_document().map(|d| d.path.clone());
         let area_resp = egui::Area::new(egui::Id::new("preview_toc_hover_overlay"))
             .order(egui::Order::Foreground)
@@ -106,21 +105,16 @@ impl<'a> PreviewSidePanels<'a> {
                         && let Some(preview) =
                             self.app.tab_previews.iter_mut().find(|p| &p.path == path)
                     {
-                        let (cl, ai, _) = crate::views::panels::toc::TocPanel::new(
+                        let (cl, _, _) = crate::views::panels::toc::TocPanel::new(
                             &mut preview.pane,
                             &mut self.app.state,
                         )
                         .show(ui);
                         clicked_line = cl;
-                        active_index_out = ai;
                     }
                 });
             });
-        if let Some(clicked) = clicked_line {
-            self.app.state.scroll.scroll_to_line = Some(clicked);
-            self.app.state.scroll.last_scroll_to_line = None;
-        }
-        self.app.state.active_toc_index = active_index_out;
+        self.apply_toc_click_scroll(clicked_line);
         let mut keep_open = false;
         if let Some(pos) = ui.input(|i| i.pointer.hover_pos()) {
             let over_overlay = area_resp
@@ -150,28 +144,26 @@ impl<'a> PreviewSidePanels<'a> {
             .settings()
             .layout
             .toc_position;
-        let frame =
-            egui::Frame::side_top_panel(&ui.ctx().global_style()).inner_margin(TOC_PANEL_MARGIN);
         let panel = match position {
             TocPosition::Left => egui::SidePanel::left("toc_panel"),
             TocPosition::Right => egui::SidePanel::right("toc_panel"),
         };
         let mut clicked_line = None;
-        let mut active_index_out = None;
         let response = panel
-            .frame(frame)
+            .frame(crate::views::panels::toc::TocPanel::panel_frame(
+                &ui.ctx().global_style(),
+            ))
             .default_width(TOC_PANEL_DEFAULT_WIDTH)
             .show_inside(ui, |ui| {
                 if let Some(path) = doc_path
                     && let Some(preview) = self.app.tab_previews.iter_mut().find(|p| p.path == path)
                 {
-                    let (cl, ai, _) = crate::views::panels::toc::TocPanel::new(
+                    let (cl, _, _) = crate::views::panels::toc::TocPanel::new(
                         &mut preview.pane,
                         &mut self.app.state,
                     )
                     .show(ui);
                     clicked_line = cl;
-                    active_index_out = ai;
                 }
             });
         let edge = match position {
@@ -186,10 +178,6 @@ impl<'a> PreviewSidePanels<'a> {
         };
         ui.painter()
             .line_segment(edge, ui.visuals().window_stroke());
-        if let Some(clicked) = clicked_line {
-            self.app.state.scroll.scroll_to_line = Some(clicked);
-            self.app.state.scroll.last_scroll_to_line = None;
-        }
-        self.app.state.active_toc_index = active_index_out;
+        self.apply_toc_click_scroll(clicked_line);
     }
 }

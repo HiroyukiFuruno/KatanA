@@ -36,7 +36,7 @@ impl<'a> TocPanel<'a> {
     fn render_leaf_item(
         &self,
         ui: &mut egui::Ui,
-        _ctx: &TocRenderContext<'_>,
+        ctx: &TocRenderContext<'_>,
         item: &katana_core::markdown::outline::OutlineItem,
         is_active: bool,
         idx: &mut usize,
@@ -54,6 +54,8 @@ impl<'a> TocPanel<'a> {
         if response.clicked() {
             next_scroll = Some(item.index);
         }
+
+        Self::scroll_active_item_into_view(&response, is_active, ctx.auto_scroll_active_item);
 
         if !ui.is_rect_visible(rect) {
             *idx += 1;
@@ -133,6 +135,12 @@ impl<'a> TocPanel<'a> {
         .indent(TOC_INDENT_PER_LEVEL)
         .show(ui);
 
+        Self::scroll_active_item_into_view(
+            &accordion_response.response,
+            is_active,
+            ctx.auto_scroll_active_item,
+        );
+
         /* WHY: Accordion header click handling. Extract click from header to enable jumping. */
         if accordion_response.response.clicked() {
             next_scroll = Some(item.index);
@@ -176,6 +184,16 @@ impl<'a> TocPanel<'a> {
                 stroke,
                 egui::StrokeKind::Inside,
             );
+        }
+    }
+
+    pub(crate) fn scroll_active_item_into_view(
+        response: &egui::Response,
+        is_active: bool,
+        should_auto_scroll: bool,
+    ) {
+        if is_active && should_auto_scroll {
+            response.scroll_to_me(None);
         }
     }
 }

@@ -20,6 +20,7 @@ pub struct ScrollState {
     pub preview_echo: SyncEcho,
     pub active_editor_line: Option<usize>,
     pub scroll_to_line: Option<usize>,
+    pub toc_scroll_to_line: Option<usize>,
     pub editor_line_anchors: Vec<f32>,
     /* WHY: Tracks the last line that was actually scrolled to, so that
      * repeated Next/Prev on the same single match does not re-trigger
@@ -49,6 +50,7 @@ impl ScrollState {
             preview_echo: SyncEcho::default(),
             active_editor_line: None,
             scroll_to_line: None,
+            toc_scroll_to_line: None,
             editor_line_anchors: Vec::new(),
             last_scroll_to_line: None,
             hovered_preview_lines: Vec::new(),
@@ -76,6 +78,7 @@ mod tests {
             editor_y: 320.0,
             preview_y: 180.0,
             scroll_to_line: Some(12),
+            toc_scroll_to_line: Some(24),
             last_scroll_to_line: Some(12),
             sync_override: Some(false),
             ..Default::default()
@@ -87,6 +90,7 @@ mod tests {
         assert_eq!(scroll.editor_y, 0.0);
         assert_eq!(scroll.preview_y, 0.0);
         assert_eq!(scroll.scroll_to_line, None);
+        assert_eq!(scroll.toc_scroll_to_line, None);
         assert_eq!(scroll.last_scroll_to_line, None);
         assert_eq!(scroll.sync_override, Some(false));
     }

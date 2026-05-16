@@ -124,6 +124,7 @@ impl eframe::App for KatanaApp {
         self.update_file_dialog(ctx);
 
         self.state.scroll.scroll_to_line = None;
+        self.state.scroll.toc_scroll_to_line = None;
         crate::views::app_frame::AppFrameOps::intercept_url_commands(ctx, self);
 
         self.show_splash(ctx);

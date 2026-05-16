@@ -7,6 +7,7 @@ pub use crate::state::document::{
 pub use crate::state::layout::{DiffReviewSnapshot, LayoutState};
 pub use crate::state::scroll::{ScrollSource, ScrollState};
 pub use crate::state::search::{SearchState, SearchTab};
+pub use crate::state::toc::TocState;
 pub use crate::state::update::{UpdatePhase, UpdateState};
 pub use crate::state::workspace::WorkspaceState;
 
@@ -37,13 +38,13 @@ pub struct AppState {
     pub workspace: WorkspaceState,
     pub layout: LayoutState,
     pub search: SearchState,
+    pub toc: TocState,
     pub scroll: ScrollState,
     pub update: UpdateState,
     pub config: ConfigState,
     pub diagnostics: DiagnosticsState,
     pub command_palette: CommandPaletteState,
     pub global_workspace: katana_platform::workspace::GlobalWorkspaceService,
-    pub active_toc_index: Option<usize>,
 }
 
 impl AppState {
@@ -71,6 +72,7 @@ impl AppState {
             workspace: WorkspaceState::new(),
             layout,
             search,
+            toc: TocState::default(),
             scroll: ScrollState::new(),
             update: UpdateState::new(),
             config: ConfigState::new(plugin_registry, settings, cache),
@@ -79,7 +81,6 @@ impl AppState {
             global_workspace: katana_platform::workspace::GlobalWorkspaceService::new(Box::new(
                 katana_platform::workspace::JsonWorkspaceRepository::with_default_path(),
             )),
-            active_toc_index: None,
         }
     }
 

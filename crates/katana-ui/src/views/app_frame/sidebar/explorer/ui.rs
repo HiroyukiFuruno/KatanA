@@ -58,6 +58,9 @@ impl<'a> ExplorerSidebar<'a> {
                 .resizable(true)
                 .min_size(crate::shell::FILE_TREE_PANEL_MIN_WIDTH)
                 .default_size(crate::shell::FILE_TREE_PANEL_DEFAULT_WIDTH)
+                .frame(crate::views::panels::explorer::ExplorerPanel::frame(
+                    &ui.ctx().global_style(),
+                ))
                 .show_inside(ui, |ui| {
                     let active_path = app
                         .state

@@ -17,6 +17,10 @@ pub(crate) struct ExplorerPanel<'a> {
 }
 
 impl<'a> ExplorerPanel<'a> {
+    pub(crate) fn frame(style: &egui::Style) -> egui::Frame {
+        egui::Frame::window(style).inner_margin(egui::Margin::ZERO)
+    }
+
     pub fn new(
         workspace: &'a mut crate::app_state::WorkspaceState,
         search: &'a mut crate::app_state::SearchState,

@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use crate::app_state::ScrollSource;
+
     use super::*;
 
     #[test]
@@ -146,6 +148,19 @@ mod tests {
             "When scroll_to_line is active, source must NOT be set to Editor; \
              otherwise the preview's scroll_request position will be overwritten by mapper"
         );
+    }
+
+    #[test]
+    fn update_scroll_sync_with_toc_scroll_to_line_does_not_set_editor_source() {
+        let mut scroll = crate::app_state::ScrollState {
+            mapper: crate::state::scroll_sync::ScrollMapper::build(500.0, 500.0, &[]),
+            toc_scroll_to_line: Some(52),
+            ..Default::default()
+        };
+
+        EditorLogicOps::update_scroll_sync(&mut scroll, 1000.0, 500.0, 400.0, false, 0.01, vec![]);
+
+        assert_ne!(scroll.source, ScrollSource::Editor);
     }
 
     #[test]

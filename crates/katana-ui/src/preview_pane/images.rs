@@ -1,5 +1,5 @@
 use super::image_raster::{MAX_ZOOM, MIN_ZOOM};
-use crate::preview_pane::ViewerState;
+use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
 use eframe::egui::{self, TextureHandle, Vec2};
 
 pub use super::types::ImageLogicOps;
@@ -73,6 +73,7 @@ impl ImageLogicOps {
             ui.visuals().window_fill(),
         );
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
+            state.prepare_texture(ViewerTextureIdentity::local_file(path), preview_background);
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
                 state.texture = load_local_image_texture(ui, path, id, preview_background);
                 state.texture_background = Some(preview_background);
