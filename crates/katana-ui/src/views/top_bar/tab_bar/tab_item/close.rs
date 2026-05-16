@@ -2,6 +2,10 @@ use crate::views::top_bar::tab_bar::tab_item::TabItem;
 use eframe::egui;
 
 impl<'a> TabItem<'a> {
+    pub(crate) fn close_area_visible(is_pinned: bool, tab_hovered: bool) -> bool {
+        is_pinned || tab_hovered
+    }
+
     pub(super) fn close_rect(parent_rect: egui::Rect, close_width: f32) -> egui::Rect {
         egui::Rect::from_min_size(
             egui::pos2(

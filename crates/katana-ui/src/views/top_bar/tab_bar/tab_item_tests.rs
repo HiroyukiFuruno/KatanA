@@ -15,6 +15,17 @@ fn tab_width_excludes_close_area_until_hovered() {
 }
 
 #[test]
+fn close_area_stays_visible_for_pinned_tab_without_hover() {
+    assert!(TabItem::close_area_visible(true, false));
+}
+
+#[test]
+fn close_area_is_hover_only_for_unpinned_tab() {
+    assert!(!TabItem::close_area_visible(false, false));
+    assert!(TabItem::close_area_visible(false, true));
+}
+
+#[test]
 fn tab_width_uses_parent_tab_bounds_without_exceeding_max_width() {
     assert_eq!(TabItem::tab_width_from_parts(300.0, 24.0, 0.0, true), 200.0);
 }

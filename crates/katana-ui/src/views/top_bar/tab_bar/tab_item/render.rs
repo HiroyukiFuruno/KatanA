@@ -123,15 +123,24 @@ impl<'a> TabItem<'a> {
                     .with(self.doc.path.to_string_lossy().to_string()),
                 egui::Sense::click(),
             )
-            .on_hover_text(crate::i18n::I18nOps::get().tab.close.clone());
+            .on_hover_text(self.close_button_label());
         response.widget_info(|| {
             egui::WidgetInfo::labeled(
                 egui::WidgetType::Button,
                 ui.is_enabled(),
-                crate::i18n::I18nOps::get().tab.close.clone(),
+                self.close_button_label(),
             )
         });
         Some(response)
+    }
+
+    fn close_button_label(&self) -> String {
+        let tab = &crate::i18n::I18nOps::get().tab;
+        if self.doc.is_pinned {
+            tab.unpin.clone()
+        } else {
+            tab.close.clone()
+        }
     }
 
     pub(crate) fn title_close_gap() -> f32 {

@@ -591,6 +591,38 @@ fn document_tab_close_appears_on_hover_and_expands_width() {
 }
 
 #[test]
+fn pinned_document_tab_pin_stays_visible_without_hover() {
+    let mut harness = setup_harness();
+    harness.step();
+
+    let workspace = fresh_temp_dir("katana_pinned_document_tab_pin_visible");
+    let readme = workspace.join("README.md");
+    std::fs::write(&readme, "# README").unwrap();
+
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenWorkspace(workspace));
+    wait_for_workspace_load(&mut harness);
+    harness
+        .state_mut()
+        .trigger_action(AppAction::OpenMultipleDocuments(vec![readme]));
+    harness.run_steps(20);
+    harness
+        .state_mut()
+        .trigger_action(AppAction::TogglePinDocument(0));
+    harness.run_steps(10);
+
+    let pin_rect = trailing_control_rect_for_label(&harness, "README.md");
+    let border = document_tab_border(&harness, "README.md");
+    let right_margin = border.right() - pin_rect.right();
+
+    assert!(
+        (1.5..=2.5).contains(&right_margin),
+        "pinned document tab pin must stay visible at the right edge without hover, got {right_margin}: {border:?} vs {pin_rect:?}"
+    );
+}
+
+#[test]
 fn document_tab_height_stays_stable_when_close_appears() {
     let mut harness = setup_harness();
     harness.step();
