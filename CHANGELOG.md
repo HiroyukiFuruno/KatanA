@@ -2,6 +2,13 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.22] - 2026-05-18 (UTC)
+
+### 🔧 System
+
+- **Windows distribution stability**: Closed the last remaining gaps where external processes spawned from build scripts and screenshot tooling could briefly flash a console window on Windows. Every process launch now routes through a sanctioned headless facade.
+- **AST Linter scan expansion**: The `no-direct-process-command` rule now also scans every `crates/<name>/build.rs` and the `scripts/screenshot/` crate. This prevents future regressions where a new `std::process::Command::new` call sneaks in outside the directories the linter previously checked.
+
 ## [0.22.21] - 2026-05-16 09:31:46 (UTC)
 
 ### ✨ Improvements

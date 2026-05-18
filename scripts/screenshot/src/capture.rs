@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
+use katana_core::system::ProcessService;
 use std::path::Path;
-use std::process::Command;
 use std::thread;
 use std::time::Duration;
 
@@ -17,7 +17,7 @@ pub fn screenshot(process_name: &str, output: &Path) -> Result<()> {
 #[cfg(target_os = "macos")]
 fn capture_macos(process_name: &str, output: &Path) -> Result<()> {
     let window_id = wait_for_window_id_macos(process_name, 10)?;
-    let status = Command::new("screencapture")
+    let status = ProcessService::create_command("screencapture")
         .args(["-l", &window_id.to_string(), &output.display().to_string()])
         .status()?;
     anyhow::ensure!(status.success(), "screencapture exited with {status}");
@@ -32,12 +32,12 @@ fn capture_macos(_process_name: &str, _output: &Path) -> Result<()> {
 #[cfg(target_os = "linux")]
 fn capture_linux(output: &Path) -> Result<()> {
     if which("scrot") {
-        let status = Command::new("scrot")
+        let status = ProcessService::create_command("scrot")
             .args(["--focused", &output.display().to_string()])
             .status()?;
         anyhow::ensure!(status.success(), "scrot exited with {status}");
     } else if which("import") {
-        let status = Command::new("import")
+        let status = ProcessService::create_command("import")
             .args(["-window", "root", &output.display().to_string()])
             .status()?;
         anyhow::ensure!(status.success(), "import exited with {status}");
@@ -54,7 +54,10 @@ fn capture_linux(_output: &Path) -> Result<()> {
 
 #[cfg(target_os = "linux")]
 fn which(cmd: &str) -> bool {
-    Command::new("which").arg(cmd).output().map_or(false, |o| o.status.success())
+    ProcessService::create_command("which")
+        .arg(cmd)
+        .output()
+        .map_or(false, |o| o.status.success())
 }
 
 fn wait_for_window_id_macos(process_name: &str, timeout_secs: u64) -> Result<u64> {
@@ -87,7 +90,11 @@ for w in wl:
             break
 "#
     );
-    let out = Command::new("python3").arg("-c").arg(&script).output().ok()?;
+    let out = ProcessService::create_command("python3")
+        .arg("-c")
+        .arg(&script)
+        .output()
+        .ok()?;
     if !out.status.success() {
         return None;
     }

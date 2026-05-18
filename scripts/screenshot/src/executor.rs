@@ -1,7 +1,8 @@
 use crate::{capture, request::Step};
 use anyhow::{bail, Result};
+use katana_core::system::ProcessService;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command};
+use std::process::Child;
 use std::thread;
 use std::time::Duration;
 
@@ -25,7 +26,7 @@ impl Session {
     }
 
     pub fn launch(&mut self, viewport: Option<(u32, u32)>, wait_secs: f64) -> Result<()> {
-        let mut cmd = Command::new(&self.binary);
+        let mut cmd = ProcessService::create_command(self.binary.to_str().unwrap_or(""));
         cmd.env("HOME", &self.home_dir);
 
         let config_dir = if cfg!(target_os = "macos") {

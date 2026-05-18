@@ -6,9 +6,10 @@ use katana_linter::rules::domains::theme::{
     HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps,
 };
 use katana_linter::rules::{
-    FontNormalizationOps, ForegroundSurfaceOps, GlobalMenuParityOps, ReleaseScriptOps,
+    FontNormalizationOps, ForegroundSurfaceOps, GlobalMenuParityOps, ProcessCommandOps,
+    ReleaseScriptOps,
 };
-use katana_linter::utils::{LinterFileOps, ViolationReporterOps};
+use katana_linter::utils::{LinterFileOps, LinterParserOps, ViolationReporterOps};
 use std::sync::{LazyLock, Mutex};
 
 static KAL_CURRENT_DIR_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
@@ -41,6 +42,20 @@ fn target_crates(root: &std::path::Path) -> Vec<std::path::PathBuf> {
         root.join("crates/katana-platform/tests"),
         root.join("crates/katana-ui/src"),
         root.join("crates/katana-ui/tests"),
+    ]
+}
+
+/* WHY: Headless-process enforcement must cover every path that can spawn an OS process,
+ * including supplementary script crates that live outside the primary `crates/katana-*` tree.
+ * Build scripts are scanned separately by `ast_linter_no_direct_process_command_in_build_scripts`
+ * because they live at `crates/<name>/build.rs` (outside any `src/`). */
+fn headless_process_target_dirs(root: &std::path::Path) -> Vec<std::path::PathBuf> {
+    vec![
+        root.join("crates/katana-core/src"),
+        root.join("crates/katana-linter/src"),
+        root.join("crates/katana-platform/src"),
+        root.join("crates/katana-ui/src"),
+        root.join("scripts/screenshot/src"),
     ]
 }
 
@@ -269,6 +284,60 @@ fn ast_linter_shortcut_duplicates() {
         "shortcut-duplicates",
         "Fix: Duplicate shortcuts are not allowed across commands. Ensure each OS shortcut mapping in `os_commands.json` is unique.",
         &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_no_direct_process_command_in_sources() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    AstLinterOps::run(
+        "no-direct-process-command",
+        "Fix: Route every process spawn through `ProcessService::create_command` \
+         (or `create_command_visible` for the Java exception). In a build.rs, \
+         `include!(\"build_support/process.rs\")` and call `create_build_command`. \
+         Direct `std::process::Command::new` is forbidden outside the allowlisted facades.",
+        &headless_process_target_dirs(root),
+        ProcessCommandOps::lint,
+    );
+}
+
+#[test]
+fn ast_linter_no_direct_process_command_in_build_scripts() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let build_scripts = LinterFileOps::collect_build_scripts(root);
+    let mut violations: Vec<katana_linter::Violation> = Vec::new();
+    for file in &build_scripts {
+        match LinterParserOps::parse_file(file) {
+            Ok(syntax) => violations.extend(ProcessCommandOps::lint_build_script(file, &syntax)),
+            Err(errors) => violations.extend(errors),
+        }
+    }
+    ViolationReporterOps::panic(
+        "no-direct-process-command-build-scripts",
+        "Fix: A build.rs called `std::process::Command::new` directly. \
+         Add `include!(\"build_support/process.rs\")` to the build script and use \
+         `create_build_command(...)` so Windows builds do not flash a console window.",
+        &violations,
+    );
+}
+
+#[test]
+fn ast_linter_headless_process_build_scripts_are_discovered() {
+    /* WHY: Regression guard. If `collect_build_scripts` ever returns an empty list (because
+     * the walker max_depth, file name filter, or workspace layout regresses), the
+     * `ast_linter_no_direct_process_command_in_build_scripts` test would silently pass
+     * because there would be nothing to scan. This test fails fast in that case. */
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let build_scripts = LinterFileOps::collect_build_scripts(root);
+    assert!(
+        !build_scripts.is_empty(),
+        "Expected at least one build.rs in crates/*; the build-script collector regressed."
+    );
+    assert!(
+        build_scripts
+            .iter()
+            .any(|p| p.ends_with("katana-ui/build.rs")),
+        "Expected crates/katana-ui/build.rs to be discovered by collect_build_scripts."
     );
 }
 

@@ -16,7 +16,7 @@ use katana_ui::state::command_palette_providers::{
     AppCommandProvider, MarkdownContentProvider, WorkspaceFileProvider,
 };
 use std::path::{Component, Path, PathBuf};
-use std::process::Command;
+use katana_core::system::ProcessService;
 use std::time::Duration;
 use tempfile::TempDir;
 
@@ -834,7 +834,7 @@ fn maybe_capture_recording_frame(
 
 fn encode_video(recorder: &ActiveRecording, output_path: &Path) -> Result<()> {
     let input_pattern = recorder.frame_dir.path().join("frame_%06d.png");
-    let mut cmd = Command::new("ffmpeg");
+    let mut cmd = ProcessService::create_command("ffmpeg");
     cmd.arg("-y")
         .arg("-framerate")
         .arg(recorder.fps.to_string())
