@@ -174,8 +174,16 @@ mod tests {
     }
     #[test]
     fn render_diagram_drawio_returns_ok_section() {
+        /* WHY: `render_diagram` reads process-global env vars (MERMAID_JS / DRAWIO_JS /
+         * PLANTUML_JAR) that other tests in this file temporarily flip via
+         * `with_missing_renderer_assets`. Without acquiring `RENDER_ENV_LOCK`, this test
+         * can race with a sibling test that has just unset DRAWIO_JS, causing the
+         * render to flap between Image / NotInstalled and producing flaky pre-push
+         * failures. Serialise every render_diagram invocation through the same lock. */
         let xml = r#"<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>"#;
-        let section = RendererLogicOps::render_diagram(&DiagramKind::DrawIo, xml, 0);
+        let section = with_render_env_lock(|| {
+            RendererLogicOps::render_diagram(&DiagramKind::DrawIo, xml, 0)
+        });
         assert_variant!(
             section,
             RenderedSection::Image { .. }

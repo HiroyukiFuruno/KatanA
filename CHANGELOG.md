@@ -8,6 +8,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - **Windows distribution stability**: Closed the last remaining gaps where external processes spawned from build scripts and screenshot tooling could briefly flash a console window on Windows. Every process launch now routes through a sanctioned headless facade.
 - **AST Linter scan expansion**: The `no-direct-process-command` rule now also scans every `crates/<name>/build.rs` and the `scripts/screenshot/` crate. This prevents future regressions where a new `std::process::Command::new` call sneaks in outside the directories the linter previously checked.
+- **Preview-render test stabilisation**: Closed a flaky-test race where one diagram-render test could read `MERMAID_JS` / `DRAWIO_JS` / `PLANTUML_JAR` env vars that a sibling test temporarily flipped, causing intermittent "Expected Mermaid image section" failures during pre-push verification. Every `render_diagram` invocation in the preview-pane test suite now serialises through the same render-env lock.
 
 ## [0.22.21] - 2026-05-16 09:31:46 (UTC)
 
