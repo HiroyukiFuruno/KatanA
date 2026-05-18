@@ -1,16 +1,19 @@
+/* WHY: include! the build-script-only headless process helper so this build.rs can spawn
+ * processes (rustc, git) without flashing a console window on Windows. The helper duplicates
+ * the minimal CREATE_NO_WINDOW logic from `katana_core::system::ProcessService::create_command`
+ * because build scripts cannot depend on `katana-core` (would form a build-time cycle). */
+include!("build_support/process.rs");
+
 fn main() {
     println!("cargo::rustc-check-cfg=cfg(coverage)");
 
-    if let Ok(output) = std::process::Command::new("rustc")
-        .arg("--version")
-        .output()
-    {
+    if let Ok(output) = create_build_command("rustc").arg("--version").output() {
         let version = String::from_utf8_lossy(&output.stdout).trim().to_string();
         println!("cargo:rustc-env=KATANA_RUSTC_VERSION={version}");
     }
 
     let profile = std::env::var("PROFILE").unwrap_or_else(|_| "dev".to_string());
-    if let Ok(output) = std::process::Command::new("git")
+    if let Ok(output) = create_build_command("git")
         .args(["rev-parse", "--short", "HEAD"])
         .output()
     {

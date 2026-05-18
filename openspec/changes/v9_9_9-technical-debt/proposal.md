@@ -26,3 +26,30 @@ During the extraction of components from `shell_ui.rs` into the `views/` modules
 2. Decompose large UI blocks into smaller helper functions / internal sub-components.
 3. Extract inline closures into private `impl` methods where applicable to reduce nesting.
 4. Ensure no new bugs are introduced by confirming layout logic matches visual parity.
+
+---
+
+## Additional Discovery: Clippy Violations Outside the Diff
+
+While running `cargo clippy --workspace --tests -- -D warnings` during the self-review of the `enforce-headless-windows-processes` change (2026-05-18), the following pre-existing clippy violations were observed. They are unrelated to the headless-process work and are recorded here per the self-review skill's "Fix it now, or record it now. Never leave it untracked." rule.
+
+### katana-core
+
+- `crates/katana-core/src/editor/mod.rs:104` — `default_constructed_unit_structs`: `NoopSyntaxHighlighter::default()` should be replaced with the literal unit construction `NoopSyntaxHighlighter`. Inherited from commit `6d00d31a` ("refactor: align export and editor interfaces", 2026-05-04).
+
+### katana-ui
+
+- `crates/katana-ui/src/linter_bridge.rs:299` — `needless_borrow`: reference immediately dereferenced.
+- `crates/katana-ui/src/views/panels/explorer/drag.rs:239` — `needless_borrow`.
+- `crates/katana-ui/src/views/panels/toc/tests/anchor_state_tests/shared_current_and_hover_tests.rs:64` — `vec_init_then_push`: `vec![0..1]` can be a constant-len Vec.
+- `crates/katana-ui/src/shell/shell_tests.rs:1155` — `needless_update`: struct update has no effect.
+- `crates/katana-ui/tests/ui_integration_parallel.rs:65` — `clashing_extern_declarations` / module loaded twice: `crates/katana-ui/tests/integration/preview_pane/styling.rs`.
+- `crates/katana-ui/src/views/panels/problems/bulk_fixes.rs:149` — `unnecessary_clone`: replace with `std::slice::from_ref`.
+
+### scripts/screenshot
+
+- `scripts/screenshot/src/executor_harness.rs` (lines 118, 209, 413, 429, 932, 1019, etc.) — `needless_borrow` / `redundant_deref`. Pre-existing in the screenshot tooling.
+
+### Recommendation
+
+These violations were not introduced by the headless-process enforcement work and were not fixed in that PR to keep the diff focused. They should be addressed either as part of `v9_9_9-technical-debt` (after the v0.28.0 Floem migration) or as a dedicated cleanup change targeted at `cargo clippy -- -D warnings` health.

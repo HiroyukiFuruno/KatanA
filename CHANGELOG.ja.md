@@ -2,6 +2,14 @@
 
 KatanA Desktop における重要な変更点（アップデート）を記録します。
 
+## [0.22.22] - 2026-05-19 (JST)
+
+### 🔧 その他
+
+- **Windows 配布の安定性向上**: ビルドスクリプトとスクリーンショット用ツールから起動される外部プロセスで、Windows 環境において一瞬コンソールウィンドウ（console window）が表示される最後の漏れを解消しました。すべてのプロセス起動が、ヘッドレス（headless）実行を強制する公式ファサード経由に統一されています。
+- **AST Linter の検査範囲拡張**: `no-direct-process-command` ルールが、各 crate の `build.rs` と `scripts/screenshot/` 配下も検査対象に含まれるようになりました。新規に `std::process::Command::new` 呼び出しが追加された場合でも、これまで lint で見逃されていたディレクトリで再発しないようにします。
+- **プレビュー描画テストの安定化**: 図形描画テストの一部が `MERMAID_JS` / `DRAWIO_JS` / `PLANTUML_JAR` 環境変数を一時的に書き換える際、同じ環境を読み取る別テストとの race condition により pre-push 検証で「Expected Mermaid image section」エラーが断続的に発生する flaky な状態を解消しました。preview-pane テストスイート内の `render_diagram` 呼び出しは、すべて同一の render-env lock 経由で直列化されます。
+
 ## [0.22.21] - 2026-05-16 18:31:46 (JST)
 
 ### ✨ 改善
