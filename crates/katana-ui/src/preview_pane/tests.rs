@@ -181,9 +181,8 @@ mod tests {
          * render to flap between Image / NotInstalled and producing flaky pre-push
          * failures. Serialise every render_diagram invocation through the same lock. */
         let xml = r#"<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>"#;
-        let section = with_render_env_lock(|| {
-            RendererLogicOps::render_diagram(&DiagramKind::DrawIo, xml, 0)
-        });
+        let section =
+            with_render_env_lock(|| RendererLogicOps::render_diagram(&DiagramKind::DrawIo, xml, 0));
         assert_variant!(
             section,
             RenderedSection::Image { .. }
