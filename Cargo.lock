@@ -2738,7 +2738,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.22"
+version = "0.22.23"
 dependencies = [
  "anyhow",
  "base64",
@@ -2792,7 +2792,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.22"
+version = "0.22.23"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -2834,7 +2834,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.22"
+version = "0.22.23"
 dependencies = [
  "anyhow",
  "cc",
@@ -2854,7 +2854,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.22"
+version = "0.22.23"
 dependencies = [
  "accesskit",
  "anyhow",
