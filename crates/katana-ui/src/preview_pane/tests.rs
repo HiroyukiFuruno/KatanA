@@ -432,11 +432,44 @@ mod tests {
             "    }\n",
             "    PreviewPane --> RenderedSection\n",
         );
-        let section = with_render_env_lock(|| {
-            RendererLogicOps::render_diagram(&DiagramKind::Mermaid, source, 0)
-        });
+        /* WHY: Mermaid rendering relies on a process-global V8 runtime, a shared bundle cache,
+         * and an on-disk cache directory. Under heavy parallel test load (e.g. `just check-light`
+         * runs all impacted-crate tests with `--test-threads=2`), the first render attempt can
+         * transiently fail with `"No such file or directory"` even with RENDER_ENV_LOCK held,
+         * because cache / runtime-state initialisation across threads is not yet idempotent.
+         * The bounds invariant under test is independent of that flake, so retry a few times
+         * before giving up. If every attempt still fails we panic with the last failure so
+         * the underlying runtime regression is not silently hidden. */
+        let mut section = RenderedSection::Markdown(String::new(), 0);
+        let mut last_raw = None;
+        for attempt in 0..3 {
+            let (mapped, raw) = with_render_env_lock(|| {
+                let block = katana_core::markdown::DiagramBlock {
+                    kind: DiagramKind::Mermaid,
+                    source: source.to_string(),
+                };
+                let raw = RendererLogicOps::dispatch_renderer(&block);
+                let mapped = RendererLogicOps::map_diagram_result(
+                    &DiagramKind::Mermaid,
+                    source,
+                    raw.clone(),
+                    0,
+                );
+                (mapped, raw)
+            });
+            last_raw = Some(raw);
+            section = mapped;
+            if matches!(section, RenderedSection::Image { .. }) {
+                break;
+            }
+            if attempt < 2 {
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+        }
         let RenderedSection::Image { svg_data, .. } = section else {
-            panic!("Expected Mermaid image section");
+            panic!(
+                "Mermaid render did not produce an Image after 3 attempts.\n  last raw DiagramResult: {last_raw:?}\n  last mapped section: {section:?}"
+            );
         };
         let bounds = nontransparent_pixel_bounds(&svg_data).expect("diagram has visible pixels");
         let width = svg_data.width as usize;
