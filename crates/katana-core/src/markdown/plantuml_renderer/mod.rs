@@ -72,9 +72,20 @@ impl PlantUmlRendererOps {
         let themed_source = inject_theme(source, preset);
         let args = build_plantuml_args(jar);
 
-        /* WHY: Some JREs crash on AWT/Swing init when spawned from a CREATE_NO_WINDOW parent.
-         * With all stdio piped, no console window appears even without the flag. */
-        let mut child = crate::system::ProcessService::create_command_visible("java")
+        /* WHY: On Windows, KatanA is a GUI-subsystem process and `java.exe` is console-subsystem.
+         * Spawning a console-subsystem child from a GUI parent allocates a fresh console window
+         * regardless of how stdio is piped — Stdio::piped() controls handle inheritance, not
+         * console allocation. The `-Djava.awt.headless=true` arg added in build_plantuml_args
+         * prevents AWT initialisation, so applying CREATE_NO_WINDOW is now safe.
+         * We additionally prefer `javaw.exe` (GUI-subsystem Java launcher, shipped alongside
+         * `java.exe` by every standard JDK/JRE installer) so no console is ever associated
+         * with the child even in environments where CREATE_NO_WINDOW is ignored. */
+        #[cfg(windows)]
+        let program = "javaw";
+        #[cfg(not(windows))]
+        let program = "java";
+
+        let mut child = crate::system::ProcessService::create_command(program)
             .args(&args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

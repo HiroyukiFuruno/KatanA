@@ -75,11 +75,14 @@ impl ProcessCommandVisitor {
             column,
             message: "Use of `Command::new` detected. You MUST route process spawning through \
                       a sanctioned headless facade. In production code, call \
-                      `katana_core::system::ProcessService::create_command` (or \
-                      `create_command_visible` for the Java exception). In a `build.rs`, \
+                      `katana_core::system::ProcessService::create_command`. In a `build.rs`, \
                       `include!(\"build_support/process.rs\")` and call \
                       `create_build_command`. This enforces the Windows `CREATE_NO_WINDOW` \
-                      policy and prevents console windows from popping up on Windows."
+                      policy and prevents console windows from popping up on Windows. \
+                      For Java specifically, prefer the Windows GUI-subsystem `javaw` \
+                      launcher together with `create_command` instead of bypassing the \
+                      flag — `Stdio::piped()` does not suppress console allocation when a \
+                      GUI parent spawns a console-subsystem child."
                 .to_string(),
         });
     }

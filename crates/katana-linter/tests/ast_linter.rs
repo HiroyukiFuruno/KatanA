@@ -292,10 +292,12 @@ fn ast_linter_no_direct_process_command_in_sources() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
     AstLinterOps::run(
         "no-direct-process-command",
-        "Fix: Route every process spawn through `ProcessService::create_command` \
-         (or `create_command_visible` for the Java exception). In a build.rs, \
-         `include!(\"build_support/process.rs\")` and call `create_build_command`. \
-         Direct `std::process::Command::new` is forbidden outside the allowlisted facades.",
+        "Fix: Route every process spawn through `ProcessService::create_command`. \
+         In a build.rs, `include!(\"build_support/process.rs\")` and call `create_build_command`. \
+         Direct `std::process::Command::new` is forbidden outside the allowlisted facades. \
+         For Java on Windows, use the GUI-subsystem `javaw` launcher with `create_command` — \
+         `Stdio::piped()` does not suppress console allocation when a GUI parent spawns a \
+         console-subsystem child.",
         &headless_process_target_dirs(root),
         ProcessCommandOps::lint,
     );
