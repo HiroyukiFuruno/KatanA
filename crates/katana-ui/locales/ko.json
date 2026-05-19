@@ -26,6 +26,7 @@
     "demo": "데모",
     "welcome_screen": "환영 화면",
     "user_guide": "사용자 가이드",
+    "language_auto": "자동 (OS 설정 따름)",
     "language_en": "영어",
     "language_ja": "일본어",
     "language_zh_cn": "중국어 (간체)",

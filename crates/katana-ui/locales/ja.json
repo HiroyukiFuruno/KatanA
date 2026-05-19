@@ -26,6 +26,7 @@
     "demo": "デモ・機能紹介を見る",
     "welcome_screen": "ようこそ画面",
     "user_guide": "ユーザーガイド",
+    "language_auto": "自動 (OS に追従)",
     "language_en": "英語",
     "language_ja": "日本語",
     "language_zh_cn": "中国語 (簡体字)",

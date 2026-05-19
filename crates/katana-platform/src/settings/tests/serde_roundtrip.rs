@@ -74,7 +74,7 @@ fn test_app_settings_serde_missing_fields_use_defaults() {
     let loaded: AppSettings = serde_json::from_str(json).unwrap();
     assert_eq!(loaded.theme.theme, "custom");
     assert!((loaded.font.size - 14.0).abs() < f32::EPSILON);
-    assert_eq!(loaded.language, "en");
+    assert_eq!(loaded.language, AUTO_LANGUAGE_CODE);
 }
 
 #[test]

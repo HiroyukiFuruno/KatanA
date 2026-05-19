@@ -28,7 +28,7 @@ impl OsLocaleOps {
     }
 
     /* WHY: Normalizes standard BCP 47 locales (e.g. en-US, zh-Hant-TW, ja-JP) into KatanA's internal subset (e.g. en, zh-TW, ja). */
-    pub(crate) fn resolve_locale_to_lang(locale: &str) -> String {
+    pub fn resolve_locale_to_lang(locale: &str) -> String {
         let lower = locale.to_lowercase();
 
         if lower.starts_with("zh-hans") || lower.contains("hans") || lower.starts_with("zh-cn") {

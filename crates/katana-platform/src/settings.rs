@@ -6,7 +6,9 @@ pub mod repository;
 pub mod service;
 pub mod types;
 
-pub use defaults::{DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH, SettingsDefaultOps};
+pub use defaults::{
+    AUTO_LANGUAGE_CODE, DEFAULT_IGNORED_DIRECTORIES, DEFAULT_MAX_DEPTH, SettingsDefaultOps,
+};
 pub use repository::{InMemoryRepository, JsonFileRepository, SettingsRepository};
 pub use service::SettingsService;
 pub use types::*;

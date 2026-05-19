@@ -4,6 +4,7 @@ use crate::settings::*;
 
 mod diff_mode;
 mod editor;
+mod general;
 mod ingest;
 mod performance;
 
@@ -13,6 +14,11 @@ impl BehaviorTabOps {
         state: &mut crate::app_state::AppState,
     ) -> Option<AppAction> {
         let behavior_msgs = &crate::i18n::I18nOps::get().settings.behavior;
+        if let Some(action) = general::BehaviorGeneralOps::render(ui, state) {
+            return Some(action);
+        }
+        ui.add_space(SUBSECTION_SPACING);
+
         ui.label(egui::RichText::new(&behavior_msgs.editor_behavior_section_title).strong());
         ui.add_space(SETTINGS_TOGGLE_SPACING);
         ui.indent("behavior_editor_settings_body", |ui| {

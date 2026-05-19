@@ -26,6 +26,7 @@
     "demo": "演示",
     "welcome_screen": "欢迎屏幕",
     "user_guide": "用户指南",
+    "language_auto": "自动 (跟随系统)",
     "language_en": "英语",
     "language_ja": "日语",
     "language_zh_cn": "中文 (简体)",
