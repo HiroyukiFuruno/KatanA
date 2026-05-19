@@ -21,6 +21,8 @@ pub struct MenuMessages {
     pub release_notes: String,
     pub view: String,
     pub command_palette: String,
+    #[serde(default = "default_menu_language_auto")]
+    pub language_auto: String,
     pub language_en: String,
     pub language_ja: String,
     pub language_zh_cn: String,
@@ -57,6 +59,10 @@ fn default_menu_zoom_in() -> String {
 
 fn default_menu_zoom_out() -> String {
     "Zoom Out".to_string()
+}
+
+fn default_menu_language_auto() -> String {
+    "Auto (Follow OS)".to_string()
 }
 
 fn default_menu_demo() -> String {

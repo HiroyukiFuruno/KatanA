@@ -26,6 +26,7 @@
     "demo": "Demo",
     "welcome_screen": "Welcome Screen",
     "user_guide": "User Guide",
+    "language_auto": "Auto (Follow OS)",
     "language_en": "English",
     "language_ja": "Japanese",
     "language_zh_cn": "Chinese (Simplified)",

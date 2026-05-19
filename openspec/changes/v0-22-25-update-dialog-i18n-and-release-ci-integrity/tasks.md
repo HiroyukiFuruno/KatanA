@@ -62,13 +62,24 @@ D. 更新確認 dialog の error 詳細部分が i18n 化されておらず、`u
 
 ### C. OS-follow locale mode
 
-- [ ] C-1. `SettingsDefaultOps::default_language` を `"en"` → `"auto"` に変更。
-- [ ] C-2. `SettingsService::resolve_effective_language(detector: impl FnOnce() -> Option<String>) -> String` を新設。"auto" → OS locale → "en" の優先順位で評価する。
-- [ ] C-3. `apply_os_default_language` を「first_launch 時に保存値を `"auto"` にする」だけに簡素化。OS 言語の即時保存は行わない。
-- [ ] C-4. 全 caller を `resolve_effective_language` 経由に切り替え (`global_menu_context.rs`, i18n bundle ロード経路, 等)。
-- [ ] C-5. 設定 UI (`crates/katana-ui/src/settings/tabs/general.rs` 付近) の Language dropdown 先頭に "Auto" を追加。各 locale JSON に label を追加。
-- [ ] C-6. Migration test: 既存 `language: "ja"` の repository が `resolve_effective_language` で `"ja"` を返すこと (沈黙の置換が起きないこと) を保証。
-- [ ] C-7. "auto" + OS locale が `ja-JP`/`en-US`/unknown の 3 ケースで期待値を返すユニットテスト。
+- [x] C-1. `SettingsDefaultOps::default_language` を `"en"` → `"auto"` に変更。
+- [x] C-2. `SettingsService::resolve_effective_language(detector: impl FnOnce() -> Option<String>) -> String` を新設。"auto" → OS locale → "en" の優先順位で評価する。
+- [x] C-3. `apply_os_default_language` を「first_launch 時に保存値を `"auto"` にする」だけに簡素化。OS 言語の即時保存は行わない。
+- [x] C-4. 全 caller を `resolve_effective_language` 経由に切り替え (`global_menu_context.rs`, i18n bundle ロード経路, 等)。
+- [x] C-5. 設定 UI (`crates/katana-ui/src/settings/tabs/general.rs` 付近) の Language dropdown 先頭に "Auto" を追加。各 locale JSON に label を追加。
+- [x] C-6. Migration test: 既存 `language: "ja"` の repository が `resolve_effective_language` で `"ja"` を返すこと (沈黙の置換が起きないこと) を保証。
+- [x] C-7. "auto" + OS locale が `ja-JP`/`en-US`/unknown の 3 ケースで期待値を返すユニットテスト。
+
+#### C verification
+
+- [x] `cargo test -p katana-platform settings` が通過。
+- [x] `cargo test -p katana-platform test_resolve_effective_language --lib` が通過。
+- [x] `cargo test -p katana-platform test_apply_os_default_language --lib` が通過。
+- [x] `cargo check -p katana-ui` が通過。
+- [x] `cargo test -p katana-ui all_locale_files_deserialize_to_strong_struct` が通過。
+- [x] `cargo test -p katana-ui test_persistence_language_roundtrip` が通過。
+- [x] `cargo test -p katana-ui i18n::logic::tests::set_language_with_unknown_code_does_not_panic --lib -- --test-threads=1` が通過。
+- [x] `cargo clippy -p katana-platform -p katana-ui --lib -- -D warnings` が通過。
 
 ### D. Update-check error i18n
 

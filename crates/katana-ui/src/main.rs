@@ -55,9 +55,10 @@ fn main() -> eframe::Result<()> {
     let mut settings = SettingsService::new(Box::new(repo));
 
     settings.apply_os_default_theme();
-    settings.apply_os_default_language(katana_platform::OsLocaleOps::get_default_language());
+    settings.apply_os_default_language();
 
-    let saved_language = settings.settings().language.clone();
+    let runtime_language =
+        settings.resolve_effective_language(katana_platform::OsLocaleOps::get_default_language);
     let saved_icon_pack = settings.settings().theme.icon_pack.clone();
     let saved_icon_settings = settings.settings().icon.clone();
 
@@ -98,7 +99,7 @@ fn main() -> eframe::Result<()> {
                 );
             }
 
-            katana_ui::i18n::I18nOps::set_language(&saved_language);
+            katana_ui::i18n::I18nOps::set_language(&runtime_language);
             katana_ui::shell_ui::ShellUiOps::update_native_menu_strings_from_i18n();
 
             let mut app = KatanaApp::new(state);
