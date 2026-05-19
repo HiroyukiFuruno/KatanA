@@ -6,12 +6,11 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
-- **Windows console window suppression**: Fixed the lingering console window that briefly appeared on Windows when KatanA launched the PlantUML renderer (notably on startup if the opened document contains a PlantUML block). The renderer now uses the GUI-subsystem `javaw.exe` together with the `CREATE_NO_WINDOW` flag so no console is ever associated with the Java child process.
+- **Windows console window suppression**: Fixed the lingering console window that briefly appeared on Windows when KatanA launched the PlantUML renderer (notably on startup if the opened document contains a PlantUML block). The renderer now spawns `java.exe` through the centralised `CREATE_NO_WINDOW` facade so no console window is ever allocated for the Java child process.
 
 ### 🔧 System
 
-- **Headless facade hardening**: Removed the `create_command_visible` escape hatch in the process facade — every Windows process launch from KatanA now goes through the `CREATE_NO_WINDOW` enforced path, and the AST linter message reflects the canonical guidance (use `javaw` + `create_command` for Java).
-- **Mermaid render test stabilisation**: Closed a flaky pre-push failure where the Mermaid raster-bounds test could transiently fail under parallel test load due to a race in the shared Mermaid V8 runtime / cache initialisation. The test now retries a few times and surfaces the underlying failure if every attempt still fails.
+- **Headless facade hardening**: Removed the `create_command_visible` escape hatch in the process facade — every Windows process launch from KatanA now goes through the `CREATE_NO_WINDOW` enforced path, and the AST linter message reflects the canonical guidance (use `ProcessService::create_command` for every external process, including Java).
 
 ## [0.22.22] - 2026-05-18 (UTC)
 
