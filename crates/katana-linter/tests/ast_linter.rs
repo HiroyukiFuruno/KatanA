@@ -116,10 +116,21 @@ fn ast_linter_changelog_contains_current_workspace_version() {
 #[test]
 fn ast_linter_windows_msi_packaging_uses_current_version() {
     let root = LinterFileOps::workspace_root().expect("Test requirement");
-    let all_violations = ReleaseScriptOps::lint(root);
+    let all_violations = ReleaseScriptOps::lint_windows_msi_packaging(root);
     ViolationReporterOps::panic(
         "release-script-windows-msi-version",
         "Fix: Windows packaging must remove stale MSI files and copy only the MSI matching the current Cargo version.",
+        &all_violations,
+    );
+}
+
+#[test]
+fn ast_linter_release_automation_has_no_ci_bypass_markers() {
+    let root = LinterFileOps::workspace_root().expect("Test requirement");
+    let all_violations = ReleaseScriptOps::lint_ci_integrity(root);
+    ViolationReporterOps::panic(
+        "no-skip-ci-marker",
+        "Fix: release-ci-integrity forbids CI bypass markers in scripts/release/** and .github/workflows/**.",
         &all_violations,
     );
 }
