@@ -21,3 +21,4 @@ pub use domains::release_scripts::ReleaseScriptOps;
 pub use domains::shortcut::ShortcutOps;
 pub use domains::theme::{HardcodedColorOps, ThemeBuilderOps, UnusedThemeColorOps};
 pub use domains::ui::{ForegroundSurfaceOps, GlobalMenuParityOps};
+pub use domains::update_check::UpdateCheckOps;

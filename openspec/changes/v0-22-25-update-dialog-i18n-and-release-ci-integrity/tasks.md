@@ -83,19 +83,35 @@ D. 更新確認 dialog の error 詳細部分が i18n 化されておらず、`u
 
 ### D. Update-check error i18n
 
-- [ ] D-1. `katana_core::update` 配下に `CheckUpdateError` enum を定義 (`NetworkUnreachable / NetworkTimedOut / ServerStatus(u16) / ProxyFailed / InvalidPayload / Other(String)`)。
-- [ ] D-2. `ReleaseClient::fetch_latest_release` の戻り型を `Result<Option<LatestRelease>, CheckUpdateError>` に変更し、ureq の error variant から `CheckUpdateError` への from 実装を追加。既存の anyhow::Error 経路は `From<CheckUpdateError> for anyhow::Error` で互換維持。
-- [ ] D-3. `UpdateOps::check_for_updates_simple` の error 型を `String` から `CheckUpdateError` に変更し、`crates/katana-ui/src/app/update.rs` の `update_rx` / `state.update.check_error` の型をそれに合わせる。
-- [ ] D-4. `views/modals/update/mod.rs` の error 表示部分を、`CheckUpdateError::i18n_key()` で i18n bundle を引いて localize された phrase を返す形に変更する。`ServerStatus(code)` のような param はプレースホルダ置換 (`{status}`)。
-- [ ] D-5. 10 言語の `crates/katana-ui/locales/*.json` に以下キーを追加:
+- [x] D-1. `katana_core::update` 配下に `CheckUpdateError` enum を定義 (`NetworkUnreachable / NetworkTimedOut / ServerStatus(u16) / ProxyFailed / InvalidPayload / Other(String)`)。
+- [x] D-2. `ReleaseClient::fetch_latest_release` の戻り型を `Result<Option<LatestRelease>, CheckUpdateError>` に変更し、ureq の error variant から `CheckUpdateError` への from 実装を追加。既存の anyhow::Error 経路は `From<CheckUpdateError> for anyhow::Error` で互換維持。
+- [x] D-3. `UpdateOps::check_for_updates_simple` の error 型を `String` から `CheckUpdateError` に変更し、`crates/katana-ui/src/app/update.rs` の `update_rx` / `state.update.check_error` の型をそれに合わせる。
+- [x] D-4. `views/modals/update/mod.rs` の error 表示部分を、`CheckUpdateError::i18n_key()` で i18n bundle を引いて localize された phrase を返す形に変更する。`ServerStatus(code)` のような param はプレースホルダ置換 (`{status}`)。
+- [x] D-5. 10 言語の `crates/katana-ui/locales/*.json` に以下キーを追加:
   - `update_check_error_network_unreachable`
   - `update_check_error_network_timed_out`
   - `update_check_error_server_status`
   - `update_check_error_proxy_failed`
   - `update_check_error_invalid_payload`
   - `update_check_error_unknown`
-- [ ] D-6. AST linter 新 rule `no-raw-update-check-error-display` を実装。`views/modals/update/**.rs` をスキャンし `state.update.check_error` の値が i18n bundle を経由せず直接表示されているケースを違反として報告。
-- [ ] D-7. integration test: 各 variant に対して dialog text が **当該 locale の文言**になることを保証。
+- [x] D-6. AST linter 新 rule `no-raw-update-check-error-display` を実装。`views/modals/update/**.rs` をスキャンし `state.update.check_error` の値が i18n bundle を経由せず直接表示されているケースを違反として報告。
+- [x] D-7. integration test: 各 variant に対して dialog text が **当該 locale の文言**になることを保証。
+
+#### D verification
+
+- [x] `cargo check -p katana-core -p katana-ui -p katana-linter` が通過。
+- [x] `cargo test -p katana-core update --lib` が通過。
+- [x] `cargo test -p katana-core fetch_latest_release --lib` が通過。
+- [x] `cargo test -p katana-ui all_locale_files_deserialize_to_strong_struct` が通過。
+- [x] `cargo test -p katana-ui localizes_all_non_status_variants --lib` が通過。
+- [x] `cargo test -p katana-ui localizes_server_status_with_placeholder --lib` が通過。
+- [x] `cargo test -p katana-ui localizes_network_error_in_japanese --lib` が通過。
+- [x] `cargo test -p katana-ui unknown_error_uses_localized_phrase_without_raw_detail --lib` が通過。
+- [x] `cargo test -p katana-ui test_update_check_error_action --lib` が通過。
+- [x] `cargo test -p katana-linter update_check --lib` が通過。
+- [x] `cargo test -p katana-linter --test ast_linter ast_linter_update_check_error_display_is_localized` が通過。
+- [x] `cargo test -p katana-linter --test ast_linter ast_linter_shared_kal_rules` が通過。
+- [x] `cargo clippy -p katana-core -p katana-ui -p katana-linter --lib -- -D warnings` が通過。
 
 ### E. CHANGELOG and release artifacts
 

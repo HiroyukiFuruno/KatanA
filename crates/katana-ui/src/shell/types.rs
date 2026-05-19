@@ -38,8 +38,11 @@ pub struct KatanaApp {
     pub(crate) download_rx: Option<std::sync::mpsc::Receiver<Result<(), String>>>,
     pub(crate) active_download: Option<crate::preview_pane::DownloadRequest>,
     pub(crate) explorer_rx: Option<std::sync::mpsc::Receiver<ExplorerLoadMessage>>,
-    pub(crate) update_rx:
-        Option<std::sync::mpsc::Receiver<Result<Option<katana_core::update::ReleaseInfo>, String>>>,
+    pub(crate) update_rx: Option<
+        std::sync::mpsc::Receiver<
+            Result<Option<katana_core::update::ReleaseInfo>, katana_core::update::CheckUpdateError>,
+        >,
+    >,
     pub(crate) changelog_rx: Option<std::sync::mpsc::Receiver<crate::changelog::ChangelogEvent>>,
     pub(crate) update_install_rx: Option<std::sync::mpsc::Receiver<UpdateInstallEvent>>,
     pub(crate) export_tasks: Vec<ExportTask>,
