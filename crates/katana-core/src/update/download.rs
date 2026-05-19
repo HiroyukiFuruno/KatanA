@@ -148,6 +148,9 @@ mod tests {
 
     #[test]
     fn test_download_update() {
+        let proxy_env = crate::update::proxy_env_test::ProxyEnvGuard::capture();
+        proxy_env.clear_proxy_env();
+
         use std::io::Write;
         use std::net::TcpListener;
         use std::thread;

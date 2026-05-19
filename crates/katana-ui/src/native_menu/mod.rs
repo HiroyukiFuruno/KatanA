@@ -6,6 +6,7 @@ mod ffi {
     pub const TAG_OPEN_WORKSPACE: i32 = 1;
     pub const TAG_SAVE: i32 = 2;
     pub const TAG_OPEN_FILE: i32 = 21;
+    pub const TAG_LANG_AUTO: i32 = 38;
     pub const TAG_LANG_EN: i32 = 3;
     pub const TAG_LANG_JA: i32 = 4;
     pub const TAG_ABOUT: i32 = 5;
@@ -139,6 +140,9 @@ impl NativeMenuOps {
             ffi::TAG_OPEN_WORKSPACE => AppAction::PickOpenWorkspace,
             ffi::TAG_OPEN_FILE => AppAction::PickOpenFileInCurrentWorkspace,
             ffi::TAG_SAVE => AppAction::SaveDocument,
+            ffi::TAG_LANG_AUTO => {
+                AppAction::ChangeLanguage(katana_platform::settings::AUTO_LANGUAGE_CODE.to_string())
+            }
             ffi::TAG_LANG_EN => AppAction::ChangeLanguage("en".to_string()),
             ffi::TAG_LANG_JA => AppAction::ChangeLanguage("ja".to_string()),
             ffi::TAG_LANG_ZH_CN => AppAction::ChangeLanguage("zh-CN".to_string()),

@@ -3,7 +3,7 @@
 `SettingsService` handles reading and writing settings via the repository,
 and manages OS integration (theme, language) on first launch. */
 
-use super::defaults::SettingsDefaultOps;
+use super::defaults::{AUTO_LANGUAGE_CODE, SettingsDefaultOps};
 use super::repository::{InMemoryRepository, SettingsRepository};
 use super::types::{AppSettings, SettingsLoadOrigin};
 
@@ -54,14 +54,27 @@ impl SettingsService {
         self.settings.theme.theme = preset.colors().mode.to_theme_string();
     }
 
-    /* WHY: Applies the OS-default language on first launch. */
-    pub fn apply_os_default_language(&mut self, detected_lang: Option<String>) {
+    /* WHY: Stores auto-follow language mode on first launch. */
+    pub fn apply_os_default_language(&mut self) {
         if !self.is_first_launch {
             return;
         }
-        if let Some(lang) = detected_lang {
-            self.settings.language = lang;
+        self.settings.language = SettingsDefaultOps::default_language();
+    }
+
+    pub fn resolve_effective_language(&self, detector: impl FnOnce() -> Option<String>) -> String {
+        let saved = self.settings.language.trim();
+        if !Self::is_auto_language(saved) {
+            return saved.to_string();
         }
+
+        detector()
+            .map(|locale| crate::OsLocaleOps::resolve_locale_to_lang(&locale))
+            .unwrap_or_else(SettingsDefaultOps::fallback_language)
+    }
+
+    fn is_auto_language(language: &str) -> bool {
+        language.is_empty() || language == AUTO_LANGUAGE_CODE
     }
 
     /* WHY: Load structured workspace state (e.g. tabs, pins) from the config directory. */
@@ -128,8 +141,11 @@ mod tests {
         let mut service = SettingsService::new(repo);
         assert!(service.is_first_launch);
 
-        service.apply_os_default_language(Some("fr".to_string()));
-        assert_eq!(service.settings().language, "fr");
+        service.apply_os_default_language();
+        assert_eq!(
+            service.settings().language,
+            SettingsDefaultOps::default_language()
+        );
     }
 
     #[test]
@@ -143,7 +159,7 @@ mod tests {
 
         assert!(!service.is_first_launch);
 
-        service.apply_os_default_language(Some("fr".to_string()));
+        service.apply_os_default_language();
         /* WHY: Existing user shouldn't be overridden */
         assert_eq!(service.settings().language, "ja");
     }

@@ -1,11 +1,15 @@
 pub mod cleanup;
 pub mod download;
+pub mod error;
 pub mod installer;
+#[cfg(test)]
+mod proxy_env_test;
 mod release_client;
 pub mod scripts;
 pub mod types;
 pub mod version;
 
+pub use error::*;
 pub use types::*;
 
 /// Default interval between automatic update checks (6 hours).

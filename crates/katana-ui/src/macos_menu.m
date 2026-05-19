@@ -9,6 +9,7 @@ enum {
     TAG_OPEN_WORKSPACE = 1,
     TAG_SAVE           = 2,
     TAG_OPEN_FILE      = 21,
+    TAG_LANG_AUTO      = 38,
     TAG_LANG_EN        = 3,
     TAG_LANG_JA        = 4,
     TAG_ABOUT          = 5,
@@ -473,6 +474,14 @@ void katana_setup_native_menu(void) {
     /* WHY: --- Settings > Language --- */
     NSMenu *langMenu = [[NSMenu alloc] initWithTitle:@"Language"];
     g_language_menu = langMenu;
+
+    NSMenuItem *autoItem = [[NSMenuItem alloc]
+        initWithTitle:@"Auto"
+        action:action
+        keyEquivalent:@""];
+    [autoItem setTarget:g_target];
+    [autoItem setTag:TAG_LANG_AUTO];
+    [langMenu addItem:autoItem];
 
     NSMenuItem *enItem = [[NSMenuItem alloc]
         initWithTitle:@"English"

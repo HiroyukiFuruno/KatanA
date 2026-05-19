@@ -42,8 +42,7 @@ impl UpdateOps for KatanaApp {
         self.update_rx = Some(rx);
         std::thread::spawn(move || {
             let result =
-                katana_core::update::UpdateOps::check_for_updates_simple(env!("CARGO_PKG_VERSION"))
-                    .map_err(|e| e.to_string());
+                katana_core::update::UpdateOps::check_for_updates_simple(env!("CARGO_PKG_VERSION"));
             let _ = tx.send(result);
         });
     }
@@ -114,7 +113,8 @@ impl UpdateOps for KatanaApp {
                 UpdateInstallEvent::Finished(Err(err)) => {
                     self.state.update.checking = false;
                     self.state.update.phase = None;
-                    self.state.update.check_error = Some(err);
+                    self.state.update.check_error =
+                        Some(katana_core::update::CheckUpdateError::Other(err));
                     self.show_update_dialog = true;
                     self.update_install_rx = None;
                     ctx.request_repaint();

@@ -18,7 +18,9 @@ header() { printf "\n${BOLD}${CYAN}==> %s${RESET}\n" "$*"; }
 
 # Expected version from argument
 EXPECTED_VERSION=${1:-}
+HAS_EXPECTED_VERSION=false
 if [[ -n "$EXPECTED_VERSION" ]]; then
+    HAS_EXPECTED_VERSION=true
     EXPECTED_VERSION="${EXPECTED_VERSION#v}" # Strip leading v
 fi
 
@@ -26,7 +28,7 @@ fi
 is_ci() { [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; }
 
 RELEASE_BRANCH_PATTERN='^release/v([0-9]+\.[0-9]+\.[0-9]+)(-[A-Za-z0-9][A-Za-z0-9._-]*)?$'
-TASK_BRANCH_PATTERN='^release/v[0-9]+\.[0-9]+\.[0-9]+-task-[0-9]+(-fix)?$'
+TASK_BRANCH_PATTERN='^release/v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9][A-Za-z0-9._-]*)?-task-?[0-9A-Za-z]+(-fix)?$'
 
 # 1. Check for uncommitted changes (Local only)
 if ! is_ci; then
@@ -59,12 +61,18 @@ if [[ -n "$EXPECTED_VERSION" ]]; then
     TARGET_VERSION="$EXPECTED_VERSION"
     info "Target version set by argument: v${TARGET_VERSION}"
 elif [[ "$CURRENT_BRANCH" =~ $RELEASE_BRANCH_PATTERN ]]; then
-    # タスク用ブランチでは最終リリース準備まで Cargo.toml の version を上げない。
+    # Task branches do not bump Cargo.toml until final release preparation.
     if [[ "$CURRENT_BRANCH" =~ $TASK_BRANCH_PATTERN ]]; then
         success "Task branch detected (${CURRENT_BRANCH}). Skipping final PR readiness checks."
         exit 0
     fi
     TARGET_VERSION="${match[1]}"
+    if [[ "$HAS_EXPECTED_VERSION" == "false" && ! is_ci && "$CUR_VERSION" != "$TARGET_VERSION" ]]; then
+        warn "Release integration branch detected before final release preparation."
+        warn "Skipping final PR readiness checks until an explicit version is provided."
+        info "Run ./scripts/release/check-pr-ready.sh ${TARGET_VERSION} after release prep."
+        exit 0
+    fi
     info "Target version detected from branch: v${TARGET_VERSION}"
 else
     TARGET_VERSION="$CUR_VERSION"

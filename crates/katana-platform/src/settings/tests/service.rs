@@ -64,23 +64,51 @@ fn test_apply_os_default_theme_on_first_launch_picks_katana_preset() {
 fn test_apply_os_default_language_is_noop_for_existing_users() {
     let mut service = SettingsService::new(Box::new(InMemoryRepository));
     service.settings_mut().language = "ja".to_string();
-    service.apply_os_default_language(Some("fr".to_string()));
+    service.apply_os_default_language();
     assert_eq!(service.settings().language, "ja");
 
-    service.apply_os_default_language(None);
+    service.apply_os_default_language();
     assert_eq!(service.settings().language, "ja");
 }
 
 #[test]
-fn test_apply_os_default_language_updates_on_first_launch() {
+fn test_apply_os_default_language_sets_auto_on_first_launch() {
     let repo = FirstLaunchRepo {
         preset: ThemePreset::KatanaDark,
     };
     let mut service = SettingsService::new(Box::new(repo));
 
-    service.apply_os_default_language(None);
-    assert_eq!(service.settings().language, "en");
+    service.apply_os_default_language();
+    assert_eq!(service.settings().language, AUTO_LANGUAGE_CODE);
+}
 
-    service.apply_os_default_language(Some("fr".to_string()));
-    assert_eq!(service.settings().language, "fr");
+#[test]
+fn test_resolve_effective_language_uses_os_locale_for_auto() {
+    let mut service = SettingsService::default();
+    service.settings_mut().language = AUTO_LANGUAGE_CODE.to_string();
+
+    assert_eq!(
+        service.resolve_effective_language(|| Some("ja-JP".to_string())),
+        "ja"
+    );
+    assert_eq!(
+        service.resolve_effective_language(|| Some("en-US".to_string())),
+        "en"
+    );
+    assert_eq!(
+        service.resolve_effective_language(|| Some("unknown".to_string())),
+        "en"
+    );
+    assert_eq!(service.resolve_effective_language(|| None), "en");
+}
+
+#[test]
+fn test_resolve_effective_language_preserves_existing_japanese_language() {
+    let mut service = SettingsService::default();
+    service.settings_mut().language = "ja".to_string();
+
+    assert_eq!(
+        service.resolve_effective_language(|| Some("en-US".to_string())),
+        "ja"
+    );
 }

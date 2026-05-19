@@ -1520,13 +1520,17 @@ mod tests_extra {
         let mut app = setup_test_app();
         app.state.update.checking = true;
         let (tx, rx) = std::sync::mpsc::channel();
-        tx.send(Err("Network failure".to_string())).unwrap();
+        tx.send(Err(katana_core::update::CheckUpdateError::NetworkUnreachable))
+            .unwrap();
         app.update_rx = Some(rx);
 
         let ctx = eframe::egui::Context::default();
         app.poll_update_check(&ctx);
 
-        assert_eq!(app.state.update.check_error.unwrap(), "Network failure");
+        assert_eq!(
+            app.state.update.check_error.unwrap(),
+            katana_core::update::CheckUpdateError::NetworkUnreachable
+        );
         assert!(app.update_rx.is_none());
     }
 
@@ -1534,8 +1538,9 @@ mod tests_extra {
     fn test_update_check_channel_closed() {
         let mut app = setup_test_app();
         app.state.update.checking = true;
-        let (tx, rx) =
-            std::sync::mpsc::channel::<Result<Option<katana_core::update::ReleaseInfo>, String>>();
+        let (tx, rx) = std::sync::mpsc::channel::<
+            Result<Option<katana_core::update::ReleaseInfo>, katana_core::update::CheckUpdateError>,
+        >();
         /* WHY: cause Err(RecvError) or Disconnected */
         drop(tx);
         app.update_rx = Some(rx);

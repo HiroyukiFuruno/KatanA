@@ -1,4 +1,4 @@
-use katana_core::update::ReleaseInfo;
+use katana_core::update::{CheckUpdateError, ReleaseInfo};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum UpdatePhase {
@@ -11,7 +11,7 @@ pub struct UpdateState {
     pub available: Option<ReleaseInfo>,
     pub checking: bool,
     pub phase: Option<UpdatePhase>,
-    pub check_error: Option<String>,
+    pub check_error: Option<CheckUpdateError>,
 }
 
 impl Default for UpdateState {

@@ -60,7 +60,7 @@ pub struct AppSettings {
     /* WHY: Terms of service accepted version (None = not accepted). */
     #[serde(default)]
     pub terms_accepted_version: Option<String>,
-    /* WHY: UI language ("en" or "ja", etc). */
+    /* WHY: UI language mode ("auto" or an explicit language code). */
     #[serde(default = "super::super::defaults::SettingsDefaultOps::default_language")]
     pub language: String,
     /* WHY: Additional key-value settings for future use. */

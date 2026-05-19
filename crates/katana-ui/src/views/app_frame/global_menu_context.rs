@@ -79,7 +79,6 @@ impl<'a> GlobalMenuContext<'a> {
     }
 
     fn is_language_selected(&self, current: &str, code: &str) -> bool {
-        let default = katana_platform::OsLocaleOps::get_default_language();
-        current == code || (current.is_empty() && default.as_deref() == Some(code))
+        current == code
     }
 }
