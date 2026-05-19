@@ -177,7 +177,7 @@ Einstein's famous equation: $E = mc^2$
 
 ### Display Math
 
-$ \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} $$
+$$ \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} $$
 
 ---
 

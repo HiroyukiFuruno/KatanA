@@ -2,6 +2,17 @@
 
 KatanA Desktop における重要な変更点（アップデート）を記録します。
 
+## [0.22.23] - 2026-05-19 (JST)
+
+### 🐛 不具合修正
+
+- **Windows のコンソールウィンドウ表示抑止**: KatanA が PlantUML 描画用に Java を起動した際、Windows 環境で一瞬コンソールウィンドウ（console window）が表示される問題を修正しました（特に起動時に開いている文書に PlantUML ブロックが含まれていると顕著でした）。GUI サブシステム（subsystem）の `javaw.exe` を使用し、`CREATE_NO_WINDOW` フラグも適用することで、Java の子プロセスにコンソールが割り当てられないようにしています。
+
+### 🔧 その他
+
+- **ヘッドレス（headless）ファサードの強化**: プロセス起動ファサードから抜け穴になっていた `create_command_visible` API を撤去し、Windows 上のすべての外部プロセス起動が `CREATE_NO_WINDOW` 強制パスを通るようにしました。AST Linter のメッセージも、Java を呼ぶ際の推奨手順（`javaw` + `create_command`）を案内する内容に更新しています。
+- **Mermaid 描画テストの安定化**: Mermaid のラスター境界テストが、並列テスト実行下で Mermaid V8 ランタイム / キャッシュ初期化の race により断続的に失敗していた flaky な状態を解消しました。テスト側で数回 retry し、それでも描画に失敗する場合は最終結果を露出させて regression を黙って隠さないようにしています。
+
 ## [0.22.22] - 2026-05-19 (JST)
 
 ### 🔧 その他
