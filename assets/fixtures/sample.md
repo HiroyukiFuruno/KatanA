@@ -141,9 +141,9 @@ Text below
 
 1. First item
 2. Second item
-   3. Nested 2-1
-   4. Nested 2-2
-5. Third item
+   1. Nested 2-1
+   2. Nested 2-2
+3. Third item
 
 ### 3.3 Task Lists
 
@@ -216,8 +216,8 @@ features:
    ```
 
 3. Verify:
-  - Sub-item A
-  - Sub-item B
+   - Sub-item A
+   - Sub-item B
 
 ↑ Code blocks should be correctly indented within list items.
 
@@ -357,7 +357,7 @@ Mass-energy equivalence: $ E = mc^2 $
 
 ### 9.3 Single-line Math
 
-$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
+$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 
 ---
 
