@@ -45,11 +45,20 @@ D. 更新確認 dialog の error 詳細部分が i18n 化されておらず、`u
 
 ### B. release CI integrity
 
-- [ ] B-1. `scripts/release/bump-version.sh` のローカル経路と CI 経路の双方から `[skip ci]` を撤廃する。
-- [ ] B-2. 撤廃を guard する `katana-linter` の新 rule `no-skip-ci-marker` を実装。`scripts/release/**/*.sh` と `.github/workflows/**` を grep ベースで検査。
-- [ ] B-3. ast_linter.rs の integration test に B-2 の rule を追加し、`[skip ci]` 文字列を含む fixture が違反扱いになることを保証。
-- [ ] B-4. Release workflow の preflight job で `git diff --name-only HEAD~1` を検査し、`Cargo.toml` / `Cargo.lock` / `Info.plist` のいずれかが差分に含まれる場合は paths-ignore を無効化して CI を強制発火させる。
-- [ ] B-5. bump-version.sh の unit test (またはスクリプト test) で commit message が `chore: Release v${VERSION}` 形式 (skip ci 文字列なし) であることを検証する。
+- [x] B-1. `scripts/release/bump-version.sh` のローカル経路と CI 経路の双方から `[skip ci]` を撤廃する。
+- [x] B-2. 撤廃を guard する `katana-linter` の新 rule `no-skip-ci-marker` を実装。`scripts/release/**/*.sh` と `.github/workflows/**` を grep ベースで検査。
+- [x] B-3. ast_linter.rs の integration test に B-2 の rule を追加し、`[skip ci]` 文字列を含む fixture が違反扱いになることを保証。
+- [x] B-4. Release workflow の preflight job で `git diff --name-only HEAD~1` を検査し、`Cargo.toml` / `Cargo.lock` / `Info.plist` のいずれかが差分に含まれる場合は paths-ignore を無効化して CI を強制発火させる。
+- [x] B-5. bump-version.sh の unit test (またはスクリプト test) で commit message が `chore: Release v${VERSION}` 形式 (skip ci 文字列なし) であることを検証する。
+
+#### B verification
+
+- [x] `rg -n "\[skip ci\]|\[ci skip\]" scripts/release .github/workflows` が該当なし。
+- [x] `cargo test -p katana-linter release_scripts --lib` が通過。
+- [x] `cargo test -p katana-linter --test ast_linter ast_linter_release_automation_has_no_ci_bypass_markers` が通過。
+- [x] `cargo test -p katana-linter --test ast_linter ast_linter_windows_msi_packaging_uses_current_version` が通過。
+- [x] `bash -n scripts/release/bump-version.sh scripts/release/verify-version-bump-ci.sh` が通過。
+- [x] `scripts/release/check-pr-ready.sh` が task branch / release prep 前の統合ブランチでは最終 release 検査を skip することを確認。
 
 ### C. OS-follow locale mode
 
