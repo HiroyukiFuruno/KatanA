@@ -1,6 +1,5 @@
 use anyhow::Result;
 use serde::Deserialize;
-use std::io::ErrorKind;
 
 pub(super) const LATEST_RELEASE_API_URL: &str =
     "https://api.github.com/repos/HiroyukiFuruno/KatanA/releases/latest";
@@ -14,22 +13,41 @@ pub(super) struct LatestRelease {
 pub(super) struct ReleaseClient;
 
 impl ReleaseClient {
+    /* WHY: `error-first` ast-lint rule forbids `if let Ok(...) {}` success-branching,
+     * `clippy::single_match` complains that our two-arm match collapses to `if let`.
+     * The two rules are mutually exclusive here. The match form makes the
+     * "Ok → early return, Err → fall through to next strategy" intent the most
+     * legible, so silence the clippy lint locally rather than the project-wide rule. */
+    #[allow(clippy::single_match)]
     pub(super) fn fetch_latest_release(url: &str) -> Result<Option<LatestRelease>> {
-        let attempt = match Self::fetch_with_agent(url, &ureq::Agent::new_with_defaults()) {
+        /* WHY: Try direct first. ureq 3.x's `Agent::new_with_defaults()` adopts
+         * environment / system proxies automatically, which on some Windows
+         * machines points at a stale or unreachable proxy and surfaces as a
+         * "io: Connection refused" dialog at every launch even though
+         * api.github.com is reachable directly. Direct-first sidesteps that
+         * regression for users who do not need a proxy. */
+        match Self::fetch_with_agent(url, &Self::direct_agent()) {
             Ok(release) => return Ok(Some(release)),
-            Err(error) if Self::should_retry_without_proxy(&error) => {
-                Self::fetch_with_agent(url, &Self::direct_agent())
-            }
-            Err(error) => Err(error),
-        };
-        match attempt {
-            Ok(release) => Ok(Some(release)),
-            /* WHY: GitHub API rate limiting (403/429) or transient upstream denials should
-            be treated as "no update available" so the user does not see a confusing
-            failure dialog, matching the previous HTML-redirect implementation. */
-            Err(ureq::Error::StatusCode(_)) => Ok(None),
-            Err(error) => Err(error.into()),
+            Err(_) => {}
         }
+
+        /* If direct failed AND the user explicitly opted into a proxy via the
+         * standard environment variables (corporate networks, intentional
+         * traffic routing), try once more through it before giving up. */
+        if ureq::Proxy::try_from_env().is_some() {
+            match Self::fetch_with_agent(url, &ureq::Agent::new_with_defaults()) {
+                Ok(release) => return Ok(Some(release)),
+                Err(_) => {}
+            }
+        }
+
+        /* WHY: Update check is a best-effort background convenience, not a
+         * critical path. Any unresolved fetch (network refused, DNS failure,
+         * rate-limit 403/429, malformed payload) is collapsed to "no update
+         * info available right now" so the launch UI never has to show a red
+         * update-check-failed dialog. Users can still browse the GitHub
+         * Releases page manually. */
+        Ok(None)
     }
 
     fn direct_agent() -> ureq::Agent {
@@ -46,20 +64,6 @@ impl ReleaseClient {
             .body_mut()
             .read_json::<GitHubReleasePayload>()?;
         Ok(payload.into())
-    }
-
-    fn should_retry_without_proxy(error: &ureq::Error) -> bool {
-        if ureq::Proxy::try_from_env().is_none() {
-            return false;
-        }
-
-        match error {
-            ureq::Error::Io(error) => error.kind() == ErrorKind::ConnectionRefused,
-            ureq::Error::ConnectProxyFailed(message) => {
-                message.to_ascii_lowercase().contains("refused")
-            }
-            _ => false,
-        }
     }
 }
 
@@ -149,7 +153,12 @@ mod tests {
     }
 
     #[test]
-    fn fetch_latest_release_retries_direct_when_env_proxy_refuses_connection() {
+    fn fetch_latest_release_succeeds_via_direct_even_when_env_proxy_is_refusing() {
+        /* WHY: Regression guard for the v0.22.22+ Windows hang where ureq 3.x's default
+         * agent picked up an env / system proxy that pointed at an unreachable address,
+         * surfacing "io: Connection refused" to the user. Direct-first must succeed
+         * for the common case (proxy env present but unreachable, GitHub reachable
+         * directly) so the launch dialog stays clean. */
         let _guard = PROXY_ENV_MUTEX.lock().unwrap();
         let _snapshot = EnvSnapshot::capture();
         EnvSnapshot::set_refusing_proxy();
@@ -164,6 +173,53 @@ mod tests {
         assert_eq!(release.tag_name, "v9.9.9");
         assert_eq!(release.html_url, "https://example.test/release");
         assert_eq!(release.body, "notes");
+    }
+
+    #[test]
+    fn fetch_latest_release_returns_none_when_direct_connection_is_refused() {
+        /* WHY: When the server is unreachable AND no env proxy is configured,
+         * the update check must collapse to Ok(None) — never bubble a network
+         * error to the launch UI as a red update-check-failed dialog. */
+        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
+        let _snapshot = EnvSnapshot::capture();
+        EnvSnapshot::clear_proxy_env();
+        let unreachable_url = format!("http://{}/latest", reserved_loopback_address());
+
+        let result = ReleaseClient::fetch_latest_release(&unreachable_url).unwrap();
+
+        assert!(
+            result.is_none(),
+            "network refusal must not propagate as Err"
+        );
+    }
+
+    #[test]
+    fn fetch_latest_release_returns_none_when_direct_and_env_proxy_both_fail() {
+        /* WHY: Even if the user has an env proxy configured (corporate network)
+         * AND both direct and proxy paths fail, the update check must still
+         * collapse to Ok(None) rather than surface a launch-blocking dialog. */
+        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
+        let _snapshot = EnvSnapshot::capture();
+        EnvSnapshot::set_refusing_proxy();
+        let unreachable_url = format!("http://{}/latest", reserved_loopback_address());
+
+        let result = ReleaseClient::fetch_latest_release(&unreachable_url).unwrap();
+
+        assert!(
+            result.is_none(),
+            "both direct and proxy failures must collapse to Ok(None)"
+        );
+    }
+
+    fn reserved_loopback_address() -> String {
+        /* WHY: Bind a TCP listener to grab a free port, then immediately drop it so
+         * subsequent connects deterministically receive RST → ConnectionRefused.
+         * `127.0.0.1:1` is sometimes occupied by a local service or filtered by the OS,
+         * so picking a verified-unused port avoids platform-specific test flakes. */
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        drop(listener);
+        address.to_string()
     }
 
     fn spawn_release_server(payload: &'static str) -> String {
@@ -200,36 +256,5 @@ mod tests {
         let result = ReleaseClient::fetch_latest_release(&url).unwrap();
 
         assert!(result.is_none());
-    }
-
-    #[test]
-    fn should_retry_returns_false_without_proxy_env() {
-        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
-        let _snapshot = EnvSnapshot::capture();
-        EnvSnapshot::clear_proxy_env();
-        let error = ureq::Error::Io(std::io::Error::new(ErrorKind::ConnectionRefused, "refused"));
-
-        assert!(!ReleaseClient::should_retry_without_proxy(&error));
-    }
-
-    #[test]
-    fn should_retry_returns_false_for_non_refused_io_error() {
-        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
-        let _snapshot = EnvSnapshot::capture();
-        EnvSnapshot::set_refusing_proxy();
-        let error = ureq::Error::Io(std::io::Error::new(ErrorKind::TimedOut, "timeout"));
-
-        assert!(!ReleaseClient::should_retry_without_proxy(&error));
-    }
-
-    #[test]
-    fn should_retry_returns_true_for_connect_proxy_refused() {
-        let _guard = PROXY_ENV_MUTEX.lock().unwrap();
-        let _snapshot = EnvSnapshot::capture();
-        EnvSnapshot::set_refusing_proxy();
-        let error =
-            ureq::Error::ConnectProxyFailed("CONNECT failed: Connection refused".to_string());
-
-        assert!(ReleaseClient::should_retry_without_proxy(&error));
     }
 }

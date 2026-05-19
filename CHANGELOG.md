@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.24] - 2026-05-19 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Update check no longer surfaces "io: Connection refused" at launch**: Fixed a regression where the auto update-check dialog flashed a red "更新の確認に失敗しました — io: Connection refused" error on every launch on machines (notably Windows) whose ureq-discovered system/environment proxy pointed at an unreachable address. The client now tries the GitHub Releases API directly first and only falls back to a configured proxy if direct access fails. Any unresolved fetch (refused, DNS failure, rate-limit, malformed payload) is now silently treated as "no update info right now" rather than blocking the launch UI.
+
 ## [0.22.23] - 2026-05-19 (UTC)
 
 ### 🐛 Bug Fixes
