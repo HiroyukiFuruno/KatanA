@@ -2,37 +2,38 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
-## [0.22.25] - 2026-05-19 16:09:41 (UTC)
+## [0.22.25] - 2026-05-19 17:13:21 (UTC)
+
+### 🚀 Features
+
+- **Automatic language mode**: Added a language option that follows the operating system. New installs use this automatic mode by default, while existing manual language choices stay unchanged.
 
 ### 🐛 Bug Fixes
 
-- **Release quality checks now always run for version bumps**: Fixed release automation so version updates no longer bypass CI. Release PRs that touch the app version now keep the normal validation path active before they can be merged.
-- **Language can follow the operating system again**: Added an "Auto (Follow OS)" language choice and made new installs use it by default. Existing saved language choices are preserved, so users who explicitly selected Japanese or English are not silently changed.
-- **Update-check errors are now localized**: Replaced raw network/library error details in the update-check dialog with localized explanations for connection, timeout, server, proxy, payload, and unknown failures across all supported app languages.
+- **Localized update-check errors**: Update-check failures now show readable messages in the selected app language instead of raw network or library errors. Connection, timeout, server, proxy, response, and unknown failures are covered.
 
-## [0.22.24] - 2026-05-19 (UTC)
+## [0.22.24] - 2026-05-19 09:15:55 (UTC)
 
 ### 🐛 Bug Fixes
 
-- **Update check no longer surfaces "io: Connection refused" at launch**: Fixed a regression where the auto update-check dialog flashed a red "Update check failed — io: Connection refused" error on every launch on machines (notably Windows) whose ureq-discovered system/environment proxy pointed at an unreachable address. The client now tries the GitHub Releases API directly first and only falls back to a configured proxy if direct access fails. Any unresolved fetch (refused, DNS failure, rate-limit, malformed payload) is now silently treated as "no update info right now" rather than blocking the launch UI.
+- **Startup update-check error no longer blocks the app**: KatanA no longer shows a red update-check failure on every launch when the system network settings point to an unreachable proxy. If update information cannot be fetched, the app now starts quietly and treats it as temporarily unavailable update information.
 
-## [0.22.23] - 2026-05-19 (UTC)
+## [0.22.23] - 2026-05-19 07:44:56 (UTC)
 
 ### 🐛 Bug Fixes
 
-- **Windows console window suppression**: Fixed the lingering console window that briefly appeared on Windows when KatanA launched the PlantUML renderer (notably on startup if the opened document contains a PlantUML block). The renderer now spawns `java.exe` through the centralised `CREATE_NO_WINDOW` facade so no console window is ever allocated for the Java child process.
+- **Windows console window suppression**: Fixed the console window that could briefly appear on Windows when KatanA opened a document containing a PlantUML diagram.
 
 ### 🔧 System
 
-- **Headless facade hardening**: Removed the `create_command_visible` escape hatch in the process facade — every Windows process launch from KatanA now goes through the `CREATE_NO_WINDOW` enforced path, and the AST linter message reflects the canonical guidance (use `ProcessService::create_command` for every external process, including Java).
+- **Windows background process stability**: Strengthened the internal process-launch path so background tools used by KatanA stay hidden on Windows.
 
-## [0.22.22] - 2026-05-18 (UTC)
+## [0.22.22] - 2026-05-18 08:22:37 (UTC)
 
 ### 🔧 System
 
-- **Windows distribution stability**: Closed the last remaining gaps where external processes spawned from build scripts and screenshot tooling could briefly flash a console window on Windows. Every process launch now routes through a sanctioned headless facade.
-- **AST Linter scan expansion**: The `no-direct-process-command` rule now also scans every `crates/<name>/build.rs` and the `scripts/screenshot/` crate. This prevents future regressions where a new `std::process::Command::new` call sneaks in outside the directories the linter previously checked.
-- **Preview-render test stabilisation**: Closed a flaky-test race where one diagram-render test could read `MERMAID_JS` / `DRAWIO_JS` / `PLANTUML_JAR` env vars that a sibling test temporarily flipped, causing intermittent "Expected Mermaid image section" failures during pre-push verification. Every `render_diagram` invocation in the preview-pane test suite now serialises through the same render-env lock.
+- **Windows distribution stability**: Improved safeguards so helper tools used around KatanA do not briefly flash console windows on Windows.
+- **Diagram preview reliability**: Improved internal checks around diagram preview rendering so intermittent preview failures are caught before release.
 
 ## [0.22.21] - 2026-05-16 09:31:46 (UTC)
 
@@ -261,7 +262,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🔧 System
 
 - **Preview-First Default**: Newly opened documents now default to preview mode unless the user explicitly switches the active tab to code or split mode.
-- Refactored `ExplorerPanel` and `ExplorerContent` to use a builder pattern (`with_referenced_images()`) to stay within the argument-count linting limit.
+- Improved the internal structure of the Explorer so referenced images can be expanded without making the panel harder to maintain.
 
 ## [0.22.4] - 2026-04-23 21:40:00 (UTC)
 
@@ -272,7 +273,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
   - Added real-time in-editor visualization for linting errors with squiggly lines and gutter icons.
   - Implemented diagnostic popups with "Quick Fix" and "Fix All" automated formatting capabilities.
   - Added an in-app documentation viewer for MarkdownLint rules with visual examples.
-  - Refactored markdownlint rules to comply with strict AST linter constraints.
+  - Improved the internal rule organization so Markdown checks remain stable as more fixes are added.
 
 ### 🐛 Bug Fixes
 
@@ -302,8 +303,8 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🔧 System
 
-- Enhanced internal stability and tooling by introducing an AST linter to statically detect duplicate shortcut definitions during development.
-- Addressed internal integration test instabilities related to environmental variable mutations.
+- Improved shortcut-definition safeguards so duplicate shortcuts are caught earlier.
+- Improved internal test stability around environment-dependent behavior.
 
 ## [0.22.2] - 2026-04-20 16:38:00 (UTC)
 
@@ -375,8 +376,8 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### Fixed
 
-- Fixed an AST linter violation related to horizontal layouts in `preview_pane` by migrating to `AlignCenter` widget.
-- Resolved unused imports in the images functionality of the preview pane.
+- Fixed a preview layout issue that could affect image-related controls.
+- Removed unused preview-pane code paths to keep the image feature stable.
 
 ## [0.21.0] - 2026-04-12 08:21:00 (UTC)
 
@@ -440,7 +441,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🔧 System
 
-- Optimized CI/CD pipeline and local Make/Lefthook execution by eliminating redundant test targets and managing concurrent job parallelism.
+- Improved internal validation performance by removing redundant checks and tuning parallel execution.
 - Centralized resource directories and resolved Windows packaging dependency issues for a cleaner architecture and distribution.
 
 ## [0.18.6] - 2026-04-10 19:06:06 (UTC)
@@ -467,8 +468,8 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🔧 System
 
-- **Headless-by-Default enforcement:** All external process invocations across the codebase (diagram rendering, file reveal, update cleanup, download) are now routed exclusively through `ProcessService`, making the `CREATE_NO_WINDOW` policy on Windows both mandatory and auditable.
-- **AST Linter rule `no-direct-process-command`:** Added a compile-time linting rule that prohibits direct use of `std::process::Command::new` outside of `ProcessService`. This prevents future regressions where background processes could inadvertently pop up console windows on Windows.
+- **Windows background process stability:** Diagram rendering, file reveal, update cleanup, and downloads now use the same hidden background-process behavior on Windows.
+- **Regression prevention:** Added internal safeguards so future background tasks do not accidentally bring back console-window popups on Windows.
 
 ## [0.18.4] - 2026-04-10 11:18:09 (UTC)
 
@@ -520,7 +521,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - Improved background stability of the testing environment for Windows builds.
 
-## [0.18.1] - 2026-04-09
+## [0.18.1] - 2026-04-09 15:40:06 (UTC)
 
 ### 🚀 Features
 
@@ -540,7 +541,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🔧 System
 
-- Improved CI/CD pipelines to construct and distribute stable releases across multiple operating systems automatically.
+- Improved release packaging reliability across supported operating systems.
 
 ## [0.17.2] - 2026-04-08 08:45:00 (UTC)
 
@@ -1159,15 +1160,15 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🚀 Features
 
 - Add `FORCE=1` option to `make release` to skip all interactive confirmation prompts
-- Implement `USE_GITHUB_WORKFLOW` flag to conditionally trigger GitHub Actions release
+- Improved release automation controls for maintainers
 
 ### 🔧 System
 
 - Skip Git hooks (`--no-verify`) during release push as quality checks are pre-verified
 - Enable full local release flow (DMG build, GitHub publication, Homebrew update) as default
 
-- Modularize release logic into independent scripts under `scripts/release/`
-- Move main release control script to `scripts/release/release.sh`
+- Reorganized release tooling into smaller maintainable parts
+- Improved the main release control flow for easier maintenance
 
 ## [0.3.0] - 2026-03-21 03:52:24 (UTC)
 
@@ -1180,9 +1181,9 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
-- Resolve Japanese CJK font baseline jitter (ガタツキ) in UI components
+- Resolve CJK font baseline jitter in UI components
 - Prevent TOC side panel auto-expansion and ignore YAML frontmatter in outline
-- Allow dead_code for macOS specific emoji rendering constants on Linux CI
+- Improve Linux compatibility for macOS-specific emoji rendering code
 
 ### 🔧 System
 
@@ -1193,7 +1194,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🔧 System
 
-- Update Rust dependencies and GitHub Actions plugins
+- Updated project dependencies and release tooling
 - Fix coverage gap in preview_pane and codify release bypass rules
 - Resolve V0.2.0 archive omission and add AI warning block to next tasks
 
@@ -1231,7 +1232,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🐛 Bug Fixes
 
-- Automatically inject version into Info.plist during DMG build
+- Keep app version metadata aligned in macOS packages
 - Automatically sync internal version files during releases.
 
 ### 🔧 System
@@ -1329,11 +1330,11 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - Improve .app signing (abolish --deep, specify runtime/timestamp, DMG remains unsigned)
 - Fix regression where workspace is not restored on startup
-- Apply emoji support patch to vendored egui_commonmark
+- Improved emoji rendering in the Markdown preview
 
 ### 🔧 System
 
-- Add glob filters to pre-push hook and skip CI execution for pushes without code changes
+- Improve change detection for code-quality checks
 - Prepare for v0.0.4 release
 - Exclude unnecessary old backup images (.old.png) when updating snapshots from Git tracking
 - Expand coverage gate exclusion rules (return None/false/display/Pending)
@@ -1350,7 +1351,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - Unify Coverage job with local make coverage
 - Improve DrawIo diagram text visibility in dark theme
 - Expand mmdc resolution from .app bundle to 6-layer fallback
-- Skip diagram snapshot tests in CI environment
+- Improve diagram snapshot verification stability in automated environments
 - Fix startup from GUI apps by supplementing node PATH when executing mmdc
 - Add margins above and below HTML blocks to resolve layout tightness
 
@@ -1360,10 +1361,10 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - Prepare for v0.0.3 release
 - Change release notes to be extracted from CHANGELOG.md
 
-- Constantize magic numbers and expand AST linter tests
+- Improved internal validation coverage around rendering rules
 - Unify Ignore tags to limited_local
 
-- Fix CI environment dependent errors in snapshot tests
+- Fix environment-dependent errors in snapshot verification
 - Fix global state conflict errors in multiple i18n tests
 - Add integration tests for diagram rendering and sample fixtures
 
@@ -1372,7 +1373,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 ### 🐛 Bug Fixes
 
 - Resolve linux cross-compilation errors for github actions
-- Resolve markdown rendering, i18n label update, and CI coverage flakiness
+- Resolve Markdown rendering, label update, and quality-check instability
 - Support CenteredMarkdown for raw HTML alignment reproduction
 - Fix CenteredMarkdown alignment, image path resolution, and badge display
 
@@ -1380,10 +1381,10 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 - Kick ci to retry integration tests
 - Release v0.0.2
-- Include Cargo.lock and CHANGELOG.ja.md in release v0.0.2
+- Include complete release metadata in release v0.0.2
 
 - Update integration test snapshot
-- Increase snapshot tolerance to 4000 to absorb CI/local macOS text rendering differences
+- Tune snapshot comparison tolerance for text rendering differences across environments
 
 ## [0.0.1] - 2026-03-16 23:16:22 (UTC)
 
@@ -1406,23 +1407,23 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - Add macOS app bundle (.app) packaging (#18)
 - Add macOS DMG installer generation (#19)
 - Automate release (git-cliff + make release) (#20)
-- Create new Release CD workflow (.github/workflows/release.yml) (#22)
+- Add release automation for distributing packaged builds (#22)
 - Add GitHub Sponsors URL settings and Japanese version of README
 
 ### 🐛 Bug Fixes
 
 - Fix Clippy warnings, formatting, and 30-line limit
 - Fix issues confirmed via screenshots
-- Stabilize tests by making PLANTUML_JAR an exclusive override
+- Improved PlantUML test isolation
 - Fix 3 issues — lazy loading, Mermaid fonts, and forced desktop move
 - Fix flaky issues in snapshot tests
-- De-indent code blocks in lists during preprocessing to avoid egui layout constraints
-- Change Info.plist update to Perl for macOS sed compatibility
-- Add ad-hoc code signing to Release CD
-- Fix CI trigger branch name to master and update Cargo.lock
-- Fix sccache-action SHA and organize English/Japanese versions of CHANGELOG
-- Temporarily disable sccache during cargo install (conflict avoidance)
-- Disable RUSTC_WRAPPER in CI Lint job (clippy compatibility)
+- Fixed code block layout inside lists in the Markdown preview
+- Improved macOS version metadata update compatibility
+- Add ad-hoc code signing to packaged releases
+- Fixed release automation branch targeting and version metadata
+- Improve build cache configuration and organize English/Japanese changelogs
+- Avoid build-cache conflicts during tool installation
+- Improved lint-job compatibility for Rust checks
 
 ### 🔧 System
 
@@ -1430,15 +1431,15 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - Remove opsx prompt files
 - Align gitignore with official templates
 - Mark Task 6.2 as completed — bootstrap-katana-macos-mvp all tasks completed
-- Exclude openspec directory from git control
-- Update gitignore (openspec, obsidian settings, katana-core .gitignore integration)
+- Exclude local planning files from version control
+- Update ignore rules for local planning, notes, and nested project settings
 - Delete unnecessary document templates and README
-- Add CI coverage job and document quality gates
-- Tighten CI requirements for desktop-viewer-polish and delete unnecessary assets
+- Add automated quality coverage checks and document quality gates
+- Tighten release quality requirements and delete unnecessary assets
 - Integrate lefthook validation commands into Makefile and automate fixes
-- Update dependencies (dirs-sys 0.5.0, rfd 0.17.2, egui_commonmark features added)
+- Updated desktop and Markdown rendering dependencies
 - Add GitHub Sponsors URL settings and Japanese version of README
-- Add configuration to exclude CI bot commits from cliff.toml
+- Improve release-note generation settings
 - Prepare for v0.0.1 release
 
 - Fix clippy warnings in drawio_renderer
@@ -1447,7 +1448,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - Extract magic numbers into named constants with clear purpose
 - Externalize language definitions to locales/languages.json
 - Unify span_location duplication into free functions (self-review fix)
-- Separate egui rendering logic and event routing
+- Separated rendering logic and event routing
 - Translate Japanese comments and strings in source code and tests to English
 - Improve UI layout and add linter module
 
