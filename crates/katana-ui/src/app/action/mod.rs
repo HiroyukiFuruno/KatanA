@@ -9,6 +9,7 @@ mod dispatch_secondary;
 mod dispatch_tertiary;
 mod file_open;
 mod image_ingest;
+mod language;
 mod process_authoring;
 mod process_demo;
 mod process_demo_group;
@@ -116,7 +117,7 @@ impl ActionOps for KatanaApp {
                 .previous_app_version
                 .clone()
         });
-        let lang = self.state.config.settings.settings().language.clone();
+        let lang = crate::i18n::I18nOps::get_language();
         let (tx, rx) = std::sync::mpsc::channel();
         self.changelog_rx = Some(rx);
         crate::changelog::ChangelogOps::fetch_changelog(&lang, current_version, previous, tx);

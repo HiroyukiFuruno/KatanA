@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
+mod error_message;
 mod phases;
 
 use crate::Icon;
@@ -69,10 +70,11 @@ impl<'a> UpdateModal<'a> {
             phases::show_checking(ctx, &msgs.title, &msgs.checking_for_updates);
         } else if let Some(err) = &self.state.update.check_error {
             let color = self.resolve_error_color(ctx);
+            let message = error_message::UpdateErrorMessageOps::localize(err, msgs);
             let close = phases::show_error(
                 ctx,
                 &msgs.title,
-                err,
+                &message,
                 &msgs.failed_to_check,
                 &msgs.action_close,
                 color,

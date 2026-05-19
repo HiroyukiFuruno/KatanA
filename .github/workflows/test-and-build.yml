@@ -6,6 +6,10 @@ on:
     paths:
       - '**/*.rs'
       - '!scripts/**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - 'crates/katana-ui/Info.plist'
+      - '.github/workflows/**'
   pull_request:
     branches: [master]
     paths:
@@ -31,13 +35,6 @@ env:
 jobs:
   test:
     name: Test and Build
-    # WHY: Avoid redundant CI runs when a PR is merged, since tests already pass on the PR itself.
-    # Direct pushes to master without a PR merge will still trigger tests.
-    if: >-
-      github.event_name != 'push' || (
-        !startsWith(github.event.head_commit.message, 'Merge pull request ') &&
-        !contains(github.event.head_commit.message, '(#')
-      )
     strategy:
       fail-fast: false
       matrix:

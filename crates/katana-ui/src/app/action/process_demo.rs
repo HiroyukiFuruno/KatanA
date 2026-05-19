@@ -10,7 +10,7 @@ impl KatanaApp {
     /// Files use `Katana://Demo/` virtual paths so that auto-refresh
     /// and save operations are safely bypassed.
     pub(super) fn handle_action_open_help_demo(&mut self) {
-        let lang = self.state.config.settings.settings().language.clone();
+        let lang = crate::i18n::I18nOps::get_language();
         let demo_assets = super::demo_bundle::resolve_demo_bundle(&lang);
 
         if demo_assets.is_empty() {
@@ -24,7 +24,7 @@ impl KatanaApp {
     }
 
     pub(super) fn handle_action_open_welcome_screen(&mut self) {
-        let lang = self.state.config.settings.settings().language.clone();
+        let lang = crate::i18n::I18nOps::get_language();
         if let Some(asset) = super::demo_bundle::resolve_single_asset(&lang, "welcome.md") {
             self.open_special_virtual_asset(asset);
         }
@@ -32,7 +32,7 @@ impl KatanaApp {
 
     /// Handler for AppAction::OpenUserGuide
     pub(super) fn handle_action_open_user_guide(&mut self) {
-        let lang = self.state.config.settings.settings().language.clone();
+        let lang = crate::i18n::I18nOps::get_language();
         if let Some(asset) = super::demo_bundle::resolve_single_asset(&lang, "guide.md") {
             self.open_special_virtual_asset(asset);
         }

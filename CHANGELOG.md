@@ -2,6 +2,14 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.25] - 2026-05-19 16:09:41 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Release quality checks now always run for version bumps**: Fixed release automation so version updates no longer bypass CI. Release PRs that touch the app version now keep the normal validation path active before they can be merged.
+- **Language can follow the operating system again**: Added an "Auto (Follow OS)" language choice and made new installs use it by default. Existing saved language choices are preserved, so users who explicitly selected Japanese or English are not silently changed.
+- **Update-check errors are now localized**: Replaced raw network/library error details in the update-check dialog with localized explanations for connection, timeout, server, proxy, payload, and unknown failures across all supported app languages.
+
 ## [0.22.24] - 2026-05-19 (UTC)
 
 ### 🐛 Bug Fixes

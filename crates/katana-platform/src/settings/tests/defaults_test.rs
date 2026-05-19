@@ -28,7 +28,7 @@ fn test_app_settings_default_values() {
     assert!(s.theme.custom_color_overrides.is_none());
     assert!((s.font.size - 14.0).abs() < f32::EPSILON);
     assert_eq!(s.font.family, "monospace");
-    assert_eq!(s.language, "en");
+    assert_eq!(s.language, AUTO_LANGUAGE_CODE);
     assert!(s.workspace.last_workspace.is_none());
     /* WHY: Behavior defaults */
     assert!(s.behavior.confirm_close_dirty_tab);

@@ -6,6 +6,8 @@ pub struct SettingsDefaultOps;
 pub(crate) const DEFAULT_FONT_SIZE: f32 = 14.0;
 pub(crate) const DEFAULT_AUTO_SAVE_INTERVAL_SECS: f64 = 5.0;
 pub(crate) const DEFAULT_AUTO_REFRESH_INTERVAL_SECS: f64 = 2.0;
+pub const AUTO_LANGUAGE_CODE: &str = "auto";
+pub const FALLBACK_LANGUAGE_CODE: &str = "en";
 pub const DEFAULT_MAX_DEPTH: usize = 10;
 pub const DEFAULT_CACHE_RETENTION_DAYS: u32 = 7;
 pub const DEFAULT_DIAGRAM_CONCURRENCY: usize = 10;
@@ -25,7 +27,10 @@ impl SettingsDefaultOps {
         "0.2.3".to_string()
     }
     pub fn default_language() -> String {
-        "en".to_string()
+        AUTO_LANGUAGE_CODE.to_string()
+    }
+    pub fn fallback_language() -> String {
+        FALLBACK_LANGUAGE_CODE.to_string()
     }
     pub fn default_theme() -> String {
         if crate::os_theme::OsThemeOps::is_dark_mode().unwrap_or(true) {

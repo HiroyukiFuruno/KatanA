@@ -1,3 +1,4 @@
+use super::CheckUpdateError;
 use super::release_client::{LATEST_RELEASE_API_URL, ReleaseClient};
 use super::types::{ReleaseInfo, UpdateManager, UpdateOps};
 use anyhow::Result;
@@ -28,7 +29,10 @@ impl UpdateOps {
             .as_deref()
             .unwrap_or(LATEST_RELEASE_API_URL);
 
-        Self::check_for_updates_from_url(&manager.current_version, url)
+        Ok(Self::check_for_updates_from_url(
+            &manager.current_version,
+            url,
+        )?)
     }
 
     pub fn is_newer_version(current: &str, latest: &str) -> bool {
@@ -68,11 +72,16 @@ impl UpdateOps {
         0
     }
 
-    pub fn check_for_updates_simple(current_version: &str) -> Result<Option<ReleaseInfo>> {
+    pub fn check_for_updates_simple(
+        current_version: &str,
+    ) -> Result<Option<ReleaseInfo>, CheckUpdateError> {
         Self::check_for_updates_from_url(current_version, LATEST_RELEASE_API_URL)
     }
 
-    fn check_for_updates_from_url(current_version: &str, url: &str) -> Result<Option<ReleaseInfo>> {
+    fn check_for_updates_from_url(
+        current_version: &str,
+        url: &str,
+    ) -> Result<Option<ReleaseInfo>, CheckUpdateError> {
         let Some(release) = ReleaseClient::fetch_latest_release(url)? else {
             return Ok(None);
         };

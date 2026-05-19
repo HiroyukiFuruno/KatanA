@@ -9,3 +9,4 @@ pub mod release_scripts;
 pub mod shortcut;
 pub mod theme;
 pub mod ui;
+pub mod update_check;

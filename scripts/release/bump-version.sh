@@ -35,7 +35,7 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
     echo "🤖 Running in GitHub Actions. Using 'gh api' for verified commit..."
     
     BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-    COMMIT_MSG="chore: Release v${TARGET_VERSION} [skip ci]"
+    COMMIT_MSG="chore: Release v${TARGET_VERSION}"
     
     # Helper to update a file via GitHub API
     update_file() {
@@ -85,7 +85,7 @@ else
     if ! git diff --quiet Cargo.toml Cargo.lock "$INFO_PLIST"; then
         git add Cargo.toml Cargo.lock "$INFO_PLIST"
         # Local commits must keep the developer's configured identity so GitHub can match the signature.
-        git commit -S -n -m "chore: Release v${TARGET_VERSION} [skip ci]" -- Cargo.toml Cargo.lock "$INFO_PLIST"
+        git commit -S -n -m "chore: Release v${TARGET_VERSION}" -- Cargo.toml Cargo.lock "$INFO_PLIST"
         
         echo "✅ Version bump committed locally."
         echo "   (Note: Use 'git push' manually if the branch is not protected)"
