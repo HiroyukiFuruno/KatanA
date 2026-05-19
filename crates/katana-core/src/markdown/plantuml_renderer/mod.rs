@@ -75,17 +75,18 @@ impl PlantUmlRendererOps {
         /* WHY: On Windows, KatanA is a GUI-subsystem process and `java.exe` is console-subsystem.
          * Spawning a console-subsystem child from a GUI parent allocates a fresh console window
          * regardless of how stdio is piped — Stdio::piped() controls handle inheritance, not
-         * console allocation. The `-Djava.awt.headless=true` arg added in build_plantuml_args
-         * prevents AWT initialisation, so applying CREATE_NO_WINDOW is now safe.
-         * We additionally prefer `javaw.exe` (GUI-subsystem Java launcher, shipped alongside
-         * `java.exe` by every standard JDK/JRE installer) so no console is ever associated
-         * with the child even in environments where CREATE_NO_WINDOW is ignored. */
-        #[cfg(windows)]
-        let program = "javaw";
-        #[cfg(not(windows))]
-        let program = "java";
-
-        let mut child = crate::system::ProcessService::create_command(program)
+         * console allocation. Suppressing that allocation is exactly what `CREATE_NO_WINDOW`
+         * (applied centrally inside `ProcessService::create_command`) does, so we route the
+         * launch through the facade instead of bypassing it.
+         *
+         * Note on `javaw.exe`: the GUI-subsystem Java launcher does NOT plumb stdout/stderr
+         * through inherited pipes the way `java.exe` does, so `wait_with_output()` against
+         * a `javaw` child hangs waiting for output that will never arrive (observed: Windows
+         * CI Test and Build hung > 1h on `run_plantuml_process_errors_with_non_existent_jar`).
+         * Always invoke `java.exe`; the AWT crash that the old `create_command_visible`
+         * comment cited does not occur once `-Djava.awt.headless=true` is set, which
+         * `build_plantuml_args` already does. */
+        let mut child = crate::system::ProcessService::create_command("java")
             .args(&args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
