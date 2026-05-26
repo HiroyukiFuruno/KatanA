@@ -40,7 +40,6 @@ pub struct I18nMessages {
     pub update: UpdateMessages,
     pub workspace: WorkspaceMessages,
     pub preview: PreviewMessages,
-    pub plantuml: PlantUmlMessages,
     pub view_mode: ViewModeMessages,
     pub split_toggle: SplitToggleMessages,
     pub error: ErrorMessages,

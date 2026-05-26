@@ -125,13 +125,6 @@
       "trackpad_help": "トラックパッド: 2本指ピンチでのズーム、1本指ドラッグでの移動"
     }
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ PlantUML JAR をダウンロード中…",
-    "plantuml_installed": "PlantUML のインストールが完了しました。プレビューを更新中…",
-    "download_error": "ダウンロードエラー: ",
-    "downloading_tool": "{tool} をダウンロード中…",
-    "tool_installed": "{tool} のインストールが完了しました。プレビューを更新します…"
-  },
   "view_mode": {
     "preview": "プレビュー",
     "code": "コード",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: 未設定]"
   },
   "tool": {
-    "not_installed": "{tool} がインストールされていません",
-    "install_path": "インストール先: {path}",
-    "download": "⬇ {tool} をダウンロード"
+    "not_installed": "{tool} がインストールされていません"
   },
   "settings": {
     "title": "設定",
@@ -403,11 +394,7 @@
       "daily": "毎日",
       "weekly": "毎週",
       "monthly": "毎月",
-      "check_now": "今すぐ更新をチェックする",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML は {path} にインストールされています。",
-      "plantuml_not_installed": "PlantUML はインストールされていません。",
-      "plantuml_update_now": "PlantUML を最新版に更新"
+      "check_now": "今すぐ更新をチェックする"
     },
     "behavior": {
       "section_title": "動作",

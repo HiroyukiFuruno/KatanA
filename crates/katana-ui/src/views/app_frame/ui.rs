@@ -1,7 +1,6 @@
 use super::types::*;
 use crate::app::action::ActionOps;
 use crate::app_state::AppAction;
-use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use eframe::egui;
 
@@ -13,7 +12,7 @@ impl<'a> MainPanels<'a> {
         Self { app, theme_colors }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+    pub fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
 
         let theme_colors = self.theme_colors;
@@ -53,7 +52,7 @@ impl<'a> MainPanels<'a> {
         WorkspaceToolbar::new(app).show(ui);
         ExplorerSidebar::new(app).show(ui);
         TabToolbar::new(app).show(ui);
-        CentralContent::new(app).show(ui)
+        CentralContent::new(app).show(ui);
     }
 
     fn render_status_bar(

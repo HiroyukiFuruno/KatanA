@@ -7,7 +7,7 @@ use crate::app::doc_close::DocCloseOps;
 use crate::app::doc_search::DocSearchRefresh;
 use crate::app::document_scroll::DocumentScrollOps;
 use crate::app::image_document::ImageDocumentOps;
-use crate::preview_pane::{DownloadRequest, PreviewPane};
+use crate::preview_pane::PreviewPane;
 use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 

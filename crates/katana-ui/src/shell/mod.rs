@@ -33,7 +33,6 @@ pub(crate) const TREE_ACCORDION_LINE_GAMMA: f32 = 0.2;
 pub(crate) const TREE_ACCORDION_LINE_DASH_LENGTH: f32 = 1.0;
 pub(crate) const TREE_ACCORDION_LINE_GAP_LENGTH: f32 = 3.0;
 
-pub(crate) const DOWNLOAD_STATUS_CHECK_INTERVAL_MS: u64 = 200;
 pub(crate) const ACTIVE_FILE_HIGHLIGHT_ROUNDING: f32 = 3.0;
 
 impl KatanaApp {
@@ -44,8 +43,6 @@ impl KatanaApp {
             fs: FilesystemService::new(),
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
-            download_rx: None,
-            active_download: None,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,

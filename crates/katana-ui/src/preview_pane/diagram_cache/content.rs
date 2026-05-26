@@ -55,7 +55,7 @@ impl DiagramCacheIdentityService {
             document_dir_name: Self::document_dir_name(document_path),
             kind_dir_name: kind_dir_name(kind).to_string(),
             content_checksum: DiagramChecksumService::checksum(kind, source),
-            renderer_version: sanitize_filename(&backend.version().value),
+            renderer_version: renderer_version_token(&backend.version().value),
             theme_hash: format!("{:x}", deterministic_hash(&theme.fingerprint())),
         }
     }
@@ -113,17 +113,8 @@ fn kind_dir_name(kind: &DiagramKind) -> &'static str {
     }
 }
 
-fn sanitize_filename(value: &str) -> String {
-    value
-        .chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_') {
-                ch
-            } else {
-                '_'
-            }
-        })
-        .collect()
+fn renderer_version_token(value: &str) -> String {
+    format!("{:x}", deterministic_hash(value))
 }
 
 const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
@@ -162,5 +153,15 @@ mod tests {
             DiagramCacheIdentityService::build(path, &DiagramKind::Mermaid, "graph TD\nA-->C");
 
         assert_ne!(first.content_checksum, second.content_checksum);
+    }
+
+    #[test]
+    fn renderer_version_token_is_bounded_and_changes_with_input() {
+        let first = renderer_version_token("runtime=mermaid;checksum=first");
+        let second = renderer_version_token("runtime=mermaid;checksum=second");
+
+        assert_ne!(first, second);
+        assert!(first.len() <= 16);
+        assert!(second.len() <= 16);
     }
 }

@@ -94,16 +94,6 @@ impl ConfigState {
             }
         }
     }
-
-    pub fn try_get_plantuml_jar_path(&self) -> Option<std::path::PathBuf> {
-        use katana_core::markdown::plantuml_renderer::PlantUmlRendererOps;
-        PlantUmlRendererOps::default_install_path()
-    }
-
-    pub fn get_plantuml_jar_path_if_exists(&self) -> Option<std::path::PathBuf> {
-        use katana_core::markdown::plantuml_renderer::PlantUmlRendererOps;
-        PlantUmlRendererOps::find_plantuml_jar()
-    }
 }
 
 #[cfg(test)]

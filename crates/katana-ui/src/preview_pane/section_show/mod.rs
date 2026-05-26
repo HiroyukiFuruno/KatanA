@@ -1,6 +1,6 @@
 /* WHY: Refactored section entry point to maintain a clean top-level structure and manage complexity via sub-modules. */
 
-use crate::preview_pane::{DownloadRequest, RenderedSection};
+use crate::preview_pane::RenderedSection;
 use eframe::egui;
 use egui_commonmark::CommonMarkCache;
 
@@ -26,10 +26,10 @@ pub(super) fn show_section(
     search_active_index: Option<usize>,
     is_slideshow: bool,
     is_last_section: bool,
-) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
+) -> Vec<(usize, char)> {
     match section {
         RenderedSection::Markdown(md, source_lines) => {
-            let actions = markdown::SectionMarkdownOps::render_markdown(
+            markdown::SectionMarkdownOps::render_markdown(
                 ui,
                 cache,
                 md,
@@ -46,8 +46,7 @@ pub(super) fn show_section(
                 search_active_index,
                 is_slideshow,
                 is_last_section,
-            );
-            (None, actions)
+            )
         }
         RenderedSection::Image { svg_data, alt, .. } => {
             crate::preview_pane::ImageLogicOps::show_rasterized(
@@ -59,7 +58,7 @@ pub(super) fn show_section(
                 None,
                 |_, _, _| {},
             );
-            (None, vec![])
+            vec![]
         }
         RenderedSection::LocalImage { path, alt, .. } => {
             crate::preview_pane::ImageLogicOps::show_local_image(
@@ -71,7 +70,7 @@ pub(super) fn show_section(
                 None,
                 |_, _, _| {},
             );
-            (None, vec![])
+            vec![]
         }
         RenderedSection::Error {
             kind,
@@ -98,7 +97,7 @@ pub(super) fn show_section(
             {
                 hovered.push(global_line_offset..global_line_offset + source_lines);
             }
-            (None, vec![])
+            vec![]
         }
         RenderedSection::CommandNotFound {
             tool_name,
@@ -128,22 +127,17 @@ pub(super) fn show_section(
             {
                 hovered.push(global_line_offset..global_line_offset + source_lines);
             }
-            (None, vec![])
+            vec![]
         }
         RenderedSection::NotInstalled {
             kind,
-            download_url,
-            install_path,
+            message,
             source_lines,
             ..
         } => {
-            let (rect, req) =
-                crate::preview_pane::image_fallback::ImageFallbackOps::show_not_installed(
-                    ui,
-                    kind,
-                    download_url,
-                    install_path,
-                );
+            let rect = crate::preview_pane::image_fallback::ImageFallbackOps::show_not_installed(
+                ui, kind, message,
+            );
             if let Some(anchors) = block_anchors {
                 anchors.push((global_line_offset..global_line_offset + source_lines, rect));
             }
@@ -153,7 +147,7 @@ pub(super) fn show_section(
             {
                 hovered.push(global_line_offset..global_line_offset + source_lines);
             }
-            (req, vec![])
+            vec![]
         }
         RenderedSection::Pending {
             kind, source_lines, ..
@@ -183,7 +177,7 @@ pub(super) fn show_section(
             {
                 hovered.push(global_line_offset..global_line_offset + source_lines);
             }
-            (None, vec![])
+            vec![]
         }
     }
 }

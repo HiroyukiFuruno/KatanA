@@ -1,16 +1,9 @@
-use crate::preview_pane::DownloadRequest;
 use eframe::egui;
 
 pub struct ImageFallbackOps;
 
 impl ImageFallbackOps {
-    pub(crate) fn show_not_installed(
-        ui: &mut egui::Ui,
-        kind: &str,
-        download_url: &str,
-        install_path: &std::path::Path,
-    ) -> (egui::Rect, Option<DownloadRequest>) {
-        let mut request = None;
+    pub(crate) fn show_not_installed(ui: &mut egui::Ui, kind: &str, message: &str) -> egui::Rect {
         let res = ui.group(|ui| {
             ui.label(
                 egui::RichText::new(crate::i18n::I18nOps::tf(
@@ -31,32 +24,9 @@ impl ImageFallbackOps {
                         }),
                 ),
             );
-            let path_str = install_path.display().to_string();
-            ui.label(
-                egui::RichText::new(crate::i18n::I18nOps::tf(
-                    &crate::i18n::I18nOps::get().tool.install_path,
-                    &[("path", path_str.as_str())],
-                ))
-                .small()
-                .weak(),
-            );
-            if crate::icon::IconOps::button_with_icon_str(
-                ui,
-                &crate::i18n::I18nOps::tf(
-                    &crate::i18n::I18nOps::get().tool.download,
-                    &[("tool", kind)],
-                ),
-            )
-            .clicked()
-            {
-                request = Some(DownloadRequest {
-                    tool_name: kind.to_string(),
-                    url: download_url.to_string(),
-                    dest: install_path.to_path_buf(),
-                });
-            }
+            ui.label(egui::RichText::new(message).small().weak());
         });
-        (res.response.rect, request)
+        res.response.rect
     }
 
     pub(crate) fn show_image_fallback(

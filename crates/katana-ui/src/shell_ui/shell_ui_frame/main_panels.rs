@@ -1,6 +1,5 @@
 /* WHY: Encapsulated main panel rendering logic to manage UI layout complexity and maintain architectural separation. */
 
-use crate::app::download::DownloadOps;
 use crate::shell::KatanaApp;
 use eframe::egui;
 
@@ -36,11 +35,7 @@ impl KatanaApp {
             .frame(egui::Frame::central_panel(&ctx.style()).inner_margin(0.0))
             .show(ctx, |ui| {
                 crate::widgets::InteractionFacade::scope(ui, is_blocked, |ui| {
-                    let download_req =
-                        crate::views::app_frame::MainPanels::new(self, theme_colors).show(ui);
-                    if let Some(req) = download_req {
-                        self.start_download(req);
-                    }
+                    crate::views::app_frame::MainPanels::new(self, theme_colors).show(ui);
                 });
             });
         true

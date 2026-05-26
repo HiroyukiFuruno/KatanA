@@ -24,12 +24,13 @@ fn diagram_html() -> String {
         .expect("diagram HTML export should succeed")
 }
 
-fn export_bytes(format: ExportFormat, extension: &str, html: &str) -> Vec<u8> {
+fn export_bytes(format: ExportFormat, extension: &str, source: &str) -> Vec<u8> {
     let temp_dir = tempfile::tempdir().expect("temp dir should be created");
     let output_path = temp_dir.path().join(format!("diagram.{extension}"));
     let input = ExportInput {
-        format: format.clone(),
-        html_source: html.to_string(),
+        format,
+        markdown_source: source.to_string(),
+        source_path: temp_dir.path().join("diagram.md"),
         output_path: output_path.clone(),
         config: ExportConfig::default(),
     };
@@ -55,11 +56,11 @@ fn html_export_transforms_mermaid_and_drawio_blocks() {
 
 #[test]
 fn native_exporters_write_pdf_png_and_jpeg_from_diagram_html() {
-    let html = diagram_html();
+    let source = diagram_markdown();
 
-    let pdf = export_bytes(ExportFormat::Pdf, "pdf", &html);
-    let png = export_bytes(ExportFormat::Png, "png", &html);
-    let jpeg = export_bytes(ExportFormat::Jpeg, "jpg", &html);
+    let pdf = export_bytes(ExportFormat::Pdf, "pdf", &source);
+    let png = export_bytes(ExportFormat::Png, "png", &source);
+    let jpeg = export_bytes(ExportFormat::Jpeg, "jpg", &source);
 
     assert!(pdf.starts_with(b"%PDF"));
     assert!(png.starts_with(b"\x89PNG"));

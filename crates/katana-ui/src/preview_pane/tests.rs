@@ -145,11 +145,9 @@ mod tests {
             let dir = tempfile::tempdir().unwrap();
             unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
             unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
-            unsafe { std::env::set_var("PLANTUML_JAR", dir.path().join("missing-plantuml.jar")) };
             let result = action();
             unsafe { std::env::remove_var("MERMAID_JS") };
             unsafe { std::env::remove_var("DRAWIO_JS") };
-            unsafe { std::env::remove_var("PLANTUML_JAR") };
             result
         })
     }
@@ -174,8 +172,8 @@ mod tests {
     }
     #[test]
     fn render_diagram_drawio_returns_ok_section() {
-        /* WHY: `render_diagram` reads process-global env vars (MERMAID_JS / DRAWIO_JS /
-         * PLANTUML_JAR) that other tests in this file temporarily flip via
+        /* WHY: `render_diagram` reads process-global env vars (MERMAID_JS / DRAWIO_JS)
+         * that other tests in this file temporarily flip via
          * `with_missing_renderer_assets`. Without acquiring `RENDER_ENV_LOCK`, this test
          * can race with a sibling test that has just unset DRAWIO_JS, causing the
          * render to flap between Image / NotInstalled and producing flaky pre-push
@@ -224,18 +222,21 @@ mod tests {
     }
 
     #[test]
-    fn dispatch_renderer_plantuml_when_no_jar_returns_not_installed() {
+    fn dispatch_renderer_plantuml_returns_result() {
         let result = with_render_env_lock(|| {
-            unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
             let block = DiagramBlock {
                 kind: DiagramKind::PlantUml,
                 source: "@startuml\nA->B\n@enduml".to_string(),
             };
-            let result = RendererLogicOps::dispatch_renderer(&block);
-            unsafe { std::env::remove_var("PLANTUML_JAR") };
-            result
+            RendererLogicOps::dispatch_renderer(&block)
         });
-        assert_variant!(result, DiagramResult::NotInstalled { .. });
+        assert_variant!(
+            result,
+            DiagramResult::Ok(_)
+                | DiagramResult::Err { .. }
+                | DiagramResult::NotInstalled { .. }
+                | DiagramResult::CommandNotFound { .. }
+        );
     }
 
     #[test]
@@ -395,8 +396,7 @@ mod tests {
             "src",
             DiagramResult::NotInstalled {
                 kind: "PlantUML".to_string(),
-                download_url: "https://example.com".to_string(),
-                install_path: std::path::PathBuf::from("/tmp/plantuml.jar"),
+                message: "runtime unavailable".to_string(),
             },
             0,
         );

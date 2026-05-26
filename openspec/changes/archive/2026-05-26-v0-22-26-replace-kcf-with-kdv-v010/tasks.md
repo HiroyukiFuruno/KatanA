@@ -21,10 +21,10 @@
 
 ## Definition of Ready
 
-- [ ] `katana-document-viewer` v0.1.0 が crates.io で利用可能であることを確認する。
-- [ ] `katana-diagram-renderer` の採用 version を crates.io semver dependency として確定する。
-- [ ] KatanA v0.22.26 の対象 branch と release 方針を確認する。
-- [ ] kcf 依存が現在どの crate / module / test / docs に残っているかを棚卸しする。
+- [x] `katana-document-viewer` v0.1.0 が crates.io で利用可能であることを確認する。
+- [x] `katana-diagram-renderer` の採用 version を crates.io semver dependency として確定する。
+- [x] KatanA v0.22.26 の対象 branch と release 方針を確認する。
+- [x] kcf 依存が現在どの crate / module / test / docs に残っているかを棚卸しする。
 
 ## Branch Rule
 
@@ -44,16 +44,16 @@
 
 ## 1. Dependency Boundary
 
-- [ ] 1.1 `Cargo.toml` / crate manifests / `Cargo.lock` から `katana-canvas-forge` dependency を削除する。
-- [ ] 1.2 `katana-document-viewer = "0.1.0"` を crates.io workspace dependency として追加する。
-- [ ] 1.3 `katana-diagram-renderer` が crates.io semver dependency として解決され、git / path dependency ではないことを固定する。
-- [ ] 1.4 `cargo tree` または `cargo metadata` で `katana-canvas-forge` が dependency graph に残っていないことを検証する。
-- [ ] 1.5 kcf DTO / adapter / feature flag / test helper の参照を棚卸しし、削除対象と移行対象を分ける。
+- [x] 1.1 `Cargo.toml` / crate manifests / `Cargo.lock` から `katana-canvas-forge` dependency を削除する。
+- [x] 1.2 `katana-document-viewer = "0.1.0"` を crates.io workspace dependency として追加する。
+- [x] 1.3 `katana-diagram-renderer` が crates.io semver dependency として解決され、git / path dependency ではないことを固定する。
+- [x] 1.4 `cargo tree` または `cargo metadata` で `katana-canvas-forge` が dependency graph に残っていないことを検証する。
+- [x] 1.5 kcf DTO / adapter / feature flag / test helper の参照を棚卸しし、削除対象と移行対象を分ける。
 
 ### Definition of Done (DoD)
 
-- [ ] workspace dependency graph に `katana-canvas-forge` が含まれないこと。
-- [ ] kdv v0.1.0 と kdr が crates.io から解決されること。
+- [x] workspace dependency graph に `katana-canvas-forge` が含まれないこと。
+- [x] kdv v0.1.0 と kdr が crates.io から解決されること。
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 2. Preview Migration
@@ -63,16 +63,16 @@
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 2.1 Markdown preview の kcf 呼び出しを kdv adapter 呼び出しへ差し替える。
-- [ ] 2.2 Mermaid / Draw.io / PlantUML の theme snapshot を kdv adapter 経由で kdr `RenderInput` へ渡す。
-- [ ] 2.3 図形 cache key が kdv / kdr の runtime、profile、theme fingerprint で変化することを維持する。
-- [ ] 2.4 tab switch / scroll / zoom だけで checksum 判定や再描画が走らないことを維持する。
-- [ ] 2.5 Mermaid / Draw.io / PlantUML preview の回帰テストを kdv 経由に更新する。
+- [x] 2.1 Markdown preview の kcf 呼び出しを kdv adapter 呼び出しへ差し替える。
+- [x] 2.2 Mermaid / Draw.io / PlantUML の theme snapshot を kdv adapter 経由で kdr `RenderInput` へ渡す。
+- [x] 2.3 図形 cache key が kdv / kdr の runtime、profile、theme fingerprint で変化することを維持する。
+- [x] 2.4 tab switch / scroll / zoom だけで checksum 判定や再描画が走らないことを維持する。
+- [x] 2.5 Mermaid / Draw.io / PlantUML preview の回帰テストを kdv 経由に更新する。
 
 ### Definition of Done (DoD)
 
-- [ ] Preview 経路に kcf adapter 呼び出しが残っていないこと。
-- [ ] Light theme の Mermaid / Draw.io が dark 配色へ戻らないこと。
+- [x] Preview 経路に kcf adapter 呼び出しが残っていないこと。
+- [x] Light theme の Mermaid / Draw.io が dark 配色へ戻らないこと。
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 3. Export Migration
@@ -82,16 +82,16 @@
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 3.1 HTML export を kdv v0.1.0 経由へ差し替える。
-- [ ] 3.2 PDF / PNG / JPEG export を kdv v0.1.0 経由へ差し替える。
-- [ ] 3.3 export thread に渡す theme snapshot を kdv / kdr 境界で維持する。
-- [ ] 3.4 export の Mermaid / Draw.io 図形が現在テーマで描画される回帰テストを更新する。
-- [ ] 3.5 HTML semantics と PDF / PNG / JPEG surface の既存 parity 検証を kdv 経由で通す。
+- [x] 3.1 HTML export を kdv v0.1.0 経由へ差し替える。
+- [x] 3.2 PDF / PNG / JPEG export を kdv v0.1.0 経由へ差し替える。
+- [x] 3.3 export thread に渡す theme snapshot を kdv / kdr 境界で維持する。
+- [x] 3.4 export の Mermaid / Draw.io 図形が現在テーマで描画される回帰テストを更新する。
+- [x] 3.5 HTML semantics と PDF / PNG / JPEG surface の既存 parity 検証を kdv 経由で通す。
 
 ### Definition of Done (DoD)
 
-- [ ] Export 経路に kcf API / DTO / adapter 呼び出しが残っていないこと。
-- [ ] HTML / PDF / PNG / JPEG export が kdv v0.1.0 経由で通ること。
+- [x] Export 経路に kcf API / DTO / adapter 呼び出しが残っていないこと。
+- [x] HTML / PDF / PNG / JPEG export が kdv v0.1.0 経由で通ること。
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ## 4. Active Spec and Documentation Cleanup
@@ -101,15 +101,15 @@
 - [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
 - [ ] Base branch is synced, and a new branch is explicitly created for this task.
 
-- [ ] 4.1 active spec の kcf 前提を kdv / kdr 境界へ更新し、archive 内の履歴は変更対象外として残す。
-- [ ] 4.2 docs / comments / diagnostics / test names に残る current-context の kcf 表現を棚卸しし、必要箇所だけ更新する。
-- [ ] 4.3 `CHANGELOG.md` に v0.22.26 のユーザー向け変更を記録する。
-- [ ] 4.4 `./scripts/openspec validate v0-22-26-replace-kcf-with-kdv-v010 --strict` を実行する。
+- [x] 4.1 active spec の kcf 前提を kdv / kdr 境界へ更新し、archive 内の履歴は変更対象外として残す。
+- [x] 4.2 docs / comments / diagnostics / test names に残る current-context の kcf 表現を棚卸しし、必要箇所だけ更新する。
+- [x] 4.3 `CHANGELOG.md` に v0.22.26 のユーザー向け変更を記録する。
+- [x] 4.4 `./scripts/openspec validate v0-22-26-replace-kcf-with-kdv-v010 --strict` を実行する。
 
 ### Definition of Done (DoD)
 
-- [ ] active OpenSpec と docs が kcf を current dependency として扱っていないこと。
-- [ ] OpenSpec strict validation が通ること。
+- [x] active OpenSpec と docs が kcf を current dependency として扱っていないこと。
+- [x] OpenSpec strict validation が通ること。
 - [ ] Execute `/openspec-delivery` workflow (`.codex/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
 
 ---
@@ -120,6 +120,7 @@
 
 - [ ] 5.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする。
 - [ ] 5.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）。
+- [/] 5.3 README の JDK / `plantuml.jar` セットアップ記述を削除し、PlantUML JAR の取得・更新 UI / 実装を KDV / KDR 境界移行後の不要機能として除去する。
 
 ## KatanA CLI Entry Point
 
@@ -129,8 +130,8 @@
 
 ## 6. Final Verification & Release Work
 
-- [ ] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `$self-review` skill.
-- [ ] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md).
+- [x] 6.1 Execute self-review using `docs/coding-rules.ja.md` and `$self-review` skill.
+- [x] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md).
 - [ ] 6.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `just check` / `just check-light` を二重実行しない。
 - [ ] 6.4 Create PR from Base Feature Branch targeting `master`.
 - [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail.

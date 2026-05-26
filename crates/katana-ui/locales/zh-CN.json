@@ -125,13 +125,6 @@
     "show_diagram_controls": "图表控件",
     "toggle_slideshow": "切换幻灯片"
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ 正在下载 PlantUML JAR…",
-    "plantuml_installed": "PlantUML 已安装。正在刷新预览…",
-    "download_error": "下载错误: ",
-    "downloading_tool": "正在下载 {tool}…",
-    "tool_installed": "{tool} 已安装。正在刷新预览…"
-  },
   "view_mode": {
     "preview": "预览",
     "code": "代码",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: 未配置]"
   },
   "tool": {
-    "not_installed": "{tool} 未安装。",
-    "install_path": "路径: {path}",
-    "download": "⬇ 下载 {tool}"
+    "not_installed": "{tool} 未安装。"
   },
   "settings": {
     "title": "设置",
@@ -392,11 +383,7 @@
       "daily": "每天",
       "weekly": "每周",
       "monthly": "每月",
-      "check_now": "立即检查",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML 已安装在 {path}。",
-      "plantuml_not_installed": "未安装 PlantUML。",
-      "plantuml_update_now": "将 PlantUML 更新到最新版本"
+      "check_now": "立即检查"
     },
     "behavior": {
       "section_title": "行为",

@@ -35,8 +35,6 @@ pub struct KatanaApp {
     pub(crate) fs: FilesystemService,
     pub(crate) pending_action: AppAction,
     pub(crate) tab_previews: Vec<TabPreviewCache>,
-    pub(crate) download_rx: Option<std::sync::mpsc::Receiver<Result<(), String>>>,
-    pub(crate) active_download: Option<crate::preview_pane::DownloadRequest>,
     pub(crate) explorer_rx: Option<std::sync::mpsc::Receiver<ExplorerLoadMessage>>,
     pub(crate) update_rx: Option<
         std::sync::mpsc::Receiver<

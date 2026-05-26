@@ -146,7 +146,8 @@ mod tests {
         state.update_diagnostics_for_content(first.clone(), "first source", Vec::new());
         state.update_diagnostics_for_content(second.clone(), "second source", Vec::new());
 
-        let batches = ProblemBulkFixOps::batches_for_paths(&problems, &state, &[second.clone()]);
+        let batches =
+            ProblemBulkFixOps::batches_for_paths(&problems, &state, std::slice::from_ref(&second));
 
         assert_eq!(batches.len(), 1);
         assert_eq!(batches[0].path, second);

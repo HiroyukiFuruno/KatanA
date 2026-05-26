@@ -1,4 +1,4 @@
-use crate::preview_pane::{DownloadRequest, RenderedSection, SectionLifecycle, ViewerState};
+use crate::preview_pane::{RenderedSection, SectionLifecycle, ViewerState};
 use eframe::egui::{self};
 use egui_commonmark::CommonMarkCache;
 
@@ -43,7 +43,7 @@ impl SectionLogicOps {
         search_active_index: Option<usize>,
         is_slideshow: bool,
         is_last_section: bool,
-    ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
+    ) -> Vec<(usize, char)> {
         super::section_show::show_section(
             ui,
             cache,
@@ -82,8 +82,7 @@ impl SectionLogicOps {
         search_query: Option<String>,
         search_active_index: Option<usize>,
         is_slideshow: bool,
-    ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
-        let mut request: Option<DownloadRequest> = None;
+    ) -> Vec<(usize, char)> {
         let mut actions = Vec::new();
         let mut current_heading_offset = 0;
         let mut global_task_list_idx = 0;
@@ -148,7 +147,7 @@ impl SectionLogicOps {
                         );
                     }
                     _ => {
-                        let (req, mut event_actions) = Self::show_section(
+                        let mut event_actions = Self::show_section(
                             ui,
                             cache,
                             section,
@@ -172,9 +171,6 @@ impl SectionLogicOps {
                         {
                             lifecycle[i].is_drawn = true; // Markdown and non-image error sections render directly
                         }
-                        if let Some(r) = req {
-                            request = Some(r);
-                        }
                         actions.append(&mut event_actions);
                     }
                 }
@@ -186,6 +182,6 @@ impl SectionLogicOps {
                 egui::RichText::new(crate::i18n::I18nOps::get().preview.no_preview.clone()).weak(),
             );
         }
-        (request, actions)
+        actions
     }
 }

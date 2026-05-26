@@ -63,12 +63,6 @@ impl Default for EditorConfig {
 #[derive(Debug)]
 struct NoopSyntaxHighlighter;
 
-impl Default for NoopSyntaxHighlighter {
-    fn default() -> Self {
-        Self
-    }
-}
-
 impl SyntaxHighlighter for NoopSyntaxHighlighter {
     fn highlight(&self, _source: &str) -> HighlightedText {
         HighlightedText { spans: Vec::new() }
@@ -101,7 +95,7 @@ mod tests {
 
     #[test]
     fn noop_highlighter_defaults_to_empty_spans() {
-        let highlighter = NoopSyntaxHighlighter::default();
+        let highlighter = NoopSyntaxHighlighter;
         let highlighted = highlighter.highlight("");
         assert!(highlighted.spans.is_empty());
     }

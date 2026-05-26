@@ -4,4 +4,4 @@ mod app_action_types {
 
 pub use crate::lint_fix_batch::LintFixBatch;
 pub use crate::markdown_authoring_op::{CodeBlockKind, MarkdownAuthoringOp};
-pub use app_action_types::{AppAction, AssetDownloadRequest};
+pub use app_action_types::AppAction;

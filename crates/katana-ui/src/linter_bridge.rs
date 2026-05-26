@@ -296,7 +296,7 @@ mod tests {
         let diagnostics = MarkdownLinterBridgeOps::evaluate_document(
             &state,
             &PathBuf::from("doc.md"),
-            &multibyte_line,
+            multibyte_line,
         );
 
         assert!(

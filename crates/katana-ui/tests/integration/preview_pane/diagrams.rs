@@ -107,11 +107,9 @@ fn mermaid_both_states_render_semantically() {
             let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
             assert_standard_diagram_markdown_visible(&harness);
         }
-        RenderedSection::NotInstalled {
-            kind, download_url, ..
-        } => {
+        RenderedSection::NotInstalled { kind, message, .. } => {
             assert_eq!(kind, "Mermaid");
-            assert!(download_url.contains("mermaid.min.js"));
+            assert!(!message.is_empty());
             let tool_msg = I18nOps::tf(
                 &I18nOps::get().tool.not_installed,
                 &[("tool", kind.as_str())],
@@ -128,61 +126,30 @@ const PLANTUML_SOURCE: &str = "@startuml\nAlice -> Bob : Hello\n@enduml";
 
 #[test]
 fn plantuml_both_states_render_semantically() {
-    /* WHY: Verify PlantUML rendering transitions: 'NotInstalled' when JAR is missing, and 'Image' when available. */
+    /* WHY: KDV/KDR owns PlantUML runtime resolution, so UI semantics must be valid whether the renderer produces an image or reports a runtime error. */
     let _guard = crate::integration::lock_serial_test_mutex();
-    let saved_jar = std::env::var("PLANTUML_JAR").ok();
-
-    unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/path/for/idempotent/test.jar") };
-
     let pane = render_and_wait("plantuml", PLANTUML_SOURCE);
-    assert!(
-        matches!(pane.sections[1], RenderedSection::NotInstalled { .. }),
-        "With hidden jar, should be NotInstalled, got: {:?}",
-        pane.sections[1]
-    );
-    if let RenderedSection::NotInstalled {
-        kind, download_url, ..
-    } = &pane.sections[1]
-    {
-        assert_eq!(kind, "PlantUML", "Kind should be PlantUML");
-        assert!(
-            download_url.contains("plantuml"),
-            "URL should mention plantuml"
-        );
-        let tool_msg = I18nOps::tf(&I18nOps::get().tool.not_installed, &[("tool", kind)]);
-        let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
-        assert_standard_diagram_markdown_visible(&harness);
-        let _fallback = harness.get_by_label(&tool_msg);
-    }
-
-    match &saved_jar {
-        Some(v) => unsafe { std::env::set_var("PLANTUML_JAR", v) },
-        None => unsafe { std::env::remove_var("PLANTUML_JAR") },
-    }
-
-    if katana_core::markdown::plantuml_renderer::PlantUmlRendererOps::find_plantuml_jar().is_some()
-    {
-        let pane = render_and_wait("plantuml", PLANTUML_SOURCE);
-        assert!(
-            matches!(
-                pane.sections[1],
-                RenderedSection::Image { .. } | RenderedSection::Error { .. }
-            ),
-            "[PlantUML rendered] Expected Image or Error at index 1, got: {:?}",
-            pane.sections[1]
-        );
-        if let RenderedSection::Image { svg_data, alt, .. } = &pane.sections[1] {
+    match &pane.sections[1] {
+        RenderedSection::Image { svg_data, alt, .. } => {
             assert!(svg_data.width > 0, "PlantUML image width should be > 0");
             assert!(svg_data.height > 0, "PlantUML image height should be > 0");
             assert!(alt.contains("PlantUml"), "Alt should mention PlantUml");
+            let harness = build_harness(pane.sections.clone(), 600.0, 400.0);
+            assert_standard_diagram_markdown_visible(&harness);
         }
-        let harness = build_harness(pane.sections.clone(), 600.0, 400.0);
-        assert_standard_diagram_markdown_visible(&harness);
-    }
-
-    match saved_jar {
-        Some(v) => unsafe { std::env::set_var("PLANTUML_JAR", v) },
-        None => unsafe { std::env::remove_var("PLANTUML_JAR") },
+        RenderedSection::NotInstalled { kind, message, .. } => {
+            assert_eq!(kind, "PlantUML", "Kind should be PlantUML");
+            assert!(!message.is_empty());
+            let tool_msg = I18nOps::tf(&I18nOps::get().tool.not_installed, &[("tool", kind)]);
+            let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
+            assert_standard_diagram_markdown_visible(&harness);
+            let _fallback = harness.get_by_label(&tool_msg);
+        }
+        RenderedSection::Error { .. } => {
+            let harness = build_harness(pane.sections.clone(), 600.0, 300.0);
+            assert_standard_diagram_markdown_visible(&harness);
+        }
+        _ => panic!("Expected PlantUML image, runtime message, or render error"),
     }
 }
 

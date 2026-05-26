@@ -46,7 +46,7 @@ This is a legacy capability specification that was automatically migrated to com
 
 ### Requirement: Export 時の図形ブロックは現在テーマで描画される
 
-システムは、HTML / PDF / PNG / JPEG export に含まれる Mermaid / Draw.io 図形ブロックを、export 開始時点の KatanA テーマスナップショットで描画しなければならない（SHALL）。export thread は kcf 内部の既定テーマや、export 実行時に変化しうるグローバル状態に依存してはならない（MUST NOT）。
+システムは、HTML / PDF / PNG / JPEG export に含まれる Mermaid / Draw.io 図形ブロックを、export 開始時点の KatanA テーマスナップショットで描画しなければならない（SHALL）。export thread は kdv / kdr 内部の既定テーマや、export 実行時に変化しうるグローバル状態に依存してはならない（MUST NOT）。
 
 #### Scenario: HTML export の Mermaid が light テーマで描画される
 
@@ -68,24 +68,40 @@ This is a legacy capability specification that was automatically migrated to com
 
 ### Requirement: V8 を使う Markdown 出力依存関係はバージョン整合している
 
-システムは、HTML / PDF / PNG / JPEG 出力（export）で kcf が利用する V8 を使う依存関係（V8-backed dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。出力は、`katana-canvas-forge`、`katana-diagram-renderer`、または数式描画依存の不整合により停止してはならない（MUST NOT）。
+システムは、HTML / PDF / PNG / JPEG 出力（export）で kdv / kdr が利用する V8 を使う依存関係（V8-backed dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。出力は、`katana-document-viewer`、`katana-diagram-renderer`、または数式描画依存の不整合により停止してはならない（MUST NOT）。
 
 #### Scenario: HTML 出力は整合した依存関係で図形ブロックを描画する
 
 - **WHEN** Mermaid または Draw.io ブロックを含む Markdown 文書を HTML へ出力する
-- **THEN** kcf は `katana-canvas-forge = "0.1.7"` として解決される
-- **THEN** kcf と kdr が異なる `v8` バージョンを要求することにより、出力経路が失敗しない
+- **THEN** kdv は `katana-document-viewer = "0.1.0"` として解決される
+- **THEN** kdr は crates.io の semver dependency として解決される
+- **THEN** kcf は依存関係グラフに含まれない
 - **THEN** 数式描画依存は `v8` を要求しない
 
 #### Scenario: ネイティブ出力でも図形描画を利用できる
 
 - **WHEN** Mermaid または Draw.io ブロックを含む Markdown 文書を PDF / PNG / JPEG へ出力する
-- **THEN** 出力経路は、作業領域で整合した `v8 = "=147.4.0"` の依存関係グラフ（dependency graph）を使う
+- **THEN** 出力経路は、作業領域で整合した V8-backed dependency graph を使う
 - **THEN** V8 バージョン分裂に起因するワーカー切断の失敗（failure）により、図形描画が省略または置換されない
 
 #### Scenario: 依存関係のずれはリリース前に検出される
 
-- **WHEN** 将来のリリースで kcf、kdr、または作業領域の `v8` を更新する
+- **WHEN** 将来のリリースで kdv、kdr、または作業領域の `v8` を更新する
 - **THEN** リリース検証は、依存関係グラフに互換性のない V8 を使う描画器（V8-backed renderer）バージョンが含まれないことを確認する
 - **THEN** Mermaid / Draw.io 出力の回帰テストは、リリース完了扱いの前に実行される
 
+### Requirement: Markdown export は kdv v0.1.0 経由で行う
+
+システムは、Markdown の HTML / PDF / PNG / JPEG export を `katana-canvas-forge`（kcf）ではなく、`katana-document-viewer`（kdv）v0.1.0 経由で実行しなければならない（MUST）。
+
+#### Scenario: kdv export adapter を使用する
+
+- **WHEN** ユーザーが HTML、PDF、PNG、または JPEG export を実行する
+- **THEN** KatanA は kdv v0.1.0 の export 境界へ Markdown document、theme snapshot、出力形式、保存先を渡す
+- **THEN** KatanA は kcf の export API、kcf DTO、または kcf adapter を呼び出さない
+
+#### Scenario: kcf dependency が残らない
+
+- **WHEN** KatanA v0.22.26 の release 検証で dependency graph を確認する
+- **THEN** `katana-canvas-forge` は workspace dependencies と transitive dependencies に含まれない
+- **THEN** export 経路の成功は kcf の存在に依存しない

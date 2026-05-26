@@ -5,7 +5,7 @@ use crate::shell::*;
 use katana_core::markdown::ExporterTrait;
 
 use crate::app::export_poll::ExportPoll;
-use crate::preview_pane::{DownloadRequest, PreviewPane};
+use crate::preview_pane::PreviewPane;
 use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 

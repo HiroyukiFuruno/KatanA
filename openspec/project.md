@@ -50,14 +50,13 @@ KatanA（シェル）
   ├─ katana-document-viewer       Viewer / export（Markdown / HTML / PDF / PNG / JPG / 画像 / PDF / Office / CSV...）
   ├─ katana-language-editor       テキスト編集 widget（言語非依存。KatanA は Markdown highlighter を注入）
   ├─ katana-chat-ui               Chat サイドパネル + autofix diff surface（ACP / Ollama）
-  ├─ katana-diagram-renderer (kdr) 外部描画バックエンド（Mermaid / Draw.io / PlantUML / math 等。egui 非依存）
-  └─ katana-canvas-forge (kcf)    document export バックエンド（HTML / PDF / PNG / JPEG。egui 非依存）
+  └─ katana-diagram-renderer (kdr) 外部描画バックエンド（Mermaid / Draw.io / PlantUML / math 等。egui 非依存）
 ```
 
 ### 依存方向の原則
 
 - KatanA → 外部ライブラリ（一方向のみ）
-- 外部ライブラリ同士は原則無依存。KDVはKDRの外部描画結果やKCFの export 結果を受け取ってもよいが、同期制御は持たない。
+- KDV は viewer / export pipeline を持ち、必要に応じて KDR の外部描画結果を利用してよいが、editor-viewer 同期制御は持たない。
 - 外部ライブラリは LLM / ACP に依存しない（katana-chat-ui のみ例外）
 - editor-viewer同期制御はKatanAだけが持つ。KatanAがviewerまたはeditorへ命令する。
 
@@ -115,9 +114,9 @@ v0.23.0  katana-chat-ui v0.0.1 intake（ACP foundation・neutral interface）
 v0.24.0  katana-chat-ui v0.1.0 intake（chat panel widget + autofix diff surface）
 v0.25.0  katana-chat-ui future intake（document generation + translation overlay）
 
-version なし  katana-canvas-forge v0.1.0 intake（Mermaid + Draw.io + 既存export維持・master refactoring）
-version なし  katana-diagram-renderer v0.1.0 intake（kcf から描画責務を分離・export は kcf 残置）
+version なし  katana-diagram-renderer v0.1.0 intake（外部描画責務の分離）
 version なし  katana-document-viewer rename / KMM DTO viewer + export ownership 整理
+v0.22.26  katana-document-viewer v0.1.0 intake（kcf 依存を廃止し、preview / export を KDV + KDR 境界へ移行）
 
 ──── Floem 移行（egui 制約解消）────
 v0.26.0  Floem Phase 1 intake = editor + chat input（IME / カラー絵文字解消・最優先）

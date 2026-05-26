@@ -1,5 +1,4 @@
 use crate::app::preview::PreviewOps;
-use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use crate::shell_ui::{SPLIT_HALF_RATIO, SPLIT_PANEL_MAX_RATIO};
 use crate::theme_bridge;
@@ -24,7 +23,7 @@ impl<'a> VerticalSplit<'a> {
         }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+    pub fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let pane_order = self.pane_order;
         /* WHY: Use local available height inside the split container, not global window height. */
@@ -40,7 +39,6 @@ impl<'a> VerticalSplit<'a> {
                 .background,
         );
         let active_path = app.state.active_document().map(|d| d.path.clone());
-        let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
                 PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_v_bottom")
@@ -79,7 +77,7 @@ impl<'a> VerticalSplit<'a> {
                      * widgets (tables/code blocks) cannot leak size back into the resizable
                      * split panel state. */
                     let preview_rect = ui.max_rect();
-                    let out = ui.allocate_ui_at_rect(preview_rect, |ui| {
+                    ui.allocate_ui_at_rect(preview_rect, |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
                             PreviewContent::new(
                                 pane,
@@ -92,9 +90,7 @@ impl<'a> VerticalSplit<'a> {
                             )
                             .show(ui)
                         })
-                        .inner
                     });
-                    download_req = out.inner;
                 }
             });
         let current_panel_state = egui::containers::panel::PanelState::load(ui.ctx(), panel_id);
@@ -143,7 +139,5 @@ impl<'a> VerticalSplit<'a> {
                 )
                 .show(ui);
             });
-
-        download_req
     }
 }

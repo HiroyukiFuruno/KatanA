@@ -125,13 +125,6 @@
     "show_diagram_controls": "圖表控制項",
     "toggle_slideshow": "切換投影片"
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ 正在下載 PlantUML JAR…",
-    "plantuml_installed": "PlantUML 已安裝。正在重新整理預覽…",
-    "download_error": "下載錯誤: ",
-    "downloading_tool": "正在下載 {tool}…",
-    "tool_installed": "{tool} 已安裝。正在重新整理預覽…"
-  },
   "view_mode": {
     "preview": "預覽",
     "code": "程式碼",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: 未設定]"
   },
   "tool": {
-    "not_installed": "{tool} 未安裝。",
-    "install_path": "路徑: {path}",
-    "download": "⬇ 下載 {tool}"
+    "not_installed": "{tool} 未安裝。"
   },
   "settings": {
     "title": "設定",
@@ -392,11 +383,7 @@
       "daily": "每天",
       "weekly": "每週",
       "monthly": "每月",
-      "check_now": "立即檢查",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML 已安裝在 {path}。",
-      "plantuml_not_installed": "未安裝 PlantUML。",
-      "plantuml_update_now": "將 PlantUML 更新到最新版本"
+      "check_now": "立即檢查"
     },
     "behavior": {
       "section_title": "行為",

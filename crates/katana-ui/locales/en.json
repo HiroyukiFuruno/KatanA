@@ -125,13 +125,6 @@
       "trackpad_help": "Trackpad: Pinch with two fingers to zoom, drag with one to pan"
     }
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ Downloading PlantUML JAR…",
-    "plantuml_installed": "PlantUML installed. Refreshing preview…",
-    "download_error": "Download error: ",
-    "downloading_tool": "Downloading {tool}…",
-    "tool_installed": "{tool} installed. Refreshing preview…"
-  },
   "view_mode": {
     "preview": "Preview",
     "code": "Code",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: Unconfigured]"
   },
   "tool": {
-    "not_installed": "{tool} is not installed.",
-    "install_path": "Install path: {path}",
-    "download": "⬇ Download {tool}"
+    "not_installed": "{tool} is not installed."
   },
   "settings": {
     "title": "Settings",
@@ -403,11 +394,7 @@
       "daily": "Daily",
       "weekly": "Weekly",
       "monthly": "Monthly",
-      "check_now": "Check Now",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML is installed at {path}.",
-      "plantuml_not_installed": "PlantUML is not installed.",
-      "plantuml_update_now": "Update PlantUML to Latest"
+      "check_now": "Check Now"
     },
     "behavior": {
       "section_title": "Behavior",

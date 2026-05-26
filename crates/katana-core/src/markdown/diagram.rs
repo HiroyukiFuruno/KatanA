@@ -129,16 +129,10 @@ impl DiagramResult {
                 html_escape(install_hint),
                 html_escape(source)
             ),
-            Self::NotInstalled {
-                kind,
-                download_url,
-                install_path,
-            } => format!(
-                r#"<div class="katana-diagram-error"><p>{} rendering engine is not installed.</p><p>Download from: <a href="{}">{}</a></p><p>Install to: <code>{}</code></p></div>"#,
+            Self::NotInstalled { kind, message } => format!(
+                r#"<div class="katana-diagram-error"><p>{} rendering engine is not available.</p><p>{}</p></div>"#,
                 html_escape(kind),
-                html_escape(download_url),
-                html_escape(download_url),
-                html_escape(&install_path.to_string_lossy())
+                html_escape(message)
             ),
         }
     }

@@ -1,6 +1,5 @@
 use egui_kittest::Harness;
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
-use std::path::PathBuf;
 
 #[test]
 fn markdown_only_input_is_sectioned_correctly() {
@@ -97,8 +96,7 @@ fn show_section_not_installed_variant_renders() {
     let mut pane = PreviewPane::default();
     pane.sections = vec![RenderedSection::NotInstalled {
         kind: "PlantUML".to_string(),
-        download_url: "https://example.com/plantuml.jar".to_string(),
-        install_path: PathBuf::from("/tmp/plantuml.jar"),
+        message: "runtime unavailable".to_string(),
         source_lines: 0,
     }];
 

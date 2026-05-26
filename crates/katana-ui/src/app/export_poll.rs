@@ -24,22 +24,13 @@ impl ExportPoll for KatanaApp {
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
         let source = source.to_string();
         let ext = ext.to_string();
-        let base_dir = doc_path.parent().map(|p| p.to_path_buf());
+        let source_path = doc_path.to_path_buf();
         let filename = output_path
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "export".to_string());
         let (tx, rx) = std::sync::mpsc::channel();
         std::thread::spawn(move || {
-            let exporter = katana_core::markdown::HtmlExporter;
-            let html = match exporter.export_markdown_to_html(&source, &preset, base_dir.as_deref())
-            {
-                Ok(h) => h,
-                Err(e) => {
-                    let _ = tx.send(Err(e.to_string()));
-                    return;
-                }
-            };
             let exporter: Box<dyn ExporterTrait> = match ext.as_str() {
                 "pdf" => Box::new(katana_core::markdown::PdfExporter),
                 _ => Box::new(katana_core::markdown::ImageExporter),
@@ -50,9 +41,13 @@ impl ExportPoll for KatanaApp {
                     "jpg" | "jpeg" => katana_core::markdown::ExportFormat::Jpeg,
                     _ => katana_core::markdown::ExportFormat::Png,
                 },
-                html_source: html,
+                markdown_source: source,
+                source_path,
                 output_path: output_path.clone(),
-                config: katana_core::markdown::ExportConfig::default(),
+                config: katana_core::markdown::ExportConfig {
+                    theme: preset,
+                    ..Default::default()
+                },
             };
             let _ = tx.send(
                 exporter

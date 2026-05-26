@@ -9,8 +9,4 @@ pub struct SettingsUpdateMessages {
     pub weekly: String,
     pub monthly: String,
     pub check_now: String,
-    pub plantuml_section_title: String,
-    pub plantuml_installed: String,
-    pub plantuml_not_installed: String,
-    pub plantuml_update_now: String,
 }

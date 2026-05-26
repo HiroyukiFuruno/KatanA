@@ -1,5 +1,4 @@
 use crate::app::preview::PreviewOps;
-use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use crate::shell::SPLIT_PREVIEW_PANEL_MIN_WIDTH;
 use crate::shell_ui::SPLIT_HALF_RATIO;
@@ -23,7 +22,7 @@ impl<'a> HorizontalSplit<'a> {
             pane_order,
         }
     }
-    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+    pub fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let pane_order = self.pane_order;
         /* WHY: Use local available width inside the split container, not global window width. */
@@ -39,7 +38,6 @@ impl<'a> HorizontalSplit<'a> {
                 .background,
         );
         let active_path = app.state.active_document().map(|d| d.path.clone());
-        let mut download_req = None;
         let panel_id = match pane_order {
             PaneOrder::EditorFirst => {
                 PreviewLogicOps::preview_panel_id(active_path.as_deref(), "preview_panel_h_right")
@@ -80,7 +78,7 @@ impl<'a> HorizontalSplit<'a> {
                      * widgets (tables/code blocks) cannot leak width back into the resizable
                      * panel state and cause expand-without-shrink behavior. */
                     let preview_rect = ui.max_rect();
-                    let out = ui.allocate_ui_at_rect(preview_rect, |ui| {
+                    ui.allocate_ui_at_rect(preview_rect, |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
                             PreviewContent::new(
                                 pane,
@@ -93,9 +91,7 @@ impl<'a> HorizontalSplit<'a> {
                             )
                             .show(ui)
                         })
-                        .inner
                     });
-                    download_req = out.inner;
                 }
             });
         let current_panel_state = egui::containers::panel::PanelState::load(ui.ctx(), panel_id);
@@ -144,7 +140,5 @@ impl<'a> HorizontalSplit<'a> {
                 )
                 .show(ui);
             });
-
-        download_req
     }
 }

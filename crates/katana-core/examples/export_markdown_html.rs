@@ -1,20 +1,16 @@
 use katana_core::markdown::{
     ExportFormat as BackendExportFormat, ExportInput, ExporterTrait, HtmlExporter, ImageExporter,
-    KatanaRenderer, PdfExporter, color_preset::DiagramColorPreset,
+    PdfExporter, color_preset::DiagramColorPreset,
 };
 use std::path::{Path, PathBuf};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let options = ExportOptions::parse(std::env::args().skip(1).collect())?;
     let source = std::fs::read_to_string(&options.input_path)?;
-    let html = HtmlExporter::export(
-        &source,
-        &KatanaRenderer,
-        DiagramColorPreset::dark(),
-        options.input_path.parent(),
-    )?;
     prepare_output_parent(&options.output_path)?;
-    options.format.export(&html, &options.output_path)?;
+    options
+        .format
+        .export(&source, &options.input_path, &options.output_path)?;
     println!("{}", options.output_path.display());
     Ok(())
 }
@@ -65,14 +61,27 @@ impl ExportFormat {
             .unwrap_or_else(|| Ok(Self::Html))
     }
 
-    fn export(&self, html: &str, output_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    fn export(
+        &self,
+        source: &str,
+        input_path: &Path,
+        output_path: &Path,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         match self {
-            Self::Html => Ok(std::fs::write(output_path, html)?),
+            Self::Html => {
+                let html = HtmlExporter.export_markdown_to_html(
+                    source,
+                    DiagramColorPreset::dark(),
+                    input_path.parent(),
+                )?;
+                Ok(std::fs::write(output_path, html)?)
+            }
             Self::Pdf => {
                 PdfExporter
                     .export(&ExportInput {
                         format: BackendExportFormat::Pdf,
-                        html_source: html.to_string(),
+                        markdown_source: source.to_string(),
+                        source_path: input_path.to_path_buf(),
                         output_path: output_path.to_path_buf(),
                         config: Default::default(),
                     })
@@ -84,7 +93,8 @@ impl ExportFormat {
                 ImageExporter
                     .export(&ExportInput {
                         format: BackendExportFormat::Png,
-                        html_source: html.to_string(),
+                        markdown_source: source.to_string(),
+                        source_path: input_path.to_path_buf(),
                         output_path: output_path.to_path_buf(),
                         config: Default::default(),
                     })
@@ -96,7 +106,8 @@ impl ExportFormat {
                 ImageExporter
                     .export(&ExportInput {
                         format: BackendExportFormat::Jpeg,
-                        html_source: html.to_string(),
+                        markdown_source: source.to_string(),
+                        source_path: input_path.to_path_buf(),
                         output_path: output_path.to_path_buf(),
                         config: Default::default(),
                     })
