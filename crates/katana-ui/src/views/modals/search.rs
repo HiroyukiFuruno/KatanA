@@ -1,7 +1,7 @@
 use crate::Icon;
 use crate::app_state::{AppAction, AppState, ScrollSource, ViewMode};
 use crate::i18n;
-use crate::preview_pane::{DownloadRequest, PreviewPane};
+use crate::preview_pane::PreviewPane;
 use crate::shell::{
     ACTIVE_FILE_HIGHLIGHT_ROUNDING, EDITOR_INITIAL_VISIBLE_ROWS, FILE_TREE_PANEL_DEFAULT_WIDTH,
     FILE_TREE_PANEL_MIN_WIDTH, NO_WORKSPACE_BOTTOM_SPACING, RECENT_WORKSPACES_ITEM_SPACING,

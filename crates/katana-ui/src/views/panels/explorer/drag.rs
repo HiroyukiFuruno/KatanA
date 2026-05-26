@@ -236,7 +236,7 @@ mod tests {
         let source = Path::new("workspace_root").join("notes");
         let hovered = Path::new("workspace_root");
 
-        assert!(super::ExplorerDragUi::resolve_drop_target_dir(&source, &hovered, true).is_none());
+        assert!(super::ExplorerDragUi::resolve_drop_target_dir(&source, hovered, true).is_none());
     }
 
     #[test]

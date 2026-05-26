@@ -143,7 +143,6 @@ impl<'a> SettingsWindow<'a> {
                                             SettingsTab::Updates => {
                                                 triggered_action = crate::settings::tabs::UpdatesTabOps::render_updates_tab(
                                                     ui, state,
-                                                    state.config.get_plantuml_jar_path_if_exists(),
                                                 );
                                             }
                                             SettingsTab::Behavior => {

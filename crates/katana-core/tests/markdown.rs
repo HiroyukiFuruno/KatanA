@@ -68,11 +68,9 @@ fn katana_renderer_handles_mermaid_block_without_crash() {
 #[test]
 fn katana_renderer_handles_plantuml_block_without_crash() {
     let _guard = ENV_LOCK.lock().unwrap();
-    unsafe { std::env::set_var("PLANTUML_JAR", "/nonexistent/plantuml.jar") };
     let md = "\n```plantuml\n@startuml\nA -> B\n@enduml\n```\n";
     let out = MarkdownRenderOps::render_with_katana_renderer(md).expect("render failed");
     assert!(!out.html.is_empty());
-    unsafe { std::env::remove_var("PLANTUML_JAR") };
 }
 
 #[test]

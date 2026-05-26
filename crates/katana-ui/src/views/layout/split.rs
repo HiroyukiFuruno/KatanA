@@ -1,7 +1,6 @@
 use katana_platform::SplitDirection;
 
 use crate::app::preview::PreviewOps;
-use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use crate::theme_bridge;
 use crate::views::panels::preview::PreviewContent;
@@ -26,7 +25,7 @@ impl<'a> SplitMode<'a> {
             pane_order,
         }
     }
-    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+    pub fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let split_dir = self.split_dir;
         let pane_order = self.pane_order;
@@ -34,7 +33,7 @@ impl<'a> SplitMode<'a> {
         match split_dir {
             SplitDirection::Horizontal => HorizontalSplit::new(&ctx, app, pane_order).show(ui),
             SplitDirection::Vertical => VerticalSplit::new(&ctx, app, pane_order).show(ui),
-        }
+        };
     }
 }
 
@@ -50,7 +49,7 @@ impl<'a> PreviewOnly<'a> {
     pub fn new(ui: &'a mut egui::Ui, app: &'a mut KatanaApp) -> Self {
         Self { ui, app }
     }
-    pub fn show(self) -> Option<DownloadRequest> {
+    pub fn show(self) {
         let ui = self.ui;
         let app = self.app;
         ui.painter().rect_filled(
@@ -69,7 +68,7 @@ impl<'a> PreviewOnly<'a> {
         let active_path = app.state.active_document().map(|d| d.path.clone());
         if let Some(path) = active_path {
             let pane = crate::shell::KatanaApp::get_preview_pane(&mut app.tab_previews, path);
-            let download_req = PreviewContent::new(
+            PreviewContent::new(
                 pane,
                 app.state.document.active_document(),
                 &mut app.state.scroll,
@@ -83,7 +82,6 @@ impl<'a> PreviewOnly<'a> {
             /* WHY: In PreviewOnly mode, there is no editor to consume the scroll_to_line request. */
             /* WHY: We consume it here right after PreviewContent has processed it. */
             app.state.scroll.scroll_to_line = None;
-            download_req
         } else {
             ui.centered_and_justified(|ui| {
                 ui.label(
@@ -93,7 +91,6 @@ impl<'a> PreviewOnly<'a> {
                         .clone(),
                 );
             });
-            None
         }
     }
 }

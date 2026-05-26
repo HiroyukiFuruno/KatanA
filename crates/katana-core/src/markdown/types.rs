@@ -40,8 +40,7 @@ pub enum DiagramResult {
     },
     NotInstalled {
         kind: String,
-        download_url: String,
-        install_path: std::path::PathBuf,
+        message: String,
     },
 }
 

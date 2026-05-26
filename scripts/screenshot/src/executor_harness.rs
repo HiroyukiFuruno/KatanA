@@ -5,6 +5,7 @@ use crate::request::{
 use anyhow::{bail, Context, Result};
 use egui_kittest::{kittest::Queryable, Harness};
 use katana_core::markdown::ExporterTrait;
+use katana_core::system::ProcessService;
 use katana_core::workspace::TreeEntry;
 use katana_platform::theme::{ThemeMode, ThemePreset};
 use katana_ui::app_state::{AppAction, AppState, SettingsSection, SettingsTab};
@@ -16,7 +17,6 @@ use katana_ui::state::command_palette_providers::{
     AppCommandProvider, MarkdownContentProvider, WorkspaceFileProvider,
 };
 use std::path::{Component, Path, PathBuf};
-use katana_core::system::ProcessService;
 use std::time::Duration;
 use tempfile::TempDir;
 
@@ -311,28 +311,20 @@ pub fn run(
                 };
                 let preset =
                     katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
-                let base_dir = doc_path.parent().map(|p| p.to_path_buf());
-                let tmp_html_name = format!("katana_screenshot_export_{}.html", s.output_name);
-                let html_path = katana_ui::shell_logic::ShellLogicOps::export_named_html_to_tmp(
-                    &source,
-                    &tmp_html_name,
-                    &preset,
-                    base_dir.as_deref(),
-                )
-                .map_err(|e| anyhow::anyhow!("html export failed: {e}"))?;
                 let out = output_dir.join(format!("{}.png", s.output_name));
-                let html_source = std::fs::read_to_string(&html_path)
-                    .map_err(|e| anyhow::anyhow!("read html failed: {e}"))?;
                 let export_input = katana_core::markdown::export::ExportInput {
                     format: katana_core::markdown::export::ExportFormat::Png,
-                    html_source,
+                    markdown_source: source,
+                    source_path: doc_path,
                     output_path: out.clone(),
-                    config: katana_core::markdown::export::ExportConfig::default(),
+                    config: katana_core::markdown::export::ExportConfig {
+                        theme: preset,
+                        ..Default::default()
+                    },
                 };
                 katana_core::markdown::export::ImageExporter
                     .export(&export_input)
-                .map_err(|e| anyhow::anyhow!("png export failed: {e}"))?;
-                let _ = std::fs::remove_file(&html_path);
+                    .map_err(|e| anyhow::anyhow!("png export failed: {e}"))?;
                 println!("  exported: {}", out.display());
             }
             Step::OpenFile(s) => {
@@ -373,7 +365,9 @@ pub fn run(
                 let path = PathBuf::from(&s.path)
                     .canonicalize()
                     .with_context(|| format!("workspace path not found: {}", s.path))?;
-                harness.state_mut().trigger_action(AppAction::OpenWorkspace(path));
+                harness
+                    .state_mut()
+                    .trigger_action(AppAction::OpenWorkspace(path));
                 let fps = recording.as_ref().map(|r| r.fps as f64).unwrap_or(60.0);
                 let frames = ((s.wait_seconds * fps) as usize).max(30);
                 for _ in 0..frames {

@@ -3,7 +3,7 @@
 use crate::app::*;
 use crate::shell::*;
 
-use crate::preview_pane::{DownloadRequest, PreviewPane};
+use crate::preview_pane::PreviewPane;
 use crate::shell_logic::ShellLogicOps;
 use katana_platform::FilesystemService;
 

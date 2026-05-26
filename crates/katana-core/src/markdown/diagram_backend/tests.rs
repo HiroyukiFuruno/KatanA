@@ -123,6 +123,33 @@ fn cache_key_changes_when_runtime_profile_changes() {
 }
 
 #[test]
+fn cache_key_changes_when_kdv_or_kdr_version_changes() {
+    let input = input_with_options(DiagramRenderOptions::default());
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdv-kdr-mermaid");
+    let old = DiagramBackendVersion::from_kdv_kdr(
+        "0.1.0",
+        "0.3.1",
+        "Mermaid",
+        "11.10.0",
+        "checksum",
+        "katana-mermaid",
+    );
+    let new = DiagramBackendVersion::from_kdv_kdr(
+        "0.1.1",
+        "0.3.2",
+        "Mermaid",
+        "11.10.0",
+        "checksum",
+        "katana-mermaid",
+    );
+
+    assert_ne!(
+        DiagramBackendCacheKey::new(backend_id.clone(), old, &input),
+        DiagramBackendCacheKey::new(backend_id, new, &input)
+    );
+}
+
+#[test]
 fn current_theme_snapshot_uses_ui_theme_override() {
     DiagramThemeSnapshot::set_current_override(DiagramThemeOverride {
         name: "custom-light".to_string(),
@@ -198,19 +225,13 @@ fn backend_error_converts_to_existing_diagram_result() {
 
     match (DiagramBackendError::NotInstalled {
         kind: "PlantUML".to_string(),
-        download_url: "https://example.com/plantuml.jar".to_string(),
-        install_path: PathBuf::from("plantuml.jar"),
+        message: "runtime unavailable".to_string(),
     })
     .into_diagram_result("ignored")
     {
-        DiagramResult::NotInstalled {
-            kind,
-            download_url,
-            install_path,
-        } => {
+        DiagramResult::NotInstalled { kind, message } => {
             assert_eq!(kind, "PlantUML");
-            assert_eq!(download_url, "https://example.com/plantuml.jar");
-            assert_eq!(install_path, PathBuf::from("plantuml.jar"));
+            assert_eq!(message, "runtime unavailable");
         }
         other => panic!("unexpected result: {other:?}"),
     }

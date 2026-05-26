@@ -52,14 +52,9 @@ impl RendererLogicOps {
                 _source: source,
                 source_lines,
             },
-            DiagramResult::NotInstalled {
+            DiagramResult::NotInstalled { kind: k, message } => RenderedSection::NotInstalled {
                 kind: k,
-                download_url,
-                install_path,
-            } => RenderedSection::NotInstalled {
-                kind: k,
-                download_url,
-                install_path,
+                message,
                 source_lines,
             },
         }

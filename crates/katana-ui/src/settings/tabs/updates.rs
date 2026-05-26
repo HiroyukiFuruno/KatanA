@@ -1,25 +1,15 @@
 mod update_interval_selector;
 
-use std::path::PathBuf;
-
-use crate::app_action::{AppAction, AssetDownloadRequest};
-use crate::settings::tabs::updates_renderer_section::{
-    RendererUpdateSection, RendererUpdateSectionOps,
-};
+use crate::app_action::AppAction;
 use crate::state::update::UpdatePhase;
 use eframe::egui;
 
 const SECTION_SPACING: f32 = 8.0;
-const SECTION_SEPARATOR_SPACING: f32 = 24.0;
-const SECTION_AFTER_SEPARATOR_SPACING: f32 = 16.0;
-const PLANTUML_DOWNLOAD_URL: &str =
-    "https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar";
 
 impl crate::settings::tabs::UpdatesTabOps {
     pub(crate) fn render_updates_tab(
         ui: &mut egui::Ui,
         state: &mut crate::app_state::AppState,
-        jar_path: Option<PathBuf>,
     ) -> Option<AppAction> {
         let mut pending_action = None;
         let i18n_root = crate::i18n::I18nOps::get();
@@ -31,9 +21,7 @@ impl crate::settings::tabs::UpdatesTabOps {
             ui.heading(&i18n_settings.section_title);
             ui.add_space(SECTION_SPACING);
             update_interval_selector::UpdateIntervalSelector::render(ui, state, i18n_settings);
-            ui.add_space(SECTION_SEPARATOR_SPACING);
-            ui.separator();
-            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
+            ui.add_space(SECTION_SPACING);
 
             let current_version = env!("CARGO_PKG_VERSION");
             crate::widgets::AlignCenter::new()
@@ -85,31 +73,6 @@ impl crate::settings::tabs::UpdatesTabOps {
                 if ui.button(&i18n_settings.check_now).clicked() {
                     pending_action = Some(AppAction::CheckForUpdates);
                 }
-            }
-
-            ui.add_space(SECTION_SEPARATOR_SPACING);
-            ui.separator();
-            ui.add_space(SECTION_AFTER_SEPARATOR_SPACING);
-
-            let section_action = RendererUpdateSectionOps::render(
-                ui,
-                RendererUpdateSection {
-                    title: &i18n_settings.plantuml_section_title,
-                    installed_path: jar_path,
-                    default_path: state.config.try_get_plantuml_jar_path(),
-                    installed_template: &i18n_settings.plantuml_installed,
-                    not_installed_message: &i18n_settings.plantuml_not_installed,
-                    update_label: &i18n_settings.plantuml_update_now,
-                    action: |dest| {
-                        AppAction::StartPlantumlDownload(AssetDownloadRequest {
-                            url: PLANTUML_DOWNLOAD_URL.to_string(),
-                            dest,
-                        })
-                    },
-                },
-            );
-            if pending_action.is_none() {
-                pending_action = section_action;
             }
         });
 

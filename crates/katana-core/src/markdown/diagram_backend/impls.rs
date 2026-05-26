@@ -37,6 +37,24 @@ impl DiagramBackendVersion {
             renderer_profile: renderer_profile.to_string(),
         }
     }
+
+    pub fn from_kdv_kdr(
+        kdv_crate_version: &str,
+        kdr_crate_version: &str,
+        runtime_name: &str,
+        runtime_version: &str,
+        runtime_checksum: &str,
+        renderer_profile: &str,
+    ) -> Self {
+        let runtime = format!("{runtime_name}:{runtime_version};checksum={runtime_checksum}");
+        Self {
+            value: format!(
+                "crate=katana-document-viewer:{kdv_crate_version};renderer=katana-diagram-renderer:{kdr_crate_version};runtime={runtime};profile={renderer_profile}"
+            ),
+            runtime_version: runtime,
+            renderer_profile: renderer_profile.to_string(),
+        }
+    }
 }
 
 impl DiagramThemeSnapshot {

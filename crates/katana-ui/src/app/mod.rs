@@ -13,7 +13,6 @@ pub mod document_edit;
 #[cfg(test)]
 mod document_edit_tests;
 pub(crate) mod document_scroll;
-pub mod download;
 pub mod export;
 pub mod export_poll;
 pub(crate) mod image_document;
@@ -27,7 +26,6 @@ pub(crate) use diff_review::DiffReviewActionOps;
 pub(crate) use diff_review::LintFixReviewPath;
 pub(crate) use document::DocumentOps;
 pub(crate) use document_edit::DocumentEditOps;
-pub(crate) use download::DownloadOps;
 pub(crate) use export::ExportOps;
 pub(crate) use preview::PreviewOps;
 pub use types::*;

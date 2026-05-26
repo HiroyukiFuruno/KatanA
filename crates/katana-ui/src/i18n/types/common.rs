@@ -56,8 +56,6 @@ pub struct AiMessages {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolMessages {
     pub not_installed: String,
-    pub install_path: String,
-    pub download: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

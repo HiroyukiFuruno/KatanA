@@ -1,6 +1,5 @@
 use super::types::*;
 use crate::app_state::ViewMode;
-use crate::preview_pane::DownloadRequest;
 use crate::shell::KatanaApp;
 use crate::views::panels::preview::PreviewSidePanels;
 use eframe::egui;
@@ -10,7 +9,7 @@ impl<'a> CentralContent<'a> {
         Self { app }
     }
 
-    pub(crate) fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+    pub(crate) fn show(self, ui: &mut egui::Ui) {
         let app = self.app;
         let current_mode = app.state.active_view_mode();
         let is_split = current_mode == ViewMode::Split;
@@ -32,20 +31,19 @@ impl<'a> CentralContent<'a> {
                             .accordion_vertical_line,
                     );
                 });
-                return None;
+                return;
             }
 
             if Self::handle_lint_fix_review_tab(ui, app, &doc_path) {
-                return None;
+                return;
             }
 
             if p.starts_with("Katana://Welcome") || p.starts_with("Katana://Guide") {
                 /* WHY: Welcome / Guide are virtual read-only preview docs — no editor controls */
-                let mut req = None;
                 egui::CentralPanel::default().show_inside(ui, |ui| {
-                    req = crate::views::layout::split::PreviewOnly::new(ui, app).show();
+                    crate::views::layout::split::PreviewOnly::new(ui, app).show();
                 });
-                return req;
+                return;
             }
         }
 
@@ -55,14 +53,15 @@ impl<'a> CentralContent<'a> {
             egui::CentralPanel::default().show_inside(ui, |ui| {
                 crate::views::panels::dashboard::DashboardView::new(app).show(ui, app);
             });
-            return None;
+            return;
         }
 
         if is_split {
-            return Self::render_split_mode(ui, app);
+            Self::render_split_mode(ui, app);
+            return;
         }
 
-        Self::render_single_mode(ui, app, current_mode)
+        Self::render_single_mode(ui, app, current_mode);
     }
 
     fn render_preview_side_panels(ui: &mut egui::Ui, app: &mut KatanaApp) {
@@ -93,19 +92,14 @@ impl<'a> CentralContent<'a> {
         false
     }
 
-    fn render_split_mode(ui: &mut egui::Ui, app: &mut KatanaApp) -> Option<DownloadRequest> {
+    fn render_split_mode(ui: &mut egui::Ui, app: &mut KatanaApp) {
         let split_dir = app.state.active_split_direction();
         let pane_order = app.state.active_pane_order();
         let ctx = ui.ctx().clone();
-        crate::views::layout::split::SplitMode::new(&ctx, app, split_dir, pane_order).show(ui)
+        crate::views::layout::split::SplitMode::new(&ctx, app, split_dir, pane_order).show(ui);
     }
 
-    fn render_single_mode(
-        ui: &mut egui::Ui,
-        app: &mut KatanaApp,
-        current_mode: ViewMode,
-    ) -> Option<DownloadRequest> {
-        let mut download_req = None;
+    fn render_single_mode(ui: &mut egui::Ui, app: &mut KatanaApp, current_mode: ViewMode) {
         egui::CentralPanel::default()
             .frame(egui::Frame::central_panel(&ui.ctx().global_style()).inner_margin(0.0))
             .show_inside(ui, |ui| match current_mode {
@@ -133,10 +127,9 @@ impl<'a> CentralContent<'a> {
                     .show(ui);
                 }
                 ViewMode::PreviewOnly => {
-                    download_req = crate::views::layout::split::PreviewOnly::new(ui, app).show();
+                    crate::views::layout::split::PreviewOnly::new(ui, app).show();
                 }
                 ViewMode::Split => {}
             });
-        download_req
     }
 }

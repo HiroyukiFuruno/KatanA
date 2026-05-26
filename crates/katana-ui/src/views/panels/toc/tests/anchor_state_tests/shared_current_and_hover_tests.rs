@@ -61,7 +61,7 @@ fn preview_hover_after_toc_click_updates_current() {
         crate::app_state::ViewMode::PreviewOnly
     );
 
-    state.scroll.hovered_preview_lines = vec![0..1];
+    state.scroll.hovered_preview_lines = std::iter::once(0..1).collect();
     TocPanel::record_toc_click_anchor(&mut state.toc, &preview.anchor_map, 1);
 
     let active_early = {

@@ -6,22 +6,24 @@ use katana_core::markdown::{
 use std::collections::HashSet;
 use std::sync::Mutex;
 
-fn do_pdf_export(html: &str, output: &std::path::Path) {
+fn do_pdf_export(markdown: &str, output: &std::path::Path) {
     PdfExporter
         .export(&ExportInput {
             format: ExportFormat::Pdf,
-            html_source: html.to_string(),
+            markdown_source: markdown.to_string(),
+            source_path: output.with_extension("md"),
             output_path: output.to_path_buf(),
             config: Default::default(),
         })
         .unwrap();
 }
 
-fn do_image_export(html: &str, output: &std::path::Path) {
+fn do_image_export(markdown: &str, output: &std::path::Path) {
     ImageExporter
         .export(&ExportInput {
             format: image_export_format(output),
-            html_source: html.to_string(),
+            markdown_source: markdown.to_string(),
+            source_path: output.with_extension("md"),
             output_path: output.to_path_buf(),
             config: Default::default(),
         })
@@ -63,11 +65,9 @@ fn render_with_missing_diagram_assets(source: &str) -> Result<RenderOutput, Mark
     let dir = tempfile::tempdir().unwrap();
     unsafe { std::env::set_var("MERMAID_JS", dir.path().join("missing-mermaid.min.js")) };
     unsafe { std::env::set_var("DRAWIO_JS", dir.path().join("missing-drawio.min.js")) };
-    unsafe { std::env::set_var("PLANTUML_JAR", dir.path().join("missing-plantuml.jar")) };
     let output = MarkdownRenderOps::render_with_katana_renderer(source);
     unsafe { std::env::remove_var("MERMAID_JS") };
     unsafe { std::env::remove_var("DRAWIO_JS") };
-    unsafe { std::env::remove_var("PLANTUML_JAR") };
     output
 }
 
@@ -264,7 +264,7 @@ fn pdf_export_writes_native_pdf_without_chromium() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.pdf");
 
-    do_pdf_export(sample_export_html(), &output);
+    do_pdf_export(sample_export_markdown(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     assert!(bytes.starts_with(b"%PDF-"));
@@ -277,7 +277,7 @@ fn pdf_export_splits_long_document_into_pages() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.pdf");
 
-    do_pdf_export(&long_export_html(), &output);
+    do_pdf_export(&long_export_markdown(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     let page_count = pdf_page_count(&bytes);
@@ -293,7 +293,7 @@ fn image_export_writes_native_png_without_chromium() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.png");
 
-    do_image_export(sample_export_html(), &output);
+    do_image_export(sample_export_markdown(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     assert!(bytes.starts_with(&[137, 80, 78, 71, 13, 10, 26, 10]));
@@ -301,18 +301,22 @@ fn image_export_writes_native_png_without_chromium() {
 }
 
 #[test]
-fn image_export_keeps_inline_svg_diagram_without_chromium() {
+fn image_export_keeps_rendered_diagram_without_chromium() {
+    let _guard = RENDER_ENV_LOCK.lock().unwrap();
+    if mermaid_runtime_is_missing() {
+        return;
+    }
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.png");
 
-    do_image_export(inline_svg_export_html(), &output);
+    do_image_export(sample_export_markdown(), &output);
 
     let image = image::open(&output).unwrap().to_rgba8();
     assert!(
         image
             .pixels()
-            .any(|pixel| pixel[2] > 180 && pixel[0] < 80 && pixel[1] < 160),
-        "native image export must keep the inline SVG diagram pixels"
+            .any(|pixel| pixel[3] > 0 && pixel[0] < 245 && pixel[1] < 245 && pixel[2] < 245),
+        "native image export must include rendered diagram pixels"
     );
 }
 
@@ -322,7 +326,7 @@ fn image_export_writes_native_jpeg_without_chromium() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("document.jpeg");
 
-    do_image_export(sample_export_html(), &output);
+    do_image_export(sample_export_markdown(), &output);
 
     let bytes = std::fs::read(&output).unwrap();
     assert!(bytes.starts_with(&[0xFF, 0xD8, 0xFF]));
@@ -350,9 +354,10 @@ fn sample_mermaid_exports_html_pdf_png_and_jpeg_without_chromium() {
     );
     let dir = tempfile::tempdir().unwrap();
 
-    do_pdf_export(&output.html, &dir.path().join("sample.pdf"));
-    do_image_export(&output.html, &dir.path().join("sample.png"));
-    do_image_export(&output.html, &dir.path().join("sample.jpeg"));
+    let markdown = include_str!("../../../assets/fixtures/sample_mermaid.md");
+    do_pdf_export(markdown, &dir.path().join("sample.pdf"));
+    do_image_export(markdown, &dir.path().join("sample.png"));
+    do_image_export(markdown, &dir.path().join("sample.jpeg"));
 
     assert!(
         std::fs::metadata(dir.path().join("sample.pdf"))
@@ -457,40 +462,24 @@ fn pdf_page_count(bytes: &[u8]) -> usize {
         .count()
 }
 
-fn sample_export_html() -> &'static str {
-    r#"<!DOCTYPE html>
-<html>
-<body>
-<h1>Export Sample</h1>
-<p>Generated HTML is converted without Chrome or Chromium.</p>
-<div class="katana-diagram mermaid">
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120">
-<text x="20" y="40">Diagram label</text>
-</svg>
-</div>
-</body>
-</html>"#
+fn sample_export_markdown() -> &'static str {
+    r#"# Export Sample
+
+Generated Markdown is converted without Chrome or Chromium.
+
+```mermaid
+graph TD
+    A[Diagram label] --> B[Done]
+```
+"#
 }
 
-fn long_export_html() -> String {
+fn long_export_markdown() -> String {
     let mut body = String::new();
     for index in 1..=120 {
         body.push_str(&format!(
-            "<p>PDF pagination regression line {index}: exported content stays readable.</p>\n"
+            "PDF pagination regression line {index}: exported content stays readable.\n\n"
         ));
     }
-    format!("<!DOCTYPE html><html><body>{body}</body></html>")
-}
-
-fn inline_svg_export_html() -> &'static str {
-    r##"<!DOCTYPE html>
-<html>
-<body>
-<h1>Diagram Export</h1>
-<svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
-<rect x="8" y="8" width="144" height="80" fill="#0044ff"/>
-<text x="24" y="54" fill="#ffffff">Diagram label</text>
-</svg>
-</body>
-</html>"##
+    format!("# Long Export\n\n{body}")
 }

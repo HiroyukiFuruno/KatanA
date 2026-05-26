@@ -28,50 +28,23 @@ impl ShellLogicOps {
         preset: &katana_core::markdown::color_preset::DiagramColorPreset,
     ) -> Result<std::path::PathBuf, String> {
         let exporter = katana_core::markdown::HtmlExporter;
-        let html = exporter
-            .export_markdown_to_html(source, preset, None)
-            .map_err(|e| e.to_string())?;
 
         let hash = Self::hash_str(&path.to_string_lossy());
         let filename = format!("katana_export_{hash}.html");
         let output_path = std::env::temp_dir().join(filename);
         let input = katana_core::markdown::ExportInput {
             format: katana_core::markdown::ExportFormat::Html,
-            html_source: html,
+            markdown_source: source.to_string(),
+            source_path: path.to_path_buf(),
             output_path: output_path.clone(),
-            config: katana_core::markdown::ExportConfig::default(),
+            config: katana_core::markdown::ExportConfig {
+                theme: preset.clone(),
+                ..Default::default()
+            },
         };
         katana_core::markdown::ExporterTrait::export(&exporter, &input)
             .map_err(|e| e.to_string())?;
         Ok(output_path)
-    }
-
-    pub fn download_with_curl(url: &str, dest: &std::path::Path) -> Result<(), String> {
-        Self::_download_with_cmd("curl", url, dest)
-    }
-
-    pub(crate) fn _download_with_cmd(
-        cmd: &str,
-        url: &str,
-        dest: &std::path::Path,
-    ) -> Result<(), String> {
-        if let Some(p) = dest.parent() {
-            std::fs::create_dir_all(p).map_err(|e| e.to_string())?;
-        }
-        let status = katana_core::system::ProcessService::create_command(cmd)
-            .args(vec!["-L", "-o", dest.to_str().unwrap_or(""), url])
-            .status()
-            .map_err(|e| {
-                format!(
-                    "{}: {e}",
-                    crate::i18n::I18nOps::get().error.curl_launch_failed.clone()
-                )
-            })?;
-        if status.success() {
-            Ok(())
-        } else {
-            Err(crate::i18n::I18nOps::get().error.download_failed.clone())
-        }
     }
 
     pub fn export_named_html_to_tmp(
@@ -81,15 +54,19 @@ impl ShellLogicOps {
         base_dir: Option<&std::path::Path>,
     ) -> Result<std::path::PathBuf, String> {
         let exporter = katana_core::markdown::HtmlExporter;
-        let html = exporter
-            .export_markdown_to_html(source, preset, base_dir)
-            .map_err(|e| e.to_string())?;
         let output_path = std::env::temp_dir().join(filename);
+        let source_path = base_dir
+            .map(|dir| dir.join(filename).with_extension("md"))
+            .unwrap_or_else(|| std::path::PathBuf::from(filename).with_extension("md"));
         let input = katana_core::markdown::ExportInput {
             format: katana_core::markdown::ExportFormat::Html,
-            html_source: html,
+            markdown_source: source.to_string(),
+            source_path,
             output_path: output_path.clone(),
-            config: katana_core::markdown::ExportConfig::default(),
+            config: katana_core::markdown::ExportConfig {
+                theme: preset.clone(),
+                ..Default::default()
+            },
         };
         katana_core::markdown::ExporterTrait::export(&exporter, &input)
             .map_err(|e| e.to_string())?;

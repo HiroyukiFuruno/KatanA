@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use serde::{Deserialize, Serialize};
 
 use crate::markdown::DiagramResult;
@@ -30,8 +28,7 @@ pub enum DiagramBackendError {
     },
     NotInstalled {
         kind: String,
-        download_url: String,
-        install_path: PathBuf,
+        message: String,
     },
 }
 
@@ -50,15 +47,7 @@ impl DiagramBackendError {
                 install_hint,
                 source: source.into(),
             },
-            Self::NotInstalled {
-                kind,
-                download_url,
-                install_path,
-            } => DiagramResult::NotInstalled {
-                kind,
-                download_url,
-                install_path,
-            },
+            Self::NotInstalled { kind, message } => DiagramResult::NotInstalled { kind, message },
         }
     }
 }

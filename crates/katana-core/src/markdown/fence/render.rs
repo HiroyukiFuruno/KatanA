@@ -48,8 +48,8 @@ impl MarkdownFenceOps {
                 install_hint,
                 ..
             } => Self::fallback_html("", &format!("{tool_name} not found. {install_hint}")),
-            DiagramResult::NotInstalled { kind, .. } => {
-                Self::fallback_html("", &format!("{kind} is not installed"))
+            DiagramResult::NotInstalled { kind, message } => {
+                Self::fallback_html("", &format!("{kind} is not available. {message}"))
             }
         })
     }

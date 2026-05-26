@@ -4,10 +4,6 @@ use crate::app_state::ExportFormat;
 use crate::state::document::ViewMode;
 use katana_platform::{PaneOrder, SplitDirection};
 
-#[path = "app_action_types/asset_download_request.rs"]
-mod asset_download_request;
-pub use asset_download_request::AssetDownloadRequest;
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum AppAction {
     InstallUpdate,
@@ -81,7 +77,6 @@ pub enum AppAction {
     CheckForUpdates,
     StartUpdateDownload,
     InstallUpdateAndRestart,
-    StartPlantumlDownload(AssetDownloadRequest),
     SetSplitDirection(SplitDirection),
     ToggleSplitMode,
     ToggleCodePreview,

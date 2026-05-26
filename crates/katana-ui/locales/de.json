@@ -125,13 +125,6 @@
     "show_diagram_controls": "Diagrammsteuerungen",
     "toggle_slideshow": "Diashow umschalten"
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ Lade PlantUML JAR herunter…",
-    "plantuml_installed": "PlantUML installiert. Vorschau wird aktualisiert…",
-    "download_error": "Download-Fehler: ",
-    "downloading_tool": "{tool} wird heruntergeladen…",
-    "tool_installed": "{tool} installiert. Vorschau wird aktualisiert…"
-  },
   "view_mode": {
     "preview": "Vorschau",
     "code": "Code",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: Nicht konfiguriert]"
   },
   "tool": {
-    "not_installed": "{tool} ist nicht installiert.",
-    "install_path": "Pfad: {path}",
-    "download": "⬇ {tool} herunterladen"
+    "not_installed": "{tool} ist nicht installiert."
   },
   "settings": {
     "title": "Einstellungen",
@@ -392,11 +383,7 @@
       "daily": "Täglich",
       "weekly": "Wöchentlich",
       "monthly": "Monatlich",
-      "check_now": "Jetzt prüfen",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML ist unter {path} installiert.",
-      "plantuml_not_installed": "PlantUML ist nicht installiert.",
-      "plantuml_update_now": "PlantUML auf neueste Version aktualisieren"
+      "check_now": "Jetzt prüfen"
     },
     "behavior": {
       "section_title": "Verhalten",

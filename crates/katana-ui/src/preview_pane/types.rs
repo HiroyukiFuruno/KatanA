@@ -100,8 +100,7 @@ pub enum RenderedSection {
     },
     NotInstalled {
         kind: String,
-        download_url: String,
-        install_path: std::path::PathBuf,
+        message: String,
         source_lines: usize,
     },
     Pending {
@@ -109,13 +108,6 @@ pub enum RenderedSection {
         source: String,
         source_lines: usize,
     },
-}
-
-#[derive(Debug, Clone)]
-pub struct DownloadRequest {
-    pub tool_name: String,
-    pub url: String,
-    pub dest: std::path::PathBuf,
 }
 
 #[derive(Clone)]

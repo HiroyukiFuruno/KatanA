@@ -8,9 +8,22 @@ fn main() {
     println!("cargo:rerun-if-changed={}", lock_path.display());
 
     let lock = fs::read_to_string(&lock_path).expect("Cargo.lock should be readable");
-    let version = lock_package_version(&lock, "katana-diagram-renderer")
-        .expect("katana-diagram-renderer should exist in Cargo.lock");
-    println!("cargo:rustc-env=KATANA_DIAGRAM_RENDERER_VERSION={version}");
+    emit_lock_package_version(
+        &lock,
+        "katana-diagram-renderer",
+        "KATANA_DIAGRAM_RENDERER_VERSION",
+    );
+    emit_lock_package_version(
+        &lock,
+        "katana-document-viewer",
+        "KATANA_DOCUMENT_VIEWER_VERSION",
+    );
+}
+
+fn emit_lock_package_version(lock: &str, package_name: &str, env_name: &str) {
+    let version = lock_package_version(lock, package_name)
+        .unwrap_or_else(|| panic!("{package_name} should exist in Cargo.lock"));
+    println!("cargo:rustc-env={env_name}={version}");
 }
 
 fn lock_package_version(lock: &str, package_name: &str) -> Option<String> {

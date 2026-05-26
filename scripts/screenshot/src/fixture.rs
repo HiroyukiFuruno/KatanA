@@ -60,8 +60,7 @@ fn write_workspace_file(file: &WorkspaceFile, workspace_dir: &Path) -> Result<()
             let source = PathBuf::from(source)
                 .canonicalize()
                 .with_context(|| format!("copy source not found for fixture file {name}"))?;
-            std::fs::copy(source, &dest)
-                .with_context(|| format!("copying fixture file {name}"))?;
+            std::fs::copy(source, &dest).with_context(|| format!("copying fixture file {name}"))?;
         }
     }
 

@@ -166,21 +166,7 @@ The project is evolving rapidly — new features and improvements are released f
 
 ## Diagram Rendering Setup
 
-KatanA supports Mermaid, PlantUML, and Draw.io diagrams in Markdown fenced code blocks. Mermaid and Draw.io renderer assets are bootstrapped by KatanA. PlantUML rendering requires a Java runtime.
-
-### PlantUML
-
-1. Install a Java runtime:
-
-```sh
-brew install openjdk@25
-```
-
-1. Open a Markdown file containing a PlantUML block in KatanA and click the **⬇ Download** button that appears in the preview pane. The `plantuml.jar` will be downloaded automatically.
-
-### Draw.io
-
-Draw.io diagrams are rendered natively — no external tools required.
+KatanA supports Mermaid, PlantUML, and Draw.io diagrams in Markdown fenced code blocks. Diagram rendering is handled by the bundled KDV / KDR integration, so no Java runtime or renderer download step is required.
 
 ---
 
@@ -274,30 +260,6 @@ Support helps cover:
 
 - ⭐ Star this repository — it helps others discover KatanA
 - Share KatanA with people who might find it useful
-
----
-
-## Appendix: Windows Environment Setup
-
-Installation instructions for the Java runtime required for PlantUML rendering on Windows.
-
-<details>
-<summary>Installing JDK (Required for PlantUML)</summary>
-
-A Java runtime is required to render PlantUML diagrams.
-
-```powershell
-winget install -e --id Oracle.JDK.25
-```
-
-> **If you encounter errors:** Errors may occur if your `winget` sources are outdated. Keep your sources updated and retry:
->
-> ```powershell
-> winget source update
-> winget install -e --id Oracle.JDK.25
-> ```
-
-</details>
 
 ---
 

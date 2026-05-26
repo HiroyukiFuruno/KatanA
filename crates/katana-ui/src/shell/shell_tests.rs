@@ -4,7 +4,6 @@ mod tests {
     use super::*;
     use crate::app::action::ActionOps;
     use crate::app::document::DocumentOps;
-    use crate::app::download::DownloadOps;
     use crate::app::workspace::WorkspaceOps;
     use crate::shell_logic::ShellLogicOps;
     use crate::state::ViewMode;
@@ -402,26 +401,6 @@ mod tests {
     }
 
     #[test]
-    fn start_download_sets_download_state() {
-        let mut app = make_app();
-        app.start_download(crate::preview_pane::DownloadRequest {
-            tool_name: "PlantUML".to_string(),
-            url: "http://example.com/plantuml.jar".to_string(),
-            dest: PathBuf::from("/tmp/test_plantuml.jar"),
-        });
-        assert!(app.state.layout.status_message.is_some());
-        assert!(app.download_rx.is_some());
-    }
-
-    #[test]
-    pub(crate) fn download_with_curl_creates_parent_dir() {
-        let dir = tempfile::tempdir().unwrap();
-        let dest = dir.path().join("subdir").join("file.jar");
-        let _ = ShellLogicOps::download_with_curl("http://127.0.0.1:0/nonexistent", &dest);
-        assert!(dest.parent().unwrap().exists());
-    }
-
-    #[test]
     fn take_action_returns_and_resets_pending_action() {
         let mut app = make_app();
         app.pending_action = AppAction::ChangeLanguage("en".to_string());
@@ -436,11 +415,6 @@ mod tests {
         );
     }
 
-    #[test]
-    fn poll_download_without_rx_does_nothing() {
-        let app = make_app();
-        assert!(app.download_rx.is_none());
-    }
 }
 
 #[cfg(test)]
@@ -449,7 +423,6 @@ mod tests_extra {
     use super::*;
     use crate::app::action::ActionOps;
     use crate::app::document::DocumentOps;
-    use crate::app::download::DownloadOps;
     use crate::app::export::ExportOps;
     use crate::app::preview::PreviewOps;
     use crate::app::update::UpdateOps;
@@ -551,38 +524,6 @@ mod tests_extra {
     }
 
     #[test]
-    pub(crate) fn download_with_curl_success_with_local_file_url() {
-        let dir = tempfile::tempdir().unwrap();
-        let src = dir.path().join("source.txt");
-        let dest = dir.path().join("dest.txt");
-        std::fs::write(&src, "hello").unwrap();
-
-        let url = if cfg!(windows) {
-            format!("file:///{}", src.display().to_string().replace('\\', "/"))
-        } else {
-            format!("file://{}", src.display())
-        };
-        let result = ShellLogicOps::download_with_curl(&url, &dest);
-        assert!(result.is_ok());
-        assert!(dest.exists());
-    }
-
-    #[test]
-    pub(crate) fn download_with_curl_launch_error() {
-        let dir = tempfile::tempdir().unwrap();
-        let dest = dir.path().join("dest.txt");
-        let result = ShellLogicOps::_download_with_cmd(
-            "invalid_curl_binary_for_test",
-            "http://example.com/file",
-            &dest,
-        );
-
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert!(err.contains(&crate::i18n::I18nOps::get().error.curl_launch_failed));
-    }
-
-    #[test]
     fn process_action_open_workspace_calls_handler() {
         let mut app = make_app();
         let dir = make_temp_workspace();
@@ -650,105 +591,6 @@ mod tests_extra {
         let path = _dir.path().join("test.md");
         app.refresh_preview(&path, "# Initial");
         app.refresh_preview(&path, "# Updated");
-    }
-
-    #[test]
-    fn poll_download_does_nothing_when_no_rx() {
-        let mut app = make_app();
-        let ctx = egui::Context::default();
-        app.poll_download(&ctx);
-        assert!(app.download_rx.is_none());
-    }
-
-    #[test]
-    fn poll_download_sets_status_on_success() {
-        let mut app = make_app();
-        let (tx, rx) = std::sync::mpsc::channel();
-        app.download_rx = Some(rx);
-        tx.send(Ok(())).unwrap();
-        drop(tx);
-        let ctx = egui::Context::default();
-        app.poll_download(&ctx);
-        assert!(app.state.layout.status_message.is_some());
-        assert!(app.download_rx.is_none());
-        assert_eq!(
-            format!("{:?}", app.pending_action),
-            format!("{:?}", AppAction::RefreshDiagrams)
-        );
-    }
-
-    #[test]
-    fn poll_download_sets_error_on_failure() {
-        let mut app = make_app();
-        let (tx, rx) = std::sync::mpsc::channel();
-        app.download_rx = Some(rx);
-        tx.send(Err("network error".to_string())).unwrap();
-        drop(tx);
-        let ctx = egui::Context::default();
-        app.poll_download(&ctx);
-        assert!(app.state.layout.status_message.is_some());
-        assert!(app.download_rx.is_none());
-    }
-
-    #[test]
-    fn poll_download_keeps_rx_when_empty() {
-        let mut app = make_app();
-        let (_tx, rx) = std::sync::mpsc::channel::<Result<(), String>>();
-        app.download_rx = Some(rx);
-        let ctx = egui::Context::default();
-        app.poll_download(&ctx);
-        assert!(app.download_rx.is_some());
-    }
-
-    #[test]
-    fn poll_download_clears_rx_on_disconnect() {
-        let mut app = make_app();
-        let (tx, rx) = std::sync::mpsc::channel::<Result<(), String>>();
-        /* WHY: Disconnected on sender drop */
-        drop(tx);
-        app.download_rx = Some(rx);
-        let ctx = egui::Context::default();
-        app.poll_download(&ctx);
-        assert!(app.download_rx.is_none());
-    }
-
-    #[test]
-    pub(crate) fn download_with_curl_failure_returns_error() {
-        let dir = tempfile::TempDir::new().unwrap();
-        let dest = dir.path().join("nonexistent.jar");
-        let result = ShellLogicOps::download_with_curl("file:///nonexistent/path/to/file", &dest);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    pub(crate) fn download_with_curl_creates_parent_dirs() {
-        let dir = tempfile::TempDir::new().unwrap();
-        let src = dir.path().join("source.txt");
-        std::fs::write(&src, "hello").unwrap();
-        let dest = dir.path().join("subdir").join("deep").join("dest.txt");
-        let url = if cfg!(windows) {
-            format!("file:///{}", src.display().to_string().replace('\\', "/"))
-        } else {
-            format!("file://{}", src.display())
-        };
-        let result = ShellLogicOps::download_with_curl(&url, &dest);
-        assert!(dest.parent().unwrap().exists());
-        assert!(result.is_ok());
-        assert!(dest.exists());
-    }
-
-    #[test]
-    pub(crate) fn download_with_curl_no_parent_path() {
-        let result = ShellLogicOps::download_with_curl("file:///nonexistent/file", std::path::Path::new(""));
-        assert!(result.is_err());
-    }
-
-    #[test]
-    #[cfg(unix)]
-    pub(crate) fn download_with_curl_create_dir_error() {
-        let dest = std::path::Path::new("/dev/null/impossible_dir/file.jar");
-        let result = ShellLogicOps::download_with_curl("file:///nonexistent/file", dest);
-        assert!(result.is_err());
     }
 
     struct FailingRepository;
@@ -1152,7 +994,6 @@ mod tests_extra {
                     histories: vec![temp_text.clone(), "/workspace/real".to_string()],
                     open_workspace_tabs: vec![temp_text.clone()],
                     active_workspace: Some(temp_text.clone()),
-                    ..katana_platform::workspace::GlobalWorkspaceState::default()
                 },
             ),
         ));
@@ -1428,8 +1269,6 @@ mod tests_extra {
             fs: FilesystemService::new(),
             pending_action: AppAction::None,
             tab_previews: Vec::new(),
-            download_rx: None,
-            active_download: None,
             explorer_rx: None,
             update_rx: None,
             changelog_rx: None,
@@ -1587,7 +1426,7 @@ mod tests_extra {
         assert!(path.exists(), "HTML file must exist at {}", path.display());
         let contents = std::fs::read_to_string(&path).unwrap();
         assert!(
-            contents.contains("<!DOCTYPE html>"),
+            contents.to_ascii_lowercase().contains("<!doctype html>"),
             "Output must be valid HTML"
         );
         assert!(contents.contains("Hello"), "Output must contain heading");
@@ -1720,7 +1559,7 @@ mod tests_extra {
 
         let html = std::fs::read_to_string(&path).unwrap();
         assert!(
-            html.contains("<!DOCTYPE html>"),
+            html.to_ascii_lowercase().contains("<!doctype html>"),
             "must be full HTML document"
         );
         assert!(html.contains("Real Document"), "must contain the heading");

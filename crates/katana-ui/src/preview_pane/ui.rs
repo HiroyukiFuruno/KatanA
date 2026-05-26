@@ -12,11 +12,10 @@ impl PreviewPane {
 }
 
 impl PreviewPane {
-    pub fn show(&mut self, ui: &mut egui::Ui) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
+    pub fn show(&mut self, ui: &mut egui::Ui) -> Vec<(usize, char)> {
         self.repaint_ctx = Some(ui.ctx().clone());
         self.poll_renders(ui.ctx());
 
-        let mut request: Option<DownloadRequest> = None;
         let mut actions = Vec::new();
 
         ScrollArea::vertical()
@@ -34,14 +33,12 @@ impl PreviewPane {
                         .max_rect(child_rect)
                         .layout(egui::Layout::top_down(egui::Align::Min)),
                     |ui| {
-                        let (req, act) = self.render_sections(ui, None, None, None, None, false);
-                        request = req;
-                        actions = act;
+                        actions = self.render_sections(ui, None, None, None, None, false);
                     },
                 );
             });
         self.render_fullscreen_modal(ui.ctx());
-        (request, actions)
+        actions
     }
 
     pub fn show_content(
@@ -51,10 +48,10 @@ impl PreviewPane {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         search_query: Option<String>,
         search_active_index: Option<usize>,
-    ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
+    ) -> Vec<(usize, char)> {
         self.repaint_ctx = Some(ui.ctx().clone());
         self.poll_renders(ui.ctx());
-        let (request, actions) = self.render_sections(
+        let actions = self.render_sections(
             ui,
             active_editor_line,
             hovered_lines,
@@ -63,7 +60,7 @@ impl PreviewPane {
             false,
         );
         self.render_fullscreen_modal(ui.ctx());
-        (request, actions)
+        actions
     }
 
     pub(crate) fn render_sections(
@@ -74,13 +71,13 @@ impl PreviewPane {
         search_query: Option<String>,
         search_active_index: Option<usize>,
         is_slideshow: bool,
-    ) -> (Option<DownloadRequest>, Vec<(usize, char)>) {
+    ) -> Vec<(usize, char)> {
         self.visible_rect = Some(ui.clip_rect());
         self.content_top_y = ui.next_widget_position().y;
         self.heading_anchors.clear();
         self.block_anchors.clear();
         let mut fullscreen_request: Option<usize> = None;
-        let (request, actions) = crate::preview_pane::SectionLogicOps::render_sections(
+        let actions = crate::preview_pane::SectionLogicOps::render_sections(
             ui,
             &mut self.commonmark_cache,
             &self.sections,
@@ -123,7 +120,7 @@ impl PreviewPane {
         let ctx = ui.ctx().clone();
         self.handle_fullscreen_request(fullscreen_request, Some(&ctx));
 
-        (request, actions)
+        actions
     }
 
     pub(crate) fn render_fullscreen_modal(&mut self, ctx: &egui::Context) {

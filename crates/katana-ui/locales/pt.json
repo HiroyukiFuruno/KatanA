@@ -125,13 +125,6 @@
     "show_diagram_controls": "Controles do Diagrama",
     "toggle_slideshow": "Alternar Apresentação de Slides"
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ Baixando PlantUML JAR…",
-    "plantuml_installed": "PlantUML instalado. Atualizando visualização…",
-    "download_error": "Erro de download: ",
-    "downloading_tool": "Baixando {tool}…",
-    "tool_installed": "{tool} instalado. Atualizando visualização…"
-  },
   "view_mode": {
     "preview": "Visualização",
     "code": "Código",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: Não configurada]"
   },
   "tool": {
-    "not_installed": "{tool} não está instalado.",
-    "install_path": "Caminho: {path}",
-    "download": "⬇ Baixar {tool}"
+    "not_installed": "{tool} não está instalado."
   },
   "settings": {
     "title": "Configurações",
@@ -392,11 +383,7 @@
       "daily": "Diário",
       "weekly": "Semanal",
       "monthly": "Mensal",
-      "check_now": "Verificar agora",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "O PlantUML está instalado em {path}.",
-      "plantuml_not_installed": "PlantUML não está instalado.",
-      "plantuml_update_now": "Atualizar PlantUML para a versão mais recente"
+      "check_now": "Verificar agora"
     },
     "behavior": {
       "section_title": "Comportamento",

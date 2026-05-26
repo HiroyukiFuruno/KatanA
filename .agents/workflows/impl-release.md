@@ -111,7 +111,7 @@ git switch -c release/vX.Y.Z
 
 2. push 前の正式な品質ゲートは `pre-push` hook とする。通常の Task PR では、重い `just check` / `just check-light` を push 直前に二重実行せず、必要な対象検証を実施した上で通常の `git push` を行い、hook に通す。
 
-3. `git push --no-verify` は原則禁止する。例外は、hook 自体の不具合、または同一コミットで同等以上の hook ゲートを通した直後の再 push に限る。例外を使う場合は、理由、直前に通したゲート、対象コミット、実行コマンドを `tasks.md` または PR 本文に記録する。
+3. `git push --no-verify` は禁止する。hook や実行環境に問題がある場合は原因を直し、通常の `git push` で pre-push hook を通す。例外記録で済ませてはならない。
 
 4. markdownのフォーマット（format）および Lint修正（lintfix）を実行し、`tasks.md` を含む全ドキュメントの体裁を整える。
 

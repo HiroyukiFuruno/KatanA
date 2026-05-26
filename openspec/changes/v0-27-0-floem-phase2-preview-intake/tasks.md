@@ -35,7 +35,7 @@
 ## 2. 動作検証
 
 - [ ] 2.1 Markdown preview が Floem 経由で描画されることを確認する
-- [ ] 2.2 図表（Mermaid / Draw.io）が kcf 経由で preview に表示されることを確認する
+- [ ] 2.2 図表（Mermaid / Draw.io）が kdv / kdr 経由で preview に表示されることを確認する
 - [ ] 2.3 残る egui 依存（chrome のみ）を記録する（v0.28.0 の対象）
 - [ ] 2.4 `just check` がエラーなし（exit code 0）で通過すること
 

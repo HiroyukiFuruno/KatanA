@@ -125,13 +125,6 @@
     "show_diagram_controls": "다이어그램 컨트롤",
     "toggle_slideshow": "슬라이드쇼 전환"
   },
-  "plantuml": {
-    "downloading_plantuml": "⬇ PlantUML JAR 다운로드 중…",
-    "plantuml_installed": "PlantUML이 설치되었습니다. 미리보기를 새로 고칩니다…",
-    "download_error": "다운로드 오류: ",
-    "downloading_tool": "{tool} 다운로드 중…",
-    "tool_installed": "{tool} 설치 완료. 미리보기를 새로고침합니다…"
-  },
   "view_mode": {
     "preview": "미리보기",
     "code": "코드",
@@ -224,9 +217,7 @@
     "ai_unconfigured": "[AI: 구성되지 않음]"
   },
   "tool": {
-    "not_installed": "{tool}이(가) 설치되지 않았습니다.",
-    "install_path": "경로: {path}",
-    "download": "⬇ {tool} 다운로드"
+    "not_installed": "{tool}이(가) 설치되지 않았습니다."
   },
   "settings": {
     "title": "설정",
@@ -392,11 +383,7 @@
       "daily": "매일",
       "weekly": "매주",
       "monthly": "매월",
-      "check_now": "지금 확인",
-      "plantuml_section_title": "PlantUML",
-      "plantuml_installed": "PlantUML이 {path}에 설치되어 있습니다.",
-      "plantuml_not_installed": "PlantUML이 설치되어 있지 않습니다.",
-      "plantuml_update_now": "PlantUML 최신 버전으로 업데이트"
+      "check_now": "지금 확인"
     },
     "behavior": {
       "section_title": "동작",

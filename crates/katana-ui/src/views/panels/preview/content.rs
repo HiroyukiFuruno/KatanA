@@ -1,6 +1,6 @@
 use super::types::*;
 use crate::app_state::AppAction;
-use crate::preview_pane::{DownloadRequest, PreviewPane};
+use crate::preview_pane::PreviewPane;
 use eframe::egui;
 const BACK_TO_TOP_THRESHOLD: f32 = 400.0;
 use super::types::PreviewLogicOps;
@@ -27,7 +27,7 @@ impl<'a> PreviewContent<'a> {
         }
     }
 
-    pub fn show(self, ui: &mut egui::Ui) -> Option<DownloadRequest> {
+    pub fn show(self, ui: &mut egui::Ui) {
         let PreviewContent {
             preview,
             document,
@@ -38,7 +38,6 @@ impl<'a> PreviewContent<'a> {
             doc_search_active_index,
         } = self;
 
-        let mut download_req = None;
         /* WHY: Lock preview content to the panel's current available width so
          * intrinsic-size widgets cannot expand the parent resizable panel state. */
         let panel_width = ui.available_width();
@@ -110,7 +109,7 @@ impl<'a> PreviewContent<'a> {
                                     None
                                 };
 
-                                let (req, actions) = preview.show_content(
+                                let actions = preview.show_content(
                                     ui,
                                     scroll.active_editor_line,
                                     hover_out,
@@ -132,7 +131,6 @@ impl<'a> PreviewContent<'a> {
                                     scroll.scroll_to_line = Some(hovered.start);
                                 }
 
-                                download_req = req;
                                 /* WHY: Handle embedded actions like Task List toggling. */
                                 if let Some((global_index, new_state)) = actions.into_iter().next() {
                                     *action = AppAction::ToggleTaskList {
@@ -177,7 +175,5 @@ impl<'a> PreviewContent<'a> {
         if let Some(doc) = document {
             PreviewLogicOps::render_linter_docs_github_button(ui, &doc.path);
         }
-
-        download_req
     }
 }

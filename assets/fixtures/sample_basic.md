@@ -289,7 +289,7 @@ Mass-energy equivalence: $E = mc^2$
 
 ### 10.3 Single-line Math
 
-$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
+$$ \sum_{k=1}^{n} k = \frac{n(n+1)}{2} $$
 
 ---
 
