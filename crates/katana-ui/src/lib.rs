@@ -51,6 +51,8 @@ pub mod shell;
 pub mod shell_logic;
 pub mod shell_ui;
 pub mod svg_loader;
+#[cfg(test)]
+pub(crate) mod test_render_env;
 pub mod theme_bridge;
 pub mod widgets;
 

@@ -13,7 +13,7 @@ mod kdv_runtime;
 use self::kdv_runtime::{kdv_diagram_output, kdv_render_request_theme};
 
 const KDV_CRATE_VERSION: &str = env!("KATANA_DOCUMENT_VIEWER_VERSION");
-const KDR_CRATE_VERSION: &str = env!("KATANA_DIAGRAM_RENDERER_VERSION");
+const KRR_CRATE_VERSION: &str = env!("KATANA_RENDER_RUNTIME_VERSION");
 const KDV_MERMAID_PROFILE: &str = "katana-mermaid";
 const KDV_DRAWIO_PROFILE: &str = "katana-drawio";
 const KDV_PLANTUML_PROFILE: &str = "katana-plantuml";
@@ -32,7 +32,7 @@ struct KatanaMermaidBackend;
 impl DiagramBackendAdapter for KatanaMermaidBackend {
     fn id(&self) -> &DiagramBackendId {
         static ID: OnceLock<DiagramBackendId> = OnceLock::new();
-        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdv-kdr-mermaid"))
+        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdv-krr-mermaid"))
     }
 
     fn version(&self) -> &DiagramBackendVersion {
@@ -52,7 +52,7 @@ impl DiagramBackendAdapter for KatanaPlantUmlBackend {
     fn id(&self) -> &DiagramBackendId {
         static ID: OnceLock<DiagramBackendId> = OnceLock::new();
         ID.get_or_init(|| {
-            DiagramBackendId::new(DiagramBackendLanguage::PlantUml, "kdv-kdr-plantuml")
+            DiagramBackendId::new(DiagramBackendLanguage::PlantUml, "kdv-krr-plantuml")
         })
     }
 
@@ -72,7 +72,7 @@ struct KatanaDrawIoBackend;
 impl DiagramBackendAdapter for KatanaDrawIoBackend {
     fn id(&self) -> &DiagramBackendId {
         static ID: OnceLock<DiagramBackendId> = OnceLock::new();
-        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::DrawIo, "kdv-kdr-drawio"))
+        ID.get_or_init(|| DiagramBackendId::new(DiagramBackendLanguage::DrawIo, "kdv-krr-drawio"))
     }
 
     fn version(&self) -> &DiagramBackendVersion {
@@ -86,34 +86,34 @@ impl DiagramBackendAdapter for KatanaDrawIoBackend {
 }
 
 fn mermaid_backend_version() -> DiagramBackendVersion {
-    DiagramBackendVersion::from_kdv_kdr(
+    DiagramBackendVersion::from_kdv_krr(
         KDV_CRATE_VERSION,
-        KDR_CRATE_VERSION,
+        KRR_CRATE_VERSION,
         "Mermaid.js",
-        katana_diagram_renderer::markdown::mermaid_renderer::MERMAID_JS_VERSION,
-        katana_diagram_renderer::markdown::mermaid_renderer::MERMAID_JS_CHECKSUM,
+        katana_render_runtime::markdown::mermaid_renderer::MERMAID_JS_VERSION,
+        katana_render_runtime::markdown::mermaid_renderer::MERMAID_JS_CHECKSUM,
         KDV_MERMAID_PROFILE,
     )
 }
 
 fn drawio_backend_version() -> DiagramBackendVersion {
-    DiagramBackendVersion::from_kdv_kdr(
+    DiagramBackendVersion::from_kdv_krr(
         KDV_CRATE_VERSION,
-        KDR_CRATE_VERSION,
+        KRR_CRATE_VERSION,
         "Draw.io",
-        katana_diagram_renderer::markdown::drawio_renderer::DRAWIO_JS_VERSION,
-        katana_diagram_renderer::markdown::drawio_renderer::DRAWIO_JS_CHECKSUM,
+        katana_render_runtime::markdown::drawio_renderer::DRAWIO_JS_VERSION,
+        katana_render_runtime::markdown::drawio_renderer::DRAWIO_JS_CHECKSUM,
         KDV_DRAWIO_PROFILE,
     )
 }
 
 fn plantuml_backend_version() -> DiagramBackendVersion {
-    DiagramBackendVersion::from_kdv_kdr(
+    DiagramBackendVersion::from_kdv_krr(
         KDV_CRATE_VERSION,
-        KDR_CRATE_VERSION,
+        KRR_CRATE_VERSION,
         "PlantUML",
-        katana_diagram_renderer::markdown::plantuml_renderer::PLANTUML_JAR_VERSION,
-        katana_diagram_renderer::markdown::plantuml_renderer::PLANTUML_JAR_CHECKSUM,
+        katana_render_runtime::markdown::plantuml_renderer::PLANTUML_JAR_VERSION,
+        katana_render_runtime::markdown::plantuml_renderer::PLANTUML_JAR_CHECKSUM,
         KDV_PLANTUML_PROFILE,
     )
 }

@@ -58,7 +58,7 @@
 - [x] 2.3 `katana-ui-widget` のDoR/DoDを、KMM metadata/display DTO確定後のFloem共通UI部品として定義する
 - [x] 2.4 `katana-document-viewer` のDoR/DoDを、KMM public DTOとKUW境界待ちとして定義する
 - [x] 2.5 `katana-language-editor` のDoR/DoDを、KMM metadata schemaとtarget resolution API待ちとして定義する
-- [x] 2.6 `katana-diagram-renderer` のDoR/DoDを外部描画専用 crate として定義し、`katana-canvas-forge` のDoR/DoDを既存export維持・KDV移譲後のexport削除条件として定義する
+- [x] 2.6 `katana-render-runtime` のDoR/DoDを外部描画 runtime 専用 crate として定義し、`katana-canvas-forge` のDoR/DoDを既存export維持・KDV移譲後のexport削除条件として定義する
 - [x] 2.7 `katana` 統合のDoR/DoDを、各repo public contractだけを使う統合として定義する
 
 ### Definition of Done

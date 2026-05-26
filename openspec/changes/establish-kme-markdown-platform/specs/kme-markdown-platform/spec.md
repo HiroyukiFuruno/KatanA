@@ -10,7 +10,7 @@ The system SHALL define KMM, editor, viewer, export, KatanA integration, and UI 
 - **THEN** `katana-markdown-model` owns the document model, metadata schema, and target resolution
 - **THEN** `katana-language-editor` owns metadata updates on save
 - **THEN** `katana-document-viewer` owns Floem viewer rendering and HTML/PDF/PNG/JPG export of KMM models
-- **THEN** `katana-diagram-renderer` owns external rendering for Mermaid, Draw.io, PlantUML, and math
+- **THEN** `katana-render-runtime` owns external rendering for Mermaid, Draw.io, PlantUML, and math
 - **THEN** `katana-canvas-forge` owns document export (HTML / PDF / PNG / JPEG)
 - **THEN** `katana` owns integration and fixture authority
 - **THEN** `katana` owns editor-viewer synchronization control and commands viewer or editor

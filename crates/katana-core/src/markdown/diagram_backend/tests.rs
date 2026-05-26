@@ -88,7 +88,7 @@ fn cache_key_changes_when_theme_changes() {
         false,
         DiagramColorPreset::light(),
     ));
-    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdr-mermaid");
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "krr-mermaid");
     let version = DiagramBackendVersion::new("runtime");
 
     assert_ne!(
@@ -100,16 +100,16 @@ fn cache_key_changes_when_theme_changes() {
 #[test]
 fn cache_key_changes_when_runtime_profile_changes() {
     let input = input_with_options(DiagramRenderOptions::default());
-    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdr-mermaid");
-    let old = DiagramBackendVersion::from_kdr(
-        "0.1.3",
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "krr-mermaid");
+    let old = DiagramBackendVersion::from_krr(
+        "0.3.3",
         "Mermaid",
         "11.10.0",
         "old-checksum",
         "katana-mermaid",
     );
-    let new = DiagramBackendVersion::from_kdr(
-        "0.1.3",
+    let new = DiagramBackendVersion::from_krr(
+        "0.3.3",
         "Mermaid",
         "11.10.0",
         "new-checksum",
@@ -123,20 +123,20 @@ fn cache_key_changes_when_runtime_profile_changes() {
 }
 
 #[test]
-fn cache_key_changes_when_kdv_or_kdr_version_changes() {
+fn cache_key_changes_when_kdv_or_krr_version_changes() {
     let input = input_with_options(DiagramRenderOptions::default());
-    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdv-kdr-mermaid");
-    let old = DiagramBackendVersion::from_kdv_kdr(
+    let backend_id = DiagramBackendId::new(DiagramBackendLanguage::Mermaid, "kdv-krr-mermaid");
+    let old = DiagramBackendVersion::from_kdv_krr(
         "0.1.0",
-        "0.3.1",
+        "0.3.3",
         "Mermaid",
         "11.10.0",
         "checksum",
         "katana-mermaid",
     );
-    let new = DiagramBackendVersion::from_kdv_kdr(
+    let new = DiagramBackendVersion::from_kdv_krr(
         "0.1.1",
-        "0.3.2",
+        "0.3.4",
         "Mermaid",
         "11.10.0",
         "checksum",

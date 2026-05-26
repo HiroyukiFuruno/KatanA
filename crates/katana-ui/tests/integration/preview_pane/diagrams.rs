@@ -94,7 +94,7 @@ const MERMAID_SOURCE: &str = "graph TD\n    A[Start] --> B[End]";
 
 #[test]
 fn mermaid_both_states_render_semantically() {
-    /* WHY: kdr owns Mermaid runtime assets now. Hiding legacy assets may still render successfully. */
+    /* WHY: KRR owns Mermaid runtime assets now. Hiding legacy assets may still render successfully. */
     let _guard = crate::integration::lock_serial_test_mutex();
     let pane = crate::integration::test_helpers::MissingRendererAssetsOps::with(|| {
         render_and_wait("mermaid", MERMAID_SOURCE)
@@ -126,7 +126,7 @@ const PLANTUML_SOURCE: &str = "@startuml\nAlice -> Bob : Hello\n@enduml";
 
 #[test]
 fn plantuml_both_states_render_semantically() {
-    /* WHY: KDV/KDR owns PlantUML runtime resolution, so UI semantics must be valid whether the renderer produces an image or reports a runtime error. */
+    /* WHY: KDV/KRR owns PlantUML runtime resolution, so UI semantics must be valid whether the renderer produces an image or reports a runtime error. */
     let _guard = crate::integration::lock_serial_test_mutex();
     let pane = render_and_wait("plantuml", PLANTUML_SOURCE);
     match &pane.sections[1] {

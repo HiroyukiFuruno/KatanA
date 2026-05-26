@@ -104,7 +104,7 @@ The system MUST preserve the preview workflow when a supported diagram block can
 
 ### Requirement: ダイアグラムプレビューは現在のテーマスナップショットを使用する
 
-システムは、アプリ起動時点のスナップショットや dark/light 切り替えだけに依存するのではなく、現在のテーマスナップショットに基づいてダイアグラムプレビューを描画しなければならない（SHALL）。kdv / kdr backed renderer を利用する Mermaid / Draw.io / PlantUML でも、KatanA が渡したテーマスナップショットを実描画が使用しなければならない（MUST）。
+システムは、アプリ起動時点のスナップショットや dark/light 切り替えだけに依存するのではなく、現在のテーマスナップショットに基づいてダイアグラムプレビューを描画しなければならない（SHALL）。KDV / KRR backed renderer を利用する Mermaid / Draw.io / PlantUML でも、KatanA が渡したテーマスナップショットを実描画が使用しなければならない（MUST）。
 
 #### Scenario: Mermaid プレビューが同一モード内の色変更へ追従する
 
@@ -118,23 +118,23 @@ The system MUST preserve the preview workflow when a supported diagram block can
 - **THEN** PlantUML 描画は更新後のテーマスナップショットを使用する
 - **THEN** プレビューは旧色セットで描かれた古いダイアグラム画像を再利用しない
 
-#### Scenario: kdv backed Mermaid プレビューが light テーマを使用する
+#### Scenario: KDV / KRR backed Mermaid プレビューが light テーマを使用する
 
 - **WHEN** KatanA の active theme が light mode の状態で Mermaid block を描画する
-- **THEN** KatanA は kdv adapter を通じて kdr の `RenderInput` に light テーマの名前、背景、文字色、塗り、線、矢印、Mermaid theme を渡す
-- **THEN** kdr が返す SVG は kdr 内部の dark 既定値ではなく、KatanA が渡した light テーマに基づく
+- **THEN** KatanA は KDV adapter を通じて KRR backed renderer に light テーマの名前、背景、文字色、塗り、線、矢印、Mermaid theme を渡す
+- **THEN** KRR が返す SVG は KRR 内部の dark 既定値ではなく、KatanA が渡した light テーマに基づく
 - **THEN** 画面上の Mermaid 図形は dark 背景・白文字寄りの配色へ戻らない
 
-#### Scenario: kdv backed Draw.io プレビューが light テーマを使用する
+#### Scenario: KDV / KRR backed Draw.io プレビューが light テーマを使用する
 
 - **WHEN** KatanA の active theme が light mode の状態で Draw.io block を描画する
-- **THEN** KatanA は kdv adapter を通じて kdr の `RenderInput` に light テーマの名前、背景、文字色、塗り、線、矢印、Draw.io label color を渡す
-- **THEN** kdr が返す SVG は kdr 内部の dark 既定値ではなく、KatanA が渡した light テーマに基づく
+- **THEN** KatanA は KDV adapter を通じて KRR backed renderer に light テーマの名前、背景、文字色、塗り、線、矢印、Draw.io label color を渡す
+- **THEN** KRR が返す SVG は KRR 内部の dark 既定値ではなく、KatanA が渡した light テーマに基づく
 - **THEN** 画面上の Draw.io 図形は dark 背景・白文字寄りの配色へ戻らない
 
 ### Requirement: ダイアグラムキャッシュキーはテーマ差分を識別する
 
-システムは、永続化されるダイアグラムキャッシュキーに active なダイアグラムテーマの fingerprint を含めなければならない（SHALL）。kdr backed renderer では、KatanA 側の cache key と kdr 側の `cache_fingerprint` が、実描画に使われたテーマ差分で変化しなければならない（MUST）。
+システムは、永続化されるダイアグラムキャッシュキーに active なダイアグラムテーマの fingerprint を含めなければならない（SHALL）。KRR backed renderer では、KatanA 側の cache key と KRR 側の `cache_fingerprint` が、実描画に使われたテーマ差分で変化しなければならない（MUST）。
 
 #### Scenario: テーマ fingerprint が変化する
 
@@ -142,16 +142,16 @@ The system MUST preserve the preview workflow when a supported diagram block can
 - **THEN** キャッシュキーは変化する
 - **THEN** システムは古いキャッシュ結果を再利用せず、ダイアグラムを再描画する
 
-#### Scenario: kdr runtime と profile の差分で cache key が変化する
+#### Scenario: KRR runtime と profile の差分で cache key が変化する
 
-- **WHEN** kdr の runtime version または renderer profile が変わった時
+- **WHEN** KRR の runtime version または renderer profile が変わった時
 - **THEN** KatanA の diagram cache key は変化する
-- **THEN** KatanA は古い kdr 出力を再利用しない
+- **THEN** KatanA は古い KRR 出力を再利用しない
 
-#### Scenario: kdr の crate version を手書きで固定しない
+#### Scenario: KRR の crate version を手書きで固定しない
 
-- **WHEN** KatanA が kdr backed renderer の cache key または backend version を組み立てる
-- **THEN** system は実際の `katana-diagram-renderer` dependency version、`RenderOutput.runtime`、`RenderOutput.profile` から識別情報を得る
+- **WHEN** KatanA が KRR backed renderer の cache key または backend version を組み立てる
+- **THEN** system は実際の `katana-render-runtime` dependency version、runtime version、renderer profile、runtime checksum から識別情報を得る
 - **THEN** `crate=katana-diagram-renderer:0.1.0` のような古い手書き文字列を cache invalidation の根拠にしない
 
 ### Requirement: Diagram fences do not leak from non-diagram code blocks
@@ -194,13 +194,14 @@ The system MUST preserve the preview workflow when a supported diagram block can
 
 ### Requirement: V8 を使う図形プレビュー依存関係はバージョン整合している
 
-システムは、Mermaid / Draw.io プレビュー（preview）で利用する V8 を使う描画依存関係（V8-backed renderer dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。対応済み図形ブロック（diagram block）は、`katana-document-viewer`、`katana-diagram-renderer`、または数式描画依存の不整合によりワーカー（worker）起動前に失敗してはならない（MUST NOT）。
+システムは、Mermaid / Draw.io プレビュー（preview）で利用する V8 を使う描画依存関係（V8-backed renderer dependencies）を、作業領域（workspace）内とユーザーレビュー用の `scripts/screenshot` manifest 内で単一の互換 `v8` バージョンに揃えなければならない（MUST）。同じプロセス内の数式描画（MathJax）経路は V8 を初期化してはならない（MUST NOT）。対応済み図形ブロック（diagram block）は、`katana-document-viewer`、`katana-render-runtime`、または数式描画依存の不整合によりワーカー（worker）起動前に失敗してはならない（MUST NOT）。
 
-#### Scenario: 作業領域の依存関係が kdv と kdr に揃う
+#### Scenario: 作業領域の依存関係が KDV と KRR に揃う
 
-- **WHEN** KatanA v0.22.26 向けに作業領域の依存関係（workspace dependencies）を解決する
-- **THEN** `katana-document-viewer` は `0.1.0` として解決される
-- **THEN** `katana-diagram-renderer` は crates.io dependency として解決される
+- **WHEN** KatanA v0.22.27 向けに作業領域の依存関係（workspace dependencies）を解決する
+- **THEN** `katana-document-viewer` は `0.1.1` として解決される
+- **THEN** `katana-render-runtime` は `0.3.3` として crates.io dependency で解決される
+- **THEN** `katana-diagram-renderer` は workspace dependency graph に含まれない
 - **THEN** `katana-canvas-forge` は依存関係グラフに含まれない
 - **THEN** V8-backed renderer dependency は互換性のない複数の `v8` バージョンを要求しない
 - **THEN** 数式描画依存は `v8` を要求しない
@@ -215,26 +216,27 @@ The system MUST preserve the preview workflow when a supported diagram block can
 
 - **WHEN** 開いている Markdown 文書に対応済み Draw.io ブロックが含まれる
 - **THEN** プレビューは Mermaid 描画と同じ、作業領域で整合した V8 実行環境（runtime）を使う
-- **THEN** kdv と kdr の境界で V8 バージョン分裂によりブロックが失敗しない
+- **THEN** KDV と KRR の境界で V8 バージョン分裂によりブロックが失敗しない
 
-### Requirement: 図形プレビューは kdv と crates.io kdr 経由で行う
+### Requirement: 図形プレビューは KDV と crates.io KRR 経由で行う
 
-システムは、Mermaid / Draw.io / PlantUML の図形プレビューを KatanA 内部実装または `katana-canvas-forge`（kcf）ではなく、`katana-document-viewer`（kdv）v0.1.0 と crates.io 経由の `katana-diagram-renderer`（kdr）dependency を通して処理しなければならない（MUST）。
+システムは、Mermaid / Draw.io / PlantUML の図形プレビューを KatanA 内部実装、`katana-canvas-forge`（KCF）、または `katana-diagram-renderer`（KDR）への直接依存ではなく、`katana-document-viewer`（KDV）と crates.io 経由の `katana-render-runtime`（KRR）dependency を通して処理しなければならない（MUST）。
 
-#### Scenario: kdv v0.1.0 を crates.io dependency として参照する
+#### Scenario: KDV を crates.io dependency として参照する
 
-- **WHEN** KatanA v0.22.26 の workspace dependencies を解決する
-- **THEN** `katana-document-viewer = "0.1.0"` が crates.io dependency として解決される
+- **WHEN** KatanA v0.22.27 の workspace dependencies を解決する
+- **THEN** `katana-document-viewer` が crates.io dependency として解決される
 - **THEN** `katana-canvas-forge` は workspace dependency graph に含まれない
 
-#### Scenario: kdr を crates.io dependency として参照する
+#### Scenario: KRR を crates.io dependency として参照する
 
-- **WHEN** KatanA v0.22.26 の workspace dependencies を解決する
-- **THEN** `katana-diagram-renderer` は crates.io の semver dependency として解決される
-- **THEN** `katana-diagram-renderer` は git dependency または path dependency として解決されない
+- **WHEN** KatanA v0.22.27 の workspace dependencies を解決する
+- **THEN** `katana-render-runtime = "0.3.3"` は crates.io の semver dependency として解決される
+- **THEN** `katana-render-runtime` は git dependency または path dependency として解決されない
+- **THEN** `katana-diagram-renderer` は workspace dependency graph に含まれない
 
-#### Scenario: 図形プレビューは kdv adapter を通る
+#### Scenario: 図形プレビューは KDV adapter を通る
 
 - **WHEN** active Markdown document に Mermaid、Draw.io、または PlantUML ブロックが含まれる
-- **THEN** KatanA は document、theme snapshot、diagram cache context を kdv adapter へ渡す
-- **THEN** KatanA は kcf adapter または kcf DTO を呼び出さない
+- **THEN** KatanA は document、theme snapshot、diagram cache context を KDV adapter へ渡す
+- **THEN** KatanA は KCF adapter、KCF DTO、または KDR wrapper を呼び出さない

@@ -8,7 +8,7 @@ description = "KatanA core: document model, workspace model, markdown pipeline, 
 [dependencies]
 comrak.workspace = true
 katana-document-viewer.workspace = true
-katana-diagram-renderer.workspace = true
+katana-render-runtime.workspace = true
 katana-markdown-model.workspace = true
 serde.workspace = true
 serde_json.workspace = true
