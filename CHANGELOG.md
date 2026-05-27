@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.28] - 2026-05-27 07:02:47 (UTC)
+
+### ✨ Improvements
+
+- **Document preview and export stability**: Refreshed the document and diagram rendering components used by previews and saved files, improving consistency after rendering updates.
+- **Markdown processing stability**: Updated Markdown processing dependencies so large documents and embedded assets use the latest parser and archive handling fixes.
+
+### 🔧 System
+
+- **Dependency maintenance**: Removed older duplicate support libraries from the release dependency graph, reducing the maintenance surface for future builds.
+
 ## [0.22.27] - 2026-05-26 23:48:35 (UTC)
 
 ### ✨ Improvements
