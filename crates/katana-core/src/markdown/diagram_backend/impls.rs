@@ -21,7 +21,7 @@ impl DiagramBackendVersion {
         }
     }
 
-    pub fn from_kdr(
+    pub fn from_krr(
         crate_version: &str,
         runtime_name: &str,
         runtime_version: &str,
@@ -31,16 +31,16 @@ impl DiagramBackendVersion {
         let runtime = format!("{runtime_name}:{runtime_version};checksum={runtime_checksum}");
         Self {
             value: format!(
-                "crate=katana-diagram-renderer:{crate_version};runtime={runtime};profile={renderer_profile}"
+                "crate=katana-render-runtime:{crate_version};runtime={runtime};profile={renderer_profile}"
             ),
             runtime_version: runtime,
             renderer_profile: renderer_profile.to_string(),
         }
     }
 
-    pub fn from_kdv_kdr(
+    pub fn from_kdv_krr(
         kdv_crate_version: &str,
-        kdr_crate_version: &str,
+        krr_crate_version: &str,
         runtime_name: &str,
         runtime_version: &str,
         runtime_checksum: &str,
@@ -49,7 +49,7 @@ impl DiagramBackendVersion {
         let runtime = format!("{runtime_name}:{runtime_version};checksum={runtime_checksum}");
         Self {
             value: format!(
-                "crate=katana-document-viewer:{kdv_crate_version};renderer=katana-diagram-renderer:{kdr_crate_version};runtime={runtime};profile={renderer_profile}"
+                "crate=katana-document-viewer:{kdv_crate_version};renderer=katana-render-runtime:{krr_crate_version};runtime={runtime};profile={renderer_profile}"
             ),
             runtime_version: runtime,
             renderer_profile: renderer_profile.to_string(),

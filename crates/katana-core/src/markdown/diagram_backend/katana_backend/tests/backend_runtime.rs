@@ -35,14 +35,14 @@ fn mermaid_backend_id_has_correct_language_and_implementation() {
     let backend = KatanaMermaidBackend;
     let id = backend.id();
     assert_eq!(id.language, DiagramBackendLanguage::Mermaid);
-    assert_eq!(id.implementation, "kdv-kdr-mermaid");
+    assert_eq!(id.implementation, "kdv-krr-mermaid");
 }
 
 #[test]
 fn mermaid_backend_version_is_non_empty() {
     let version = KatanaMermaidBackend.version();
     assert!(version.value.contains("katana-document-viewer"));
-    assert!(version.value.contains("katana-diagram-renderer"));
+    assert!(version.value.contains("katana-render-runtime"));
     assert!(version.renderer_profile.contains("mermaid"));
 }
 
@@ -51,14 +51,14 @@ fn plantuml_backend_id_has_correct_language_and_implementation() {
     let backend = KatanaPlantUmlBackend;
     let id = backend.id();
     assert_eq!(id.language, DiagramBackendLanguage::PlantUml);
-    assert_eq!(id.implementation, "kdv-kdr-plantuml");
+    assert_eq!(id.implementation, "kdv-krr-plantuml");
 }
 
 #[test]
 fn plantuml_backend_version_is_non_empty() {
     let version = KatanaPlantUmlBackend.version();
     assert!(version.value.contains("katana-document-viewer"));
-    assert!(version.value.contains("katana-diagram-renderer"));
+    assert!(version.value.contains("katana-render-runtime"));
     assert!(version.renderer_profile.contains("plantuml"));
 }
 
@@ -67,22 +67,22 @@ fn drawio_backend_id_has_correct_language_and_implementation() {
     let backend = KatanaDrawIoBackend;
     let id = backend.id();
     assert_eq!(id.language, DiagramBackendLanguage::DrawIo);
-    assert_eq!(id.implementation, "kdv-kdr-drawio");
+    assert_eq!(id.implementation, "kdv-krr-drawio");
 }
 
 #[test]
 fn drawio_backend_version_is_non_empty() {
     let version = KatanaDrawIoBackend.version();
     assert!(version.value.contains("katana-document-viewer"));
-    assert!(version.value.contains("katana-diagram-renderer"));
+    assert!(version.value.contains("katana-render-runtime"));
     assert!(version.renderer_profile.contains("drawio"));
 }
 
 #[test]
-fn drawio_backend_renders_svg_with_kdr_runtime() {
+fn drawio_backend_renders_svg_with_krr_runtime() {
     let output = KatanaDrawIoBackend
         .render(&render_input(DiagramBackendLanguage::DrawIo, DRAWIO_SOURCE))
-        .expect("Draw.io should render through kdv/kdr");
+        .expect("Draw.io should render through KDV/KRR");
 
     match output {
         DiagramBackendOutput::HtmlFragment(svg) => assert!(svg.contains("<svg")),

@@ -8,7 +8,7 @@ pub struct DiagramRuntimeAssetOps;
 
 impl DiagramRuntimeAssetOps {
     pub fn resolve_path(kind: DiagramRuntimeAssetKind) -> Option<std::path::PathBuf> {
-        katana_diagram_renderer::RuntimePathResolver::resolve(Self::kdr_kind(kind), None).ok()
+        katana_render_runtime::RuntimePathResolver::resolve(Self::krr_kind(kind), None).ok()
     }
 
     pub fn find_path(kind: DiagramRuntimeAssetKind) -> Option<std::path::PathBuf> {
@@ -16,10 +16,10 @@ impl DiagramRuntimeAssetOps {
         path.exists().then_some(path)
     }
 
-    fn kdr_kind(kind: DiagramRuntimeAssetKind) -> katana_diagram_renderer::DiagramKind {
+    fn krr_kind(kind: DiagramRuntimeAssetKind) -> katana_render_runtime::DiagramKind {
         match kind {
-            DiagramRuntimeAssetKind::Mermaid => katana_diagram_renderer::DiagramKind::Mermaid,
-            DiagramRuntimeAssetKind::DrawIo => katana_diagram_renderer::DiagramKind::Drawio,
+            DiagramRuntimeAssetKind::Mermaid => katana_render_runtime::DiagramKind::Mermaid,
+            DiagramRuntimeAssetKind::DrawIo => katana_render_runtime::DiagramKind::Drawio,
         }
     }
 }
@@ -29,14 +29,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn kdr_kind_maps_all_runtime_asset_kinds() {
+    fn krr_kind_maps_all_runtime_asset_kinds() {
         assert!(matches!(
-            DiagramRuntimeAssetOps::kdr_kind(DiagramRuntimeAssetKind::Mermaid),
-            katana_diagram_renderer::DiagramKind::Mermaid
+            DiagramRuntimeAssetOps::krr_kind(DiagramRuntimeAssetKind::Mermaid),
+            katana_render_runtime::DiagramKind::Mermaid
         ));
         assert!(matches!(
-            DiagramRuntimeAssetOps::kdr_kind(DiagramRuntimeAssetKind::DrawIo),
-            katana_diagram_renderer::DiagramKind::Drawio
+            DiagramRuntimeAssetOps::krr_kind(DiagramRuntimeAssetKind::DrawIo),
+            katana_render_runtime::DiagramKind::Drawio
         ));
     }
 }

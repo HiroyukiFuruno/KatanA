@@ -10,10 +10,7 @@ mod tests {
     use super::*;
     use katana_core::markdown::{DiagramBlock, DiagramKind, DiagramResult};
 
-    use std::sync::Mutex;
-
     const BADGE_PREFIX_LEN: usize = "[![".len();
-    static RENDER_ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[derive(Debug, Clone, PartialEq, Eq)]
     struct MdImage {
@@ -153,10 +150,7 @@ mod tests {
     }
 
     fn with_render_env_lock<ResultValue>(action: impl FnOnce() -> ResultValue) -> ResultValue {
-        let _guard = RENDER_ENV_LOCK
-            .lock()
-            .unwrap_or_else(|err| err.into_inner());
-        action()
+        crate::test_render_env::RenderEnvLock::with_lock(action)
     }
 
     macro_rules! assert_variant {
@@ -419,7 +413,7 @@ mod tests {
      *    well past the job timeout (>1h observed in PR #300).
      * The bounds invariant remains valuable as a manual regression check — run with
      * `cargo test -- --ignored mermaid_class_diagram` when verifying Mermaid raster output.
-     * Root-causing the V8 runtime race belongs in katana-diagram-renderer, not this PR. */
+     * Root-causing the V8 runtime race belongs in katana-render-runtime, not this PR. */
     #[ignore = "Mermaid V8 runtime / cache race causes flaky failures and hangs Windows CI"]
     #[test]
     fn mermaid_class_diagram_keeps_content_within_raster_bounds() {
@@ -867,7 +861,7 @@ mod tests {
 
     #[test]
     fn cache_key_differs_by_theme() {
-        let _guard = RENDER_ENV_LOCK.lock().unwrap();
+        let _guard = crate::test_render_env::RenderEnvLock::lock();
         use katana_core::markdown::color_preset::DiagramColorPreset;
 
         let path = std::path::Path::new("/tmp/test.md");
@@ -915,7 +909,7 @@ mod tests {
 
     #[test]
     fn mermaid_cache_key_ignores_legacy_renderer_env() {
-        let _guard = RENDER_ENV_LOCK.lock().unwrap();
+        let _guard = crate::test_render_env::RenderEnvLock::lock();
         let path = std::path::Path::new("/tmp/test.md");
         let kind = DiagramKind::Mermaid;
         let source = "graph TD; A-->B";

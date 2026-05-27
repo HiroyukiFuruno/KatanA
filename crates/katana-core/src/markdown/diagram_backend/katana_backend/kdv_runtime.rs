@@ -27,7 +27,7 @@ pub(super) fn kdv_diagram_output(
     if matches!(kind, KdvDiagramKind::PlantUml) {
         return Err(DiagramBackendError::NotInstalled {
             kind: diagram_kind_label(kind).to_string(),
-            message: "KDV/KDR returned non-SVG PlantUML output.".to_string(),
+            message: "KDV/KRR returned non-SVG PlantUML output.".to_string(),
         });
     }
     Err(DiagramBackendError::RenderFailed {

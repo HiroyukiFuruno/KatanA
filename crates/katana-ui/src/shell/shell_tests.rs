@@ -1459,12 +1459,14 @@ mod tests_extra {
     fn export_html_to_tmp_does_not_leak_templates_or_raw_mermaid_code() {
         let preset = katana_core::markdown::color_preset::DiagramColorPreset::dark();
         let source = "# Diagram\n\n```mermaid\ngraph TD\n  A[Start] --> B[Done]\n```\n";
-        let path = ShellLogicOps::export_named_html_to_tmp(
-            source,
-            "katana_template_export.html",
-            preset,
-            None,
-        )
+        let path = crate::test_render_env::RenderEnvLock::with_lock(|| {
+            ShellLogicOps::export_named_html_to_tmp(
+                source,
+                "katana_template_export.html",
+                preset,
+                None,
+            )
+        })
         .expect("generation must succeed");
         let contents = std::fs::read_to_string(&path).unwrap();
 

@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.27] - 2026-05-26 23:48:35 (UTC)
+
+### ✨ Improvements
+
+- **Diagram preview and export stability**: Updated the bundled document and diagram rendering path used by Mermaid, Draw.io, and PlantUML so previews and saved files stay aligned after renderer updates.
+
+### 🔧 System
+
+- **Rendering dependency cleanup**: Removed a deprecated compatibility renderer path from the app dependency graph and now use the current rendering runtime directly.
+
 ## [0.22.26] - 2026-05-25 19:14:28 (UTC)
 
 ### ✨ Improvements

@@ -22,4 +22,4 @@ KMMより先に `katana-ast-lint` を分離し、KatanA ecosystem全体で同じ
 - `katana-ast-lint`: 共通AST lint本体の新規repository
 - `katana`: 既存AST lint相当の検査棚卸しと移行元
 - `katana-markdown-model`: P1以降の品質ゲート利用者
-- `katana-document-preview`, `katana-language-editor`, `katana-diagram-renderer`, `katana-canvas-forge`, `katana-ui-widget`: 後続利用者
+- `katana-document-preview`, `katana-language-editor`, `katana-render-runtime`, `katana-canvas-forge`, `katana-ui-widget`: 後続利用者

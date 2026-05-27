@@ -17,10 +17,10 @@
 - **THEN** preview は `katana-document-preview-floem` の vello scene 経由で描画される
 - **THEN** 行間・マージンの調整は vendor パッチなしで実現できる
 
-#### Scenario: 図表は kdv / kdr 経由で preview に表示される
+#### Scenario: 図表は KDV / KRR 経由で preview に表示される
 
 - **WHEN** preview が Mermaid / Draw.io block を含む
-- **THEN** 図表描画は kdv / kdr 経由で取得した SVG を vello scene に組み込む
+- **THEN** 図表描画は KDV / KRR 経由で取得した SVG を vello scene に組み込む
 - **THEN** preview crate 内に独自 Mermaid / Draw.io 描画は含まれない
 
 #### Scenario: カラー絵文字が preview で表示される

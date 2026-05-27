@@ -166,7 +166,7 @@ The project is evolving rapidly — new features and improvements are released f
 
 ## Diagram Rendering Setup
 
-KatanA supports Mermaid, PlantUML, and Draw.io diagrams in Markdown fenced code blocks. Diagram rendering is handled by the bundled KDV / KDR integration, so no Java runtime or renderer download step is required.
+KatanA supports Mermaid, PlantUML, and Draw.io diagrams in Markdown fenced code blocks. Diagram rendering is handled by the bundled KDV / KRR integration, so no Java runtime or renderer download step is required.
 
 ---
 

@@ -109,7 +109,7 @@ fn force_full_render_resets_local_image_viewer_state() {
  * preview_pane::tests::tests::mermaid_class_diagram_keeps_content_within_raster_bounds:
  * under parallel test load the Mermaid pipeline transiently returns Markdown fallback
  * instead of Image, panicking on `panic!("single class diagram should render as image")`.
- * Ignored until the race is fixed in katana-diagram-renderer. Run with
+ * Ignored until the race is fixed in katana-render-runtime. Run with
  * `cargo test -- --ignored sample_class_diagram_matches_single_render` to verify manually. */
 #[ignore = "Mermaid V8 runtime / cache race causes flaky failures"]
 #[test]

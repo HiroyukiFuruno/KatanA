@@ -1,6 +1,6 @@
 ## Why
 
-KMM、katana-language-editor、katana-document-viewer、katana-diagram-renderer、katana-canvas-forge、katana-ui-widgetの責務が分かれても、KatanA本体の統合順序が曖昧だとviewer、editor、exportが別々の仕様へ戻る。さらにAST lintの統制が先に揃っていないと、repositoryごとに品質ゲートが割れる。
+KMM、katana-language-editor、katana-document-viewer、katana-render-runtime、katana-canvas-forge、katana-ui-widgetの責務が分かれても、KatanA本体の統合順序が曖昧だとviewer、editor、exportが別々の仕様へ戻る。さらにAST lintの統制が先に揃っていないと、repositoryごとに品質ゲートが割れる。
 
 このchangeは、KatanAが各libraryをどの順序で取り込み、現行Markdown UXを落とさずKMMへ移行するかを固定する。
 

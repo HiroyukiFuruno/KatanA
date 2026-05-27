@@ -10,8 +10,8 @@ fn main() {
     let lock = fs::read_to_string(&lock_path).expect("Cargo.lock should be readable");
     emit_lock_package_version(
         &lock,
-        "katana-diagram-renderer",
-        "KATANA_DIAGRAM_RENDERER_VERSION",
+        "katana-render-runtime",
+        "KATANA_RENDER_RUNTIME_VERSION",
     );
     emit_lock_package_version(
         &lock,
@@ -64,13 +64,13 @@ name = "other"
 version = "1.0.0"
 
 [[package]]
-name = "katana-diagram-renderer"
-version = "0.1.0"
+name = "katana-render-runtime"
+version = "0.3.3"
 "#;
 
         assert_eq!(
-            lock_package_version(lock, "katana-diagram-renderer"),
-            Some("0.1.0".to_string())
+            lock_package_version(lock, "katana-render-runtime"),
+            Some("0.3.3".to_string())
         );
     }
 }
