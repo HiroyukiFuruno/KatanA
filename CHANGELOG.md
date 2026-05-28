@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.29] - 2026-05-28 01:31:21 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Draw.io diagram text layout**: Fixed multiline Draw.io labels in previews so text inside boxes starts at the expected position instead of appearing with an unnecessary blank line at the top.
+
 ## [0.22.28] - 2026-05-27 07:02:47 (UTC)
 
 ### ✨ Improvements
