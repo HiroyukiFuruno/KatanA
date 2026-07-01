@@ -10,7 +10,7 @@ fn slideshow_settings_sidebar_is_top_aligned() {
     let mut layout_state = LayoutState::new();
     layout_state.slideshow_settings_open = true;
 
-    let output = ctx.run(
+    let output = ctx.run_ui(
         egui::RawInput {
             screen_rect: Some(egui::Rect::from_min_size(
                 egui::pos2(0.0, 0.0),

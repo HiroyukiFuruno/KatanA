@@ -93,7 +93,7 @@ impl<'a> SplashOverlay<'a> {
 
         /* WHY: Perfectly center the content by using a vertical layout that fills the screen. */
         let layout = egui::Layout::top_down(egui::Align::Center);
-        ui.allocate_new_ui(
+        ui.scope_builder(
             egui::UiBuilder::new().max_rect(content_rect).layout(layout),
             |ui| {
                 ui.add_space((content_rect.height() - SPLASH_CONTENT_HEIGHT) / 2.0);

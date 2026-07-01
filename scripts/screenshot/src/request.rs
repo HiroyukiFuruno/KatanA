@@ -41,6 +41,8 @@ pub struct FixtureSettings {
     pub explorer_visible: Option<bool>,
     pub no_extension: Option<bool>,
     pub linter_enabled: Option<bool>,
+    pub slideshow_show_diagram_controls: Option<bool>,
+    pub preview_show_diagram_controls: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]

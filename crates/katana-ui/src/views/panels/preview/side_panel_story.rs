@@ -69,7 +69,7 @@ impl<'a> PreviewSidePanels<'a> {
                         ..Default::default()
                     })
                     .inner_margin(egui::Margin::same(POPUP_PADDING))
-                    .rounding(POPUP_ROUNDING);
+                    .corner_radius(POPUP_ROUNDING);
 
                 frame.show(ui, |ui| {
                     ui.set_width(PANEL_WIDTH);
@@ -148,7 +148,7 @@ impl<'a> PreviewSidePanels<'a> {
                         i18n.preview.toggle_slideshow.clone(),
                     )
                     .min_size(egui::vec2(ui.available_width(), SLIDESHOW_BTN_H))
-                    .rounding(egui::Rounding::same(SLIDESHOW_BTN_ROUNDING as u8));
+                    .corner_radius(egui::CornerRadius::same(SLIDESHOW_BTN_ROUNDING as u8));
 
                     if ui.add(start_btn).clicked() {
                         self.app.pending_action = AppAction::ToggleSlideshow;

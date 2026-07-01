@@ -97,7 +97,7 @@ impl<'a> PreviewSidePanels<'a> {
                         ..Default::default()
                     })
                     .inner_margin(egui::Margin::same(POPUP_PADDING))
-                    .rounding(POPUP_ROUNDING);
+                    .corner_radius(POPUP_ROUNDING);
                 frame.show(ui, |ui| {
                     ui.set_width(PANEL_WIDTH);
                     ui.set_min_height(panel_height);
@@ -145,15 +145,15 @@ impl<'a> PreviewSidePanels<'a> {
             .layout
             .toc_position;
         let panel = match position {
-            TocPosition::Left => egui::SidePanel::left("toc_panel"),
-            TocPosition::Right => egui::SidePanel::right("toc_panel"),
+            TocPosition::Left => egui::Panel::left("toc_panel"),
+            TocPosition::Right => egui::Panel::right("toc_panel"),
         };
         let mut clicked_line = None;
         let response = panel
             .frame(crate::views::panels::toc::TocPanel::panel_frame(
                 &ui.ctx().global_style(),
             ))
-            .default_width(TOC_PANEL_DEFAULT_WIDTH)
+            .default_size(TOC_PANEL_DEFAULT_WIDTH)
             .show_inside(ui, |ui| {
                 if let Some(path) = doc_path
                     && let Some(preview) = self.app.tab_previews.iter_mut().find(|p| p.path == path)

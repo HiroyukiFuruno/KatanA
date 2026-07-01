@@ -21,9 +21,8 @@ tiny-skia.workspace = true
 epaint_default_fonts.workspace = true
 xmltree.workspace = true
 tempfile.workspace = true
-regex = "1.12.3"
+regex = "1.12.4"
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
-v8.workspace = true
 include_dir.workspace = true
 base64 = "0.22"
 ureq.workspace = true
@@ -31,7 +30,7 @@ semver.workspace = true
 zip.workspace = true
 tar.workspace = true
 flate2.workspace = true
-emojis = "0.8.2"
+emojis = "0.9.0"
 syntect = { version = "5", default-features = false, features = ["default-themes", "default-syntaxes", "regex-fancy"] }
 dirs = "6.0.0"
 pulldown-cmark = "0.13.4"

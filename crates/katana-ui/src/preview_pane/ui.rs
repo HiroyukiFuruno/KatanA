@@ -107,7 +107,7 @@ impl PreviewPane {
 
         if let Some(ref mut h) = hovered_lines {
             for item in &self.anchor_map {
-                if let Some(rect) = item.rect
+                if let Some(rect) = item.outer_rect
                     && ui.rect_contains_pointer(rect)
                 {
                     h.push(item.line_span.clone());

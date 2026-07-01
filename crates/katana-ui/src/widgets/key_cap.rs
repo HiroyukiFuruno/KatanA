@@ -71,12 +71,12 @@ impl KeyCapOps {
             );
         }
 
-        let mut frame = egui::Frame::none()
+        let mut frame = egui::Frame::NONE
             .inner_margin(egui::Margin::symmetric(
                 KEY_CAP_MARGIN_X as i8,
                 KEY_CAP_MARGIN_Y as i8,
             ))
-            .rounding(KEY_CAP_ROUNDING)
+            .corner_radius(KEY_CAP_ROUNDING)
             .fill(bg);
         frame.stroke = stroke;
 

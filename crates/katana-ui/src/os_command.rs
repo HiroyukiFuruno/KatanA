@@ -204,13 +204,11 @@ mod tests {
     fn test_render_shortcut_row() {
         let mut harness = egui_kittest::Harness::builder()
             .with_size(eframe::egui::vec2(400.0, 300.0))
-            .build(|ctx| {
-                eframe::egui::CentralPanel::default().show(ctx, |ui| {
-                    OsCommandOps::render_shortcut_row(ui, "Label: {{os_cmd:save_document}}");
-                    OsCommandOps::render_shortcut_row(ui, "Missing {{os_cmd:unknown_123}}");
-                    OsCommandOps::render_shortcut_row(ui, "No OS Cmd");
-                    OsCommandOps::render_shortcut_row(ui, "Empty shortcut: {{os_cmd:}}");
-                });
+            .build_ui(|ui| {
+                OsCommandOps::render_shortcut_row(ui, "Label: {{os_cmd:save_document}}");
+                OsCommandOps::render_shortcut_row(ui, "Missing {{os_cmd:unknown_123}}");
+                OsCommandOps::render_shortcut_row(ui, "No OS Cmd");
+                OsCommandOps::render_shortcut_row(ui, "Empty shortcut: {{os_cmd:}}");
             });
         harness.run();
     }
@@ -219,15 +217,13 @@ mod tests {
     fn test_render() {
         let mut harness = egui_kittest::Harness::builder()
             .with_size(eframe::egui::vec2(400.0, 300.0))
-            .build(|ctx| {
-                eframe::egui::CentralPanel::default().show(ctx, |ui| {
-                    OsCommandOps::render_mixed(ui, "Press {{os_cmd:save_document}} to save.");
-                    OsCommandOps::render_mixed(ui, "Missing {{os_cmd:unknown}}.");
-                    OsCommandOps::render_mixed(ui, "No shortcut here.");
-                    OsCommandOps::render_mixed(ui, "Empty {{os_cmd:}}");
-                    OsCommandOps::render_mixed(ui, "{{os_cmd:just_shortcut}}");
-                    OsCommandOps::render_mixed(ui, "Unclosed {{os_cmd:unclosed_template");
-                });
+            .build_ui(|ui| {
+                OsCommandOps::render_mixed(ui, "Press {{os_cmd:save_document}} to save.");
+                OsCommandOps::render_mixed(ui, "Missing {{os_cmd:unknown}}.");
+                OsCommandOps::render_mixed(ui, "No shortcut here.");
+                OsCommandOps::render_mixed(ui, "Empty {{os_cmd:}}");
+                OsCommandOps::render_mixed(ui, "{{os_cmd:just_shortcut}}");
+                OsCommandOps::render_mixed(ui, "Unclosed {{os_cmd:unclosed_template");
             });
         harness.run();
     }

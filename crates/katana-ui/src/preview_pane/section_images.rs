@@ -18,11 +18,12 @@ impl SectionImageOps {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         is_slideshow: bool,
     ) {
-        let allow_controls = !is_slideshow
-            || ui.ctx().data(|d| {
-                d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
-                    .unwrap_or(false)
-            });
+        let allow_controls = preview_diagram_controls_enabled(ui)
+            && (!is_slideshow
+                || ui.ctx().data(|d| {
+                    d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
+                        .unwrap_or(false)
+                }));
         let allow_hover = !is_slideshow
             || ui.ctx().data(|d| {
                 d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
@@ -107,11 +108,12 @@ impl SectionImageOps {
         hovered_lines: Option<&mut Vec<std::ops::Range<usize>>>,
         is_slideshow: bool,
     ) {
-        let allow_controls = !is_slideshow
-            || ui.ctx().data(|d| {
-                d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
-                    .unwrap_or(false)
-            });
+        let allow_controls = preview_diagram_controls_enabled(ui)
+            && (!is_slideshow
+                || ui.ctx().data(|d| {
+                    d.get_temp(egui::Id::new("katana_slideshow_diagram_controls"))
+                        .unwrap_or(false)
+                }));
         let allow_hover = !is_slideshow
             || ui.ctx().data(|d| {
                 d.get_temp(egui::Id::new("katana_slideshow_hover_highlight"))
@@ -186,4 +188,11 @@ impl SectionImageOps {
             }
         }
     }
+}
+
+fn preview_diagram_controls_enabled(ui: &egui::Ui) -> bool {
+    ui.ctx().data(|data| {
+        data.get_temp(egui::Id::new("katana_preview_diagram_controls"))
+            .unwrap_or(true)
+    })
 }

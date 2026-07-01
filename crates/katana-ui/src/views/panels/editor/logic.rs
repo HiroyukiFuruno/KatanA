@@ -11,11 +11,11 @@ impl EditorLogicOps {
         if let Some(mut ts) = egui::TextEdit::load_state(ui.ctx(), editor_id) {
             let new_range = egui::text::CCursorRange {
                 primary: egui::text::CCursor {
-                    index: char_end,
+                    index: egui::text::CharIndex(char_end),
                     prefer_next_row: false,
                 },
                 secondary: egui::text::CCursor {
-                    index: char_start,
+                    index: egui::text::CharIndex(char_start),
                     prefer_next_row: false,
                 },
                 h_pos: None,

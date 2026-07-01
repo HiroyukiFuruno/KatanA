@@ -157,6 +157,9 @@ fn current_theme_snapshot_uses_ui_theme_override() {
         background: "#fff4c2".to_string(),
         text: "#332900".to_string(),
         preview_text: "#332900".to_string(),
+        table_border: Some("#776622".to_string()),
+        table_header_background: Some("#eadf9a".to_string()),
+        table_even_row_background: Some("#f8efb8".to_string()),
     });
 
     let snapshot = DiagramThemeSnapshot::current();
@@ -165,6 +168,12 @@ fn current_theme_snapshot_uses_ui_theme_override() {
     assert_eq!(snapshot.background, "#fff4c2");
     assert_eq!(snapshot.text, "#332900");
     assert_eq!(snapshot.preview_text, "#332900");
+    assert_eq!(snapshot.table_border.as_deref(), Some("#776622"));
+    assert_eq!(snapshot.table_header_background.as_deref(), Some("#eadf9a"));
+    assert_eq!(
+        snapshot.table_even_row_background.as_deref(),
+        Some("#f8efb8")
+    );
 
     DiagramThemeSnapshot::clear_current_override();
 }

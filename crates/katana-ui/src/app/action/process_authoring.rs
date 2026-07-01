@@ -28,12 +28,12 @@ impl KatanaApp {
                 /* WHY: CCursor indices are char-counts; convert to byte offsets. */
                 let lo_byte = buffer
                     .char_indices()
-                    .nth(lo)
+                    .nth(lo.0)
                     .map(|(i, _)| i)
                     .unwrap_or(buffer.len());
                 let hi_byte = buffer
                     .char_indices()
-                    .nth(hi)
+                    .nth(hi.0)
                     .map(|(i, _)| i)
                     .unwrap_or(buffer.len());
                 (lo_byte, hi_byte)
@@ -72,12 +72,12 @@ impl KatanaApp {
                 let hi = r.primary.index.max(r.secondary.index);
                 let lo_byte = buffer
                     .char_indices()
-                    .nth(lo)
+                    .nth(lo.0)
                     .map(|(i, _)| i)
                     .unwrap_or(buffer.len());
                 let hi_byte = buffer
                     .char_indices()
-                    .nth(hi)
+                    .nth(hi.0)
                     .map(|(i, _)| i)
                     .unwrap_or(buffer.len());
                 (lo_byte, hi_byte)

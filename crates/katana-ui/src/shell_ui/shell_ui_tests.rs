@@ -140,7 +140,7 @@ mod tests {
         let file_path = dir.path().join("note.rs");
         std::fs::write(&file_path, "fn main() {}").unwrap();
 
-        let _ = ctx.run(raw_input_with_dropped_path(file_path), |ctx| {
+        let _ = ctx.run_ui(raw_input_with_dropped_path(file_path), |ctx| {
             dropped_files::DroppedFileOps::queue(&mut app, ctx);
         });
 
@@ -162,7 +162,7 @@ mod tests {
         let file_path = dir.path().join("decision.adr");
         std::fs::write(&file_path, "# Decision").unwrap();
 
-        let _ = ctx.run(raw_input_with_dropped_path(file_path.clone()), |ctx| {
+        let _ = ctx.run_ui(raw_input_with_dropped_path(file_path.clone()), |ctx| {
             dropped_files::DroppedFileOps::queue(&mut app, ctx);
         });
 
@@ -209,9 +209,9 @@ mod tests {
         let mut action = AppAction::None;
         let mut expanded_directories = std::collections::HashSet::new();
 
-        let output = ctx.run(test_input(egui::vec2(320.0, 200.0)), |ctx| {
+        let output = ctx.run_ui(test_input(egui::vec2(320.0, 200.0)), |ctx| {
             egui::CentralPanel::default()
-                .frame(egui::Frame::central_panel(&ctx.global_style()).inner_margin(0.0))
+                .frame(egui::Frame::central_panel(&ctx.ctx().global_style()).inner_margin(0.0))
                 .show(ctx, |ui| {
                     let mut render_ctx = TreeRenderContext {
                         action: &mut action,
@@ -263,10 +263,13 @@ mod tests {
         let ctx = test_context();
         let path = PathBuf::from("/tmp/padding.md");
         let mut app = app_with_preview_doc(&path, "# PaddingHeading\n\nBody");
-        let output = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let output = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -281,7 +284,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
         let shapes = flatten_shapes(output.shapes.iter());
         let heading_rect = shapes
             .iter()
@@ -322,15 +325,18 @@ mod tests {
                     "preview_panel_h_right",
                 ),
                 egui::containers::panel::PanelState {
-                    rect: Rect::from_min_size(pos2(0.0, 0.0), egui::vec2(240.0, 800.0)),
+                    outer_rect: Rect::from_min_size(pos2(0.0, 0.0), egui::vec2(240.0, 800.0)),
                 },
             );
         });
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -345,7 +351,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
         assert!(
             preview_rect.width() >= 500.0 && preview_rect.width() <= 650.0,
             "fresh horizontal split must ignore stale panel state and stay in a sane range, got {}",
@@ -359,10 +365,13 @@ mod tests {
         let active = PathBuf::from("/tmp/active.md");
         let mut app = app_with_preview_doc(&active, "# Title\n\nBody");
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -376,12 +385,15 @@ mod tests {
             ),
         )
         .expect("preview panel rect after first frame")
-        .rect;
+        .outer_rect;
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -395,7 +407,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect after second frame")
-        .rect;
+        .outer_rect;
 
         assert!(
             first_rect.width() >= 500.0 && first_rect.width() <= 650.0,
@@ -423,10 +435,13 @@ mod tests {
         );
         let mut app = app_with_preview_doc(&active, markdown);
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -440,12 +455,15 @@ mod tests {
             ),
         )
         .expect("preview panel rect after first frame")
-        .rect;
+        .outer_rect;
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -459,7 +477,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect after second frame")
-        .rect;
+        .outer_rect;
 
         assert!(
             first_rect.width() >= 500.0 && first_rect.width() <= 650.0,
@@ -489,10 +507,13 @@ mod tests {
         );
         let mut app = app_with_preview_doc(&active, markdown);
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -506,12 +527,15 @@ mod tests {
             ),
         )
         .expect("preview panel rect after first frame")
-        .rect;
+        .outer_rect;
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -525,7 +549,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect after second frame")
-        .rect;
+        .outer_rect;
 
         assert!(
             first_rect.width() >= 500.0 && first_rect.width() <= 650.0,
@@ -557,10 +581,13 @@ mod tests {
         );
         let mut app = app_with_preview_doc(&active, markdown);
         /* WHY: Run first frame to establish initial state */
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -574,15 +601,18 @@ mod tests {
             ),
         )
             .expect("preview panel rect after first frame")
-            .rect
+            .outer_rect
             .width();
         println!("frame 0: width={initial_width}");
         /* WHY: Run 9 more frames - width must remain stable (no ratchet). */
         for frame_idx in 1..=9 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                    let egui_ctx = ui.ctx().clone();
+
                     crate::views::layout::split::HorizontalSplit::new(
-                        ctx,
+
+                        &egui_ctx,
                         &mut app,
                         PaneOrder::EditorFirst,
                     ).show(ui);
@@ -596,7 +626,7 @@ mod tests {
                 ),
             )
             .expect("preview panel rect")
-            .rect
+            .outer_rect
             .width();
 
             println!("frame {frame_idx}: width={current_width} (delta={})", current_width - initial_width);
@@ -626,10 +656,13 @@ mod tests {
         let mut app = app_with_preview_doc(&active, markdown);
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                    let egui_ctx = ui.ctx().clone();
+
                     crate::views::layout::split::HorizontalSplit::new(
-                        ctx,
+
+                        &egui_ctx,
                         &mut app,
                         PaneOrder::EditorFirst,
                     )
@@ -646,7 +679,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect after wide frame")
-        .rect;
+        .outer_rect;
 
         ctx.data_mut(|data| {
             data.insert_persisted(
@@ -655,16 +688,19 @@ mod tests {
                     "preview_panel_h_right",
                 ),
                 egui::containers::panel::PanelState {
-                    rect: Rect::from_min_size(pos2(0.0, 0.0), egui::vec2(300.0, 800.0)),
+                    outer_rect: Rect::from_min_size(pos2(0.0, 0.0), egui::vec2(300.0, 800.0)),
                 },
             );
         });
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                    let egui_ctx = ui.ctx().clone();
+
                     crate::views::layout::split::HorizontalSplit::new(
-                        ctx,
+
+                        &egui_ctx,
                         &mut app,
                         PaneOrder::EditorFirst,
                     )
@@ -681,7 +717,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect after forced narrow frame")
-        .rect;
+        .outer_rect;
 
         assert!(
             narrow_rect.width() < wide_rect.width() - 200.0,
@@ -710,15 +746,18 @@ mod tests {
                     "preview_panel_v_bottom",
                 ),
                 egui::containers::panel::PanelState {
-                    rect: Rect::from_min_size(pos2(0.0, 0.0), egui::vec2(1200.0, 180.0)),
+                    outer_rect: Rect::from_min_size(pos2(0.0, 0.0), egui::vec2(1200.0, 180.0)),
                 },
             );
         });
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -733,7 +772,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
         assert!(
             preview_rect.height() >= 50.0 && preview_rect.height() <= 500.0,
             "fresh vertical split must ignore stale panel state and stay in a sane range, got {}",
@@ -748,10 +787,13 @@ mod tests {
         let long_line = "\u{3042}".repeat(240);
         let mut app = app_with_preview_doc(&path, &long_line);
 
-        let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
+        let output = ctx.run_ui(test_input(egui::vec2(900.0, 700.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -766,7 +808,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
         let shapes = flatten_shapes(output.shapes.iter());
         let text_shape = shapes
             .iter()
@@ -798,10 +840,13 @@ mod tests {
         let inline_code = format!("`{}`", "\u{3042}".repeat(240));
         let mut app = app_with_preview_doc(&path, &inline_code);
 
-        let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
+        let output = ctx.run_ui(test_input(egui::vec2(900.0, 700.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -816,7 +861,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
         let shapes = flatten_shapes(output.shapes.iter());
         let text_shape = shapes
             .iter()
@@ -851,10 +896,13 @@ mod tests {
         );
         let mut app = app_with_preview_doc(&path, markdown);
 
-        let output = ctx.run(test_input(egui::vec2(900.0, 700.0)), |ctx| {
+        let output = ctx.run_ui(test_input(egui::vec2(900.0, 700.0)), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -869,7 +917,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
         let shapes = flatten_shapes(output.shapes.iter());
         let text_shapes: Vec<&egui::epaint::TextShape> = shapes
             .iter()
@@ -919,10 +967,13 @@ mod tests {
         let total_height = 800.0_f32;
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, total_height)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, total_height)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -938,7 +989,7 @@ mod tests {
             ),
         )
         .expect("preview panel rect")
-        .rect;
+        .outer_rect;
 
         let editor_height = total_height - preview_rect.height();
         let min_editor_ratio = 0.30;
@@ -961,10 +1012,13 @@ mod tests {
         let mut app = app_with_preview_doc(&active, &long_content);
 
         for _ in 0..5 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -976,10 +1030,13 @@ mod tests {
         app.state.scroll.source = ScrollSource::Editor;
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -1005,10 +1062,13 @@ mod tests {
         let mut app = app_with_preview_doc(&active, &long_content);
 
         for _ in 0..5 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -1020,10 +1080,13 @@ mod tests {
         app.state.scroll.source = ScrollSource::Editor;
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::HorizontalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -1049,10 +1112,13 @@ mod tests {
         let mut app = app_with_preview_doc(&active, &long_content);
 
         for _ in 0..5 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::PreviewFirst,
                 ).show(ui);
@@ -1064,10 +1130,13 @@ mod tests {
         app.state.scroll.source = ScrollSource::Editor;
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::PreviewFirst,
                 ).show(ui);
@@ -1093,10 +1162,13 @@ mod tests {
         let mut app = app_with_preview_doc(&active, &long_content);
 
         for _ in 0..5 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -1108,10 +1180,13 @@ mod tests {
         app.state.scroll.source = ScrollSource::Preview;
 
         for _ in 0..3 {
-            let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
+            let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
+                let egui_ctx = ui.ctx().clone();
+
                 crate::views::layout::split::VerticalSplit::new(
-                    ctx,
+
+                    &egui_ctx,
                     &mut app,
                     PaneOrder::EditorFirst,
                 ).show(ui);
@@ -1142,8 +1217,8 @@ mod tests {
         }));
         app.pending_action = AppAction::RefreshDiagrams;
 
-        let _ = ctx.run(test_input(egui::vec2(1200.0, 800.0)), |ctx| {
-            app.update(ctx, &mut frame);
+        let _ = ctx.run_ui(test_input(egui::vec2(1200.0, 800.0)), |ui| {
+            app.ui(ui, &mut frame);
         });
 
         assert!(

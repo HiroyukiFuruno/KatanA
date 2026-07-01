@@ -1,4 +1,3 @@
-use crate::markdown::color_preset::DiagramColorPreset;
 use crate::markdown::diagram_backend::DiagramThemeSnapshot;
 use katana_document_viewer::{KdvThemeMode, KdvThemeSnapshot};
 use katana_markdown_model::DiagramKind as KdvDiagramKind;
@@ -6,12 +5,6 @@ use katana_markdown_model::DiagramKind as KdvDiagramKind;
 pub(crate) struct KdvThemeAdapter;
 
 impl KdvThemeAdapter {
-    pub(crate) fn from_preset(preset: &DiagramColorPreset) -> KdvThemeSnapshot {
-        let name = if preset.dark_mode { "dark" } else { "light" };
-        let theme = DiagramThemeSnapshot::from_preset(name, preset.dark_mode, preset);
-        Self::from_diagram_theme(&theme)
-    }
-
     pub(crate) fn from_diagram_theme(theme: &DiagramThemeSnapshot) -> KdvThemeSnapshot {
         let mut snapshot = if theme.is_dark {
             KdvThemeSnapshot::katana_dark()
@@ -24,8 +17,19 @@ impl KdvThemeAdapter {
         } else {
             KdvThemeMode::Light
         };
-        snapshot.background = theme.background.clone();
+        if !is_transparent_background(&theme.background) {
+            snapshot.background = theme.background.clone();
+        }
         snapshot.text = theme.text.clone();
+        if let Some(table_border) = &theme.table_border {
+            snapshot.table_border = table_border.clone();
+        }
+        if let Some(table_header_background) = &theme.table_header_background {
+            snapshot.table_header_background = table_header_background.clone();
+        }
+        if let Some(table_even_row_background) = &theme.table_even_row_background {
+            snapshot.table_even_row_background = table_even_row_background.clone();
+        }
         snapshot.diagram_background = theme.background.clone();
         snapshot.diagram_text = theme.preview_text.clone();
         snapshot.diagram_fill = theme.fill.clone();
@@ -51,9 +55,18 @@ impl KdvThemeAdapter {
     }
 }
 
+fn is_transparent_background(value: &str) -> bool {
+    let normalized = value.trim().to_ascii_lowercase();
+    matches!(
+        normalized.as_str(),
+        "transparent" | "rgba(0,0,0,0)" | "#00000000"
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::markdown::color_preset::DiagramColorPreset;
 
     #[test]
     fn from_diagram_theme_preserves_light_diagram_snapshot() {
@@ -68,6 +81,31 @@ mod tests {
         assert_eq!(theme.diagram_stroke, preset.stroke);
         assert_eq!(theme.diagram_arrow, preset.arrow);
         assert_eq!(theme.mermaid_theme, preset.mermaid_theme);
+    }
+
+    #[test]
+    fn from_diagram_theme_preserves_explicit_table_tokens() {
+        let preset = DiagramColorPreset::light();
+        let mut source = DiagramThemeSnapshot::from_preset("light", false, preset);
+        source.table_border = Some("#123456".to_string());
+        source.table_header_background = Some("#abcdef".to_string());
+        source.table_even_row_background = Some("#fedcba".to_string());
+
+        let theme = KdvThemeAdapter::from_diagram_theme(&source);
+
+        assert_eq!(theme.table_border, "#123456");
+        assert_eq!(theme.table_header_background, "#abcdef");
+        assert_eq!(theme.table_even_row_background, "#fedcba");
+    }
+
+    #[test]
+    fn from_diagram_theme_keeps_document_background_when_source_is_transparent() {
+        let preset = DiagramColorPreset::dark();
+        let source = DiagramThemeSnapshot::from_preset("dark", true, preset);
+        let theme = KdvThemeAdapter::from_diagram_theme(&source);
+
+        assert_eq!(theme.background, KdvThemeSnapshot::katana_dark().background);
+        assert_eq!(theme.diagram_background, "transparent");
     }
 
     #[test]

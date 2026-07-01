@@ -88,7 +88,7 @@ impl TextEditRenderer {
                 && response.clicked()
                 && let Some(c) = text_output.cursor_range
             {
-                let line = EditorLogicOps::char_index_to_line(buffer, c.primary.index);
+                let line = EditorLogicOps::char_index_to_line(buffer, c.primary.index.into());
                 scroll.scroll_to_line = Some(line);
             }
 

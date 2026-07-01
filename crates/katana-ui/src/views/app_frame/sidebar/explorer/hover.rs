@@ -50,7 +50,7 @@ impl ExplorerHoverOverlay {
                         ..Default::default()
                     })
                     .inner_margin(egui::Margin::ZERO)
-                    .rounding(egui::CornerRadius {
+                    .corner_radius(egui::CornerRadius {
                         ne: HOVER_PANEL_ROUNDING,
                         se: HOVER_PANEL_ROUNDING,
                         nw: 0,
@@ -100,7 +100,7 @@ impl ExplorerHoverOverlay {
             }
         }
         if !keep_open && ui.input(|i| i.pointer.hover_pos().is_some()) {
-            if ui.ctx().memory(|mem| mem.any_popup_open()) {
+            if ui.ctx().any_popup_open() {
                 return;
             }
             ui.ctx()

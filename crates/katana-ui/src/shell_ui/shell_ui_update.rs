@@ -3,6 +3,10 @@ use crate::app_state::AppAction;
 use crate::shell::KatanaApp;
 use crate::shell_ui::ShellUiOps;
 use eframe::egui;
+use katana_platform::theme::Rgb;
+
+const TABLE_HEADER_ALPHA: f32 = 0.3;
+const TABLE_STRIPE_ALPHA: f32 = 0.1;
 
 impl KatanaApp {
     /// Per-frame state updates and rendering prerequisites.
@@ -135,6 +139,17 @@ impl KatanaApp {
                 background: rgb_hex(theme_colors.preview.background),
                 text: rgb_hex(theme_colors.preview.text),
                 preview_text: rgb_hex(theme_colors.preview.text),
+                table_border: Some(rgb_hex(theme_colors.preview.border)),
+                table_header_background: Some(blended_preview_selection_hex(
+                    theme_colors.preview.selection,
+                    theme_colors.preview.background,
+                    TABLE_HEADER_ALPHA,
+                )),
+                table_even_row_background: Some(blended_preview_selection_hex(
+                    theme_colors.preview.selection,
+                    theme_colors.preview.background,
+                    TABLE_STRIPE_ALPHA,
+                )),
             },
         );
         self.cached_theme = Some(theme_colors.clone());
@@ -160,6 +175,36 @@ impl KatanaApp {
     }
 }
 
-fn rgb_hex(color: katana_platform::theme::Rgb) -> String {
+fn rgb_hex(color: Rgb) -> String {
     format!("#{:02x}{:02x}{:02x}", color.r, color.g, color.b)
+}
+
+fn blended_preview_selection_hex(selection: Rgb, background: Rgb, alpha: f32) -> String {
+    let background = crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(background);
+    let selection = crate::theme_bridge::ThemeBridgeOps::rgb_to_color32(selection);
+    let blended = background.blend(selection.gamma_multiply(alpha));
+    format!("#{:02x}{:02x}{:02x}", blended.r(), blended.g(), blended.b())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn blended_preview_selection_hex_matches_viewer_table_fill_over_background() {
+        let selection = Rgb {
+            r: 0,
+            g: 120,
+            b: 212,
+        };
+        let background = Rgb {
+            r: 30,
+            g: 30,
+            b: 30,
+        };
+
+        let hex = blended_preview_selection_hex(selection, background, TABLE_HEADER_ALPHA);
+
+        assert_eq!(hex, "#153955");
+    }
 }

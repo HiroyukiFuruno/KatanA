@@ -54,7 +54,7 @@ impl<'a> PreviewSidePanels<'a> {
                         ..Default::default()
                     })
                     .inner_margin(egui::Margin::same(POPUP_PADDING))
-                    .rounding(POPUP_ROUNDING);
+                    .corner_radius(POPUP_ROUNDING);
 
                 frame.show(ui, |ui| {
                     ui.set_width(PANEL_WIDTH);

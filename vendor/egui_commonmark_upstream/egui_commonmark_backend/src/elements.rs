@@ -93,7 +93,7 @@ pub fn code_block<'t>(
     text: &str,
     show_code_copy_button: bool,
     layouter: &'t mut dyn FnMut(&Ui, &dyn TextBuffer, f32) -> std::sync::Arc<egui::Galley>,
-    id_source: impl std::hash::Hash,
+    id_source: impl std::hash::Hash + std::fmt::Debug,
 ) -> (egui::Response, std::sync::Arc<egui::Galley>) {
     let mut text = text.strip_suffix('\n').unwrap_or(text);
 

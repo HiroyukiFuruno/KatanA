@@ -40,11 +40,11 @@ impl EditorDiagnostics {
                 };
 
                 let match_start = egui::text::CCursor {
-                    index: start,
+                    index: egui::text::CharIndex(start),
                     prefer_next_row: false,
                 };
                 let match_end = egui::text::CCursor {
-                    index: end,
+                    index: egui::text::CharIndex(end),
                     prefer_next_row: false,
                 };
 

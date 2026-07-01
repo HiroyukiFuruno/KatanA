@@ -67,8 +67,8 @@ impl<'a> VerticalSplit<'a> {
 
         panel
             .resizable(true)
-            .default_height(half_height)
-            .max_height(available_height * SPLIT_PANEL_MAX_RATIO)
+            .default_size(half_height)
+            .max_size(available_height * SPLIT_PANEL_MAX_RATIO)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
                 if let Some(path) = &active_path {
@@ -77,20 +77,25 @@ impl<'a> VerticalSplit<'a> {
                      * widgets (tables/code blocks) cannot leak size back into the resizable
                      * split panel state. */
                     let preview_rect = ui.max_rect();
-                    ui.allocate_ui_at_rect(preview_rect, |ui| {
-                        ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
-                            PreviewContent::new(
-                                pane,
-                                app.state.document.active_document(),
-                                &mut app.state.scroll,
-                                &mut app.pending_action,
-                                scroll_sync,
-                                Some(app.state.search.doc_search.query.clone()),
-                                Some(app.state.search.doc_search_active_index),
-                            )
-                            .show(ui)
-                        })
-                    });
+                    ui.scope_builder(
+                        egui::UiBuilder::new()
+                            .max_rect(preview_rect)
+                            .layout(egui::Layout::top_down(egui::Align::Min)),
+                        |ui| {
+                            ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
+                                PreviewContent::new(
+                                    pane,
+                                    app.state.document.active_document(),
+                                    &mut app.state.scroll,
+                                    &mut app.pending_action,
+                                    scroll_sync,
+                                    Some(app.state.search.doc_search.query.clone()),
+                                    Some(app.state.search.doc_search_active_index),
+                                )
+                                .show(ui)
+                            })
+                        },
+                    );
                 }
             });
         let current_panel_state = egui::containers::panel::PanelState::load(ui.ctx(), panel_id);
@@ -99,14 +104,16 @@ impl<'a> VerticalSplit<'a> {
             /* WHY: Guard against intrinsic-size leaks from preview contents.
              * If panel height grows while the splitter is not being dragged, treat it
              * as layout ratchet and restore the previous height. */
-            if !was_dragging && curr.rect.height() > prev.rect.height() + LAYOUT_RATCHET_THRESHOLD {
+            if !was_dragging
+                && curr.outer_rect.height() > prev.outer_rect.height() + LAYOUT_RATCHET_THRESHOLD
+            {
                 ui.ctx().data_mut(|data| {
                     data.insert_persisted(
                         panel_id,
                         egui::containers::panel::PanelState {
-                            rect: egui::Rect::from_min_size(
-                                curr.rect.min,
-                                egui::vec2(curr.rect.width(), prev.rect.height()),
+                            outer_rect: egui::Rect::from_min_size(
+                                curr.outer_rect.min,
+                                egui::vec2(curr.outer_rect.width(), prev.outer_rect.height()),
                             ),
                         },
                     );

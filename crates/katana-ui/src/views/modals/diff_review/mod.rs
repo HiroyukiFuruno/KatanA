@@ -113,7 +113,7 @@ impl<'a> DiffReviewModal<'a> {
         let can_reject_all = is_pending && self.review.files.len() > 1;
         let mut action = None;
 
-        egui::Frame::none().inner_margin(egui::Margin {
+        egui::Frame::NONE.inner_margin(egui::Margin {
             left: MODAL_INNER_MARGIN_I,
             right: MODAL_INNER_MARGIN_I,
             top: MODAL_INNER_MARGIN_I,

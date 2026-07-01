@@ -24,7 +24,7 @@ impl ShortcutsTabOps {
         os_bindings: &HashMap<String, String>,
     ) {
         /* WHY: Draw a semi-transparent overlay over the entire settings area to visually block other interaction while recording is active. Use window_fill instead of hardcoded colors to conform to AST linters. */
-        let screen = ui.ctx().screen_rect();
+        let screen = ui.ctx().content_rect();
         ui.painter().rect_filled(
             screen,
             0.0,
@@ -114,9 +114,9 @@ impl ShortcutsTabOps {
 
                     const BOX_INNER_MARGIN_X: i8 = 16;
                     const BOX_INNER_MARGIN_Y: i8 = 10;
-                    let mut frame = egui::Frame::none()
+                    let mut frame = egui::Frame::NONE
                         .fill(ui.visuals().extreme_bg_color)
-                        .rounding(ui.visuals().widgets.inactive.corner_radius)
+                        .corner_radius(ui.visuals().widgets.inactive.corner_radius)
                         .inner_margin(egui::Margin::symmetric(BOX_INNER_MARGIN_X, BOX_INNER_MARGIN_Y));
                     /* WHY: Simulate active/focused state */
                     frame.stroke = ui.visuals().selection.stroke;

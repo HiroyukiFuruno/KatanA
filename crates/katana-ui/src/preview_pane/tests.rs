@@ -66,7 +66,7 @@ mod tests {
         state: &mut ViewerState,
         image: &katana_core::markdown::svg_rasterize::RasterizedSvg,
     ) {
-        let _ = ctx.run(
+        let _ = ctx.run_ui(
             egui::RawInput {
                 screen_rect: Some(egui::Rect::from_min_size(
                     egui::pos2(0.0, 0.0),

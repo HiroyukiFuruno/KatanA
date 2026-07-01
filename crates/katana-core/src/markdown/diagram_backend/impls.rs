@@ -71,6 +71,9 @@ impl DiagramThemeSnapshot {
             snapshot.background = current.background;
             snapshot.text = current.text;
             snapshot.preview_text = current.preview_text;
+            snapshot.table_border = current.table_border;
+            snapshot.table_header_background = current.table_header_background;
+            snapshot.table_even_row_background = current.table_even_row_background;
         }
         snapshot
     }
@@ -99,6 +102,9 @@ impl DiagramThemeSnapshot {
             is_dark,
             background: preset.background.to_string(),
             text: preset.text.to_string(),
+            table_border: None,
+            table_header_background: None,
+            table_even_row_background: None,
             fill: preset.fill.to_string(),
             stroke: preset.stroke.to_string(),
             arrow: preset.arrow.to_string(),

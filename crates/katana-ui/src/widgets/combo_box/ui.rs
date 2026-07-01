@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn test_styled_combobox_renders_without_panic() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 StyledComboBox::new("render_test", "Value").show(ui, |ui| {
                     ui.label("item_a");
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn test_styled_combobox_renders_with_width() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 StyledComboBox::new("width_test", "Value")
                     .width(200.0)
@@ -102,7 +102,7 @@ mod tests {
     #[test]
     fn test_styled_combobox_popup_visuals_make_inactive_rows_transparent() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 StyledComboBox::apply_popup_visuals(ui);
 

@@ -29,7 +29,7 @@ impl<'a> GroupHeader<'a> {
             *tab_action = Some(AppAction::ToggleCollapseTabGroup(self.g.id.clone()));
         }
         if group_resp.secondary_clicked() && self.g.name != "demo" {
-            ui.memory_mut(|mem| mem.toggle_popup(egui::Id::new("group_popup").with(&self.g.id)));
+            egui::Popup::toggle_id(ui.ctx(), egui::Id::new("group_popup").with(&self.g.id));
         }
 
         self.handle_popup(ui, tab_action, &group_resp);
@@ -99,16 +99,14 @@ impl<'a> GroupHeader<'a> {
     ) {
         let popup_id = egui::Id::new("group_popup").with(&self.g.id);
         if self.inline_rename_group == Some(&self.g.id) && self.g.name != "demo" {
-            ui.memory_mut(|mem| mem.open_popup(popup_id));
+            egui::Popup::open_id(ui.ctx(), popup_id);
             *tab_action = Some(AppAction::ClearInlineRename);
         }
         let rename = self.inline_rename_group;
-        let popup_resp = egui::popup_below_widget(
-            ui,
-            popup_id,
-            group_resp,
-            egui::PopupCloseBehavior::IgnoreClicks,
-            |ui| {
+        let popup_resp = egui::Popup::from_response(group_resp)
+            .id(popup_id)
+            .close_behavior(egui::PopupCloseBehavior::IgnoreClicks)
+            .show(|ui| {
                 super::group_header_popup::GroupHeaderPopup {
                     g: self.g,
                     inline_rename_group: rename,
@@ -116,8 +114,8 @@ impl<'a> GroupHeader<'a> {
                     popup_id,
                 }
                 .show(ui)
-            },
-        );
+            })
+            .map(|response| response.response.rect);
         self.close_popup_on_outside_click(ui, popup_id, group_resp, popup_resp);
     }
 
@@ -128,7 +126,7 @@ impl<'a> GroupHeader<'a> {
         group_resp: &egui::Response,
         popup_resp: Option<egui::Rect>,
     ) {
-        let is_open = ui.memory(|mem| mem.is_popup_open(popup_id));
+        let is_open = egui::Popup::is_id_open(ui.ctx(), popup_id);
         let primary_pressed = ui.input(|i| i.pointer.any_pressed() && i.pointer.primary_pressed());
         if !is_open || !primary_pressed {
             return;
@@ -139,7 +137,7 @@ impl<'a> GroupHeader<'a> {
         let outside_popup = popup_resp.is_none_or(|r| !r.contains(pos));
         let outside_header = !group_resp.rect.contains(pos);
         if outside_popup && outside_header {
-            ui.memory_mut(|mem| mem.close_popup(popup_id));
+            egui::Popup::close_id(ui.ctx(), popup_id);
         }
     }
 }

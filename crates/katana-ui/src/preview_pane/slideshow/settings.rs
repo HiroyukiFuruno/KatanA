@@ -117,8 +117,11 @@ impl SlideshowSettingsOps {
                 ui.visuals().window_stroke(),
             );
 
-            let mut child_ui =
-                ui.child_ui(panel_rect, egui::Layout::top_down(egui::Align::Min), None);
+            let mut child_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(panel_rect)
+                    .layout(egui::Layout::top_down(egui::Align::Min)),
+            );
             egui::Frame::NONE
                 .inner_margin(FULLSCREEN_PADDING)
                 .show(&mut child_ui, |ui| {
