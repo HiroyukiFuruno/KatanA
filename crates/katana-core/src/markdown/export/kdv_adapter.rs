@@ -1,8 +1,9 @@
 use super::{
-    ExportError, ExportFormat, ExportInput, ExportOutput,
+    ExportConfig, ExportError, ExportFormat, ExportInput, ExportOutput,
     kdv_markdown_normalizer::KdvMarkdownNormalizer,
 };
 use crate::markdown::color_preset::DiagramColorPreset;
+use crate::markdown::diagram_backend::DiagramThemeSnapshot;
 use crate::markdown::kdv_theme_adapter::KdvThemeAdapter;
 use katana_document_viewer::{
     BuildProfile, BuildRequest, DiagramRenderingBackend, DocumentSnapshotFactory, DocumentSource,
@@ -21,7 +22,8 @@ impl KdvExportAdapter {
         let source_path = base_dir
             .map(|dir| dir.join("document.md"))
             .unwrap_or_else(|| std::path::PathBuf::from("document.md"));
-        let bytes = Self::export_bytes(source, &source_path, ExportFormat::Html, preset)?;
+        let theme = ExportConfig::theme_from_preset(preset);
+        let bytes = Self::export_bytes(source, &source_path, ExportFormat::Html, &theme)?;
         String::from_utf8(bytes).map_err(ExportError::InvalidHtml)
     }
 
@@ -47,9 +49,9 @@ impl KdvExportAdapter {
         source: &str,
         source_path: &std::path::Path,
         format: ExportFormat,
-        preset: &DiagramColorPreset,
+        theme: &DiagramThemeSnapshot,
     ) -> Result<Vec<u8>, ExportError> {
-        let theme = KdvThemeAdapter::from_preset(preset);
+        let theme = KdvThemeAdapter::from_diagram_theme(theme);
         let snapshot = Self::document_snapshot(source, source_path)?;
         let pipeline = ForgePipeline::new(DiagramRenderingBackend::new(KrrDiagramRenderEngine));
         let graph = pipeline

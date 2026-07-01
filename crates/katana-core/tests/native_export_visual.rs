@@ -1,16 +1,20 @@
 use katana_core::markdown::{
-    ExportConfig, ExportFormat, ExportInput, ExporterTrait, ImageExporter, PdfExporter,
-    color_preset::DiagramColorPreset,
+    DiagramThemeSnapshot, ExportConfig, ExportFormat, ExportInput, ExporterTrait, ImageExporter,
+    PdfExporter, color_preset::DiagramColorPreset,
 };
 
 fn do_image_export(markdown: &str, output: &std::path::Path) {
+    do_image_export_with_config(markdown, output, dark_export_config());
+}
+
+fn do_image_export_with_config(markdown: &str, output: &std::path::Path, config: ExportConfig) {
     ImageExporter
         .export(&ExportInput {
             format: ExportFormat::Png,
             markdown_source: markdown.to_string(),
             source_path: output.with_extension("md"),
             output_path: output.to_path_buf(),
-            config: dark_export_config(),
+            config,
         })
         .unwrap();
 }
@@ -36,6 +40,21 @@ fn image_export_writes_markdown_content_pixels_in_png() {
 
     let image = image::open(output).unwrap().to_rgba8();
     assert_has_nonwhite_pixel(&image);
+}
+
+#[test]
+fn image_export_applies_document_theme_background_from_snapshot() {
+    let dir = tempfile::tempdir().unwrap();
+    let output = dir.path().join("document.png");
+
+    do_image_export_with_config(
+        "# Themed Export",
+        &output,
+        ExportConfig::with_theme(themed_export_snapshot()),
+    );
+
+    let image = image::open(output).unwrap().to_rgba8();
+    assert_eq!(image.get_pixel(8, 8).0, [0x12, 0x34, 0x56, 0xFF]);
 }
 
 #[test]
@@ -76,10 +95,16 @@ fn assert_has_nonwhite_pixel(image: &image::RgbaImage) {
 }
 
 fn dark_export_config() -> ExportConfig {
-    ExportConfig {
-        theme: DiagramColorPreset::dark().clone(),
-        ..Default::default()
-    }
+    ExportConfig::from_preset(DiagramColorPreset::dark())
+}
+
+fn themed_export_snapshot() -> DiagramThemeSnapshot {
+    let mut theme =
+        DiagramThemeSnapshot::from_preset("document-theme-test", true, &DiagramColorPreset::dark());
+    theme.background = "#123456".to_string();
+    theme.text = "#F5F5F5".to_string();
+    theme.preview_text = "#F5F5F5".to_string();
+    theme
 }
 
 fn dark_export_markdown() -> &'static str {

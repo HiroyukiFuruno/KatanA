@@ -99,7 +99,7 @@ impl DiagnosticsHoverOps {
                     *action = crate::app_state::AppAction::ApplyLintFixes(vec![
                         diag.fix_info.clone().unwrap(),
                     ]);
-                    ui.close_menu();
+                    ui.close();
                 }
                 if ui.button(&linter_msgs.fix_all).clicked() {
                     let all_fixes = all_diagnostics
@@ -114,7 +114,7 @@ impl DiagnosticsHoverOps {
                         })
                         .collect();
                     *action = crate::app_state::AppAction::ApplyLintFixes(all_fixes);
-                    ui.close_menu();
+                    ui.close();
                 }
             });
         }
@@ -130,7 +130,7 @@ impl DiagnosticsHoverOps {
                 meta.code.to_string(),
                 meta.docs_url.to_string(),
             );
-            ui.close_menu();
+            ui.close();
         }
     }
 }

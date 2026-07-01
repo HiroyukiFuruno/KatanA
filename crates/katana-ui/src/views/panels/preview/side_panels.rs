@@ -33,9 +33,9 @@ impl<'a> PreviewSidePanels<'a> {
     }
 
     fn render_sidebar(&mut self, ui: &mut egui::Ui) {
-        let panel_resp = egui::SidePanel::right("preview_side_bar")
+        let panel_resp = egui::Panel::right("preview_side_bar")
             .resizable(false)
-            .exact_width(PREVIEW_SIDE_BAR_WIDTH)
+            .exact_size(PREVIEW_SIDE_BAR_WIDTH)
             .show_inside(ui, |ui| {
                 ui.add_space(PREVIEW_SIDE_BAR_MARGIN);
                 ui.vertical_centered(|ui| {
@@ -172,7 +172,7 @@ impl<'a> PreviewSidePanels<'a> {
             egui::Button::image(icon.ui_image(ui, crate::icon::IconSize::Medium))
                 .fill(if is_active { active_bg } else { icon_bg })
                 .min_size(egui::vec2(TOGGLE_BUTTON_SIZE, TOGGLE_BUTTON_SIZE))
-                .rounding(egui::Rounding::same(TOGGLE_BUTTON_ROUNDING)),
+                .corner_radius(egui::CornerRadius::same(TOGGLE_BUTTON_ROUNDING)),
         );
 
         let mut txt = tooltip.to_string();

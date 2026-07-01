@@ -87,7 +87,7 @@ impl KatanaTableRenderer {
                         .show(constrained_ui, |inner_ui| {
                             inner_ui.set_max_width(table_width);
 
-                            let frame_res = egui::Frame::none()
+                            let frame_res = egui::Frame::NONE
                                 .inner_margin(egui::Margin {
                                     left: DEFAULT_MARGIN,
                                     right: DEFAULT_MARGIN,

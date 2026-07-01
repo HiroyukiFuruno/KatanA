@@ -66,7 +66,7 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
                             ..Default::default()
                         })
                         .inner_margin(egui::Margin::same(crate::shell::RAIL_POPUP_PADDING))
-                        .rounding(crate::shell::RAIL_POPUP_ROUNDING);
+                        .corner_radius(crate::shell::RAIL_POPUP_ROUNDING);
 
                     frame.show(ui, |ui| {
                         match active {
@@ -169,7 +169,7 @@ impl crate::views::app_frame::types::ExplorerSidebar<'_> {
         if ui.input(|i| i.pointer.any_pressed()) {
             if let Some(pos) = ui.input(|i| i.pointer.interact_pos()) {
                 if !area_resp.response.rect.contains(pos) && pos.x > rail_width {
-                    ui.ctx().memory_mut(|m| m.close_popup(area_id));
+                    egui::Popup::close_id(ui.ctx(), area_id);
                 }
             }
         }

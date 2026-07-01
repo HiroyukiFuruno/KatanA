@@ -1,4 +1,5 @@
 use crate::markdown::color_preset::DiagramColorPreset;
+use crate::markdown::diagram_backend::DiagramThemeSnapshot;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExportFormat {
@@ -15,7 +16,7 @@ pub enum PaperSize {
 
 #[derive(Debug, Clone)]
 pub struct ExportConfig {
-    pub theme: DiagramColorPreset,
+    pub theme: DiagramThemeSnapshot,
     pub paper_size: PaperSize,
 }
 
@@ -61,8 +62,32 @@ pub trait ExporterTrait: Send + Sync {
 impl Default for ExportConfig {
     fn default() -> Self {
         Self {
-            theme: DiagramColorPreset::current().clone(),
+            theme: DiagramThemeSnapshot::current(),
             paper_size: PaperSize::A4,
         }
+    }
+}
+
+impl ExportConfig {
+    pub fn from_preset(preset: &DiagramColorPreset) -> Self {
+        Self {
+            theme: Self::theme_from_preset(preset),
+            paper_size: PaperSize::A4,
+        }
+    }
+
+    pub fn with_theme(theme: DiagramThemeSnapshot) -> Self {
+        Self {
+            theme,
+            paper_size: PaperSize::A4,
+        }
+    }
+
+    pub fn theme_from_preset(preset: &DiagramColorPreset) -> DiagramThemeSnapshot {
+        DiagramThemeSnapshot::from_preset(
+            if preset.dark_mode { "dark" } else { "light" },
+            preset.dark_mode,
+            preset,
+        )
     }
 }

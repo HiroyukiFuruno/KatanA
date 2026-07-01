@@ -158,6 +158,14 @@ pub fn run(
     for _ in 0..10 {
         harness.step();
     }
+    if let Some(show_controls) = fixture.settings.preview_show_diagram_controls {
+        harness.ctx.data_mut(|data| {
+            data.insert_temp(
+                egui::Id::new("katana_preview_diagram_controls"),
+                show_controls,
+            );
+        });
+    }
     let mut recording: Option<ActiveRecording> = None;
 
     for (i, step) in steps.iter().enumerate() {
@@ -317,10 +325,7 @@ pub fn run(
                     markdown_source: source,
                     source_path: doc_path,
                     output_path: out.clone(),
-                    config: katana_core::markdown::export::ExportConfig {
-                        theme: preset,
-                        ..Default::default()
-                    },
+                    config: katana_core::markdown::export::ExportConfig::from_preset(&preset),
                 };
                 katana_core::markdown::export::ImageExporter
                     .export(&export_input)

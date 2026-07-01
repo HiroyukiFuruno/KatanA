@@ -58,15 +58,15 @@ impl EditorLogicOps {
         target_line: usize,
         response: &egui::Response,
         galley: &egui::text::Galley,
-        target_rect: fn(&egui::Rect, egui::Rect) -> (egui::Rect, egui::Align),
+        target_outer_rect: fn(&egui::Rect, egui::Rect) -> (egui::Rect, egui::Align),
     ) {
         if let Some(idx) = Self::line_to_char_index(buffer, target_line) {
             let cursor = egui::text::CCursor {
-                index: idx,
+                index: egui::text::CharIndex(idx),
                 prefer_next_row: false,
             };
             let pos = galley.pos_from_cursor(cursor);
-            let (rect, align) = target_rect(&response.rect, pos);
+            let (rect, align) = target_outer_rect(&response.rect, pos);
             ui.scroll_to_rect(rect, Some(align));
         }
     }

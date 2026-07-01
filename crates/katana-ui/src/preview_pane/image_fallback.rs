@@ -85,7 +85,7 @@ impl ImageFallbackOps {
                     target_dir = parent.to_path_buf();
                 }
                 let _ = open::that(target_dir);
-                ui.close_menu();
+                ui.close();
             }
         });
 

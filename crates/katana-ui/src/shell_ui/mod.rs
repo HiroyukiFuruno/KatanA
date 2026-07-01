@@ -102,36 +102,33 @@ pub(crate) const SPLIT_PANEL_MAX_RATIO: f32 = 0.7;
 pub(crate) const PREVIEW_CONTENT_PADDING: i8 = 12;
 
 impl eframe::App for KatanaApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        crate::widgets::InteractionFacade::begin_frame(ctx);
-        let theme_colors = self.poll_and_prepare(ctx);
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = ui.ctx().clone();
+        crate::widgets::InteractionFacade::begin_frame(&ctx);
+        let theme_colors = self.poll_and_prepare(&ctx);
 
-        if !self.show_main_panels(ctx, &theme_colors) {
+        if !self.show_main_panels(ui, &theme_colors) {
             return;
         }
 
-        if self.is_foreground_surface_active(ctx) {
+        if self.is_foreground_surface_active(&ctx) {
             egui::Area::new("foreground_surface_blocker".into())
                 .order(egui::Order::Background)
                 .fixed_pos(egui::pos2(0.0, 0.0))
                 .interactable(true)
-                .show(ctx, |ui| {
-                    ui.allocate_rect(ctx.screen_rect(), egui::Sense::all());
+                .show(&ctx, |ui| {
+                    ui.allocate_rect(ctx.content_rect(), egui::Sense::all());
                 });
         }
 
-        self.show_modals(ctx);
-        self.update_file_dialog(ctx);
+        self.show_modals(&ctx);
+        self.update_file_dialog(&ctx);
 
         self.state.scroll.scroll_to_line = None;
         self.state.scroll.toc_scroll_to_line = None;
-        crate::views::app_frame::AppFrameOps::intercept_url_commands(ctx, self);
+        crate::views::app_frame::AppFrameOps::intercept_url_commands(&ctx, self);
 
-        self.show_splash(ctx);
-    }
-
-    fn ui(&mut self, _ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        /* WHY: eframe::App trait requires this method in some contexts or versions. */
+        self.show_splash(&ctx);
     }
 
     fn on_exit(&mut self) {

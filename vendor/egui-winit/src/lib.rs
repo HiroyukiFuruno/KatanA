@@ -101,9 +101,6 @@ pub struct State {
     /// Only one touch will be interpreted as pointer at any time.
     pointer_touch_id: Option<u64>,
 
-    /// track ime state
-    has_sent_ime_enabled: bool,
-
     #[cfg(feature = "accesskit")]
     pub accesskit: Option<accesskit_winit::Adapter>,
 
@@ -149,8 +146,6 @@ impl State {
 
             simulate_touch_screen: false,
             pointer_touch_id: None,
-
-            has_sent_ime_enabled: false,
 
             #[cfg(feature = "accesskit")]
             accesskit: None,
@@ -689,31 +684,35 @@ impl State {
         // }
 
         match ime {
-            winit::event::Ime::Enabled => {
-                if cfg!(target_os = "linux") {
-                    // This event means different things in X11 and Wayland, but we can just
-                    // ignore it and enable IME on the preedit event.
-                    // See <https://github.com/rust-windowing/winit/issues/2498>
+            winit::event::Ime::Enabled => {}
+            winit::event::Ime::Preedit(text, Some((start_bytes, end_bytes))) => {
+                let active_range_chars = if let (Some(start_chars), Some(middle_chars)) = (
+                    text.get(..*start_bytes).map(|s| s.chars().count()),
+                    text.get(*start_bytes..*end_bytes).map(|s| s.chars().count()),
+                ) {
+                    if cfg!(target_os = "windows") && start_chars == 0 && middle_chars == 0 {
+                        None
+                    } else {
+                        Some(start_chars..start_chars + middle_chars)
+                    }
                 } else {
-                    self.ime_event_enable();
-                }
-            }
-            winit::event::Ime::Preedit(text, Some(_cursor)) => {
-                self.ime_event_enable();
+                    log::warn!("ignoring {ime:?}'s range because it is invalid");
+                    None
+                };
                 self.egui_input
                     .events
-                    .push(egui::Event::Ime(egui::ImeEvent::Preedit(text.clone())));
+                    .push(egui::Event::Ime(egui::ImeEvent::Preedit {
+                        text: text.clone(),
+                        active_range_chars,
+                    }));
             }
             winit::event::Ime::Commit(text) => {
                 self.egui_input
                     .events
                     .push(egui::Event::Ime(egui::ImeEvent::Commit(text.clone())));
-                self.ime_event_disable();
             }
-            winit::event::Ime::Disabled => {
-                self.ime_event_disable();
-            }
-            winit::event::Ime::Preedit(_, None) => {
+            winit::event::Ime::Disabled => {}
+            winit::event::Ime::Preedit(text, None) => {
                 if cfg!(target_os = "macos") {
                     // On macOS, when the user presses backspace to delete the
                     // last character in an IME composition, `winit` only emits
@@ -731,28 +730,13 @@ impl State {
                     // See: https://github.com/emilk/egui/pull/7973
                     self.egui_input
                         .events
-                        .push(egui::Event::Ime(egui::ImeEvent::Preedit(String::new())));
+                        .push(egui::Event::Ime(egui::ImeEvent::Preedit {
+                            text: text.clone(),
+                            active_range_chars: None,
+                        }));
                 }
-
-                self.ime_event_disable();
             }
         }
-    }
-
-    pub fn ime_event_enable(&mut self) {
-        if !self.has_sent_ime_enabled {
-            self.egui_input
-                .events
-                .push(egui::Event::Ime(egui::ImeEvent::Enabled));
-            self.has_sent_ime_enabled = true;
-        }
-    }
-
-    pub fn ime_event_disable(&mut self) {
-        self.egui_input
-            .events
-            .push(egui::Event::Ime(egui::ImeEvent::Disabled));
-        self.has_sent_ime_enabled = false;
     }
 
     /// Returns `true` if the event was sent to egui.
@@ -1092,6 +1076,7 @@ impl State {
         let egui::PlatformOutput {
             commands,
             cursor_icon,
+            cursor_image: _,
             events: _,                    // handled elsewhere
             mutable_text_under_cursor: _, // only used in eframe web
             ime,
@@ -1166,6 +1151,15 @@ impl State {
 
         #[cfg(not(feature = "accesskit"))]
         let _ = accesskit_update;
+    }
+
+    pub fn handle_platform_output_with_event_loop(
+        &mut self,
+        window: &Window,
+        _event_loop: &ActiveEventLoop,
+        platform_output: egui::PlatformOutput,
+    ) {
+        self.handle_platform_output(window, platform_output);
     }
 
     fn set_cursor_icon(&mut self, window: &Window, cursor_icon: egui::CursorIcon) {
@@ -1741,6 +1735,16 @@ fn process_viewport_command(
         ViewportCommand::Fullscreen(v) => {
             window.set_fullscreen(v.then_some(winit::window::Fullscreen::Borderless(None)));
         }
+        ViewportCommand::SetMonitor(idx) => {
+            if let Some(monitor) = window.available_monitors().nth(idx) {
+                window.set_fullscreen(Some(winit::window::Fullscreen::Borderless(Some(monitor))));
+            } else {
+                log::warn!(
+                    "ViewportCommand::SetMonitor({idx}): index out of range ({} monitors available)",
+                    window.available_monitors().count()
+                );
+            }
+        }
         ViewportCommand::Decorations(v) => window.set_decorations(v),
         ViewportCommand::WindowLevel(l) => window.set_window_level(match l {
             egui::viewport::WindowLevel::AlwaysOnBottom => WindowLevel::AlwaysOnBottom,
@@ -1891,6 +1895,7 @@ pub fn create_winit_window_attributes(
 
         mouse_passthrough: _, // handled in `apply_viewport_builder_to_window`
         clamp_size_to_monitor_size: _, // Handled in `viewport_builder` in `epi_integration.rs`
+        monitor: _, // handled by `SetMonitor` after window creation
     } = viewport_builder;
 
     let mut window_attributes = winit::window::WindowAttributes::default()

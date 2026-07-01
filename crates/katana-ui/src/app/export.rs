@@ -83,7 +83,7 @@ impl ExportOps for KatanaApp {
         }
     }
     fn export_as_html(&mut self, _ctx: &egui::Context, source: &str, doc_path: &std::path::Path) {
-        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
+        let theme = katana_core::markdown::DiagramThemeSnapshot::current();
         let source = source.to_string();
         let base_dir = doc_path.parent().map(|p| p.to_path_buf());
         let filename = self.export_filename(doc_path, "html");
@@ -92,10 +92,10 @@ impl ExportOps for KatanaApp {
 
         let fname = filename.clone();
         std::thread::spawn(move || {
-            let result = ShellLogicOps::export_named_html_to_tmp(
+            let result = ShellLogicOps::export_named_html_to_tmp_with_theme(
                 &source,
                 &fname,
-                &preset,
+                theme,
                 base_dir.as_deref(),
             );
             let _ = tx.send(result);

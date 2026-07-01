@@ -339,9 +339,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 if section.format.strikethrough != egui::Stroke::NONE {
                     any_strikethrough = true;
                     st_stroke = section.format.strikethrough;
-                    let start_char = text[..section.byte_range.start].chars().count();
+                    let start_char = text[..section.byte_range.start.0].chars().count();
                     let end_char = start_char
-                        + text[section.byte_range.start..section.byte_range.end]
+                        + text[section.byte_range.start.0..section.byte_range.end.0]
                             .chars()
                             .count();
                     for flag in &mut strikethrough_char_flags[start_char..end_char] {
@@ -352,9 +352,9 @@ impl<'a> CommonMarkViewerInternal<'a> {
                 if section.format.underline != egui::Stroke::NONE {
                     any_underline = true;
                     ul_stroke = section.format.underline;
-                    let start_char = text[..section.byte_range.start].chars().count();
+                    let start_char = text[..section.byte_range.start.0].chars().count();
                     let end_char = start_char
-                        + text[section.byte_range.start..section.byte_range.end]
+                        + text[section.byte_range.start.0..section.byte_range.end.0]
                             .chars()
                             .count();
                     for flag in &mut underline_char_flags[start_char..end_char] {
@@ -2389,7 +2389,8 @@ impl<'a> CommonMarkViewerInternal<'a> {
                                 egui::Align::LEFT,
                             );
                             for section in layout_job.sections.iter_mut() {
-                                if section.byte_range.start >= section_start {
+                                if section.byte_range.start >= egui::text::ByteIndex(section_start)
+                                {
                                     section.format.color = hyperlink_color;
                                     section.format.underline = egui::Stroke::NONE;
                                 }

@@ -33,10 +33,10 @@ impl NormalizeFonts {
     fn normalize_cjk_baseline(&mut self, proportional_candidates: &[&str]) {
         let tweaked_fallback = egui::FontTweak {
             coords: Default::default(),
-            hinting_override: None,
             scale: 1.0,
             y_offset_factor: MONO_FALLBACK_Y_OFFSET_FACTOR + MONO_PRIMARY_Y_OFFSET_FACTOR,
             y_offset: LINUX_Y_OFFSET,
+            ..Default::default()
         };
         let mono_fallback_name = SystemFontLoader::load_first_valid(
             &mut self.fonts,

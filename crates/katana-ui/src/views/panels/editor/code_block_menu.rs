@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn code_block_menu_state_defaults_closed() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 assert!(!CodeBlockMenuPopupOps::is_open(ui));
             });
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn code_block_menu_state_can_be_closed() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 CodeBlockMenuPopupOps::set_open(ui, true);
                 assert!(CodeBlockMenuPopupOps::is_open(ui));
@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn code_block_menu_applies_transparent_inactive_item_background() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 CodeBlockMenuOps::apply_menu_item_visuals(ui);
 

@@ -158,7 +158,7 @@ mod tests {
     #[test]
     fn popup_stays_available_when_child_menu_is_open() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 super::super::code_block_menu::CodeBlockMenuPopupOps::set_open(ui, true);
 

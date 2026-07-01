@@ -27,6 +27,18 @@ impl ShellLogicOps {
         source: &str,
         preset: &katana_core::markdown::color_preset::DiagramColorPreset,
     ) -> Result<std::path::PathBuf, String> {
+        Self::export_html_to_tmp_with_theme(
+            path,
+            source,
+            katana_core::markdown::ExportConfig::theme_from_preset(preset),
+        )
+    }
+
+    pub fn export_html_to_tmp_with_theme(
+        path: &std::path::Path,
+        source: &str,
+        theme: katana_core::markdown::DiagramThemeSnapshot,
+    ) -> Result<std::path::PathBuf, String> {
         let exporter = katana_core::markdown::HtmlExporter;
 
         let hash = Self::hash_str(&path.to_string_lossy());
@@ -37,10 +49,7 @@ impl ShellLogicOps {
             markdown_source: source.to_string(),
             source_path: path.to_path_buf(),
             output_path: output_path.clone(),
-            config: katana_core::markdown::ExportConfig {
-                theme: preset.clone(),
-                ..Default::default()
-            },
+            config: katana_core::markdown::ExportConfig::with_theme(theme),
         };
         katana_core::markdown::ExporterTrait::export(&exporter, &input)
             .map_err(|e| e.to_string())?;
@@ -53,6 +62,20 @@ impl ShellLogicOps {
         preset: &katana_core::markdown::color_preset::DiagramColorPreset,
         base_dir: Option<&std::path::Path>,
     ) -> Result<std::path::PathBuf, String> {
+        Self::export_named_html_to_tmp_with_theme(
+            source,
+            filename,
+            katana_core::markdown::ExportConfig::theme_from_preset(preset),
+            base_dir,
+        )
+    }
+
+    pub fn export_named_html_to_tmp_with_theme(
+        source: &str,
+        filename: &str,
+        theme: katana_core::markdown::DiagramThemeSnapshot,
+        base_dir: Option<&std::path::Path>,
+    ) -> Result<std::path::PathBuf, String> {
         let exporter = katana_core::markdown::HtmlExporter;
         let output_path = std::env::temp_dir().join(filename);
         let source_path = base_dir
@@ -63,10 +86,7 @@ impl ShellLogicOps {
             markdown_source: source.to_string(),
             source_path,
             output_path: output_path.clone(),
-            config: katana_core::markdown::ExportConfig {
-                theme: preset.clone(),
-                ..Default::default()
-            },
+            config: katana_core::markdown::ExportConfig::with_theme(theme),
         };
         katana_core::markdown::ExporterTrait::export(&exporter, &input)
             .map_err(|e| e.to_string())?;

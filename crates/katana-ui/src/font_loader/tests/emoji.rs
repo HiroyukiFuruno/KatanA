@@ -26,7 +26,7 @@ fn test_apple_color_emoji_family_renders_directly() {
     ctx.set_fonts(fonts);
 
     let mut glyph = None;
-    let _ = ctx.run(Default::default(), |ctx| {
+    let _ = ctx.run_ui(Default::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let galley = ui.painter().layout_no_wrap(
                 "🌍".to_owned(),

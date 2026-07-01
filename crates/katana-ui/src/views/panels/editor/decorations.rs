@@ -29,7 +29,7 @@ impl EditorDecorations {
         } = params;
         let mut current_cursor_y = None;
         if let Some(c) = cursor_range {
-            let paragraph = EditorLogicOps::char_index_to_line(buffer, c.primary.index);
+            let paragraph = EditorLogicOps::char_index_to_line(buffer, c.primary.index.into());
             scroll.active_editor_line = Some(paragraph);
             let cursor_rect = galley.pos_from_cursor(c.primary);
             current_cursor_y = Some(cursor_rect.min.y);
@@ -67,11 +67,11 @@ impl EditorDecorations {
                 continue;
             };
             let cursor_start = egui::text::CCursor {
-                index: start_idx,
+                index: egui::text::CharIndex(start_idx),
                 prefer_next_row: false,
             };
             let cursor_end = egui::text::CCursor {
-                index: end_idx.saturating_sub(1),
+                index: egui::text::CharIndex(end_idx.saturating_sub(1)),
                 prefer_next_row: false,
             };
             let pos_start = galley.pos_from_cursor(cursor_start);
@@ -106,11 +106,11 @@ impl EditorDecorations {
         });
         for (idx, range) in doc_search_matches.iter().enumerate() {
             let match_start = egui::text::CCursor {
-                index: range.start,
+                index: egui::text::CharIndex(range.start),
                 prefer_next_row: false,
             };
             let match_end = egui::text::CCursor {
-                index: range.end,
+                index: egui::text::CharIndex(range.end),
                 prefer_next_row: false,
             };
             let color = if idx == doc_search_active_index {

@@ -4,7 +4,7 @@ use egui::{Context, RawInput, Ui, pos2, vec2};
 #[test]
 fn test_renderer_sanity() {
     let ctx = Context::default();
-    let _ = ctx.run(RawInput::default(), |ctx| {
+    let _ = ctx.run_ui(RawInput::default(), |ctx| {
         let rect = egui::Rect::from_min_size(pos2(0.0, 0.0), vec2(500.0, 500.0));
         let builder = egui::UiBuilder::new().max_rect(rect);
         let mut ui = Ui::new(ctx.clone(), egui::Id::new("test"), builder);
@@ -32,7 +32,7 @@ fn test_renderer_sanity() {
 #[test]
 fn test_renderer_long_content_no_expand() {
     let ctx = Context::default();
-    let _ = ctx.run(RawInput::default(), |ctx| {
+    let _ = ctx.run_ui(RawInput::default(), |ctx| {
         let rect = egui::Rect::from_min_size(pos2(0.0, 0.0), vec2(500.0, 500.0));
         let builder = egui::UiBuilder::new().max_rect(rect);
         let mut ui = Ui::new(ctx.clone(), egui::Id::new("test_long"), builder);

@@ -33,15 +33,15 @@ impl<'a> TocPanel<'a> {
 
         let width = TOC_PANEL_DEFAULT_WIDTH;
         let panel = match position {
-            TocPosition::Left => egui::SidePanel::left("toc_panel"),
-            TocPosition::Right => egui::SidePanel::right("toc_panel"),
+            TocPosition::Left => egui::Panel::left("toc_panel"),
+            TocPosition::Right => egui::Panel::right("toc_panel"),
         };
 
         let mut output = (None, None);
         let panel_resp = panel
             .frame(Self::panel_frame(&ui.ctx().global_style()))
-            .default_width(width)
-            .width_range(TOC_MIN_WIDTH..=TOC_MAX_WIDTH)
+            .default_size(width)
+            .size_range(TOC_MIN_WIDTH..=TOC_MAX_WIDTH)
             .show_inside(ui, |ui| {
                 output = self.show_toc_content(ui);
             });

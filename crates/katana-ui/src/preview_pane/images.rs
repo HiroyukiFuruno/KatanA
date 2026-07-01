@@ -112,7 +112,7 @@ impl ImageLogicOps {
                 .clicked()
             {
                 let _ = open::that(path);
-                ui.close_menu();
+                ui.close();
             }
         });
 

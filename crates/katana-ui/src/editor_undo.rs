@@ -53,6 +53,7 @@ impl EditorUndoOps {
     }
 
     fn clamp_cursor(mut range: egui::text::CCursorRange, max: usize) -> egui::text::CCursorRange {
+        let max = egui::text::CharIndex(max);
         range.primary.index = range.primary.index.min(max);
         range.secondary.index = range.secondary.index.min(max);
         range

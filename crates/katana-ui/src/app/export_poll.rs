@@ -21,7 +21,7 @@ impl ExportPoll for KatanaApp {
         output_path: std::path::PathBuf,
         doc_path: &std::path::Path,
     ) {
-        let preset = katana_core::markdown::color_preset::DiagramColorPreset::current().clone();
+        let theme = katana_core::markdown::DiagramThemeSnapshot::current();
         let source = source.to_string();
         let ext = ext.to_string();
         let source_path = doc_path.to_path_buf();
@@ -44,10 +44,7 @@ impl ExportPoll for KatanaApp {
                 markdown_source: source,
                 source_path,
                 output_path: output_path.clone(),
-                config: katana_core::markdown::ExportConfig {
-                    theme: preset,
-                    ..Default::default()
-                },
+                config: katana_core::markdown::ExportConfig::with_theme(theme),
             };
             let _ = tx.send(
                 exporter

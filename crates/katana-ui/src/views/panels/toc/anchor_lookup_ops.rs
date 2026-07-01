@@ -22,7 +22,7 @@ impl<'a> TocPanel<'a> {
     ) -> Option<&crate::preview_pane::types::DocumentAnchorMapItem> {
         let mut active_anchor = None;
         for item in anchor_map {
-            let Some(rect) = item.rect else {
+            let Some(rect) = item.outer_rect else {
                 continue;
             };
             if rect.min.y <= threshold {

@@ -46,7 +46,7 @@ impl PreviewLogicOps {
         content_top_y: f32,
     ) -> Option<f32> {
         let item = anchor_map.iter().find(|a| a.index == Some(heading_index))?;
-        let rect = item.rect?;
+        let rect = item.outer_rect?;
         /* WHY: rect.min.y is screen-space. Subtracting content_top_y converts it   */
         /* to the ScrollArea's virtual-space offset (scroll_offset = 0 when at      */
         /* the very top of the content, before any Frame/padding offsets).         */
@@ -68,7 +68,7 @@ impl PreviewLogicOps {
 
         let mut computed_anchors = Vec::with_capacity(preview.anchor_map.len());
         for item in &preview.anchor_map {
-            if let Some(rect) = item.rect {
+            if let Some(rect) = item.outer_rect {
                 /* WHY: Use physical editor line Y positions for ultra-high precision. */
                 /* This eliminates drift caused by soft-wrapping in the editor. Fallback to row-height. */
                 let editor_y = scroll
@@ -181,7 +181,7 @@ impl PreviewLogicOps {
                     let btn = egui::Button::image(
                         crate::Icon::ArrowUp.ui_image(ui, crate::icon::IconSize::Medium),
                     )
-                    .rounding(egui::Rounding::same(BUTTON_ROUNDING as u8))
+                    .corner_radius(egui::CornerRadius::same(BUTTON_ROUNDING as u8))
                     .fill(icon_bg);
                     if ui
                         .add(btn)

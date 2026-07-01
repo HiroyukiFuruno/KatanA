@@ -43,7 +43,7 @@ impl<'a> SearchBar<'a> {
         }
     }
 
-    pub fn id_source(mut self, id: impl std::hash::Hash) -> Self {
+    pub fn id_source(mut self, id: impl std::hash::Hash + std::fmt::Debug) -> Self {
         self.id_source = Some(egui::Id::new(id));
         self
     }
@@ -74,13 +74,13 @@ impl<'a> SearchBar<'a> {
     }
 
     pub fn show(mut self, ui: &mut egui::Ui) -> egui::Response {
-        let frame = egui::Frame::none()
+        let frame = egui::Frame::NONE
             .fill(ui.visuals().extreme_bg_color)
             .inner_margin(egui::Margin::symmetric(
                 layout::PADDING_X as i8,
                 layout::PADDING_Y as i8,
             ))
-            .rounding(layout::ROUNDING_RADIUS);
+            .corner_radius(layout::ROUNDING_RADIUS);
 
         let mut changed = false;
         /* WHY: Pre-compute row_height to constrain allocate_ui_with_layout call */
@@ -123,7 +123,7 @@ impl<'a> SearchBar<'a> {
                 let mut text_edit = egui::TextEdit::singleline(self.params.query_mut())
                     .id_source(id_source)
                     .desired_width(text_width)
-                    .frame(egui::Frame::none());
+                    .frame(egui::Frame::NONE);
                 if let Some(color) = self.text_color {
                     text_edit = text_edit.text_color(color);
                 }

@@ -64,9 +64,9 @@ impl<'a> HorizontalSplit<'a> {
 
         panel_side
             .resizable(true)
-            .min_width(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
-            .max_width(available_width * crate::shell_ui::SPLIT_PANEL_MAX_RATIO)
-            .default_width(half_width)
+            .min_size(SPLIT_PREVIEW_PANEL_MIN_WIDTH)
+            .max_size(available_width * crate::shell_ui::SPLIT_PANEL_MAX_RATIO)
+            .default_size(half_width)
             .frame(egui::Frame::NONE)
             .show_inside(ui, |ui| {
                 if let Some(path) = &active_path {
@@ -78,20 +78,25 @@ impl<'a> HorizontalSplit<'a> {
                      * widgets (tables/code blocks) cannot leak width back into the resizable
                      * panel state and cause expand-without-shrink behavior. */
                     let preview_rect = ui.max_rect();
-                    ui.allocate_ui_at_rect(preview_rect, |ui| {
-                        ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
-                            PreviewContent::new(
-                                pane,
-                                app.state.document.active_document(),
-                                &mut app.state.scroll,
-                                &mut app.pending_action,
-                                scroll_sync,
-                                Some(app.state.search.doc_search.query.clone()),
-                                Some(app.state.search.doc_search_active_index),
-                            )
-                            .show(ui)
-                        })
-                    });
+                    ui.scope_builder(
+                        egui::UiBuilder::new()
+                            .max_rect(preview_rect)
+                            .layout(egui::Layout::top_down(egui::Align::Min)),
+                        |ui| {
+                            ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
+                                PreviewContent::new(
+                                    pane,
+                                    app.state.document.active_document(),
+                                    &mut app.state.scroll,
+                                    &mut app.pending_action,
+                                    scroll_sync,
+                                    Some(app.state.search.doc_search.query.clone()),
+                                    Some(app.state.search.doc_search_active_index),
+                                )
+                                .show(ui)
+                            })
+                        },
+                    );
                 }
             });
         let current_panel_state = egui::containers::panel::PanelState::load(ui.ctx(), panel_id);
@@ -100,14 +105,16 @@ impl<'a> HorizontalSplit<'a> {
             /* WHY: Guard against intrinsic-size leaks from preview contents.
              * If panel width grows while the splitter is not being dragged, treat it
              * as layout ratchet and restore the previous width. */
-            if !was_dragging && curr.rect.width() > prev.rect.width() + LAYOUT_RATCHET_THRESHOLD {
+            if !was_dragging
+                && curr.outer_rect.width() > prev.outer_rect.width() + LAYOUT_RATCHET_THRESHOLD
+            {
                 ui.ctx().data_mut(|data| {
                     data.insert_persisted(
                         panel_id,
                         egui::containers::panel::PanelState {
-                            rect: egui::Rect::from_min_size(
-                                curr.rect.min,
-                                egui::vec2(prev.rect.width(), curr.rect.height()),
+                            outer_rect: egui::Rect::from_min_size(
+                                curr.outer_rect.min,
+                                egui::vec2(prev.outer_rect.width(), curr.outer_rect.height()),
                             ),
                         },
                     );

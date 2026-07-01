@@ -287,7 +287,7 @@ mod tests {
         });
         let mut intercepted = false;
 
-        let _ = ctx.run(raw_input, |ctx| {
+        let _ = ctx.run_ui(raw_input, |ctx| {
             intercepted =
                 EditorLogicOps::intercept_clipboard_image_paste_for_test(ctx, true, || true);
         });
@@ -310,7 +310,7 @@ mod tests {
         });
         let mut intercepted = true;
 
-        let _ = ctx.run(raw_input, |ctx| {
+        let _ = ctx.run_ui(raw_input, |ctx| {
             intercepted =
                 EditorLogicOps::intercept_clipboard_image_paste_for_test(ctx, true, || false);
         });

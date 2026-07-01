@@ -14,7 +14,7 @@ fn active_leaf_item_requests_scroll_into_view() {
         ..Default::default()
     };
 
-    let _ = ctx.run(input, |ctx| {
+    let _ = ctx.run_ui(input, |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let output = egui::ScrollArea::vertical()
                 .animated(false)
@@ -48,7 +48,7 @@ fn active_parent_item_requests_scroll_into_view() {
         ..Default::default()
     };
 
-    let _ = ctx.run(input, |ctx| {
+    let _ = ctx.run_ui(input, |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let output = egui::ScrollArea::vertical()
                 .animated(false)
@@ -89,7 +89,7 @@ fn active_item_keeps_toc_scroll_when_auto_scroll_is_disabled() {
         ..Default::default()
     };
 
-    let _ = ctx.run(input, |ctx| {
+    let _ = ctx.run_ui(input, |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let output = egui::ScrollArea::vertical()
                 .animated(false)

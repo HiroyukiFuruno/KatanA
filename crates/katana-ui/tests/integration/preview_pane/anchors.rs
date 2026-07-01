@@ -16,7 +16,7 @@ fn block_anchors_extracted_for_rich_blocks() {
     );
 
     let ctx = egui::Context::default();
-    let _ = ctx.run(
+    let _ = ctx.run_ui(
         egui::RawInput {
             screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(800.0, 600.0))),
             ..Default::default()
@@ -39,7 +39,7 @@ fn consecutive_rich_blocks_produce_correct_block_anchors() {
      * corruption in the markdown event handler. */
     let md = concat!("```rust\nfn hello() {}\n```\n\n> [!NOTE]\n> Alert\n\n```python\nprint(1)\n```\n");
     let ctx = egui::Context::default();
-    let _ = ctx.run(egui::RawInput::default(), |ctx| {
+    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut pane = PreviewPane::default();
             pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
