@@ -2,6 +2,16 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.31] - 2026-07-02 17:30:06 (UTC)
+
+### 🐛 Bug Fixes
+
+- **PDF export SVG and theme parity**: Updated the KDV export path to katana-document-viewer 0.2.7, improving PDF raster quality for SVG-backed diagrams, math, SVG images, and SVG data URIs while preserving their display size, and incorporating KDV 0.2.6 export parity fixes for alert colors, theme-aware inline code backgrounds, dark code token fallback, and details/accordion spacing.
+
+### 🔧 System
+
+- **Dependency maintenance**: Updated katana-document-viewer to 0.2.7, comrak to 0.53, and refreshed the associated release dependency lockfile updates.
+
 ## [0.22.30] - 2026-06-11 19:20:48 (UTC)
 
 ### 🐛 Bug Fixes

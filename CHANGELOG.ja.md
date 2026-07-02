@@ -2,6 +2,16 @@
 
 KatanA Desktop における重要な変更点（アップデート）を記録します。
 
+## [0.22.31] - 2026-07-03 02:30:06 (JST)
+
+### 🐛 不具合修正
+
+- **PDF出力のSVG品質とテーマ差分**: KDV出力経路をkatana-document-viewer 0.2.7へ更新し、SVGを使う図形、数式、SVG画像、SVG data URIのPDFラスター品質を表示サイズを維持したまま改善しました。あわせてKDV 0.2.6のalert色、テーマに沿ったinline code背景、ダークテーマのコードトークンfallback、details / accordionの余白調整も取り込みました。
+
+### 🔧 その他
+
+- **依存関係の更新**: katana-document-viewer 0.2.7、comrak 0.53への更新と、関連するリリース依存関係のlockfile更新を含めました。
+
 ## [0.22.30] - 2026-06-12 04:20:49 (JST)
 
 ### 🐛 不具合修正
