@@ -2,6 +2,12 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.32] - 2026-07-03 12:49:42 (UTC)
+
+### 🐛 Bug Fixes
+
+- **Editor responsiveness after changes**: Fixed a regression where editing, saving, or applying Markdown lint fixes could make the editor appear frozen after the document refreshed.
+
 ## [0.22.31] - 2026-07-02 17:30:06 (UTC)
 
 ### 🐛 Bug Fixes
