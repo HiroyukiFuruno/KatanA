@@ -118,8 +118,10 @@
     - `./scripts/openspec validate v0-29-0-html-file-preview --strict --no-interactive`
 - [x] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
   - Result: `KML_SCOPE=openspec/changes/v0-29-0-html-file-preview just kml-check` passed. No CHANGELOG update exists yet in the implementation PR phase.
-- [ ] 6.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `just check` / `just check-light` を二重実行しない
-- [ ] 6.4 Create PR from Base Feature Branch targeting `master`
+- [x] 6.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `just check` / `just check-light` を二重実行しない
+  - Result: `git push -u origin v0-29-0-html-file-preview` passed the normal pre-push hook.
+- [x] 6.4 Create PR from Base Feature Branch targeting `master`
+  - PR: [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317)
 - [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
 - [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.7 Create `release/v0.29.0` branch from master
