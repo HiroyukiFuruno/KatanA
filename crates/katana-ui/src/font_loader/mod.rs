@@ -53,20 +53,20 @@ impl SystemFontLoader {
 
         let prop_tweak = egui::FontTweak {
             coords: Default::default(),
-            hinting_override: None,
             scale: 1.0,
             y_offset_factor: PROPORTIONAL_Y_OFFSET_FACTOR,
             y_offset: LINUX_Y_OFFSET,
+            ..Default::default()
         };
         let prop_name =
             Self::load_first_valid(&mut fonts, proportional_candidates, Some(prop_tweak), "");
 
         let markdown_tweak = egui::FontTweak {
             coords: Default::default(),
-            hinting_override: None,
             scale: 1.0,
             y_offset_factor: MARKDOWN_PROPORTIONAL_Y_OFFSET_FACTOR,
             y_offset: LINUX_Y_OFFSET,
+            ..Default::default()
         };
         let markdown_name = Self::load_first_valid(
             &mut fonts,
@@ -77,10 +77,10 @@ impl SystemFontLoader {
 
         let mono_tweak = egui::FontTweak {
             coords: Default::default(),
-            hinting_override: None,
             scale: 1.0,
             y_offset_factor: MONO_PRIMARY_Y_OFFSET_FACTOR,
             y_offset: LINUX_Y_OFFSET,
+            ..Default::default()
         };
         let mono_name =
             Self::load_first_valid(&mut fonts, monospace_candidates, Some(mono_tweak), "");

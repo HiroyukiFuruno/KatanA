@@ -326,12 +326,14 @@ impl CodeBlock {
                 for range in search_highlights {
                     // Strong yellow for regular highlights
                     let color = egui::Color32::from_rgba_unmultiplied(255, 255, 0, 100);
+                    let range_start = egui::text::ByteIndex(range.start);
+                    let range_end = egui::text::ByteIndex(range.end);
 
                     let mut i = 0;
                     while i < job.sections.len() {
                         let section = &job.sections[i];
-                        if section.byte_range.end <= range.start
-                            || section.byte_range.start >= range.end
+                        if section.byte_range.end <= range_start
+                            || section.byte_range.start >= range_end
                         {
                             i += 1;
                             continue;
@@ -339,21 +341,21 @@ impl CodeBlock {
 
                         let mut replace_with = Vec::new();
 
-                        if section.byte_range.start < range.start {
+                        if section.byte_range.start < range_start {
                             let mut p1 = section.clone();
-                            p1.byte_range.end = range.start;
+                            p1.byte_range.end = range_start;
                             replace_with.push(p1);
                         }
 
                         let mut p2 = section.clone();
-                        p2.byte_range.start = p2.byte_range.start.max(range.start);
-                        p2.byte_range.end = p2.byte_range.end.min(range.end);
+                        p2.byte_range.start = p2.byte_range.start.max(range_start);
+                        p2.byte_range.end = p2.byte_range.end.min(range_end);
                         p2.format.background = color;
                         replace_with.push(p2);
 
-                        if section.byte_range.end > range.end {
+                        if section.byte_range.end > range_end {
                             let mut p3 = section.clone();
-                            p3.byte_range.start = range.end;
+                            p3.byte_range.start = range_end;
                             replace_with.push(p3);
                         }
 
@@ -366,12 +368,14 @@ impl CodeBlock {
                 if let Some(range) = &active_highlight {
                     // Strong orange for active highlight
                     let color = egui::Color32::from_rgba_unmultiplied(255, 160, 0, 150);
+                    let range_start = egui::text::ByteIndex(range.start);
+                    let range_end = egui::text::ByteIndex(range.end);
 
                     let mut i = 0;
                     while i < job.sections.len() {
                         let section = &job.sections[i];
-                        if section.byte_range.end <= range.start
-                            || section.byte_range.start >= range.end
+                        if section.byte_range.end <= range_start
+                            || section.byte_range.start >= range_end
                         {
                             i += 1;
                             continue;
@@ -379,21 +383,21 @@ impl CodeBlock {
 
                         let mut replace_with = Vec::new();
 
-                        if section.byte_range.start < range.start {
+                        if section.byte_range.start < range_start {
                             let mut p1 = section.clone();
-                            p1.byte_range.end = range.start;
+                            p1.byte_range.end = range_start;
                             replace_with.push(p1);
                         }
 
                         let mut p2 = section.clone();
-                        p2.byte_range.start = p2.byte_range.start.max(range.start);
-                        p2.byte_range.end = p2.byte_range.end.min(range.end);
+                        p2.byte_range.start = p2.byte_range.start.max(range_start);
+                        p2.byte_range.end = p2.byte_range.end.min(range_end);
                         p2.format.background = color;
                         replace_with.push(p2);
 
-                        if section.byte_range.end > range.end {
+                        if section.byte_range.end > range_end {
                             let mut p3 = section.clone();
-                            p3.byte_range.start = range.end;
+                            p3.byte_range.start = range_end;
                             replace_with.push(p3);
                         }
 
@@ -639,7 +643,10 @@ impl CommonMarkCache {
 
     /// Clear the cache for a specific scrollable viewer. Returns false if the
     /// id was not in the cache.
-    pub fn clear_scrollable_with_id(&mut self, source_id: impl std::hash::Hash) -> bool {
+    pub fn clear_scrollable_with_id(
+        &mut self,
+        source_id: impl std::hash::Hash + std::fmt::Debug,
+    ) -> bool {
         self.scroll.remove(&egui::Id::new(source_id)).is_some()
     }
 

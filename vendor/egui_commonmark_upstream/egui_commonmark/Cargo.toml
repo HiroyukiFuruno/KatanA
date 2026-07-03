@@ -13,7 +13,7 @@
 edition = "2024"
 rust-version = "1.88"
 name = "egui_commonmark"
-version = "0.23.0"
+version = "0.24.0"
 authors = ["Erlend Walstad"]
 build = false
 include = [
@@ -79,21 +79,21 @@ version = "0.2"
 optional = true
 
 [dependencies.egui]
-version = "0.34"
+version = "0.35"
 default-features = false
 
 [dependencies.egui_commonmark_backend]
-version = "0.23.0"
+version = "0.24.0"
 path = "../egui_commonmark_backend"
 default-features = false
 
 [dependencies.egui_commonmark_macros]
-version = "0.23.0"
+version = "0.24.0"
 optional = true
 default-features = false
 
 [dependencies.egui_extras]
-version = "0.34"
+version = "0.35"
 default-features = false
 
 
@@ -105,7 +105,7 @@ default-features = false
 version = "1.12"
 
 [dev-dependencies.eframe]
-version = "0.34"
+version = "0.35"
 features = [
     "default_fonts",
     "glow",
@@ -115,7 +115,7 @@ features = [
 default-features = false
 
 [dev-dependencies.egui_commonmark_macros]
-version = "0.23.0"
+version = "0.24.0"
 default-features = false
 
 [dev-dependencies.image]

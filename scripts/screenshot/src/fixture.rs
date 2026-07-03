@@ -91,6 +91,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
     });
     let explorer_visible = settings.explorer_visible.unwrap_or(false);
     let linter_enabled = settings.linter_enabled.unwrap_or(true);
+    let show_diagram_controls = settings.slideshow_show_diagram_controls.unwrap_or(true);
 
     let no_extension = settings.no_extension.unwrap_or(false);
 
@@ -141,7 +142,27 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
   }},
   "layout": {{
     "explorer_default_visible": {explorer_visible}
+  }},
+  "behavior": {{
+    "slideshow_show_diagram_controls": {show_diagram_controls}
   }}{workspace_block}{linter_block}
 }}"#
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn screenshot_settings_can_disable_diagram_controls() {
+        let settings = FixtureSettings {
+            slideshow_show_diagram_controls: Some(false),
+            ..FixtureSettings::default()
+        };
+
+        let json = build_settings_json(&settings, None);
+
+        assert!(json.contains(r#""slideshow_show_diagram_controls": false"#));
+    }
 }

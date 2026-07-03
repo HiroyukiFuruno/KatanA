@@ -168,7 +168,7 @@ mod tests {
     #[test]
     fn test_header_bottom_y_capture() {
         let ctx = Context::default();
-        let _ = ctx.run(RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(RawInput::default(), |ctx| {
             let rect = egui::Rect::from_min_size(pos2(0.0, 0.0), vec2(200.0, 200.0));
             let builder = egui::UiBuilder::new().max_rect(rect);
             let mut ui = egui::Ui::new(ctx.clone(), egui::Id::new("test"), builder);

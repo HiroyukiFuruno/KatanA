@@ -25,7 +25,7 @@ fn make_anchor_map_with_rects(
                 kind: katana_core::markdown::outline::AnchorKind::Heading,
                 index: Some(idx),
                 line_span: *line..*line + 1,
-                rect: Some(rect),
+                outer_rect: Some(rect),
             }
         })
         .collect()
@@ -45,7 +45,7 @@ fn make_anchor_map(
                 kind: katana_core::markdown::outline::AnchorKind::Heading,
                 index: Some(idx),
                 line_span: *line_start..*line_end,
-                rect: None,
+                outer_rect: None,
             },
         )
         .collect()

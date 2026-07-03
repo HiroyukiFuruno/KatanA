@@ -20,7 +20,7 @@ pub struct DocumentAnchorMapItem {
     pub kind: katana_core::markdown::outline::AnchorKind,
     pub index: Option<usize>,
     pub line_span: std::ops::Range<usize>,
-    pub rect: Option<egui::Rect>,
+    pub outer_rect: Option<egui::Rect>,
 }
 
 #[derive(Default)]

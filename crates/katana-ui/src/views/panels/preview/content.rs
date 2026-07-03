@@ -94,7 +94,7 @@ impl<'a> PreviewContent<'a> {
                 |ui| {
                     scroll_area.show(ui, |ui| {
                         /* WHY: Use a Frame with explicit horizontal margin for consistent padding (12px). */
-                        egui::Frame::none()
+                        egui::Frame::NONE
                             .inner_margin(egui::Margin::symmetric(
                                 crate::shell_ui::PREVIEW_CONTENT_PADDING,
                                 0,

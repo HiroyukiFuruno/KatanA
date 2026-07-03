@@ -1434,6 +1434,38 @@ mod tests_extra {
     }
 
     #[test]
+    fn export_html_with_theme_preserves_explicit_table_header_colors() {
+        let mut theme = katana_core::markdown::ExportConfig::theme_from_preset(
+            katana_core::markdown::color_preset::DiagramColorPreset::dark(),
+        );
+        theme.table_border = Some("#334455".to_string());
+        theme.table_header_background = Some("#123456".to_string());
+        theme.table_even_row_background = Some("#223344".to_string());
+        let source = "| Key | Value |\n| --- | --- |\n| Theme | Export |\n";
+        let filename = "katana_themed_table_export.html";
+
+        let path =
+            ShellLogicOps::export_named_html_to_tmp_with_theme(source, filename, theme, None)
+                .expect("themed HTML export must succeed");
+        let contents = std::fs::read_to_string(&path).unwrap();
+
+        assert!(
+            contents.contains("--kdv-table-header:#123456;"),
+            "HTML export must use the active KatanA table header token: {contents}"
+        );
+        assert!(
+            contents.contains("--kdv-table-even:#223344;"),
+            "HTML export must use the active KatanA table stripe token: {contents}"
+        );
+        assert!(
+            contents.contains("--kdv-table-border:#334455;"),
+            "HTML export must use the active KatanA table border token: {contents}"
+        );
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
     fn export_status_messages_do_not_show_raw_lucide_templates() {
         let locales = [
             ("en", include_str!("../../locales/en.json")),
@@ -1566,6 +1598,46 @@ mod tests_extra {
         );
         assert!(html.contains("Real Document"), "must contain the heading");
         assert!(html.contains("Paragraph content"), "must contain body text");
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn export_as_html_thread_uses_current_theme_table_tokens() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let md_path = dir.path().join("themed_table.md");
+        let source = "| Key | Value |\n| --- | --- |\n| Theme | Export |\n";
+        std::fs::write(&md_path, source).unwrap();
+        app.handle_select_document(md_path.clone(), true);
+        katana_core::markdown::DiagramThemeSnapshot::set_current_override(
+            katana_core::markdown::DiagramThemeOverride {
+                name: "table-export-test".to_string(),
+                is_dark: true,
+                background: "#1e1e1e".to_string(),
+                text: "#d4d4d4".to_string(),
+                preview_text: "#d4d4d4".to_string(),
+                table_border: Some("#334455".to_string()),
+                table_header_background: Some("#123456".to_string()),
+                table_even_row_background: Some("#223344".to_string()),
+            },
+        );
+
+        app.export_as_html(&egui::Context::default(), source, &md_path);
+        katana_core::markdown::DiagramThemeSnapshot::clear_current_override();
+
+        let task = &app.export_tasks[0];
+        let path = task
+            .rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("channel must receive within 5s")
+            .expect("export must succeed");
+        let html = std::fs::read_to_string(&path).unwrap();
+
+        assert!(
+            html.contains("--kdv-table-header:#123456;"),
+            "HTML export must use the current viewer table header token: {html}"
+        );
 
         let _ = std::fs::remove_file(&path);
     }

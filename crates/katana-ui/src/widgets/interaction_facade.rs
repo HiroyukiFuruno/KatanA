@@ -45,17 +45,19 @@ impl InteractionFacade {
         add_contents: impl FnOnce(&mut egui::Ui) -> R,
     ) -> R {
         let is_blocked = is_blocked || Self::is_hover_blocked(ui.ctx());
-        let prev_enabled = ui.is_enabled();
         let prev_alpha = ui.visuals().disabled_alpha;
 
         if is_blocked {
             ui.visuals_mut().disabled_alpha = 1.0;
+            let res = ui
+                .scope_builder(egui::UiBuilder::new().disabled(), add_contents)
+                .inner;
+            ui.visuals_mut().disabled_alpha = prev_alpha;
+            return res;
         }
-        ui.set_enabled(!is_blocked);
 
         let res = add_contents(ui);
 
-        ui.set_enabled(prev_enabled);
         ui.visuals_mut().disabled_alpha = prev_alpha;
         res
     }

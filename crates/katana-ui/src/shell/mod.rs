@@ -146,7 +146,7 @@ impl KatanaApp {
             || self.splash_start.is_some()
             || self.show_meta_info_for.is_some()
             || self.needs_changelog_display
-            || ctx.memory(|mem| mem.any_popup_open())
+            || ctx.any_popup_open()
     }
 }
 

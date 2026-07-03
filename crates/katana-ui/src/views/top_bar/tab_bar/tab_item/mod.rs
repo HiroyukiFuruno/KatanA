@@ -181,7 +181,7 @@ impl<'a> TabItem<'a> {
 
     pub(crate) fn resolved_parent_tab_rect(
         parent_rect: egui::Rect,
-        _close_response_rect: Option<egui::Rect>,
+        _close_response_outer_rect: Option<egui::Rect>,
     ) -> egui::Rect {
         parent_rect
     }

@@ -8,7 +8,7 @@ use std::path::Path;
 
 fn render_preview_once(pane: &mut PreviewPane) {
     let ctx = egui::Context::default();
-    let _ = ctx.run(
+    let _ = ctx.run_ui(
         egui::RawInput {
             screen_rect: Some(egui::Rect::from_min_size(
                 egui::pos2(0.0, 0.0),
@@ -36,7 +36,7 @@ fn bare_anchor_img_inline_html_does_not_render_as_raw_text() {
      * processed or correctly ignored. */
     let md = "<a href=\"#\"><img src=\"test.png\" alt=\"Sponsor\"></a>\n";
     let ctx = egui::Context::default();
-    let output = ctx.run(egui::RawInput::default(), |ctx| {
+    let output = ctx.run_ui(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut pane = PreviewPane::default();
             pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));
@@ -63,7 +63,7 @@ fn p_align_center_strong_link_does_not_render_as_raw_text() {
      * leaked as raw text in the preview. */
     let md = "<p align=\"center\"><strong><a href=\"#\">Link</a></strong></p>";
     let ctx = egui::Context::default();
-    let output = ctx.run(egui::RawInput::default(), |ctx| {
+    let output = ctx.run_ui(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut pane = PreviewPane::default();
             pane.update_markdown_sections(md, std::path::Path::new("/tmp/test.md"));

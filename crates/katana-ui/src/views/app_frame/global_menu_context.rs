@@ -52,7 +52,7 @@ impl<'a> GlobalMenuContext<'a> {
 
     pub(super) fn set_action(&mut self, ui: &mut egui::Ui, action: AppAction) {
         self.app.pending_action = action;
-        ui.close_menu();
+        ui.close();
     }
 
     fn apply_button(

@@ -55,6 +55,12 @@ pub struct DiagramThemeSnapshot {
     pub is_dark: bool,
     pub background: String,
     pub text: String,
+    #[serde(default)]
+    pub table_border: Option<String>,
+    #[serde(default)]
+    pub table_header_background: Option<String>,
+    #[serde(default)]
+    pub table_even_row_background: Option<String>,
     pub fill: String,
     pub stroke: String,
     pub arrow: String,
@@ -75,6 +81,9 @@ pub struct DiagramThemeOverride {
     pub background: String,
     pub text: String,
     pub preview_text: String,
+    pub table_border: Option<String>,
+    pub table_header_background: Option<String>,
+    pub table_even_row_background: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]

@@ -3,7 +3,7 @@ use eframe::egui;
 
 impl<'a> Accordion<'a> {
     pub fn new(
-        id_source: impl std::hash::Hash,
+        id_source: impl std::hash::Hash + std::fmt::Debug,
         label: impl Into<egui::WidgetText>,
         body: impl FnOnce(&mut egui::Ui) + 'a,
     ) -> Self {

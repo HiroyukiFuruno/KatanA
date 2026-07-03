@@ -17,8 +17,8 @@ impl<'a> GlobalMenuBar<'a> {
         let i18n = crate::i18n::I18nOps::get();
         let mut context = super::global_menu_context::GlobalMenuContext::new(self.app, i18n);
 
-        egui::TopBottomPanel::top("app_global_menu_bar").show_inside(ui, |ui| {
-            egui::menu::bar(ui, |ui| {
+        egui::Panel::top("app_global_menu_bar").show_inside(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 super::global_menu_app::GlobalAppMenu::render(ui, &mut context);
                 super::global_menu_file::GlobalFileMenu::render(ui, &mut context);
                 super::global_menu_view::GlobalViewMenu::render(ui, &mut context);

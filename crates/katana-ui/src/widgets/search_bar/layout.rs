@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn content_width_reserves_frame_padding_inside_requested_width() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let width = content_width(ui, Some(240.0));
 
@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn trailing_width_reserves_clear_and_toggle_buttons() {
         let ctx = egui::Context::default();
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let clear_only = trailing_width(ui, false, true);
                 let clear_and_toggles = trailing_width(ui, true, true);

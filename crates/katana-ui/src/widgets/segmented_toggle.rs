@@ -10,7 +10,7 @@ pub struct SegmentedStringToggle<'a> {
 
 impl<'a> SegmentedStringToggle<'a> {
     pub fn new(
-        id_source: impl std::hash::Hash,
+        id_source: impl std::hash::Hash + std::fmt::Debug,
         choices: &'a [&'a str],
         selected: &'a mut String,
     ) -> Self {

@@ -32,7 +32,7 @@ impl DashboardView {
         let margin = DASHBOARD_PANEL_PADDING;
 
         egui::CentralPanel::default()
-            .frame(egui::Frame::none().fill(ui.visuals().panel_fill))
+            .frame(egui::Frame::NONE.fill(ui.visuals().panel_fill))
             .show_inside(ui, |ui| {
                 ui.add_space(margin * DASHBOARD_SPACER_FACTOR_LARGE);
 

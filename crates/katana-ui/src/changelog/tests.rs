@@ -83,7 +83,7 @@ fn test_fetch_changelog_coverage() {
 #[test]
 fn test_render_release_notes_tab_ui() {
     let ctx = egui::Context::default();
-    let _ = ctx.run(egui::RawInput::default(), |ctx| {
+    let _ = ctx.run_ui(egui::RawInput::default(), |ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let sections = vec![ChangelogSection {
                 version: "0.8.0".to_string(),

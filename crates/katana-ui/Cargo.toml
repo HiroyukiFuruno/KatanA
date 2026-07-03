@@ -22,21 +22,21 @@ tracing-subscriber.workspace = true
 rfd = "0.17"
 image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
 serde_json.workspace = true
-open = "5.3.5"
+open = "5.3.6"
 resvg = { version = "0.47.0", default-features = true }
 ehttp = "0.7.1"
 dirs = "6.0.0"
 sha2 = "0.11"
-regex = "1.12.3"
-chrono = "0.4.44"
+regex = "1.12.4"
+chrono = "0.4.45"
 tempfile = "3"
 pulldown-cmark = "0.13"
 base64 = "0.22.1"
 mathjax_svg.workspace = true
-unicode-segmentation = "1.13.2"
+unicode-segmentation = "1.13.3"
 arboard = "3.6.1"
-uuid = { version = "1.23.1", features = ["v4"] }
-egui-file-dialog = "0.13.0"
+uuid = { version = "1.23.4", features = ["v4"] }
+egui-file-dialog = "0.14.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
@@ -58,6 +58,6 @@ category = "public.app-category.developer-tools"
 short_description = "A fast, lightweight Markdown workspace for macOS"
 
 [dev-dependencies]
-accesskit = "0.24.0"
-egui_kittest = { version = "0.34", features = ["snapshot", "wgpu", "eframe"] }
+accesskit = "0.24.1"
+egui_kittest = { version = "0.35", features = ["snapshot", "wgpu", "eframe"] }
 time = "0.3"

@@ -25,7 +25,7 @@ impl DocumentAnchorMapItem {
                     kind: a.kind.clone(),
                     index,
                     line_span: a.line_start..a.line_end,
-                    rect: None,
+                    outer_rect: None,
                 }
             })
             .collect()
@@ -37,7 +37,7 @@ impl DocumentAnchorMapItem {
         block_anchors: &[(std::ops::Range<usize>, egui::Rect)],
     ) {
         for item in anchor_map.iter_mut() {
-            item.rect = None;
+            item.outer_rect = None;
         }
 
         for (span, rect) in heading_anchors {
@@ -45,7 +45,7 @@ impl DocumentAnchorMapItem {
                 matches!(a.kind, katana_core::markdown::outline::AnchorKind::Heading)
                     && a.line_span.start.abs_diff(span.start) <= 1
             }) {
-                item.rect = Some(item.rect.map_or(*rect, |r| r.union(*rect)));
+                item.outer_rect = Some(item.outer_rect.map_or(*rect, |r| r.union(*rect)));
             }
         }
         for (span, rect) in block_anchors {
@@ -54,15 +54,15 @@ impl DocumentAnchorMapItem {
                     && a.line_span.start <= span.start
                     && a.line_span.end >= span.start
             }) {
-                item.rect = Some(item.rect.map_or(*rect, |r| r.union(*rect)));
+                item.outer_rect = Some(item.outer_rect.map_or(*rect, |r| r.union(*rect)));
             }
             if let Some(item) = anchor_map.iter_mut().find(|a| {
                 matches!(a.kind, katana_core::markdown::outline::AnchorKind::Heading)
-                    && a.rect.is_none()
+                    && a.outer_rect.is_none()
                     && a.line_span.start <= span.start
                     && a.line_span.end >= span.start
             }) {
-                item.rect = Some(*rect);
+                item.outer_rect = Some(*rect);
             }
         }
     }

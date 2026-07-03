@@ -45,7 +45,7 @@ impl<'a> GroupHeaderPopup<'a> {
                 }
                 /* WHY: Pressing Return (Enter) should commit the new name and close the popup for better UX. */
                 if resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                    ui.memory_mut(|mem| mem.close_popup(self.popup_id));
+                    egui::Popup::close_id(ui.ctx(), self.popup_id);
                 }
             })
             .show(ui);
@@ -103,11 +103,11 @@ impl<'a> GroupHeaderPopup<'a> {
         ui.separator();
         if ui.button(&i18n.tab.ungroup).clicked() {
             *self.tab_action = Some(AppAction::UngroupTabGroup(self.g.id.clone()));
-            ui.memory_mut(|mem| mem.close_popup(self.popup_id));
+            egui::Popup::close_id(ui.ctx(), self.popup_id);
         }
         if ui.button(&i18n.tab.close_group).clicked() {
             *self.tab_action = Some(AppAction::CloseTabGroup(self.g.id.clone()));
-            ui.memory_mut(|mem| mem.close_popup(self.popup_id));
+            egui::Popup::close_id(ui.ctx(), self.popup_id);
         }
     }
 }

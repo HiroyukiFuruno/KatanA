@@ -118,7 +118,7 @@ fn test_font_jitter_6_monospace() {
                 clip_rect: egui::Rect::EVERYTHING,
                 shape: egui::epaint::Shape::galley(egui::Pos2::ZERO, galley, egui::Color32::WHITE),
             }];
-            primitives = ctx.tessellate(shapes, 1.0);
+            primitives = ui.ctx().tessellate(shapes, 1.0);
         });
     });
 
@@ -203,7 +203,7 @@ fn test_font_jitter_7_codeblock_layoutjob() {
                 clip_rect: egui::Rect::EVERYTHING,
                 shape: egui::epaint::Shape::galley(egui::Pos2::ZERO, galley, egui::Color32::WHITE),
             }];
-            primitives = ctx.tessellate(shapes, 1.0);
+            primitives = ui.ctx().tessellate(shapes, 1.0);
         });
     });
 
@@ -294,7 +294,7 @@ fn test_font_jitter_8_inline_code_cross_family() {
                         egui::Color32::WHITE,
                     ),
                 }];
-                primitives = ctx.tessellate(shapes, 1.0);
+                primitives = ui.ctx().tessellate(shapes, 1.0);
 
                 if let Some(egui::epaint::Primitive::Mesh(mesh)) =
                     primitives.first().map(|p| &p.primitive)

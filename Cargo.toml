@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.22.29"
+version = "0.22.31"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -18,16 +18,16 @@ description = "A context-aware AI desktop application."
 
 [workspace.dependencies]
 # UI
-eframe = { version = "0.34", features = ["default"] }
-egui = "0.34"
-egui_extras = { version = "0.34", features = ["image", "file", "http", "svg", "svg_text"] }
-egui_commonmark = { version = "0.23", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
+eframe = { version = "0.35", features = ["default"] }
+egui = "0.35"
+egui_extras = { version = "0.35", features = ["image", "file", "http", "svg", "svg_text"] }
+egui_commonmark = { version = "0.24", default-features = false, features = ["better_syntax_highlighting", "load-images", "pulldown_cmark"] }
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
 # Markdown
-comrak = { version = "0.52", default-features = false, features = ["shortcodes"] }
-katana-document-viewer = "0.1.4"
-katana-render-runtime = "0.3.6"
+comrak = { version = "0.53", default-features = false, features = ["shortcodes"] }
+katana-document-viewer = "0.2.7"
+katana-render-runtime = "0.3.8"
 katana-markdown-model = "0.2.1"
 katana-ast-lint = "0.5.1"
 katana-markdown-linter = "0.19.4"
@@ -60,8 +60,7 @@ ignore = "0.4"
 resvg = "0.47"
 usvg = "0.47"
 tiny-skia = "0.12"
-epaint_default_fonts = "0.34"
-v8 = { version = "=149.2.0", features = ["simdutf"] }
+epaint_default_fonts = "0.35"
 mathjax_svg = "3.2.0"
 xmltree = "0.12"
 include_dir = "0.7.4"

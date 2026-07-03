@@ -19,9 +19,9 @@ tempfile = "3"
 katana-ui = { path = "../../crates/katana-ui" }
 katana-platform = { path = "../../crates/katana-platform" }
 katana-core = { path = "../../crates/katana-core" }
-katana-markdown-linter = "=0.19.1"
-egui_kittest = { version = "0.34", features = ["wgpu", "eframe"] }
-egui = "0.34"
+katana-markdown-linter = "0.19.4"
+egui_kittest = { version = "0.35", features = ["wgpu", "eframe"] }
+egui = "0.35"
 image = { version = "0.25", default-features = false, features = ["png"] }
 
 [patch.crates-io]
