@@ -22,6 +22,10 @@ impl FileOpenOps {
             &mut extensions,
             katana_core::workspace::TreeEntry::image_extensions(),
         );
+        Self::append_extensions(
+            &mut extensions,
+            katana_core::workspace::TreeEntry::html_extensions(),
+        );
         Self::append_extensions(&mut extensions, Self::DRAWIO_EXTENSIONS);
         extensions
     }
@@ -178,5 +182,60 @@ impl KatanaApp {
                 self.file_dialog.pick_file();
             }
         }
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+    use crate::shell::KatanaApp;
+    use std::sync::Arc;
+
+    fn make_app() -> KatanaApp {
+        let state = crate::app_state::AppState::new(
+            katana_core::ai::AiProviderRegistry::new(),
+            katana_core::plugin::PluginRegistry::new(),
+            katana_platform::SettingsService::default(),
+            Arc::new(katana_platform::InMemoryCacheService::default()),
+        );
+        KatanaApp::new(state)
+    }
+
+    #[test]
+    fn supported_extensions_include_html_documents() {
+        let app = make_app();
+        let extensions = FileOpenOps::supported_extensions(&app);
+
+        assert!(extensions.iter().any(|ext| ext == "html"));
+        assert!(extensions.iter().any(|ext| ext == "htm"));
+        assert!(
+            FileOpenOps::dialog_extensions(&app)
+                .iter()
+                .any(|ext| ext == "html")
+        );
+    }
+
+    #[test]
+    fn openable_files_accept_html_and_htm_paths() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions
+            .clear();
+        let dir = tempfile::tempdir().unwrap();
+        let html = dir.path().join("index.html");
+        let htm = dir.path().join("legacy.HTM");
+        let text = dir.path().join("note.txt");
+        std::fs::write(&html, "<h1>Index</h1>").unwrap();
+        std::fs::write(&htm, "<h1>Legacy</h1>").unwrap();
+        std::fs::write(&text, "plain").unwrap();
+
+        let openable = FileOpenOps::openable_files(&app, vec![html.clone(), htm.clone(), text]);
+
+        assert_eq!(openable, vec![html, htm]);
     }
 }

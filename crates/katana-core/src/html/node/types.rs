@@ -49,6 +49,14 @@ pub enum HtmlNode {
         align: Option<TextAlign>,
         children: Vec<HtmlNode>,
     },
+    Details {
+        summary: Vec<HtmlNode>,
+        children: Vec<HtmlNode>,
+    },
+    Table {
+        headers: Vec<Vec<HtmlNode>>,
+        rows: Vec<Vec<Vec<HtmlNode>>>,
+    },
     LineBreak,
     Emphasis(Vec<HtmlNode>),
     Strong(Vec<HtmlNode>),

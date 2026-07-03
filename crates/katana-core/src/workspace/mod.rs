@@ -4,8 +4,10 @@ mod types;
 pub use types::*;
 
 const IMAGE_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"];
-const STANDARD_VISIBLE_EXTENSIONS: &[&str] =
-    &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "drawio"];
+const HTML_EXTENSIONS: &[&str] = &["html", "htm"];
+const STANDARD_VISIBLE_EXTENSIONS: &[&str] = &[
+    "png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "drawio", "html", "htm",
+];
 
 impl TreeEntry {
     pub fn path(&self) -> &Path {
@@ -41,6 +43,13 @@ impl TreeEntry {
         }
     }
 
+    pub fn is_html(&self) -> bool {
+        match self {
+            Self::File { path } => Self::path_is_html(path),
+            _ => false,
+        }
+    }
+
     pub fn path_is_image(path: &Path) -> bool {
         path.extension()
             .and_then(|ext| ext.to_str())
@@ -51,8 +60,22 @@ impl TreeEntry {
             })
     }
 
+    pub fn path_is_html(path: &Path) -> bool {
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| {
+                HTML_EXTENSIONS
+                    .iter()
+                    .any(|html_ext| html_ext.eq_ignore_ascii_case(ext))
+            })
+    }
+
     pub fn image_extensions() -> &'static [&'static str] {
         IMAGE_EXTENSIONS
+    }
+
+    pub fn html_extensions() -> &'static [&'static str] {
+        HTML_EXTENSIONS
     }
 
     pub fn standard_visible_extensions() -> &'static [&'static str] {

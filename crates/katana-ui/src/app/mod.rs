@@ -15,8 +15,12 @@ mod document_edit_tests;
 pub(crate) mod document_scroll;
 pub mod export;
 pub mod export_poll;
+#[cfg(test)]
+mod export_tests;
 pub(crate) mod image_document;
 pub mod preview;
+#[cfg(test)]
+mod preview_tests;
 pub mod types;
 pub mod update;
 pub mod workspace;

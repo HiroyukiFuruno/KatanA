@@ -52,4 +52,23 @@ mod tests {
                 .is_empty()
         );
     }
+
+    #[test]
+    fn refresh_diagnostics_skips_html_documents() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let doc_path = dir.path().join("index.html");
+        std::fs::write(&doc_path, "# Title\n### Skipped\n").unwrap();
+        app.state.workspace.data = Some(Workspace::new(dir.path(), Vec::new()));
+
+        app.handle_select_document(doc_path.clone(), true);
+        app.handle_action_refresh_diagnostics();
+
+        assert!(
+            app.state
+                .diagnostics
+                .get_file_diagnostics(&doc_path)
+                .is_empty()
+        );
+    }
 }

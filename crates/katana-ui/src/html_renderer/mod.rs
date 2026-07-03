@@ -7,6 +7,7 @@ pub use types::HtmlRenderer;
 mod append_text;
 mod block_render;
 mod render_inline;
+mod table_render;
 
 fn svg_badge_hosts() -> Vec<&'static str> {
     vec!["img.shields.io"]
@@ -109,11 +110,33 @@ pub(super) fn collect_text(nodes: &[HtmlNode]) -> String {
             | HtmlNode::Paragraph { children, .. }
             | HtmlNode::Emphasis(children)
             | HtmlNode::Strong(children) => s.push_str(&collect_text(children)),
+            HtmlNode::Details { summary, children } => {
+                s.push_str(&collect_text(summary));
+                s.push_str(&collect_text(children));
+            }
+            HtmlNode::Table { headers, rows } => {
+                collect_table_text(headers, rows, &mut s);
+            }
             HtmlNode::Image { alt, .. } => s.push_str(alt),
             HtmlNode::LineBreak => s.push('\n'),
         }
     }
     s
+}
+
+fn collect_table_text(headers: &[Vec<HtmlNode>], rows: &[Vec<Vec<HtmlNode>>], output: &mut String) {
+    for header in headers {
+        output.push_str(&collect_text(header));
+    }
+    for row in rows {
+        collect_table_row_text(row, output);
+    }
+}
+
+fn collect_table_row_text(row: &[Vec<HtmlNode>], output: &mut String) {
+    for cell in row {
+        output.push_str(&collect_text(cell));
+    }
 }
 
 const UTF8_MAX_LEN: usize = 4;
@@ -165,6 +188,9 @@ fn block_margin_for(node: &katana_core::html::HtmlNode) -> f32 {
     match node {
         katana_core::html::HtmlNode::Heading { .. } => HEADING_BLOCK_MARGIN_Y,
         katana_core::html::HtmlNode::Paragraph { .. } => PARAGRAPH_BLOCK_MARGIN_Y,
+        katana_core::html::HtmlNode::Details { .. } | katana_core::html::HtmlNode::Table { .. } => {
+            PARAGRAPH_BLOCK_MARGIN_Y
+        }
         _ => 0.0,
     }
 }

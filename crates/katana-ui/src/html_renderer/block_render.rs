@@ -56,6 +56,27 @@ impl<'a> HtmlRenderer<'a> {
                 }
                 None
             }
+            HtmlNode::Details { summary, children } => {
+                let summary_text = {
+                    let text = collect_text(summary);
+                    if text.trim().is_empty() {
+                        "Details".to_string()
+                    } else {
+                        text
+                    }
+                };
+                let mut action = None;
+                let text_color = self.text_color;
+                let max_image_width = self.max_image_width;
+                egui::CollapsingHeader::new(summary_text)
+                    .default_open(true)
+                    .show(self.ui, |ui| {
+                        let mut inner = HtmlRenderer::new_inner(ui, text_color, max_image_width);
+                        action = inner.render_nodes(children);
+                    });
+                action
+            }
+            HtmlNode::Table { headers, rows } => self.render_table(headers, rows),
             _ => None,
         }
     }

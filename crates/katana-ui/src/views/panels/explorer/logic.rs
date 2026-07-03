@@ -76,3 +76,34 @@ impl ExplorerLogicOps {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn workspace_filter_hides_html_file_when_query_does_not_match() {
+        let root = std::path::PathBuf::from("/workspace");
+        let index = root.join("index.html");
+        let readme = root.join("README.md");
+        let entries = vec![
+            TreeEntry::File {
+                path: index.clone(),
+            },
+            TreeEntry::File {
+                path: readme.clone(),
+            },
+        ];
+        let mut search = SearchState::new();
+        search.filter_enabled = true;
+        search.filter.query = "README".to_string();
+
+        ExplorerLogicOps::update_search_filter_cache(&mut search, &root, &entries);
+
+        let Some((_, visible)) = search.filter_cache else {
+            panic!("filter cache should be populated");
+        };
+        assert!(visible.contains(&readme));
+        assert!(!visible.contains(&index));
+    }
+}

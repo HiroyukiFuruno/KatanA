@@ -6,6 +6,7 @@ use super::*;
 mod basic_tags;
 mod complex_structures;
 mod edge_cases;
+mod html_documents;
 mod markdown_inlines;
 
 fn parser() -> HtmlParser<'static> {

@@ -26,7 +26,7 @@ impl HtmlRegexOps {
     pub fn p() -> &'static Regex {
         use std::sync::LazyLock;
         static RE: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r#"(?is)<p\s+([^>]*)>(.*?)</p>"#).unwrap());
+            LazyLock::new(|| Regex::new(r#"(?is)<p(?:\s+([^>]*))?>(.*?)</p>"#).unwrap());
         &RE
     }
 
@@ -48,6 +48,59 @@ impl HtmlRegexOps {
         use std::sync::LazyLock;
         static RE: LazyLock<Regex> =
             LazyLock::new(|| Regex::new(r#"(?is)<strong>(.*?)</strong>"#).unwrap());
+        &RE
+    }
+
+    pub fn ignored_block() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(
+                r#"(?is)(?:<head\b[^>]*>.*?</head>|<script\b[^>]*>.*?</script>|<style\b[^>]*>.*?</style>|<iframe\b[^>]*>.*?</iframe>|<noscript\b[^>]*>.*?</noscript>)"#,
+            )
+            .unwrap()
+        });
+        &RE
+    }
+
+    pub fn details() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r#"(?is)<details\b[^>]*>(.*?)</details>"#).unwrap());
+        &RE
+    }
+
+    pub fn summary() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r#"(?is)<summary\b[^>]*>(.*?)</summary>"#).unwrap());
+        &RE
+    }
+
+    pub fn table() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r#"(?is)<table\b[^>]*>(.*?)</table>"#).unwrap());
+        &RE
+    }
+
+    pub fn tr() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r#"(?is)<tr\b[^>]*>(.*?)</tr>"#).unwrap());
+        &RE
+    }
+
+    pub fn th() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r#"(?is)<th\b[^>]*>(.*?)</th>"#).unwrap());
+        &RE
+    }
+
+    pub fn td() -> &'static Regex {
+        use std::sync::LazyLock;
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r#"(?is)<td\b[^>]*>(.*?)</td>"#).unwrap());
         &RE
     }
 

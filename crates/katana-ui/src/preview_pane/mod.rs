@@ -3,6 +3,7 @@ pub mod background;
 pub mod core_render;
 mod core_render_diagram;
 mod core_render_lifecycle;
+mod core_render_sections;
 pub(crate) mod diagram_cache;
 pub mod extension_table;
 mod render_workers;
