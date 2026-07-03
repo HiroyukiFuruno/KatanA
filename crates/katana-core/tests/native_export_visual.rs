@@ -100,7 +100,7 @@ fn dark_export_config() -> ExportConfig {
 
 fn themed_export_snapshot() -> DiagramThemeSnapshot {
     let mut theme =
-        DiagramThemeSnapshot::from_preset("document-theme-test", true, &DiagramColorPreset::dark());
+        DiagramThemeSnapshot::from_preset("document-theme-test", true, DiagramColorPreset::dark());
     theme.background = "#123456".to_string();
     theme.text = "#F5F5F5".to_string();
     theme.preview_text = "#F5F5F5".to_string();
