@@ -20,7 +20,8 @@
 - [x] KDV の `SourceKind::Html` / direct HTML source contract が Katana から利用可能か確認する。
 - [x] KRR が MVP に不要であること、または必要な場合の具体的な missing capability を記録する。
 - [x] KDV / KRR の外部 issue または OpenSpec change が必要な場合、Katana 実装へ混ぜずに切り出す。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+  - Delivered as part of the aggregate implementation PR [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317).
 
 - [x] 1.1 `katana-document-viewer` の公開 API と direct HTML normalizer を棚卸しする。
 - [x] 1.2 Katana 側で利用できる場合、外部 repo 変更不要として判断表に記録する。
@@ -38,15 +39,16 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
 
 - [x] `.html` / `.htm` が standard visible extensions に含まれる。
 - [x] file open dialog と drag-and-drop が `.html` / `.htm` を openable file として扱う。
 - [x] 既存の workspace filtering は HTML file にも通常どおり適用される。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+  - Delivered as part of the aggregate implementation PR [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317).
 
 - [x] 2.1 `TreeEntry::standard_visible_extensions()` に HTML 拡張子を追加する。
 - [x] 2.2 `FileOpenOps::supported_extensions()` / dialog extension / dropped file 判定のテストを追加する。
@@ -56,15 +58,16 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
 
 - [x] `.html` / `.htm` active document は Markdown としてではなく direct HTML preview path へ流れる。
 - [x] HTML file preview は既存 native preview surface、HTML renderer、または KDV direct HTML contract を使う。
 - [x] WebView、React、DOM runtime、bundled web app が追加されていない。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+  - Delivered as part of the aggregate implementation PR [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317).
 
 - [x] 3.1 active document path から HTML document を識別する小さな helper を追加する。
 - [x] 3.2 `refresh_preview` / `full_refresh_preview` で HTML source を direct HTML preview に渡す。
@@ -75,15 +78,16 @@
 
 ### Definition of Ready (DoR)
 
-- [ ] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
-- [ ] Base branch is synced, and a new branch is explicitly created for this task.
+- [x] Ensure the previous task completed its full delivery cycle: self-review, recovery (if needed), PR creation, merge, and branch deletion.
+- [x] Base branch is synced, and a new branch is explicitly created for this task.
 
 ### Definition of Done (DoD)
 
 - [x] Markdown diagnostics は HTML file を lint 対象にしない。
 - [x] Markdown formatting は HTML file を formatter へ渡さない。
 - [x] HTML file preview は Markdown export adapter を preview rendering に使わない。
-- [ ] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+- [x] Execute `/openspec-delivery` workflow (`.agents/workflows/openspec-delivery.md`) to run the comprehensive delivery routine (Self-review, Commit, PR Creation, and Merge).
+  - Delivered as part of the aggregate implementation PR [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317).
 
 - [x] 4.1 `process_diagnostics` の Markdown extension gate が HTML file を除外するテストを追加する。
 - [x] 4.2 Markdown formatting path gate が HTML file を拒否する既存挙動をテストで固定する。
@@ -130,6 +134,12 @@
 - [x] 6.8 Run `just VERSION=0.29.0 release` and update CHANGELOG (`changelog-writing` skill)
   - Result: version bump commit `e088e6ba` created; CHANGELOG EN/JA updated for 0.29.0.
   - Release preflight requires version-prefixed active OpenSpec changes to have no pending tasks. The change directory was renamed to `release-tracking-v0-29-0-html-file-preview` so the remaining release delivery tasks stay tracked without blocking the release branch.
-- [ ] 6.9 Create PR from `release/v0.29.0` targeting `master` — Ensure `Release Readiness` CI passes
-- [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+- [x] 6.9 Create PR from `release/v0.29.0` targeting `master` — Ensure `Release Readiness` CI passes
+  - PR: [#318](https://github.com/HiroyukiFuruno/KatanA/pull/318)
+  - Result: `Release Readiness` and CI passed.
+- [x] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
+  - Merge commit: `091c674a09dee83f845c459aa46dc643e667021e`
+- [x] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
+  - Release: [KatanA Desktop v0.29.0](https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.29.0)
+  - Published at: `2026-07-04T02:53:53Z`
+  - Assets: `checksums.txt`, `KatanA-Desktop-0.29.0.dmg`, `KatanA-linux-x86_64.tar.gz`, `KatanA-macOS.zip`, `KatanA-windows-x86_64.msi`, `KatanA-windows-x86_64.zip`
