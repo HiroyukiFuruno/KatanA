@@ -122,10 +122,13 @@
   - Result: `git push -u origin v0-29-0-html-file-preview` passed the normal pre-push hook.
 - [x] 6.4 Create PR from Base Feature Branch targeting `master`
   - PR: [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317)
-- [ ] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
-- [ ] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
-- [ ] 6.7 Create `release/v0.29.0` branch from master
-- [ ] 6.8 Run `just VERSION=0.29.0 release` and update CHANGELOG (`changelog-writing` skill)
+- [x] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
+  - Result: PR [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317) CI passed after coverage補完テスト追加.
+- [x] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
+  - Merge commit: `30c01e73441777ed53a59a1d88e2ca1de16a30f2`
+- [x] 6.7 Create `release/v0.29.0` branch from master
+- [x] 6.8 Run `just VERSION=0.29.0 release` and update CHANGELOG (`changelog-writing` skill)
+  - Result: version bump commit `e088e6ba` created; CHANGELOG EN/JA updated for 0.29.0.
 - [ ] 6.9 Create PR from `release/v0.29.0` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
