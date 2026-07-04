@@ -2,8 +2,8 @@
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-29-0-preview-driven-local-editing` またはリリース用統合ブランチ（例: `release/v0.29.0`）
-- **作業ブランチ**: 標準は `v0-29-0-preview-driven-local-editing-task-x`、リリース用は `feature/v0.29.0-task-x` (xはタスク番号)
+- **標準（Base）ブランチ**: `future-preview-driven-local-editing` または将来のリリース用統合ブランチ
+- **作業ブランチ**: 標準は `future-preview-driven-local-editing-task-x`、リリース用は対象リリースに合わせた `feature/vX.Y.Z-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへ PR を作成・マージしてください。
 
@@ -83,6 +83,6 @@
 - [ ] 5.2 Run preview-driven edit contract/unit tests.
 - [ ] 5.3 Run UI integration tests covering preview selection, local edit commit, cancel, stale range rejection, source inspector, and save behavior.
 - [ ] 5.4 Run diagram/math/table local edit regression tests.
-- [ ] 5.5 Run `openspec validate v0-29-0-preview-driven-local-editing`.
+- [ ] 5.5 Run `openspec validate future-preview-driven-local-editing`.
 - [ ] 5.6 Confirm no WebView, React, DOM runtime, or bundled web app is introduced.
 - [ ] 5.7 Confirm native input surface ownership remains with `Floem input surface（将来の独自 input surface 実装）`, not this preview-local editing change.

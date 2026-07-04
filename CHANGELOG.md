@@ -2,6 +2,24 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.29.0] - 2026-07-04 01:12:47 (UTC)
+
+### 🚀 Features
+
+- **HTML file preview**: Added direct preview support for `.html` and `.htm` files, including common static document content such as headings, paragraphs, links, images, details sections, and tables.
+
+### ✨ Improvements
+
+- **Workspace file handling**: HTML files now appear in the workspace and can be opened through the file picker or drag-and-drop while still respecting the normal workspace filter.
+
+### 🐛 Bug Fixes
+
+- **Markdown-only tools stay scoped**: HTML files are no longer treated as Markdown for diagnostics, formatting, or document export actions, reducing misleading messages for preview-only documents.
+
+### 🔧 System
+
+- **Preview stability**: Expanded automated coverage around document previews and renderer behavior to improve release stability.
+
 ## [0.22.32] - 2026-07-03 12:49:42 (UTC)
 
 ### 🐛 Bug Fixes
@@ -1524,6 +1542,6 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 - Task 6.2 — add preview synchronization tests
 - Add app state unit tests and fix java headless mode for plantuml
 - Add unit tests for preview synchronization (Task 3.2 completed)
-- Tighten coverage — removed ignore-filename-regex, abolished #[coverage(off)], enforced 100% Regions
+- Tighten coverage — removed ignore-filename-regex, abolished coverage-off attributes, enforced 100% Regions
 - Address differences in LLVM coverage calculation and tighten 100% test gate
 - Add integration tests for persistence round-trip
