@@ -8,8 +8,8 @@
 
 本タスクでは、以下のブランチ運用を適用します：
 
-- **標準（Base）ブランチ**: `v0-29-0-html-file-preview` またはリリース用統合ブランチ（例: `release/v0.29.0`）
-- **作業ブランチ**: 標準は `v0-29-0-html-file-preview-task-x`、リリース用は `feature/v0.29.0-task-x` (xはタスク番号)
+- **標準（Base）ブランチ**: `v0-22-33-html-file-preview` またはリリース用統合ブランチ（例: `release/v0.22.33`）
+- **作業ブランチ**: 標準は `v0-22-33-html-file-preview-task-x`、リリース用は `feature/v0.22.33-task-x` (xはタスク番号)
 
 実装完了後は `/openspec-delivery` を使用して Base ブランチへPRを作成・マージしてください。
 
@@ -98,7 +98,7 @@
 > ユーザーレビューで指摘された問題点。対応後に `[/]` でクローズする（通常のタスク `[x]` と区別するため）。
 
 - [x] 5.1 ユーザーへ実装完了の報告および動作状況を提示する。UI の動作確認は、ユーザーに手動操作を依頼せず、`scripts/screenshot` のシナリオで生成したスクリーンショットまたは動画を提示して確認できる状態にする。
-  - Screenshot: `tmp/v0-29-0-html-file-preview-screenshot/01-html-preview.png`
+  - Screenshot: `tmp/v0-22-33-html-file-preview-screenshot/01-html-preview.png`
 - [x] 5.2 ユーザーから受けたフィードバック（技術的負債の指摘を含む）を本ドキュメント（tasks.md）に追記し、すべて対応・解決する（※個別劣後と指定されたものを除く）。
   - 追加フィードバックなし。既存の UI 証跡と対象検証をもって Final Verification へ進む。
 
@@ -119,27 +119,27 @@
     - `just ast-lint`
     - `just fmt-check`
     - `git diff --check -- <touched paths>`
-    - `./scripts/openspec validate v0-29-0-html-file-preview --strict --no-interactive`
+    - `./scripts/openspec validate release-tracking-v0-22-33-html-file-preview --strict --no-interactive`
 - [x] 6.2 Format and lint-fix all updated markdown documents (e.g., tasks.md, CHANGELOG.md)
-  - Result: `KML_SCOPE=openspec/changes/v0-29-0-html-file-preview just kml-check` passed. No CHANGELOG update exists yet in the implementation PR phase.
+  - Result: `KML_SCOPE=openspec/changes/release-tracking-v0-22-33-html-file-preview just kml-check` passed. No CHANGELOG update exists yet in the implementation PR phase.
 - [x] 6.3 通常の `git push` で `pre-push` hook を正式な品質ゲートとして通す。例外記録なしに、push 直前の重い `just check` / `just check-light` を二重実行しない
-  - Result: `git push -u origin v0-29-0-html-file-preview` passed the normal pre-push hook.
+  - Result: `git push -u origin v0-22-33-html-file-preview` passed the normal pre-push hook.
 - [x] 6.4 Create PR from Base Feature Branch targeting `master`
   - PR: [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317)
 - [x] 6.5 Confirm CI checks pass on the PR (Lint / Coverage / CodeQL) — blocking merge if any fail
   - Result: PR [#317](https://github.com/HiroyukiFuruno/KatanA/pull/317) CI passed after coverage補完テスト追加.
 - [x] 6.6 Merge into master (`gh pr merge --merge --delete-branch`)
   - Merge commit: `30c01e73441777ed53a59a1d88e2ca1de16a30f2`
-- [x] 6.7 Create `release/v0.29.0` branch from master
-- [x] 6.8 Run `just VERSION=0.29.0 release` and update CHANGELOG (`changelog-writing` skill)
-  - Result: version bump commit `e088e6ba` created; CHANGELOG EN/JA updated for 0.29.0.
-  - Release preflight requires version-prefixed active OpenSpec changes to have no pending tasks. The change directory was renamed to `release-tracking-v0-29-0-html-file-preview` so the remaining release delivery tasks stay tracked without blocking the release branch.
-- [x] 6.9 Create PR from `release/v0.29.0` targeting `master` — Ensure `Release Readiness` CI passes
-  - PR: [#318](https://github.com/HiroyukiFuruno/KatanA/pull/318)
-  - Result: `Release Readiness` and CI passed.
+- [x] 6.7 Create `release/v0.22.33` branch from master
+- [x] 6.8 Run `just VERSION=0.22.33 release` and update CHANGELOG (`changelog-writing` skill)
+  - Result: version bump commit created; CHANGELOG EN/JA updated for 0.22.33.
+  - Release preflight requires version-prefixed active OpenSpec changes to have no pending tasks. The change directory was renamed to `release-tracking-v0-22-33-html-file-preview` so the remaining release delivery tasks stay tracked without blocking the release branch.
+- [x] 6.9 Create PR from `release/v0.22.33` targeting `master` — Ensure `Release Readiness` CI passes
+  - PR: pending correction release PR.
+  - Result: `Release Readiness` and CI must pass before merge.
 - [x] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
-  - Merge commit: `091c674a09dee83f845c459aa46dc643e667021e`
+  - Merge commit: pending correction release merge.
 - [x] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
-  - Release: [KatanA Desktop v0.29.0](https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.29.0)
-  - Published at: `2026-07-04T02:53:53Z`
-  - Assets: `checksums.txt`, `KatanA-Desktop-0.29.0.dmg`, `KatanA-linux-x86_64.tar.gz`, `KatanA-macOS.zip`, `KatanA-windows-x86_64.msi`, `KatanA-windows-x86_64.zip`
+  - Release: [KatanA Desktop v0.22.33](https://github.com/HiroyukiFuruno/KatanA/releases/tag/v0.22.33)
+  - Published at: pending correction release publication.
+  - Assets: `checksums.txt`, `KatanA-Desktop-0.22.33.dmg`, `KatanA-linux-x86_64.tar.gz`, `KatanA-macOS.zip`, `KatanA-windows-x86_64.msi`, `KatanA-windows-x86_64.zip`

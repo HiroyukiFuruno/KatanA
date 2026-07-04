@@ -4,7 +4,7 @@ KatanA の現行 preview は Markdown document を中心に設計されている
 
 一方で、`katana-document-viewer` は `SourceKind::Html` / `DocumentKind::Html` と direct HTML source normalizer を既に持っている。Katana 側の実装では、最初から KDV / KRR の外部修正を前提にせず、Katana 内の open / preview routing を整える。KDV API が必要十分でない場合のみ、外部 repo の issue または OpenSpec change へ分離する。
 
-この変更は `v0-29-0-preview-driven-local-editing` の制約と整合させる。つまり、WebView、React、DOM runtime、bundled web app を導入しない。
+この変更は将来の preview-driven local editing 計画の制約と整合させる。つまり、WebView、React、DOM runtime、bundled web app を導入しない。
 
 ## Goals / Non-Goals
 
@@ -36,7 +36,7 @@ Katana 側で active document の拡張子を判定し、`.html` / `.htm` の場
 
 MVP の表示品質は「安全に読める preview」とする。対応対象は、既存 HTML renderer と KDV direct HTML normalizer が扱える見出し、段落、リンク、画像、details、table などの静的 HTML 表示である。CSS / JS の忠実再現は別 change の責務判断に回す。
 
-代替案として、最初から WebView または headless browser を使う方法がある。しかし既存の v0.29.0 方針と衝突し、security / sandbox / asset policy / platform parity の設計が必要になるため採用しない。
+代替案として、最初から WebView または headless browser を使う方法がある。しかし将来の preview-driven local editing 方針と衝突し、security / sandbox / asset policy / platform parity の設計が必要になるため採用しない。
 
 ### KDV は利用可能性を先に検証し、不足時だけ外部化する
 
