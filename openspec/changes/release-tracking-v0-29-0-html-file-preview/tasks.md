@@ -129,6 +129,7 @@
 - [x] 6.7 Create `release/v0.29.0` branch from master
 - [x] 6.8 Run `just VERSION=0.29.0 release` and update CHANGELOG (`changelog-writing` skill)
   - Result: version bump commit `e088e6ba` created; CHANGELOG EN/JA updated for 0.29.0.
+  - Release preflight requires version-prefixed active OpenSpec changes to have no pending tasks. The change directory was renamed to `release-tracking-v0-29-0-html-file-preview` so the remaining release delivery tasks stay tracked without blocking the release branch.
 - [ ] 6.9 Create PR from `release/v0.29.0` targeting `master` — Ensure `Release Readiness` CI passes
 - [ ] 6.10 Merge release PR into master (`gh pr merge --merge --delete-branch`)
 - [ ] 6.11 Verify GitHub Release completion and archive this change using `/opsx-archive`
