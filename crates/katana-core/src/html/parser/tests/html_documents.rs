@@ -45,6 +45,18 @@ fn parses_details_with_summary_and_body() {
 }
 
 #[test]
+fn parses_details_without_summary() {
+    let nodes = parser().parse(r#"<details><p>Body only</p></details>"#);
+
+    let [HtmlNode::Details { summary, children }] = &nodes[..] else {
+        panic!("expected one details node: {nodes:?}");
+    };
+
+    assert!(summary.is_empty());
+    assert_eq!(HtmlNode::render_to_html(children), "<p>Body only</p>");
+}
+
+#[test]
 fn parses_table_headers_and_rows() {
     let nodes = parser().parse(
         r#"<table>
@@ -63,4 +75,18 @@ fn parses_table_headers_and_rows() {
     assert_eq!(HtmlNode::render_to_html(&headers[0]), "Name");
     assert_eq!(HtmlNode::render_to_html(&rows[0][0]), "KatanA");
     assert!(HtmlNode::render_to_html(&rows[0][1]).contains("<a href="));
+}
+
+#[test]
+fn parses_header_row_with_data_cells() {
+    let nodes = parser().parse(r#"<table><tr><th>Name</th><td>KatanA</td></tr></table>"#);
+
+    let [HtmlNode::Table { headers, rows }] = &nodes[..] else {
+        panic!("expected one table node: {nodes:?}");
+    };
+
+    assert_eq!(headers.len(), 1);
+    assert_eq!(rows.len(), 1);
+    assert_eq!(HtmlNode::render_to_html(&headers[0]), "Name");
+    assert_eq!(HtmlNode::render_to_html(&rows[0][0]), "KatanA");
 }

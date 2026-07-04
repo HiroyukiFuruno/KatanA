@@ -65,10 +65,15 @@ fn test_html_extension_detection() {
     let markdown = TreeEntry::File {
         path: PathBuf::from("/root/readme.md"),
     };
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/site"),
+        children: Vec::new(),
+    };
 
     assert!(html.is_html());
     assert!(htm.is_html());
     assert!(!markdown.is_html());
+    assert!(!directory.is_html());
     assert!(TreeEntry::html_extensions().contains(&"html"));
     assert!(TreeEntry::html_extensions().contains(&"htm"));
     assert!(TreeEntry::standard_visible_extensions().contains(&"html"));
