@@ -138,6 +138,38 @@ fn buffer_without_diagrams_does_not_generate_pending_sections() {
 }
 
 #[test]
+fn html_document_buffer_uses_direct_html_section() {
+    let mut pane = PreviewPane::default();
+    let html = r#"<!doctype html>
+<html>
+  <body>
+    <h1>HTML Title</h1>
+    <p><a href="docs.html">Docs</a></p>
+    <img src="asset.png" alt="Asset">
+    <details><summary>More</summary><p>Details body</p></details>
+    <table>
+      <tr><th>Name</th><th>State</th></tr>
+      <tr><td>KatanA</td><td>Ready</td></tr>
+    </table>
+  </body>
+</html>"#;
+
+    pane.update_html_document_sections(html, std::path::Path::new("/tmp/index.html"));
+
+    assert!(matches!(
+        pane.sections.as_slice(),
+        [RenderedSection::HtmlDocument(rendered, _)]
+            if rendered.contains("<details>") && rendered.contains("<table>")
+    ));
+    assert!(
+        !pane
+            .sections
+            .iter()
+            .any(|section| matches!(section, RenderedSection::Markdown(_, _)))
+    );
+}
+
+#[test]
 fn verification_that_preview_updates_do_not_depend_on_file_saves() {
     /* WHY: Verify the core architectural requirement that the UI state (PreviewPane) is tied to
      * the in-memory Document buffer rather than the file on disk. */

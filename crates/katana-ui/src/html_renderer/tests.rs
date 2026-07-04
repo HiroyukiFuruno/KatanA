@@ -54,3 +54,34 @@ fn heading_with_align_center_is_centered() {
         bounds.x0
     );
 }
+
+#[test]
+fn details_and_table_render_static_labels() {
+    use eframe::egui;
+    use egui_kittest::{Harness, kittest::Queryable};
+
+    let html = r#"
+<details><summary>More</summary><p>Details body</p></details>
+<table>
+  <tr><th>Name</th><th>State</th></tr>
+  <tr><td>KatanA</td><td><a href="docs.html">Ready</a></td></tr>
+</table>"#;
+    let parser = katana_core::html::HtmlParser::new(std::path::Path::new("."));
+    let nodes = parser.parse(html);
+
+    let mut harness = Harness::builder()
+        .with_size(egui::vec2(600.0, 400.0))
+        .build_ui(move |ui| {
+            ui.set_width(600.0);
+            let renderer = HtmlRenderer::new(ui, std::path::Path::new("."));
+            renderer.render(&nodes);
+        });
+
+    harness.step();
+
+    let _summary = harness.get_by_label("More");
+    let _body = harness.get_by_label("Details body");
+    let _header = harness.get_by_label("Name");
+    let _cell = harness.get_by_label("KatanA");
+    let _link = harness.get_by_label("Ready");
+}

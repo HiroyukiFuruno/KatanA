@@ -104,6 +104,7 @@ impl SectionLogicOps {
                                 .len();
                         *lines
                     }
+                    RenderedSection::HtmlDocument(_, lines) => *lines,
                     RenderedSection::Image { source_lines, .. } => *source_lines,
                     RenderedSection::LocalImage { source_lines, .. } => *source_lines,
                     RenderedSection::Error { source_lines, .. } => *source_lines,

@@ -121,6 +121,22 @@ mod tests {
         assert!(message.contains("note.txt"));
     }
 
+    #[test]
+    fn format_html_file_reports_not_markdown_failure() {
+        let mut app = make_app();
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("index.htm");
+        std::fs::write(&path, "<h1>Title</h1>").unwrap();
+
+        app.handle_action_format_markdown_file(&eframe::egui::Context::default(), path);
+
+        let Some((message, status_type)) = app.state.layout.status_message else {
+            panic!("status message should be set");
+        };
+        assert_eq!(status_type, crate::app_state::StatusType::Warning);
+        assert!(message.contains("index.htm"));
+    }
+
     fn undo_text(ctx: &eframe::egui::Context, path: &std::path::Path, current: &str) -> String {
         let id = crate::editor_undo::EditorUndoIdentity::text_edit_id(None, path);
         let state = eframe::egui::TextEdit::load_state(ctx, id).unwrap();

@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::html::HtmlNode;
-use crate::html::parser::TextAlign;
+use crate::html::TextAlign;
 
 #[test]
 fn parse_unknown_tag_is_skipped() {

@@ -39,6 +39,10 @@ impl ExportOps for KatanaApp {
         let buffer = doc.buffer.clone();
         let doc_path = doc.path.clone();
 
+        if reject_html_export_if_needed(self, &doc_path) {
+            return;
+        }
+
         match fmt {
             crate::app_state::ExportFormat::Html => self.export_as_html(ctx, &buffer, &doc_path),
             crate::app_state::ExportFormat::Pdf => {
@@ -52,6 +56,7 @@ impl ExportOps for KatanaApp {
             }
         }
     }
+
     fn export_filename(&self, doc_path: &std::path::Path, ext: &str) -> String {
         let (prefix, relative) = if let Some(ws) = &self.state.workspace.data {
             let initials: String = ws
@@ -175,4 +180,19 @@ impl ExportOps for KatanaApp {
     fn poll_export(&mut self, ctx: &egui::Context) {
         ExportPoll::poll_export(self, ctx);
     }
+}
+
+fn reject_html_export_if_needed(app: &mut KatanaApp, doc_path: &std::path::Path) -> bool {
+    if !katana_core::workspace::TreeEntry::path_is_html(doc_path) {
+        return false;
+    }
+
+    app.state.layout.status_message = Some((
+        format!(
+            "HTML document export is not supported for preview-only documents: {}",
+            doc_path.display()
+        ),
+        crate::app_state::StatusType::Warning,
+    ));
+    true
 }

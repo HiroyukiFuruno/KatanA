@@ -1,7 +1,7 @@
 /* WHY: Verification of nested elements, such as links containing images (common in README badges) and aligned paragraphs. */
 
 use super::*;
-use crate::html::parser::TextAlign;
+use crate::html::TextAlign;
 use crate::html::{HtmlNode, LinkTarget};
 
 #[test]

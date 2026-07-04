@@ -1,7 +1,7 @@
 /* WHY: Verification of standard HTML tag parsing (img, br, p, headings, formatting). */
 
 use super::*;
-use crate::html::parser::TextAlign;
+use crate::html::TextAlign;
 use crate::html::{HtmlNode, LinkTarget};
 use std::path::PathBuf;
 

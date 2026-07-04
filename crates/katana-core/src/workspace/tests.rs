@@ -53,3 +53,29 @@ fn test_image_extension_detection() {
     assert!(TreeEntry::standard_visible_extensions().contains(&"drawio"));
     assert!(TreeEntry::standard_visible_extensions().contains(&"svg"));
 }
+
+#[test]
+fn test_html_extension_detection() {
+    let html = TreeEntry::File {
+        path: PathBuf::from("/root/site/index.HTML"),
+    };
+    let htm = TreeEntry::File {
+        path: PathBuf::from("/root/site/legacy.htm"),
+    };
+    let markdown = TreeEntry::File {
+        path: PathBuf::from("/root/readme.md"),
+    };
+    let directory = TreeEntry::Directory {
+        path: PathBuf::from("/root/site"),
+        children: Vec::new(),
+    };
+
+    assert!(html.is_html());
+    assert!(htm.is_html());
+    assert!(!markdown.is_html());
+    assert!(!directory.is_html());
+    assert!(TreeEntry::html_extensions().contains(&"html"));
+    assert!(TreeEntry::html_extensions().contains(&"htm"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"html"));
+    assert!(TreeEntry::standard_visible_extensions().contains(&"htm"));
+}

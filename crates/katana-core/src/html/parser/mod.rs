@@ -1,10 +1,11 @@
+mod blocks;
 pub mod inline;
 pub mod regex;
 #[cfg(test)]
 mod tests;
 pub mod types;
 
-use crate::html::node::{HtmlNode, LinkTarget, TextAlign};
+use crate::html::node::{HtmlNode, LinkTarget};
 use ::regex::{Captures, Match};
 use std::path::Path;
 pub use types::*;
@@ -43,13 +44,40 @@ impl<'a> HtmlParser<'a> {
         remaining: &str,
         tag_start: usize,
     ) {
-        let trimmed = remaining[..tag_start].trim();
+        let before_tag = &remaining[..tag_start];
+        let trimmed = before_tag.trim();
         if !trimmed.is_empty() {
-            HtmlInlineParserOps::parse(trimmed, self.base_dir, nodes);
+            let text = if before_tag.chars().last().is_some_and(char::is_whitespace)
+                && Self::next_tag_preserves_leading_space(&remaining[tag_start..])
+            {
+                format!("{trimmed} ")
+            } else {
+                trimmed.to_string()
+            };
+            HtmlInlineParserOps::parse(&text, self.base_dir, nodes);
         }
     }
 
+    fn next_tag_preserves_leading_space(tag: &str) -> bool {
+        let tag_name = tag
+            .split('>')
+            .next()
+            .unwrap_or(tag)
+            .trim_start()
+            .to_ascii_lowercase();
+        tag_name.starts_with("<a ")
+            || tag_name.starts_with("<em")
+            || tag_name.starts_with("<strong")
+            || tag_name.starts_with("<img ")
+    }
+
     fn process_tag_or_skip<'b>(&self, nodes: &mut Vec<HtmlNode>, remaining: &'b str) -> &'b str {
+        if let Some(m) = HtmlRegexOps::ignored_block().find(remaining)
+            && m.start() == 0
+        {
+            return &remaining[m.end()..];
+        }
+
         if let Some((node, consumed)) = self.try_parse_tag(remaining) {
             nodes.push(node);
             &remaining[consumed..]
@@ -63,6 +91,8 @@ impl<'a> HtmlParser<'a> {
     fn try_parse_tag(&self, s: &str) -> Option<(HtmlNode, usize)> {
         self.try_parse_br_or_img(s)
             .or_else(|| self.try_parse_a(s))
+            .or_else(|| self.try_parse_details(s))
+            .or_else(|| self.try_parse_table(s))
             .or_else(|| self.try_parse_paragraph(s))
             .or_else(|| self.try_parse_heading(s))
             .or_else(|| self.try_parse_em_or_strong(s))
@@ -96,65 +126,6 @@ impl<'a> HtmlParser<'a> {
         let target = LinkTarget::resolve(href, self.base_dir);
         Some((
             HtmlNode::Link { target, children },
-            caps.get(0).unwrap().end(),
-        ))
-    }
-
-    fn try_parse_paragraph(&self, s: &str) -> Option<(HtmlNode, usize)> {
-        let caps: Captures = HtmlRegexOps::p().captures(s)?;
-        if caps.get(0).map(|m: Match| m.start()).unwrap_or(1) != 0 {
-            return None;
-        }
-
-        let attrs = caps.get(1).map(|m: Match| m.as_str()).unwrap_or("");
-        let inner = caps.get(2).map(|m: Match| m.as_str()).unwrap_or("");
-        let align =
-            HtmlRegexOps::extract_attr(attrs, "align").and_then(|a: String| match a.as_str() {
-                "center" => Some(TextAlign::Center),
-                "left" => Some(TextAlign::Left),
-                "right" => Some(TextAlign::Right),
-                _ => None,
-            });
-        let children = self.parse_fragment(inner);
-        Some((
-            HtmlNode::Paragraph { align, children },
-            caps.get(0).unwrap().end(),
-        ))
-    }
-
-    fn try_parse_heading(&self, s: &str) -> Option<(HtmlNode, usize)> {
-        let caps: Captures = HtmlRegexOps::heading().captures(s)?;
-        if caps.get(0).map(|m: Match| m.start()).unwrap_or(1) != 0 {
-            return None;
-        }
-
-        let level: u8 = caps
-            .get(1)
-            .map(|m: Match| m.as_str())
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(1);
-        let attrs = caps.get(2).map(|m: Match| m.as_str()).unwrap_or("");
-        let align = if attrs.contains(r#"align="center""#) {
-            Some(TextAlign::Center)
-        } else if attrs.contains(r#"align="left""#) {
-            Some(TextAlign::Left)
-        } else if attrs.contains(r#"align="right""#) {
-            Some(TextAlign::Right)
-        } else {
-            None
-        };
-        const CAP_HEADING_INNER: usize = 3;
-        let inner = caps
-            .get(CAP_HEADING_INNER)
-            .map(|m: Match| m.as_str())
-            .unwrap_or("");
-        let children = self.parse_fragment(inner);
-        Some((
-            HtmlNode::Heading {
-                level,
-                align,
-                children,
-            },
             caps.get(0).unwrap().end(),
         ))
     }

@@ -1,0 +1,57 @@
+{
+  "schema_version": "1",
+  "name": "v0-29-0-html-file-preview",
+  "fixture": {
+    "settings": {
+      "theme": "dark",
+      "locale": "en",
+      "explorer_visible": true,
+      "linter_enabled": false
+    },
+    "workspace_files": [
+      {
+        "name": "index.html",
+        "content": "<!doctype html>\n<html>\n  <head>\n    <title>Hidden metadata</title>\n    <style>body { color: red; }</style>\n    <script>window.bad = true;</script>\n  </head>\n  <body>\n    <main>\n      <h1>HTML Preview</h1>\n      <p>Static HTML document rendered in KatanA.</p>\n      <p><a href=\"docs.html\">Open related docs</a></p>\n      <details>\n        <summary>Implementation scope</summary>\n        <p>CSS, JavaScript, iframe, and WebView are outside this MVP.</p>\n      </details>\n      <table>\n        <tr><th>Feature</th><th>Status</th></tr>\n        <tr><td>Direct HTML preview</td><td>Ready</td></tr>\n        <tr><td>Markdown diagnostics</td><td>Skipped</td></tr>\n      </table>\n    </main>\n  </body>\n</html>\n"
+      },
+      {
+        "name": "docs.html",
+        "content": "<!doctype html>\n<html><body><h1>Docs</h1><p>Linked HTML document.</p></body></html>\n"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "type": "launch",
+      "viewport": { "width": 1280, "height": 800 },
+      "wait_seconds": 2.0
+    },
+    {
+      "type": "open_file",
+      "file_name": "index.html",
+      "wait_seconds": 1.0
+    },
+    {
+      "type": "action",
+      "action": {
+        "set_view_mode": {
+          "mode": "preview_only"
+        }
+      }
+    },
+    {
+      "type": "wait",
+      "seconds": 1.0
+    },
+    {
+      "type": "assert_active_document",
+      "path_contains": "index.html"
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-html-preview"
+    },
+    {
+      "type": "quit"
+    }
+  ]
+}

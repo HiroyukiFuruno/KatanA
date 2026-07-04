@@ -38,7 +38,10 @@ impl LinkTarget {
 impl HtmlNode {
     pub fn display_mode(&self) -> DisplayMode {
         match self {
-            Self::Heading { .. } | Self::Paragraph { .. } => DisplayMode::Block,
+            Self::Heading { .. }
+            | Self::Paragraph { .. }
+            | Self::Details { .. }
+            | Self::Table { .. } => DisplayMode::Block,
             Self::Text(_)
             | Self::Image { .. }
             | Self::Link { .. }
@@ -103,6 +106,16 @@ impl HtmlNode {
                     html.push_str(&Self::render_to_html(children));
                     html.push_str("</p>");
                 }
+                Self::Details { summary, children } => {
+                    html.push_str("<details><summary>");
+                    html.push_str(&Self::render_to_html(summary));
+                    html.push_str("</summary>");
+                    html.push_str(&Self::render_to_html(children));
+                    html.push_str("</details>");
+                }
+                Self::Table { headers, rows } => {
+                    Self::render_table_html(headers, rows, &mut html);
+                }
                 Self::Emphasis(children) => {
                     html.push_str("<em>");
                     html.push_str(&Self::render_to_html(children));
@@ -116,6 +129,39 @@ impl HtmlNode {
             }
         }
         html
+    }
+
+    fn render_table_html(headers: &[Vec<Self>], rows: &[Vec<Vec<Self>>], html: &mut String) {
+        html.push_str("<table>");
+        Self::render_table_headers_html(headers, html);
+        html.push_str("<tbody>");
+        Self::render_table_rows_html(rows, html);
+        html.push_str("</tbody></table>");
+    }
+
+    fn render_table_headers_html(headers: &[Vec<Self>], html: &mut String) {
+        if headers.is_empty() {
+            return;
+        }
+        html.push_str("<thead><tr>");
+        for header in headers {
+            html.push_str("<th>");
+            html.push_str(&Self::render_to_html(header));
+            html.push_str("</th>");
+        }
+        html.push_str("</tr></thead>");
+    }
+
+    fn render_table_rows_html(rows: &[Vec<Vec<Self>>], html: &mut String) {
+        for row in rows {
+            html.push_str("<tr>");
+            for cell in row {
+                html.push_str("<td>");
+                html.push_str(&Self::render_to_html(cell));
+                html.push_str("</td>");
+            }
+            html.push_str("</tr>");
+        }
     }
 }
 
@@ -186,6 +232,53 @@ mod tests {
             children: vec![HtmlNode::Text("text".into())],
         };
         assert_eq!(node.display_mode(), DisplayMode::Block);
+    }
+
+    #[test]
+    fn details_is_block() {
+        let node = HtmlNode::Details {
+            summary: vec![HtmlNode::Text("more".into())],
+            children: vec![HtmlNode::Text("body".into())],
+        };
+        assert_eq!(node.display_mode(), DisplayMode::Block);
+    }
+
+    #[test]
+    fn table_is_block() {
+        let node = HtmlNode::Table {
+            headers: vec![vec![HtmlNode::Text("name".into())]],
+            rows: vec![vec![vec![HtmlNode::Text("katana".into())]]],
+        };
+        assert_eq!(node.display_mode(), DisplayMode::Block);
+    }
+
+    #[test]
+    fn render_details_to_html() {
+        let nodes = vec![HtmlNode::Details {
+            summary: vec![HtmlNode::Text("more".into())],
+            children: vec![HtmlNode::Paragraph {
+                align: None,
+                children: vec![HtmlNode::Text("body".into())],
+            }],
+        }];
+
+        assert_eq!(
+            HtmlNode::render_to_html(&nodes),
+            "<details><summary>more</summary><p>body</p></details>"
+        );
+    }
+
+    #[test]
+    fn render_table_to_html() {
+        let nodes = vec![HtmlNode::Table {
+            headers: vec![vec![HtmlNode::Text("Name".into())]],
+            rows: vec![vec![vec![HtmlNode::Text("KatanA".into())]]],
+        }];
+
+        assert_eq!(
+            HtmlNode::render_to_html(&nodes),
+            "<table><thead><tr><th>Name</th></tr></thead><tbody><tr><td>KatanA</td></tr></tbody></table>"
+        );
     }
 
     #[test]
