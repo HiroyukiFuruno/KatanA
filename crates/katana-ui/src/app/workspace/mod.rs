@@ -20,7 +20,14 @@ mod poll;
 pub(crate) mod tabs;
 
 fn append_standard_visible_extensions(extensions: &mut Vec<String>) {
-    for ext in katana_core::workspace::TreeEntry::standard_visible_extensions() {
+    append_extensions(
+        extensions,
+        katana_core::workspace::TreeEntry::standard_visible_extensions(),
+    );
+}
+
+fn append_extensions(extensions: &mut Vec<String>, additions: &[&str]) {
+    for ext in additions {
         if extensions
             .iter()
             .any(|existing| existing.eq_ignore_ascii_case(ext))
@@ -28,6 +35,32 @@ fn append_standard_visible_extensions(extensions: &mut Vec<String>) {
             continue;
         }
         extensions.push((*ext).to_string());
+    }
+}
+
+pub(crate) struct WorkspaceExtensionPolicy;
+
+impl WorkspaceExtensionPolicy {
+    pub(crate) fn effective(
+        settings: &katana_platform::settings::WorkspaceSettings,
+    ) -> Vec<String> {
+        let mut extensions = settings.visible_extensions.clone();
+        if settings.enable_drawio_mount {
+            extensions.push("drowio".to_string());
+        }
+        append_standard_visible_extensions(&mut extensions);
+        extensions
+    }
+
+    pub(crate) fn file_creation(
+        settings: &katana_platform::settings::WorkspaceSettings,
+    ) -> Vec<String> {
+        let mut extensions = settings.visible_extensions.clone();
+        append_extensions(
+            &mut extensions,
+            katana_core::workspace::TreeEntry::html_extensions(),
+        );
+        extensions
     }
 }
 

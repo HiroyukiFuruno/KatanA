@@ -13,7 +13,7 @@ pub(super) const MAX_ZOOM: f32 = 10.0;
 const MIN_CONTAINER_HEIGHT: f32 = 145.0;
 const MAX_TEXTURE_SIDE: usize = 2048;
 
-fn color_image_for_texture(
+pub(super) fn color_image_for_texture(
     img: &RasterizedSvg,
     background: egui::Color32,
     should_replace_light_background: bool,

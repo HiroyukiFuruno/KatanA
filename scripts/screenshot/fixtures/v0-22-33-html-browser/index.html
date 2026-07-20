@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hidden document metadata</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>KatanA HTML Preview</h1>
+    <p>Rust owns HTML parsing, CSS layout, V8 JavaScript, hit-testing, and pixels.</p>
+    <p id="status" class="status">JavaScript has not executed</p>
+    <a id="prevented-link" href="linked-panel.html">Run prevented navigation</a>
+    <a id="navigation-link" href="linked-panel.html#linked-target">Open linked panel section</a>
+    <a id="fragment-link" href="#fragment-target">Open page section</a>
+    <details id="accordion">
+      <summary id="summary">Accordion: interactive details</summary>
+      <div class="panel">
+        <button id="action" type="button">Run click action</button>
+        <label>Type target</label>
+        <input id="text-input" value="">
+        <p id="result" class="result">Waiting for interaction</p>
+      </div>
+    </details>
+    <table>
+      <thead><tr><th>Feature</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>CSS layout</td><td>Rendered in KRR</td></tr>
+        <tr><td>V8 click action</td><td>Interactive</td></tr>
+      </tbody>
+    </table>
+    <div id="scroll-space" style="height: 900px"></div>
+    <p id="scroll-target">Scroll event reached the KRR viewport</p>
+    <section id="fragment-target">
+      <h2>Same-document fragment target</h2>
+      <p id="fragment-state">Interaction state has not changed</p>
+    </section>
+    <div style="height: 500px"></div>
+  </main>
+  <script src="actions.js"></script>
+</body>
+</html>

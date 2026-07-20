@@ -29,6 +29,7 @@ pub enum AppAction {
         byte_range: std::ops::Range<usize>,
     },
     OpenMultipleDocuments(Vec<PathBuf>),
+    OpenUrl(String),
     RemoveWorkspace(String),
     RemoveWorkspaceHistory(String),
     ShowStatusMessage(String, crate::app_state::StatusType),

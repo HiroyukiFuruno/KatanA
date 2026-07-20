@@ -7,6 +7,7 @@ pub(crate) mod tab_border;
 pub(crate) mod tab_drag;
 pub(crate) mod tab_drop_indicator;
 pub mod types;
+pub(crate) mod url_source;
 pub(crate) mod workspace_tab_bar;
 pub(crate) mod workspace_tab_bar_close;
 pub(crate) mod workspace_tab_bar_detail;

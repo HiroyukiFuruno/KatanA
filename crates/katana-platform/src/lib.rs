@@ -17,6 +17,7 @@
 )]
 
 pub mod cache;
+mod config_path;
 pub mod contract;
 pub mod filesystem;
 pub mod os_fonts;

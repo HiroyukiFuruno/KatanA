@@ -12,6 +12,7 @@ pub mod search;
 pub mod shortcut_context;
 pub mod toc;
 pub mod update;
+pub mod url_tab;
 pub mod workspace;
 
 #[cfg(test)]
@@ -24,6 +25,7 @@ pub use scroll::*;
 pub use search::*;
 pub use toc::*;
 pub use update::*;
+pub use url_tab::*;
 pub use workspace::*;
 
 #[cfg(test)]
@@ -62,6 +64,8 @@ pub mod app_state_tests {
             is_loaded: true,
             is_pinned: false,
             is_reference: false,
+            revision: 0,
+            saved_revision: 0,
             last_imported_disk_hash: None,
             pending_dirty_warning_hash: None,
         };
@@ -105,6 +109,8 @@ pub mod app_state_tests {
             is_loaded: true,
             is_pinned: false,
             is_reference: false,
+            revision: 0,
+            saved_revision: 0,
             last_imported_disk_hash: None,
             pending_dirty_warning_hash: None,
         };

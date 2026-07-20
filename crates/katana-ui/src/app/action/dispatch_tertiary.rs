@@ -42,15 +42,10 @@ impl KatanaApp {
             AppAction::ShowReleaseNotes => self.handle_show_release_notes(),
             AppAction::ClearAllCaches => self.handle_action_clear_all_caches(ctx),
             AppAction::RequestNewFile(path) => {
-                let ext = self
-                    .state
-                    .config
-                    .settings
-                    .settings()
-                    .workspace
-                    .visible_extensions
-                    .first()
-                    .cloned();
+                let extensions = crate::app::workspace::WorkspaceExtensionPolicy::file_creation(
+                    &self.state.config.settings.settings().workspace,
+                );
+                let ext = extensions.first().cloned();
                 self.state.layout.create_fs_node_modal = Some((path, String::new(), ext, false));
             }
             AppAction::RequestNewDirectory(path) => {

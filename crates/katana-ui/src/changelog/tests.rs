@@ -74,10 +74,25 @@ fn test_is_older() {
 }
 
 #[test]
-fn test_fetch_changelog_coverage() {
-    let (tx, _rx) = std::sync::mpsc::channel();
-    ChangelogOps::fetch_changelog("en", "0.8.0".to_string(), None, tx.clone());
-    ChangelogOps::fetch_changelog("ja", "0.8.0".to_string(), None, tx);
+fn test_fetch_changelog_uses_embedded_current_release_notes() {
+    let current_version = env!("CARGO_PKG_VERSION");
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    ChangelogOps::fetch_changelog("en", current_version.to_string(), None, tx.clone());
+    match rx.recv().unwrap() {
+        ChangelogEvent::Success(sections) => {
+            assert_eq!(sections.first().unwrap().version, current_version);
+        }
+        ChangelogEvent::Error(error) => panic!("unexpected changelog error: {error}"),
+    }
+
+    ChangelogOps::fetch_changelog("ja", current_version.to_string(), None, tx);
+    match rx.recv().unwrap() {
+        ChangelogEvent::Success(sections) => {
+            assert_eq!(sections.first().unwrap().version, current_version);
+        }
+        ChangelogEvent::Error(error) => panic!("unexpected changelog error: {error}"),
+    }
 }
 
 #[test]
@@ -99,111 +114,4 @@ fn test_render_release_notes_tab_ui() {
             ChangelogOps::render_release_notes_tab(ui, &[], false, false);
         });
     });
-}
-
-#[test]
-fn test_handle_fetch_result_network_error() {
-    let (tx, rx) = std::sync::mpsc::channel();
-    ChangelogOps::handle_fetch_result(Err("Offline".to_string()), &tx, "0.1.0", None);
-    match rx.try_recv().unwrap() {
-        ChangelogEvent::Error(e) => assert_eq!(e, "Offline"),
-        _ => panic!("Expected Error event"),
-    }
-}
-
-#[test]
-fn test_handle_fetch_result_http_error_with_text() {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let response = ehttp::Response {
-        url: "https://example.com".to_string(),
-        ok: false,
-        status: 404,
-        status_text: "Not Found".to_string(),
-        bytes: b"Not Found Data".to_vec(),
-        headers: ehttp::Headers::new(&[]),
-    };
-    ChangelogOps::handle_fetch_result(Ok(response), &tx, "0.1.0", None);
-    match rx.try_recv().unwrap() {
-        ChangelogEvent::Error(e) => assert_eq!(e, "HTTP error 404: Not Found Data"),
-        _ => panic!("Expected Error"),
-    }
-}
-
-#[test]
-fn test_handle_fetch_result_ok_response_decode_error() {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let response = ehttp::Response {
-        url: "https://example.com".to_string(),
-        ok: true,
-        status: 200,
-        status_text: "OK".to_string(),
-        bytes: vec![0xFF, 0xFE, 0xFD],
-        headers: ehttp::Headers::new(&[]),
-    };
-    ChangelogOps::handle_fetch_result(Ok(response), &tx, "0.1.0", None);
-    match rx.try_recv().unwrap() {
-        ChangelogEvent::Error(e) => assert_eq!(e, "Failed to decode response text"),
-        _ => panic!("Expected Error"),
-    }
-}
-
-#[test]
-fn test_handle_fetch_result_failure_response_decode_error() {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let response = ehttp::Response {
-        url: "https://example.com".to_string(),
-        ok: false,
-        status: 500,
-        status_text: "Server Error".to_string(),
-        bytes: vec![0xFF, 0xFE, 0xFD],
-        headers: ehttp::Headers::new(&[]),
-    };
-    ChangelogOps::handle_fetch_result(Ok(response), &tx, "0.1.0", None);
-    match rx.try_recv().unwrap() {
-        ChangelogEvent::Error(e) => assert_eq!(e, "HTTP error: 500"),
-        _ => panic!("Expected Error"),
-    }
-}
-
-#[test]
-fn test_handle_fetch_result_success() {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let md = "# Changelog\n## [0.8.0]\n### Added\n- Ok!";
-    let response = ehttp::Response {
-        url: "https://example.com".to_string(),
-        ok: true,
-        status: 200,
-        status_text: "OK".to_string(),
-        bytes: md.as_bytes().to_vec(),
-        headers: ehttp::Headers::new(&[]),
-    };
-    ChangelogOps::handle_fetch_result(Ok(response), &tx, "0.8.0", None);
-    match rx.try_recv().unwrap() {
-        ChangelogEvent::Success(sections) => {
-            assert_eq!(sections.len(), 1);
-            assert_eq!(sections[0].version, "0.8.0");
-        }
-        _ => panic!("Expected Success"),
-    }
-}
-
-#[test]
-fn test_get_changelog_url_cache_busting() {
-    let url_en = ChangelogOps::get_changelog_url("en", "0.8.0");
-    assert!(
-        url_en.starts_with("https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=0.8.0&t="),
-        "URL {} does not contain expected prefix", url_en
-    );
-
-    let url_ja = ChangelogOps::get_changelog_url("ja", "0.8.1-beta");
-    assert!(
-        url_ja.starts_with("https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.ja.md?v=0.8.1-beta&t="),
-        "URL {} does not contain expected prefix", url_ja
-    );
-
-    let url_unknown = ChangelogOps::get_changelog_url("it", "1.0.0");
-    assert!(
-        url_unknown.starts_with("https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master/CHANGELOG.md?v=1.0.0&t="),
-        "URL {} does not contain expected prefix", url_unknown
-    );
 }

@@ -27,8 +27,8 @@ fi
 # Helpers for checking file consistency
 is_ci() { [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; }
 
-RELEASE_BRANCH_PATTERN='^release/v([0-9]+\.[0-9]+\.[0-9]+)(-[A-Za-z0-9][A-Za-z0-9._-]*)?$'
 TASK_BRANCH_PATTERN='^release/v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9][A-Za-z0-9._-]*)?-task-?[0-9A-Za-z]+(-fix)?$'
+RELEASE_BRANCH_VERSION_SCRIPT='scripts/release/extract-release-branch-version.sh'
 
 # 1. Check for uncommitted changes (Local only)
 if ! is_ci; then
@@ -60,13 +60,13 @@ TARGET_VERSION=""
 if [[ -n "$EXPECTED_VERSION" ]]; then
     TARGET_VERSION="$EXPECTED_VERSION"
     info "Target version set by argument: v${TARGET_VERSION}"
-elif [[ "$CURRENT_BRANCH" =~ $RELEASE_BRANCH_PATTERN ]]; then
+elif BRANCH_VERSION=$(bash "$RELEASE_BRANCH_VERSION_SCRIPT" "$CURRENT_BRANCH" 2>/dev/null); then
     # Task branches do not bump Cargo.toml until final release preparation.
     if [[ "$CURRENT_BRANCH" =~ $TASK_BRANCH_PATTERN ]]; then
         success "Task branch detected (${CURRENT_BRANCH}). Skipping final PR readiness checks."
         exit 0
     fi
-    TARGET_VERSION="${match[1]}"
+    TARGET_VERSION="$BRANCH_VERSION"
     if [[ "$HAS_EXPECTED_VERSION" == "false" && ! is_ci && "$CUR_VERSION" != "$TARGET_VERSION" ]]; then
         warn "Release integration branch detected before final release preparation."
         warn "Skipping final PR readiness checks until an explicit version is provided."
@@ -114,14 +114,19 @@ fi
 rm -f "$LOCK_CHECK_OUTPUT"
 success "Cargo.lock is synced."
 
-# 5. Branch naming vs Target Version for Release branches
+# 5. Version increment guard
+if ! ./scripts/release/check-version-increment.sh "$TARGET_VERSION"; then
+    error "Version increment check failed for v${TARGET_VERSION}."
+    exit 1
+fi
+
+# 6. Branch naming vs Target Version for Release branches
 if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
-    if [[ ! "$CURRENT_BRANCH" =~ $RELEASE_BRANCH_PATTERN ]]; then
+    if ! BRANCH_VERSION=$(bash "$RELEASE_BRANCH_VERSION_SCRIPT" "$CURRENT_BRANCH" 2>/dev/null); then
          error "Branch name '$CURRENT_BRANCH' does not follow release/vX.Y.Z or release/vX.Y.Z-name format."
          exit 1
     fi
-    
-    BRANCH_VERSION="${match[1]}"
+
     if [[ "$BRANCH_VERSION" != "$TARGET_VERSION" ]]; then
         error "Branch version (v${BRANCH_VERSION}) does not match target version (v${TARGET_VERSION})."
         exit 1
@@ -129,7 +134,7 @@ if [[ "$CURRENT_BRANCH" =~ ^release/ ]]; then
     success "Branch version matches target version."
 fi
 
-# 6. Run preflight
+# 7. Run preflight
 if ! ./scripts/release/preflight.sh "$TARGET_VERSION"; then
     error "Preflight checks failed for v${TARGET_VERSION}."
     exit 1

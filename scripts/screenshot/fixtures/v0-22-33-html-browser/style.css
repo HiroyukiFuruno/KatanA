@@ -1,0 +1,18 @@
+main { margin: 12px; padding: 12px; border: 1px solid #c9d6e4; background: #ffffff; }
+h1 { margin: 0 0 6px; font-size: 26px; color: #173f5f; }
+p { margin: 0 0 6px; }
+.status { margin: 6px 0; padding: 4px; border: 1px solid #9fd4be; background: #e6f5ef; color: #12513a; }
+details { margin: 8px 0; padding: 4px; border: 1px solid #93b4cf; background: #f7fbff; }
+summary { padding: 4px; border: 1px solid #0b60d1; background: #4f9dff; color: #ffffff; font-weight: 700; }
+.panel { margin-top: 4px; padding: 6px; border: 1px solid #c9d6e4; background: #ffffff; }
+button { margin: 4px 0; padding: 4px; border: 1px solid #1f5f8b; background: #1f5f8b; color: #ffffff; }
+label { margin-top: 4px; font-weight: 700; }
+input { width: 220px; height: 28px; margin: 4px 0; padding: 4px; border: 1px solid #93b4cf; background: #fff4cc; }
+.result { min-height: 16px; padding: 4px; color: #7a3e1d; }
+a { margin: 8px 0; padding: 4px; border: 1px solid #6d3fc4; background: #b99aff; color: #24113f; }
+#prevented-link { border-color: #b33a57; background: #ffb6c1; color: #4a1020; }
+#fragment-link { border-color: #9b4f12; background: #f0a35e; color: #3d210b; }
+table { margin-top: 8px; border: 1px solid #c8cdd2; }
+#scroll-target { padding: 8px; border: 1px solid #2f855a; background: #c6f6d5; color: #17372a; }
+#fragment-target { padding: 8px; border: 1px solid #2f855a; background: #eef8f2; }
+#fragment-state { padding: 8px; border: 1px solid #4c956c; background: #f2f2f2; color: #17372a; }

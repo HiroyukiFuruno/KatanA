@@ -124,23 +124,25 @@ impl DocumentOps for KatanaApp {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
-        let doc = &mut self.state.document.open_documents[idx];
-        doc.buffer = content.clone();
-
-        use crate::state::document::VirtualPathExt as _;
-        if !doc.path.is_virtual_path() {
-            doc.is_dirty = true;
+        let (path, changed) = {
+            let doc = &mut self.state.document.open_documents[idx];
+            let before_revision = doc.revision;
+            doc.update_buffer(content.clone());
+            (doc.path.clone(), doc.revision != before_revision)
+        };
+        if !changed {
+            return;
         }
-
-        let path = doc.path.clone();
-        let concurrency = self
-            .state
-            .config
-            .settings
-            .settings()
-            .performance
-            .resolved_diagram_concurrency();
-        self.full_refresh_preview(&path, &content, true, concurrency);
+        if !katana_core::workspace::TreeEntry::path_is_html(&path) {
+            let concurrency = self
+                .state
+                .config
+                .settings
+                .settings()
+                .performance
+                .resolved_diagram_concurrency();
+            self.full_refresh_preview(&path, &content, true, concurrency);
+        }
 
         if self.state.search.doc_search_open {
             self.refresh_doc_search_matches(&content);
@@ -152,18 +154,23 @@ impl DocumentOps for KatanaApp {
         let Some(idx) = self.state.document.active_doc_idx else {
             return;
         };
-        let doc = &mut self.state.document.open_documents[idx];
-        if !doc.is_dirty {
+        if !self.state.document.open_documents[idx].is_dirty {
             return;
         }
 
         use crate::state::document::VirtualPathExt as _;
-        if doc.path.is_virtual_path() {
-            doc.is_dirty = false;
+        if self.state.document.open_documents[idx]
+            .path
+            .is_virtual_path()
+        {
+            self.state.document.open_documents[idx].is_dirty = false;
             return;
         }
 
-        if let Err(e) = self.fs.save_document(doc) {
+        if let Err(e) = self
+            .fs
+            .save_document(&mut self.state.document.open_documents[idx])
+        {
             self.state.layout.status_message = Some((
                 crate::i18n::I18nOps::tf(
                     &crate::i18n::I18nOps::get().status.save_failed,
@@ -178,6 +185,10 @@ impl DocumentOps for KatanaApp {
             crate::i18n::I18nOps::get().status.saved.clone(),
             crate::app_state::StatusType::Success,
         ));
+        let path = self.state.document.open_documents[idx].path.clone();
+        if katana_core::workspace::TreeEntry::path_is_html(&path) {
+            self.schedule_html_preview_refresh(&path);
+        }
         self.pending_action = crate::app_state::AppAction::RefreshDiagnostics; /* WHY: FB32 */
     }
 }

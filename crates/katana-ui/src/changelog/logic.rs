@@ -2,80 +2,27 @@ use std::sync::mpsc::Sender;
 
 use super::types::{ChangelogEvent, ChangelogOps, ChangelogSection};
 
-const GITHUB_RAW_BASE: &str =
-    "https://raw.githubusercontent.com/HiroyukiFuruno/KatanA/refs/heads/master";
+const CHANGELOG_EN: &str = include_str!("../../../../CHANGELOG.md");
+const CHANGELOG_JA: &str = include_str!("../../../../CHANGELOG.ja.md");
 
 impl ChangelogOps {
-    pub(crate) fn get_changelog_url(language: &str, current_version: &str) -> String {
-        let filename = if language.starts_with("ja") {
-            "CHANGELOG.ja.md"
-        } else {
-            "CHANGELOG.md"
-        };
-
-        use std::time::{SystemTime, UNIX_EPOCH};
-        let ts = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
-
-        format!(
-            "{}/{}?v={}&t={}",
-            GITHUB_RAW_BASE, filename, current_version, ts
-        )
-    }
-
     pub fn fetch_changelog(
         language: &str,
         current_version: String,
         previous_version: Option<String>,
         tx: Sender<ChangelogEvent>,
     ) {
-        let url = Self::get_changelog_url(language, &current_version);
-        let request = ehttp::Request::get(&url);
-        ehttp::fetch(request, move |result| {
-            Self::handle_fetch_result(result, &tx, &current_version, previous_version.as_deref());
-        });
+        let raw_markdown = Self::embedded_changelog(language);
+        let sections =
+            Self::parse_changelog(raw_markdown, &current_version, previous_version.as_deref());
+        let _ = tx.send(ChangelogEvent::Success(sections));
     }
 
-    pub(super) fn handle_fetch_result(
-        result: Result<ehttp::Response, String>,
-        tx: &Sender<ChangelogEvent>,
-        current_version: &str,
-        previous_version: Option<&str>,
-    ) {
-        match result {
-            Ok(response) => {
-                let text = match response.text() {
-                    Some(t) => t.to_string(),
-                    None => {
-                        if response.ok {
-                            let _ = tx.send(ChangelogEvent::Error(
-                                "Failed to decode response text".to_string(),
-                            ));
-                        } else {
-                            let _ = tx.send(ChangelogEvent::Error(format!(
-                                "HTTP error: {}",
-                                response.status
-                            )));
-                        }
-                        return;
-                    }
-                };
-                if !response.ok {
-                    let _ = tx.send(ChangelogEvent::Error(format!(
-                        "HTTP error {}: {}",
-                        response.status,
-                        text.chars().take(200).collect::<String>()
-                    )));
-                    return;
-                }
-                let sections = Self::parse_changelog(&text, current_version, previous_version);
-                let _ = tx.send(ChangelogEvent::Success(sections));
-            }
-            Err(err) => {
-                let _ = tx.send(ChangelogEvent::Error(err));
-            }
+    pub(super) fn embedded_changelog(language: &str) -> &'static str {
+        if language.starts_with("ja") {
+            CHANGELOG_JA
+        } else {
+            CHANGELOG_EN
         }
     }
 

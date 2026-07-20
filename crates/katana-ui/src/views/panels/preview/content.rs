@@ -1,9 +1,10 @@
 use super::types::*;
+use super::{content_html_browser::show_html_browser_content, types::PreviewLogicOps};
 use crate::app_state::AppAction;
 use crate::preview_pane::PreviewPane;
 use eframe::egui;
+
 const BACK_TO_TOP_THRESHOLD: f32 = 400.0;
-use super::types::PreviewLogicOps;
 
 impl<'a> PreviewContent<'a> {
     #[allow(clippy::too_many_arguments)]
@@ -43,6 +44,18 @@ impl<'a> PreviewContent<'a> {
         let panel_width = ui.available_width();
         ui.set_min_width(panel_width);
         ui.set_max_width(panel_width);
+
+        if preview.has_html_browser() {
+            show_html_browser_content(
+                preview,
+                ui,
+                scroll.active_editor_line,
+                search_query,
+                doc_search_active_index,
+                action,
+            );
+            return;
+        }
 
         /* WHY: Check for forced scroll target from Sync System or Navigation. */
         let mut forced_offset = PreviewLogicOps::compute_forced_offset(
@@ -124,6 +137,7 @@ impl<'a> PreviewContent<'a> {
 
                                 /* WHY: Handle clicks for Editor-to-Preview navigation. */
                                 if is_interactive
+                                    && !preview.html_browser_is_interacting()
                                     && ui.rect_contains_pointer(ui.min_rect())
                                     && ui.input(|i| i.pointer.primary_clicked())
                                     && let Some(hovered) = scroll.hovered_preview_lines.first()

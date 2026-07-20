@@ -41,6 +41,8 @@ impl PreviewPane {
     }
 
     pub(crate) fn poll_renders(&mut self, ctx: &egui::Context) {
+        self.poll_html_browser(ctx);
+
         while let Some(path) = self.image_preload_queue.pop() {
             if self.image_cache.insert(path.clone()) {
                 let uri = format!("file://{}", path.display());

@@ -25,6 +25,11 @@ pub(crate) struct ExportTask {
     pub open_on_complete: bool,
 }
 
+pub(crate) struct PendingHtmlPreviewRefresh {
+    pub path: std::path::PathBuf,
+    pub due_at: std::time::Instant,
+}
+
 pub enum UpdateInstallEvent {
     Progress(katana_core::update::UpdateProgress),
     Finished(Result<katana_core::update::UpdatePreparation, String>),
@@ -74,4 +79,6 @@ pub struct KatanaApp {
 
     pub(crate) file_dialog: egui_file_dialog::FileDialog,
     pub(crate) pending_dialog_action: Option<AppAction>,
+    pub(crate) pending_html_preview_refresh: Option<PendingHtmlPreviewRefresh>,
+    pub(crate) html_preview_observer: Option<crate::html_preview_observer::HtmlPreviewObserver>,
 }

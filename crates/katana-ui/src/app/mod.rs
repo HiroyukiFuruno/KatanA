@@ -23,6 +23,7 @@ pub mod preview;
 mod preview_tests;
 pub mod types;
 pub mod update;
+pub(crate) mod url_source;
 pub mod workspace;
 
 pub(crate) use action::ActionOps;

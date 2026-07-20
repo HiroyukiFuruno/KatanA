@@ -10,7 +10,7 @@ mod startup_workspace;
 mod test_hooks;
 mod transient_workspace;
 mod types;
-pub(crate) use types::{ExplorerLoadType, ExportTask, TabPreviewCache};
+pub(crate) use types::{ExplorerLoadType, ExportTask, PendingHtmlPreviewRefresh, TabPreviewCache};
 pub use types::{KatanaApp, UpdateInstallEvent};
 
 pub mod constants;
@@ -72,6 +72,8 @@ impl KatanaApp {
             pending_editor_cursor: None,
             file_dialog: egui_file_dialog::FileDialog::new(),
             pending_dialog_action: None,
+            pending_html_preview_refresh: None,
+            html_preview_observer: None,
         };
         let current_version = env!("CARGO_PKG_VERSION");
         let mut show_changelog = false;

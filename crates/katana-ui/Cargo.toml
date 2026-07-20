@@ -9,6 +9,7 @@ description = "KatanA UI: egui application shell, panes, menu wiring, and presen
 [dependencies]
 katana-core = { path = "../katana-core" }
 katana-platform = { path = "../katana-platform" }
+katana-document-viewer.workspace = true
 katana-markdown-linter.workspace = true
 eframe.workspace = true
 egui.workspace = true
@@ -22,12 +23,12 @@ tracing-subscriber.workspace = true
 rfd = "0.17"
 image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "webp"] }
 serde_json.workspace = true
-open = "5.3.6"
+open = "5.4.0"
 resvg = { version = "0.47.0", default-features = true }
 ehttp = "0.7.1"
 dirs = "6.0.0"
 sha2 = "0.11"
-regex = "1.12.4"
+regex = "1.13.1"
 chrono = "0.4.45"
 tempfile = "3"
 pulldown-cmark = "0.13"
@@ -35,8 +36,10 @@ base64 = "0.22.1"
 mathjax_svg.workspace = true
 unicode-segmentation = "1.13.3"
 arboard = "3.6.1"
-uuid = { version = "1.23.4", features = ["v4"] }
+uuid = { version = "1.24.0", features = ["v4"] }
 egui-file-dialog = "0.14.1"
+notify.workspace = true
+url.workspace = true
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

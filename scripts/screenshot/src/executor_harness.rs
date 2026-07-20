@@ -1,6 +1,8 @@
+use crate::capture::PngBounds;
 use crate::request::{
-    AssertActiveDocumentStep, AssertDiffReviewStep, ClickButton, Fixture, ScrollDirection, Step,
-    UiAction, VideoFormat,
+    AssertActiveDocumentStep, AssertDiffReviewStep, AssertHtmlBrowserFrameContainsRgbStep,
+    AssertHtmlBrowserOriginStep, ClickButton, Fixture, ScrollDirection, Step, UiAction,
+    VideoFormat,
 };
 use anyhow::{bail, Context, Result};
 use egui_kittest::{kittest::Queryable, Harness};
@@ -19,6 +21,8 @@ use katana_ui::state::command_palette_providers::{
 use std::path::{Component, Path, PathBuf};
 use std::time::Duration;
 use tempfile::TempDir;
+
+const HARNESS_PIXELS_PER_POINT: f32 = 2.0;
 
 struct ActiveRecording {
     output_name: String,
@@ -107,18 +111,13 @@ pub fn run(
 
     let mut harness = Harness::builder()
         .with_size(egui::vec2(width, height))
-        .with_pixels_per_point(2.0)
+        .with_pixels_per_point(HARNESS_PIXELS_PER_POINT)
         .build_eframe(move |cc| {
             use katana_core::{ai::AiProviderRegistry, plugin::PluginRegistry};
             use katana_platform::SettingsService;
 
             let preset = katana_core::markdown::color_preset::DiagramColorPreset::current();
-            katana_ui::font_loader::SystemFontLoader::setup_fonts(
-                &cc.egui_ctx,
-                &preset,
-                None,
-                None,
-            );
+            katana_ui::font_loader::SystemFontLoader::setup_fonts(&cc.egui_ctx, preset, None, None);
             katana_ui::svg_loader::KatanaSvgLoader::install(&cc.egui_ctx);
 
             let repo = katana_platform::JsonFileRepository::new(settings_path.clone());
@@ -173,6 +172,8 @@ pub fn run(
             Step::Launch(_) => "launch",
             Step::Wait(_) => "wait",
             Step::Screenshot(_) => "screenshot",
+            Step::AssertScreenshotChanged(_) => "assert_screenshot_changed",
+            Step::AssertScreenshotContainsRgb(_) => "assert_screenshot_contains_rgb",
             Step::RecordStart(_) => "record_start",
             Step::RecordStop(_) => "record_stop",
             Step::Scroll(_) => "scroll",
@@ -180,6 +181,8 @@ pub fn run(
             Step::OpenFile(_) => "open_file",
             Step::OpenWorkspace(_) => "open_workspace",
             Step::AssertActiveDocument(_) => "assert_active_document",
+            Step::AssertHtmlBrowserOrigin(_) => "assert_html_browser_origin",
+            Step::AssertHtmlBrowserFrameContainsRgb(_) => "assert_html_browser_frame_contains_rgb",
             Step::AssertDiffReview(_) => "assert_diff_review",
             Step::Action(_) => "action",
             Step::Drag(_) => "drag",
@@ -214,7 +217,7 @@ pub fn run(
                     harness
                         .state_mut()
                         .trigger_action(AppAction::SelectDocument(path));
-                    let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                    let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                     for _ in 0..fps {
                         harness.step();
                         maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -248,6 +251,26 @@ pub fn run(
                     .save(&out)
                     .map_err(|e| anyhow::anyhow!("save failed: {e}"))?;
                 println!("  saved: {}", out.display());
+            }
+            Step::AssertScreenshotChanged(assertion) => {
+                let baseline = output_dir.join(format!("{}.png", assertion.baseline));
+                let current = output_dir.join(format!("{}.png", assertion.current));
+                let changed = crate::capture::assert_png_changed(
+                    &baseline,
+                    &current,
+                    assertion.min_changed_pixels,
+                )?;
+                println!("  changed pixels: {changed}");
+            }
+            Step::AssertScreenshotContainsRgb(assertion) => {
+                let screenshot = output_dir.join(format!("{}.png", assertion.screenshot));
+                let matching = crate::capture::assert_png_contains_rgb(
+                    &screenshot,
+                    assertion.rgb,
+                    assertion.tolerance,
+                    assertion.min_pixels,
+                )?;
+                println!("  matching RGB pixels: {matching}");
             }
             Step::RecordStart(s) => {
                 if recording.is_some() {
@@ -298,6 +321,23 @@ pub fn run(
                         modifiers: egui::Modifiers::NONE,
                         phase: egui::TouchPhase::Move,
                     });
+                    harness.step();
+                    maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
+                    sleep_frame(fps);
+                }
+                let viewport = harness.ctx.viewport_rect();
+                let pos = egui::pos2(viewport.center().x, viewport.center().y);
+                harness
+                    .input_mut()
+                    .events
+                    .push(egui::Event::PointerMoved(pos));
+                harness.input_mut().events.push(egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::Vec2::ZERO,
+                    modifiers: egui::Modifiers::NONE,
+                    phase: egui::TouchPhase::End,
+                });
+                for _ in 0..6 {
                     harness.step();
                     maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
                     sleep_frame(fps);
@@ -390,6 +430,12 @@ pub fn run(
             Step::AssertActiveDocument(s) => {
                 assert_active_document(&mut harness, s)?;
             }
+            Step::AssertHtmlBrowserOrigin(s) => {
+                assert_html_browser_origin(&mut harness, s)?;
+            }
+            Step::AssertHtmlBrowserFrameContainsRgb(s) => {
+                assert_html_browser_frame_contains_rgb(&mut harness, s)?;
+            }
             Step::AssertDiffReview(s) => {
                 assert_diff_review(&mut harness, s)?;
             }
@@ -409,7 +455,7 @@ pub fn run(
                         let config = &mut harness.state_mut().app_state_mut().config;
                         config.active_settings_tab = settings_tab;
                         config.active_settings_section = settings_section;
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -425,7 +471,7 @@ pub fn run(
                             );
                         state.set_open(true);
                         state.store(&harness.ctx);
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -435,7 +481,7 @@ pub fn run(
                         harness.ctx.data_mut(|d| {
                             d.insert_temp(egui::Id::new("icons_advanced_is_open"), true);
                         });
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -455,7 +501,7 @@ pub fn run(
                             modifiers: egui::Modifiers::NONE,
                             phase: egui::TouchPhase::Move,
                         });
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -501,7 +547,7 @@ pub fn run(
                             );
                         state.set_open(true);
                         state.store(&harness.ctx);
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -514,14 +560,16 @@ pub fn run(
                             "code_only" => ViewMode::CodeOnly,
                             "split" => ViewMode::Split,
                             other => {
-                                println!("  WARNING: unknown view mode {other:?}, defaulting to preview_only");
+                                println!(
+                                    "  WARNING: unknown view mode {other:?}, defaulting to preview_only"
+                                );
                                 ViewMode::PreviewOnly
                             }
                         };
                         harness
                             .state_mut()
                             .trigger_action(AppAction::SetViewMode(view_mode));
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -656,6 +704,90 @@ pub fn run(
                         click_at(&mut harness, egui::pos2(*x, *y), *button);
                         step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
                     }
+                    UiAction::ClickRgbRegion {
+                        rgb,
+                        tolerance,
+                        min_region_pixels,
+                        search_bounds,
+                        button,
+                        wait_seconds,
+                    } => {
+                        let image = harness.render().map_err(|error| {
+                            anyhow::anyhow!("render failed before RGB click: {error}")
+                        })?;
+                        let effective_search_bounds = (*search_bounds).or_else(|| {
+                            harness
+                                .state_mut()
+                                .html_browser_display_rect_for_test()
+                                .and_then(|rect| {
+                                    physical_png_bounds(
+                                        rect,
+                                        image.width(),
+                                        image.height(),
+                                        HARNESS_PIXELS_PER_POINT,
+                                    )
+                                })
+                        });
+                        let region = crate::capture::locate_largest_color_region_in_image(
+                            &image,
+                            *rgb,
+                            *tolerance,
+                            *min_region_pixels,
+                            effective_search_bounds,
+                        )
+                        .map_err(|error| {
+                            let diagnostic =
+                                output_dir.join(format!("rgb-click-failure-step-{:02}.png", i + 1));
+                            if let Err(save_error) = image.save(&diagnostic) {
+                                return anyhow::anyhow!(
+                                    "{error}; additionally failed to save {}: {save_error}",
+                                    diagnostic.display()
+                                );
+                            }
+                            anyhow::anyhow!(
+                                "{error}; rendered frame saved to {}",
+                                diagnostic.display()
+                            )
+                        })?;
+                        let point = egui::pos2(
+                            region.center_x as f32 / HARNESS_PIXELS_PER_POINT,
+                            region.center_y as f32 / HARNESS_PIXELS_PER_POINT,
+                        );
+                        println!(
+                            "  click RGB({},{},{}): region {}..={}, {}..={} ({} pixels); harness point ({:.1}, {:.1})",
+                            rgb[0],
+                            rgb[1],
+                            rgb[2],
+                            region.min_x,
+                            region.max_x,
+                            region.min_y,
+                            region.max_y,
+                            region.pixels,
+                            point.x,
+                            point.y,
+                        );
+                        click_at(&mut harness, point, *button);
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
+                    UiAction::TypeText { text, wait_seconds } => {
+                        harness
+                            .input_mut()
+                            .events
+                            .push(egui::Event::Text(text.clone()));
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
+                    UiAction::ResizeWindow {
+                        width,
+                        height,
+                        wait_seconds,
+                    } => {
+                        anyhow::ensure!(
+                            *width > 0 && *height > 0,
+                            "screenshot viewport dimensions must be positive"
+                        );
+                        harness.set_size(egui::vec2(*width as f32, *height as f32));
+                        step_for_seconds(&mut harness, recording.as_mut(), *wait_seconds)?;
+                    }
                     UiAction::DragByLabel {
                         from_label,
                         to_label,
@@ -687,6 +819,9 @@ pub fn run(
                             UiAction::OpenChangelog => AppAction::ShowReleaseNotes,
                             UiAction::OpenHelpDemo => AppAction::OpenHelpDemo,
                             UiAction::SelectNextTab => AppAction::SelectNextTab,
+                            UiAction::RefreshDocument => {
+                                AppAction::RefreshDocument { is_manual: true }
+                            }
                             UiAction::ConfirmCurrentDiffReviewFile => {
                                 AppAction::ConfirmCurrentDiffReviewFile
                             }
@@ -711,10 +846,13 @@ pub fn run(
                             | UiAction::ClickNode { .. }
                             | UiAction::HoverAt { .. }
                             | UiAction::ClickAt { .. }
+                            | UiAction::ClickRgbRegion { .. }
+                            | UiAction::TypeText { .. }
+                            | UiAction::ResizeWindow { .. }
                             | UiAction::DragByLabel { .. } => unreachable!(),
                         };
                         harness.state_mut().trigger_action(app_action);
-                        let fps = recording.as_ref().map(|r| r.fps as u32).unwrap_or(60);
+                        let fps = recording.as_ref().map(|r| r.fps).unwrap_or(60);
                         for _ in 0..fps {
                             harness.step();
                             maybe_capture_recording_frame(&mut harness, recording.as_mut())?;
@@ -743,6 +881,35 @@ pub fn run(
     Ok(())
 }
 
+fn physical_png_bounds(
+    rect: egui::Rect,
+    image_width: u32,
+    image_height: u32,
+    pixels_per_point: f32,
+) -> Option<PngBounds> {
+    if !rect.is_finite() || !pixels_per_point.is_finite() || pixels_per_point <= 0.0 {
+        return None;
+    }
+    let min_x = (rect.min.x * pixels_per_point)
+        .floor()
+        .clamp(0.0, image_width as f32) as u32;
+    let min_y = (rect.min.y * pixels_per_point)
+        .floor()
+        .clamp(0.0, image_height as f32) as u32;
+    let max_x = (rect.max.x * pixels_per_point)
+        .ceil()
+        .clamp(0.0, image_width as f32) as u32;
+    let max_y = (rect.max.y * pixels_per_point)
+        .ceil()
+        .clamp(0.0, image_height as f32) as u32;
+    (max_x > min_x && max_y > min_y).then_some(PngBounds {
+        x: min_x,
+        y: min_y,
+        width: max_x - min_x,
+        height: max_y - min_y,
+    })
+}
+
 fn assert_active_document(
     harness: &mut Harness<'_, KatanaApp>,
     assertion: &AssertActiveDocumentStep,
@@ -763,6 +930,48 @@ fn assert_active_document(
         );
     }
     println!("  active document matched: {path}");
+    Ok(())
+}
+
+fn assert_html_browser_origin(
+    harness: &mut Harness<'_, KatanaApp>,
+    assertion: &AssertHtmlBrowserOriginStep,
+) -> Result<()> {
+    harness.run_steps(120);
+    let origin = harness
+        .state_mut()
+        .html_browser_origin_for_test()
+        .context("expected the active document to have a KRR browser origin")?;
+    if !origin.ends_with(&assertion.origin_ends_with) {
+        bail!(
+            "HTML browser origin assertion failed: expected origin to end with {:?}, got {:?}",
+            assertion.origin_ends_with,
+            origin
+        );
+    }
+    println!("  HTML browser origin matched: {origin}");
+    Ok(())
+}
+
+fn assert_html_browser_frame_contains_rgb(
+    harness: &mut Harness<'_, KatanaApp>,
+    assertion: &AssertHtmlBrowserFrameContainsRgbStep,
+) -> Result<()> {
+    harness.run_steps(120);
+    let matching = harness
+        .state_mut()
+        .html_browser_frame_matching_rgb_pixels_for_test(assertion.rgb)
+        .context("expected the active document to have a complete KRR browser frame")?;
+    if matching < assertion.min_pixels {
+        bail!(
+            "KRR frame contains {matching} pixels at rgb({},{},{}), expected at least {}",
+            assertion.rgb[0],
+            assertion.rgb[1],
+            assertion.rgb[2],
+            assertion.min_pixels
+        );
+    }
+    println!("  matching KRR frame RGB pixels: {matching}");
     Ok(())
 }
 
@@ -928,7 +1137,7 @@ fn run_command_palette(
             let app = harness.state_mut().app_state_mut();
             app.command_palette.is_open = false;
         }
-        step_for_seconds(harness, recording.as_deref_mut(), 0.45)?;
+        step_for_seconds(harness, recording, 0.45)?;
     }
 
     Ok(())
@@ -1015,7 +1224,7 @@ fn run_global_search(
         apply_global_search_query(harness, tab, &typed);
         step_for_seconds(harness, recording.as_deref_mut(), keystroke_delay_seconds)?;
     }
-    step_for_seconds(harness, recording.as_deref_mut(), pause_after_seconds)?;
+    step_for_seconds(harness, recording, pause_after_seconds)?;
     Ok(())
 }
 
@@ -1206,6 +1415,7 @@ fn click_at(harness: &mut Harness<'_, KatanaApp>, pos: egui::Pos2, button: Click
         pressed: true,
         modifiers: egui::Modifiers::NONE,
     });
+    harness.step();
     harness.input_mut().events.push(egui::Event::PointerButton {
         pos,
         button: pointer_button,
@@ -1409,7 +1619,8 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use super::{find_workspace_file, normalize_relative_path};
+    use super::{find_workspace_file, normalize_relative_path, physical_png_bounds};
+    use crate::capture::PngBounds;
     use katana_core::workspace::TreeEntry;
     use std::path::{Path, PathBuf};
 
@@ -1453,6 +1664,33 @@ mod tests {
         assert_eq!(
             normalize_relative_path(Path::new("./docs/../README.md")),
             PathBuf::from("README.md"),
+        );
+    }
+
+    #[test]
+    fn physical_png_bounds_scale_and_clip_the_html_surface() {
+        let rect = egui::Rect::from_min_max(egui::pos2(-10.0, 20.0), egui::pos2(120.0, 90.0));
+
+        assert_eq!(
+            physical_png_bounds(rect, 200, 100, 2.0),
+            Some(PngBounds {
+                x: 0,
+                y: 40,
+                width: 200,
+                height: 60,
+            })
+        );
+    }
+
+    #[test]
+    fn physical_png_bounds_reject_non_visible_or_invalid_rectangles() {
+        let outside = egui::Rect::from_min_max(egui::pos2(150.0, 150.0), egui::pos2(200.0, 200.0));
+
+        assert_eq!(physical_png_bounds(outside, 200, 100, 2.0), None);
+        assert_eq!(physical_png_bounds(egui::Rect::NAN, 200, 100, 2.0), None);
+        assert_eq!(
+            physical_png_bounds(egui::Rect::EVERYTHING, 200, 100, 0.0),
+            None
         );
     }
 }

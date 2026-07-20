@@ -6,7 +6,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🚀 Features
 
-- **HTML file preview**: Added direct preview support for `.html` and `.htm` files, including common static document content such as headings, paragraphs, links, images, details sections, and tables.
+- **Interactive HTML browser view**: Added browser-equivalent viewing for local `.html` / `.htm` files and web URLs, including CSS layout, JavaScript actions, form input, links, navigation, and reload inside the native document view.
 
 ### ✨ Improvements
 
@@ -18,7 +18,7 @@ All notable changes to KatanA Desktop. This file records the changes to KatanA D
 
 ### 🔧 System
 
-- **Preview stability**: Expanded automated coverage around document previews and renderer behavior to improve release stability.
+- **Preview stability**: HTML interaction and repaint checks now verify that updated controls and unchanged page content remain visible without overlapping or clipped text.
 
 ## [0.22.32] - 2026-07-03 12:49:42 (UTC)
 

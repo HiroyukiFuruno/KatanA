@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::capture::PngBounds;
+
 #[derive(Debug, Deserialize)]
 pub struct Request {
     pub schema_version: String,
@@ -51,6 +53,8 @@ pub enum Step {
     Launch(LaunchStep),
     Wait(WaitStep),
     Screenshot(ScreenshotStep),
+    AssertScreenshotChanged(AssertScreenshotChangedStep),
+    AssertScreenshotContainsRgb(AssertScreenshotContainsRgbStep),
     RecordStart(RecordStartStep),
     RecordStop(RecordStopStep),
     Scroll(ScrollStep),
@@ -62,6 +66,10 @@ pub enum Step {
     OpenWorkspace(OpenWorkspaceStep),
     /// Assert that the active document matches the expected screenshot state.
     AssertActiveDocument(AssertActiveDocumentStep),
+    /// Assert that the active KRR frame retains the expected complete origin.
+    AssertHtmlBrowserOrigin(AssertHtmlBrowserOriginStep),
+    /// Assert pixels directly in the active KRR RGBA frame.
+    AssertHtmlBrowserFrameContainsRgb(AssertHtmlBrowserFrameContainsRgbStep),
     /// Assert that the active diff review state matches the expected content.
     AssertDiffReview(AssertDiffReviewStep),
     /// Trigger a named UI action (e.g. toggle_toc, toggle_split_view).
@@ -93,6 +101,22 @@ pub struct ScreenshotStep {
     pub output_name: String,
     /// Crop the rendered image to this rect (physical pixels, after pixels_per_point scaling).
     pub crop: Option<CropRect>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertScreenshotChangedStep {
+    pub baseline: String,
+    pub current: String,
+    pub min_changed_pixels: u64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertScreenshotContainsRgbStep {
+    pub screenshot: String,
+    pub rgb: [u8; 3],
+    #[serde(default)]
+    pub tolerance: u8,
+    pub min_pixels: u64,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy)]
@@ -158,6 +182,17 @@ pub struct AssertActiveDocumentStep {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct AssertHtmlBrowserOriginStep {
+    pub origin_ends_with: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AssertHtmlBrowserFrameContainsRgbStep {
+    pub rgb: [u8; 3],
+    pub min_pixels: u64,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct AssertDiffReviewStep {
     #[serde(default)]
     pub file_count: Option<usize>,
@@ -210,6 +245,14 @@ pub enum UiAction {
     CloseDocSearch,
     /// Refresh diagnostics for currently open Markdown documents.
     RefreshDiagnostics,
+    /// Reload the active document through the same action exposed by KatanA.
+    RefreshDocument,
+    /// Resize the active window or harness viewport.
+    ResizeWindow {
+        width: u32,
+        height: u32,
+        wait_seconds: f64,
+    },
     /// Apply all lint fixes for the active file and open the diff review.
     ApplyLintFixesForActiveFile,
     /// Open settings and navigate to a specific tab.
@@ -298,6 +341,22 @@ pub enum UiAction {
         button: ClickButton,
         wait_seconds: f64,
     },
+    /// Detect a rendered RGB region and click its center.
+    ClickRgbRegion {
+        rgb: [u8; 3],
+        #[serde(default)]
+        tolerance: u8,
+        min_region_pixels: u64,
+        #[serde(default)]
+        search_bounds: Option<PngBounds>,
+        button: ClickButton,
+        wait_seconds: f64,
+    },
+    /// Type text into the currently focused control.
+    TypeText {
+        text: String,
+        wait_seconds: f64,
+    },
     /// Drag between two widgets by label.
     DragByLabel {
         from_label: String,
@@ -363,4 +422,87 @@ pub fn load(path: &std::path::Path) -> anyhow::Result<Request> {
     anyhow::ensure!(!req.name.is_empty(), "request.name must not be empty");
     anyhow::ensure!(!req.steps.is_empty(), "request.steps must not be empty");
     Ok(req)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Request;
+
+    #[test]
+    fn browser_evidence_actions_are_valid_request_steps() {
+        let request = serde_json::from_str::<Request>(
+            r#"{
+                "schema_version": "1",
+                "name": "browser-evidence",
+                "steps": [
+                    {
+                        "type": "action",
+                        "action": {
+                            "click_at": {
+                                "x": 120.0,
+                                "y": 240.0,
+                                "button": "primary",
+                                "wait_seconds": 0.5
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "type_text": {
+                                "text": "KRR input",
+                                "wait_seconds": 0.5
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "click_rgb_region": {
+                                "rgb": [31, 95, 139],
+                                "min_region_pixels": 100,
+                                "search_bounds": {
+                                    "x": 400,
+                                    "y": 200,
+                                    "width": 1200,
+                                    "height": 800
+                                },
+                                "button": "primary",
+                                "wait_seconds": 0.5
+                            }
+                        }
+                    },
+                    {
+                        "type": "action",
+                        "action": "refresh_document"
+                    },
+                    {
+                        "type": "action",
+                        "action": {
+                            "resize_window": {
+                                "width": 1100,
+                                "height": 700,
+                                "wait_seconds": 0.5
+                            }
+                        }
+                    },
+                    {
+                        "type": "assert_screenshot_changed",
+                        "baseline": "before",
+                        "current": "after",
+                        "min_changed_pixels": 100
+                    },
+                    {
+                        "type": "assert_screenshot_contains_rgb",
+                        "screenshot": "after",
+                        "rgb": [184, 242, 208],
+                        "tolerance": 2,
+                        "min_pixels": 100
+                    }
+                ]
+            }"#,
+        );
+
+        assert!(request.is_ok(), "{request:?}");
+    }
 }

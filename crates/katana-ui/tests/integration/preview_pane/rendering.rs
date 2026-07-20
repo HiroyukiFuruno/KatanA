@@ -1,3 +1,4 @@
+use katana_document_viewer::{DocumentKind, MarkdownSource, PreviewConfig, PreviewRenderEngine};
 use katana_platform::InMemoryCacheService;
 use katana_ui::preview_pane::{PreviewPane, RenderedSection};
 use std::sync::Arc;
@@ -138,8 +139,10 @@ fn buffer_without_diagrams_does_not_generate_pending_sections() {
 }
 
 #[test]
-fn html_document_buffer_uses_direct_html_section() {
+fn html_document_buffer_does_not_use_static_sections() {
     let mut pane = PreviewPane::default();
+    let directory = tempfile::tempdir().expect("temporary HTML workspace");
+    let path = directory.path().join("index.html");
     let html = r#"<!doctype html>
 <html>
   <body>
@@ -153,20 +156,53 @@ fn html_document_buffer_uses_direct_html_section() {
     </table>
   </body>
 </html>"#;
+    std::fs::write(&path, html).expect("HTML fixture");
 
-    pane.update_html_document_sections(html, std::path::Path::new("/tmp/index.html"));
+    pane.update_html_document_sections(html, &path);
 
-    assert!(matches!(
-        pane.sections.as_slice(),
-        [RenderedSection::HtmlDocument(rendered, _)]
-            if rendered.contains("<details>") && rendered.contains("<table>")
-    ));
-    assert!(
-        !pane
-            .sections
-            .iter()
-            .any(|section| matches!(section, RenderedSection::Markdown(_, _)))
+    assert!(pane.sections.is_empty());
+}
+
+#[test]
+fn kdv_preview_engine_treats_html_path_as_html_document() {
+    let engine = PreviewRenderEngine;
+    let output = engine
+        .render_viewer_output(
+            &MarkdownSource {
+                content: "<html><body><h1>HTML</h1></body></html>".to_string(),
+                document_id: Some("/tmp/index.html".to_string()),
+            },
+            &PreviewConfig::default(),
+        )
+        .expect("KDV must accept direct HTML source");
+
+    assert_eq!(DocumentKind::Html, output.input.snapshot.kind);
+    assert_eq!(
+        std::path::PathBuf::from("/tmp/index.html"),
+        output.input.snapshot.source_path
     );
+}
+
+#[test]
+fn html_preview_surface_is_not_reused_as_markdown_diagram() {
+    let mut pane = PreviewPane::default();
+
+    pane.update_html_document_sections(
+        "<html><body><h1>HTML</h1></body></html>",
+        std::path::Path::new("/tmp/index.html"),
+    );
+
+    pane.update_markdown_sections(
+        "# Markdown\n```mermaid\ngraph TD; A-->B\n```",
+        std::path::Path::new("/tmp/readme.md"),
+    );
+
+    assert!(!pane.sections.iter().any(
+        |section| matches!(section, RenderedSection::Image { alt, .. } if alt == "KDV HTML preview")
+    ));
+    assert!(pane.sections.iter().any(
+        |section| matches!(section, RenderedSection::Error { kind, .. } if kind == "Mermaid")
+    ));
 }
 
 #[test]

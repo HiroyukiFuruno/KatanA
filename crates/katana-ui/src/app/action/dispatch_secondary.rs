@@ -17,6 +17,7 @@ impl KatanaApp {
             AppAction::OpenDroppedFiles(paths) => {
                 crate::app::action::FileOpenOps::open_dropped_files(self, paths);
             }
+            AppAction::OpenUrl(url) => self.handle_open_url(ctx, url),
             AppAction::RequestMoveFsNode {
                 source_path,
                 target_dir,
