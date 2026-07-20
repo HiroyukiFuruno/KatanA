@@ -80,6 +80,7 @@ fn config_dir(home: &Path) -> PathBuf {
 }
 
 fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>) -> String {
+    let app_version = katana_ui::about_info::APP_VERSION;
     let theme_str = settings.theme.as_deref().unwrap_or("dark");
     let locale = settings.locale.as_deref().unwrap_or("en");
     let preset = settings.preset.as_deref().unwrap_or_else(|| {
@@ -133,7 +134,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
 
     format!(
         r#"{{
-  "version": "0.22.0",
+  "version": "{app_version}",
   "terms_accepted_version": "1.0",
   "language": "{locale}",
   "theme": {{
@@ -145,6 +146,9 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
   }},
   "behavior": {{
     "slideshow_show_diagram_controls": {show_diagram_controls}
+  }},
+  "updates": {{
+    "previous_app_version": "{app_version}"
   }}{workspace_block}{linter_block}
 }}"#
     )
@@ -153,6 +157,7 @@ fn build_settings_json(settings: &FixtureSettings, workspace_dir: Option<&Path>)
 #[cfg(test)]
 mod tests {
     use super::*;
+    use katana_platform::{JsonFileRepository, SettingsRepository};
 
     #[test]
     fn screenshot_settings_can_disable_diagram_controls() {
@@ -164,5 +169,39 @@ mod tests {
         let json = build_settings_json(&settings, None);
 
         assert!(json.contains(r#""slideshow_show_diagram_controls": false"#));
+    }
+
+    #[test]
+    fn screenshot_settings_use_the_target_katana_version() {
+        let json = build_settings_json(&FixtureSettings::default(), None);
+
+        assert!(json.contains(&format!(
+            r#""version": "{}""#,
+            katana_ui::about_info::APP_VERSION
+        )));
+        assert!(json.contains(&format!(
+            r#""previous_app_version": "{}""#,
+            katana_ui::about_info::APP_VERSION
+        )));
+    }
+
+    #[test]
+    fn screenshot_settings_restore_the_fixture_workspace() {
+        let root = tempfile::tempdir().unwrap();
+        let settings_path = root.path().join("settings.json");
+        let workspace = root.path().join("workspace");
+        std::fs::create_dir_all(&workspace).unwrap();
+        std::fs::write(
+            &settings_path,
+            build_settings_json(&FixtureSettings::default(), Some(&workspace)),
+        )
+        .unwrap();
+
+        let loaded = JsonFileRepository::new(settings_path).load();
+
+        assert_eq!(
+            loaded.workspace.last_workspace.as_deref(),
+            workspace.to_str()
+        );
     }
 }

@@ -8,6 +8,7 @@ mod dispatch;
 mod dispatch_secondary;
 mod dispatch_tertiary;
 mod file_open;
+mod html_navigation;
 mod image_ingest;
 mod language;
 mod process_authoring;
@@ -28,6 +29,7 @@ mod process_reorder;
 mod process_tabs;
 mod process_update;
 mod refresh_content;
+mod url_source;
 
 #[cfg(test)]
 mod process_markdown_formatting_tests;

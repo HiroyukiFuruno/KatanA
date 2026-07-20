@@ -131,6 +131,28 @@ impl DocumentState {
         }
         self.tab_groups.retain(|g| !g.members.is_empty());
     }
+
+    pub fn replace_path_references(&mut self, previous: &std::path::Path, next: &std::path::Path) {
+        for tab in &mut self.tab_view_modes {
+            if tab.path == previous {
+                tab.path = next.to_path_buf();
+            }
+        }
+        for tab in &mut self.tab_split_states {
+            if tab.path == previous {
+                tab.path = next.to_path_buf();
+            }
+        }
+        let previous = previous.to_string_lossy();
+        let next = next.to_string_lossy().to_string();
+        for group in &mut self.tab_groups {
+            for member in &mut group.members {
+                if member == &previous {
+                    *member = next.clone();
+                }
+            }
+        }
+    }
 }
 
 impl TabGroup {

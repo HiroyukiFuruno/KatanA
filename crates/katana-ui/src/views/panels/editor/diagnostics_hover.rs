@@ -121,7 +121,7 @@ impl DiagnosticsHoverOps {
         if ui
             .link(format!(
                 "{} - {}",
-                &crate::i18n::I18nOps::get().linter.docs,
+                crate::i18n::I18nOps::get().linter.docs,
                 meta.code
             ))
             .clicked()

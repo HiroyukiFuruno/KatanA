@@ -9,6 +9,8 @@ pub struct Document {
     pub is_loaded: bool,
     pub is_pinned: bool,
     pub is_reference: bool,
+    pub revision: u64,
+    pub saved_revision: u64,
     pub last_imported_disk_hash: Option<u64>,
     pub pending_dirty_warning_hash: Option<u64>,
 }
@@ -40,6 +42,8 @@ impl Document {
             is_loaded: true,
             is_pinned: false,
             is_reference: false,
+            revision: 0,
+            saved_revision: 0,
             last_imported_disk_hash: Some(hash),
             pending_dirty_warning_hash: None,
         }
@@ -53,6 +57,8 @@ impl Document {
             is_loaded: false,
             is_pinned: false,
             is_reference: false,
+            revision: 0,
+            saved_revision: 0,
             last_imported_disk_hash: None,
             pending_dirty_warning_hash: None,
         }
@@ -63,13 +69,28 @@ impl Document {
         if self.buffer != new {
             self.buffer = new;
             self.is_dirty = true;
+            self.revision = self.revision.wrapping_add(1);
         }
     }
 
     pub fn mark_clean(&mut self) {
         self.is_dirty = false;
+        self.saved_revision = self.revision;
         self.last_imported_disk_hash = Some(DocumentOps::compute_hash(&self.buffer));
         self.pending_dirty_warning_hash = None;
+    }
+
+    pub fn replace_from_disk(&mut self, content: String) -> bool {
+        if self.buffer == content {
+            return false;
+        }
+        self.buffer = content;
+        self.is_dirty = false;
+        self.revision = self.revision.wrapping_add(1);
+        self.saved_revision = self.revision;
+        self.last_imported_disk_hash = Some(DocumentOps::compute_hash(&self.buffer));
+        self.pending_dirty_warning_hash = None;
+        true
     }
 
     pub fn file_name(&self) -> Option<&str> {
@@ -149,5 +170,39 @@ mod tests {
             Some(DocumentOps::compute_hash("world"))
         );
         assert_eq!(doc.pending_dirty_warning_hash, None);
+    }
+
+    #[test]
+    fn document_revisions_change_only_for_new_content() {
+        let mut doc = Document::new("test.md", "hello");
+        doc.update_buffer("hello");
+        assert_eq!(doc.revision, 0);
+        assert_eq!(doc.saved_revision, 0);
+
+        doc.update_buffer("world");
+        assert_eq!(doc.revision, 1);
+        assert_eq!(doc.saved_revision, 0);
+
+        doc.mark_clean();
+        assert_eq!(doc.saved_revision, 1);
+    }
+
+    #[test]
+    fn replace_from_disk_keeps_document_state_in_sync_with_saved_content() {
+        let mut doc = Document::new("index.html", "initial");
+        doc.update_buffer("unsaved edit");
+        doc.pending_dirty_warning_hash = Some(42);
+
+        assert!(doc.replace_from_disk("external update".to_string()));
+        assert_eq!(doc.buffer, "external update");
+        assert!(!doc.is_dirty);
+        assert_eq!(doc.revision, 2);
+        assert_eq!(doc.saved_revision, 2);
+        assert_eq!(
+            doc.last_imported_disk_hash,
+            Some(DocumentOps::compute_hash("external update"))
+        );
+        assert_eq!(doc.pending_dirty_warning_hash, None);
+        assert!(!doc.replace_from_disk("external update".to_string()));
     }
 }

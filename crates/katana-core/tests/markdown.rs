@@ -7,7 +7,7 @@ static ENV_LOCK: Mutex<()> = Mutex::new(());
 fn basic_gfm_renders_to_html() {
     let md = "# Heading\n\nParagraph with **bold** and `code`.\n";
     let out = MarkdownRenderOps::render_basic(md).expect("render failed");
-    assert!(out.html.contains("<h1>"));
+    assert!(out.html.contains("<h1 id=\"heading\">"));
     assert!(out.html.contains("<strong>bold</strong>"));
     assert!(out.html.contains("<code>code</code>"));
 }
@@ -50,7 +50,7 @@ fn unknown_fence_passes_through() {
 fn render_with_katana_renderer_succeeds_for_plain_markdown() {
     let md = "# Hello\n\nWorld";
     let out = MarkdownRenderOps::render_with_katana_renderer(md).expect("render failed");
-    assert!(out.html.contains("<h1>"));
+    assert!(out.html.contains("<h1 id=\"hello\">"));
     assert!(out.html.contains("World"));
 }
 

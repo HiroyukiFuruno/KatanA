@@ -27,6 +27,8 @@ jobs:
           toolchain: stable
       - name: Run PR readiness check
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [[ "${GITHUB_HEAD_REF}" == release/* ]]; then
             version="${GITHUB_HEAD_REF#release/v}"

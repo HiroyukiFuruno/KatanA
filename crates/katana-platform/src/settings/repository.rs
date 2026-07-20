@@ -28,8 +28,7 @@ impl JsonFileRepository {
         Self { path }
     }
     pub fn with_default_path() -> Self {
-        let base = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-        Self::new(base.join("KatanA").join("settings.json"))
+        Self::new(crate::config_path::AppConfigPath::resolve().join("settings.json"))
     }
 }
 

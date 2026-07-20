@@ -26,6 +26,11 @@ pub(crate) trait PreviewOps {
         force: bool,
         concurrency: usize,
     );
+    fn full_refresh_html_source(
+        &mut self,
+        path: &std::path::Path,
+        source: katana_document_viewer::browser_session::HtmlBrowserSource,
+    );
 }
 
 fn is_drawio_preview_path(path: &std::path::Path) -> bool {
@@ -116,6 +121,17 @@ impl PreviewOps for KatanaApp {
             },
         );
         update_preview_hash(&mut self.tab_previews, &path_buf, h);
+    }
+
+    fn full_refresh_html_source(
+        &mut self,
+        path: &std::path::Path,
+        source: katana_document_viewer::browser_session::HtmlBrowserSource,
+    ) {
+        let path = path.to_path_buf();
+        let pane = Self::get_preview_pane(&mut self.tab_previews, path.clone());
+        pane.full_render_html_source(source, true);
+        update_preview_hash(&mut self.tab_previews, &path, 0);
     }
 }
 

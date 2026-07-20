@@ -12,14 +12,9 @@ impl KatanaApp {
             .as_ref()
             .map(|workspace| workspace.root.clone());
         if let Some(mut modal_data) = self.state.layout.create_fs_node_modal.take() {
-            let visible_ext = self
-                .state
-                .config
-                .settings
-                .settings()
-                .workspace
-                .visible_extensions
-                .clone();
+            let visible_ext = crate::app::workspace::WorkspaceExtensionPolicy::file_creation(
+                &self.state.config.settings.settings().workspace,
+            );
             let close = crate::views::modals::file_ops::CreateFsNodeModal::new(
                 &mut modal_data,
                 &visible_ext,

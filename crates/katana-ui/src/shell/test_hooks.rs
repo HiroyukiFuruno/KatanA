@@ -1,6 +1,8 @@
 use super::KatanaApp;
 use crate::app_state::AppState;
 
+const RGB_COMPONENT_COUNT: usize = 3;
+
 impl KatanaApp {
     #[doc(hidden)]
     pub fn disable_update_check_for_test(&mut self) {
@@ -41,6 +43,49 @@ impl KatanaApp {
     #[doc(hidden)]
     pub fn app_state_mut(&mut self) -> &mut AppState {
         &mut self.state
+    }
+
+    #[doc(hidden)]
+    pub fn html_browser_origin_for_test(&self) -> Option<String> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_origin())
+    }
+
+    #[doc(hidden)]
+    pub fn html_browser_navigation_history_for_test(&self) -> Option<Vec<String>> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_navigation_history())
+    }
+
+    #[doc(hidden)]
+    pub fn html_browser_frame_matching_rgb_pixels_for_test(
+        &self,
+        expected: [u8; RGB_COMPONENT_COUNT],
+    ) -> Option<u64> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| {
+                preview
+                    .pane
+                    .html_browser_frame_matching_rgb_pixels(expected)
+            })
+    }
+
+    #[doc(hidden)]
+    pub fn html_browser_display_rect_for_test(&self) -> Option<eframe::egui::Rect> {
+        let active_path = self.state.active_path()?;
+        self.tab_previews
+            .iter()
+            .find(|preview| preview.path == active_path)
+            .and_then(|preview| preview.pane.html_browser_display_rect())
     }
 
     #[doc(hidden)]

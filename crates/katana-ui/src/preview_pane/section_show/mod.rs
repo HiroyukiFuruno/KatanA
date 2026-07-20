@@ -48,23 +48,6 @@ pub(super) fn show_section(
                 is_last_section,
             )
         }
-        RenderedSection::HtmlDocument(html, source_lines) => {
-            let response = ui.scope(|ui| {
-                crate::preview_pane::HtmlLogicOps::render_html_block(ui, html, None, md_file_path);
-            });
-            if let Some(anchors) = block_anchors {
-                anchors.push((
-                    global_line_offset..global_line_offset + source_lines,
-                    response.response.rect,
-                ));
-            }
-            if let Some(hovered) = hovered_lines
-                && response.response.hovered()
-            {
-                hovered.push(global_line_offset..global_line_offset + source_lines);
-            }
-            vec![]
-        }
         RenderedSection::Image { svg_data, alt, .. } => {
             crate::preview_pane::ImageLogicOps::show_rasterized(
                 ui,

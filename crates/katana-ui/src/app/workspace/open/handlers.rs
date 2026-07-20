@@ -32,11 +32,7 @@ impl WorkspaceOpenHandlersOps {
         let new_token = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
         app.state.workspace.cancel_token = Some(new_token.clone());
         let settings = app.state.config.settings.settings().workspace.clone();
-        let mut visible_exts = settings.visible_extensions.clone();
-        if settings.enable_drawio_mount {
-            visible_exts.push("drowio".to_string());
-        }
-        super::super::append_standard_visible_extensions(&mut visible_exts);
+        let visible_exts = crate::app::workspace::WorkspaceExtensionPolicy::effective(&settings);
         let in_memory_dirs = app.state.workspace.in_memory_dirs.clone();
         std::thread::spawn(move || {
             let fs = katana_platform::FilesystemService::new();

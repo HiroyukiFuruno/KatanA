@@ -3,6 +3,8 @@ use katana_core::markdown::DiagramKind;
 use katana_core::markdown::outline::OutlineItem;
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
+use super::image_html_surface::HtmlBrowserSurface;
+
 pub(crate) const DIAGRAM_SVG_DISPLAY_SCALE: f32 = 2.0;
 
 pub(crate) const RENDER_POLL_INTERVAL_MS: u64 = 50;
@@ -49,6 +51,7 @@ pub struct PreviewPane {
     pub(crate) repaint_ctx: Option<egui::Context>,
     pub session_generation: u64,
     pub section_lifecycle: Vec<SectionLifecycle>,
+    pub(crate) html_browser: Option<HtmlBrowserSurface>,
 }
 
 pub(crate) struct RenderJob {
@@ -76,7 +79,6 @@ pub struct PreviewPaneUtilsOps;
 #[derive(Debug, Clone)]
 pub enum RenderedSection {
     Markdown(String, usize),
-    HtmlDocument(String, usize),
     Image {
         svg_data: RasterizedSvg,
         alt: String,

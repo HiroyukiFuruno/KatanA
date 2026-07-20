@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.29.0"
+version = "0.22.33"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/HiroyukiFuruno/KatanA"
@@ -25,9 +25,9 @@ egui_commonmark = { version = "0.24", default-features = false, features = ["bet
 egui_commonmark_backend = { path = "vendor/egui_commonmark_upstream/egui_commonmark_backend" }
 
 # Markdown
-comrak = { version = "0.53", default-features = false, features = ["shortcodes"] }
-katana-document-viewer = "0.2.7"
-katana-render-runtime = "0.3.8"
+comrak = { version = "0.54", default-features = false, features = ["shortcodes"] }
+katana-document-viewer = "0.3.1"
+katana-render-runtime = "0.4.3"
 katana-markdown-model = "0.2.1"
 katana-ast-lint = "0.5.1"
 katana-markdown-linter = "0.19.4"
@@ -64,6 +64,8 @@ epaint_default_fonts = "0.35"
 mathjax_svg = "3.2.0"
 xmltree = "0.12"
 include_dir = "0.7.4"
+notify = "8.2.0"
+url = "2.5"
 
 [patch.crates-io]
 egui_commonmark = { path = "vendor/egui_commonmark_upstream/egui_commonmark" }

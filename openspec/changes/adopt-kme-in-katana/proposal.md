@@ -25,5 +25,5 @@ KMM、katana-language-editor、katana-document-viewer、katana-render-runtime、
 - `Cargo.toml`: git dependencyの追加または差し替え
 - `katana-ui`: viewer/editor/export接続部のadapter更新
 - `katana-ast-lint`: 統合前の共通AST lint品質ゲート
-- `openspec/changes/v0-29-0-preview-driven-local-editing`: KMM metadataとeditable node contractへ接続
+- `openspec/changes/future-preview-driven-local-editing`: KMM metadataとeditable node contractへ接続
 - `assets/fixtures`: description list fixture追加

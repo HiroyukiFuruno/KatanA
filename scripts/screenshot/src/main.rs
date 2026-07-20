@@ -1,3 +1,4 @@
+mod capture;
 mod executor_harness;
 mod fixture;
 mod request;
@@ -17,11 +18,11 @@ struct Cli {
     #[arg(long, value_name = "DIR", help = "Output directory for PNG files")]
     output: PathBuf,
     #[arg(
-        long,
+        long = "binary",
         value_name = "PATH",
         help = "Ignored (kept for backward compatibility)"
     )]
-    binary: Option<PathBuf>,
+    _binary: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -43,7 +44,8 @@ fn main() -> Result<()> {
 
     let tmp_dir = tempfile::Builder::new()
         .prefix("katana-screenshot-")
-        .tempdir()?;
+        // WHY: KatanA は workspace 復元時に system temp 配下を意図的に除外する。
+        .tempdir_in(&output_dir)?;
     let fixture_env = fixture::setup(&req.fixture, tmp_dir.path())?;
 
     executor_harness::run(

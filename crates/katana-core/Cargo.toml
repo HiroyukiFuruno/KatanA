@@ -21,7 +21,7 @@ tiny-skia.workspace = true
 epaint_default_fonts.workspace = true
 xmltree.workspace = true
 tempfile.workspace = true
-regex = "1.12.4"
+regex = "1.13.1"
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 include_dir.workspace = true
 base64 = "0.22"

@@ -109,6 +109,42 @@ mod tests {
     }
 
     #[test]
+    fn handle_open_explorer_includes_html_files_without_user_visible_toggle() {
+        let mut app = make_app();
+        app.state
+            .config
+            .settings
+            .settings_mut()
+            .workspace
+            .visible_extensions
+            .clear();
+        let dir = make_temp_workspace();
+        let html = dir.path().join("index.html");
+        let htm = dir.path().join("legacy.htm");
+        std::fs::write(&html, "<h1>Index</h1>").unwrap();
+        std::fs::write(&htm, "<h1>Legacy</h1>").unwrap();
+
+        app.handle_open_explorer(dir.path().to_path_buf());
+        wait_for_explorer(&mut app);
+
+        let ws = app.state.workspace.data.as_ref().unwrap();
+        let mut results = Vec::new();
+        ShellLogicOps::collect_matches(
+            &ws.tree,
+            "",
+            &[],
+            &[],
+            &ws.root,
+            false,
+            false,
+            false,
+            &mut results,
+        );
+        assert!(results.contains(&html));
+        assert!(results.contains(&htm));
+    }
+
+    #[test]
     fn handle_select_document_file_not_found_sets_status_message() {
         let mut app = make_app();
         app.handle_select_document(PathBuf::from("/nonexistent/file.md"), true);
@@ -202,6 +238,36 @@ mod tests {
 
         app.handle_save_document();
         assert!(app.state.layout.status_message.is_some());
+    }
+
+    #[test]
+    fn html_preview_is_queued_only_after_a_successful_save() {
+        let mut app = make_app();
+        let dir = make_temp_workspace();
+        let path = dir.path().join("index.html");
+        std::fs::write(&path, "<h1>Before</h1>").unwrap();
+        app.handle_select_document(path.clone(), true);
+
+        app.handle_update_buffer("<h1>After</h1>".to_string());
+        assert!(app.pending_html_preview_refresh.is_none());
+
+        app.handle_save_document();
+        let pending = app
+            .pending_html_preview_refresh
+            .as_ref()
+            .expect("HTML save must queue a deferred preview refresh");
+        assert_eq!(pending.path, path);
+
+        let first_due_at = pending.due_at;
+        app.handle_update_buffer("<h1>Newest</h1>".to_string());
+        app.handle_save_document();
+
+        let coalesced = app
+            .pending_html_preview_refresh
+            .as_ref()
+            .expect("latest HTML save must replace the pending refresh");
+        assert_eq!(coalesced.path, path);
+        assert!(coalesced.due_at >= first_due_at);
     }
 
     #[test]
@@ -1298,6 +1364,8 @@ mod tests_extra {
             pending_editor_cursor: None,
             file_dialog: egui_file_dialog::FileDialog::new(),
             pending_dialog_action: None,
+            pending_html_preview_refresh: None,
+            html_preview_observer: None,
         }
     }
 

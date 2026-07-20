@@ -120,3 +120,31 @@ fn workspace_tab_policy_reorders_tabs_without_changing_active_workspace() {
     assert_eq!(result.open_tabs, vec!["/work/b", "/work/c", "/work/a"]);
     assert_eq!(result.active_workspace, Some("/work/b".to_string()));
 }
+
+#[test]
+fn effective_visible_extensions_include_html_even_when_settings_are_empty() {
+    let mut settings = katana_platform::settings::WorkspaceSettings::default();
+    settings.visible_extensions.clear();
+
+    let extensions = WorkspaceExtensionPolicy::effective(&settings);
+
+    assert!(extensions.iter().any(|ext| ext == "html"));
+    assert!(extensions.iter().any(|ext| ext == "htm"));
+}
+
+#[test]
+fn file_creation_visible_extensions_include_standard_html_documents() {
+    let settings = katana_platform::settings::WorkspaceSettings {
+        visible_extensions: vec!["md".to_string()],
+        ..Default::default()
+    };
+
+    let extensions = WorkspaceExtensionPolicy::file_creation(&settings);
+
+    assert!(extensions.iter().any(|ext| ext == "html"));
+    assert!(extensions.iter().any(|ext| ext == "htm"));
+    assert!(
+        !extensions.iter().any(|ext| ext == "png"),
+        "new-file choices should not inherit every tree-visible binary extension"
+    );
+}

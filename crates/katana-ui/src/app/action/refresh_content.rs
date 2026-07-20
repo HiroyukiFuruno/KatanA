@@ -3,7 +3,17 @@ use crate::app::*;
 use crate::app_state::*;
 use crate::shell::*;
 
+const HTML_PREVIEW_REFRESH_DELAY_MS: u64 = 250;
+
 impl KatanaApp {
+    pub(crate) fn schedule_html_preview_refresh(&mut self, path: &std::path::Path) {
+        self.pending_html_preview_refresh = Some(crate::shell::PendingHtmlPreviewRefresh {
+            path: path.to_path_buf(),
+            due_at: std::time::Instant::now()
+                + std::time::Duration::from_millis(HTML_PREVIEW_REFRESH_DELAY_MS),
+        });
+    }
+
     /// Apply freshly read file content, handling hash checks and dirty-doc logic.
     pub(super) fn apply_refreshed_content(
         &mut self,
@@ -38,9 +48,7 @@ impl KatanaApp {
                 ));
             }
         } else {
-            doc.buffer = new_content.clone();
-            doc.last_imported_disk_hash = Some(new_hash);
-            doc.pending_dirty_warning_hash = None;
+            doc.replace_from_disk(new_content.clone());
             self.state.layout.status_message = Some((
                 crate::i18n::I18nOps::get().status.refresh_success.clone(),
                 StatusType::Success,
@@ -50,7 +58,10 @@ impl KatanaApp {
         if is_manual {
             self.reset_preview_caches(ctx);
         }
-        if did_update_buffer || is_manual {
+        if did_update_buffer && !is_manual && katana_core::workspace::TreeEntry::path_is_html(path)
+        {
+            self.schedule_html_preview_refresh(path);
+        } else if did_update_buffer || is_manual {
             let concurrency = self
                 .state
                 .config
@@ -99,6 +110,16 @@ impl KatanaApp {
             return;
         };
         let path = self.state.document.open_documents[idx].path.clone();
+        if let Some(source) = self.state.url_tab.source_for_document(&path).cloned() {
+            match crate::app::url_source::ValidatedHttpUrl::parse(&source.source_url) {
+                Ok(url) => self.fetch_html_url(ctx, url, Some(path)),
+                Err(error) => self
+                    .state
+                    .url_tab
+                    .fail(crate::state::HtmlSourceError::InvalidUrl(error)),
+            }
+            return;
+        }
         if path.to_string_lossy().starts_with("Katana://") {
             if is_manual {
                 /* WHY: For virtual documents, manual refresh should retry rendering after missing dependencies are installed. */

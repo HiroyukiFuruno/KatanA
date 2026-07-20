@@ -24,8 +24,21 @@ VERSION="${VERSION#v}"
 
 header "Preflight checks for v${VERSION}"
 
-# 1. Artifact Naming Validation
-info "1/5 Verifying Cargo.toml version..."
+# 1. Version Increment Contract
+info "1/7 Verifying version increment contract..."
+bash scripts/release/test-version-increment.sh
+success "Version increment contract is enforced."
+
+# 2. Browser-equivalent HTML release contract
+info "2/7 Verifying browser-equivalent HTML release contract..."
+bash scripts/release/test-html-browser-release-contract.sh
+if [[ "$VERSION" == "0.22.33" ]]; then
+    scripts/release/check-html-browser-release-contract.sh "$VERSION"
+fi
+success "Browser-equivalent HTML release contract is enforced."
+
+# 3-4. Artifact Naming Validation
+info "3/7 Verifying Cargo.toml version..."
 CARGO_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
     error "Cargo.toml version ($CARGO_VERSION) does not match target release version ($VERSION)."
@@ -33,7 +46,7 @@ if [[ "$CARGO_VERSION" != "$VERSION" ]]; then
 fi
 success "Cargo.toml version matches."
 
-info "2/5 Verifying Info.plist version..."
+info "4/7 Verifying Info.plist version..."
 PLIST_VERSION=$(awk '/CFBundleShortVersionString/{getline; gsub(/.*<string>v?|<\/string>.*/, ""); print}' crates/katana-ui/Info.plist | xargs)
 if [[ "$PLIST_VERSION" != "$VERSION" ]]; then
     error "Info.plist CFBundleShortVersionString ($PLIST_VERSION) does not match target release version ($VERSION)."
@@ -41,8 +54,8 @@ if [[ "$PLIST_VERSION" != "$VERSION" ]]; then
 fi
 success "Info.plist version matches."
 
-# 2. CHANGELOG Validation
-info "3/5 Validating CHANGELOG via AST Linter..."
+# 5. CHANGELOG Validation
+info "5/7 Validating CHANGELOG via AST Linter..."
 if ! cargo test -p katana-linter --test ast_linter ast_linter_changelog_contains_current_workspace_version -q >/dev/null 2>&1; then
     error "AST Linter failed: Version v${VERSION} not found in CHANGELOG.md."
     exit 1
@@ -55,12 +68,12 @@ if ! grep -q "^## \[${VERSION}\]" CHANGELOG.ja.md; then
 fi
 success "CHANGELOG.ja.md contains notes for v${VERSION}."
 
-# 3. Linuxbrew Formula Validation
-info "4/5 Verifying Linuxbrew formula contract..."
+# 6. Linuxbrew Formula Validation
+info "6/7 Verifying Linuxbrew formula contract..."
 scripts/release/check-linuxbrew-formula-contract.sh
 
-# 4. OpenSpec Validation
-info "5/5 Validating OpenSpec task completion..."
+# 7. OpenSpec Validation
+info "7/7 Validating OpenSpec task completion..."
 VERSION_DASHED=$(echo "$VERSION" | tr '.' '-')
 for CHANGE_DIR in openspec/changes/v${VERSION_DASHED}-*(N); do
     if [[ -d "$CHANGE_DIR" ]]; then

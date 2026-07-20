@@ -37,6 +37,11 @@ impl<'a> TabToolbar<'a> {
             if let Some(a) = tab_action {
                 app.pending_action = a;
             }
+            if let Some(action) =
+                crate::views::top_bar::url_source::UrlSourceBar::show(ui, &mut app.state.url_tab)
+            {
+                app.pending_action = action;
+            }
 
             let doc_info = app.state.active_document().map(|doc| {
                 let p = doc.path.to_string_lossy();

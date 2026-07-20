@@ -1,74 +1,8 @@
-use egui_commonmark::CommonMarkCache;
 use katana_core::preview::{ImagePreviewOps, PreviewSection, PreviewSectionOps};
 
 use super::types::*;
 
 impl PreviewPane {
-    pub fn update_html_document_sections(
-        &mut self,
-        source: &str,
-        html_file_path: &std::path::Path,
-    ) {
-        self.md_file_path = html_file_path.to_path_buf();
-        self.outline_items.clear();
-        self.anchor_map.clear();
-        self.document_anchors.clear();
-        self.sections = Self::html_document_sections(source);
-        self.section_lifecycle
-            .resize(self.sections.len(), SectionLifecycle::default());
-    }
-
-    pub fn full_render_html_document(
-        &mut self,
-        source: &str,
-        html_file_path: &std::path::Path,
-        force: bool,
-    ) {
-        if force {
-            self.commonmark_cache = CommonMarkCache::default();
-            self.viewer_states.clear();
-            self.fullscreen_viewer_state.reset();
-            self.fullscreen_image = None;
-        }
-
-        self.md_file_path = html_file_path.to_path_buf();
-        self.outline_items.clear();
-        self.anchor_map.clear();
-        self.document_anchors.clear();
-        self.reset_html_document_render_state();
-        self.session_generation += 1;
-        self.sections = Self::html_document_sections(source);
-        self.section_lifecycle = self
-            .sections
-            .iter()
-            .map(|_| SectionLifecycle {
-                is_loaded: true,
-                is_drawn: false,
-            })
-            .collect();
-    }
-
-    fn reset_html_document_render_state(&mut self) {
-        self.image_preload_queue.clear();
-        self.image_cache.clear();
-        self.render_rx = None;
-        self.is_loading = false;
-        self.cancel_token
-            .store(true, std::sync::atomic::Ordering::Relaxed);
-        self.cancel_token = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    }
-
-    fn html_document_sections(source: &str) -> Vec<RenderedSection> {
-        if source.trim().is_empty() {
-            return Vec::new();
-        }
-        let source_lines = source.lines().count().max(1);
-        vec![RenderedSection::HtmlDocument(
-            source.to_string(),
-            source_lines,
-        )]
-    }
-
     pub fn update_markdown_sections(&mut self, source: &str, md_file_path: &std::path::Path) {
         self.md_file_path = md_file_path.to_path_buf();
         let (outline_items, document_anchors) =
@@ -90,12 +24,7 @@ impl PreviewPane {
 
         let raw = PreviewSectionOps::split_into_sections(&resolved);
         let mut new_sections = Vec::with_capacity(raw.len());
-        let mut diagram_iter = self.sections.iter().filter(|s| {
-            !matches!(
-                s,
-                RenderedSection::Markdown(_, _) | RenderedSection::HtmlDocument(_, _)
-            )
-        });
+        let mut diagram_iter = self.sections.iter().filter(|s| !is_markdown_section(s));
         for section in &raw {
             self.push_markdown_section(section, &mut diagram_iter, &mut new_sections);
         }
@@ -148,4 +77,8 @@ impl PreviewPane {
             }
         }
     }
+}
+
+fn is_markdown_section(section: &RenderedSection) -> bool {
+    matches!(section, RenderedSection::Markdown(_, _))
 }

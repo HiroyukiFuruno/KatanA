@@ -9,6 +9,7 @@ pub use crate::state::scroll::{ScrollSource, ScrollState};
 pub use crate::state::search::{SearchState, SearchTab};
 pub use crate::state::toc::TocState;
 pub use crate::state::update::{UpdatePhase, UpdateState};
+pub use crate::state::url_tab::UrlTabState;
 pub use crate::state::workspace::WorkspaceState;
 
 pub use katana_platform::CacheFacade;
@@ -41,6 +42,7 @@ pub struct AppState {
     pub toc: TocState,
     pub scroll: ScrollState,
     pub update: UpdateState,
+    pub url_tab: UrlTabState,
     pub config: ConfigState,
     pub diagnostics: DiagnosticsState,
     pub command_palette: CommandPaletteState,
@@ -75,6 +77,7 @@ impl AppState {
             toc: TocState::default(),
             scroll: ScrollState::new(),
             update: UpdateState::new(),
+            url_tab: UrlTabState::new(),
             config: ConfigState::new(plugin_registry, settings, cache),
             diagnostics: DiagnosticsState::new(),
             command_palette: CommandPaletteState::new(),

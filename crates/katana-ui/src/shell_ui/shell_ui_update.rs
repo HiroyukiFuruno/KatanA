@@ -21,6 +21,9 @@ impl KatanaApp {
 
         self.tick_auto_save();
         self.tick_auto_refresh(ctx);
+        self.sync_html_preview_observer();
+        self.tick_pending_html_preview_refresh();
+        self.poll_html_preview_observer();
 
         let theme_colors = self
             .state
@@ -59,6 +62,8 @@ impl KatanaApp {
         self.poll_changelog(ctx);
         self.poll_export(ctx);
         self.poll_linter_docs(ctx);
+        self.poll_url_source(ctx);
+        self.poll_html_browser_navigation(ctx);
         self.tick_diagnostics(ctx);
 
         let editor_focused = matches!(
