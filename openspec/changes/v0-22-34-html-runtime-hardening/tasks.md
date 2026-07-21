@@ -32,8 +32,8 @@
 - [x] 3.3 fullscreen smooth scroll を x/y pan として扱い、拡大後の zoom と描画寸法を保持する
 - [x] 3.4 最大化、右下 controls、fullscreen close を固定黒背景、白 icon、1 px 白 border に統一する
 - [x] 3.5 公開済み KDV v0.3.2 / KRR v0.4.4 を registry-only で解決し、workspace と screenshot runner の lockfile checksum を確定する
-- [ ] 3.6 workspace version、release metadata、CHANGELOG EN/JA、OpenSpec release target を v0.22.34 に同期する
-- [ ] 3.7 SemVer guard が published v0.22.33 -> v0.22.34 だけを許可し、v0.29.0 と非隣接版を拒否することを確認する
+- [x] 3.6 workspace version、release metadata、CHANGELOG EN/JA、OpenSpec release target を v0.22.34 に同期する
+- [x] 3.7 SemVer guard が published v0.22.33 -> v0.22.34 だけを許可し、v0.29.0 と非隣接版を拒否することを確認する
 
 ## 4. Headless evidence
 
