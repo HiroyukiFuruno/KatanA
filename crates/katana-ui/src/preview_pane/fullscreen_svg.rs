@@ -1,12 +1,8 @@
-use crate::icon::Icon;
 use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
 use eframe::egui::{self, Vec2};
 use katana_core::markdown::svg_rasterize::RasterizedSvg;
 
-use super::fullscreen::{
-    CLOSE_BTN_IDLE_OPACITY, FULLSCREEN_CLOSE_MARGIN, FULLSCREEN_CLOSE_SIZE, FULLSCREEN_PADDING,
-    MAX_ZOOM, MIN_ZOOM,
-};
+use super::fullscreen::FULLSCREEN_PADDING;
 
 pub(super) fn show_fullscreen_svg(
     ctx: &egui::Context,
@@ -41,19 +37,13 @@ pub(super) fn show_fullscreen_svg(
 
             let (blocker_rect, response) =
                 ui.allocate_exact_size(screen.size(), egui::Sense::click_and_drag());
-            if response.hovered() && viewer_state.closing_since.is_none() {
-                let zoom_delta = ui.input(|i| i.zoom_delta());
-                if zoom_delta != 1.0 {
-                    viewer_state.zoom = (viewer_state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
-                }
-                viewer_state.pan += if response.dragged() {
-                    response.drag_delta()
-                } else {
-                    ui.input(|i| i.smooth_scroll_delta)
-                };
-                if response.clicked() {
-                    viewer_state.closing_since = Some(current_time);
-                }
+            if response.hovered() {
+                super::fullscreen::FullscreenInteraction::from_input(ui, &response)
+                    .apply(viewer_state);
+            }
+
+            if response.clicked() && viewer_state.closing_since.is_none() {
+                viewer_state.closing_since = Some(current_time);
             }
 
             let c = ui.visuals().panel_fill;
@@ -110,44 +100,11 @@ pub(super) fn show_fullscreen_svg(
                 viewer_state,
                 blocker_rect,
             );
-            if render_fs_close_btn(
-                ui,
-                blocker_rect,
-                crate::theme_bridge::WHITE.gamma_multiply(alpha),
-                dc_close,
-            ) {
+            if super::fullscreen::render_fullscreen_close_button(ui, blocker_rect, dc_close, alpha)
+            {
                 viewer_state.closing_since = Some(current_time);
             }
         });
 
     keep_open
-}
-
-fn render_fs_close_btn(
-    ui: &mut egui::Ui,
-    blocker_rect: egui::Rect,
-    tint: egui::Color32,
-    hover_text: &str,
-) -> bool {
-    let close_btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
-    let close_btn_rect = egui::Rect::from_min_size(
-        egui::pos2(
-            blocker_rect.right() - close_btn_size.x - FULLSCREEN_CLOSE_MARGIN,
-            blocker_rect.top() + FULLSCREEN_CLOSE_MARGIN,
-        ),
-        close_btn_size,
-    );
-    ui.put(
-        close_btn_rect,
-        egui::Button::image(
-            Icon::CloseModal
-                .image(crate::icon::IconSize::Large)
-                .tint(tint.gamma_multiply(CLOSE_BTN_IDLE_OPACITY)),
-        )
-        .fill(crate::theme_bridge::TRANSPARENT)
-        .stroke(egui::Stroke::NONE),
-    )
-    .on_hover_text(hover_text)
-    .on_hover_cursor(egui::CursorIcon::PointingHand)
-    .clicked()
 }

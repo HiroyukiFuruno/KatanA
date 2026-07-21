@@ -1,11 +1,7 @@
-use crate::icon::Icon;
 use crate::preview_pane::ViewerState;
 use eframe::egui::{self, Vec2};
 
-use super::fullscreen::{
-    CLOSE_BTN_IDLE_OPACITY, FULLSCREEN_CLOSE_MARGIN, FULLSCREEN_CLOSE_SIZE, FULLSCREEN_PADDING,
-    MAX_ZOOM, MIN_ZOOM,
-};
+use super::fullscreen::FULLSCREEN_PADDING;
 
 pub(super) fn show_fullscreen_local(
     ctx: &egui::Context,
@@ -24,18 +20,11 @@ pub(super) fn show_fullscreen_local(
             let (blocker_rect, response) =
                 ui.allocate_exact_size(screen.size(), egui::Sense::click_and_drag());
             if response.hovered() {
-                let zoom_delta = ui.input(|i| i.zoom_delta());
-                if zoom_delta != 1.0 {
-                    viewer_state.zoom = (viewer_state.zoom * zoom_delta).clamp(MIN_ZOOM, MAX_ZOOM);
-                }
-                viewer_state.pan += if response.dragged() {
-                    response.drag_delta()
-                } else {
-                    ui.input(|i| i.smooth_scroll_delta)
-                };
-                if response.clicked() {
-                    keep_open = false;
-                }
+                super::fullscreen::FullscreenInteraction::from_input(ui, &response)
+                    .apply(viewer_state);
+            }
+            if response.clicked() {
+                keep_open = false;
             }
             let c = ui.visuals().panel_fill;
             let bg_color = crate::theme_bridge::ThemeBridgeOps::from_rgb(c.r(), c.g(), c.b());
@@ -95,39 +84,10 @@ pub(super) fn show_fullscreen_local(
                 viewer_state,
                 blocker_rect,
             );
-            if render_fs_close_btn(ui, blocker_rect, crate::theme_bridge::WHITE, dc_close) {
+            if super::fullscreen::render_fullscreen_close_button(ui, blocker_rect, dc_close, 1.0) {
                 keep_open = false;
             }
         });
 
     keep_open
-}
-
-fn render_fs_close_btn(
-    ui: &mut egui::Ui,
-    blocker_rect: egui::Rect,
-    tint: egui::Color32,
-    hover_text: &str,
-) -> bool {
-    let close_btn_size = Vec2::splat(FULLSCREEN_CLOSE_SIZE);
-    let close_btn_rect = egui::Rect::from_min_size(
-        egui::pos2(
-            blocker_rect.right() - close_btn_size.x - FULLSCREEN_CLOSE_MARGIN,
-            blocker_rect.top() + FULLSCREEN_CLOSE_MARGIN,
-        ),
-        close_btn_size,
-    );
-    ui.put(
-        close_btn_rect,
-        egui::Button::image(
-            Icon::CloseModal
-                .image(crate::icon::IconSize::Large)
-                .tint(tint.gamma_multiply(CLOSE_BTN_IDLE_OPACITY)),
-        )
-        .fill(crate::theme_bridge::TRANSPARENT)
-        .stroke(egui::Stroke::NONE),
-    )
-    .on_hover_text(hover_text)
-    .on_hover_cursor(egui::CursorIcon::PointingHand)
-    .clicked()
 }
