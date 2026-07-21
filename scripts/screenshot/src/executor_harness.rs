@@ -307,17 +307,14 @@ pub fn run(
                 for _ in 0..frames {
                     let viewport = harness.ctx.viewport_rect();
                     let pos = egui::pos2(viewport.center().x, viewport.center().y);
-                    let signed_delta = match s.direction {
-                        ScrollDirection::Down => -delta_per_frame,
-                        ScrollDirection::Up => delta_per_frame,
-                    };
+                    let delta = scroll_delta(s.direction, delta_per_frame);
                     harness
                         .input_mut()
                         .events
                         .push(egui::Event::PointerMoved(pos));
                     harness.input_mut().events.push(egui::Event::MouseWheel {
                         unit: egui::MouseWheelUnit::Point,
-                        delta: egui::Vec2::new(0.0, signed_delta),
+                        delta,
                         modifiers: egui::Modifiers::NONE,
                         phase: egui::TouchPhase::Move,
                     });
@@ -908,6 +905,15 @@ fn physical_png_bounds(
         width: max_x - min_x,
         height: max_y - min_y,
     })
+}
+
+fn scroll_delta(direction: ScrollDirection, amount: f32) -> egui::Vec2 {
+    match direction {
+        ScrollDirection::Up => egui::vec2(0.0, amount),
+        ScrollDirection::Down => egui::vec2(0.0, -amount),
+        ScrollDirection::Left => egui::vec2(amount, 0.0),
+        ScrollDirection::Right => egui::vec2(-amount, 0.0),
+    }
 }
 
 fn assert_active_document(
@@ -1619,8 +1625,9 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use super::{find_workspace_file, normalize_relative_path, physical_png_bounds};
+    use super::{find_workspace_file, normalize_relative_path, physical_png_bounds, scroll_delta};
     use crate::capture::PngBounds;
+    use crate::request::ScrollDirection;
     use katana_core::workspace::TreeEntry;
     use std::path::{Path, PathBuf};
 
@@ -1691,6 +1698,23 @@ mod tests {
         assert_eq!(
             physical_png_bounds(egui::Rect::EVERYTHING, 200, 100, 0.0),
             None
+        );
+    }
+
+    #[test]
+    fn scroll_delta_maps_every_direction_to_one_axis() {
+        assert_eq!(scroll_delta(ScrollDirection::Up, 8.0), egui::vec2(0.0, 8.0));
+        assert_eq!(
+            scroll_delta(ScrollDirection::Down, 8.0),
+            egui::vec2(0.0, -8.0)
+        );
+        assert_eq!(
+            scroll_delta(ScrollDirection::Left, 8.0),
+            egui::vec2(8.0, 0.0)
+        );
+        assert_eq!(
+            scroll_delta(ScrollDirection::Right, 8.0),
+            egui::vec2(-8.0, 0.0)
         );
     }
 }
