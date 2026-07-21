@@ -78,7 +78,8 @@ impl DiagramControllerOps {
                 rect,
                 egui::Button::image(
                     icon.image(IconSize::Large)
-                        .tint(Self::control_icon_color(is_hovered, is_active)),
+                        .tint(Self::control_icon_color(is_hovered, is_active))
+                        .alt_text(tooltip),
                 )
                 .fill(Self::control_background_color(is_hovered, is_active))
                 .stroke(Self::control_stroke(is_hovered, is_active, false)),
@@ -88,12 +89,17 @@ impl DiagramControllerOps {
                 rect,
                 egui::Button::image(
                     icon.image(IconSize::Large)
-                        .tint(Self::control_icon_color(is_hovered, false)),
+                        .tint(Self::control_icon_color(is_hovered, false))
+                        .alt_text(tooltip),
                 )
                 .fill(Self::control_background_color(is_hovered, false))
                 .stroke(Self::control_stroke(is_hovered, false, false)),
             )
         };
+
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), tooltip)
+        });
 
         let has_focus = response.has_focus();
         if has_focus {
@@ -194,6 +200,10 @@ impl DiagramControllerOps {
 #[cfg(test)]
 mod tests {
     use super::DiagramControllerOps;
+    use egui_kittest::Harness;
+    use egui_kittest::kittest::Queryable;
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicBool, Ordering};
 
     #[test]
     fn diagram_overlay_controls_use_non_theme_overlay_tokens() {
@@ -201,12 +211,59 @@ mod tests {
         let hover = DiagramControllerOps::control_background_color(true, false);
         let active = DiagramControllerOps::control_background_color(false, true);
         let icon = DiagramControllerOps::control_icon_color(false, false);
+        let border = DiagramControllerOps::control_stroke(false, false, false);
         let focus = DiagramControllerOps::control_stroke(false, false, true);
+        let [idle_r, idle_g, idle_b, _] = idle.to_srgba_unmultiplied();
+        let [border_r, border_g, border_b, _] = border.color.to_srgba_unmultiplied();
 
+        assert_eq!((idle_r, idle_g, idle_b), (0, 0, 0));
         assert!(idle.a() >= 0x90);
         assert!(hover.a() > idle.a());
         assert!(active.a() > hover.a());
         assert!(icon.a() >= 0xf0);
+        assert_eq!(border.width, 1.0);
+        assert_eq!((border_r, border_g, border_b), (255, 255, 255));
         assert!(focus.color.a() >= 0xe0);
+    }
+
+    #[test]
+    fn fullscreen_control_exposes_label_and_reports_click() {
+        crate::i18n::I18nOps::set_language("en");
+        let clicked = Arc::new(AtomicBool::new(false));
+        let observed_click = Arc::clone(&clicked);
+        let mut harness = Harness::builder()
+            .with_size(egui::vec2(200.0, 200.0))
+            .build_ui(move |ui| {
+                let rect = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(200.0, 200.0));
+                if DiagramControllerOps::draw_fullscreen_button(ui, rect) {
+                    observed_click.store(true, Ordering::Relaxed);
+                }
+            });
+
+        harness.get_by_label("Fullscreen").click();
+        harness.step();
+
+        assert!(clicked.load(Ordering::Relaxed));
+    }
+
+    #[test]
+    fn fullscreen_control_wins_over_image_drag_surface() {
+        crate::i18n::I18nOps::set_language("en");
+        let clicked = Arc::new(AtomicBool::new(false));
+        let observed_click = Arc::clone(&clicked);
+        let mut harness = Harness::builder()
+            .with_size(egui::vec2(200.0, 200.0))
+            .build_ui(move |ui| {
+                let (rect, _) =
+                    ui.allocate_exact_size(egui::vec2(200.0, 200.0), egui::Sense::click_and_drag());
+                if DiagramControllerOps::draw_fullscreen_button(ui, rect) {
+                    observed_click.store(true, Ordering::Relaxed);
+                }
+            });
+
+        harness.get_by_label("Fullscreen").click();
+        harness.step();
+
+        assert!(clicked.load(Ordering::Relaxed));
     }
 }

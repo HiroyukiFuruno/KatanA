@@ -12,6 +12,7 @@ impl PreviewPane {
         force: bool,
         diagram_concurrency: usize,
     ) {
+        let preserved_fullscreen = force.then(|| self.preservable_local_fullscreen()).flatten();
         if force {
             self.commonmark_cache = CommonMarkCache::default();
             self.viewer_states.clear();
@@ -98,6 +99,7 @@ impl PreviewPane {
         }
         self.sections = sections;
         self.section_lifecycle = lifecycle;
+        self.restore_local_fullscreen(preserved_fullscreen);
         super::diagram_cache::DiagramRenderCacheCoordinator::prune_document(
             &cache,
             md_file_path,
@@ -126,5 +128,28 @@ impl PreviewPane {
             self.repaint_ctx.clone(),
             concurrency,
         );
+    }
+
+    fn preservable_local_fullscreen(&self) -> Option<(std::path::PathBuf, ViewerState)> {
+        let idx = self.fullscreen_image?;
+        let RenderedSection::LocalImage { path, .. } = self.sections.get(idx)? else {
+            return None;
+        };
+        let mut state = self.fullscreen_viewer_state.clone();
+        state.texture = None;
+        Some((path.clone(), state))
+    }
+
+    fn restore_local_fullscreen(&mut self, preserved: Option<(std::path::PathBuf, ViewerState)>) {
+        let Some((path, state)) = preserved else {
+            return;
+        };
+        let Some(idx) = self.sections.iter().position(
+            |section| matches!(section, RenderedSection::LocalImage { path: current, .. } if current == &path),
+        ) else {
+            return;
+        };
+        self.fullscreen_image = Some(idx);
+        self.fullscreen_viewer_state = state;
     }
 }

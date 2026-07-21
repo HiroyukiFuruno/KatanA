@@ -59,16 +59,14 @@ impl PreviewPane {
             self.show_html_browser(ui);
             return Vec::new();
         }
-        let actions = self.render_sections(
+        self.render_sections(
             ui,
             active_editor_line,
             hovered_lines,
             search_query,
             search_active_index,
             false,
-        );
-        self.render_fullscreen_modal(ui.ctx());
-        actions
+        )
     }
 
     pub(crate) fn render_sections(
@@ -177,7 +175,7 @@ impl PreviewPane {
         if let Some(idx) = self.fullscreen_image {
             match self.sections.get(idx) {
                 /* WHY: valid, keep open */
-                Some(RenderedSection::Image { .. }) => {}
+                Some(RenderedSection::Image { .. } | RenderedSection::LocalImage { .. }) => {}
                 _ => self.fullscreen_image = None,
             }
         }

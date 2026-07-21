@@ -1,4 +1,4 @@
-use crate::preview_pane::ViewerState;
+use crate::preview_pane::{ViewerState, ViewerTextureIdentity};
 use eframe::egui::{self, Vec2};
 
 use super::fullscreen::FULLSCREEN_PADDING;
@@ -17,36 +17,27 @@ pub(super) fn show_fullscreen_local(
         .order(egui::Order::Foreground)
         .fixed_pos(screen.min)
         .show(ctx, |ui| {
+            let panel_fill = ui.visuals().panel_fill;
+            let background = crate::theme_bridge::ThemeBridgeOps::from_rgb(
+                panel_fill.r(),
+                panel_fill.g(),
+                panel_fill.b(),
+            );
+            viewer_state.prepare_texture(ViewerTextureIdentity::local_file(path), background);
             let (blocker_rect, response) =
                 ui.allocate_exact_size(screen.size(), egui::Sense::click_and_drag());
             if response.hovered() {
                 super::fullscreen::FullscreenInteraction::from_input(ui, &response)
                     .apply(viewer_state);
             }
-            if response.clicked() {
-                keep_open = false;
-            }
-            let c = ui.visuals().panel_fill;
-            let bg_color = crate::theme_bridge::ThemeBridgeOps::from_rgb(c.r(), c.g(), c.b());
-            ui.painter().rect_filled(blocker_rect, 0.0, bg_color);
+            ui.painter().rect_filled(blocker_rect, 0.0, background);
 
             let texture_handle = if viewer_state.texture.is_none() {
-                if let Ok(bytes) = std::fs::read(path)
-                    && let Ok(dyn_img) = image::load_from_memory(&bytes)
-                {
-                    let rgba = dyn_img.into_rgba8();
-                    let size = std::array::from_fn(|i| {
-                        if i == 0 {
-                            rgba.width() as usize
-                        } else {
-                            rgba.height() as usize
-                        }
-                    });
-                    viewer_state.texture = Some(ui.ctx().load_texture(
-                        format!("local_image_fs_{idx}"),
-                        egui::ColorImage::from_rgba_unmultiplied(size, &rgba),
-                        egui::TextureOptions::LINEAR,
-                    ));
+                viewer_state.texture = crate::preview_pane::ImageLogicOps::load_local_image_texture(
+                    ui, path, idx, background,
+                );
+                if viewer_state.texture.is_some() {
+                    viewer_state.texture_background = Some(background);
                 }
                 viewer_state.texture.clone()
             } else {

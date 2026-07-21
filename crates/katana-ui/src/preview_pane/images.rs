@@ -4,61 +4,62 @@ use eframe::egui::{self, TextureHandle, Vec2};
 
 pub use super::types::ImageLogicOps;
 
-fn load_local_image_texture(
-    ui: &mut egui::Ui,
-    path: &std::path::Path,
-    id: usize,
-    preview_background: egui::Color32,
-) -> Option<TextureHandle> {
-    let bytes = std::fs::read(path).ok()?;
-    let color_img = if path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("svg"))
-    {
-        let svg = std::str::from_utf8(&bytes).ok()?;
-        let rasterized =
-            katana_core::markdown::svg_rasterize::SvgRasterizeOps::rasterize_svg(svg, 1.0).ok()?;
-        let mut pixels = rasterized.rgba;
-        super::image_background::ImageBackgroundOps::composite_rgba_over_background(
-            &mut pixels,
-            preview_background,
-        );
-        egui::ColorImage::from_rgba_unmultiplied(
-            std::array::from_fn(|i| {
-                if i == 0 {
-                    rasterized.width as usize
-                } else {
-                    rasterized.height as usize
-                }
-            }),
-            &pixels,
-        )
-    } else {
-        let rgba = image::load_from_memory(&bytes).ok()?.into_rgba8();
-        let size = std::array::from_fn(|i| {
-            if i == 0 {
-                rgba.width() as usize
-            } else {
-                rgba.height() as usize
-            }
-        });
-        let mut pixels = rgba.into_raw();
-        super::image_background::ImageBackgroundOps::composite_rgba_over_background(
-            &mut pixels,
-            preview_background,
-        );
-        egui::ColorImage::from_rgba_unmultiplied(size, &pixels)
-    };
-
-    Some(ui.ctx().load_texture(
-        format!("local_image_{id}"),
-        color_img,
-        egui::TextureOptions::LINEAR,
-    ))
-}
-
 impl ImageLogicOps {
+    pub(super) fn load_local_image_texture(
+        ui: &mut egui::Ui,
+        path: &std::path::Path,
+        id: usize,
+        preview_background: egui::Color32,
+    ) -> Option<TextureHandle> {
+        let bytes = std::fs::read(path).ok()?;
+        let color_img = if path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("svg"))
+        {
+            let svg = std::str::from_utf8(&bytes).ok()?;
+            let rasterized =
+                katana_core::markdown::svg_rasterize::SvgRasterizeOps::rasterize_svg(svg, 1.0)
+                    .ok()?;
+            let mut pixels = rasterized.rgba;
+            super::image_background::ImageBackgroundOps::composite_rgba_over_background(
+                &mut pixels,
+                preview_background,
+            );
+            egui::ColorImage::from_rgba_unmultiplied(
+                std::array::from_fn(|i| {
+                    if i == 0 {
+                        rasterized.width as usize
+                    } else {
+                        rasterized.height as usize
+                    }
+                }),
+                &pixels,
+            )
+        } else {
+            let rgba = image::load_from_memory(&bytes).ok()?.into_rgba8();
+            let size = std::array::from_fn(|i| {
+                if i == 0 {
+                    rgba.width() as usize
+                } else {
+                    rgba.height() as usize
+                }
+            });
+            let mut pixels = rgba.into_raw();
+            super::image_background::ImageBackgroundOps::composite_rgba_over_background(
+                &mut pixels,
+                preview_background,
+            );
+            egui::ColorImage::from_rgba_unmultiplied(size, &pixels)
+        };
+
+        Some(ui.ctx().load_texture(
+            format!("local_image_{id}"),
+            color_img,
+            egui::TextureOptions::LINEAR,
+        ))
+    }
+
     pub(crate) fn show_local_image(
         ui: &mut egui::Ui,
         path: &std::path::Path,
@@ -75,7 +76,7 @@ impl ImageLogicOps {
         let texture_handle = if let Some(state) = viewer_state.as_mut() {
             state.prepare_texture(ViewerTextureIdentity::local_file(path), preview_background);
             if state.texture.is_none() || state.texture_background != Some(preview_background) {
-                state.texture = load_local_image_texture(ui, path, id, preview_background);
+                state.texture = Self::load_local_image_texture(ui, path, id, preview_background);
                 state.texture_background = Some(preview_background);
             }
             state.texture.clone()
