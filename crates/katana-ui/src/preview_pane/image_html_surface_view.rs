@@ -30,17 +30,27 @@ impl HtmlBrowserSurface {
             .unwrap_or_else(|| ui.available_size().max(Vec2::splat(1.0)))
     }
 
-    fn show_error(&self, ui: &egui::Ui, rect: egui::Rect, error: &str) {
-        ui.painter().text(
-            rect.min
-                + egui::vec2(
-                    HTML_BROWSER_ERROR_TEXT_PADDING,
-                    HTML_BROWSER_ERROR_TEXT_PADDING,
-                ),
-            egui::Align2::LEFT_TOP,
-            format!("HTML browser error: {error}"),
-            egui::TextStyle::Body.resolve(ui.style()),
-            ui.visuals().error_fg_color,
+    fn show_error(&self, ui: &mut egui::Ui, rect: egui::Rect, error: &str) {
+        let content_rect = rect.shrink(HTML_BROWSER_ERROR_TEXT_PADDING);
+        ui.scope_builder(
+            egui::UiBuilder::new()
+                .max_rect(content_rect)
+                .layout(egui::Layout::top_down(egui::Align::Min)),
+            |ui| {
+                ui.set_max_width(content_rect.width());
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false, false])
+                    .show(ui, |ui| {
+                        ui.add(
+                            egui::Label::new(
+                                egui::RichText::new(error)
+                                    .monospace()
+                                    .color(ui.visuals().error_fg_color),
+                            )
+                            .wrap(),
+                        );
+                    });
+            },
         );
     }
 

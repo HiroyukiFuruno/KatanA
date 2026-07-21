@@ -162,7 +162,7 @@ impl HtmlBrowserSurface {
         };
         match adapter.dispatch_input(input) {
             Ok(()) => self.await_frame(),
-            Err(error) => self.record_error(error.to_string()),
+            Err(error) => self.record_adapter_error("input", None, error),
         }
     }
 }
