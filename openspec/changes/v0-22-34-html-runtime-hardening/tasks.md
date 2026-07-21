@@ -39,8 +39,8 @@
 
 - [ ] 4.1 external CSS/JavaScript/image、embedded Mermaid SVG、accordion、button、text/IME、prevented/allowed navigation、fragment、reload、resize の headless acceptance を registry-only binary で通す
 - [ ] 4.2 structured primary error と同一 process 内 worker recovery を screenshot と machine assertion で証明する
-- [ ] 4.3 light theme/白画像上の固定 BG＋border controls を screenshot と pixel assertion で証明する
-- [ ] 4.4 fullscreen 拡大後の上下左右 scroll で画像寸法が変化しないことを screenshot dimensions/hash と state assertion で証明する
+- [x] 4.3 light theme/白画像上の固定 BG＋border controls を screenshot と pixel assertion で証明する
+- [x] 4.4 fullscreen 拡大後の上下左右 scroll で画像寸法が変化しないことを screenshot dimensions/hash と state assertion で証明する
 - [ ] 4.5 Chromium/WebView/helper/browser archive が source、dependency、package、process に存在しないことを機械検査する
 
 ## 5. Release

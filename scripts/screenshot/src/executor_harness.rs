@@ -1362,11 +1362,41 @@ fn navigate_slideshow(
 }
 
 fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickButton) {
-    let node = harness.get_by_label(label);
-    match button {
-        ClickButton::Primary => node.click(),
-        ClickButton::Secondary => node.click_secondary(),
-    }
+    let viewport = harness.ctx.viewport_rect();
+    let physical_viewport = egui::Rect::from_min_max(
+        egui::pos2(
+            viewport.min.x * HARNESS_PIXELS_PER_POINT,
+            viewport.min.y * HARNESS_PIXELS_PER_POINT,
+        ),
+        egui::pos2(
+            viewport.max.x * HARNESS_PIXELS_PER_POINT,
+            viewport.max.y * HARNESS_PIXELS_PER_POINT,
+        ),
+    );
+    let all_rects: Vec<_> = harness
+        .get_all_by_label(label)
+        .into_iter()
+        .map(|node| node.rect())
+        .collect();
+    let visible_rects: Vec<_> = all_rects
+        .iter()
+        .copied()
+        .filter(|rect| physical_viewport.intersects(*rect))
+        .collect();
+    let [physical_rect] = visible_rects.as_slice() else {
+        panic!(
+            "expected exactly one visible accessibility node {label:?}, found {}: {visible_rects:?}; all: {all_rects:?}",
+            visible_rects.len()
+        );
+    };
+    let logical_pos = egui::pos2(
+        physical_rect.center().x / HARNESS_PIXELS_PER_POINT,
+        physical_rect.center().y / HARNESS_PIXELS_PER_POINT,
+    );
+    println!(
+        "  click accessibility node {label:?}: {physical_rect:?} -> {logical_pos:?}"
+    );
+    click_at(harness, logical_pos, button);
 }
 
 fn apply_lint_fixes_for_active_file(
