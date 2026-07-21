@@ -43,13 +43,20 @@
 - [x] 4.4 fullscreen 拡大後の上下左右 scroll で画像寸法が変化しないことを screenshot dimensions/hash と state assertion で証明する
 - [x] 4.5 Chromium/WebView/helper/browser archive が source、dependency、package、process に存在しないことを機械検査する
 
-## 5. Release
+## 5. Release readiness
 
-- [ ] 5.1 KatanA の format、lint、AST lint、tests、strict coverage、OpenSpec strict validation、release readiness をすべて通す
-- [ ] 5.2 self-review 後に関心ごとに signed commit を作成し、`release/v0.22.34` を通常 push する
-- [ ] 5.3 PR の必須 CI をすべて通し、承認済み条件を満たした状態で merge する
-- [ ] 5.4 GitHub Release v0.22.34、release assets、latest release、withdrawn v0.29.0 不在を live verification する
-- [ ] 5.5 merge/release 後に open issue、local branch/worktree、remote branch hygiene を確認する
+- [x] 5.1 KatanA の format、lint、AST lint、tests、strict coverage、OpenSpec strict validation、release readiness をすべて通す
+- [x] 5.2 branch 全体を self-review し、関心ごとの commit が signed で version と release metadata が一致することを確認する
+
+Release execution is tracked separately because push, CI, publication, and
+post-release hygiene can only be verified after this preflight succeeds.
+
+| Step | State |
+| --- | --- |
+| Push `release/v0.22.34` with normal hooks | Pending |
+| Pass required PR CI and merge | Pending |
+| Verify GitHub Release v0.22.34, assets, latest release, and absence of v0.29.0 | Pending |
+| Verify open issues and local/remote branch/worktree hygiene | Pending |
 
 ## 6. User feedback ledger
 
