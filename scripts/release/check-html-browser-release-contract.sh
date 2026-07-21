@@ -11,8 +11,8 @@ if [[ -z "$TARGET_VERSION" ]]; then
 fi
 TARGET_VERSION="${TARGET_VERSION#v}"
 
-if [[ "$TARGET_VERSION" != "0.22.33" ]]; then
-    error "The browser-equivalent HTML release contract applies only to v0.22.33; received v${TARGET_VERSION}."
+if [[ "$TARGET_VERSION" != "0.22.34" ]]; then
+    error "The browser-equivalent HTML release contract applies only to v0.22.34; received v${TARGET_VERSION}."
     exit 1
 fi
 
@@ -23,16 +23,17 @@ CARGO_LOCK=${KATANA_CARGO_LOCK:-${ROOT_DIR}/Cargo.lock}
 CARGO_CONFIG=${KATANA_CARGO_CONFIG:-${ROOT_DIR}/.cargo/config.toml}
 HTML_SPEC=${KATANA_HTML_SPEC:-${ROOT_DIR}/openspec/specs/html-file-preview/spec.md}
 RUNTIME_GUARD=${KATANA_HTML_RUNTIME_CONTRACT_GUARD:-${ROOT_DIR}/scripts/release/check-html-browser-runtime-contract.sh}
-ACCEPTANCE_REQUEST=${KATANA_HTML_ACCEPTANCE_REQUEST:-${ROOT_DIR}/scripts/screenshot/examples/v0-22-33-html-headless-preview.json}
-ACCEPTANCE_INDEX=${KATANA_HTML_ACCEPTANCE_INDEX:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-33-html-browser/index.html}
-ACCEPTANCE_LINKED=${KATANA_HTML_ACCEPTANCE_LINKED:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-33-html-browser/linked-panel.html}
-ACCEPTANCE_STYLE=${KATANA_HTML_ACCEPTANCE_STYLE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-33-html-browser/style.css}
-ACCEPTANCE_SCRIPT=${KATANA_HTML_ACCEPTANCE_SCRIPT:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-33-html-browser/actions.js}
+ACCEPTANCE_REQUEST=${KATANA_HTML_ACCEPTANCE_REQUEST:-${ROOT_DIR}/scripts/screenshot/examples/v0-22-34-html-headless-preview.json}
+ACCEPTANCE_INDEX=${KATANA_HTML_ACCEPTANCE_INDEX:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-34-html-browser/index.html}
+ACCEPTANCE_LINKED=${KATANA_HTML_ACCEPTANCE_LINKED:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-34-html-browser/linked-panel.html}
+ACCEPTANCE_STYLE=${KATANA_HTML_ACCEPTANCE_STYLE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-34-html-browser/style.css}
+ACCEPTANCE_SCRIPT=${KATANA_HTML_ACCEPTANCE_SCRIPT:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-34-html-browser/actions.js}
+ACCEPTANCE_IMAGE=${KATANA_HTML_ACCEPTANCE_IMAGE:-${ROOT_DIR}/scripts/screenshot/fixtures/v0-22-34-html-browser/resource-image.svg}
 ACCEPTANCE_RUNNER=${KATANA_HTML_ACCEPTANCE_RUNNER:-${ROOT_DIR}/scripts/screenshot/src/main.rs}
 ACCEPTANCE_CARGO_TOML=${KATANA_HTML_ACCEPTANCE_CARGO_TOML:-${ROOT_DIR}/scripts/screenshot/Cargo.toml}
 ACCEPTANCE_CARGO_LOCK=${KATANA_HTML_ACCEPTANCE_CARGO_LOCK:-${ROOT_DIR}/scripts/screenshot/Cargo.lock}
 
-for required_file in "$CARGO_TOML" "$CARGO_LOCK" "$HTML_SPEC" "$ACCEPTANCE_REQUEST" "$ACCEPTANCE_INDEX" "$ACCEPTANCE_LINKED" "$ACCEPTANCE_STYLE" "$ACCEPTANCE_SCRIPT" "$ACCEPTANCE_RUNNER" "$ACCEPTANCE_CARGO_TOML" "$ACCEPTANCE_CARGO_LOCK"; do
+for required_file in "$CARGO_TOML" "$CARGO_LOCK" "$HTML_SPEC" "$ACCEPTANCE_REQUEST" "$ACCEPTANCE_INDEX" "$ACCEPTANCE_LINKED" "$ACCEPTANCE_STYLE" "$ACCEPTANCE_SCRIPT" "$ACCEPTANCE_IMAGE" "$ACCEPTANCE_RUNNER" "$ACCEPTANCE_CARGO_TOML" "$ACCEPTANCE_CARGO_LOCK"; do
     if [[ ! -r "$required_file" ]]; then
         error "Required HTML browser release contract file is missing: ${required_file}"
         exit 1
@@ -49,25 +50,25 @@ if [[ -z "${KATANA_RELEASE_ROOT:-}" ]] &&
 fi
 
 if grep -Eq 'executor_native|native_window|--native-window' "$ACCEPTANCE_RUNNER"; then
-    error "v0.22.33 acceptance runner must remain headless-only."
+    error "v0.22.34 acceptance runner must remain headless-only."
     exit 1
 fi
 
-if ! python3 - "$ACCEPTANCE_REQUEST" "$ACCEPTANCE_INDEX" "$ACCEPTANCE_LINKED" "$ACCEPTANCE_STYLE" "$ACCEPTANCE_SCRIPT" <<'PY'
+if ! python3 - "$ACCEPTANCE_REQUEST" "$ACCEPTANCE_INDEX" "$ACCEPTANCE_LINKED" "$ACCEPTANCE_STYLE" "$ACCEPTANCE_SCRIPT" "$ACCEPTANCE_IMAGE" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-request_path, index_path, linked_path, style_path, script_path = map(Path, sys.argv[1:])
+request_path, index_path, linked_path, style_path, script_path, image_path = map(Path, sys.argv[1:])
 request = json.loads(request_path.read_text())
 steps = request.get("steps", [])
-if request.get("name") != "v0-22-33-html-headless-preview":
-    raise SystemExit("acceptance request must be the v0.22.33 headless preview")
+if request.get("name") != "v0-22-34-html-headless-preview":
+    raise SystemExit("acceptance request must be the v0.22.34 headless preview")
 workspace_files = {
     entry.get("name"): entry for entry in request.get("fixture", {}).get("workspace_files", [])
 }
 
-for name in ("index.html", "linked-panel.html", "style.css", "actions.js"):
+for name in ("index.html", "linked-panel.html", "style.css", "actions.js", "resource-image.svg"):
     if name not in workspace_files:
         raise SystemExit(f"acceptance fixture is missing workspace file {name}")
 
@@ -104,6 +105,18 @@ scroll_directions = {
 if not {"down", "up"}.issubset(scroll_directions):
     raise SystemExit("acceptance scenario must scroll down and back up through the KRR viewport")
 
+raw_frame_markers = {
+    tuple(step.get("rgb", []))
+    for step in steps
+    if step.get("type") == "assert_html_browser_frame_contains_rgb"
+    and step.get("min_pixels", 0) > 0
+}
+for expected_rgb in ((38, 184, 166), (245, 158, 11)):
+    if expected_rgb not in raw_frame_markers:
+        raise SystemExit(
+            f"acceptance scenario must prove raw KRR pixels for visual resource {expected_rgb}"
+        )
+
 screenshots = {
     step.get("output_name")
     for step in steps
@@ -111,6 +124,8 @@ screenshots = {
 }
 required_screenshots = {
     "01-initial-render",
+    "01-resource-image",
+    "01-embedded-svg",
     "02-accordion-open",
     "03-button-action",
     "04-text-input",
@@ -135,6 +150,8 @@ if len(change_assertions) < 7 or any(
 
 expected_rgb_markers = {
     "01-initial-render": [230, 245, 239],
+    "01-resource-image": [38, 184, 166],
+    "01-embedded-svg": [245, 158, 11],
     "02-accordion-open": [184, 242, 208],
     "03-button-action": [255, 224, 138],
     "04-text-input": [167, 221, 255],
@@ -230,6 +247,8 @@ for screenshot in ("07-link-navigation", "08-reloaded-linked-panel", "09-resized
 index = index_path.read_text()
 for marker in (
     'rel="stylesheet" href="style.css"',
+    'id="resource-image" src="resource-image.svg"',
+    'id="embedded-mermaid-svg"',
     "<details",
     "id=\"action\"",
     "id=\"text-input\"",
@@ -273,6 +292,10 @@ linked = linked_path.read_text()
 for marker in ("Linked fragment target loaded by KRR", "#e8c7ff"):
     if marker not in linked:
         raise SystemExit(f"acceptance linked fixture is missing its navigation marker: {marker}")
+image = image_path.read_text()
+for marker in ('xmlns="http://www.w3.org/2000/svg"', '#26b8a6', 'External resource pipeline'):
+    if marker not in image:
+        raise SystemExit(f"acceptance image fixture is missing marker: {marker}")
 PY
 then
     error "Interactive headless evidence contract is incomplete."
@@ -302,12 +325,12 @@ with acceptance_lock_path.open("rb") as handle:
 
 dependencies = cargo.get("workspace", {}).get("dependencies", {})
 manifest_release_lines = {
-    "katana-document-viewer": (0, 3, 1),
-    "katana-render-runtime": (0, 4, 3),
+    "katana-document-viewer": (0, 3, 2),
+    "katana-render-runtime": (0, 4, 4),
 }
 minimum_lock_versions = {
-    "katana-document-viewer": (0, 3, 1),
-    "katana-render-runtime": (0, 4, 3),
+    "katana-document-viewer": (0, 3, 2),
+    "katana-render-runtime": (0, 4, 4),
 }
 
 
@@ -403,8 +426,8 @@ fi
 required_markers=(
     "Browser-equivalent HTML session is the only interactive preview path"
     "The system MUST NOT fall back to static HTML rendering"
-    "v0.22.33 release must prove the published browser chain"
-    'minimum resolved version of KDV `0.3.1` and KRR `0.4.3`'
+    "v0.22.34 release must prove the published browser chain"
+    'minimum resolved version of KDV `0.3.2` and KRR `0.4.4`'
     "raw KRR frame pixels"
 )
 for marker in "${required_markers[@]}"; do

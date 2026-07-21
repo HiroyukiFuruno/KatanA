@@ -32,7 +32,7 @@ success "Version increment contract is enforced."
 # 2. Browser-equivalent HTML release contract
 info "2/7 Verifying browser-equivalent HTML release contract..."
 bash scripts/release/test-html-browser-release-contract.sh
-if [[ "$VERSION" == "0.22.33" ]]; then
+if [[ "$VERSION" == "0.22.34" ]]; then
     scripts/release/check-html-browser-release-contract.sh "$VERSION"
 fi
 success "Browser-equivalent HTML release contract is enforced."

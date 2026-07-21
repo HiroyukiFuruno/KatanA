@@ -125,13 +125,13 @@ The system MUST keep Markdown diagnostics, Markdown formatting, Markdown export,
 - **THEN** Markdown diagnostics and formatting do not process its source
 - **THEN** Markdown export and diagram wrapping are not used to render its interactive surface
 
-### Requirement: v0.22.33 release must prove the published browser chain
+### Requirement: v0.22.34 release must prove the published browser chain
 
-KatanA v0.22.33 MUST consume published KDV `0.3.x` and KRR `0.4.x` crates from crates.io, with a minimum resolved version of KDV `0.3.1` and KRR `0.4.3`. KatanA MUST NOT use a local path or git dependency for KDV/KRR, or package a Chromium/browser runtime archive. The initial release order remains KRR `0.4.0` before KDV `0.3.0`, while the final KatanA integration MUST include the required patch fixes. The withdrawn `v0.29.0` MUST NOT be accepted as a release target.
+KatanA v0.22.34 MUST consume published KDV `0.3.x` and KRR `0.4.x` crates from crates.io, with a minimum resolved version of KDV `0.3.2` and KRR `0.4.4`. KatanA MUST NOT use a local path or git dependency for KDV/KRR, or package a Chromium/browser runtime archive. The initial release order remains KRR `0.4.0` before KDV `0.3.0`, while the final KatanA integration MUST include the required patch fixes. The withdrawn `v0.29.0` MUST NOT be accepted as a release target.
 
 #### Scenario: Release evidence exercises browser behavior
 
-- **WHEN** v0.22.33 release readiness is evaluated
+- **WHEN** v0.22.34 release readiness is evaluated
 - **THEN** packaged headless-process evidence covers external CSS/JavaScript, accordion, JavaScript action, text input, link navigation, reload, resize, and complete action frames
 - **THEN** same-document and external fragment states prove the complete document origin, raw KRR frame pixels, and composed KatanA screenshot pixels independently
 - **THEN** the evidence shows no overlapping or clipped text in unchanged or updated regions
@@ -139,6 +139,6 @@ KatanA v0.22.33 MUST consume published KDV `0.3.x` and KRR `0.4.x` crates from c
 
 #### Scenario: Static or unpublished chain is detected
 
-- **WHEN** KatanA resolves KDV below `0.3.1`, KRR below `0.4.3`, a path/git source, or includes a Chromium/browser runtime archive
-- **THEN** the v0.22.33 release gate fails
+- **WHEN** KatanA resolves KDV below `0.3.2`, KRR below `0.4.4`, a path/git source, or includes a Chromium/browser runtime archive
+- **THEN** the v0.22.34 release gate fails
 - **THEN** a static screenshot or parser test cannot satisfy the release gate
