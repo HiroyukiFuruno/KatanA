@@ -97,6 +97,12 @@
       "path_contains": "index.html"
     },
     {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
       "type": "action",
       "action": {
         "click_rgb_region": {
@@ -271,6 +277,12 @@
       "duration_seconds": 0.25
     },
     {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
       "type": "action",
       "action": {
         "click_rgb_region": {
@@ -315,7 +327,13 @@
     {
       "type": "scroll",
       "direction": "up",
-      "pixels": 2000.0,
+      "pixels": 3000.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
       "duration_seconds": 0.25
     },
     {

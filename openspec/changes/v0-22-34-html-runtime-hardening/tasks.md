@@ -37,11 +37,11 @@
 
 ## 4. Headless evidence
 
-- [ ] 4.1 external CSS/JavaScript/image、embedded Mermaid SVG、accordion、button、text/IME、prevented/allowed navigation、fragment、reload、resize の headless acceptance を registry-only binary で通す
-- [ ] 4.2 structured primary error と同一 process 内 worker recovery を screenshot と machine assertion で証明する
+- [x] 4.1 external CSS/JavaScript/image、embedded Mermaid SVG、accordion、button、text/IME、prevented/allowed navigation、fragment、reload、resize の headless acceptance を registry-only binary で通す
+- [x] 4.2 structured primary error と同一 process 内 worker recovery を screenshot と machine assertion で証明する
 - [x] 4.3 light theme/白画像上の固定 BG＋border controls を screenshot と pixel assertion で証明する
 - [x] 4.4 fullscreen 拡大後の上下左右 scroll で画像寸法が変化しないことを screenshot dimensions/hash と state assertion で証明する
-- [ ] 4.5 Chromium/WebView/helper/browser archive が source、dependency、package、process に存在しないことを機械検査する
+- [x] 4.5 Chromium/WebView/helper/browser archive が source、dependency、package、process に存在しないことを機械検査する
 
 ## 5. Release
 
@@ -53,8 +53,8 @@
 
 ## 6. User feedback ledger
 
-- [/] 6.1 `HTML browser error: browser worker has stopped` だけで終わらず、原因を UI とログから追跡可能にする
-- [/] 6.2 画像を最大化して上下左右 scroll しても元の寸法へ戻さない
-- [/] 6.3 light theme または白背景画像でも、最大化と右下 controls を固定 BG と border で視認可能にする
-- [/] 6.4 Chromium に依存せず、既存 Rust/V8 CSS/JavaScript rendering 設計を維持する
-- [/] 6.5 機械検証後に headless 実機スクリーンショットを提示し、HTML の描画と操作を判断可能にする
+- [x] 6.1 `HTML browser error: browser worker has stopped` だけで終わらず、原因を UI とログから追跡可能にする
+- [x] 6.2 画像を最大化して上下左右 scroll しても元の寸法へ戻さない
+- [x] 6.3 light theme または白背景画像でも、最大化と右下 controls を固定 BG と border で視認可能にする
+- [x] 6.4 Chromium に依存せず、既存 Rust/V8 CSS/JavaScript rendering 設計を維持する
+- [x] 6.5 機械検証後に headless 実機スクリーンショットを提示し、HTML の描画と操作を判断可能にする
