@@ -23,7 +23,7 @@
 - [x] 2.3 startup recovery、invalid resize、全 browser command/error path の回帰テストを追加する
 - [x] 2.4 公開済み KRR v0.4.4 を crates.io dependency として lock し、local path/git source がないことを release contract で証明する
 - [x] 2.5 KDV の full check、AST lint、strict coverage、release-check、publish dry-run を通す
-- [ ] 2.6 KDV v0.3.2 を PR/CI/merge し、GitHub Release と crates.io 公開を確認する
+- [x] 2.6 KDV v0.3.2 を PR/CI/merge し、GitHub Release と crates.io 公開を確認する
 
 ## 3. KatanA v0.22.34 integration
 
@@ -31,7 +31,7 @@
 - [x] 3.2 current viewport に一致しない startup/recovery frame を破棄する
 - [x] 3.3 fullscreen smooth scroll を x/y pan として扱い、拡大後の zoom と描画寸法を保持する
 - [x] 3.4 最大化、右下 controls、fullscreen close を固定黒背景、白 icon、1 px 白 border に統一する
-- [ ] 3.5 公開済み KDV v0.3.2 / KRR v0.4.4 を registry-only で解決し、workspace と screenshot runner の lockfile checksum を確定する
+- [x] 3.5 公開済み KDV v0.3.2 / KRR v0.4.4 を registry-only で解決し、workspace と screenshot runner の lockfile checksum を確定する
 - [ ] 3.6 workspace version、release metadata、CHANGELOG EN/JA、OpenSpec release target を v0.22.34 に同期する
 - [ ] 3.7 SemVer guard が published v0.22.33 -> v0.22.34 だけを許可し、v0.29.0 と非隣接版を拒否することを確認する
 

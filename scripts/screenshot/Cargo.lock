@@ -2939,9 +2939,9 @@ dependencies = [
 
 [[package]]
 name = "katana-document-viewer"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ed1f6fa17ee9f003485f45c3ff5491db3bd2d0ee0d8568e509fe7d041532280"
+checksum = "d42d3daac031362c5888b2aaadf186dbf8ffe0da708663e903c7249757bdb731"
 dependencies = [
  "cosmic-text",
  "epaint_default_fonts",
@@ -3008,9 +3008,9 @@ dependencies = [
 
 [[package]]
 name = "katana-render-runtime"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4d56ad29a447a8c2754c3961bda2dc6e8111c49e1e6d5be84eb158069611f0a"
+checksum = "4b06dce48084e4945db7b06a387f188cd30448abc256a703ce4fd33d982a3530"
 dependencies = [
  "anyhow",
  "base64",
