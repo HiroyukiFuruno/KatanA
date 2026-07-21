@@ -146,6 +146,8 @@ jobs:
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Run release preflight logic
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: ./scripts/release/check-pr-ready.sh "${{ steps.version.outputs.version_bare }}"
 
       - name: Extract release notes from CHANGELOG.md
