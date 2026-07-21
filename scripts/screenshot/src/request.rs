@@ -138,11 +138,13 @@ pub struct RecordStartStep {
 #[derive(Debug, Deserialize)]
 pub struct RecordStopStep {}
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum ScrollDirection {
     Up,
     Down,
+    Left,
+    Right,
 }
 
 #[derive(Debug, Deserialize)]
@@ -426,7 +428,7 @@ pub fn load(path: &std::path::Path) -> anyhow::Result<Request> {
 
 #[cfg(test)]
 mod tests {
-    use super::Request;
+    use super::{Request, ScrollDirection, Step};
 
     #[test]
     fn browser_evidence_actions_are_valid_request_steps() {
@@ -504,5 +506,41 @@ mod tests {
         );
 
         assert!(request.is_ok(), "{request:?}");
+    }
+
+    #[test]
+    fn scroll_steps_accept_horizontal_and_vertical_directions(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let request = serde_json::from_str::<Request>(
+            r#"{
+                "schema_version": "1",
+                "name": "four-axis-scroll",
+                "steps": [
+                    { "type": "scroll", "direction": "up", "pixels": 10.0, "duration_seconds": 0.1 },
+                    { "type": "scroll", "direction": "down", "pixels": 10.0, "duration_seconds": 0.1 },
+                    { "type": "scroll", "direction": "left", "pixels": 10.0, "duration_seconds": 0.1 },
+                    { "type": "scroll", "direction": "right", "pixels": 10.0, "duration_seconds": 0.1 }
+                ]
+            }"#,
+        )?;
+        let directions = request
+            .steps
+            .iter()
+            .filter_map(|step| match step {
+                Step::Scroll(scroll) => Some(scroll.direction),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            directions,
+            vec![
+                ScrollDirection::Up,
+                ScrollDirection::Down,
+                ScrollDirection::Left,
+                ScrollDirection::Right,
+            ]
+        );
+        Ok(())
     }
 }

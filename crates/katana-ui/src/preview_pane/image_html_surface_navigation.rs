@@ -10,15 +10,20 @@ impl HtmlBrowserSurface {
             *self = Self::start(source);
             return;
         };
-        let result = HtmlBrowserNavigation::new(source)
-            .map_err(|error| error.to_string())
-            .and_then(|navigation| {
-                adapter
-                    .navigate(navigation)
-                    .map_err(|error| error.to_string())
-            });
-        if let Err(error) = result {
-            self.record_error(error);
+        let navigation = match HtmlBrowserNavigation::new(source) {
+            Ok(navigation) => navigation,
+            Err(error) => {
+                self.record_failure(
+                    "KRR browser",
+                    "prepare navigation",
+                    origin,
+                    error.to_string(),
+                );
+                return;
+            }
+        };
+        if let Err(error) = adapter.navigate(navigation) {
+            self.record_adapter_error("navigate", Some(origin), error);
             return;
         }
         self.pending_navigation_url = None;

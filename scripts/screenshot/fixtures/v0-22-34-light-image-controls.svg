@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1400" width="1800" height="1400" role="img" aria-label="Light image control verification">
+  <rect width="1800" height="1400" fill="#ffffff"/>
+  <rect x="24" y="24" width="1752" height="1352" fill="none" stroke="#d1d5db" stroke-width="8"/>
+  <rect x="80" y="80" width="520" height="360" fill="#22c55e"/>
+  <rect x="1200" y="80" width="520" height="360" fill="#3b82f6"/>
+  <rect x="80" y="960" width="520" height="360" fill="#f59e0b"/>
+  <rect x="1200" y="960" width="520" height="360" fill="#ef4444"/>
+  <circle cx="900" cy="700" r="180" fill="#ffffff" stroke="#111827" stroke-width="12"/>
+  <text x="780" y="680" fill="#111827" font-family="Arial" font-size="54">KatanA</text>
+  <text x="724" y="752" fill="#111827" font-family="Arial" font-size="38">1800 x 1400</text>
+  <text x="112" y="276" fill="#ffffff" font-family="Arial" font-size="56">TOP LEFT</text>
+  <text x="1250" y="276" fill="#ffffff" font-family="Arial" font-size="56">TOP RIGHT</text>
+  <text x="112" y="1168" fill="#111827" font-family="Arial" font-size="56">BOTTOM LEFT</text>
+  <text x="1232" y="1168" fill="#ffffff" font-family="Arial" font-size="56">BOTTOM RIGHT</text>
+</svg>

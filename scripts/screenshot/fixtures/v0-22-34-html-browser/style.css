@@ -2,6 +2,11 @@ main { margin: 12px; padding: 12px; border: 1px solid #c9d6e4; background: #ffff
 h1 { margin: 0 0 6px; font-size: 26px; color: #173f5f; }
 p { margin: 0 0 6px; }
 .status { margin: 6px 0; padding: 4px; border: 1px solid #9fd4be; background: #e6f5ef; color: #12513a; }
+.visual-assets { display: flex; gap: 12px; align-items: center; margin: 8px 0; }
+figure { margin: 0; padding: 6px; border: 1px solid #93b4cf; background: #f7fbff; }
+figcaption { margin-top: 4px; color: #173f5f; }
+#resource-image { display: block; width: 240px; height: 96px; }
+#embedded-mermaid-svg { display: block; width: 320px; height: 96px; }
 details { margin: 8px 0; padding: 4px; border: 1px solid #93b4cf; background: #f7fbff; }
 summary { padding: 4px; border: 1px solid #0b60d1; background: #4f9dff; color: #ffffff; font-weight: 700; }
 .panel { margin-top: 4px; padding: 6px; border: 1px solid #c9d6e4; background: #ffffff; }

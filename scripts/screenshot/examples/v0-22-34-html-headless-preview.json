@@ -1,6 +1,6 @@
 {
   "schema_version": "1",
-  "name": "v0-22-33-html-headless-preview",
+  "name": "v0-22-34-html-headless-preview",
   "fixture": {
     "settings": {
       "theme": "dark",
@@ -11,19 +11,23 @@
     "workspace_files": [
       {
         "name": "index.html",
-        "source": "scripts/screenshot/fixtures/v0-22-33-html-browser/index.html"
+        "source": "scripts/screenshot/fixtures/v0-22-34-html-browser/index.html"
       },
       {
         "name": "linked-panel.html",
-        "source": "scripts/screenshot/fixtures/v0-22-33-html-browser/linked-panel.html"
+        "source": "scripts/screenshot/fixtures/v0-22-34-html-browser/linked-panel.html"
       },
       {
         "name": "style.css",
-        "source": "scripts/screenshot/fixtures/v0-22-33-html-browser/style.css"
+        "source": "scripts/screenshot/fixtures/v0-22-34-html-browser/style.css"
       },
       {
         "name": "actions.js",
-        "source": "scripts/screenshot/fixtures/v0-22-33-html-browser/actions.js"
+        "source": "scripts/screenshot/fixtures/v0-22-34-html-browser/actions.js"
+      },
+      {
+        "name": "resource-image.svg",
+        "source": "scripts/screenshot/fixtures/v0-22-34-html-browser/resource-image.svg"
       }
     ]
   },
@@ -57,8 +61,46 @@
       "min_pixels": 500
     },
     {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [38, 184, 166],
+      "min_pixels": 500
+    },
+    {
+      "type": "assert_html_browser_frame_contains_rgb",
+      "rgb": [245, 158, 11],
+      "min_pixels": 500
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-resource-image"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "01-resource-image",
+      "rgb": [38, 184, 166],
+      "tolerance": 2,
+      "min_pixels": 500
+    },
+    {
+      "type": "screenshot",
+      "output_name": "01-embedded-svg"
+    },
+    {
+      "type": "assert_screenshot_contains_rgb",
+      "screenshot": "01-embedded-svg",
+      "rgb": [245, 158, 11],
+      "tolerance": 2,
+      "min_pixels": 500
+    },
+    {
       "type": "assert_active_document",
       "path_contains": "index.html"
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
     },
     {
       "type": "action",
@@ -235,6 +277,12 @@
       "duration_seconds": 0.25
     },
     {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
+      "duration_seconds": 0.25
+    },
+    {
       "type": "action",
       "action": {
         "click_rgb_region": {
@@ -279,7 +327,13 @@
     {
       "type": "scroll",
       "direction": "up",
-      "pixels": 2000.0,
+      "pixels": 3000.0,
+      "duration_seconds": 0.25
+    },
+    {
+      "type": "scroll",
+      "direction": "down",
+      "pixels": 320.0,
       "duration_seconds": 0.25
     },
     {

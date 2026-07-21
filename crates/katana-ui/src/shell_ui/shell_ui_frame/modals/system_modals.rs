@@ -66,5 +66,15 @@ impl KatanaApp {
             )
             .show(ctx);
         }
+
+        if !self.state.layout.show_slideshow
+            && let Some(active_path) = self.state.active_document().map(|doc| doc.path.clone())
+            && let Some(preview) = self
+                .tab_previews
+                .iter_mut()
+                .find(|preview| preview.path == active_path)
+        {
+            preview.pane.render_fullscreen_modal(ctx);
+        }
     }
 }

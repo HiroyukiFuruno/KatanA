@@ -10,6 +10,8 @@ const FRAME_UPDATE_POLL_INTERVAL: std::time::Duration = std::time::Duration::fro
 const FRAME_UPDATE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 const HTML_BROWSER_ERROR_TEXT_PADDING: f32 = 12.0;
 
+#[path = "image_html_surface_failure.rs"]
+mod failure;
 #[path = "image_html_surface_frame.rs"]
 mod frame;
 #[path = "image_html_surface_geometry.rs"]
@@ -102,6 +104,9 @@ impl HtmlBrowserSurface {
             };
             match update {
                 BrowserSessionUpdate::Frame(frame) => {
+                    if !self.accepts_frame_viewport(frame.viewport) {
+                        continue;
+                    }
                     let origin = frame.origin.as_str().to_owned();
                     self.record_navigation(origin.clone());
                     self.document_origin = Some(origin);
@@ -118,7 +123,7 @@ impl HtmlBrowserSurface {
                     self.pending_navigation_url = Some(navigation.url.as_str().to_string());
                 }
                 BrowserSessionUpdate::Error(error) => {
-                    self.record_error(error.to_string());
+                    self.record_adapter_error("receive worker update", None, error);
                 }
             }
         }
@@ -145,9 +150,10 @@ impl HtmlBrowserSurface {
             return;
         }
         if let Err(error) = adapter.resize(viewport) {
-            self.record_error(error.to_string());
+            self.record_adapter_error("resize", None, error);
             return;
         }
+        self.discard_bootstrap_frame(viewport);
         self.viewport = Some(viewport);
         self.await_frame();
     }
@@ -170,11 +176,29 @@ impl HtmlBrowserSurface {
     fn is_interacting(&self) -> bool {
         self.pointer_over || self.focused
     }
+
+    fn accepts_frame_viewport(&self, frame_viewport: HtmlBrowserViewport) -> bool {
+        self.viewport
+            .is_none_or(|requested_viewport| requested_viewport == frame_viewport)
+    }
+
+    fn discard_bootstrap_frame(&mut self, requested_viewport: HtmlBrowserViewport) {
+        let is_bootstrap = self.frame.as_ref().is_some_and(|frame| {
+            frame.viewport.width == INITIAL_VIEWPORT_DIMENSION
+                && frame.viewport.height == INITIAL_VIEWPORT_DIMENSION
+                && frame.viewport != requested_viewport
+        });
+        if is_bootstrap {
+            self.frame = None;
+            self.texture = None;
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use katana_document_viewer::browser_session::BrowserSessionAdapterError;
 
     const DEVICE_SCALE_FACTOR: f32 = 2.0;
     const UI_WIDTH: f32 = 100.0;
@@ -250,6 +274,53 @@ mod tests {
         assert!(!surface.focused);
         assert!(!surface.pointer_over);
         assert_eq!(surface.error.as_deref(), Some("runtime failed"));
+    }
+
+    #[test]
+    fn worker_stop_does_not_overwrite_the_primary_browser_error() {
+        let mut surface = HtmlBrowserSurface::failed("primary KRR failure".to_string());
+
+        surface.record_adapter_error(
+            "resize",
+            Some("file:///workspace/index.html".to_string()),
+            BrowserSessionAdapterError::WorkerStopped,
+        );
+
+        assert_eq!(surface.error.as_deref(), Some("primary KRR failure"));
+    }
+
+    #[test]
+    fn adapter_errors_include_layer_operation_document_and_cause() {
+        let mut surface = HtmlBrowserSurface::failed("initial".to_string());
+        surface.error = None;
+
+        surface.record_adapter_error(
+            "resize",
+            Some("file:///workspace/index.html".to_string()),
+            BrowserSessionAdapterError::CommandQueueFull,
+        );
+
+        let error = surface.error.as_deref().unwrap_or_default();
+        assert!(error.contains("Layer: KDV worker"));
+        assert!(error.contains("Operation: resize"));
+        assert!(error.contains("Document: file:///workspace/index.html"));
+        assert!(error.contains("Cause: browser command queue is full"));
+    }
+
+    #[test]
+    fn requested_viewport_rejects_stale_bootstrap_frames() {
+        let bootstrap = HtmlBrowserViewport::new(1, 1, 1.0).unwrap();
+        let requested = HtmlBrowserViewport::new(320, 240, 1.0).unwrap();
+        let mut surface = HtmlBrowserSurface::failed("test".to_string());
+        surface.frame = Some(BrowserFrame::new(1, bootstrap, vec![255, 255, 255, 255]));
+
+        assert!(surface.accepts_frame_viewport(bootstrap));
+        surface.discard_bootstrap_frame(requested);
+        surface.viewport = Some(requested);
+
+        assert!(surface.frame.is_none());
+        assert!(!surface.accepts_frame_viewport(bootstrap));
+        assert!(surface.accepts_frame_viewport(requested));
     }
 
     #[test]

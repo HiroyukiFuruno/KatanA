@@ -307,17 +307,14 @@ pub fn run(
                 for _ in 0..frames {
                     let viewport = harness.ctx.viewport_rect();
                     let pos = egui::pos2(viewport.center().x, viewport.center().y);
-                    let signed_delta = match s.direction {
-                        ScrollDirection::Down => -delta_per_frame,
-                        ScrollDirection::Up => delta_per_frame,
-                    };
+                    let delta = scroll_delta(s.direction, delta_per_frame);
                     harness
                         .input_mut()
                         .events
                         .push(egui::Event::PointerMoved(pos));
                     harness.input_mut().events.push(egui::Event::MouseWheel {
                         unit: egui::MouseWheelUnit::Point,
-                        delta: egui::Vec2::new(0.0, signed_delta),
+                        delta,
                         modifiers: egui::Modifiers::NONE,
                         phase: egui::TouchPhase::Move,
                     });
@@ -910,6 +907,15 @@ fn physical_png_bounds(
     })
 }
 
+fn scroll_delta(direction: ScrollDirection, amount: f32) -> egui::Vec2 {
+    match direction {
+        ScrollDirection::Up => egui::vec2(0.0, amount),
+        ScrollDirection::Down => egui::vec2(0.0, -amount),
+        ScrollDirection::Left => egui::vec2(amount, 0.0),
+        ScrollDirection::Right => egui::vec2(-amount, 0.0),
+    }
+}
+
 fn assert_active_document(
     harness: &mut Harness<'_, KatanaApp>,
     assertion: &AssertActiveDocumentStep,
@@ -1356,11 +1362,41 @@ fn navigate_slideshow(
 }
 
 fn click_node(harness: &mut Harness<'_, KatanaApp>, label: &str, button: ClickButton) {
-    let node = harness.get_by_label(label);
-    match button {
-        ClickButton::Primary => node.click(),
-        ClickButton::Secondary => node.click_secondary(),
-    }
+    let viewport = harness.ctx.viewport_rect();
+    let physical_viewport = egui::Rect::from_min_max(
+        egui::pos2(
+            viewport.min.x * HARNESS_PIXELS_PER_POINT,
+            viewport.min.y * HARNESS_PIXELS_PER_POINT,
+        ),
+        egui::pos2(
+            viewport.max.x * HARNESS_PIXELS_PER_POINT,
+            viewport.max.y * HARNESS_PIXELS_PER_POINT,
+        ),
+    );
+    let all_rects: Vec<_> = harness
+        .get_all_by_label(label)
+        .into_iter()
+        .map(|node| node.rect())
+        .collect();
+    let visible_rects: Vec<_> = all_rects
+        .iter()
+        .copied()
+        .filter(|rect| physical_viewport.intersects(*rect))
+        .collect();
+    let [physical_rect] = visible_rects.as_slice() else {
+        panic!(
+            "expected exactly one visible accessibility node {label:?}, found {}: {visible_rects:?}; all: {all_rects:?}",
+            visible_rects.len()
+        );
+    };
+    let logical_pos = egui::pos2(
+        physical_rect.center().x / HARNESS_PIXELS_PER_POINT,
+        physical_rect.center().y / HARNESS_PIXELS_PER_POINT,
+    );
+    println!(
+        "  click accessibility node {label:?}: {physical_rect:?} -> {logical_pos:?}"
+    );
+    click_at(harness, logical_pos, button);
 }
 
 fn apply_lint_fixes_for_active_file(
@@ -1619,8 +1655,9 @@ fn normalize_relative_path(path: &Path) -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use super::{find_workspace_file, normalize_relative_path, physical_png_bounds};
+    use super::{find_workspace_file, normalize_relative_path, physical_png_bounds, scroll_delta};
     use crate::capture::PngBounds;
+    use crate::request::ScrollDirection;
     use katana_core::workspace::TreeEntry;
     use std::path::{Path, PathBuf};
 
@@ -1691,6 +1728,23 @@ mod tests {
         assert_eq!(
             physical_png_bounds(egui::Rect::EVERYTHING, 200, 100, 0.0),
             None
+        );
+    }
+
+    #[test]
+    fn scroll_delta_maps_every_direction_to_one_axis() {
+        assert_eq!(scroll_delta(ScrollDirection::Up, 8.0), egui::vec2(0.0, 8.0));
+        assert_eq!(
+            scroll_delta(ScrollDirection::Down, 8.0),
+            egui::vec2(0.0, -8.0)
+        );
+        assert_eq!(
+            scroll_delta(ScrollDirection::Left, 8.0),
+            egui::vec2(8.0, 0.0)
+        );
+        assert_eq!(
+            scroll_delta(ScrollDirection::Right, 8.0),
+            egui::vec2(-8.0, 0.0)
         );
     }
 }

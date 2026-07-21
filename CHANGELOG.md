@@ -2,6 +2,22 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.34] - 2026-07-21 18:23:10 (UTC)
+
+### ✨ Improvements
+
+- **Complete HTML resource rendering**: Local HTML files and web pages now load allowed external stylesheets, scripts, images, and embedded SVG content while keeping the main document visible when an individual resource is blocked or fails.
+- **Traceable HTML failures and recovery**: HTML errors now identify the failed layer, operation, document URL, and original cause, and the viewer can recover in the same process after a browser session startup failure.
+
+### 🐛 Bug Fixes
+
+- **Fullscreen image navigation**: Zoomed images now remain fullscreen at the selected size while panning or scrolling in every direction, including across automatic document refreshes.
+- **Image controls on light content**: Fullscreen, navigation, zoom, and close controls now use a fixed dark background and visible border so they remain legible over light themes and white images.
+
+### 🔧 System
+
+- **HTML runtime stability**: Updated the shared Rust and V8 rendering path and strengthened cross-platform release checks without adding an external browser dependency.
+
 ## [0.22.33] - 2026-07-04 05:26:11 (UTC)
 
 ### 🚀 Features

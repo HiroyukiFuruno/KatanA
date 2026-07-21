@@ -10,6 +10,23 @@
     <h1>KatanA HTML Preview</h1>
     <p>Rust owns HTML parsing, CSS layout, V8 JavaScript, hit-testing, and pixels.</p>
     <p id="status" class="status">JavaScript has not executed</p>
+    <section class="visual-assets" aria-label="Rendered visual assets">
+      <figure>
+        <img id="resource-image" src="resource-image.svg" alt="External SVG rendered by KRR">
+        <figcaption>External SVG image</figcaption>
+      </figure>
+      <figure>
+        <svg id="embedded-mermaid-svg" viewBox="0 0 320 96" width="320" height="96" role="img" aria-label="Embedded workflow diagram">
+          <rect x="8" y="18" width="92" height="56" rx="4" fill="#f59e0b"></rect>
+          <path d="M100 46 H208" stroke="#173f5f" stroke-width="6"></path>
+          <polygon points="208,36 228,46 208,56" fill="#173f5f"></polygon>
+          <rect x="228" y="18" width="84" height="56" rx="4" fill="#8b5cf6"></rect>
+          <text x="24" y="52" fill="#24113f" font-size="16">Parse</text>
+          <text x="244" y="52" fill="#ffffff" font-size="16">Paint</text>
+        </svg>
+        <figcaption>Embedded SVG diagram</figcaption>
+      </figure>
+    </section>
     <a id="prevented-link" href="linked-panel.html">Run prevented navigation</a>
     <a id="navigation-link" href="linked-panel.html#linked-target">Open linked panel section</a>
     <a id="fragment-link" href="#fragment-target">Open page section</a>

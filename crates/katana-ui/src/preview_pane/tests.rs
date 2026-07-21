@@ -669,6 +669,62 @@ mod tests {
     }
 
     #[test]
+    fn force_refresh_preserves_same_local_image_fullscreen_transform() {
+        let mut pane = PreviewPane::default();
+        let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+        let source = "![image](file:///tmp/fullscreen-refresh.png)";
+        let document_path = std::path::Path::new("/tmp/fullscreen-refresh.png");
+        pane.full_render(source, document_path, cache.clone(), false, 4);
+        pane.fullscreen_image = Some(0);
+        pane.fullscreen_viewer_state.zoom_in();
+        pane.fullscreen_viewer_state
+            .pan_by(egui::vec2(120.0, -80.0));
+        pane.fullscreen_viewer_state.texture_identity = Some(ViewerTextureIdentity::local_file(
+            std::path::Path::new("/tmp/fullscreen-refresh.png"),
+        ));
+
+        pane.full_render(source, document_path, cache, true, 4);
+
+        assert_eq!(pane.fullscreen_image, Some(0));
+        assert_eq!(pane.fullscreen_viewer_state.zoom, 1.25);
+        assert_eq!(pane.fullscreen_viewer_state.pan, egui::vec2(120.0, -80.0));
+        assert!(pane.fullscreen_viewer_state.texture.is_none());
+
+        pane.fullscreen_viewer_state.prepare_texture(
+            ViewerTextureIdentity::local_file(std::path::Path::new("/tmp/fullscreen-refresh.png")),
+            crate::theme_bridge::WHITE,
+        );
+        assert_eq!(pane.fullscreen_viewer_state.zoom, 1.25);
+        assert_eq!(pane.fullscreen_viewer_state.pan, egui::vec2(120.0, -80.0));
+    }
+
+    #[test]
+    fn force_refresh_closes_fullscreen_when_local_image_changes() {
+        let mut pane = PreviewPane::default();
+        let cache = std::sync::Arc::new(katana_platform::InMemoryCacheService::default());
+        let document_path = std::path::Path::new("/tmp/fullscreen-refresh.png");
+        pane.full_render(
+            "![before](file:///tmp/before.png)",
+            document_path,
+            cache.clone(),
+            false,
+            4,
+        );
+        pane.fullscreen_image = Some(0);
+
+        pane.full_render(
+            "![after](file:///tmp/after.png)",
+            document_path,
+            cache,
+            true,
+            4,
+        );
+
+        assert!(pane.fullscreen_image.is_none());
+        assert_eq!(pane.fullscreen_viewer_state, ViewerState::default());
+    }
+
+    #[test]
     fn parse_md_image_simple_image() {
         let input = "![alt text](path/to/image.png)";
         let img = parse_md_image(input).unwrap();
@@ -1137,6 +1193,20 @@ mod tests {
             source_lines: 0,
         });
         pane.handle_fullscreen_request(Some(0), None);
+        assert_eq!(pane.fullscreen_image, Some(0));
+    }
+
+    #[test]
+    fn handle_fullscreen_request_sets_index_for_valid_local_image() {
+        let mut pane = PreviewPane::default();
+        pane.sections.push(RenderedSection::LocalImage {
+            path: std::path::PathBuf::from("light-image-controls.svg"),
+            alt: "Light image control verification".to_string(),
+            source_lines: 1,
+        });
+
+        pane.handle_fullscreen_request(Some(0), None);
+
         assert_eq!(pane.fullscreen_image, Some(0));
     }
 
