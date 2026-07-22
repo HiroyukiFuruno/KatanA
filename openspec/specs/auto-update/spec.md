@@ -3,6 +3,18 @@
 ## Purpose
 TBD - created by archiving change v0-22-11-update-auto-relauncher-asset-fix. Update Purpose after archive.
 ## Requirements
+### Requirement: Update discovery must survive public API rate limits
+
+システムは、GitHub REST API の未認証 rate limit に到達した場合でも、認証情報や外部サービスをユーザーへ要求せず、GitHub の公開リリースページから最新版を特定して更新確認を継続しなければならない（MUST）。
+
+#### Scenario: Latest release API returns a rate-limit status
+
+- **WHEN** 最新リリース API がステータス 403 または 429 を返す
+- **THEN** システムは公開された `/releases/latest` の redirect をたどる
+- **THEN** 最終 URL の `/releases/tag/{version}` から SemVer tag と release URL を取得する
+- **THEN** fallback が成功した場合は更新サーバーのステータスエラーを表示しない
+- **THEN** proxy 環境変数が不正でも、到達済み API の rate-limit 応答を proxy エラーで上書きしない
+
 ### Requirement: Update download URL must use the asset name actually published by the release pipeline
 
 システムは、自動アップデート時のアセットダウンロード URL を、`.github/workflows/build-and-release.yml` が GitHub Release に publish しているアセット名と完全に一致させなければならない（MUST）。
@@ -136,4 +148,3 @@ TBD - created by archiving change v0-22-11-update-auto-relauncher-asset-fix. Upd
 - **WHEN** ユーザーがアプリ内の「アップデート＆再起動」を 1 回クリックする
 - **THEN** 更新、差し替え、再起動が自動で完了する
 - **AND** ユーザーに追加の復旧手順は表示されない
-
