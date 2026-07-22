@@ -36,7 +36,7 @@ post-release verification can only run after this preflight succeeds.
 
 | Step | State |
 | --- | --- |
-| Push `release/v0.22.35` with normal hooks | Pending |
+| Push `release/v0.22.35` with normal hooks | Complete |
 | Pass required PR CI and merge | Pending |
 | Verify GitHub Release v0.22.35, assets, latest release, and absence of v0.29.0 | Pending |
 | Verify local/remote branch and worktree hygiene | Pending |
