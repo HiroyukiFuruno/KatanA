@@ -44,6 +44,8 @@ post-release verification can only run after this preflight succeeds.
 ## 4. User feedback ledger
 
 - [x] 4.1 `JavaScript expecption: TypeError: document.addEventListener is not a function` を根本解決する
+- [x] 4.2 GitHub REST API が rate limit で 403 / 429 を返しても、公開リリース URL から更新確認を継続する
+- [x] 4.3 空白を含む macOS app bundle を release asset inspector が誤判定しないようにする
 
-`4.2` の未完了停止禁止、機械検証、headless 実機証跡、release 完了は上記の
+`4.4` の未完了停止禁止、機械検証、headless 実機証跡、release 完了は上記の
 release execution table と本タスクの最終完了条件として追跡する。
