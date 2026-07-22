@@ -49,3 +49,7 @@ post-release verification can only run after this preflight succeeds.
 
 `4.4` の未完了停止禁止、機械検証、headless 実機証跡、release 完了は上記の
 release execution table と本タスクの最終完了条件として追跡する。
+
+## 5. Release gate reliability
+
+- [x] 5.1 高負荷時の UI accessibility tree 反映を条件待機し、Problems count 統合テストの競合を除去する

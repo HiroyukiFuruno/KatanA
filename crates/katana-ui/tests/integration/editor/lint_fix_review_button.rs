@@ -10,6 +10,8 @@ use katana_ui::i18n::I18nOps;
 use katana_ui::state::diagnostics::ProblemsScope;
 use std::path::PathBuf;
 
+const UI_SETTLE_FRAME_LIMIT: usize = 10;
+
 #[test]
 fn editor_diagnostic_fix_button_opens_lint_fix_review_tab() {
     let _guard = crate::integration::lock_serial_test_mutex();
@@ -176,16 +178,27 @@ fn problems_status_count_follows_scope_only_while_panel_open() {
         .is_panel_open = true;
     harness.run_steps(3);
 
-    harness.get_by_label(&problem_count_label(3));
+    wait_for_label(&mut harness, &problem_count_label(3));
     harness.state_mut().app_state_mut().diagnostics.scope = ProblemsScope::ActiveTab;
-    harness.run_steps(3);
-    harness.get_by_label(&problem_count_label(1));
+    wait_for_label(&mut harness, &problem_count_label(1));
 
-    harness
-        .get_by_label(&I18nOps::get().status.problems_panel_close)
-        .click();
-    harness.run_steps(3);
-    harness.get_by_label(&problem_count_label(3));
+    let close_label = I18nOps::get().status.problems_panel_close.clone();
+    wait_for_label(&mut harness, &close_label);
+    harness.get_by_label(&close_label).click();
+    wait_for_label(&mut harness, &problem_count_label(3));
+}
+
+fn wait_for_label(
+    harness: &mut egui_kittest::Harness<'static, katana_ui::shell::KatanaApp>,
+    label: &str,
+) {
+    for _ in 0..UI_SETTLE_FRAME_LIMIT {
+        if harness.query_all_by_label(label).next().is_some() {
+            return;
+        }
+        harness.step();
+    }
+    panic!("label did not appear after UI settled: {label}");
 }
 
 fn open_document_with_fixable_diagnostic(
