@@ -2,6 +2,17 @@
 
 All notable changes to KatanA Desktop. This file records the changes to KatanA Desktop.
 
+## [0.22.35] - 2026-07-22 02:09:02 (UTC)
+
+### 🐛 Bug Fixes
+
+- **HTML document lifecycle events**: Scripts that register `DOMContentLoaded`, `readystatechange`, or `load` handlers now initialize correctly instead of failing because the document event API is unavailable.
+- **Traceable lifecycle script errors**: Errors thrown by document lifecycle handlers now retain the document URL, operation, script line and column, and JavaScript stack instead of being replaced by a generic browser worker failure.
+
+### 🔧 System
+
+- **Native HTML runtime stability**: Updated the shared Rust and V8 rendering path while preserving the browser-free application architecture.
+
 ## [0.22.34] - 2026-07-21 18:23:10 (UTC)
 
 ### ✨ Improvements

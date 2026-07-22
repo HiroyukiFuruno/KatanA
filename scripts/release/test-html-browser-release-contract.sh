@@ -20,7 +20,7 @@ write_fixture() {
         "$directory/openspec/specs/html-file-preview" \
         "$directory/scripts/release" \
         "$directory/scripts/screenshot/examples" \
-        "$directory/scripts/screenshot/fixtures/v0-22-34-html-browser" \
+        "$directory/scripts/screenshot/fixtures/v0-22-35-html-browser" \
         "$directory/scripts/screenshot/src"
     cat >"$directory/Cargo.toml" <<EOF
 [workspace]
@@ -52,8 +52,8 @@ EOF
         cat >"$directory/openspec/specs/html-file-preview/spec.md" <<'EOF'
 ### Requirement: Browser-equivalent HTML session is the only interactive preview path
 The system MUST NOT fall back to static HTML rendering when the browser session cannot start.
-### Requirement: v0.22.34 release must prove the published browser chain
-The minimum resolved version of KDV `0.3.2` and KRR `0.4.4` is required.
+### Requirement: v0.22.35 release must prove the published browser chain
+The minimum resolved version of KDV `0.3.3` and KRR `0.4.5` is required.
 Headless evidence must prove raw KRR frame pixels independently.
 EOF
     else
@@ -65,9 +65,9 @@ exit ${runtime_guard_result}
 EOF
     chmod +x "$directory/scripts/release/check-html-browser-runtime-contract.sh"
     printf '%s\n' 'mod executor_harness;' >"$directory/scripts/screenshot/src/main.rs"
-    cat >"$directory/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'EOF'
+    cat >"$directory/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'EOF'
 {
-  "name": "v0-22-34-html-headless-preview",
+  "name": "v0-22-35-html-headless-preview",
   "fixture": {
     "workspace_files": [
       {"name": "index.html", "source": "index.html"},
@@ -141,7 +141,41 @@ EOF
   ]
 }
 EOF
-    cat >"$directory/scripts/screenshot/fixtures/v0-22-34-html-browser/index.html" <<'EOF'
+    cat >"$directory/scripts/screenshot/examples/v0-22-35-light-image-controls.json" <<'EOF'
+{
+  "name": "v0-22-35-light-image-controls",
+  "fixture": {
+    "settings": {
+      "theme": "light",
+      "preview_show_diagram_controls": true
+    },
+    "workspace_files": [
+      {"name": "light-image-controls.png", "source": "light-image-controls.png"}
+    ]
+  },
+  "steps": [
+    {"type": "screenshot", "output_name": "01-light-image-controls"},
+    {"type": "assert_screenshot_contains_rgb", "screenshot": "01-light-image-controls", "rgb": [106, 106, 106], "min_pixels": 1000},
+    {"type": "action", "action": {"click_node": {"label": "Fullscreen"}}},
+    {"type": "screenshot", "output_name": "02-fullscreen-controls"},
+    {"type": "action", "action": {"click_node": {"label": "Zoom In"}}},
+    {"type": "screenshot", "output_name": "03-fullscreen-zoomed"},
+    {"type": "scroll", "direction": "right", "pixels": 100},
+    {"type": "screenshot", "output_name": "04-fullscreen-scroll-right"},
+    {"type": "scroll", "direction": "down", "pixels": 100},
+    {"type": "screenshot", "output_name": "05-fullscreen-scroll-down"},
+    {"type": "scroll", "direction": "left", "pixels": 100},
+    {"type": "screenshot", "output_name": "06-fullscreen-scroll-left"},
+    {"type": "scroll", "direction": "up", "pixels": 100},
+    {"type": "screenshot", "output_name": "07-fullscreen-scroll-up"},
+    {"type": "assert_screenshot_changed", "baseline": "03-fullscreen-zoomed", "current": "04-fullscreen-scroll-right", "min_changed_pixels": 1},
+    {"type": "assert_screenshot_changed", "baseline": "04-fullscreen-scroll-right", "current": "05-fullscreen-scroll-down", "min_changed_pixels": 1},
+    {"type": "assert_screenshot_changed", "baseline": "05-fullscreen-scroll-down", "current": "06-fullscreen-scroll-left", "min_changed_pixels": 1},
+    {"type": "assert_screenshot_changed", "baseline": "06-fullscreen-scroll-left", "current": "07-fullscreen-scroll-up", "min_changed_pixels": 1}
+  ]
+}
+EOF
+    cat >"$directory/scripts/screenshot/fixtures/v0-22-35-html-browser/index.html" <<'EOF'
 <link rel="stylesheet" href="style.css"><img id="resource-image" src="resource-image.svg">
 <svg id="embedded-mermaid-svg"></svg><details></details><a id="prevented-link"></a>
 <a id="fragment-link" href="#fragment-target"></a><p id="scroll-target"></p>
@@ -149,7 +183,7 @@ EOF
 <button id="action"></button><input id="text-input">
 <a href="linked-panel.html#linked-target">Open</a><script src="actions.js"></script>
 EOF
-    cat >"$directory/scripts/screenshot/fixtures/v0-22-34-html-browser/style.css" <<'EOF'
+    cat >"$directory/scripts/screenshot/fixtures/v0-22-35-html-browser/style.css" <<'EOF'
 .status { background: #e6f5ef; }
 summary { background: #4f9dff; }
 input { background: #fff4cc; }
@@ -159,21 +193,22 @@ a { background: #b99aff; }
 #fragment-link { background: #f0a35e; }
 #fragment-target { background: #d6f5e3; }
 EOF
-    cat >"$directory/scripts/screenshot/fixtures/v0-22-34-html-browser/actions.js" <<'EOF'
-const status = "JavaScript executed by KRR V8";
+    cat >"$directory/scripts/screenshot/fixtures/v0-22-35-html-browser/actions.js" <<'EOF'
+document.addEventListener('DOMContentLoaded', () => {});
+const status = "DOMContentLoaded executed by KRR V8";
 const states = ["#b8f2d0", "#ffe08a", "#a7ddff"];
 const prevented = "event.preventDefault() #ffd1dc";
 const fragment = "Same-document fragment requested by KRR V8";
 const preserved = "Input state preserved: #d6f5e3";
 EOF
-    printf '%s\n' '<style>#linked-target { background: #e8c7ff; }</style><section id="linked-target">Linked fragment target loaded by KRR</section>' >"$directory/scripts/screenshot/fixtures/v0-22-34-html-browser/linked-panel.html"
-    printf '%s\n' '<svg xmlns="http://www.w3.org/2000/svg" aria-label="External resource pipeline"><rect fill="#26b8a6"/></svg>' >"$directory/scripts/screenshot/fixtures/v0-22-34-html-browser/resource-image.svg"
+    printf '%s\n' '<style>#linked-target { background: #e8c7ff; }</style><section id="linked-target">Linked fragment target loaded by KRR</section>' >"$directory/scripts/screenshot/fixtures/v0-22-35-html-browser/linked-panel.html"
+    printf '%s\n' '<svg xmlns="http://www.w3.org/2000/svg" aria-label="External resource pipeline"><rect fill="#26b8a6"/></svg>' >"$directory/scripts/screenshot/fixtures/v0-22-35-html-browser/resource-image.svg"
 }
 
 expect_accept() {
     local name=$1
     local directory=$2
-    if ! KATANA_RELEASE_ROOT="$directory" bash "$GUARD" 0.22.34 >/dev/null; then
+    if ! KATANA_RELEASE_ROOT="$directory" bash "$GUARD" 0.22.35 >/dev/null; then
         printf '[ERROR] Expected fixture to pass: %s\n' "$name" >&2
         exit 1
     fi
@@ -182,7 +217,7 @@ expect_accept() {
 expect_reject() {
     local name=$1
     local directory=$2
-    local version=${3:-0.22.34}
+    local version=${3:-0.22.35}
     if KATANA_RELEASE_ROOT="$directory" bash "$GUARD" "$version" >/dev/null 2>&1; then
         printf '[ERROR] Expected fixture to fail: %s\n' "$name" >&2
         exit 1
@@ -190,30 +225,30 @@ expect_reject() {
 }
 
 pass_dir="$TMP_ROOT/pass"
-write_fixture "$pass_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$pass_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 expect_accept "published browser dependency lines and patch floors" "$pass_dir"
 
 stale_kdv_lock_dir="$TMP_ROOT/stale-kdv-lock"
-write_fixture "$stale_kdv_lock_dir" '"0.3.2"' '"0.4.4"' 0.3.0 0.4.4 true 0
+write_fixture "$stale_kdv_lock_dir" '"0.3.3"' '"0.4.5"' 0.3.2 0.4.5 true 0
 expect_reject "stale KDV dependency patch" "$stale_kdv_lock_dir"
 
 stale_krr_lock_dir="$TMP_ROOT/stale-krr-lock"
-write_fixture "$stale_krr_lock_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.2 true 0
+write_fixture "$stale_krr_lock_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.4 true 0
 expect_reject "stale KRR dependency patch" "$stale_krr_lock_dir"
 
 stale_acceptance_lock_dir="$TMP_ROOT/stale-acceptance-lock"
-write_fixture "$stale_acceptance_lock_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$stale_acceptance_lock_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 python3 - "$stale_acceptance_lock_dir/scripts/screenshot/Cargo.lock" <<'PY'
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
-path.write_text(path.read_text().replace('version = "0.3.2"', 'version = "0.3.0"', 1))
+path.write_text(path.read_text().replace('version = "0.3.3"', 'version = "0.3.0"', 1))
 PY
 expect_reject "stale headless acceptance dependency patch" "$stale_acceptance_lock_dir"
 
 missing_checksum_dir="$TMP_ROOT/missing-checksum"
-write_fixture "$missing_checksum_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$missing_checksum_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 python3 - "$missing_checksum_dir/Cargo.lock" <<'PY'
 import sys
 from pathlib import Path
@@ -229,19 +264,19 @@ write_fixture "$old_dependency_dir" '"0.2.8"' '"0.3.8"' 0.2.8 0.3.8 true 0
 expect_reject "old static dependency lines" "$old_dependency_dir"
 
 stale_manifest_dir="$TMP_ROOT/stale-manifest"
-write_fixture "$stale_manifest_dir" '"0.3.0"' '"0.4.0"' 0.3.2 0.4.4 true 0
+write_fixture "$stale_manifest_dir" '"0.3.0"' '"0.4.0"' 0.3.3 0.4.5 true 0
 expect_reject "manifest permits stale dependency patches" "$stale_manifest_dir"
 
 path_dependency_dir="$TMP_ROOT/path-dependency"
-write_fixture "$path_dependency_dir" '{ version = "0.3.2", path = "../kdv" }' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$path_dependency_dir" '{ version = "0.3.3", path = "../kdv" }' '"0.4.5"' 0.3.3 0.4.5 true 0
 expect_reject "local path dependency" "$path_dependency_dir"
 
 git_dependency_dir="$TMP_ROOT/git-dependency"
-write_fixture "$git_dependency_dir" '"0.3.2"' '{ version = "0.4.4", git = "https://example.invalid/krr" }' 0.3.2 0.4.4 true 0
+write_fixture "$git_dependency_dir" '"0.3.3"' '{ version = "0.4.5", git = "https://example.invalid/krr" }' 0.3.3 0.4.5 true 0
 expect_reject "git dependency" "$git_dependency_dir"
 
 patch_override_dir="$TMP_ROOT/patch-override"
-write_fixture "$patch_override_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$patch_override_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 cat >>"$patch_override_dir/Cargo.toml" <<'EOF'
 
 [patch.crates-io]
@@ -250,7 +285,7 @@ EOF
 expect_reject "patch override" "$patch_override_dir"
 
 cargo_config_override_dir="$TMP_ROOT/cargo-config-override"
-write_fixture "$cargo_config_override_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$cargo_config_override_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 mkdir -p "$cargo_config_override_dir/.cargo"
 cat >"$cargo_config_override_dir/.cargo/config.toml" <<'EOF'
 [patch.crates-io]
@@ -259,34 +294,34 @@ EOF
 expect_reject "cargo config patch override" "$cargo_config_override_dir"
 
 non_registry_dir="$TMP_ROOT/non-registry"
-write_fixture "$non_registry_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0 'git+https://example.invalid/runtime'
+write_fixture "$non_registry_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0 'git+https://example.invalid/runtime'
 expect_reject "non-registry lock source" "$non_registry_dir"
 
 missing_spec_dir="$TMP_ROOT/missing-spec"
-write_fixture "$missing_spec_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 false 0
+write_fixture "$missing_spec_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 false 0
 expect_reject "missing browser OpenSpec contract" "$missing_spec_dir"
 
 runtime_failure_dir="$TMP_ROOT/runtime-failure"
-write_fixture "$runtime_failure_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 1
+write_fixture "$runtime_failure_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 1
 expect_reject "packaged runtime contract failure" "$runtime_failure_dir"
 
 missing_interaction_dir="$TMP_ROOT/missing-interaction"
-write_fixture "$missing_interaction_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$missing_interaction_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 mv \
-    "$missing_interaction_dir/scripts/screenshot/fixtures/v0-22-34-html-browser/index.html" \
-    "$missing_interaction_dir/scripts/screenshot/fixtures/v0-22-34-html-browser/index.html.missing"
+    "$missing_interaction_dir/scripts/screenshot/fixtures/v0-22-35-html-browser/index.html" \
+    "$missing_interaction_dir/scripts/screenshot/fixtures/v0-22-35-html-browser/index.html.missing"
 expect_reject "missing interactive acceptance fixture" "$missing_interaction_dir"
 
 missing_resource_dir="$TMP_ROOT/missing-resource"
-write_fixture "$missing_resource_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$missing_resource_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 mv \
-    "$missing_resource_dir/scripts/screenshot/fixtures/v0-22-34-html-browser/resource-image.svg" \
-    "$missing_resource_dir/scripts/screenshot/fixtures/v0-22-34-html-browser/resource-image.svg.missing"
+    "$missing_resource_dir/scripts/screenshot/fixtures/v0-22-35-html-browser/resource-image.svg" \
+    "$missing_resource_dir/scripts/screenshot/fixtures/v0-22-35-html-browser/resource-image.svg.missing"
 expect_reject "missing external image acceptance fixture" "$missing_resource_dir"
 
 missing_semantic_dir="$TMP_ROOT/missing-semantic"
-write_fixture "$missing_semantic_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$missing_semantic_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$missing_semantic_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$missing_semantic_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -305,9 +340,46 @@ path.write_text(json.dumps(request))
 PY
 expect_reject "missing semantic action-state assertion" "$missing_semantic_dir"
 
+missing_lifecycle_dir="$TMP_ROOT/missing-lifecycle"
+write_fixture "$missing_lifecycle_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$missing_lifecycle_dir/scripts/screenshot/fixtures/v0-22-35-html-browser/actions.js" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+path.write_text(
+    path.read_text().replace("document.addEventListener('DOMContentLoaded', () => {});\n", "")
+)
+PY
+expect_reject "missing DOMContentLoaded lifecycle initialization" "$missing_lifecycle_dir"
+
+missing_horizontal_pan_dir="$TMP_ROOT/missing-horizontal-pan"
+write_fixture "$missing_horizontal_pan_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$missing_horizontal_pan_dir/scripts/screenshot/examples/v0-22-35-light-image-controls.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+request = json.loads(path.read_text())
+request["steps"] = [
+    step
+    for step in request["steps"]
+    if step.get("direction") not in {"right", "left"}
+    and "scroll-right" not in step.get("output_name", "")
+    and "scroll-left" not in step.get("output_name", "")
+    and "scroll-right" not in step.get("baseline", "")
+    and "scroll-right" not in step.get("current", "")
+    and "scroll-left" not in step.get("baseline", "")
+    and "scroll-left" not in step.get("current", "")
+]
+path.write_text(json.dumps(request))
+PY
+expect_reject "missing horizontal fullscreen pan evidence" "$missing_horizontal_pan_dir"
+
 missing_fragment_dir="$TMP_ROOT/missing-fragment"
-write_fixture "$missing_fragment_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$missing_fragment_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$missing_fragment_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$missing_fragment_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -325,8 +397,8 @@ PY
 expect_reject "missing same-document fragment evidence" "$missing_fragment_dir"
 
 missing_origin_dir="$TMP_ROOT/missing-origin"
-write_fixture "$missing_origin_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$missing_origin_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$missing_origin_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$missing_origin_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -343,8 +415,8 @@ PY
 expect_reject "missing complete browser origin evidence" "$missing_origin_dir"
 
 missing_raw_frame_dir="$TMP_ROOT/missing-raw-frame"
-write_fixture "$missing_raw_frame_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$missing_raw_frame_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$missing_raw_frame_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$missing_raw_frame_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -361,8 +433,8 @@ PY
 expect_reject "missing raw KRR frame evidence" "$missing_raw_frame_dir"
 
 ascii_only_input_dir="$TMP_ROOT/ascii-only-input"
-write_fixture "$ascii_only_input_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$ascii_only_input_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$ascii_only_input_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$ascii_only_input_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -378,8 +450,8 @@ PY
 expect_reject "missing committed non-ASCII IME input" "$ascii_only_input_dir"
 
 fixed_click_bounds_dir="$TMP_ROOT/fixed-click-bounds"
-write_fixture "$fixed_click_bounds_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$fixed_click_bounds_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$fixed_click_bounds_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$fixed_click_bounds_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -401,21 +473,21 @@ PY
 expect_reject "fixed HTML click search bounds" "$fixed_click_bounds_dir"
 
 native_request_name_dir="$TMP_ROOT/native-request-name"
-write_fixture "$native_request_name_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
-python3 - "$native_request_name_dir/scripts/screenshot/examples/v0-22-34-html-headless-preview.json" <<'PY'
+write_fixture "$native_request_name_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
+python3 - "$native_request_name_dir/scripts/screenshot/examples/v0-22-35-html-headless-preview.json" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
 request = json.loads(path.read_text())
-request["name"] = "v0-22-34-html-native-window-preview"
+request["name"] = "v0-22-35-html-native-window-preview"
 path.write_text(json.dumps(request))
 PY
 expect_reject "native-window acceptance request name" "$native_request_name_dir"
 
 native_runner_dir="$TMP_ROOT/native-runner"
-write_fixture "$native_runner_dir" '"0.3.2"' '"0.4.4"' 0.3.2 0.4.4 true 0
+write_fixture "$native_runner_dir" '"0.3.3"' '"0.4.5"' 0.3.3 0.4.5 true 0
 printf '%s\n' 'mod executor_native; // --native-window' >"$native_runner_dir/scripts/screenshot/src/main.rs"
 expect_reject "native-window acceptance runner" "$native_runner_dir"
 
@@ -425,7 +497,7 @@ forbidden_runtime_source_dir="$TMP_ROOT/forbidden-runtime-source"
 mkdir -p "$forbidden_runtime_source_dir"
 printf '%s\n' 'const RUNTIME: &str = "Chromium";' >"$forbidden_runtime_source_dir/runtime.rs"
 if KATANA_HTML_UI_SOURCE_ROOT="$forbidden_runtime_source_dir" \
-    bash "$ROOT_DIR/scripts/release/check-html-browser-runtime-contract.sh" 0.22.34 \
+    bash "$ROOT_DIR/scripts/release/check-html-browser-runtime-contract.sh" 0.22.35 \
     >/dev/null 2>&1; then
     printf '[ERROR] Runtime contract accepted an external browser source marker.\n' >&2
     exit 1
@@ -434,13 +506,13 @@ fi
 forbidden_runtime_manifest="$TMP_ROOT/forbidden-runtime-Cargo.toml"
 printf '%s\n' '[dependencies]' 'fantoccini = "0.22"' >"$forbidden_runtime_manifest"
 if KATANA_HTML_RUNTIME_MANIFESTS="$forbidden_runtime_manifest" \
-    bash "$ROOT_DIR/scripts/release/check-html-browser-runtime-contract.sh" 0.22.34 \
+    bash "$ROOT_DIR/scripts/release/check-html-browser-runtime-contract.sh" 0.22.35 \
     >/dev/null 2>&1; then
     printf '[ERROR] Runtime contract accepted an external browser dependency.\n' >&2
     exit 1
 fi
 
-if ! bash "$ROOT_DIR/scripts/release/check-html-browser-runtime-contract.sh" 0.22.34 >/dev/null; then
+if ! bash "$ROOT_DIR/scripts/release/check-html-browser-runtime-contract.sh" 0.22.35 >/dev/null; then
     printf '[ERROR] KatanA interactive HTML runtime contract failed.\n' >&2
     exit 1
 fi

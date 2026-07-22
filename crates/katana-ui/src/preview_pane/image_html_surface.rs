@@ -308,6 +308,38 @@ mod tests {
     }
 
     #[test]
+    fn lifecycle_script_error_reaches_the_surface_with_runtime_stack() {
+        let source = HtmlBrowserSource::new(
+            "<script>document.addEventListener('DOMContentLoaded', () => { throw new Error('lifecycle failed'); });</script>",
+            "https://example.test/index.html",
+        )
+        .expect("valid browser source");
+        let mut surface = HtmlBrowserSurface::start(source);
+        let context = egui::Context::default();
+        let deadline = std::time::Instant::now() + FRAME_UPDATE_TIMEOUT;
+
+        while surface.error.is_none() && std::time::Instant::now() < deadline {
+            surface.poll(&context);
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+
+        let error = surface.error.as_deref().unwrap_or_default();
+        for expected in [
+            "Layer: KDV worker",
+            "Operation: receive worker update",
+            "Layer: KRR runtime",
+            "Operation: start",
+            "Document: https://example.test/index.html",
+            "Cause: in-process HTML runtime failed",
+            "JavaScript exception: Error: lifecycle failed",
+            "inline-script:1:",
+            "krr-html-dom-bootstrap",
+        ] {
+            assert!(error.contains(expected), "missing {expected:?} in {error}");
+        }
+    }
+
+    #[test]
     fn requested_viewport_rejects_stale_bootstrap_frames() {
         let bootstrap = HtmlBrowserViewport::new(1, 1, 1.0).unwrap();
         let requested = HtmlBrowserViewport::new(320, 240, 1.0).unwrap();
