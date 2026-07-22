@@ -103,6 +103,16 @@ assets_for_filter() {
 download() {
     local name="$1"
     local url="$ASSET_BASE_URL/$name"
+    if [[ -n "${KATANA_RELEASE_ASSET_DIR:-}" ]]; then
+        local source_path="$KATANA_RELEASE_ASSET_DIR/$name"
+        if [[ ! -f "$source_path" ]]; then
+            fail "Local asset not found: $source_path"
+            return 1
+        fi
+        cp "$source_path" "$name"
+        ok "Loaded local $name ($(du -h "$name" | awk '{print $1}'))"
+        return
+    fi
     info "Downloading $name ..."
     if ! curl -fsSL --retry 2 -o "$name" "$url"; then
         fail "Could not download $name"
@@ -143,18 +153,20 @@ inspect_tar_gz() {
 inspect_zip() {
     local name="$1"
     local expected="$2"
+    local entries
     section "$name (zip)"
     download "$name" || return
     echo "SHA-256: $(sha256_of "$name")"
     echo "--- entries (head 50) ---"
-    unzip -l "$name" | head -55
+    entries=$(unzip -Z1 "$name")
+    sed -n '1,50p' <<<"$entries"
     echo
-    if unzip -l "$name" | awk '{print $NF}' | grep -qxF "$expected"; then
+    if grep -qxF "$expected" <<<"$entries"; then
         ok "Asset contract OK: '$expected' present"
     else
         fail "Asset contract VIOLATION: '$expected' NOT found"
         echo "Actual top-level entries:"
-        unzip -l "$name" | awk 'NR>3 {print $NF}' | awk -F/ '{print $1}' | sort -u | grep -v '^$' | head -20
+        awk -F/ '{print $1}' <<<"$entries" | sort -u | grep -v '^$' | sed -n '1,20p'
     fi
 }
 

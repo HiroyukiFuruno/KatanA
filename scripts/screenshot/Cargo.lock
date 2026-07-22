@@ -2905,7 +2905,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.34"
+version = "0.22.35"
 dependencies = [
  "anyhow",
  "base64",
@@ -2939,9 +2939,9 @@ dependencies = [
 
 [[package]]
 name = "katana-document-viewer"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d42d3daac031362c5888b2aaadf186dbf8ffe0da708663e903c7249757bdb731"
+checksum = "204a48203238eb145e2c9a25ce0245c7e33209d7d0e1098c840c74ecbaff9650"
 dependencies = [
  "cosmic-text",
  "epaint_default_fonts",
@@ -2988,7 +2988,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.34"
+version = "0.22.35"
 dependencies = [
  "anyhow",
  "cc",
@@ -3008,9 +3008,9 @@ dependencies = [
 
 [[package]]
 name = "katana-render-runtime"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b06dce48084e4945db7b06a387f188cd30448abc256a703ce4fd33d982a3530"
+checksum = "4f90416a7d638dc70e51c0e9ea36ce4a04d76dd828dfc6b85d075405b74a8529"
 dependencies = [
  "anyhow",
  "base64",
@@ -3053,7 +3053,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.34"
+version = "0.22.35"
 dependencies = [
  "anyhow",
  "arboard",

@@ -92,7 +92,7 @@ jobs:
         run: |
           rustup component add llvm-tools-preview
           curl -LsSf https://github.com/taiki-e/cargo-llvm-cov/releases/latest/download/cargo-llvm-cov-x86_64-apple-darwin.tar.gz | tar xz -C ~/.cargo/bin
-          just coverage
+          JOBS=1 just coverage
 
   lint:
     name: Lint
