@@ -507,6 +507,8 @@ mod tests {
     fn serve_html(listener: TcpListener) -> std::io::Result<()> {
         for _ in 0..RESPONSE_COUNT {
             let (mut stream, _) = listener.accept()?;
+            let mut request = [0; 1024];
+            stream.read(&mut request)?;
             write_html_response(
                 &mut stream,
                 200,
@@ -559,6 +561,9 @@ mod tests {
         app.poll_url_source(ctx);
         for preview in app.tab_previews.iter_mut() {
             preview.pane.poll_html_browser(ctx);
+        }
+        if let Some(error) = &app.state.url_tab.last_error {
+            return Err(format!("HTML URL load failed: {error}").into());
         }
         Ok(())
     }
