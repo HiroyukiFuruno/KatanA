@@ -9,24 +9,17 @@ pub(super) fn show_html_browser_content(
     doc_search_active_index: Option<usize>,
     action: &mut AppAction,
 ) {
-    egui::Frame::NONE
-        .inner_margin(egui::Margin::symmetric(
-            crate::shell_ui::PREVIEW_CONTENT_PADDING,
-            0,
-        ))
-        .show(ui, |ui| {
-            let actions = preview.show_content(
-                ui,
-                active_editor_line,
-                None,
-                search_query,
-                doc_search_active_index,
-            );
-            if let Some((global_index, new_state)) = actions.into_iter().next() {
-                *action = AppAction::ToggleTaskList {
-                    global_index,
-                    new_state,
-                };
-            }
-        });
+    let actions = preview.show_content(
+        ui,
+        active_editor_line,
+        None,
+        search_query,
+        doc_search_active_index,
+    );
+    if let Some((global_index, new_state)) = actions.into_iter().next() {
+        *action = AppAction::ToggleTaskList {
+            global_index,
+            new_state,
+        };
+    }
 }

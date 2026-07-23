@@ -1138,9 +1138,21 @@ version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c9cdaae01d5ed7882b04d795e7f752f46ff52d2fa3b50a20d28c464510bba98"
 dependencies = [
+ "cssparser-macros",
  "dtoa-short",
  "itoa",
+ "phf 0.13.1",
  "smallvec",
+]
+
+[[package]]
+name = "cssparser-macros"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10a2a99df6e410a8ff4245aa2006499ea662245f967cc7c0a38c83ef8eb44dbf"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2837,7 +2849,7 @@ dependencies = [
 
 [[package]]
 name = "katana-core"
-version = "0.22.35"
+version = "0.22.36"
 dependencies = [
  "anyhow",
  "base64",
@@ -2894,7 +2906,7 @@ dependencies = [
 
 [[package]]
 name = "katana-linter"
-version = "0.22.35"
+version = "0.22.36"
 dependencies = [
  "ignore",
  "katana-ast-lint",
@@ -2936,7 +2948,7 @@ dependencies = [
 
 [[package]]
 name = "katana-platform"
-version = "0.22.35"
+version = "0.22.36"
 dependencies = [
  "anyhow",
  "cc",
@@ -2956,12 +2968,13 @@ dependencies = [
 
 [[package]]
 name = "katana-render-runtime"
-version = "0.4.5"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f90416a7d638dc70e51c0e9ea36ce4a04d76dd828dfc6b85d075405b74a8529"
+checksum = "2d4c20fcc3d267b23f6bb66c99d4b106c2717bbd8bef050ba177cd0c85230f69"
 dependencies = [
  "anyhow",
  "base64",
+ "cssparser",
  "html5ever",
  "include_dir",
  "jni",
@@ -2983,7 +2996,7 @@ dependencies = [
 
 [[package]]
 name = "katana-ui"
-version = "0.22.35"
+version = "0.22.36"
 dependencies = [
  "accesskit",
  "anyhow",

@@ -26,7 +26,7 @@ impl HtmlBrowserSurface {
             self.record_adapter_error("navigate", Some(origin), error);
             return;
         }
-        self.pending_navigation_url = None;
+        self.pending_navigation_urls.clear();
         self.error = None;
         self.record_navigation(origin);
         self.await_frame();
